@@ -296,15 +296,23 @@ export function node(state = nodeInitialState, action) {
             let index = indexById(childNodes, node && node.id);
             console.log("update index", index);
             let updatedNode = childNodes[index];
+            // copy same values from source object
+            // not needed for WS update -> should be removed 
+            // (have to be tested first)
             for(let i in updatedNode){
                 if(typeof data[i] !== "undefined"){
                     updatedNode[i] = data[i];
                 }
             }
-            state.childNodes[index] = updatedNode;
-            console.log("update node", updatedNode);
+            if(updatedNode.accordionLeft!=data.formTitle.titleLeft)
+                updatedNode.accordionLeft = data.formTitle.titleLeft;
+            if(updatedNode.accordionRight != data.formTitle.titleRight)
+                updatedNode.accordionRight = data.formTitle.titleRight;
+            //console.log("update node", updatedNode);            
+
             var result = {
                 ...state,
+
                 subNodeForm: subNodeForm(state.subNodeForm, action),
                 subNodeRegister: subNodeRegister(state.subNodeRegister, action),
                 subNodeDaos: subNodeDaos(state.subNodeDaos, action),

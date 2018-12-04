@@ -8,7 +8,6 @@ import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -19,6 +18,7 @@ import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.UnitCountActionResult;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDataInteger;
@@ -236,10 +236,10 @@ public class UnitCountAction extends Action {
 		descItem.setCreateChange(change);
 
 		if (outputItemType.getEntity().getUseSpecification()) {
-            RulItemSpec rulItemSpec = outputItemType.getItemSpecs().stream().
-                    filter(s -> s.getCode().equalsIgnoreCase(value)).
-                    findFirst().
-                    orElseThrow(() -> new SystemException("Nenalezena specifikace.").set("code", value));
+            RulItemSpec rulItemSpec = outputItemType.getItemSpecByCode(value);
+            if (rulItemSpec == null) {
+                throw new SystemException("Nenalezena specifikace.").set("code", value);
+            }
             descItem.setItemSpec(rulItemSpec);
         }
 		descriptionItemService.createDescriptionItem(descItem, node, fundVersion, change);

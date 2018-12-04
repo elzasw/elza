@@ -2743,6 +2743,16 @@
     </item-spec>
 
     <!-- Počet EJ -->
+    <item-spec code="ZP2015_UNIT_COUNT_KAR" item-type="ZP2015_UNIT_COUNT_ITEM">
+        <name>Karton</name>
+        <description>Karton</description>
+        <shortcut>kar</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_COUNT_FAS" item-type="ZP2015_UNIT_COUNT_ITEM">
+        <name>Fascikl</name>
+        <description>Fascikl</description>
+        <shortcut>fas</shortcut>
+    </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_LIO" item-type="ZP2015_UNIT_COUNT_ITEM">
         <name>Listiny do roku 1850</name>
         <description>Listiny do roku 1850</description>

@@ -700,7 +700,8 @@ class FlatFormData{
                 let forcedTypeSpecs = itemSpecsMap[typeId] && itemSpecsMap[typeId].specs;
 
                 //Add forced specifications
-                if (forcedTypeSpecs){
+                // Do not force enum values -> has to be entered manually by user
+                if (forcedTypeSpecs && refType.dataType.code!=="ENUM"){
                     let lastPosition = typeItems ? typeItems.length : 0;
                     let unusedForcedSpecs = this._getUnusedSpecIds(forcedTypeSpecs, typeItems);
 
