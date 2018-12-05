@@ -1,12 +1,9 @@
 package cz.tacr.elza.print;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang3.Validate;
-
 import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.print.item.Item;
 
 /**
  * Structured
@@ -14,13 +11,18 @@ import cz.tacr.elza.domain.ArrStructuredObject;
  */
 public class Structured {
 
-    private final List<NodeId> nodeIds = new ArrayList<>();
+    private List<Item> items;
+
+    //private final List<NodeId> nodeIds = new ArrayList<>();
 
     private final NodeLoader nodeLoader;
 
+    final private Integer id;
+
     private String value;
 
-    private Structured(NodeLoader nodeLoader) {
+    private Structured(Integer id, NodeLoader nodeLoader) {
+        this.id = id;
         this.nodeLoader = nodeLoader;
     }
 
@@ -42,14 +44,30 @@ public class Structured {
         this.value = value;
     }
 
+    /*
     public NodeIterator getNodes() {
         Iterator<NodeId> nodeIdIterator = nodeIds.iterator();
         return new NodeIterator(nodeLoader, nodeIdIterator);
     }
-
+    
     void addNodeId(NodeId nodeId) {
         Validate.notNull(nodeId);
         nodeIds.add(nodeId);
+    }*/
+
+    public boolean hasItem(String itemTypeCode) {
+        load();
+
+        boolean exists = items.stream().anyMatch(item -> item.getType().getCode().equals(itemTypeCode));
+
+        return exists;
+    }
+
+    private void load() {
+        if (items != null) {
+            return;
+        }
+        items = nodeLoader.loadStructItems(id);
     }
 
     /**
@@ -60,14 +78,8 @@ public class Structured {
      * @return
      */
     public static Structured newInstance(ArrStructuredObject structObj, NodeLoader nodeLoader) {
-        Structured result = new Structured(nodeLoader);
+        Structured result = new Structured(structObj.getStructuredObjectId(), nodeLoader);
         result.setValue(structObj.getValue());
-        return result;
-    }
-
-    public static Structured newInstance(String value, NodeLoader nodeLoader) {
-        Structured result = new Structured(nodeLoader);
-        result.setValue(value);
         return result;
     }
 }

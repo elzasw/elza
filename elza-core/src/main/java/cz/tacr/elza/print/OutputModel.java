@@ -39,8 +39,10 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParDynasty;
 import cz.tacr.elza.domain.ParEvent;
@@ -62,7 +64,6 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemSpec;
-import cz.tacr.elza.print.item.ItemStructuredRef;
 import cz.tacr.elza.print.item.ItemType;
 import cz.tacr.elza.print.item.convertors.ItemConvertor;
 import cz.tacr.elza.print.item.convertors.ItemConvertorContext;
@@ -83,6 +84,7 @@ import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
 import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -169,6 +171,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
      */
     private List<Integer> startNodes = new ArrayList<>();
 
+    private StructuredItemRepository structItemRepos;
+
     public OutputModel(final StaticDataService staticDataService,
                        final ElzaLocale elzaLocale,
                        final FundTreeProvider fundTreeProvider,
@@ -178,7 +182,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final ApNameRepository apNameRepository,
                        final ApExternalIdRepository apEidRepository,
                        final AttPageProvider attPageProvider,
-                       final StructuredObjectRepository structObjRepos) {
+                       final StructuredObjectRepository structObjRepos,
+                       final StructuredItemRepository structItemRepos) {
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
         this.fundTreeProvider = fundTreeProvider;
@@ -189,6 +194,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.apEidRepository = apEidRepository;
         this.attPageProvider = attPageProvider;
         this.structObjRepos = structObjRepos;
+        this.structItemRepos = structItemRepos;
     }
 
     public boolean isInitialized() {
@@ -355,6 +361,21 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         return nodes;
     }
 
+    private List<Item> convert(List<? extends ArrItem> srcItems) {
+        ItemConvertor conv = new OutputItemConvertor();
+        List<Item> result = srcItems.stream()
+                .map(i -> conv.convert(i, this))
+                /*
+                // add packet reference
+                if (item instanceof ItemStructuredRef) {
+                    item.getValue(Structured.class).addNodeId(node.getNodeId());
+                }*/
+                .filter(Objects::nonNull)
+                .sorted(Item::compareTo)
+                .collect(Collectors.toList());
+        return result;
+    }
+
     /**
      * Init output node from node cache.
      */
@@ -362,19 +383,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         // set node items
         List<ArrDescItem> descItems = cachedNode.getDescItems();
         if (descItems != null) {
-            ItemConvertor conv = new OutputItemConvertor();
-            List<Item> items = descItems.stream()
-                    .map(i -> {
-                        Item item = conv.convert(i, this);
-                        // add packet reference
-                        if (item instanceof ItemStructuredRef) {
-                            item.getValue(Structured.class).addNodeId(node.getNodeId());
-                        }
-                        return item;
-                    })
-                    .filter(Objects::nonNull)
-                    .sorted(Item::compareTo)
-                    .collect(Collectors.toList());
+            List<Item> items = convert(descItems);
             node.setItems(items);
         }
 
@@ -782,19 +791,27 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     @Transactional(value = TxType.MANDATORY)
     @Override
-    public Iterator<Structured> createStructObjIterator(String structTypeCode) {
+    public List<Structured> createStructObjList(String structTypeCode) {
         // get struct item
-        RulStructuredType structType = this.staticData.getStructuredTypeByCode(structTypeCode);
-        List<ArrStructuredObject> sobs = this.structObjRepos.findStructureDataBySubtreeNodeIds(this.startNodes,
-                                                                                               structType
-                                                                                                       .getStructuredTypeId(),
-                                                                     false);
+        RulStructuredType structType = staticData.getStructuredTypeByCode(structTypeCode);
+        List<ArrStructuredObject> sobs = structObjRepos
+                .findStructureDataBySubtreeNodeIds(this.startNodes,
+                                                   structType.getStructuredTypeId(),
+                                                   false);
 
         List<Structured> result = new ArrayList<>(sobs.size());
         for (ArrStructuredObject sob : sobs) {
             Structured s = Structured.newInstance(sob, this);
             result.add(s);
         }
-        return result.iterator();
+        return result;
+    }
+
+    @Override
+    public List<Item> loadStructItems(Integer structObjId) {
+        List<ArrStructuredItem> items = structItemRepos.findByStructuredObjectAndDeleteChangeIsNullFetchData(
+                                                                                                             structObjId);
+        List<Item> result = convert(items);
+        return result;
     }
 }

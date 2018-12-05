@@ -37,6 +37,7 @@ import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
 import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -82,12 +83,13 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
         super(em, dmsService);
 
         StructuredObjectRepository structObjRepos = applicationContext.getBean(StructuredObjectRepository.class);
+        StructuredItemRepository structItemRepos = applicationContext.getBean(StructuredItemRepository.class);
 
         pdfAttProvider = new PdfAttProvider(applicationContext);
         outputModel = new OutputModel(staticDataService, elzaLocale,
                 fundTreeProvider, nodeCacheService, institutionRepository,
                 apDescRepository, apNameRepository, apEidRepository,
-                pdfAttProvider, structObjRepos);
+                pdfAttProvider, structObjRepos, structItemRepos);
         pdfAttProvider.setOutput(outputModel);
     }
 
