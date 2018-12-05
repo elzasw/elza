@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.core.data.DataType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -817,6 +818,8 @@ public class ClientFactoryVO {
     /**
      * Vytvoření hodnoty atributu.
      *
+     * TODO: přepsat metodu bez mapperu na klasické metody/factory
+     *
      * @param item hodnota atributu
      * @return VO hodnota atributu
      */
@@ -871,6 +874,14 @@ public class ClientFactoryVO {
         Integer specId = (item.getItemSpec() == null) ? null : item.getItemSpec().getItemSpecId();
         itemVO.setDescItemSpecId(specId);
         itemVO.setItemTypeId(item.getItemTypeId());
+
+        if (DataType.RECORD_REF == DataType.fromCode(code)) {
+            if (data != null) {
+                ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) data;
+                ApAccessPointVO accessPointVO = apFactory.createVO(dataRecordRef.getRecord());
+                ((ArrItemRecordRefVO) itemVO).setRecord(accessPointVO);
+            }
+        }
 
         return itemVO;
     }
