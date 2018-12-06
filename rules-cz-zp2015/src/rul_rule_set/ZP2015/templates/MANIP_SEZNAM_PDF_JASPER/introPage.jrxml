@@ -260,7 +260,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Seznam pramenů a literatury:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Informace o zpracování:"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" positionType="Float" x="0" y="70" width="455" height="25" isRemoveLineWhenBlank="true" uuid="c65fb600-e002-4000-bb49-b44ea5e3c025">
