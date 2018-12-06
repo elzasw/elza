@@ -80,7 +80,7 @@ class IssueLists extends AbstractReactComponent {
                     </Row>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.close')}</Button>
                 </Modal.Footer>
             </div>
         )
