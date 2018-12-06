@@ -242,5 +242,10 @@
        </delete>
        <dropTable tableName="ap_variant_record"/>
     </changeSet>
+    <changeSet id="20181120234101" author="ppyt">
+      <!-- Incorrect migration from 0.15 - shift ids -->
+      <sql>UPDATE db_hibernate_sequences SET next_val = (select max(name_id) from ap_name)+20 WHERE sequence_name = 'ap_name|name_id'</sql>
+      <sql>UPDATE db_hibernate_sequences SET next_val = (select max(description_id) from ap_description)+20 WHERE sequence_name = 'ap_description|description_id'</sql>
+    </changeSet>
 
 </databaseChangeLog>
