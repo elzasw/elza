@@ -1078,7 +1078,7 @@ public class ArrangementController {
 
 		List<ArrFundVO> fundVOList = new ArrayList<>(fundList.size());
 		fundList.forEach(f -> {
-            ArrFundVO fundVO = factoryVo.createFundVO(f.getFund(), false, userService.getLoggedUserDetail());
+            ArrFundVO fundVO = factoryVo.createFundVO(f.getFund(), true, userService.getLoggedUserDetail());
 			//fundVO.setVersions(Arrays.asList(factoryVo.createFundVersion(f.getOpenVersion())));
 			fundVOList.add(fundVO);
         });
