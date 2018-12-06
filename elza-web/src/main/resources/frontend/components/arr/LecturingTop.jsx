@@ -39,6 +39,7 @@ class LecturingTop extends React.Component {
         this.props.dispatch(issueTypesActions.fetchIfNeeded());
         this.props.dispatch(issueStatesActions.fetchIfNeeded());
         this.props.dispatch(issuesActions.protocols.fetchIfNeeded(this.props.fund.id));
+        this.setState({issueListId: this.props.issueProtocols.filter.issueListId});
     }
 
     componentWillReceiveProps(nextProps, nextContext) {
@@ -78,7 +79,7 @@ class LecturingTop extends React.Component {
     };
 
     newNode = () => {
-        if (!this.props.node.selectedSubNodeId) {
+        if (!this.props.node || !this.props.node.selectedSubNodeId) {
             return;
         }
         this.props.dispatch(modalDialogShow(this, i18n("arr.issues.add.node.title"), <IssueForm onSubmit={(data) => WebApi.addIssue({
@@ -103,6 +104,7 @@ class LecturingTop extends React.Component {
     selectIssueList = (issueListId) => {
         this.setState({issueListId}, () => {
             this.props.dispatch(issuesActions.protocol.fetchIfNeeded(issueListId));
+            this.props.dispatch(issuesActions.protocols.filter({issueListId}));
             this.props.dispatch(issuesActions.list.fetchIfNeeded(issueListId));
         });
     };
@@ -138,7 +140,7 @@ class LecturingTop extends React.Component {
                 <div className="actions">
                     <DropdownButton disabled={!canWrite} bsStyle="default" id='dropdown-add-comment' noCaret title={<Icon glyph='fa-plus-circle' />}>
                         <MenuItem eventKey="1" onClick={this.newArr}>{i18n("arr.issues.add.arr")}</MenuItem>
-                        <MenuItem eventKey="2" disabled={!this.props.node.selectedSubNodeId} onClick={this.newNode}>{i18n("arr.issues.add.node")}</MenuItem>
+                        <MenuItem eventKey="2" disabled={!this.props.node || !this.props.node.selectedSubNodeId} onClick={this.newNode}>{i18n("arr.issues.add.node")}</MenuItem>
                     </DropdownButton>
                     {hasAdmin && <Button bsStyle="action" className="pull-right" onClick={this.settings}><Icon glyph='fa-cogs' /></Button>}
                     <Button bsStyle="action" className="pull-right" disabled={!issueListId} onClick={this.download}><Icon glyph='fa-download' /></Button>
