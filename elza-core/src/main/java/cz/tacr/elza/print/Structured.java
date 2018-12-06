@@ -26,16 +26,6 @@ public class Structured {
         this.nodeLoader = nodeLoader;
     }
 
-    /**
-     * Metoda pro získání hodnoty do fieldu v Jasper.
-     * Umožní na položce v detailu volat metody sám nad sebou (nejen implicitně zpřístupněné gettery).
-     *
-     * @return odkaz sám na sebe
-     */
-    public Structured getStructured() {
-        return this;
-    }
-
     public String getValue() {
         return value;
     }
@@ -59,6 +49,16 @@ public class Structured {
         load();
 
         boolean exists = items.stream().anyMatch(item -> item.getType().getCode().equals(itemTypeCode));
+
+        return exists;
+    }
+
+    public boolean hasItemWithSpec(String itemTypeCode, String itemSpecCode) {
+        load();
+
+        boolean exists = items.stream().anyMatch(
+                                                 item -> (item.getType().getCode().equals(itemTypeCode) &&
+                                                         item.getSpecification().getCode().equals(itemSpecCode)));
 
         return exists;
     }
