@@ -822,6 +822,7 @@ var messages = {
     "subNodeForm.descItemType.notIdentified": "Nezjištěno",
     "subNodeForm.addNodeAfter": "JP za",
     "subNodeForm.digitizationRequest": "Požadavek na digitalizaci",
+    "subNodeForm.issueAdd": "Přidat připomínku",
 
     "subNodeForm.descItem.edited": "Editováno",
 
