@@ -255,9 +255,7 @@ let eventMap = {
     'FRAGMENT_UPDATE': fragmentUpdate,
     'ISSUE_LIST_UPDATE': issueListUpdate,
     'ISSUE_UPDATE': issueUpdate,
-    // Zatím nevyužité akce
-    //'ISSUE_LIST_CREATE': issueListCreate,
-    //'ISSUE_CREATE': issueCreate,
+    'ISSUE_CREATE': issueCreate,
 }
 
 if (!window.ws) {
@@ -538,9 +536,16 @@ function issueListUpdate({id}) {
     store.dispatch(issuesActions.protocol.invalidate(id))
 }
 
-function issueUpdate({id}) {
-    store.dispatch(issuesActions.detail.invalidate(id));
-    store.dispatch(issuesActions.comments.invalidate(id));
+function issueUpdate({issueListId, ids}) {
+    store.dispatch(issuesActions.list.invalidate(issueListId));
+    store.dispatch(issuesActions.detail.invalidate(issueListId));
+    ids.forEach(id => {
+        store.dispatch(issuesActions.comments.invalidate(id));
+    });
+}
+
+function issueCreate({issueListId}) {
+    store.dispatch(issuesActions.list.invalidate(issueListId));
 }
 
 /**

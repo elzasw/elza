@@ -95,8 +95,8 @@ public enum EventType {
 
     ISSUE_LIST_CREATE(EventId.class),
     ISSUE_LIST_UPDATE(EventId.class),
-    ISSUE_CREATE(EventId.class),
-    ISSUE_UPDATE(EventId.class),
+    ISSUE_CREATE(EventIdInIssueList.class),
+    ISSUE_UPDATE(EventIdInIssueList.class),
 
     BULK_ACTION_STATE_CHANGE(EventStringInVersion.class);
 

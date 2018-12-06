@@ -32,6 +32,10 @@ public class EventFactory {
         return new EventId(eventType, ids);
     }
 
+    public static EventIdInIssueList createIdEventInIssueList(final EventType eventType, final Integer issueListId, final Integer... ids) {
+        return new EventIdInIssueList(eventType, issueListId, ids);
+    }
+
     public static EventIdsInVersion createIdsInVersionEvent(final EventType eventType,
                                                             final ArrFundVersion version,
                                                             final Integer... entityIds) {

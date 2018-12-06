@@ -39,7 +39,11 @@ class LecturingTop extends React.Component {
         this.props.dispatch(issueTypesActions.fetchIfNeeded());
         this.props.dispatch(issueStatesActions.fetchIfNeeded());
         this.props.dispatch(issuesActions.protocols.fetchIfNeeded(this.props.fund.id));
-        this.setState({issueListId: this.props.issueProtocols.filter.issueListId});
+        const issueListId = this.props.issueProtocols.filter.issueListId;
+        this.setState({issueListId});
+        if (issueListId) {
+            this.props.dispatch(issuesActions.list.fetchIfNeeded(issueListId));
+        }
     }
 
     componentWillReceiveProps(nextProps, nextContext) {

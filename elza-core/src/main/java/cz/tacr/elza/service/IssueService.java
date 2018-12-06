@@ -329,7 +329,7 @@ public class IssueService {
 
         issue = issueRepository.save(issue);
 
-        publishEvent(issue.getIssueId(), EventType.ISSUE_CREATE);
+        publishIssueEvent(issueList.getIssueListId(), issue.getIssueId(), EventType.ISSUE_CREATE);
 
         if (node != null) {
             ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(issueList.getFund().getFundId());
@@ -361,7 +361,7 @@ public class IssueService {
 
         issue = issueRepository.save(issue);
 
-        publishEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
+        publishIssueEvent(issue.getIssueList().getIssueListId(), issue.getIssueId(), EventType.ISSUE_UPDATE);
 
         ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(issue.getFund().getFundId());
         if (oldNode != null) {
@@ -396,7 +396,7 @@ public class IssueService {
             issue.setIssueType(issueType);
             issueRepository.save(issue);
 
-            publishEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
+            publishIssueEvent(issue.getIssueList().getIssueListId(), issue.getIssueId(), EventType.ISSUE_UPDATE);
             if (issue.getNode() != null) {
                 ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(issue.getFund().getFundId());
                 publishVersionEvent(issue.getNode().getNodeId(), fundVersion, EventType.NODES_CHANGE);
@@ -435,7 +435,7 @@ public class IssueService {
             }
         }
 
-        publishEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
+        publishIssueEvent(issue.getIssueList().getIssueListId(), issue.getIssueId(), EventType.ISSUE_UPDATE);
 
         return comment;
     }
@@ -494,7 +494,7 @@ public class IssueService {
             }
         }
 
-        publishEvent(issue.getIssueId(), EventType.ISSUE_UPDATE);
+        publishIssueEvent(issue.getIssueList().getIssueListId(), issue.getIssueId(), EventType.ISSUE_UPDATE);
 
         return comment;
     }
@@ -704,6 +704,10 @@ public class IssueService {
 
     protected void publishEvent(Integer id, final EventType type) {
         eventNotificationService.publishEvent(EventFactory.createIdEvent(type, id));
+    }
+
+    protected void publishIssueEvent(final Integer issueListId, final Integer issueId, final EventType type) {
+        eventNotificationService.publishEvent(EventFactory.createIdEventInIssueList(type, issueListId, issueId));
     }
 
     protected void publishVersionEvent(final Integer id, final ArrFundVersion fundVersion, final EventType type) {
