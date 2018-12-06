@@ -49,6 +49,8 @@ var messages = {
     "global.action.download": "Stáhnout",
     "global.action.downloadAll": "Stáhnout vše",
     "global.action.run": "Spustit",
+    "global.action.back": "Zpět",
+    "global.action.next": "Dále",
 
     "download.allreadyDownloading" : "Požadavek na stažení souboru již byl odeslán",
     "download.error.title": "Chyba stahování",
@@ -174,6 +176,8 @@ var messages = {
     "exception.reg.SCOPE_CODE_CANT_CHANGE": "Kód oblasti nelze změnit",
     "exception.reg.SCOPE_EXISTS": "Kod oblasti entit již existuje",
     "exception.reg.USING_SCOPE_CANT_DELETE": "Nelze smazat oblast, která obsahuje přístupový bod",
+    "exception.reg.NOT_UNIQUE_FULL_NAME": "Celé jméno není unikátní v rámci třídy",
+    "exception.reg.CANT_MIGRATE_AP": "Nelze migrovat přístupový bod",
 
     "exception.sobj.NO_VALID_ITEMS": "Bez vyplnění alespoň některých prvků popisu nelze položku přidat. Vyplňte příslušné prvky popisu.",
 
@@ -839,6 +843,7 @@ var messages = {
     "registry.shown": "Zobrazeno",
     "registry.deleteRegistryQuestion": "Opravdu chcete smazat přístupový bod?",
     "registry.deleteRegistry": "Smazat",
+    "registry.migrateAp": "Převést na strukturované heslo",
     "registry.registryUsage": "Místa použití",
     "registry.registryUsageCount": "Počet nalezených výskytů",
     "registry.usage.tooMany": "Počet nalezených výskytů je příliš velký",
@@ -870,6 +875,12 @@ var messages = {
 
     "registryField.noItemsFound": "Záznamy nebyly nalezeny.",
     "registryField.visibleCount": "Zobrazeno {0} z {1} záznamů",
+
+    "ap.error.script": "Selhání groovy scriptu",
+    "ap.error.impossibleItemTypeIds": "Nepovolené prvky popisu:",
+    "ap.error.requiredItemTypeIds":"Nevyplněné povinné prvky popisu:",
+    "ap.error.emptyValue": "Prázdná hodnota přístupového bodu",
+    "ap.error.duplicateValue": "Hodnota již existuje",
 
     "party.noSelection.title": "Není vybrána osoba",
     "party.noSelection.message": "Prosím vyberte osobu ze seznamu nebo vytvořte novou.",

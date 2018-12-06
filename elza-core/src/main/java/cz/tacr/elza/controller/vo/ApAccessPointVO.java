@@ -1,5 +1,9 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.controller.vo.ap.ApFormVO;
+import cz.tacr.elza.controller.vo.ap.ApStateVO;
+
+import javax.annotation.Nullable;
 import java.util.Collection;
 
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -9,14 +13,14 @@ import cz.tacr.elza.domain.ApAccessPoint;
  * VO rejstříkového záznamu.
  */
 public class ApAccessPointVO extends AbstractApAccessPoint {
-    
+
     /**
      * Id hesla.
      */
     private Integer id;
-    
+
     private String uuid;
-    
+
     /**
      * Typ rejstříku.
      */
@@ -36,16 +40,16 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
      * Podrobná charakteristika rejstříkového hesla.
      */
     private String characteristics;
-    
+
     private boolean invalid;
-    
+
     /**
      * Id osoby.
      */
     // TODO: client should read if it's party AP by cached AP types and find party by AP if needed
     @Deprecated
     private Integer partyId;
-    
+
     /**
      * Externí identifikátory rejstříkového hesla, například interpi.
      */
@@ -55,6 +59,30 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
      * Seznam jmen přístupového bodu.
      */
     private Collection<ApAccessPointNameVO> names;
+
+    /**
+     * Kód pravidla pro AP.
+     */
+    @Nullable
+    private Integer ruleSystemId;
+
+    /**
+     * Stav přístupového bodu.
+     */
+    @Nullable
+    private ApStateVO state;
+
+    /**
+     * Chyby v přístupovém bodu.
+     */
+    @Nullable
+    private String errorDescription;
+
+    /**
+     * Strukturované data formuláře pro AP. Vyplněné pouze v případě, že se jedná o strukturovaný typ.
+     */
+    @Nullable
+    private ApFormVO form;
 
     public Integer getId() {
         return id;
@@ -136,6 +164,42 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 
     public void setNames(Collection<ApAccessPointNameVO> names) {
         this.names = names;
+    }
+
+    @Nullable
+    public ApStateVO getState() {
+        return state;
+    }
+
+    public void setState(@Nullable final ApStateVO state) {
+        this.state = state;
+    }
+
+    @Nullable
+    public String getErrorDescription() {
+        return errorDescription;
+    }
+
+    public void setErrorDescription(@Nullable final String errorDescription) {
+        this.errorDescription = errorDescription;
+    }
+
+    @Nullable
+    public ApFormVO getForm() {
+        return form;
+    }
+
+    public void setForm(@Nullable final ApFormVO form) {
+        this.form = form;
+    }
+
+    @Nullable
+    public Integer getRuleSystemId() {
+        return ruleSystemId;
+    }
+
+    public void setRuleSystemId(@Nullable final Integer ruleSystemId) {
+        this.ruleSystemId = ruleSystemId;
     }
 
     /**

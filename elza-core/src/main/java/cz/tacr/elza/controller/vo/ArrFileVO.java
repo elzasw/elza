@@ -1,9 +1,16 @@
 package cz.tacr.elza.controller.vo;
 
+import org.apache.commons.lang3.Validate;
+
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.service.attachment.AttachmentService;
+
 /**
  * ArrFile Value object
  *
- * @author Petr Compel <petr.compel@marbes.cz>
+ *
  * @since 13.3.2016
  */
 public class ArrFileVO extends DmsFileVO {
@@ -12,6 +19,16 @@ public class ArrFileVO extends DmsFileVO {
 
     private Boolean editable;
     private Boolean generatePdf;
+
+    public ArrFileVO() {
+
+    }
+
+    public ArrFileVO(ArrFile srcFile) {
+        super(srcFile);
+        this.fundId = srcFile.getFund().getFundId();
+        //this.editable = srcFile.get
+    }
 
     public Integer getFundId() {
         return fundId;
@@ -35,5 +52,23 @@ public class ArrFileVO extends DmsFileVO {
 
     public void setGeneratePdf(Boolean generatePdf) {
         this.generatePdf = generatePdf;
+    }
+
+    static public ArrFileVO newInstance(ArrFile srcFile, AttachmentService attachmentService) {
+        ArrFileVO result = new ArrFileVO(srcFile);
+        result.setEditable(attachmentService.isEditable(srcFile.getMimeType()));
+        result.setGeneratePdf(attachmentService.supportGenerateTo(srcFile, "application/pdf"));
+        return result;
+    }
+
+    public ArrFile createEntity(FundRepository fundRepository) {
+        ArrFile result = new ArrFile();
+        if (fundId != null) {
+            ArrFund fund = fundRepository.findOne(fundId);
+            Validate.notNull(fund, "Archivní pomůcka neexistuje (ID={})", fundId);
+            result.setFund(fund);
+        }
+        copyTo(result);
+        return result;
     }
 }

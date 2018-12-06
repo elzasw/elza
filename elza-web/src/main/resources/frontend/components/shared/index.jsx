@@ -1,6 +1,6 @@
-export * as Utils from 'components/Utils'
+export * as Utils from '../Utils'
 export {default as AbstractReactComponent} from 'components/AbstractReactComponent.jsx';
-export {default as ExceptionUtils} from 'components/ExceptionUtils.jsx';
+export * as ExceptionUtils from 'components/ExceptionUtils.jsx';
 export {default as i18n} from 'components/i18n.jsx';
 export {default as LongText} from 'components/LongText.jsx';
 export {default as ListBox} from 'components/shared/listbox/ListBox.jsx';

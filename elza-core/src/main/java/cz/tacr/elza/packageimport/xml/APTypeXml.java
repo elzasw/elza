@@ -27,6 +27,9 @@ public class APTypeXml {
     @XmlAttribute(name = "parent-ap-type")
     private String parentType;
 
+    @XmlAttribute(name = "rule-system")
+    private String ruleSystem;
+
     @XmlElement(name = "name", required = true)
     private String name;
 
@@ -66,6 +69,14 @@ public class APTypeXml {
 
     public void setParentType(final String parentRegisterType) {
         this.parentType = parentRegisterType;
+    }
+
+    public String getRuleSystem() {
+        return ruleSystem;
+    }
+
+    public void setRuleSystem(final String ruleSystem) {
+        this.ruleSystem = ruleSystem;
     }
 
     public String getName() {

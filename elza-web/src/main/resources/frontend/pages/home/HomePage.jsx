@@ -19,7 +19,7 @@ import PageLayout from "../shared/layout/PageLayout";
 // import AutocompleteTest from "./test/AutocompleteTest";
 
 import './HomePage.less'
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 
 /**
  * Home stránka
@@ -65,8 +65,8 @@ class HomePage extends AbstractReactComponent {
         this.dispatch(modalDialogShow(
             this,
             i18n('arr.fund.title.add'),
-            <FundForm 
-                create 
+            <FundForm
+                create
                 initData={initData}
                 onSubmitForm={(data) => {return this.dispatch(createFund(data))}}
             />

@@ -338,12 +338,70 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <!-- Prvek popisu pro migraci String2Date -->
+    <item-type code="SRD_STRING2DATE" data-type="STRING">
+        <name>String Date for migration</name>
+        <shortcut>String Datum</shortcut>
+        <description>ZP5.2.5 Datum</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
     <item-type code="SRD_SIMPLE_DATE" data-type="DATE">
         <name>Datum</name>
         <shortcut>Datum</shortcut>
         <description>ZP5.2.5 Datum</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+
+    <item-type code="AP_NAME" data-type="STRING">
+        <name>Hlavní část</name>
+        <shortcut>Hl. část</shortcut>
+        <description>Hlavní část jména</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="AP_COMPLEMENT" data-type="STRING">
+        <name>Doplněk - textový</name>
+        <shortcut>Doplněk</shortcut>
+        <description>Textový doplněk ke jménu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="AP_DESCRIPTION" data-type="TEXT">
+        <name>Popis</name>
+        <shortcut>Popis</shortcut>
+        <description>Popis</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="VZTAH_STAT_ZASTUPCE" data-type="APFRAG_REF" fragment-type="STAT_ZASTUPCE">
+        <name>Vztah - Statutární zástupce</name>
+        <shortcut>St. zást.</shortcut>
+        <description>Vztah pro statutárního zástupce</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="VZTAH_TYP" data-type="ENUM">
+        <name>Typ vztahu</name>
+        <shortcut>Vztah</shortcut>
+        <description>Typ vztahu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="VZTAH_ENTITA" data-type="RECORD_REF">
+        <name>Entita vztahu</name>
+        <shortcut>Entita</shortcut>
+        <description>Entita vztahu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
 </item-types>

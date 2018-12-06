@@ -150,13 +150,13 @@ public class PartyController {
 
     @Autowired
     private AccessPointService accessPointService;
-    
+
     @Autowired
     private ApFactory apFactory;
 
     @Autowired
-    private StaticDataService staticDataService; 
-    
+    private StaticDataService staticDataService;
+
     /**
      * Uložení nové osoby
      * @param partyVO data osoby
@@ -450,7 +450,7 @@ public class PartyController {
             ParPartyTypeVO partyTypeVO = factoryVo
                     .getOrCreateVo(partyType.getPartyTypeId(), partyType, partyTypeVoMap, ParPartyTypeVO.class);
 
-            ApTypeVO apTypeVO = ApTypeVO.newInstnace(apType, staticData);
+            ApTypeVO apTypeVO = ApTypeVO.newInstance(apType, staticData);
             partyTypeVO.addApType(apTypeVO);
         }
 

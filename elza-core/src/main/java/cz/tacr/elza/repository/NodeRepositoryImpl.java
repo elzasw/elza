@@ -47,7 +47,6 @@ import cz.tacr.elza.controller.vo.filter.UnitdateCondition;
 import cz.tacr.elza.controller.vo.filter.UnitdateSearchParam;
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -262,7 +261,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      */
     @SuppressWarnings("unchecked")
     private List<String> findDescItemIdsByDateSearchParamsData(final List<UnitdateSearchParam> searchParams, final Integer fundId) {
-        Class<ArrData> entityClass = ArrData.class;
+        Class<ArrDescItem> entityClass = ArrDescItem.class;
         QueryBuilder queryBuilder = createQueryBuilder(entityClass);
 
         BooleanJunction<BooleanJunction> dateBool = queryBuilder.bool();
@@ -348,7 +347,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      */
     @SuppressWarnings("unchecked")
     private List<String> findDescItemIdsByTextSearchParamsData(final List<TextSearchParam> searchParams, final Integer fundId) {
-        Class<ArrData> entityClass = ArrData.class;
+        Class<ArrDescItem> entityClass = ArrDescItem.class;
         QueryBuilder queryBuilder = createQueryBuilder(entityClass);
 
         BooleanJunction<BooleanJunction> textBool = queryBuilder.bool();
@@ -430,7 +429,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
             return Collections.emptyList();
         }
 
-        Class<ArrData> entityClass = ArrData.class;
+        Class<ArrDescItem> entityClass = ArrDescItem.class;
         QueryBuilder queryBuilder = createQueryBuilder(entityClass);
 
 

@@ -1,5 +1,5 @@
 import AjaxUtils from "../components/AjaxUtils";
-import {DEFAULT_LIST_SIZE} from 'constants.jsx'
+import {DEFAULT_LIST_SIZE} from '../constants.tsx'
 
 function getData(data, timeout = 1000) {
     return new Promise(function (resolve, reject) {
@@ -407,6 +407,54 @@ export class WebApiCls {
         });
     }
 
+    createStructuredAccessPoint(name, complement, languageCode, description, typeId, scopeId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/structured', null, {
+            '@class': 'cz.tacr.elza.controller.vo.ApAccessPointCreateVO',
+            name,
+            description,
+            complement,
+            languageCode,
+            // local: false,
+            scopeId,
+            typeId
+        });
+    }
+
+    confirmStructuredAccessPoint(accessPointId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/'+ accessPointId + '/confirm', null, null);
+    }
+    migrateAccessPoint(accessPointId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/'+ accessPointId + '/migrate', null, null);
+    }
+    changeAccessPointItems(accessPointId, items) {
+        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/'+ accessPointId + '/items', null, items);
+    }
+
+    deleteAccessPointItemsByType(accessPointId, itemTypeId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/'+ accessPointId + '/type/' + itemTypeId, null, null);
+    }
+
+    deleteAccessPoint(accessPointId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + accessPointId);
+    }
+
+    createAccessPointStructuredName(accessPointId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/'+ accessPointId + '/name/structured', null);
+    }
+
+    changeNameItems(accessPointId, objectId, items) {
+        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/'+ accessPointId + '/name/' + objectId + '/items', null, items);
+    }
+
+    deleteNameItemsByType(accessPointId, objectId, itemTypeId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/'+ accessPointId + '/name/' + objectId + '/type/' + itemTypeId, null, null);
+    }
+
+    getAccessPointName(accessPointId, objectId) {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + objectId);
+    }
+
+
     findRegistry(search = null, registryParent = null, apTypeId = null, versionId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId = null, excludeInvalid = true) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/', {
             search,
@@ -483,12 +531,41 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + accessPointId + '/name', null, data);
     }
 
-    deleteAccessPointName(accessPointId, nameId) {
-        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + nameId);
+    deleteAccessPointName(accessPointId, objectId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + objectId);
     }
 
-    setPreferredAccessPointName(accessPointId, nameId) {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + nameId + '/preferred');
+    confirmAccessPointStructuredName(accessPointId, objectId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + objectId + '/confirm', null, null);
+    }
+
+    setPreferredAccessPointName(accessPointId, objectId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + objectId + '/preferred');
+    }
+
+    getFragment(fragmentId) {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/fragment/' + fragmentId);
+    }
+
+    createFragment(fragmentTypeCode) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/fragment/create/' + fragmentTypeCode);
+    }
+
+    deleteFragment(fragmentId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/fragment/' + fragmentId, null, null);
+    }
+
+    confirmFragment(fragmentId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/fragment/' + fragmentId + '/confirm', null, null);
+    }
+
+    changeFragmentItems(fragmentId, items) {
+        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/fragment/' + fragmentId + '/items', null, items);
+    }
+
+    deleteFragmentItemsByType(fragmentId, itemTypeId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/fragment/' + fragmentId + '/type/' + itemTypeId, null, null);
+
     }
 
     getRecordTypes() {
@@ -1179,6 +1256,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/externalSystems');
     }
 
+    getEidTypes() {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/eidTypes');
+    }
+
     findInterpiRecords(criteria) {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/interpi', null, criteria);
     }
@@ -1227,8 +1308,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.structureUrl + '/extension/' + fundVersionId + '/' + structureTypeCode, null, structureExtensionCodes);
     }
 
-    findRulStructureTypes() {
-        return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/type');
+    findRulStructureTypes(fundVersionId) {
+        return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/type', {fundVersionId});
     }
 
     getStructureData(fundVersionId, structureDataId) {
@@ -1308,6 +1389,11 @@ export class UrlFactory {
         return serverContextPath + WebApiCls.exportUrl + '/create';
     }
 
+    /* Export data from grid */
+    static exportGridData(versionId, exportType, columns) {
+        return serverContextPath + WebApiCls.arrangementUrl + '/dataGrid/export/' + versionId + '/' + exportType
+                + "?rulItemTypeIds=" + columns;
+    }
     static exportRegCoordinate(objectId) {
         return serverContextPath + WebApiCls.kmlUrl + '/export/regCoordinates/' + objectId;
     }

@@ -35,4 +35,15 @@ public interface StructureExtensionDefinitionRepository extends JpaRepository<Ru
     List<RulStructureExtensionDefinition> findByStructureTypeAndDefTypeAndFundOrderByPriority(@Param("structuredType") RulStructuredType structuredType,
                                                                                               @Param("defType") RulStructureExtensionDefinition.DefType defType,
                                                                                               @Param("fund") ArrFund fund);
+
+    /**
+     * Vyhledá aktivované definice rozšíření pro strukturovaný typ, def-type.
+     *
+     * @param structuredType strukturovaný typ
+     * @param defType       typ definice
+     * @return nalezené soubory
+     */
+    @Query("SELECT sed FROM rul_structure_extension_definition sed JOIN sed.structuredTypeExtension se WHERE se.structuredType = :structuredType AND sed.defType = :defType ORDER BY sed.priority")
+    List<RulStructureExtensionDefinition> findByStructureTypeAndDefTypeOrderByPriority(@Param("structuredType") RulStructuredType structuredType,
+                                                                                       @Param("defType") RulStructureExtensionDefinition.DefType defType);
 }

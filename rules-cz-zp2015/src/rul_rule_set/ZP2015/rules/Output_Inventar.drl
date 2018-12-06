@@ -17,8 +17,7 @@ no-loop
 when
     $itemType : RulItemTypeExt( code in (
         "ZP2015_RELATED_UNITS",
-        "ZP2015_ARRANGEMENT_INFO",
-        "ZP2015_UNIT_CONTENT"
+        "ZP2015_ARRANGEMENT_INFO"
     ) )
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
@@ -34,6 +33,17 @@ when
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
     $itemType.setRepeatable(true);
+end
+
+rule "Doporučené neopakovatelné prvky"
+no-loop
+when
+    $itemType : RulItemTypeExt( code in (
+        "ZP2015_UNIT_CONTENT"
+    ) )
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
+    $itemType.setRepeatable(false);
 end
 
 // Povinné prvky popisu

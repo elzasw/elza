@@ -17,7 +17,7 @@ import {
 import FundNodesSelectForm from './FundNodesSelectForm';
 import FundNodesList from './FundNodesList';
 import NodeLabel from './NodeLabel';
-import {fundOutputDetailFetchIfNeeded, fundOutputEdit} from 'actions/arr/fundOutput.jsx'
+import {fundOutputDetailFetchIfNeeded, fundOutputEdit} from '../../actions/arr/fundOutput.jsx'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'

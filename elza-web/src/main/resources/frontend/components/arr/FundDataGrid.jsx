@@ -63,7 +63,7 @@ import './FundDataGrid.less'
 import {getPagesCount} from "../shared/datagrid/DataGridPagination";
 import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx'
 import {toDuration} from "../validate";
-import {DisplayType} from "../../constants";
+import {DisplayType} from "../../constants.tsx";
 import Moment from 'moment';
 import * as groups from "../../actions/refTables/groups"
 

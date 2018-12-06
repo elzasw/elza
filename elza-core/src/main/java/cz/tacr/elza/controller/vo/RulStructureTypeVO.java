@@ -7,4 +7,5 @@ package cz.tacr.elza.controller.vo;
  */
 public class RulStructureTypeVO extends BaseCodeVo {
 
+
 }

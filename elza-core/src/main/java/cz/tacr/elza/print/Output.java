@@ -79,6 +79,15 @@ public interface Output {
     NodeIterator createFlatNodeIterator();
 
     /**
+     * Create iterator for structured object
+     * 
+     * @param structTypeCode
+     *            Code of structured type
+     * @return List of structured objects
+     */
+    List<Structured> createStructObjList(String structTypeCode);
+
+    /**
      * @return kolekci s počtem prvků odpovídajícím počtu stran příloh,
      *         používá se jako DS v Jasperu pro placeholder stránky
      */

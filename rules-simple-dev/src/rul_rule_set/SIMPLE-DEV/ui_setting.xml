@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<settings xmlns:ns2="fund-views" xmlns:ns3="type-groups">
+<settings xmlns:ns2="fund-views" xmlns:ns3="type-groups" xmlns:ns4="allow-structure-types">
     <favorite-item-specs code="SRD_LANGUAGE">
         <favorite-item>SRD_LANGUAGE_43</favorite-item>
         <favorite-item>SRD_LANGUAGE_8</favorite-item>
@@ -45,6 +45,9 @@
             </hierarchy>
         </ns2:default>
     </fund-views>
+    <allow-structure-types settings-type="STRUCTURE_TYPES" entity-type="RULE">
+        <ns4:type code="SRD_PACKET"/>
+    </allow-structure-types>
 	<type-groups settings-type="TYPE_GROUPS" entity-type="RULE">
         <ns3:default>
             <group code="01_BASE">

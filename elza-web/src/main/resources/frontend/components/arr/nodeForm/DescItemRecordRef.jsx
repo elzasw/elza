@@ -9,14 +9,24 @@ import DescItemLabel from './DescItemLabel.jsx'
 import './DescItemRecordRef.less'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import RegistrySelectPage from 'pages/select/RegistrySelectPage.jsx'
+
+//import RegistrySelectPage from 'pages/select/RegistrySelectPage.jsx'
+let RegistrySelectPage;
+import('pages/select/RegistrySelectPage.jsx').then((a) => {
+    RegistrySelectPage = a.default;
+});
+
 import {registryDetailFetchIfNeeded, registryListFilter, registryDetailClear, AREA_REGISTRY_LIST} from 'actions/registry/registry.jsx'
 import {partyDetailFetchIfNeeded, partyListFilter, partyDetailClear, AREA_PARTY_LIST} from 'actions/party/party.jsx'
 import classNames from 'classnames'
 import {storeFromArea, objectById} from 'shared/utils'
-import {MODAL_DIALOG_VARIANT} from 'constants.jsx'
-import RegistryField from "../../registry/RegistryField";
+import {MODAL_DIALOG_VARIANT} from '../../../constants.tsx'
 
+//import RegistryField from "../../registry/RegistryField";
+let RegistryField;
+import('../../registry/RegistryField').then((a) => {
+    RegistryField = a.default;
+});
 
 class DescItemRecordRef extends AbstractReactComponent {
 
@@ -84,7 +94,6 @@ class DescItemRecordRef extends AbstractReactComponent {
     render() {
         const {descItem, locked, singleDescItemTypeEdit, hasSpecification, readMode, cal, onDetail, typePrefix, ...otherProps} = this.props;
         const record = descItem.record ? descItem.record : null;
-
         if (readMode) {
             if (record) {
                 return <DescItemLabel onClick={onDetail.bind(this, record.id)} value={record.record} notIdentified={descItem.undefined} />
@@ -121,7 +130,7 @@ class DescItemRecordRef extends AbstractReactComponent {
 
 export default connect((state, props) => {
     let fundName = null, nodeName = null;
-    if (props.typePrefix != "output") {
+    if (props.typePrefix != "output" && props.typePrefix != "accesspoint" && props.typePrefix != "ap-name") {
         const {arrRegion:{activeIndex,funds}} = state;
         const fund = funds[activeIndex];
         const {nodes} = fund;

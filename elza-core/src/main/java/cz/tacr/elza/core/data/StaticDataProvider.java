@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ParComplementType;
@@ -314,6 +315,8 @@ public class StaticDataProvider {
         itemSpecIdMap = new HashMap<>();
 
         for (RulItemType it : itemTypes) {
+            it = HibernateUtils.unproxy(it);
+
             // update data type reference from cache
             DataType dataType = DataType.fromId(it.getDataTypeId());
             it.setDataType(dataType.getEntity());
@@ -338,10 +341,15 @@ public class StaticDataProvider {
             return;
         }
 
-        List<RulItemSpec> itemSpecs = itemSpecRepository.findByItemType(rsit.getEntity());
+        RulItemType itemType = rsit.getEntity();
+        List<RulItemSpec> itemSpecs = itemSpecRepository.findByItemType(itemType);
         for (RulItemSpec is : itemSpecs) {
             // check if initialized in same transaction
-            Validate.isTrue(rsit.getEntity() == is.getItemType());
+            RulItemType itemTypeFromSpec = is.getItemType();
+            if (itemType != itemTypeFromSpec) {
+                Validate.isTrue(false, "Inconsistency between itemType ({}) and itemType from specification ({})",
+                                itemType, itemTypeFromSpec);
+            }
 
             rsit.addItemSpec(is);
             this.itemSpecs.add(is);
@@ -366,7 +374,13 @@ public class StaticDataProvider {
     }
 
     private void checkPackageReference(RulPackage rulPackage) {
-        Validate.isTrue(rulPackage == packageIdMap.get(rulPackage.getPackageId()));
+        if (rulPackage == null) {
+            Validate.notNull(rulPackage);
+        }
+        RulPackage currPackage = packageIdMap.get(rulPackage.getPackageId());
+        if (rulPackage != currPackage) {
+            Validate.isTrue(rulPackage == currPackage);
+        }
     }
 
     private void initPartyNameFormTypes(PartyNameFormTypeRepository partyNameFormTypeRepository) {

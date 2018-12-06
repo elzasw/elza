@@ -1,7 +1,6 @@
 const webpack = require('webpack');
 const path = require('path');
 const fs = require('fs');
-const HappyPack = require('happypack');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 
 process.env.BABEL_ENV = 'development';
@@ -10,9 +9,9 @@ process.env.NODE_ENV = 'development';
 // Default config
 const defaultConfig = {
     hot: false,
+    parallelism: 6,
     circularDependencyCheck: true,
     sourceMap: 'eval-source-map',
-    happyPack: false,
     devTools: false,
     port: 8090
 };
@@ -37,20 +36,22 @@ const config = Object.assign(defaultConfig, fileConfig);
 // Entry points
 const webpackAndPolyfillEntries = [
     `webpack-dev-server/client?http://localhost:${config.port}`,
-    'webpack/hot/only-dev-server',
     'babel-polyfill',
 ];
+
+if (config.hot) {
+    webpackAndPolyfillEntries.splice(1, 0, 'webpack/hot/only-dev-server')
+}
+
 const reactHotEntry = ['react-hot-loader/patch'];
 const appEntry = ['./index.jsx'];
 
 // Plugins
 const defaultPlugins = [
-    new webpack.HotModuleReplacementPlugin(),
-    new webpack.NamedModulesPlugin(),
-    new webpack.NoEmitOnErrorsPlugin(),
     new webpack.DefinePlugin({
         __DEV__: true,
         __DEVTOOLS__: config.devTools,
+        __SHOW_DEVTOOLS__: false
     }),
     new webpack.ProvidePlugin({
         $: "jquery",
@@ -65,18 +66,19 @@ const circularDependencyPlugin = [
         failOnError: true
     })
 ];
-const happyPackPlugin = [
-    new HappyPack({
-        id: 'jsx',
-        threads: 6,
-        loaders: ['babel-loader']
-    }),
-];
+
+const hotPlugin = config.hot ? [new webpack.HotModuleReplacementPlugin()] : [];
 
 module.exports = {
+    mode: "development",
+    optimization: {
+        minimize: false,
+        occurrenceOrder:true,
+        noEmitOnErrors: true
+    },
     entry: [].concat(
-        webpackAndPolyfillEntries,
         config.hot ? reactHotEntry : [],
+        webpackAndPolyfillEntries,
         appEntry
     ),
     devtool: config.sourceMap,
@@ -97,32 +99,33 @@ module.exports = {
         headers: { 'Access-Control-Allow-Origin': '*' }
     },
     plugins: [].concat(
+        hotPlugin,
         config.circularDependencyCheck ? circularDependencyPlugin : [],
-        config.happyPack ? happyPackPlugin : [],
         defaultPlugins
     ),
     resolve: {
-        extensions: ['.js', '.jsx'],
+        extensions: ['.tsx', '.ts', '.jsx', '.js'],
         modules: [
             path.resolve(__dirname),
             path.resolve(__dirname, "node_modules")
-        ]
+        ],
+        alias: {
+            'stompjs': path.resolve(__dirname, "node_modules") + '/stompjs/lib/stomp.js',
+        }
     },
-    node: {
-        net: "empty",
-        tls: "empty"
-    },
-    watchOptions: {
-        aggregateTimeout: 300,
-        poll: 1000
-    },
+    parallelism: config.parallelism,
     module: {
         rules: [
             {
+                test: /\.tsx?$/,
+                use: 'ts-loader',
+                exclude: path.resolve(__dirname, "node_modules"),
+            },
+            {
                 test: /\.jsx?$/,
-                exclude: /node_modules/,
+                exclude: path.resolve(__dirname, "node_modules"),
                 use: [
-                    {loader: config.happyPack ? 'happypack/loader?id=jsx' : 'babel-loader'}
+                    {loader: 'babel-loader'}
                 ]
             },
             {

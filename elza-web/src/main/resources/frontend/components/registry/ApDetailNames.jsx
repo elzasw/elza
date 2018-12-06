@@ -9,13 +9,17 @@ import {normalizeNameObject} from 'actions/party/party.jsx'
 import ApNameForm from './ApNameForm.jsx'
 import {WebApi as WebApi} from "../../actions/WebApi";
 import './ApDetailNames.less'
+import NewApItemNameFormModal from "../accesspoint/NewApItemNameFormModal";
+import UpdateApItemNameFormModal from "../accesspoint/UpdateApItemNameFormModal";
 
 class ApDetailNames extends AbstractReactComponent {
 
     static PropTypes = {
         canEdit: React.PropTypes.bool.isRequired,
         accessPoint: React.PropTypes.object.isRequired,
+        type: React.PropTypes.object.isRequired,
         refreshParty: React.PropTypes.func.isRequired,
+        renderError: React.PropTypes.func.isRequired,
     };
 
     getName = (name) => {
@@ -26,7 +30,7 @@ class ApDetailNames extends AbstractReactComponent {
         const {accessPoint} = this.props;
         WebApi.createAccessPointName(accessPoint.id, data).then(() => {
             this.props.refreshParty();
-            this.dispatch(modalDialogHide());
+            this.props.dispatch(modalDialogHide());
         });
     };
 
@@ -34,7 +38,7 @@ class ApDetailNames extends AbstractReactComponent {
         const {accessPoint} = this.props;
         WebApi.updateAccessPointName(accessPoint.id, {...name, ...data}).then(() => {
             this.props.refreshParty();
-            this.dispatch(modalDialogHide());
+            this.props.dispatch(modalDialogHide());
         });
     };
 
@@ -53,11 +57,24 @@ class ApDetailNames extends AbstractReactComponent {
     };
 
     handleNameAdd = () => {
-        this.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.new'), <ApNameForm onSubmit={this.nameAdd} />, "dialog-lg"));
+        const {type} = this.props;
+        if (type.ruleSystemId != null) {
+            const accessPointId = this.props.accessPoint.id;
+            WebApi.createAccessPointStructuredName(accessPointId).then(data => {
+                this.props.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.new'), <NewApItemNameFormModal objectId={data.objectId} accessPointId={accessPointId} onSubmit={this.props.refreshParty} />, "dialog-lg"));
+            })
+        } else {
+            this.props.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.new'), <ApNameForm onSubmit={this.nameAdd} />, "dialog-lg"));
+        }
     };
 
     handleNameUpdate = (name) => {
-        this.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.update'), <ApNameForm initialValues={name} onSubmit={this.nameUpdate.bind(this, name)} />, "dialog-lg"));
+        const {type} = this.props;
+        if (type.ruleSystemId != null) {
+            this.props.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.new'), <UpdateApItemNameFormModal objectId={name.objectId} accessPointId={this.props.accessPoint.id} onSubmit={this.props.refreshParty} />, "dialog-lg"));
+        } else {
+            this.props.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.update'), <ApNameForm initialValues={name} onSubmit={this.nameUpdate.bind(this, name)}/>, "dialog-lg"));
+        }
     };
 
     handleDelete = (id) => {
@@ -73,7 +90,7 @@ class ApDetailNames extends AbstractReactComponent {
     };
 
     render() {
-        const {accessPoint, canEdit} = this.props;
+        const {accessPoint, canEdit, renderError} = this.props;
 
         return <div className="accesspoint-detail-names">
             <div>
@@ -85,10 +102,11 @@ class ApDetailNames extends AbstractReactComponent {
                     <div key={name.id} className={name.preferredName ? "preffered value-group" : "value-group"}>
                         <div className="value">{this.getName(name)}</div>
                         <div className="actions">
+                            {renderError(name)}
                             {canEdit && <Button bsStyle="action" onClick={() => this.handleNameUpdate(name)}><Icon glyph="fa-pencil" /></Button>}
                             {canEdit && !name.preferredName && <span>
-                                <Button className="delete" bsStyle="action" onClick={() => this.handleDelete(name.id)}><Icon glyph="fa-trash" /></Button>
-                                <Button bsStyle="action" onClick={() => this.handleSelectPreferred(name.id)}><Icon glyph="fa-star" /></Button>
+                                <Button className="delete" bsStyle="action" onClick={() => this.handleDelete(name.objectId)}><Icon glyph="fa-trash" /></Button>
+                                <Button bsStyle="action" onClick={() => this.handleSelectPreferred(name.objectId)}><Icon glyph="fa-star" /></Button>
                             </span>}
                         </div>
                     </div>)}

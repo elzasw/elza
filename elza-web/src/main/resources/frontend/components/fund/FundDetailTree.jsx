@@ -7,7 +7,6 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Tabs} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes.js';
-import {AppActions} from 'stores/index.jsx';
 import {MenuItem} from 'react-bootstrap';
 import {fundTreeFulltextChange, fundTreeFulltextSearch, fundTreeSelectNode, fundTreeFocusNode, fundTreeFetchIfNeeded, fundTreeNodeExpand, fundTreeFulltextNextItem, fundTreeFulltextPrevItem, fundTreeNodeCollapse, fundTreeCollapse} from 'actions/arr/fundTree.jsx'
 import {fundSelectSubNode} from 'actions/arr/node.jsx';
@@ -19,7 +18,7 @@ import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
 import {selectFundTab} from 'actions/arr/fund.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import FundTreeLazy from "../arr/FundTreeLazy";
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 
 class FundDetailTree extends AbstractReactComponent {
     constructor(props) {

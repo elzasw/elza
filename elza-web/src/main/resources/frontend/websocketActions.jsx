@@ -48,24 +48,26 @@ import {
     nodesDelete,
     structureChange,
     updateExtSystem,
-    userChange
-} from 'actions/global/change.jsx';
+    userChange,
+    changeAccessPoint,
+    changeFragment
+} from './actions/global/change.jsx';
 
-import Stomp from 'stompjs';
+import {Stomp} from 'stompjs';
 import URLParse from "url-parse";
 
 import {reloadUserDetail} from 'actions/user/userDetail';
 import {fundTreeFetch} from "./actions/arr/fundTree";
 import * as types from "./actions/constants/ActionTypes";
 import {fundNodeSubNodeFulltextSearch} from "./actions/arr/node";
-import {PERSISTENT_SORT_CODE, ZP2015_INTRO_VYPOCET_EJ} from "./constants";
+import {PERSISTENT_SORT_CODE, ZP2015_INTRO_VYPOCET_EJ} from "./constants.tsx";
 
 const url = new URLParse(serverContextPath + '/stomp');
 
 const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
 
 const wsUrl = wsProtocol+ "//" + url.host + url.pathname;
-console.log("Websocekt URL", wsUrl)
+console.log("Websocekt URL", wsUrl);
 
 class websocket{
     constructor(url, eventMap) {
@@ -248,7 +250,9 @@ let eventMap = {
     'REQUEST_ITEM_QUEUE_CHANGE': changeRequestItemQueueChange,
     'DELETE_NODES': deleteNodes,
     'FUND_EXTENSION_CHANGE': fundExtensionChange,
-    'STRUCTURE_DATA_CHANGE': structureDataChange
+    'STRUCTURE_DATA_CHANGE': structureDataChange,
+    'ACCESS_POINT_UPDATE':accessPointUpdate,
+    'FRAGMENT_UPDATE': fragmentUpdate
 }
 
 if (!window.ws) {
@@ -516,6 +520,15 @@ function extSystemUpdate(value){
 function extSystemDelete(value){
     store.dispatch(deleteExtSystem(value.ids[0]));
 }
+
+function accessPointUpdate(value) {
+    store.dispatch(changeAccessPoint(value.ids));
+}
+
+function fragmentUpdate(value) {
+    store.dispatch(changeFragment(value.ids));
+}
+
 /**
  * Zpracování validací.
  *

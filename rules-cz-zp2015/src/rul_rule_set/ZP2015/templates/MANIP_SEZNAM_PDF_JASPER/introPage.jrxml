@@ -37,7 +37,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Dějiny archivního souboru:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Dějiny jednotky popisu:"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="8852f770-71f7-4c06-8a38-675773982ab1">
@@ -225,7 +225,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Tématický popis:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Tematický popis jednotky popisu:"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" positionType="Float" x="0" y="55" width="455" height="25" isRemoveLineWhenBlank="true" uuid="c1063b45-361d-4763-b3ff-3bd3f03aa121">
@@ -260,7 +260,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Seznam pramenů a literatury:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Informace o zpracování:"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" positionType="Float" x="0" y="70" width="455" height="25" isRemoveLineWhenBlank="true" uuid="c65fb600-e002-4000-bb49-b44ea5e3c025">

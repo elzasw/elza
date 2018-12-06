@@ -24,7 +24,9 @@ import cz.tacr.elza.domain.ApFulltextProviderImpl;
 import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.SysLanguage;
+import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.SequenceService;
 
 /**
  * Context for data exchange access points.
@@ -45,6 +47,8 @@ public class AccessPointsContext {
 
     private final ArrangementService arrangementService;
 
+    private final AccessPointService accessPointService;
+
     private final List<AccessPointWrapper> apQueue = new ArrayList<>();
 
     private final List<ApExternalIdWrapper> eidQueue = new ArrayList<>();
@@ -54,13 +58,14 @@ public class AccessPointsContext {
     private final List<ApNameWrapper> nameQueue = new ArrayList<>();
 
     public AccessPointsContext(StorageManager storageManager, int batchSize, ApScope scope, ApChangeHolder changeHolder,
-            StaticDataProvider staticData, ImportInitHelper initHelper) {
+                               StaticDataProvider staticData, ImportInitHelper initHelper) {
         this.storageManager = storageManager;
         this.batchSize = batchSize;
         this.scope = scope;
         this.changeHolder = changeHolder;
         this.staticData = staticData;
         this.arrangementService = initHelper.getArrangementService();
+        this.accessPointService = initHelper.getAccessPointService();
     }
 
     public void init(ObservableImport observableImport) {
@@ -181,6 +186,10 @@ public class AccessPointsContext {
         }
         storageManager.storeGeneric(nameQueue);
         nameQueue.clear();
+    }
+
+    public int nextNameObjectId() {
+        return accessPointService.nextNameObjectId();
     }
 
     /**

@@ -2,15 +2,15 @@
  * Akce pro výstupy - named output.
  */
 
-import * as types from 'actions/constants/ActionTypes.js';
-import {WebApi} from 'actions/index.jsx'
-import {i18n} from 'components/shared';
-import {indexById} from 'stores/app/utils.jsx';
+import * as types from '../../actions/constants/ActionTypes.js';
+import {WebApi} from '../../actions/index.jsx'
+import {i18n} from '../../components/shared';
+import {indexById} from '../../stores/app/utils.jsx';
 import {isFundOutputFilesAction} from './fundOutputFiles.jsx';
 import {isFundOutputFunctionsAction} from './fundOutputFunctions.jsx';
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
-import {modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {savingApiWrapper} from 'actions/global/status.jsx';
+import {addToastrSuccess} from '../../components/shared/toastr/ToastrActions.jsx'
+import {modalDialogHide} from '../../actions/global/modalDialog.jsx'
+import {savingApiWrapper} from '../../actions/global/status.jsx';
 
 export function isFundOutput(action) {
     if (isFundOutputDetail(action)) {

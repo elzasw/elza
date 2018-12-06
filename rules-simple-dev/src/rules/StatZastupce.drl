@@ -1,0 +1,34 @@
+package ZP2015;
+
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.drools.model.AvailableDescItems;
+import cz.tacr.elza.drools.model.ActiveLevel;
+import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.DescItem;
+
+import java.util.Arrays;
+import java.util.Set;
+import cz.tacr.elza.domain.RulItemType;
+
+// Povinné položky
+rule "Povinné"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("VZTAH_TYP", "VZTAH_ENTITA"))
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
+    $itemType.setRepeatable(false);
+end
+
+rule "Možné typy vztahů"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "VZTAH_TYP")
+    $itemSpec : RulItemSpecExt(code in ("VZTAH_TYP_PRIMATOR",
+                                        "VZTAH_TYP_TAJEMNIK")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+    $itemSpec.setRepeatable(false);
+end

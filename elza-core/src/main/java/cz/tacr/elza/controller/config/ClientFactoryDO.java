@@ -29,11 +29,8 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.FilterTools;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
-import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputFileVO;
-import cz.tacr.elza.controller.vo.DmsFileVO;
 import cz.tacr.elza.controller.vo.ParPartyNameVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
@@ -49,18 +46,17 @@ import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrStructuredItem;
-import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
@@ -137,6 +133,9 @@ public class ClientFactoryDO {
 
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
+
+    @Autowired
+    private StaticDataService staticDataService;
 
     /**
      * Vytvoří node z VO.
@@ -851,17 +850,6 @@ public class ClientFactoryDO {
         return conditions;
     }
 
-    /**
-     * Převod DMS soubor VO na DO
-     *
-     * @param fileVO soubor VO
-     * @return soubor DO
-     */
-    public DmsFile createDmsFile(final DmsFileVO fileVO) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(fileVO, DmsFile.class);
-    }
-
     public ArrOutputItem createOutputItem(final ArrItemVO outputItemVO, final Integer itemTypeId) {
 
         ArrData data = outputItemVO.createDataEntity(em);
@@ -903,30 +891,6 @@ public class ClientFactoryDO {
         return outputItem;
     }
 
-
-    /**
-     * Převod ArrFile soubor VO na DO
-     *
-     * @param fileVO soubor VO
-     * @return soubor DO
-     */
-    public ArrFile createArrFile(final ArrFileVO fileVO) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(fileVO, ArrFile.class);
-    }
-
-
-    /**
-     * Převod ArrOutputFile soubor VO na DO
-     *
-     * @param fileVO soubor VO
-     * @return soubor DO
-     */
-    public ArrOutputFile createArrOutputFile(final ArrOutputFileVO fileVO) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(fileVO, ArrOutputFile.class);
-    }
-
     /**
      * Převod seznamu oprávnávnění VO na DO.
      *
@@ -934,8 +898,12 @@ public class ClientFactoryDO {
      * @return seznam DO
      */
     public List<UsrPermission> createPermissionList(final List<UsrPermissionVO> permissions) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.mapAsList(permissions, UsrPermission.class);
+
+        StaticDataProvider staticData = staticDataService.getData();
+        List<UsrPermission> result = permissions.stream().map(
+                                                              pvo -> pvo.createEntity(staticData))
+                .collect(Collectors.toList());
+        return result;
     }
 
     /**

@@ -15,6 +15,7 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.xml.stream.XMLStreamException;
 
+import cz.tacr.elza.service.*;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
@@ -69,12 +70,6 @@ import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
-import cz.tacr.elza.service.AccessPointService;
-import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.GroovyScriptService;
-import cz.tacr.elza.service.LevelTreeCacheService;
-import cz.tacr.elza.service.StructObjValueService;
-import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
 /**
@@ -99,7 +94,7 @@ public class DEImportService {
 
     private final LevelTreeCacheService levelTreeCacheService;
 
-    private final AccessPointService accessPointService;
+    private final AccessPointDataService apDataService;
 
     private final ResourcePathResolver resourcePathResolver;
 
@@ -128,6 +123,7 @@ public class DEImportService {
             LevelTreeCacheService levelTreeCacheService,
             StructObjValueService structObjService,
             AccessPointService accessPointService,
+            AccessPointDataService apDataService,
             ResourcePathResolver resourcePathResolver) {
         this.initHelper = new ImportInitHelper(groovyScriptService, institutionRepository, institutionTypeRepository,
                 arrangementService, levelRepository, apRepository, apNameRepository, apDescRepository, apEidRepository,
@@ -140,7 +136,7 @@ public class DEImportService {
         this.scopeRepository = scopeRepository;
         this.fundVersionRepository = fundVersionRepository;
         this.levelTreeCacheService = levelTreeCacheService;
-        this.accessPointService = accessPointService;
+        this.apDataService = apDataService;
         this.resourcePathResolver = resourcePathResolver;
     }
 
@@ -237,7 +233,7 @@ public class DEImportService {
      */
     private ImportContext initContext(DEImportParams params, Session session) {
         // create AP change holder
-        ApChangeHolder apChangeHolder = new ApChangeHolder(accessPointService);
+        ApChangeHolder apChangeHolder = new ApChangeHolder(apDataService);
 
         // init storage manager
         StorageManager storageManager = new StorageManager(params.getMemoryScoreLimit(), session, apChangeHolder,

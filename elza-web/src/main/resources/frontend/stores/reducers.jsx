@@ -9,6 +9,7 @@ import {normalizeInt} from 'components/validate.jsx';
 /**
  * Sestavení reducerů.
  */
+import ap from './app/accesspoint/accessPoint.jsx';
 import arrRegion from './app/arr/arrRegion.jsx';
 import refTables from './app/refTables/refTables.jsx';
 import registryRegionRecordTypes from './app/registry/registryRegionRecordTypes.jsx';
@@ -54,6 +55,7 @@ const normalizePacketSize = (value, previousValue, allValues, previousAllValues)
 
 
 const rootReducer = combineReducers({
+    ap,
     app,
     arrRegion,
     refTables,

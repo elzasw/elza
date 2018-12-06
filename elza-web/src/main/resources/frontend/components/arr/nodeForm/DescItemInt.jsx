@@ -11,7 +11,7 @@ import {normalizeInt, fromDuration, toDuration, normalizeDuration} from 'compone
 import {decorateValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
-import {DisplayType} from "../../../constants";
+import {DisplayType} from "../../../constants.tsx";
 
 class DescItemInt extends AbstractReactComponent {
 

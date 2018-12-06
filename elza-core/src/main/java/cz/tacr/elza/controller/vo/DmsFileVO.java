@@ -1,10 +1,13 @@
 package cz.tacr.elza.controller.vo;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import cz.tacr.elza.domain.DmsFile;
+
 /**
- * @author Petr Compel <petr.compel@marbes.cz>
+ * 
  * @since 13.3.2016
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
@@ -26,7 +29,25 @@ public class DmsFileVO {
 
     private String pagesCount;
 
+    /**
+     * Používá se při uploadu souboru na server
+     */
     private MultipartFile file;
+
+    public DmsFileVO() {
+
+    }
+
+    protected DmsFileVO(DmsFile srcFile) {
+        id = srcFile.getFileId();
+        fileName = srcFile.getFileName();
+        mimeType = srcFile.getMimeType();
+        name = srcFile.getName();
+        fileSize = srcFile.getFileSize();
+        if (srcFile.getPagesCount() != null) {
+            pagesCount = srcFile.getPagesCount().toString();
+        }
+    }
 
     public Integer getId() {
         return id;
@@ -91,4 +112,34 @@ public class DmsFileVO {
     public void setContent(final String content) {
         this.content = content;
     }
+
+    static public DmsFileVO newInstance(DmsFile srcFile) {
+        DmsFileVO result = new DmsFileVO(srcFile);
+        return result;
+    }
+
+    public DmsFile createEntity() {
+        DmsFile result = new DmsFile();
+        copyTo(result);
+        return result;
+    }
+
+    /**
+     * Copy values from VO to DmsFile
+     * 
+     * @param result
+     */
+    protected void copyTo(DmsFile target) {
+        target.setFileId(id);
+        target.setFileName(fileName);
+        target.setFileSize(fileSize);
+        target.setMimeType(mimeType);
+        target.setName(name);
+        if (pagesCount != null) {
+            int pageCnt = Integer.parseInt(pagesCount);
+            target.setPagesCount(pageCnt);
+        }
+
+    }
+
 }

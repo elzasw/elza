@@ -17,7 +17,7 @@ import {
 } from '../../actions/registry/registry';
 import { modalDialogHide } from '../../actions/global/modalDialog';
 
-import { MODAL_DIALOG_VARIANT } from 'constants.jsx';
+import { MODAL_DIALOG_VARIANT } from '../../constants.tsx';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import i18n from '../i18n';
 import PartyField from '../party/PartyField';

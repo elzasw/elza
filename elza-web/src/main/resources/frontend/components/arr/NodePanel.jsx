@@ -58,7 +58,7 @@ import defaultKeymap from './NodePanelKeymap.jsx'
 
 import './NodePanel.less';
 import NodeSettingsForm from "./NodeSettingsForm";
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 // Konstance kolik se má maximálně zobrazit v seznamu parents a children záznamů
 const PARENT_CHILD_MAX_LENGTH = 250
 

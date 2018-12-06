@@ -8,12 +8,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import cz.tacr.elza.core.data.*;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -315,7 +318,7 @@ public class ScriptModelFactory {
 
         ActiveLevel activeLevel = new ActiveLevel(modelLevel);
 
-		// read descitems for thic activelevel instead of original level
+        // read descitems for this activelevel instead of original level
 		descItemReader.add(activeLevel, level.getNode());
 
         // Prepare children info

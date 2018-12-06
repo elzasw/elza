@@ -8,14 +8,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Tabs} from 'components/shared';
-import {AppActions} from 'stores/index.jsx';
 import {fundCloseNodeTab, fundSelectNodeTab} from 'actions/arr/nodes.jsx'
 import {nodesFetchIfNeeded} from 'actions/arr/node.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus.jsx'
 import NodePanel from "./NodePanel";
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 
 class NodeTabs extends AbstractReactComponent {
     constructor(props) {

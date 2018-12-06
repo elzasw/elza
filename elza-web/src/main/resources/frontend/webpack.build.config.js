@@ -2,8 +2,16 @@ process.env.BABEL_ENV = 'production';
 process.env.NODE_ENV = 'production';
 const path = require('path');
 const webpack = require('webpack');
-const CommonsChunkPlugin = require("webpack/lib/optimize/CommonsChunkPlugin");
 const CircularDependencyPlugin = require('circular-dependency-plugin');
+
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+
+const styleLoader = MiniCssExtractPlugin.loader;
+const cssLoader = require.resolve('css-loader');
+const sassLoader = require.resolve('sass-loader');
+const lessLoader = require.resolve('less-loader');
+const resolveUrlLoader = require.resolve('resolve-url-loader');
+
 
 const SOURCE_MAP = false
 
@@ -23,14 +31,22 @@ module.exports = {
         sourceMapFilename: "[name].js.map",
     },
     resolve: {
-        extensions: ['.js', '.jsx'],
+        extensions: ['.tsx', '.ts', '.jsx', '.js'],
         modules: [
             path.resolve(__dirname),
             path.resolve(__dirname, "node_modules")
-        ]
+        ],
+        alias: {
+            'stompjs': path.resolve(__dirname, "node_modules") + '/stompjs/lib/stomp.js',
+        }
     },
     module: {
         rules: [
+            {
+                test: /\.tsx?$/,
+                use: 'ts-loader',
+                exclude: /node_modules/
+            },
             {
                 test: /\.jsx?$/,
                 exclude: /node_modules/,
@@ -38,30 +54,26 @@ module.exports = {
                     {loader: 'babel-loader'}
                 ]
             },
+            {test: /\.css$/, use: [styleLoader, {loader: cssLoader, options: {sourceMap: true}}]},
             {
-                test: /\.css/,
-                use: [{loader: "style-loader"}, {loader: "css-loader"}]
+                test: /\.less$/, use: [
+                    styleLoader,
+                    {loader: cssLoader, options: {sourceMap: true}},
+                    {loader: lessLoader, options: {
+                        sourceMap: true,
+                        paths: [
+                            path.resolve(__dirname)
+                        ]
+                    }}
+                ]
             },
             {
-                test: /\.less$/,
-                use: [
-                    {loader: "style-loader"},
-                    {loader: "css-loader"},
-                    {
-                        loader: "less-loader",
-                        options: {
-                            strictMath: true,
-                            noIeCompat: false,
-                            paths: [
-                                path.resolve(__dirname),
-                                path.resolve(__dirname, "node_modules")
-                            ]
-                        }
-                    }]
-            },
-            {
-                test: /\.scss$/,
-                use: [{loader: "style-loader"}, {loader: "css-loader"}, {loader: "sass-loader"}]
+                test: /\.scss$/, use: [
+                    styleLoader,
+                    {loader: cssLoader, options: {sourceMap: true}},
+                    {loader: resolveUrlLoader, options: {sourceMap: true}},
+                    {loader: sassLoader, options: {sourceMap: true}}
+                ]
             },
             {
                 test: /\.(gif|png)$/,
@@ -73,10 +85,6 @@ module.exports = {
             },
             {test: /\.(ttf|eot|svg)?$/, use: [{loader: "file-loader?name=[name].[ext]"}]}
         ]
-    },
-    node: {
-        net: "empty",
-        tls: "empty"
     },
     plugins: [
         new CircularDependencyPlugin({
@@ -90,15 +98,6 @@ module.exports = {
             jQuery: "jquery"
         }),
 
-        // ignore dev config
-        new webpack.IgnorePlugin(/\.\/dev/, /\/config$/),
-
-
-        new webpack.LoaderOptionsPlugin({
-            minimize: true,
-            debug: false
-        }),
-
         new webpack.DefinePlugin({
             'process.env.BABEL_ENV': JSON.stringify(process.env.NODE_ENV),
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
@@ -108,19 +107,12 @@ module.exports = {
             __DEV__: false
         }),
 
-        // optimizations
-        new webpack.optimize.ModuleConcatenationPlugin(),
-        new webpack.optimize.UglifyJsPlugin({
-            compress: {
-                screw_ie8: true,
-                warnings: false
-            },
-            output: {
-                comments: false
-            },
-            sourceMap: SOURCE_MAP
+
+        new MiniCssExtractPlugin({
+            filename: "[name].css",
+            chunkFilename: "[id].css"
         }),
-        new webpack.optimize.OccurrenceOrderPlugin(true)
+
 
     ]
 };

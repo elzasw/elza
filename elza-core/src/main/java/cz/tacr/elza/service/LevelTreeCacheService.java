@@ -287,7 +287,8 @@ public class LevelTreeCacheService {
      * @param fundVersion    verze AS
      * @return seznam JP
      */
-    public List<NodeItemWithParent> getNodeItemsWithParents(final Set<Integer> nodeIds, final ArrFundVersion fundVersion) {
+    public List<NodeItemWithParent> getNodeItemsWithParents(final List<Integer> nodeIds,
+                                                            final ArrFundVersion fundVersion) {
 
         List<Integer> nodeIdsSort = sortNodesByTreePosition(nodeIds, fundVersion);
 
@@ -672,7 +673,8 @@ public class LevelTreeCacheService {
      *
      * @return mapu id nodů a jejich rodičů
      */
-    public Map<Integer, TreeNodeVO> findParentsWithTitles(final Set<Integer> nodeIds, final ArrFundVersion version) {
+    public Map<Integer, TreeNodeVO> findParentsWithTitles(final Collection<Integer> nodeIds,
+                                                          final ArrFundVersion version) {
         Assert.notNull(nodeIds, "Nebyly vyplněny identifikátory JP");
         Assert.notNull(version, "Verze AS musí být vyplněna");
 
@@ -1148,7 +1150,7 @@ public class LevelTreeCacheService {
 
 
 
-    public List<Integer> sortNodesByTreePosition(final Set<Integer> nodeIds, final ArrFundVersion version) {
+    public List<Integer> sortNodesByTreePosition(final Collection<Integer> nodeIds, final ArrFundVersion version) {
         List<TreeNodeVO> nodes = getNodesByIds(nodeIds, version.getFundVersionId());
 
         nodes.sort((node1, node2) -> {

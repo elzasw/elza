@@ -1,12 +1,18 @@
 package cz.tacr.elza.packageimport.xml;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlType;
-import java.util.List;
+
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.table.ElzaColumn;
 
 
 /**
@@ -29,6 +35,9 @@ public class ItemType {
 
     @XmlAttribute(name = "structure-type")
     private String structureType;
+
+    @XmlAttribute(name = "fragment-type")
+    private String fragmentType;
 
     @XmlElement(name = "name", required = true)
     private String name;
@@ -77,6 +86,14 @@ public class ItemType {
 
     public void setStructureType(final String structureType) {
         this.structureType = structureType;
+    }
+
+    public String getFragmentType() {
+        return fragmentType;
+    }
+
+    public void setFragmentType(final String fragmentType) {
+        this.fragmentType = fragmentType;
     }
 
     public String getName() {
@@ -141,5 +158,51 @@ public class ItemType {
 
     public void setDisplayType(DisplayType displayType) {
         this.displayType = displayType;
+    }
+
+    /**
+     * Převod DAO na VO typů atributu.
+     *
+     * @param rulDescItemType
+     *            DAO typy
+     * @param itemType
+     *            VO typu
+     */
+    public static ItemType fromEntity(RulItemType rulDescItemType) {
+        ItemType itemType = new ItemType();
+        itemType.setCode(rulDescItemType.getCode());
+        itemType.setName(rulDescItemType.getName());
+        itemType.setShortcut(rulDescItemType.getShortcut());
+        itemType.setCanBeOrdered(rulDescItemType.getCanBeOrdered());
+        itemType.setDataType(rulDescItemType.getDataType().getCode());
+        itemType.setDescription(rulDescItemType.getDescription());
+        itemType.setIsValueUnique(rulDescItemType.getIsValueUnique());
+        itemType.setUseSpecification(rulDescItemType.getUseSpecification());
+
+        DataType dataType = DataType.fromCode(rulDescItemType.getDataType().getCode());
+
+        if (dataType == DataType.JSON_TABLE) {
+            List<ElzaColumn> columnsDefinition = (List<ElzaColumn>) rulDescItemType.getViewDefinition();
+            if (columnsDefinition != null) {
+                List<Column> columns = new ArrayList<>(columnsDefinition.size());
+                for (ElzaColumn elzaColumn : columnsDefinition) {
+                    Column column = new Column();
+                    column.setCode(elzaColumn.getCode());
+                    column.setName(elzaColumn.getName());
+                    column.setDataType(elzaColumn.getDataType().name());
+                    column.setWidth(elzaColumn.getWidth());
+                    columns.add(column);
+                }
+                itemType.setColumnsDefinition(columns);
+            }
+        } else if (dataType == DataType.INT) {
+            cz.tacr.elza.domain.integer.DisplayType displayType = (cz.tacr.elza.domain.integer.DisplayType) rulDescItemType
+                    .getViewDefinition();
+            if (displayType != null) {
+                itemType.displayType = cz.tacr.elza.packageimport.xml.DisplayType.valueOf(displayType.name());
+            }
+        }
+
+        return itemType;
     }
 }

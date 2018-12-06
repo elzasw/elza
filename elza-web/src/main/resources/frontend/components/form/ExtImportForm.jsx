@@ -15,7 +15,7 @@ import {registryDetailFetchIfNeeded} from 'actions/registry/registry.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import Scope from '../../components/shared/scope/Scope';
 import {apExtSystemListFetchIfNeeded} from 'actions/registry/apExtSystemList';
-import {AP_EXT_SYSTEM_TYPE} from 'constants.jsx';
+import {AP_EXT_SYSTEM_TYPE} from '../../constants.tsx';
 import ExtMapperForm from "./ExtMapperForm";
 import AbstractReactComponent from "../AbstractReactComponent";
 import i18n from "../i18n";

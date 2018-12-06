@@ -42,12 +42,12 @@ import {
 import * as perms from 'actions/user/Permission.jsx';
 import {getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import {ActionState} from 'constants.jsx'
+import {ActionState} from '../../constants.tsx'
 import {actionStateTranslation, fundActionActionReceive} from "../../actions/arr/fundAction";
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './FundActionPageKeymap.jsx';
 import PersistentSortForm from "../../components/arr/PersistentSortForm";
-import {PERSISTENT_SORT_CODE} from "../../constants";
+import {PERSISTENT_SORT_CODE} from "../../constants.tsx";
 import {descItemTypesFetchIfNeeded} from "../../actions/refTables/descItemTypes";
 
 class FundActionPage extends ArrParentPage {

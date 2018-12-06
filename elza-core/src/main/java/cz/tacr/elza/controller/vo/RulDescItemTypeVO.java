@@ -94,6 +94,11 @@ public class RulDescItemTypeVO {
      */
     private Integer structureTypeId;
 
+    /**
+     * identifikátor fragmentu
+     */
+    private Integer fragmentTypeId;
+
     public Integer getId() {
         return id;
     }
@@ -220,5 +225,13 @@ public class RulDescItemTypeVO {
 
     public void setStructureTypeId(Integer structureTypeId) {
         this.structureTypeId = structureTypeId;
+    }
+
+    public Integer getFragmentTypeId() {
+        return fragmentTypeId;
+    }
+
+    public void setFragmentTypeId(final Integer fragmentTypeId) {
+        this.fragmentTypeId = fragmentTypeId;
     }
 }

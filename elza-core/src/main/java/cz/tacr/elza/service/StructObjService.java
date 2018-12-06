@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
 import org.castor.core.util.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -38,6 +39,7 @@ import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.RulStructuredTypeExtension;
+import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
@@ -46,6 +48,8 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.StructObjCode;
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingStructureTypes;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FilteredResult;
@@ -78,6 +82,7 @@ public class StructObjService {
     private final ItemTypeRepository itemTypeRepository;
     private final ChangeRepository changeRepository;
     private final EventNotificationService notificationService;
+    private final SettingsService settingsService;
 
     @Autowired
     public StructObjService(final StructuredItemRepository structureItemRepository,
@@ -91,7 +96,8 @@ public class StructObjService {
                             final StructObjValueService structureDataService,
                             final ItemTypeRepository itemTypeRepository,
                             final ChangeRepository changeRepository,
-                            final EventNotificationService notificationService) {
+                            final EventNotificationService notificationService,
+                            final SettingsService settingsService) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionRepository = structureExtensionRepository;
         this.structObjRepository = structureDataRepository;
@@ -104,6 +110,7 @@ public class StructObjService {
         this.itemTypeRepository = itemTypeRepository;
         this.changeRepository = changeRepository;
         this.notificationService = notificationService;
+        this.settingsService = settingsService;
     }
 
     /**
@@ -295,16 +302,16 @@ public class StructObjService {
      * Vytvoření položky k hodnotě strukt. datového typu.
      *
      * @param structureItem   položka
-     * @param structureDataId identifikátor hodnoty strukt. datového typu
+     * @param structObjId identifikátor hodnoty strukt. datového typu
      * @param fundVersionId   identifikátor verze AS
      * @return vytvořená entita
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrStructuredItem createStructureItem(final ArrStructuredItem structureItem,
-                                                 final Integer structureDataId,
+                                                 final Integer structObjId,
                                                  @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
 
-        ArrStructuredObject structObj = getStructObjById(structureDataId);
+        ArrStructuredObject structObj = getStructObjById(structObjId);
 
         ArrChange change = structObj.getState() == ArrStructuredObject.State.TEMP ? structObj.getCreateChange()
                 : arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_ITEM);
@@ -1102,4 +1109,39 @@ public class StructObjService {
             }
         }
     }
+    
+    /**
+     * Vyhledání povolených strukturovaných typů ve verzi AS.
+     *
+     * @param fundVersion verze AS
+     * @return povolené entity
+     */
+    public List<RulStructuredType> findStructureTypes(final ArrFundVersion fundVersion) {
+        Validate.notNull(fundVersion);
+
+        List<UISettings> settings = settingsService.getGlobalSettings(UISettings.SettingsType.STRUCTURE_TYPES, UISettings.EntityType.RULE);
+        UISettings settingsUse = null;
+        for (UISettings setting : settings) {
+            if (fundVersion.getRuleSetId().equals(setting.getEntityId())) {
+                settingsUse = setting;
+                break;
+            }
+        }
+
+        if (settingsUse == null) {
+            return Collections.emptyList();
+        } else {
+            SettingStructureTypes structureTypes = (SettingStructureTypes) PackageService.convertSetting(settingsUse, null);
+            Set<String> typeCodes = structureTypes.getItems().stream()
+                    .map(SettingStructureTypes.Type::getCode)
+                    .collect(Collectors.toSet());
+            List<RulStructuredType> result = new ArrayList<>();
+            for (RulStructuredType structureType : findStructureTypes()) {
+                if (typeCodes.contains(structureType.getCode())) {
+                    result.add(structureType);
+                }
+            }
+            return result;
+        }
+    }    
 }

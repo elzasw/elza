@@ -5,7 +5,10 @@ import java.util.List;
 
 import cz.tacr.elza.core.data.ApTypeRoles;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.domain.ApRuleSystem;
 import cz.tacr.elza.domain.ApType;
+
+import javax.annotation.Nullable;
 
 
 /**
@@ -33,6 +36,12 @@ public class ApTypeVO
     private List<ApTypeVO> children;
 
     private List<Integer> relationRoleTypIds;
+
+    /**
+     * Kód pravidla.
+     */
+    @Nullable
+    private Integer ruleSystemId;
 
     /**
      * Seznam rodičů seřazený od přímého rodiče po kořen.
@@ -115,11 +124,21 @@ public class ApTypeVO
     public void setRelationRoleTypIds(final List<Integer> relationRoleTypIds) {
         this.relationRoleTypIds = relationRoleTypIds;
     }
-    
+
+    @Nullable
+    public Integer getRuleSystemId() {
+        return ruleSystemId;
+    }
+
+    public void setRuleSystemId(@Nullable final Integer ruleSystemId) {
+        this.ruleSystemId = ruleSystemId;
+    }
+
     /**
      * Creates value object from AP type. Hierarchy is not set.
      */
-    public static ApTypeVO newInstnace(ApType src, StaticDataProvider staticData) {
+    public static ApTypeVO newInstance(ApType src, StaticDataProvider staticData) {
+        ApRuleSystem ruleSystem = src.getRuleSystem();
         ApTypeVO vo = new ApTypeVO();
         vo.setAddRecord(!src.isReadOnly());
         //vo.addChild(child);
@@ -132,6 +151,7 @@ public class ApTypeVO
         //vo.addParent(parentName);
         //vo.addParents(nextParents);
         vo.setPartyTypeId(src.getPartyTypeId());
+        vo.setRuleSystemId(ruleSystem == null ? null : ruleSystem.getRuleSystemId());
         // set roles
         ApTypeRoles roles = staticData.getApTypeRolesById(src.getApTypeId());
         if (roles != null) {

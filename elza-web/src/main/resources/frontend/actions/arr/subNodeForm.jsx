@@ -2,7 +2,7 @@
  * Akce pro formulář JP.
  */
 
-import {DisplayType, FOCUS_KEYS} from "../../constants";
+import {DisplayType, FOCUS_KEYS} from "../../constants.tsx";
 import {WebApi} from 'actions/index.jsx';
 import {findByRoutingKeyInGlobalState, getMapFromList, getRoutingKeyType, indexById} from 'stores/app/utils.jsx'
 import {getFocusDescItemLocation} from 'stores/app/arr/subNodeFormUtils.jsx'
@@ -10,7 +10,7 @@ import {valuesEquals} from 'components/Utils.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
 import {increaseNodeVersion} from './node.jsx'
 import {outputIncreaseNodeVersion} from './outputActions.jsx'
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from '../../actions/constants/ActionTypes.js';
 import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {i18n} from 'components/shared';
 import {statusSaved, statusSaving} from 'actions/global/status.jsx';
@@ -24,7 +24,7 @@ import {fromDuration} from "../../components/validate";
 const CACHE_SIZE = 20;
 const CACHE_SIZE2 = CACHE_SIZE/2;
 
-class ItemFormActions {
+export class ItemFormActions {
     constructor(area) {
         this.area = area;
     }
@@ -856,7 +856,7 @@ class ItemFormActions {
     /**
      * Vyžádání dat - aby byla ve store k dispozici.
      * @param {int} versionId verze AS
-     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
+     * @param {int|null} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param needClean
      */
     fundSubNodeFormFetchIfNeeded(versionId, routingKey, needClean = false, showChildren, showParents) {

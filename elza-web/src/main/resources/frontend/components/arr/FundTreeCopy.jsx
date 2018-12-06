@@ -8,7 +8,6 @@ import { connect } from 'react-redux';
 import { AbstractReactComponent, i18n } from 'components/shared';
 import FundTreeLazy from './FundTreeLazy';
 import * as types from 'actions/constants/ActionTypes.js';
-import { AppActions } from 'stores/index.jsx';
 import {
   fundTreeFulltextChange,
   fundTreeFulltextSearch,
@@ -24,7 +23,7 @@ import { propsEquals } from 'components/Utils.jsx';
 import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
 
 import { fundTreeSelectNode } from '../../actions/arr/fundTree';
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 
 class FundTreeCopy extends AbstractReactComponent {
   constructor(props) {

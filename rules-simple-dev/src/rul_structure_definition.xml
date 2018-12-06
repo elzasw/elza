@@ -7,4 +7,12 @@
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>1</priority>
     </structure-definition>
+    <structure-definition structure-type="STAT_ZASTUPCE" filename="StatZastupce.drl">
+        <def-type>ATTRIBUTE_TYPES</def-type>
+        <priority>1</priority>
+    </structure-definition>
+    <structure-definition structure-type="STAT_ZASTUPCE" filename="StatZastupce.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>1</priority>
+    </structure-definition>
 </structure-definitions>

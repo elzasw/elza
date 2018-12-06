@@ -7,7 +7,7 @@ import {
     NoFocusButton
 } from 'components/shared'
 import {connect} from 'react-redux'
-import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
+import {outputFormActions} from '../../actions/arr/subNodeForm';
 
 import './NodeSubNodeForm.less';
 import SubNodeForm from "./SubNodeForm";

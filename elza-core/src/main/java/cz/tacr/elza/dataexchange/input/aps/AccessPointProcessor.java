@@ -2,7 +2,7 @@ package cz.tacr.elza.dataexchange.input.aps;
 
 import java.util.Iterator;
 
-import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.AccessPointDataService;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.dataexchange.input.DEImportException;
@@ -74,7 +74,8 @@ public class AccessPointProcessor extends AccessPointEntryProcessor {
         entity.setCreateChange(context.getCreateChange());
         entity.setLanguage(lang);
         entity.setName(name.getN());
-        entity.setFullName(AccessPointService.generateFullName(name.getN(), name.getCpl()));
+        entity.setFullName(AccessPointDataService.generateFullName(name.getN(), name.getCpl()));
+        entity.setObjectId(context.nextNameObjectId());
         return entity;
     }
 }

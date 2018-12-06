@@ -513,7 +513,7 @@ export default class Autocomplete extends AbstractReactComponent {
         return (
             <FloatingMenu
                 target={this.wrap}
-                closeMenu={this.closeMenu}
+                closeMenu={this.handleInputBlur}
                 ref={(menu)=>{this.menu = menu;}}
               onMouseDown={()=>{console.log("ignore next blur"); this.focus(); this._ignoreBlur=true;}}
               onMouseUp={()=>{this.focus();}}

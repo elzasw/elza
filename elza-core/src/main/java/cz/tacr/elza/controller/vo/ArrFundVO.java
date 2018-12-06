@@ -1,9 +1,5 @@
 package cz.tacr.elza.controller.vo;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,7 +7,6 @@ import java.util.List;
 /**
  * VO pro archivní pomůcku.
  *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 7. 1. 2016
  */
 public class ArrFundVO extends ArrFundBaseVO {
@@ -29,6 +24,10 @@ public class ArrFundVO extends ArrFundBaseVO {
     private List<ArrOutputDefinitionVO> validNamedOutputs;
 
     private List<ArrOutputDefinitionVO> historicalNamedOutputs;
+
+    public ArrFundVO() {
+
+    }
 
     public Date getCreateDate() {
         return createDate;
@@ -86,18 +85,4 @@ public class ArrFundVO extends ArrFundBaseVO {
         this.historicalNamedOutputs = historicalNamedOutputs;
     }
 
-    @Override
-    public boolean equals(final Object obj) {
-        return EqualsBuilder.reflectionEquals(this, obj);
-    }
-
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this);
-    }
 }

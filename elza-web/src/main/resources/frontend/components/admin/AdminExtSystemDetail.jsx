@@ -9,7 +9,6 @@ import {
     CollapsablePanel,
     StoreHorizontalLoader
 } from 'components/shared';
-import {AppActions} from 'stores/index.jsx';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {
     findExtSystemFetchIfNeeded,

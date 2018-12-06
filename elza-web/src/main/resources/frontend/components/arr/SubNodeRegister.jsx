@@ -21,7 +21,7 @@ import {partyDetailFetchIfNeeded, partyListFilter, partyDetailClear, AREA_PARTY_
 import {storeFromArea, objectById} from 'shared/utils'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import classNames from 'classnames'
-import {MODAL_DIALOG_VARIANT} from 'constants.jsx'
+import {MODAL_DIALOG_VARIANT} from '../../constants.tsx'
 
 const SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     static PropTypes = {

@@ -9,7 +9,6 @@ import {AbstractReactComponent, i18n} from 'components/shared';
 import FundTreeLazy from './FundTreeLazy';
 import ArrSearchForm from './ArrSearchForm';
 import * as types from 'actions/constants/ActionTypes.js';
-import {AppActions} from 'stores/index.jsx';
 import {MenuItem} from 'react-bootstrap';
 import {fundTreeFulltextChange, fundTreeFulltextSearch, fundTreeFocusNode, fundTreeFetchIfNeeded, fundTreeNodeExpand, fundTreeFulltextNextItem, fundTreeFulltextPrevItem, fundTreeNodeCollapse, fundTreeCollapse} from 'actions/arr/fundTree.jsx'
 import {fundSelectSubNode} from 'actions/arr/node.jsx'
@@ -18,7 +17,7 @@ import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 import PersistentSortDialog from "./PersisetntSortDialog";
 import {WebApi} from "../../actions/WebApi";
 

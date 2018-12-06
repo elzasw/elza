@@ -6,7 +6,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {i18n, AbstractReactComponent, Icon} from 'components/shared'
 import {indexById} from 'stores/app/utils.jsx'
 import {relationCreate, relationUpdate, relationDelete, RELATION_CLASS_TYPE_REPEATABILITY, USE_UNITDATE_ENUM, normalizeDatation} from 'actions/party/party.jsx'
-import {RELATION_CLASS_CODES} from 'constants.jsx'
+import {RELATION_CLASS_CODES} from '../../constants.tsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {isNotBlankObject} from 'components/Utils.jsx'
 

@@ -7,6 +7,7 @@ import java.util.Map;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataApFragRef;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDate;
 import cz.tacr.elza.domain.ArrDataDecimal;
@@ -40,7 +41,8 @@ public enum DataType {
     ENUM(ArrDataNull.class),
     FILE_REF(ArrDataFileRef.class),
     JSON_TABLE(ArrDataJsonTable.class, Integer.MAX_VALUE),
-    DATE(ArrDataDate.class);
+    DATE(ArrDataDate.class),
+    APFRAG_REF(ArrDataApFragRef.class);
 
     private static Map<Integer, DataType> entityIdMap;
 
@@ -76,6 +78,11 @@ public enum DataType {
         return name();
     }
 
+    /**
+     * Return entity DB id
+     * 
+     * @return
+     */
     public int getId() {
         return getEntity().getDataTypeId();
     }

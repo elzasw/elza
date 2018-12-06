@@ -23,6 +23,12 @@ public enum RegistryCode implements ErrorCode {
      */
     CANT_DELETE_PREFERRED_NAME,
 
+
+    /**
+     * Nelze migrovat přístupový bod.
+     */
+    CANT_MIGRATE_AP,
+
     /**
      * Nalezeno použití hesla v návazné tabulce.
      */
@@ -54,6 +60,11 @@ public enum RegistryCode implements ErrorCode {
      * Osoba neexistuje.
      */
     PARTY_NOT_EXIST,
+
+    /**
+     * Typ hesla musí mít vazbu na typ osoby.
+     */
+    REGISTRY_HAS_NOT_TYPE_PARTY,
 
     /** Nebyl nalezen typ rejstříku. */
     REGISTRY_TYPE_NOT_FOUND,

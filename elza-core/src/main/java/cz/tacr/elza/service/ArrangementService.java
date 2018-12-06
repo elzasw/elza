@@ -205,7 +205,7 @@ public class ArrangementService {
 
         //        Assert.isTrue(ruleSet.equals(arrangementType.getRuleSet()));
 
-        ArrLevel rootLevel = createLevel(change, null, uuid, fund);
+        ArrLevel rootLevel = createRootLevel(change, uuid, fund);
         createVersion(change, fund, ruleSet, rootLevel.getNode(), dateRange);
 
         return fund;
@@ -365,14 +365,13 @@ public class ArrangementService {
         return fundVersionRepository.save(version);
     }
 
-    private ArrLevel createLevel(final ArrChange createChange,
-                                 final ArrNode parentNode,
+    private ArrLevel createRootLevel(final ArrChange createChange,
                                  final String uuid,
                                  final ArrFund fund) {
         ArrLevel level = new ArrLevel();
         level.setPosition(1);
         level.setCreateChange(createChange);
-        level.setNodeParent(parentNode);
+        level.setNodeParent(null);
         level.setNode(createNode(uuid, fund, createChange));
         return levelRepository.saveAndFlush(level);
     }
@@ -405,18 +404,6 @@ public class ArrangementService {
         level.setNode(createNodeSimple(fund, uuid, createChange));
         return levelRepository.save(level);
     }
-
-    public ArrLevel createLevel(final ArrChange createChange, final ArrNode node, final ArrNode parentNode, final int position) {
-        Assert.notNull(createChange, "Změna musí být vyplněna");
-
-        ArrLevel level = new ArrLevel();
-        level.setPosition(position);
-        level.setCreateChange(createChange);
-        level.setNodeParent(parentNode);
-        level.setNode(node);
-        return levelRepository.saveAndFlush(level);
-    }
-
 
     /**
      * Vytvoření jednoznačného identifikátoru požadavku.
@@ -954,7 +941,8 @@ public class ArrangementService {
      * @param version verze AP
      * @return seznam id nodů a jejich rodičů
      */
-    public List<TreeNodeFulltext> createTreeNodeFulltextList(final Set<Integer> nodeIds, final ArrFundVersion version) {
+    public List<TreeNodeFulltext> createTreeNodeFulltextList(final Collection<Integer> nodeIds,
+                                                             final ArrFundVersion version) {
         Assert.notNull(nodeIds, "Musí být vyplněno");
         Assert.notNull(version, "Verze AS musí být vyplněna");
 
@@ -975,16 +963,17 @@ public class ArrangementService {
         return result;
     }
 
-    public List<VersionValidationItem> createVersionValidationItems(final List<ArrNodeConformity> validationErrors, final ArrFundVersion version) {
+    public List<VersionValidationItem> createVersionValidationItems(final List<ArrNodeConformity> validationErrors,
+                                                                    final ArrFundVersion version) {
         Map<Integer, String> validations = new LinkedHashMap<>();
         for (ArrNodeConformity conformity : validationErrors) {
             String description = validations.get(conformity.getNode().getNodeId());
 
-            if (description == null) {
-                description = "";
+            List<String> descriptions = new LinkedList<>();
+            if (description != null) {
+                descriptions.add(description);
             }
 
-            List<String> descriptions = new LinkedList<>();
             for (ArrNodeConformityError error : conformity.getErrorConformity()) {
                 descriptions.add(error.getDescription());
             }
@@ -993,7 +982,7 @@ public class ArrangementService {
                 descriptions.add(missing.getDescription());
             }
 
-            description += description + StringUtils.join(descriptions, " ");
+            description = StringUtils.join(descriptions, " ");
 
             validations.put(conformity.getNode().getNodeId(), description);
         }
@@ -1089,7 +1078,7 @@ public class ArrangementService {
 
         int count = indexTo - indexFrom;
         Iterable<Integer> nodeIds = Iterables.limit(Iterables.skip(nodes, indexFrom), count);
-        Set<Integer> nodesLimited = new HashSet<>(count);
+        List<Integer> nodesLimited = new ArrayList<>(count);
         for (Integer integer : nodeIds) {
             nodesLimited.add(integer);
         }
@@ -1180,8 +1169,6 @@ public class ArrangementService {
         if (foundNode.getNode() == null || countAll == 0) {
             return new ArrangementController.ValidationItems(null, countAll);
         } else {
-            Set<Integer> nodesLimited = new HashSet<>();
-
             Integer index = direction > 0 ? foundNode.getIndex() + 1 : foundNode.getIndex() - 1;
 
             if (!nodes.contains(nodeId) && direction > 0) {
@@ -1193,6 +1180,7 @@ public class ArrangementService {
             } else if (index > nodes.size() - 1) {
                 index = 0;
             }
+            List<Integer> nodesLimited = new ArrayList<>(1);
             nodesLimited.add(nodes.get(index));
             List<NodeItemWithParent> nodeItemsWithParents = levelTreeCacheService.getNodeItemsWithParents(nodesLimited, fundVersion);
 

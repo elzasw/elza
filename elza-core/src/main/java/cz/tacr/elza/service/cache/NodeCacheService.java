@@ -139,8 +139,10 @@ public class NodeCacheService {
 
     /**
      * Synchronizace záznamů v databázi.
+     * 
+     * Synchronní metoda volaná z transakce.
      */
-    @Transactional
+    @Transactional(TxType.MANDATORY)
     public void syncCache() {
         writeLock.lock();
         try {

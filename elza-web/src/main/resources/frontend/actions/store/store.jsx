@@ -1,7 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {routerNavigate} from 'actions/router.jsx'
 import {setFocus} from 'actions/global/focus.jsx'
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 
 export function storeRestoreFromStorage() {
     return (dispatch, getState) => {

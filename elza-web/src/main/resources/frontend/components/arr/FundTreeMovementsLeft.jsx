@@ -7,7 +7,6 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Tabs} from 'components/shared';
 import FundTreeLazy from './FundTreeLazy'
 import * as types from 'actions/constants/ActionTypes.js';
-import {AppActions} from 'stores/index.jsx';
 import {MenuItem} from 'react-bootstrap';
 import {selectFundTab, closeFundTab} from 'actions/arr/fund.jsx'
 import {fundTreeFulltextChange, fundTreeFulltextSearch, fundTreeFulltextNextItem, fundTreeFulltextPrevItem, fundTreeSelectNode, fundTreeCollapse, fundTreeFocusNode, fundTreeFetchIfNeeded, fundTreeNodeExpand, fundTreeNodeCollapse} from 'actions/arr/fundTree.jsx'

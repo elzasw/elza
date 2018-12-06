@@ -49,7 +49,7 @@ import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import PageLayout from "../shared/layout/PageLayout";
 import {fundChangeReadMode} from 'actions/arr/fund.jsx'
 import defaultKeymap from './ArrParentPageKeymap.jsx';
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 import * as groups from "../../actions/refTables/groups";
 
 export default class ArrParentPage extends AbstractReactComponent {

@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.core.data.DataType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -49,21 +50,16 @@ import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
 import cz.tacr.elza.controller.vo.ArrDaoRequestVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
-import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
 import cz.tacr.elza.controller.vo.ArrOutputExtVO;
-import cz.tacr.elza.controller.vo.ArrOutputFileVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
 import cz.tacr.elza.controller.vo.ArrRequestVO;
-import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
-import cz.tacr.elza.controller.vo.DmsFileVO;
-import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
@@ -111,6 +107,8 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApName;
@@ -132,7 +130,6 @@ import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequestNode;
-import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
@@ -142,11 +139,8 @@ import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
-import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.ParParty;
@@ -168,7 +162,6 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.SysExternalSystem;
-import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
@@ -210,7 +203,6 @@ import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.SettingsService;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
-import ma.glasnost.orika.MappingContext;
 
 
 /**
@@ -237,7 +229,7 @@ public class ClientFactoryVO {
 
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
-    
+
     @Autowired
     private ApNameRepository apNameRepository;
 
@@ -315,7 +307,10 @@ public class ClientFactoryVO {
 
     @Autowired
     private ApFactory apFactory;
-    
+
+    @Autowired
+    private StaticDataService staticDataService;
+
     /**
      * Vytvoření nastavení.
      *
@@ -661,9 +656,9 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrFundVO fundVO = mapper.map(fund, ArrFundVO.class);
         fundVO.setInstitutionId(fund.getInstitution().getInstitutionId());
-        
+
         // TODO: AP scopes on fund VO object needed/used ?
-        
+
         if (includeVersions) {
 
             List<ArrFundVersion> versions = fundVersionRepository
@@ -823,6 +818,8 @@ public class ClientFactoryVO {
     /**
      * Vytvoření hodnoty atributu.
      *
+     * TODO: přepsat metodu bez mapperu na klasické metody/factory
+     *
      * @param item hodnota atributu
      * @return VO hodnota atributu
      */
@@ -877,6 +874,14 @@ public class ClientFactoryVO {
         Integer specId = (item.getItemSpec() == null) ? null : item.getItemSpec().getItemSpecId();
         itemVO.setDescItemSpecId(specId);
         itemVO.setItemTypeId(item.getItemTypeId());
+
+        if (DataType.RECORD_REF == DataType.fromCode(code)) {
+            if (data != null) {
+                ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) data;
+                ApAccessPointVO accessPointVO = apFactory.createVO(dataRecordRef.getRecord());
+                ((ArrItemRecordRefVO) itemVO).setRecord(accessPointVO);
+            }
+        }
 
         return itemVO;
     }
@@ -1521,19 +1526,6 @@ public class ClientFactoryVO {
     }
 
     /**
-     * Vytvoří seznam VO.
-     * @param permissions vstupní seznam oprávnění
-     * @return seznam VO
-     */
-    public List<UsrPermissionVO> createPermissionList(final List<UsrPermission> permissions, Class<?> targetEntity) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        Map<Object, Object> map = new HashMap<>();
-        map.put("targetEntity", targetEntity);
-        MappingContext context = new MappingContext(map);
-        return mapper.mapAsList(permissions, UsrPermissionVO.class, context);
-    }
-
-    /**
      * Vytvoří VO uživatele s návaznými daty.
      * @param user uživatel
      * @param initPermissions mají se plnit oprávnění?
@@ -1549,7 +1541,14 @@ public class ClientFactoryVO {
         if (initPermissions) {
 //        List<UsrPermission> permissions = permissionRepository.findByUserOrderByPermissionIdAsc(user);
             List<UsrPermission> permissions = permissionRepository.getAllPermissionsWithGroups(user);
-            result.setPermissions(createPermissionList(permissions, UsrUser.class));
+
+            StaticDataProvider staticData = staticDataService.getData();
+            List<UsrPermissionVO> permissionsVOs = permissions.stream().map(
+                                                                            p -> UsrPermissionVO.newInstance(p, false,
+                                                                                                             staticData))
+                    .collect(Collectors.toList());
+
+            result.setPermissions(permissionsVOs);
         }
 
         // Načtení členství ve skupinách
@@ -1576,7 +1575,13 @@ public class ClientFactoryVO {
         // Načtení oprávnění
         if (initPermissions) {
             List<UsrPermission> permissions = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
-            result.setPermissions(createPermissionList(permissions, UsrGroup.class));
+
+            StaticDataProvider staticData = staticDataService.getData();
+            List<UsrPermissionVO> permissionsVOs = permissions.stream().map(
+                                                                  p -> UsrPermissionVO.newInstance(p, true, staticData))
+                    .collect(Collectors.toList());
+
+            result.setPermissions(permissionsVOs);
         }
 
         // Přiřazení uživatelé
@@ -1586,60 +1591,6 @@ public class ClientFactoryVO {
         }
 
         return result;
-    }
-
-    /**
-     * Vytvoří VO DMS File
-     * @param file DO
-     * @return VO
-     */
-    public DmsFileVO createDmsFile(final DmsFile file) {
-        return mapperFactory.getMapperFacade().map(file, DmsFileVO.class);
-    }
-
-    /**
-     * Vytvoří List VO DMS File
-     * @param filesList List DO
-     * @return List VO
-     */
-    public List<DmsFileVO> createDmsFilesList(final List<DmsFile> filesList) {
-        return createList(filesList, DmsFileVO.class, this::createDmsFile);
-    }
-
-    /**
-     * Vytvoří VO Arr File
-     * @param file DO
-     * @return VO
-     */
-    public ArrFileVO createArrFile(final ArrFile file) {
-        return mapperFactory.getMapperFacade().map(file, ArrFileVO.class);
-    }
-
-    /**
-     * Vytvoří List VO Arr File
-     * @param filesList List DO
-     * @return List VO
-     */
-    public List<ArrFileVO> createArrFilesList(final List<ArrFile> filesList) {
-        return createList(filesList, ArrFileVO.class, this::createArrFile);
-    }
-
-    /**
-     * Vytvoří VO Arr Output
-     * @param file DO
-     * @return VO
-     */
-    public ArrOutputFileVO createArrOutputFile(final ArrOutputFile file) {
-        return mapperFactory.getMapperFacade().map(file, ArrOutputFileVO.class);
-    }
-
-    /**
-     * Vytvoří List VO Arr Output
-     * @param filesList List DO
-     * @return List VO
-     */
-    public List<ArrOutputFileVO> createArrOutputFilesList(final List<ArrOutputFile> filesList) {
-        return createList(filesList, ArrOutputFileVO.class, this::createArrOutputFile);
     }
 
     public ArrOutputDefinitionVO createArrOutputDefinition(final ArrOutputDefinition outputDefinition) {
@@ -2196,24 +2147,6 @@ public class ClientFactoryVO {
         return vo;
     }
 
-    public ArrStructureDataVO createStructureData(final ArrStructuredObject structureData) {
-        ArrStructureDataVO structureDataVO = new ArrStructureDataVO();
-        structureDataVO.setId(structureData.getStructuredObjectId());
-        structureDataVO.setTypeCode(structureData.getStructuredType().getCode());
-        structureDataVO.setValue(structureData.getValue());
-        structureDataVO.setErrorDescription(structureData.getErrorDescription());
-        structureDataVO.setAssignable(structureData.getAssignable());
-        structureDataVO.setState(structureData.getState());
-        return structureDataVO;
-    }
-
-    public List<ArrStructureDataVO> createStructureDataList(final List<ArrStructuredObject> structureDataList) {
-        if (structureDataList == null) {
-            return null;
-        }
-        return structureDataList.stream().map(this::createStructureData).collect(Collectors.toList());
-    }
-
     public List<StructureExtensionFundVO> createStructureExtensionFund(final List<RulStructuredTypeExtension> allStructureExtensions,
                                                                        final List<RulStructuredTypeExtension> structureExtensions) {
         List<StructureExtensionFundVO> result = new ArrayList<>(allStructureExtensions.size());
@@ -2232,24 +2165,6 @@ public class ClientFactoryVO {
         structureExtensionFundVO.setName(structureExtension.getName());
         structureExtensionFundVO.setActive(false);
         return structureExtensionFundVO;
-    }
-
-    public List<LanguageVO> createLanguages(final Collection<SysLanguage> languages) {
-        if (languages == null) {
-            return null;
-        }
-        return languages.stream().map(this::createLanguage).collect(Collectors.toList());
-    }
-
-    public LanguageVO createLanguage(final SysLanguage language) {
-        if (language == null) {
-            return null;
-        }
-        LanguageVO languageVO = new LanguageVO();
-        languageVO.setId(language.getLanguageId());
-        languageVO.setCode(language.getCode());
-        languageVO.setName(language.getName());
-        return languageVO;
     }
 
     public SysExternalSystemVO createExtSystem(SysExternalSystem extSystem) {

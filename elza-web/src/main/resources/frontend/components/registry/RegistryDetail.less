@@ -129,36 +129,6 @@
         }
     }
 
-    .btn-action {
-        padding: 0;
-        border: none;
-        margin: 0;
-        background: transparent;
-        height: 1.3em;
-        width: 1.3em;
-        font-size: 1em;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        color: inherit;
-
-        .icon {
-            color: inherit;
-            transition: transform 100ms ease-in-out;
-            vertical-align: middle;
-        }
-
-        &:hover {
-            background-color: #6fa8dc;
-            color: white;
-        }
-
-        &.delete:hover {
-            background-color: #d25959;
-            color: white;
-        }
-    }
-
     .panel-group {
         margin-bottom: 0;
 
@@ -279,5 +249,98 @@
                 }
             }
         }
+    }
+
+    .error-message {
+        //background-color:red;
+        padding: 5px;
+        text-align: left;
+
+        .error-list {
+            ul {
+                margin-bottom:0;
+                padding-left: 15px;
+            }
+        }
+        .error-item {
+            margin-bottom: 5px;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    .panel-body {
+
+        padding: 0;
+
+        .cp-15 {
+            margin: 0 15px 0 15px;
+        }
+
+        .form-standard-actions {
+            .btn {
+                padding: 2px;
+                border: none;
+                margin: 0;
+                background: transparent;
+                height: 2em;
+                font-size: 0.9em;
+                .icon  {
+                    color: @node-form-actions-color;
+                    height: 1.35em;
+                    line-height: 1.35em;
+                    width: 1.35em;
+                    vertical-align: middle;
+                }
+            }
+            .btn:hover {
+                background-color: @node-form-actions-hover;
+            }
+        }
+
+        .form-actions-container {
+            width: 100%;
+            background: @node-form-actions-bg;
+            height: 1.8em;
+            position: relative;
+
+            .form-actions {
+                width: 100%;
+                white-space: nowrap;
+                padding-right: 40px;
+                .section {
+                    > span:first-of-type {
+                        padding-left: 3px;
+                    }
+
+                    display:inline-block;
+                    border-right: 1px @node-form-actions-hover solid;
+
+                    &:last-of-type {
+                        border-right: none;
+                    }
+
+                    > .btn {
+                        margin-right: 8px;
+                    }
+
+                    .form-standard-actions;
+                    .btn {
+                        &.dropdown-toggle {
+                            padding: 0 3px 0 3px;
+                            /*margin-left: -8px;*/
+                        }
+                    }
+                    .btn-group {
+                        > .btn:first-of-type {
+                            margin-right: 8px;
+                        }
+                    }
+                }
+            }
+        }
+
     }
 }

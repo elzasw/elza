@@ -21,21 +21,24 @@ public class OutputItemConvertor implements ItemConvertor {
                 return item;
             }
         }
-        throw new SystemException("Failed to convert output item", BaseCode.SYSTEM_ERROR).set("arrItemId", arrItem.getItemId());
+        throw new SystemException("Failed to convert output item", BaseCode.SYSTEM_ERROR)
+                .set("arrItemId", arrItem.getItemId())
+                .set("itemTypeId", arrItem.getItemTypeId());
     }
 
     private List<ItemConvertor> getConvertors() {
         return Arrays.asList(
-                new StringItemConvertor(),
-                new IntegerItemConvertor(),
-                new DecimalItemConvertor(),
-                new UnitDateItemConvertor(),
-                new CoordinatesItemConvertor(),
-                new EnumItemConvertor(),
-                new RecordRefItemConvertor(),
-                new PartyRefItemConvertor(),
-                new StructuredObjectRefItemConvertor(),
-                new FileRefItemConvertor(),
-                new JsonTableItemConvertor());
+                             new StringItemConvertor(),
+                             new IntegerItemConvertor(),
+                             new DecimalItemConvertor(),
+                             new UnitDateItemConvertor(),
+                             new CoordinatesItemConvertor(),
+                             new EnumItemConvertor(),
+                             new RecordRefItemConvertor(),
+                             new PartyRefItemConvertor(),
+                             new StructuredObjectRefItemConvertor(),
+                             new FileRefItemConvertor(),
+                             new JsonTableItemConvertor(),
+                             new DateItemConvertor());
     }
 }

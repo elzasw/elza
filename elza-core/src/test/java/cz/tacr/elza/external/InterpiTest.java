@@ -124,7 +124,7 @@ public class InterpiTest extends AbstractControllerTest {
         importVO.setOriginator(true);
 
         ApAccessPointVO apRecord = post(spec -> spec.body(importVO), "/api/registry/interpi/import").as(ApAccessPointVO.class);
-        ApAccessPointVO record = getRecord(apRecord.getId());
+        ApAccessPointVO record = getAccessPoint(apRecord.getId());
         Assert.isTrue(apRecord.getRecord().equals(record.getRecord()));
 
         ApAccessPointVO apRecordUpdate = put(spec -> spec.pathParam("recordId", record.getId()).body(importVO), "/api/registry/interpi/import/{recordId}").as(ApAccessPointVO.class);

@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,16 +15,6 @@ import org.springframework.stereotype.Service;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.RulAction;
-import cz.tacr.elza.domain.RulArrangementRule;
-import cz.tacr.elza.domain.RulComponent;
-import cz.tacr.elza.domain.RulExtensionRule;
-import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulStructureDefinition;
-import cz.tacr.elza.domain.RulStructureExtensionDefinition;
-import cz.tacr.elza.domain.RulTemplate;
 
 @Service
 public class ResourcePathResolver {
@@ -202,6 +193,17 @@ public class ResourcePathResolver {
         Path path = droolsDir.resolve(droolFile);
 
         return path;
+    }
+
+    /**
+     * @return Path to drool file (may not exist).
+     */
+    @Transactional(TxType.MANDATORY)
+    public Path getDroolsFile(ApRule rule) {
+        ApRuleSystem ruleSystem = rule.getRuleSystem();
+        Path droolsDir = getDroolsDir(ruleSystem.getRulPackage().getPackageId());
+        String droolFile = rule.getComponent().getFilename();
+        return droolsDir.resolve(droolFile);
     }
 
     /**

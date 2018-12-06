@@ -13,7 +13,7 @@ import {storeFromArea} from 'shared/utils'
 
 import './AdminExtSystemList.less';
 import AdminExtSystemListItem from "./AdminExtSystemListItem";
-import {FOCUS_KEYS} from "../../constants";
+import {FOCUS_KEYS} from "../../constants.tsx";
 
 class AdminExtSystemList extends AbstractReactComponent {
 

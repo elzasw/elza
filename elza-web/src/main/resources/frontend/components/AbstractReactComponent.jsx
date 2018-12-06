@@ -1,10 +1,18 @@
 import React from 'react';
-import {propsEquals} from 'components/Utils.jsx'
+import {propsEquals} from './Utils.jsx'
 
 /**
  * Abstraktní předek pro všechny komponenty.
+ *
  */
 class AbstractReactComponent extends React.Component {
+
+    /**
+     * Nepoužívat -> používat this.props.dispatch
+     * @deprecated
+     */
+    dispatch;
+
     constructor(props) {
         super(props);
 

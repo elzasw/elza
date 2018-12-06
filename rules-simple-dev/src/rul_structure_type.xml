@@ -2,4 +2,7 @@
     <structure-type code="SRD_PACKET">
         <name>Obaly</name>
     </structure-type>
+    <structure-type code="STAT_ZASTUPCE">
+        <name>Statutární zástupce</name>
+    </structure-type>
 </structure-types>

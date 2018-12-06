@@ -12,7 +12,7 @@ import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTyp
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
 import {submitForm} from 'components/form/FormUtils.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {PARTY_TYPE_CODES, RELATION_CLASS_CODES} from 'constants.jsx'
+import {PARTY_TYPE_CODES, RELATION_CLASS_CODES} from '../../constants.tsx'
 
 
 import './RelationForm.less'

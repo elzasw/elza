@@ -32,9 +32,11 @@ public enum EventType {
     PARTY_DELETE(EventId.class),
     PARTY_UPDATE(EventId.class),
 
-    RECORD_CREATE(EventId.class),
-    RECORD_DELETE(EventId.class),
-    RECORD_UPDATE(EventId.class),
+    ACCESS_POINT_CREATE(EventId.class),
+    ACCESS_POINT_DELETE(EventId.class),
+    ACCESS_POINT_UPDATE(EventId.class),
+
+    FRAGMENT_UPDATE(EventId.class),
 
     COPY_OLDER_SIBLING_ATTRIBUTE(EventIdInVersion.class),
 

@@ -193,6 +193,7 @@ public class PartiesContext {
         }
         for (ApName name : convResult.createNames()) {
             name.setCreateChange(apContext.getCreateChange());
+            name.setObjectId(apContext.nextNameObjectId());
             apContext.addName(name, apInfo);
         }
     }

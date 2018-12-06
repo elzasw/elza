@@ -9,10 +9,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -34,9 +39,10 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNodeOutput;
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParDynasty;
 import cz.tacr.elza.domain.ParEvent;
@@ -53,11 +59,11 @@ import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemSpec;
-import cz.tacr.elza.print.item.ItemStructuredRef;
 import cz.tacr.elza.print.item.ItemType;
 import cz.tacr.elza.print.item.convertors.ItemConvertor;
 import cz.tacr.elza.print.item.convertors.ItemConvertorContext;
@@ -78,6 +84,8 @@ import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
 import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
@@ -149,20 +157,35 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final ApExternalIdRepository apEidRepository;
 
+    private final StructuredObjectRepository structObjRepos;
+
     /**
      * Provider for attachments
      */
     private AttPageProvider attPageProvider;
 
-    public OutputModel(StaticDataService staticDataService,
-                       FundTreeProvider fundTreeProvider,
-                       NodeCacheService nodeCacheService,
-                       InstitutionRepository institutionRepository,
-                       ApDescriptionRepository apDescRepository,
-                       ApNameRepository apNameRepository,
-            ApExternalIdRepository apEidRepository,
-            AttPageProvider attPageProvider) {
+    private ElzaLocale elzaLocale;
+
+    /**
+     * Collection of start nodes
+     */
+    private List<Integer> startNodes = new ArrayList<>();
+
+    private StructuredItemRepository structItemRepos;
+
+    public OutputModel(final StaticDataService staticDataService,
+                       final ElzaLocale elzaLocale,
+                       final FundTreeProvider fundTreeProvider,
+                       final NodeCacheService nodeCacheService,
+                       final InstitutionRepository institutionRepository,
+                       final ApDescriptionRepository apDescRepository,
+                       final ApNameRepository apNameRepository,
+                       final ApExternalIdRepository apEidRepository,
+                       final AttPageProvider attPageProvider,
+                       final StructuredObjectRepository structObjRepos,
+                       final StructuredItemRepository structItemRepos) {
         this.staticDataService = staticDataService;
+        this.elzaLocale = elzaLocale;
         this.fundTreeProvider = fundTreeProvider;
         this.nodeCacheService = nodeCacheService;
         this.institutionRepository = institutionRepository;
@@ -170,6 +193,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.apNameRepository = apNameRepository;
         this.apEidRepository = apEidRepository;
         this.attPageProvider = attPageProvider;
+        this.structObjRepos = structObjRepos;
+        this.structItemRepos = structItemRepos;
     }
 
     public boolean isInitialized() {
@@ -291,7 +316,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
      * Prepare filtered list of records
      */
     private FilteredRecords filterRecords(String typeCode) {
-        FilteredRecords filteredAPs = new FilteredRecords(typeCode);
+        FilteredRecords filteredAPs = new FilteredRecords(elzaLocale, typeCode);
 
         // add all nodes
         Iterator<NodeId> nodeIdIterator = fund.getRootNodeId().getIteratorDFS();
@@ -336,6 +361,21 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         return nodes;
     }
 
+    private List<Item> convert(List<? extends ArrItem> srcItems) {
+        ItemConvertor conv = new OutputItemConvertor();
+        List<Item> result = srcItems.stream()
+                .map(i -> conv.convert(i, this))
+                /*
+                // add packet reference
+                if (item instanceof ItemStructuredRef) {
+                    item.getValue(Structured.class).addNodeId(node.getNodeId());
+                }*/
+                .filter(Objects::nonNull)
+                .sorted(Item::compareTo)
+                .collect(Collectors.toList());
+        return result;
+    }
+
     /**
      * Init output node from node cache.
      */
@@ -343,19 +383,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         // set node items
         List<ArrDescItem> descItems = cachedNode.getDescItems();
         if (descItems != null) {
-            ItemConvertor conv = new OutputItemConvertor();
-            List<Item> items = descItems.stream()
-                    .map(i -> {
-                        Item item = conv.convert(i, this);
-                        // add packet reference
-                        if (item instanceof ItemStructuredRef) {
-                            item.getValue(Structured.class).addNodeId(node.getNodeId());
-                        }
-                        return item;
-                    })
-                    .filter(Objects::nonNull)
-                    .sorted(Item::compareTo)
-                    .collect(Collectors.toList());
+            List<Item> items = convert(descItems);
             node.setItems(items);
         }
 
@@ -393,7 +421,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.type = outputType.getName();
 
         // init node id tree
-        NodeId rootNodeId = createNodeIdTree(params.getOutputNodes(), params.getFundVersionId());
+        NodeId rootNodeId = createNodeIdTree(params.getOutputNodeIds(), params.getFundVersionId());
 
         // init fund
         ArrFund arrFund = definition.getFund();
@@ -433,13 +461,14 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
      *
      * @return NodeId tree root.
      */
-    private NodeId createNodeIdTree(List<ArrNodeOutput> outputNodes, Integer fundVersionId) {
+    private NodeId createNodeIdTree(List<Integer> outputNodeIds, Integer fundVersionId) {
         FundTree fundTree = fundTreeProvider.getFundTree(fundVersionId);
 
         Map<Integer, NodeId> nodeIdMap = new HashMap<>();
 
-        for (ArrNodeOutput outputNode : outputNodes) {
-            TreeNode treeNode = fundTree.getNode(outputNode.getNodeId());
+        startNodes.addAll(outputNodeIds);
+        for (Integer outputNodeId : outputNodeIds) {
+            TreeNode treeNode = fundTree.getNode(outputNodeId);
 
             // convert output node to NodeId with all parents up to root
             NodeId nodeId = createNodeIdWithParents(treeNode, nodeIdMap);
@@ -753,5 +782,36 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         }
 
         return attPageProvider.getAttPagePlaceHolders(itemTypeCode);
+    }
+
+    @Override
+    public Locale getLocale() {
+        return elzaLocale.getLocale();
+    }
+
+    @Transactional(value = TxType.MANDATORY)
+    @Override
+    public List<Structured> createStructObjList(String structTypeCode) {
+        // get struct item
+        RulStructuredType structType = staticData.getStructuredTypeByCode(structTypeCode);
+        List<ArrStructuredObject> sobs = structObjRepos
+                .findStructureDataBySubtreeNodeIds(this.startNodes,
+                                                   structType.getStructuredTypeId(),
+                                                   false);
+
+        List<Structured> result = new ArrayList<>(sobs.size());
+        for (ArrStructuredObject sob : sobs) {
+            Structured s = Structured.newInstance(sob, this);
+            result.add(s);
+        }
+        return result;
+    }
+
+    @Override
+    public List<Item> loadStructItems(Integer structObjId) {
+        List<ArrStructuredItem> items = structItemRepos.findByStructuredObjectAndDeleteChangeIsNullFetchData(
+                                                                                                             structObjId);
+        List<Item> result = convert(items);
+        return result;
     }
 }

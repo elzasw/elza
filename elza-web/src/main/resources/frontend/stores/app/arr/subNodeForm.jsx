@@ -11,7 +11,7 @@ import {
 } from './subNodeFormUtils.jsx'
 import {validateCoordinatePoint, validateDouble, validateInt, validateDuration} from 'components/validate.jsx'
 import {valuesEquals} from 'components/Utils.jsx'
-import {DisplayType} from "../../../constants";
+import {DisplayType} from "../../../constants.tsx";
 
 function getLoc(state, valueLocation) {
     const formData = state.formData;
@@ -317,6 +317,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                     if (loc.descItem.validateTimer) {
                         clearTimeout(loc.descItem.validateTimer);
                     }
+                    // FIXME @randak tohle je blbě
                 var fc = () => action.dispatch(
                     action.formActions.fundSubNodeFormValueValidate(action.versionId, action.routingKey, action.valueLocation)
                 );

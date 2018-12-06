@@ -1,28 +1,25 @@
 package cz.tacr.elza.drools.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrStructuredItem;
-import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.Structured;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.drools.model.StructObjItem;
+import cz.tacr.elza.service.vo.AccessPoint;
+import cz.tacr.elza.service.vo.AccessPointMigrate;
+import cz.tacr.elza.service.vo.Language;
+import cz.tacr.elza.service.vo.Name;
+import cz.tacr.elza.service.vo.NameMigrate;
+import cz.tacr.elza.service.vo.SimpleItem;
+import org.apache.commons.collections4.CollectionUtils;
 
 /**
  * Factory method for the base Drools model objects.
@@ -65,7 +62,6 @@ public class ModelFactory {
      * Vytvoří hodnoty atributu.
      *
      * @param descItems hodnoty atributu
-     * @param lastVersion
      * @return seznam vo hodnot atributu
      */
     static public List<DescItem> createDescItems(@Nullable final List<ArrDescItem> descItems,
@@ -98,7 +94,7 @@ public class ModelFactory {
 
     /**
      * Create packet for Drools from corresponding object
-     * @param structureData
+     * @param structObj
      * @return
      */
     static public Structured createStructured(final ArrStructuredObject structObj, StructuredItemRepository itemRepos) {
@@ -158,4 +154,61 @@ public class ModelFactory {
 	    return result;
     }
 
+    public static List<SimpleItem> createApItems(final List<ApItem> items) {
+	    if (CollectionUtils.isEmpty(items)) {
+	        return Collections.emptyList();
+        }
+        List<SimpleItem> result = new ArrayList<>(items.size());
+        for (ApItem item : items) {
+            RulItemType itemType = item.getItemType();
+            RulItemSpec itemSpec = item.getItemSpec();
+            ArrData data = item.getData();
+            String value = null;
+            if (data != null) {
+                if (data.getType() == DataType.ENUM) {
+                    value = item.getItemSpec().getName();
+                } else {
+                    value = data.getFulltextValue();
+                }
+            }
+            SimpleItem fi = new SimpleItem(item.getItemId(), itemType.getCode(), itemSpec == null ? null : itemSpec.getCode(), item.getPosition(), value);
+            result.add(fi);
+        }
+        return result;
+    }
+
+    private static Name createApName(final ApName name, final List<ApItem> items) {
+	    return new Name(name.getNameId(), name.isPreferredName(), createApItems(items), createApLanguage(name.getLanguage()));
+    }
+
+    private static NameMigrate createApNameMigrate(final ApName name) {
+        return new NameMigrate(name.getNameId(), name.isPreferredName(), name.getName(), name.getComplement(), name.getFullName(), createApLanguage(name.getLanguage()));
+    }
+
+    private static Language createApLanguage(final SysLanguage language) {
+        if (language == null) {
+            return null;
+        }
+        return new Language(language.getLanguageId(), language.getName(), language.getCode());
+    }
+
+    public static AccessPoint createAp(final ApAccessPoint apAccessPoint,
+                                       final List<ApItem> apItems,
+                                       final List<ApName> apNames,
+                                       final Map<Integer, List<ApItem>> apNameItems) {
+        List<Name> names = new ArrayList<>(apNames.size());
+        for (ApName apName : apNames) {
+            names.add(createApName(apName, apNameItems.get(apName.getNameId())));
+        }
+
+        return new AccessPoint(apAccessPoint.getAccessPointId(), apAccessPoint.getUuid(), createApItems(apItems), names);
+    }
+
+    public static AccessPointMigrate createApMigrate(final ApAccessPoint apAcessPoint, final List<ApName> apNames, final ApDescription apDescription) {
+        List<NameMigrate> names = new ArrayList<>(apNames.size());
+        for (ApName apName : apNames) {
+            names.add(createApNameMigrate(apName));
+        }
+        return new AccessPointMigrate(names, apAcessPoint.getAccessPointId(), apAcessPoint.getUuid(), apDescription.getDescription());
+    }
 }

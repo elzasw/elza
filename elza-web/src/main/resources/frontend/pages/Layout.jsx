@@ -43,7 +43,7 @@ import {modalDialogShow} from "../actions/global/modalDialog";
 import i18n from "../components/i18n";
 import RegistryUsageForm from "../components/form/RegistryUsageForm";
 import PartyUsageForm from "../components/form/PartyUsageForm";
-import {FOCUS_KEYS} from "../constants";
+import {FOCUS_KEYS} from "../constants.tsx";
 
 
 let _gameRunner = null;
@@ -185,7 +185,7 @@ function mapStateToProps(state) {
     const {contextMenu, modalDialog, login} = state
     return {
         contextMenu,
-        modalDialog, 
+        modalDialog,
         login
     }
 }

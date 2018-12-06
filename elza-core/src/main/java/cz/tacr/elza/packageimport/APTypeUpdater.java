@@ -12,12 +12,16 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.domain.ApRuleSystem;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.PackageCode;
@@ -55,14 +59,22 @@ public class APTypeUpdater {
 
     private final List<ParPartyType> parPartyTypes;
 
+    private List<ApRuleSystem> apRuleSystems;
+
+    private StaticDataProvider staticDataProvider;
+
     public APTypeUpdater(final ApTypeRepository apTypeRepository,
             final RegistryRoleRepository registryRoleRepository,
             final ApAccessPointRepository accessPointRepository,
-            List<ParPartyType> parPartyTypes) {
+            final List<ParPartyType> parPartyTypes,
+            final List<ApRuleSystem> apRuleSystems,
+            final StaticDataProvider staticDataProvider) {
         this.apTypeRepository = apTypeRepository;
         this.registryRoleRepository = registryRoleRepository;
         this.accessPointRepository = accessPointRepository;
         this.parPartyTypes = parPartyTypes;
+        this.apRuleSystems = apRuleSystems;
+        this.staticDataProvider = staticDataProvider;
     }
 
     private void addApType(ApType apType) {
@@ -88,17 +100,48 @@ public class APTypeUpdater {
      */
     private void convertToApType(final RulPackage rulPackage,
                                          final APTypeXml apTypeXml,
-                                         final ApType apType,
-                                         final List<ParPartyType> parPartyTypes) {
+                                 final ApType apType) {
         apType.setRulPackage(rulPackage);
         apType.setCode(apTypeXml.getCode());
         apType.setName(apTypeXml.getName());
         apType.setReadOnly(apTypeXml.isReadOnly());
 
+        // read rules
+        if (StringUtils.isNotEmpty(apTypeXml.getRuleSystem())) {
+            ApRuleSystem apRuleSystem = PackageService.findEntity(apRuleSystems, apTypeXml.getRuleSystem(),
+                                                                  ApRuleSystem::getCode);
+            if (apRuleSystem == null) {
+                throw new ObjectNotFoundException("Cannot find rules for access point type", BaseCode.ID_NOT_EXIST)
+                        .setId(apTypeXml.getRuleSystem());
+            }
+            apType.setRuleSystem(apRuleSystem);
+        } else {
+            apType.setRuleSystem(null);
+        }
+
+        // prepare parent ApType
         ApType parent = null;
         String parentCode = apTypeXml.getParentType();
         if (parentCode != null) {
             parent = this.getApTypeByCode(parentCode);
+            if (parent == null) {
+                // parent is not in source xml
+                // try to find it in static data (from another package)
+                parent = staticDataProvider.getApTypeByCode(parentCode);
+                // check that not this package
+                if (parent != null) {
+                    String parentPkgCode = parent.getRulPackage().getCode();
+                    String updatePkgCode = rulPackage.getCode();
+                    if (parentPkgCode.equals(updatePkgCode)) {
+                        throw new BusinessException("Parent ApType not found in new package.",
+                                PackageCode.CODE_NOT_FOUND)
+                                        .set("code", apTypeXml.getCode())
+                                        .set("parentCode", parentCode)
+                                        .set("file", AP_TYPE_XML);
+                    }
+                }
+            }
+
             if (parent == null) {
                 throw new BusinessException("Parent ApType not found.",
                         PackageCode.CODE_NOT_FOUND)
@@ -109,6 +152,7 @@ public class APTypeUpdater {
         }
         apType.setParentApType(parent);
 
+        // set party type
         if (apTypeXml.getPartyType() != null) {
             // check party type - if exists
             ParPartyType parPartyType = PackageService.findEntity(parPartyTypes, apTypeXml.getPartyType(),
@@ -158,7 +202,7 @@ public class APTypeUpdater {
                 if (type == null) {
                     type = new ApType();
                 }
-                convertToApType(rulPackage, apXmlType, type, parPartyTypes);
+                convertToApType(rulPackage, apXmlType, type);
                 addApType(type);
 
                 // check if old types still exists

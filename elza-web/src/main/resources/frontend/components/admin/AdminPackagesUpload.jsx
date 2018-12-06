@@ -8,7 +8,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
-import {AppActions} from 'stores/index.jsx';
 import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
 
 import {importPackage} from 'actions/admin/packages.jsx';

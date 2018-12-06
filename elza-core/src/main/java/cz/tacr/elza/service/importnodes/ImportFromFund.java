@@ -123,7 +123,7 @@ public class ImportFromFund implements ImportSource {
 
     @Override
     public List<ArrStructuredObject> getStructuredList() {
-        return structureDataRepository.findStructureDataBySubtreeNodeIds(nodeIds, ignoreRootNodes);
+        return structureDataRepository.findStructureDataBySubtreeNodeIds(nodeIds, null, ignoreRootNodes);
     }
 
     @Override

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
@@ -25,8 +26,11 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
+import cz.tacr.elza.repository.ApFragmentRepository;
+import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
@@ -192,12 +196,21 @@ public class HelperTestService {
     private ApExternalIdRepository apEidRepository;
     @Autowired
     private UpdateConformityInfoService updateConformityInfoService;
+    @Autowired
+    private ApItemRepository apItemRepository;
+    @Autowired
+    private ApFragmentRepository fragmentRepository;
+    @Autowired
+    private ApChangeRepository apChangeRepository;
 
     @Autowired
     private PackageService packageService;
 
     @Autowired
     private StaticDataService staticDataService;
+
+    @Autowired
+    protected EntityManager em;
 
     @Transactional
     public void importPackage(final File file) {
@@ -247,6 +260,8 @@ public class HelperTestService {
         partyGroupIdentifierRepository.deleteAll();
         partyCreatorRepository.deleteAll();
         partyNameRepository.deleteAll();
+        apItemRepository.deleteAll();
+        fragmentRepository.deleteAll();
         apNameRepository.deleteAll();
         nodeRegisterRepository.deleteAll();
         fundVersionRepository.deleteAll();
@@ -265,7 +280,11 @@ public class HelperTestService {
         apDescRepository.deleteAll();
         apEidRepository.deleteAll();
         apRepository.deleteAll();
+        apChangeRepository.deleteAll();
         externalSystemRepository.deleteAll();
+
+        // DB has to be flushed before start
+        em.flush();
 
         logger.info("All tables cleaned.");
     }

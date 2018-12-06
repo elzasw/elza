@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -48,6 +49,7 @@ import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApEidTypeVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
@@ -66,6 +68,7 @@ import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.FundListCountResult;
+import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.controller.vo.PackageVO;
@@ -92,6 +95,22 @@ import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.ValidationResult;
+import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemDateVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemDecimalVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemEnumVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemFormattedTextVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemIntVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemJsonTableVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemPartyRefVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemTextVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemUnitdateVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemUnitidVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
+import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.NodeData;
@@ -113,12 +132,13 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
-
 
 public abstract class AbstractControllerTest extends AbstractTest {
 
@@ -127,7 +147,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     private static final RestAssuredConfig UTF8_ENCODER_CONFIG = RestAssuredConfig.newConfig().encoderConfig(
             EncoderConfig.encoderConfig().defaultContentCharset("UTF-8"));
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractControllerTest.class);
+    protected static final Logger logger = LoggerFactory.getLogger(AbstractControllerTest.class);
     protected static final String CONTENT_TYPE_HEADER = "content-type";
     protected static final String JSON_CONTENT_TYPE = "application/json";
     protected static final String WWW_FORM_CONTENT_TYPE = "application/x-www-form-urlencoded";
@@ -140,7 +160,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String STRUCTURE_CONTROLLER_URL = "/api/structure";
     protected static final String BULK_ACTION_CONTROLLER_URL = "/api/action";
     protected static final String PARTY_CONTROLLER_URL = "/api/party";
-    protected static final String REGISTRY_CONTROLLER_URL = "/api/registry";
+    protected static final String AP_CONTROLLER_URL = "/api/registry";
     protected static final String KML_CONTROLLER_URL = "/api/kml";
     protected static final String VALIDATION_CONTROLLER_URL = "/api/validate";
     protected static final String RULE_CONTROLLER_URL = "/api/rule";
@@ -278,27 +298,49 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String INSTITUTIONS = PARTY_CONTROLLER_URL + "/institutions";
 
     // REGISTRY
-    protected static final String CREATE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes";
-    protected static final String UPDATE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes/{scopeId}";
-    protected static final String DELETE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes/{scopeId}";
-    protected static final String FA_SCOPES = REGISTRY_CONTROLLER_URL + "/fundScopes";
-    protected static final String ALL_SCOPES = REGISTRY_CONTROLLER_URL + "/scopes";
-    protected static final String RECORD_TYPES = REGISTRY_CONTROLLER_URL + "/recordTypes";
+    protected static final String CREATE_SCOPE = AP_CONTROLLER_URL + "/scopes";
+    protected static final String UPDATE_SCOPE = AP_CONTROLLER_URL + "/scopes/{scopeId}";
+    protected static final String DELETE_SCOPE = AP_CONTROLLER_URL + "/scopes/{scopeId}";
+    protected static final String FA_SCOPES = AP_CONTROLLER_URL + "/fundScopes";
+    protected static final String ALL_SCOPES = AP_CONTROLLER_URL + "/scopes";
+    protected static final String RECORD_TYPES = AP_CONTROLLER_URL + "/recordTypes";
 
-    protected static final String FIND_RECORD = REGISTRY_CONTROLLER_URL + "/";
-    protected static final String FIND_RECORD_FOR_RELATION = REGISTRY_CONTROLLER_URL + "/findRecordForRelation";
-    protected static final String GET_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}";
-    protected static final String CREATE_ACCESS_POINT = REGISTRY_CONTROLLER_URL + "/";
-    protected static final String UPDATE_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}";
-    protected static final String DELETE_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}";
-    protected static final String USAGES_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}/usage";
-    protected static final String REPLACE_RECORD = REGISTRY_CONTROLLER_URL + "/{recordId}/replace";
+    protected static final String FIND_RECORD = AP_CONTROLLER_URL + "/";
+    protected static final String FIND_RECORD_FOR_RELATION = AP_CONTROLLER_URL + "/findRecordForRelation";
+    protected static final String GET_RECORD = AP_CONTROLLER_URL + "/{recordId}";
+    protected static final String CREATE_ACCESS_POINT = AP_CONTROLLER_URL + "/";
+    protected static final String UPDATE_RECORD = AP_CONTROLLER_URL + "/{recordId}";
+    protected static final String DELETE_RECORD = AP_CONTROLLER_URL + "/{recordId}";
+    protected static final String USAGES_RECORD = AP_CONTROLLER_URL + "/{recordId}/usage";
+    protected static final String REPLACE_RECORD = AP_CONTROLLER_URL + "/{recordId}/replace";
 
-    protected static final String CREATE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/variantRecord/";
-    protected static final String UPDATE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/variantRecord/{variantRecordId}";
-    protected static final String DELETE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/variantRecord/{variantRecordId}";
+    protected static final String CREATE_STRUCTURED_ACCESS_POINT = AP_CONTROLLER_URL + "/structured";
+    protected static final String CONFIRM_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/confirm";
+    protected static final String CREATE_STRUCTURED_NAME_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/name/structured";
+    protected static final String UPDATE_STRUCTURED_NAME_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/name/structured";
+    protected static final String CONFIRM_NAME_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}/confirm";
+    protected static final String CHANGE_ACCESS_POINT_ITEMS = AP_CONTROLLER_URL + "/{accessPointId}/items";
+    protected static final String DELETE_ACCESS_POINT_ITEMS_BY_TYPE = AP_CONTROLLER_URL + "/{accessPointId}/type/{itemTypeId}";
+    protected static final String CHANGE_NAME_ITEMS = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}/items";
+    protected static final String DELETE_NAME_ITEMS_BY_TYPE = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}/type/{itemTypeId}";
+    protected static final String GET_NAME = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}";
+    protected static final String GET_LANGUAGES = AP_CONTROLLER_URL + "/languages";
+    protected static final String GET_EXTERNAL_ID_TYPES = AP_CONTROLLER_URL + "/eidTypes";
 
-    protected static final String RECORD_TYPES_FOR_PARTY_TYPE = REGISTRY_CONTROLLER_URL + "/recordTypesForPartyType";
+    protected static final String CREATE_VARIANT_RECORD = AP_CONTROLLER_URL + "/variantRecord/";
+    protected static final String UPDATE_VARIANT_RECORD = AP_CONTROLLER_URL + "/variantRecord/{variantRecordId}";
+    protected static final String DELETE_VARIANT_RECORD = AP_CONTROLLER_URL + "/variantRecord/{variantRecordId}";
+
+    protected static final String RECORD_TYPES_FOR_PARTY_TYPE = AP_CONTROLLER_URL + "/recordTypesForPartyType";
+
+    // FRAGMENT
+    protected static final String FRAGMENT_TYPES = AP_CONTROLLER_URL + "/fragment/types";
+    protected static final String GET_FRAGMENT = AP_CONTROLLER_URL + "/fragment/{fragmentId}";
+    protected static final String DELETE_FRAGMENT = AP_CONTROLLER_URL + "/fragment/{fragmentId}";
+    protected static final String DELETE_FRAGMENT_ITEMS_BY_TYPE = AP_CONTROLLER_URL + "/fragment/{fragmentId}/type/{itemTypeId}";
+    protected static final String CONFIRM_FRAGMENT = AP_CONTROLLER_URL + "/fragment/{fragmentId}/confirm";
+    protected static final String CHANGE_FRAGMENT_ITEMS = AP_CONTROLLER_URL + "/fragment/{fragmentId}/items";
+    protected static final String CREATE_FRAGMENT = AP_CONTROLLER_URL + "/fragment/create/{fragmentTypeCode}";
 
     // RULE
     protected static final String RULE_SETS = RULE_CONTROLLER_URL + "/getRuleSets";
@@ -353,16 +395,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     private List<RulDataTypeVO> dataTypes = null;
     private List<RulDescItemTypeExtVO> descItemTypes = null;
 
-    // Import institucí
-    private final static String XML_INSTITUTION = "institution-import.xml";
-
     private static Map<String, String> cookies = null;
-
-    public static File getResourceFile(String resourcePath) {
-        URL url = Thread.currentThread().getContextClassLoader().getResource(resourcePath);
-        Assert.assertNotNull(url);
-        return new File(url.getPath());
-    }
 
     @Override
     @Before
@@ -388,6 +421,19 @@ public abstract class AbstractControllerTest extends AbstractTest {
             requestSpecification.log().all();
         }
         cookies = response.getCookies();
+    }
+
+    private Map<String, Integer> counterMap = new HashMap<>();
+
+    protected void counter(final String text) {
+        Integer count = counterMap.get(text);
+        if (count == null) {
+            count = 1;
+            counterMap.put(text, count);
+        } else {
+            counterMap.put(text, ++count);
+        }
+        logger.info(text + ": #" + count);
     }
 
     public static Response delete(final Function<RequestSpecification, RequestSpecification> params, final String url) {
@@ -1258,6 +1304,153 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return descItem;
     }
 
+    protected ApUpdateItemVO buildApItem(final UpdateOp updateOp,
+                                         final String typeCode,
+                                         final String specCode,
+                                         final Object value,
+                                         final Integer position,
+                                         final Integer objectId) {
+        return buildApItem(updateOp, buildApItem(typeCode, specCode, value, position, objectId));
+    }
+
+    protected ApUpdateItemVO buildApItem(final UpdateOp updateOp,
+                                         final ApItemVO item) {
+        ApUpdateItemVO updateItem = new ApUpdateItemVO();
+        updateItem.setUpdateOp(updateOp);
+        updateItem.setItem(item);
+        return updateItem;
+    }
+
+    /**
+     * Vytvoření objektu pro hodnotu atributu.
+     *
+     * @param typeCode         kód typu atributu
+     * @param specCode         kód specifikace atributu
+     * @param value            hodnota
+     * @param position         pozice
+     * @param objectId identifikátor hodnoty atributu
+     * @return vytvořený object hodnoty atributu
+     */
+    protected ApItemVO buildApItem(final String typeCode,
+                                   final String specCode,
+                                   final Object value,
+                                   final Integer position,
+                                   final Integer objectId) {
+        Assert.assertNotNull("Musí být vyplněn kód typu atributu", typeCode);
+
+        RulDescItemTypeExtVO type = findDescItemTypeByCode(typeCode);
+        Assert.assertNotNull( "Typ atributu neexistuje -> CODE: " + typeCode, type);
+
+        RulDescItemSpecVO spec = null;
+
+        if (specCode != null) {
+            spec = findDescItemSpecByCode(specCode, type);
+            Assert.assertNotNull( "Specifikace atributu neexistuje -> CODE: " + specCode, spec);
+        }
+
+        DataType dataType = DataType.fromId(type.getDataTypeId());
+        ApItemVO item;
+
+        switch (dataType) {
+
+            case INT: {
+                item = new ApItemIntVO();
+                ((ApItemIntVO) item).setValue((Integer) value);
+                break;
+            }
+
+            case STRING: {
+                item = new ApItemStringVO();
+                ((ApItemStringVO) item).setValue((String) value);
+                break;
+            }
+
+            case TEXT: {
+                item = new ApItemTextVO();
+                ((ApItemTextVO) item).setValue((String) value);
+                break;
+            }
+
+            case UNITDATE: {
+                item = new ApItemUnitdateVO();
+                ((ApItemUnitdateVO) item).setValue((String) value);
+                ((ApItemUnitdateVO) item).setCalendarTypeId(getCalendarTypes().get(0).getId());
+                break;
+            }
+
+            case UNITID: {
+                item = new ApItemUnitidVO();
+                ((ApItemUnitidVO) item).setValue((String) value);
+                break;
+            }
+
+            case FORMATTED_TEXT: {
+                item = new ApItemFormattedTextVO();
+                ((ApItemFormattedTextVO) item).setValue((String) value);
+                break;
+            }
+
+            case COORDINATES: {
+                item = new ApItemCoordinatesVO();
+                ((ApItemCoordinatesVO) item).setValue((String) value);
+                break;
+            }
+
+            case PARTY_REF: {
+                item = new ApItemPartyRefVO();
+                ((ApItemPartyRefVO) item).setValue(((ParPartyVO) value).getId());
+                break;
+            }
+
+            case RECORD_REF: {
+                item = new ApItemAccessPointRefVO();
+                ((ApItemAccessPointRefVO) item).setValue(((ApAccessPointVO) value).getId());
+                break;
+            }
+
+            case DECIMAL: {
+                item = new ApItemDecimalVO();
+                ((ApItemDecimalVO) item).setValue((BigDecimal) value);
+                break;
+            }
+
+            case ENUM: {
+                item = new ApItemEnumVO();
+                if (BooleanUtils.isNotTrue(type.getUseSpecification())) {
+                    throw new IllegalStateException(
+                            "Specifikace u typu musí být povinná pro ENUM -> CODE: " + type.getCode());
+                }
+                break;
+            }
+
+            case JSON_TABLE: {
+                item = new ApItemJsonTableVO();
+                ((ApItemJsonTableVO) item).setValue(((ElzaTable) value));
+                break;
+            }
+
+            case DATE: {
+                item = new ApItemDateVO();
+                ((ApItemDateVO) item).setValue((LocalDate) value);
+                break;
+            }
+
+            default:
+                throw new IllegalStateException("Neimplementovaný datový typ atributu -> CODE: " + dataType.getCode());
+
+        }
+
+        if (spec != null) {
+            item.setSpecId(spec.getId());
+        }
+
+        item.setPosition(position);
+        item.setObjectId(objectId);
+        item.setTypeId(type.getId());
+
+        return item;
+    }
+
     /**
      * Vyhledání datového typu atributu.
      *
@@ -1734,10 +1927,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vrátí jedno heslo (s variantními hesly) dle id.
      *
-     * @param recordId id požadovaného hesla
+     * @param accessPointId id požadovaného hesla
      */
-    protected ApAccessPointVO getRecord(final int recordId) {
-        return get(spec -> spec.pathParam("recordId", recordId), GET_RECORD).getBody().as(ApAccessPointVO.class);
+    protected ApAccessPointVO getAccessPoint(final int accessPointId) {
+        return get(spec -> spec.pathParam("recordId", accessPointId), GET_RECORD).getBody().as(ApAccessPointVO.class);
     }
 
     /**
@@ -3221,5 +3414,179 @@ public abstract class AbstractControllerTest extends AbstractTest {
         post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
                 .pathParameter("structureTypeCode", structureTypeCode)
                 .body(structureDataBatchUpdate), UPDATE_STRUCTURE_DATA_BATCH);
+    }
+
+    /**
+     * Vytvoření nového dočasného fragmentu. Pro potvrzení je třeba použít {@link #confirmFragment}
+     *
+     * @param fragmentTypeCode kód typu fragmentu
+     * @return založený fragment
+     */
+    protected ApFragmentVO createFragment(final String fragmentTypeCode) {
+        return post(spec -> spec.pathParameter("fragmentTypeCode", fragmentTypeCode), CREATE_FRAGMENT)
+                .as(ApFragmentVO.class);
+    }
+
+    protected ApFragmentVO changeFragmentItems(final Integer fragmentId,
+                                               final List<ApUpdateItemVO> items) {
+        return put(spec -> spec.pathParameter("fragmentId", fragmentId)
+                .body(items), CHANGE_FRAGMENT_ITEMS)
+                .as(ApFragmentVO.class);
+    }
+
+    /**
+     * Potvrzení fragmentu.
+     *
+     * @param fragmentId identifikátor fragmentu
+     */
+    protected void confirmFragment(final Integer fragmentId) {
+        post(spec -> spec.pathParameter("fragmentId", fragmentId), CONFIRM_FRAGMENT);
+    }
+
+    /**
+     * Získání fragmentu.
+     *
+     * @param fragmentId identifikátor fragmentu
+     */
+    protected ApFragmentVO getFragment(final Integer fragmentId) {
+        return get(spec -> spec.pathParameter("fragmentId", fragmentId), GET_FRAGMENT).as(ApFragmentVO.class);
+    }
+
+    /**
+     * Smazání fragmentu.
+     *
+     * @param fragmentId identifikátor fragmentu
+     */
+    protected void deleteFragment(final Integer fragmentId) {
+        delete(spec -> spec.pathParameter("fragmentId", fragmentId), DELETE_FRAGMENT);
+    }
+
+    protected ApAccessPointVO createStructuredAccessPoint(final ApAccessPointCreateVO accessPoint) {
+        return post(spec -> spec.body(accessPoint), CREATE_STRUCTURED_ACCESS_POINT).as(ApAccessPointVO.class);
+    }
+
+    protected void confirmStructuredAccessPoint(final Integer accessPointId) {
+        post(spec -> spec.pathParameter("accessPointId", accessPointId), CONFIRM_ACCESS_POINT);
+    }
+
+    protected ApAccessPointNameVO createAccessPointStructuredName(final Integer accessPointId) {
+        return post(spec -> spec.pathParameter("accessPointId", accessPointId),
+                CREATE_STRUCTURED_NAME_ACCESS_POINT).as(ApAccessPointNameVO.class);
+    }
+
+    protected void confirmAccessPointStructuredName(final Integer accessPointId,
+                                                    final Integer objectId) {
+        post(spec -> spec.pathParameter("accessPointId", accessPointId)
+                        .pathParameter("objectId", objectId),
+                CONFIRM_NAME_ACCESS_POINT);
+    }
+
+    /**
+     * Úprava hodnot těla přístupového bodu. Přidání/upravení/smazání.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param items         položky ke změně
+     */
+    protected void changeAccessPointItems(final Integer accessPointId,
+                                                     final List<ApUpdateItemVO> items) {
+        put(spec -> spec.pathParameter("accessPointId", accessPointId)
+                .body(items), CHANGE_ACCESS_POINT_ITEMS);
+    }
+
+    /**
+     * Úprava hodnot jména přístupového bodu. Přidání/upravení/smazání.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param objectId      identifikátor objektu jména
+     * @param items         položky ke změně
+     */
+    protected void changeNameItems(final Integer accessPointId,
+                                   final Integer objectId,
+                                   final List<ApUpdateItemVO> items) {
+        put(spec -> spec.pathParameter("accessPointId", accessPointId)
+                .pathParameter("objectId", objectId)
+                .body(items), CHANGE_NAME_ITEMS);
+    }
+
+    /**
+     * Získání jména přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param objectId      identifikátor objektu jména
+     * @return jméno
+     */
+    protected ApAccessPointNameVO getAccessPointName(final Integer accessPointId,
+                                                     final Integer objectId) {
+        return get(spec -> spec.pathParameter("accessPointId", accessPointId)
+                .pathParameter("objectId", objectId), GET_NAME).as(ApAccessPointNameVO.class);
+    }
+
+    /**
+     * Upravení jazyk strukturovaného jména přístupového bodu.
+     *
+     * @param accessPointId   identifikátor přístupového bodu
+     * @param accessPointName data jména
+     * @return upravené jméno
+     */
+    public ApAccessPointNameVO updateAccessPointStructuredName(final Integer accessPointId,
+                                                               final ApAccessPointNameVO accessPointName) {
+        return put(spec -> spec.pathParameter("accessPointId", accessPointId)
+                .body(accessPointName), UPDATE_STRUCTURED_NAME_ACCESS_POINT).as(ApAccessPointNameVO.class);
+    }
+
+    /**
+     * Vrací všechny jazyky.
+     */
+    public Map<String, LanguageVO> getAllLanguages() {
+        return Arrays.stream(get(GET_LANGUAGES).getBody().as(LanguageVO[].class))
+                .collect(Collectors.toMap(LanguageVO::getCode, Function.identity()));
+    }
+
+    /**
+     * Vrací typy externích identifikátorů.
+     */
+    public Map<String, ApEidTypeVO> getAllExternalIdTypes() {
+        return Arrays.stream(get(GET_EXTERNAL_ID_TYPES).getBody().as(ApEidTypeVO[].class))
+                .collect(Collectors.toMap(ApEidTypeVO::getCode, Function.identity()));
+    }
+
+    /**
+     * Smazání hodnot fragmentu podle typu.
+     *
+     * @param accessPointId identifikátor identifikátor přístupového bodu
+     * @param itemTypeId    identifikátor typu atributu
+     */
+    public void deleteAccessPointItemsByType(final Integer accessPointId,
+                                             final Integer itemTypeId) {
+        delete(spec -> spec.pathParameter("accessPointId", accessPointId)
+                .pathParameter("itemTypeId", itemTypeId), DELETE_ACCESS_POINT_ITEMS_BY_TYPE);
+    }
+
+    /**
+     * Smazání hodnot jména podle typu.
+     *
+     * @param accessPointId identifikátor identifikátor přístupového bodu
+     * @param objectId      identifikátor objektu jména
+     * @param itemTypeId    identifikátor typu atributu
+     */
+    public void deleteNameItemsByType(final Integer accessPointId,
+                                      final Integer objectId,
+                                      final Integer itemTypeId) {
+        delete(spec -> spec.pathParameter("accessPointId", accessPointId)
+                .pathParameter("objectId", objectId)
+                .pathParameter("itemTypeId", itemTypeId), DELETE_NAME_ITEMS_BY_TYPE);
+    }
+
+    /**
+     * Smazání hodnot fragmentu podle typu.
+     *
+     * @param fragmentId identifikátor fragmentu
+     * @param itemTypeId identifikátor typu atributu
+     */
+    public ApFragmentVO deleteFragmentItemsByType(final Integer fragmentId,
+                                                  final Integer itemTypeId) {
+        return delete(spec -> spec.pathParameter("fragmentId", fragmentId)
+                .pathParameter("itemTypeId", itemTypeId), DELETE_FRAGMENT_ITEMS_BY_TYPE)
+                .as(ApFragmentVO.class);
     }
 }

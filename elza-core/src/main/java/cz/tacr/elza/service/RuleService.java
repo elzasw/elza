@@ -38,31 +38,7 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.rules.ItemTypeExtBuilder;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemSettings;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrNodeConformityError;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ArrNodeExtension;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrStructuredItem;
-import cz.tacr.elza.domain.RulArrangementExtension;
-import cz.tacr.elza.domain.RulComponent;
-import cz.tacr.elza.domain.RulExtensionRule;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeAction;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulStructuredType;
-import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -924,5 +900,15 @@ public class RuleService {
         return ids.stream().
                 map(id -> rulItemTypeMap.get(id)).
                 collect(Collectors.toList());
+    }
+
+    public List<RulItemTypeExt> getFragmentItemTypesInternal(final RulStructuredType fragmentType, final List<ApItem> items) {
+        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
+        return rulesExecutor.executeFragmentItemTypesRules(fragmentType, rulDescItemTypeExtList, items);
+    }
+
+    public List<RulItemTypeExt> getApItemTypesInternal(final ApType type, final List<ApItem> items, final ApRule.RuleType ruleType) {
+        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
+        return rulesExecutor.executeApItemTypesRules(type, rulDescItemTypeExtList, items, ruleType);
     }
 }

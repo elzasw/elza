@@ -1,6 +1,6 @@
 import {getMapFromList, indexById} from 'stores/app/utils.jsx'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
-import {DisplayType} from "../../../constants";
+import {DisplayType} from "../../../constants.tsx";
 import {toDuration} from "../../../components/validate";
 
 const availability = {

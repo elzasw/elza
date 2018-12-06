@@ -17,6 +17,7 @@ import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.common.db.DatabaseType;
 import cz.tacr.elza.common.db.RecursiveQueryBuilder;
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrStructuredObject;
 
 /**
@@ -114,38 +115,51 @@ public class StructuredObjectRepositoryImpl implements StructuredObjectRepositor
 
     @Override
     public List<ArrStructuredObject> findStructureDataBySubtreeNodeIds(final Collection<Integer> nodeIds,
+                                                                       Integer structuredTypeId,
                                                                        final boolean ignoreRootNodes) {
         Validate.notEmpty(nodeIds);
 
         RecursiveQueryBuilder<ArrStructuredObject> rqBuilder = DatabaseType.getCurrent()
                 .createRecursiveQueryBuilder(ArrStructuredObject.class);
 
-        rqBuilder.addSqlPart("SELECT p.* FROM arr_structured_object p WHERE p.structured_object_id IN (")
-
-                .addSqlPart("SELECT dpr.structured_object_id FROM arr_data_structure_ref dpr ")
-                .addSqlPart(
-                        "JOIN arr_structured_object ap ON ap.structured_object_id = dpr.structured_object_id WHERE dpr.data_id IN (")
-
-                .addSqlPart("SELECT d.data_id FROM arr_item i JOIN arr_data d ON d.data_id = i.data_id ")
+        // select all opened structured data
+        rqBuilder
+                .addSqlPart("SELECT distinct so.* FROM arr_item i ")
+                .addSqlPart("JOIN arr_data d ON d.data_id = i.data_id ")
+                .addSqlPart("JOIN arr_data_structure_ref dsr ON dsr.data_id = i.data_id ")
+                .addSqlPart("JOIN arr_structured_object so ON so.structured_object_id = dsr.structured_object_id ")
                 .addSqlPart("JOIN arr_desc_item di ON di.item_id = i.item_id ")
-                .addSqlPart("WHERE i.delete_change_id IS NULL AND d.data_type_id = 15 AND di.node_id IN (")
+                .addSqlPart("WHERE i.delete_change_id IS NULL AND d.data_type_id = " + DataType.STRUCTURED.getId()
+                        + " AND di.node_id IN (");
 
-                .addSqlPart(
-                        "WITH RECURSIVE treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS ")
-                .addSqlPart("(SELECT t.* FROM arr_level t WHERE t.node_id IN (:nodeIds) ").addSqlPart("UNION ALL ")
+        addAllNodesIn(rqBuilder, "nodeIds");
+        rqBuilder.addSqlPart(")");
+
+        if (ignoreRootNodes) {
+            rqBuilder.addSqlPart(" AND di.node_id NOT IN (:nodeIds)");
+        }
+        if (structuredTypeId != null) {
+            rqBuilder.addSqlPart(" AND so.structured_type_id = :structuredTypeId");
+        }
+        rqBuilder.addSqlPart(" ORDER BY so.sort_value");
+
+        
+        rqBuilder.prepareQuery(em);
+        rqBuilder.setParameter("nodeIds", nodeIds);
+        rqBuilder.setParameter("structuredTypeId", structuredTypeId);
+        return rqBuilder.getQuery().getResultList();
+    }
+
+    public static void addAllNodesIn(RecursiveQueryBuilder<?> rqBuilder, final String nodeIdsParamName) {
+        // select recursively all relevant nodes
+        rqBuilder.addSqlPart(
+                             "WITH RECURSIVE treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS ")
+                .addSqlPart("(SELECT t.* FROM arr_level t WHERE t.node_id IN (:").addSqlPart(nodeIdsParamName)
+                .addSqlPart(" ) ")
+                .addSqlPart("UNION ALL ")
                 .addSqlPart("SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) ")
 
                 .addSqlPart("SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
                 .addSqlPart("WHERE t.delete_change_id IS NULL");
-        if (ignoreRootNodes) {
-            rqBuilder.addSqlPart(" AND n.node_id NOT IN (:nodeIds)");
-        }
-
-        rqBuilder.addSqlPart(")))");
-
-        rqBuilder.prepareQuery(em);
-        rqBuilder.setParameter("nodeIds", nodeIds);
-        return rqBuilder.getQuery().getResultList();
-
     }
 }

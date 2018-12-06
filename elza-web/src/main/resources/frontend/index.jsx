@@ -1,18 +1,13 @@
 /**
  * Vstupní soubor pro UI - inicializace a zobrazení VIEW.
  */
-
-
-'use strict'
-
 // Import css Bootstrapu
 import './elza-styles.less';
 
 import React from 'react';
 
-import {Utils} from 'components/shared';
-import {WebApi, WebApiCls} from 'actions/index.jsx';
-import {userDetailChange} from 'actions/user/userDetail.jsx'
+import {Utils} from './components/shared';
+import {WebApi, WebApiCls} from './actions/index.jsx';
 
 
 // Přidání custom style bsStyle action
@@ -35,13 +30,12 @@ if ( typeof window.CustomEvent !== "function" ){
 
 // Globální init
 Utils.init();
-const es6promise = require('es6-promise');
-//var es5Shim = require('es5-shim');
+import * as es6promise from 'es6-promise';
 es6promise.polyfill();
 
 // Nastavení neomezeného počtu listenerů pro event emitter - v ELZA je emitter použit pro klávesové zkratky, kde je více listenerů
-const EventEmitter = require('events').EventEmitter;
-EventEmitter.defaultMaxListeners = 0
+import EventEmitter from 'events';
+EventEmitter.defaultMaxListeners = 0;
 
 function xx() {
     setTimeout(fc, 1000)
@@ -120,7 +114,7 @@ SplitToggle.defaultProps = {
 
 // Pokud dostane focus body, chceme jej změnit na implcitiní focus pro ribbon
 import {setFocus} from 'actions/global/focus.jsx';
-import {FOCUS_KEYS} from "./constants";
+import {FOCUS_KEYS} from "./constants.tsx";
 {
     const testBodyfocus = () => {
         if (document.activeElement === document.body) { // focus je na body, nastavíme ho podle aktuálně přepnuté oblasti
@@ -148,38 +142,15 @@ function scheduleStoreSave() {
 scheduleStoreSave();
 
 // Aplikace
-import {AppContainer} from 'react-hot-loader'
-import Redbox from 'redbox-react'
 import ReactDOM from 'react-dom'
-
-class CustomRedbox extends React.Component {
-    static PropTypes = {
-        error: React.PropTypes.instanceOf(Error).isRequired
-    };
-
-    render() {
-        const {error} = this.props;
-        console.error(error);
-        return <Redbox error={error} />;
-    }
-}
 
 const render = Component => {
     const MOUNT_POINT = document.getElementById('content');
 
-    ReactDOM.render(
-        <AppContainer errorReported={CustomRedbox}>
-            <Component store={store} />
-        </AppContainer>,
-        MOUNT_POINT
-    )
+    ReactDOM.render(<Component store={store} />, MOUNT_POINT)
 };
 
 
 import Root from './router';
 
 render(Root);
-
-if (module.hot) {
-    module.hot.accept(['./router', './stores', './actions', './pages', './components'], () => render(Root));
-}

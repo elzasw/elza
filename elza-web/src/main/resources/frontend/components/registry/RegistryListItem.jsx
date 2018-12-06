@@ -14,21 +14,23 @@ class RegistryListItem extends AbstractReactComponent {
         onClick: React.PropTypes.func,
         partyType: React.PropTypes.object.isRequired,
         relationTypesForClass: React.PropTypes.object,
+        eidTypes: React.PropTypes.object.isRequired,
         record: React.PropTypes.object.isRequired,
         relations: React.PropTypes.array,
         invalid: React.PropTypes.bool
     };
 
     getDisplayIds = () => {
+        const {eidTypes} = this.props;
 		const eids = this.props.externalIds;
 		if (!eids || eids.length == 0) {
 			return [this.props.id];
 		}
-	
+
 		let eidArr = [];
 		eids.forEach(eid => {
-			// TODO: read eid type name from refTables by id
-			const eidTypeName =  "eid_type_name-" + eid.typeId;
+            const typeId = eid.typeId;
+            const eidTypeName = eidTypes && eidTypes[typeId] ? eidTypes[typeId].name : "eid_type_name-" + typeId;
 			eidArr.push(eidTypeName + ":" + eid.value);
 		});
 		return eidArr;
@@ -36,22 +38,16 @@ class RegistryListItem extends AbstractReactComponent {
 
 	getApTypeNames = () => {
         const type = this.props.apTypeIdMap[this.props.typeId];
-        
+
 		let names = [type.name];
         if (type.parents) {
 			type.parents.forEach(name => names.push(name));
 		}
 		return names;
     }
-	
+
     render() {
         const {className, isActive, id, record, invalid} = this.props;
-		
-        const iconName = 'fa-file-o';
-        const clsItem = 'registry-list-icon-list';
-		
-        //let doubleClick = this.handleDoubleClick.bind(this, item);
-        const doubleClick = false;
 
         const cls = classNames(className, 'registry-list-item', {
             active: isActive,
@@ -61,9 +57,9 @@ class RegistryListItem extends AbstractReactComponent {
 		const typeNames = this.getApTypeNames().join(' | ');
 		const displayId = this.getDisplayIds().join(', ');
 
-		return <div key={'record-id-' + id} className={cls} onDoubleClick={doubleClick}>
+		return <div key={'record-id-' + id} className={cls}>
 			<div>
-				<Icon glyph={iconName} />
+				<Icon glyph='fa-file-o' />
 				<span className="name" title={record}>{record}</span>
 			</div>
 			<div>

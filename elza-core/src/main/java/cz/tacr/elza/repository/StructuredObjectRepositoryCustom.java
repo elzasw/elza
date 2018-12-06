@@ -17,5 +17,20 @@ public interface StructuredObjectRepositoryCustom {
 
     FilteredResult<ArrStructuredObject> findStructureData(final Integer structuredTypeId, int fundId, String search, Boolean assignable, int firstResult, int maxResults);
 
-    List<ArrStructuredObject> findStructureDataBySubtreeNodeIds(Collection<Integer> nodeIds, boolean ignoreRootNodes);
+    /**
+     * Return collection of structured objects
+     * 
+     * @param nodeIds
+     *            Collection of parent nodes
+     * @param structuredTypeId
+     *            Id structured, allow to limit result only to this type.
+     *            If null StructuredObject of all types are returned
+     * @param ignoreRootNodes
+     *            Flag to include objects from parent nodes.
+     *            If true object from parent nodes are not included.
+     *            If false object from parent nodes are included in result.
+     * @return
+     */
+    List<ArrStructuredObject> findStructureDataBySubtreeNodeIds(Collection<Integer> nodeIds, Integer structuredTypeId,
+                                                                boolean ignoreRootNodes);
 }

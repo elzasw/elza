@@ -25,6 +25,7 @@ import org.springframework.context.ApplicationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.exception.BusinessException;
@@ -36,6 +37,8 @@ import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
 import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.output.OutputParams;
@@ -68,6 +71,7 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
     private PdfAttProvider pdfAttProvider;
 
     JasperOutputGenerator(ApplicationContext applicationContext, StaticDataService staticDataService,
+                          ElzaLocale elzaLocale,
                           FundTreeProvider fundTreeProvider,
                           NodeCacheService nodeCacheService,
                           InstitutionRepository institutionRepository,
@@ -78,10 +82,14 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
                           DmsService dmsService) {
         super(em, dmsService);
 
+        StructuredObjectRepository structObjRepos = applicationContext.getBean(StructuredObjectRepository.class);
+        StructuredItemRepository structItemRepos = applicationContext.getBean(StructuredItemRepository.class);
+
         pdfAttProvider = new PdfAttProvider(applicationContext);
-        outputModel = new OutputModel(staticDataService, fundTreeProvider, nodeCacheService, institutionRepository,
+        outputModel = new OutputModel(staticDataService, elzaLocale,
+                fundTreeProvider, nodeCacheService, institutionRepository,
                 apDescRepository, apNameRepository, apEidRepository,
-                pdfAttProvider);
+                pdfAttProvider, structObjRepos, structItemRepos);
         pdfAttProvider.setOutput(outputModel);
     }
 

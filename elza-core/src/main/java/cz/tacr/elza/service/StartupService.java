@@ -59,8 +59,12 @@ public class StartupService implements SmartLifecycle {
     private final BulkActionConfigManager bulkActionConfigManager;
 
     private final EntityManager em;
-    
+
     private final ApNameRepository apNameRepository;
+
+    private final AccessPointService accessPointService;
+
+    private final AccessPointGeneratorService accessPointGeneratorService;
 
     private boolean running;
 
@@ -75,7 +79,9 @@ public class StartupService implements SmartLifecycle {
                           StaticDataService staticDataService,
                           BulkActionConfigManager bulkActionConfigManager,
                           EntityManager em,
-                          ApNameRepository apNameRepository) {
+                          ApNameRepository apNameRepository,
+                          final AccessPointService accessPointService,
+                          final AccessPointGeneratorService accessPointGeneratorService) {
         this.nodeRepository = nodeRepository;
         this.fundVersionRepository = fundVersionRepository;
         this.updateConformityInfoService = updateConformityInfoService;
@@ -87,6 +93,8 @@ public class StartupService implements SmartLifecycle {
         this.bulkActionConfigManager = bulkActionConfigManager;
         this.apNameRepository = apNameRepository;
         this.em = em;
+        this.accessPointService = accessPointService;
+        this.accessPointGeneratorService = accessPointGeneratorService;
     }
 
     @Autowired
@@ -101,7 +109,7 @@ public class StartupService implements SmartLifecycle {
         ArrDataRecordRef.setFulltextProvider(fulltextProvider);
         ArrDataPartyRef.setFulltextProvider(fulltextProvider);
         startInTransaction();
-        
+
         running = true;
         logger.info("Elza startup finished");
     }
@@ -144,11 +152,27 @@ public class StartupService implements SmartLifecycle {
         outputServiceInternal.init();
         clearBulkActions();
         clearTempStructureData();
+        clearTempAccessPoint();
         bulkActionConfigManager.load();
         syncNodeCacheService();
         startNodeValidation();
         structureDataService.startGenerator();
         runQueuedRequests();
+        runQueuedAccessPoints();
+    }
+
+    /**
+     * Provede spuštění AP pro revalidaci.
+     */
+    private void runQueuedAccessPoints() {
+        accessPointGeneratorService.restartQueuedAccessPoints();
+    }
+
+    /**
+     * Provede vymazání nepoužitých dočasných AP všechně návazných dat.
+     */
+    private void clearTempAccessPoint() {
+        accessPointService.removeTempAccessPoints();
     }
 
     /**

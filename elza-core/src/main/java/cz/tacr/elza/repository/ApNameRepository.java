@@ -31,11 +31,22 @@ public interface ApNameRepository extends ElzaJpaRepository<ApName, Integer> {
 
     @Query("SELECT apn from par_party p JOIN p.accessPoint ap JOIN ap.names apn WHERE p.partyId = ?1 AND apn.preferredName = true AND apn.deleteChangeId is null")
     ApName findPreferredNameByPartyId(Integer partyId);
-    
+
     @Modifying
     @Query("UPDATE ap_name name SET name.deleteChange=?2 WHERE name.accessPointId IN ?1 AND name.deleteChangeId IS NULL")
     int invalidateByAccessPointIdIn(Collection<Integer> apIds, ApChange deleteChange);
 
     @Query("SELECT COUNT(n) FROM ap_name n JOIN n.accessPoint ap WHERE ap.scope = :scope AND LOWER(n.fullName) = LOWER(:fullName) AND n.deleteChangeId IS NULL")
     int countUniqueName(@Param("fullName") String fullName, @Param("scope") ApScope scope);
+
+    @Query("SELECT n FROM ap_name n WHERE n.objectId = :objectId AND n.deleteChangeId IS NULL")
+    ApName findByObjectId(@Param("objectId") Integer objectId);
+
+    @Modifying
+    @Query("DELETE FROM ap_name n WHERE n.state = 'TEMP'")
+    void removeTemp();
+
+    @Modifying
+    @Query("DELETE FROM ap_name n WHERE n.state = 'TEMP' AND n.accessPoint = :accessPoint")
+    void removeTemp(@Param("accessPoint") ApAccessPoint accessPoint);
 }

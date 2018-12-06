@@ -44,12 +44,6 @@ public class StructureItemTypesRules extends Rules {
     @Autowired
     private StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
 
-    @Autowired
-    private PackageRepository packageRepository;
-
-    @Autowired
-    private PackageDependencyRepository packageDependencyRepository;
-
     /**
      * Spuštění zpracování pravidel.
      *
@@ -91,34 +85,7 @@ public class StructureItemTypesRules extends Rules {
 
         List<RulPackage> sortedPackages = getSortedPackages(rulPackages);
 
-        rulStructureExtensionDefinitions.sort((o1, o2) -> {
-
-            RulPackage p1 = o1.getRulPackage();
-            RulPackage p2 = o2.getRulPackage();
-
-            // 1. seřadit podle řazení balíčků
-            Integer ae1 = sortedPackages.indexOf(p1);
-            Integer ae2 = sortedPackages.indexOf(p2);
-
-            int pComp = ae1.compareTo(ae2);
-            if (pComp != 0) {
-                return pComp;
-            } else {
-
-                // 2. seřadit podle priority
-                Integer pr1 = o1.getPriority();
-                Integer pr2 = o1.getPriority();
-
-                int prComp = pr1.compareTo(pr2);
-                if (prComp != 0) {
-                    return prComp;
-                } else {
-
-                    // 2. seřadit podle id
-                    return o1.getStructureExtensionDefinitionId().compareTo(o2.getStructureExtensionDefinitionId());
-                }
-            }
-        });
+        sortDefinitionByPackages(rulStructureExtensionDefinitions, sortedPackages);
 
         for (RulStructureExtensionDefinition rulStructureExtensionDefinition : rulStructureExtensionDefinitions) {
             // TODO: Consider using structureType in getDroolsFile?
@@ -129,16 +96,6 @@ public class StructureItemTypesRules extends Rules {
         }
 
         return rulDescItemTypeExtList;
-    }
-
-    private List<RulPackage> getSortedPackages(final List<RulPackage> packages) {
-        List<RulPackage> packagesAll = packageRepository.findAll();
-        PackageUtils.Graph<RulPackage> g = new PackageUtils.Graph<>(packagesAll.size());
-        List<RulPackageDependency> dependencies = packageDependencyRepository.findAll();
-        dependencies.forEach(d -> g.addEdge(d.getRulPackage(), d.getDependsOnPackage()));
-        List<RulPackage> rulPackages = g.topologicalSort();
-        rulPackages.retainAll(packages);
-        return rulPackages;
     }
 
 }
