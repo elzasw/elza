@@ -2,6 +2,8 @@ package cz.tacr.elza.common;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Helper methods to prepare name of downloaded file
  * and set headers
@@ -19,7 +21,7 @@ public abstract class FileDownload {
     public static void addContentDispositionAsAttachment(HttpServletResponse response, String srcFilename) {
         StringBuilder sb = new StringBuilder();
         String incorrectChars = ",;\"`'\\/:+*|!<>";
-        char[] chars = srcFilename.toCharArray();
+        char[] chars = StringUtils.stripAccents(srcFilename).toCharArray();
         boolean onlyWhitespaces = true;
         for (char c : chars) {
             if (incorrectChars.indexOf(c) >= 0) {
