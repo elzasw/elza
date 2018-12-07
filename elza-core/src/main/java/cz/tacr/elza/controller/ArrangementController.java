@@ -40,6 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.factory.ApFactory;
@@ -544,7 +545,7 @@ public class ArrangementController {
         }
 
         OutputStream os = response.getOutputStream();
-        response.setHeader("Content-Disposition", "attachment; filename=desc-item-" + descItemObjectId + ".csv");
+        FileDownload.addContentDispositionAsAttachment(response, "desc-item-" + descItemObjectId + ".csv");
         arrIOService.csvExport(descItem, os);
         os.close();
     }
@@ -577,7 +578,7 @@ public class ArrangementController {
 
         //outputItem = itemService.loadData(outputItem);
         OutputStream os = response.getOutputStream();
-        response.setHeader("Content-Disposition", "attachment; filename=output-item-" + descItemObjectId + ".csv");
+        FileDownload.addContentDispositionAsAttachment(response, "output-item-" + descItemObjectId + ".csv");
         arrIOService.csvExport(outputItem, os);
         os.close();
     }

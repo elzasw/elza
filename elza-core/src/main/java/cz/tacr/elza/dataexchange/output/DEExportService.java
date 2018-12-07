@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.net.HttpHeaders;
 
+import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.controller.DEExportController.DEExportParamsVO;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -169,7 +170,7 @@ public class DEExportService {
         // file headers
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType(MediaType.APPLICATION_XML_VALUE);
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=elza-data.xml");
+        FileDownload.addContentDispositionAsAttachment(response, "elza-data.xml");
 
         // cache headers
         response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
