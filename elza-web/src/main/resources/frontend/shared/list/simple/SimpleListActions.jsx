@@ -5,6 +5,7 @@ export const RESPONSE = 'list.simple.response';
 export const FILTER = 'list.simple.filter';
 export const INVALIDATE = 'list.simple.invalidate';
 export const SELECT_PARENT = 'list.simple.selectParent';
+export const RESET = 'list.simple.reset';
 
 /**
  * Zneplatnění dat.
@@ -31,6 +32,18 @@ export function filter(area, filter) {
         type: FILTER,
         area,
         filter,
+    }
+}
+
+/**
+ * Reset store.
+ * @param area oblast
+ * @returns {{type: string, area: *, filter: *}}
+ */
+export function reset(area) {
+    return {
+        type: RESET,
+        area
     }
 }
 
@@ -89,6 +102,7 @@ export function is(action) {
         case REQUEST:
         case RESPONSE:
         case INVALIDATE:
+        case RESET:
             return true;
         default:
             return false;

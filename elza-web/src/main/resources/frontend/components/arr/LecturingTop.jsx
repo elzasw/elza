@@ -28,7 +28,8 @@ const basicOptionMap = (i) => <option key={i.id} value={i.id}>{i.name}</option>;
 class LecturingTop extends React.Component {
 
     state = {
-        issueListId: null
+        issueListId: null,
+        fundId: null
     };
 
     static propTypes = {
@@ -39,9 +40,12 @@ class LecturingTop extends React.Component {
         this.props.dispatch(issueTypesActions.fetchIfNeeded());
         this.props.dispatch(issueStatesActions.fetchIfNeeded());
         this.props.dispatch(issuesActions.protocols.fetchIfNeeded(this.props.fund.id));
+        const fundId = this.props.issueProtocols.filter.fundId;
         const issueListId = this.props.issueProtocols.filter.issueListId;
-        this.setState({issueListId});
-        if (issueListId) {
+        if (fundId !== null && fundId !== this.props.fund.id) {
+            this.props.dispatch(issuesActions.list.reset());
+        } else if (issueListId) {
+            this.setState({issueListId});
             this.props.dispatch(issuesActions.list.fetchIfNeeded(issueListId));
         }
     }
@@ -51,10 +55,13 @@ class LecturingTop extends React.Component {
         nextProps.dispatch(issueTypesActions.fetchIfNeeded());
         nextProps.dispatch(issueStatesActions.fetchIfNeeded());
         nextProps.dispatch(issuesActions.protocols.fetchIfNeeded(this.props.fund.id));
+        if (nextProps.fund.id !== this.props.fund.id) {
+            this.props.dispatch(issuesActions.list.reset());
+        }
         if (nextProps.issueProtocols.fetched && nextProps.issueProtocols.count > 0) {
             if (!issueListId) {
                 const newIssueListId = nextProps.issueProtocols.rows[0].id;
-                this.selectIssueList(newIssueListId);
+                this.selectIssueList(newIssueListId, nextProps.fund.id);
             } else {
                 nextProps.dispatch(issuesActions.protocol.fetchIfNeeded(issueListId));
                 nextProps.dispatch(issuesActions.list.fetchIfNeeded(issueListId));
@@ -105,10 +112,10 @@ class LecturingTop extends React.Component {
         this.props.dispatch(issuesActions.detail.select(issueId));
     };
 
-    selectIssueList = (issueListId) => {
+    selectIssueList = (issueListId, fundId) => {
         this.setState({issueListId}, () => {
             this.props.dispatch(issuesActions.protocol.fetchIfNeeded(issueListId));
-            this.props.dispatch(issuesActions.protocols.filter({issueListId}));
+            this.props.dispatch(issuesActions.protocols.filter({issueListId, fundId}));
             this.props.dispatch(issuesActions.list.fetchIfNeeded(issueListId));
         });
     };
@@ -150,7 +157,7 @@ class LecturingTop extends React.Component {
                     <Button bsStyle="action" className="pull-right" disabled={!issueListId} onClick={this.download}><Icon glyph='fa-download' /></Button>
                 </div>
             </div>
-            <FormControl componentClass={"select"} name={"protocol"} onChange={({target: {value}}) => this.selectIssueList(value)} value={issueListId}>
+            <FormControl componentClass={"select"} name={"protocol"} onChange={({target: {value}}) => this.selectIssueList(value, fund.id)} value={issueListId}>
                 {issueProtocols.fetched && issueProtocols.count === 0 && <option value={null} />}
                 {issueProtocols.fetched && issueProtocols.rows.map(basicOptionMap)}
             </FormControl>

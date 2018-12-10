@@ -26,7 +26,8 @@ export const protocol = {
 export const list = {
     fetchIfNeeded: (parent, force = false) => SimpleListActions.fetchIfNeeded(AREA_LIST, parent, (parent, filter) => WebApi.findIssueByIssueList(parent, filter.state, filter.type).then(dataToRowsHelper), force),
     filter:(filter) => SimpleListActions.filter(AREA_LIST, filter),
-    invalidate: (id) => SimpleListActions.invalidate(AREA_LIST, id)
+    invalidate: (id) => SimpleListActions.invalidate(AREA_LIST, id),
+    reset: () => SimpleListActions.reset(AREA_LIST)
 };
 
 // Detail připomínky
