@@ -452,7 +452,7 @@ public class ApFactory {
                 item = new ApItemAPFragmentRefVO(apItem);
                 break;
             default:
-                throw new NotImplementedException("NenÌ implementov·no: " + dataType.getCode());
+                throw new NotImplementedException("Nen√≠ implementov√°no: " + dataType.getCode());
         }
 
         return item;
