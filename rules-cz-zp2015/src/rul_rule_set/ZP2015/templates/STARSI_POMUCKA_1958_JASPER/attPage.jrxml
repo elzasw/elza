@@ -3,25 +3,16 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="intro" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="7dadc22d-1241-4907-8921-52170562f815">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="org.apache.commons.lang.StringUtils"/>
-	<parameter name="cnt" class="java.lang.Integer" isForPrompting="false">
-		<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
-	</parameter>
 	<field name="attPage" class="java.lang.String"/>
-	<variable name="PG_COUNT" class="java.lang.Integer" calculation="Count"/>
-	<title>
-		<band height="17"/>
-	</title>
 	<detail>
-		<band height="42">
+		<band height="802">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField>
-				<reportElement x="0" y="0" width="555" height="30" uuid="91474ff6-ed17-4852-aaf5-7f3fa3862aad"/>
+				<reportElement x="0" y="0" width="555" height="802" uuid="91474ff6-ed17-4852-aaf5-7f3fa3862aad">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
 				<textFieldExpression><![CDATA[$F{attPage}]]></textFieldExpression>
 			</textField>
-			<break>
-				<reportElement x="0" y="37" width="98" height="1" uuid="8500619d-713c-4134-9603-327de061cf60">
-					<printWhenExpression><![CDATA[($P{cnt}+1)<$V{PAGE_NUMBER}]]></printWhenExpression>
-				</reportElement>
-			</break>
 		</band>
 	</detail>
 </jasperReport>
