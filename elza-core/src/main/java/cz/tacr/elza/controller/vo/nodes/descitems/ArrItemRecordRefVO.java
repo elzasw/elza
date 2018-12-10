@@ -5,11 +5,13 @@ import java.util.Objects;
 
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
@@ -17,7 +19,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 /**
  * VO hodnoty atributu - record.
  *
- * @author Martin Šlapa
  * @since 8.1.2016
  */
 public class ArrItemRecordRefVO extends ArrItemVO {
@@ -28,6 +29,16 @@ public class ArrItemRecordRefVO extends ArrItemVO {
     private ApAccessPointVO record;
 
     private Integer value;
+
+    public ArrItemRecordRefVO() {
+
+    }
+
+    public ArrItemRecordRefVO(ArrItem item, ApAccessPointVO value) {
+        super(item);
+        this.record = value;
+        this.value = record.getId();
+    }
 
     public ApAccessPointVO getRecord() {
         return record;
@@ -66,5 +77,21 @@ public class ArrItemRecordRefVO extends ArrItemVO {
 
         data.setDataType(DataType.RECORD_REF.getEntity());
         return data;
+    }
+
+    public static ArrItemRecordRefVO newInstance(ArrItem item, ApFactory apFactory) {
+        ArrData data = item.getData();
+        ApAccessPointVO value = null;
+        if (data != null) {
+            if (!(data instanceof ArrDataRecordRef)) {
+                throw new BusinessException("Inconsistent data type", BaseCode.PROPERTY_IS_INVALID)
+                        .set("dataClass", item.getClass());
+            }
+            ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) data;
+            value = apFactory.createVO(dataRecordRef.getRecord());
+
+        }
+        ArrItemRecordRefVO vo = new ArrItemRecordRefVO(item, value);
+        return vo;
     }
 }
