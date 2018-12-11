@@ -247,5 +247,12 @@
       <sql>UPDATE db_hibernate_sequences SET next_val = (select max(name_id) from ap_name)+20 WHERE sequence_name = 'ap_name|name_id'</sql>
       <sql>UPDATE db_hibernate_sequences SET next_val = (select max(description_id) from ap_description)+20 WHERE sequence_name = 'ap_description|description_id'</sql>
     </changeSet>
+    <!-- Rename party types -->
+    <changeSet id="20181120234102" author="ppyt">
+        <update tableName="par_party_type" ><column name="name" value="OSOBA" /><column name="description" value="Osoba" /><where>code = 'PERSON'</where></update>
+        <update tableName="par_party_type" ><column name="name" value="ROD, RODINA" /><column name="description" value="Rod, rodina" /><where>code = 'DYNASTY'</where></update>
+        <update tableName="par_party_type" ><column name="name" value="KORPORACE" /><column name="description" value="Korporace" /><where>code='GROUP_PARTY'</where></update>
+        <update tableName="par_party_type" ><column name="name" value="UDÁLOST" /><column name="description" value="Dočasná korporace - událost" /><where>code='EVENT'</where></update>
+    </changeSet>
 
 </databaseChangeLog>
