@@ -142,40 +142,29 @@ then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
-// Pokud je rodič složka, tak může být složka nebo jednotlivost pokud sourozenec neexistuje
-rule "Atribut ZP2015_LEVEL_TYPE u rodice je ZP2015_LEVEL_FOLDER, nema sourozence"
+// Pokud je rodič složka a není složka jednotlivostí, tak může mít podsložku nebo jednotlivost
+rule "Atribut ZP2015_LEVEL_TYPE u rodice je ZP2015_LEVEL_FOLDER a není ZP2015_FOLDER_SINGLE_TYPE, tak může mít podsložku"
 no-loop
-when
+when    
+    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $parentDescItems   
+    // rodic neni slozka jednotlivosti    
+    not( DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_SINGLE_TYPE" ) from $parentDescItems )
+    
     $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
-    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingBefore==null && siblingAfter==null)
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $parentDescItems
-    $itemSpec : RulItemSpecExt(code == "ZP2015_LEVEL_FOLDER" || code == "ZP2015_LEVEL_ITEM") from $itemType.rulItemSpecList
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
-// Pokud je rodič složka a má sourozence pred, tak je stejného typu jako oni
-rule "Atribut ZP2015_LEVEL_TYPE u rodice je ZP2015_LEVEL_FOLDER, ma sourozence pred"
+// Pokud je rodič složka jednotlivosti, tak může být jen jednotlivost
+rule "Atribut ZP2015_LEVEL_TYPE u rodice je ZP2015_LEVEL_FOLDER"
 no-loop
 when
     $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
-    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingBefore!=null && $siblingDescItems: siblingBefore.descItems)
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $parentDescItems
-    DescItem(type=="ZP2015_LEVEL_TYPE" && $specCode: specCode) from $siblingDescItems
-    $itemSpec : RulItemSpecExt(code == $specCode) from $itemType.rulItemSpecList
-then
-    $itemSpec.setType(RulItemSpec.Type.REQUIRED);
-end
-
-// Pokud je rodič složka a má sourozence za, tak je stejného typu jako oni
-rule "Atribut ZP2015_LEVEL_TYPE u rodice je ZP2015_LEVEL_FOLDER, ma sourozence za"
-no-loop
-when
-    $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
-    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingAfter!=null && $siblingDescItems: siblingAfter.descItems)
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $parentDescItems
-    DescItem(type=="ZP2015_LEVEL_TYPE" && $specCode: specCode) from $siblingDescItems
-    $itemSpec : RulItemSpecExt(code == $specCode) from $itemType.rulItemSpecList
+    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
+    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_SINGLE_TYPE" ) from $parentDescItems
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_LEVEL_ITEM") ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
 end
