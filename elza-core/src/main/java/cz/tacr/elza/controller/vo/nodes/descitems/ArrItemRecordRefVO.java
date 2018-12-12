@@ -37,7 +37,9 @@ public class ArrItemRecordRefVO extends ArrItemVO {
     public ArrItemRecordRefVO(ArrItem item, ApAccessPointVO value) {
         super(item);
         this.record = value;
-        this.value = record.getId();
+        if (record != null) {
+            this.value = record.getId();
+        }
     }
 
     public ApAccessPointVO getRecord() {
