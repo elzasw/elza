@@ -243,4 +243,12 @@
        <dropTable tableName="ap_variant_record"/>
     </changeSet>
 
+    <changeSet id="20181210140000" author="marek">
+        <addNotNullConstraint
+            tableName="ap_access_point"
+            columnName="state"
+            columnDataType="nvarchar(50)"
+            defaultNullValue="OK"/>
+    </changeSet>
+
 </databaseChangeLog>
