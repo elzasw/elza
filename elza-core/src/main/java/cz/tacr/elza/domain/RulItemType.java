@@ -17,8 +17,6 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
-import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.domain.integer.DisplayType;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.annotations.Cache;
@@ -30,6 +28,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.integer.DisplayType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 
 
@@ -51,6 +51,8 @@ public class RulItemType {
     public static final TypeReference<List<ElzaColumn>> ELZA_COLUMNS = new TypeReference<List<ElzaColumn>>(){};
 
     public static final TypeReference<DisplayType> DISPLAY_TYPE = new TypeReference<DisplayType>(){};
+
+    public static final String FIELD_VIEW_ORDER = "viewOrder";
 
     @Id
     @GeneratedValue

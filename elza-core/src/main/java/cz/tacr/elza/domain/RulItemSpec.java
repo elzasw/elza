@@ -41,6 +41,8 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class RulItemSpec {
 
+    public static final String FIELD_VIEW_ORDER = "viewOrder";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
