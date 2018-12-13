@@ -15,7 +15,6 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.xml.stream.XMLStreamException;
 
-import cz.tacr.elza.service.*;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
@@ -70,6 +69,13 @@ import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
+import cz.tacr.elza.service.AccessPointDataService;
+import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.GroovyScriptService;
+import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.StructObjValueService;
+import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
 /**
@@ -233,7 +239,7 @@ public class DEImportService {
      */
     private ImportContext initContext(DEImportParams params, Session session) {
         // create AP change holder
-        ApChangeHolder apChangeHolder = new ApChangeHolder(apDataService);
+        ApChangeHolder apChangeHolder = new ApChangeHolder(apDataService, session);
 
         // init storage manager
         StorageManager storageManager = new StorageManager(params.getMemoryScoreLimit(), session, apChangeHolder,
