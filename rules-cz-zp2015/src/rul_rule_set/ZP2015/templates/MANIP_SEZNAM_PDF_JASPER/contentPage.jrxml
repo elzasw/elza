@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.4.0.final using JasperReports Library version 6.4.1  -->
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="contentPage" language="groovy" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="70" bottomMargin="70" uuid="71cc9236-0f65-4a0a-bb66-bbfe841a66c1">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
@@ -720,7 +720,7 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 				</reportElement>
 				<frame>
 					<reportElement style="ItemIds" positionType="Float" x="0" y="0" width="455" height="5" isRemoveLineWhenBlank="true" uuid="24c7a650-6a35-4a55-8bcc-4acfdd4bd53a">
-						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					</reportElement>
 					<textField isStretchWithOverflow="true" pattern="">
@@ -734,14 +734,16 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 	$V{rootRef} : 
 	$F{node}.getSingleItemValue("ZP2015_UNIT_ID") + " " + $F{node}.getSingleItemValue("ZP2015_INV_CISLO")]]></textFieldExpression>
 					</textField>
-					<textField isStretchWithOverflow="true" pattern="">
+					<textField isStretchWithOverflow="true" pattern="" bookmarkLevel="1">
 						<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="151" y="0" width="149" height="0" isRemoveLineWhenBlank="true" backcolor="#FF0400" uuid="f5623b8e-6f6f-42a5-be27-6f253dd9c537">
 							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+							<printWhenExpression><![CDATA[$F{depth}==1]]></printWhenExpression>
 						</reportElement>
 						<textElement textAlignment="Center" markup="html">
 							<font pdfEncoding="Cp1250"/>
 						</textElement>
 						<textFieldExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_SERIAL_NUMBER")]]></textFieldExpression>
+						<anchorNameExpression><![CDATA["Jednotky popisu"]]></anchorNameExpression>
 					</textField>
 					<textField isStretchWithOverflow="true" pattern="">
 						<reportElement style="Item" positionType="Float" x="300" y="0" width="149" height="0" isRemoveLineWhenBlank="true" backcolor="#FF0400" uuid="8dc98e28-c13b-4dc6-8543-46ddcc621a79"/>
@@ -749,6 +751,27 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 							<font pdfEncoding="Cp1250"/>
 						</textElement>
 						<textFieldExpression><![CDATA[$P{storageFormatter}.format($F{node})]]></textFieldExpression>
+					</textField>
+					<textField isStretchWithOverflow="true" pattern="" bookmarkLevel="2">
+						<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="151" y="0" width="149" height="0" isRemoveLineWhenBlank="true" backcolor="#FF0400" uuid="5eeb55b5-e4e3-4410-9c3d-22e48e20a88f">
+							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+							<printWhenExpression><![CDATA[$F{depth}==2]]></printWhenExpression>
+						</reportElement>
+						<textElement textAlignment="Center" markup="html">
+							<font pdfEncoding="Cp1250"/>
+						</textElement>
+						<textFieldExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_SERIAL_NUMBER")]]></textFieldExpression>
+						<anchorNameExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_TITLE")]]></anchorNameExpression>
+					</textField>
+					<textField isStretchWithOverflow="true" pattern="">
+						<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="151" y="0" width="149" height="0" isRemoveLineWhenBlank="true" backcolor="#FF0400" uuid="9361ed7b-e629-41d0-b55a-0bed00c6f76c">
+							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+							<printWhenExpression><![CDATA[$F{depth}>2]]></printWhenExpression>
+						</reportElement>
+						<textElement textAlignment="Center" markup="html">
+							<font pdfEncoding="Cp1250"/>
+						</textElement>
+						<textFieldExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_SERIAL_NUMBER")]]></textFieldExpression>
 					</textField>
 				</frame>
 				<textField isStretchWithOverflow="true" pattern="">
@@ -764,7 +787,7 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<printWhenExpression><![CDATA[$V{unitDate}.isEmpty()]]></printWhenExpression>
 				</reportElement>
-				<textField isStretchWithOverflow="true" bookmarkLevel="1">
+				<textField isStretchWithOverflow="true">
 					<reportElement style="Title" positionType="Float" mode="Transparent" x="0" y="0" width="455" height="4" isRemoveLineWhenBlank="true" backcolor="#FF0400" uuid="ca455b78-f786-469e-a192-7a3149b1d7e1">
 						<printWhenExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]></printWhenExpression>
 					</reportElement>
@@ -772,9 +795,8 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 						<font pdfEncoding=""/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{fund}.getName()]]></textFieldExpression>
-					<anchorNameExpression><![CDATA["Jednotky popisu"]]></anchorNameExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" bookmarkLevel="1">
+				<textField isStretchWithOverflow="true">
 					<reportElement style="Title" positionType="Float" mode="Transparent" x="0" y="4" width="455" height="3" isRemoveLineWhenBlank="true" backcolor="#FFF200" uuid="9002ee86-d46d-4599-beea-cf2602a340b0">
 						<printWhenExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() <= 0]]></printWhenExpression>
 					</reportElement>
@@ -782,7 +804,6 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 						<font pdfEncoding=""/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_TITLE")]]></textFieldExpression>
-					<anchorNameExpression><![CDATA["Jednotky popisu"]]></anchorNameExpression>
 				</textField>
 			</frame>
 			<frame>
@@ -795,7 +816,7 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 						<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					</reportElement>
-					<textField isStretchWithOverflow="true" bookmarkLevel="1">
+					<textField isStretchWithOverflow="true">
 						<reportElement style="Title" positionType="Float" mode="Transparent" x="0" y="0" width="320" height="4" isRemoveLineWhenBlank="true" backcolor="#FF0400" uuid="ca455b78-f786-469e-a192-7a3149b1d7e1">
 							<printWhenExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]></printWhenExpression>
 						</reportElement>
@@ -803,9 +824,8 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 							<font pdfEncoding=""/>
 						</textElement>
 						<textFieldExpression><![CDATA[$P{fund}.getName()]]></textFieldExpression>
-						<anchorNameExpression><![CDATA["Jednotky popisu"]]></anchorNameExpression>
 					</textField>
-					<textField isStretchWithOverflow="true" bookmarkLevel="1">
+					<textField isStretchWithOverflow="true">
 						<reportElement style="Title" positionType="Float" mode="Transparent" x="0" y="4" width="320" height="3" isRemoveLineWhenBlank="true" backcolor="#FFF200" uuid="9002ee86-d46d-4599-beea-cf2602a340b0">
 							<printWhenExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() <= 0]]></printWhenExpression>
 						</reportElement>
@@ -813,7 +833,6 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 							<font pdfEncoding=""/>
 						</textElement>
 						<textFieldExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_TITLE")]]></textFieldExpression>
-						<anchorNameExpression><![CDATA["Jednotky popisu"]]></anchorNameExpression>
 					</textField>
 				</frame>
 				<textField isStretchWithOverflow="true" pattern="">

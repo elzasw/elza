@@ -25,6 +25,7 @@ import cz.tacr.elza.print.AttPageProvider;
 import cz.tacr.elza.print.File;
 import cz.tacr.elza.print.Output;
 import cz.tacr.elza.print.item.Item;
+import cz.tacr.elza.print.item.ItemFileRef;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.attachment.AttachmentService;
 
@@ -50,11 +51,14 @@ public class PdfAttProvider implements AttPageProvider {
 
         final private File printFile;
 
+        final String attachmentName;
+
         private PDDocument pdfDoc;
 
-        public PdfFileInfo(final File printFile, final CloseablePathResource resource) {
+        public PdfFileInfo(final File printFile, final CloseablePathResource resource, final String attachmentName) {
             this.printFile = printFile;
             this.resource = resource;
+            this.attachmentName = attachmentName;
         }
 
         public int getPageCnt() {
@@ -94,6 +98,10 @@ public class PdfAttProvider implements AttPageProvider {
 
         }
 
+        public String getName() {
+            return attachmentName;
+        }
+
     }
 
     /**
@@ -120,10 +128,11 @@ public class PdfAttProvider implements AttPageProvider {
 
             // get number of pages
             int pageCnt = fileInfo.getPageCnt();
+            String attachmentName = fileInfo.getName();
 
             // prepare placeholders
             for (int i = 0; i < pageCnt; i++) {
-                AttPagePlaceHolder attPlaceHolder = new AttPagePlaceHolder(item.getType().getCode());
+                AttPagePlaceHolder attPlaceHolder = new AttPagePlaceHolder(item.getType().getCode(), attachmentName, i);
                 pagePlaceHolders.add(attPlaceHolder);
             }
         }
@@ -176,13 +185,15 @@ public class PdfAttProvider implements AttPageProvider {
      * Create PDF file from attachment (if possible)
      * 
      * @param printFile
+     * @param name
+     *            Name of attachment
      * @return
      */
-    private PdfFileInfo createFileInfo(File printFile) {
+    private PdfFileInfo createFileInfo(File printFile, String name) {
         final DmsFile dmsFile = dmsService.getFile(printFile.getFileId());
         CloseablePathResource resource = attachmentService.generate(dmsFile, DmsService.MIME_TYPE_APPLICATION_PDF);
 
-        PdfFileInfo pdfFi = new PdfFileInfo(printFile, resource);
+        PdfFileInfo pdfFi = new PdfFileInfo(printFile, resource, name);
         pdfFi.init();
         return pdfFi;
     }
@@ -226,9 +237,13 @@ public class PdfAttProvider implements AttPageProvider {
             // item type have to be file ref
             Validate.isTrue(item.getType().getDataType() == DataType.FILE_REF,
                             "Item type has to be file-ref, itemTypeCode: {}", itemTypeCode);
+
+            ItemFileRef fileRef = (ItemFileRef) item;
+            String attachmentName = fileRef.getName();
+
             File printFile = item.getValue(File.class);
 
-            PdfFileInfo fileInfo = createFileInfo(printFile);
+            PdfFileInfo fileInfo = createFileInfo(printFile, attachmentName);
 
             atts.addAttachment(item, fileInfo);
         });

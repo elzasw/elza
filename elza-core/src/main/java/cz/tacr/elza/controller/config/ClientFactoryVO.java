@@ -30,6 +30,7 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.config.rules.GroupConfiguration;
@@ -1868,23 +1869,27 @@ public class ClientFactoryVO {
                                          final ArrRequest request,
                                          final boolean detail,
                                          final ArrFundVersion fundVersion) {
+        ArrRequest req = HibernateUtils.unproxy(request);
         ArrRequestVO requestVO;
         switch (request.getDiscriminator()) {
             case DIGITIZATION: {
                 requestVO = new ArrDigitizationRequestVO();
-                convertDigitizationRequest((ArrDigitizationRequest) request, (ArrDigitizationRequestVO) requestVO, countNodesRequestMap.get(request), nodesRequestMap.get(request));
+            convertDigitizationRequest((ArrDigitizationRequest) req, (ArrDigitizationRequestVO) requestVO,
+                                       countNodesRequestMap.get(request), nodesRequestMap.get(request));
                 break;
             }
 
             case DAO: {
                 requestVO = new ArrDaoRequestVO();
-                convertDaoRequest((ArrDaoRequest) request, (ArrDaoRequestVO) requestVO, countDaosRequestMap.get(request), daosRequestMap.get(request), detail, fundVersion);
+            convertDaoRequest((ArrDaoRequest) req, (ArrDaoRequestVO) requestVO, countDaosRequestMap.get(request),
+                              daosRequestMap.get(request), detail, fundVersion);
                 break;
             }
 
             case DAO_LINK: {
                 requestVO = new ArrDaoLinkRequestVO();
-                convertDaoLinkRequest((ArrDaoLinkRequest) request, (ArrDaoLinkRequestVO) requestVO, false, fundVersion, codeTreeNodeClientMap);
+            convertDaoLinkRequest((ArrDaoLinkRequest) req, (ArrDaoLinkRequestVO) requestVO, false, fundVersion,
+                                  codeTreeNodeClientMap);
                 break;
             }
 
@@ -1897,19 +1902,20 @@ public class ClientFactoryVO {
 
     private void prepareRequest(final Set<ArrDigitizationRequest> requestForNodes, final Set<ArrDaoRequest> requestForDaos,
                                 final Set<ArrDaoLinkRequest> requestForDaoLinks, final ArrRequest request) {
+        ArrRequest req = HibernateUtils.unproxy(request);
         switch (request.getDiscriminator()) {
             case DIGITIZATION: {
-                requestForNodes.add((ArrDigitizationRequest) request);
+            requestForNodes.add((ArrDigitizationRequest) req);
                 break;
             }
 
             case DAO: {
-                requestForDaos.add((ArrDaoRequest) request);
+            requestForDaos.add((ArrDaoRequest) req);
                 break;
             }
 
             case DAO_LINK: {
-                requestForDaoLinks.add((ArrDaoLinkRequest) request);
+            requestForDaoLinks.add((ArrDaoLinkRequest) req);
                 break;
             }
 
