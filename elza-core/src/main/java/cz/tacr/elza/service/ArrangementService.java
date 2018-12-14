@@ -39,6 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
@@ -68,6 +69,7 @@ import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeConformity.State;
 import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulRuleSet;
@@ -1395,6 +1397,22 @@ public class ArrangementService {
             }
         }
         return Collections.emptyMap();
+    }
+
+    public Collection<Integer> findNodeIdsByStructuredObjectId(Integer structuredObjectId) {
+        return nodeRepository.findNodeIdsByStructuredObjectIds(Collections.singletonList(structuredObjectId));
+    }
+
+    public Collection<Integer> findNodeIdsByStructuredObjectIds(List<Integer> structuredObjectIds) {
+        if (structuredObjectIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<List<Integer>> idsParts = Lists.partition(structuredObjectIds, 1000);
+        Set<Integer> nodeIds = new HashSet<>(1000);
+        for (List<Integer> idsPart : idsParts) {
+            nodeIds.addAll(nodeRepository.findNodeIdsByStructuredObjectIds(idsPart));
+        }
+        return nodeIds;
     }
 
     /**

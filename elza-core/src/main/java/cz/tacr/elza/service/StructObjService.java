@@ -60,7 +60,9 @@ import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
 import cz.tacr.elza.repository.StructuredTypeRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 
 /**
  * Servisní třída pro práci se strukturovanými datovými typy.
@@ -1079,6 +1081,11 @@ public class StructObjService {
                 structureDataIds,
                 null,
                 null));
+
+        Collection<Integer> nodeIds = arrangementService.findNodeIdsByStructuredObjectIds(structureDataIds);
+        if (!nodeIds.isEmpty()) {
+            notificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundVersion.getFundVersionId(), nodeIds.toArray(new Integer[0])));
+        }
     }
 
     /**
