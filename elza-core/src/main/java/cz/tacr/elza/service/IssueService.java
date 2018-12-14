@@ -17,16 +17,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
-import com.google.common.eventbus.Subscribe;
-import cz.tacr.elza.EventBusListener;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.packageimport.PackageService;
-import cz.tacr.elza.packageimport.xml.SettingFundIssues;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.event.CacheInvalidateEvent;
-import cz.tacr.elza.service.vo.WfConfig;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.lang3.StringUtils;
@@ -38,14 +28,42 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.google.common.eventbus.Subscribe;
+
+import cz.tacr.elza.EventBusListener;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.WfComment;
+import cz.tacr.elza.domain.WfIssue;
+import cz.tacr.elza.domain.WfIssueList;
+import cz.tacr.elza.domain.WfIssueState;
+import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingFundIssues;
+import cz.tacr.elza.repository.SettingsRepository;
+import cz.tacr.elza.repository.WfCommentRepository;
+import cz.tacr.elza.repository.WfIssueListRepository;
+import cz.tacr.elza.repository.WfIssueRepository;
+import cz.tacr.elza.repository.WfIssueStateRepository;
+import cz.tacr.elza.repository.WfIssueTypeRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.vo.WfConfig;
 
 import static cz.tacr.elza.domain.UsrPermission.Permission;
 import static cz.tacr.elza.utils.CsvUtils.*;
@@ -315,7 +333,7 @@ public class IssueService {
 
         WfIssueState issueState = issueStateRepository.getStartState();
 
-        int number = issueRepository.getNumberMax(issueList.getIssueListId()).orElse(0) + 1;
+        int number = issueRepository.getNumberMaxByFundId(issueList.getFund().getFundId()).orElse(0) + 1;
 
         WfIssue issue = new WfIssue();
         issue.setIssueList(issueList);
