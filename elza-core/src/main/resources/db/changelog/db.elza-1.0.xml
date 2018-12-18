@@ -243,9 +243,10 @@
        <dropTable tableName="ap_variant_record"/>
     </changeSet>
     <changeSet id="20181120234101" author="ppyt">
+      <validCheckSum>7:f7564b9199d790ba5cb35f672ee76c1c</validCheckSum>
       <!-- Incorrect migration from 0.15 - shift ids -->
-      <sql>UPDATE db_hibernate_sequences SET next_val = (select max(name_id) from ap_name)+20 WHERE sequence_name = 'ap_name|name_id'</sql>
-      <sql>UPDATE db_hibernate_sequences SET next_val = (select max(description_id) from ap_description)+20 WHERE sequence_name = 'ap_description|description_id'</sql>
+      <sql>UPDATE db_hibernate_sequences SET next_val = (select coalesce( (select max(name_id)+20 from ap_name) , 1) ) WHERE sequence_name = 'ap_name|name_id'</sql>
+      <sql>UPDATE db_hibernate_sequences SET next_val = (select coalesce( (select max(description_id)+20 from ap_description), 1) ) WHERE sequence_name = 'ap_description|description_id'</sql>
     </changeSet>
     <!-- Rename party types -->
     <changeSet id="20181120234102" author="ppyt">
