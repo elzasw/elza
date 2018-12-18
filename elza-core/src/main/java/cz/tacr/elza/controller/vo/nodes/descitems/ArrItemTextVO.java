@@ -52,7 +52,7 @@ public class ArrItemTextVO extends ArrItemVO {
         if (data != null) {
             if (!(data instanceof ArrDataText)) {
                 throw new BusinessException("Inconsistent data type", BaseCode.PROPERTY_IS_INVALID)
-                        .set("dataClass", item.getClass());
+                        .set("dataClass", data.getClass());
             }
             ArrDataText dataText = (ArrDataText) data;
             value = dataText.getValue();
