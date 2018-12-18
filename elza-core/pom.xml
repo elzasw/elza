@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>elza</artifactId>
@@ -24,11 +25,11 @@
         <!-- END - Find bugs -->
 
         <!-- Dependency for javax - proper JDOC generation -->
-            <dependency>
-                <groupId>javax.interceptor</groupId>
-                <artifactId>javax.interceptor-api</artifactId>
-                <version>1.2</version>
-            </dependency>
+        <dependency>
+            <groupId>javax.interceptor</groupId>
+            <artifactId>javax.interceptor-api</artifactId>
+            <version>1.2</version>
+        </dependency>
 
         <!-- liquibase -->
         <dependency>
@@ -87,7 +88,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <!--<scope>provided</scope>-->
+            <!--<scope>provided</scope> -->
         </dependency>
         <dependency>
             <groupId>net.sourceforge.jtds</groupId>
@@ -131,8 +132,8 @@
             <artifactId>hibernate-ehcache</artifactId>
         </dependency>
         <dependency>
-           <groupId>org.hibernate</groupId>
-           <artifactId>hibernate-search-orm</artifactId>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-search-orm</artifactId>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -184,11 +185,19 @@
         <!-- HSQL: cannot be used due to lack of spatial extension (geometry) -->
         <!-- H2: recursive query with parameters is not supported -->
         <!-- H2 database for tests but can be used for releases -->
+		<!-- H2 v 197 requires Hibernate 5.4 and org.locationtech.jts 1.15.1+ -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>1.4.196</version>
         </dependency>
+        <!-- Required by H2 v 197 -->
+        <!-- <dependency>
+            <groupId>org.locationtech.jts</groupId>
+            <artifactId>jts-core</artifactId>
+            <version>1.15.1</version>
+        </dependency>-->
+        <!-- Required by H2 and HibernateSpetial -->
         <dependency>
             <groupId>org.opengeo</groupId>
             <artifactId>geodb</artifactId>
@@ -233,15 +242,15 @@
             <version>${geotools.version}</version>
         </dependency>
         <dependency>
-          <groupId>org.apache.lucene</groupId>
-          <artifactId>lucene-queryparser</artifactId>
-          <version>${hibernate.lucene.version}</version>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+            <version>${hibernate.lucene.version}</version>
         </dependency>
         <dependency>
-		    <groupId>org.apache.lucene</groupId>
-		    <artifactId>lucene-backward-codecs</artifactId>
-		    <version>${hibernate.lucene.version}</version>
-		</dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-backward-codecs</artifactId>
+            <version>${hibernate.lucene.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
@@ -266,9 +275,9 @@
             <artifactId>commons-io</artifactId>
         </dependency>
         <dependency>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-lang3</artifactId>
-          <version>3.5</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.5</version>
         </dependency>
 
         <!-- CXF -->
@@ -334,7 +343,7 @@
             <!-- Add test folder with source files for packages -->
             <testResource>
                 <directory>${basedir}/target/test-resources</directory>
-                <includes/>
+                <includes />
             </testResource>
             <testResource>
                 <directory>${project.basedir}/../package-cz-base/src</directory>
@@ -372,144 +381,52 @@
                 </executions>
             </plugin>
             <plugin>
-				<groupId>org.jvnet.jaxb2.maven2</groupId>
-				<artifactId>maven-jaxb2-plugin</artifactId>
-				<version>0.13.1</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<phase>generate-sources</phase>
-						<configuration>
-							<extension>true</extension>
-							<args>
-								<arg>-Xinheritance</arg>
-							</args>
-							<generateDirectory>${project.build.directory}/generated-sources/jaxb</generateDirectory>
-							<schemaDirectory>${project.basedir}/src/main/resources/schema</schemaDirectory>
-							<schemaIncludes>
-								<include>elza-schema-v2.xsd</include>
-							</schemaIncludes>
-							<bindingDirectory>${project.basedir}/src/main/resources/schema</bindingDirectory>
-							<bindingIncludes>
-								<include>elza-schema-v2-bindinds.xml</include>
-							</bindingIncludes>
-							<plugins>
-								<plugin>
-									<groupId>org.jvnet.jaxb2_commons</groupId>
-									<artifactId>jaxb2-basics</artifactId>
-									<version>1.11.1</version>
-								</plugin>
-							</plugins>
-						</configuration>
-					</execution>
-				</executions>
-				<dependencies>
-					<dependency>
-					    <groupId>com.sun.xml.bind</groupId>
-					    <artifactId>jaxb-xjc</artifactId>
-					    <version>2.2.7</version>
-					</dependency>
-					<dependency>
-					    <groupId>com.sun.xml.bind</groupId>
-					    <artifactId>jaxb-impl</artifactId>
-					    <version>2.2.7</version>
-					</dependency>
-				</dependencies>
-			</plugin>
-			<!-- Copy resources -->
-<!--			<plugin>
-			 <artifactId>maven-resources-plugin</artifactId>
-			 &lt;!&ndash; <version>3.0.2</version> &ndash;&gt;
-			 <executions>
-			   &lt;!&ndash; Copy test resources &ndash;&gt;
-			   <execution>
-			     <id>copy-package-cz-base</id>
-			     <phase>generate-test-resources</phase>
- 			     <goals>
-			       <goal>copy-resources</goal>
-			     </goals>
-			     <configuration>
-			       <outputDirectory>${project.basedir}/target/test-resources/package-cz-base</outputDirectory>
-			       <resources>
-			         <resource>
-			           <directory>${project.basedir}/../package-cz-base/src</directory>
-			           <includes />
-			         </resource>
-			       </resources>
-			     </configuration>
-			   </execution>
-               <execution>
-                 <id>copy-rules-cz-zp2015</id>
-                 <phase>generate-test-resources</phase>
-                 <goals>
-                   <goal>copy-resources</goal>
-                 </goals>
-                 <configuration>
-                   <outputDirectory>${project.basedir}/target/test-resources/rules-cz-zp2015</outputDirectory>
-                   <resources>
-                     <resource>
-                       <directory>${project.basedir}/../rules-cz-zp2015/src</directory>
-                       <includes />
-                     </resource>
-                   </resources>
-                 </configuration>
-               </execution>
-			 </executions>
-			</plugin>-->
-<!--             <plugin> -->
-<!--                 <groupId>org.codehaus.mojo</groupId> -->
-<!--                 <artifactId>jaxb2-maven-plugin</artifactId> -->
-<!--                 <version>2.2</version> -->
-<!--                 <executions> -->
-<!--                     <execution> -->
-<!--                         <id>xjc</id> -->
-<!--                         <goals> -->
-<!--                             <goal>xjc</goal> -->
-<!--                         </goals> -->
-<!--                     </execution> -->
-<!--                 </executions> -->
-<!--                 <configuration> -->
-<!--                     <sources> -->
-<!--                         <source>src/main/resources/interpi/interpi_schema.xsd</source> -->
-<!--                     </sources> -->
-<!--                     <target>2.1</target> -->
-<!--                     <packageName>cz.tacr.elza.interpi.ws.wo</packageName> -->
-<!--                 </configuration> -->
-<!--             </plugin> -->
-<!--             <plugin> -->
-<!--               <groupId>org.apache.cxf</groupId> -->
-<!--               <artifactId>cxf-codegen-plugin</artifactId> -->
-<!--               <version>${cxf.version}</version> -->
-<!--               <dependencies> -->
-<!--               <dependency> -->
-<!--                   <groupId>xerces</groupId> -->
-<!--                   <artifactId>xercesImpl</artifactId> -->
-<!--                   <version>2.9.1</version> -->
-<!--               </dependency> -->
-<!--               </dependencies> -->
-<!--               <executions> -->
-<!--                 <execution> -->
-<!--                   <id>generate-sources</id> -->
-<!--                   <phase>generate-sources</phase> -->
-<!--                   <configuration> -->
-<!--                     <sourceRoot>${project.build.directory}/generated-sources/interpi</sourceRoot> -->
-<!--                       <wsdlOptions> -->
-<!--                         <wsdlOption> -->
-<!--                           <wsdl>src/main/resources/interpi/interpi.ws.soap.wsdl</wsdl> -->
-<!--                           <packagenames> -->
-<!--                               <packagename>cz.tacr.elza.interpi.ws</packagename> -->
-<!--                           </packagenames> -->
-<!--                         </wsdlOption> -->
-<!--                       </wsdlOptions> -->
-<!--                   </configuration> -->
-<!--                   <goals> -->
-<!--                     <goal>wsdl2java</goal> -->
-<!--                   </goals> -->
-<!--                 </execution> -->
-<!--               </executions> -->
-<!--             </plugin> -->
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+                <version>0.13.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <extension>true</extension>
+                            <args>
+                                <arg>-Xinheritance</arg>
+                            </args>
+                            <generateDirectory>${project.build.directory}/generated-sources/jaxb</generateDirectory>
+                            <schemaDirectory>${project.basedir}/src/main/resources/schema</schemaDirectory>
+                            <schemaIncludes>
+                                <include>elza-schema-v2.xsd</include>
+                            </schemaIncludes>
+                            <bindingDirectory>${project.basedir}/src/main/resources/schema</bindingDirectory>
+                            <bindingIncludes>
+                                <include>elza-schema-v2-bindinds.xml</include>
+                            </bindingIncludes>
+                            <plugins>
+                                <plugin>
+                                    <groupId>org.jvnet.jaxb2_commons</groupId>
+                                    <artifactId>jaxb2-basics</artifactId>
+                                    <version>1.11.1</version>
+                                </plugin>
+                            </plugins>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-xjc</artifactId>
+                        <version>2.2.7</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
+                        <version>2.2.7</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
     </build>
 
