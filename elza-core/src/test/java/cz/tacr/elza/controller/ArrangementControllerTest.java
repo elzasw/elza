@@ -1,37 +1,8 @@
 package cz.tacr.elza.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.tacr.elza.controller.ArrangementController.CopySiblingResult;
-import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.filter.Filters;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.table.ElzaRow;
-import cz.tacr.elza.domain.table.ElzaTable;
-import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.service.ArrIOService;
-import cz.tacr.elza.service.FundLevelService;
-import cz.tacr.elza.service.vo.ChangesResult;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.csv.CSVRecord;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,7 +23,57 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.csv.CSVRecord;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import cz.tacr.elza.controller.ArrangementController.CopySiblingResult;
+import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
+import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ApTypeVO;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
+import cz.tacr.elza.controller.vo.ArrOutputExtVO;
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
+import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.OutputSettingsVO;
+import cz.tacr.elza.controller.vo.RulOutputTypeVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.filter.Filters;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.table.ElzaRow;
+import cz.tacr.elza.domain.table.ElzaTable;
+import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.service.ArrIOService;
+import cz.tacr.elza.service.FundLevelService;
+import cz.tacr.elza.service.vo.ChangesResult;
 
 public class ArrangementControllerTest extends AbstractControllerTest {
 
@@ -261,7 +282,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         outputs = getOutputs(fundVersion.getId());
         outputDefinition = outputs.get(0).getOutputDefinition();
 
-        ArrItemStringVO item = new ArrItemStringVO();
+        ArrItemTextVO item = new ArrItemTextVO();
         item.setValue("test1");
         RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_SCALE");
         ArrangementController.OutputItemResult outputItem = createOutputItem(item, fundVersion.getId(), typeVo.getId(), outputDefinition.getId(), outputDefinition.getVersion());
@@ -269,18 +290,19 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(itemCreated);
         assertNotNull(itemCreated.getDescItemObjectId());
         assertNotNull(itemCreated.getPosition());
-        assertTrue(itemCreated instanceof ArrItemStringVO);
-        assertTrue(((ArrItemStringVO) itemCreated).getValue().equals(item.getValue()));
+        assertTrue(itemCreated instanceof ArrItemTextVO);
+        ArrItemTextVO itemCreatedText = (ArrItemTextVO) itemCreated;
+        assertTrue(itemCreatedText.getValue().equals(item.getValue()));
 
-        ((ArrItemStringVO) itemCreated).setValue("xxx");
+        itemCreatedText.setValue("xxx");
         outputItem = updateOutputItem(itemCreated, fundVersion.getId(), outputItem.getParent().getVersion(), true);
 
         ArrItemVO itemUpdated = outputItem.getItem();
         assertNotNull(itemUpdated);
         assertNotNull(itemUpdated.getDescItemObjectId());
         assertNotNull(itemUpdated.getPosition());
-        assertTrue(itemUpdated instanceof ArrItemStringVO);
-        assertTrue(((ArrItemStringVO) itemUpdated).getValue().equals(((ArrItemStringVO) itemCreated).getValue()));
+        assertTrue(itemUpdated instanceof ArrItemTextVO);
+        assertTrue(((ArrItemTextVO) itemUpdated).getValue().equals(itemCreatedText.getValue()));
 
         ArrangementController.OutputFormDataNewVO outputFormData = getOutputFormData(outputItem.getParent().getId(), fundVersion.getId());
 
@@ -292,7 +314,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrItemVO itemDeleted = outputItem.getItem();
         Assert.assertNull(itemDeleted);
 
-        item = new ArrItemStringVO();
+        item = new ArrItemTextVO();
         item.setValue("test1");
         outputItem = createOutputItem(item, fundVersion.getId(), typeVo.getId(), outputDefinition.getId(), parent.getVersion());
         parent = outputItem.getParent();

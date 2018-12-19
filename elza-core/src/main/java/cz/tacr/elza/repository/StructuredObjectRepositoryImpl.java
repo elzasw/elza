@@ -145,8 +145,11 @@ public class StructuredObjectRepositoryImpl implements StructuredObjectRepositor
 
         
         rqBuilder.prepareQuery(em);
+        // Add always
         rqBuilder.setParameter("nodeIds", nodeIds);
-        rqBuilder.setParameter("structuredTypeId", structuredTypeId);
+        if (structuredTypeId != null) {
+            rqBuilder.setParameter("structuredTypeId", structuredTypeId);
+        }
         return rqBuilder.getQuery().getResultList();
     }
 

@@ -40,9 +40,8 @@ public class NameDispatcher extends NestedLoadDispatcher<ParPartyName> {
         // init references
         if (party.getPreferredNameId().equals(result.getPartyNameId())) {
             party.setPreferredName(result);
-        } else {
-            names.add(result);
         }
+        names.add(result);
     }
 
     @Override

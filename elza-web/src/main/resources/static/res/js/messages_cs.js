@@ -1284,7 +1284,7 @@ var messages = {
     "arr.functions.persistentSort.direction.asc": "Vzestupně",
     "arr.functions.persistentSort.direction": "Směr řazení",
     "arr.functions.persistentSort.direction.desc": "Sestupně",
-    "arr.functions.persistentSort.sortChildren": "Řadit nižží úrovně",
+    "arr.functions.persistentSort.sortChildren": "Řadit nižší úrovně",
     "arr.functions.persistentSort.items": "Prvky",
     "arr.functions.persistentSort.spec": "Specifikace",
     "arr.functions.persistentSort.noSelection.item": "Není vybrán prvek",

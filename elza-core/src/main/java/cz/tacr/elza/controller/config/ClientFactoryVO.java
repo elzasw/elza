@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.core.data.DataType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -31,6 +30,7 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.config.rules.GroupConfiguration;
@@ -107,6 +107,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -126,7 +127,6 @@ import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDaoRequestDao;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequestNode;
@@ -201,6 +201,7 @@ import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.SettingsService;
+import cz.tacr.elza.service.attachment.AttachmentService;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 
@@ -310,6 +311,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private StaticDataService staticDataService;
+
+    @Autowired
+    private AttachmentService attachmentService;
 
     /**
      * Vytvoření nastavení.
@@ -827,43 +831,56 @@ public class ClientFactoryVO {
         Assert.notNull(item, "Hodnota musí být vyplněna");
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
-        ArrItemVO itemVO;
+        ArrItemVO itemVO = null;
         ArrData data = item.getData();
-		String code = item.getItemType().getDataType().getCode();
-        if (data instanceof ArrDataText) {
-			switch (code) {
-                case "TEXT":
-                    itemVO = new ArrItemTextVO();
-                    ((ArrItemTextVO) itemVO).setValue(((ArrDataText)data).getValue());
-                    break;
-                case "FORMATTED_TEXT":
-                    itemVO = new ArrItemFormattedTextVO();
-                    ((ArrItemFormattedTextVO) itemVO).setValue(((ArrDataText)data).getValue());
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-        } else {
-            itemVO = mapper.map(data, ArrItemVO.class);
+        DataType dataType = DataType.fromId(item.getItemType().getDataTypeId()); //.getCode();
+        switch (dataType) {
+        case TEXT:
+            return ArrItemTextVO.newInstance(item);
+        case FORMATTED_TEXT:
+            return ArrItemFormattedTextVO.newInstance(item);
+        case FILE_REF:
+            return ArrItemFileRefVO.newInstance(item, this.attachmentService);
+        case ENUM:
+            return ArrItemEnumVO.newInstance(item);
+        case INT:
+            return ArrItemIntVO.newInstance(item);
+        case RECORD_REF:
+            return ArrItemRecordRefVO.newInstance(item, apFactory);
         }
 
+        // TODO: refactorize following code to the solution without mappers
+        if (data != null) {
+            itemVO = mapper.map(data, ArrItemVO.class);
+        }
         if (itemVO == null) {
-            switch (code) {
-                case "INT": itemVO = new ArrItemIntVO(); break;
-                case "STRING": itemVO = new ArrItemStringVO(); break;
-                case "TEXT": itemVO = new ArrItemTextVO(); break;
-                case "UNITDATE": itemVO = new ArrItemUnitdateVO(); break;
-                case "UNITID": itemVO = new ArrItemUnitidVO(); break;
-                case "FORMATTED_TEXT": itemVO = new ArrItemFormattedTextVO(); break;
-                case "COORDINATES": itemVO = new ArrItemCoordinatesVO(); break;
-                case "PARTY_REF": itemVO = new ArrItemPartyRefVO(); break;
-                case "RECORD_REF": itemVO = new ArrItemRecordRefVO(); break;
-                case "DECIMAL": itemVO = new ArrItemDecimalVO(); break;
-                case "STRUCTURED": itemVO = new ArrItemStructureVO(); break;
-                case "ENUM": itemVO = new ArrItemEnumVO(); break;
-                case "FILE_REF": itemVO = new ArrItemFileRefVO(); break;
-                case "JSON_TABLE": itemVO = new ArrItemJsonTableVO(); break;
-                default: throw  new NotImplementedException(code);
+            switch (dataType) {
+            case STRING:
+                itemVO = new ArrItemStringVO();
+                break;
+            case UNITDATE:
+                itemVO = new ArrItemUnitdateVO();
+                break;
+            case UNITID:
+                itemVO = new ArrItemUnitidVO();
+                break;
+            case COORDINATES:
+                itemVO = new ArrItemCoordinatesVO();
+                break;
+            case PARTY_REF:
+                itemVO = new ArrItemPartyRefVO();
+                break;
+            case DECIMAL:
+                itemVO = new ArrItemDecimalVO();
+                break;
+            case STRUCTURED:
+                itemVO = new ArrItemStructureVO();
+                break;
+            case JSON_TABLE:
+                itemVO = new ArrItemJsonTableVO();
+                break;
+            default:
+                throw new NotImplementedException(item.getItemType().getDataTypeId().toString());
             }
             itemVO.setUndefined(true);
         }
@@ -874,14 +891,6 @@ public class ClientFactoryVO {
         Integer specId = (item.getItemSpec() == null) ? null : item.getItemSpec().getItemSpecId();
         itemVO.setDescItemSpecId(specId);
         itemVO.setItemTypeId(item.getItemTypeId());
-
-        if (DataType.RECORD_REF == DataType.fromCode(code)) {
-            if (data != null) {
-                ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) data;
-                ApAccessPointVO accessPointVO = apFactory.createVO(dataRecordRef.getRecord());
-                ((ArrItemRecordRefVO) itemVO).setRecord(accessPointVO);
-            }
-        }
 
         return itemVO;
     }
@@ -1860,23 +1869,27 @@ public class ClientFactoryVO {
                                          final ArrRequest request,
                                          final boolean detail,
                                          final ArrFundVersion fundVersion) {
+        ArrRequest req = HibernateUtils.unproxy(request);
         ArrRequestVO requestVO;
         switch (request.getDiscriminator()) {
             case DIGITIZATION: {
                 requestVO = new ArrDigitizationRequestVO();
-                convertDigitizationRequest((ArrDigitizationRequest) request, (ArrDigitizationRequestVO) requestVO, countNodesRequestMap.get(request), nodesRequestMap.get(request));
+            convertDigitizationRequest((ArrDigitizationRequest) req, (ArrDigitizationRequestVO) requestVO,
+                                       countNodesRequestMap.get(request), nodesRequestMap.get(request));
                 break;
             }
 
             case DAO: {
                 requestVO = new ArrDaoRequestVO();
-                convertDaoRequest((ArrDaoRequest) request, (ArrDaoRequestVO) requestVO, countDaosRequestMap.get(request), daosRequestMap.get(request), detail, fundVersion);
+            convertDaoRequest((ArrDaoRequest) req, (ArrDaoRequestVO) requestVO, countDaosRequestMap.get(request),
+                              daosRequestMap.get(request), detail, fundVersion);
                 break;
             }
 
             case DAO_LINK: {
                 requestVO = new ArrDaoLinkRequestVO();
-                convertDaoLinkRequest((ArrDaoLinkRequest) request, (ArrDaoLinkRequestVO) requestVO, false, fundVersion, codeTreeNodeClientMap);
+            convertDaoLinkRequest((ArrDaoLinkRequest) req, (ArrDaoLinkRequestVO) requestVO, false, fundVersion,
+                                  codeTreeNodeClientMap);
                 break;
             }
 
@@ -1889,19 +1902,20 @@ public class ClientFactoryVO {
 
     private void prepareRequest(final Set<ArrDigitizationRequest> requestForNodes, final Set<ArrDaoRequest> requestForDaos,
                                 final Set<ArrDaoLinkRequest> requestForDaoLinks, final ArrRequest request) {
+        ArrRequest req = HibernateUtils.unproxy(request);
         switch (request.getDiscriminator()) {
             case DIGITIZATION: {
-                requestForNodes.add((ArrDigitizationRequest) request);
+            requestForNodes.add((ArrDigitizationRequest) req);
                 break;
             }
 
             case DAO: {
-                requestForDaos.add((ArrDaoRequest) request);
+            requestForDaos.add((ArrDaoRequest) req);
                 break;
             }
 
             case DAO_LINK: {
-                requestForDaoLinks.add((ArrDaoLinkRequest) request);
+            requestForDaoLinks.add((ArrDaoLinkRequest) req);
                 break;
             }
 

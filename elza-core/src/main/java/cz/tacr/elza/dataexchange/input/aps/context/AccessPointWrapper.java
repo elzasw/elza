@@ -59,23 +59,27 @@ public class AccessPointWrapper implements EntityWrapper {
      * @throws DEImportException
      *             When scopes or types does not match.
      */
-    public void changeToUpdated(ApAccessPointInfo info) {
+    public void changeToUpdated(ApAccessPointInfo dbInfo) {
         // check if item is not already processed
         Validate.isTrue(saveMethod != SaveMethod.UPDATE);
         
-        if (!entity.getScopeId().equals(info.getScopeId())) {
+        // access point id is valid (not null)
+        int accessPointId = dbInfo.getAccessPointId();
+
+        if (!entity.getScopeId().equals(dbInfo.getScopeId())) {
             throw new DEImportException("Scope of importing AP doesn't match with scope of existing AP, import scopeId:"
-                    + entity.getScopeId() + ", existing scopeId:" + info.getScopeId());
+                    + entity.getScopeId() + ", existing scopeId:" + dbInfo.getScopeId());
         }
-        if (!entity.getApTypeId().equals(info.getApTypeId())) {
+        if (!entity.getApTypeId().equals(dbInfo.getApTypeId())) {
             throw new DEImportException("Type of importing AP doesn't match with type of existing AP, import typeId:"
-                    + entity.getApTypeId() + ", existing typeId:" + info.getApTypeId());
+                    + entity.getApTypeId() + ", existing typeId:" + dbInfo.getApTypeId());
         }
         // TODO: implement how to detect older AP and which versionable sub-entity
         // should be updated.
         saveMethod = SaveMethod.UPDATE;
         apInfo.setSaveMethod(saveMethod);
-        apInfo.setEntityId(info.getAccessPointId());
+        entity.setAccessPointId(accessPointId);
+        apInfo.setEntityId(accessPointId);
         apInfo.onEntityPersist();
     }
 

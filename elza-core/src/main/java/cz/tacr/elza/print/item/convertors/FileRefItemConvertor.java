@@ -2,6 +2,7 @@ package cz.tacr.elza.print.item.convertors;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.print.File;
 import cz.tacr.elza.print.item.AbstractItem;
@@ -16,8 +17,10 @@ public class FileRefItemConvertor extends AbstractItemConvertor {
             return null;
         }
         ArrDataFileRef data = (ArrDataFileRef) item.getData();
-        File file = context.getFile(data.getFile());
+        ArrFile dataFile = data.getFile();
+        String name = dataFile.getName();
+        File file = context.getFile(dataFile);
 
-        return new ItemFileRef(file);
+        return new ItemFileRef(file, name);
     }
 }

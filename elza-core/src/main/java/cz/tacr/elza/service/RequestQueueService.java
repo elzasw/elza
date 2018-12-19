@@ -26,6 +26,7 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -502,6 +503,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
         private void execute(final ArrRequestQueueItem queueItem) {
 
             ArrRequest request = queueItem.getRequest();
+            request = HibernateUtils.unproxy(request);
 
             // get active version
             ArrFundVersion openVersion = fundVerRepos.findByFundIdAndLockChangeIsNull(request.getFund().getFundId());
