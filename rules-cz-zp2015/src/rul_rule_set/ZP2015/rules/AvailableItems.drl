@@ -130,14 +130,63 @@ then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
-// Pokud je rodic série, tak může být série, složka nebo jednotlivost
-rule "Atribut ZP2015_LEVEL_TYPE, ZP2015_LEVEL_SERIES"
+// Rodic serie a nema sourozence - muze byt serie, slozka, jednotlivost
+rule "Rodic serie a nema sourozence - muze byt serie, slozka, jednotlivost"
 no-loop
 when
     $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
-    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
+    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingBefore==null && siblingAfter==null )
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_SERIES" ) from $parentDescItems
     $itemSpec : RulItemSpecExt(code in ("ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Pokud je rodic série a ma sourozence pred typu serie, tak je serie"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
+    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingBefore!=null && $siblingDescItems: siblingBefore.descItems )
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_SERIES" ) from $parentDescItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_SERIES") from $siblingDescItems
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_LEVEL_SERIES")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Pokud je rodic série a ma sourozence za typu serie, tak je serie"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
+    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingAfter!=null && $siblingDescItems: siblingAfter.descItems )
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_SERIES" ) from $parentDescItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_SERIES") from $siblingDescItems
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_LEVEL_SERIES")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+
+rule "Pokud je rodic série a ma sourozence pred typu slozka nebo jednotlivost, tak je slozka nebo jednotlivost"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
+    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingBefore!=null && $siblingDescItems: siblingBefore.descItems )
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_SERIES" ) from $parentDescItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM")) from $siblingDescItems
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Pokud je rodic série a ma sourozence za typu slozka nebo jednotlivost, tak je slozka nebo jednotlivost"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ZP2015_LEVEL_TYPE")
+    $activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingAfter!=null && $siblingDescItems: siblingAfter.descItems )
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_SERIES" ) from $parentDescItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM")) from $siblingDescItems
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM")) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
