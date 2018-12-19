@@ -5,7 +5,9 @@ import java.util.Map;
 
 import org.apache.commons.lang3.Validate;
 
-public abstract class SealedUnitId {
+import cz.tacr.elza.bulkaction.generator.unitid.PartSealedUnitId.SealType;
+
+public abstract class AssignedUnitId {
 
     static public enum LevelType {
         /**
@@ -66,7 +68,7 @@ public abstract class SealedUnitId {
         }
 
         // parse prefix
-        LevelType levelType = SealedUnitId.getPrefixPart(value);
+        LevelType levelType = AssignedUnitId.getPrefixPart(value);
         value = value.substring(levelType.getPrefixLength());
         SealedLevel level = getLevel(levelType);
 
@@ -75,7 +77,7 @@ public abstract class SealedUnitId {
 
     private PartSealedUnitId find(SealedLevel level, String value) {
         // prepare part
-        String partString = SealedUnitId.getFirstPart(value);
+        String partString = AssignedUnitId.getFirstPart(value);
         UnitIdPart part;
         // Parse part
         try {
@@ -100,17 +102,17 @@ public abstract class SealedUnitId {
      * @return
      * @throws UnitIdException
      */
-    public PartSealedUnitId addValue(String value, boolean seal, SealValidator validator) throws UnitIdException {
+    public PartSealedUnitId addValue(String value, SealType sealType, SealValidator validator) throws UnitIdException {
         Validate.isTrue(value != null);
         Validate.isTrue(value.length() > 0);
 
         // parse prefix
-        LevelType levelType = SealedUnitId.getPrefixPart(value);
+        LevelType levelType = AssignedUnitId.getPrefixPart(value);
         value = value.substring(levelType.getPrefixLength());
         SealedLevel level = getLevel(levelType);
 
         // prepare part
-        String partString = SealedUnitId.getFirstPart(value);
+        String partString = AssignedUnitId.getFirstPart(value);
         // Parse part
         UnitIdPart part = UnitIdPart.parse(partString);
 
@@ -127,7 +129,7 @@ public abstract class SealedUnitId {
             remaining = null;
         }
 
-        return level.add(part, remaining, seal, validator);
+        return level.add(part, remaining, sealType, validator);
     }
 
     abstract public int getDepth();

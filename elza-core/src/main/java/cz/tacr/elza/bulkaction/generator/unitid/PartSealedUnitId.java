@@ -2,8 +2,15 @@ package cz.tacr.elza.bulkaction.generator.unitid;
 
 import org.apache.commons.lang3.Validate;
 
-public class PartSealedUnitId extends SealedUnitId
+public class PartSealedUnitId extends AssignedUnitId
 {
+    public enum SealType {
+        NOT_SEALED,
+        // unitId was just assigned
+        ASSIGNED,
+        // sealed in DB
+        FULLY_SEALED
+    }
     final UnitIdPart part;
 
     final SealedLevel level;
@@ -11,7 +18,7 @@ public class PartSealedUnitId extends SealedUnitId
     /**
      * Flag if value is sealed
      */
-    boolean sealed = false;
+    private SealType sealType = SealType.NOT_SEALED;
 
     /**
      * Seal validator.
@@ -37,13 +44,17 @@ public class PartSealedUnitId extends SealedUnitId
      * 
      * @param b
      */
-    public void setSealed(final boolean b, final SealValidator validator) {
-        sealed = b;
+    public void setSealed(final SealType sealType, final SealValidator validator) {
+        this.sealType = sealType;
         this.sealValidator = validator;
     }
 
     public boolean isSealed() {
-        return sealed;
+        return sealType != SealType.NOT_SEALED;
+    }
+
+    public boolean isFullySealed() {
+        return sealType == SealType.FULLY_SEALED;
     }
 
     @Override

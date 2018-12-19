@@ -4,16 +4,17 @@ import java.util.TreeMap;
 
 import org.apache.commons.lang3.Validate;
 
-import cz.tacr.elza.bulkaction.generator.unitid.SealedUnitId.LevelType;
+import cz.tacr.elza.bulkaction.generator.unitid.AssignedUnitId.LevelType;
+import cz.tacr.elza.bulkaction.generator.unitid.PartSealedUnitId.SealType;
 
 public class SealedLevel {
 
     final TreeMap<UnitIdPart, PartSealedUnitId> units = new TreeMap<>();
-    final private SealedUnitId parent;
+    final private AssignedUnitId parent;
 
     final private LevelType levelType;
 
-    SealedLevel(SealedUnitId parent, LevelType levelType) {
+    SealedLevel(AssignedUnitId parent, LevelType levelType) {
         Validate.notNull(parent);
         this.parent = parent;
         this.levelType = levelType;
@@ -29,7 +30,7 @@ public class SealedLevel {
      * @return
      * @throws UnitIdException
      */
-    public PartSealedUnitId add(UnitIdPart part, String remaining, boolean seal, SealValidator validator)
+    public PartSealedUnitId add(UnitIdPart part, String remaining, SealType sealType, SealValidator validator)
             throws UnitIdException {
         // check if exists
         PartSealedUnitId unit = units.get(part);
@@ -44,10 +45,10 @@ public class SealedLevel {
             if (unit.isSealed()) {
                 throw new UnitIdException("Item is already sealed");
             }
-            unit.setSealed(seal, validator);
+            unit.setSealed(sealType, validator);
             return unit;
         } else {
-            return unit.addValue(remaining, seal, validator);
+            return unit.addValue(remaining, sealType, validator);
         }
     }
 
@@ -97,7 +98,7 @@ public class SealedLevel {
             Validate.isTrue(!result.isSealed());
         }
         // Create sealed based on boarders -> no validator is added
-        result.setSealed(true, null);
+        result.setSealed(SealType.ASSIGNED, null);
 
         return result;
     }
@@ -229,7 +230,7 @@ public class SealedLevel {
         if (item == null) {
             return false;
         } else {
-            return item.isSealed();
+            return item.isFullySealed();
         }
     }
 
