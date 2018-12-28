@@ -1289,9 +1289,9 @@ var messages = {
     "arr.functions.persistentSort.spec": "Specifikace",
     "arr.functions.persistentSort.noSelection.item": "Není vybrán prvek",
     "arr.functions.persistentSort.noSelection.spec": "Není vybrána specifikace",
-    "arr.functions.persistentSort.sortSuccess": "Prezistetntní řazení proběhlo úspěšně",
-    "arr.functions.persistentSort.sortError": "Prezistetntní řazení selhalo",
-    "arr.functions.persistentSort.sortInterrupted": "Prezistetntní řazení bylo přerušeno",
+    "arr.functions.persistentSort.sortSuccess": "Seřazení proběhlo úspěšně",
+    "arr.functions.persistentSort.sortError": "Seřazení selhalo",
+    "arr.functions.persistentSort.sortInterrupted": "Seřazení bylo přerušeno",
 
     "arr.functions.computeAndVizualizeEJ": "Výpočet a vizualizace EJ ",
     "arr.functions.computeAndVizualizeEJ.success": "Výpočet a vizualizace EJ proběhlo úspěšně",
