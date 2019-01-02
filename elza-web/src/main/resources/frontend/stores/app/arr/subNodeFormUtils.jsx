@@ -1,7 +1,11 @@
 import {getMapFromList, indexById} from 'stores/app/utils.jsx'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
 import {DisplayType} from "../../../constants.tsx";
-import {toDuration} from "../../../components/validate";
+import {
+    isNormalizeDurationLength,
+    normalizeDurationLength,
+    toDuration
+} from "../../../components/validate";
 
 const availability = {
     REQUIRED : "REQUIRED",
@@ -452,7 +456,7 @@ export function mergeAfterUpdate(state, data, refTables) {
     // Update info about descItemTypes
     state.infoTypesMap = flatLocalForm.types;
     // Update form with new data
-    state.formData = restoreFormDataStructure(flatLocalForm);
+    state.formData = restoreFormDataStructure(flatLocalForm, state.refTypesMap);
 
     return state;
 }
@@ -484,7 +488,7 @@ function insertDescItemSpecsMap(types, specs){
  *
  * @return Object
  * */
-function restoreFormDataStructure(data){
+function restoreFormDataStructure(data, refTypesMap){
     let groupId, group, typeId, type, descItemId, descItem, specId, spec;
     let usedTypes = {ids:[]};
     let usedGroups = {ids:[]};
@@ -501,6 +505,21 @@ function restoreFormDataStructure(data){
             usedTypes[descItem.itemType] = type;
             usedTypes.ids.push(descItem.itemType);
         }
+
+        const refType = refTypesMap[type.id];
+        if (refType.dataType.code === 'INT' && refType.viewDefinition === DisplayType.DURATION) {
+            if (!isNaN(descItem.prevValue)) {
+                descItem.prevValue = toDuration(descItem.prevValue);
+            } else if (!isNormalizeDurationLength(descItem.prevValue)) {
+                descItem.prevValue = normalizeDurationLength(descItem.prevValue);
+            }
+            if (!isNaN(descItem.value)) {
+                descItem.value = toDuration(descItem.value);
+            } else if (!isNormalizeDurationLength(descItem.value)) {
+                descItem.value = normalizeDurationLength(descItem.value);
+            }
+        }
+
         usedTypes[descItem.itemType].descItems.push(descItem);
     }
 
