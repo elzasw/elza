@@ -94,7 +94,7 @@ class DescItemRecordRef extends AbstractReactComponent {
     render() {
         const {descItem, locked, singleDescItemTypeEdit, hasSpecification, readMode, cal, onDetail, typePrefix, ...otherProps} = this.props;
         const record = descItem.record ? descItem.record : null;
-console.warn(999999999, record);
+
         if (readMode) {
             if (record) {
                 return <DescItemLabel onClick={onDetail.bind(this, record.id)} value={record.record} notIdentified={descItem.undefined} />
