@@ -1016,12 +1016,12 @@ when
     $itemType : RulItemTypeExt(code in ( "ZP2015_UNIT_DATE" ) )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
 
-    // neexistje nadrizeny level typu logicka slozka s dataci a posuzovana uroven je slozka
+    // neexistje nadrizeny level typu logicka slozka s dataci
     not ( $level : Level( this!=$activeLevel ) and
          //DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $level.descItems and
          DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_LOGICAL" ) from $level.descItems and
-         DescItem(type in ( "ZP2015_UNIT_DATE", "ZP2015_DATE_OTHER" )) from $level.descItems and
-         DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER") ) from $descItem
+         DescItem(type in ( "ZP2015_UNIT_DATE", "ZP2015_DATE_OTHER" )) from $level.descItems
+         //DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $descItem
          )
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
