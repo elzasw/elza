@@ -118,7 +118,7 @@ module.exports = {
         rules: [
             {
                 test: /\.tsx?$/,
-                use: 'ts-loader',
+                use: ['babel-loader', 'ts-loader'],
                 exclude: path.resolve(__dirname, "node_modules"),
             },
             {
