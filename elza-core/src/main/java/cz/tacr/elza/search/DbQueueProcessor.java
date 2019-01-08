@@ -32,6 +32,8 @@ public class DbQueueProcessor implements BackendQueueProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(DbQueueProcessor.class);
 
+    @Autowired
+    ApplicationContext applicationContext;
 
     // --- services ---
 
@@ -48,10 +50,16 @@ public class DbQueueProcessor implements BackendQueueProcessor {
     // --- constructor ---
 
     public DbQueueProcessor() {
+        ConfigurableApplicationContext confAppContext = (ConfigurableApplicationContext) applicationContext;
+        confAppContext.addApplicationListener((ApplicationListener<ContextRefreshedEvent>) event -> {
+            logger.debug("Spring application context init for " + DbQueueProcessor.class);
+            AutowireCapableBeanFactory factory = event.getApplicationContext().getAutowireCapableBeanFactory();
+            factory.autowireBean(DbQueueProcessor.this);
+        });
     }
 
     /**
-     * Doinicializace potÅ™ebnÃ½ch bean pÅ™i startu.
+     * Doinicializace potøebných bean pøi startu.
      *
      * @param applicationContext
      */
@@ -72,11 +80,11 @@ public class DbQueueProcessor implements BackendQueueProcessor {
     }
 
     /**
-     * Kontrola nainicialozovÃ¡nÃ­ pouÅ¾Ã­vanÃ½ch bean.
+     * Kontrola nainicialozování používaných bean.
      */
     private void checkBeans() {
         if (indexWorkService == null || indexWorkProcessor == null) {
-            throw new SystemException("Nebyly inicializovanÃ© zÃ¡vislÃ© beany!");
+            throw new SystemException("Nebyly inicializované závislé beany!");
         }
     }
 
