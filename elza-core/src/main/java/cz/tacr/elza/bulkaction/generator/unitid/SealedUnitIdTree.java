@@ -1,13 +1,15 @@
 package cz.tacr.elza.bulkaction.generator.unitid;
 
-public class SealedUnitIdTree extends SealedUnitId {
+import cz.tacr.elza.bulkaction.generator.unitid.PartSealedUnitId.SealType;
+
+public class SealedUnitIdTree extends AssignedUnitId {
 
     public SealedUnitIdTree() {
         // empty constructor for easier debugging
     }
 
     public PartSealedUnitId addSealedValue(String uv, SealValidator validator) throws UnitIdException {
-        return addValue(uv, true, validator);
+        return addValue(uv, SealType.FULLY_SEALED, validator);
     }
 
     @Override

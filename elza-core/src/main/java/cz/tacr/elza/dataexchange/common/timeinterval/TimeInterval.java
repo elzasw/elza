@@ -132,13 +132,21 @@ public class TimeInterval {
         BoundaryFormat ubf = null;
         if (parts.length == 1) {
             if (!isSingleFormatValid(lbf)) {
-                throw new IllegalArgumentException("Single format is not acceptable for time interval, value:" + format);
+                throw new IllegalArgumentException("Single format is not acceptable for time interval, value:"
+                        + format +
+                        ", lower boundary: " + lBoundary.getLocalDateTime() +
+                        ", upper boundary: " + uBoundary.getLocalDateTime());
             }
             singleFormat = true;
         } else {
+            if (!lbf.isValid(lBoundary)) {
+                throw new IllegalArgumentException("Lower boundary is incorrect:" + lbf.getValue() + ", date: "
+                        + lBoundary.getLocalDateTime());
+            }
             ubf = BoundaryFormat.fromValue(parts[1]);
-            if (!lbf.isValid(lBoundary) || !ubf.isValid(uBoundary)) {
-                throw new IllegalArgumentException("Format is not acceptable for time interval, value:" + format);
+            if (!ubf.isValid(uBoundary)) {
+                throw new IllegalArgumentException("Upper boundary is incorrect:" + ubf.getValue() + ", date: "
+                        + uBoundary.getLocalDateTime());
             }
             singleFormat = false;
         }

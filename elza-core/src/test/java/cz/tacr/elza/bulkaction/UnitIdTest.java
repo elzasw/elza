@@ -12,11 +12,12 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import cz.tacr.elza.bulkaction.generator.unitid.AssignedUnitId;
+import cz.tacr.elza.bulkaction.generator.unitid.AssignedUnitId.LevelType;
 import cz.tacr.elza.bulkaction.generator.unitid.LevelGenerator;
 import cz.tacr.elza.bulkaction.generator.unitid.PartSealedUnitId;
+import cz.tacr.elza.bulkaction.generator.unitid.PartSealedUnitId.SealType;
 import cz.tacr.elza.bulkaction.generator.unitid.SealedLevel;
-import cz.tacr.elza.bulkaction.generator.unitid.SealedUnitId;
-import cz.tacr.elza.bulkaction.generator.unitid.SealedUnitId.LevelType;
 import cz.tacr.elza.bulkaction.generator.unitid.SealedUnitIdTree;
 import cz.tacr.elza.bulkaction.generator.unitid.UnitIdException;
 import cz.tacr.elza.bulkaction.generator.unitid.UnitIdPart;
@@ -227,14 +228,14 @@ public class UnitIdTest {
         try {
             root.addSealedValue("1", null);
 
-            SealedLevel level = root.getLevel(SealedUnitId.LevelType.DEFAULT);
+            SealedLevel level = root.getLevel(AssignedUnitId.LevelType.DEFAULT);
             assertTrue(level.getUnitCount() == 1);
             PartSealedUnitId unit = level.getUnit("1");
             assertNotNull(unit);
             assertTrue(unit.isLeaf());
             assertTrue(unit.getDepth() == 1);
 
-            SealedLevel level2 = root.getLevel(SealedUnitId.LevelType.SLASHED);
+            SealedLevel level2 = root.getLevel(AssignedUnitId.LevelType.SLASHED);
             assertTrue(level2.getUnitCount() == 0);
         } catch (UnitIdException e) {
             fail(e.getMessage());
@@ -252,7 +253,7 @@ public class UnitIdTest {
             root.addSealedValue("2/1", null);
             root.addSealedValue("/3", null);
 
-            SealedLevel level = root.getLevel(SealedUnitId.LevelType.DEFAULT);
+            SealedLevel level = root.getLevel(AssignedUnitId.LevelType.DEFAULT);
             assertTrue(level.getUnitCount() == 2);
 
             // check "1"
@@ -261,16 +262,16 @@ public class UnitIdTest {
             assertTrue(!unit1.isLeaf());
             assertTrue(unit1.isSealed());
             // check child nodes
-            SealedLevel level1Def = unit1.getLevel(SealedUnitId.LevelType.DEFAULT);
+            SealedLevel level1Def = unit1.getLevel(AssignedUnitId.LevelType.DEFAULT);
             // contains 1/1/2
             assertTrue(level1Def.getUnitCount() == 1);
             PartSealedUnitId unit11 = level1Def.getUnit("1");
             assertNotNull(unit11);
             assertFalse(unit11.isSealed());
             assertFalse(unit11.isLeaf());
-            SealedLevel level11Def = unit11.getLevel(SealedUnitId.LevelType.DEFAULT);
+            SealedLevel level11Def = unit11.getLevel(AssignedUnitId.LevelType.DEFAULT);
             assertTrue(level11Def.getUnitCount() == 1);
-            SealedLevel level11Sls = unit11.getLevel(SealedUnitId.LevelType.SLASHED);
+            SealedLevel level11Sls = unit11.getLevel(AssignedUnitId.LevelType.SLASHED);
             assertTrue(level11Sls.getUnitCount() == 0);
 
             PartSealedUnitId unit112 = level11Def.getUnit("2");
@@ -280,7 +281,7 @@ public class UnitIdTest {
             assertTrue(unit112.getDepth() == 3);
 
             // check "/3"
-            SealedLevel level2 = root.getLevel(SealedUnitId.LevelType.SLASHED);
+            SealedLevel level2 = root.getLevel(AssignedUnitId.LevelType.SLASHED);
             assertTrue(level2.getUnitCount() == 1);
             PartSealedUnitId unit3 = level2.getUnit("3");
             assertNotNull(unit3);
@@ -856,7 +857,7 @@ public class UnitIdTest {
         SealedUnitIdTree root = new SealedUnitIdTree();
         try {
             // add value -> 1 is in the tree but not sealed
-            root.addValue("1", false, null);
+            root.addValue("1", SealType.NOT_SEALED, null);
 
             UnitIdPart part1_m1 = UnitIdPart.parse("1-1");
             UnitIdPart part1 = UnitIdPart.parse("1");

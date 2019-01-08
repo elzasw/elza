@@ -43,6 +43,7 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
+import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
@@ -372,7 +373,7 @@ public class ArrIOService {
     }
 
     public void toKml(final HttpServletResponse response, final Geometry geometry) throws IOException {
-        response.setHeader("Content-Disposition", "attachment;filename=export.kml");
+        FileDownload.addContentDispositionAsAttachment(response, "export.kml");
 
         ServletOutputStream out = response.getOutputStream();
         Encoder encoder = new Encoder(new KMLConfiguration());
@@ -444,8 +445,7 @@ public class ArrIOService {
         columNames.add("ID entity");
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
-        response.setHeader("Content-Disposition",
-                           "attachment;filename=" + getExportFileName(version.getFund(), "-data"));
+        FileDownload.addContentDispositionAsAttachment(response, getExportFileName(version.getFund(), "-data"));
 
         ArrayList<Integer> filteredIds = filterTreeService.getFilteredIds(versionId);
         int page = 0;
@@ -530,8 +530,7 @@ public class ArrIOService {
         }
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
-        response.setHeader("Content-Disposition",
-                           "attachment;filename=" + getExportFileName(version.getFund(), "-table"));
+        FileDownload.addContentDispositionAsAttachment(response, getExportFileName(version.getFund(), "-table"));
         ArrayList<Integer> filteredIds = filterTreeService.getFilteredIds(versionId);
         int page = 0;
         int pageSize = 100;

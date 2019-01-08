@@ -1,7 +1,8 @@
 package cz.tacr.elza.dataexchange.output.parties;
 
 import javax.persistence.EntityManager;
-import javax.persistence.criteria.FetchParent;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Root;
 
 import org.apache.commons.lang.Validate;
 
@@ -50,7 +51,7 @@ public class PartyInfoLoader extends AbstractEntityLoader<PartyInfoImpl> {
     }
 
     @Override
-    protected void setQueryFetch(FetchParent<?, ?> baseEntity) {
+    protected void buildExtendedQuery(Root<?> baseEntity, CriteriaBuilder cb) {
         baseEntity.fetch(ParParty.FIELD_RECORD);
     }
 

@@ -494,7 +494,7 @@ public class ItemTypeUpdater {
      */
     private void changeString2DatePart(List<Integer> ids, MultiFormatParser mfp) {
         // request all current arr_data_string
-        Collection<DataStringRepository.OnlyValues> srcValues = dataStringRepository.findValuesByDataId(ids);
+        Collection<DataStringRepository.OnlyValues> srcValues = dataStringRepository.findValuesByDataIdIn(ids);
         // drop all old strings
         dataStringRepository.deleteMasterOnly(ids);
         // update data type

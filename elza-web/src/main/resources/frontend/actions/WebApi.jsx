@@ -1617,6 +1617,11 @@ export class UrlFactory {
         return serverContextPath + WebApiCls.exportUrl + '/create';
     }
 
+    /* Export data from grid */
+    static exportGridData(versionId, exportType, columns) {
+        return serverContextPath + WebApiCls.arrangementUrl + '/dataGrid/export/' + versionId + '/' + exportType
+                + "?rulItemTypeIds=" + columns;
+    }
     static exportRegCoordinate(objectId) {
         return serverContextPath + WebApiCls.kmlUrl + '/export/regCoordinates/' + objectId;
     }
