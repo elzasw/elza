@@ -20,4 +20,6 @@ public interface WfIssueRepositoryCustom {
     List<WfIssue> findOpenByFundIdAndNodeNull(@NotNull Integer fundId, @Nullable Integer userId);
 
     List<WfIssue> findOpenByNodeId(@NotNull Collection<Integer> nodeIds, @Nullable Integer userId);
+
+    List<Integer> findNodeIdWithOpenIssueByFundId(@NotNull Integer fundId, @Nullable Integer userId);
 }

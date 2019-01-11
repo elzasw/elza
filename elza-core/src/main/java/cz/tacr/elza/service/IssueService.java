@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +32,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.common.eventbus.Subscribe;
 
 import cz.tacr.elza.EventBusListener;
+import cz.tacr.elza.controller.vo.IssueNodeItem;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -42,7 +46,6 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.WfComment;
 import cz.tacr.elza.domain.WfIssue;
@@ -50,6 +53,7 @@ import cz.tacr.elza.domain.WfIssueList;
 import cz.tacr.elza.domain.WfIssueState;
 import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingFundIssues;
@@ -78,8 +82,6 @@ public class IssueService {
 
     private static final int CVS_MAX_TEXT_LENGTH = 32760;
 
-    private Map<String, WfConfig> configs;
-
     // --- dao ---
 
     private final WfCommentRepository commentRepository;
@@ -93,9 +95,14 @@ public class IssueService {
 
     private final AccessPointService accessPointService;
     private final ArrangementService arrangementService;
+    private final LevelTreeCacheService levelTreeCacheService;
     private final IEventNotificationService eventNotificationService;
     private final UserService userService;
     private final StaticDataService staticDataService;
+
+    // --- fields ---
+
+    private Map<String, WfConfig> configs;
 
     // --- constructor ---
 
@@ -103,26 +110,31 @@ public class IssueService {
     public IssueService(
             AccessPointService accessPointService,
             ArrangementService arrangementService,
+            LevelTreeCacheService levelTreeCacheService,
             IEventNotificationService eventNotificationService,
             UserService userService,
+            StaticDataService staticDataService,
             WfCommentRepository commentRepository,
             WfIssueListRepository issueListRepository,
             WfIssueRepository issueRepository,
             WfIssueStateRepository issueStateRepository,
             WfIssueTypeRepository issueTypeRepository,
-            SettingsRepository settingsRepository, final StaticDataService staticDataService) {
+            SettingsRepository settingsRepository) {
         this.accessPointService = accessPointService;
         this.arrangementService = arrangementService;
+        this.levelTreeCacheService = levelTreeCacheService;
         this.eventNotificationService = eventNotificationService;
         this.userService = userService;
+        this.staticDataService = staticDataService;
         this.commentRepository = commentRepository;
         this.issueListRepository = issueListRepository;
         this.issueRepository = issueRepository;
         this.issueStateRepository = issueStateRepository;
         this.issueTypeRepository = issueTypeRepository;
         this.settingsRepository = settingsRepository;
-        this.staticDataService = staticDataService;
     }
+
+    // --- methods ---
 
     @Subscribe
     public synchronized void invalidateCache(final CacheInvalidateEvent cacheInvalidateEvent) {
@@ -133,8 +145,6 @@ public class IssueService {
             configs = null;
         }
     }
-
-    // --- methods ---
 
     /**
      * Získání stavů připomínek.
@@ -681,7 +691,7 @@ public class IssueService {
         if (userDetail == null) {
             return Collections.emptyList();
         }
-        Integer userId = userDetail.hasPermission(UsrPermission.Permission.ADMIN) ? null : userDetail.getId();
+        Integer userId = userDetail.hasPermission(Permission.ADMIN) ? null : userDetail.getId();
         return issueRepository.findOpenByFundIdAndNodeNull(fund.getFundId(), userId);
     }
 
@@ -696,7 +706,7 @@ public class IssueService {
         if (userDetail == null) {
             return Collections.emptyList();
         }
-        Integer userId = userDetail.hasPermission(UsrPermission.Permission.ADMIN) ? null : userDetail.getId();
+        Integer userId = userDetail.hasPermission(Permission.ADMIN) ? null : userDetail.getId();
         return issueRepository.findOpenByNodeId(Collections.singletonList(nodeId), userId);
     }
 
@@ -715,7 +725,7 @@ public class IssueService {
         if (userDetail == null) {
             return Collections.emptyMap();
         }
-        Integer userId = userDetail.hasPermission(UsrPermission.Permission.ADMIN) ? null : userDetail.getId();
+        Integer userId = userDetail.hasPermission(Permission.ADMIN) ? null : userDetail.getId();
         List<WfIssue> issueList = issueRepository.findOpenByNodeId(nodeIds, userId);
         return issueList.stream().collect(Collectors.groupingBy(issue -> issue.getNode().getNodeId()));
     }
@@ -754,5 +764,94 @@ public class IssueService {
             });
         }
         return configs.get(ruleSet.getCode());
+    }
+
+    private List<Integer> findNodeIdWithOpenIssue(@NotNull ArrFund fund, @NotNull UserDetail userDetail) {
+
+        Validate.notNull(fund, "Fund is null");
+        if (userDetail == null) {
+            return Collections.emptyList();
+        }
+
+        Integer userId = userDetail.hasPermission(Permission.ADMIN) ? null : userDetail.getId();
+
+        return issueRepository.findNodeIdWithOpenIssueByFundId(fund.getFundId(), userId);
+    }
+
+    /**
+     * Vyhledá další uzel s otevřenou připomínkou.
+     *
+     * @param fundVersion verze AS
+     * @param currentNodeId výchozí uzel (default root)
+     * @param direction krok
+     * @return uzel s připomínkou
+     */
+    public IssueNodeItem nextIssueNode(@NotNull ArrFundVersion fundVersion, @Nullable Integer currentNodeId, int direction, @NotNull UserDetail userDetail) {
+
+        List<Integer> nodeIdList = findNodeIdWithOpenIssue(fundVersion.getFund(), userDetail);
+
+        if (nodeIdList.isEmpty()) {
+            return new IssueNodeItem(0);
+        }
+
+        Set<Integer> nodeIds = new HashSet<>(nodeIdList);
+        TreeNode root = arrangementService.getRootTreeNode(fundVersion);
+
+        if (currentNodeId == null) {
+            currentNodeId = root.getId();
+        }
+
+        List<Integer> sortedNodeIds = filterNodes(root, nodeIds, currentNodeId);
+
+        int index = sortedNodeIds.indexOf(currentNodeId);
+
+        if (index == -1) {
+            // vychozi node nebyl nalezen v aktualni verzi
+            throw new ObjectNotFoundException("Nenalezena JP ve verzi " + fundVersion.getFundVersionId(),
+                    ArrangementCode.NODE_NOT_FOUND).setId(currentNodeId);
+        }
+
+        // direction = Integer.signum(direction);
+
+        if (nodeIds.contains(currentNodeId)) {
+            index += direction;
+        } else {
+            // vychozi node lezi nekde mezi dvema pripominkama
+            sortedNodeIds.remove(index);
+            if (direction == 0) {
+                // specialni pripad - skok o 0 by znamena aktualni node, ale ten v tomto pripade nema pripominku
+                return new IssueNodeItem(sortedNodeIds.size());
+            }
+            if (direction > 0) {
+                index++;
+            }
+            index += direction;
+        }
+
+        index %= sortedNodeIds.size();
+        if (index < 0) {
+            index += sortedNodeIds.size();
+        }
+
+        NodeItemWithParent node = getNodeItemWithParent(sortedNodeIds.get(index), fundVersion);
+
+        return new IssueNodeItem(sortedNodeIds.size(), index, node);
+    }
+
+    private List<Integer> filterNodes(TreeNode root, Set<Integer> nodeIds, Integer currentNodeId) {
+        List<Integer> sortedNodeIds = new LinkedList<>();
+        levelTreeCacheService.walkTree(root, node -> {
+            Integer nodeId = node.getId();
+            if (nodeIds.contains(nodeId) || nodeId.equals(currentNodeId)) {
+                sortedNodeIds.add(nodeId);
+            }
+        });
+        return sortedNodeIds;
+    }
+
+    private NodeItemWithParent getNodeItemWithParent(Integer nodeId, ArrFundVersion fundVersion) {
+        List<Integer> nodeIds = Collections.singletonList(nodeId);
+        List<NodeItemWithParent> nodeItemsWithParents = levelTreeCacheService.getNodeItemsWithParents(nodeIds, fundVersion);
+        return nodeItemsWithParents.get(0);
     }
 }

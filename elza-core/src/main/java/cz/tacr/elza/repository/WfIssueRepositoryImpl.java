@@ -104,4 +104,27 @@ public class WfIssueRepositoryImpl implements WfIssueRepositoryCustom {
 
         return query.getResultList();
     }
+
+    @Override
+    public List<Integer> findNodeIdWithOpenIssueByFundId(@NotNull Integer fundId, @Nullable Integer userId) {
+
+        StringBuilder hql = new StringBuilder(256);
+        hql.append("select distinct i.node.nodeId from wf_issue i" +
+                " where i.issueList.fund.fundId = :fundId");
+        if (userId != null) {
+            hql.append(" and i.issueList in (select pv.issueList from usr_permission_view pv where pv.user.userId = :userId)");
+        }
+        hql.append(" and i.issueState.finalState = false" +
+                " and i.issueList.open = true" +
+                " and i.node is not null");
+
+        Query query = entityManager.createQuery(hql.toString());
+
+        query.setParameter("fundId", fundId);
+        if (userId != null) {
+            query.setParameter("userId", userId);
+        }
+
+        return query.getResultList();
+    }
 }

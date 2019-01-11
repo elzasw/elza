@@ -16,12 +16,13 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.controller.vo.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
@@ -43,6 +44,14 @@ import cz.tacr.elza.config.view.LevelConfig;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.AccordionNodeVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
+import cz.tacr.elza.controller.vo.ArrRequestVO;
+import cz.tacr.elza.controller.vo.NodeConformityVO;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNode;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.NodeData;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
 import cz.tacr.elza.core.data.ItemType;
@@ -2019,8 +2028,20 @@ public class LevelTreeCacheService {
 
         return nodeIds;
     }
+
+    /**
+     * Rekurzivní procházení stromu.
+     *
+     * @param root výchozí node
+     * @param callback akce
+     */
+    public void walkTree(@NotNull final TreeNode root, @NotNull final Consumer<TreeNode> callback) {
+        callback.accept(root);
+        LinkedList<TreeNode> childs = root.getChilds();
+        if (childs != null) {
+            for (TreeNode child : childs) {
+                walkTree(child, callback);
+            }
+        }
+    }
 }
-
-
-
-

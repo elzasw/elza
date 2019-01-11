@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.factory.WfFactory;
+import cz.tacr.elza.controller.vo.IssueNodeItem;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.WfCommentVO;
 import cz.tacr.elza.controller.vo.WfIssueListVO;
@@ -31,6 +32,7 @@ import cz.tacr.elza.controller.vo.WfIssueStateVO;
 import cz.tacr.elza.controller.vo.WfIssueTypeVO;
 import cz.tacr.elza.controller.vo.WfIssueVO;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.WfComment;
@@ -416,6 +418,28 @@ public class IssueController {
         comment = issueService.updateComment(comment, commentVO.getComment(), newIssueState);
 
         return factory.createCommentVO(comment);
+    }
+
+    /**
+     * Vyhledá další uzel s otevřenou připomínkou.
+     *
+     * @param fundVersionId verze AS
+     * @param currentNodeId výchozí uzel (default root)
+     * @param direction krok (default 1)
+     * @return uzel s připomínkou
+     */
+    @RequestMapping(value = "/funds/{fundVersionId}/issues/next_node", method = RequestMethod.GET)
+    @Transactional
+    public IssueNodeItem nextIssueByFundVersion(@PathVariable(value = "fundVersionId") Integer fundVersionId,
+                                                @RequestParam(value = "nodeId", required = false) Integer currentNodeId,
+                                                @RequestParam(value = "direction", required = false, defaultValue = "1") int direction) {
+
+        // kontrola existence
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+
+        UserDetail userDetail = userService.getLoggedUserDetail();
+
+        return issueService.nextIssueNode(fundVersion, currentNodeId, direction, userDetail);
     }
 
     protected Collection<UsrUser> findUsers(List<UsrUserVO> users, String fieldName) {
