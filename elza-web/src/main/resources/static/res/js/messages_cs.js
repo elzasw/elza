@@ -328,6 +328,7 @@ var messages = {
     "ribbon.saving": "Ukládání",
 
     "toast.arr.validation.error.notFound": "Nebyla nalezena další chyba",
+    "toast.arr.validation.issues.notFound": "Nebyla nalezena další připomínka",
 
     "home.action.arr": "Archivní pomůcky",
     "home.action.party": "Osoby",

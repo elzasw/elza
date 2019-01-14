@@ -1551,6 +1551,17 @@ export class WebApiCls {
     updateIssueComment(commentId : number, data : CommentVO) {
         return AjaxUtils.ajaxPut(WebApiCls.issueUrl + '/comments/' + commentId, null, data)
     }
+
+    /**
+     * Vyhledá další uzel s otevřenou připomínkou.
+     *
+     * @param fundVersionId verze AS
+     * @param nodeId výchozí uzel (default root)
+     * @param direction krok (default 1)
+     */
+    nextIssueByFundVersion(fundVersionId : number, nodeId : number, direction : number) {
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/funds/' + fundVersionId + '/issues/nextNode', {nodeId, direction});
+    }
 }
 
 declare class IssueListVO extends Object {
