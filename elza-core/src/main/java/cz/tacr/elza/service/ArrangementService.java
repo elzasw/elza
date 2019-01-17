@@ -39,6 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
@@ -186,6 +187,21 @@ public class ArrangementService {
     private ApplicationContext appCtx;
 
     public static final String UNDEFINED = "Nezjištěno";
+
+    /**
+     * Načtení verze na základě id.
+     *
+     * @param fundVersionId id souboru
+     * @return konkrétní verze
+     * @throws ObjectNotFoundException objekt nenalezen
+     */
+    public ArrFundVersion getFundVersion(@NotNull Integer fundVersionId) {
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        if (fundVersion == null) {
+            throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + fundVersionId, ArrangementCode.FUND_VERSION_NOT_FOUND).setId(fundVersionId);
+        }
+        return fundVersion;
+    }
 
     /**
      * Načtení souboru na základě id.
@@ -1182,11 +1198,12 @@ public class ArrangementService {
         return new ArrangementController.ValidationItems(levelTreeCacheService.getNodeItemsWithParents(nodesLimited, fundVersion), countAll);
     }
 
-    private List<Integer> createErrorTree(final ArrFundVersion fundVersion, @Nullable final FoundNode foundNode) {
+    public TreeNode getRootTreeNode(@NotNull ArrFundVersion fundVersion) {
+
         Integer rootNodeId = fundVersion.getRootNode().getNodeId();
-        TreeNode rootTreeNode = null;
         Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(fundVersion);
 
+        TreeNode rootTreeNode = null;
         for (TreeNode treeNode : versionTreeCache.values()) {
             if (treeNode.getId().equals(rootNodeId)) {
                 rootTreeNode = treeNode;
@@ -1196,8 +1213,15 @@ public class ArrangementService {
 
         if (rootTreeNode == null) {
             throw new ObjectNotFoundException("Nenalezen kořen stromu ve verzi " + fundVersion.getFundVersionId(),
-                    ArrangementCode.NODE_NOT_FOUND).set("id", rootNodeId);
+                    ArrangementCode.NODE_NOT_FOUND).setId(rootNodeId);
         }
+
+        return rootTreeNode;
+    }
+
+    private List<Integer> createErrorTree(final ArrFundVersion fundVersion, @Nullable final FoundNode foundNode) {
+
+        TreeNode rootTreeNode = getRootTreeNode(fundVersion);
 
         List<UIVisiblePolicy> policies = visiblePolicyRepository.findByFund(fundVersion.getFund());
 
@@ -1395,6 +1419,22 @@ public class ArrangementService {
             }
         }
         return Collections.emptyMap();
+    }
+
+    public Collection<Integer> findNodeIdsByStructuredObjectId(Integer structuredObjectId) {
+        return nodeRepository.findNodeIdsByStructuredObjectIds(Collections.singletonList(structuredObjectId));
+    }
+
+    public Collection<Integer> findNodeIdsByStructuredObjectIds(List<Integer> structuredObjectIds) {
+        if (structuredObjectIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<List<Integer>> idsParts = Lists.partition(structuredObjectIds, 1000);
+        Set<Integer> nodeIds = new HashSet<>(1000);
+        for (List<Integer> idsPart : idsParts) {
+            nodeIds.addAll(nodeRepository.findNodeIdsByStructuredObjectIds(idsPart));
+        }
+        return nodeIds;
     }
 
     /**

@@ -15,8 +15,8 @@ public interface WfIssueRepository extends ElzaJpaRepository<WfIssue, Integer>, 
 
     @Query("select max(i.number)" +
             " from wf_issue i" +
-            " where i.issueList.issueListId = :issueListId")
-    Optional<Integer> getNumberMax(@Param(value = "issueListId") Integer issueListId);
+            " where i.issueList.fund.fundId = :fundId")
+    Optional<Integer> getNumberMaxByFundId(@Param(value = "fundId") Integer fundId);
 
     @Modifying
     @Query("delete from wf_issue i" +

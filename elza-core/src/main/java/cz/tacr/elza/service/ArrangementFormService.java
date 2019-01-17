@@ -110,13 +110,7 @@ public class ArrangementFormService {
 	@AuthMethod(permission = { UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD })
 	public DescFormDataNewVO getNodeFormData(@AuthParam(type = AuthParam.Type.FUND_VERSION) Integer versionId,
 	        Integer nodeId) {
-
-		ArrFundVersion version = fundVersionRepository.findOne(versionId);
-		if (version == null) {
-			throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + versionId,
-			        ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", versionId);
-		}
-
+		ArrFundVersion version = arrangementService.getFundVersion(versionId);
 		return getNodeFormData(version, nodeId);
 	}
 
@@ -169,11 +163,7 @@ public class ArrangementFormService {
 	public void updateDescItem(@AuthParam(type = AuthParam.Type.FUND_VERSION) int fundVersionId,
 	        int nodeVersion, ArrItemVO descItemVO, boolean createVersion,
 	        StompHeaderAccessor requestHeaders) {
-		ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
-		if (version == null) {
-			throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + fundVersionId,
-			        ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", fundVersionId);
-		}
+		ArrFundVersion version = arrangementService.getFundVersion(fundVersionId);
 		updateDescItem(version, nodeVersion, descItemVO, createVersion, requestHeaders);
 	}
 
@@ -189,16 +179,8 @@ public class ArrangementFormService {
 	public void updateDescItems(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
 								final UpdateDescItemsParam params,
 								@Nullable final StompHeaderAccessor requestHeaders) {
-		ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-		if (fundVersion == null) {
-			throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + fundVersionId,
-					ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", fundVersionId);
-		}
-		ArrNode node = nodeRepository.findOne(params.getNodeId());
-		if (node == null) {
-			throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + params.getNodeId(),
-					ArrangementCode.NODE_NOT_FOUND).set("id", params.getNodeId());
-		}
+		ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+		ArrNode node = arrangementService.getNode(params.getNodeId());
 		final StaticDataProvider dataProvider = this.staticData.getData();
 		List<ArrDescItem> createItems = params.getCreateItemVOs().stream().map(itemVO -> convertDescItem(dataProvider, itemVO)).collect(Collectors.toList());
 		List<ArrDescItem> updateItems = params.getUpdateItemVOs().stream().map(itemVO -> convertDescItem(dataProvider, itemVO)).collect(Collectors.toList());
