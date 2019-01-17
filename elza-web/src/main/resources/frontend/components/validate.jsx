@@ -148,7 +148,6 @@ export function fromDuration(duration) {
     let result = 0;
 
     for (let i = 0; i < data.length; i++) {
-        console.warn(result)
         result += data[data.length - (i + 1)] * Math.pow(60, i);
     }
 
@@ -166,6 +165,26 @@ export function toDuration(number) {
     let m = Math.floor(number % 3600 / 60);
     let s = Math.floor(number % 3600 % 60);
     return pad2(h) + ":" + pad2(m) + ":" + pad2(s);
+}
+
+/**
+ * Normalizace délky řetězce délky trvání.
+ *
+ * @param duration délka trvání
+ * @returns {string} normalizovaná délka trvání
+ */
+export function normalizeDurationLength(duration) {
+    return toDuration(fromDuration(duration));
+}
+
+/**
+ * Je délka řetězce délky trvání normalizovaná?
+ *
+ * @param duration délka trvání
+ * @returns {boolean} true, pokud je validní
+ */
+export function isNormalizeDurationLength(duration) {
+    return /^(([0-9]{2})|([1-9][0-9]{2,}):[0-9]{2}:[0-9]{2})$/.test(duration);
 }
 
 /**

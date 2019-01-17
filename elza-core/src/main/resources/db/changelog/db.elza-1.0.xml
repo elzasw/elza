@@ -256,4 +256,12 @@
         <update tableName="par_party_type" ><column name="name" value="UDÁLOST" /><column name="description" value="Dočasná korporace - událost" /><where>code='EVENT'</where></update>
     </changeSet>
 
+    <changeSet id="20181210140000" author="marek">
+        <addNotNullConstraint
+            tableName="ap_access_point"
+            columnName="state"
+            columnDataType="nvarchar(50)"
+            defaultNullValue="OK"/>
+    </changeSet>
+
 </databaseChangeLog>
