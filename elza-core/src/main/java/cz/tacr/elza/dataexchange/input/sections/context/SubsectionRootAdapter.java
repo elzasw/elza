@@ -5,8 +5,8 @@ import java.util.List;
 import com.vividsolutions.jts.util.Assert;
 
 import cz.tacr.elza.dataexchange.input.DEImportParams.ImportDirection;
-import cz.tacr.elza.dataexchange.input.context.SimpleIdHolder;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
+import cz.tacr.elza.dataexchange.input.context.SimpleIdHolder;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrLevel;
@@ -46,7 +46,12 @@ class SubsectionRootAdapter implements SectionRootAdapter {
     }
 
     private int getNextLevelPosition() {
-        int levelPosition = importPosition.getLevelPosition() == null ? 0 : importPosition.getLevelPosition();
+        int levelPosition;
+        if (importPosition.getLevelPosition() == null) {
+            levelPosition = 0;
+        } else {
+            levelPosition = importPosition.getLevelPosition();
+        }
         ArrNode parentNode = importPosition.getParentLevel().getNode();
 
         if (importPosition.getTargetLevel() != null) {
@@ -63,10 +68,16 @@ class SubsectionRootAdapter implements SectionRootAdapter {
             levelPosition++;
         } else {
             if (importPosition.getDirection() == ImportDirection.AFTER) {
-                // add last
-                Integer max = levelRepository.findMaxPositionUnderParent(parentNode);
-                levelPosition = max == null ? 1 : max + 1;
+                if (levelPosition == 0) {
+                    // first iteration -> add last from DB
+                    Integer max = levelRepository.findMaxPositionUnderParent(parentNode);
+                    levelPosition = max == null ? 1 : max + 1;
+                } else {
+                    levelPosition++;
+                }
             } else {
+                // This is probably broken for adding multiple items without root
+                // This code will work for adding single item
                 // add first
                 List<ArrLevel> moveLevels = levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(parentNode,
                         levelPosition);
