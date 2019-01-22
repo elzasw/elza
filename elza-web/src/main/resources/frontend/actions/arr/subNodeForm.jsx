@@ -961,7 +961,10 @@ class NodeFormActions extends ItemFormActions {
             case 'NODE':    // podpora kešování
                 const state = getState();
                 const node = this._getParentObjStore(state, versionId, routingKey);
-                if (node === null) return;   // nemělo by nastat
+                if (node === null) {
+                    console.error("Node not found, versionId="+versionId);
+                    return;   // nemělo by nastat
+                }
 
                 const subNodeFormCache = node.subNodeFormCache;
 
@@ -1012,11 +1015,9 @@ class NodeFormActions extends ItemFormActions {
                     // ##
                     // # Data požadovaného formuláře
                     // ##
-                    let indexFrom = null;
 
-                    if (node.changeParent || indexById(node.childNodes, nodeId) == null) {
-                        indexFrom = node.viewStartIndex - node.viewStartIndex % (node.pageSize / 2);
-                    }
+                    // výpočet pozice záznamu
+                    let indexFrom = node.viewStartIndex - node.viewStartIndex % (node.pageSize / 2);
 
                     const nodeParam = {nodeId};
                     const resultParam = {

@@ -1703,6 +1703,7 @@ public class AccessPointService {
      */
     private ApAccessPoint createAccessPoint(final ApScope scope, final ApType type, final ApChange change) {
         ApAccessPoint accessPoint = createAccessPointEntity(scope, type, change);
+        accessPoint.setState(ApState.OK);
         return apRepository.save(accessPoint);
     }
 

@@ -63,27 +63,35 @@ export function fundSelectSubNode(versionId, subNodeId, subNodeParentNode, openN
         dispatch(fundExtendedView(false));
 
         let state = getState();
-        const nodes = state.arrRegion.funds[state.arrRegion.activeIndex].fundTree.nodes;
+
+        // vyhledání indexu uzlu, nejprve se vyzkouší strom
+        let nodes = state.arrRegion.funds[state.arrRegion.activeIndex].fundTree.nodes;
         if (!subNodeId && subNodeIndex !== null) {
             const index = indexById(nodes, subNodeParentNode.id) + subNodeIndex + 1;
             subNodeId = nodes[index].id;
         }
-        const index = indexById(nodes, subNodeId);
-        subNodeIndex = index;
-        if (index) {
+        let index = indexById(nodes, subNodeId);
+        // pokud není ve stromu, tak se zkusí i akordeon - při přidání položky
+        // je někdy dříve v akordeonu než-li ve stromu
+        if(index===null) {
+            const fund = state.arrRegion.funds[state.arrRegion.activeIndex];
+            nodes = fund.nodes.nodes[fund.nodes.activeIndex].childNodes;
+            index = indexById(nodes, subNodeId);
+
+            subNodeIndex = index;
+        } else {
+            // korekce pozice v případě stromu o nadřazené
+            let i = index;
             const node = nodes[index];
-            for (let i = index; i >= 0; i--) {
+            for (; i >= 0; i--) {
                 const n = nodes[i];
-                if (n.depth === node.depth) {
-                    subNodeIndex--;
-                } else {
-                    if (n.depth < node.depth) {
-                        break;
-                    }
+                if (n.depth < node.depth) {
+                    break;
                 }
             }
-            subNodeIndex = index - subNodeIndex - 1;
+            subNodeIndex = index - i - 1;
         }
+
         dispatch(fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible, subNodeIndex));
         dispatch(developerNodeScenariosDirty(subNodeId, subNodeParentNode.routingKey, state.arrRegion.funds[state.arrRegion.activeIndex].versionId));
     }
