@@ -70,6 +70,15 @@ then
 	results.add(RelatedNodeDirection.DESCENDANTS);
 end
 
+rule "Pokud v SaveDescriptionItems provedu přidání hodnoty ZP2015_UNIT_DATE, tak dopady jsou na potomky (mohly by mít dataci)"
+when
+    descItem : DescItem(type == "ZP2015_UNIT_DATE", change in ( DescItemChange.CREATE, DescItemChange.DELETE))
+    NodeTypeOperation(this==NodeTypeOperation.SAVE_DESC_ITEM)
+then
+	results.add(RelatedNodeDirection.DESCENDANTS);
+end
+
+
 /*
 
 rule "Pokud v SaveDescriptionItems provedu smazání hodnoty ZP2015_TITLE, tak dopady jsou Node+Descendants"
