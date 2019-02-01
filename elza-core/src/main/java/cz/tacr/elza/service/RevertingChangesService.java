@@ -54,6 +54,7 @@ import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LockedValueRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
@@ -101,6 +102,9 @@ public class RevertingChangesService {
 
     @Autowired
     private ItemTypeRepository itemTypeRepository;
+
+    @Autowired
+    private DescItemRepository descItemRepository;
 
     @Autowired
     private DescriptionItemService descriptionItemService;
@@ -311,6 +315,14 @@ public class RevertingChangesService {
         }
 
         {
+            List<Integer> toReindex = new ArrayList<>(1024);
+
+            // preindexovat zaznamy, ktere mohou byt smazane
+            toReindex.addAll(node != null
+                    ? descItemRepository.findIdByNodeAndCreatedAfterChange(node, toChange)
+                    : descItemRepository.findIdByFundAndCreatedAfterChange(fund, toChange)
+            );
+
             Query updateEntityQuery = createExtendUpdateEntityQuery(fund, node, "deleteChange", "arr_desc_item", "arr_item", toChange);
             updateEntityQuery.executeUpdate();
 
@@ -326,6 +338,14 @@ public class RevertingChangesService {
             deleteEntityQuery.executeUpdate();
 
             dataRepository.delete(arrDataList);
+
+            // preindexovat všechny aktualni
+            toReindex.addAll(node != null
+                    ? descItemRepository.findOpenIdByNodeAndCreatedAfterChange(node)
+                    : descItemRepository.findOpenIdByFundAndCreatedAfterChange(fund)
+            );
+
+            descriptionItemService.reindexDescItem(toReindex);
         }
 
         if (nodeId == null) {
