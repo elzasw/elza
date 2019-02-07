@@ -17,7 +17,8 @@ const dataToRowsHelper = data => ({rows: data, count: data.length});
 // Seznam protokolů
 export const protocols = {
     fetchIfNeeded: (parent, force = false) => SimpleListActions.fetchIfNeeded(AREA_PROTOCOLS, parent, (parent, filter) => WebApi.findIssueListByFund(parent, filter.open).then(dataToRowsHelper), force),
-    filter: (filter) => SimpleListActions.filter(AREA_PROTOCOLS, filter)
+    filter: (filter) => SimpleListActions.filter(AREA_PROTOCOLS, filter),
+    invalidate: (id) => SimpleListActions.invalidate(AREA_PROTOCOLS, id),
 };
 
 // Detail protokolu

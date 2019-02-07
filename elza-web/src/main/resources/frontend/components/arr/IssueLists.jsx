@@ -46,11 +46,13 @@ class IssueLists extends AbstractReactComponent {
     };
 
     onSave = data => {
+        this.props.dispatch(issuesActions.protocols.invalidate(this.props.fundId));
         this.setState({id:data.id, initialValues: data});
     };
 
     filter = ({target: {value}}) => {
         this.props.dispatch(issuesActions.protocols.filter({open: value == 'true'}));
+        this.setState({id: null, initialValues: IssueListForm.initialValues});
     };
 
     render() {
