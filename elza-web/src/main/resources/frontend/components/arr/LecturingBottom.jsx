@@ -30,21 +30,34 @@ class LecturingBottom extends React.Component {
         text: "",
         comment: null,
         submitting: false,
+        actualFundId: null
     };
 
     componentDidMount() {
-        const {issueDetail} = this.props;
+        const {issueDetail, fund} = this.props;
         if (issueDetail && issueDetail.id) {
             this.props.dispatch(issuesActions.detail.fetchIfNeeded(issueDetail.id));
             this.props.dispatch(issuesActions.comments.fetchIfNeeded(issueDetail.id));
         }
+
+        const fundId = this.props.issueProtocols.filter.fundId;
+        if (fundId !== null && fundId !== fund.id) {
+            this.props.dispatch(issuesActions.detail.reset());
+            this.props.dispatch(issuesActions.comments.reset());
+        }
     }
 
     componentWillReceiveProps(nextProps, nextContext) {
-        const {issueDetail} = nextProps;
-        if (issueDetail.id) {
+        const {issueDetail, fund} = nextProps;
+
+        if (issueDetail && issueDetail.id) {
             this.props.dispatch(issuesActions.detail.fetchIfNeeded(issueDetail.id));
             this.props.dispatch(issuesActions.comments.fetchIfNeeded(issueDetail.id));
+        }
+
+        if (fund.id !== this.props.fund.id) {
+            this.props.dispatch(issuesActions.detail.reset());
+            this.props.dispatch(issuesActions.comments.reset());
         }
     }
 
@@ -110,7 +123,7 @@ class LecturingBottom extends React.Component {
         const canUpdateIssue = canWrite && userDetail.id === data.userCreate.id && issueComments.fetched && issueComments.rows.length === 0;
 
         let state = null;
-        if (issueStates.fetched) {
+        if (issueStates && issueStates.fetched && data) {
             state = objectById(issueStates.data, data.issueStateId);
         }
 
@@ -193,6 +206,7 @@ export default connect((state) => {
     return {
         issueTypes: state.refTables.issueTypes,
         issueStates: state.refTables.issueStates,
+        issueProtocols: storeFromArea(state, issuesActions.AREA_PROTOCOLS),
         issueDetail: storeFromArea(state, issuesActions.AREA_DETAIL),
         issueComments: storeFromArea(state, issuesActions.AREA_COMMENTS),
         userDetail: state.userDetail,

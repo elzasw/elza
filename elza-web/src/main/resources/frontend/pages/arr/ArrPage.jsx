@@ -927,7 +927,7 @@ class ArrPage extends ArrParentPage {
         return <div className='issues-panel'>
             <HorizontalSplitter
                                 top={<LecturingTop fund={activeFund} node={node} />}
-                                bottom={<LecturingBottom />}
+                                bottom={<LecturingBottom fund={activeFund} />}
             />
         </div>
     }

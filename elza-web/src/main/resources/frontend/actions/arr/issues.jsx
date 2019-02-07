@@ -39,12 +39,14 @@ export const detail = {
     fetchIfNeeded: (id, force = false) => DetailActions.fetchIfNeeded(AREA_DETAIL, id, id => WebApi.getIssue(id), force),
     invalidate: (id) => DetailActions.invalidate(AREA_DETAIL, id),
     select: (id) => DetailActions.select(AREA_DETAIL, id),
+    reset: () => DetailActions.reset(AREA_DETAIL),
 };
 
 // Komentáře připomínky
 export const comments = {
     fetchIfNeeded: (id, force = false) => SimpleListActions.fetchIfNeeded(AREA_COMMENTS, id, id => WebApi.findIssueCommentByIssue(id).then(dataToRowsHelper), force),
     invalidate: (id) => SimpleListActions.invalidate(AREA_COMMENTS, id),
+    reset: () => SimpleListActions.reset(AREA_COMMENTS)
 };
 
 export function nodeWithIssueByFundVersion(fund, nodeId, direction) {
