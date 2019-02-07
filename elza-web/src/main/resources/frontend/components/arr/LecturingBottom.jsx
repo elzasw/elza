@@ -135,7 +135,7 @@ class LecturingBottom extends React.Component {
             {fetched && <div className="lecturing-bottom-container">
                 <div className="comments">
                     <div className="comment text-muted">
-                        <div>{data.description}</div>
+                        <div className="comment-text">{data.description}</div>
                         <div className="text-right">
                             {canUpdateIssue && <div className="pull-left">
                                 <Button bsStyle="action" onClick={this.editIssue}>
@@ -147,7 +147,7 @@ class LecturingBottom extends React.Component {
                     </div>
                     {issueComments.rows.map((item: CommentVO, index, arr) => <div>
                         <div className={"comment" + (userDetail.id === item.user.id ? " text-muted" : "")}>
-                            <div>{item.comment}</div>
+                            <div className="comment-text">{item.comment}</div>
                             <div className="text-right">
                                 {canWrite && userDetail.id === item.user.id && arr.length === index+1 && <div className="pull-left">
                                     <Button bsStyle="action" onClick={this.editComment.bind(this, item)}>
