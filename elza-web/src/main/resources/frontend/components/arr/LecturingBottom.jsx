@@ -109,6 +109,13 @@ class LecturingBottom extends React.Component {
         );
         const canUpdateIssue = canWrite && userDetail.id === data.userCreate.id && issueComments.fetched && issueComments.rows.length === 0;
 
+        let state = null;
+        if (issueStates.fetched) {
+            state = objectById(issueStates.data, data.issueStateId);
+        }
+
+        const textFieldDisabled = submitting || state && state.finalState;
+
         return <div className="lecturing-bottom">
             {!id && <div className="text-center">{i18n("arr.issues.choose")}</div>}
             {isFetching && <Loading/>}
@@ -139,7 +146,7 @@ class LecturingBottom extends React.Component {
                         </div>
                         {(item.nextStateId !== item.prevStateId || arr.length === index+1) && <div className="state-change"><Icon glyph="fa-angle-double-right"/> {objectById(issueStates.data, item.nextStateId).name}</div>}
                     </div>)}
-                    {!issueComments.rows.length && <div className="state-change"><Icon glyph="fa-angle-double-right"/> {objectById(issueStates.data, data.issueStateId).name}</div>}
+                    {!issueComments.rows.length && <div className="state-change"><Icon glyph="fa-angle-double-right"/> {state && state.name}</div>}
                 </div>
                 {canWrite && !comment && <div className="add-comment">
                     <div>
@@ -148,16 +155,16 @@ class LecturingBottom extends React.Component {
                             maxRows={3}
                             rows={3}
                             value={this.state.text} onChange={({target:{value}}) => this.setState({text:value})}
-                            disabled={submitting}
+                            disabled={textFieldDisabled}
                         />
                     </div>
                     <div className="text-right">
-                        <DropdownButton dropup pullRight noCaret title={i18n("arr.issues.state.change")} bsStyle="action" id="comment-state" disabled={!this.state.text || submitting}>
+                        <DropdownButton dropup pullRight noCaret title={i18n("arr.issues.state.change")} bsStyle="action" id="comment-state" disabled={!this.state.text || textFieldDisabled}>
                             {issueStates.data.filter(i => i.id !== data.issueStateId).map(i => <MenuItem key={i.id} onClick={this.addComment.bind(this,i.id)}>
                                 {i.name}
                             </MenuItem>)}
                         </DropdownButton>
-                        <Button bsStyle="action" disabled={!this.state.text || submitting} onClick={this.addComment.bind(this,null)}>
+                        <Button bsStyle="action" disabled={!this.state.text || textFieldDisabled} onClick={this.addComment.bind(this,null)}>
                             <Icon glyph="fa-arrow-circle-up"/>
                         </Button>
                     </div>
