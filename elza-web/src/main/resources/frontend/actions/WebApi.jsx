@@ -1000,8 +1000,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxCallRaw('/logout', {}, 'POST', '', 'application/x-www-form-urlencoded', true);
     }
 
-    findFunds(fulltext, max = DEFAULT_LIST_SIZE) {
-        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/getFunds', {fulltext, max})
+    findFunds(fulltext, max = DEFAULT_LIST_SIZE, from = 0) {
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/getFunds', {fulltext, max, from})
             .then(json => ({funds: json.list, fundCount: json.count}))
     }
 
