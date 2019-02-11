@@ -37,7 +37,7 @@ class IssueLists extends AbstractReactComponent {
     };
 
     create = () => {
-        this.setState({id: null, initialValues: IssueListForm.initialValues});
+        WebApi.addIssueList({...IssueListForm.initialValues, name: i18n("issueList.new.unnamed"), fundId: this.props.fundId}).then(this.onCreate);
     };
 
     onCreate = data => {
