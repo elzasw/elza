@@ -10,11 +10,11 @@ public class DCStorageConfig implements InitializingBean {
 
 	private static DCStorageConfig instance;
 
-	private String repositoryIdentifier;
+	private String repositoryIdentifier = "repo";
 
-	private String basePath;
+	private String basePath = "storage";
 
-	private boolean rejectMode;
+	private boolean rejectMode = false;
 
 	public String getRepositoryIdentifier() {
 		return repositoryIdentifier;
