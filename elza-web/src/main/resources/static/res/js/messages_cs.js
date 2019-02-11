@@ -439,6 +439,7 @@ var messages = {
     "issueList.open":"Stav",
     "issueList.open.true":"Otevřený",
     "issueList.open.false":"Zavřený",
+    "issueList.new.unnamed":"Nepojmenovaný",
 
     "arr.fund.search.result.count": "Počet nalezených výsledků: {0}",
     "arr.fund.search.noFulltext": "Pro zobrazení výsledků hledání v archivních souborech zadejte vyhledávací podmínku.",
