@@ -192,7 +192,7 @@ export function isNormalizeDurationLength(duration) {
  * @param number
  * @returns {string}
  */
-function pad2(number) {
+export function pad2(number) {
     return (number < 10 ? '0' : '') + number
 }
 

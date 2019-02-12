@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -2227,7 +2228,7 @@ public class ArrangementController {
 	@Transactional
     public ChangesResult findChangesByDate(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                            @RequestParam(value = "maxSize", required = false, defaultValue = "20") final Integer maxSize,
-                                           @RequestParam(value = "fromDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime fromDate,
+                                           @RequestParam(value = "fromDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final OffsetDateTime fromDate,
                                            @RequestParam(value = "changeId") final Integer changeId,
                                            @RequestParam(value = "nodeId", required = false) final Integer nodeId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);

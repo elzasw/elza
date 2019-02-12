@@ -1,6 +1,7 @@
 package cz.tacr.elza.service;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -259,7 +260,7 @@ public class OutputServiceInternal {
     @Transactional(TxType.MANDATORY)
     public ArrChange createGenerateChange(Integer userId) {
         ArrChange change = new ArrChange();
-        change.setChangeDate(LocalDateTime.now());
+        change.setChangeDate(OffsetDateTime.now());
         change.setType(ArrChange.Type.GENERATE_OUTPUT);
         if (userId != null) {
             change.setUser(em.getReference(UsrUser.class, userId));

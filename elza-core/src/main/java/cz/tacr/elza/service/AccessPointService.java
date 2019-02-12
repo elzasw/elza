@@ -471,7 +471,7 @@ public class AccessPointService {
      * @return uložený uzel
      */
     private ArrNode saveNode(final ArrNode node, final ArrChange change) {
-        node.setLastUpdate(change.getChangeDate());
+        node.setLastUpdate(change.getChangeDate().toLocalDateTime());
         nodeRepository.save(node);
         nodeRepository.flush();
         return node;

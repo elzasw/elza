@@ -1,5 +1,5 @@
 
-import {normalizeDoubleWithDot} from 'components/validate.jsx'
+import {normalizeDoubleWithDot, pad2} from 'components/validate.jsx'
 import {ShortcutManager} from 'react-shortcuts';
 
 /**
@@ -640,6 +640,36 @@ export function dateTimeToLocalUTC(date) {
         + ':' + _dtpad( date.getMinutes())
         + ':' + _dtpad( date.getSeconds())
         + '.' + _dtpad( date.getMilliseconds());
+}
+
+/**
+ * Převede datum a čas na datum a čas v UTC se zónou.
+ * @param date
+ * @return {*}
+ */
+export function dateTimeToZonedUTC(date) {
+    if (!date) {
+        return date;
+    }
+
+    const zone = date.getTimezoneOffset();
+
+    return date.getFullYear()
+        + '-' + _dtpad( date.getMonth() + 1)
+        + '-' + _dtpad( date.getDate())
+        + 'T' + _dtpad( date.getHours())
+        + ':' + _dtpad( date.getMinutes())
+        + ':' + _dtpad( date.getSeconds())
+        + '.' + _dtpad( date.getMilliseconds())
+        + toZoneString(zone);
+}
+
+function toZoneString(zone) {
+    const positive = zone >= 0;
+    const zoneTmp = positive ? zone : -zone;
+    let h = Math.floor(zoneTmp / 60);
+    let m = Math.floor(zoneTmp % 60);
+    return (positive ? "-" : "+") + pad2(h) + ":" + pad2(m);
 }
 
 export const removeUndefined = (obj) => {
