@@ -125,6 +125,10 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
     protected void configure(final HttpSecurity http) throws Exception {
         http.headers().frameOptions().sameOrigin();
         http.authorizeRequests().antMatchers("/api/**").authenticated();
+        http.authorizeRequests()
+                .antMatchers("/services").permitAll()
+                .antMatchers("/services/**").authenticated()
+                .and().httpBasic();
         http.csrf().disable();
         http.sessionManagement()
                 .maximumSessions(10)
