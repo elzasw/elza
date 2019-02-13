@@ -28,7 +28,7 @@ class Root extends React.Component {
     render() {
         return <Provider store={this.props.store} key="provider">
             <div style={{height: '100%'}}>
-                <BrowserRouter key="router" basename={serverContextPath}>
+                <BrowserRouter key="router" basename={serverContextPath.startsWith("http") ? "" : serverContextPath}>
                     <Route component={Layout} />
                 </BrowserRouter>
                 {this.devTools()}
