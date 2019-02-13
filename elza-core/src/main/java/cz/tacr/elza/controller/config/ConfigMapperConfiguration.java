@@ -2,6 +2,7 @@ package cz.tacr.elza.controller.config;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -244,6 +245,7 @@ public class ConfigMapperConfiguration {
         initSimpleVO(mapperFactory);
 
         mapperFactory.getConverterFactory().registerConverter(new LocalDateTimeConverter());
+        mapperFactory.getConverterFactory().registerConverter(new OffsetDateTimeConverter());
         mapperFactory.getConverterFactory().registerConverter(new LocalDateConverter());
         mapperFactory.getConverterFactory().registerConverter(new DescItemTypeEnumConverter());
         mapperFactory.getConverterFactory().registerConverter(new DescItemSpecEnumConverter());
@@ -1093,6 +1095,22 @@ public class ConfigMapperConfiguration {
         @Override
         public LocalDateTime convertFrom(final Date date, final Type<LocalDateTime> type) {
             return LocalDateTime.from(LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()));
+        }
+    }
+
+    /**
+     * Konvertor mezi OffsetDateTime a Date.
+     */
+    public class OffsetDateTimeConverter extends BidirectionalConverter<OffsetDateTime, Date> {
+
+        @Override
+        public Date convertTo(final OffsetDateTime localDateTime, final Type<Date> type) {
+            return Date.from(localDateTime.toInstant());
+        }
+
+        @Override
+        public OffsetDateTime convertFrom(final Date date, final Type<OffsetDateTime> type) {
+            return OffsetDateTime.from(date.toInstant());
         }
     }
 
