@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -414,7 +414,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String UPDATE_COMMENT = ISSUE_CONTROLLER_URL + "/comments/{commentId}";
     protected static final String EXPORT_ISSUE_LIST = ISSUE_CONTROLLER_URL + "/issue_lists/{issueListId}/export";
 
-    protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.00");
+    protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.00Z");
 
     @Value("${local.server.port}")
     private int port;
@@ -3075,7 +3075,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected ChangesResult findChangesByDate(final Integer fundVersionId,
                                               final Integer maxSize,
-                                              final LocalDateTime fromDate,
+                                              final OffsetDateTime fromDate,
                                               final Integer changeId,
                                               final Integer nodeId) {
         return get(spec -> spec.pathParam("fundVersionId", fundVersionId)

@@ -40,7 +40,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -202,7 +202,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         final Integer lastChangeId = changesAll.getChanges().get(0).getChangeId();
         final Integer firstChangeId = changesAll.getChanges().get(changesAll.getChanges().size() - 1).getChangeId();
-        ChangesResult changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, LocalDateTime.now(), lastChangeId, null);
+        ChangesResult changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, OffsetDateTime.now(), lastChangeId, null);
         assertNotNull(changesByDate);
         assertNotNull(changesByDate.getChanges());
 
@@ -210,10 +210,10 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         try {
             logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
             Thread.sleep(5000);
-            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, LocalDateTime.now(), lastChangeId, null);
+            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, OffsetDateTime.now(), lastChangeId, null);
             logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
             Thread.sleep(5000);
-            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, LocalDateTime.now(), lastChangeId, null);
+            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, OffsetDateTime.now(), lastChangeId, null);
             logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
         } catch (InterruptedException e) {
             e.printStackTrace();
