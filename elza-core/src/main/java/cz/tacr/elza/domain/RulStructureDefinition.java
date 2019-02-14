@@ -149,6 +149,11 @@ public class RulStructureDefinition {
         /**
          * Serializace hodnoty.
          */
-        SERIALIZED_VALUE
+        SERIALIZED_VALUE,
+
+        /**
+         * Parsování hodnoty.
+         */
+        PARSE_VALUE
     }
 }

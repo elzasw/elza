@@ -1347,9 +1347,9 @@ export class WebApiCls {
         });
     }
 
-    createStructureData(fundVersionId, structureTypeCode) {
+    createStructureData(fundVersionId, structureTypeCode, value = null) {
         // Kvůli JSON stringify musíme poslat pomocí RAW aby se nevytvořili '"' v body
-        return AjaxUtils.ajaxCallRaw(WebApiCls.structureUrl + '/data/' + fundVersionId, null, "POST", structureTypeCode, 'application/json');
+        return AjaxUtils.ajaxCallRaw(WebApiCls.structureUrl + '/data/' + fundVersionId, {value}, "POST", structureTypeCode, 'application/json');
     }
 
     duplicateStructureDataBatch(fundVersionId, structureDataId, data) {

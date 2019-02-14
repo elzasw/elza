@@ -21,15 +21,15 @@ void generate() {
     StringBuilder sortValueBuilder = new StringBuilder();
     
     // Fixed prefix
-    appendValue(valueBuilder, "ZP2015_PACKET_FIXED_PREFIX");
-    appendValue(sortValueBuilder, "ZP2015_PACKET_FIXED_PREFIX");
+    appendValue(valueBuilder, "SRD_PACKET_FIXED_PREFIX");
+    appendValue(sortValueBuilder, "SRD_PACKET_FIXED_PREFIX");
     
     // User defined prefix
-    appendValue(valueBuilder, "ZP2015_PACKET_PREFIX");
-    appendValue(sortValueBuilder, "ZP2015_PACKET_PREFIX");
+    appendValue(valueBuilder, "SRD_PACKET_PREFIX");
+    appendValue(sortValueBuilder, "SRD_PACKET_PREFIX");
 
     // Packet number    
-    String number = toStringValue("ZP2015_PACKET_NUMBER");
+    String number = toStringValue("SRD_PACKET_NUMBER");
     if(StringUtils.isNotBlank(number)) {
         // append zeroes
         int addZeros = packetLeadingZeros - number.length();
@@ -41,8 +41,8 @@ void generate() {
     }
     
     // Postfix
-    appendValue(valueBuilder, "ZP2015_PACKET_POSTFIX");
-    appendValue(sortValueBuilder, "ZP2015_PACKET_POSTFIX");
+    appendValue(valueBuilder, "SRD_PACKET_POSTFIX");
+    appendValue(sortValueBuilder, "SRD_PACKET_POSTFIX");
     
     // store result
     result.setValue(valueBuilder.toString().trim());

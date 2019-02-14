@@ -1003,6 +1003,7 @@ public class PackageService {
         switch (definition.getDefType()) {
             case ATTRIBUTE_TYPES:
                 return ZIP_DIR_RULES;
+            case PARSE_VALUE:
             case SERIALIZED_VALUE:
                 return ZIP_DIR_SCRIPTS;
             default:
@@ -2768,6 +2769,7 @@ public class PackageService {
                         case ATTRIBUTE_TYPES:
                             dir = dirRules;
                             break;
+                        case PARSE_VALUE:
                         case SERIALIZED_VALUE:
                             dir = dirGroovies;
                             break;
@@ -2784,6 +2786,7 @@ public class PackageService {
                         case ATTRIBUTE_TYPES:
                             dir = dirRules;
                             break;
+                        case PARSE_VALUE:
                         case SERIALIZED_VALUE:
                             dir = dirGroovies;
                             break;
