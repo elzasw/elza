@@ -194,7 +194,7 @@ public class AccessPointGeneratorService {
      */
     @Transactional
     public void processAsyncGenerate(final Integer accessPointId, final Integer changeId) {
-        ApAccessPoint accessPoint = apRepository.findOneWithLock(accessPointId);
+        ApAccessPoint accessPoint = apRepository.findOne(accessPointId);
         ApChange change;
         if (changeId == null) {
             change = apDataService.createChange(ApChange.Type.AP_REVALIDATE);
@@ -327,7 +327,7 @@ public class AccessPointGeneratorService {
 
         accessPoint.setErrorDescription(apErrorDescription.asJsonString());
         accessPoint.setState(apStateOld == ApState.TEMP ? ApState.TEMP : apState);
-        apRepository.save(accessPoint);
+        accessPointService.saveWithLock(accessPoint);
 
         eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.ACCESS_POINT_UPDATE, accessPoint.getAccessPointId()));
 

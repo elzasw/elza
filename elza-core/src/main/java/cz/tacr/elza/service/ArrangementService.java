@@ -539,6 +539,28 @@ public class ArrangementService {
     }
 
     /**
+     * Migrace typu objektu změny.
+     *
+     * @param change  migrovaná změna
+     * @param newType nový typ změny
+     * @return upravený objekt změny
+     */
+    public ArrChange migrateChangeType(final ArrChange change, final ArrChange.Type newType) {
+        Validate.notNull(change);
+        Validate.notNull(newType);
+        Validate.notNull(change.getChangeId());
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        change.setChangeDate(OffsetDateTime.now());
+        if (userDetail != null && userDetail.getId() != null) {
+            UsrUser user = em.getReference(UsrUser.class, userDetail.getId());
+            change.setUser(user);
+        }
+        change.setType(newType);
+        return changeRepository.save(change);
+    }
+
+
+    /**
      * Dodatečné nastavení primární vazby u změny.
      *
      * @param change        změna u které primární uzel nastavujeme

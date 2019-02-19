@@ -151,4 +151,15 @@
 
     </changeSet>
 
+    <changeSet id="20190219094000" author="slapa">
+        <addColumn tableName="ap_access_point">
+            <column name="version" type="int" defaultValueNumeric="0"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="20190219094001" author="slapa">
+        <addColumn tableName="ap_access_point">
+            <column name="last_update" type="timestamp"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

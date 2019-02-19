@@ -977,7 +977,7 @@ public class StructObjService {
 
         validateStructureItems(itemTypes, structureItems);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_DATA_BATCH);
+        ArrChange change = arrangementService.migrateChangeType(structureData.getCreateChange(), ArrChange.Type.ADD_STRUCTURE_DATA_BATCH);
         List<ArrStructuredObject> structureDataList = createStructObjList(fundVersion.getFund(),
                 structureData.getStructuredType(), ArrStructuredObject.State.OK, change, count - 1);
 

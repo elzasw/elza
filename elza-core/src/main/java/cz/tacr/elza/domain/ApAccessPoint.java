@@ -1,18 +1,20 @@
 package cz.tacr.elza.domain;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.persistence.*;
 
 import cz.tacr.elza.api.interfaces.IApScope;
 import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.domain.interfaces.Versionable;
 import org.hibernate.annotations.Type;
 
 /**
  * Rejstříkové heslo.
  */
 @Entity(name = "ap_access_point")
-public class ApAccessPoint implements IApScope {
+public class ApAccessPoint extends AbstractVersionableEntity implements Versionable, IApScope {
 
     public static final String FIELD_ACCESS_POINT_ID = "accessPointId";
     public static final String FIELD_UUID = "uuid";
@@ -82,6 +84,9 @@ public class ApAccessPoint implements IApScope {
     // without getter/setter only for JPA query
     @OneToMany(mappedBy = "accessPoint")
     private List<ApDescription> descriptions;
+
+    @Column
+    private LocalDateTime lastUpdate;
 
     /**
      * ID hesla.
@@ -206,6 +211,14 @@ public class ApAccessPoint implements IApScope {
 
     public void setErrorDescription(final String errorDescription) {
         this.errorDescription = errorDescription;
+    }
+
+    public LocalDateTime getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public void setLastUpdate(final LocalDateTime lastUpdate) {
+        this.lastUpdate = lastUpdate;
     }
 
     @Override
