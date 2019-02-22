@@ -3,7 +3,13 @@
  */
 
 import * as types from 'actions/constants/ActionTypes.js';
-import {WebApi} from 'actions/index.jsx';
+import { WebApi } from 'actions/index.jsx';
+
+import { SimpleListActions } from 'shared/list'
+
+
+// import { DEFAULT_LIST_SIZE } from '../../constants.tsx'
+export const DEFAULT_FUND_LIST_MAX_SIZE = 5;
 
 function _fundRegionDataKey(fundRegion) {
     return fundRegion.filterText + '_'
@@ -61,7 +67,7 @@ export function fundsFundDetailFetchIfNeeded() {
 /**
  * Fetch dat pro seznam archivních souborů.
  */
-export function fundsFetchIfNeeded() {
+export function fundsFetchIfNeeded(from = 0, size = DEFAULT_FUND_LIST_MAX_SIZE) {
     return (dispatch, getState) => {
         var state = getState();
         const fundRegion = state.fundRegion;
@@ -69,7 +75,7 @@ export function fundsFetchIfNeeded() {
 
         if (fundRegion.currentDataKey !== dataKey) {
             dispatch(fundsRequest(dataKey))
-            WebApi.findFunds(fundRegion.filterText)
+            WebApi.findFunds(fundRegion.filterText, size, from)
                 .then(json => {
                     var newState = getState();
                     const newFundRegion = newState.fundRegion;
@@ -107,5 +113,17 @@ function fundsFundDetailReceive(data) {
     return {
         type: types.FUNDS_FUND_DETAIL_RECEIVE,
         data,
+    }
+}
+
+/**
+ * Filtr archivních souborů
+ *
+ * @param filter {Object} - objekt filtru
+ */
+export function fundsFilter(filter) {
+    return {
+        type: types.FUNDS_FILTER,
+        filter,
     }
 }
