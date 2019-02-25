@@ -5,10 +5,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import { WebApi } from 'actions/index.jsx';
 
-import { SimpleListActions } from 'shared/list'
-
-
-// import { DEFAULT_LIST_SIZE } from '../../constants.tsx'
+import { DEFAULT_LIST_SIZE } from '../../constants.tsx'
 export const DEFAULT_FUND_LIST_MAX_SIZE = 5;
 
 function _fundRegionDataKey(fundRegion) {
@@ -71,11 +68,12 @@ export function fundsFetchIfNeeded(from = 0, size = DEFAULT_FUND_LIST_MAX_SIZE) 
     return (dispatch, getState) => {
         var state = getState();
         const fundRegion = state.fundRegion;
-        const dataKey = _fundRegionDataKey(fundRegion)
+        const dataKey = _fundRegionDataKey(fundRegion);
+        const { filter } = fundRegion;
 
-        if (fundRegion.currentDataKey !== dataKey) {
+        if (fundRegion.currentDataKey !== dataKey || filter !== { from, size }) {
             dispatch(fundsRequest(dataKey))
-            WebApi.findFunds(fundRegion.filterText, size, from)
+            WebApi.findFunds(fundRegion.filterText, filter.size, filter.from)
                 .then(json => {
                     var newState = getState();
                     const newFundRegion = newState.fundRegion;

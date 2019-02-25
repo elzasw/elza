@@ -2,12 +2,18 @@ import * as types from 'actions/constants/ActionTypes.js';
 import { indexById } from 'stores/app/utils.jsx'
 import { consolidateState } from 'components/Utils.jsx'
 import { isFundTreeAction } from 'actions/arr/fundTree.jsx'
+import { DEFAULT_FUND_LIST_MAX_SIZE } from 'actions/fund/fund.jsx'
 import fundDetail from './fundDetail.jsx'
+
 
 const initialState = {
     fetched: false,
     fetching: false,
     filterText: '',
+    filter: {
+        from: 0,
+        size: DEFAULT_FUND_LIST_MAX_SIZE
+    },
     currentDataKey: '',
     funds: [],
     fundsCount: 0,
@@ -105,10 +111,6 @@ export default function fundRegion(state = initialState, action = {}) {
                 fetched: true,
                 funds: action.data.funds,
                 fundsCount: action.data.fundCount,
-                filter: {
-                    from: action.data.from,
-                    size: action.data.max
-                }
             }
         default:
             return state

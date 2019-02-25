@@ -63,8 +63,8 @@ class FundPage extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         const { filter } = this.props.fundRegion;
+
         if (nextProps.fundRegion.filter !== filter) {
-            console.warn(this.props);
             this.fetchIfNeeded(nextProps);
         }
     }
@@ -74,9 +74,9 @@ class FundPage extends AbstractReactComponent {
     }
 
     fetchIfNeeded = (props = this.props) => {
-        const { maxSize } = props
+        const { filter } = props.fundRegion;
 
-        this.dispatch(fundsFetchIfNeeded(0, maxSize));
+        this.dispatch(fundsFetchIfNeeded(filter.from, filter.size));
         this.dispatch(fundsFundDetailFetchIfNeeded());
     };
 
