@@ -65,19 +65,20 @@ class FundPage extends AbstractReactComponent {
         const { filter } = this.props.fundRegion;
 
         if (nextProps.fundRegion.filter !== filter) {
-            this.fetchIfNeeded(nextProps);
+            this.fetchFundsIfNeeded(nextProps);
         }
+
+        this.dispatch(fundsFundDetailFetchIfNeeded());
     }
 
     componentDidMount() {
-        this.fetchIfNeeded();
+        this.fetchFundsIfNeeded();
     }
 
-    fetchIfNeeded = (props = this.props) => {
+    fetchFundsIfNeeded = (props = this.props) => {
         const { filter } = props.fundRegion;
 
         this.dispatch(fundsFetchIfNeeded(filter.from, filter.size));
-        this.dispatch(fundsFundDetailFetchIfNeeded());
     };
 
     handleAddFund() {
