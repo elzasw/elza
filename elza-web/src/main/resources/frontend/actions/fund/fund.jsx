@@ -67,13 +67,13 @@ export function fundsFundDetailFetchIfNeeded() {
 export function fundsFetchIfNeeded(from = 0, size = DEFAULT_FUND_LIST_MAX_SIZE) {
     return (dispatch, getState) => {
         var state = getState();
-        const fundRegion = state.fundRegion;
-        const dataKey = _fundRegionDataKey(fundRegion);
+        const { fundRegion } = state;
         const { filter } = fundRegion;
+        const dataKey = _fundRegionDataKey(fundRegion);
 
-        if (fundRegion.currentDataKey !== dataKey || filter !== { from, size }) {
+        if (fundRegion.currentDataKey !== dataKey) {
             dispatch(fundsRequest(dataKey))
-            WebApi.findFunds(fundRegion.filterText, filter.size, filter.from)
+            WebApi.findFunds(fundRegion.filterText, size, filter.from)
                 .then(json => {
                     var newState = getState();
                     const newFundRegion = newState.fundRegion;

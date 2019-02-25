@@ -61,25 +61,14 @@ class FundPage extends AbstractReactComponent {
         this.buildRibbon = this.buildRibbon.bind(this);
     }
 
-    componentWillReceiveProps(nextProps) {
-        const { filter } = this.props.fundRegion;
-
-        if (nextProps.fundRegion.filter !== filter) {
-            this.fetchFundsIfNeeded(nextProps);
-        }
-
+    componentWillReceiveProps() {
+        this.dispatch(fundsFetchIfNeeded());
         this.dispatch(fundsFundDetailFetchIfNeeded());
     }
 
     componentDidMount() {
-        this.fetchFundsIfNeeded();
+        this.dispatch(fundsFetchIfNeeded());
     }
-
-    fetchFundsIfNeeded = (props = this.props) => {
-        const { filter } = props.fundRegion;
-
-        this.dispatch(fundsFetchIfNeeded(filter.from, filter.size));
-    };
 
     handleAddFund() {
         const { userDetail } = this.props;
@@ -349,10 +338,10 @@ class FundPage extends AbstractReactComponent {
     };
 
     handleFilterNext = () => {
-        const { filter } = this.props.fundRegion;
+        const { filter, fundsCount } = this.props.fundRegion;
         let { from } = filter;
 
-        if (from < DEFAULT_FUND_LIST_MAX_SIZE) {
+        if (from < fundsCount - DEFAULT_FUND_LIST_MAX_SIZE) {
             from = from + DEFAULT_FUND_LIST_MAX_SIZE;
             this.dispatch(fundsFilter({ ...filter, from }));
         }

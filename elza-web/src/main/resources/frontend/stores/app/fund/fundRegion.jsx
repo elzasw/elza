@@ -2,7 +2,6 @@ import * as types from 'actions/constants/ActionTypes.js';
 import { indexById } from 'stores/app/utils.jsx'
 import { consolidateState } from 'components/Utils.jsx'
 import { isFundTreeAction } from 'actions/arr/fundTree.jsx'
-import { DEFAULT_FUND_LIST_MAX_SIZE } from 'actions/fund/fund.jsx'
 import fundDetail from './fundDetail.jsx'
 
 
@@ -12,7 +11,6 @@ const initialState = {
     filterText: '',
     filter: {
         from: 0,
-        size: DEFAULT_FUND_LIST_MAX_SIZE
     },
     currentDataKey: '',
     funds: [],
@@ -95,8 +93,8 @@ export default function fundRegion(state = initialState, action = {}) {
                 ...state,
                 filter: {
                     from: typeof action.filter.from !== 'undefined' ? action.filter.from : '',
-                    size: typeof action.filter.size !== 'undefined' ? action.filter.size : ''
                 },
+                currentDataKey: ''
             }
         case types.FUNDS_REQUEST:
             return {
