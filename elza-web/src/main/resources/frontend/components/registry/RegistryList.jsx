@@ -251,7 +251,8 @@ class RegistryList extends AbstractReactComponent {
                 prev={this.handleFilterPrev}
                 next={this.handleFilterNext}
                 from={this.props.registryList.filter.from}
-                maxSize={this.props.registryList.count}
+                maxSize={maxSize}
+                totalCount={this.props.registryList.count}
             />}
         </div>
     }

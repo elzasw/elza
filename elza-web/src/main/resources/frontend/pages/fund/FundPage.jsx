@@ -380,7 +380,8 @@ class FundPage extends AbstractReactComponent {
                     prev={this.handleFilterPrev}
                     next={this.handleFilterNext}
                     from={fundRegion.filter.from}
-                    maxSize={fundRegion.fundsCount}
+                    maxSize={maxSize}
+                    totalCount={fundRegion.fundsCount}
                 />}
             </div>
         )
