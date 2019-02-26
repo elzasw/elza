@@ -36,7 +36,6 @@ class ArrSearchForm extends AbstractReactComponent {
 
         errors.condition = [];
         values.condition.forEach((item, index) => {
-            console.warn(item)
             if (item.type === TYPE_UNITDATE) {
                 errors.condition.push(DatationField.reduxValidate(item));
             } else {

@@ -1123,10 +1123,12 @@ class ArrPage extends ArrParentPage {
         const showDaosJp = arrRegion.showDaosJp;
         const activeFund = this.getActiveFund(this.props);
 
+        const centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
+        const centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
+
         if (arrRegion.extendedView) {   // extended view - jiné větší zobrazení stromu, renderuje se zde
-            let centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
-            let centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
-            let colorCoded = !(centerSettingsValues && centerSettingsValues.treeColorCoding === false);
+            const colorCoded = !(centerSettingsValues && centerSettingsValues.treeColorCoding === false);
+
             return (
                 <FundTreeMain
                     focus={focus}
@@ -1149,6 +1151,8 @@ class ArrPage extends ArrParentPage {
                 </div>
             );
         } else {    // standardní zobrazení pořádání - záložky node
+            const accordion = centerSettingsValues && centerSettingsValues.acordeon === true;
+
             return (
                 <NodeTabs
                     versionId={activeFund.versionId}
@@ -1162,6 +1166,7 @@ class ArrPage extends ArrParentPage {
                     fundId={activeFund.id}
                     showRegisterJp={showRegisterJp}
                     showDaosJp={showDaosJp}
+                    displayAccordion={accordion}
                 />
             )
         }

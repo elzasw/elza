@@ -723,7 +723,7 @@ return true
      * @return {Object} view
      */
     renderAccordion(form, recordInfo, daos, readMode) {
-        const {node, versionId, userDetail, fund, fundId, closed} = this.props;
+        const {node, versionId, userDetail, fund, fundId, closed, displayAccordion} = this.props;
         const {focusItemIndex} = this.state;
         var rows = [];
 
@@ -749,7 +749,8 @@ return true
                 const accordionLeft = item.accordionLeft ? item.accordionLeft : i18n('accordion.title.left.name.undefined', item.id)
                 const accordionRight = item.accordionRight ? item.accordionRight : ''
                 const referenceMark = <span className="reference-mark">{createReferenceMarkString(item)}</span>
-                const focused = a === this.state.focusItemIndex
+                const focused = a === this.state.focusItemIndex;
+                const disabled = !displayAccordion;
 
                 let digitizationInfo;
                 if (item.digitizationRequests && item.digitizationRequests.length > 0) {
@@ -763,9 +764,9 @@ return true
 
                 if (node.selectedSubNodeId == item.id) {
                     rows.push(
-                        <div key={item.id} ref={'accheader-' + item.id} className={'accordion-item opened' + (focused ? ' focused' : '')}>
-                            <div key='header' className='accordion-header-container' onClick={this.handleCloseItem.bind(this, item)}>
-                                <div className='accordion-header'>
+                        <div key={item.id} ref={'accheader-' + item.id} className={'accordion-item opened' + (focused ? ' focused' : '') + (disabled ? ' disabled' : '')}>
+                            <div key='header' className='accordion-header-container' onClick={displayAccordion ? this.handleCloseItem.bind(this, item) : () => ''}>
+                                <div className={'accordion-header'}>
                                     <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
                                         {referenceMark} <span className="title" title={accordionLeft}>{accordionLeft}</span>
                                     </div>
@@ -784,7 +785,7 @@ return true
                             </div>
                         </div>
                     )
-                } else {
+                } else if (displayAccordion) {
                     rows.push(
                         <div key={item.id} ref={'accheader-' + item.id} className={'accordion-item closed' + (focused ? ' focused' : '')}>
                             <div key='header' className='accordion-header-container' onClick={this.handleOpenItem.bind(this, item)}>
@@ -815,7 +816,7 @@ return true
             <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={(action,e)=>this.handleAccordionShortcuts(action,e)} tabIndex={0} global stopPropagation={false}>
                 <div  className='inner-wrapper' ref="innerAccordionWrapper">
                     <div className="menu-wrapper">
-                        <NodeActionsBar node={node} selectedSubNodeIndex={focusItemIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
+                        <NodeActionsBar onNext={this.props.onNext} simplified={!displayAccordion} node={node} selectedSubNodeIndex={focusItemIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
                     </div>
                     <div className='content-wrapper' ref='accordionContent'>
                         {rows}
@@ -992,8 +993,9 @@ NodePanel.propTypes = {
     fundId: React.PropTypes.number,
     showRegisterJp: React.PropTypes.bool.isRequired,
     showDaosJp: React.PropTypes.bool.isRequired,
+    displayAccordion: React.PropTypes.bool.isRequired,
     closed: React.PropTypes.bool.isRequired,
-    userDetail: React.PropTypes.object.isRequired,
+    userDetail: React.PropTypes.object.isRequired
 };
 
 export default connect(mapStateToProps)(NodePanel);

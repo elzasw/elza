@@ -59,6 +59,7 @@ class NodeActionsBar extends AbstractReactComponent {
             )
         }
     }
+
     /**
      * Akce kontrolující zda je na uzly použit filtr
      * @return {bool} nodesFiltered
@@ -68,8 +69,9 @@ class NodeActionsBar extends AbstractReactComponent {
         var nodesFiltered = node.filterText ? true : false;
         return nodesFiltered;
     }
+
     render() {
-      const {node, selectedSubNodeIndex, versionId, userDetail, fundId, closed} = this.props;
+      const {simplified, node, selectedSubNodeIndex, versionId, userDetail, fundId, closed} = this.props;
       var selectedSubNodeNumber = selectedSubNodeIndex + 1; // pořadí vybraného záznamu v akordeonu
       var gotoTitle = this.isFilterUsed() ? i18n('arr.fund.subNodes.findPosition.filterActive') : i18n('arr.fund.subNodes.findPosition')
 
@@ -85,6 +87,7 @@ class NodeActionsBar extends AbstractReactComponent {
                 <div className="button-wrap">
                     <div className="left-side">
                         <Search
+                            disabled={simplified}
                             tabIndex={-1}
                             ref='search'
                             className='search-input'
@@ -113,7 +116,7 @@ class NodeActionsBar extends AbstractReactComponent {
                           onClick={()=>this.dispatch(fundSubNodesPrevPage(versionId, node.id, node.routingKey))}
                           title={i18n('arr.fund.subNodes.prevPage',node.pageSize)}
                         >
-                            <Icon glyph="fa-backward" />
+                            <Icon glyph={simplified ? "fa-caret-left" : "fa-backward"} />
                         </div>
                         <div
                           className='btn btn-default'
@@ -121,7 +124,7 @@ class NodeActionsBar extends AbstractReactComponent {
                           onClick={()=>this.dispatch(fundSubNodesNextPage(versionId, node.id, node.routingKey))}
                           title={i18n('arr.fund.subNodes.nextPage',node.pageSize)}
                         >
-                            <Icon glyph="fa-forward" />
+                            <Icon glyph={simplified ? "fa-caret-right" : "fa-forward"} />
                         </div>
                     </div>
                 </div>
@@ -132,11 +135,12 @@ class NodeActionsBar extends AbstractReactComponent {
 };
 
 NodeActionsBar.propTypes = {
-      node: React.PropTypes.any.isRequired,
-      versionId: React.PropTypes.any.isRequired,
-      userDetail: React.PropTypes.object.isRequired,
-      fundId: React.PropTypes.any.isRequired,
-      closed: React.PropTypes.any.isRequired,
-      selectedSubNodeIndex: React.PropTypes.number.isRequired
+    simplified: React.PropTypes.bool.isRequired,
+    node: React.PropTypes.any.isRequired,
+    versionId: React.PropTypes.any.isRequired,
+    userDetail: React.PropTypes.object.isRequired,
+    fundId: React.PropTypes.any.isRequired,
+    closed: React.PropTypes.any.isRequired,
+    selectedSubNodeIndex: React.PropTypes.number.isRequired
 };
 export default connect()(NodeActionsBar);

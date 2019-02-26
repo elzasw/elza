@@ -9,8 +9,11 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Tabs} from 'components/shared';
 import {fundCloseNodeTab, fundSelectNodeTab} from 'actions/arr/nodes.jsx'
+import {fundSelectSubNode} from 'actions/arr/node.jsx'
+import {createFundRoot, getParentNode} from './ArrUtils.jsx'
 import {nodesFetchIfNeeded} from 'actions/arr/node.jsx'
 import {propsEquals} from 'components/Utils.jsx'
+import {indexById} from 'stores/app/utils.jsx'
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
 import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus.jsx'
 import NodePanel from "./NodePanel";
@@ -64,9 +67,24 @@ return true
         this.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'tabs'))
     }
 
+    // @todo
+    // handleSelectNextNode = (node) => {
+    //     const { versionId, nodes } = this.props;
+    //     const index = indexById(nodes, node.id);
+
+    //     if (index !== null) {
+    //         var parentNode = getParentNode(node, nodes);
+    //         if (parentNode == null) {   // root
+    //             parentNode = createFundRoot(this.props.fund);
+    //         }
+
+    //         this.dispatch(fundSelectSubNode(versionId, nodes[index + 1], parentNode, false, null, true));
+    //     }
+    // } 
+
     render() {
         const {fund, nodes, activeIndex, versionId, rulDataTypes, showRegisterJp, showDaosJp,
-                calendarTypes, descItemTypes, fundId, closed} = this.props;
+                calendarTypes, descItemTypes, fundId, closed, displayAccordion} = this.props;
 
         if (nodes.length == 0) {
             return <div></div>
@@ -86,24 +104,34 @@ return true
         var activeNode = nodes[activeIndex];
         var activeTab = tabs[activeIndex];
 
+        const showOnlyOne = !(!displayAccordion && tabs.length <= 1);
+
         return (
             <Tabs.Container ref='tabs' className='node-tabs-container'>
-                <Tabs.Tabs closable items={tabs} activeItem={activeTab}
-                    onSelect={this.handleTabSelect}
-                    onClose={item=>this.dispatch(fundCloseNodeTab(versionId, item.id, item.key, item.index))}
-                />
+                {showOnlyOne &&
+                    <Tabs.Tabs
+                        closable
+                        items={tabs} activeItem={activeTab}
+                        onSelect={this.handleTabSelect}
+                        onClose={item=>this.dispatch(fundCloseNodeTab(versionId, item.id, item.key, item.index))}
+                    />
+                }
                 <Tabs.Content>
-                    {activeNode && <NodePanel versionId={versionId}
-                                              fund={fund}
-                                              closed={closed}
-                                              fundId={fundId}
-                                              node={activeNode}
-                                              rulDataTypes={rulDataTypes}
-                                              calendarTypes={calendarTypes}
-                                              descItemTypes={descItemTypes}
-                                              showRegisterJp={showRegisterJp}
-                                              showDaosJp={showDaosJp}
-                    />}
+                    {activeNode && 
+                        <NodePanel 
+                            versionId={versionId}
+                            fund={fund}
+                            closed={closed}
+                            fundId={fundId}
+                            node={activeNode}
+                            rulDataTypes={rulDataTypes}
+                            calendarTypes={calendarTypes}
+                            descItemTypes={descItemTypes}
+                            showRegisterJp={showRegisterJp}
+                            showDaosJp={showDaosJp}
+                            displayAccordion={displayAccordion}
+                        />
+                    }
                 </Tabs.Content>
             </Tabs.Container>
         );
@@ -121,7 +149,8 @@ NodeTabs.propTypes = {
     descItemTypes: React.PropTypes.object.isRequired,
     showRegisterJp: React.PropTypes.bool.isRequired,
     showDaosJp: React.PropTypes.bool.isRequired,
-    closed: React.PropTypes.bool.isRequired,
+    displayAcordeon: React.PropTypes.bool.isRequired,
+    closed: React.PropTypes.bool.isRequired
 }
 
 function mapStateToProps(state) {
