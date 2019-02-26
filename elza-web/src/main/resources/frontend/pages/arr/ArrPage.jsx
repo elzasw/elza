@@ -338,19 +338,27 @@ class ArrPage extends ArrParentPage {
                     {
                         name: i18n('arr.fund.settings.panel.center.parents'),
                         key: 'parents',
-                        checked: dataCenter && dataCenter.parents},
+                        checked: dataCenter && dataCenter.parents
+                    },
                     {
                         name: i18n('arr.fund.settings.panel.center.children'),
                         key: 'children',
-                        checked: dataCenter && dataCenter.children},
+                        checked: dataCenter && dataCenter.children
+                    },
                     {
                         name: i18n('arr.fund.settings.panel.rightPanel'),
                         key: 'rightPanel',
-                        checked: dataCenter && dataCenter.rightPanel !== undefined ? dataCenter.rightPanel : true},
+                        checked: dataCenter && dataCenter.rightPanel !== undefined ? dataCenter.rightPanel : true
+                    },
                     {
                         name: i18n('arr.fund.settings.panel.treeColorCoding'),
                         key: "treeColorCoding",
                         checked: dataCenter && dataCenter.treeColorCoding !== undefined ? dataCenter.treeColorCoding : true
+                    },
+                    {
+                        name: i18n('arr.fund.settings.panel.acordeon'),
+                        key: "acordeon",
+                        checked: dataCenter && dataCenter.acordeon !== undefined ? dataCenter.acordeon : false
                     }
                 ]
             },
