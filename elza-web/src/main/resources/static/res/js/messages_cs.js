@@ -501,6 +501,7 @@ var messages = {
     "arr.fund.settings.panel.center.children": "Seznam potomků jednotky popisu",
     "arr.fund.settings.panel.rightPanel": "Pravý panel",
     "arr.fund.settings.panel.treeColorCoding": "Barevné označení úrovní ve stromu",
+    "arr.fund.settings.panel.acordeon": "Akordeon",
     "arr.fund.settings.panel.right.title": "Záložky v pravém panelu",
 
     "arr.fund.version": "Verze {0}",
