@@ -7,7 +7,8 @@ import {connect} from 'react-redux';
 import {WebApi} from "../../actions/WebApi";
 import {
     structureTypeFetchIfNeeded, AREA, structureTypeFilter,
-    structureTypeInvalidate
+    structureTypeInvalidate,
+    DEFAULT_STRUCTURE_TYPE_MAX_SIZE
 } from "../../actions/arr/structureType";
 import storeFromArea from "../../shared/utils/storeFromArea";
 import debounce from "../../shared/utils/debounce";
@@ -21,15 +22,20 @@ import PropTypes from 'prop-types';
 import UpdateMultipleSub from "./structure/UpdateMultipleSub";
 import {addToastrWarning} from "../shared/toastr/ToastrActions";
 import DescItemFactory from "components/arr/nodeForm/DescItemFactory.jsx";
+import ListPager from "components/shared/listPager/ListPager";
 
 class ArrStructurePanel extends AbstractReactComponent {
-
     static propTypes = {
         code: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
         id: PropTypes.number.isRequired,
         fundVersionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
+        maxSize: React.PropTypes.number
+    };
+
+    static defaultProps = {
+        maxSize: DEFAULT_STRUCTURE_TYPE_MAX_SIZE
     };
 
     state = {
@@ -182,6 +188,26 @@ class ArrStructurePanel extends AbstractReactComponent {
         this.props.dispatch(structureTypeFilter({...filter, ...toFilter}));
     };
 
+    handleFilterPrev = () => {
+        const { filter } = this.props.store;
+        let { from } = filter;
+
+        if (from >= DEFAULT_STRUCTURE_TYPE_MAX_SIZE) {
+            from = from - DEFAULT_STRUCTURE_TYPE_MAX_SIZE;
+            this.dispatch(structureTypeFilter({...filter, from}));
+        }
+    };
+
+    handleFilterNext = () => {
+        const { filter, count } = this.props.store;
+        let { from } = filter;
+
+        if (from < count - DEFAULT_STRUCTURE_TYPE_MAX_SIZE) {
+            from = from + DEFAULT_STRUCTURE_TYPE_MAX_SIZE;
+            this.dispatch(structureTypeFilter({...filter, from}));
+        }
+    };
+
     /**
      *
      * @param clickItem
@@ -326,8 +352,8 @@ class ArrStructurePanel extends AbstractReactComponent {
     }
 
     render() {
-        const {rows, filter, fetched} = this.props.store;
-        const {readMode} = this.props;
+        const {rows, filter, fetched, count} = this.props.store;
+        const {readMode, maxSize} = this.props;
         const {activeIndexes, contextMenu} = this.state;
         if (!fetched) {
             return <Loading />
@@ -364,6 +390,15 @@ class ArrStructurePanel extends AbstractReactComponent {
                 multiselect={true}
             /> : <div className="list listbox-wrapper no-result text-center">{i18n('search.action.noResult')}</div>}
              {contextMenu.isOpen && this.renderContextMenu()}
+             {count > maxSize && 
+                <ListPager
+                    prev={this.handleFilterPrev}
+                    next={this.handleFilterNext}
+                    from={filter.from}
+                    maxSize={maxSize}
+                    totalCount={count}
+                />
+             }
         </div>
 
 
