@@ -1,13 +1,28 @@
 package cz.tacr.elza.packageimport.xml;
 
-import javax.xml.bind.annotation.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlType;
+
+import org.apache.commons.lang.StringUtils;
+
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecRegister;
+import cz.tacr.elza.packageimport.ItemTypeUpdater;
+import cz.tacr.elza.repository.ItemSpecRegisterRepository;
 
 
 /**
  * ItemSpec.
  *
- * @author Martin Šlapa
  * @since 14.12.2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -91,5 +106,44 @@ public class ItemSpec {
 
     public void setCategories(final List<Category> categories) {
         this.categories = categories;
+    }
+
+    /**
+     * Převod DAO na VO specifikace.
+     *
+     * @param rulDescItemSpec
+     *            DAO specifikace
+     * @return
+     */
+    public static ItemSpec fromEntity(RulItemSpec rulDescItemSpec,
+                                          ItemSpecRegisterRepository itemSpecRegisterRepository) {
+        ItemSpec itemSpec = new ItemSpec();
+        itemSpec.setCode(rulDescItemSpec.getCode());
+        itemSpec.setName(rulDescItemSpec.getName());
+        itemSpec.setDescription(rulDescItemSpec.getDescription());
+        itemSpec.setItemType(rulDescItemSpec.getItemType().getCode());
+        itemSpec.setShortcut(rulDescItemSpec.getShortcut());
+
+        List<RulItemSpecRegister> rulItemSpecRegisters = itemSpecRegisterRepository
+                .findByDescItemSpecId(rulDescItemSpec);
+
+        List<ItemSpecRegister> itemSpecRegisterList = new ArrayList<>(rulItemSpecRegisters.size());
+
+        for (RulItemSpecRegister rulItemSpecRegister : rulItemSpecRegisters) {
+            ItemSpecRegister itemSpecRegister = ItemSpecRegister.fromEntity(rulItemSpecRegister);
+            itemSpecRegisterList.add(itemSpecRegister);
+        }
+
+        itemSpec.setItemSpecRegisters(itemSpecRegisterList);
+
+        if (StringUtils.isNotEmpty(rulDescItemSpec.getCategory())) {
+            String[] categoriesString = rulDescItemSpec.getCategory().split("\\" + ItemTypeUpdater.CATEGORY_SEPARATOR);
+            List<Category> categories = Arrays.asList(categoriesString).stream()
+                    .map(s -> new Category(s))
+                    .collect(Collectors.toList());
+            itemSpec.setCategories(categories);
+        }
+
+        return itemSpec;
     }
 }

@@ -5,6 +5,9 @@ elza:
     h2:
        # Enable H2 DB console on URL .../console
        console: false
+   
+  # ISO code of locale
+  locale: cs
 
   workingDir: ./work
 
@@ -50,7 +53,7 @@ spring:
                     indexBase: ${elza.workingDir}/lucene/indexes/
                     directory_provider: filesystem
                     worker:
-                        backend: cz.tacr.elza.search.DbQueueProcessor
+                      backend: cz.tacr.elza.search.DbQueueProcessor
 
             # PostgreSQL
             dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect

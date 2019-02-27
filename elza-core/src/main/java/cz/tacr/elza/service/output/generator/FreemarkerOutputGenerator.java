@@ -10,6 +10,9 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 
+import org.springframework.context.ApplicationContext;
+
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.exception.ProcessException;
@@ -18,6 +21,7 @@ import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
 import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.output.OutputParams;
@@ -32,7 +36,9 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
 
     private final OutputModel outputModel;
 
-    FreemarkerOutputGenerator(StaticDataService staticDataService,
+    FreemarkerOutputGenerator(ApplicationContext applicationContext,
+                              StaticDataService staticDataService,
+                              ElzaLocale elzaLocale,
                               FundTreeProvider fundTreeProvider,
                               NodeCacheService nodeCacheService,
                               InstitutionRepository institutionRepository,
@@ -42,8 +48,12 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
                               EntityManager em,
                               DmsService dmsService) {
         super(em, dmsService);
-        outputModel = new OutputModel(staticDataService, fundTreeProvider, nodeCacheService, institutionRepository,
-                apDescRepository, apNameRepository, apEidRepository, null);
+
+        StructuredObjectRepository structObjRepos = applicationContext.getBean(StructuredObjectRepository.class);
+
+        outputModel = new OutputModel(staticDataService, elzaLocale,
+                fundTreeProvider, nodeCacheService, institutionRepository,
+                apDescRepository, apNameRepository, apEidRepository, null, structObjRepos);
     }
 
     @Override

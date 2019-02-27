@@ -93,7 +93,7 @@ class DescItemRecordRef extends AbstractReactComponent {
 
     render() {
         const {descItem, locked, singleDescItemTypeEdit, hasSpecification, readMode, cal, onDetail, typePrefix, ...otherProps} = this.props;
-        const record = descItem.accessPoint ? descItem.accessPoint : null;
+        const record = descItem.record ? descItem.record : null;
 
         if (readMode) {
             if (record) {

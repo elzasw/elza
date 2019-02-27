@@ -155,6 +155,18 @@ public class ApControllerTest extends AbstractControllerTest {
         } while (true);
 
         ApAccessPointNameVO secondName = createName(accessPoint);
+
+        do {
+            secondName = getAccessPointName(accessPoint.getId(), secondName.getObjectId());
+            Assert.assertNotNull(secondName);
+            if (StringUtils.equals("Karel", secondName.getName())
+                    && StringUtils.equals("IV", secondName.getComplement())) {
+                break;
+            }
+            counter("Čekání na validaci ap kvůli založení jména");
+            Thread.sleep(100);
+        } while (true);
+
         confirmAccessPointStructuredName(accessPoint.getId(), secondName.getObjectId());
 
         do {

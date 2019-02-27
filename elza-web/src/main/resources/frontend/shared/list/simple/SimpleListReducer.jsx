@@ -1,5 +1,5 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {REQUEST, RESPONSE, FILTER, SELECT_PARENT, INVALIDATE} from './SimpleListActions'
+import {REQUEST, RESPONSE, FILTER, SELECT_PARENT, INVALIDATE, RESET} from './SimpleListActions'
 
 const simpleFilter = (rows, filter) => rows;
 
@@ -101,6 +101,8 @@ export default function list(state = initialState, action = {}, config = null) {
                 filter: action.filter
             }
         }
+        case RESET:
+            return initialState;
         default:
             return state
     }

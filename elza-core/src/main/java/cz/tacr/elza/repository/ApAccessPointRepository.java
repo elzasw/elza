@@ -78,11 +78,6 @@ public interface ApAccessPointRepository
     @Query("SELECT DISTINCT ap.accessPointId FROM ap_name n JOIN n.accessPoint ap WHERE ap.state = 'INIT' OR n.state = 'INIT'")
     Set<Integer> findInitAccessPointIds();
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = "15000")})
-    @Query("SELECT ap FROM ap_access_point ap where ap.accessPointId = :accessPointId")
-    ApAccessPoint findOneWithLock(@Param("accessPointId") Integer accessPointId);
-
     @Query("SELECT distinct i.itemId" +
             " FROM arr_item i" +
             " JOIN arr_data_party_ref pr ON (pr.dataId = i.dataId)" +

@@ -1,8 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
@@ -21,6 +19,11 @@ public class UserPermissionInfoVO {
 
     /** Seznam identifikátorů scopů, ke kterým se vztahuje oprávnění. */
 	private List<Integer> scopeIds = new ArrayList<>();
+
+	/**
+	 * Seznam identifikátorů protokolů, ke kterým se vztahuje oprávnění.
+	 */
+	private List<Integer> issueListIds = new ArrayList<>();
 
     /**
      * Default constructor for deserialization
@@ -59,6 +62,14 @@ public class UserPermissionInfoVO {
         this.scopeIds = scopeIds;
     }
 
+	public List<Integer> getIssueListIds() {
+		return issueListIds;
+	}
+
+	public void setIssueListIds(final List<Integer> issueListIds) {
+		this.issueListIds = issueListIds;
+	}
+
 	/**
 	 * Add all scope ids
 	 * 
@@ -71,10 +82,19 @@ public class UserPermissionInfoVO {
 	/**
 	 * Add all fund ids
 	 * 
-	 * @param fundIds
+	 * @param ids
 	 */
 	private void addFundIds(Collection<Integer> ids) {
 		this.fundIds.addAll(ids);
+	}
+
+	/**
+	 * Add all issue list ids
+	 *
+	 * @param ids
+	 */
+	private void addIssueListIds(Collection<Integer> ids) {
+		this.issueListIds.addAll(ids);
 	}
 
 	/**
@@ -87,7 +107,7 @@ public class UserPermissionInfoVO {
 		UserPermissionInfoVO result = new UserPermissionInfoVO(perm.getPermission());
 		result.addFundIds(perm.getFundIds());
 		result.addScopeIds(perm.getScopeIds());
-
+		result.addIssueListIds(perm.getIssueListIds());
 		return result;
 	}
 }

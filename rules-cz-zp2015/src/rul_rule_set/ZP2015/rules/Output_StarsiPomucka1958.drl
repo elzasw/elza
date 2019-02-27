@@ -12,16 +12,37 @@ import java.util.Arrays;
 import java.util.Set;
 import cz.tacr.elza.domain.RulItemType;
 
-rule "Jen vybrané jsou možné"
+rule "Možné neopakovatelné prvky"
 no-loop
 when
     $itemType : RulItemTypeExt( code in (
         "ZP2015_RELATED_UNITS",
-        "ZP2015_ARRANGEMENT_INFO",
-        "ZP2015_UNIT_CONTENT"
+        "ZP2015_ARRANGEMENT_INFO"
     ) )
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
+    $itemType.setRepeatable(false);
+end
+
+rule "Možné opakovatelné prvky - přílohy"
+no-loop
+when
+    $itemType : RulItemTypeExt( code in (
+        "ZP2015_ATTACHMENT"
+    ) )
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+    $itemType.setRepeatable(true);
+end
+
+rule "Doporučené neopakovatelné prvky"
+no-loop
+when
+    $itemType : RulItemTypeExt( code in (
+        "ZP2015_UNIT_CONTENT"
+    ) )
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
     $itemType.setRepeatable(false);
 end
 
@@ -34,7 +55,7 @@ when
 		"ZP2015_UNIT_SOURCE",
         "ZP2015_UNIT_HIST",
         "ZP2015_FUTURE_UNITS",
-		"ZP2015_UNIT_ARR",
+        "ZP2015_UNIT_ARR",
         "ZP2015_ARRANGE_RULES",
         "ZP2015_DESCRIPTION_DATE",
         "ZP2015_DATE_RANGE",

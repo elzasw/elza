@@ -1,10 +1,11 @@
 import {storeFromArea} from "./../utils";
 
-export const SELECT = 'detail.select'
-export const REQUEST = 'detail.request'
-export const RESPONSE = 'detail.response'
-export const INVALIDATE = 'detail.invalidate'
-export const UPDATE_VALUE = 'detail.update_value'
+export const SELECT = 'detail.select';
+export const REQUEST = 'detail.request';
+export const RESPONSE = 'detail.response';
+export const INVALIDATE = 'detail.invalidate';
+export const UPDATE_VALUE = 'detail.update_value';
+export const RESET = 'detail.reset';
 
 /**
  * Zneplatnění dat.
@@ -135,5 +136,18 @@ function response(area, data) {
         type: RESPONSE,
         area,
         data,
+    }
+}
+
+
+/**
+ * Reset store.
+ * @param area oblast
+ * @returns {{type: string, area: *, filter: *}}
+ */
+export function reset(area) {
+    return {
+        type: RESET,
+        area
     }
 }

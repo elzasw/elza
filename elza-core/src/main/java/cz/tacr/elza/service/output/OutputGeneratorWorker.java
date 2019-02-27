@@ -3,6 +3,7 @@ package cz.tacr.elza.service.output;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
@@ -119,8 +120,8 @@ public class OutputGeneratorWorker implements Runnable {
 
     private OutputState resolveEndState(OutputParams params) {
         ArrChange change = params.getChange();
-        for (ArrNodeOutput outputNode : params.getOutputNodes()) {
-            if (!fundLevelServiceInternal.isLastChange(change, outputNode.getNodeId(), false, true)) {
+        for (Integer outputNodeId : params.getOutputNodeIds()) {
+            if (!fundLevelServiceInternal.isLastChange(change, outputNodeId, false, true)) {
                 return OutputState.OUTDATED;
             }
         }
@@ -137,12 +138,13 @@ public class OutputGeneratorWorker implements Runnable {
         ArrChange change = arrangementService.createChange(Type.GENERATE_OUTPUT);
 
         List<ArrNodeOutput> outputNodes = outputServiceInternal.getOutputNodes(definition, fundVersion.getLockChange());
+        List<Integer> nodeIds = outputNodes.stream().map(no -> no.getNodeId()).collect(Collectors.toList());
 
         List<ArrOutputItem> outputItems = outputServiceInternal.getOutputItems(definition, fundVersion.getLockChange());
 
         Path templateDir = resourcePathResolver.getTemplateDir(definition.getTemplate()).toAbsolutePath();
 
-        return new OutputParams(definition, change, fundVersion, outputNodes, outputItems, templateDir);
+        return new OutputParams(definition, change, fundVersion, nodeIds, outputItems, templateDir);
     }
 
     /**

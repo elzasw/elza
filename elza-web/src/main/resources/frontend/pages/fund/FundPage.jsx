@@ -27,6 +27,8 @@ import {approveFund, deleteFund, exportFund, updateFund} from 'actions/arr/fund.
 import {scopesDirty} from 'actions/refTables/scopesData.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {globalFundTreeInvalidate} from "../../actions/arr/globalFundTree";
+import SearchFundsForm from "../../components/arr/SearchFundsForm";
+import IssueLists from "../../components/arr/IssueLists";
 
 class FundPage extends AbstractReactComponent {
     constructor(props) {
@@ -176,14 +178,34 @@ class FundPage extends AbstractReactComponent {
         return this.dispatch(updateFund(data));
     }
 
+    /**
+     * Vyvolání dialogu s vyhledáním na všemi AS.
+     */
+    handleFundsSearchForm = () => {
+        this.props.dispatch(modalDialogShow(
+            this,
+            i18n('arr.fund.title.search'),
+            <SearchFundsForm />
+        ));
+    };
+
     buildRibbon() {
         const {fundRegion, userDetail} = this.props
 
         const altActions = [];
         if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_CREATE)) {
             altActions.push(
-                <Button key="add-fa" onClick={this.handleAddFund}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span></div></Button>
+                <Button key="add-fa" onClick={this.handleAddFund}><Icon glyph="fa-plus-circle"/>
+                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span></div>
+                </Button>
             )
+        }
+
+        altActions.push(
+            <Button key="search-fa" onClick={this.handleFundsSearchForm}><Icon glyph="fa-search" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span></div></Button>
+        );
+
+        if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_CREATE)) {
             altActions.push(
                 <Button key="fa-import" onClick={this.handleImport}><Icon glyph='fa-upload'/>
                     <div><span className="btnText">{i18n('ribbon.action.arr.fund.import')}</span></div>
@@ -204,6 +226,13 @@ class FundPage extends AbstractReactComponent {
                     <Button key="approve-version" onClick={this.handleApproveFundVersion}><Icon glyph="fa-calendar-check-o"/>
                         <div><span className="btnText">{i18n('ribbon.action.arr.fund.approve')}</span></div>
                     </Button>)
+            }
+            if (userDetail.hasOne([perms.FUND_ISSUE_ADMIN_ALL])) {
+                itemActions.push(
+                    <Button key="fa-lecturing" onClick={this.handleIssuesSettings}><Icon glyph='fa-commenting'/>
+                        <div><span className="btnText">{i18n('arr.issues.settings.title')}</span></div>
+                    </Button>,
+                )
             }
             if (userDetail.hasOne(perms.FUND_ADMIN)) {
                 itemActions.push(
@@ -243,6 +272,13 @@ class FundPage extends AbstractReactComponent {
         if (confirm(i18n('arr.fund.action.delete.confirm', fundDetail.name))) {
             this.dispatch(deleteFund(fundDetail.id))
         }
+    }
+
+    handleIssuesSettings = () => {
+        const {fundRegion} = this.props;
+        const fundDetail = fundRegion.fundDetail;
+
+        this.props.dispatch(modalDialogShow(this, i18n("arr.issues.settings.title"), <IssueLists fundId={fundDetail.id} />));
     }
 
     handleShowInArr(item) {

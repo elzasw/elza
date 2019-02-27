@@ -37,6 +37,7 @@ export class WebApiCls {
 
     static baseUrl = '/api';
     static arrangementUrl = WebApiCls.baseUrl + '/arrangement';
+    static issueUrl = WebApiCls.baseUrl + '/issue';
     static registryUrl = WebApiCls.baseUrl + '/registry';
     static partyUrl = WebApiCls.baseUrl + '/party';
     static importUrl = WebApiCls.baseUrl + '/import';
@@ -63,6 +64,27 @@ export class WebApiCls {
             luceneQuery: luceneQuery
         };
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/fulltext', null,  data);
+    }
+
+    /**
+     * Seznam AS serazeny podle poctu vyhledanych JP.
+     * Vysledek vyhledavani je ulozeny v user session pro pouziti v {@link #fundFulltext(number)}.
+     *
+     * @param input vstupni data pro fultextove vyhledavani
+     * @return seznam AS razeny podle poctu vyhledanych JP
+     */
+    fundFulltext(filterText) {
+        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/fundFulltext', null,  filterText);
+    }
+
+    /**
+     * Seznam uzlu daneho AS serazeny podle relevance pri vyhledani.
+
+     * @param fundId identifikátor AS
+     * @return seznam uzlu daneho AS serazeny podle relevance pri vyhledani
+     */
+    fundFulltextNodes(fundId) {
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + `/fundFulltext/${fundId}`, null,  fundId);
     }
 
     getFundsByVersionIds(versionIds) {
@@ -1371,9 +1393,226 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.structureUrl + '/data/' + fundVersionId + '/assignable/' + assignable, null, structureDataIds)
     }
 
+    /**
+     * Získání druhů připomnek.
+     *
+     * @returns {Promise} list druhů připomínek
+     */
+    findAllIssueTypes() {
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/issue_types');
+    }
 
+    /**
+     * Získání stavů připomínek.
+     *
+     * @returns {Promise} list stavů připomínek
+     */
+    findAllIssueStates() : IssueStateVO[] {
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/issue_states');
+    }
+
+    /**
+     * Získání protokolů pro konkrétní archivní souboru.
+     *
+     * @param fundId identifikátor AS
+     * @param open filter zda je issue list otevřen nebo zavřen
+     * @returns {Promise} seznam protokolů
+     */
+    findIssueListByFund(fundId : number, open : boolean = null) {
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/funds/' + fundId + '/issue_lists', {open});
+    }
+
+    /**
+     * Získání detailu protokolu.
+     *
+     * @param issueListId identifikátor protokolu.
+     * @returns {Promise} detail protokolu
+     */
+    getIssueList(issueListId : number) : IssueListVO {
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/issue_lists/' + issueListId);
+    }
+
+    /**
+     * Získání seznam připomínek dle parametrů.
+     *
+     * @param issueListId identifikátor protokolu.
+     * @param issueStateId identifikátor stavu připomínky dle kterého filtrujeme
+     * @param issueTypeId identifikátor druhu připomínky dle kterého filtrujeme
+     * @returns {Promise} seznam připomínek
+     */
+    findIssueByIssueList(issueListId : number, issueStateId : number = null, issueTypeId : number = null) {
+        const requestParams = {
+            issueStateId,
+            issueTypeId
+        };
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/issue_lists/' + issueListId + '/issues', requestParams);
+    }
+
+    /**
+     * Založení nového protokolu.
+     *
+     * @param data {IssueListVO} data pro založení protokolu
+     */
+    addIssueList(data : IssueListVO) : IssueListVO {
+        return AjaxUtils.ajaxPost(WebApiCls.issueUrl + '/issue_lists', null, data)
+    }
+
+    /**
+     * Úprava vlastností existujícího protokolu
+     *
+     * @param issueListId identifikátor protokolu.
+     * @param data {IssueListVO} data pro uložení protokolu
+     */
+    updateIssueList(issueListId : number, data : IssueListVO) : IssueListVO {
+        return AjaxUtils.ajaxPut(WebApiCls.issueUrl + '/issue_lists/' + issueListId, null, data)
+    }
+
+    /**
+     * Získání detailu připomínky.
+     *
+     * @param issueId identifikátor připomínky
+     * @returns {Promise} detail připomínky
+     */
+    getIssue(issueId : number) {
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/issues/' + issueId);
+    }
+
+    /**
+     * Přidání připomínky k protokolu.
+     *
+     * @param data {IssueVO} data pro přidání připomínky
+     * @returns {Promise}
+     */
+    addIssue(data : IssueVO) {
+        return AjaxUtils.ajaxPost(WebApiCls.issueUrl + '/issues', null, data)
+    }
+
+    /**
+     * Úprava připomínky.
+     *
+     * @param issueId identifikátor připomínky
+     * @param data {IssueVO} data pro uložení připomínky
+     */
+    updateIssue(issueId : number, data : IssueVO) {
+        return AjaxUtils.ajaxPut(WebApiCls.issueUrl + '/issues/' + issueId, null, data)
+    }
+
+    /**
+     * Změna druhu připomínky.
+     *
+     * @param issueId     identifikátor připomínky
+     * @param issueTypeId identifikátor stavu připomínky
+     * @returns {Promise}
+     */
+    setIssueType(issueId : number, issueTypeId : number) {
+        const requestParams = {
+            issueTypeId,
+        };
+        return AjaxUtils.ajaxPost(WebApiCls.issueUrl + '/issues/' + issueId + '/type', requestParams)
+    }
+
+    /**
+     * Vyhledání komentářů k připomínce.
+     *
+     * @param issueId identifikátor připomínky
+     * @returns {Promise} pole {CommentVO}
+     */
+    findIssueCommentByIssue(issueId : number) {
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/issues/' + issueId + '/comments');
+    }
+
+    /**
+     * Získání detailu komentáře.
+     *
+     * @param commentId identifikátor komentáře
+     * @returns {Promise} detail {CommentVO}
+     */
+    getIssueComment(commentId : number) {
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/comments/' + commentId);
+    }
+
+    /**
+     * Založení nového komentáře.
+     *
+     * @param data komentář
+     * @returns {Promise}
+     */
+    addIssueComment(data : CommentVO) {
+        return AjaxUtils.ajaxPost(WebApiCls.issueUrl + '/comments', null, data)
+    }
+
+    /**
+     * Úprava komentáře.
+     *
+     * @param commentId identifikátor komentáře
+     * @param data komentář
+     * @returns {Promise}
+     */
+    updateIssueComment(commentId : number, data : CommentVO) {
+        return AjaxUtils.ajaxPut(WebApiCls.issueUrl + '/comments/' + commentId, null, data)
+    }
+
+    /**
+     * Vyhledá další uzel s otevřenou připomínkou.
+     *
+     * @param fundVersionId verze AS
+     * @param nodeId výchozí uzel (default root)
+     * @param direction krok (default 1)
+     */
+    nextIssueByFundVersion(fundVersionId : number, nodeId : number, direction : number) {
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/funds/' + fundVersionId + '/issues/nextNode', {nodeId, direction});
+    }
 }
 
+declare class IssueListVO extends Object {
+    id: number;
+    fundId: number;
+    name: string;
+    open: boolean;
+    rdUsers: UsrUserVO[];
+    wrUsers: UsrUserVO[];
+}
+
+declare class IssueStateVO extends Object {
+    id: number;
+    code: string;
+    name: string;
+    startState: boolean;
+    finalState: boolean;
+}
+
+declare class IssueVO extends Object {
+    id: number;
+    issueListId: number;
+    nodeId: number;
+    number: number;
+    issueTypeId: number;
+    issueStateId: number;
+    description: string;
+    userCreate: UsrUserVO;
+    timeCreated: string;
+    referenceMark: string[];
+}
+
+declare class CommentVO extends Object {
+    id: number;
+    issueId: number;
+    comment: string;
+    user: UsrUserVO;
+    prevStateId: number;
+    nextStateId: number;
+    timeCreated: string;
+}
+
+declare class UsrUserVO extends Object {
+    username : string;
+    id : string;
+    active : boolean;
+    description : string;
+    party : Object;
+    permissions : Object[];
+    groups : Object[];
+}
 
 /**
  * Továrna URL
@@ -1408,8 +1647,13 @@ export class UrlFactory {
     static downloadGeneratedDmsFile(id, fundId, mimeType){
         return serverContextPath + WebApiCls.dmsUrl +`/fund/${fundId}/${id}/generated?mimeType=${mimeType}`;
     }
+
     static downloadOutputResult(id) {
         return serverContextPath + '/api/outputResult/' + id
+    }
+
+    static exportIssueList(issueListId) {
+        return serverContextPath + WebApiCls.issueUrl + `/issue_lists/${issueListId}/export`;
     }
 }
 /**

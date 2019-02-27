@@ -35,7 +35,7 @@ import cz.tacr.elza.ElzaCore;
 @Configuration
 @EnableConfigurationProperties
 @Import({ElzaCore.class})
-@ComponentScan(basePackageClasses = {ElzaWebApp.class, ElzaCore.class})
+@ComponentScan(basePackageClasses = { ElzaWebApp.class, ElzaCore.class }, lazyInit = true)
 @EnableScheduling
 @EnableAsync
 public class ElzaWebApp {

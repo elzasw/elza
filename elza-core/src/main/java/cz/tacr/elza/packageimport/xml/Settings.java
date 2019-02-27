@@ -1,12 +1,13 @@
 package cz.tacr.elza.packageimport.xml;
 
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import java.util.List;
 
 
 /**
@@ -28,6 +29,7 @@ public class Settings {
             @XmlElement(name = "record", type = SettingRecord.class),
             @XmlElement(name = "favorite-item-specs", type = SettingFavoriteItemSpecs.class),
             @XmlElement(name = "grid-view", type = SettingGridView.class),
+            @XmlElement(name = "fund-issues", type = SettingFundIssues.class),
     })
     private List<Setting> settings;
 

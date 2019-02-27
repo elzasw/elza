@@ -18,4 +18,3 @@ export const inCircle = (WrappedComponent,customStyle) => {
     }
     return IconWrapper;
 }
-

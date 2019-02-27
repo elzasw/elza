@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<issue-states>
+    <issue-state code="OPEN">
+        <name>Otevřená</name>
+        <start-state>true</start-state>
+        <final-state>false</final-state>
+    </issue-state>
+    <issue-state code="RESOLVED">
+        <name>Vypořádaná</name>
+        <start-state>false</start-state>
+        <final-state>true</final-state>
+    </issue-state>
+    <issue-state code="REJECTED">
+        <name>Odmítnutá</name>
+        <start-state>false</start-state>
+        <final-state>true</final-state>
+    </issue-state>
+</issue-states>

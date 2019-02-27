@@ -1,5 +1,5 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {REQUEST, RESPONSE, SELECT, INVALIDATE, UPDATE_VALUE} from './DetailActions'
+import {REQUEST, RESPONSE, SELECT, INVALIDATE, UPDATE_VALUE, RESET} from './DetailActions'
 
 /**
  * Implicitní funkce pro načtení data key.
@@ -77,6 +77,8 @@ export default function detail(state = initialState, action = {}, config = null)
                 id: action.id,
             }
         }
+        case RESET:
+            return initialState;
         default:
             return state
     }

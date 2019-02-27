@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
@@ -73,9 +74,34 @@ public interface StructuredItemRepository extends JpaRepository<ArrStructuredIte
 
     void deleteByStructuredObjectFund(ArrFund fund);
 
+    @Query("SELECT si" +
+            " FROM arr_structured_item si" +
+            " JOIN FETCH si.structuredObject so" +
+            " WHERE so.fund.id = :fundId" +
+            " AND si.deleteChange.id in :deleteChangeIds" +
+            " AND so.state <> 'TEMP'" +
+            " ORDER BY so.sortValue")
+    List<ArrStructuredItem> findByFundAndDeleteChange(@Param("fundId") Integer fundId, @Param("deleteChangeIds") List<Integer> deleteChangeIds);
+
+    @Query("SELECT si" +
+            " FROM arr_structured_item si" +
+            " JOIN FETCH si.structuredObject so" +
+            " WHERE so.fund.id = :fundId" +
+            " AND si.createChange.id in :createChangeIds" +
+            " AND so.state <> 'TEMP'" +
+            " ORDER BY so.sortValue")
+    List<ArrStructuredItem> findByFundAndCreateChange(@Param("fundId") Integer fundId, @Param("createChangeIds") List<Integer> createChangeIds);
+
+    @Query("SELECT si" +
+            " FROM arr_structured_item si" +
+            " JOIN si.structuredObject so" +
+            " WHERE so.fund = :fund" +
+            " AND si.deleteChange >= :change")
+    List<ArrStructuredItem> findNotBeforeDeleteChange(@Param("fund") ArrFund fund, @Param("change") ArrChange change);
+
     /**
      * Count number of structured items within two changeIds
-     * 
+     *
      * @param fundId
      * @param fromChange
      *            Higher change id
@@ -84,7 +110,7 @@ public interface StructuredItemRepository extends JpaRepository<ArrStructuredIte
      * @return
      */
     @Query("SELECT COUNT(i) FROM arr_structured_item i WHERE i.structuredObject.fundId = :fundId and " +
-            "( " + 
+            "( " +
             " (i.createChangeId>=:toChangeId AND i.createChangeId<=:fromChangeId) OR "+
             " (i.deleteChangeId is not null AND i.deleteChangeId>=:toChangeId AND i.deleteChangeId<=:fromChangeId) " +
             ")")

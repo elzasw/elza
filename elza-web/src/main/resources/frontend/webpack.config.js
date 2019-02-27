@@ -13,7 +13,8 @@ const defaultConfig = {
     circularDependencyCheck: true,
     sourceMap: 'eval-source-map',
     devTools: false,
-    port: 8090
+    port: 8090,
+    ignorePolyfill: false
 };
 
 // File config
@@ -36,8 +37,11 @@ const config = Object.assign(defaultConfig, fileConfig);
 // Entry points
 const webpackAndPolyfillEntries = [
     `webpack-dev-server/client?http://localhost:${config.port}`,
-    'babel-polyfill',
 ];
+
+if (!config.ignorePolyfill) {
+    webpackAndPolyfillEntries.push('babel-polyfill')
+}
 
 if (config.hot) {
     webpackAndPolyfillEntries.splice(1, 0, 'webpack/hot/only-dev-server')
@@ -118,7 +122,7 @@ module.exports = {
         rules: [
             {
                 test: /\.tsx?$/,
-                use: 'ts-loader',
+                use: ['babel-loader', 'ts-loader'],
                 exclude: path.resolve(__dirname, "node_modules"),
             },
             {

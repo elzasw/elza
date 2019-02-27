@@ -1,5 +1,10 @@
 package cz.tacr.elza.repository;
 
+import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -61,8 +66,6 @@ import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
-
-import static java.util.stream.Collectors.*;
 
 /**
  * Custom node repository implementation
@@ -274,7 +277,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
         FullTextQueryContext<ArrDescItem> ctx = new FullTextQueryContext<>(ArrDescItem.class);
 
-        Query descItemIdsQuery = createDescItemIdsByTextSearchParamsDataQuery(searchParams, fundId, ctx.getQueryBuilder());
+        Query descItemIdsQuery = createDescItemIdsByTextSearchParamsDataQuery(searchParams, fundId);
 
         List<ArrDescItemInfo> result = findNodeIdsByValidDescItems(lockChangeId, descItemIdsQuery, ctx);
 
@@ -297,7 +300,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
         FullTextQueryContext<ArrDescItem> ctx = new FullTextQueryContext<>(ArrDescItem.class);
 
-        Query descItemIdsQuery = createDescItemIdsByDateSearchParamsDataQuery(searchParams, fundId, ctx.getQueryBuilder());
+        Query descItemIdsQuery = createDescItemIdsByDateSearchParamsDataQuery(searchParams, fundId);
 
         List<ArrDescItemInfo> result = findNodeIdsByValidDescItems(lockChangeId, descItemIdsQuery, ctx);
 
@@ -312,7 +315,11 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      *
      * @return id nodů
      */
-    private Query createDescItemIdsByDateSearchParamsDataQuery(final List<UnitdateSearchParam> searchParams, final Integer fundId, QueryBuilder queryBuilder) {
+    @SuppressWarnings("unchecked")
+    private Query createDescItemIdsByDateSearchParamsDataQuery(final List<UnitdateSearchParam> searchParams,
+                                                                      final Integer fundId) {
+        Class<ArrDescItem> entityClass = ArrDescItem.class;
+        QueryBuilder queryBuilder = createQueryBuilder(entityClass);
 
         BooleanJunction<BooleanJunction> dateBool = queryBuilder.bool();
 
@@ -389,7 +396,11 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      *
      * @return id nodů
      */
-    private Query createDescItemIdsByTextSearchParamsDataQuery(final List<TextSearchParam> searchParams, final Integer fundId, QueryBuilder queryBuilder) {
+    @SuppressWarnings("unchecked")
+    private Query createDescItemIdsByTextSearchParamsDataQuery(final List<TextSearchParam> searchParams,
+                                                               final Integer fundId) {
+        Class<ArrDescItem> entityClass = ArrDescItem.class;
+        QueryBuilder queryBuilder = createQueryBuilder(entityClass);
 
         BooleanJunction<BooleanJunction> textBool = queryBuilder.bool();
 

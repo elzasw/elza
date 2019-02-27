@@ -1,5 +1,19 @@
 package cz.tacr.elza.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.core.security.AuthMethod;
@@ -19,20 +33,6 @@ import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.eventnotification.events.EventVisiblePolicy;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Serviska pro správu oprávnění pro zobrazování chyb.
@@ -75,7 +75,7 @@ public class PolicyService {
      */
     public List<NodeItemWithParent> getTreePolicy(final ArrFundVersion fundVersion) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
-        Set<Integer> nodeIds = nodeRepository.findNodeIdsForFondWithPolicy(fundVersion.getFund());
+        List<Integer> nodeIds = nodeRepository.findNodeIdsForFondWithPolicy(fundVersion.getFund());
         List<NodeItemWithParent> nodeItemWithParents = levelTreeCacheService.getNodeItemsWithParents(nodeIds, fundVersion);
         return nodeItemWithParents;
     }

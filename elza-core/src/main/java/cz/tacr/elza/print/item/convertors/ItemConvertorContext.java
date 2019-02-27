@@ -1,5 +1,7 @@
 package cz.tacr.elza.print.item.convertors;
 
+import java.util.Locale;
+
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrStructuredObject;
@@ -24,4 +26,6 @@ public interface ItemConvertorContext {
     File getFile(ArrFile file);
 
     Structured getStructured(ArrStructuredObject structureData);
+
+    Locale getLocale();
 }

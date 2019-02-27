@@ -60,7 +60,9 @@ import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
 import cz.tacr.elza.repository.StructuredTypeRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 
 /**
  * Servisní třída pro práci se strukturovanými datovými typy.
@@ -884,7 +886,7 @@ public class StructObjService {
 
         validateStructureItems(itemTypes, structureItems);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_DATA_BATCH);
+        ArrChange change = arrangementService.migrateChangeType(structureData.getCreateChange(), ArrChange.Type.ADD_STRUCTURE_DATA_BATCH);
         List<ArrStructuredObject> structureDataList = createStructObjList(fundVersion.getFund(),
                 structureData.getStructuredType(), ArrStructuredObject.State.OK, change, count - 1);
 
@@ -1079,6 +1081,11 @@ public class StructObjService {
                 structureDataIds,
                 null,
                 null));
+
+        Collection<Integer> nodeIds = arrangementService.findNodeIdsByStructuredObjectIds(structureDataIds);
+        if (!nodeIds.isEmpty()) {
+            notificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundVersion.getFundVersionId(), nodeIds.toArray(new Integer[0])));
+        }
     }
 
     /**
@@ -1143,5 +1150,35 @@ public class StructObjService {
             }
             return result;
         }
-    }    
+    }
+
+    public Map<Integer, Map<Integer, ArrStructuredObject>> groupStructuredObjectByChange(Integer fundId, List<Integer> changeIdList) {
+
+        if (changeIdList.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<Integer, Map<Integer, ArrStructuredObject>> changeIdStructuredObjectMap = new HashMap<>();
+
+        for (ArrStructuredObject structuredObject : structObjRepository.findByFundAndCreateChange(fundId, changeIdList)) {
+            Integer changeId = structuredObject.getCreateChange().getChangeId();
+            changeIdStructuredObjectMap.computeIfAbsent(changeId, k -> new HashMap<>()).put(structuredObject.getStructuredObjectId(), structuredObject);
+        }
+        for (ArrStructuredObject structuredObject : structObjRepository.findByFundAndDeleteChange(fundId, changeIdList)) {
+            Integer changeId = structuredObject.getDeleteChange().getChangeId();
+            changeIdStructuredObjectMap.computeIfAbsent(changeId, k -> new HashMap<>()).put(structuredObject.getStructuredObjectId(), structuredObject);
+        }
+        for (ArrStructuredItem structuredItem : structureItemRepository.findByFundAndCreateChange(fundId, changeIdList)) {
+            Integer changeId = structuredItem.getCreateChange().getChangeId();
+            ArrStructuredObject structuredObject = structuredItem.getStructuredObject();
+            changeIdStructuredObjectMap.computeIfAbsent(changeId, k -> new HashMap<>()).put(structuredObject.getStructuredObjectId(), structuredObject);
+        }
+        for (ArrStructuredItem structuredItem : structureItemRepository.findByFundAndDeleteChange(fundId, changeIdList)) {
+            Integer changeId = structuredItem.getDeleteChange().getChangeId();
+            ArrStructuredObject structuredObject = structuredItem.getStructuredObject();
+            changeIdStructuredObjectMap.computeIfAbsent(changeId, k -> new HashMap<>()).put(structuredObject.getStructuredObjectId(), structuredObject);
+        }
+        return changeIdStructuredObjectMap;
+    }
+
 }

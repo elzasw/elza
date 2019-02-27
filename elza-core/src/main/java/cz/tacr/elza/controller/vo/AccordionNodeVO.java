@@ -43,6 +43,11 @@ public class AccordionNodeVO {
      */
     private Integer version;
 
+    /**
+     * Seznam otevřených připomínek.
+     */
+    private List<WfSimpleIssueVO> issues;
+
     public AccordionNodeVO() {
     }
 
@@ -115,5 +120,13 @@ public class AccordionNodeVO {
 
     public Integer getVersion() {
         return version;
+    }
+
+    public List<WfSimpleIssueVO> getIssues() {
+        return issues;
+    }
+
+    public void setIssues(List<WfSimpleIssueVO> issues) {
+        this.issues = issues;
     }
 }

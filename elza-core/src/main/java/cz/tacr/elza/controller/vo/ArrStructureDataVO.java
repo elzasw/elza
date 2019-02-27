@@ -1,7 +1,5 @@
 package cz.tacr.elza.controller.vo;
 
-import java.util.Objects;
-
 import cz.tacr.elza.domain.ArrStructuredObject;
 
 /**
@@ -66,21 +64,15 @@ public class ArrStructureDataVO {
         this.typeCode = typeCode;
     }
 
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ArrStructureDataVO that = (ArrStructureDataVO) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(value, that.value) &&
-                state == that.state &&
-                Objects.equals(assignable, that.assignable) &&
-                Objects.equals(errorDescription, that.errorDescription) &&
-                Objects.equals(typeCode, that.typeCode);
+    public static ArrStructureDataVO newInstance(final ArrStructuredObject structureData) {
+        ArrStructureDataVO structureDataVO = new ArrStructureDataVO();
+        structureDataVO.setId(structureData.getStructuredObjectId());
+        structureDataVO.setTypeCode(structureData.getStructuredType().getCode());
+        structureDataVO.setValue(structureData.getValue());
+        structureDataVO.setErrorDescription(structureData.getErrorDescription());
+        structureDataVO.setAssignable(structureData.getAssignable());
+        structureDataVO.setState(structureData.getState());
+        return structureDataVO;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, value, state, assignable, errorDescription, typeCode);
-    }
 }

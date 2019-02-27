@@ -1,6 +1,7 @@
 package cz.tacr.elza.print;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import cz.tacr.elza.print.item.Item;
@@ -77,6 +78,15 @@ public interface Output {
      * @return instance iterátoru, který prochází jednotky popisu do hloubky
      */
     NodeIterator createFlatNodeIterator();
+
+    /**
+     * Create iterator for structured object
+     * 
+     * @param structTypeCode
+     *            Code of structured type
+     * @return Structured object iterator
+     */
+    Iterator<Structured> createStructObjIterator(String structTypeCode);
 
     /**
      * @return kolekci s počtem prvků odpovídajícím počtu stran příloh,

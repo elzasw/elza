@@ -93,8 +93,12 @@ public enum EventType {
     EXTERNAL_SYSTEM_CREATE(EventId.class),
     EXTERNAL_SYSTEM_DELETE(EventId.class),
 
-    BULK_ACTION_STATE_CHANGE(EventStringInVersion.class);
+    ISSUE_LIST_CREATE(EventId.class),
+    ISSUE_LIST_UPDATE(EventId.class),
+    ISSUE_CREATE(EventIdInIssueList.class),
+    ISSUE_UPDATE(EventIdInIssueList.class),
 
+    BULK_ACTION_STATE_CHANGE(EventStringInVersion.class);
 
     private Class<? extends AbstractEventSimple> eventClass;
 

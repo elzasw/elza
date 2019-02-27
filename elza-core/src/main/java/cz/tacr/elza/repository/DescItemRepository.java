@@ -1,5 +1,13 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -9,13 +17,6 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -209,9 +210,6 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.deleteChange IS NULL AND i.itemType = ?2 AND i.itemSpec is null")
     List<ArrDescItem> findByNodeAndDeleteChangeIsNullAndItemTypeAndSpecItemTypeIsNull(ArrNode node, RulItemType itemType);
 
-    @Query("SELECT COUNT(i) FROM arr_desc_item i JOIN i.itemType t WHERE i.itemType = ?1")
-    Long getCountByType(RulItemType itemType);
-
     @Query("SELECT n.fundId, i.nodeId, d.dataId FROM arr_desc_item i JOIN i.data d JOIN i.node n WHERE i.deleteChange IS NULL and i.data in (?1)")
     List<Object[]> findFundIdNodeIdDataIdByDataAndDeleteChangeIsNull(List<? extends ArrData> data);
 
@@ -220,6 +218,18 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 
     @Query("Select i from arr_desc_item i join arr_data_party_ref d on i.data = d WHERE d.party = :party AND i.deleteChange IS NULL")
     List<ArrDescItem> findArrItemByParty(@Param("party") final ParParty party);
+
+    @Query("SELECT i.id FROM arr_desc_item i WHERE i.node = :node AND i.createChange >= :change")
+    List<Integer> findIdByNodeAndCreatedAfterChange(@Param("node") final ArrNode node, @Param("change") final ArrChange change);
+
+    @Query("SELECT i.id FROM arr_desc_item i WHERE i.node.fund = :fund AND i.createChange >= :change")
+    List<Integer> findIdByFundAndCreatedAfterChange(@Param("fund") final ArrFund fund, @Param("change") final ArrChange change);
+
+    @Query("SELECT i.id FROM arr_desc_item i WHERE i.node = :node AND i.deleteChange IS NULL")
+    List<Integer> findOpenIdByNodeAndCreatedAfterChange(@Param("node") final ArrNode node);
+
+    @Query("SELECT i.id FROM arr_desc_item i WHERE i.node.fund = :fund AND i.deleteChange IS NULL")
+    List<Integer> findOpenIdByFundAndCreatedAfterChange(@Param("fund") final ArrFund fund);
 
     void deleteByNodeFund(ArrFund fund);
 }

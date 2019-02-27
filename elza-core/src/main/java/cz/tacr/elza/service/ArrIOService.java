@@ -12,14 +12,13 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
@@ -46,11 +45,15 @@ import com.vividsolutions.jts.geom.Polygon;
 
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataJsonTable;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrOutputItem;
@@ -67,11 +70,12 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
-import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.OutputItemRepository;
+
+import static cz.tacr.elza.utils.CsvUtils.CSV_EXCEL_ENCODING;
+import static cz.tacr.elza.utils.CsvUtils.CSV_EXCEL_FORMAT;
 
 /**
  * Serviska pro import/export dat pro ArrItem.
@@ -92,13 +96,7 @@ public class ArrIOService {
     private ItemTypeRepository itemTypeRepository;
 
     @Autowired
-    private DescItemRepository descItemRepository;
-
-    @Autowired
     private FundVersionRepository fundVersionRepository;
-
-    @Autowired
-    private OutputItemRepository outputItemRepository;
 
     @Autowired
     private ItemService itemService;
@@ -112,19 +110,8 @@ public class ArrIOService {
     @Autowired
     private RuleService ruleService;
 
-    /**
-     * CSV konfigurace pro CZ Excel.
-     */
-    public static final CSVFormat CSV_EXCEL_FORMAT = CSVFormat.DEFAULT
-            .withIgnoreEmptyLines(false)
-            .withAllowMissingColumnNames()
-            .withDelimiter(';')
-            .withQuote('"');
-    /**
-     * Kódování pro CSV soubory.
-     */
-    public static final String CSV_EXCEL_ENCODING = "cp1250";
-
+    @Autowired
+    private StaticDataService staticDataService;
 
     /**
      * Export dat tabulky do csv formátu, který bude zapsán do streamu.
@@ -420,11 +407,33 @@ public class ArrIOService {
         encoder.encode(features, KML.kml, out);
     }
 
+    /**
+     * Return name of export
+     * 
+     * @param fund
+     * @return
+     */
+    private static String getExportFileName(ArrFund fund, String postfix) {
+        StringBuilder exportName = new StringBuilder();
+        if (StringUtils.isNotBlank(fund.getInternalCode())) {
+            exportName.append(fund.getInternalCode());
+        } else 
+        if (StringUtils.isNotBlank(fund.getName())) {
+            exportName.append(fund.getName());
+        } else {
+            exportName.append(fund.getFundId().toString());
+        }
+        exportName.append(postfix);
+        exportName.append(".csv");
+        return exportName.toString();
+    }
+
+    @Transactional
     public void dataGridDataExport(final HttpServletResponse response,
                                    final Integer versionId,
-                                   final List<Integer> rulItemTypeIds) throws IOException {
-        Map<Integer, RulItemType> rulItemTypes = ruleService.findItemTypesByIdsOrdered(rulItemTypeIds).stream().
-            collect(Collectors.toMap(RulItemType::getItemTypeId, Function.identity()));
+                                   final List<Integer> rulItemTypeIds)
+            throws IOException {
+        StaticDataProvider sdp = staticDataService.createProvider();
 
         List<String> columNames = new LinkedList<>();
         columNames.add("Číslo záznamu");
@@ -435,7 +444,8 @@ public class ArrIOService {
         columNames.add("ID entity");
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
-        response.setHeader("Content-Disposition", "attachment;filename=" + version.getFund().getInternalCode() + "-data.csv");
+        response.setHeader("Content-Disposition",
+                           "attachment;filename=" + getExportFileName(version.getFund(), "-data"));
 
         ArrayList<Integer> filteredIds = filterTreeService.getFilteredIds(versionId);
         int page = 0;
@@ -451,41 +461,7 @@ public class ArrIOService {
                         filteredIds);
                 for (FilterNode node : filteredData) {
                     ++i;
-                    for (Map.Entry<Integer, DescItemValues> entry : node.getValuesMap().entrySet()) {
-                        RulItemType rulItemType = rulItemTypes.get(entry.getKey());
-                        DescItemValues descItemValues = entry.getValue();
-                        if (descItemValues != null && !descItemValues.getValues().isEmpty()) {
-                            for (DescItemValue v : descItemValues.getValues()) {
-                                List<Object> rowValues = new ArrayList<>(columNames.size());
-                                rowValues.add(i);
-                                rowValues.add(StringUtils.join(node.getReferenceMark()));
-                                rowValues.add(rulItemType.getName());
-
-                                String specname = null;
-                                Integer entityId = null;
-                                if (v instanceof TitleValue) {
-                                    TitleValue tv = (TitleValue)  v;
-                                    if (DataType.fromId(rulItemType.getDataTypeId()) != DataType.ENUM) {
-                                        specname = tv.getSpecName();
-                                    }
-                                    entityId = tv.getEntityId();
-                                }
-
-                                String value;
-                                if (v instanceof JsonTableTitleValue) {
-                                    JsonTableTitleValue tableValue = (JsonTableTitleValue) v;
-                                    value = "Tabulka 2x" + tableValue.getRows();
-                                } else {
-                                    value = v.getValue();
-                                }
-
-                                rowValues.add(specname);
-                                rowValues.add(value);
-                                rowValues.add(entityId);
-                                csvp.printRecord(rowValues);
-                            }
-                        }
-                    }
+                    writeNodeData(sdp, columNames, i, node, csvp);
                 }
                 csvp.flush();
                 page++;
@@ -493,6 +469,48 @@ public class ArrIOService {
         }
     }
 
+    private void writeNodeData(StaticDataProvider sdp, List<String> columNames, int i, FilterNode node,
+                               CSVPrinter csvp)
+            throws IOException {
+        for (Map.Entry<Integer, DescItemValues> entry : node.getValuesMap().entrySet()) {
+            ItemType itemType = sdp.getItemTypeById(entry.getKey());
+            DescItemValues descItemValues = entry.getValue();
+            if (descItemValues != null && !descItemValues.getValues().isEmpty()) {
+                for (DescItemValue v : descItemValues.getValues()) {
+                    List<Object> rowValues = new ArrayList<>(columNames.size());
+                    rowValues.add(i);
+                    rowValues.add(StringUtils.join(node.getReferenceMark()));
+                    rowValues.add(itemType.getEntity().getName());
+
+                    String specname = null;
+                    Integer entityId = null;
+                    if (v instanceof TitleValue) {
+                        TitleValue tv = (TitleValue) v;
+                        if (itemType.getDataType() != DataType.ENUM) {
+                            specname = tv.getSpecName();
+                        }
+                        entityId = tv.getEntityId();
+                    }
+
+                    String value;
+                    if (v instanceof JsonTableTitleValue) {
+                        JsonTableTitleValue tableValue = (JsonTableTitleValue) v;
+                        value = "Tabulka 2x" + tableValue.getRows();
+                    } else {
+                        value = v.getValue();
+                    }
+
+                    rowValues.add(specname);
+                    rowValues.add(value);
+                    rowValues.add(entityId);
+                    csvp.printRecord(rowValues);
+                }
+            }
+        }
+    }
+
+
+    @Transactional
     public void dataGridTableExport(final HttpServletResponse response,
                                    final Integer versionId,
                                    final List<Integer> rulItemTypeIds) throws IOException {
@@ -512,7 +530,8 @@ public class ArrIOService {
         }
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
-        response.setHeader("Content-Disposition", "attachment;filename=" + version.getFund().getInternalCode() + "-table.csv");
+        response.setHeader("Content-Disposition",
+                           "attachment;filename=" + getExportFileName(version.getFund(), "-table"));
         ArrayList<Integer> filteredIds = filterTreeService.getFilteredIds(versionId);
         int page = 0;
         int pageSize = 100;

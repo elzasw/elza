@@ -32,7 +32,10 @@ import TemplateForm, {EXISTS_TEMPLATE, NEW_TEMPLATE} from "./TemplateForm";
 import TemplateUseForm from "./TemplateUseForm";
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import DescItemFactory from "components/arr/nodeForm/DescItemFactory.jsx";
-import { CLS_ITEM_ENUM } from "../../shared/factory/factoryConsts";
+import {CLS, CLS_ITEM_ENUM} from "../../shared/factory/factoryConsts";
+import storeFromArea from "../../shared/utils/storeFromArea";
+import * as issuesActions from "../../actions/arr/issues";
+import IssueForm from "../form/IssueForm";
 
 require('./NodeSubNodeForm.less');
 
@@ -206,9 +209,19 @@ class NodeSubNodeForm extends AbstractReactComponent {
     renderFormActions() {
         const notRoot = !isFundRootId(this.props.nodeId);
 
-        const {fundId, userDetail} = this.props;
+        const {fundId, userDetail, issueProtocol} = this.props;
         const historyAllowed = userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId},
                                                  perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId});
+
+        const isProtocolLoaded = issueProtocol.fetched && issueProtocol.data;
+        const haveProtocolPermissionToWrite =
+            isProtocolLoaded && (
+                userDetail.hasOne([perms.FUND_ISSUE_ADMIN_ALL]) || (
+                    userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
+                    userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
+                    userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(issueProtocol.data.id) !== -1
+                )
+            );
 
         return (
             <div ref="nodeToolbar" className='node-form-actions-container'>
@@ -238,6 +251,11 @@ class NodeSubNodeForm extends AbstractReactComponent {
                             {i18n("subNodeForm.digitizationRequest")}
                         </NoFocusButton>
                     </div>
+                    {isProtocolLoaded && <div className='section'>
+                        <NoFocusButton onClick={this.handleCreateIssueNode} disabled={!haveProtocolPermissionToWrite} title={i18n("subNodeForm.issueAdd")}>
+                            <Icon glyph="fa-commenting"/>
+                        </NoFocusButton>
+                    </div>}
                     <div className='section'>
                         <DropdownButton bsStyle="default" title={<Icon glyph="fa-ellipsis-h" />} noCaret id="arr-structure-panel-add">
                             <MenuItem eventKey="1" onClick={this.handleCreateTemplate}>{i18n("subNodeForm.section.createTemplate")}</MenuItem>
@@ -248,6 +266,25 @@ class NodeSubNodeForm extends AbstractReactComponent {
             </div>
         )
     }
+
+    handleCreateIssueNode = () => {
+        const {issueProtocol, dispatch, fund} = this.props;
+
+        let node;
+        if (fund.nodes && fund.nodes.activeIndex !== null) {
+            node = fund.nodes.nodes[fund.nodes.activeIndex]
+        }
+
+        dispatch(modalDialogShow(this, i18n("arr.issues.add.node.title"), <IssueForm onSubmit={(data) => WebApi.addIssue({
+            ...data,
+            issueListId: issueProtocol.id,
+            nodeId: node.selectedSubNodeId
+        })}  onSubmitSuccess={(data) => {
+            dispatch(issuesActions.list.invalidate(data.issueListId));
+            dispatch(issuesActions.detail.invalidate(data.id));
+            dispatch(modalDialogHide());
+        }} />));
+    };
 
     handleCreateTemplate = () => {
 
@@ -316,7 +353,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                         const itemCls = factory.createClass(item);
                         const newItem = itemCls.copyItem(withValues);
                         // enums are always stored
-                        if(withValues || item[factory.CLS] === factory.CLS_ITEM_ENUM) {
+                        if(withValues || item[CLS] === CLS_ITEM_ENUM) {
                             newItem.strValue = itemCls.toSimpleString();
                         }
                         items.push(newItem);
@@ -389,11 +426,11 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
                 if (createItems.length > 0 || updateItems.length > 0 || deleteItems.length > 0) {
                     return WebApi.updateDescItems(fund.versionId, selectedSubNode.id, selectedSubNode.version, createItems, updateItems, deleteItems).then(() => {
-                        this.dispatch(nodeFormActions.fundSubNodeFormTemplateUse(fund.versionId, routingKey, template, data.replaceValues));
+                        this.dispatch(nodeFormActions.fundSubNodeFormTemplateUse(fund.versionId, routingKey, template, data.replaceValues, true));
                         return this.dispatch(modalDialogHide());
                     });
                 } else {
-                    this.dispatch(nodeFormActions.fundSubNodeFormTemplateUse(fund.versionId, routingKey, template, data.replaceValues));
+                    this.dispatch(nodeFormActions.fundSubNodeFormTemplateUse(fund.versionId, routingKey, template, data.replaceValues, false));
                     return this.dispatch(modalDialogHide());
                 }
             }
@@ -577,7 +614,8 @@ function mapStateToProps(state) {
         fund,
         focus,
         userDetail,
-        groups: refTables.groups.data
+        groups: refTables.groups.data,
+        issueProtocol: storeFromArea(state, issuesActions.AREA_PROTOCOL),
     }
 }
 

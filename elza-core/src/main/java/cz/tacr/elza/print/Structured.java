@@ -52,6 +52,13 @@ public class Structured {
         nodeIds.add(nodeId);
     }
 
+    /**
+     * Create instance of structured object
+     * 
+     * @param structObj
+     * @param nodeLoader
+     * @return
+     */
     public static Structured newInstance(ArrStructuredObject structObj, NodeLoader nodeLoader) {
         Structured result = new Structured(nodeLoader);
         result.setValue(structObj.getValue());

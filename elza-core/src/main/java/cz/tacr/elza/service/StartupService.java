@@ -9,9 +9,11 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.search.DbQueueProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -69,6 +71,8 @@ public class StartupService implements SmartLifecycle {
 
     private final IndexWorkProcessor indexWorkProcessor;
 
+    private final ApplicationContext applicationContext;
+
     private boolean running;
 
     @Autowired
@@ -85,7 +89,8 @@ public class StartupService implements SmartLifecycle {
                           ApNameRepository apNameRepository,
                           final AccessPointService accessPointService,
                           final AccessPointGeneratorService accessPointGeneratorService,
-                          IndexWorkProcessor indexWorkProcessor) {
+                          IndexWorkProcessor indexWorkProcessor,
+                          final ApplicationContext applicationContext) {
         this.nodeRepository = nodeRepository;
         this.fundVersionRepository = fundVersionRepository;
         this.updateConformityInfoService = updateConformityInfoService;
@@ -100,6 +105,7 @@ public class StartupService implements SmartLifecycle {
         this.accessPointService = accessPointService;
         this.accessPointGeneratorService = accessPointGeneratorService;
         this.indexWorkProcessor = indexWorkProcessor;
+        this.applicationContext = applicationContext;
     }
 
     @Autowired
@@ -155,6 +161,7 @@ public class StartupService implements SmartLifecycle {
         }
         DatabaseType.init(em);
         staticDataService.init();
+        DbQueueProcessor.startInit(applicationContext);
         outputServiceInternal.init();
         clearBulkActions();
         clearTempStructureData();

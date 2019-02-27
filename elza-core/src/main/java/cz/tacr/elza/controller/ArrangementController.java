@@ -1078,7 +1078,7 @@ public class ArrangementController {
 
 		List<ArrFundVO> fundVOList = new ArrayList<>(fundList.size());
 		fundList.forEach(f -> {
-            ArrFundVO fundVO = factoryVo.createFundVO(f.getFund(), false);
+            ArrFundVO fundVO = factoryVo.createFundVO(f.getFund(), true, userService.getLoggedUserDetail());
 			//fundVO.setVersions(Arrays.asList(factoryVo.createFundVersion(f.getOpenVersion())));
 			fundVOList.add(fundVO);
         });
@@ -1098,7 +1098,7 @@ public class ArrangementController {
         if (fund == null) {
             throw new ObjectNotFoundException("AS s ID=" + fundId + " nebyl nalezen", ArrangementCode.FUND_NOT_FOUND).set("id", fundId);
         }
-        return factoryVo.createFundVO(fund, true);
+        return factoryVo.createFundVO(fund, true, userService.getLoggedUserDetail());
     }
 
     /**
@@ -1134,10 +1134,11 @@ public class ArrangementController {
 
         List<ArrFundVersion> versions = fundVersionRepository.findAll(idsParam.getIds());
 
+        UserDetail user = userService.getLoggedUserDetail();
         List<ArrFundVO> result = new LinkedList<>();
         for (ArrFundVersion version : versions) {
-            ArrFundVO fund = factoryVo.createFundVO(version.getFund(), false);
-            ArrFundVersionVO versionVo = factoryVo.createFundVersion(version);
+            ArrFundVO fund = factoryVo.createFundVO(version.getFund(), false, user);
+            ArrFundVersionVO versionVo = factoryVo.createFundVersion(version, user);
             fund.setVersions(Arrays.asList(versionVo));
 
             result.add(fund);
@@ -1173,7 +1174,7 @@ public class ArrangementController {
     @RequestMapping(value = "/nodeData", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     public NodeData getNodeData(final @RequestBody NodeDataParam param) {
-        return levelTreeCacheService.getNodeData(param);
+        return levelTreeCacheService.getNodeData(param, userService.getLoggedUserDetail());
     }
 
     /**
@@ -1210,8 +1211,9 @@ public class ArrangementController {
 
         Assert.notNull(version, "Nebyla nalezena verze s id " + versionId);
 
+        UserDetail user = userService.getLoggedUserDetail();
         ArrFundVersion nextVersion = arrangementService.approveVersion(version, dateRange);
-        return factoryVo.createFundVersion(nextVersion);
+        return factoryVo.createFundVersion(nextVersion, user);
     }
 
     /**
@@ -1319,7 +1321,8 @@ public class ArrangementController {
                 .createFundWithScenario(createFund.getName(), ruleSet, createFund.getInternalCode(), institution, createFund.getDateRange());
 
         // Kontrola na vyplněnost uživatele nebo skupiny jako správce, pokud není admin
-        if (!userService.hasPermission(UsrPermission.Permission.FUND_ADMIN)) {
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        if (!userDetail.hasPermission(UsrPermission.Permission.FUND_ADMIN)) {
             if (ObjectUtils.isEmpty(createFund.getAdminUsers()) && ObjectUtils.isEmpty(createFund.getAdminGroups())) {
                 Assert.isTrue(false, "Nebyl vybrán správce");
             }
@@ -1363,7 +1366,7 @@ public class ArrangementController {
 			        g -> userService.addFundAdminPermissions(null, g.getId(), newFund));
         }
 
-        return factoryVo.createFundVO(newFund, true);
+        return factoryVo.createFundVO(newFund, true, userDetail);
     }
 
     /**
@@ -1386,8 +1389,7 @@ public class ArrangementController {
                         factoryDO.createFund(arrFundVO),
                         ruleSetRepository.findOne(ruleSetId),
                         apScopes
-                ),
-                false
+                ), false, userService.getLoggedUserDetail()
         );
     }
 
@@ -1651,7 +1653,6 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/fundFulltext", method = RequestMethod.POST)
     public List<ArrFundFulltextResult> fundFulltext(final @RequestBody FulltextFundRequest input) {
-
         // vyhledáš, vrátíš seznam AS s počtem nalezených JP
         // + uložíš si do session uživatele Map<fundId, List<nodeId>
 

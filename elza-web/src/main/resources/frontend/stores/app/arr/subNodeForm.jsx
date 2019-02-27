@@ -47,6 +47,7 @@ const initialState = {
     infoGroupsMap: null,
     infoTypesMap: null,
     refTypesMap: null,
+    addItemTypeIds: null,
     getLoc: getLoc
 }
 
@@ -189,6 +190,67 @@ export function convertValue(value, descItem, type) {
     }
 }
 
+/**
+ * Přidání typu atributu do formuláře.
+ *
+ * @param state      upravovaný state
+ * @param itemTypeId přidávaný typ
+ */
+function addItemType(state, itemTypeId) {
+    let addGroup, addItemType;
+    state.infoGroups.forEach(group => {
+        group.types.forEach(type => {
+            if (type.id == itemTypeId) {
+                addGroup = group;
+                addItemType = type;
+            }
+        });
+    });
+
+    // ##
+    // # Přidání do formuláře
+    // ##
+
+    // Dohledání skupiny, pokud existuje
+    let grpIndex = indexById(state.formData.descItemGroups, addGroup.code, 'code');
+    let descItemGroup;
+    if (grpIndex !== null) {
+        descItemGroup = state.formData.descItemGroups[grpIndex];
+    } else {   // skupina není, je nutné ji nejdříve přidat a následně seřadit skupiny podle pořadí
+        descItemGroup = {code: addGroup.code, name: addGroup.name, descItemTypes: []};
+        state.formData.descItemGroups.push(descItemGroup);
+
+        // Seřazení
+        state.formData.descItemGroups.sort((a, b) => state.infoGroupsMap[a.code].position - state.infoGroupsMap[b.code].position);
+    }
+
+    // Přidání prvku do skupiny a seřazení prvků podle position
+    let descItemType = {...addItemType, descItems: []};
+    descItemGroup.descItemTypes.push(descItemType);
+    // Musíme ponechat prázdnou hodnotu
+    let refType = state.refTypesMap[descItemType.id];
+    let infoType = state.infoTypesMap[descItemType.id];
+
+    // Upravení a opravení seznamu hodnot, případně přidání prázdných
+    consolidateDescItems(descItemType, infoType, refType, true);
+
+    descItemGroup.descItemTypes.sort((a, b) => {
+        return indexById(descItemGroup.types, a.id) - indexById(descItemGroup.types, b.id);
+    });
+
+    state.formData = {...state.formData};
+}
+
+function addValue(state, loc) {
+    let refType = state.refTypesMap[loc.descItemType.id];
+
+    let descItem = createDescItem(loc.descItemType, refType, true);
+    descItem.position = loc.descItemType.descItems.length + 1;
+    loc.descItemType.descItems = [...loc.descItemType.descItems, descItem];
+
+    state.formData = {...state.formData};
+}
+
 export default function subNodeForm(state = initialState, action = {}) {
     // Načtení umístění, pokud bylo v akci předáno
     let loc
@@ -298,13 +360,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             state.formData = {...state.formData};
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_ADD:
-            var refType = state.refTypesMap[loc.descItemType.id]
-
-            var descItem = createDescItem(loc.descItemType, refType, true);
-            descItem.position = loc.descItemType.descItems.length + 1;
-            loc.descItemType.descItems = [...loc.descItemType.descItems, descItem];
-
-            state.formData = {...state.formData};
+            addValue(state, loc);
             return {...state};
         case types.CHANGE_NODES:
         case types.OUTPUT_CHANGES_DETAIL:
@@ -432,13 +488,14 @@ export default function subNodeForm(state = initialState, action = {}) {
         case types.FUND_SUB_NODE_FORM_TEMPLATE_USE: {
             const groups = action.groups;
             const template = action.template;
+            const addItemTypeIds = action.addItemTypeIds;
             const formData = template.formData;
             const replaceValues = template.replaceValues;
 
             Object.keys(formData).map(itemTypeId => {
                 let existsItemType = false;
                 const items = formData[itemTypeId];
-                console.warn(itemTypeId, items);
+
                 const groupCode = groups.reverse[itemTypeId];
                 const group = groups[groupCode];
 
@@ -462,6 +519,12 @@ export default function subNodeForm(state = initialState, action = {}) {
                             items.forEach((item => {
                                 const {value, ...newItem} = item; // odebrání hodnoty
                                 itemsMerge.push(newItem);
+                                if (!value) {
+                                    if (!state.addItemTypeIds) {
+                                        state.addItemTypeIds = [];
+                                    }
+                                    state.addItemTypeIds.push(itemType.id);
+                                }
                             }));
                         }
                     }
@@ -483,6 +546,17 @@ export default function subNodeForm(state = initialState, action = {}) {
                 // Přidání prvku do skupiny a seřazení prvků podle position
                 const itemType = {...addItemType, descItems: itemsMerge};
                 if (!existsItemType) {
+                    if (addItemTypeIds) {
+                        if (!state.addItemTypeIds) {
+                            state.addItemTypeIds = [];
+                        }
+                        items.forEach((item) => { // musím přidat tolikrát, kolikrát je to v šabloně
+                            const {value, ...newItem} = item;
+                            if (!value) {
+                                state.addItemTypeIds.push(itemType.id);
+                            }
+                        });
+                    }
                     descItemGroup.descItemTypes.push(itemType);
                 }
                 // Musíme ponechat prázdnou hodnotu
@@ -503,52 +577,14 @@ export default function subNodeForm(state = initialState, action = {}) {
             return {...state};
         }
 
+        // Přidá identifikátory typů atributů, které budou s dalším načtením obsahu JP přidány (prázdné)
+        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPES_ADD_TEMPLATE: {
+            state.addItemTypeIds = action.itemTypeIds;
+            return {...state};
+        }
+
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
-            // Dohledání skupiny a desc item type
-            var addGroup, addItemType;
-            state.infoGroups.forEach(group => {
-                group.types.forEach(type => {
-                    if (type.id == action.descItemTypeId) {
-                        addGroup = group;
-                        addItemType = type;
-                    }
-                });
-            });
-
-            // ##
-            // # Přidání do formuláře
-            // ##
-
-            // Dohledání skupiny, pokud existuje
-            var grpIndex = indexById(state.formData.descItemGroups, addGroup.code, 'code');
-            var descItemGroup;
-            if (grpIndex !== null) {
-                descItemGroup = state.formData.descItemGroups[grpIndex];
-            } else {   // skupina není, je nutné ji nejdříve přidat a následně seřadit skupiny podle pořadí
-                descItemGroup = {code: addGroup.code, name: addGroup.name, descItemTypes: []};
-                state.formData.descItemGroups.push(descItemGroup);
-
-                // Seřazení
-                state.formData.descItemGroups.sort((a, b) => state.infoGroupsMap[a.code].position - state.infoGroupsMap[b.code].position);
-            }
-
-            // Přidání prvku do skupiny a seřazení prvků podle position
-            var descItemType = {...addItemType, descItems: []};
-            descItemGroup.descItemTypes.push(descItemType);
-            // Musíme ponechat prázdnou hodnotu
-            var refType = state.refTypesMap[descItemType.id]
-            var infoType = state.infoTypesMap[descItemType.id]
-
-            // Upravení a opravení seznamu hodnot, případně přidání prázdných
-            consolidateDescItems(descItemType, infoType, refType, true)
-
-            descItemGroup.descItemTypes.sort((a, b) => {
-                return indexById(descItemGroup.types, a.id) - indexById(descItemGroup.types, b.id);
-                //return state.refTypesMap[a.id].viewOrder - state.refTypesMap[b.id].viewOrder
-                //return a.viewOrder - b.viewOrder
-            });
-
-            state.formData = {...state.formData};
+            addItemType(state, action.descItemTypeId);
             return {...state};
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
             if (action.onlyDescItems) { // jen desc items, nic víc
@@ -631,6 +667,32 @@ export default function subNodeForm(state = initialState, action = {}) {
                 result.formData = null;
             }
             updateFormData(result, action.data, refTypesMap, action.groups, null, state.dirty);
+
+            // Pokud existují typy atributů, které chceme po načtení přidat, přidáme je
+            const itemTypeIds = result.addItemTypeIds;
+            if (itemTypeIds) {
+                const added = {};
+                itemTypeIds.forEach(itemTypeId => {
+                    if (added[itemTypeId]) {
+                        var descItemGroup = null;
+                        var descItemType = null;
+                        for (let i = 0; i < result.formData.descItemGroups.length; i++) {
+                            descItemGroup = result.formData.descItemGroups[i];
+                            const itemTypeIndex = indexById(descItemGroup.descItemTypes, itemTypeId);
+                            if (itemTypeIndex != null) {
+                                descItemType = descItemGroup.descItemTypes[itemTypeIndex];
+                                addValue(result, {descItemGroup, descItemType});
+                                break;
+                            }
+                        }
+                    } else {
+                        addItemType(result, itemTypeId);
+                        added[itemTypeId] = true;
+                    }
+                });
+                result.addItemTypeIds = null;
+            }
+
             return result;
         case types.FUND_SUBNODE_UPDATE:
             var {node, parent} = action.data;

@@ -1,7 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
 import java.util.List;
-import java.util.Objects;
 
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.security.UserDetail;
@@ -111,22 +110,18 @@ public class UsrUserVO {
         this.groups = groups;
     }
 
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UsrUserVO usrUserVO = (UsrUserVO) o;
-        return active == usrUserVO.active &&
-                Objects.equals(username, usrUserVO.username) &&
-                Objects.equals(id, usrUserVO.id) &&
-                Objects.equals(description, usrUserVO.description) &&
-                Objects.equals(party, usrUserVO.party) &&
-                Objects.equals(permissions, usrUserVO.permissions) &&
-                Objects.equals(groups, usrUserVO.groups);
+    public UsrUser createEntity() {
+        UsrUser entity = new UsrUser();
+        entity.setUserId(id);
+        entity.setActive(active);
+        entity.setUsername(username);
+        entity.setDescription(description);
+        // party is not set
+        return entity;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(username, id, active, description, party, permissions, groups);
+    public static UsrUserVO newInstance(UsrUser user) {
+        UsrUserVO vo = new UsrUserVO(user, null);
+        return vo;
     }
 }

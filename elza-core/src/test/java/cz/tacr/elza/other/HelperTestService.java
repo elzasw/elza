@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
@@ -79,6 +80,9 @@ import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.repository.WfCommentRepository;
+import cz.tacr.elza.repository.WfIssueListRepository;
+import cz.tacr.elza.repository.WfIssueRepository;
 
 
 /**
@@ -201,12 +205,21 @@ public class HelperTestService {
     private ApFragmentRepository fragmentRepository;
     @Autowired
     private ApChangeRepository apChangeRepository;
+    @Autowired
+    private WfCommentRepository commentRepository;
+    @Autowired
+    private WfIssueListRepository issueListRepository;
+    @Autowired
+    private WfIssueRepository issueRepository;
 
     @Autowired
     private PackageService packageService;
 
     @Autowired
     private StaticDataService staticDataService;
+
+    @Autowired
+    protected EntityManager em;
 
     @Transactional
     public void importPackage(final File file) {
@@ -234,6 +247,9 @@ public class HelperTestService {
     public void deleteTables() {
         logger.debug("Cleaning table contents...");
 
+        commentRepository.deleteAll();
+        issueRepository.deleteAll();
+        issueListRepository.deleteAll();
         cachedNodeRepository.deleteAll();
         permissionRepository.deleteAll();
         groupUserRepository.deleteAll();
@@ -278,6 +294,9 @@ public class HelperTestService {
         apRepository.deleteAll();
         apChangeRepository.deleteAll();
         externalSystemRepository.deleteAll();
+
+        // DB has to be flushed before start
+        em.flush();
 
         logger.info("All tables cleaned.");
     }

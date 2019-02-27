@@ -145,14 +145,14 @@ public class UserControllerTest extends AbstractControllerTest {
 
         // Přidání a odebrání oprávnění na skupinu
         addGroupPermission(group.getId(), permissionVOs);
-        group = getGroup(user.getId());
+        group = getGroup(group.getId());
 		assertNotNull(group.getPermissions());
 		assertTrue(group.getPermissions().size() == 3);
 
         for (UsrPermissionVO x : group.getPermissions()) {
             deleteGroupPermission(group.getId(), x);
         }
-        group = getGroup(user.getId());
+        group = getGroup(group.getId());
 		assertNotNull(group.getPermissions());
 		assertTrue(group.getPermissions().size() == 0);
 
