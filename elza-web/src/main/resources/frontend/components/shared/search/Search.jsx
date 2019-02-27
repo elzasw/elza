@@ -103,7 +103,7 @@ class Search extends React.Component {
         }
 
         if (!readOnly) {
-            actions.push(<NoFocusButton key='handleSearch' className='search-button' onClick={this.handleSearch.bind(this, false, false)}>{searchIcon}</NoFocusButton>)
+            actions.push(<NoFocusButton disabled={disabled} key='handleSearch' className='search-button' onClick={this.handleSearch.bind(this, false, false)}>{searchIcon}</NoFocusButton>)
         }
 
         if (this.state.filterText) {

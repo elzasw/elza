@@ -71,7 +71,7 @@ class NodeActionsBar extends AbstractReactComponent {
     }
 
     render() {
-      const {simplified, node, selectedSubNodeIndex, versionId, userDetail, fundId, closed} = this.props;
+      const {simplified, node, selectedSubNodeIndex, versionId, userDetail, fundId, closed, onSwitchNode} = this.props;
       var selectedSubNodeNumber = selectedSubNodeIndex + 1; // pořadí vybraného záznamu v akordeonu
       var gotoTitle = this.isFilterUsed() ? i18n('arr.fund.subNodes.findPosition.filterActive') : i18n('arr.fund.subNodes.findPosition')
 
@@ -79,6 +79,16 @@ class NodeActionsBar extends AbstractReactComponent {
       if (node.selectedSubNodeId && node.nodeIndex !== null) {
           text = (node.nodeIndex + 1) + " / " + text;
       }
+
+      const onNextAction = (e) => {
+          if (simplified) onSwitchNode('nextItem', e);
+          else this.dispatch(fundSubNodesNextPage(versionId, node.id, node.routingKey));
+      }
+
+      const onPrevAction = (e) => {
+        if (simplified) onSwitchNode('prevItem', e);
+        else this.dispatch(fundSubNodesPrevPage(versionId, node.id, node.routingKey));
+    }
 
       return(
         <div key='actions' className='node-actions-bar'>
@@ -112,17 +122,17 @@ class NodeActionsBar extends AbstractReactComponent {
                         </div>
                         <div
                           className='btn btn-default'
-                          disabled={node.viewStartIndex == 0}
-                          onClick={()=>this.dispatch(fundSubNodesPrevPage(versionId, node.id, node.routingKey))}
-                          title={i18n('arr.fund.subNodes.prevPage',node.pageSize)}
+                          disabled={!simplified && node.viewStartIndex === 0}
+                          onClick={(e) => onPrevAction(e)}
+                          title={i18n('arr.fund.subNodes.prevPage', node.pageSize)}
                         >
                             <Icon glyph={simplified ? "fa-caret-left" : "fa-backward"} />
                         </div>
                         <div
                           className='btn btn-default'
-                          disabled={node.viewStartIndex + node.pageSize >= node.nodeCount}
-                          onClick={()=>this.dispatch(fundSubNodesNextPage(versionId, node.id, node.routingKey))}
-                          title={i18n('arr.fund.subNodes.nextPage',node.pageSize)}
+                          disabled={!simplified && node.viewStartIndex + node.pageSize >= node.nodeCount}
+                          onClick={(e) => onNextAction(e)}
+                          title={i18n('arr.fund.subNodes.nextPage', node.pageSize)}
                         >
                             <Icon glyph={simplified ? "fa-caret-right" : "fa-forward"} />
                         </div>
@@ -141,6 +151,7 @@ NodeActionsBar.propTypes = {
     userDetail: React.PropTypes.object.isRequired,
     fundId: React.PropTypes.any.isRequired,
     closed: React.PropTypes.any.isRequired,
-    selectedSubNodeIndex: React.PropTypes.number.isRequired
+    selectedSubNodeIndex: React.PropTypes.number.isRequired,
+    onSwitchNode: React.PropTypes.func,
 };
 export default connect()(NodeActionsBar);

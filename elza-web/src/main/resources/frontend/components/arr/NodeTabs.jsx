@@ -9,8 +9,6 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Tabs} from 'components/shared';
 import {fundCloseNodeTab, fundSelectNodeTab} from 'actions/arr/nodes.jsx'
-import {fundSelectSubNode} from 'actions/arr/node.jsx'
-import {createFundRoot, getParentNode} from './ArrUtils.jsx'
 import {nodesFetchIfNeeded} from 'actions/arr/node.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
@@ -67,21 +65,6 @@ return true
         this.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'tabs'))
     }
 
-    // @todo
-    // handleSelectNextNode = (node) => {
-    //     const { versionId, nodes } = this.props;
-    //     const index = indexById(nodes, node.id);
-
-    //     if (index !== null) {
-    //         var parentNode = getParentNode(node, nodes);
-    //         if (parentNode == null) {   // root
-    //             parentNode = createFundRoot(this.props.fund);
-    //         }
-
-    //         this.dispatch(fundSelectSubNode(versionId, nodes[index + 1], parentNode, false, null, true));
-    //     }
-    // } 
-
     render() {
         const {fund, nodes, activeIndex, versionId, rulDataTypes, showRegisterJp, showDaosJp,
                 calendarTypes, descItemTypes, fundId, closed, displayAccordion} = this.props;
@@ -104,11 +87,11 @@ return true
         var activeNode = nodes[activeIndex];
         var activeTab = tabs[activeIndex];
 
-        const showOnlyOne = !(!displayAccordion && tabs.length <= 1);
+        const noTabs = !displayAccordion && tabs.length <= 1;
 
         return (
-            <Tabs.Container ref='tabs' className='node-tabs-container'>
-                {showOnlyOne &&
+            <Tabs.Container ref='tabs' className={`node-tabs-container ${noTabs ? 'node-no--tabs' : ''}`}>
+                {!noTabs &&
                     <Tabs.Tabs
                         closable
                         items={tabs} activeItem={activeTab}
@@ -149,7 +132,7 @@ NodeTabs.propTypes = {
     descItemTypes: React.PropTypes.object.isRequired,
     showRegisterJp: React.PropTypes.bool.isRequired,
     showDaosJp: React.PropTypes.bool.isRequired,
-    displayAcordeon: React.PropTypes.bool.isRequired,
+    displayAccordion: React.PropTypes.bool.isRequired,
     closed: React.PropTypes.bool.isRequired
 }
 

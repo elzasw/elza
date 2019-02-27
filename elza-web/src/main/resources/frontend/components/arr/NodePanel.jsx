@@ -762,7 +762,7 @@ return true
                     </div>
                 }
 
-                if (node.selectedSubNodeId == item.id) {
+                if (node.selectedSubNodeId === item.id) {
                     rows.push(
                         <div key={item.id} ref={'accheader-' + item.id} className={'accordion-item opened' + (focused ? ' focused' : '') + (disabled ? ' disabled' : '')}>
                             <div key='header' className='accordion-header-container' onClick={displayAccordion ? this.handleCloseItem.bind(this, item) : () => ''}>
@@ -813,10 +813,19 @@ return true
             }
         }
         return (
-            <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={(action,e)=>this.handleAccordionShortcuts(action,e)} tabIndex={0} global stopPropagation={false}>
+            <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={(action,e) => this.handleAccordionShortcuts(action,e)} tabIndex={0} global stopPropagation={false}>
                 <div  className='inner-wrapper' ref="innerAccordionWrapper">
                     <div className="menu-wrapper">
-                        <NodeActionsBar onNext={this.props.onNext} simplified={!displayAccordion} node={node} selectedSubNodeIndex={focusItemIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
+                        <NodeActionsBar 
+                            simplified={!displayAccordion} 
+                            node={node}
+                            selectedSubNodeIndex={focusItemIndex}
+                            versionId={versionId}
+                            userDetail={userDetail}
+                            fundId={fundId}
+                            closed={closed}
+                            onSwitchNode={this.handleAccordionShortcuts.bind(this)}
+                        />
                     </div>
                     <div className='content-wrapper' ref='accordionContent'>
                         {rows}
