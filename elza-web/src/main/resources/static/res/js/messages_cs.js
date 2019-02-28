@@ -688,6 +688,8 @@ var messages = {
     "arr.daos.files.title.unitOfMeasure.IN" : "in",
     "arr.daos.files.title.unitOfMeasure.MM" : "mm",
 
+    "arr.fund.subNodes.prev": "Skok o záznam vzad",
+    "arr.fund.subNodes.next": "Skok o záznam vpřed",
     "arr.fund.subNodes.prevPage": "Skok o {0} záznamů vzad",
     "arr.fund.subNodes.nextPage": "Skok o {0} záznamů vpřed",
     "arr.fund.subNodes.findPosition": "Přejít na JP podle pořadového čísla",
