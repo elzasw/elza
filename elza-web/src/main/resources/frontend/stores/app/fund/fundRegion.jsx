@@ -86,6 +86,9 @@ export default function fundRegion(state = initialState, action = {}) {
             return {
                 ...state,
                 filterText: typeof action.filterText !== 'undefined' ? action.filterText : '',
+                filter: {
+                    from: 0,
+                },
                 currentDataKey: '',
             }
         case types.FUNDS_FILTER:
