@@ -263,5 +263,15 @@
             columnDataType="nvarchar(50)"
             defaultNullValue="OK"/>
     </changeSet>
+    
+    <!-- Pridani indexu pro zrychleni StructObj dotazu -->
+    <changeSet id="20190228112500000" author="ppyt">
+      <createIndex indexName="arr_item_data_idx" tableName="arr_item">
+        <column name="data_id" type="int"/>
+      </createIndex>
+      <createIndex tableName="arr_data_structure_ref" indexName="arr_data_structure_ref_struct_obj_idx">
+        <column name="structured_object_id" type="int"></column>
+      </createIndex>
+    </changeSet>
 
 </databaseChangeLog>
