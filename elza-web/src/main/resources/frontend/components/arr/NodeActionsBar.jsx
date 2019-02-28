@@ -71,77 +71,83 @@ class NodeActionsBar extends AbstractReactComponent {
     }
 
     render() {
-      const {simplified, node, selectedSubNodeIndex, versionId, userDetail, fundId, closed, onSwitchNode} = this.props;
-      var selectedSubNodeNumber = selectedSubNodeIndex + 1; // pořadí vybraného záznamu v akordeonu
-      var gotoTitle = this.isFilterUsed() ? i18n('arr.fund.subNodes.findPosition.filterActive') : i18n('arr.fund.subNodes.findPosition')
+        const {simplified, node, selectedSubNodeIndex, versionId, userDetail, fundId, closed, onSwitchNode} = this.props;
+        var selectedSubNodeNumber = selectedSubNodeIndex + 1; // pořadí vybraného záznamu v akordeonu
+        var gotoTitle = this.isFilterUsed() ? i18n('arr.fund.subNodes.findPosition.filterActive') : i18n('arr.fund.subNodes.findPosition')
 
-      let text = node.nodeCount;
-      if (node.selectedSubNodeId && node.nodeIndex !== null) {
-          text = (node.nodeIndex + 1) + " / " + text;
-      }
+        let text = node.nodeCount;
+        if (node.selectedSubNodeId && node.nodeIndex !== null) {
+            text = (node.nodeIndex + 1) + " / " + text;
+        }
 
-      const onNextAction = (e) => {
-          if (simplified) onSwitchNode('nextItem', e);
-          else this.dispatch(fundSubNodesNextPage(versionId, node.id, node.routingKey));
-      }
+        const onNextAction = (e) => {
+            if (simplified) onSwitchNode('nextItem', e);
+            else this.dispatch(fundSubNodesNextPage(versionId, node.id, node.routingKey));
+        }
 
-      const onPrevAction = (e) => {
+        const onPrevAction = (e) => {
         if (simplified) onSwitchNode('prevItem', e);
         else this.dispatch(fundSubNodesPrevPage(versionId, node.id, node.routingKey));
-    }
+        }
 
-      return(
-        <div key='actions' className='node-actions-bar'>
-            <div key='actions' className='actions'>
-                <AddNodeCross node={node} selectedSubNodeIndex={selectedSubNodeIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
-                <div className="button-wrap">
-                    <div className="left-side">
-                        <Search
-                            disabled={simplified}
-                            tabIndex={-1}
-                            ref='search'
-                            className='search-input'
-                            placeholder={i18n('search.input.filter')}
-                            value={node.filterText}
-                            onClear={() => {this.dispatch(fundNodeSubNodeFulltextSearch(''))}}
-                            onSearch={(value) => {this.dispatch(fundNodeSubNodeFulltextSearch(value))}}
-                            filter
-                        />
-                    </div>
-                    <div className="right-side">
-                        <div>
-                            {text}
+        return(
+            <div key='actions' className='node-actions-bar'>
+                <div key='actions' className='actions'>
+                    <AddNodeCross node={node} selectedSubNodeIndex={selectedSubNodeIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
+                    <div className="button-wrap">
+                        <div className="left-side">
+                            <Search
+                                disabled={simplified}
+                                tabIndex={-1}
+                                ref='search'
+                                className='search-input'
+                                placeholder={i18n('search.input.filter')}
+                                value={node.filterText}
+                                onClear={() => {this.dispatch(fundNodeSubNodeFulltextSearch(''))}}
+                                onSearch={(value) => {this.dispatch(fundNodeSubNodeFulltextSearch(value))}}
+                                filter
+                            />
                         </div>
-                        <div
-                          className='btn btn-default'
-                          onClick={this.handleFindPosition}
-                          disabled={this.isFilterUsed()}
-                          title={gotoTitle}
-                        >
-                            <Icon glyph="fa-hand-o-down" />
-                        </div>
-                        <div
-                          className='btn btn-default'
-                          disabled={!simplified && node.viewStartIndex === 0}
-                          onClick={(e) => onPrevAction(e)}
-                          title={i18n('arr.fund.subNodes.prevPage', node.pageSize)}
-                        >
-                            <Icon glyph={simplified ? "fa-caret-left" : "fa-backward"} />
-                        </div>
-                        <div
-                          className='btn btn-default'
-                          disabled={!simplified && node.viewStartIndex + node.pageSize >= node.nodeCount}
-                          onClick={(e) => onNextAction(e)}
-                          title={i18n('arr.fund.subNodes.nextPage', node.pageSize)}
-                        >
-                            <Icon glyph={simplified ? "fa-caret-right" : "fa-forward"} />
+                        <div className="right-side">
+                            <div>
+                                {text}
+                            </div>
+                            <div
+                            className='btn btn-default'
+                            onClick={this.handleFindPosition}
+                            disabled={this.isFilterUsed()}
+                            title={gotoTitle}
+                            >
+                                <Icon glyph="fa-hand-o-down" />
+                            </div>
+                            <div
+                            className='btn btn-default'
+                            disabled={!simplified && node.viewStartIndex === 0}
+                            onClick={(e) => onPrevAction(e)}
+                            title={i18n(
+                                `arr.fund.subNodes.prev${simplified ? '' : 'Page'}`,
+                                simplified ? node.pageSize : null
+                            )}
+                            >
+                                <Icon glyph={simplified ? "fa-caret-left" : "fa-backward"} />
+                            </div>
+                            <div
+                            className='btn btn-default'
+                            disabled={!simplified && node.viewStartIndex + node.pageSize >= node.nodeCount}
+                            onClick={(e) => onNextAction(e)}
+                            title={i18n(
+                                `arr.fund.subNodes.next${simplified ? '' : 'Page'}`,
+                                simplified ? node.pageSize : null
+                            )}
+                            >
+                                <Icon glyph={simplified ? "fa-caret-right" : "fa-forward"} />
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-      );
-    }
+        );
+        }
 };
 
 NodeActionsBar.propTypes = {
