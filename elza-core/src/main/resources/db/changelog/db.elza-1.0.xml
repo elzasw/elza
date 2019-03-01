@@ -272,6 +272,9 @@
       <createIndex tableName="arr_data_structure_ref" indexName="arr_data_structure_ref_struct_obj_idx">
         <column name="structured_object_id" type="int"></column>
       </createIndex>
+      <createIndex indexName="arr_structured_item_struct_obj_idx" tableName="arr_structured_item">
+        <column name="structured_object_id" type="int"/>
+      </createIndex>
     </changeSet>
 
 </databaseChangeLog>
