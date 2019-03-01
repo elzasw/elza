@@ -30,6 +30,7 @@ import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.core.fund.FundTree;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.core.fund.TreeNode;
@@ -59,7 +60,6 @@ import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.item.Item;
@@ -793,7 +793,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     @Override
     public List<Structured> createStructObjList(String structTypeCode) {
         // get struct item
-        RulStructuredType structType = staticData.getStructuredTypeByCode(structTypeCode);
+        StructType structType = staticData.getStructuredTypeByCode(structTypeCode);
         List<ArrStructuredObject> sobs = structObjRepos
                 .findStructureDataBySubtreeNodeIds(this.startNodes,
                                                    structType.getStructuredTypeId(),

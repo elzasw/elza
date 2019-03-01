@@ -18,6 +18,7 @@ import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
@@ -27,7 +28,6 @@ import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ArrStructuredObject.State;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
 import cz.tacr.elza.repository.ApNameRepository;
@@ -87,9 +87,10 @@ public class OutputModelTest extends AbstractServiceTest {
         FundInfo fi = this.createFund("F1");
 
         // Create struct objs
-        RulStructuredType structureType = sdp.getStructuredTypeByCode("SRD_PACKET");
+        StructType structureType = sdp.getStructuredTypeByCode("SRD_PACKET");
         assertNotNull(structureType);
-        ArrStructuredObject structObj1 = structObjService.createStructObj(fi.getFund(), structureType, State.OK);
+        ArrStructuredObject structObj1 = structObjService.createStructObj(fi.getFund(), structureType
+                .getStructuredType(), State.OK);
         assertNotNull(structObj1);
         // add item
         ArrItemEnumVO enumVo = new ArrItemEnumVO();
@@ -100,7 +101,8 @@ public class OutputModelTest extends AbstractServiceTest {
         assertNotNull(structItem);
 
         structObjService.createStructureItem(structItem, structObj1.getStructuredObjectId(), fi.getFundVersionId());
-        ArrStructuredObject structObj2 = structObjService.createStructObj(fi.getFund(), structureType, State.OK);
+        ArrStructuredObject structObj2 = structObjService.createStructObj(fi.getFund(), structureType
+                .getStructuredType(), State.OK);
         assertNotNull(structObj2);
 
         // Create levels

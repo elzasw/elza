@@ -8,6 +8,7 @@ import java.util.Map;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
@@ -125,8 +126,9 @@ public class SectionContext {
     }
 
     public void setProcessingStructType(String structTypeCode) {
-        RulStructuredType st = staticData.getStructuredTypeByCode(structTypeCode);
-        this.processingStructType = Validate.notNull(st);
+        StructType st = staticData.getStructuredTypeByCode(structTypeCode);
+        Validate.notNull(st);
+        this.processingStructType = st.getStructuredType();
     }
 
     public StructObjContext addStructObject(ArrStructuredObject entity, String importId) {

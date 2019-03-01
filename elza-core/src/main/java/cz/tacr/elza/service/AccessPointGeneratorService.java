@@ -399,7 +399,7 @@ public class AccessPointGeneratorService {
             rulPackage = structureExtensionDefinition.getRulPackage();
         } else {
             List<RulStructureDefinition> structureDefinitions = structureDefinitionRepository
-                    .findByStructuredTypeAndDefTypeOrderByPriority(structureType, RulStructureDefinition.DefType.SERIALIZED_VALUE);
+                    .findByStructTypeAndDefTypeOrderByPriority(structureType, RulStructureDefinition.DefType.SERIALIZED_VALUE);
             if (structureDefinitions.size() > 0) {
                 RulStructureDefinition structureDefinition = structureDefinitions.get(structureDefinitions.size() - 1);
                 component = structureDefinition.getComponent();

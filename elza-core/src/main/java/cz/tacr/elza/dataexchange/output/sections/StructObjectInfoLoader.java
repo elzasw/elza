@@ -5,10 +5,10 @@ import javax.persistence.EntityManager;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.RulStructuredType;
 
 public class StructObjectInfoLoader extends AbstractEntityLoader<StructObjectInfoImpl> {
 
@@ -32,8 +32,8 @@ public class StructObjectInfoLoader extends AbstractEntityLoader<StructObjectInf
     protected StructObjectInfoImpl createResult(Object entity) {
         ArrStructuredObject structObj = (ArrStructuredObject) entity;
 
-        RulStructuredType structType = staticData.getStructuredTypeById(structObj.getStructuredTypeId());
-        return new StructObjectInfoImpl(structObj.getStructuredObjectId(), structType);
+        StructType structType = staticData.getStructuredTypeById(structObj.getStructuredTypeId());
+        return new StructObjectInfoImpl(structObj.getStructuredObjectId(), structType.getStructuredType());
     }
 
     @Override
