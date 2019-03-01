@@ -611,6 +611,7 @@ public class ImportProcess {
         so.setErrorDescription(sourceObj.getErrorDescription());
         so.setStructuredType(sourceObj.getStructuredType());
         so.setValue(sourceObj.getValue());
+        so.setComplement(sourceObj.getComplement());
         so.setFund(targetFundVersion.getFund());
         so = structureDataRepository.save(so);
 

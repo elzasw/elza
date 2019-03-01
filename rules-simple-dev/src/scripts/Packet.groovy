@@ -47,6 +47,7 @@ void generate() {
     // store result
     result.setValue(valueBuilder.toString().trim());
     result.setSortValue(sortValueBuilder.toString().trim());
+    result.setComplement("xxx");
 }
 
 String toStringValue(String itemTypeCode) {

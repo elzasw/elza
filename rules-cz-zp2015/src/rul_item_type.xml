@@ -337,6 +337,9 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
+        <item-aptypes>
+            <item-aptype register-type="ORGANIZATION"/>
+        </item-aptypes>
     </item-type>
     <item-type code="ZP2015_STORAGE_COND" data-type="TEXT">
         <name>Způsob a forma dochování</name>
@@ -425,6 +428,9 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
+        <item-aptypes>
+            <item-aptype register-type="ORGANIZATION"/>
+        </item-aptypes>
     </item-type>
     <item-type code="ZP2015_EXERQUE" data-type="TEXT">
         <name>Opis, nápis, exerque</name>

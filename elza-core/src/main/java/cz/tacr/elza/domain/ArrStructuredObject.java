@@ -84,6 +84,9 @@ public class ArrStructuredObject implements IArrFund, Structured {
     @Column(length = StringLength.LENGTH_1000)
     private String sortValue;
 
+    @Column(length = StringLength.LENGTH_1000)
+    private String complement;
+
     @Column(nullable = false)
     private Boolean assignable;
 
@@ -133,12 +136,12 @@ public class ArrStructuredObject implements IArrFund, Structured {
     }
 
     /**
-     * @param value User visible value 
+     * @param value User visible value
      */
     public void setValue(final String value) {
         this.value = value;
     }
-    
+
     /**
      * Return value used for sorting
      * @return
@@ -155,7 +158,18 @@ public class ArrStructuredObject implements IArrFund, Structured {
 		this.sortValue = sortValue;
 	}
 
-	@Override
+    /**
+     * @return doplněk
+     */
+    public String getComplement() {
+        return complement;
+    }
+
+    public void setComplement(String complement) {
+        this.complement = complement;
+    }
+
+    @Override
     public String getStructureTypeCode() {
         return structuredType == null ? null : structuredType.getCode();
     }

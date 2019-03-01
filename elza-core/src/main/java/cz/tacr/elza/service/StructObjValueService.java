@@ -383,6 +383,7 @@ public class StructObjValueService {
         // Check if result is properly set (not empty)
         String value = result.getValue();
         String sortValue = result.getSortValue();
+        String complement = result.getComplement();
         if (StringUtils.isEmpty(value)) {
             validationErrorDescription.setEmptyValue(true);
         }
@@ -417,6 +418,10 @@ public class StructObjValueService {
         }
         if (!StringUtils.equals(structObj.getSortValue(), sortValue)) {
             structObj.setSortValue(sortValue);
+            change = true;
+        }
+        if (!StringUtils.equals(structObj.getComplement(), complement)) {
+            structObj.setComplement(complement);
             change = true;
         }
         if (!Objects.equals(structObj.getState(), state)) {
@@ -741,6 +746,7 @@ public class StructObjValueService {
     public static class Result {
         private String value;
         private String sortValue;
+        private String complement;
 
         public String getValue() {
             return value;
@@ -756,6 +762,14 @@ public class StructObjValueService {
 
         public void setSortValue(String sortValue) {
             this.sortValue = sortValue;
+        }
+
+        public String getComplement() {
+            return complement;
+        }
+
+        public void setComplement(String complement) {
+            this.complement = complement;
         }
     }
 
