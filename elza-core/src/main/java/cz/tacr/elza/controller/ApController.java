@@ -190,10 +190,10 @@ public class ApController {
             apTypeIds.add(apTypeId);
         } else {
             if (itemSpecId != null) {
-                // kdyz je vyplnene itemSpecId, tak se itemTypeId ignoruje
                 RulItemSpec spec = itemSpecRepository.getOneCheckExist(itemSpecId);
                 apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemSpec(spec));
-            } else if (itemTypeId != null) {
+            }
+            if (itemTypeId != null) {
                 RulItemType type = itemTypeRepository.getOneCheckExist(itemTypeId);
                 apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemType(type));
             }
