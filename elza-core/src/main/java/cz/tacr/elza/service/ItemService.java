@@ -186,6 +186,7 @@ public class ItemService {
 
         // extra check for data
         ArrData data = descItem.getData();
+        RulItemType rulItemType = descItem.getItemType();
 
         // check if defined specification
         Integer itemSpecId = descItem.getItemSpecId();
@@ -196,7 +197,6 @@ public class ItemService {
                         ArrangementCode.ITEM_SPEC_NOT_FOUND).level(Level.WARNING);
             }
 
-            RulItemType rulItemType = descItem.getItemType();
             RulItemSpec rulItemSpec = itemType.getItemSpecById(itemSpecId);
             if (rulItemSpec == null) {
                 throw new SystemException("Specifikace neodpovídá typu hodnoty atributu");
@@ -223,6 +223,18 @@ public class ItemService {
             if (itemSpecId != null) {
                 throw new BusinessException("Pro typ atributu nesmí být specifikace vyplněná",
                         ArrangementCode.ITEM_SPEC_FOUND).level(Level.WARNING);
+            } else {
+                if (itemType.getDataType().equals(DataType.RECORD_REF)) {
+                    ApAccessPoint apAccessPoint = ((ArrDataRecordRef) data).getRecord();
+
+                    List<Integer> apTypeIds = itemAptypeRepository.findApTypeIdsByItemType(rulItemType);
+                    Set<Integer> apTypeIdTree = registerTypeRepository.findSubtreeIds(apTypeIds);
+
+                    if (!apTypeIdTree.contains(apAccessPoint.getApTypeId())) {
+                        throw new BusinessException("Hodnota neodpovídá typu rejstříku podle specifikace nebo typu",
+                                RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING);
+                    }
+                }
             }
         }
     }
