@@ -85,6 +85,10 @@ public abstract class ArrRequest {
 
     }
 
+    public static final String TABLE_NAME = "arr_request";
+
+    public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
@@ -105,7 +109,7 @@ public abstract class ArrRequest {
     private String rejectReason;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "createChangeId", nullable = false)
+    @JoinColumn(name = FIELD_CREATE_CHANGE_ID, nullable = false)
     private ArrChange createChange;
 
     @Column

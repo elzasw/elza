@@ -15,12 +15,16 @@ import javax.persistence.Table;
 /**
  * Digitální archivní objekt (digitalizát).
  *
- * @author Martin Šlapa
- * @since 06.12.2016
  */
 @Table
 @Entity(name = "arr_dao_link")
 public class ArrDaoLink {
+
+    public static final String TABLE_NAME = "arr_dao_link";
+
+    public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
+
+    public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
 
     @Id
     @GeneratedValue
@@ -42,17 +46,17 @@ public class ArrDaoLink {
     private Integer daoId;
 
 	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "createChangeId", nullable = false)
+    @JoinColumn(name = FIELD_CREATE_CHANGE_ID, nullable = false)
     private ArrChange createChange;
 
-    @Column(name = "createChangeId", updatable = false, insertable = false)
+    @Column(name = FIELD_CREATE_CHANGE_ID, updatable = false, insertable = false)
     private Integer createChangeId;
 
 	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "deleteChangeId")
+    @JoinColumn(name = FIELD_DELETE_CHANGE_ID)
     private ArrChange deleteChange;
 
-    @Column(name = "deleteChangeId", updatable = false, insertable = false)
+    @Column(name = FIELD_DELETE_CHANGE_ID, updatable = false, insertable = false)
     private Integer deleteChangeId;
 
     public Integer getDaoLinkId() {

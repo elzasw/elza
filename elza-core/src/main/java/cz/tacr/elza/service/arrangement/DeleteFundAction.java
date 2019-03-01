@@ -41,6 +41,7 @@ import cz.tacr.elza.repository.FundStructureExtensionRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.LockedValueRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
@@ -154,6 +155,8 @@ public class DeleteFundAction {
     @Autowired
     private ChangeRepository changeRepository;
 
+    @Autowired
+    private LockedValueRepository lockedValueRepository;
     @Autowired
     private DescItemRepository descItemRepository;
     @Autowired
@@ -325,6 +328,9 @@ public class DeleteFundAction {
     }
 
     private void dropDescItems() {
+        // drop locked values
+        lockedValueRepository.deleteByFund(fund);
+
         // TODO: drop arr_data and all subtypes
 
         // drop items
