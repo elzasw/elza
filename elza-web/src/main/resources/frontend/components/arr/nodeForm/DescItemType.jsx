@@ -27,6 +27,7 @@ import {validate, convertValue} from "stores/app/arr/subNodeForm.jsx";
 import {valuesEquals} from 'components/Utils.jsx';
 import {WebApi} from 'actions/index.jsx';
 import objectById from "../../../shared/utils/objectById";
+import DescItemRecordRef from "./DescItemRecordRef";
 
 const placeholder = document.createElement("div");
 placeholder.className = "placeholder";
@@ -610,6 +611,7 @@ class DescItemType extends AbstractReactComponent {
                 itemName: refType.shortcut,
                 specName: specName,
                 singleDescItemTypeEdit: singleDescItemTypeEdit,
+                itemTypeId: refType.id,
                 onDetail: (value)=>{this.handleDetailRecord(descItemIndex, value);},
                 onCreateRecord: (value)=>{this.handleCreateRecord(descItemIndex);},
             },

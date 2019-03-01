@@ -108,7 +108,7 @@ class DescItemRecordRef extends AbstractReactComponent {
         if (hasSpecification && !descItem.descItemSpecId) {
             disabled = true;
         }
-
+console.warn(this.props)
         return <div className='desc-item-value desc-item-value-parts'>
             <ItemTooltipWrapper tooltipTitle="dataType.recordRef.format" className="tooltipWrapper">
                 <RegistryField

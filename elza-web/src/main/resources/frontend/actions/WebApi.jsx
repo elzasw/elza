@@ -477,11 +477,12 @@ export class WebApiCls {
     }
 
 
-    findRegistry(search = null, registryParent = null, apTypeId = null, versionId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId = null, excludeInvalid = true) {
+    findRegistry(search = null, registryParent = null, apTypeId = null, versionId = null, itemTypeId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId = null, excludeInvalid = true) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/', {
             search,
             from,
             count,
+            itemTypeId,
             itemSpecId,
             parentRecordId: registryParent,
             apTypeId,

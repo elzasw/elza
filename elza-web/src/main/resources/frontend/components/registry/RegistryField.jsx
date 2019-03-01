@@ -67,12 +67,12 @@ class RegistryField extends AbstractReactComponent {
     handleSearchChange = debounce((text) => {
         text = text == "" ? null : text;
         this.setState({searchText: text});
-        const {roleTypeId, partyId, registryParent, apTypeId, versionId, itemSpecId} = this.props;
+        const {roleTypeId, partyId, registryParent, apTypeId, versionId, itemSpecId, itemTypeId} = this.props;
         let promise = null;
         if (roleTypeId || partyId) {
             promise = WebApi.findRecordForRelation(text, roleTypeId, partyId, 0, AUTOCOMPLETE_REGISTRY_LIST_SIZE);
         } else {
-            promise = WebApi.findRegistry(text, registryParent, apTypeId, versionId, itemSpecId, 0, AUTOCOMPLETE_REGISTRY_LIST_SIZE);
+            promise = WebApi.findRegistry(text, registryParent, apTypeId, versionId, itemTypeId, itemSpecId, 0, AUTOCOMPLETE_REGISTRY_LIST_SIZE);
         }
         promise.then(json => {
             this.setState({
