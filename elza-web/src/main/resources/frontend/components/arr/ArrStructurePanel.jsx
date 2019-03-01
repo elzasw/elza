@@ -379,7 +379,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                 <Button bsStyle="default" onClick={this.handleUpdate} disabled={activeIndexes.length < 1}>
                     <Icon glyph="fa-edit" />
                 </Button>
-                <Checkbox
+                {/*<Checkbox
                     className="multiselect-checkbox"
                     inline
                     checked={this.state.multiselectAllowed}
@@ -387,9 +387,8 @@ class ArrStructurePanel extends AbstractReactComponent {
                         this.setState({multiselectAllowed: e.target.checked});
                     }}
                 >
-                    {/* @todo translation */}
                     Výběr více
-                </Checkbox>
+                </Checkbox>*/}
                 <Button bsStyle="default" onClick={this.handleExtensionsSettings} className={"pull-right"}>
                     <Icon glyph="fa-cogs" />
                 </Button>
