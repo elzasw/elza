@@ -328,6 +328,7 @@ var messages = {
     "ribbon.saving": "Ukládání",
 
     "toast.arr.validation.error.notFound": "Nebyla nalezena další chyba",
+    "toast.arr.validation.issues.notFound": "Nebyla nalezena další připomínka",
 
     "home.action.arr": "Archivní pomůcky",
     "home.action.party": "Osoby",
@@ -438,6 +439,7 @@ var messages = {
     "issueList.open":"Stav",
     "issueList.open.true":"Otevřený",
     "issueList.open.false":"Zavřený",
+    "issueList.new.unnamed":"Nepojmenovaný",
 
     "arr.fund.search.result.count": "Počet nalezených výsledků: {0}",
     "arr.fund.search.noFulltext": "Pro zobrazení výsledků hledání v archivních souborech zadejte vyhledávací podmínku.",

@@ -49,9 +49,14 @@ class DescItemStructureRef extends AbstractReactComponent {
             })
     };
 
+    findValue = () => {
+        const input = this.input;
+        return input && input.input && input.input.props.value;
+    };
+
     addNewStructure = () => {
         const {structureTypeCode, versionId, fundId, structureTypeName, onChange, descItemFactory} = this.props;
-        WebApi.createStructureData(versionId, structureTypeCode).then(structureData => {
+        WebApi.createStructureData(versionId, structureTypeCode, this.findValue()).then(structureData => {
             this.props.dispatch(
                 modalDialogShow(
                     this,

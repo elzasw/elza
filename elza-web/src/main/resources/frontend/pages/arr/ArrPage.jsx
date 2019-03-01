@@ -58,7 +58,6 @@ import ArrHistoryForm from 'components/arr/ArrHistoryForm.jsx'
 import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
-import {Shortcuts} from 'react-shortcuts';
 import * as perms from '../../actions/user/Permission.jsx';
 import {selectTab} from 'actions/global/tab.jsx'
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
@@ -71,12 +70,12 @@ import {structureTypesFetchIfNeeded} from "../../actions/refTables/structureType
 import objectById from "../../shared/utils/objectById";
 import FundTemplateSettingsForm from "../../components/arr/FundTemplateSettingsForm";
 import SearchFundsForm from "../../components/arr/SearchFundsForm";
-import Splitter from "../../components/shared/splitter/Splitter";
 import HorizontalSplitter from "../../components/shared/splitter/HorizontalSplitter";
 import LecturingTop from "../../components/arr/LecturingTop";
 import LecturingBottom from "../../components/arr/LecturingBottom";
 import storeFromArea from "../../shared/utils/storeFromArea";
 import * as issuesActions from "../../actions/arr/issues";
+import {nodeWithIssueByFundVersion} from "../../actions/arr/issues";
 import IssueForm from "../../components/form/IssueForm";
 
 const keyModifier = Utils.getKeyModifier();
@@ -492,37 +491,25 @@ class ArrPage extends ArrParentPage {
     };
 
     handleIssuePrevious = () => {
-        const {dispatch, issueDetail, issueList} = this.props;
-        const nodeIssues = issueList.rows.filter(i => !!i.nodeId);
-        if (nodeIssues.length > 0) {
-            const index = indexById(nodeIssues, issueDetail.id);
-            let newIssue = null;
-            if (index == null || !nodeIssues[index-1]) {
-                newIssue = nodeIssues[0];
-            } else {
-                newIssue = nodeIssues[index-1]
-            }
-
-            dispatch(issuesActions.detail.select(newIssue.id));
-        }
+        this.handleIssue(-1);
     };
     
     handleIssueNext = () => {
-        const {dispatch, issueDetail, issueList} = this.props;
-        const nodeIssues = issueList.rows.filter(i => !!i.nodeId);
-        if (nodeIssues.length > 0) {
-            const index = indexById(nodeIssues, issueDetail.id);
-            let newIssue = null;
-            if (index == null || !nodeIssues[index+1]) {
-                newIssue = nodeIssues[nodeIssues.length - 1];
-            } else {
-                newIssue = nodeIssues[index+1]
-            }
-
-            dispatch(issuesActions.detail.select(newIssue.id));
-        }
+        this.handleIssue(1);
     };
 
+    handleIssue = (direction) => {
+        const {dispatch, arrRegion} = this.props;
+        const indexFund = arrRegion.activeIndex;
+        if (indexFund !== null) {
+            const activeFund = arrRegion.funds[indexFund];
+            const nodeIndex = activeFund.nodes.activeIndex;
+            if (nodeIndex !== null) {
+                const activeNode = activeFund.nodes.nodes[nodeIndex];
+                dispatch(nodeWithIssueByFundVersion(activeFund, activeNode.selectedSubNodeId, direction));
+            }
+        }
+    };
 
     /**
      * Sestavení Ribbonu.
@@ -595,9 +582,9 @@ class ArrPage extends ArrParentPage {
                             <span className="btnText">{i18n('ribbon.action.arr.validation.error.next')}</span>
                         </Button>
                     );
-                    if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: activeFund.id}) && !readMode) {
+                    if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: activeFund.id})) {
                         itemActions.push(
-                            <Button key="prepareFundAction" onClick={this.handleOpenFundActionForm.bind(this, activeFund.versionId, activeInfo.activeSubNode)}>
+                            <Button disabled={readMode} key="prepareFundAction" onClick={this.handleOpenFundActionForm.bind(this, activeFund.versionId, activeInfo.activeSubNode)}>
                                 <Icon glyph="fa-calculator"/>
                                 <span className="btnText">{i18n('ribbon.action.arr.fund.newFundAction')}</span>
                             </Button>
@@ -618,21 +605,29 @@ class ArrPage extends ArrParentPage {
                         userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(issueProtocol.data.id) !== -1
                     )
                 );
-            const haveProtocolPermissionToRead =
-                haveProtocolPermissionToWrite || (isProtocolLoaded &&
-                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD] &&
-                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD].issueListIds &&
-                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD].issueListIds.indexOf(issueProtocol.data.id) !== -1);
+            // const haveProtocolPermissionToRead =
+            //     haveProtocolPermissionToWrite || (isProtocolLoaded &&
+            //     userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD] &&
+            //     userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD].issueListIds &&
+            //     userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD].issueListIds.indexOf(issueProtocol.data.id) !== -1);
+
+            if (nodeIndex !== null) {
+                const activeNode = activeFund.nodes.nodes[nodeIndex];
+                if (activeNode.selectedSubNodeId !== null) {
+                    subNodeId = activeNode.selectedSubNodeId;
+                    itemActions.push(
+                        <Button key="next-issue" onClick={this.handleIssuePrevious}>
+                            <Icon glyph="fa-arrow-left"/>
+                            <span className="btnText">{i18n('ribbon.action.arr.issue.previous')}</span>
+                        </Button>,
+                        <Button key="previous-issue" onClick={this.handleIssueNext}>
+                            <Icon glyph="fa-arrow-right"/>
+                            <span className="btnText">{i18n('ribbon.action.arr.issue.next')}</span>
+                        </Button>);
+                }
+            }
 
             itemActions.push(
-                <Button key="next-issue" onClick={this.handleIssuePrevious} disabled={!haveProtocolPermissionToRead}>
-                    <Icon glyph="fa-arrow-left"/>
-                    <span className="btnText">{i18n('ribbon.action.arr.issue.previous')}</span>
-                </Button>,
-                <Button key="previous-issue" onClick={this.handleIssueNext} disabled={!haveProtocolPermissionToRead}>
-                    <Icon glyph="fa-arrow-right"/>
-                    <span className="btnText">{i18n('ribbon.action.arr.issue.next')}</span>
-                </Button>,
                 <DropdownButton bsStyle="default" disabled={!haveProtocolPermissionToWrite} title={<span>
                 <Icon glyph="fa-commenting"/>
                 <span className="btnText">{i18n('ribbon.action.arr.issue.add')}</span>
@@ -932,7 +927,7 @@ class ArrPage extends ArrParentPage {
         return <div className='issues-panel'>
             <HorizontalSplitter
                                 top={<LecturingTop fund={activeFund} node={node} />}
-                                bottom={<LecturingBottom />}
+                                bottom={<LecturingBottom fund={activeFund} />}
             />
         </div>
     }

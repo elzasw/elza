@@ -428,7 +428,7 @@ public class IssueController {
      * @param direction krok (default 1)
      * @return uzel s připomínkou
      */
-    @RequestMapping(value = "/funds/{fundVersionId}/issues/next_node", method = RequestMethod.GET)
+    @RequestMapping(value = "/funds/{fundVersionId}/issues/nextNode", method = RequestMethod.GET)
     @Transactional
     public IssueNodeItem nextIssueByFundVersion(@PathVariable(value = "fundVersionId") Integer fundVersionId,
                                                 @RequestParam(value = "nodeId", required = false) Integer currentNodeId,

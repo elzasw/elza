@@ -196,7 +196,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @return uložený uzel
      */
     public ArrNode saveNode(final ArrNode node, final ArrChange change) {
-        node.setLastUpdate(change.getChangeDate());
+        node.setLastUpdate(change.getChangeDate().toLocalDateTime());
         nodeRepository.save(node);
         nodeRepository.flush();
         return node;

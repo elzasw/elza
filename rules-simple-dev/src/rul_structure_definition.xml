@@ -7,6 +7,10 @@
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>1</priority>
     </structure-definition>
+    <structure-definition structure-type="SRD_PACKET" filename="Packet-parse.groovy">
+        <def-type>PARSE_VALUE</def-type>
+        <priority>1</priority>
+    </structure-definition>
     <structure-definition structure-type="STAT_ZASTUPCE" filename="StatZastupce.drl">
         <def-type>ATTRIBUTE_TYPES</def-type>
         <priority>1</priority>

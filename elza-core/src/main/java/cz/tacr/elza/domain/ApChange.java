@@ -1,6 +1,7 @@
 package cz.tacr.elza.domain;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -34,7 +35,7 @@ public class ApChange {
     private Integer changeId;
 
     @Column(nullable = false)
-    private LocalDateTime changeDate;
+    private OffsetDateTime changeDate;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = UsrUser.class)
     @JoinColumn(name = "userId", nullable = true)
@@ -56,11 +57,11 @@ public class ApChange {
         this.changeId = changeId;
     }
 
-    public LocalDateTime getChangeDate() {
+    public OffsetDateTime getChangeDate() {
         return changeDate;
     }
 
-    public void setChangeDate(LocalDateTime changeDate) {
+    public void setChangeDate(OffsetDateTime changeDate) {
         this.changeDate = changeDate;
     }
 

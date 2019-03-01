@@ -273,8 +273,8 @@ public class StructureControllerTest extends AbstractControllerTest {
             }
         }
         ArrStructureDataVO structureDataGet = getStructureData(fundVersion.getId(), structureData.getId());
-        assertSame(structureDataGet.getState(), ArrStructuredObject.State.ERROR);
-        assertTrue(StringUtils.isEmpty(structureDataGet.getValue()));
+        assertSame(structureDataGet.getState(), ArrStructuredObject.State.OK);
+        assertTrue(StringUtils.isNotEmpty(structureDataGet.getValue()));
         assertTrue(StringUtils.isEmpty(structureDataConfirmed.getErrorDescription()));
         
         FilteredResultVO<ArrStructureDataVO> structureDataResult1 = findStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId(), null, null, null, null);

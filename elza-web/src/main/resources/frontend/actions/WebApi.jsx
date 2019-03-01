@@ -1000,8 +1000,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxCallRaw('/logout', {}, 'POST', '', 'application/x-www-form-urlencoded', true);
     }
 
-    findFunds(fulltext, max = DEFAULT_LIST_SIZE) {
-        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/getFunds', {fulltext, max})
+    findFunds(fulltext, max = DEFAULT_LIST_SIZE, from = 0) {
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/getFunds', {fulltext, max, from})
             .then(json => ({funds: json.list, fundCount: json.count}))
     }
 
@@ -1347,9 +1347,9 @@ export class WebApiCls {
         });
     }
 
-    createStructureData(fundVersionId, structureTypeCode) {
+    createStructureData(fundVersionId, structureTypeCode, value = null) {
         // Kvůli JSON stringify musíme poslat pomocí RAW aby se nevytvořili '"' v body
-        return AjaxUtils.ajaxCallRaw(WebApiCls.structureUrl + '/data/' + fundVersionId, null, "POST", structureTypeCode, 'application/json');
+        return AjaxUtils.ajaxCallRaw(WebApiCls.structureUrl + '/data/' + fundVersionId, {value}, "POST", structureTypeCode, 'application/json');
     }
 
     duplicateStructureDataBatch(fundVersionId, structureDataId, data) {
@@ -1550,6 +1550,17 @@ export class WebApiCls {
      */
     updateIssueComment(commentId : number, data : CommentVO) {
         return AjaxUtils.ajaxPut(WebApiCls.issueUrl + '/comments/' + commentId, null, data)
+    }
+
+    /**
+     * Vyhledá další uzel s otevřenou připomínkou.
+     *
+     * @param fundVersionId verze AS
+     * @param nodeId výchozí uzel (default root)
+     * @param direction krok (default 1)
+     */
+    nextIssueByFundVersion(fundVersionId : number, nodeId : number, direction : number) {
+        return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/funds/' + fundVersionId + '/issues/nextNode', {nodeId, direction});
     }
 }
 

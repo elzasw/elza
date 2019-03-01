@@ -1,9 +1,7 @@
 package cz.tacr.elza.search;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import cz.tacr.elza.domain.SysIndexWork;
+import cz.tacr.elza.service.IndexWorkService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +14,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.domain.SysIndexWork;
-import cz.tacr.elza.service.IndexWorkService;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
 
@@ -97,6 +97,7 @@ public class IndexWorkProcessor implements Runnable {
         synchronized (lock) {
             lock.notifyAll();
         }
+        waitForCompleteTasks();
     }
 
     /**
@@ -107,7 +108,23 @@ public class IndexWorkProcessor implements Runnable {
     public void suspendIndexing() {
         this.suspend = true;
         this.stop = true;
+        waitForCompleteTasks();
         logger.info("Hibernate search index processor - suspended");
+    }
+
+    /**
+     * Vyčkání na dokončení všech vláken s běžícím přeindexováním.
+     */
+    private void waitForCompleteTasks() {
+        ThreadPoolExecutor executor = taskExecutor.getThreadPoolExecutor();
+        while (executor.getTaskCount() != executor.getCompletedTaskCount()) {
+            logger.warn("Waiting for complete tasks {}/{}", executor.getCompletedTaskCount(), executor.getTaskCount());
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                logger.error("Interrupt thread", e);
+            }
+        }
     }
 
     /**
@@ -246,17 +263,16 @@ public class IndexWorkProcessor implements Runnable {
 
         taskExecutor.submit(() -> {
 
-            processBatch(workList);
-
-            indexWorkService.delete(workIdList);
+            processBatch(workList, workIdList);
 
         });
     }
 
-    protected void processBatch(List<SysIndexWork> workList) {
+    protected void processBatch(List<SysIndexWork> workList, final List<Long> workIdList) {
         try {
 
             searchWorkIndexService.processBatch(workList);
+            indexWorkService.delete(workIdList);
 
         } catch (Exception e) {
             StringBuilder sb = new StringBuilder(256);

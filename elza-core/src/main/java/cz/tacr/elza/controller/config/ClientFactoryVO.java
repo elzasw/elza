@@ -707,7 +707,7 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrFundVersionVO fundVersionVO = mapper.map(fundVersion, ArrFundVersionVO.class);
         Date createDate = Date.from(
-                fundVersion.getCreateChange().getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
+                fundVersion.getCreateChange().getChangeDate().toInstant());
         fundVersionVO.setCreateDate(createDate);
         ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSetId(),
                                                                     fundVersion.getFundId());
@@ -715,7 +715,7 @@ public class ClientFactoryVO {
 
         ArrChange lockChange = fundVersion.getLockChange();
         if (lockChange != null) {
-            Date lockDate = Date.from(lockChange.getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
+            Date lockDate = Date.from(lockChange.getChangeDate().toInstant());
             fundVersionVO.setLockDate(lockDate);
         } else {
             fundVersionVO.setIssues(wfFactory.createSimpleIssues(fundVersion.getFund(), user));

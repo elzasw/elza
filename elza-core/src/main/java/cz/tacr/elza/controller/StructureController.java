@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -78,11 +79,15 @@ public class StructureController {
     @Transactional
     @RequestMapping(value = "/data/{fundVersionId}", method = RequestMethod.POST)
     public ArrStructureDataVO createStructureData(@RequestBody final String structureTypeCode,
-                                                  @PathVariable(value = "fundVersionId") final Integer fundVersionId) {
+                                                  @PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                                  @RequestParam(value = "value", required = false) final String value) {
 
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
         ArrStructuredObject createStructureData = structureService.createStructObj(fundVersion.getFund(), structureType, ArrStructuredObject.State.TEMP);
+        if (StringUtils.isNotEmpty(value)) {
+            structureService.addItemsFromValue(createStructureData, value);
+        }
         return ArrStructureDataVO.newInstance(createStructureData);
     }
 

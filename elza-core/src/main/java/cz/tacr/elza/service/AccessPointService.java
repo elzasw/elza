@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -319,7 +320,7 @@ public class AccessPointService {
             }
             ApChange change = apDataService.createChange(ApChange.Type.AP_DELETE);
             ap.setDeleteChange(change);
-            apRepository.save(ap);
+            saveWithLock(ap);
 
             List<ApName> names = apNameRepository.findByAccessPoint(ap);
             names.forEach(name -> name.setDeleteChange(change));
@@ -471,7 +472,7 @@ public class AccessPointService {
      * @return uložený uzel
      */
     private ArrNode saveNode(final ArrNode node, final ArrChange change) {
-        node.setLastUpdate(change.getChangeDate());
+        node.setLastUpdate(change.getChangeDate().toLocalDateTime());
         nodeRepository.save(node);
         nodeRepository.flush();
         return node;
@@ -1082,7 +1083,7 @@ public class AccessPointService {
         }
         accessPoint.setApType(apType);
         accessPoint.setRuleSystem(apType.getRuleSystem());
-        ApAccessPoint result = apRepository.save(accessPoint);
+        ApAccessPoint result = saveWithLock(accessPoint);
         if (result.getRuleSystem() != null) {
             ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
             //apGeneratorService.generateAndSetResult(accessPoint, change);
@@ -1172,7 +1173,7 @@ public class AccessPointService {
         ApRuleSystem ruleSystem = accessPoint.getApType().getRuleSystem();
         accessPoint.setRuleSystem(ruleSystem);
         accessPoint.setState(ApState.INIT);
-        apRepository.save(accessPoint);
+        saveWithLock(accessPoint);
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_MIGRATE);
 
@@ -1329,7 +1330,7 @@ public class AccessPointService {
 
         if (accessPoint.getState() == ApState.TEMP) {
             accessPoint.setState(ApState.INIT);
-            apRepository.save(accessPoint);
+            saveWithLock(accessPoint);
 
             ApName preferredName = apNameRepository.findPreferredNameByAccessPoint(accessPoint);
             preferredName.setState(ApState.INIT);
@@ -1362,7 +1363,7 @@ public class AccessPointService {
         }
 
         accessPoint.setRuleSystem(apType.getRuleSystem());
-        apRepository.save(accessPoint);
+        saveWithLock(accessPoint);
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
         //apGeneratorService.generateAndSetResult(accessPoint, change);
@@ -1579,11 +1580,7 @@ public class AccessPointService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
     public ApAccessPoint getAccessPoint(@AuthParam(type = AuthParam.Type.AP) final Integer accessPointId) {
-        ApAccessPoint accessPoint = apRepository.findOne(accessPointId);
-        if (accessPoint == null) {
-            throw new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST).setId(accessPointId);
-        }
-        return accessPoint;
+        return getAccessPointInternal(accessPointId);
     }
 
     /**
@@ -1604,12 +1601,23 @@ public class AccessPointService {
      * @param accessPointId identifikátor přístupového bodu
      * @return přístupový bod
      */
-    public ApAccessPoint getAccessPointInternalWithLock(@AuthParam(type = AuthParam.Type.AP) final Integer accessPointId) {
-        ApAccessPoint accessPoint = apRepository.findOneWithLock(accessPointId);
+    public ApAccessPoint getAccessPointInternal(final Integer accessPointId) {
+        ApAccessPoint accessPoint = apRepository.findOne(accessPointId);
         if (accessPoint == null) {
             throw new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST).setId(accessPointId);
         }
         return accessPoint;
+    }
+
+    /**
+     * Uložení AP s odverzováním.
+     *
+     * @param accessPoint přístupový bod
+     * @return aktualizovaný přístupový bod
+     */
+    public ApAccessPoint saveWithLock(final ApAccessPoint accessPoint) {
+        accessPoint.setLastUpdate(LocalDateTime.now());
+        return apRepository.saveAndFlush(accessPoint);
     }
 
     /**
@@ -1714,7 +1722,7 @@ public class AccessPointService {
     private ApAccessPoint createAccessPoint(final ApScope scope, final ApType type, final ApChange change) {
         ApAccessPoint accessPoint = createAccessPointEntity(scope, type, change);
         accessPoint.setState(ApState.OK);
-        return apRepository.save(accessPoint);
+        return saveWithLock(accessPoint);
     }
 
     /**
@@ -1729,7 +1737,7 @@ public class AccessPointService {
         ApAccessPoint accessPoint = createAccessPointEntity(scope, type, change);
         accessPoint.setRuleSystem(type.getRuleSystem());
         accessPoint.setState(ApState.TEMP);
-        return apRepository.save(accessPoint);
+        return saveWithLock(accessPoint);
     }
 
     /**

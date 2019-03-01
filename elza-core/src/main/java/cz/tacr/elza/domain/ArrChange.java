@@ -1,6 +1,7 @@
 package cz.tacr.elza.domain;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -32,7 +33,7 @@ public class ArrChange {
     private Integer changeId;
 
     @Column(nullable = false)
-    private LocalDateTime changeDate;
+    private OffsetDateTime changeDate;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = UsrUser.class)
     @JoinColumn(name = "userId", nullable = true)
@@ -66,7 +67,7 @@ public class ArrChange {
     *
     * @return datum změny.
     */
-    public LocalDateTime getChangeDate() {
+    public OffsetDateTime getChangeDate() {
         return changeDate;
     }
 
@@ -74,7 +75,7 @@ public class ArrChange {
      * Nastaví datum změny.
      * @param changeDate datum změny.
      */
-    public void setChangeDate(final LocalDateTime changeDate) {
+    public void setChangeDate(final OffsetDateTime changeDate) {
         this.changeDate = changeDate;
     }
 

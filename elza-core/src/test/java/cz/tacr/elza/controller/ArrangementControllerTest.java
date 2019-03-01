@@ -78,6 +78,27 @@ import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.utils.CsvUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.*;
+
 public class ArrangementControllerTest extends AbstractControllerTest {
 
     public static final Logger logger = LoggerFactory.getLogger(ArrangementControllerTest.class);
@@ -225,7 +246,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         final Integer lastChangeId = changesAll.getChanges().get(0).getChangeId();
         final Integer firstChangeId = changesAll.getChanges().get(changesAll.getChanges().size() - 1).getChangeId();
-        ChangesResult changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, LocalDateTime.now(), lastChangeId, null);
+        ChangesResult changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, OffsetDateTime.now(), lastChangeId, null);
         assertNotNull(changesByDate);
         assertNotNull(changesByDate.getChanges());
 
@@ -233,10 +254,10 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         try {
             logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
             Thread.sleep(5000);
-            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, LocalDateTime.now(), lastChangeId, null);
+            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, OffsetDateTime.now(), lastChangeId, null);
             logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
             Thread.sleep(5000);
-            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, LocalDateTime.now(), lastChangeId, null);
+            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, OffsetDateTime.now(), lastChangeId, null);
             logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
         } catch (InterruptedException e) {
             e.printStackTrace();

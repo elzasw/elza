@@ -72,6 +72,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
                     case perms.INTERPI_MAPPING_WR:
                     case perms.FUND_ADMIN:
                     case perms.FUND_CREATE:
+                    case perms.FUND_ISSUE_ADMIN_ALL:
                         permission[p.permission] = this.buildPermission(permission[p.permission], p);
                         break;
                 }

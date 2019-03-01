@@ -10,7 +10,7 @@ import {LazyListBox} from 'components/shared';
 import {WebApi} from 'actions/index.jsx';
 import {getScrollbarWidth, timeToString, dateToString} from 'components/Utils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {dateTimeToLocalUTC} from "components/Utils"
+import {dateTimeToLocalUTC, dateTimeToZonedUTC} from "components/Utils"
 import FundNodesSelectForm from "./FundNodesSelectForm";
 
 require("./ArrHistoryForm.less");
@@ -251,7 +251,7 @@ class ArrHistoryForm extends AbstractReactComponent {
         const {versionId} = this.props;
         const {goToDateValue, changeId, node, showHistoryForNode} = this.state;
 
-        return WebApi.findChangesByDate(versionId, this.getNodeId(), changeId, dateTimeToLocalUTC(goToDateValue))
+        return WebApi.findChangesByDate(versionId, this.getNodeId(), changeId, dateTimeToZonedUTC(goToDateValue))
             .then(json => {
                 const offset = json.offset;
                 this.setState({

@@ -29,7 +29,6 @@ class LecturingTop extends React.Component {
 
     state = {
         issueListId: null,
-        fundId: null
     };
 
     static propTypes = {

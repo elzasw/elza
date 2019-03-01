@@ -37,7 +37,7 @@ class IssueLists extends AbstractReactComponent {
     };
 
     create = () => {
-        this.setState({id: null, initialValues: IssueListForm.initialValues});
+        WebApi.addIssueList({...IssueListForm.initialValues, name: i18n("issueList.new.unnamed"), fundId: this.props.fundId}).then(this.onCreate);
     };
 
     onCreate = data => {
@@ -46,11 +46,13 @@ class IssueLists extends AbstractReactComponent {
     };
 
     onSave = data => {
+        this.props.dispatch(issuesActions.protocols.invalidate(this.props.fundId));
         this.setState({id:data.id, initialValues: data});
     };
 
     filter = ({target: {value}}) => {
         this.props.dispatch(issuesActions.protocols.filter({open: value == 'true'}));
+        this.setState({id: null, initialValues: IssueListForm.initialValues});
     };
 
     render() {

@@ -2,6 +2,7 @@ package cz.tacr.elza.service;
 
 import java.text.Normalizer;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -471,7 +472,7 @@ public class ArrangementService {
 
     public ArrNode createNode(final ArrFund fund, final ArrChange createChange) {
         ArrNode node = new ArrNode();
-        node.setLastUpdate(createChange.getChangeDate());
+        node.setLastUpdate(createChange.getChangeDate().toLocalDateTime());
         node.setUuid(generateUuid());
         node.setFund(fund);
         nodeRepository.save(node);
@@ -481,7 +482,7 @@ public class ArrangementService {
 
     public ArrNode createNodeSimple(final ArrFund fund, final String uuid, final ArrChange createChange) {
         ArrNode node = new ArrNode();
-        node.setLastUpdate(createChange.getChangeDate());
+        node.setLastUpdate(createChange.getChangeDate().toLocalDateTime());
         node.setUuid(uuid == null ? generateUuid() : uuid);
         node.setFund(fund);
         nodeRepository.save(node);
@@ -495,7 +496,7 @@ public class ArrangementService {
             return createNode(fund, change);
         }
         ArrNode node = new ArrNode();
-        node.setLastUpdate(change.getChangeDate());
+        node.setLastUpdate(change.getChangeDate().toLocalDateTime());
         node.setUuid(uuid);
         node.setFund(fund);
         nodeRepository.save(node);
@@ -514,7 +515,7 @@ public class ArrangementService {
                                   @Nullable final ArrNode primaryNode) {
         ArrChange change = new ArrChange();
         UserDetail userDetail = userService.getLoggedUserDetail();
-        change.setChangeDate(LocalDateTime.now());
+        change.setChangeDate(OffsetDateTime.now());
 
         if (userDetail != null && userDetail.getId() != null) {
 			UsrUser user = em.getReference(UsrUser.class, userDetail.getId());
@@ -536,6 +537,28 @@ public class ArrangementService {
     public ArrChange createChange(@Nullable final ArrChange.Type type) {
         return createChange(type, null);
     }
+
+    /**
+     * Migrace typu objektu změny.
+     *
+     * @param change  migrovaná změna
+     * @param newType nový typ změny
+     * @return upravený objekt změny
+     */
+    public ArrChange migrateChangeType(final ArrChange change, final ArrChange.Type newType) {
+        Validate.notNull(change);
+        Validate.notNull(newType);
+        Validate.notNull(change.getChangeId());
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        change.setChangeDate(OffsetDateTime.now());
+        if (userDetail != null && userDetail.getId() != null) {
+            UsrUser user = em.getReference(UsrUser.class, userDetail.getId());
+            change.setUser(user);
+        }
+        change.setType(newType);
+        return changeRepository.save(change);
+    }
+
 
     /**
      * Dodatečné nastavení primární vazby u změny.
@@ -668,7 +691,7 @@ public class ArrangementService {
         Assert.notNull(level, "Musí být vyplněno");
 
         ArrNode node = level.getNode();
-        node.setLastUpdate(deleteChange.getChangeDate());
+        node.setLastUpdate(deleteChange.getChangeDate().toLocalDateTime());
         nodeRepository.save(node);
 
         level.setDeleteChange(deleteChange);
@@ -960,7 +983,7 @@ public class ArrangementService {
         Assert.notNull(lockNode, "Musí být vyplněno");
 
         lockNode.setUuid(dbNode.getUuid());
-        lockNode.setLastUpdate(change.getChangeDate());
+        lockNode.setLastUpdate(change.getChangeDate().toLocalDateTime());
         lockNode.setFund(dbNode.getFund());
 
         return nodeRepository.save(lockNode);

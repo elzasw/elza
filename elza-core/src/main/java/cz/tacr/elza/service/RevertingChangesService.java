@@ -2,8 +2,7 @@ package cz.tacr.elza.service;
 
 import java.math.BigInteger;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,6 +53,7 @@ import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LockedValueRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
@@ -101,6 +101,9 @@ public class RevertingChangesService {
 
     @Autowired
     private ItemTypeRepository itemTypeRepository;
+
+    @Autowired
+    private DescItemRepository descItemRepository;
 
     @Autowired
     private DescriptionItemService descriptionItemService;
@@ -214,7 +217,7 @@ public class RevertingChangesService {
     public ChangesResult findChangesByDate(@NotNull final ArrFundVersion fundVersion,
                                            @Nullable final ArrNode node,
                                            final int maxSize,
-                                           @NotNull final LocalDateTime fromDate,
+                                           @NotNull final OffsetDateTime fromDate,
                                            @NotNull final ArrChange fromChange) {
         Validate.notNull(fundVersion, "Verze AS musí být vyplněna");
         Validate.notNull(fromDate, "Datum od musí být vyplněn");
@@ -311,6 +314,14 @@ public class RevertingChangesService {
         }
 
         {
+            List<Integer> toReindex = new ArrayList<>(1024);
+
+            // preindexovat zaznamy, ktere mohou byt smazane
+            toReindex.addAll(node != null
+                    ? descItemRepository.findIdByNodeAndCreatedAfterChange(node, toChange)
+                    : descItemRepository.findIdByFundAndCreatedAfterChange(fund, toChange)
+            );
+
             Query updateEntityQuery = createExtendUpdateEntityQuery(fund, node, "deleteChange", "arr_desc_item", "arr_item", toChange);
             updateEntityQuery.executeUpdate();
 
@@ -326,6 +337,14 @@ public class RevertingChangesService {
             deleteEntityQuery.executeUpdate();
 
             dataRepository.delete(arrDataList);
+
+            // preindexovat všechny aktualni
+            toReindex.addAll(node != null
+                    ? descItemRepository.findOpenIdByNodeAndCreatedAfterChange(node)
+                    : descItemRepository.findOpenIdByFundAndCreatedAfterChange(fund)
+            );
+
+            descriptionItemService.reindexDescItem(toReindex);
         }
 
         if (nodeId == null) {
@@ -1064,7 +1083,7 @@ public class RevertingChangesService {
             Change change = new Change();
             change.setChangeId(changeResult.changeId);
             change.setNodeChanges(changeResult.nodeChanges == null ? null : changeResult.nodeChanges.intValue());
-            change.setChangeDate(Date.from(changeResult.changeDate.atZone(ZoneId.systemDefault()).toInstant()));
+            change.setChangeDate(Date.from(changeResult.changeDate.toInstant()));
             change.setPrimaryNodeId(changeResult.primaryNodeId);
             change.setType(StringUtils.isEmpty(changeResult.type) ? null : ArrChange.Type.valueOf(changeResult.type));
             change.setUserId(changeResult.userId);
@@ -1175,7 +1194,8 @@ public class RevertingChangesService {
     private @NotNull ChangeResult convertResult(@NotNull final Object[] o) {
         ChangeResult change = new ChangeResult();
         change.setChangeId((Integer) o[0]);
-        change.setChangeDate(((Timestamp) o[1]).toLocalDateTime());
+        Timestamp ts = (Timestamp) o[1];
+        change.setChangeDate(OffsetDateTime.ofInstant(Instant.ofEpochMilli(ts.getTime()), ZoneId.systemDefault()));
         change.setUserId((Integer) o[2]);
         change.setType(o[3] == null ? null : ((String) o[3]).trim());
         change.setPrimaryNodeId((Integer) o[4]);
@@ -1375,7 +1395,7 @@ public class RevertingChangesService {
      * @param fromDate     datum podle kterého počítám změny k přeskočení
      * @return query objekt
      */
-    private int countChangeIndex(@NotNull Integer fundId, @Nullable Integer nodeId, @NotNull Integer fromChangeId, @NotNull LocalDateTime fromDate) {
+    private int countChangeIndex(@NotNull Integer fundId, @Nullable Integer nodeId, @NotNull Integer fromChangeId, @NotNull OffsetDateTime fromDate) {
 
         // doplňující parametry dotazu
         String selectParams = "COUNT(*)";
@@ -1390,7 +1410,7 @@ public class RevertingChangesService {
             query.setParameter("nodeId", nodeId);
         }
         query.setParameter("fromChangeId", fromChangeId);
-        query.setParameter("changeDate", Timestamp.valueOf(fromDate), TemporalType.TIMESTAMP);
+        query.setParameter("changeDate", Timestamp.valueOf(fromDate.atZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime()), TemporalType.TIMESTAMP);
 
         return ((Number) query.getSingleResult()).intValue();
     }
@@ -1450,7 +1470,7 @@ public class RevertingChangesService {
         /**
          * Datum a čas změny.
          */
-        private LocalDateTime changeDate;
+        private OffsetDateTime changeDate;
 
         /**
          * Identifikátor uživatele, který změnu provedl.
@@ -1480,11 +1500,11 @@ public class RevertingChangesService {
             this.changeId = changeId;
         }
 
-        public LocalDateTime getChangeDate() {
+        public OffsetDateTime getChangeDate() {
             return changeDate;
         }
 
-        public void setChangeDate(final LocalDateTime changeDate) {
+        public void setChangeDate(final OffsetDateTime changeDate) {
             this.changeDate = changeDate;
         }
 
