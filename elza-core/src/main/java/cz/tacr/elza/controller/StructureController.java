@@ -358,7 +358,8 @@ public class StructureController {
         ArrStructuredObject structureData = structureService.getStructObjById(structureDataId);
 
         List<ArrStructuredItem> structureItems = structureService.findStructureItems(structureData);
-        List<RulItemTypeExt> structureItemTypes = ruleService.getStructureItemTypes(structureData.getStructuredType(), fundVersion, structureItems);
+        List<RulItemTypeExt> structureItemTypes = ruleService.getStructureItemTypes(structureData.getStructuredTypeId(),
+                                                                                    fundVersion, structureItems);
 
         Integer fundId = fundVersion.getFund().getFundId();
         String ruleCode = fundVersion.getRuleSet().getCode();

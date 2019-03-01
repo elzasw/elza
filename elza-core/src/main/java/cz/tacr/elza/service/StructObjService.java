@@ -752,7 +752,8 @@ public class StructObjService {
      * @param count         maximální počet položek
      * @return nalezené položky
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR,
+    		UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public FilteredResult<ArrStructuredObject> findStructureData(final RulStructuredType structureType,
                                                                  @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                                                                  @Nullable final String search,

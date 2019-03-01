@@ -1,21 +1,22 @@
 package cz.tacr.elza.drools;
 
-import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.drools.service.ModelFactory;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.StructureDefinitionRepository;
-import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
-import cz.tacr.elza.repository.StructuredTypeRepository;
+import java.nio.file.Path;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.nio.file.Path;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.Collectors;
+import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulStructureDefinition;
+import cz.tacr.elza.domain.RulStructureExtensionDefinition;
+import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.drools.service.ModelFactory;
+import cz.tacr.elza.repository.StructureDefinitionRepository;
+import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
 
 
 /**
@@ -49,7 +50,7 @@ public class FragmentItemTypesRules extends Rules {
         facts.addAll(rulDescItemTypeExtList);
 
         List<RulStructureDefinition> rulStructureDefinitions = structureDefinitionRepository
-                .findByStructuredTypeAndDefTypeOrderByPriority(fragmentType, RulStructureDefinition.DefType.ATTRIBUTE_TYPES);
+                .findByStructTypeAndDefTypeOrderByPriority(fragmentType, RulStructureDefinition.DefType.ATTRIBUTE_TYPES);
 
         for (RulStructureDefinition rulStructureDefinition : rulStructureDefinitions) {
             // TODO: Consider using structureType in getDroolsFile?
@@ -62,12 +63,7 @@ public class FragmentItemTypesRules extends Rules {
         List<RulStructureExtensionDefinition> rulStructureExtensionDefinitions = structureExtensionDefinitionRepository
                 .findByStructureTypeAndDefTypeOrderByPriority(fragmentType, RulStructureExtensionDefinition.DefType.ATTRIBUTE_TYPES);
 
-        List<RulPackage> rulPackages = rulStructureExtensionDefinitions.stream()
-                .map(RulStructureExtensionDefinition::getRulPackage).collect(Collectors.toList());
-
-        List<RulPackage> sortedPackages = getSortedPackages(rulPackages);
-
-        sortDefinitionByPackages(rulStructureExtensionDefinitions, sortedPackages);
+        sortDefinitionByPackages(rulStructureExtensionDefinitions);
 
         for (RulStructureExtensionDefinition rulStructureExtensionDefinition : rulStructureExtensionDefinitions) {
             // TODO: Consider using structureType in getDroolsFile?

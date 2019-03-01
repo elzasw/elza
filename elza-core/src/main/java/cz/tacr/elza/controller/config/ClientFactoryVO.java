@@ -18,9 +18,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.controller.factory.WfFactory;
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.core.data.DataType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -42,6 +39,7 @@ import cz.tacr.elza.config.rules.TypeInfo;
 import cz.tacr.elza.config.rules.ViewConfiguration;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.controller.factory.ApFactory;
+import cz.tacr.elza.controller.factory.WfFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.ApExternalSystemVO;
@@ -89,6 +87,9 @@ import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.controller.vo.WfIssueStateVO;
+import cz.tacr.elza.controller.vo.WfIssueTypeVO;
+import cz.tacr.elza.controller.vo.WfSimpleIssueVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;

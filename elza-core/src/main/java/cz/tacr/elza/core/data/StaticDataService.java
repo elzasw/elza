@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.repository.ApExternalIdTypeRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
@@ -25,11 +27,10 @@ import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegistryRoleRepository;
-import cz.tacr.elza.repository.ApExternalIdTypeRepository;
-import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructuredTypeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
 
@@ -68,6 +69,8 @@ public class StaticDataService {
 
     final StructuredTypeRepository structuredTypeRepository;
 
+    final StructureDefinitionRepository structureDefinitionRepository;
+
     final DataTypeRepository dataTypeRepository;
 
     final CalendarTypeRepository calendarTypeRepository;
@@ -95,24 +98,25 @@ public class StaticDataService {
     final RegistryRoleRepository registryRoleRepository;
 
     @Autowired
-    public StaticDataService(EntityManager em,
-                             RuleSetRepository ruleSetRepository,
-                             ItemTypeRepository itemTypeRepository,
-                             ItemSpecRepository itemSpecRepository,
-                             DataTypeRepository dataTypeRepository,
-                             CalendarTypeRepository calendarTypeRepository,
-                             PartyTypeRepository partyTypeRepository,
-                             PackageRepository packageRepository,
-                             StructuredTypeRepository structuredTypeRepository,
-                             PartyNameFormTypeRepository partyNameFormTypeRepository,
-                             ComplementTypeRepository complementTypeRepository,
-                             PartyTypeComplementTypeRepository partyTypeComplementTypeRepository,
-                             ApTypeRepository apTypeRepository,
-                             RelationTypeRepository relationTypeRepository,
-                             RelationTypeRoleTypeRepository relationTypeRoleTypeRepository,
-                             ApExternalIdTypeRepository apEidTypeRepository,
-                             SysLanguageRepository sysLanguageRepository,
-                             RegistryRoleRepository registryRoleRepository) {
+    public StaticDataService(final EntityManager em,
+                             final RuleSetRepository ruleSetRepository,
+                             final ItemTypeRepository itemTypeRepository,
+                             final ItemSpecRepository itemSpecRepository,
+                             final DataTypeRepository dataTypeRepository,
+                             final CalendarTypeRepository calendarTypeRepository,
+                             final PartyTypeRepository partyTypeRepository,
+                             final PackageRepository packageRepository,
+                             final StructuredTypeRepository structuredTypeRepository,
+                             final StructureDefinitionRepository structureDefinitionRepository,
+                             final PartyNameFormTypeRepository partyNameFormTypeRepository,
+                             final ComplementTypeRepository complementTypeRepository,
+                             final PartyTypeComplementTypeRepository partyTypeComplementTypeRepository,
+                             final ApTypeRepository apTypeRepository,
+                             final RelationTypeRepository relationTypeRepository,
+                             final RelationTypeRoleTypeRepository relationTypeRoleTypeRepository,
+                             final ApExternalIdTypeRepository apEidTypeRepository,
+                             final SysLanguageRepository sysLanguageRepository,
+                             final RegistryRoleRepository registryRoleRepository) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
         this.itemTypeRepository = itemTypeRepository;
@@ -122,6 +126,7 @@ public class StaticDataService {
         this.partyTypeRepository = partyTypeRepository;
         this.packageRepository = packageRepository;
         this.structuredTypeRepository = structuredTypeRepository;
+        this.structureDefinitionRepository = structureDefinitionRepository;
         this.partyNameFormTypeRepository = partyNameFormTypeRepository;
         this.complementTypeRepository = complementTypeRepository;
         this.partyTypeComplementTypeRepository = partyTypeComplementTypeRepository;

@@ -10,12 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulPackageDependency;
-import cz.tacr.elza.domain.RulStructureExtensionDefinition;
-import cz.tacr.elza.packageimport.PackageUtils;
-import cz.tacr.elza.repository.PackageDependencyRepository;
-import cz.tacr.elza.repository.PackageRepository;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.StatelessKieSession;
 import org.kie.internal.KnowledgeBase;
@@ -25,8 +19,12 @@ import org.kie.internal.builder.KnowledgeBuilderFactory;
 import org.kie.internal.io.ResourceFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ArrangementRuleRepository;
+import cz.tacr.elza.repository.PackageDependencyRepository;
+import cz.tacr.elza.repository.PackageRepository;
 
 
 /**
@@ -50,6 +48,9 @@ public abstract class Rules {
 
     @Autowired
     protected PackageDependencyRepository packageDependencyRepository;
+
+    @Autowired
+    protected StaticDataService staticDataService;
 
 
     /**
@@ -112,43 +113,20 @@ public abstract class Rules {
         return entry.getValue().newStatelessKieSession();
     }
 
-    protected List<RulPackage> getSortedPackages(final List<RulPackage> packages) {
-        List<RulPackage> packagesAll = packageRepository.findAll();
-        PackageUtils.Graph<RulPackage> g = new PackageUtils.Graph<>(packagesAll.size());
-        List<RulPackageDependency> dependencies = packageDependencyRepository.findAll();
-        dependencies.forEach(d -> g.addEdge(d.getRulPackage(), d.getDependsOnPackage()));
-        List<RulPackage> rulPackages = g.topologicalSort();
-        rulPackages.retainAll(packages);
-        return rulPackages;
-    }
-
-    protected void sortDefinitionByPackages(final List<RulStructureExtensionDefinition> rulStructureExtensionDefinitions, final List<RulPackage> sortedPackages) {
+    protected void sortDefinitionByPackages(final List<RulStructureExtensionDefinition> rulStructureExtensionDefinitions) {
         rulStructureExtensionDefinitions.sort((o1, o2) -> {
 
-            RulPackage p1 = o1.getRulPackage();
-            RulPackage p2 = o2.getRulPackage();
+            // 1. seřadit podle priority
+            Integer pr1 = o1.getPriority();
+            Integer pr2 = o1.getPriority();
 
-            // 1. seřadit podle řazení balíčků
-            Integer ae1 = sortedPackages.indexOf(p1);
-            Integer ae2 = sortedPackages.indexOf(p2);
-
-            int pComp = ae1.compareTo(ae2);
-            if (pComp != 0) {
-                return pComp;
+            int prComp = pr1.compareTo(pr2);
+            if (prComp != 0) {
+                return prComp;
             } else {
 
-                // 2. seřadit podle priority
-                Integer pr1 = o1.getPriority();
-                Integer pr2 = o1.getPriority();
-
-                int prComp = pr1.compareTo(pr2);
-                if (prComp != 0) {
-                    return prComp;
-                } else {
-
-                    // 2. seřadit podle id
-                    return o1.getStructureExtensionDefinitionId().compareTo(o2.getStructureExtensionDefinitionId());
-                }
+                // 2. seřadit podle id
+                return o1.getStructureExtensionDefinitionId().compareTo(o2.getStructureExtensionDefinitionId());
             }
         });
     }
