@@ -186,24 +186,6 @@ public class ItemService {
 
         // extra check for data
         ArrData data = descItem.getData();
-        if (data != null && !descItem.isUndefined()) {
-            // check record_ref
-            if (itemType.getDataType().equals(DataType.RECORD_REF)) {
-
-                ApAccessPoint apAccessPoint = ((ArrDataRecordRef) data).getRecord();
-                RulItemType rulItemType = descItem.getItemType();
-
-                // TODO: refactor and use static data
-                List<Integer> apTypeIds = itemAptypeRepository.findApTypeIdsByItemType(rulItemType);
-                if (!apTypeIds.isEmpty()) {
-                    Set<Integer> apTypeIdTree = registerTypeRepository.findSubtreeIds(apTypeIds);
-                    if (!apTypeIdTree.contains(apAccessPoint.getApTypeId())) {
-                        throw new BusinessException("Hodnota neodpovídá typu rejstříku",
-                                RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING);
-                    }
-                }
-            }
-        }
 
         // check if defined specification
         Integer itemSpecId = descItem.getItemSpecId();
@@ -214,6 +196,7 @@ public class ItemService {
                         ArrangementCode.ITEM_SPEC_NOT_FOUND).level(Level.WARNING);
             }
 
+            RulItemType rulItemType = descItem.getItemType();
             RulItemSpec rulItemSpec = itemType.getItemSpecById(itemSpecId);
             if (rulItemSpec == null) {
                 throw new SystemException("Specifikace neodpovídá typu hodnoty atributu");
@@ -226,10 +209,11 @@ public class ItemService {
 
                     // TODO: refactor and use static data
                     List<Integer> apTypeIds = itemAptypeRepository.findApTypeIdsByItemSpec(rulItemSpec);
+                    apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemType(rulItemType));
                     Set<Integer> apTypeIdTree = registerTypeRepository.findSubtreeIds(apTypeIds);
 
                     if (!apTypeIdTree.contains(apAccessPoint.getApTypeId())) {
-                        throw new BusinessException("Hodnota neodpovídá typu rejstříku podle specifikace",
+                        throw new BusinessException("Hodnota neodpovídá typu rejstříku podle specifikace nebo typu",
                                 RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING);
                     }
                 }
