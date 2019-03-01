@@ -11,7 +11,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.Tuple;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.FetchParent;
+import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
@@ -80,7 +80,7 @@ public abstract class AbstractEntityLoader<RES> extends AbstractBatchLoader<Obje
     /**
      * Sets additional fetches to root entity. Default implementation is empty.
      */
-    protected void setQueryFetch(FetchParent<?, ?> root) {
+    protected void buildExtendedQuery(Root<?> root, CriteriaBuilder cb) {
     }
 
     /**
@@ -121,8 +121,9 @@ public abstract class AbstractEntityLoader<RES> extends AbstractBatchLoader<Obje
         CriteriaQuery<Tuple> cq = cb.createTupleQuery();
 
         Root<?> root = cq.from(entityClass);
-        setQueryFetch(root);
+        buildExtendedQuery(root, cb);
 
+        // prepare where
         Path<?> jpaPath = getJpaPath(root, entityIdPath);
         Predicate cond = createQueryCondition(root, cb);
         if (cond != null) {
@@ -131,10 +132,18 @@ public abstract class AbstractEntityLoader<RES> extends AbstractBatchLoader<Obje
             cond = jpaPath.in(entityIds);
         }
         cq.where(cond);
+        List<Order> order = createQueryOrderBy(cb);
+        if (order != null) {
+            cq.orderBy(order);
+        }
 
         cq.multiselect(jpaPath, root);
 
         return cq;
+    }
+
+    private List<Order> createQueryOrderBy(CriteriaBuilder cb) {
+        return null;
     }
 
     /**

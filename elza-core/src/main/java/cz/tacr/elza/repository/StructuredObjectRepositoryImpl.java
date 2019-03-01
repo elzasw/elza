@@ -141,11 +141,15 @@ public class StructuredObjectRepositoryImpl implements StructuredObjectRepositor
         if (structuredTypeId != null) {
             rqBuilder.addSqlPart(" AND so.structured_type_id = :structuredTypeId");
         }
+        rqBuilder.addSqlPart(" ORDER BY so.sort_value");
 
         
         rqBuilder.prepareQuery(em);
+        // Add always
         rqBuilder.setParameter("nodeIds", nodeIds);
-        rqBuilder.setParameter("structuredTypeId", structuredTypeId);
+        if (structuredTypeId != null) {
+            rqBuilder.setParameter("structuredTypeId", structuredTypeId);
+        }
         return rqBuilder.getQuery().getResultList();
     }
 

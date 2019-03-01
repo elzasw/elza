@@ -107,18 +107,23 @@ public class RulesExecutor {
     /**
      * Spustí pravidla pro strukturovaný datový typ.
      *
-     * @param structureType          typ
-     * @param rulDescItemTypeExtList seznam všech atributů
-     * @param fundVersion            verze AS
-     * @param structureItems         seznam položek strukturovaného datového typu
+     * @param structTypeId
+     *            typ
+     * @param rulDescItemTypeExtList
+     *            seznam všech atributů
+     * @param fundVersion
+     *            verze AS
+     * @param structureItems
+     *            seznam položek strukturovaného datového typu
      * @return seznam typů atributů odpovídající pravidlům
      */
-    public List<RulItemTypeExt> executeStructureItemTypesRules(final RulStructuredType structureType,
+    public List<RulItemTypeExt> executeStructureItemTypesRules(final Integer structTypeId,
                                                                final List<RulItemTypeExt> rulDescItemTypeExtList,
                                                                final ArrFundVersion fundVersion,
                                                                final List<ArrStructuredItem> structureItems) {
         try {
-            return structureItemTypesRules.execute(structureType, rulDescItemTypeExtList, fundVersion.getFund(), structureItems);
+            return structureItemTypesRules.execute(structTypeId, rulDescItemTypeExtList, fundVersion.getFund(),
+                                                   structureItems);
         } catch (IOException e) {
             throw wrapIOException(e);
         }

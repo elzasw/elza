@@ -5,11 +5,13 @@ import javax.persistence.EntityManager;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 
 /**
  * VO hodnoty atributu - int.
  *
- * @author Martin Šlapa
  * @since 8.1.2016
  */
 public class ArrItemIntVO extends ArrItemVO {
@@ -18,6 +20,15 @@ public class ArrItemIntVO extends ArrItemVO {
      * celé číslo
      */
     private Integer value;
+
+    public ArrItemIntVO() {
+
+    }
+
+    public ArrItemIntVO(ArrItem item, final Integer value) {
+        super(item);
+        this.value = value;
+    }
 
     public Integer getValue() {
         return value;
@@ -33,5 +44,20 @@ public class ArrItemIntVO extends ArrItemVO {
         data.setValue(value);
         data.setDataType(DataType.INT.getEntity());
         return data;
+    }
+
+    public static ArrItemIntVO newInstance(ArrItem item) {
+        ArrData data = item.getData();
+        Integer value = null;
+        if (data != null) {
+            if (!(data instanceof ArrDataInteger)) {
+                throw new BusinessException("Inconsistent data type", BaseCode.PROPERTY_IS_INVALID)
+                        .set("dataClass", item.getClass());
+            }
+            ArrDataInteger dataInt = (ArrDataInteger) data;
+            value = dataInt.getValue();
+        }
+        ArrItemIntVO vo = new ArrItemIntVO(item, value);
+        return vo;
     }
 }

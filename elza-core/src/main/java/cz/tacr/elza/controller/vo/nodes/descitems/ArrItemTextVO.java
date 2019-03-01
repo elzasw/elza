@@ -5,11 +5,13 @@ import javax.persistence.EntityManager;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 
 /**
  * VO hodnoty atributu - text.
  *
- * @author Martin Šlapa
  * @since 8.1.2016
  */
 public class ArrItemTextVO extends ArrItemVO {
@@ -18,6 +20,15 @@ public class ArrItemTextVO extends ArrItemVO {
      * text
      */
     private String value;
+
+    public ArrItemTextVO() {
+
+    }
+
+    public ArrItemTextVO(ArrItem item, String value) {
+        super(item);
+        this.value = value;
+    }
 
     public String getValue() {
         return value;
@@ -33,5 +44,20 @@ public class ArrItemTextVO extends ArrItemVO {
         data.setValue(value);
         data.setDataType(DataType.TEXT.getEntity());
         return data;
+    }
+
+    public static ArrItemTextVO newInstance(ArrItem item) {
+        ArrData data = item.getData();
+        String value = null;
+        if (data != null) {
+            if (!(data instanceof ArrDataText)) {
+                throw new BusinessException("Inconsistent data type", BaseCode.PROPERTY_IS_INVALID)
+                        .set("dataClass", data.getClass());
+            }
+            ArrDataText dataText = (ArrDataText) data;
+            value = dataText.getValue();
+        }
+        ArrItemTextVO vo = new ArrItemTextVO(item, value);
+        return vo;
     }
 }

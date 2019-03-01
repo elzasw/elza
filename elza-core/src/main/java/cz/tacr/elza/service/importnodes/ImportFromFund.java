@@ -39,6 +39,8 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.table.ElzaTable;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.ScopeRepository;
@@ -238,7 +240,12 @@ public class ImportFromFund implements ImportSource {
             if (cachedNodes == null) {
                 throw new IllegalStateException();
             }
-            return cachedNodes.get(nodeId);
+            CachedNode cachedNode = cachedNodes.get(nodeId);
+            if (cachedNode == null) {
+                throw new BusinessException("Missing node in cache", BaseCode.DB_INTEGRITY_PROBLEM)
+                        .set("nodeId", nodeId);
+            }
+            return cachedNode;
         }
     }
 

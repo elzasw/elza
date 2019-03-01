@@ -304,16 +304,16 @@ public class StructObjService {
      * Vytvoření položky k hodnotě strukt. datového typu.
      *
      * @param structureItem   položka
-     * @param structureDataId identifikátor hodnoty strukt. datového typu
+     * @param structObjId identifikátor hodnoty strukt. datového typu
      * @param fundVersionId   identifikátor verze AS
      * @return vytvořená entita
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrStructuredItem createStructureItem(final ArrStructuredItem structureItem,
-                                                 final Integer structureDataId,
+                                                 final Integer structObjId,
                                                  @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
 
-        ArrStructuredObject structObj = getStructObjById(structureDataId);
+        ArrStructuredObject structObj = getStructObjById(structObjId);
 
         ArrChange change = structObj.getState() == ArrStructuredObject.State.TEMP ? structObj.getCreateChange()
                 : arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_ITEM);

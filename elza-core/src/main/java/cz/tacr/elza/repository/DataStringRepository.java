@@ -24,7 +24,7 @@ public interface DataStringRepository extends JpaRepository<ArrDataString, Integ
     }
 
     //@Query(nativeQuery = true, value = "select data_id, value from arr_data_string where data_id in (?1)")
-    Collection<OnlyValues> findValuesByDataId(List<Integer> ids);
+    Collection<OnlyValues> findValuesByDataIdIn(List<Integer> ids);
 
     @Modifying
     @Query(nativeQuery = true, value = "delete from arr_data_string where data_id in (?1)")

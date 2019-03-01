@@ -60,7 +60,7 @@ ${item.serializedValue}
 </#list>
 
 *************************************
-4. Tématický popis archivního souboru
+4. Tematický popis archivního souboru
 *************************************
 
 **********************************************************************

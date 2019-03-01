@@ -90,7 +90,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
             // create external id
             ApExternalId entity = new ApExternalId();
             entity.setCreateChange(context.getCreateChange());
-            entity.setValue(eid.getT());
+            entity.setValue(eid.getV());
             entity.setExternalIdType(eidType);
             entities.add(entity);
         }

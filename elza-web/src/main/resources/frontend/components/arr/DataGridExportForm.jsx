@@ -10,7 +10,7 @@ import AbstractReactComponent from "../AbstractReactComponent";
 import FormInput from "../shared/form/FormInput";
 import i18n from "../i18n";
 import {connect} from 'react-redux'
-import {WebApiCls} from "../../actions/WebApi";
+import {UrlFactory} from "../../actions/WebApi";
 import {modalDialogHide} from "../../actions/global/modalDialog";
 import {downloadFile} from "../../actions/global/download";
 
@@ -29,7 +29,8 @@ const handleSubmit = (values, dispatch, versionId, fundDataGrid) => {
     } else {
         columns = fundDataGrid.columnsOrder;
     }
-    dispatch(downloadFile(WebApiCls.arrangementUrl + '/dataGrid/export/' + versionId + '/' + values.exportType + "?rulItemTypeIds=" + columns));
+    let url = UrlFactory.exportGridData(versionId, values.exportType, columns);
+    dispatch(downloadFile(url));
 };
 
 const EXPORT_TYPE = {

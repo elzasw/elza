@@ -23,6 +23,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.repository.ApExternalIdTypeRepository;
@@ -37,6 +38,7 @@ import cz.tacr.elza.repository.RegistryRoleRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructuredTypeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
 
@@ -52,7 +54,7 @@ public class StaticDataProvider {
 
     private List<RelationType> relationTypes;
 
-    private List<RulStructuredType> structuredTypes;
+    private List<StructType> structuredTypes;
 
     private List<ItemType> itemTypes;
     
@@ -84,9 +86,9 @@ public class StaticDataProvider {
 
     private Map<String, RelationTypeImpl> relationTypeCodeMap;
 
-    private Map<Integer, RulStructuredType> structuredTypeIdMap;
+    private Map<Integer, StructType> structuredTypeIdMap = new HashMap<>();
 
-    private Map<String, RulStructuredType> structuredTypeCodeMap;
+    private Map<String, StructType> structuredTypeCodeMap = new HashMap<>();
 
     private Map<Integer, ItemType> itemTypeIdMap;
 
@@ -219,16 +221,16 @@ public class StaticDataProvider {
         return sysLanguageCodeMap.get(code);
     }
     
-    public List<RulStructuredType> getStructuredTypes() {
+    public List<StructType> getStructuredTypes() {
         return structuredTypes;
     }
 
-    public RulStructuredType getStructuredTypeById(Integer id) {
+    public StructType getStructuredTypeById(Integer id) {
         Validate.notNull(id);
         return structuredTypeIdMap.get(id);
     }
 
-    public RulStructuredType getStructuredTypeByCode(String code) {
+    public StructType getStructuredTypeByCode(String code) {
         Validate.notEmpty(code);
         return structuredTypeCodeMap.get(code);
     }
@@ -285,7 +287,7 @@ public class StaticDataProvider {
      */
     void init(StaticDataService service) {
         initRuleSets(service.ruleSetRepository);
-        initStructuredTypes(service.structuredTypeRepository);
+        initStructuredTypes(service.structuredTypeRepository, service.structureDefinitionRepository);
         initItemTypes( service.itemTypeRepository, service.itemSpecRepository);
         initPackages(service.packageRepository);
         initPartyNameFormTypes(service.partyNameFormTypeRepository);
@@ -357,12 +359,26 @@ public class StaticDataProvider {
         }
     }
 
-    private void initStructuredTypes(StructuredTypeRepository structuredTypeRepository) {
+    private void initStructuredTypes(StructuredTypeRepository structuredTypeRepository,
+                                     StructureDefinitionRepository structureDefinitionRepository) {
         List<RulStructuredType> structuredTypes = structuredTypeRepository.findAll();
 
-        this.structuredTypes = Collections.unmodifiableList(structuredTypes);
-        this.structuredTypeIdMap = createLookup(structuredTypes, RulStructuredType::getStructuredTypeId);
-        this.structuredTypeCodeMap = createLookup(structuredTypes, RulStructuredType::getCode);
+        ArrayList<StructType> structTypes = new ArrayList<>(structuredTypes.size());
+
+        // Prepare structured types
+        structuredTypes.forEach(st -> {
+            // read attrs definition
+            List<RulStructureDefinition> attrDefs = structureDefinitionRepository
+                    .findByStructTypeAndDefTypeOrderByPriority(st, RulStructureDefinition.DefType.ATTRIBUTE_TYPES);
+
+            StructType structType = new StructType(st, attrDefs);
+            structTypes.add(structType);
+
+            structuredTypeIdMap.put(st.getStructuredTypeId(), structType);
+            structuredTypeCodeMap.put(st.getCode(), structType);
+        });
+
+        this.structuredTypes = Collections.unmodifiableList(structTypes);
     }
 
     private void initPackages(PackageRepository packageRepository) {

@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import cz.tacr.elza.common.CloseablePathResource;
+import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.controller.vo.ArrOutputFileVO;
 import cz.tacr.elza.controller.vo.DmsFileVO;
@@ -330,7 +331,7 @@ public class DmsController {
         Assert.notNull(fileId, "Identifikátor souboru musí být vyplněn");
         DmsFile file = dmsService.getFile(fileId);
         Assert.notNull(file, "Soubor s fileId " + fileId + " neexistuje!");
-        response.setHeader("Content-Disposition", "attachment;filename="+file.getFileName());
+        FileDownload.addContentDispositionAsAttachment(response, file.getFileName());
 
         try (ServletOutputStream out = response.getOutputStream();
                 InputStream in = dmsService.downloadFile(file);) {
@@ -375,7 +376,7 @@ public class DmsController {
                 fileName = outputDef.getName() + ".zip";
                 in = new BufferedInputStream(new FileInputStream(fileForDownload));
             }
-            response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
+            FileDownload.addContentDispositionAsAttachment(response, fileName);
 
             IOUtils.copy(in, out);
         } finally {
@@ -469,7 +470,7 @@ public class DmsController {
         ServletOutputStream out = response.getOutputStream();
 
         try (CloseablePathResource output = attachmentService.generate(file, mimeType)) {
-            response.setHeader("Content-Disposition", "attachment;filename=" + output.getFilename());
+            FileDownload.addContentDispositionAsAttachment(response, output.getFilename());
             response.setContentLengthLong(output.contentLength());
 
             // Copy to output stream
