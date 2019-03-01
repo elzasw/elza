@@ -568,7 +568,7 @@
     </item-type>
     <item-type code="ZP2015_RELEASE_DATE_PLACE" data-type="STRING">
         <name>Datum a místo vydání</name>
-        <shortcut>Datum a místo vydání</shortcut>>
+        <shortcut>Datum a místo vydání</shortcut>
         <description>Datum a místo vydání uvedené na titulní straně archivní pomůcky</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
@@ -764,7 +764,7 @@
         <use-specification>true</use-specification>
     </item-type>
 
-	<!-- Technika, adjustace, nosič a látka záznamu - strukturovaný popis -->
+    <!-- Technika, adjustace, nosič a látka záznamu - strukturovaný popis -->
     <item-type code="ZP2015_ITEM_MAT_TECHNIKA" data-type="TEXT">
         <name>Technika záznamu</name>
         <shortcut>Techn. záznamu</shortcut>

@@ -16,4 +16,51 @@
                         tableName="arr_change"/>
     </changeSet>
 
+    <changeSet id="20190225150000" author="marek">
+
+        <dropForeignKeyConstraint baseTableName="rul_item_spec_register"
+            constraintName="fk_rulDescItemSpecRegister_apType"/>
+
+        <dropForeignKeyConstraint baseTableName="rul_item_spec_register"
+            constraintName="fk_rulDescItemSpecRegister_descItemSpec"/>
+
+        <dropPrimaryKey tableName="rul_item_spec_register"
+            constraintName="pk_rul_desc_item_spec_register"/>
+
+        <dropNotNullConstraint tableName="rul_item_spec_register" columnName="item_spec_id" columnDataType="int"/>
+
+        <renameTable
+            oldTableName="rul_item_spec_register"
+            newTableName="rul_item_aptype"/>
+
+        <renameColumn tableName="rul_item_aptype"
+            oldColumnName="item_spec_register_id"
+            newColumnName="item_aptype_id"
+            columnDataType="int"/>
+
+        <update tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_item_aptype|item_aptype_id"/>
+            <where>sequence_name = 'rul_item_spec_register|item_spec_register_id'</where>
+        </update>
+
+        <addColumn tableName="rul_item_aptype">
+            <column name="item_type_id" type="int"/>
+        </addColumn>
+
+        <addPrimaryKey constraintName="pk_item_aptype" tableName="rul_item_aptype" columnNames="item_aptype_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_item_aptype_ap_type"
+            baseTableName="rul_item_aptype" baseColumnNames="ap_type_id"
+            referencedTableName="ap_type" referencedColumnNames="ap_type_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_item_aptype_item_spec"
+            baseTableName="rul_item_aptype" baseColumnNames="item_spec_id"
+            referencedTableName="rul_item_spec" referencedColumnNames="item_spec_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_item_aptype_item_type"
+            baseTableName="rul_item_aptype" baseColumnNames="item_type_id"
+            referencedTableName="rul_item_type" referencedColumnNames="item_type_id"/>
+
+    </changeSet>
+
 </databaseChangeLog>

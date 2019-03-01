@@ -51,7 +51,7 @@ import cz.tacr.elza.repository.GroupUserRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.InstitutionTypeRepository;
 import cz.tacr.elza.repository.ItemRepository;
-import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
@@ -116,7 +116,7 @@ public class HelperTestService {
     @Autowired
     protected ItemSpecRepository itemSpecRepository;
     @Autowired
-    private ItemSpecRegisterRepository itemSpecRegisterRepository;
+    private ItemAptypeRepository itemAptypeRepository;
     @Autowired
     protected ItemTypeRepository itemTypeRepository;
     @Autowired
@@ -282,7 +282,7 @@ public class HelperTestService {
         nodeOutputRepository.deleteAll();
         outputRepository.deleteAll();
         outputDefinitionRepository.deleteAll();
-        itemSpecRegisterRepository.deleteAll();
+        itemAptypeRepository.deleteAll();
         nodeExtensionRepository.deleteAll();
         changeRepository.deleteAll();
         nodeRepository.deleteAll();

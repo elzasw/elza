@@ -96,8 +96,6 @@ import cz.tacr.elza.domain.UISettings.EntityType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.WfIssueState;
 import cz.tacr.elza.domain.WfIssueType;
-import cz.tacr.elza.domain.integer.DisplayType;
-import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -187,7 +185,7 @@ import cz.tacr.elza.repository.ArrangementRuleRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.ComponentRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
-import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
@@ -378,7 +376,7 @@ public class PackageService {
     private ItemSpecRepository itemSpecRepository;
 
     @Autowired
-    private ItemSpecRegisterRepository itemSpecRegisterRepository;
+    private ItemAptypeRepository itemAptypeRepository;
 
     @Autowired
     private ActionRepository packageActionsRepository;
@@ -1867,7 +1865,7 @@ public class PackageService {
                                                                POLICY_TYPE_XML);
         final RulPackage rulPackage = ruc.getRulPackage();
         final RulRuleSet rulRuleSet = ruc.getRulSet();
-                
+
         List<RulPolicyType> rulPolicyTypesTypes = policyTypeRepository.findByRulPackage(rulPackage);
         List<RulPolicyType> rulPolicyTypesNew = new ArrayList<>();
 
@@ -2375,20 +2373,18 @@ public class PackageService {
      * Zpracování typů atributů.
      *
      * @param puc      balíček
-     * @return                výsledný seznam atributů v db
      */
-    private List<RulItemType> processItemTypes(final PackageContext puc) {
+    private void processItemTypes(final PackageContext puc) {
         ItemSpecs itemSpecs = puc.convertXmlStreamToObject(ItemSpecs.class, ITEM_SPEC_XML);
         ItemTypes itemTypes = puc.convertXmlStreamToObject(ItemTypes.class, ITEM_TYPE_XML);
 
         ItemTypeUpdater updater = applicationContext.getBean(ItemTypeUpdater.class);
 
-        List<RulItemType> updatedItemTypes = updater.update(itemTypes, itemSpecs, puc);
+        updater.update(itemTypes, itemSpecs, puc);
         // check if node cache should be sync
         if (updater.getNumDroppedCachedNode() > 0) {
             puc.setSyncNodeCache(true);
         }
-        return updatedItemTypes;
     }
 
     /**
@@ -2475,7 +2471,7 @@ public class PackageService {
                                              final PackageContext pkgCtx) {
         RuleSets xmlRulesets = pkgCtx.convertXmlStreamToObject(RuleSets.class, RULE_SET_XML);
         RulPackage rulPackage = pkgCtx.getPackage();
-        
+
         List<RulRuleSet> rulRuleSets = ruleSetRepository.findByRulPackage(rulPackage);
         List<RulRuleSet> rulRuleSetsNew = new ArrayList<>();
 
@@ -2489,8 +2485,8 @@ public class PackageService {
 
                 convertRuleSet(rulPackage, ruleSet, item);
                 rulRuleSetsNew.add(item);
-                
-                RuleUpdateContext ruc = new RuleUpdateContext(RuleState.UPDATE, pkgCtx, 
+
+                RuleUpdateContext ruc = new RuleUpdateContext(RuleState.UPDATE, pkgCtx,
                                                               item, this.resourcePathResolver);
                 pkgCtx.addRuleUpdateContext(ruc);
             }
@@ -2529,7 +2525,7 @@ public class PackageService {
 
     /**
      * Smazání pravidel.
-     * 
+     *
      * @param pkgCtx
      *            package context
      */
@@ -2704,7 +2700,7 @@ public class PackageService {
 
         List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
         for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
-            itemSpecRegisterRepository.deleteByItemSpec(rulDescItemSpec);
+            itemAptypeRepository.deleteByItemSpec(rulDescItemSpec);
         }
         itemSpecRepository.delete(rulDescItemSpecs);
 
@@ -2716,7 +2712,13 @@ public class PackageService {
         List<RulOutputType> outputTypes = outputTypeRepository.findByRulPackage(rulPackage);
 
         packageActionsRepository.findByRulPackage(rulPackage).forEach(this::deleteActionLink);
+
+        List<RulItemType> rulDescItemTypes = itemTypeRepository.findByRulPackage(rulPackage);
+        for (RulItemType rulDescItemType : rulDescItemTypes) {
+            itemAptypeRepository.deleteByItemType(rulDescItemType);
+        }
         itemTypeRepository.deleteByRulPackage(rulPackage);
+
         structureExtensionDefinitionRepository.deleteByRulPackage(rulPackage);
         structureExtensionRepository.deleteByRulPackage(rulPackage);
         structureDefinitionRepository.deleteByRulPackage(rulPackage);
@@ -3590,7 +3592,7 @@ public class PackageService {
         itemTypes.setItemTypes(itemTypeList);
 
         for (RulItemType rulDescItemType : rulDescItemTypes) {
-            ItemType itemType = ItemType.fromEntity(rulDescItemType);
+            ItemType itemType = ItemType.fromEntity(rulDescItemType, itemAptypeRepository);
             itemTypeList.add(itemType);
         }
 
@@ -3603,7 +3605,7 @@ public class PackageService {
      * @param zos        stream zip souboru
      */
     private void exportItemSpecs(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
-        List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
+        List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackageFetchItemType(rulPackage);
         if (rulDescItemSpecs.size() == 0) {
             return;
         }
@@ -3613,7 +3615,7 @@ public class PackageService {
         itemSpecs.setItemSpecs(itemSpecList);
 
         for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
-            ItemSpec itemSpec = ItemSpec.fromEntity(rulDescItemSpec, itemSpecRegisterRepository);
+            ItemSpec itemSpec = ItemSpec.fromEntity(rulDescItemSpec, itemAptypeRepository);
             itemSpecList.add(itemSpec);
         }
 

@@ -345,7 +345,7 @@ public class StaticDataProvider {
         List<RulItemSpec> itemSpecs = itemSpecRepository.findByItemType(itemType);
         for (RulItemSpec is : itemSpecs) {
             // check if initialized in same transaction
-            RulItemType itemTypeFromSpec = is.getItemType();
+            RulItemType itemTypeFromSpec = HibernateUtils.unproxy(is.getItemType());
             if (itemType != itemTypeFromSpec) {
                 Validate.isTrue(false, "Inconsistency between itemType ({}) and itemType from specification ({})",
                                 itemType, itemTypeFromSpec);
