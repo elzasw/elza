@@ -2,7 +2,7 @@ import React from 'react';
 import {AbstractReactComponent, i18n, Icon, Loading, ListBox, FormInput, TooltipTrigger} from 'components/shared';
 import FloatingMenu from "components/shared/floating-menu/FloatingMenu.jsx";
 import {objectById} from "shared/utils";
-import {Button, DropdownButton, FormControl, MenuItem} from 'react-bootstrap';
+import {Button, Checkbox, DropdownButton, FormControl, MenuItem} from 'react-bootstrap';
 import {connect} from 'react-redux';
 import {WebApi} from "../../actions/WebApi";
 import {
@@ -43,7 +43,8 @@ class ArrStructurePanel extends AbstractReactComponent {
         contextMenu: {
             isOpen: false,
             coordinates: {x:0,y:0}
-        }
+        },
+        multiselectAllowed: true
     };
 
     componentDidMount() {
@@ -336,17 +337,27 @@ class ArrStructurePanel extends AbstractReactComponent {
     renderItemContent = (props) => {
         const {item, ...otherProps} = props;
         const hasError = item.state === 'ERROR' && item.errorDescription;
+        const {complement} = item;
+
         return (
             <div {...otherProps} onContextMenu={this.openContextMenu.bind(this, item)}>
-              <div className="structure-name">
-                {item.value || <em>{i18n("arr.structure.list.item.noValue")}</em>}
-              </div>
+                <div className="structure-name">
+                    {item.value || <em>{i18n("arr.structure.list.item.noValue")}</em>}
+                    {complement &&
+                        <div className="structure-name-complement">
+                            {complement}
+                        </div>
+                    }
+                </div>
                 {
                     hasError &&
                         <TooltipTrigger tooltipClass="error-message" content={this.renderErrorContent(item.errorDescription)} placement="left">
                             <Icon glyph="fa-exclamation-triangle" />
                         </TooltipTrigger>
                 }
+                <div className="context-menu-icon" onClick={this.openContextMenu.bind(this, item)}>
+                    <Icon glyph="fa-ellipsis-v" />
+                </div>
             </div>
         )
     }
@@ -354,7 +365,7 @@ class ArrStructurePanel extends AbstractReactComponent {
     render() {
         const {rows, filter, fetched, count} = this.props.store;
         const {readMode, maxSize} = this.props;
-        const {activeIndexes, contextMenu} = this.state;
+        const {activeIndexes, contextMenu, multiselectAllowed} = this.state;
         if (!fetched) {
             return <Loading />
         }
@@ -368,6 +379,17 @@ class ArrStructurePanel extends AbstractReactComponent {
                 <Button bsStyle="default" onClick={this.handleUpdate} disabled={activeIndexes.length < 1}>
                     <Icon glyph="fa-edit" />
                 </Button>
+                <Checkbox
+                    className="multiselect-checkbox"
+                    inline
+                    checked={this.state.multiselectAllowed}
+                    onChange={(e) => {
+                        this.setState({multiselectAllowed: e.target.checked});
+                    }}
+                >
+                    {/* @todo translation */}
+                    Výběr více
+                </Checkbox>
                 <Button bsStyle="default" onClick={this.handleExtensionsSettings} className={"pull-right"}>
                     <Icon glyph="fa-cogs" />
                 </Button>
@@ -387,7 +409,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                 items={rows}
                 onChangeSelection={this.handleChangeSelection}
                 renderItemContent={this.renderItemContent}
-                multiselect={true}
+                multiselect={multiselectAllowed}
             /> : <div className="list listbox-wrapper no-result text-center">{i18n('search.action.noResult')}</div>}
              {contextMenu.isOpen && this.renderContextMenu()}
              {count > maxSize && 

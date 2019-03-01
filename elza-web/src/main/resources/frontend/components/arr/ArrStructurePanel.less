@@ -29,6 +29,16 @@
                 vertical-align: middle;
             }
         }
+
+        .multiselect-checkbox {
+            margin-top: 0;
+            padding-left: 4px;
+
+            input {
+                position: relative;
+                margin: 0 5px 0 0; 
+            }
+        }
     }
 
     .filter {
@@ -44,10 +54,28 @@
             display: flex;
 
             .structure-name {
+                display: flex;
                 flex-grow: 1;
+                
+                &-complement {
+                    margin-left: 5px;
+                    color: #aaa;
+                }
+            }
+
+            .context-menu-icon { 
+                display: none;
+            }
+
+            &:hover {
+                .context-menu-icon {
+                    display: flex;
+                    align-items: center;
+                }
             }
         }
     }
+
     .floating-menu {
         border: 1px solid #ccc;
         box-shadow: 2px 5px 12px rgba(0,0,0,0.125);

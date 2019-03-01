@@ -112,7 +112,7 @@ class DescItemStructureRef extends AbstractReactComponent {
     renderItem = (props)  => {
         const {item, highlighted, selected, ...otherProps} = props;
         return <div {...otherProps} className={classNames('item', {focus: highlighted, active: selected})} key={item.id} >
-            {item.value}
+            {item.value} <span className="item-complement">{item.complement}</span>
         </div>
     };
 
