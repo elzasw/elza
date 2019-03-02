@@ -276,5 +276,14 @@
         <column name="structured_object_id" type="int"/>
       </createIndex>
     </changeSet>
+    <!-- Pridani indexu pro zrychleni undo -->
+    <changeSet id="20190228112500001" author="ppyt">
+      <createIndex indexName="arr_node_conformity_error_node_conf_idx" tableName="arr_node_conformity_error">
+        <column name="node_conformity_id" type="int"/>
+      </createIndex>
+      <createIndex indexName="arr_node_conformity_missing_node_conf_idx" tableName="arr_node_conformity_missing">
+        <column name="node_conformity_id" type="int"/>
+      </createIndex>
+    </changeSet>
 
 </databaseChangeLog>
