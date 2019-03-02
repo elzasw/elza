@@ -67,6 +67,7 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LockedValueRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -129,6 +130,9 @@ public class RevertingChangesService {
 
     @Autowired
     private StructuredObjectRepository structuredObjectRepository;
+
+    @Autowired
+    private NodeRepository nodeRepository;
 
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
@@ -357,13 +361,14 @@ public class RevertingChangesService {
         Query deleteNotUseChangesQuery = createDeleteNotUseChangesQuery();
         deleteNotUseChangesQuery.executeUpdate();
 
-        Set<Integer> deleteNodeIds = getNodeIdsToDelete();
+        // Drop unused node ids
+        // Find nodes
+        List<Integer> deleteNodeIds = nodeRepository.findUnusedNodeIdsByFund(fund);
         nodeIdsChange.removeAll(deleteNodeIds);
-
+        // Drop from cache
         nodeCacheService.deleteNodes(deleteNodeIds);
-
-        Query deleteNotUseNodesQuery = createDeleteNotUseNodesQuery();
-        deleteNotUseNodesQuery.executeUpdate();
+        // Remove from DB
+        nodeRepository.deleteByNodeIdIn(deleteNodeIds);
 
         nodeCacheService.syncNodes(nodeIdsChange);
 
@@ -626,51 +631,6 @@ public class RevertingChangesService {
         return query;
     }
 
-    private Query createDeleteNotUseNodesQuery() {
-        List<String[]> nodesTables = getNodesTables();
-        List<String> unionPart = new ArrayList<>();
-        for (String[] nodeTable : nodesTables) {
-            unionPart.add(String.format("n.nodeId NOT IN (SELECT i.%2$s.nodeId FROM %1$s i WHERE i.%2$s IS NOT NULL)", nodeTable[0], nodeTable[1]));
-        }
-        String changesHql = String.join("\nAND\n", unionPart);
-
-        String hql = String.format("DELETE FROM arr_node n WHERE %1$s", changesHql);
-
-        return entityManager.createQuery(hql);
-    }
-
-    private Set<Integer> getNodeIdsToDelete() {
-        List<String[]> nodesTables = getNodesTables();
-        List<String> unionPart = new ArrayList<>();
-        for (String[] nodeTable : nodesTables) {
-            unionPart.add(String.format("n.nodeId NOT IN (SELECT i.%2$s.nodeId FROM %1$s i WHERE i.%2$s IS NOT NULL)", nodeTable[0], nodeTable[1]));
-        }
-        String changesHql = String.join("\nAND\n", unionPart);
-        String hql = String.format("SELECT n.nodeId FROM arr_node n WHERE %1$s", changesHql);
-        Query query = entityManager.createQuery(hql);
-        return new HashSet<>(query.getResultList());
-    }
-
-    private List<String[]> getNodesTables() {
-        String[][] configUnionTables = new String[][]{
-            {"arr_level", "node"},
-            {"arr_level", "nodeParent"},
-            {"arr_node_register", "node"},
-            {"arr_node_extension", "node"},
-            {"arr_node_conformity", "node"},
-            {"arr_fund_version", "rootNode"},
-            {"ui_visible_policy", "node"},
-            {"arr_node_output", "node"},
-            {"arr_bulk_action_node", "node"},
-            {"arr_desc_item", "node"},
-            {"arr_change", "primaryNode"},
-            {"arr_dao_link", "node"},
-            {"arr_digitization_request_node", "node"},
-        };
-
-        return Arrays.asList(configUnionTables);
-    }
-
     /**
      * Delete from ARR_CHANGE unused change_ids
      * 
@@ -742,30 +702,6 @@ public class RevertingChangesService {
 
         String hqlSubSelect = String.format("SELECT i.%2$s FROM %1$s i WHERE %2$s IN (%3$s)", subTable, changeNameColumn, nodesHql);
         String hql = String.format("UPDATE %1$s SET %2$s = NULL WHERE %2$s IN (%3$s)", table, changeNameColumn, hqlSubSelect);
-        Query query = entityManager.createQuery(hql);
-
-        // nastavení parametrů dotazu
-        query.setParameter("fund", fund);
-        query.setParameter("change", change);
-        if (node != null) {
-            query.setParameter("node", node);
-        }
-
-        return query;
-    }
-
-    private Query createDeleteForeignEntityQuery(@NotNull final ArrFund fund,
-                                                 @Nullable final ArrNode node,
-                                                 @NotNull final String changeNameColumn,
-                                                 @NotNull final String table,
-                                                 @NotNull final String joinNameColumn,
-                                                 @NotNull final String subTable,
-                                                 @NotNull final ArrChange change) {
-        String nodesHql = createHQLFindChanges(changeNameColumn, table, createHqlSubNodeQuery(fund, node));
-
-        String hqlSubSelect = String.format("SELECT i FROM %1$s i WHERE %2$s IN (%3$s)", table, changeNameColumn, nodesHql);
-        String hql = String.format("DELETE FROM %1$s WHERE %2$s IN (%3$s)", subTable, joinNameColumn, hqlSubSelect);
-
         Query query = entityManager.createQuery(hql);
 
         // nastavení parametrů dotazu
