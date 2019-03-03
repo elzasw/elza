@@ -3,6 +3,8 @@ package cz.tacr.elza.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrFund;
@@ -21,5 +23,7 @@ public interface FundStructureExtensionRepository extends JpaRepository<ArrFundS
 
     List<ArrFundStructureExtension> findByFundAndDeleteChangeIsNull(ArrFund fund);
 
+    @Modifying
+    @Query("DELETE FROM arr_fund_structure_extension se WHERE se.fund = ?1")
     void deleteByFund(ArrFund fund);
 }

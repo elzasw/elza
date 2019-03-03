@@ -86,7 +86,8 @@ public abstract class ArrRequest {
     }
 
     public static final String TABLE_NAME = "arr_request";
-
+    public static final String FIELD_REQUEST_ID = "requestId";
+    public static final String FIELD_FUND = "fund";
     public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
 
     @Id

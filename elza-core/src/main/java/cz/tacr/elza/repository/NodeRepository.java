@@ -31,6 +31,11 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
             "WHERE n.fund = ?1 AND l.levelId IS NULL")
     List<Integer> findUnusedNodeIdsByFund(ArrFund fund);
 
+    @Query("SELECT distinct n.nodeId FROM arr_node n " +
+            "LEFT JOIN n.levels l " +
+            "WHERE l.levelId IS NULL")
+    List<Integer> findUnusedNodeIds();
+
     ArrNode findOneByUuid(String uuid);
 
     List<ArrNode> findByUuid(Collection<String> uuids);
@@ -39,5 +44,6 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
     void deleteByNodeIdIn(Collection<Integer> nodeIds);
 
     @Modifying
+    @Query("DELETE FROM arr_node n WHERE n.fund = ?1")
     void deleteByFund(ArrFund fund);
 }

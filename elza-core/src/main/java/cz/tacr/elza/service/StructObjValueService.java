@@ -79,7 +79,7 @@ public class StructObjValueService {
 
     private static final Logger logger = LoggerFactory.getLogger(StructObjValueService.class);
 
-    private static int QUEUE_CHECK_TIME_INTERVAL = 10000; // 10s
+    private static int QUEUE_CHECK_TIME_INTERVAL = 60000; // 60s
 
     private final EntityManager em;
     private final StructuredItemRepository structureItemRepository;

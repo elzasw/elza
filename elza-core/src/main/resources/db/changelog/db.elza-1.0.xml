@@ -285,5 +285,60 @@
         <column name="node_conformity_id" type="int"/>
       </createIndex>
     </changeSet>
+    <!-- Pridani indexu pro zrychleni pristupu k NodeInfo -->
+    <changeSet id="20190228112500002" author="ppyt">
+      <createIndex indexName="arr_node_conformity_node_idx" tableName="arr_node_conformity">
+        <column name="node_id" type="int"/>
+      </createIndex>
+      <createIndex indexName="arr_node_conformity_fund_ver_idx" tableName="arr_node_conformity">
+        <column name="fund_version_id" type="int"/>
+      </createIndex>
+      <createIndex indexName="arr_node_conformity_node_fund_ver_idx" tableName="arr_node_conformity">
+        <column name="node_id" type="int"/>
+        <column name="fund_version_id" type="int"/>
+      </createIndex>
+    </changeSet>
+    <!-- Pridani indexu pro zrychleni mazani StructObj -->
+    <changeSet id="20190228112500003" author="ppyt">
+      <createIndex indexName="arr_structured_object_fund_idx" tableName="arr_structured_object">
+        <column name="fund_id" type="int"/>
+      </createIndex>
+      <createIndex indexName="arr_structured_object_create_change_idx" tableName="arr_structured_object">
+        <column name="create_change_id" type="int"/>
+      </createIndex>
+      <createIndex indexName="arr_structured_object_delete_change_idx" tableName="arr_structured_object">
+        <column name="delete_change_id" type="int"/>
+      </createIndex>
+    </changeSet>
+    <!-- Pridani indexu pro zrychleni mazani -->
+    <changeSet id="20190228112500004" author="ppyt">
+      <createIndex indexName="arr_fund_structure_extension_fund_idx" tableName="arr_fund_structure_extension">
+        <column name="fund_id" type="int"/>
+      </createIndex>
+      <createIndex indexName="arr_fund_structure_extension_fund_ste_idx" tableName="arr_fund_structure_extension">
+        <column name="fund_id" type="int"/>
+        <column name="structured_type_extension_id" type="int"/>
+      </createIndex>
+      <createIndex indexName="arr_change_primary_node_idx" tableName="arr_change">
+        <column name="primary_node_id" type="int"/>
+      </createIndex>
+      <createIndex indexName="arr_level_node_create_change_idx" tableName="arr_level">
+        <column name="node_id" type="int"/>
+        <column name="create_change_id" type="int"/>
+      </createIndex>
+      <createIndex indexName="arr_level_node_delete_change_idx" tableName="arr_level">
+        <column name="node_id" type="int"/>
+        <column name="delete_change_id" type="int"/>
+      </createIndex>
+      <createIndex indexName="arr_fund_version_fund_idx" tableName="arr_fund_version">
+        <column name="fund_id" type="int"/>
+      </createIndex>
+      <createIndex indexName="arr_file_fund_idx" tableName="arr_file">
+        <column name="fund_id" type="int"/>
+      </createIndex>
+      <createIndex indexName="arr_fund_register_scope_fund_idx" tableName="arr_fund_register_scope">
+        <column name="fund_id" type="int"/>
+      </createIndex>
+    </changeSet>
 
 </databaseChangeLog>
