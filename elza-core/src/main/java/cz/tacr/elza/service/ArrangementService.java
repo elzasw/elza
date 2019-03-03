@@ -1,39 +1,7 @@
 package cz.tacr.elza.service;
 
-import java.text.Normalizer;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.transaction.Transactional;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import com.google.common.collect.Iterables;
-
+import com.google.common.collect.Lists;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionService;
@@ -41,6 +9,7 @@ import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
+import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
@@ -49,54 +18,47 @@ import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.AuthParam.Type;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundRegisterScope;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.ArrNodeConformity.State;
-import cz.tacr.elza.domain.ArrNodeConformityError;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.UIVisiblePolicy;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ConcurrentUpdateException;
-import cz.tacr.elza.exception.InvalidQueryException;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.*;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FundRegisterScopeRepository;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.ItemRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.VisiblePolicyRepository;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.arrangement.DeleteFundAction;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
+import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
+import java.text.Normalizer;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Main arrangement service.
@@ -105,6 +67,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  * permissions.
  */
 @Service
+@Configuration
 public class ArrangementService {
 
 	private static final AtomicInteger LAST_DESC_ITEM_OBJECT_ID = new AtomicInteger(-1);
@@ -177,6 +140,51 @@ public class ArrangementService {
     private ApplicationContext appCtx;
 
     public static final String UNDEFINED = "Nezjištěno";
+
+    /**
+     * Načtení verze na základě id.
+     *
+     * @param fundVersionId id souboru
+     * @return konkrétní verze
+     * @throws ObjectNotFoundException objekt nenalezen
+     */
+    public ArrFundVersion getFundVersion(@NotNull Integer fundVersionId) {
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        if (fundVersion == null) {
+            throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + fundVersionId, ArrangementCode.FUND_VERSION_NOT_FOUND).setId(fundVersionId);
+        }
+        return fundVersion;
+    }
+
+    /**
+     * Načtení souboru na základě id.
+     *
+     * @param fundId id souboru
+     * @return konkrétní AP
+     * @throws ObjectNotFoundException objekt nenalezen
+     */
+    public ArrFund getFund(@NotNull Integer fundId) {
+        ArrFund fund = fundRepository.findOne(fundId);
+        if (fund == null) {
+            throw new ObjectNotFoundException("Nebyl nalezen AS s ID=" + fundId, ArrangementCode.FUND_NOT_FOUND).setId(fundId);
+        }
+        return fund;
+    }
+
+    /**
+     * Načtení uzlu na základě id.
+     *
+     * @param nodeId id souboru
+     * @return konkrétní uzel
+     * @throws ObjectNotFoundException objekt nenalezen
+     */
+    public ArrNode getNode(@NotNull Integer nodeId) {
+        ArrNode node = nodeRepository.findOne(nodeId);
+        if (node == null) {
+            throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND).setId(nodeId);
+        }
+        return node;
+    }
 
     /**
      * Vytvoření archivního souboru.
@@ -483,6 +491,28 @@ public class ArrangementService {
     }
 
     /**
+     * Migrace typu objektu změny.
+     *
+     * @param change  migrovaná změna
+     * @param newType nový typ změny
+     * @return upravený objekt změny
+     */
+    public ArrChange migrateChangeType(final ArrChange change, final ArrChange.Type newType) {
+        Validate.notNull(change);
+        Validate.notNull(newType);
+        Validate.notNull(change.getChangeId());
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        change.setChangeDate(LocalDateTime.now());
+        if (userDetail != null && userDetail.getId() != null) {
+            UsrUser user = em.getReference(UsrUser.class, userDetail.getId());
+            change.setUser(user);
+        }
+        change.setType(newType);
+        return changeRepository.save(change);
+    }
+
+
+    /**
      * Dodatečné nastavení primární vazby u změny.
      *
      * @param change        změna u které primární uzel nastavujeme
@@ -619,6 +649,7 @@ public class ArrangementService {
         level.setDeleteChange(deleteChange);
         return levelRepository.saveAndFlush(level);
     }
+
     /**
      * Vrací další identifikátor objektu pro atribut (oproti PK se zachovává při nové verzi)
      * <p>
@@ -709,11 +740,67 @@ public class ArrangementService {
         Integer levelDeleteChange = level.getDeleteChange() == null ?
                 Integer.MAX_VALUE : level.getDeleteChange().getChangeId();
 
-        if (level.getCreateChange().getChangeId() < lockChange && levelDeleteChange >= lockChange) {
-            return true;
-        } else {
-            return false;
+        return level.getCreateChange().getChangeId() < lockChange && levelDeleteChange >= lockChange;
+    }
+
+    /**
+     * Vyhledání id nodů podle hodnoty atributu.
+     *
+     * @param fundIds id fondů, do kterých uzly patří
+     * @return seznam id uzlů které vyhovují parametrům
+     */
+    public List<ArrFundFulltextResult> findFundsByFulltext(final String searchValue, final Collection<ArrFund> fundList) {
+
+        List<ArrFundToNodeList> fundToNodeList = nodeRepository.findFundIdsByFulltext(searchValue, fundList);
+        fundFulltextSession().set(fundToNodeList);
+
+        List<ArrFundFulltextResult> resultList = new ArrayList<>();
+
+        if (!fundToNodeList.isEmpty()) {
+            List<Integer> fundIds = fundList.stream().map(ArrFund::getFundId).collect(Collectors.toList());
+            Map<Integer, ArrFundVersion> fundIdVersionsMap = getOpenVersionsByFundIds(fundIds).stream()
+                    .collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
+            Map<Integer, ArrFund> fundMap = fundList.stream().collect(Collectors.toMap(ArrFund::getFundId, Function.identity()));
+
+            for (ArrFundToNodeList fundCount : fundToNodeList) {
+                ArrFundFulltextResult result = new ArrFundFulltextResult();
+                ArrFund fund = fundMap.get(fundCount.getFundId());
+                ArrFundVersion fundVersion = fundIdVersionsMap.get(fundCount.getFundId());
+                result.setName(fund.getName());
+                result.setId(fundCount.getFundId());
+                result.setCount(fundCount.getNodeCount());
+                result.setFundVersionId(fundVersion.getFundVersionId());
+                resultList.add(result);
+            }
         }
+        return resultList;
+    }
+
+    protected ArrFundToNodeList getFundToNodeListFromSession(Integer fundId) {
+        Holder<List<ArrFundToNodeList>> holder = fundFulltextSession();
+        List<ArrFundToNodeList> list = holder.get();
+        if (list == null) {
+            throw new SystemException("Nenalezena session data");
+        }
+        for (ArrFundToNodeList fundToNodeList : list) {
+            if (fundId.equals(fundToNodeList.getFundId())) {
+                return fundToNodeList;
+            }
+        }
+        return null;
+    }
+
+    public List<TreeNodeVO> getNodeListByFulltext(Integer fundId) {
+        ArrFundToNodeList fundToNodeList = getFundToNodeListFromSession(fundId);
+        if (fundToNodeList != null) {
+            List<Integer> nodeIdList = fundToNodeList.getNodeIdList();
+            if (nodeIdList.size() > 20) {
+                nodeIdList = nodeIdList.subList(0, 20);
+            }
+            ArrFundVersion fundVersion = getOpenVersionByFundId(fundToNodeList.getFundId());
+            return levelTreeCacheService.getNodesByIds(nodeIdList, fundVersion.getFundVersionId());
+        }
+        return Collections.emptyList();
     }
 
     /**
@@ -1086,11 +1173,12 @@ public class ArrangementService {
         return new ArrangementController.ValidationItems(levelTreeCacheService.getNodeItemsWithParents(nodesLimited, fundVersion), countAll);
     }
 
-    private List<Integer> createErrorTree(final ArrFundVersion fundVersion, @Nullable final FoundNode foundNode) {
+    public TreeNode getRootTreeNode(@NotNull ArrFundVersion fundVersion) {
+
         Integer rootNodeId = fundVersion.getRootNode().getNodeId();
-        TreeNode rootTreeNode = null;
         Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(fundVersion);
 
+        TreeNode rootTreeNode = null;
         for (TreeNode treeNode : versionTreeCache.values()) {
             if (treeNode.getId().equals(rootNodeId)) {
                 rootTreeNode = treeNode;
@@ -1100,8 +1188,15 @@ public class ArrangementService {
 
         if (rootTreeNode == null) {
             throw new ObjectNotFoundException("Nenalezen kořen stromu ve verzi " + fundVersion.getFundVersionId(),
-                    ArrangementCode.NODE_NOT_FOUND).set("id", rootNodeId);
+                    ArrangementCode.NODE_NOT_FOUND).setId(rootNodeId);
         }
+
+        return rootTreeNode;
+    }
+
+    private List<Integer> createErrorTree(final ArrFundVersion fundVersion, @Nullable final FoundNode foundNode) {
+
+        TreeNode rootTreeNode = getRootTreeNode(fundVersion);
 
         List<UIVisiblePolicy> policies = visiblePolicyRepository.findByFund(fundVersion.getFund());
 
@@ -1281,6 +1376,61 @@ public class ArrangementService {
             for (TreeNode node : treeNode.getChilds()) {
                 recursiveAddNodes(nodeIds, node, nodePolicyTypes, policiesMap, nodeProblemsMap, foundNode);
             }
+        }
+    }
+
+    /**
+     * Sestaví informace o zanoření
+     *
+     * @param fundId identifikátor archivního souboru
+     * @param nodeIds seznam identifikátorů jednotek popisu
+     */
+    public Map<Integer, TreeNodeVO> findNodeReferenceMark(@NotNull Integer fundId, Collection<Integer> nodeIds) {
+        if (nodeIds != null && !nodeIds.isEmpty()) {
+            ArrFundVersion fundVersion = getOpenVersionByFundId(fundId);
+            if (fundVersion != null) {
+                List<TreeNodeVO> nodes = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId());
+                return nodes.stream().collect(Collectors.toMap(node -> node.getId(), node -> node));
+            }
+        }
+        return Collections.emptyMap();
+    }
+
+    public Collection<Integer> findNodeIdsByStructuredObjectId(Integer structuredObjectId) {
+        return nodeRepository.findNodeIdsByStructuredObjectIds(Collections.singletonList(structuredObjectId));
+    }
+
+    public Collection<Integer> findNodeIdsByStructuredObjectIds(List<Integer> structuredObjectIds) {
+        if (structuredObjectIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<List<Integer>> idsParts = Lists.partition(structuredObjectIds, 1000);
+        Set<Integer> nodeIds = new HashSet<>(1000);
+        for (List<Integer> idsPart : idsParts) {
+            nodeIds.addAll(nodeRepository.findNodeIdsByStructuredObjectIds(idsPart));
+        }
+        return nodeIds;
+    }
+
+    /**
+     * @return vrací session uživatele
+     */
+    @Bean
+    @Scope("session")
+    public Holder<List<ArrFundToNodeList>> fundFulltextSession() {
+        return new Holder<>();
+    }
+
+    public static class Holder<T> {
+
+        private T object;
+
+        public T get() {
+            return object;
+        }
+
+        public void set(T object) {
+            this.object = object;
         }
     }
 

@@ -1,0 +1,93 @@
+@import "/variables.less";
+
+.node-form-standard-actions {
+    & > .dropdown > .btn {
+        padding: 0 2px;
+    }
+    & > .btn {
+        padding: 2px;
+    }
+    .btn {
+        border: none;
+        margin: 0;
+        background: transparent;
+        font-size: 1.3em;
+
+        &:hover {
+            background-color: @node-form-actions-hover;
+        }
+
+        .icon {
+            color: #000000;
+            height: 1.35em;
+            width: 1.35em;
+            vertical-align: middle;
+        }
+    }
+}
+
+.lecturing-top {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    .btn {
+        background: transparent;
+        border: none;
+    }
+
+    > .actions-container {
+        flex-shrink: 0;
+
+        .actions {
+            white-space: nowrap;
+            width: 100%;
+
+            .node-form-standard-actions;
+        }
+    }
+
+    .list-container {
+        display: flex;
+        flex: 1;
+        .listbox-wrapper {
+            height: 100%;
+            max-width: 100%;
+            .item {
+                padding: 3px 5px;
+                > .info {
+                    flex: 1 0;
+                    min-width: 0;
+                }
+                .circle {
+                    background: grey;
+                    border-radius: 50%;
+                    height: 1em;
+                    width: 1em;
+                    display: inline-block;
+                    margin-right: 5px;
+                    line-height: 0.9em;
+                    vertical-align: middle;
+                    text-align: center;
+                    min-width: 1em;
+                    .icon {
+                        font-size: 0.8em;
+                        margin-top: -1px;
+                        color: white;
+                    }
+                }
+                .description {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                .reference-mark {
+                    color: grey;
+                    font-size: 0.7em;
+                    margin: 0;
+                    padding: 0 5px;
+                }
+            }
+        }
+    }
+}

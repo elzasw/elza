@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="20181009100910" author="marek">
+        <createTable tableName="sys_index_work">
+            <column name="index_work_id" type="bigint">
+                <constraints primaryKey="true" primaryKeyName="pk_sys_index_work"/>
+            </column>
+            <column name="index_name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="entity_class" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="entity_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="insert_time" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_time" type="timestamp"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="20181102120000" author="marek">
+        <createTable tableName="wf_issue_state">
+            <column name="issue_state_id" type="integer">
+                <constraints primaryKey="true" primaryKeyName="pk_wf_issue_state"/>
+            </column>
+            <column name="code" type="nvarchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_state" type="boolean" defaultValue="false" remarks="Flag if state is start state. Only one state can be marked as start state.">
+                <constraints nullable="false"/>
+            </column>
+            <column name="final_state" type="boolean" defaultValue="false" remarks="Flag if state is final. There might be several final states.">
+                <constraints nullable="false"/>
+            </column>
+            <column name="package_id" type="integer">
+                <constraints nullable="false" foreignKeyName="fk_issue_state_package" referencedTableName="rul_package" referencedColumnNames="package_id"/>
+            </column>
+        </createTable>
+        <createTable tableName="wf_issue_type">
+            <column name="issue_type_id" type="integer">
+                <constraints primaryKey="true" primaryKeyName="pk_wf_issue_type"/>
+            </column>
+            <column name="code" type="nvarchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="view_order" type="integer">
+                <constraints nullable="false"/>
+            </column>
+            <column name="package_id" type="integer">
+                <constraints nullable="false" foreignKeyName="fk_issue_type_package" referencedTableName="rul_package" referencedColumnNames="package_id"/>
+            </column>
+        </createTable>
+        <createTable tableName="wf_issue_list">
+            <column name="issue_list_id" type="integer" remarks="Identificator of issue list">
+                <constraints primaryKey="true" primaryKeyName="pk_wf_issue_list"/>
+            </column>
+            <column name="fund_id" type="integer">
+                <constraints nullable="false" foreignKeyName="fk_issue_list_fund" referencedTableName="arr_fund" referencedColumnNames="fund_id"/>
+            </column>
+            <column name="open" type="boolean" remarks="Flag if list is open for new issues">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="nvarchar(250)" remarks="Name of list">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="wf_issue">
+            <column name="issue_id" type="integer" remarks="ID of issue">
+                <constraints primaryKey="true" primaryKeyName="pk_wf_issue"/>
+            </column>
+            <column name="issue_list_id" type="integer">
+                <constraints nullable="false" foreignKeyName="fk_issue_list" referencedTableName="wf_issue_list" referencedColumnNames="issue_list_id"/>
+            </column>
+            <column name="number" type="integer">
+                <constraints nullable="false"/>
+            </column>
+            <column name="node_id" type="integer">
+                <constraints nullable="true" foreignKeyName="fk_issue_node" referencedTableName="arr_node" referencedColumnNames="node_id"/>
+            </column>
+            <column name="issue_type_id" type="integer">
+                <constraints nullable="false" foreignKeyName="fk_issue_type" referencedTableName="wf_issue_type" referencedColumnNames="issue_type_id"/>
+            </column>
+            <column name="issue_state_id" type="integer" remarks="Current state of the issue">
+                <constraints nullable="false" foreignKeyName="fk_issue_state" referencedTableName="wf_issue_state" referencedColumnNames="issue_state_id"/>
+            </column>
+            <column name="description" type="${type.text}" remarks="Description of the issue">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_create_id" type="integer" remarks="ID of user who created the issue">
+                <constraints nullable="false" foreignKeyName="fk_wf_issue_usr_user" referencedTableName="usr_user" referencedColumnNames="user_id"/>
+            </column>
+            <column name="time_created" type="timestamp" remarks="Time when issue was created">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="wf_comment">
+            <column name="comment_id" type="integer" remarks="ID of comment">
+                <constraints primaryKey="true" primaryKeyName="pk_wf_comment"/>
+            </column>
+            <column name="issue_id" type="integer">
+                <constraints nullable="false" foreignKeyName="fk_wf_comment_wf_issue" referencedTableName="wf_issue" referencedColumnNames="issue_id"/>
+            </column>
+            <column name="comment" type="${type.text}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="integer">
+                <constraints nullable="false" foreignKeyName="fk_comment_user" referencedTableName="usr_user" referencedColumnNames="user_id"/>
+            </column>
+            <column name="prev_state_id" type="integer">
+                <constraints nullable="false" foreignKeyName="fk_comment_prev_state" referencedTableName="wf_issue_state" referencedColumnNames="issue_state_id"/>
+            </column>
+            <column name="next_state_id" type="integer">
+                <constraints nullable="false" foreignKeyName="fk_comment_next_state" referencedTableName="wf_issue_state" referencedColumnNames="issue_state_id"/>
+            </column>
+            <column name="time_created" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addColumn tableName="usr_permission">
+            <column name="issue_list_id" type="integer">
+                <constraints foreignKeyName="fk_permission_issue_list" referencedTableName="wf_issue_list" referencedColumnNames="issue_list_id"/>
+            </column>
+        </addColumn>
+
+        <createView viewName="usr_permission_view" replaceIfExists="true">
+            SELECT DISTINCT
+                p.permission_id AS id,
+                p.permission,
+                CASE WHEN p.user_id IS NULL THEN gu.user_id ELSE p.user_id END AS user_id,
+                p.fund_id,
+                p.scope_id,
+                p.issue_list_id
+            FROM usr_permission p
+            LEFT JOIN usr_user u ON p.user_id = u.user_id
+            LEFT JOIN usr_group_user gu ON gu.group_id = p.group_id
+        </createView>
+
+    </changeSet>
+
+    <changeSet id="20190219094000" author="slapa">
+        <addColumn tableName="ap_access_point">
+            <column name="version" type="int" defaultValueNumeric="0"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="20190219094001" author="slapa">
+        <addColumn tableName="ap_access_point">
+            <column name="last_update" type="timestamp"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

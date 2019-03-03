@@ -1,21 +1,23 @@
 package cz.tacr.elza.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.eventbus.Subscribe;
-import cz.tacr.elza.common.TaskExecutor;
-import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.drools.service.ModelFactory;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.event.CacheInvalidateEvent;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.vo.AccessPoint;
-import cz.tacr.elza.service.vo.Name;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -28,16 +30,47 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.eventbus.Subscribe;
+
+import cz.tacr.elza.common.TaskExecutor;
+import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApFragment;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.ApNameItem;
+import cz.tacr.elza.domain.ApRule;
+import cz.tacr.elza.domain.ApRuleSystem;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.RulComponent;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulStructureDefinition;
+import cz.tacr.elza.domain.RulStructureExtensionDefinition;
+import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.drools.service.ModelFactory;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApBodyItemRepository;
+import cz.tacr.elza.repository.ApChangeRepository;
+import cz.tacr.elza.repository.ApFragmentItemRepository;
+import cz.tacr.elza.repository.ApFragmentRepository;
+import cz.tacr.elza.repository.ApNameItemRepository;
+import cz.tacr.elza.repository.ApNameRepository;
+import cz.tacr.elza.repository.ApRuleRepository;
+import cz.tacr.elza.repository.StructureDefinitionRepository;
+import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.vo.AccessPoint;
+import cz.tacr.elza.service.vo.Name;
 
 /**
  * Serviska pro generování.
@@ -66,6 +99,7 @@ public class AccessPointGeneratorService {
     private final IEventNotificationService eventNotificationService;
     private final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
     private final StructureDefinitionRepository structureDefinitionRepository;
+    private final AccessPointService accessPointService;
     private final EntityManager em;
 
     private Map<File, GroovyScriptService.GroovyScriptFile> groovyScriptMap = new HashMap<>();
@@ -90,6 +124,7 @@ public class AccessPointGeneratorService {
                                        final IEventNotificationService eventNotificationService,
                                        final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository,
                                        final StructureDefinitionRepository structureDefinitionRepository,
+                                       final AccessPointService accessPointService,
                                        final EntityManager em) {
         this.ruleRepository = ruleRepository;
         this.resourcePathResolver = resourcePathResolver;
@@ -107,6 +142,7 @@ public class AccessPointGeneratorService {
         this.eventNotificationService = eventNotificationService;
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
         this.structureDefinitionRepository = structureDefinitionRepository;
+        this.accessPointService = accessPointService;
         this.em = em;
         this.taskExecutor.addTask(new AccessPointGeneratorThread());
         this.taskExecutor.start();
@@ -158,7 +194,7 @@ public class AccessPointGeneratorService {
      */
     @Transactional
     public void processAsyncGenerate(final Integer accessPointId, final Integer changeId) {
-        ApAccessPoint accessPoint = apRepository.findOneWithLock(accessPointId);
+        ApAccessPoint accessPoint = apRepository.findOne(accessPointId);
         ApChange change;
         if (changeId == null) {
             change = apDataService.createChange(ApChange.Type.AP_REVALIDATE);
@@ -291,9 +327,11 @@ public class AccessPointGeneratorService {
 
         accessPoint.setErrorDescription(apErrorDescription.asJsonString());
         accessPoint.setState(apStateOld == ApState.TEMP ? ApState.TEMP : apState);
-        apRepository.save(accessPoint);
+        accessPointService.saveWithLock(accessPoint);
 
         eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.ACCESS_POINT_UPDATE, accessPoint.getAccessPointId()));
+
+        accessPointService.reindexDescItem(accessPoint);
     }
 
     private boolean processResult(final ApAccessPoint accessPoint, final ApChange change, final Map<Integer, ApName> apNameMap, final Map<Integer, List<ApItem>> nameItemsMap, final AccessPoint result) {

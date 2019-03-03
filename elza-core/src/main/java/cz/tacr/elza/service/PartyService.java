@@ -364,8 +364,9 @@ public class PartyService {
         EventType eventType = isNewParty ? EventType.PARTY_CREATE : EventType.PARTY_UPDATE;
         eventNotificationService.publishEvent(EventFactory.createIdEvent(eventType, result.getPartyId()));
 
-        return result;
+        reindexDescItem(saveParty);
 
+        return result;
     }
 
     /**
@@ -394,8 +395,6 @@ public class PartyService {
         accessPoint = accessPointService.syncAccessPoint(accessPoint, names, description);
         party.setAccessPoint(accessPoint);
     }
-
-
 
     /**
      * Provede synchronizaci tvůrců osoby. CRUD.
@@ -1157,4 +1156,10 @@ public class PartyService {
         // synchronize modified parties
         modifiedParties.forEach((id, party) -> this.synchRecord(party));
     }
+
+    public void reindexDescItem(ParParty party) {
+        List<Integer> itemIds = partyRepository.findItemIdByParty(party.getPartyId());
+        descriptionItemService.reindexDescItem(itemIds);
+    }
+
 }

@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -319,7 +320,7 @@ public class AccessPointService {
             }
             ApChange change = apDataService.createChange(ApChange.Type.AP_DELETE);
             ap.setDeleteChange(change);
-            apRepository.save(ap);
+            saveWithLock(ap);
 
             List<ApName> names = apNameRepository.findByAccessPoint(ap);
             names.forEach(name -> name.setDeleteChange(change));
@@ -337,6 +338,7 @@ public class AccessPointService {
             externalIdRepository.save(eids);
 
             publishAccessPointDeleteEvent(ap);
+            reindexDescItem(ap);
         }
     }
 
@@ -1043,7 +1045,7 @@ public class AccessPointService {
 
         // založení strukturovaného hlavního jména
         createStructuredName(accessPoint, true, language, change);
-
+        reindexDescItem(accessPoint);
         return accessPoint;
     }
 
@@ -1081,7 +1083,7 @@ public class AccessPointService {
         }
         accessPoint.setApType(apType);
         accessPoint.setRuleSystem(apType.getRuleSystem());
-        ApAccessPoint result = apRepository.save(accessPoint);
+        ApAccessPoint result = saveWithLock(accessPoint);
         if (result.getRuleSystem() != null) {
             ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
             //apGeneratorService.generateAndSetResult(accessPoint, change);
@@ -1089,7 +1091,7 @@ public class AccessPointService {
         }
 
         publishAccessPointUpdateEvent(result);
-
+        reindexDescItem(result);
         return result;
     }
 
@@ -1171,7 +1173,7 @@ public class AccessPointService {
         ApRuleSystem ruleSystem = accessPoint.getApType().getRuleSystem();
         accessPoint.setRuleSystem(ruleSystem);
         accessPoint.setState(ApState.INIT);
-        apRepository.save(accessPoint);
+        saveWithLock(accessPoint);
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_MIGRATE);
 
@@ -1295,7 +1297,9 @@ public class AccessPointService {
         Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
         apDataService.validationNotDeleted(accessPoint);
 
-        return createName(accessPoint, false, name, complement, language, null, true);
+        ApName apName = createName(accessPoint, false, name, complement, language, null, true);
+        reindexDescItem(accessPoint);
+        return apName;
     }
 
     /**
@@ -1309,7 +1313,9 @@ public class AccessPointService {
         Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
         apDataService.validationNotDeleted(accessPoint);
 
-        return createStructuredName(accessPoint, false, null, null);
+        ApName apName = createStructuredName(accessPoint, false, null, null);
+        reindexDescItem(accessPoint);
+        return apName;
     }
 
     /**
@@ -1324,7 +1330,7 @@ public class AccessPointService {
 
         if (accessPoint.getState() == ApState.TEMP) {
             accessPoint.setState(ApState.INIT);
-            apRepository.save(accessPoint);
+            saveWithLock(accessPoint);
 
             ApName preferredName = apNameRepository.findPreferredNameByAccessPoint(accessPoint);
             preferredName.setState(ApState.INIT);
@@ -1357,7 +1363,7 @@ public class AccessPointService {
         }
 
         accessPoint.setRuleSystem(apType.getRuleSystem());
-        apRepository.save(accessPoint);
+        saveWithLock(accessPoint);
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
         //apGeneratorService.generateAndSetResult(accessPoint, change);
@@ -1421,6 +1427,7 @@ public class AccessPointService {
         String fullName = AccessPointDataService.generateFullName(name, complement);
         ApName apNameNew = apDataService.updateAccessPointName(accessPoint, apName, name, complement, fullName, language, change, true);
         publishAccessPointUpdateEvent(accessPoint);
+        reindexDescItem(accessPoint);
         return apNameNew;
     }
 
@@ -1453,6 +1460,7 @@ public class AccessPointService {
         apItemService.copyItems(apName, newName, change);
         //apGeneratorService.generateAndSetResult(accessPoint, change);
         apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
+        reindexDescItem(accessPoint);
         return newName;
     }
 
@@ -1479,6 +1487,7 @@ public class AccessPointService {
             apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
         }
         publishAccessPointUpdateEvent(accessPoint);
+        reindexDescItem(accessPoint);
     }
 
     /**
@@ -1559,6 +1568,8 @@ public class AccessPointService {
             //apGeneratorService.generateAndSetResult(accessPoint, change);
             apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
         }
+
+        reindexDescItem(accessPoint);
     }
 
     /**
@@ -1569,11 +1580,7 @@ public class AccessPointService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
     public ApAccessPoint getAccessPoint(@AuthParam(type = AuthParam.Type.AP) final Integer accessPointId) {
-        ApAccessPoint accessPoint = apRepository.findOne(accessPointId);
-        if (accessPoint == null) {
-            throw new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST).setId(accessPointId);
-        }
-        return accessPoint;
+        return getAccessPointInternal(accessPointId);
     }
 
     /**
@@ -1594,12 +1601,23 @@ public class AccessPointService {
      * @param accessPointId identifikátor přístupového bodu
      * @return přístupový bod
      */
-    public ApAccessPoint getAccessPointInternalWithLock(@AuthParam(type = AuthParam.Type.AP) final Integer accessPointId) {
-        ApAccessPoint accessPoint = apRepository.findOneWithLock(accessPointId);
+    public ApAccessPoint getAccessPointInternal(final Integer accessPointId) {
+        ApAccessPoint accessPoint = apRepository.findOne(accessPointId);
         if (accessPoint == null) {
             throw new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST).setId(accessPointId);
         }
         return accessPoint;
+    }
+
+    /**
+     * Uložení AP s odverzováním.
+     *
+     * @param accessPoint přístupový bod
+     * @return aktualizovaný přístupový bod
+     */
+    public ApAccessPoint saveWithLock(final ApAccessPoint accessPoint) {
+        accessPoint.setLastUpdate(LocalDateTime.now());
+        return apRepository.saveAndFlush(accessPoint);
     }
 
     /**
@@ -1704,7 +1722,7 @@ public class AccessPointService {
     private ApAccessPoint createAccessPoint(final ApScope scope, final ApType type, final ApChange change) {
         ApAccessPoint accessPoint = createAccessPointEntity(scope, type, change);
         accessPoint.setState(ApState.OK);
-        return apRepository.save(accessPoint);
+        return saveWithLock(accessPoint);
     }
 
     /**
@@ -1719,7 +1737,7 @@ public class AccessPointService {
         ApAccessPoint accessPoint = createAccessPointEntity(scope, type, change);
         accessPoint.setRuleSystem(type.getRuleSystem());
         accessPoint.setState(ApState.TEMP);
-        return apRepository.save(accessPoint);
+        return saveWithLock(accessPoint);
     }
 
     /**
@@ -1970,6 +1988,8 @@ public class AccessPointService {
             apDataService.validationNameUnique(accessPoint.getScope(), name.getFullName());
         }
 
+        reindexDescItem(accessPoint);
+
         return accessPoint;
     }
 
@@ -2094,6 +2114,8 @@ public class AccessPointService {
             apDataService.changeDescription(accessPoint, description.getDescription(), change.get());
         }
 
+        reindexDescItem(accessPoint);
+
         return accessPoint;
     }
 
@@ -2106,13 +2128,13 @@ public class AccessPointService {
      * @param newName
      */
     private ApName updateAccessPointNameWhenChanged(final ApChangeNeed change, final ApAccessPoint accessPoint, final ApName existsName, final ApName newName) {
-        if (!apDataService.equalsNames(existsName, newName)) {
-            String name = newName.getName();
-            String complement = newName.getComplement();
-            String fullName = AccessPointDataService.generateFullName(name, complement);
-            return apDataService.updateAccessPointName(accessPoint, existsName, name, complement, fullName, newName.getLanguage(), change.get(), false);
+        if (apDataService.equalsNames(existsName, newName)) {
+            return existsName;
         }
-        return existsName;
+        String name = newName.getName();
+        String complement = newName.getComplement();
+        String fullName = AccessPointDataService.generateFullName(name, complement);
+        return apDataService.updateAccessPointName(accessPoint, existsName, name, complement, fullName, newName.getLanguage(), change.get(), false);
     }
 
     /**
@@ -2120,6 +2142,26 @@ public class AccessPointService {
      */
     public int nextNameObjectId() {
         return sequenceService.getNext(OBJECT_ID_SEQUENCE_NAME);
+    }
+
+    @Transactional
+    public void reindexDescItem(ApAccessPoint accessPoint) {
+        Collection<Integer> itemIds = new HashSet<>(256);
+        itemIds.addAll(apRepository.findItemIdByAccessPointIdOverDataPartyRef(accessPoint.getAccessPointId()));
+        itemIds.addAll(apRepository.findItemIdByAccessPointIdOverDataRecordRef(accessPoint.getAccessPointId()));
+        descriptionItemService.reindexDescItem(itemIds);
+    }
+
+    /**
+     * Vrátí preferovaná jména pro dané přístupové body
+     *
+     * @return seznam jmen přístupových bodů
+     */
+    public List<ApName> findPreferredNamesByAccessPointIds(Collection<Integer> accessPointIds) {
+        if (accessPointIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return apNameRepository.findPreferredNamesByAccessPointIds(accessPointIds);
     }
 
     /**

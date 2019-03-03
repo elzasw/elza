@@ -11,6 +11,13 @@ elza:
 
   workingDir: ./work
 
+#  hibernate:
+#    index:
+#      enabled: true
+#      refresh_rate: 60000
+#      batch_size: 100
+#      thread_max: 4
+
 spring:
   application:
      name: elza
@@ -45,6 +52,8 @@ spring:
                 default:
                     indexBase: ${elza.workingDir}/lucene/indexes/
                     directory_provider: filesystem
+                    worker:
+                      backend: cz.tacr.elza.search.DbQueueProcessor
 
             # PostgreSQL
             dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrFund;
@@ -46,4 +47,11 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
     @Modifying
     @Query("DELETE FROM arr_node n WHERE n.fund = ?1")
     void deleteByFund(ArrFund fund);
+
+    @Query("select distinct di.node.nodeId" +
+            " from arr_desc_item di" +
+            " join arr_data_structure_ref dsref on dsref = di.data" +
+            " where dsref.structuredObject.structuredObjectId in :structuredObjectIds" +
+            " and di.deleteChange is null")
+    List<Integer> findNodeIdsByStructuredObjectIds(@Param(value = "structuredObjectIds") Collection<Integer> structuredObjectIds);
 }

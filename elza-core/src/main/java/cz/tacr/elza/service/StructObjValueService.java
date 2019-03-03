@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -62,7 +63,9 @@ import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.GroovyScriptService.GroovyScriptFile;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 
 /**
  * Servisní třída pro aktualizaci hodnot strukturovaných objektů.
@@ -92,6 +95,7 @@ public class StructObjValueService {
     private final EventNotificationService notificationService;
     private final ResourcePathResolver resourcePathResolver;
     private final SobjVrequestRepository sobjVrequestRepository;
+    private final ArrangementService arrangementService;
 
     //private Queue<Integer> queueObjIds = new ConcurrentLinkedQueue<>();
     private final Object lock = new Object();
@@ -119,6 +123,7 @@ public class StructObjValueService {
             final EventNotificationService notificationService,
             final ResourcePathResolver resourcePathResolver,
             final SobjVrequestRepository sobjQueueRepository,
+            final ArrangementService arrangementService,
             final EntityManager em) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
@@ -130,6 +135,7 @@ public class StructObjValueService {
         this.notificationService = notificationService;
         this.resourcePathResolver = resourcePathResolver;
         this.sobjVrequestRepository = sobjQueueRepository;
+        this.arrangementService = arrangementService;
         this.em = em;
     }
 
@@ -431,6 +437,7 @@ public class StructObjValueService {
         if (change) {
             structObjRepository.save(structObj);
             sendNotification(structObj);
+            sendNodeNotification(structObj);
         }
 
         return requestNextCheck;
@@ -453,6 +460,14 @@ public class StructObjValueService {
                     null,
                     Collections.singletonList(structObjId),
                     null));
+        }
+    }
+
+    private void sendNodeNotification(ArrStructuredObject structObj) {
+        Collection<Integer> nodeIds = arrangementService.findNodeIdsByStructuredObjectId(structObj.getStructuredObjectId());
+        if (!nodeIds.isEmpty()) {
+            ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(structObj.getFund().getFundId());
+            notificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundVersion.getFundVersionId(), nodeIds.toArray(new Integer[0])));
         }
     }
 

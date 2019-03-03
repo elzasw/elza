@@ -12,7 +12,7 @@ class ControllableDropdownButton extends AbstractReactComponent {
         }
     }
 
-    static PropsTypes = {
+    static propsTypes = {
         id: React.PropTypes.string.isRequired,
         children: React.PropTypes.array.isRequired,
         onToggle: React.PropTypes.func,

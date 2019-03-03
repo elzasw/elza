@@ -1,29 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
+import {default as genericRefTable, genericRefTableState} from "./genericRefTable";
 
-const initialState = {
-    isFetching: false,
-    fetched: false,
-    dirty: false,
-    items: []
-};
 
-export default function template(state = initialState, action = {}) {
-    switch (action.type) {
-        case types.REF_TEMPLATES_REQUEST:
-            return {
-                ...state,
-                isFetching: true
-            };
-        case types.REF_TEMPLATES_RECEIVE:
-            return {
-                ...state,
-                isFetching: false,
-                fetched: true,
-                dirty: false,
-                items: action.items,
-                lastUpdated: action.receivedAt
-            };
-        default:
-            return state
-    }
+export default function template(state = genericRefTableState, action = {}) {
+    return genericRefTable(types.REF_TEMPLATES_REQUEST, types.REF_TEMPLATES_RECEIVE, state, action)
 }

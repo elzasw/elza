@@ -220,6 +220,18 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     @Query("Select i from arr_desc_item i join arr_data_party_ref d on i.data = d WHERE d.party = :party AND i.deleteChange IS NULL")
     List<ArrDescItem> findArrItemByParty(@Param("party") final ParParty party);
 
+    @Query("SELECT i.id FROM arr_desc_item i WHERE i.node = :node AND i.createChange >= :change")
+    List<Integer> findIdByNodeAndCreatedAfterChange(@Param("node") final ArrNode node, @Param("change") final ArrChange change);
+
+    @Query("SELECT i.id FROM arr_desc_item i WHERE i.node.fund = :fund AND i.createChange >= :change")
+    List<Integer> findIdByFundAndCreatedAfterChange(@Param("fund") final ArrFund fund, @Param("change") final ArrChange change);
+
+    @Query("SELECT i.id FROM arr_desc_item i WHERE i.node = :node AND i.deleteChange IS NULL")
+    List<Integer> findOpenIdByNodeAndCreatedAfterChange(@Param("node") final ArrNode node);
+
+    @Query("SELECT i.id FROM arr_desc_item i WHERE i.node.fund = :fund AND i.deleteChange IS NULL")
+    List<Integer> findOpenIdByFundAndCreatedAfterChange(@Param("fund") final ArrFund fund);
+
     @Modifying
     @Query("DELETE FROM arr_desc_item di WHERE di.node IN (SELECT n FROM arr_node n WHERE n.fund = ?1)")
     void deleteByNodeFund(ArrFund fund);

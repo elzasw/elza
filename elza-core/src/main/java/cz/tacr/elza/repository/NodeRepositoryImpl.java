@@ -1,5 +1,10 @@
 package cz.tacr.elza.repository;
 
+import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -12,7 +17,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -35,6 +39,9 @@ import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.BooleanJunction;
 import org.hibernate.search.query.dsl.QueryBuilder;
+import org.hibernate.search.query.engine.spi.FacetManager;
+import org.hibernate.search.query.facet.Facet;
+import org.hibernate.search.query.facet.FacetSortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -49,15 +56,16 @@ import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.filter.DescItemTypeFilter;
-
 
 /**
  * Custom node repository implementation
@@ -93,6 +101,61 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         return nodes;
     }
 
+    /*
+    @Override
+    public List<ArrFundToNodeList> findFundIdsByFulltext(final String text, final Collection<ArrFund> fundList) {
+
+        Assert.notEmpty(fundList, "Nebyl vyplněn identifikátor AS");
+
+        if (fundList.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Facet> facets = countItemsByFundId(text, fundList.stream().map(o -> o.getFundId()).collect(toSet()));
+
+        return facets.stream().map(facet -> new ArrFundToNodeList(Integer.valueOf(facet.getValue()), facet.getCount())).collect(toList());
+    }
+    */
+
+    /**
+     * Vrátí id nodů, přes všechny AS.
+     *
+     * @param text The query text.
+     */
+    @Override
+    public List<ArrFundToNodeList> findFundIdsByFulltext(final String text, final Collection<ArrFund> fundList) {
+
+        Assert.notEmpty(fundList, "Nebyl vyplněn identifikátor AS");
+
+        FullTextQueryContext<ArrDescItem> ctx = new FullTextQueryContext<>(ArrDescItem.class);
+
+        QueryBuilder queryBuilder = ctx.getQueryBuilder();
+
+        Query textQuery = createTextQuery(text, queryBuilder);
+        Query fundIdsQuery = createFundIdsQuery(fundList.stream().map(o -> o.getFundId()).collect(toList()), queryBuilder);
+
+        Query query = queryBuilder.bool().must(textQuery).must(fundIdsQuery).createQuery();
+
+        List<ArrDescItemInfo> itemList = findNodeIdsByValidDescItems(null, query, ctx);
+
+        // mapa (fundId -> nodeIdList -> itemCount)
+        Map<Integer, Map<Integer, Long>> map = itemList.stream().collect(groupingBy(i -> i.getFundId(), groupingBy(i -> i.getNodeId(), counting())));
+
+        List<ArrFundToNodeList> result = map.entrySet().stream().map(entry -> {
+
+            // nodeId list serazeny podle relevance tzn. podle poctu nalezenych itemu
+            List<Integer> nodeIdList = entry.getValue().entrySet().stream()
+                    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                    .map(integerLongEntry -> integerLongEntry.getKey())
+                    .collect(toList());
+
+            return new ArrFundToNodeList(entry.getKey(), nodeIdList);
+
+        }).collect(toList());
+
+        return result;
+    }
+
     /**
      * Vrátí id nodů které mají danou hodnotu v dané verzi.
      *
@@ -100,36 +163,32 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      */
     @Override
     public Set<Integer> findByFulltextAndVersionLockChangeId(final String text, final Integer fundId, final Integer lockChangeId) {
+
         Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
 
-        List<String> descItemIds = findDescItemIdsByData(text, fundId);
-        if (descItemIds.isEmpty()) {
-            return Collections.emptySet();
-        }
+        FullTextQueryContext<ArrDescItem> ctx = new FullTextQueryContext<>(ArrDescItem.class);
 
-        String descItemIdsString = StringUtils.join(descItemIds, " ");
-        List<Integer> nodeIds = findNodeIdsByValidDescItems(lockChangeId, descItemIdsString);
+        Query descItemIdsQuery = createDescItemIdsByDataQuery(text, fundId, ctx.getQueryBuilder());
 
-        return new HashSet<>(nodeIds);
+        List<ArrDescItemInfo> result = findNodeIdsByValidDescItems(lockChangeId, descItemIdsQuery, ctx);
+
+        return result.stream().map(i -> i.getNodeId()).collect(toSet());
     }
-
 
     @Override
     public Set<Integer> findByLuceneQueryAndVersionLockChangeId(final String queryText, final Integer fundId, final Integer lockChangeId)
             throws InvalidQueryException {
+
         Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
 
-        List<String> descItemIds = findDescItemIdsByLuceneQuery(queryText, fundId);
-        if (descItemIds.isEmpty()) {
-            return Collections.emptySet();
-        }
+        FullTextQueryContext<ArrDescItem> ctx = new FullTextQueryContext<>(ArrDescItem.class);
 
-        String descItemIdsString = StringUtils.join(descItemIds, " ");
-        List<Integer> nodeIds = findNodeIdsByValidDescItems(lockChangeId, descItemIdsString);
+        Query descItemIdsQuery = createDescItemIdsByLuceneQuery(queryText, fundId, ctx.getQueryBuilder());
 
-        return new HashSet<>(nodeIds);
+        List<ArrDescItemInfo> result = findNodeIdsByValidDescItems(lockChangeId, descItemIdsQuery, ctx);
+
+        return result.stream().map(i -> i.getNodeId()).collect(toSet());
     }
-
 
     @Override
     public Set<Integer> findBySearchParamsAndVersionLockChangeId(final List<SearchParam> searchParams, final Integer fundId,
@@ -212,18 +271,17 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      */
     private Set<Integer> findByTextSearchParamsAndVersionLockChangeId(final List<TextSearchParam> searchParams, final Integer fundId,
             final Integer lockChangeId) {
+
         Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
         Assert.notEmpty(searchParams, "Musí být vyplněn alespoň jeden parametr vyhledávání");
 
-        List<String> descItemIds = findDescItemIdsByTextSearchParamsData(searchParams, fundId);
-        if (descItemIds.isEmpty()) {
-            return Collections.emptySet();
-        }
+        FullTextQueryContext<ArrDescItem> ctx = new FullTextQueryContext<>(ArrDescItem.class);
 
-        String descItemIdsString = StringUtils.join(descItemIds, " ");
-        List<Integer> nodeIds = findNodeIdsByValidDescItems(lockChangeId, descItemIdsString);
+        Query descItemIdsQuery = createDescItemIdsByTextSearchParamsDataQuery(searchParams, fundId);
 
-        return new HashSet<>(nodeIds);
+        List<ArrDescItemInfo> result = findNodeIdsByValidDescItems(lockChangeId, descItemIdsQuery, ctx);
+
+        return result.stream().map(i -> i.getNodeId()).collect(toSet());
     }
 
     /**
@@ -236,19 +294,17 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @return id nodů
      */
     private Set<Integer> findByDateSearchParamsAndVersionLockChangeId(final List<UnitdateSearchParam> searchParams, final Integer fundId,
-            final Integer lockChangeId) {
+                                                                      final Integer lockChangeId) {
         Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
         Assert.notEmpty(searchParams, "Musí být vyplněn alespoň jeden parametr vyhledávání");
 
-        List<String> descItemIds = findDescItemIdsByDateSearchParamsData(searchParams, fundId);
-        if (descItemIds.isEmpty()) {
-            return Collections.emptySet();
-        }
+        FullTextQueryContext<ArrDescItem> ctx = new FullTextQueryContext<>(ArrDescItem.class);
 
-        String descItemIdsString = StringUtils.join(descItemIds, " ");
-        List<Integer> nodeIds = findNodeIdsByValidDescItems(lockChangeId, descItemIdsString);
+        Query descItemIdsQuery = createDescItemIdsByDateSearchParamsDataQuery(searchParams, fundId);
 
-        return new HashSet<>(nodeIds);
+        List<ArrDescItemInfo> result = findNodeIdsByValidDescItems(lockChangeId, descItemIdsQuery, ctx);
+
+        return result.stream().map(i -> i.getNodeId()).collect(toSet());
     }
 
     /**
@@ -260,7 +316,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @return id nodů
      */
     @SuppressWarnings("unchecked")
-    private List<String> findDescItemIdsByDateSearchParamsData(final List<UnitdateSearchParam> searchParams, final Integer fundId) {
+    private Query createDescItemIdsByDateSearchParamsDataQuery(final List<UnitdateSearchParam> searchParams,
+                                                                      final Integer fundId) {
         Class<ArrDescItem> entityClass = ArrDescItem.class;
         QueryBuilder queryBuilder = createQueryBuilder(entityClass);
 
@@ -275,17 +332,11 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         }
 
         if (dateBool.isEmpty()) {
-            return Collections.emptyList();
+            return null;
         }
 
-        Query fundIdQuery = queryBuilder.keyword().onField("fundId").matching(fundId).createQuery();
-        Query query = queryBuilder.bool().must(dateBool.createQuery()).must(fundIdQuery).createQuery();
-
-        return (List<String>) createFullTextQuery(query, entityClass).setProjection("itemId").
-                getResultList().
-                stream().
-                map(row -> ((Object[]) row)[0]).
-                collect(Collectors.toList());
+        Query fundIdQuery = queryBuilder.keyword().onField(ArrDescItem.FIELD_FUND_ID).matching(fundId).createQuery();
+        return queryBuilder.bool().must(dateBool.createQuery()).must(fundIdQuery).createQuery();
     }
 
     /**
@@ -346,7 +397,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @return id nodů
      */
     @SuppressWarnings("unchecked")
-    private List<String> findDescItemIdsByTextSearchParamsData(final List<TextSearchParam> searchParams, final Integer fundId) {
+    private Query createDescItemIdsByTextSearchParamsDataQuery(final List<TextSearchParam> searchParams,
+                                                               final Integer fundId) {
         Class<ArrDescItem> entityClass = ArrDescItem.class;
         QueryBuilder queryBuilder = createQueryBuilder(entityClass);
 
@@ -361,17 +413,11 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         }
 
         if (textBool.isEmpty()) {
-            return Collections.emptyList();
+            return null;
         }
 
-        Query fundIdQuery = queryBuilder.keyword().onField("fundId").matching(fundId).createQuery();
-        Query query = queryBuilder.bool().must(textBool.createQuery()).must(fundIdQuery).createQuery();
-
-        return (List<String>) createFullTextQuery(query, entityClass).setProjection("itemId").
-                getResultList().
-                stream().
-                map(row -> ((Object[]) row)[0]).
-                collect(Collectors.toList());
+        Query fundIdQuery = queryBuilder.keyword().onField(ArrDescItem.FIELD_FUND_ID).matching(fundId).createQuery();
+        return queryBuilder.bool().must(textBool.createQuery()).must(fundIdQuery).createQuery();
     }
 
     /**
@@ -394,24 +440,27 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      *
      * @return id atributů které mají danou hodnotu
      */
-    @SuppressWarnings("unchecked")
-    private List<String> findDescItemIdsByData(final String text, final Integer fundId) {
+    private Query createDescItemIdsByDataQuery(final String text, final Integer fundId, QueryBuilder queryBuilder) {
+
         if (StringUtils.isBlank(text)) {
-            return Collections.EMPTY_LIST;
+            return null;
         }
 
-        Class<ArrDescItem> entityClass = ArrDescItem.class;
-        QueryBuilder queryBuilder = createQueryBuilder(entityClass);
-
         Query textQuery = createTextQuery(text, queryBuilder);
-        Query fundIdQuery = queryBuilder.keyword().onField("fundId").matching(fundId).createQuery();
+        Query fundIdQuery = queryBuilder.keyword().onField(ArrDescItem.FIELD_FUND_ID).matching(fundId).createQuery();
         Query query = queryBuilder.bool().must(textQuery).must(fundIdQuery).createQuery();
 
-        List<String> result = (List<String>) createFullTextQuery(query, entityClass).setProjection("itemId").getResultList().stream().map(row -> {
-            return ((Object[]) row)[0];
-        }).collect(Collectors.toList());
+        return query;
+    }
 
-        return result;
+    private Query createFundIdsQuery(Collection<Integer> fundIds, QueryBuilder queryBuilder) {
+        // fundId je kodovany jako numeric, nelze pouzit matching()
+        // return queryBuilder.keyword().onField("fundId").matching("(" + StringUtils.join(fundIds, " ") + ")").createQuery();
+        BooleanJunction<BooleanJunction> result = queryBuilder.bool();
+        for (Integer fundId : new HashSet<>(fundIds)) {
+            result.should(queryBuilder.range().onField(ArrDescItem.FIELD_FUND_ID).from(fundId).to(fundId).createQuery());
+        }
+        return result.createQuery();
     }
 
     /**
@@ -423,15 +472,11 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @return id atributů které mají danou hodnotu
      * @throws InvalidQueryException neplatný lucene dotaz
      */
-    private List<String> findDescItemIdsByLuceneQuery(final String queryText, final Integer fundId)
-            throws InvalidQueryException{
+    private Query createDescItemIdsByLuceneQuery(final String queryText, final Integer fundId, QueryBuilder queryBuilder) {
+
         if (StringUtils.isBlank(queryText)) {
-            return Collections.emptyList();
+            return null;
         }
-
-        Class<ArrDescItem> entityClass = ArrDescItem.class;
-        QueryBuilder queryBuilder = createQueryBuilder(entityClass);
-
 
         StandardQueryParser parser = new StandardQueryParser();
         parser.setAllowLeadingWildcard(true);
@@ -452,24 +497,29 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         stringNumericConfigHashMap.put(ArrDescItem.NORMALIZED_TO_ATT,
                                        new NumericConfig(16, NumberFormat.getNumberInstance(),
                                                FieldType.NumericType.LONG));
+
+        stringNumericConfigHashMap.put(ArrDescItem.FIELD_FUND_ID,
+                new NumericConfig(32, NumberFormat.getNumberInstance(), FieldType.NumericType.INT));
+        stringNumericConfigHashMap.put(ArrDescItem.FIELD_NODE_ID,
+                new NumericConfig(32, NumberFormat.getNumberInstance(), FieldType.NumericType.INT));
+        stringNumericConfigHashMap.put(ArrDescItem.FIELD_DESC_ITEM_TYPE_ID,
+                new NumericConfig(32, NumberFormat.getNumberInstance(), FieldType.NumericType.INT));
+        stringNumericConfigHashMap.put(ArrDescItem.FIELD_CREATE_CHANGE_ID,
+                new NumericConfig(32, NumberFormat.getNumberInstance(), FieldType.NumericType.INT));
+        stringNumericConfigHashMap.put(ArrDescItem.FIELD_DELETE_CHANGE_ID,
+		        new NumericConfig(32, NumberFormat.getNumberInstance(), FieldType.NumericType.INT));
+
         parser.setNumericConfigMap(stringNumericConfigHashMap);
 
-        Query query;
         try {
+
 			Query textQuery = parser.parse(queryText, ArrDescItem.FULLTEXT_ATT);
 			Query fundIdQuery = queryBuilder.keyword().onField(ArrDescItem.FIELD_FUND_ID).matching(fundId).createQuery();
-            query = queryBuilder.bool().must(textQuery).must(fundIdQuery).createQuery();
+            return queryBuilder.bool().must(textQuery).must(fundIdQuery).createQuery();
 
         } catch (QueryNodeException e) {
             throw new InvalidQueryException(e);
         }
-
-        List<String> result = (List<String>) createFullTextQuery(query, entityClass).setProjection(
-                "itemId").getResultList().stream().map(row ->
-                        ((Object[]) row)[0]
-        ).collect(Collectors.toList());
-
-        return result;
     }
 
     /**
@@ -481,10 +531,10 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @return dotaz
      */
     private Query createTextQuery(final String text, final QueryBuilder queryBuilder) {
-        /** rozdělení zadaného výrazu podle mezer */
+        /* rozdělení zadaného výrazu podle mezer */
         String[] tokens = StringUtils.split(text.toLowerCase(), ' ');
 
-        /** hledání výsledků pomocí AND (must) tak že každý obsahuje dané části zadaného výrazu */
+        /* hledání výsledků pomocí AND (must) tak že každý obsahuje dané části zadaného výrazu */
         BooleanJunction<BooleanJunction> textConditions = queryBuilder.bool();
         for (String token : tokens) {
             String searchValue = "*" + token + "*";
@@ -523,25 +573,92 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * Vyhledá id nodů podle platných atributů. Hledá napříč archivními pomůckami.
      *
      * @param lockChangeId id změny uzavření verze archivní pomůcky, může být null
-     * @param descItemIdsString id atributů pro které se mají hledat nody
+     * @param descItemIdsQuery id atributů pro které se mají hledat nody
      *
      * @return id nodů které mají před danou změnou nějaký atribut
      */
-    @SuppressWarnings("unchecked")
-    private List<Integer> findNodeIdsByValidDescItems(final Integer lockChangeId, final String descItemIdsString) {
-        Class<ArrDescItem> entityClass = ArrDescItem.class;
+    private List<ArrDescItemInfo> findNodeIdsByValidDescItems(final Integer lockChangeId, final Query descItemIdsQuery, FullTextQueryContext<ArrDescItem> ctx) {
 
-        QueryBuilder queryBuilder = createQueryBuilder(entityClass);
+        if (descItemIdsQuery == null) {
+            return Collections.emptyList();
+        }
+
+        QueryBuilder queryBuilder = ctx.getQueryBuilder();
+
         Query changeQuery = createChangeQuery(queryBuilder, lockChangeId);
-        Query descItemIdsQuery = queryBuilder.keyword().onField("descItemIdString").matching(descItemIdsString).createQuery();
-        Query validDescItemInVersionQuery = queryBuilder.all().createQuery();
-        Query query = queryBuilder.bool().must(changeQuery).must(descItemIdsQuery).must(validDescItemInVersionQuery).createQuery();
+        // Query validDescItemInVersionQuery = createValidDescItemInVersionQuery(queryBuilder);
 
-        List<Integer> result = createFullTextQuery(query, entityClass).setProjection("nodeId").getResultList().stream().mapToInt(row -> {
-            return (int) ((Object[]) row)[0];
-        }).boxed().collect(Collectors.toList());
+        Query query = queryBuilder.bool()
+                .must(changeQuery)
+                .must(descItemIdsQuery)
+                // .must(validDescItemInVersionQuery)
+                .createQuery();
 
-        return result;
+        FullTextQuery fullTextQuery = ctx.createFullTextQuery(query).setProjection(ArrDescItem.FIELD_ITEM_ID, ArrDescItem.FIELD_NODE_ID, ArrDescItem.FIELD_FUND_ID);
+
+        List<Object[]> resultList = fullTextQuery.getResultList();
+
+        return resultList.stream()
+                .map(row -> new ArrDescItemInfo((Integer) row[0], (Integer) row[1], (Integer) row[2]))
+                .collect(toList());
+    }
+
+    /**
+     * Vyhledá id atributů podle předané hodnoty. Hledá napříč archivními pomůckami a jejich verzemi.
+     *
+     * @param fundId id fondu
+     * @param text hodnota podle které se hledá
+     * @return id atributů které mají danou hodnotu
+     */
+    private List<Facet> countItemsByFundId(final String text, final Collection<Integer> fundIds) {
+
+        if (StringUtils.isBlank(text) || CollectionUtils.isEmpty(fundIds)) {
+            return Collections.emptyList();
+        }
+
+        FullTextQueryContext<ArrDescItem> ctx = new FullTextQueryContext<>(ArrDescItem.class);
+
+        QueryBuilder queryBuilder = ctx.getQueryBuilder();
+
+        Query changeQuery = createChangeQuery(queryBuilder, null);
+        Query textQuery = createTextQuery(text, queryBuilder);
+        Query fundIdQuery = createFundIdsQuery(fundIds, queryBuilder);
+        // Query validDescItemInVersionQuery = createValidDescItemInVersionQuery(queryBuilder);
+
+        Query query = queryBuilder.bool()
+                .must(changeQuery)
+                .must(textQuery)
+                .must(fundIdQuery)
+                // .must(validDescItemInVersionQuery)
+                .createQuery();
+
+        // FullTextQuery fullTextQuery = ctx.createFullTextQuery(query).setProjection(ArrDescItem.ITEM_ID, ArrDescItem.NODE_ID, ArrDescItem.FUND_ID);
+        FullTextQuery fullTextQuery = ctx.createFullTextQuery(query).setProjection(ArrDescItem.FIELD_ITEM_ID);
+
+        List<Object[]> resultList = fullTextQuery.getResultList();
+
+        final String fundFacet = "fund_facet";
+
+        FacetManager facetManager = fullTextQuery.getFacetManager();
+
+        facetManager.enableFaceting(queryBuilder.facet().name(fundFacet).onField(ArrDescItem.FIELD_FUND_ID_STRING)
+                .discrete()
+                .includeZeroCounts(false)
+                .orderedBy(FacetSortOrder.COUNT_DESC)
+                // .maxFacetCount(20)
+                .createFacetingRequest());
+
+        /*
+        resultList.stream()
+                .map(row -> new ArrDescItemInfo((Integer) row[0], (Integer) row[1], (Integer) row[2]))
+                .collect(toList());
+        */
+
+        return facetManager.getFacets(fundFacet);
+    }
+
+    private Query createValidDescItemInVersionQuery(QueryBuilder queryBuilder) {
+        return queryBuilder.all().createQuery();
     }
 
     /**
@@ -552,17 +669,18 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @return query
      */
     private Query createChangeQuery(final QueryBuilder queryBuilder, final Integer lockChangeId) {
-        if (lockChangeId == null) { // deleteChange is null
-            return queryBuilder.range().onField("deleteChangeId").from(Integer.MAX_VALUE).to(Integer.MAX_VALUE).createQuery();
+
+        Query nullDeleteChangeQuery = queryBuilder.range().onField(ArrDescItem.FIELD_DELETE_CHANGE_ID).from(Integer.MAX_VALUE).to(Integer.MAX_VALUE).createQuery();
+
+        if (lockChangeId == null) {
+            // deleteChange is null
+            return nullDeleteChangeQuery;
         }
 
-        //createChangeId < lockChangeId
-        Query createChangeQuery = queryBuilder.range().onField("createChangeId").below(lockChangeId).excludeLimit().createQuery();
+        Query createChangeQuery = queryBuilder.range().onField(ArrDescItem.FIELD_CREATE_CHANGE_ID).below(lockChangeId).excludeLimit().createQuery();
+        Query deleteChangeQuery = queryBuilder.range().onField(ArrDescItem.FIELD_DELETE_CHANGE_ID).above(lockChangeId).excludeLimit().createQuery();
 
-        // and (deleteChange is null or deleteChange > lockChangeId)
-        Query nullDeleteChangeQuery = queryBuilder.range().onField("deleteChangeId").from(Integer.MAX_VALUE).to(Integer.MAX_VALUE).createQuery();
-        Query deleteChangeQuery = queryBuilder.range().onField("deleteChangeId").above(lockChangeId).excludeLimit().createQuery();
-
+        // createChangeId < lockChangeId and (deleteChange is null or deleteChange > lockChangeId)
         Query deleteQuery = queryBuilder.bool().should(nullDeleteChangeQuery).should(deleteChangeQuery).createQuery();
         return queryBuilder.bool().must(createChangeQuery).must(deleteQuery).createQuery();
     }
@@ -597,8 +715,14 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         });
 
         if (!descItemIds.isEmpty()) {
-            String descItemIdsString = StringUtils.join(descItemIds, " ");
-            nodeIds.addAll(findNodeIdsByValidDescItems(lockChangeId, descItemIdsString));
+
+            FullTextQueryContext<ArrDescItem> ctx = new FullTextQueryContext<>(ArrDescItem.class);
+
+            Query descItemIdsQuery = createDescItemIdsQuery(descItemIds, ctx.getQueryBuilder());
+
+            List<ArrDescItemInfo> list = findNodeIdsByValidDescItems(lockChangeId, descItemIdsQuery, ctx);
+
+            nodeIds.addAll(list.stream().map(i -> i.getNodeId()).collect(toList()));
         }
         return nodeIds;
     }
@@ -638,5 +762,76 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         }
 
         return allDescItemIds;
+    }
+
+    private Query createDescItemIdsQuery(Collection<Integer> descItemIds, QueryBuilder queryBuilder) {
+        try {
+            // itemId jakozto ID field je v indexu ulozeny stringove, ale matching() v Hibernate Search nefunguje s hodnotami typu Integer
+            // Query descItemIdsQuery = queryBuilder.keyword().onField("itemId").matching("(" + StringUtils.join(descItemIds, " ") + ")").createQuery();
+            StandardQueryParser parser = new StandardQueryParser();
+            return parser.parse('(' + StringUtils.join(descItemIds, ' ') + ')', ArrDescItem.FIELD_ITEM_ID);
+        } catch (QueryNodeException e) {
+            throw new InvalidQueryException(e);
+        }
+    }
+
+    private class FullTextQueryContext<T> {
+
+        private final Class<T> entityClass;
+        private final QueryBuilder queryBuilder;
+
+        /**
+         * Vytvoří query builder pro danou třídu.
+         *
+         * @param entityClass třída
+         */
+        public FullTextQueryContext(Class<T> entityClass) {
+            this.entityClass = entityClass;
+            this.queryBuilder = createQueryBuilder(entityClass);
+        }
+
+        public Class<T> getEntityClass() {
+            return entityClass;
+        }
+
+        public QueryBuilder getQueryBuilder() {
+            return queryBuilder;
+        }
+
+        /**
+         * Vytvoří hibernate jpa query z lucene query.
+         *
+         * @param query lucene qery
+         * @return hibernate jpa query
+         */
+        public FullTextQuery createFullTextQuery(Query query) {
+            return fullTextEntityManager.createFullTextQuery(query, entityClass);
+        }
+    }
+
+    private static class ArrDescItemInfo {
+
+        private final Integer itemId;
+        private final Integer nodeId;
+        private final Integer fundId;
+
+        public Integer getItemId() {
+            return itemId;
+        }
+
+        public Integer getNodeId() {
+            return nodeId;
+        }
+
+
+        public Integer getFundId() {
+            return fundId;
+        }
+
+        public ArrDescItemInfo(Integer itemId, Integer nodeId, Integer fundId) {
+            this.itemId = itemId;
+            this.nodeId = nodeId;
+            this.fundId = fundId;
+        }
     }
 }

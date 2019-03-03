@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -41,6 +42,7 @@ import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
@@ -51,6 +53,7 @@ import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.FulltextFundRequest;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
@@ -71,9 +74,9 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
+import cz.tacr.elza.utils.CsvUtils;
 
 public class ArrangementControllerTest extends AbstractControllerTest {
 
@@ -131,6 +134,66 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         //smazání fondu
         deleteFund(fund);
 
+    }
+
+    @Test
+    public void fundFulltextTest() throws InterruptedException {
+
+        final String value = "aaa";
+        final int count = 2;
+
+        List<ArrFundVO> funds = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            funds.add(createFundFulltext(i, count, value));
+        }
+
+        // je třeba počkat na asychronné přeindexování (možná by se mělo řešit úplně jinak)
+        Thread.sleep(1000);
+
+        try {
+
+            Set<String> names = funds.stream().map(fund -> fund.getName()).collect(Collectors.toSet());
+
+            List<ArrFundFulltextResult> resultList = fundFulltext(new FulltextFundRequest(value));
+
+            for (ArrFundFulltextResult result : resultList) {
+                assertTrue("Invalid fund [" + result.getName() + "]", names.remove(result.getName()));
+                assertEquals("Invalid count [" + result.getName() + "]", count, result.getCount());
+            }
+
+            assertTrue("Fund not found [" + StringUtils.join(names, ", ") + "]", names.isEmpty());
+
+            for (ArrFundFulltextResult result : resultList) {
+                List<TreeNodeVO> nodeList = fundFulltextNodeList(result.getId());
+                assertEquals("Invalid count [" + result.getName() + "]", count, nodeList.size());
+                for (TreeNodeVO node : nodeList) {
+                    assertEquals("Invalid node value [" + result.getName() + "]", value, node.getName());
+                }
+            }
+
+        } finally {
+            //smazání fondu
+            for (ArrFundVO fund : funds) {
+                deleteFund(fund.getId());
+            }
+        }
+    }
+
+    private ArrFundVO createFundFulltext(int i, int count, String value) {
+
+        ArrFundVO fund = createFund("Test fulltext " + i, "TST" + 1);
+
+        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_TITLE");
+
+        ArrFundVersionVO fundVersion = getOpenVersion(fund);
+        List<ArrNodeVO> nodes = createLevels(fundVersion);
+
+        for (int j = 0; j < count; j++) {
+            ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, value, null, null);
+            ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, nodes.get(j), typeVo);
+        }
+
+        return fund;
     }
 
     @Test
@@ -591,8 +654,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
             // Export a kontrola
             InputStream is = descItemCsvExport(fundVersion.getId(), descItemResult.getItem().getDescItemObjectId());
-            Reader in = new InputStreamReader(is, ArrIOService.CSV_EXCEL_ENCODING);
-            Iterable<CSVRecord> records = ArrIOService.CSV_EXCEL_FORMAT.withFirstRecordAsHeader().parse(in);
+            Reader in = new InputStreamReader(is, CsvUtils.CSV_EXCEL_ENCODING);
+            Iterable<CSVRecord> records = CsvUtils.CSV_EXCEL_FORMAT.withFirstRecordAsHeader().parse(in);
             List<CSVRecord> recordsList = new ArrayList<>();
             records.forEach(recordsList::add);
             assertTrue(recordsList.size() == 6); // šest řádků bez hlavičky

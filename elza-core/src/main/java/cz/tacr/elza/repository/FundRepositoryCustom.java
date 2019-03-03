@@ -41,6 +41,15 @@ public interface FundRepositoryCustom {
 	 */
 	Integer findCountByFulltext(String fulltext, final Integer userId);
 
+    /**
+     * Vyhledavani AS pres vsecny AS. Zohlednuje opravneni uzivatele k pristupu k AS.
+     *
+     * @param fulltext nepovinny text - vyhledavani 'LIKE' v {@code name} a {@code internalCode}
+     * @param userId ID uzivatele, muze byt null v pripade opravneni typu ALL
+     * @return seznam AS
+     */
+    List<ArrFund> findFundByFulltext(String fulltext, Integer userId);
+
 	FilteredResult<ArrFund> findFunds(String search, int firstResult, int maxResults);
 
 	/**

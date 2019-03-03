@@ -65,4 +65,10 @@ public interface PartyRepository extends ElzaJpaRepository<ParParty, Integer>, P
             "JOIN FETCH ap.accessPoint rec " +
             "WHERE ap.partyId IN :ids")
     List<ParParty> findAllFetch(@Param("ids") Iterable<Integer> ids);
+
+    @Query("SELECT distinct i.itemId" +
+            " FROM arr_item i" +
+            " JOIN arr_data_party_ref pr ON (pr.dataId = i.dataId)" +
+            " WHERE pr.party.partyId = ?1")
+    List<Integer> findItemIdByParty(Integer partyId);
 }

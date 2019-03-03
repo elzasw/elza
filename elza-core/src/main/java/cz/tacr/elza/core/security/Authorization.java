@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.api.interfaces.IApScope;
 import cz.tacr.elza.api.interfaces.IArrFund;
+import cz.tacr.elza.api.interfaces.IWfIssueList;
 import cz.tacr.elza.core.security.AuthParam.Type;
 import cz.tacr.elza.core.security.Authorization.MethodParamBasedAccess.PermissionResult;
 import cz.tacr.elza.domain.UsrGroup;
@@ -31,6 +32,7 @@ import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.UserService;
 
@@ -114,6 +116,9 @@ public class Authorization {
     @Autowired
     private PartyRepository partyRepository;
 
+    @Autowired
+    private WfIssueListRepository issueListRepository;
+
     @Around("execution(* cz.tacr.elza..*.*(..)) && @annotation(cz.tacr.elza.core.security.AuthMethod)")
 	public Object auth(final ProceedingJoinPoint pjp) throws Throwable {
 
@@ -139,13 +144,15 @@ public class Authorization {
 						hasPermission = true;
 					}
 					break;
-
 				case SCOPE:
 					// permissions for scope
 					hasPermission = checkScopePermission(permission, methodInfo, userDetail);
 					break;
 				case FUND:
 					hasPermission = checkFundPermission(permission, methodInfo, userDetail);
+					break;
+				case ISSUE_LIST:
+					hasPermission = checkIssueListPermission(permission, methodInfo, userDetail);
 					break;
 				default:
 					throw new IllegalStateException("Permission type not defined: " + permission.getType());
@@ -302,6 +309,16 @@ public class Authorization {
 		});
 	}
 
+	private boolean checkIssueListPermission(Permission permission, MethodInfo methodInfo, UserDetail userDetail) {
+		return hasPermission(methodInfo, (authParam, parameterValue) -> {
+			Integer entityId = loadIssueListId(parameterValue, authParam.type());
+			if (userDetail.hasPermission(permission, entityId)) {
+				return PermissionResult.GRANT_ACCESS;
+			}
+			return PermissionResult.DENY_ACCESS;
+		});
+	}
+
 	/**
 	 * Prapare scope id
 	 *
@@ -359,6 +376,61 @@ public class Authorization {
 				return fundVersionRepository.getOneCheckExist((Integer) value).getFund().getFundId();
 			} else if (value instanceof IArrFund) {
 				return ((IArrFund) value).getFund().getFundId();
+			}
+			break;
+		case ISSUE_LIST:
+			if (value instanceof Integer) {
+				return issueListRepository.findFundIdByIssueListId((Integer) value);
+			} else if (value instanceof IArrFund) {
+				return ((IArrFund) value).getFund().getFundId();
+			}
+			break;
+		case ISSUE:
+			if (value instanceof Integer) {
+				return issueListRepository.findFundIdByIssueId((Integer) value);
+			} else if (value instanceof IArrFund) {
+				return ((IArrFund) value).getFund().getFundId();
+			}
+			break;
+		case COMMENT:
+			if (value instanceof Integer) {
+				return issueListRepository.findFundIdByCommentId((Integer) value);
+			} else if (value instanceof IWfIssueList) {
+				return issueListRepository.findFundIdByIssueListId(((IWfIssueList) value).getIssueListId());
+			}
+			break;
+		}
+		throw new IllegalStateException(type + ":" + value.getClass().getName());
+	}
+
+	/**
+	 * Load issueList id
+	 *
+	 * @param value vstupní objekt
+	 * @param type typ vstupního parametru
+	 * @return identfikátor entity
+	 */
+	private Integer loadIssueListId(final Object value, final AuthParam.Type type) {
+		switch (type) {
+		case ISSUE_LIST:
+			if (value instanceof Integer) {
+				return (Integer) value;
+			} else if (value instanceof IWfIssueList) {
+				return ((IWfIssueList) value).getIssueListId();
+			}
+			break;
+		case ISSUE:
+			if (value instanceof Integer) {
+				return issueListRepository.findIdByIssueId((Integer) value);
+			} else if (value instanceof IWfIssueList) {
+				return ((IWfIssueList) value).getIssueListId();
+			}
+			break;
+		case COMMENT:
+			if (value instanceof Integer) {
+				return issueListRepository.findIdByCommentId((Integer) value);
+			} else if (value instanceof IWfIssueList) {
+				return ((IWfIssueList) value).getIssueListId();
 			}
 			break;
 		}

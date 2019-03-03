@@ -10,9 +10,11 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.CollectionUtils;
+import cz.tacr.elza.search.DbQueueProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -35,6 +37,7 @@ import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
+import cz.tacr.elza.search.IndexWorkProcessor;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
 /**
@@ -79,6 +82,10 @@ public class StartupService implements SmartLifecycle {
 
     private final AccessPointGeneratorService accessPointGeneratorService;
 
+    private final IndexWorkProcessor indexWorkProcessor;
+
+    private final ApplicationContext applicationContext;
+
     private boolean running;
 
     @Autowired
@@ -98,7 +105,9 @@ public class StartupService implements SmartLifecycle {
                           final NodeConformityErrorRepository nodeConformityErrorRepository,
                           final NodeConformityMissingRepository nodeConformityMissingRepository,
                           final NodeConformityRepository nodeConformityRepository,
-                          final VisiblePolicyRepository visiblePolicyRepository) {
+                          final VisiblePolicyRepository visiblePolicyRepository,
+                          IndexWorkProcessor indexWorkProcessor,
+                          final ApplicationContext applicationContext) {
         this.nodeRepository = nodeRepository;
         this.fundVersionRepository = fundVersionRepository;
         this.updateConformityInfoService = updateConformityInfoService;
@@ -116,6 +125,8 @@ public class StartupService implements SmartLifecycle {
         this.nodeConformityMissingRepository = nodeConformityMissingRepository;
         this.nodeConformityRepository = nodeConformityRepository;
         this.visiblePolicyRepository = visiblePolicyRepository;
+        this.indexWorkProcessor = indexWorkProcessor;
+        this.applicationContext = applicationContext;
     }
 
     @Autowired
@@ -139,6 +150,7 @@ public class StartupService implements SmartLifecycle {
     @Override
     public void stop() {
         logger.info("Elza stopping ...");
+        indexWorkProcessor.stopIndexing();
         structureDataService.stopGenerator();
         // TODO: stop async processes
         running = false;
@@ -171,6 +183,7 @@ public class StartupService implements SmartLifecycle {
         }
         DatabaseType.init(em);
         staticDataService.init();
+        DbQueueProcessor.startInit(applicationContext);
         outputServiceInternal.init();
         clearBulkActions();
         clearTempStructureData();
@@ -180,6 +193,7 @@ public class StartupService implements SmartLifecycle {
         syncNodeCacheService();
         startNodeValidation();
         structureDataService.startGenerator();
+        indexWorkProcessor.startIndexing();
         runQueuedRequests();
         runQueuedAccessPoints();
     }

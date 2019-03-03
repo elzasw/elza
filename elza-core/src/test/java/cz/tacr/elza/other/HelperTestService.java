@@ -80,6 +80,9 @@ import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.repository.WfCommentRepository;
+import cz.tacr.elza.repository.WfIssueListRepository;
+import cz.tacr.elza.repository.WfIssueRepository;
 
 
 /**
@@ -202,6 +205,12 @@ public class HelperTestService {
     private ApFragmentRepository fragmentRepository;
     @Autowired
     private ApChangeRepository apChangeRepository;
+    @Autowired
+    private WfCommentRepository commentRepository;
+    @Autowired
+    private WfIssueListRepository issueListRepository;
+    @Autowired
+    private WfIssueRepository issueRepository;
 
     @Autowired
     private PackageService packageService;
@@ -238,6 +247,9 @@ public class HelperTestService {
     public void deleteTables() {
         logger.debug("Cleaning table contents...");
 
+        commentRepository.deleteAll();
+        issueRepository.deleteAll();
+        issueListRepository.deleteAll();
         cachedNodeRepository.deleteAll();
         permissionRepository.deleteAll();
         groupUserRepository.deleteAll();

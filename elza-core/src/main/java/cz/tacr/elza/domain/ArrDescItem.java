@@ -14,16 +14,17 @@ import javax.persistence.Transient;
 
 import org.apache.lucene.analysis.core.KeywordTokenizerFactory;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
+import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
+import org.hibernate.search.annotations.Facet;
+import org.hibernate.search.annotations.FacetEncodingType;
 import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.annotations.TokenFilterDef;
 import org.hibernate.search.annotations.TokenizerDef;
-import org.hibernate.search.bridge.builtin.IntegerBridge;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -53,7 +54,9 @@ import cz.tacr.elza.search.DescItemIndexingInterceptor;
 public class ArrDescItem extends ArrItem {
 
 	// Constants for fulltext indexing
+    public static final String FIELD_ITEM_ID = "itemId";
     public static final String FIELD_FUND_ID = "fundId";
+    public static final String FIELD_FUND_ID_STRING = "fundIdString";
     public static final String FIELD_NODE = "node";
     public static final String FIELD_NODE_ID = "nodeId";
     public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
@@ -102,22 +105,18 @@ public class ArrDescItem extends ArrItem {
 		this.nodeId = src.nodeId;
 	}
 
-	@Field(store = Store.YES)
-    public String getDescItemIdString() {
-        return getItemId().toString();
-    }
-
     @Override
-    @Field(store = Store.YES)
-    @FieldBridge(impl = IntegerBridge.class)
+    @Field(name = FIELD_NODE_ID, analyze = Analyze.NO, store = Store.YES)
+    // @FieldBridge(impl = IntegerBridge.class)
     public Integer getNodeId() {
         return nodeId;
     }
 
-	@JsonIgnore
+    @JsonIgnore
     @Override
-    @Field(name = FIELD_FUND_ID)
-    @FieldBridge(impl = IntegerBridge.class)
+    @Field(name = FIELD_FUND_ID, analyze = Analyze.NO, store = Store.YES)
+    @Facet(name = FIELD_FUND_ID_STRING, forField = FIELD_FUND_ID, encoding = FacetEncodingType.STRING)
+    // @FieldBridge(impl = IntegerBridge.class)
     public Integer getFundId() {
         return indexData.getFundId();
     }

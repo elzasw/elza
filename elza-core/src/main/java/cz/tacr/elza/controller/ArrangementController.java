@@ -48,6 +48,7 @@ import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
+import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
@@ -61,6 +62,7 @@ import cz.tacr.elza.controller.vo.CreateFundVO;
 import cz.tacr.elza.controller.vo.DataGridExportType;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.FulltextFundRequest;
 import cz.tacr.elza.controller.vo.FundListCountResult;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
@@ -275,10 +277,10 @@ public class ArrangementController {
 
 	@Autowired
 	private ArrangementFormService formService;
-	
+
 	@Autowired
     private StaticDataService staticDataService;
-    
+
     /**
      *  Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
      *
@@ -1077,7 +1079,7 @@ public class ArrangementController {
 
 		List<ArrFundVO> fundVOList = new ArrayList<>(fundList.size());
 		fundList.forEach(f -> {
-            ArrFundVO fundVO = factoryVo.createFundVO(f.getFund(), false);
+            ArrFundVO fundVO = factoryVo.createFundVO(f.getFund(), true, userService.getLoggedUserDetail());
 			//fundVO.setVersions(Arrays.asList(factoryVo.createFundVersion(f.getOpenVersion())));
 			fundVOList.add(fundVO);
         });
@@ -1097,7 +1099,7 @@ public class ArrangementController {
         if (fund == null) {
             throw new ObjectNotFoundException("AS s ID=" + fundId + " nebyl nalezen", ArrangementCode.FUND_NOT_FOUND).set("id", fundId);
         }
-        return factoryVo.createFundVO(fund, true);
+        return factoryVo.createFundVO(fund, true, userService.getLoggedUserDetail());
     }
 
     /**
@@ -1133,10 +1135,11 @@ public class ArrangementController {
 
         List<ArrFundVersion> versions = fundVersionRepository.findAll(idsParam.getIds());
 
+        UserDetail user = userService.getLoggedUserDetail();
         List<ArrFundVO> result = new LinkedList<>();
         for (ArrFundVersion version : versions) {
-            ArrFundVO fund = factoryVo.createFundVO(version.getFund(), false);
-            ArrFundVersionVO versionVo = factoryVo.createFundVersion(version);
+            ArrFundVO fund = factoryVo.createFundVO(version.getFund(), false, user);
+            ArrFundVersionVO versionVo = factoryVo.createFundVersion(version, user);
             fund.setVersions(Arrays.asList(versionVo));
 
             result.add(fund);
@@ -1172,7 +1175,7 @@ public class ArrangementController {
     @RequestMapping(value = "/nodeData", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     public NodeData getNodeData(final @RequestBody NodeDataParam param) {
-        return levelTreeCacheService.getNodeData(param);
+        return levelTreeCacheService.getNodeData(param, userService.getLoggedUserDetail());
     }
 
     /**
@@ -1209,8 +1212,9 @@ public class ArrangementController {
 
         Assert.notNull(version, "Nebyla nalezena verze s id " + versionId);
 
+        UserDetail user = userService.getLoggedUserDetail();
         ArrFundVersion nextVersion = arrangementService.approveVersion(version, dateRange);
-        return factoryVo.createFundVersion(nextVersion);
+        return factoryVo.createFundVersion(nextVersion, user);
     }
 
     /**
@@ -1318,7 +1322,8 @@ public class ArrangementController {
                 .createFundWithScenario(createFund.getName(), ruleSet, createFund.getInternalCode(), institution, createFund.getDateRange());
 
         // Kontrola na vyplněnost uživatele nebo skupiny jako správce, pokud není admin
-        if (!userService.hasPermission(UsrPermission.Permission.FUND_ADMIN)) {
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        if (!userDetail.hasPermission(UsrPermission.Permission.FUND_ADMIN)) {
             if (ObjectUtils.isEmpty(createFund.getAdminUsers()) && ObjectUtils.isEmpty(createFund.getAdminGroups())) {
                 Assert.isTrue(false, "Nebyl vybrán správce");
             }
@@ -1362,7 +1367,7 @@ public class ArrangementController {
 			        g -> userService.addFundAdminPermissions(null, g.getId(), newFund));
         }
 
-        return factoryVo.createFundVO(newFund, true);
+        return factoryVo.createFundVO(newFund, true, userDetail);
     }
 
     /**
@@ -1379,14 +1384,13 @@ public class ArrangementController {
 
         StaticDataProvider staticData = staticDataService.getData();
         List<ApScope> apScopes = ApFactory.transformList(arrFundVO.getApScopes(), s -> s.createEntity(staticData));
-        
+
         return factoryVo.createFundVO(
                 arrangementService.updateFund(
                         factoryDO.createFund(arrFundVO),
                         ruleSetRepository.findOne(ruleSetId),
                         apScopes
-                ),
-                false
+                ), false, userService.getLoggedUserDetail()
         );
     }
 
@@ -1636,6 +1640,46 @@ public class ArrangementController {
 
 
         return arrangementService.createTreeNodeFulltextList(nodeIds, version);
+    }
+
+
+    /**
+     * Seznam AS serazeny podle poctu vyhledanych JP.
+     * Jsou zohlednena opravneni uzivatele k AS.
+     * Vysledek vyhledavani je ulozeny v user session pro pouziti v {@link ArrangementController#fundFulltext(java.lang.Integer)}.
+     *
+     * @param input vstupni data pro fultextove vyhledavani
+     * @return seznam AS razeny podle poctu vyhledanych JP
+     * @see ArrangementController#fundFulltext(java.lang.Integer)
+     */
+    @RequestMapping(value = "/fundFulltext", method = RequestMethod.POST)
+    public List<ArrFundFulltextResult> fundFulltext(final @RequestBody FulltextFundRequest input) {
+        // vyhledáš, vrátíš seznam AS s počtem nalezených JP
+        // + uložíš si do session uživatele Map<fundId, List<nodeId>
+
+        UserDetail userDetail = userService.getLoggedUserDetail();
+
+        List<ArrFund> fundList = fundRepository.findFundByFulltext(null, userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL) ? null : userDetail.getId());
+
+        if (fundList.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return arrangementService.findFundsByFulltext(input.getSearchValue(), fundList);
+    }
+
+    /**
+     * Seznam uzlu daneho AS serazeny podle relevance pri vyhledani.
+     * Seznam je vytazeny z user session viz {@link ArrangementController#fundFulltext(cz.tacr.elza.controller.vo.FulltextFundRequest)}.
+     *
+     * @param fundId ID uzlu
+     * @return seznam uzlu daneho AS serazeny podle relevance pri vyhledani
+     * @see ArrangementController#fundFulltext(cz.tacr.elza.controller.vo.FulltextFundRequest)
+     */
+    @RequestMapping(value = "/fundFulltext/{fundId}", method = RequestMethod.GET)
+    public List<TreeNodeVO> fundFulltext(final @PathVariable(value = "fundId") Integer fundId) {
+        // vybereš ze session seznam nodeId podle AS a vytvoří TreeNodeVO
+        return arrangementService.getNodeListByFulltext(fundId);
     }
 
     /**

@@ -35,6 +35,9 @@ public class UsrPermissionVO {
     /** Scope, ke kterému se vztahuje oprávnění. */
     private ApScopeVO scope;
 
+    /** Protokol, ke kterému se vztahuje oprávnění. */
+    private WfIssueListBaseVO issueList;
+
     public UsrPermissionVO() {
 
     }
@@ -54,6 +57,10 @@ public class UsrPermissionVO {
         if (srcPerm.getUserControl() != null) {
             userControl = UsrUserVO.newInstance(srcPerm.getUserControl());
         }
+        if (srcPerm.getIssueList() != null) {
+            issueList = WfIssueListBaseVO.newInstance(srcPerm.getIssueList());
+        }
+
         groupId = srcPerm.getGroupId();
         if (inheritedPermission) {
             inherited = true;
@@ -125,6 +132,14 @@ public class UsrPermissionVO {
         this.userControl = userControl;
     }
 
+    public WfIssueListBaseVO getIssueList() {
+        return issueList;
+    }
+
+    public void setIssueList(WfIssueListBaseVO issueList) {
+        this.issueList = issueList;
+    }
+
     public UsrPermission createEntity(StaticDataProvider staticData) {
         UsrPermission entity = new UsrPermission();
 
@@ -141,6 +156,9 @@ public class UsrPermissionVO {
         }
         if (userControl != null) {
             entity.setUserControl(userControl.createEntity());
+        }
+        if (issueList != null) {
+            entity.setIssueList(issueList.createEntity());
         }
         return entity;
     }

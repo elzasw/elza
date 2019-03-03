@@ -30,22 +30,13 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
     private FundRepository fundRepository;
 
     @Override
-	public List<ArrFundOpenVersion> findByFulltext(final String fulltext, final int max,
-	        final Integer userId) {
+    public List<ArrFundOpenVersion> findByFulltext(final String fulltext, final int max, final Integer userId) {
 
         String hql = "SELECT f.fundId, max(v) FROM arr_fund f JOIN f.versions v "
-		        + createFulltextWhereClause(fulltext, userId);
-        hql += " GROUP BY f.fundId, f.name ORDER BY f.name";
+                + createFulltextWhereClause(fulltext, userId)
+                + " GROUP BY f.fundId, f.name ORDER BY f.name";
 
-        Query query = entityManager.createQuery(hql);
-        if (StringUtils.isNotBlank(fulltext)) {
-            String text = "%" + fulltext + "%";
-            query.setParameter("text", text.toLowerCase());
-        }
-
-		if (userId != null) {
-			query.setParameter("userId", userId);
-        }
+        Query query = createFulltextQuery(hql, fulltext, userId);
 
         query.setMaxResults(max);
         List<Object[]> arrayList = query.getResultList();
@@ -59,49 +50,58 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
     }
 
     @Override
-	public Integer findCountByFulltext(final String fulltext, final Integer userId) {
-		String hql = "SELECT count(f) FROM arr_fund f " + createFulltextWhereClause(fulltext, userId);
-
-        Query query = entityManager.createQuery(hql);
-
-        if (StringUtils.isNotBlank(fulltext)) {
-            String text = "%" + fulltext + "%";
-            query.setParameter("text", text.toLowerCase());
-        }
-
-		if (userId != null) {
-			query.setParameter("userId", userId);
-        }
-
+    public Integer findCountByFulltext(final String fulltext, final Integer userId) {
+        String hql = "SELECT count(f) FROM arr_fund f " + createFulltextWhereClause(fulltext, userId);
+        Query query = createFulltextQuery(hql, fulltext, userId);
         return Math.toIntExact((long) query.getSingleResult());
+    }
 
+    @Override
+    public List<ArrFund> findFundByFulltext(final String fulltext, final Integer userId) {
+        String hql = "SELECT f FROM arr_fund f " + createFulltextWhereClause(fulltext, userId);
+        Query query = createFulltextQuery(hql, fulltext, userId);
+        return query.getResultList();
     }
 
 	/**
 	 * Vytvoří WHERE podmínky pro dotazy vyhledávání podle fulltextu.
 	 *
-	 * @param fulltext
-	 *            fulltext
-	 * @param readAllFunds
-	 * @param user
+	 * @param fulltext fulltext
 	 * @return WHERE podmínka (pouze pokud je nastaven fulltext)
 	 */
 	private String createFulltextWhereClause(final String fulltext, Integer userId) {
-		String result = "";
+
+		StringBuilder result = new StringBuilder(256);
+
 		if (StringUtils.isNotBlank(fulltext)) {
-			result += " WHERE LOWER(f.name) LIKE :text OR LOWER(f.internalCode) LIKE :text";
+			result.append(" WHERE LOWER(f.name) LIKE :text OR LOWER(f.internalCode) LIKE :text");
 		}
 
 		if (userId != null) {
-			if (StringUtils.isBlank(result)) {
-				result += " WHERE ";
+			if (result.length() == 0) {
+				result.append(" WHERE ");
 			} else {
-				result += " AND ";
+				result.append(" AND ");
 			}
-			result += " f IN (SELECT pv.fund FROM usr_permission_view pv WHERE userId = :userId)";
+			result.append(" f IN (SELECT pv.fund FROM usr_permission_view pv WHERE userId = :userId)");
 		}
 
-		return result;
+		return result.toString();
+	}
+
+	private Query createFulltextQuery(String hql, String fulltext, Integer userId) {
+
+		Query query = entityManager.createQuery(hql);
+
+		if (StringUtils.isNotBlank(fulltext)) {
+			String text = "%" + fulltext + "%";
+			query.setParameter("text", text.toLowerCase());
+		}
+
+		if (userId != null) {
+			query.setParameter("userId", userId);
+		}
+		return query;
 	}
 
 	@Override

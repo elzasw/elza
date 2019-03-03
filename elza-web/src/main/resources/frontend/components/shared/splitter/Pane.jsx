@@ -3,7 +3,12 @@ import ReactDOM from 'react-dom';
 import './Splitter.less'
 import AbstractReactComponent from "../../AbstractReactComponent";
 
+/**
+ * Pane
+ * state je upravován z venku pomocí ref
+ */
 class Pane extends AbstractReactComponent {
+
     state = {};
 
     render() {

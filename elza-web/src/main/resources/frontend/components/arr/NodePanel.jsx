@@ -696,6 +696,25 @@ return true
         );
     }
 
+    renderIssues(item) {
+        if (!item.issues || item.issues.length < 1) {
+            return null
+        }
+
+        return (
+            <TooltipTrigger
+                    content={<span>{item.issues.map((i: IssueVO) => <div key={i.id}>#{i.number} - {i.description}</div>)}</span>}
+                    holdOnHover
+                    placement="auto"
+                    className="issue"
+                    showDelay={50}
+                    hideDelay={0}
+                >
+                <Icon glyph="fa-commenting"/>
+            </TooltipTrigger>
+        );
+    }
+
     /**
      * Renderování Accordion.
      * @param form {Object} editační formulář, pokud je k dispozici (k dispozici je, pokud je nějaká položka Accordion vybraná)
@@ -726,6 +745,7 @@ return true
                 const item = node.childNodes[a];
 
                 const state = this.renderState(item);
+                const issues = this.renderIssues(item);
                 const accordionLeft = item.accordionLeft ? item.accordionLeft : i18n('accordion.title.left.name.undefined', item.id)
                 const accordionRight = item.accordionRight ? item.accordionRight : ''
                 const referenceMark = <span className="reference-mark">{createReferenceMarkString(item)}</span>
@@ -752,6 +772,7 @@ return true
                                     <div title={accordionRight} className='accordion-header-right' key='accordion-header-right'>
                                         <span className="title" title={accordionRight}>{accordionRight}</span>
                                     </div>
+                                    {issues}
                                     {state}
                                     {digitizationInfo}
                                 </div>
@@ -774,6 +795,7 @@ return true
                                     <div title={accordionRight} className='accordion-header-right' key='accordion-header-right'>
                                         <span className="title" title={accordionRight}>{accordionRight}</span>
                                     </div>
+                                    {issues}
                                     {state}
                                     {digitizationInfo}
                                 </div>

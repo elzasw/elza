@@ -55,3 +55,4 @@ elza-web/config/elza.yaml
 /run.bat
 /elza-core/src/main/resources/xsd/META-INF/*.episode
 /.metadata/
+/elza-web/cz.tacr.elza.domain.ArrDescItem
