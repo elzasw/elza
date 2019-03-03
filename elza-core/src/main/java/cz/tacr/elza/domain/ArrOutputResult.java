@@ -25,11 +25,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"outputDefinitionId"}))
 public class ArrOutputResult {
+
+    public static final String TABLE_NAME = "arr_output_result";
 	
 	/**
 	 * Name of field with link to output definition
 	 */
-	public static final String OUTPUT_DEFINITION="outputDefinition"; 
+    public static final String OUTPUT_DEFINITION = "outputDefinition";
+
+    public static final String FIELD_CHANGE_ID = "changeId";
 
     @Id
     @GeneratedValue
@@ -44,7 +48,7 @@ public class ArrOutputResult {
     private RulTemplate template;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "changeId", nullable = false)
+    @JoinColumn(name = FIELD_CHANGE_ID, nullable = false)
     private ArrChange change;
 
     @OneToMany(mappedBy = "outputResult", fetch = FetchType.LAZY)

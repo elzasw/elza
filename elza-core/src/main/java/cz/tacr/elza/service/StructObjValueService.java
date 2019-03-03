@@ -79,7 +79,7 @@ public class StructObjValueService {
 
     private static final Logger logger = LoggerFactory.getLogger(StructObjValueService.class);
 
-    private static int QUEUE_CHECK_TIME_INTERVAL = 10000; // 10s
+    private static int QUEUE_CHECK_TIME_INTERVAL = 60000; // 60s
 
     private final EntityManager em;
     private final StructuredItemRepository structureItemRepository;
@@ -303,6 +303,8 @@ public class StructObjValueService {
      */
     @Transactional(TxType.REQUIRED)
     public boolean processBatch() {
+        long startTime = System.currentTimeMillis();
+
         Pageable pageable = new PageRequest(0, 100);
         // find first items
         Page<ArrSobjVrequest> page = sobjVrequestRepository.findAll(pageable);
@@ -328,7 +330,11 @@ public class StructObjValueService {
         // drop processed items
         sobjVrequestRepository.delete(delItems);
 
-        return doNextCheck || page.hasNext();
+        boolean result = doNextCheck || page.hasNext();
+
+        long finishTime = System.currentTimeMillis();
+        logger.debug("Processed StructObjs, count={}, time={} ms", items.size(), (finishTime - startTime));
+        return result;
     }
 
     /**
@@ -495,7 +501,7 @@ public class StructObjValueService {
                                         final List<ArrStructuredItem> structureItems) {
         ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(structureData.getFundId());
         List<RulItemTypeExt> structureItemTypes = ruleService
-                .getStructureItemTypesInternal(structureData.getStructuredType(), fundVersion, structureItems);
+                .getStructureItemTypesInternal(structureData.getStructuredTypeId(), fundVersion, structureItems);
         List<RulItemTypeExt> requiredItemTypes = structureItemTypes.stream()
                 .filter(itemType -> RulItemType.Type.REQUIRED == itemType.getType()).collect(Collectors.toList());
         List<RulItemTypeExt> impossibleItemTypes = structureItemTypes.stream()
@@ -581,7 +587,7 @@ public class StructObjValueService {
             rulPackage = structureExtensionDefinition.getRulPackage();
         } else {
             List<RulStructureDefinition> structureDefinitions = structureDefinitionRepository
-                    .findByStructuredTypeAndDefTypeOrderByPriority(structureType,
+                    .findByStructTypeAndDefTypeOrderByPriority(structureType,
                                                                    RulStructureDefinition.DefType.SERIALIZED_VALUE);
             if (structureDefinitions.size() > 0) {
                 RulStructureDefinition structureDefinition = structureDefinitions.get(structureDefinitions.size() - 1);

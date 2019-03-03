@@ -23,10 +23,14 @@ import cz.tacr.elza.service.importnodes.vo.NodeRegister;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrNodeRegister implements NodeRegister {
 
+    public static final String TABLE_NAME = "arr_node_register";
+
     public static final String FIELD_NODE_ID = "nodeId";
     public static final String FIELD_NODE = "node";
     public static final String FIELD_RECORD = "record";
+    public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
     public static final String FIELD_DELETE_CHANGE = "deleteChange";
+    public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
 
     @Id
     @GeneratedValue
@@ -51,18 +55,18 @@ public class ArrNodeRegister implements NodeRegister {
 
     @RestResource(exported = false)
 	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "createChangeId", nullable = false)
+    @JoinColumn(name = FIELD_CREATE_CHANGE_ID, nullable = false)
     private ArrChange createChange;
 
-    @Column(name = "createChangeId", updatable = false, insertable = false)
+    @Column(name = FIELD_CREATE_CHANGE_ID, updatable = false, insertable = false)
     private Integer createChangeId;
 
     @RestResource(exported = false)
 	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "deleteChangeId", nullable = true)
+    @JoinColumn(name = FIELD_DELETE_CHANGE_ID, nullable = true)
     private ArrChange deleteChange;
 
-    @Column(name = "deleteChangeId", updatable = false, insertable = false)
+    @Column(name = FIELD_DELETE_CHANGE_ID, updatable = false, insertable = false)
     private Integer deleteChangeId;
 
     public Integer getNodeRegisterId() {

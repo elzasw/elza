@@ -41,4 +41,7 @@ public interface LockedValueRepository extends JpaRepository<ArrLockedValue, Int
     ArrLockedValue findByFundAndItemTypeAndValue(@Param("fund") ArrFund fund,
                                                  @Param("itemType") RulItemType itemType,
                                                  @Param("unitId") String value);
+
+    @Modifying
+    void deleteByFund(ArrFund fund);
 }

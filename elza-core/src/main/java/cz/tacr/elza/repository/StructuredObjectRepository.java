@@ -67,6 +67,8 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
     
     List<ArrStructuredObject> findByFund(ArrFund fund);
 
+    @Modifying
+    @Query("DELETE FROM arr_structured_object so WHERE so.fund = ?1")
     void deleteByFund(ArrFund fund);
 
     @Query("SELECT DISTINCT so FROM arr_structured_object so " +

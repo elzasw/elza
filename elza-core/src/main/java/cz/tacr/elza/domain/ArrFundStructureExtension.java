@@ -27,7 +27,11 @@ public class ArrFundStructureExtension {
 
     public final static String CREATE_CHANGE = "createChange";
 
+    public final static String CREATE_CHANGE_ID = "createChangeId";
+
     public final static String DELETE_CHANGE = "deleteChange";
+
+    public final static String DELETE_CHANGE_ID = "deleteChangeId";
 
     @Id
     @GeneratedValue
@@ -35,11 +39,11 @@ public class ArrFundStructureExtension {
     private Integer fundStructureExtensionId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "createChangeId", nullable = false)
+    @JoinColumn(name = CREATE_CHANGE_ID, nullable = false)
     private ArrChange createChange;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "deleteChangeId")
+    @JoinColumn(name = DELETE_CHANGE_ID)
     private ArrChange deleteChange;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulStructuredTypeExtension.class)

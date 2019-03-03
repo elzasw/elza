@@ -40,7 +40,7 @@ public abstract class JaxbElementHandler<T> extends ContextAwareElementHandler {
         // JAXB unmarshaller consumes end element
     }
 
-    protected Unmarshaller createUnmarshaller(JAXBContext jaxbContext) throws JAXBException {
+    protected Unmarshaller createUnmarshaller() throws JAXBException {
         if (jaxbContext == null) {
             jaxbContext = JAXBContext.newInstance(getType());
         }
@@ -48,7 +48,7 @@ public abstract class JaxbElementHandler<T> extends ContextAwareElementHandler {
     }
 
     protected JAXBElement<T> unmarshalElement(XMLEventReader eventReader) throws JAXBException {
-        Unmarshaller unmarshaller = createUnmarshaller(jaxbContext);
+        Unmarshaller unmarshaller = createUnmarshaller();
         return unmarshaller.unmarshal(eventReader, getType());
     }
 

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -46,5 +47,9 @@ public interface NodeConformityErrorRepository extends JpaRepository<ArrNodeConf
     @Query("SELECT c FROM arr_node_conformity_error c JOIN FETCH c.nodeConformity n WHERE n.fundVersion = ?1 AND n.state = 'ERR'")
     List<ArrNodeConformityError> findErrorsByFundVersion(ArrFundVersion fundVersion);
 
+    @Modifying
+    @Query("DELETE FROM arr_node_conformity_error nc WHERE nc.nodeConformity IN (SELECT n FROM arr_node_conformity n WHERE n.node.fund = ?1)")
     void deleteByNodeConformityNodeFund(ArrFund fund);
+
+    void deleteByNodeConformityNodeIdIn(List<Integer> nodeIds);
 }
