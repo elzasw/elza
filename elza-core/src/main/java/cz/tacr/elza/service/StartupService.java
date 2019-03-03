@@ -9,6 +9,7 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import org.apache.commons.collections4.CollectionUtils;
 import cz.tacr.elza.search.DbQueueProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,11 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.search.IndexWorkProcessor;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
@@ -46,6 +51,14 @@ public class StartupService implements SmartLifecycle {
     private final NodeRepository nodeRepository;
 
     private final FundVersionRepository fundVersionRepository;
+
+    private final VisiblePolicyRepository visiblePolicyRepository;
+
+    private final NodeConformityErrorRepository nodeConformityErrorRepository;
+
+    private final NodeConformityMissingRepository nodeConformityMissingRepository;
+
+    private final NodeConformityRepository nodeConformityRepository;
 
     private final UpdateConformityInfoService updateConformityInfoService;
 
@@ -76,19 +89,23 @@ public class StartupService implements SmartLifecycle {
     private boolean running;
 
     @Autowired
-    public StartupService(NodeRepository nodeRepository,
-                          FundVersionRepository fundVersionRepository,
-                          UpdateConformityInfoService updateConformityInfoService,
-                          BulkActionRunRepository bulkActionRunRepository,
-                          OutputServiceInternal outputServiceInternal,
-                          RequestQueueService requestQueueService,
-                          NodeCacheService nodeCacheService,
-                          StaticDataService staticDataService,
-                          BulkActionConfigManager bulkActionConfigManager,
-                          EntityManager em,
-                          ApNameRepository apNameRepository,
+    public StartupService(final NodeRepository nodeRepository,
+                          final FundVersionRepository fundVersionRepository,
+                          final UpdateConformityInfoService updateConformityInfoService,
+                          final BulkActionRunRepository bulkActionRunRepository,
+                          final OutputServiceInternal outputServiceInternal,
+                          final RequestQueueService requestQueueService,
+                          final NodeCacheService nodeCacheService,
+                          final StaticDataService staticDataService,
+                          final BulkActionConfigManager bulkActionConfigManager,
+                          final EntityManager em,
+                          final ApNameRepository apNameRepository,
                           final AccessPointService accessPointService,
                           final AccessPointGeneratorService accessPointGeneratorService,
+                          final NodeConformityErrorRepository nodeConformityErrorRepository,
+                          final NodeConformityMissingRepository nodeConformityMissingRepository,
+                          final NodeConformityRepository nodeConformityRepository,
+                          final VisiblePolicyRepository visiblePolicyRepository,
                           IndexWorkProcessor indexWorkProcessor,
                           final ApplicationContext applicationContext) {
         this.nodeRepository = nodeRepository;
@@ -104,6 +121,10 @@ public class StartupService implements SmartLifecycle {
         this.em = em;
         this.accessPointService = accessPointService;
         this.accessPointGeneratorService = accessPointGeneratorService;
+        this.nodeConformityErrorRepository = nodeConformityErrorRepository;
+        this.nodeConformityMissingRepository = nodeConformityMissingRepository;
+        this.nodeConformityRepository = nodeConformityRepository;
+        this.visiblePolicyRepository = visiblePolicyRepository;
         this.indexWorkProcessor = indexWorkProcessor;
         this.applicationContext = applicationContext;
     }
@@ -114,6 +135,7 @@ public class StartupService implements SmartLifecycle {
     @Override
     @Transactional(value = TxType.REQUIRES_NEW)
     public void start() {
+        long startTime = System.currentTimeMillis();
         logger.info("Elza startup service ...");
 
         ApFulltextProviderImpl fulltextProvider = new ApFulltextProviderImpl(apNameRepository);
@@ -122,7 +144,7 @@ public class StartupService implements SmartLifecycle {
         startInTransaction();
 
         running = true;
-        logger.info("Elza startup finished");
+        logger.info("Elza startup finished in {} ms", System.currentTimeMillis() - startTime);
     }
 
     @Override
@@ -166,6 +188,7 @@ public class StartupService implements SmartLifecycle {
         clearBulkActions();
         clearTempStructureData();
         clearTempAccessPoint();
+        clearOrphanedNodes();
         bulkActionConfigManager.load();
         syncNodeCacheService();
         startNodeValidation();
@@ -173,6 +196,26 @@ public class StartupService implements SmartLifecycle {
         indexWorkProcessor.startIndexing();
         runQueuedRequests();
         runQueuedAccessPoints();
+    }
+
+    private void clearOrphanedNodes() {
+        logger.debug("Finding orpahed nodes ...");
+        List<Integer> unusedNodes = nodeRepository.findUnusedNodeIds();
+        if (CollectionUtils.isEmpty(unusedNodes)) {
+            logger.debug("Orpahed nodes not found. It is OK");
+            return;
+        }
+        // log findings
+        logger.info("Found orpahed nodes, count = {}", unusedNodes.size());
+
+        // try to fix issue by dropping these nodes
+        visiblePolicyRepository.deleteByNodeIdIn(unusedNodes);
+        nodeConformityErrorRepository.deleteByNodeConformityNodeIdIn(unusedNodes);
+        nodeConformityMissingRepository.deleteByNodeConformityNodeIdIn(unusedNodes);
+        nodeConformityRepository.deleteByNodeIdIn(unusedNodes);
+        nodeCacheService.deleteNodes(unusedNodes);
+        nodeRepository.deleteByNodeIdIn(unusedNodes);
+        logger.info("Orpahed nodes deleted.");
     }
 
     /**

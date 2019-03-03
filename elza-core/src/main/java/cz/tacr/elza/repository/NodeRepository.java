@@ -21,11 +21,31 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
             "WHERE l.deleteChange IS NULL AND n.fund = ?1")
     List<Integer> findNodeIdsForFondWithPolicy(ArrFund fund);
 
+    /* Basic query:
+     * 
+       select distinct n.node_id from arr_node n 
+       left join arr_level l on l.node_id = n.node_id
+       where n.fund_id = ... and l.level_id is null
+     */
+    @Query("SELECT distinct n.nodeId FROM arr_node n " +
+            "LEFT JOIN n.levels l " +
+            "WHERE n.fund = ?1 AND l.levelId IS NULL")
+    List<Integer> findUnusedNodeIdsByFund(ArrFund fund);
+
+    @Query("SELECT distinct n.nodeId FROM arr_node n " +
+            "LEFT JOIN n.levels l " +
+            "WHERE l.levelId IS NULL")
+    List<Integer> findUnusedNodeIds();
+
     ArrNode findOneByUuid(String uuid);
 
     List<ArrNode> findByUuid(Collection<String> uuids);
 
     @Modifying
+    void deleteByNodeIdIn(Collection<Integer> nodeIds);
+
+    @Modifying
+    @Query("DELETE FROM arr_node n WHERE n.fund = ?1")
     void deleteByFund(ArrFund fund);
 
     @Query("select distinct di.node.nodeId" +

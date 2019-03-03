@@ -45,6 +45,8 @@ public class UpdateConformityInfoWorker implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(UpdateConformityInfoWorker.class);
 
+    private static final int MAX_PROCESSED_NODES = 100;
+
     @Autowired
     private LevelRepository levelRepository;
 
@@ -98,6 +100,7 @@ public class UpdateConformityInfoWorker implements Runnable {
         Set<Integer> processedNodeIds = new LinkedHashSet<>();
         try {
             ArrFundVersion version = getFundVersion();
+            long startTime = System.currentTimeMillis();
             while (true) {
                 ArrNode node;
                 synchronized (this) {
@@ -107,10 +110,17 @@ public class UpdateConformityInfoWorker implements Runnable {
                     node = getNextNode();
                 }
 
-                if (node == null) {
+                if (node == null || processedNodeIds.size() >= MAX_PROCESSED_NODES) {
+                    logger.debug("Dokoncena revalidace uzlu, pocet: {}, cas: {} ms", processedNodeIds.size(), System
+                            .currentTimeMillis() - startTime);
                     eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.CONFORMITY_INFO, version,
                             processedNodeIds.toArray(new Integer[processedNodeIds.size()])));
-                    break;
+                    // terminate if last node
+                    if (node == null) {
+                        break;
+                    }
+                    startTime = System.currentTimeMillis();
+                    processedNodeIds.clear();
                 }
                 processNode(node, version);
                 processedNodeIds.add(node.getNodeId());

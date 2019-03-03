@@ -22,13 +22,17 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * Úroveň hierarchického popisu. Úroveň sama o sobě není nositelem hodnoty. Vlastní hodnoty prvků
  * popisu jsou zapsány v atributech archivního popisu {@link ArrDescItem}.
  *
- * @author by Ondřej Buriánek, burianek@marbes.cz.
- * @since 22.7.15
  */
 @Entity(name = "arr_level")
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"position", "nodeIdParent", "deleteChangeId"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrLevel {
+
+    public static final String TABLE_NAME = "arr_level";
+
+    public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
+
+    public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
 
     @Id
     @GeneratedValue
@@ -53,12 +57,12 @@ public class ArrLevel {
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "createChangeId", nullable = false)
+    @JoinColumn(name = FIELD_CREATE_CHANGE_ID, nullable = false)
     private ArrChange createChange;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "deleteChangeId", nullable = true)
+    @JoinColumn(name = FIELD_DELETE_CHANGE_ID, nullable = true)
     private ArrChange deleteChange;
 
     @Column(nullable = false)
