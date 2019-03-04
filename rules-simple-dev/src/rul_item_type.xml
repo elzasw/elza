@@ -406,5 +406,8 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
+        <item-aptypes>
+            <item-aptype register-type="PERSON_INDIVIDUAL"/>
+        </item-aptypes>
     </item-type>
 </item-types>

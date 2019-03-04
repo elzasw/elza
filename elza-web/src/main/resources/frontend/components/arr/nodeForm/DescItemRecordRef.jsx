@@ -57,9 +57,11 @@ class DescItemRecordRef extends AbstractReactComponent {
                 }));
                 this.dispatch(partyDetailClear());
             }
+            console.warn(this.props.itemTypeId)
             this.dispatch(registryListFilter({
                 ...registryList.filter,
                 registryTypeId: null,
+                itemTypeId: this.props.itemTypeId,
                 text: filterText,
                 itemSpecId: hasSpecification ? descItem.descItemSpecId : null
             }));
