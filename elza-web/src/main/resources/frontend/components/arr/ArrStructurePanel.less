@@ -22,21 +22,18 @@
                 background-color: @node-form-actions-hover;
             }
 
+            &--multiselect {
+                &:focus {
+                    outline: none !important;
+                    box-shadow: none;
+                }
+            }
+
             .icon {
                 color: #000000;
                 height: 1.35em;
                 width: 1.35em;
                 vertical-align: middle;
-            }
-        }
-
-        .multiselect-checkbox {
-            margin-top: 0;
-            padding-left: 4px;
-
-            input {
-                position: relative;
-                margin: 0 5px 0 0; 
             }
         }
     }
@@ -49,9 +46,26 @@
 
     .list {
         flex: 1 1 auto;
+
+        &-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
         .listbox-item > div {
             padding: 2px 5px;
             display: flex;
+
+            .multiselect-checkbox {
+                margin-top: 0;
+                padding-left: 0;
+    
+                input {
+                    position: relative;
+                    margin: 0 10px 0 0; 
+                }
+            }
 
             .structure-name {
                 display: flex;
@@ -76,6 +90,13 @@
         }
     }
 
+    .selection {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 5px 0;
+    }
+
     .floating-menu {
         border: 1px solid #ccc;
         box-shadow: 2px 5px 12px rgba(0,0,0,0.125);
@@ -92,7 +113,6 @@
             border-top: 1px solid #ccc;
         }
     }
-
 }
 .error-message {
     //background-color:red;

@@ -1,5 +1,5 @@
 import React from 'react';
-import {AbstractReactComponent, i18n, Icon, Loading, ListBox, FormInput, TooltipTrigger} from 'components/shared';
+import {AbstractReactComponent, i18n, Icon, Loading, CheckListBox, FormInput, TooltipTrigger, Utils} from 'components/shared';
 import FloatingMenu from "components/shared/floating-menu/FloatingMenu.jsx";
 import {objectById} from "shared/utils";
 import {Button, Checkbox, DropdownButton, FormControl, MenuItem} from 'react-bootstrap';
@@ -12,7 +12,6 @@ import {
 } from "../../actions/arr/structureType";
 import storeFromArea from "../../shared/utils/storeFromArea";
 import debounce from "../../shared/utils/debounce";
-
 import './ArrStructurePanel.less'
 import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
 import AddStructureDataForm from "./structure/AddStructureDataForm";
@@ -23,6 +22,8 @@ import UpdateMultipleSub from "./structure/UpdateMultipleSub";
 import {addToastrWarning} from "../shared/toastr/ToastrActions";
 import DescItemFactory from "components/arr/nodeForm/DescItemFactory.jsx";
 import ListPager from "components/shared/listPager/ListPager";
+
+import defaultKeymap from './ArrStructurePanelKeymap.jsx';
 
 class ArrStructurePanel extends AbstractReactComponent {
     static propTypes = {
@@ -44,8 +45,14 @@ class ArrStructurePanel extends AbstractReactComponent {
             isOpen: false,
             coordinates: {x:0,y:0}
         },
-        multiselectAllowed: true
+        multiselect: true,
+        selectedItems: []
     };
+
+    constructor(props) {
+        super(props);
+        this.bindMethods('handleShortcuts');
+    }
 
     componentDidMount() {
         const {store:{filter}} = this.props;
@@ -57,6 +64,8 @@ class ArrStructurePanel extends AbstractReactComponent {
                 assignable: ""
             });
         }
+
+        Utils.addShortcutManager(this, defaultKeymap);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -338,9 +347,20 @@ class ArrStructurePanel extends AbstractReactComponent {
         const {item, ...otherProps} = props;
         const hasError = item.state === 'ERROR' && item.errorDescription;
         const {complement} = item;
+        const { multiselect, selectedItems } = this.state;
 
         return (
             <div {...otherProps} onContextMenu={this.openContextMenu.bind(this, item)}>
+                {multiselect &&  
+                    <Checkbox
+                        key={props.index}
+                        className="multiselect-checkbox"
+                        inline
+                        name={item.value}
+                        checked={selectedItems.indexOf(props.index) !== -1}
+                        onChange={(e) =>  this.handleSelectItem(props.index)}
+                    />
+                }
                 <div className="structure-name">
                     {item.value || <em>{i18n("arr.structure.list.item.noValue")}</em>}
                     {complement &&
@@ -362,10 +382,43 @@ class ArrStructurePanel extends AbstractReactComponent {
         )
     }
 
+    handleSelectItem = (itemIndex) => {
+        let {selectedItems} = this.state;
+
+        const exists = selectedItems.includes(itemIndex);
+
+        let result = selectedItems;
+        if (exists) {
+            result = selectedItems.filter((s) => { return s !== itemIndex })
+        } else {
+            result.push(itemIndex);
+        }
+
+        this.setState({selectedItems: result});
+    }
+
+    handleMultiselect = () => {
+        const {multiselect} = this.state;
+        this.setState({multiselect: !multiselect});
+    }
+
+    handleShortcuts(action, e) {
+        console.log("#handleShortcuts ArrStructurePanel", '[' + action + ']', this);
+        e.preventDefault();
+        switch (action) {
+            case 'openContextMenu':
+                this.openContextMenu(this, e);
+                break;
+            default:
+                super.handleShortcuts(action, e);
+        }
+    }
+
     render() {
         const {rows, filter, fetched, count} = this.props.store;
         const {readMode, maxSize} = this.props;
-        const {activeIndexes, contextMenu, multiselectAllowed} = this.state;
+        const {activeIndexes, contextMenu, multiselect, selectedItems} = this.state;
+
         if (!fetched) {
             return <Loading />
         }
@@ -379,16 +432,14 @@ class ArrStructurePanel extends AbstractReactComponent {
                 <Button bsStyle="default" onClick={this.handleUpdate} disabled={activeIndexes.length < 1}>
                     <Icon glyph="fa-edit" />
                 </Button>
-                {/*<Checkbox
-                    className="multiselect-checkbox"
-                    inline
-                    checked={this.state.multiselectAllowed}
-                    onChange={(e) => {
-                        this.setState({multiselectAllowed: e.target.checked});
-                    }}
-                >
-                    Výběr více
-                </Checkbox>*/}
+                <Button  className="btn--multiselect" bsStyle="default" onClick={this.handleMultiselect}>
+                    <Icon glyph={multiselect ? "fa-check-square-o" : "fa-square-o"} />
+                </Button>
+                {multiselect &&
+                    <Button bsStyle="default" onClick={(e) => this.openContextMenu(this, e)}>
+                        <Icon glyph="fa-bars" />
+                    </Button>
+                }
                 <Button bsStyle="default" onClick={this.handleExtensionsSettings} className={"pull-right"}>
                     <Icon glyph="fa-cogs" />
                 </Button>
@@ -403,15 +454,31 @@ class ArrStructurePanel extends AbstractReactComponent {
                 </div>
                 <FormInput className="text-filter" name={"text"} type="text" onChange={({target: {value}}) => this.filter({text:value})} value={filter.text} placeholder={i18n("arr.structure.filter.text.placholder")}/>
             </div>
-            {rows && rows.length > 0 ? <ListBox
-                className="list"
-                items={rows}
-                onChangeSelection={this.handleChangeSelection}
-                renderItemContent={this.renderItemContent}
-                multiselect={multiselectAllowed}
-            /> : <div className="list listbox-wrapper no-result text-center">{i18n('search.action.noResult')}</div>}
-             {contextMenu.isOpen && this.renderContextMenu()}
-             {count > maxSize && 
+            {rows && rows.length > 0 
+                ? <div className="list-container">
+                    <CheckListBox
+                        className="list"
+                        items={rows}
+                        activeIndexes={selectedItems}
+                        onChangeSelection={this.handleChangeSelection}
+                        renderItemContent={this.renderItemContent}
+                        multiselect={multiselect}
+                    />
+                    {multiselect && 
+                        <div className="selection">
+                            <Button bsStyle="default" onClick={() => this.setState({selectedItems: rows.map((r, index) => index)})}>
+                                Vybrat vše
+                            </Button>
+                            <div className="selection-count">
+                                Vybráno: {selectedItems.length}
+                            </div>
+                        </div>
+                    }
+                </div>
+                : <div className="list listbox-wrapper no-result text-center">{i18n('search.action.noResult')}</div>
+            }
+            {contextMenu.isOpen && this.renderContextMenu()}
+            {count > maxSize && 
                 <ListPager
                     prev={this.handleFilterPrev}
                     next={this.handleFilterNext}
@@ -419,10 +486,8 @@ class ArrStructurePanel extends AbstractReactComponent {
                     maxSize={maxSize}
                     totalCount={count}
                 />
-             }
+            }
         </div>
-
-
     }
 }
 
