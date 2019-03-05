@@ -87,11 +87,9 @@ return true
         var activeNode = nodes[activeIndex];
         var activeTab = tabs[activeIndex];
 
-        const noTabs = !displayAccordion && tabs.length <= 1;
-
         return (
-            <Tabs.Container ref='tabs' className={`node-tabs-container ${noTabs ? 'node-no--tabs' : ''}`}>
-                {!noTabs &&
+            <Tabs.Container ref='tabs' className={`node-tabs-container ${tabs.length <= 1 ? 'node-no--tabs' : ''}`}>
+                {tabs.length > 1 &&
                     <Tabs.Tabs
                         closable
                         items={tabs} activeItem={activeTab}

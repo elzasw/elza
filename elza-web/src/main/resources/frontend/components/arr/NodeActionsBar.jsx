@@ -96,8 +96,8 @@ class NodeActionsBar extends AbstractReactComponent {
                     <AddNodeCross node={node} selectedSubNodeIndex={selectedSubNodeIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
                     <div className="button-wrap">
                         <div className="left-side">
+                            {!simplified &&
                             <Search
-                                disabled={simplified}
                                 tabIndex={-1}
                                 ref='search'
                                 className='search-input'
@@ -107,6 +107,7 @@ class NodeActionsBar extends AbstractReactComponent {
                                 onSearch={(value) => {this.dispatch(fundNodeSubNodeFulltextSearch(value))}}
                                 filter
                             />
+                            }
                         </div>
                         <div className="right-side">
                             <div>
