@@ -3,6 +3,7 @@ export {default as AbstractReactComponent} from 'components/AbstractReactCompone
 export * as ExceptionUtils from 'components/ExceptionUtils.jsx';
 export {default as i18n} from 'components/i18n.jsx';
 export {default as LongText} from 'components/LongText.jsx';
+export {default as CheckListBox} from 'components/shared/listbox/CheckListBox.jsx';
 export {default as ListBox} from 'components/shared/listbox/ListBox.jsx';
 export {default as ListBox2} from 'components/shared/listbox/ListBox2.jsx';
 export {default as LazyListBox} from 'components/shared/listbox/LazyListBox.jsx';

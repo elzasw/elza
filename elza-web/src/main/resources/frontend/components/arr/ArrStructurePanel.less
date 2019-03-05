@@ -47,44 +47,36 @@
     .list {
         flex: 1 1 auto;
 
-        &-container {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        .listbox-item > div {
-            padding: 2px 5px;
-            display: flex;
-
-            .multiselect-checkbox {
-                margin-top: 0;
-                padding-left: 0;
-    
-                input {
-                    position: relative;
-                    margin: 0 10px 0 0; 
+        .listbox-item {
+            .btn {
+                &--context-menu {
+                    display: none;
                 }
-            }
-
-            .structure-name {
-                display: flex;
-                flex-grow: 1;
-                
-                &-complement {
-                    margin-left: 5px;
-                    color: #aaa;
-                }
-            }
-
-            .context-menu-icon { 
-                display: none;
             }
 
             &:hover {
-                .context-menu-icon {
+                .btn {
+                    &--context-menu {
+                        display: flex;
+                        align-items: center;
+                    }
+                }
+            }
+
+            &> div {
+                width: 100%;
+                padding: 2px 5px;
+                display: flex;
+                align-items: center;
+    
+                .structure-name {
                     display: flex;
-                    align-items: center;
+                    flex-grow: 1;
+                    
+                    &-complement {
+                        margin-left: 5px;
+                        color: #aaa;
+                    }
                 }
             }
         }
