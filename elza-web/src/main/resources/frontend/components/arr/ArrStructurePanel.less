@@ -49,6 +49,10 @@
 
         .listbox-item {
             .btn {
+                height: auto;
+                padding: 0 6px 0 5px;
+                margin-left: 5px;
+
                 &--context-menu {
                     display: none;
                 }
@@ -59,6 +63,14 @@
                     &--context-menu {
                         display: flex;
                         align-items: center;
+
+                        .icon {
+                            -webkit-transform: rotate(90deg);
+                            -moz-transform: rotate(90deg);
+                            -o-transform: rotate(90deg);
+                            -ms-transform: rotate(90deg);
+                            transform: rotate(90deg);
+                        }
                     }
                 }
             }
@@ -77,6 +89,11 @@
                         margin-left: 5px;
                         color: #aaa;
                     }
+                }
+
+                .tooltip-trigger {
+                    display: flex;
+                    width: auto;
                 }
             }
         }

@@ -38,12 +38,12 @@ class ArrStructurePanel extends AbstractReactComponent {
     };
 
     state = {
-        activeIndexes: [],
+        checkedIndexes: [],
         contextMenu: {
             isOpen: false,
             coordinates: {x:0,y:0}
         },
-        multiselect: true
+        multiselect: false
     };
 
     componentDidMount() {
@@ -80,8 +80,8 @@ class ArrStructurePanel extends AbstractReactComponent {
         })
     };
 
-    handleChangeSelection = (activeIndexes) => {
-        this.setState({activeIndexes});
+    handleChangeSelection = (checkedIndexes) => {
+        this.setState({ checkedIndexes });
     };
 
     handleCreate = () => {
@@ -125,13 +125,14 @@ class ArrStructurePanel extends AbstractReactComponent {
      *
      */
     getActiveSelection = (clickedItem = null) => {
-        const {activeIndexes} = this.state;
-        if (activeIndexes) {
+        const {multiselect, checkedIndexes} = this.state;
+
+        if (checkedIndexes) {
             const {store: {rows}} = this.props;
-            if (activeIndexes.length === 1) { // Vybrána pouze 1 položka
-                return [rows[parseInt(activeIndexes[0])].id];
-            } else if (activeIndexes.length > 1) { // Vybráno více položek
-                return activeIndexes.map(i => rows[i].id);
+            if (checkedIndexes.length === 1) { // Vybrána pouze 1 položka
+                return [rows[parseInt(checkedIndexes[0])].id];
+            } else if (checkedIndexes.length > 1) { // Vybráno více položek
+                return checkedIndexes.map(i => rows[i].id);
             } else { // Vybráno 0 položek
                 console.warn("Invalid state");
                 return null;
@@ -215,18 +216,31 @@ class ArrStructurePanel extends AbstractReactComponent {
      */
     handleSetAssignable = (clickItem, assignableState) => {
         const {fundVersionId} = this.props;
-        const ids = this.getActiveSelection(clickItem);
+        const selection = this.getActiveSelection(clickItem);
+        const ids = selection ? this.getActiveSelection(clickItem) : [clickItem.id];
+
         WebApi.setAssignableStructureDataList(fundVersionId, assignableState, ids).then(() => {
             this.props.dispatch(structureTypeInvalidate());
         });
         this.closeContextMenu();
     };
 
-    handleDelete = ({id}) => {
+    deleteItem = (itemId) => {
         const {fundVersionId} = this.props;
-        WebApi.deleteStructureData(fundVersionId, id).then(() => {
+        WebApi.deleteStructureData(fundVersionId, itemId).then(() => {
             this.props.dispatch(structureTypeInvalidate());
         });
+    };
+
+    handleDelete = (clickItem) => {
+        const ids = this.getActiveSelection(clickItem);
+
+        if (ids) {
+            ids.forEach((id) => this.deleteItem(id));
+        } else {
+            this.deleteItem(clickItem.id);
+        }
+
         this.closeContextMenu();
     };
 
@@ -260,6 +274,7 @@ class ArrStructurePanel extends AbstractReactComponent {
     }
 
     renderContextMenu = () => {
+        const { filter } = this.props.store;
         const {coordinates, node} = this.state.contextMenu;
         const {readMode} = this.props;
 
@@ -268,10 +283,9 @@ class ArrStructurePanel extends AbstractReactComponent {
         if (readMode) {
             menuParts.push(<div key="show" className="item" onClick={this.handleUpdate.bind(this, node)}>{i18n("arr.structure.item.contextMenu.show")}</div>);
         } else {
-            if(node.assignable){
+            if(node && node.assignable || (filter.assignable === "true" || filter.assignable === "")){
                 menuParts.push(<div key="changeToClosed" className="item" onClick={this.handleSetAssignable.bind(this, node, false)}>{i18n("arr.structure.item.contextMenu.changeToClosed")}</div>);
-            }
-            else {
+            } else {
                 menuParts.push(<div key="changeToOpen" className="item" onClick={this.handleSetAssignable.bind(this, node, true)}>{i18n("arr.structure.item.contextMenu.changeToOpen")}</div>);
             }
             menuParts.push(<div key="d1"  className="divider" />);
@@ -369,7 +383,7 @@ class ArrStructurePanel extends AbstractReactComponent {
     render() {
         const {rows, filter, fetched, count} = this.props.store;
         const {readMode, maxSize} = this.props;
-        const {activeIndexes, contextMenu, multiselect} = this.state;
+        const {checkedIndexes, contextMenu, multiselect} = this.state;
 
         if (!fetched) {
             return <Loading />
@@ -381,14 +395,11 @@ class ArrStructurePanel extends AbstractReactComponent {
                     <MenuItem eventKey="1" onClick={this.handleCreate}>{i18n("arr.structure.addOne")}</MenuItem>
                     <MenuItem eventKey="2" onClick={this.handleCreateMulti}>{i18n("arr.structure.addMany")}</MenuItem>
                 </DropdownButton>
-                <Button bsStyle="default" onClick={this.handleUpdate} disabled={activeIndexes.length < 1}>
-                    <Icon glyph="fa-edit" />
-                </Button>
                 <Button  className="btn--multiselect" bsStyle="default" onClick={this.handleMultiselect}>
-                    <Icon glyph={multiselect ? "fa-check-square-o" : "fa-square-o"} />
+                    <Icon glyph={multiselect ? "fa-check-square" : "fa-check-square-o"} />
                 </Button>
                 {multiselect &&
-                    <Button bsStyle="default" onClick={(e) => this.openContextMenu(this, e)}>
+                    <Button bsStyle="default" onClick={(e) => this.openContextMenu(null, e)} disabled={!checkedIndexes || checkedIndexes.length < 1 || rows.length < 1 }>
                         <Icon glyph="fa-bars" />
                     </Button>
                 }
@@ -410,7 +421,8 @@ class ArrStructurePanel extends AbstractReactComponent {
                 ? <CheckListBox
                     className="list"
                     items={rows}
-                    onSelect={(item, index, e) => this.openContextMenu(this, e)}
+                    filter={filter}
+                    onSelect={(item, itemIndex, e) => this.openContextMenu(item, e)}
                     onChangeSelection={this.handleChangeSelection}
                     renderItemContent={this.renderItemContent}
                     multiselect={multiselect}

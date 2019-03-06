@@ -70,7 +70,8 @@ class ListBox extends AbstractReactComponent {
         onChangeOrder: React.PropTypes.func,
         className: React.PropTypes.string,
         renderItemContent: React.PropTypes.func,
-        sortable: React.PropTypes.bool
+        sortable: React.PropTypes.bool,
+        filter: React.PropTypes.object
     };
 
     static defaultProps = {
@@ -109,15 +110,15 @@ class ListBox extends AbstractReactComponent {
         this.selectedItemOperation(this.props.onDelete);
     }
     selectItem = (e)=> {
-        this.selectedItemOperation(this.props.onSelect, e);
+        this.selectedItemOperation(e, this.props.onSelect);
     }
     /**
      * Wrapper for item operations from props. Checks if the operation exists and that an item is selected.
      * @param {function} operation
      */
-    selectedItemOperation = (operation, e)=>{
+    selectedItemOperation = (e, operation)=>{
         const {items, multiselect} = this.props;
-       
+
         if (multiselect) {
             let {activeIndexes, checkedIndexes} = this.state;
             const selectedIndexes = Object.keys(activeIndexes);
@@ -133,9 +134,9 @@ class ListBox extends AbstractReactComponent {
             });
 
             this.setState({
-                checkedIndexes: checkedIndexes,
-            })
-
+                checkedIndexes,
+            }, () => this.props.onChangeSelection && this.props.onChangeSelection(Object.keys(checkedIndexes)));
+            
             if (operation && selectedIndexes.length > 0) {
                 const selectedItems = [];
                 for (let a=0; a<selectedIndexes.length; a++) {
@@ -146,7 +147,8 @@ class ListBox extends AbstractReactComponent {
         } else {
             const {activeIndex} = this.state;
             if(operation && activeIndex !== null){
-                operation(items[activeIndex], activeIndex, e)
+                operation(items[activeIndex], activeIndex, e);
+                this.props.onChangeSelection && this.props.onChangeSelection([activeIndex]);
             }
         }
     }
@@ -162,7 +164,6 @@ class ListBox extends AbstractReactComponent {
                 var state = multiselect ? {lastFocus: index, activeIndexes: {[index]: true}} : {lastFocus: index, activeIndex: index};
                 this.setState(state, this.ensureItemVisible.bind(this, index));
                 this.props.onFocus && this.props.onFocus(items[index], index);
-                this.props.onChangeSelection && this.props.onChangeSelection([index]);
             }
         }
     }
@@ -183,6 +184,12 @@ class ListBox extends AbstractReactComponent {
         this.actionMap[action](e);
     }
     componentWillReceiveProps(nextProps) {
+        const { multiselect, filter, items } = this.props;
+
+        if (multiselect !== nextProps.multiselect || filter !== nextProps.filter) { 
+            this.handleClear();
+        }
+
         if (nextProps.multiselect) {
             if (typeof nextProps.activeIndexes !== 'undefined') {
                 var activeIndexes = {}
@@ -201,11 +208,11 @@ class ListBox extends AbstractReactComponent {
 
     handleClick = (index, e) => {
         const {items, multiselect, canSelectItem} = this.props
-        var {activeIndexes, lastFocus} = this.state
+        var {activeIndexes, checkedIndexes, lastFocus} = this.state
 
         if (multiselect) {
             if (e.ctrlKey || e.spaceKey) {
-                if (activeIndexes[index]) { // je označená, odznačíme ji
+                if (activeIndexes && activeIndexes[index]) { // je označená, odznačíme ji
                     activeIndexes = {...activeIndexes}
                     delete activeIndexes[index]
                 } else {
@@ -233,17 +240,14 @@ class ListBox extends AbstractReactComponent {
                 activeIndexes: activeIndexes,
                 lastFocus: index,
             })
-            this.props.onChangeSelection && this.props.onChangeSelection(Object.keys(activeIndexes))
+            this.props.onChangeSelection && this.props.onChangeSelection(Object.keys(checkedIndexes || {}))
         } else {
             if (canSelectItem(items[index], index)) {
                 this.setState({
                     activeIndex: index,
                     lastFocus: index,
-                })
+                }, () => this.props.onChangeSelection && this.props.onChangeSelection([this.state.activeIndex]));
                 this.props.onFocus && this.props.onFocus(items[index], index)
-                if (this.state.activeIndex !== index) {
-                    this.props.onChangeSelection && this.props.onChangeSelection([index])
-                }
             }
         }
     }
@@ -436,7 +440,15 @@ class ListBox extends AbstractReactComponent {
 
         this.setState({
             checkedIndexes: checkedAll ? {} : checkedIndexes
-        })
+        }, () => this.props.onChangeSelection && this.props.onChangeSelection(Object.keys(checkedIndexes)));
+    };
+
+    handleClear = () => {
+        this.setState({
+            activeIndex: null,
+            activeIndexes: null,
+            checkedIndexes: null,
+        }, () => this.props.onChangeSelection && this.props.onChangeSelection([]));
     }
 
     render() {
@@ -449,7 +461,9 @@ class ListBox extends AbstractReactComponent {
              wrapperClass += " " + className
         }
         var rows = items.map((item, index) => {
-            const active = multiselect ? (activeIndexes[index]) : (index === activeIndex)
+            const active = multiselect 
+                ? activeIndexes && (activeIndexes[index]) 
+                : (index === activeIndex);
             var draggableProps = {}
             if (this.props.sortable) {
                 draggableProps = {
@@ -462,7 +476,6 @@ class ListBox extends AbstractReactComponent {
             return (
                 <div
                     className={'listbox-item' + (active ? ' active' : '')}
-                    ref={'item-' + index}
                     key={index}
                     data-id={index}
                     onMouseDown={this.handleClick.bind(this, index)}
