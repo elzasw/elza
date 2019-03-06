@@ -147,6 +147,14 @@ public class UsrPermissionVO {
         this.issueList = issueList;
     }
 
+    public ArrNodeVO getNode() {
+        return node;
+    }
+
+    public void setNode(final ArrNodeVO node) {
+        this.node = node;
+    }
+
     public UsrPermission createEntity(StaticDataProvider staticData) {
         UsrPermission entity = new UsrPermission();
 
