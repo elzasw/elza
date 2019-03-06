@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -75,4 +76,9 @@ public interface PermissionRepository extends JpaRepository<UsrPermission, Integ
             " where p.issueList.issueListId = :issueListId" +
             " and p.permission = :permission")
     List<UsrPermission> findByIssueListAndPermission(@Param(value = "issueListId") Integer issueListId, @Param(value = "permission") Permission permission);
+
+    @Query("select p" +
+            " from usr_permission p" +
+            " where p.nodeId IN :nodeIds")
+    List<UsrPermission> findByNodeIds(@Param(value = "nodeIds") List<Integer> nodeIds);
 }

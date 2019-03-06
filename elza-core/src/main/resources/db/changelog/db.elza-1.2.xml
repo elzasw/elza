@@ -69,4 +69,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20190306144900" author="slapa">
+        <addColumn tableName="usr_permission">
+            <column name="node_id" type="int">
+                <constraints foreignKeyName="fk_usr_permission_node" referencedTableName="arr_node" referencedColumnNames="node_id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

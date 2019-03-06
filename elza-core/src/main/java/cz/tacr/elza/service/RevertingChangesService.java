@@ -390,7 +390,7 @@ public class RevertingChangesService {
         nodeIdsChange.removeAll(deleteNodeIds);
 
         issueService.resetIssueNode(deleteNodeIds);
-
+        userService.deletePermissionByNodeIds(deleteNodeIds);
         nodeCacheService.deleteNodes(deleteNodeIds);
 
         Query deleteNotUseNodesQuery = createDeleteNotUseNodesQuery();

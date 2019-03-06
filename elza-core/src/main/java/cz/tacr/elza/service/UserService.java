@@ -19,6 +19,9 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
 
+import com.google.common.collect.Lists;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -41,16 +44,7 @@ import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.Authorization;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrGroupUser;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.WfIssueList;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
@@ -59,15 +53,6 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.exception.codes.UserCode;
-import cz.tacr.elza.repository.ApNameRepository;
-import cz.tacr.elza.repository.FilteredResult;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.GroupRepository;
-import cz.tacr.elza.repository.GroupUserRepository;
-import cz.tacr.elza.repository.PermissionRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.UserRepository;
-import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
@@ -101,6 +86,9 @@ public class UserService {
 
     @Autowired
     private FundRepository fundRepository;
+
+    @Autowired
+    private NodeRepository nodeRepository;
 
     @Autowired
     private ScopeRepository scopeRepository;
@@ -200,6 +188,7 @@ public class UserService {
                 }
                 permission.setUser(user);
                 permission.setGroup(group);
+                setNodeRelation(permission, permission.getNodeId(), permission.getFundId());
                 setFundRelation(permission, permission.getFundId());
                 setScopeRelation(permission, permission.getScopeId());
                 setControlUserRelation(permission, permission.getUserControlId());
@@ -215,6 +204,7 @@ public class UserService {
                         throw new SystemException("Oprávnění neexistuje a proto nemůže být upraveno", UserCode.PERM_NOT_EXIST);
                     }
                     permissionDB.setPermission(permission.getPermission());
+                    setNodeRelation(permissionDB, permission.getNodeId(), permission.getFundId());
                     setFundRelation(permissionDB, permission.getFundId());
                     setScopeRelation(permissionDB, permission.getScopeId());
                     setControlUserRelation(permissionDB, permission.getUserControlId());
@@ -248,20 +238,26 @@ public class UserService {
         for (UsrPermission permission : permissions) {
             switch (permission.getPermission().getType()) {
                 case ALL: {
-                    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() != null) {
+                    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() != null || permission.getNodeId() != null) {
                         throw new SystemException("Neplatný vstup oprávnění: ALL", UserCode.PERM_ILLEGAL_INPUT).set("type", "ALL");
                     }
                     break;
                 }
                 case SCOPE: {
-                    if (permission.getScopeId() == null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() != null) {
+                    if (permission.getScopeId() == null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() != null || permission.getNodeId() != null) {
                         throw new SystemException("Neplatný vstup oprávnění: SCOPE", UserCode.PERM_ILLEGAL_INPUT).set("type", "SCOPE");
                     }
                     break;
                 }
                 case FUND: {
-                    if (permission.getScopeId() != null || permission.getFundId() == null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() != null) {
+                    if (permission.getScopeId() != null || permission.getFundId() == null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() != null || permission.getNodeId() != null) {
                         throw new SystemException("Neplatný vstup oprávnění: FUND", UserCode.PERM_ILLEGAL_INPUT).set("type", "FUND");
+                    }
+                    break;
+                }
+                case NODE: {
+                    if (permission.getScopeId() != null || permission.getFundId() == null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() != null || permission.getNodeId() == null) {
+                        throw new SystemException("Neplatný vstup oprávnění: NODE", UserCode.PERM_ILLEGAL_INPUT).set("type", "NODE");
                     }
                     break;
                 }
@@ -277,7 +273,7 @@ public class UserService {
                     }
                     break;
                 case ISSUE_LIST: {
-                    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() == null) {
+                    if (permission.getScopeId() != null || permission.getFundId() != null || permission.getUserControlId() != null || permission.getGroupControlId() != null || permission.getIssueListId() == null || permission.getNodeId() != null) {
                         throw new SystemException("Neplatný vstup oprávnění: ISSUE_LIST", UserCode.PERM_ILLEGAL_INPUT).set("type", "ISSUE_LIST");
                     }
                     break;
@@ -336,6 +332,64 @@ public class UserService {
         } else {
             permission.setFund(null);
         }
+    }
+
+    /**
+     * Nastaví vazbu na JP, pokud je předané id. Pokud předané není, je vazba odstraněna.
+     * Kontroluje existenci objektu s daným id.
+     *
+     * @param permission oprávnění
+     * @param nodeId     id objektu, na který má být přidána vazba
+     * @param fundId     id AS, který vztahuje k JP
+     */
+    private void setNodeRelation(final UsrPermission permission, final Integer nodeId, final Integer fundId) {
+        if (nodeId != null) {
+            ArrNode node = nodeRepository.findOne(nodeId);
+            if (node == null) {
+                throw new SystemException("Neplatná JP", ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
+            }
+            if (!node.getFundId().equals(fundId)) {
+                throw new SystemException("Neplatná JP v závislosti k AS", ArrangementCode.NODE_NOT_FOUND)
+                        .set("id", nodeId)
+                        .set("fundId", fundId);
+            }
+            permission.setNode(node);
+        } else {
+            permission.setNode(null);
+        }
+    }
+
+    /**
+     * Smazání všech oprávnění s vazbou na JP.
+     *
+     * @param nodeIds identifikátory JP
+     */
+    @Transactional(TxType.MANDATORY)
+    public void deletePermissionByNodeIds(final Collection<Integer> nodeIds) {
+        if (CollectionUtils.isEmpty(nodeIds)) {
+            return;
+        }
+
+        // naleznu všechny oprávnění
+        List<List<Integer>> nodeIdsLists = Lists.partition(new ArrayList<>(nodeIds), 1000);
+        List<UsrPermission> permissions = new ArrayList<>();
+        for (List<Integer> subNodeIds : nodeIdsLists) {
+            permissions.addAll(permissionRepository.findByNodeIds(subNodeIds));
+        }
+
+        // vyhledám všechny uživatele, u kterých se budou oprávnění mazat
+        Set<UsrUser> users = new HashSet<>();
+        for (UsrPermission permission : permissions) {
+            users.add(permission.getUser());
+        }
+
+        // invaliduji jejich cache s oprávněním
+        for (UsrUser user : users) {
+            invalidateCache(user);
+        }
+
+        // nakonec smažu všechny oprávnění s vazbou na JP
+        permissionRepository.delete(permissions);
     }
 
     /**

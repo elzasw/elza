@@ -1,24 +1,21 @@
 package cz.tacr.elza.controller;
 
-import java.util.List;
-
-import javax.transaction.Transactional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.SysExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.SysExternalSystem;
-import cz.tacr.elza.service.AdminService;
-import cz.tacr.elza.service.CacheService;
-import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import javax.transaction.Transactional;
+import java.util.List;
 
 /**
  * Kontroler pro administraci.
@@ -41,6 +38,9 @@ public class AdminController {
 
     @Autowired
     private ClientFactoryVO factoryVo;
+
+    @Autowired
+    private ArrangementService arrangementService;
 
     @RequestMapping(value = "/reindex", method = RequestMethod.GET)
 	@Transactional
@@ -138,5 +138,24 @@ public class AdminController {
     public List<SysExternalSystemSimpleVO> findAllExternalSystemsSimple() {
         List<SysExternalSystem> extSystems = externalSystemService.findAllWithoutPermission();
         return ApFactory.transformList(extSystems, factoryVo::createExtSystemSimple);
+    }
+
+    /**
+     * Získání JP podle identifikátorů pro zobrazení.
+     *
+     * @param fundId  identifikátor AS
+     * @param nodeIds identifikátory JP
+     * @return seznam JP
+     */
+    @RequestMapping(value = "/{fundId}/nodes/byIds", method = RequestMethod.POST)
+    @Transactional
+    public List<TreeNodeVO> findNodeByIds(@PathVariable("fundId") Integer fundId,
+                                          @RequestBody List<Integer> nodeIds) {
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fundId);
+        if (fundVersion == null) {
+            throw new ObjectNotFoundException("Nenalezena otevřená verze AS", ArrangementCode.FUND_VERSION_NOT_FOUND)
+                    .setId(fundId);
+        }
+        return adminService.findNodeByIds(fundVersion, nodeIds);
     }
 }
