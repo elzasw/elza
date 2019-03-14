@@ -21,6 +21,7 @@ import {WebApi} from 'actions/index.jsx';
 import './SubNodeForm.less'
 import {downloadFile} from "../../actions/global/download";
 import {FOCUS_KEYS} from "../../constants.tsx";
+import {objectEqualsDiff} from "../Utils";
 
 const classNames = require('classnames');
 
@@ -79,6 +80,19 @@ class SubNodeForm extends AbstractReactComponent {
         formActions: React.PropTypes.object.isRequired,
         showNodeAddons: React.PropTypes.bool.isRequired,
     };
+
+    shouldComponentUpdate(nextProps, nextState) {
+        if (this.state !== nextState) {
+            return true;
+        } else if (this.props.subNodeForm === nextProps.subNodeForm) {
+            return false;
+        } else {
+            return !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, "", {
+                "|formKey": true,
+                "|_uid": true
+            }, false);
+        }
+    }
 
     componentDidMount() {
         this.trySetFocus(this.props);
@@ -815,6 +829,8 @@ class SubNodeForm extends AbstractReactComponent {
         const {nodeSetting, subNodeForm, closed, readMode} = this.props;
         const {unusedItemTypeIds} = this.state;
         const formData = subNodeForm.formData;
+
+        console.info("{SubNodeForm}");
 
         let unusedGeneratedItems;    // nepoužité vygenerované PP
         if (unusedItemTypeIds && unusedItemTypeIds.length > 0) {

@@ -36,6 +36,7 @@ import {CLS, CLS_ITEM_ENUM} from "../../shared/factory/factoryConsts";
 import storeFromArea from "../../shared/utils/storeFromArea";
 import * as issuesActions from "../../actions/arr/issues";
 import IssueForm from "../form/IssueForm";
+import {objectEqualsDiff} from 'components/Utils'
 
 require('./NodeSubNodeForm.less');
 
@@ -53,6 +54,20 @@ class NodeSubNodeForm extends AbstractReactComponent {
             "getNodeSetting",
             "initFocus",
         );
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        if (this.state !== nextState) {
+            return true;
+        } else if (this.props.subNodeForm === nextProps.subNodeForm) {
+            return false;
+        } else {
+            return !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, "", {
+                ".isFetching": true,
+                ".dirty": true,
+                "|_uid": true,
+            }, false);
+        }
     }
 
     getNodeSetting() {
@@ -557,6 +572,8 @@ class NodeSubNodeForm extends AbstractReactComponent {
         const {singleDescItemTypeEdit, userDetail} = this.props;
         const {versionId, focus, closed, fundId, routingKey, rulDataTypes, calendarTypes, descItemTypes, structureTypes,
             subNodeForm, conformityInfo, descItemCopyFromPrevEnabled, singleDescItemTypeId, readMode} = this.props;
+
+        console.info("{NodeSubNodeForm}");
 
         let formActions
         if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
