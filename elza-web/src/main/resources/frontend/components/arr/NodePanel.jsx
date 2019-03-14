@@ -734,7 +734,7 @@ return true
                 rows.push(<HorizontalLoader key="loading" text={i18n('global.data.loading.node')}/>);
             }
         } else{
-            if (node.viewStartIndex > 0) {
+            if (node.viewStartIndex > 0 && displayAccordion) {
                 rows.push(
                     <Button key="prev" onClick={()=>this.dispatch(fundSubNodesPrev(versionId, node.id, node.routingKey))}>
                         <Icon glyph="fa-chevron-left" />{i18n('arr.fund.prev')}
@@ -806,7 +806,7 @@ return true
                 }
             }
 
-            if (node.nodeCount > node.pageSize && node.viewStartIndex + node.pageSize/2 < node.nodeCount && node.nodeCount - node.viewStartIndex > node.pageSize) {
+            if (node.nodeCount > node.pageSize && node.viewStartIndex + node.pageSize/2 < node.nodeCount && node.nodeCount - node.viewStartIndex > node.pageSize && displayAccordion) {
                 rows.push(
                     <Button key="next" onClick={()=>this.dispatch(fundSubNodesNext(versionId, node.id, node.routingKey))}><Icon glyph="fa-chevron-right" />{i18n('arr.fund.next')}</Button>
                 )
