@@ -30,7 +30,9 @@ import cz.tacr.elza.domain.ParPartyGroupIdentifier;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameComplement;
 import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.schema.v2.Event;
 import cz.tacr.elza.schema.v2.Family;
 import cz.tacr.elza.schema.v2.NameComplement;
@@ -220,7 +222,13 @@ public class XmlPartiesOutputStream extends BaseFragmentStream
         ParPartyName prefName = party.getPreferredName();
         list.add(createPartyName(prefName));
 
-        for (ParPartyName name : party.getPartyNames()) {
+        List<ParPartyName> partyNames = party.getPartyNames();
+        if (partyNames == null) {
+            throw new BusinessException("Party without names", BaseCode.DB_INTEGRITY_PROBLEM)
+                    .set("partyId", party.getPartyId())
+                    .set("prefNameId", prefName.getPartyNameId());
+        }
+        for (ParPartyName name : partyNames) {
             if (prefName.getPartyNameId().equals(name.getPartyNameId())) {
                 continue; // preferred already added as first
             }

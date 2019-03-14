@@ -38,7 +38,34 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.rules.ItemTypeExtBuilder;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApRule;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItemSettings;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.ArrNodeExtension;
+import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.RulArrangementExtension;
+import cz.tacr.elza.domain.RulComponent;
+import cz.tacr.elza.domain.RulExtensionRule;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeAction;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -859,16 +886,19 @@ public class RuleService {
     /**
      * Získání seznamu typů atributů podle strukt. typu a verze AS.
      *
-     * @param structureType  strukturovaný typ
-     * @param fundVersion    verze AS
-     * @param structureItems seznam položek strukturovaného datového typu
+     * @param structTypeId
+     *            strukturovaný typ
+     * @param fundVersion
+     *            verze AS
+     * @param structureItems
+     *            seznam položek strukturovaného datového typu
      * @return seznam typu atributů
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public List<RulItemTypeExt> getStructureItemTypes(final RulStructuredType structureType,
+    public List<RulItemTypeExt> getStructureItemTypes(final Integer structTypeId,
                                                       @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                                       final List<ArrStructuredItem> structureItems) {
-        return getStructureItemTypesInternal(structureType, fundVersion, structureItems);
+        return getStructureItemTypesInternal(structTypeId, fundVersion, structureItems);
     }
 
     /**
@@ -879,11 +909,12 @@ public class RuleService {
      * @param structureItems seznam položek strukturovaného datového typu
      * @return seznam typu atributů
      */
-    public List<RulItemTypeExt> getStructureItemTypesInternal(final RulStructuredType structureType,
+    public List<RulItemTypeExt> getStructureItemTypesInternal(final Integer structTypeId,
                                                               final ArrFundVersion fundVersion,
                                                               final List<ArrStructuredItem> structureItems) {
         List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
-        return rulesExecutor.executeStructureItemTypesRules(structureType, rulDescItemTypeExtList, fundVersion, structureItems);
+        return rulesExecutor.executeStructureItemTypesRules(structTypeId, rulDescItemTypeExtList, fundVersion,
+                                                            structureItems);
     }
 
 

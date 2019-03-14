@@ -119,11 +119,11 @@ public class PartyName {
      */
     public String formatValidFromTo() {
         String formattedFrom = null, formattedTo = null;
-        if (validFrom != null) {
-            formattedFrom = validFrom.getValueText();
+        if (getValidFrom() != null) {
+            formattedFrom = getValidFrom().getValueText();
         }
-        if (validTo != null) {
-            formattedTo = validTo.getValueText();
+        if (getValidTo() != null) {
+            formattedTo = getValidTo().getValueText();
         }
         boolean blankFrom = StringUtils.isBlank(formattedFrom), blankTo = StringUtils.isBlank(formattedTo);
         if (blankFrom && blankTo) {

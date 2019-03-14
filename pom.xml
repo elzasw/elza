@@ -202,12 +202,6 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.hibernatespatial</groupId>
-                <artifactId>hibernate-spatial-sqlserver</artifactId>
-                <version>1.1.1</version>
-            </dependency>
-
-            <dependency>
                 <groupId>com.vividsolutions</groupId>
                 <artifactId>jts</artifactId>
                 <version>1.12</version>
@@ -226,7 +220,7 @@
 			<dependency>
 				<groupId>net.sf.jasperreports</groupId>
 				<artifactId>jasperreports</artifactId>
-				<version>6.4.1</version>
+				<version>6.7.0</version>
 				<exclusions>
 					<exclusion>
 						<artifactId>lucene-core</artifactId>

@@ -1,9 +1,9 @@
 package cz.tacr.elza.dataexchange.input.sections;
 
+import java.util.Date;
+
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItemIndexData;
-
-import java.util.Date;
 
 /**
  * Class with prepared data for fulltext indexing
@@ -28,11 +28,19 @@ class DescItemIndexData implements ArrDescItemIndexData {
     public DescItemIndexData(Integer fundId, String fulltext, ArrData data) {
         this.fundId = fundId;
         this.fulltext = fulltext;
-        this.valueInt = data.getValueInt();
-        this.valueDouble = data.getValueDouble();
-        this.normalizedFrom = data.getNormalizedFrom();
-        this.normalizedTo = data.getNormalizedTo();
-        this.date = data.getDate();
+        if (data != null) {
+            this.valueInt = data.getValueInt();
+            this.valueDouble = data.getValueDouble();
+            this.normalizedFrom = data.getNormalizedFrom();
+            this.normalizedTo = data.getNormalizedTo();
+            this.date = data.getDate();
+        } else {
+            this.valueInt = null;
+            this.valueDouble = null;
+            this.normalizedFrom = null;
+            this.normalizedTo = null;
+            this.date = null;
+        }
     }
 
     @Override

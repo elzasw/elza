@@ -11,7 +11,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
-import cz.tacr.elza.bulkaction.generator.unitid.SealedUnitId.LevelType;
+import cz.tacr.elza.bulkaction.generator.unitid.AssignedUnitId.LevelType;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ArrData;
@@ -151,7 +151,7 @@ public class LevelGenerator {
 
         // find subtree for this level
         SealedUnitIdTree sealedTree = params.getSealedTree();
-        SealedUnitId sealedSubTree;
+        AssignedUnitId sealedSubTree;
         if(StringUtils.isNotEmpty(prefix)) {
             PartSealedUnitId parentSealedUnitId = sealedTree.find(prefix);
             Validate.notNull(parentSealedUnitId);
@@ -165,7 +165,7 @@ public class LevelGenerator {
         return generate(fixedUnitIds, sealedSubTree);
     }
 
-    private List<LevelGenerator> generate(TreeSet<UnitIdPart> fixedUnitIds, SealedUnitId sealedSubTree) {
+    private List<LevelGenerator> generate(TreeSet<UnitIdPart> fixedUnitIds, AssignedUnitId sealedSubTree) {
 
         // final collection of subsequent generators
         List<LevelGenerator> generators = new ArrayList<>(nodes.size());
@@ -187,6 +187,12 @@ public class LevelGenerator {
                 PartSealedUnitId sealedUnitId = n.getSealedUnitId();
                 if (sealedUnitId != null && fixedUnitIds.contains(sealedUnitId.getPart())) {
                     // stop at fixed node
+
+                    // prepare subgenerators
+                    LevelGenerator lg = new LevelGenerator(n.getLevel(), n.getLevelSpec(), params, sealedUnitId
+                            .getValue());
+                    generators.add(lg);
+
                     break;
                 }
                 position++;
@@ -247,6 +253,9 @@ public class LevelGenerator {
             generators.add(lg);
 
         }
+
+        Validate.isTrue(generators.size() == nodes.size());
+
         return generators;
     }
 
@@ -260,7 +269,7 @@ public class LevelGenerator {
      * @param sealedSubTree
      * @return Return generated unitId
      */
-    private String generateNode(Node n, UnitIdPart loBorder, UnitIdPart hiBorder, SealedUnitId sealedSubTree) {
+    private String generateNode(Node n, UnitIdPart loBorder, UnitIdPart hiBorder, AssignedUnitId sealedSubTree) {
 
         LevelType levelType = n.isExtraSlashBefore() ? LevelType.SLASHED : LevelType.DEFAULT;
         SealedLevel parentSealedLevel = sealedSubTree.getLevel(levelType);
@@ -286,7 +295,7 @@ public class LevelGenerator {
             // check if value is frozen
             PartSealedUnitId oldSealedUnitId = params.getSealedTree().find(oldValue);
             if (oldSealedUnitId != null) {
-                if (oldSealedUnitId.isSealed()) {
+                if (oldSealedUnitId.isFullySealed()) {
                     // move to old values
                     ArrDataString dataPrev = new ArrDataString();
                     dataPrev.setValue(oldValue);
@@ -324,7 +333,7 @@ public class LevelGenerator {
         ArrayList<UnitIdPart> parts = new ArrayList<>(nodes.size());
         for (Node n : nodes) {
             PartSealedUnitId sealedUnitId = n.getSealedUnitId();
-            if (sealedUnitId != null && sealedUnitId.isSealed() && n.isUnitIdUsable()) {
+            if (sealedUnitId != null && sealedUnitId.isFullySealed() && n.isUnitIdUsable()) {
                 parts.add(sealedUnitId.getPart());
             }
         }

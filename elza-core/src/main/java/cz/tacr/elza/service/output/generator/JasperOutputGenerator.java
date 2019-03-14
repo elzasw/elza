@@ -19,6 +19,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.context.ApplicationContext;
 
@@ -37,6 +40,7 @@ import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
 import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -82,12 +86,13 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
         super(em, dmsService);
 
         StructuredObjectRepository structObjRepos = applicationContext.getBean(StructuredObjectRepository.class);
+        StructuredItemRepository structItemRepos = applicationContext.getBean(StructuredItemRepository.class);
 
         pdfAttProvider = new PdfAttProvider(applicationContext);
         outputModel = new OutputModel(staticDataService, elzaLocale,
                 fundTreeProvider, nodeCacheService, institutionRepository,
                 apDescRepository, apNameRepository, apEidRepository,
-                pdfAttProvider, structObjRepos);
+                pdfAttProvider, structObjRepos, structItemRepos);
         pdfAttProvider.setOutput(outputModel);
     }
 
@@ -208,9 +213,57 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
 
             // Merge attachments
             mergeOutput(inDoc, outDoc, attachments);
+
+            // Copy bookmarks
+            copyBookmarks(inDoc, outDoc);
+
             outDoc.save(os);
         }
 
+    }
+
+    private void copyBookmarks(PDDocument inDoc, PDDocument outDoc) throws IOException {
+        PDDocumentOutline inOutline = inDoc.getDocumentCatalog().getDocumentOutline();
+        if (inOutline == null) {
+            // noting to cpoy
+            return;
+        }
+        PDDocumentOutline outOutline = new PDDocumentOutline();
+        outDoc.getDocumentCatalog().setDocumentOutline(outOutline);
+
+        copyBookmarks(inOutline, outOutline);
+    }
+
+    private void copyBookmarks(PDDocumentOutline inOutline, PDDocumentOutline outOutline) throws IOException {
+        // iterate source outline
+        for (PDOutlineItem inItem : inOutline.children()) {
+            copyBookmark(inItem, outOutline);
+        }
+
+    }
+
+    PDOutlineItem copyBookmark(PDOutlineItem inItem) throws IOException {
+        PDOutlineItem outItem = new PDOutlineItem();
+        outItem.setTitle(inItem.getTitle());
+        PDDestination inDest = inItem.getDestination();
+        outItem.setDestination(inDest);
+
+        // Copy child items
+        if (inItem.hasChildren()) {
+            PDOutlineItem child = inItem.getFirstChild();
+            while (child != null) {
+                PDOutlineItem copiedChild = copyBookmark(child);
+                outItem.addLast(copiedChild);
+                child = child.getNextSibling();
+            }
+        }
+
+        return outItem;
+    }
+
+    private void copyBookmark(PDOutlineItem inItem, PDDocumentOutline outOutline) throws IOException {
+        PDOutlineItem outItem = copyBookmark(inItem);
+        outOutline.addLast(outItem);
     }
 
     /**

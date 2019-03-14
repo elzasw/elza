@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.4.0.final using JasperReports Library version 6.4.1  -->
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="intro" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="70" bottomMargin="70" uuid="7dadc22d-1241-4907-8921-52170562f815">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
@@ -37,7 +37,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Dějiny archivního souboru:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Dějiny jednotky popisu:"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="8852f770-71f7-4c06-8a38-675773982ab1">
@@ -225,7 +225,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Tématický popis:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Tematický popis jednotky popisu:"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" positionType="Float" x="0" y="55" width="455" height="25" isRemoveLineWhenBlank="true" uuid="c1063b45-361d-4763-b3ff-3bd3f03aa121">
@@ -260,7 +260,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Seznam pramenů a literatury:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Informace o zpracování:"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" positionType="Float" x="0" y="70" width="455" height="25" isRemoveLineWhenBlank="true" uuid="c65fb600-e002-4000-bb49-b44ea5e3c025">

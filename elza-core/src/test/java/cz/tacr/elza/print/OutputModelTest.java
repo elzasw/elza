@@ -5,7 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.List;
 
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
@@ -15,21 +15,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.AbstractServiceTest;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ArrStructuredObject.State;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
 import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
@@ -66,6 +69,9 @@ public class OutputModelTest extends AbstractServiceTest {
     @Autowired
     OutputTypeRepository outputTypeRepository;
 
+    @Autowired
+    StructuredItemRepository structItemRepos;
+
     // test output with structObjs
     @Test
     @Transactional(TxType.REQUIRES_NEW)
@@ -73,14 +79,30 @@ public class OutputModelTest extends AbstractServiceTest {
         authorizeAsAdmin();
 
         StaticDataProvider sdp = staticDataService.createProvider();
+        RulItemType itemType = itemTypeRepository.findOneByCode("SRD_STORAGE_ID");
+        assertNotNull(itemType);
+        RulItemType pckItemType = itemTypeRepository.findOneByCode("SRD_PACKET_TYPE");
+        assertNotNull(pckItemType);
+
         FundInfo fi = this.createFund("F1");
 
         // Create struct objs
-        RulStructuredType structureType = sdp.getStructuredTypeByCode("SRD_PACKET");
+        StructType structureType = sdp.getStructuredTypeByCode("SRD_PACKET");
         assertNotNull(structureType);
-        ArrStructuredObject structObj1 = structObjService.createStructObj(fi.getFund(), structureType, State.OK);
+        ArrStructuredObject structObj1 = structObjService.createStructObj(fi.getFund(), structureType
+                .getStructuredType(), State.OK);
         assertNotNull(structObj1);
-        ArrStructuredObject structObj2 = structObjService.createStructObj(fi.getFund(), structureType, State.OK);
+        // add item
+        ArrItemEnumVO enumVo = new ArrItemEnumVO();
+        enumVo.setPosition(1);
+        enumVo.setItemTypeId(pckItemType.getItemTypeId());
+        enumVo.setDescItemSpecId(sdp.getItemSpecByCode("SRD_PACKET_TYPE_FASCICLE").getItemSpecId());
+        ArrStructuredItem structItem = factoryDO.createStructureItem(enumVo, pckItemType.getItemTypeId());
+        assertNotNull(structItem);
+
+        structObjService.createStructureItem(structItem, structObj1.getStructuredObjectId(), fi.getFundVersionId());
+        ArrStructuredObject structObj2 = structObjService.createStructObj(fi.getFund(), structureType
+                .getStructuredType(), State.OK);
         assertNotNull(structObj2);
 
         // Create levels
@@ -96,9 +118,6 @@ public class OutputModelTest extends AbstractServiceTest {
         RulOutputType outputType = outputTypeRepository.findByCode("SRD_INVENTORY");
 
         // Attach objs
-        RulItemType itemType = itemTypeRepository.findOneByCode("SRD_STORAGE_ID");
-        assertNotNull(itemType);
-
         // Insert item1 to level1
         ArrItemStructureVO itemSVO = new ArrItemStructureVO();
         ArrStructureDataVO svo1 = ArrStructureDataVO.newInstance(structObj1);
@@ -119,7 +138,7 @@ public class OutputModelTest extends AbstractServiceTest {
         OutputModel outputModel = new OutputModel(staticDataService, elzaLocale,
                 fundTreeProvider, nodeCacheService, institutionRepository,
                 apDescRepository, apNameRepository, apEidRepository,
-                null, structObjRepos);
+                null, structObjRepos, structItemRepos);
 
         ArrOutputDefinition od = new ArrOutputDefinition();
         od.setFund(fi.getFund());
@@ -131,13 +150,13 @@ public class OutputModelTest extends AbstractServiceTest {
                 Paths.get("test"));
         outputModel.init(params);
 
-        Iterator<Structured> it = outputModel.createStructObjIterator(structureType.getCode());
-        assertNotNull(it);
-        assertTrue(it.hasNext());
-        Structured s = it.next();
+        List<Structured> sos = outputModel.createStructObjList(structureType.getCode());
+        assertTrue(sos.size() == 1);
+        Structured s = sos.get(0);
         assertNotNull(s);
 
-        assertTrue(!it.hasNext());
+        boolean hasItem = s.hasItem("SRD_PACKET_TYPE");
+        assertTrue(hasItem);
 
         // Flush any pending operations
         em.flush();

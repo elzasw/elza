@@ -137,7 +137,7 @@ function scheduleStoreSave() {
     setTimeout(() => {
         store.dispatch(storeSave());
         scheduleStoreSave();
-    }, 1000)
+    }, 10000)
 }
 scheduleStoreSave();
 

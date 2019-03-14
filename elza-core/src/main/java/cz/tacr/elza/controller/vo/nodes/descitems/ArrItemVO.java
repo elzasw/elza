@@ -1,10 +1,12 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
+import javax.persistence.EntityManager;
+
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
-
-import javax.persistence.EntityManager;
+import cz.tacr.elza.domain.ArrItem;
 
 
 /**
@@ -43,6 +45,19 @@ public abstract class ArrItemVO {
      * specifikace atributu
      */
     private Integer descItemSpecId;
+
+    public ArrItemVO() {
+
+    }
+
+    public ArrItemVO(ArrItem item) {
+        this.id = item.getItemId();
+        this.descItemObjectId = item.getDescItemObjectId();
+        this.position = item.getPosition();
+        this.undefined = (item.getData() == null);
+        this.itemTypeId = item.getItemTypeId();
+        this.descItemSpecId = item.getItemSpecId();
+    }
 
     public Integer getId() {
         return id;

@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.config.rules.GroupConfiguration;
 import cz.tacr.elza.config.rules.TypeInfo;
@@ -177,7 +178,7 @@ public class RuleController {
         try {
             Path filePath = packageService.exportPackage(code);
             response.setContentType("application/zip");
-            response.setHeader("Content-Disposition", "inline; filename=" + code + "-package.zip");
+            FileDownload.addContentDispositionAsAttachment(response, code + "-package.zip");
             response.setContentLength((int) Files.size(filePath));
             ServletOutputStream os = response.getOutputStream();
 

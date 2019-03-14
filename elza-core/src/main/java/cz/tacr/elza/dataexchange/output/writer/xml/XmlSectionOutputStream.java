@@ -16,9 +16,6 @@ import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.lang.Validate;
 
 import cz.tacr.elza.common.XmlUtils;
-import cz.tacr.elza.dataexchange.common.items.DescriptionItemAPRefImpl;
-import cz.tacr.elza.dataexchange.common.items.DescriptionItemPartyRefImpl;
-import cz.tacr.elza.dataexchange.common.items.DescriptionItemStructObjectRefImpl;
 import cz.tacr.elza.dataexchange.output.items.APRefConvertor;
 import cz.tacr.elza.dataexchange.output.items.ItemConvertor;
 import cz.tacr.elza.dataexchange.output.items.ItemDataConvertorFactory;
@@ -42,8 +39,12 @@ import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.schema.v2.AccessPointRefs;
 import cz.tacr.elza.schema.v2.DescriptionItem;
+import cz.tacr.elza.schema.v2.DescriptionItemAPRef;
+import cz.tacr.elza.schema.v2.DescriptionItemPartyRef;
+import cz.tacr.elza.schema.v2.DescriptionItemStructObjectRef;
 import cz.tacr.elza.schema.v2.FundInfo;
 import cz.tacr.elza.schema.v2.Level;
+import cz.tacr.elza.schema.v2.ObjectFactory;
 import cz.tacr.elza.schema.v2.StructuredObject;
 
 /**
@@ -243,8 +244,8 @@ class XmlSectionOutputStream implements SectionOutputStream {
         public APRefConvertor createAPRefConvertor() {
             return new APRefConvertor() {
                 @Override
-                public DescriptionItemAPRefImpl convert(ArrData data) {
-                    DescriptionItemAPRefImpl item = super.convert(data);
+                public DescriptionItemAPRef convert(ArrData data, ObjectFactory objectFactory) {
+                    DescriptionItemAPRef item = super.convert(data, objectFactory);
                     if (item != null) {
                         ArrDataRecordRef apRef = (ArrDataRecordRef) data;
                         sectionContext.getContext().addApId(apRef.getRecordId());
@@ -258,8 +259,8 @@ class XmlSectionOutputStream implements SectionOutputStream {
         public PartyRefConvertor createPartyRefConvertor() {
             return new PartyRefConvertor() {
                 @Override
-                public DescriptionItemPartyRefImpl convert(ArrData data) {
-                    DescriptionItemPartyRefImpl item = super.convert(data);
+                public DescriptionItemPartyRef convert(ArrData data, ObjectFactory objectFactory) {
+                    DescriptionItemPartyRef item = super.convert(data, objectFactory);
                     if (item != null) {
                         ArrDataPartyRef partyRef = (ArrDataPartyRef) data;
                         sectionContext.getContext().addPartyId(partyRef.getPartyId());
@@ -273,8 +274,8 @@ class XmlSectionOutputStream implements SectionOutputStream {
         public StructObjRefConvertor createStructObjectRefConvertor() {
             return new StructObjRefConvertor() {
                 @Override
-                public DescriptionItemStructObjectRefImpl convert(ArrData data) {
-                    DescriptionItemStructObjectRefImpl item = super.convert(data);
+                public DescriptionItemStructObjectRef convert(ArrData data, ObjectFactory objectFactory) {
+                    DescriptionItemStructObjectRef item = super.convert(data, objectFactory);
                     if (item != null) {
                         ArrDataStructureRef structObjRef = (ArrDataStructureRef) data;
                         sectionContext.addStructObjectId(structObjRef.getStructuredObjectId());

@@ -66,7 +66,10 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
         List<Integer> apIds = new ArrayList<>(apws.size());
         for (AccessPointWrapper apw : apws) {
             Integer apId = apw.getEntity().getAccessPointId();
-            apIds.add(Validate.notNull(apId));
+            if (apId == null) {
+                Validate.notNull(apId);
+            }
+            apIds.add(apId);
         }
         ApChange change = changeHolder.getChange();
         if (apIds.size() > 0) {

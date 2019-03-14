@@ -242,6 +242,19 @@
        </delete>
        <dropTable tableName="ap_variant_record"/>
     </changeSet>
+    <changeSet id="20181120234101" author="ppyt">
+      <validCheckSum>7:f7564b9199d790ba5cb35f672ee76c1c</validCheckSum>
+      <!-- Incorrect migration from 0.15 - shift ids -->
+      <sql>UPDATE db_hibernate_sequences SET next_val = (select coalesce( (select max(name_id)+20 from ap_name) , 1) ) WHERE sequence_name = 'ap_name|name_id'</sql>
+      <sql>UPDATE db_hibernate_sequences SET next_val = (select coalesce( (select max(description_id)+20 from ap_description), 1) ) WHERE sequence_name = 'ap_description|description_id'</sql>
+    </changeSet>
+    <!-- Rename party types -->
+    <changeSet id="20181120234102" author="ppyt">
+        <update tableName="par_party_type" ><column name="name" value="OSOBA" /><column name="description" value="Osoba" /><where>code = 'PERSON'</where></update>
+        <update tableName="par_party_type" ><column name="name" value="ROD, RODINA" /><column name="description" value="Rod, rodina" /><where>code = 'DYNASTY'</where></update>
+        <update tableName="par_party_type" ><column name="name" value="KORPORACE" /><column name="description" value="Korporace" /><where>code='GROUP_PARTY'</where></update>
+        <update tableName="par_party_type" ><column name="name" value="UDÁLOST" /><column name="description" value="Dočasná korporace - událost" /><where>code='EVENT'</where></update>
+    </changeSet>
 
     <changeSet id="20181210140000" author="marek">
         <addNotNullConstraint
@@ -249,6 +262,19 @@
             columnName="state"
             columnDataType="nvarchar(50)"
             defaultNullValue="OK"/>
+    </changeSet>
+    
+    <!-- Pridani indexu pro zrychleni StructObj dotazu -->
+    <changeSet id="20190228112500000" author="ppyt">
+      <createIndex indexName="arr_item_data_idx" tableName="arr_item">
+        <column name="data_id" type="int"/>
+      </createIndex>
+      <createIndex tableName="arr_data_structure_ref" indexName="arr_data_structure_ref_struct_obj_idx">
+        <column name="structured_object_id" type="int"></column>
+      </createIndex>
+      <createIndex indexName="arr_structured_item_struct_obj_idx" tableName="arr_structured_item">
+        <column name="structured_object_id" type="int"/>
+      </createIndex>
     </changeSet>
 
 </databaseChangeLog>
