@@ -89,7 +89,7 @@ class FundNodesSelectForm extends AbstractReactComponent {
                         multipleSelectionOneLevel={multipleSelectionOneLevel}
                         onChange={this.handleChange}
                         fund={fund}
-                        area={fund && types.CUSTOM_FUND_TREE_AREA_NODES}
+                        area={fund ? types.CUSTOM_FUND_TREE_AREA_NODES : undefined}
                         />
                 </Modal.Body>
                 <Modal.Footer>
