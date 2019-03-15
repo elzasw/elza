@@ -95,6 +95,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/nodes', null, { versionId: versionId, ids: nodeIds });
     }
 
+    findNodeByIds(fundId, nodeIds) {
+        return AjaxUtils.ajaxPost(WebApiCls.adminUrl + '/' + fundId + '/nodes/byIds', null, nodeIds);
+    }
+
     createRelation(relation) {
         return AjaxUtils.ajaxPost(WebApiCls.partyUrl + '/relation', null, relation);
     }

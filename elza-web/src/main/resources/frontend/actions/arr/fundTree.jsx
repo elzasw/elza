@@ -120,6 +120,8 @@ function getFundTreeForFund(state, area, versionId) {
         return state.fundRegion.fundDetail.fundTree
     } else if (area === types.FUND_TREE_AREA_COPY) {
         return state.arrRegion.globalFundTree.fundTreeCopy
+    } else if (area === types.CUSTOM_FUND_TREE_AREA_NODES) {
+        return state.arrRegion.customFund.fundTreeNodes
     } else {    // arrRegion
         var index = indexById(state.arrRegion.funds, versionId, "versionId");
         if (index != null) {
@@ -139,6 +141,8 @@ function getFundForTree(state, area, versionId) {
         return state.fundRegion
     } else if (area === types.FUND_TREE_AREA_COPY) {
         return state.arrRegion.globalFundTree.fundTreeCopy;
+    } else if (area === types.CUSTOM_FUND_TREE_AREA_NODES) {
+        return state.arrRegion.customFund.fundTreeNodes
     } else {    // arrRegion
         var index = indexById(state.arrRegion.funds, versionId, "versionId");
         if (index != null) {
@@ -315,6 +319,9 @@ export function fundTreeNodeExpand(area, node) {
         if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {  // fundRegion
             versionId = state.fundRegion.fundDetail.versionId
             fundTree = state.fundRegion.fundDetail.fundTree
+        } else if (area === types.CUSTOM_FUND_TREE_AREA_NODES) {
+            versionId = state.arrRegion.customFund.versionId;
+            fundTree = state.arrRegion.customFund.fundTreeNodes
         } else if (area === types.FUND_TREE_AREA_COPY) {
             versionId = state.arrRegion.globalFundTree.versionId;
             fundTree = state.arrRegion.globalFundTree.fundTreeCopy
@@ -413,6 +420,9 @@ export function fundTreeFetchIfNeeded(area, sourceVersionId, expandedIds, select
         } else if (area === types.FUND_TREE_AREA_COPY) {
             versionId = state.arrRegion.globalFundTree.versionId;
             fundTree = state.arrRegion.globalFundTree.fundTreeCopy;
+        } else if (area === types.CUSTOM_FUND_TREE_AREA_NODES) {
+            versionId = state.arrRegion.customFund.versionId;
+            fundTree = state.arrRegion.customFund.fundTreeNodes;
         } else {    // arrRegion
             var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
             versionId = activeFund.versionId

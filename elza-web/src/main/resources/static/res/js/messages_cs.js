@@ -1125,6 +1125,7 @@ var messages = {
     "admin.user.noSelection.message" : "Prosím vyberte uživatele ze seznamu nebo vytvořte nového",
     "admin.user.emptyList.title" : "Žádní uživatelé",
     "admin.user.emptyList.message" : "V systému nejsou zadáni žádní uživatelé",
+    "admin.perms.tabs.funds.perm.FUND_ARR_NODE.add": "Přidat konkrétní JP pro pořádání",
 
     "admin.user.add.title": "Vytvoření uživatele",
     "admin.user.update.title": "Upravení jména",

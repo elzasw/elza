@@ -18,6 +18,9 @@ import {
 } from 'actions/arr/fundTree.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
 import FundNodesSelect from "./FundNodesSelect";
+import {customFundActionFetchListIfNeeded} from "../../actions/arr/customFundAction";
+import * as types from '../../actions/constants/ActionTypes.js';
+import Loading from "../shared/loading/Loading";
 
 /**
  * Dialogový formulář vybrání uzlů v konkrétní verzi souboru - výběr uzlů na základě konfigurace - např. single nebo multiple select.
@@ -32,11 +35,22 @@ class FundNodesSelectForm extends AbstractReactComponent {
     static defaultProps = {
         multipleSelection: true,
         multipleSelectionOneLevel: false,
+        fundId: null,
     };
 
     state = {
         selectedNodes: [],
         selectedNodesIds: []
+    };
+
+    componentDidMount() {
+        this.fetch(this.props);
+    }
+
+    fetch = (props) => {
+        if (props.fundId) {
+            props.dispatch(customFundActionFetchListIfNeeded(props.fundId));
+        }
     };
 
     handleSubmit = () => {
@@ -55,13 +69,17 @@ class FundNodesSelectForm extends AbstractReactComponent {
             selectedNodes: nodes,
             selectedNodesIds: ids
         });
-    }
+    };
 
     render() {
-        const {multipleSelection, multipleSelectionOneLevel, onClose} = this.props;
+        const {multipleSelection, multipleSelectionOneLevel, onClose, fund, fundId} = this.props;
         const {selectedNodes} = this.state;
 
         let someSelected = selectedNodes.length > 0;
+
+        if (fund && fund.fundId !== fundId) {
+            return <Loading/>
+        }
 
         return (
             <div className="add-nodes-form-container">
@@ -70,6 +88,8 @@ class FundNodesSelectForm extends AbstractReactComponent {
                         multipleSelection={multipleSelection}
                         multipleSelectionOneLevel={multipleSelectionOneLevel}
                         onChange={this.handleChange}
+                        fund={fund}
+                        area={fund && types.CUSTOM_FUND_TREE_AREA_NODES}
                         />
                 </Modal.Body>
                 <Modal.Footer>
@@ -81,5 +101,12 @@ class FundNodesSelectForm extends AbstractReactComponent {
     }
 }
 
-export default connect()(FundNodesSelectForm);
+function mapStateToProps(state, props) {
+    const {arrRegion} = state;
+    return {
+        fund: props.fundId ? arrRegion.customFund : null
+    }
+}
+
+export default connect(mapStateToProps)(FundNodesSelectForm);
 
