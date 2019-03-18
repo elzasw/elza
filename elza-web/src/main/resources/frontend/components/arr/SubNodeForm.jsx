@@ -79,6 +79,7 @@ class SubNodeForm extends AbstractReactComponent {
         focus: React.PropTypes.object,
         formActions: React.PropTypes.object.isRequired,
         showNodeAddons: React.PropTypes.bool.isRequired,
+        arrPerm: React.PropTypes.bool.isRequired,
     };
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -708,7 +709,7 @@ class SubNodeForm extends AbstractReactComponent {
      */
     renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting) {
         const {fundId, subNodeForm, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, rulDataTypes, structureTypes, calendarTypes, closed,
-            showNodeAddons, conformityInfo, versionId, readMode, userDetail, arrRegion, typePrefix} = this.props;
+            showNodeAddons, conformityInfo, versionId, readMode, userDetail, arrRegion, typePrefix, arrPerm} = this.props;
 
         const refType = subNodeForm.refTypesMap[descItemType.id];
         const infoType = subNodeForm.infoTypesMap[descItemType.id];
@@ -794,6 +795,7 @@ class SubNodeForm extends AbstractReactComponent {
             versionId={versionId}
             fundId={fundId}
             readMode={readMode}
+            arrPerm={arrPerm}
             strictMode={strictMode}
             notIdentified={notIdentified}
             onDescItemNotIdentified={(descItemIndex, descItem) => this.handleDescItemNotIdentified(descItemGroupIndex, descItemTypeIndex, descItemIndex, descItem)}

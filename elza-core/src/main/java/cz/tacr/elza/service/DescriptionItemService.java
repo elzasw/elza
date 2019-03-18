@@ -362,9 +362,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param fundVersionId identifikátor verze archivní pomůcky
      * @return vytvořená hodnota atributu
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
     public ArrDescItem createDescriptionItem(final ArrDescItem descItem,
-                                             final Integer nodeId,
+                                             @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
                                              final Integer nodeVersion,
                                              @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");

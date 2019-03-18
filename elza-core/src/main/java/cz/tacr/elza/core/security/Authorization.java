@@ -5,6 +5,7 @@ import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrNode;
 import org.apache.commons.collections.CollectionUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -151,6 +152,9 @@ public class Authorization {
 				case FUND:
 					hasPermission = checkFundPermission(permission, methodInfo, userDetail);
 					break;
+				case NODE:
+					hasPermission = checkNodePermission(permission, methodInfo, userDetail);
+					break;
 				case ISSUE_LIST:
 					hasPermission = checkIssueListPermission(permission, methodInfo, userDetail);
 					break;
@@ -291,6 +295,16 @@ public class Authorization {
 		});
 	}
 
+	private boolean checkNodePermission(final Permission permission, final MethodInfo methodInfo, final UserDetail userDetail) {
+		return hasPermission(methodInfo, (authParam, parameterValue) -> {
+			Integer entityId = loadNodeId(parameterValue, authParam.type());
+			if (userDetail.hasPermission(permission, entityId)) {
+				return PermissionResult.GRANT_ACCESS;
+			}
+			return PermissionResult.DENY_ACCESS;
+		});
+	}
+
 	/**
 	 * Check permissions for scope
 	 *
@@ -399,6 +413,21 @@ public class Authorization {
 				return issueListRepository.findFundIdByIssueListId(((IWfIssueList) value).getIssueListId());
 			}
 			break;
+		case NODE:
+			return null;
+		}
+		throw new IllegalStateException(type + ":" + value.getClass().getName());
+	}
+
+	private Integer loadNodeId(final Object value, final AuthParam.Type type) {
+		switch (type) {
+			case NODE:
+				if (value instanceof Integer) {
+					return (Integer) value;
+				} else if (value instanceof ArrNode) {
+					return ((ArrNode) value).getNodeId();
+				}
+				break;
 		}
 		throw new IllegalStateException(type + ":" + value.getClass().getName());
 	}

@@ -2665,14 +2665,20 @@ public class ArrangementController {
     public static class DescFormDataNewVO extends FormDataNewVO<ArrNodeVO> {
         private ArrNodeVO parent;
 
+        /**
+         * Oprávnění pořádat v dané JP. Nevyhodnocuje se, pokud {@link TreeData#fullArrPerm} je true.
+         */
+        private boolean arrPerm;
+
         public DescFormDataNewVO() {
         }
 
         public DescFormDataNewVO(final ArrNodeVO parent,
                                  final List<ArrItemVO> descItems,
-                                 final List<ItemTypeLiteVO> itemTypes) {
+                                 final List<ItemTypeLiteVO> itemTypes, final boolean arrPerm) {
             super(parent, descItems, itemTypes);
             this.parent = parent;
+            this.arrPerm = arrPerm;
         }
 
         @Override
@@ -2683,6 +2689,14 @@ public class ArrangementController {
         @Override
         public void setParent(final ArrNodeVO parent) {
             this.parent = parent;
+        }
+
+        public boolean isArrPerm() {
+            return arrPerm;
+        }
+
+        public void setArrPerm(final boolean arrPerm) {
+            this.arrPerm = arrPerm;
         }
     }
 

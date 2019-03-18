@@ -23,6 +23,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.security.AuthorizationRequest;
+import cz.tacr.elza.security.UserPermission;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
@@ -57,15 +60,6 @@ import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrDigitizationRequest;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.WfIssue;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.SystemException;
@@ -95,7 +89,7 @@ import cz.tacr.elza.service.vo.TitleItemsByType;
  */
 @Service
 @EventBusListener
-public class LevelTreeCacheService {
+public class LevelTreeCacheService implements NodePermissionChecker {
 
     /**
      * Maximální počet verzí stromů ukládaných současně v paměti.
@@ -143,6 +137,9 @@ public class LevelTreeCacheService {
     @Autowired
     @Lazy // TODO: odebrat a vyřešit cyklickou závislost
     private IssueService issueService;
+
+    @Autowired
+    private UserService userService;
 
     /**
      * Cache stromu pro danou verzi. (id verze -> nodeid uzlu -> uzel).
@@ -239,7 +236,15 @@ public class LevelTreeCacheService {
 
         LinkedHashMap<Integer, Node> nodes = getNodes(nodesMap, rootNode, param, version);
 
-        return new TreeData(convertToTreeNode(nodes.values()), expandedIdsExtended);
+        boolean fullArrPerm = hasFullArrPerm(version.getFundId());
+        return new TreeData(convertToTreeNodeWithPerm(nodes.values(), version, fullArrPerm), expandedIdsExtended, fullArrPerm);
+    }
+
+    public boolean hasFullArrPerm(final Integer fundId) {
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.FUND_ADMIN)
+                .or(UsrPermission.Permission.FUND_ARR, fundId);
+        return authRequest.matches(userDetail);
     }
 
     /**
@@ -1284,17 +1289,29 @@ public class LevelTreeCacheService {
                 .icon()
                 .referenceMark();
 
-        return convertToTreeNode(getNodes(nodesMap, node, param, fundVersion).values());
+        boolean fullArrPerm = hasFullArrPerm(fundVersion.getFundId());
+        return convertToTreeNodeWithPerm(getNodes(nodesMap, node, param, fundVersion).values(), fundVersion, fullArrPerm);
     }
 
     /**
-     * Konverze požadovaných objektů do objektů pro strom.
+     * Konverze požadovaných objektů do objektů pro strom s vyhodnoceným oprávněním.
      *
      * @param nodes JP k převodu
+     * @param version     verze AS
+     * @param fullArrPerm máme oprávnění pořádat v celém AS
      * @return převedené JP
      */
-    private List<TreeNodeVO> convertToTreeNode(final Collection<Node> nodes) {
-        return nodes.stream().map(node -> {
+    private List<TreeNodeVO> convertToTreeNodeWithPerm(final Collection<Node> nodes, final ArrFundVersion version, final boolean fullArrPerm) {
+        List<TreeNodeVO> result = new ArrayList<>(nodes.size());
+
+        Set<Integer> nodeIds = new HashSet<>();
+        for (Node node : nodes) {
+            nodeIds.add(node.getId());
+        }
+
+        Map<Integer, Boolean> permNodeIdMap = fullArrPerm ? Collections.emptyMap() : calcPermNodeIdMap(version, nodeIds);
+
+        for (Node node : nodes) {
             TreeNodeVO treeNode = new TreeNodeVO();
             treeNode.setId(node.getId());
             treeNode.setName(node.getName());
@@ -1303,8 +1320,58 @@ public class LevelTreeCacheService {
             treeNode.setIcon(node.getIcon());
             treeNode.setDepth(node.getDepth());
             treeNode.setVersion(node.getVersion());
-            return treeNode;
-        }).collect(Collectors.toList());
+            treeNode.setArrPerm(fullArrPerm ? true : permNodeIdMap.get(node.getId()));
+            result.add(treeNode);
+        }
+        return result;
+    }
+
+    /**
+     * Zjištění oprávnění pro JP ve verzi.
+     *
+     * @param version verze AS
+     * @param nodeIds požadované JP pro které napočítáváme oprávnění pro pořádání.
+     * @return mapa výsledků JP->true/false
+     */
+    public Map<Integer, Boolean> calcPermNodeIdMap(final ArrFundVersion version, final Set<Integer> nodeIds) {
+
+        Collection<UserPermission> userPermission = userService.getLoggedUserDetail().getUserPermission();
+        Set<Integer> permNodeIds = new HashSet<>();
+        for (UserPermission permission : userPermission) {
+            if (permission.getPermission() == UsrPermission.Permission.FUND_ARR_NODE) {
+                permNodeIds.addAll(permission.getNodeIdsByFund(version.getFundId()));
+            }
+        }
+        Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(version);
+
+        Map<Integer, Boolean> result = new HashMap<>();
+
+        // pro všechny požadované JP vyhodnotím oprávnění
+        for (Integer nodeId : nodeIds) {
+            if (permNodeIds.contains(nodeId)) { // pokud existuje oprávnění přímo na tuto JP
+                result.put(nodeId, true);
+            } else { // jinak hledám některého z předků, jestli mají toto oprávnění
+                boolean nodeIdResult = false;
+                TreeNode treeNode = versionTreeCache.get(nodeId).getParent();
+                while (treeNode != null) {
+                    Integer parentNodeId = treeNode.getId();
+                    if (permNodeIds.contains(parentNodeId)) {
+                        nodeIdResult = true;
+                        break;
+                    }
+                    treeNode = treeNode.getParent();
+                }
+                result.put(nodeId, nodeIdResult);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public boolean checkPermissionInTree(final Integer nodeId) {
+        ArrNode one = nodeRepository.findOne(nodeId);
+        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(one.getFundId());
+        return calcPermNodeIdMap(fundVersion, Collections.singleton(nodeId)).get(nodeId);
     }
 
     /**

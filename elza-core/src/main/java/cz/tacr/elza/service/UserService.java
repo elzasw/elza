@@ -1000,6 +1000,10 @@ public class UserService {
                 userPermission.addIssueListId(permission.getIssueList().getIssueListId());
                 userPermission.addFundId(permission.getIssueList().getFund().getFundId());
             }
+
+            if (permission.getNodeId() != null && permission.getFundId() != null) {
+                userPermission.addNodeId(permission.getFundId(), permission.getNodeId());
+            }
         }
 
         return new HashSet<>(userPermissions.values());

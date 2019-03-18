@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -155,7 +156,13 @@ public class ArrangementFormService {
 		ArrNodeVO nodeVO = ArrNodeVO.valueOf(node);
 		List<ArrItemVO> descItemsVOs = factoryVo.createItems(descItems);
 		List<ItemTypeLiteVO> itemTypeLites = factoryVo.createItemTypes(ruleCode, fundId, itemTypes);
-		return new DescFormDataNewVO(nodeVO, descItemsVOs, itemTypeLites);
+
+		boolean arrPerm = levelTreeCache.hasFullArrPerm(version.getFundId());
+		if (!arrPerm) {
+			Map<Integer, Boolean> permNodeIdMap = levelTreeCache.calcPermNodeIdMap(version, Collections.singleton(nodeId));
+			arrPerm = permNodeIdMap.get(nodeId);
+		}
+		return new DescFormDataNewVO(nodeVO, descItemsVOs, itemTypeLites, arrPerm);
 	}
 
 	@Transactional

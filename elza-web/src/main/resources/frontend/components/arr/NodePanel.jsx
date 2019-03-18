@@ -171,8 +171,7 @@ class NodePanel extends AbstractReactComponent {
      * Returns fund settings object built from userDetail in props
      */
     getSettingsFromProps(props=this.props){
-        const {userDetail, fundId, closed} = props;
-
+        const {userDetail, fundId, closed, node} = props;
         // center panel settings
         var settings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
         var settingsValues = settings.value ? JSON.parse(settings.value) : null;
@@ -186,15 +185,19 @@ class NodePanel extends AbstractReactComponent {
 
         let readMode = closed || settingsValues;
 
+        const subNodeForm = node.subNodeForm;
+        const arrPerm = subNodeForm.data && subNodeForm.data.arrPerm;
+
         // sets read mode when user does not have permissions to arrange fund
-        if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
+        if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) && !arrPerm) {
             readMode = true;
         }
 
         return {
             showParents,
             showChildren,
-            readMode
+            readMode,
+            arrPerm
         };
     }
 
@@ -722,7 +725,7 @@ return true
      * @param daos digitální entity k JP
      * @return {Object} view
      */
-    renderAccordion(form, recordInfo, daos, readMode) {
+    renderAccordion(form, recordInfo, daos, readMode, arrPerm) {
         const {node, versionId, userDetail, fund, fundId, closed, displayAccordion} = this.props;
         const {focusItemIndex} = this.state;
         var rows = [];
@@ -824,6 +827,7 @@ return true
                             userDetail={userDetail}
                             fundId={fundId}
                             closed={closed}
+                            arrPerm={arrPerm}
                             onSwitchNode={this.handleAccordionShortcuts.bind(this)}
                         />
                     </div>
@@ -843,6 +847,7 @@ return true
 
         const settings = this.getSettingsFromProps();
         const readMode = settings.readMode;
+        const arrPerm = settings.arrPerm;
         var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
 
         var form;
@@ -883,6 +888,7 @@ return true
                 onVisiblePolicy={this.handleVisiblePolicy}
                 onDigitizationRequest={this.handleDigitizationRequest}
                 readMode={readMode}
+                arrPerm={arrPerm}
             />
         } else {
             form = <HorizontalLoader text={i18n('global.data.loading.form')}/>
@@ -919,7 +925,7 @@ return true
             <Shortcuts name='NodePanel' key={'node-panel'} className={cls} handler={this.handleShortcuts} tabIndex={0} global stopPropagation={false}>
                 <div key='main' className='main'>
                     {settings.showParents && this.renderParents()}
-                    {this.renderAccordion(form, record, daos, readMode)}
+                    {this.renderAccordion(form, record, daos, readMode, arrPerm)}
                     {settings.showChildren &&  this.renderChildren()}
                 </div>
             </Shortcuts>

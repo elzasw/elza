@@ -71,7 +71,7 @@ class NodeActionsBar extends AbstractReactComponent {
     }
 
     render() {
-        const {simplified, node, selectedSubNodeIndex, versionId, userDetail, fundId, closed, onSwitchNode} = this.props;
+        const {simplified, node, selectedSubNodeIndex, versionId, userDetail, fundId, closed, onSwitchNode, arrPerm} = this.props;
         var selectedSubNodeNumber = selectedSubNodeIndex + 1; // pořadí vybraného záznamu v akordeonu
         var gotoTitle = this.isFilterUsed() ? i18n('arr.fund.subNodes.findPosition.filterActive') : i18n('arr.fund.subNodes.findPosition')
 
@@ -93,7 +93,7 @@ class NodeActionsBar extends AbstractReactComponent {
         return(
             <div key='actions' className='node-actions-bar'>
                 <div key='actions' className='actions'>
-                    <AddNodeCross node={node} selectedSubNodeIndex={selectedSubNodeIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
+                    <AddNodeCross node={node} selectedSubNodeIndex={selectedSubNodeIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} arrPerm={arrPerm} closed={closed}/>
                     <div className="button-wrap">
                         <div className="left-side">
                             {!simplified &&
@@ -153,6 +153,7 @@ class NodeActionsBar extends AbstractReactComponent {
 
 NodeActionsBar.propTypes = {
     simplified: React.PropTypes.bool.isRequired,
+    arrPerm: React.PropTypes.bool.isRequired,
     node: React.PropTypes.any.isRequired,
     versionId: React.PropTypes.any.isRequired,
     userDetail: React.PropTypes.object.isRequired,
