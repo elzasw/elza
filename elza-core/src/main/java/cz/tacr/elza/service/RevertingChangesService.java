@@ -2,7 +2,9 @@ package cz.tacr.elza.service;
 
 import java.math.BigInteger;
 import java.sql.Timestamp;
-import java.time.*;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,7 +46,7 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundStructureExtension;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemType;
@@ -551,15 +553,16 @@ public class RevertingChangesService {
     }
 
     private Query createUpdateOutputQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange) {
-        Query query = entityManager.createQuery("UPDATE arr_output_definition d SET d.state = :stateNew WHERE d.state IN (:stateOld) AND d IN (" +
-                "SELECT no.outputDefinition FROM arr_node_output no WHERE no.node IN (" + createHqlSubNodeQuery(fund, node) + ") AND no.createChange >= :change OR no.deleteChange >= :change" +
-                ")");
+        Query query = entityManager.createQuery("UPDATE arr_output o" +
+                " SET o.state = :stateNew" +
+                " WHERE o.state IN (:stateOld)" +
+                " AND o IN (SELECT no.output FROM arr_node_output no WHERE no.node IN (" + createHqlSubNodeQuery(fund, node) + ") AND no.createChange >= :change OR no.deleteChange >= :change)");
 
         // nastavení parametrů dotazu
         query.setParameter("fund", fund);
         query.setParameter("change", toChange);
-        query.setParameter("stateNew", ArrOutputDefinition.OutputState.OUTDATED);
-        query.setParameter("stateOld", Collections.singletonList(ArrOutputDefinition.OutputState.FINISHED));
+        query.setParameter("stateNew", ArrOutput.OutputState.OUTDATED);
+        query.setParameter("stateOld", Collections.singletonList(ArrOutput.OutputState.FINISHED));
         if (node != null) {
             query.setParameter("node", node);
         }
@@ -727,7 +730,7 @@ public class RevertingChangesService {
                 {"arr_fund_version", "lockChange"},
                 {"arr_bulk_action_run", "change"},
                 {"arr_output", "createChange"},
-                {"arr_output", "lockChange"},
+                {"arr_output", "deleteChange"},
                 {"arr_node_output", "createChange"},
                 {"arr_node_output", "deleteChange"},
                 {"arr_output_result", "change"},

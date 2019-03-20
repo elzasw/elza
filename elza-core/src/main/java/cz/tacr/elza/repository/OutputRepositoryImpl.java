@@ -13,25 +13,25 @@ import org.hibernate.query.NativeQuery;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutput.OutputState;
 
 /**
- * Implementace {@link OutputDefinitionRepositoryCustom}.
+ * Implementace {@link OutputRepositoryCustom}.
  *
  * @author Martin Šlapa
  * @since 01.04.2016
  */
 @Component
-public class OutputDefinitionRepositoryImpl implements OutputDefinitionRepositoryCustom {
+public class OutputRepositoryImpl implements OutputRepositoryCustom {
 
     @PersistenceContext
     private EntityManager em;
 
     @Override
-    public List<ArrOutputDefinition> findOutputsByNodes(ArrFundVersion fundVersion,
-                                                        Collection<Integer> nodeIds,
-                                                        OutputState... currentStates) {
+    public List<ArrOutput> findOutputsByNodes(ArrFundVersion fundVersion,
+                                              Collection<Integer> nodeIds,
+                                              OutputState... currentStates) {
         Validate.notEmpty(nodeIds);
 
         // lock change condition
@@ -42,12 +42,12 @@ public class OutputDefinitionRepositoryImpl implements OutputDefinitionRepositor
             sql1 += "no.create_change_id < :changeId AND (l.delete_change_id is null or l.delete_change_id > :changeId) AND (no.delete_change_id is null or no.delete_change_id > :changeId)";
         }
 
-        String sql2 = "SELECT od.* FROM arr_output_definition od" +
-                " JOIN (SELECT no.output_definition_id FROM arr_node_output no " + sql1 + " AND no.node_id in (:nodeIds) GROUP BY no.output_definition_id HAVING count(*) = :count) c1" +
-                    " ON c1.output_definition_id = od.output_definition_id" +
-                " JOIN (SELECT no.output_definition_id FROM arr_node_output no " + sql1 + " GROUP BY no.output_definition_id HAVING count(*) = :count) c2" +
-                    " ON c2.output_definition_id = od.output_definition_id" +
-                " WHERE od.fund_id = :fundId";
+        String sql2 = "SELECT o.* FROM arr_output o" +
+                " JOIN (SELECT no.output_id FROM arr_node_output no " + sql1 + " AND no.node_id in (:nodeIds) GROUP BY no.output_id HAVING count(*) = :count) c1" +
+                " ON c1.output_id = o.output_id" +
+                " JOIN (SELECT no.output_id FROM arr_node_output no " + sql1 + " GROUP BY no.output_id HAVING count(*) = :count) c2" +
+                " ON c2.output_id = o.output_id" +
+                " WHERE o.fund_id = :fundId";
 
         if (currentStates != null) {
             sql2 += " AND od.state IN :states";
@@ -55,7 +55,7 @@ public class OutputDefinitionRepositoryImpl implements OutputDefinitionRepositor
 
         Session session = em.unwrap(Session.class);
 
-        NativeQuery<ArrOutputDefinition> query = session.createNativeQuery(sql2, ArrOutputDefinition.class);
+        NativeQuery<ArrOutput> query = session.createNativeQuery(sql2, ArrOutput.class);
 
         query.setParameter("count", nodeIds.size());
         query.setParameter("nodeIds", nodeIds);
@@ -73,6 +73,6 @@ public class OutputDefinitionRepositoryImpl implements OutputDefinitionRepositor
             query.setParameter("states", stateNames);
         }
 
-		return query.getResultList();
+        return query.getResultList();
     }
 }

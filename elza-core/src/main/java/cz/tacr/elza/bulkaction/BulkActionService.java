@@ -48,8 +48,8 @@ import cz.tacr.elza.domain.ArrChange.Type;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutput.OutputState;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
@@ -552,8 +552,8 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
         List<ArrBulkActionNode> arrBulkActionNodes = bulkActionRun.getArrBulkActionNodes();
         List<Integer> nodeIds = arrBulkActionNodes.stream().map(ArrBulkActionNode::getNodeId).collect(Collectors.toList());
 
-        // find all related output definitions
-        List<ArrOutputDefinition> outputDefinitions = outputServiceInternal.findOutputsByNodes(bulkActionRun.getFundVersion(), nodeIds, OutputState.OPEN, OutputState.COMPUTING);
+        // find all related output outputss
+        List<ArrOutput> outputs = outputServiceInternal.findOutputsByNodes(bulkActionRun.getFundVersion(), nodeIds, OutputState.OPEN, OutputState.COMPUTING);
 
         // prepare ArrChange provider applied only if update occurs, change shared between connectors
         Supplier<ArrChange> changeSupplier = new Supplier<ArrChange>() {
@@ -568,13 +568,13 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
             }
         };
 
-        // update each output definition
+        // update each output output
         logger.info("Dispatching result to outputs");
-        for (ArrOutputDefinition definition : outputDefinitions) {
-            OutputItemConnector connector = outputServiceInternal.createItemConnector(bulkActionRun.getFundVersion(), definition);
+        for (ArrOutput output : outputs) {
+            OutputItemConnector connector = outputServiceInternal.createItemConnector(bulkActionRun.getFundVersion(), output);
             connector.setChangeSupplier(changeSupplier);
 
-            // update definition by each result
+            // update output by each result
             Result actionResult = bulkActionRun.getResult();
             if (actionResult != null) {
                 for (ActionResult result : actionResult.getResults()) {
@@ -583,8 +583,8 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
             }
 
             // update to open state
-            definition.setState(OutputState.OPEN); // saved by commit
-            outputServiceInternal.publishOutputStateChanged(definition, bulkActionRun.getFundVersionId());
+            output.setState(OutputState.OPEN); // saved by commit
+            outputServiceInternal.publishOutputStateChanged(output, bulkActionRun.getFundVersionId());
         }
         logger.info("Result dispatched to outputs");
     }

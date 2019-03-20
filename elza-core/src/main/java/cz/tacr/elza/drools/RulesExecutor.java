@@ -16,7 +16,7 @@ import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulStructuredType;
@@ -88,14 +88,14 @@ public class RulesExecutor {
     /**
      * Spustí pravidla nad typy atributů a jejich specifikacema.
      *
-     * @param outputDefinition       definice výstupu
+     * @param output výstup
      * @param rulDescItemTypeExtList seznam všech atributů
      * @return seznam typů atributů odpovídající pravidlům
      */
-    public List<RulItemTypeExt> executeOutputItemTypesRules(final ArrOutputDefinition outputDefinition,
+    public List<RulItemTypeExt> executeOutputItemTypesRules(final ArrOutput output,
                                                           final List<RulItemTypeExt> rulDescItemTypeExtList) {
         try {
-            return outputItemTypesRules.execute(outputDefinition, rulDescItemTypeExtList);
+            return outputItemTypesRules.execute(output, rulDescItemTypeExtList);
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
 			throw new SystemException(e);

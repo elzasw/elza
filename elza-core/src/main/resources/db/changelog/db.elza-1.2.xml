@@ -77,4 +77,116 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20190318130000" author="marek">
+
+        <addColumn tableName="arr_output_definition">
+            <column name="create_change_id" type="int"/>
+            <column name="delete_change_id" type="int"/>
+        </addColumn>
+
+        <update tableName="arr_output_definition">
+            <column name="create_change_id" valueComputed="(select t.create_change_id from arr_output t where t.output_definition_id = output_definition_id)"/>
+        </update>
+
+        <addNotNullConstraint tableName="arr_output_definition" columnName="create_change_id" columnDataType="int"/>
+
+        <update tableName="arr_output_definition">
+            <column name="delete_change_id" valueComputed="create_change_id"/>
+            <where>deleted</where>
+        </update>
+
+        <dropColumn tableName="arr_output_definition" columnName="temporary"/>
+        <dropColumn tableName="arr_output_definition" columnName="deleted"/>
+
+        <!-- Drop all "Associations From" Foreign Key Constraints -->
+
+        <dropForeignKeyConstraint baseTableName="arr_output_item" constraintName="fk_outputItem_output_definition"/>
+
+        <dropForeignKeyConstraint baseTableName="arr_item_settings" constraintName="fk_itemSettings_output_definition"/>
+
+        <dropForeignKeyConstraint baseTableName="arr_node_output" constraintName="fk_node_output_named_output"/>
+
+        <dropForeignKeyConstraint baseTableName="arr_output_result" constraintName="fk_arrOutputResult_arrOutputDefinition"/>
+
+        <!-- Drop "Associations To" Foreign Key Constraints -->
+
+        <dropForeignKeyConstraint baseTableName="arr_output_definition" constraintName="fk_named_output_fund"/>
+
+        <dropForeignKeyConstraint baseTableName="arr_output_definition" constraintName="fk_arr_output_definition_output_type"/>
+
+        <dropForeignKeyConstraint baseTableName="arr_output_definition" constraintName="fk_arrOutputDefinition_rulTemplate"/>
+
+        <!-- Drop table arr_output -->
+
+        <delete tableName="db_hibernate_sequences">
+            <where>sequence_name = 'arr_output|output_id'</where>
+        </delete>
+
+        <dropTable tableName="arr_output"/>
+
+        <!-- Drop Primary Key -->
+
+        <dropPrimaryKey tableName="arr_output_definition" constraintName="pk_arr_named_output"/>
+
+        <!-- Rename table -->
+
+        <renameColumn tableName="arr_output_definition" oldColumnName="output_definition_id" newColumnName="output_id" columnDataType="int"/>
+
+        <renameTable oldTableName="arr_output_definition" newTableName="arr_output"/>
+
+        <update tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="arr_output|output_id"/>
+            <where>sequence_name = 'arr_output_definition|output_definition_id'</where>
+        </update>
+
+        <!-- Recreate Primary Key -->
+
+        <addPrimaryKey tableName="arr_output" columnNames="output_id" constraintName="pk_arr_output"/>
+
+        <!-- Recreate "Associations To" Foreign Key Constraints -->
+
+        <addForeignKeyConstraint constraintName="fk_arr_output_fund"
+            baseTableName="arr_output" baseColumnNames="fund_id"
+            referencedTableName="arr_fund" referencedColumnNames="fund_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_arr_output_type"
+            baseTableName="arr_output" baseColumnNames="output_type_id"
+            referencedTableName="rul_output_type" referencedColumnNames="output_type_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_arr_output_template"
+            baseTableName="arr_output" baseColumnNames="template_id"
+            referencedTableName="rul_template" referencedColumnNames="template_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_arr_output_create_change"
+            baseTableName="arr_output" baseColumnNames="create_change_id"
+            referencedTableName="arr_change" referencedColumnNames="change_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_arr_output_delete_change"
+            baseTableName="arr_output" baseColumnNames="delete_change_id"
+            referencedTableName="arr_change" referencedColumnNames="change_id"/>
+
+        <!-- Recreate "Associations From" Foreign Key Constraints -->
+
+        <renameColumn tableName="arr_output_item" oldColumnName="output_definition_id" newColumnName="output_id" columnDataType="int"/>
+        <addForeignKeyConstraint constraintName="fk_arr_output_item_output"
+            baseTableName="arr_output_item" baseColumnNames="output_id"
+            referencedTableName="arr_output" referencedColumnNames="output_id"/>
+
+        <renameColumn tableName="arr_item_settings" oldColumnName="output_definition_id" newColumnName="output_id" columnDataType="int"/>
+        <addForeignKeyConstraint constraintName="fk_arr_item_settings_output"
+            baseTableName="arr_item_settings" baseColumnNames="output_id"
+            referencedTableName="arr_output" referencedColumnNames="output_id"/>
+
+        <renameColumn tableName="arr_node_output" oldColumnName="output_definition_id" newColumnName="output_id" columnDataType="int"/>
+        <addForeignKeyConstraint constraintName="fk_arr_node_output"
+            baseTableName="arr_node_output" baseColumnNames="output_id"
+            referencedTableName="arr_output" referencedColumnNames="output_id"/>
+
+        <renameColumn tableName="arr_output_result" oldColumnName="output_definition_id" newColumnName="output_id" columnDataType="int"/>
+        <addForeignKeyConstraint constraintName="fk_arr_output_result_output"
+            baseTableName="arr_output_result" baseColumnNames="output_id"
+            referencedTableName="arr_output" referencedColumnNames="output_id"/>
+
+    </changeSet>
+
 </databaseChangeLog>

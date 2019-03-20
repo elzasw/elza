@@ -28,7 +28,7 @@ import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.DmsFile;
@@ -365,11 +365,11 @@ public class DmsService {
 		
 		// get output result to check permissions
 		ArrOutputResult outputResult = outputResultRepository.findOneByOutputResultId(outputResultId);
-		ArrOutputDefinition outputDef = outputResult.getOutputDefinition();
+		ArrOutput output = outputResult.getOutput();
 		
 		// check permissions
 		AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.FUND_RD_ALL)
-		    .or(UsrPermission.Permission.FUND_RD, outputDef.getFundId());		
+		    .or(UsrPermission.Permission.FUND_RD, output.getFundId());
 		userService.authorizeRequest(authRequest);
 		
         return outputFileRepository.findByTextAndResult(search, outputResult, from, count);

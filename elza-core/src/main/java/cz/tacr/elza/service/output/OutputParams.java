@@ -7,13 +7,13 @@ import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.RulTemplate;
 
 public class OutputParams {
 
-    private final ArrOutputDefinition definition;
+    private final ArrOutput output;
 
     private final ArrChange change;
 
@@ -25,16 +25,16 @@ public class OutputParams {
 
     private final Path templateDir;
 
-    public OutputParams(ArrOutputDefinition definition,
+    public OutputParams(ArrOutput output,
                         ArrChange change,
                         ArrFundVersion fundVersion,
                         List<Integer> nodeIds,
                         List<ArrOutputItem> outputItems,
                         Path templateDir) {
         // sanity check
-        Validate.isTrue(definition.getFundId().equals(fundVersion.getFundId()));
+        Validate.isTrue(output.getFundId().equals(fundVersion.getFundId()));
 
-        this.definition = definition;
+        this.output = output;
         this.change = change;
         this.fundVersion = fundVersion;
         this.outputNodeIds = nodeIds;
@@ -45,19 +45,19 @@ public class OutputParams {
     /**
      * Shortcut method for output definition id.
      */
-    public Integer getDefinitionId() {
-        return definition.getOutputDefinitionId();
+    public Integer getOutputId() {
+        return output.getOutputId();
     }
 
     /**
      * Shortcut method for output definition template.
      */
     public RulTemplate getTemplate() {
-        return definition.getTemplate();
+        return output.getTemplate();
     }
 
-    public ArrOutputDefinition getDefinition() {
-        return definition;
+    public ArrOutput getOutput() {
+        return output;
     }
 
     public ArrChange getChange() {

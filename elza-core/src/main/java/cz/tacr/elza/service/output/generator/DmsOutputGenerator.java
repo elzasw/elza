@@ -48,7 +48,7 @@ public abstract class DmsOutputGenerator implements OutputGenerator {
             os.close();
             storeResult();
         } catch (IOException e) {
-            throw new ProcessException(params.getDefinitionId(), "Failed to create output result", e);
+            throw new ProcessException(params.getOutputId(), "Failed to create output result", e);
         } finally {
             tempFileProvider.close();
         }
@@ -67,7 +67,7 @@ public abstract class DmsOutputGenerator implements OutputGenerator {
         ArrOutputResult result = new ArrOutputResult();
         result.setChange(params.getChange());
         result.setTemplate(params.getTemplate());
-        result.setOutputDefinition(params.getDefinition());
+        result.setOutput(params.getOutput());
 
         em.persist(result);
 
@@ -79,7 +79,7 @@ public abstract class DmsOutputGenerator implements OutputGenerator {
     }
 
     private ArrOutputFile createOutputFile(ArrOutputResult result) {
-        String definitionName = params.getDefinition().getName();
+        String definitionName = params.getOutput().getName();
         RulTemplate template = params.getTemplate();
 
         ArrOutputFile file = new ArrOutputFile();

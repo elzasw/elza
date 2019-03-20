@@ -61,7 +61,7 @@ import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApRule;
 import cz.tacr.elza.domain.ApRuleSystem;
 import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyType;
@@ -189,7 +189,7 @@ import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
+import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.PackageDependencyRepository;
@@ -409,7 +409,7 @@ public class PackageService {
     private ResourcePathResolver resourcePathResolver;
 
     @Autowired
-    private OutputDefinitionRepository outputDefinitionRepository;
+    private OutputRepository outputRepository;
 
     @Autowired
     private PartyTypeRepository partyTypeRepository;
@@ -2421,7 +2421,7 @@ public class PackageService {
         rulOutputTypesNew = outputTypeRepository.save(rulOutputTypesNew);
 
         // update templates
-        TemplateUpdater templateUpdater = new TemplateUpdater(this.templateRepository, outputDefinitionRepository,
+        TemplateUpdater templateUpdater = new TemplateUpdater(this.templateRepository, outputRepository,
                                                               this.outputResultRepository,
                                                               rulOutputTypesNew);
         templateUpdater.run(ruc);
@@ -2430,7 +2430,7 @@ public class PackageService {
         rulOutputTypesDelete.removeAll(rulOutputTypesNew);
 
         if (!rulOutputTypesDelete.isEmpty()) {
-            List<ArrOutputDefinition> byOutputTypes = outputDefinitionRepository
+            List<ArrOutput> byOutputTypes = outputRepository
                     .findByOutputTypes(rulOutputTypesDelete);
             if (!byOutputTypes.isEmpty()) {
                 throw new IllegalStateException(

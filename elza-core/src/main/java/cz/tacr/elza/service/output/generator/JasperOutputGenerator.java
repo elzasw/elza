@@ -102,7 +102,7 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
         outputModel.init(params);
 
         // Parse PDF settings
-        String outputSettings = params.getDefinition().getOutputSettings();
+        String outputSettings = params.getOutput().getOutputSettings();
         if (StringUtils.isNotBlank(outputSettings)) {
             ObjectMapper mapper = new ObjectMapper();
             OutputSettingsVO settingsVO;
@@ -157,7 +157,7 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
         try (InputStream is = Files.newInputStream(templateFile, StandardOpenOption.READ)) {
             return JasperCompileManager.compileReport(is);
         } catch (IOException | JRException e) {
-            throw new ProcessException(params.getDefinitionId(), "Failed to parse Jasper template", e);
+            throw new ProcessException(params.getOutputId(), "Failed to parse Jasper template", e);
         }
     }
 
@@ -170,7 +170,7 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
         try {
             jasperPrint = fillManager.fill(report, parameters, new JREmptyDataSource());
         } catch (JRException e) {
-            throw new ProcessException(params.getDefinitionId(), "Failed to create Jasper document", e);
+            throw new ProcessException(params.getOutputId(), "Failed to create Jasper document", e);
         }
 
         Path pdfFile = tempFileProvider.createTempFile();
@@ -188,7 +188,7 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
 
             // JasperExportManager.exportReportToPdfStream(print, os);
         } catch (IOException | JRException e) {
-            throw new ProcessException(params.getDefinitionId(), "Failed to generate PDF from Jasper document", e);
+            throw new ProcessException(params.getOutputId(), "Failed to generate PDF from Jasper document", e);
         }
 
         return pdfFile;

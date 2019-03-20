@@ -1,40 +1,25 @@
 package cz.tacr.elza.controller;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import cz.tacr.elza.common.FileDownload;
-import cz.tacr.elza.controller.config.ClientFactoryDO;
-import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.factory.ApFactory;
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.filter.Filters;
-import cz.tacr.elza.controller.vo.filter.SearchParam;
-import cz.tacr.elza.controller.vo.nodes.*;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
-import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ConcurrentUpdateException;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.filter.DescItemTypeFilter;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.*;
-import cz.tacr.elza.service.exception.DeleteFailedException;
-import cz.tacr.elza.service.importnodes.ImportFromFund;
-import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
-import cz.tacr.elza.service.importnodes.vo.ConflictResolve;
-import cz.tacr.elza.service.importnodes.vo.ImportParams;
-import cz.tacr.elza.service.importnodes.vo.ValidateResult;
-import cz.tacr.elza.service.output.OutputRequestStatus;
-import cz.tacr.elza.service.vo.ChangesResult;
-import cz.tacr.elza.service.vo.UpdateDescItemsParam;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.Validate;
@@ -45,19 +30,134 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
+import cz.tacr.elza.common.FileDownload;
+import cz.tacr.elza.controller.config.ClientFactoryDO;
+import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.factory.ApFactory;
+import cz.tacr.elza.controller.vo.AddLevelParam;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
+import cz.tacr.elza.controller.vo.ArrDaoVO;
+import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.ArrOutputVO;
+import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
+import cz.tacr.elza.controller.vo.ArrRequestVO;
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CreateFundVO;
+import cz.tacr.elza.controller.vo.DataGridExportType;
+import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.FulltextFundRequest;
+import cz.tacr.elza.controller.vo.FundListCountResult;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.OutputSettingsVO;
+import cz.tacr.elza.controller.vo.RulOutputTypeVO;
+import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.filter.Filters;
+import cz.tacr.elza.controller.vo.filter.SearchParam;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
+import cz.tacr.elza.controller.vo.nodes.NodeData;
+import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrDaoPackage;
+import cz.tacr.elza.domain.ArrDaoRequest;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
+import cz.tacr.elza.domain.ArrDigitizationRequest;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutput.OutputState;
+import cz.tacr.elza.domain.ArrOutputItem;
+import cz.tacr.elza.domain.ArrRequest;
+import cz.tacr.elza.domain.ArrRequestQueueItem;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ConcurrentUpdateException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.filter.DescItemTypeFilter;
+import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DaoPackageRepository;
+import cz.tacr.elza.repository.DaoRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FilteredResult;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputItemRepository;
+import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.ArrIOService;
+import cz.tacr.elza.service.ArrangementFormService;
+import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.DaoService;
+import cz.tacr.elza.service.DescriptionItemService;
+import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.FilterTreeService;
+import cz.tacr.elza.service.FundLevelService;
+import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.OutputService;
+import cz.tacr.elza.service.PolicyService;
+import cz.tacr.elza.service.RequestQueueService;
+import cz.tacr.elza.service.RequestService;
+import cz.tacr.elza.service.RevertingChangesService;
+import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.exception.DeleteFailedException;
+import cz.tacr.elza.service.importnodes.ImportFromFund;
+import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
+import cz.tacr.elza.service.importnodes.vo.ConflictResolve;
+import cz.tacr.elza.service.importnodes.vo.ImportParams;
+import cz.tacr.elza.service.importnodes.vo.ValidateResult;
+import cz.tacr.elza.service.output.OutputRequestStatus;
+import cz.tacr.elza.service.vo.ChangesResult;
+import cz.tacr.elza.service.vo.UpdateDescItemsParam;
 
 /**
  * Kontroler pro pořádání.
@@ -365,26 +465,26 @@ public class ArrangementController {
      * @param itemTypeId        identfikátor typu hodnoty atributu
      */
     @Transactional
-    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/{itemTypeId}",
+    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}",
             method = RequestMethod.DELETE,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public OutputItemResult deleteOutputItemsByType(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                    @PathVariable(value = "outputDefinitionId") final Integer nodeId,
-                                                    @PathVariable(value = "outputDefinitionVersion") final Integer nodeVersion,
+                                                    @PathVariable(value = "outputId") final Integer outputId,
+                                                    @PathVariable(value = "outputVersion") final Integer outputVersion,
                                                     @PathVariable(value = "itemTypeId") final Integer itemTypeId) {
 
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
-        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+        Assert.notNull(outputVersion, "Nebyla vyplněna verze výstupu");
         Assert.notNull(itemTypeId, "Nebyl vyplněn identifikátor typu atributu");
-        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Assert.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
 
-        ArrOutputDefinition node = outputService
-                .deleteOutputItemsByType(fundVersionId, nodeId, nodeVersion, itemTypeId);
+        ArrOutput output = outputService
+                .deleteOutputItemsByType(fundVersionId, outputId, outputVersion, itemTypeId);
 
         OutputItemResult outputItemResult = new OutputItemResult();
         outputItemResult.setItem(null);
-        outputItemResult.setParent(factoryVo.createArrOutputDefinition(node));
+        outputItemResult.setParent(factoryVo.createOutput(output));
 
         return outputItemResult;
     }
@@ -519,8 +619,8 @@ public class ArrangementController {
     /**
      * Import CSV souboru, založí se nová hodnota s obsahem souboru.
      * @param fundVersionId verze souboru
-     * @param outputDefinitionVersion verze výstupu
-     * @param outputDefinitionId id výstupu
+     * @param outputVersion verze výstupu
+     * @param outputId id výstupu
      * @param descItemTypeId id typu atributu
      * @param importFile soubor soubor pro import
      * @throws IOException chyba
@@ -531,21 +631,21 @@ public class ArrangementController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public OutputItemResult outputItemCsvImport(
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-            @RequestParam(value = "outputDefinitionVersion") final Integer outputDefinitionVersion,
-            @RequestParam(value = "outputDefinitionId", required = false) final Integer outputDefinitionId,
+            @RequestParam(value = "outputVersion") final Integer outputVersion,
+            @RequestParam(value = "outputId", required = false) final Integer outputId,
             @RequestParam(value = "descItemTypeId", required = false) final Integer descItemTypeId,
             @RequestParam(value = "file") final MultipartFile importFile) throws IOException {
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
-        Assert.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
+        Assert.notNull(outputVersion, "Verze definice výstupu musí být vyplněna");
         Assert.notNull(descItemTypeId, "Nebyl vyplněn identifikátor typu atributu");
 
         InputStream is = importFile.getInputStream();
-        ArrOutputItem outputItemCreated = arrIOService.csvOutputImport(fundVersionId, outputDefinitionId, outputDefinitionVersion, descItemTypeId, is);
+        ArrOutputItem outputItemCreated = arrIOService.csvOutputImport(fundVersionId, outputId, outputVersion, descItemTypeId, is);
         is.close();
 
         OutputItemResult outputItemResult = new OutputItemResult();
         outputItemResult.setItem(factoryVo.createItem(outputItemCreated));
-        outputItemResult.setParent(factoryVo.createArrOutputDefinition(outputItemCreated.getOutputDefinition()));
+        outputItemResult.setParent(factoryVo.createOutput(outputItemCreated.getOutput()));
         return outputItemResult;
     }
 
@@ -640,29 +740,29 @@ public class ArrangementController {
      * Nastavení atributu na "Nezjištěno".
      *
      * @param fundVersionId           id archivního souboru
-     * @param outputDefinitionId      identifikátor výstupu
-     * @param outputDefinitionVersion verze výstupu
+     * @param outputId                identifikátor výstupu
+     * @param outputVersion           verze výstupu
      * @param outputItemTypeId        dentfikátor typu hodnoty atributu
      * @param outputItemSpecId        identfikátor specifikace hodnoty atributu
      * @param outputItemObjectId      identifikátor existující hodnoty atributu
      * @return upravená hodnota atributu nastavená na nezjištěno
      */
     @Transactional
-    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/notUndefined/set",
+    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/notUndefined/set",
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public OutputItemResult setNotIdentifiedOutputItem(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                       @PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
-                                                       @PathVariable(value = "outputDefinitionVersion") final Integer outputDefinitionVersion,
+                                                       @PathVariable(value = "outputId") final Integer outputId,
+                                                       @PathVariable(value = "outputVersion") final Integer outputVersion,
                                                        @RequestParam(value = "outputItemTypeId") final Integer outputItemTypeId,
                                                        @RequestParam(value = "outputItemSpecId", required = false) final Integer outputItemSpecId,
                                                        @RequestParam(value = "outputItemObjectId", required = false) final Integer outputItemObjectId) {
         ArrOutputItem outputItemUpdated = outputService
-                .setNotIdentifiedDescItem(outputItemTypeId, outputDefinitionId, outputDefinitionVersion, fundVersionId, outputItemSpecId, outputItemObjectId);
+                .setNotIdentifiedDescItem(outputItemTypeId, outputId, outputVersion, fundVersionId, outputItemSpecId, outputItemObjectId);
         OutputItemResult outputItemResult = new OutputItemResult();
         outputItemResult.setItem(factoryVo.createItem(outputItemUpdated));
-        outputItemResult.setParent(factoryVo.createOutputDefinition(outputItemUpdated.getOutputDefinition()));
+        outputItemResult.setParent(factoryVo.createOutput(outputItemUpdated.getOutput()));
         return outputItemResult;
     }
 
@@ -671,29 +771,29 @@ public class ArrangementController {
      * Zrušení nastavení atributu na "Nezjištěno".
      *
      * @param fundVersionId           id archivního souboru
-     * @param outputDefinitionId      identifikátor výstupu
-     * @param outputDefinitionVersion verze výstupu
+     * @param outputId                identifikátor výstupu
+     * @param outputVersion           verze výstupu
      * @param outputItemTypeId        dentfikátor typu hodnoty atributu
      * @param outputItemSpecId        identfikátor specifikace hodnoty atributu
      * @param outputItemObjectId      identifikátor existující hodnoty atributu
      * @return odstraněný atribut
      */
     @Transactional
-    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/notUndefined/unset",
+    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/notUndefined/unset",
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public OutputItemResult unsetNotIdentifiedOutputItem(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                         @PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
-                                                         @PathVariable(value = "outputDefinitionVersion") final Integer outputDefinitionVersion,
+                                                         @PathVariable(value = "outputId") final Integer outputId,
+                                                         @PathVariable(value = "outputVersion") final Integer outputVersion,
                                                          @RequestParam(value = "outputItemTypeId") final Integer outputItemTypeId,
                                                          @RequestParam(value = "outputItemSpecId", required = false) final Integer outputItemSpecId,
                                                          @RequestParam(value = "outputItemObjectId", required = false) final Integer outputItemObjectId) {
         ArrOutputItem descItemDeleted = outputService
-                .deleteOutputItem(outputItemObjectId, outputDefinitionVersion, fundVersionId);
+                .deleteOutputItem(outputItemObjectId, outputVersion, fundVersionId);
         OutputItemResult outputItemResult = new OutputItemResult();
         outputItemResult.setItem(null);
-        outputItemResult.setParent(factoryVo.createArrOutputDefinition(descItemDeleted.getOutputDefinition()));
+        outputItemResult.setParent(factoryVo.createOutput(descItemDeleted.getOutput()));
         return outputItemResult;
     }
 
@@ -807,76 +907,76 @@ public class ArrangementController {
     }
 
     @Transactional
-    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputDefinitionVersion}/delete",
+    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputVersion}/delete",
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public OutputItemResult deleteOutputItem(@RequestBody final ArrItemVO outputItemVO,
                                              @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                             @PathVariable(value = "outputDefinitionVersion") final Integer outputDefinitionVersion) {
+                                             @PathVariable(value = "outputVersion") final Integer outputVersion) {
         Assert.notNull(outputItemVO, "Výstup musí být vyplněn");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
-        Assert.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
+        Assert.notNull(outputVersion, "Verze definice výstupu musí být vyplněna");
 
         ArrOutputItem outputItemDeleted = outputService
-                .deleteOutputItem(outputItemVO.getDescItemObjectId(), outputDefinitionVersion, fundVersionId);
+                .deleteOutputItem(outputItemVO.getDescItemObjectId(), outputVersion, fundVersionId);
 
         OutputItemResult outputItemResult = new OutputItemResult();
         outputItemResult.setItem(null);
-        outputItemResult.setParent(factoryVo.createOutputDefinition(outputItemDeleted.getOutputDefinition()));
+        outputItemResult.setParent(factoryVo.createOutput(outputItemDeleted.getOutput()));
 
         return outputItemResult;
     }
 
     @Transactional
-    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/{itemTypeId}/create",
+    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}/create",
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public OutputItemResult createOutputItem(@RequestBody final ArrItemVO outputItemVO,
                                              @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                              @PathVariable(value = "itemTypeId") final Integer itemTypeId,
-                                             @PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
-                                             @PathVariable(value = "outputDefinitionVersion") final Integer outputDefinitionVersion) {
+                                             @PathVariable(value = "outputId") final Integer outputId,
+                                             @PathVariable(value = "outputVersion") final Integer outputVersion) {
         Assert.notNull(outputItemVO, "Výstup musí být vyplněn");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         Assert.notNull(itemTypeId, "Nebyl vyplněn identifikátor typu atributu");
-        Assert.notNull(outputDefinitionId, "Identifikátor definice výstupu musí být vyplněn");
-        Assert.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
+        Assert.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
+        Assert.notNull(outputVersion, "Verze výstupu musí být vyplněna");
 
         ArrOutputItem outputItem = factoryDO.createOutputItem(outputItemVO, itemTypeId);
 
-        ArrOutputItem outputItemCreated = outputService.createOutputItem(outputItem, outputDefinitionId,
-                outputDefinitionVersion, fundVersionId);
+        ArrOutputItem outputItemCreated = outputService.createOutputItem(outputItem, outputId,
+                outputVersion, fundVersionId);
 
         OutputItemResult outputItemResult = new OutputItemResult();
         outputItemResult.setItem(factoryVo.createItem(outputItemCreated));
-        outputItemResult.setParent(factoryVo.createArrOutputDefinition(outputItemCreated.getOutputDefinition()));
+        outputItemResult.setParent(factoryVo.createOutput(outputItemCreated.getOutput()));
 
         return outputItemResult;
     }
 
     @Transactional
-    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputDefinitionVersion}/update/{createNewVersion}",
+    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputVersion}/update/{createNewVersion}",
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public OutputItemResult updateOutputItem(@RequestBody final ArrItemVO outputItemVO,
                                              @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                             @PathVariable(value = "outputDefinitionVersion") final Integer outputDefinitionVersion,
+                                             @PathVariable(value = "outputVersion") final Integer outputVersion,
                                              @PathVariable(value = "createNewVersion") final Boolean createNewVersion) {
         Assert.notNull(outputItemVO, "Výstup musí být vyplněn");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
-        Assert.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
+        Assert.notNull(outputVersion, "Verze výstupu musí být vyplněna");
         Validate.isTrue(createNewVersion); // TODO: remove from API (update client)
 
         ArrOutputItem outputItem = factoryDO.createOutputItem(outputItemVO);
 
-        ArrOutputItem outputItemUpdated = outputService.updateOutputItem(outputItem, outputDefinitionVersion, fundVersionId);
+        ArrOutputItem outputItemUpdated = outputService.updateOutputItem(outputItem, outputVersion, fundVersionId);
 
         OutputItemResult outputItemResult = new OutputItemResult();
         outputItemResult.setItem(factoryVo.createItem(outputItemUpdated));
-        outputItemResult.setParent(factoryVo.createOutputDefinition(outputItemUpdated.getOutputDefinition()));
+        outputItemResult.setParent(factoryVo.createOutput(outputItemUpdated.getOutput()));
 
         return outputItemResult;
     }
@@ -884,61 +984,60 @@ public class ArrangementController {
     /**
      * Přepnutí na automatickou/uživatelskou úpravu typu atributu.
      *
-     * @param outputDefinitionId identifikátor výstupu
-     * @param fundVersionId      identfikátor verze AS
-     * @param itemTypeId         identfikátor typu hodnoty atributu
+     * @param outputId identifikátor výstupu
+     * @param fundVersionId identfikátor verze AS
+     * @param itemTypeId identfikátor typu hodnoty atributu
      */
     @Transactional
-    @RequestMapping(value = "/output/{outputDefinitionId}/{fundVersionId}/{itemTypeId}/switch", method = RequestMethod.POST)
-    public void switchOutputCalculating(@PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
+    @RequestMapping(value = "/output/{outputId}/{fundVersionId}/{itemTypeId}/switch", method = RequestMethod.POST)
+    public void switchOutputCalculating(@PathVariable(value = "outputId") final Integer outputId,
                                         @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                         @PathVariable(value = "itemTypeId") final Integer itemTypeId,
                                         @RequestParam(value = "strict", required = false, defaultValue = "false") final Boolean strict) {
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
-        ArrOutputDefinition outputDefinition = outputService.getOutputDefinition(outputDefinitionId);
+        ArrOutput output = outputService.getOutput(outputId);
         RulItemType itemType = itemTypeRepository.findOne(itemTypeId);
 
-        outputService.switchOutputCalculating(outputDefinition, version, itemType, strict);
+        outputService.switchOutputCalculating(output, version, itemType, strict);
     }
 
     /**
      * Získání dat pro formulář.
      *
-     * @param outputDefinitionId    identfikátor outputu
+     * @param outputId identifikátor výstupu
      * @param fundVersionId id verze stromu
      * @return formulář
      */
-	@Transactional
-    @RequestMapping(value = "/output/{outputDefinitionId}/{fundVersionId}/form", method = RequestMethod.GET)
-    public OutputFormDataNewVO getOutputFormData(@PathVariable(value = "outputDefinitionId") final Integer outputDefinitionId,
+    @Transactional
+    @RequestMapping(value = "/output/{outputId}/{fundVersionId}/form", method = RequestMethod.GET)
+    public OutputFormDataNewVO getOutputFormData(@PathVariable(value = "outputId") final Integer outputId,
                                                  @PathVariable(value = "fundVersionId") final Integer fundVersionId) {
         Assert.notNull(fundVersionId, "Identifikátor verze musí být vyplněn");
-        Assert.notNull(outputDefinitionId, "Identifikátor výstupu musí být vyplněn");
+        Assert.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
 
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
-        ArrOutputDefinition outputDefinition = outputService.getOutputDefinition(outputDefinitionId);
-
         Assert.notNull(version, "Verze AP neexistuje");
 
-        List<ArrOutputItem> outputItems = outputService.getOutputItems(version, outputDefinition);
+        ArrOutput output = outputService.getOutput(outputId);
+        List<ArrOutputItem> outputItems = outputService.getOutputItems(version, output);
 
         List<RulItemTypeExt> itemTypes;
         try {
-            itemTypes = ruleService.getOutputItemTypes(outputDefinition);
+            itemTypes = ruleService.getOutputItemTypes(output);
         } catch (Exception e) {
             logger.error("Chyba při zpracování pravidel", e);
             itemTypes = new ArrayList<>();
         }
 
-        List<RulItemTypeExt> hiddenItemTypes = outputService.findHiddenItemTypes(version, outputDefinition, itemTypes, outputItems);
+        List<RulItemTypeExt> hiddenItemTypes = outputService.findHiddenItemTypes(version, output, itemTypes, outputItems);
 
         Integer fundId = version.getFund().getFundId();
         String ruleCode = version.getRuleSet().getCode();
 
-        ArrOutputDefinitionVO outputDefinitionVO = factoryVo.createArrOutputDefinition(outputDefinition);
+        ArrOutputVO outputVO = factoryVo.createOutput(output);
         List<ArrItemVO> descItems = factoryVo.createItems(outputItems);
         List<ItemTypeLiteVO> itemTypeLites = factoryVo.createItemTypes(ruleCode, fundId, itemTypes);
-        return new OutputFormDataNewVO(outputDefinitionVO, descItems, itemTypeLites,
+        return new OutputFormDataNewVO(outputVO, descItems, itemTypeLites,
                 hiddenItemTypes.stream().map(RulItemTypeExt::getItemTypeId).collect(Collectors.toList()));
     }
 
@@ -1002,8 +1101,7 @@ public class ArrangementController {
     }
 
     /**
-     * Smazání celého archivního souboru. (pouze pokud neexistuje výstup
-     * (arr_named_output))
+     * Smazání celého archivního souboru.
      *
      * @param fundId
      *            id archivního souboru
@@ -1999,8 +2097,8 @@ public class ArrangementController {
      * @return  seznam outputů
      */
     @RequestMapping(value = "/output/{fundVersionId}", method = RequestMethod.GET)
-	@Transactional
-    public List<ArrOutputExtVO> getOutputs(@PathVariable(value = "fundVersionId") final Integer fundVersionId, @RequestParam(value = "state", required = false) final OutputState state) {
+    @Transactional
+    public List<ArrOutputVO> getOutputs(@PathVariable(value = "fundVersionId") final Integer fundVersionId, @RequestParam(value = "state", required = false) final OutputState state) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         List<ArrOutput> outputs = state == null ? outputService.getSortedOutputs(fundVersion) : outputService.getSortedOutputsByState(fundVersion, state);
         return factoryVo.createOutputExtList(outputs, fundVersion);
@@ -2014,12 +2112,12 @@ public class ArrangementController {
      * @return output
      */
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}", method = RequestMethod.GET)
-	@Transactional
-    public ArrOutputExtVO getOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                    @PathVariable(value = "outputId") final Integer outputId) {
+    @Transactional
+    public ArrOutputVO getOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                 @PathVariable(value = "outputId") final Integer outputId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        outputService.getNamedOutput(fundVersion, output);
+        outputService.getOutput(fundVersion, output);
         return factoryVo.createOutputExt(output, fundVersion);
     }
 
@@ -2035,16 +2133,13 @@ public class ArrangementController {
         outputService.setOutputSettings(outputSettings, outputId);
     }
 
-
-
     @RequestMapping(value = "/output/generate/{outputId}", method = RequestMethod.GET)
-	@Transactional
+    @Transactional
     public GenerateOutputResult generateOutput(@PathVariable(value = "outputId") int outputId,
                                                @RequestParam(value = "forced", defaultValue = "false") boolean forced) {
         ArrOutput output = outputService.getOutput(outputId);
-        ArrOutputDefinition definition = output.getOutputDefinition();
 
-        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(definition.getFundId());
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
         OutputRequestStatus requestStatus = outputService.addRequest(outputId, fundVersion, !forced);
 
         GenerateOutputResult generateOutputResult = new GenerateOutputResult();
@@ -2061,28 +2156,13 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/output/{fundVersionId}", method = RequestMethod.PUT)
-    public ArrOutputDefinitionVO createNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                   @RequestBody final OutputNameParam param) {
+    public ArrOutputVO createNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                         @RequestBody final OutputNameParam param) {
         Assert.notNull(param, "Vstupní data musí být vyplněny");
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        ArrOutputDefinition outputDefinition = outputService.createOutputDefinition(fundVersion, param.getName(), param.getInternalCode(),
-                param.getTemporary(), param.getOutputTypeId(), param.getTemplateId());
-        return factoryVo.createOutputDefinition(outputDefinition);
-    }
-
-    /**
-     * Zamknutí verze výstupu.
-     *
-     * @param fundVersionId identfikátor verze AS
-     * @param outputId      identifikátor výstupu
-     */
-    @Transactional
-    @RequestMapping(value = "/output/{fundVersionId}/{outputId}/lock", method = RequestMethod.POST)
-    public void outputLock(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                           @PathVariable(value = "outputId") final Integer outputId) {
-        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        ArrOutput output = outputService.getOutput(outputId);
-        outputService.outputLock(fundVersion, output);
+        ArrOutput output = outputService.createOutput(fundVersion, param.getName(), param.getInternalCode(),
+                param.getOutputTypeId(), param.getTemplateId());
+        return factoryVo.createOutput(output);
     }
 
     /**
@@ -2131,7 +2211,7 @@ public class ArrangementController {
                                   @PathVariable(value = "outputId") final Integer outputId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        outputService.deleteNamedOutput(fundVersion, output.getOutputDefinition());
+        outputService.deleteNamedOutput(fundVersion, output);
     }
 
     /**
@@ -2146,7 +2226,7 @@ public class ArrangementController {
                                   @PathVariable(value = "outputId") final Integer outputId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        outputService.revertToOpenState(fundVersion, output.getOutputDefinition());
+        outputService.revertToOpenState(fundVersion, output);
     }
 
     /**
@@ -2158,11 +2238,11 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}/clone", method = RequestMethod.POST)
-    public ArrOutputDefinitionVO cloneOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                             @PathVariable(value = "outputId") final Integer outputId) {
+    public ArrOutputVO cloneOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                   @PathVariable(value = "outputId") final Integer outputId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        return factoryVo.createOutputDefinition(outputService.cloneOutput(fundVersion, output.getOutputDefinition()));
+        return factoryVo.createOutput(outputService.cloneOutput(fundVersion, output));
     }
 
     /**
@@ -2700,15 +2780,15 @@ public class ArrangementController {
         }
     }
 
-    public static class OutputFormDataNewVO extends FormDataNewVO<ArrOutputDefinitionVO> {
-        private ArrOutputDefinitionVO parent;
+    public static class OutputFormDataNewVO extends FormDataNewVO<ArrOutputVO> {
+        private ArrOutputVO parent;
 
         List<Integer> unusedItemTypeIds;
 
         public OutputFormDataNewVO() {
         }
 
-        public OutputFormDataNewVO(final ArrOutputDefinitionVO parent,
+        public OutputFormDataNewVO(final ArrOutputVO parent,
                                    final List<ArrItemVO> descItems,
                                    final List<ItemTypeLiteVO> itemTypes,
                                    final List<Integer> unusedItemTypeIds) {
@@ -2718,12 +2798,12 @@ public class ArrangementController {
         }
 
         @Override
-        public ArrOutputDefinitionVO getParent() {
+        public ArrOutputVO getParent() {
             return parent;
         }
 
         @Override
-        public void setParent(final ArrOutputDefinitionVO parent) {
+        public void setParent(final ArrOutputVO parent) {
             this.parent = parent;
         }
 
@@ -2862,16 +2942,16 @@ public class ArrangementController {
         }
     }
 
-    public static class OutputItemResult extends ItemResult<ArrOutputDefinitionVO> {
-        private ArrOutputDefinitionVO parent;
+    public static class OutputItemResult extends ItemResult<ArrOutputVO> {
+        private ArrOutputVO parent;
 
         @Override
-        public ArrOutputDefinitionVO getParent() {
+        public ArrOutputVO getParent() {
             return parent;
         }
 
         @Override
-        public void setParent(final ArrOutputDefinitionVO parent) {
+        public void setParent(final ArrOutputVO parent) {
             this.parent = parent;
         }
     }
@@ -2879,7 +2959,7 @@ public class ArrangementController {
     /**
      * Vstupní parametry pro přesuny uzlů.
      */
-    public static class LevelMoveParam extends NodeParam{
+    public static class LevelMoveParam extends NodeParam {
 
         /**
          * Seznam uzlů, které přesouváme.
@@ -3300,11 +3380,6 @@ public class ArrangementController {
         private String internalCode;
 
         /**
-         * Je výstup dočasný?
-         */
-        private Boolean temporary;
-
-        /**
          * Rul Output Type ID
          */
         private Integer outputTypeId;
@@ -3328,14 +3403,6 @@ public class ArrangementController {
 
         public void setInternalCode(final String internalCode) {
             this.internalCode = internalCode;
-        }
-
-        public Boolean getTemporary() {
-            return temporary;
-        }
-
-        public void setTemporary(final Boolean temporary) {
-            this.temporary = temporary;
         }
 
         public Integer getOutputTypeId() {

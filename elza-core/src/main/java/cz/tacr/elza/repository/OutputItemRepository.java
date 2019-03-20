@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.RulItemType;
 
@@ -18,14 +18,10 @@ public interface OutputItemRepository extends JpaRepository<ArrOutputItem, Integ
 
     /**
      * Vyhledá všechny otevřené (nesmazené) hodnoty atributů podle typu a výstupu. (pro vícehodnotový atribut)
-     *
-     * @param itemType
-     * @param outputDefinition
-     * @return
      */
-    @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.outputDefinition = :outputDefinition AND i.position > :position")
+    @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.output = :output AND i.position > :position")
     List<ArrOutputItem> findOpenOutputItemsAfterPosition(@Param("itemType") RulItemType itemType,
-                                                         @Param("outputDefinition") ArrOutputDefinition outputDefinition,
+                                                         @Param("output") ArrOutput output,
                                                          @Param("position") Integer position);
 
     /**
@@ -37,50 +33,43 @@ public interface OutputItemRepository extends JpaRepository<ArrOutputItem, Integ
     @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
     ArrOutputItem findOpenOutputItem(Integer descItemObjectId);
 
-	/**
-	 * Return list of output items with fetched data
-	 *
-	 * @param descItemObjectId
-	 * @return
-	 */
-	@Query("SELECT i FROM arr_output_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.descItemObjectId = :itemObjectId")
+    /**
+     * Return list of output items with fetched data
+     */
+    @Query("SELECT i FROM arr_output_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.descItemObjectId = :itemObjectId")
     List<ArrOutputItem> findOpenOutputItems(@Param("itemObjectId") Integer descItemObjectId);
 
-    @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.itemTypeId = :itemTypeId AND i.outputDefinition = :outputDefinition")
+    @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.itemTypeId = :itemTypeId AND i.output = :output")
     List<ArrOutputItem> findOpenOutputItems(@Param("itemTypeId") Integer itemTypeId,
-                                            @Param("outputDefinition") ArrOutputDefinition outputDefinition);
+                                            @Param("output") ArrOutput output);
 
     /**
      * Finds maximum item position for specified type and definition. Only look up for open items.
      *
      * @return Maximum position or 0 when no item found.
      */
-    @Query("SELECT COALESCE(MAX(i.position), 0) FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.outputDefinition = :outputDefinition")
+    @Query("SELECT COALESCE(MAX(i.position), 0) FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.output = :output")
     int findMaxItemPosition(@Param("itemType") RulItemType itemType,
-                            @Param("outputDefinition") ArrOutputDefinition outputDefinition);
+                            @Param("output") ArrOutput output);
 
     /**
      * Vyhledá všechny otevřené (nesmazené) hodnoty atributů podle typu a uzlu mezi pozicemi. (pro vícehodnotový atribut)
-     *
-     * @param itemType
-     * @param node
-     * @return
      */
-    @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.outputDefinition = :outputDefinition AND i.position >= :positionFrom AND i.position <= :positionTo")
+    @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.output = :output AND i.position >= :positionFrom AND i.position <= :positionTo")
     List<ArrOutputItem> findOpenOutputItemsBetweenPositions(@Param("itemType") RulItemType itemType,
-                                                          @Param("outputDefinition") ArrOutputDefinition outputDefinition,
-                                                          @Param("positionFrom") Integer positionFrom,
-                                                          @Param("positionTo") Integer positionTo);
+                                                            @Param("output") ArrOutput output,
+                                                            @Param("positionFrom") Integer positionFrom,
+                                                            @Param("positionTo") Integer positionTo);
 
     // @Modifying
-    // void deleteByOutputDefinition(ArrOutputDefinition outputDefinition);
+    // void deleteByOutput(ArrOutput output);
 
-	@Query("SELECT i FROM arr_output_item i LEFT JOIN FETCH i.data WHERE i.outputDefinition = :outputDefinition AND i.deleteChange IS NULL")
-    List<ArrOutputItem> findByOutputAndDeleteChangeIsNull(@Param("outputDefinition") ArrOutputDefinition outputDefinition);
+    @Query("SELECT i FROM arr_output_item i LEFT JOIN FETCH i.data WHERE i.output = :output AND i.deleteChange IS NULL")
+    List<ArrOutputItem> findByOutputAndDeleteChangeIsNull(@Param("output") ArrOutput output);
 
-	@Query("SELECT i FROM arr_output_item i LEFT JOIN FETCH i.data WHERE i.outputDefinition = :outputDefinition AND i.createChange < :lockChange AND (i.deleteChange > :lockChange OR i.deleteChange IS NULL)")
-    List<ArrOutputItem> findByOutputAndChange(@Param("outputDefinition") ArrOutputDefinition outputDefinition,
-                                              @Param("lockChange") ArrChange lockChange);
+    @Query("SELECT i FROM arr_output_item i LEFT JOIN FETCH i.data WHERE i.output = :output AND i.createChange < :change AND (i.deleteChange > :change OR i.deleteChange IS NULL)")
+    List<ArrOutputItem> findByOutputAndChange(@Param("output") ArrOutput output,
+                                              @Param("change") ArrChange change);
 
-    void deleteByOutputDefinitionFund(ArrFund fund);
+    void deleteByOutputFund(ArrFund fund);
 }

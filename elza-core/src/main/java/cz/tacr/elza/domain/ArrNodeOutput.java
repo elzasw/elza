@@ -27,9 +27,9 @@ public class ArrNodeOutput {
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer nodeOutputId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrOutputDefinition.class)
-    @JoinColumn(name = "outputDefinitionId", nullable = false)
-    private ArrOutputDefinition outputDefinition;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrOutput.class)
+    @JoinColumn(name = "outputId", nullable = false)
+    private ArrOutput output;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
     @JoinColumn(name = "nodeId", nullable = false)
@@ -63,15 +63,15 @@ public class ArrNodeOutput {
     /**
      * @return pojmenovaný výstup z archivního souboru
      */
-    public ArrOutputDefinition getOutputDefinition() {
-        return outputDefinition;
+    public ArrOutput getOutput() {
+        return output;
     }
 
     /**
-     * @param outputDefinition pojmenovaný výstup z archivního souboru
+     * @param output pojmenovaný výstup z archivního souboru
      */
-    public void setOutputDefinition(final ArrOutputDefinition outputDefinition) {
-        this.outputDefinition = outputDefinition;
+    public void setOutput(final ArrOutput output) {
+        this.output = output;
     }
 
     /**

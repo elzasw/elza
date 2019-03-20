@@ -15,6 +15,6 @@ public interface FundRepository extends ElzaJpaRepository<ArrFund, Integer> , Fu
     @Query(value = "SELECT fa FROM arr_fund_version v JOIN v.fund fa JOIN v.rootNode n where n.uuid = ?1 and v.lockChange is null")
     ArrFund findByRootNodeUuid(String uuid);
 
-    @Query("SELECT fa FROM arr_fund fa JOIN fa.outputDefinitions o WHERE o.outputDefinitionId=?1")
-    ArrFund findByOutputDefinitionId(Integer outputDefinitionId);
+    @Query("SELECT fa FROM arr_fund fa JOIN fa.outputs o WHERE o.outputId=?1")
+    ArrFund findByOutputId(Integer outputId);
 }

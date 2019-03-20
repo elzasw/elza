@@ -28,25 +28,25 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public class ArrOutputItem extends ArrItem {
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrOutputDefinition.class)
-    @JoinColumn(name = "outputDefinitionId", nullable = false)
-    private ArrOutputDefinition outputDefinition;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrOutput.class)
+    @JoinColumn(name = "outputId", nullable = false)
+    private ArrOutput output;
 
     public ArrOutputItem() {
     }
 
-	public ArrOutputItem(ArrOutputItem srcItem) {
-		super(srcItem);
-		this.outputDefinition = srcItem.outputDefinition;
-	}
-
-    @Override
-    public ArrOutputDefinition getOutputDefinition() {
-        return outputDefinition;
+    public ArrOutputItem(ArrOutputItem srcItem) {
+        super(srcItem);
+        this.output = srcItem.output;
     }
 
-    public void setOutputDefinition(final ArrOutputDefinition outputDefinition) {
-        this.outputDefinition = outputDefinition;
+    @Override
+    public ArrOutput getOutput() {
+        return output;
+    }
+
+    public void setOutput(final ArrOutput output) {
+        this.output = output;
     }
 
     @Override

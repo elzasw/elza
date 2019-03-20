@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 
@@ -31,16 +31,16 @@ public class OutputItemTypesRules extends Rules {
      *
      * @param rulDescItemTypeExtList seznam všech atributů
      */
-    public synchronized List<RulItemTypeExt> execute(final ArrOutputDefinition outputDefinition,
+    public synchronized List<RulItemTypeExt> execute(final ArrOutput output,
                                                      final List<RulItemTypeExt> rulDescItemTypeExtList)
             throws Exception
     {
         
-        RulOutputType outputType = outputDefinition.getOutputType();
+        RulOutputType outputType = output.getOutputType();
 
         LinkedList<Object> facts = new LinkedList<>();
         facts.addAll(rulDescItemTypeExtList);
-        facts.add(outputDefinition);
+        facts.add(output);
         facts.add(outputType);
 
         Path path = resourcePathResolver.getDroolFile(outputType);

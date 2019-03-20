@@ -37,7 +37,7 @@ import cz.tacr.elza.controller.vo.ArrOutputFileVO;
 import cz.tacr.elza.controller.vo.DmsFileVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.DmsFile;
@@ -352,7 +352,7 @@ public class DmsController {
             throws IOException {
         Validate.notNull(outputResultId, "Identifikátor výstupu musí být vyplněn");
         ArrOutputResult result = outputResultRepository.getOneCheckExist(outputResultId);
-        ArrOutputDefinition outputDef = result.getOutputDefinition();
+        ArrOutput output = result.getOutput();
         
         // check number of files
         List<ArrOutputFile> outputFiles = result.getOutputFiles();
@@ -373,7 +373,7 @@ public class DmsController {
             } else {
                 // multiple files have to be zipped
                 fileForDownload = dmsService.getOutputFilesZip(result).toFile();
-                fileName = outputDef.getName() + ".zip";
+                fileName = output.getName() + ".zip";
                 in = new BufferedInputStream(new FileInputStream(fileForDownload));
             }
             FileDownload.addContentDispositionAsAttachment(response, fileName);

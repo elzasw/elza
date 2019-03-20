@@ -4,10 +4,6 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-
 /**
  * VO pro archivní pomůcku.
  *
@@ -25,9 +21,9 @@ public class ArrFundVO extends ArrFundBaseVO {
 
     private List<ApScopeVO> apScopes;
 
-    private List<ArrOutputDefinitionVO> validNamedOutputs;
+    private List<ArrOutputVO> validNamedOutputs;
 
-    private List<ArrOutputDefinitionVO> historicalNamedOutputs;
+    private List<ArrOutputVO> historicalNamedOutputs;
 
     public ArrFundVO() {
 
@@ -73,19 +69,19 @@ public class ArrFundVO extends ArrFundBaseVO {
         this.institutionId = institutionId;
     }
 
-    public List<ArrOutputDefinitionVO> getValidNamedOutputs() {
+    public List<ArrOutputVO> getValidNamedOutputs() {
         return validNamedOutputs;
     }
 
-    public void setValidNamedOutputs(final List<ArrOutputDefinitionVO> validNamedOutputs) {
+    public void setValidNamedOutputs(final List<ArrOutputVO> validNamedOutputs) {
         this.validNamedOutputs = validNamedOutputs;
     }
 
-    public List<ArrOutputDefinitionVO> getHistoricalNamedOutputs() {
+    public List<ArrOutputVO> getHistoricalNamedOutputs() {
         return historicalNamedOutputs;
     }
 
-    public void setHistoricalNamedOutputs(final List<ArrOutputDefinitionVO> historicalNamedOutputs) {
+    public void setHistoricalNamedOutputs(final List<ArrOutputVO> historicalNamedOutputs) {
         this.historicalNamedOutputs = historicalNamedOutputs;
     }
 

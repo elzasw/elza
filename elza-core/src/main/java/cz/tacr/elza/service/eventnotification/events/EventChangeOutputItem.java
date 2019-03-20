@@ -16,17 +16,17 @@ public class EventChangeOutputItem extends EventVersion {
     /**
      * Idetifikator uzlu.
      */
-    private Integer outputDefinitionId;
+    private Integer outputId;
     /**
      * verze uzlu.
      */
     private Integer version;
 
     public EventChangeOutputItem(final EventType eventType, final Integer versionId, final Integer itemObjectId,
-                                 final Integer outputDefinitionId, final Integer version) {
+                                 final Integer outputId, final Integer version) {
         super(eventType, versionId);
         this.itemObjectId = itemObjectId;
-        this.outputDefinitionId = outputDefinitionId;
+        this.outputId = outputId;
         this.version = version;
     }
 
@@ -38,12 +38,12 @@ public class EventChangeOutputItem extends EventVersion {
         this.itemObjectId = itemObjectId;
     }
 
-    public Integer getOutputDefinitionId() {
-        return outputDefinitionId;
+    public Integer getOutputId() {
+        return outputId;
     }
 
-    public void setOutputDefinitionId(final Integer outputDefinitionId) {
-        this.outputDefinitionId = outputDefinitionId;
+    public void setOutputId(final Integer outputId) {
+        this.outputId = outputId;
     }
 
     public Integer getVersion() {

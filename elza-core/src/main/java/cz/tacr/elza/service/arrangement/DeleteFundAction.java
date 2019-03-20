@@ -49,10 +49,9 @@ import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
+import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
-import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
@@ -155,14 +154,12 @@ public class DeleteFundAction {
     private CachedNodeRepository cachedNodeRepository;
 
     @Autowired
-    private OutputDefinitionRepository outputDefinitionRepository;
+    private OutputRepository outputRepository;
     @Autowired
     private ChangeRepository changeRepository;
 
     @Autowired
     private DescItemRepository descItemRepository;
-    @Autowired
-    private OutputRepository outputRepository;
     @Autowired
     private LevelRepository levelRepository;
     @Autowired
@@ -359,13 +356,12 @@ public class DeleteFundAction {
     private void dropOutputs() {
         // drop outputs
         // TODO: select changeIds and dataIds
-        outputRepository.deleteByOutputDefinitionFund(fund);
-        outputFileRepository.deleteByOutputResultOutputDefinitionFund(fund);
-        outputResultRepository.deleteByOutputDefinitionFund(fund);
-        itemSettingsRepository.deleteByOutputDefinitionFund(fund);
-        outputItemRepository.deleteByOutputDefinitionFund(fund);
-        nodeOutputRepository.deleteByOutputDefinitionFund(fund);
-        outputDefinitionRepository.deleteByFund(fund);
+        outputFileRepository.deleteByOutputResultOutputFund(fund);
+        outputResultRepository.deleteByOutputFund(fund);
+        itemSettingsRepository.deleteByOutputFund(fund);
+        outputItemRepository.deleteByOutputFund(fund);
+        nodeOutputRepository.deleteByOutputFund(fund);
+        outputRepository.deleteByFund(fund);
 
         em.flush();
     }

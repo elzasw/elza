@@ -50,8 +50,8 @@ import cz.tacr.elza.repository.GroupRepository;
 import cz.tacr.elza.repository.GroupUserRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.InstitutionTypeRepository;
-import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
+import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
@@ -62,7 +62,6 @@ import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.PartyCreatorRepository;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
@@ -131,8 +130,6 @@ public class HelperTestService {
     protected NodeRepository nodeRepository;
     @Autowired
     private NodeRegisterRepository nodeRegisterRepository;
-    @Autowired
-    private OutputDefinitionRepository outputDefinitionRepository;
     @Autowired
     private OutputRepository outputRepository;
     @Autowired
@@ -281,7 +278,6 @@ public class HelperTestService {
         levelRepository.deleteAll();
         nodeOutputRepository.deleteAll();
         outputRepository.deleteAll();
-        outputDefinitionRepository.deleteAll();
         itemAptypeRepository.deleteAll();
         nodeExtensionRepository.deleteAll();
         changeRepository.deleteAll();
@@ -305,8 +301,8 @@ public class HelperTestService {
 		return fundRepository;
 	}
 
-    public OutputDefinitionRepository getOutputDefinitionRepository() {
-        return outputDefinitionRepository;
+    public OutputRepository getOutputRepository() {
+        return outputRepository;
     }
 
     // Each package have to be loaded in separate transaction
