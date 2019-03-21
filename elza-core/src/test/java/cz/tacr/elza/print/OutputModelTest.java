@@ -140,11 +140,11 @@ public class OutputModelTest extends AbstractServiceTest {
                 apDescRepository, apNameRepository, apEidRepository,
                 null, structObjRepos, structItemRepos);
 
-        ArrOutput od = new ArrOutput();
-        od.setFund(fi.getFund());
-        od.setOutputType(outputType);
+        ArrOutput output = new ArrOutput();
+        output.setFund(fi.getFund());
+        output.setOutputType(outputType);
 
-        OutputParams params = new OutputParams(od, null, fi.getFundVersion(),
+        OutputParams params = new OutputParams(output, null, fi.getFundVersion(),
                 Collections.singletonList(level1.getNodeId()),
                 Collections.emptyList(),
                 Paths.get("test"));

@@ -34,10 +34,14 @@ public class OutputRepositoryImpl implements OutputRepositoryCustom {
                                               OutputState... currentStates) {
         Validate.notEmpty(nodeIds);
 
+        Integer lockChangeId = fundVersion.getLockChangeId();
+
         // lock change condition
-        String sql1 = " JOIN arr_level l ON l.node_id = no.node_id" + fundVersion.getLockChangeId() == null
-                ? " WHERE l.delete_change_id is null AND no.delete_change_id is null"
-                : " WHERE no.create_change_id < :changeId AND (l.delete_change_id is null OR l.delete_change_id > :changeId) AND (no.delete_change_id is null OR no.delete_change_id > :changeId)";
+        String sql1 = " JOIN arr_level l ON l.node_id = no.node_id" + (
+                lockChangeId == null
+                        ? " WHERE l.delete_change_id is null AND no.delete_change_id is null"
+                        : " WHERE no.create_change_id < :changeId AND (l.delete_change_id is null OR l.delete_change_id > :changeId) AND (no.delete_change_id is null OR no.delete_change_id > :changeId)"
+        );
 
         String sql2 = "SELECT o.* FROM arr_output o" +
                 " JOIN (SELECT no.output_id FROM arr_node_output no" + sql1 + " AND no.node_id in (:nodeIds) GROUP BY no.output_id HAVING count(*) = :count) c1" +
@@ -58,8 +62,8 @@ public class OutputRepositoryImpl implements OutputRepositoryCustom {
         query.setParameter("nodeIds", nodeIds);
         query.setParameter("fundId", fundVersion.getFundId());
 
-        if (fundVersion.getLockChangeId() != null) {
-            query.setParameter("changeId", fundVersion.getLockChangeId());
+        if (lockChangeId != null) {
+            query.setParameter("changeId", lockChangeId);
         }
 
         if (currentStates != null) {
