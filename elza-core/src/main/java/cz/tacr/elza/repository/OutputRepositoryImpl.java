@@ -35,22 +35,19 @@ public class OutputRepositoryImpl implements OutputRepositoryCustom {
         Validate.notEmpty(nodeIds);
 
         // lock change condition
-        String sql1 = "JOIN arr_level l ON l.node_id = no.node_id WHERE ";
-        if (fundVersion.getLockChangeId() == null) {
-            sql1 += "l.delete_change_id is null AND no.delete_change_id is null";
-        } else {
-            sql1 += "no.create_change_id < :changeId AND (l.delete_change_id is null or l.delete_change_id > :changeId) AND (no.delete_change_id is null or no.delete_change_id > :changeId)";
-        }
+        String sql1 = " JOIN arr_level l ON l.node_id = no.node_id" + fundVersion.getLockChangeId() == null
+                ? " WHERE l.delete_change_id is null AND no.delete_change_id is null"
+                : " WHERE no.create_change_id < :changeId AND (l.delete_change_id is null OR l.delete_change_id > :changeId) AND (no.delete_change_id is null OR no.delete_change_id > :changeId)";
 
         String sql2 = "SELECT o.* FROM arr_output o" +
-                " JOIN (SELECT no.output_id FROM arr_node_output no " + sql1 + " AND no.node_id in (:nodeIds) GROUP BY no.output_id HAVING count(*) = :count) c1" +
+                " JOIN (SELECT no.output_id FROM arr_node_output no" + sql1 + " AND no.node_id in (:nodeIds) GROUP BY no.output_id HAVING count(*) = :count) c1" +
                 " ON c1.output_id = o.output_id" +
-                " JOIN (SELECT no.output_id FROM arr_node_output no " + sql1 + " GROUP BY no.output_id HAVING count(*) = :count) c2" +
+                " JOIN (SELECT no.output_id FROM arr_node_output no" + sql1 + " GROUP BY no.output_id HAVING count(*) = :count) c2" +
                 " ON c2.output_id = o.output_id" +
                 " WHERE o.fund_id = :fundId";
 
         if (currentStates != null) {
-            sql2 += " AND od.state IN :states";
+            sql2 += " AND o.state IN :states";
         }
 
         Session session = em.unwrap(Session.class);
