@@ -133,7 +133,7 @@ class NodePanel extends AbstractReactComponent {
         if (node.selectedSubNodeId !== null) {
             focusItemIndex = indexById(node.childNodes, node.selectedSubNodeId)
         }
-        return focusItemIndex
+        return focusItemIndex || prevFocusItemIndex;
     }
 
     componentDidMount() {
@@ -847,7 +847,7 @@ return true
 
         const settings = this.getSettingsFromProps();
         const readMode = settings.readMode;
-        const arrPerm = settings.arrPerm;
+        const arrPerm = settings.arrPerm || false;
         var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
 
         var form;

@@ -484,6 +484,7 @@ class ListBox extends AbstractReactComponent {
                 >
                     {multiselect &&  
                         <Checkbox
+                            key="box"
                             className="listbox-item-checkbox"
                             inline
                             checked={checkedIndexes && checkedIndexes[index] || false}

@@ -1124,7 +1124,7 @@ DescItemType.propTypes = {
     locked: PropTypes.bool.isRequired,
     hideDelete: PropTypes.bool,
     readMode: PropTypes.bool.isRequired,
-    arrPerm: PropTypes.bool.arrPerm,
+    arrPerm: PropTypes.bool.isRequired,
     notIdentified: PropTypes.bool.isRequired,
     onDescItemNotIdentified: PropTypes.func.isRequired,
     closed: PropTypes.bool.isRequired,
@@ -1135,7 +1135,7 @@ DescItemType.propTypes = {
     userDetail: PropTypes.object.isRequired,
     showNodeAddons: PropTypes.bool.isRequired,
     strictMode: PropTypes.bool.isRequired,
-    descItemFactory: PropTypes.object.isRequired
+    descItemFactory: PropTypes.func.isRequired
 };
 
 export default connect(mapStateToProps, null, null, {withRef: true})(DescItemType);

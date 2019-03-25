@@ -578,6 +578,7 @@ export default class Autocomplete extends AbstractReactComponent {
         if(!customFilter){
             renderedActions.push(
                 <DropdownButton
+                   key="open"
                    toggled={this.state.isOpen}
                    disabled={disabled}
                    onMouseDown={()=>{

@@ -40,7 +40,7 @@ class DescItemInt extends AbstractReactComponent {
 
     render() {
         const {descItem, locked, readMode, cal} = this.props;
-        const value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : descItem.value;
+        const value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : (descItem.value === null ? "" : descItem.value);
 
         if (readMode) {
             return (

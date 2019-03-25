@@ -313,19 +313,19 @@ class ArrStructurePanel extends AbstractReactComponent {
         let parts = [];
         error = JSON.parse(error);
         if(error.emptyValue){
-            parts.push(<div className="error-item">{i18n("arr.structure.item.error.emptyValue")}</div>);
+            parts.push(<div key="empty" className="error-item">{i18n("arr.structure.item.error.emptyValue")}</div>);
         }
         if(error.duplicateValue){
-            parts.push(<div className="error-item">{i18n("arr.structure.item.error.duplicateValue")}</div>);
+            parts.push(<div key="duplicate" className="error-item">{i18n("arr.structure.item.error.duplicateValue")}</div>);
         }
         if(error.impossibleItemTypeIds.length > 0){
             const items = [];
-            error.impossibleItemTypeIds.map((id)=>{
+            error.impossibleItemTypeIds.map((id, index)=>{
                 const descItem = objectById(descItemTypes, id);
-                items.push(<li>{descItem.name}</li>);
+                items.push(<li key={index}>{descItem.name}</li>);
             });
             parts.push(
-                <div className="error-list error-item">
+                <div key="items" className="error-list error-item">
                   <div>{i18n("arr.structure.item.error.impossibleItemTypes")}</div>
                   <ul>{items}</ul>
                 </div>
@@ -348,25 +348,26 @@ class ArrStructurePanel extends AbstractReactComponent {
     }
 
     renderItemContent = (props) => {
-        const {item, ...otherProps} = props;
+        const {item, active, index, ...otherProps} = props;
+
         const hasError = item.state === 'ERROR' && item.errorDescription;
         const {complement} = item;
 
         return (
-            <div {...otherProps} onContextMenu={this.openContextMenu.bind(this, item)}>
+            <div {...otherProps} key={index} onContextMenu={this.openContextMenu.bind(this, item)}>
                 <div className="structure-name">
-                    {item.value || <em>{i18n("arr.structure.list.item.noValue")}</em>}
+                    {item.value || <em key="no-val">{i18n("arr.structure.list.item.noValue")}</em>}
                     {complement &&
-                        <div className="structure-name-complement">
-                            {complement}
-                        </div>
+                    <div key="complement" className="structure-name-complement">
+                        {complement}
+                    </div>
                     }
                 </div>
                 {
                     hasError &&
-                        <TooltipTrigger tooltipClass="error-message" content={this.renderErrorContent(item.errorDescription)} placement="left">
-                            <Icon glyph="fa-exclamation-triangle" />
-                        </TooltipTrigger>
+                    <TooltipTrigger key="tooltip" tooltipClass="error-message" content={this.renderErrorContent(item.errorDescription)} placement="left">
+                        <Icon glyph="fa-exclamation-triangle" />
+                    </TooltipTrigger>
                 }
                 <Button className="btn--context-menu" bsStyle="default" onClick={this.openContextMenu.bind(this, item)}>
                     <Icon glyph="fa-ellipsis-v" />
@@ -420,6 +421,7 @@ class ArrStructurePanel extends AbstractReactComponent {
             {rows && rows.length > 0 
                 ? <CheckListBox
                     className="list"
+                    key="list"
                     items={rows}
                     filter={filter}
                     onSelect={(item, itemIndex, e) => this.openContextMenu(item, e)}
@@ -427,11 +429,12 @@ class ArrStructurePanel extends AbstractReactComponent {
                     renderItemContent={this.renderItemContent}
                     multiselect={multiselect}
                 />
-                : <div className="list listbox-wrapper no-result text-center">{i18n('search.action.noResult')}</div>
+                : <div key="no-result" className="list listbox-wrapper no-result text-center">{i18n('search.action.noResult')}</div>
             }
             {contextMenu.isOpen && this.renderContextMenu()}
             {count > maxSize && 
                 <ListPager
+                    key="pager"
                     prev={this.handleFilterPrev}
                     next={this.handleFilterNext}
                     from={filter.from}
