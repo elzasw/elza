@@ -85,13 +85,13 @@ class SubNodeForm extends AbstractReactComponent {
     shouldComponentUpdate(nextProps, nextState) {
         if (this.state !== nextState) {
             return true;
-        } else if (this.props.subNodeForm === nextProps.subNodeForm) {
-            return false;
         } else {
             return !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, "", {
                 "|formKey": true,
                 "|_uid": true
-            }, false);
+            })
+                || !objectEqualsDiff(this.props.descItemCopyFromPrevEnabled, nextProps.descItemCopyFromPrevEnabled)
+                || !objectEqualsDiff(this.props.nodeSetting, nextProps.nodeSetting);
         }
     }
 

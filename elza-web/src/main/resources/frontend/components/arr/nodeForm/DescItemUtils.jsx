@@ -31,3 +31,7 @@ export function decorateValue(component, active, error, locked, additionalClassN
 export function decorateAutocompleteValue(component, active, error, locked, additionalClassNames = []) {
     return _decorateValue(component, active, error, locked, [...additionalClassNames])
 }
+
+export function inputValue(value) {
+    return value === null ? "" : value;
+}

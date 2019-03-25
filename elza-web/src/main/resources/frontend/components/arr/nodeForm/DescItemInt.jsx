@@ -8,7 +8,7 @@ import {connect} from 'react-redux';
 import {AbstractReactComponent, i18n} from 'components/shared';
 import {Checkbox} from 'react-bootstrap'
 import {normalizeInt, fromDuration, toDuration, normalizeDuration} from 'components/validate.jsx'
-import {decorateValue} from './DescItemUtils.jsx'
+import {decorateValue, inputValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 import {DisplayType} from "../../../constants.tsx";
@@ -40,7 +40,7 @@ class DescItemInt extends AbstractReactComponent {
 
     render() {
         const {descItem, locked, readMode, cal} = this.props;
-        const value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : (descItem.value === null ? "" : descItem.value);
+        const value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : inputValue(descItem.value);
 
         if (readMode) {
             return (

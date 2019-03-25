@@ -8,7 +8,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {AbstractReactComponent, i18n} from 'components/shared';
 import {connect} from 'react-redux'
-import {decorateValue} from './DescItemUtils.jsx'
+import {decorateValue, inputValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 import TextareaAutosize from 'react-autosize-textarea';
@@ -29,7 +29,7 @@ class DescItemText extends AbstractReactComponent {
             )
         }
 
-        value = descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value;
+        value = descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : inputValue(value);
 
         let cls = [];
         let textareaProps = {

@@ -176,8 +176,11 @@ export function objectEquals( x, y ) {
  * @returns {boolean} true pokud se shodují
  */
 export function objectEqualsDiff( x, y, path = "", ignore = {}, log = false ) {
-    if ( x === y || ignore[path] ) return true;
+    // if ( x === y || ignore[path] ) return true;
     // if both x and y are null or undefined and exactly the same
+
+    // fast compare
+    if ( JSON.stringify(x) === JSON.stringify(y) || ignore[path] ) return true;
 
     if ( ! ( x instanceof Object ) || ! ( y instanceof Object ) ) {
         log && console.warn("diff 1", path, x, y);
@@ -198,7 +201,7 @@ export function objectEqualsDiff( x, y, path = "", ignore = {}, log = false ) {
         if ( ! x.hasOwnProperty( p ) ) continue;
         // other properties were tested using x.constructor === y.constructor
 
-        if ( ! y.hasOwnProperty( p ) && !ignore[pathProp] )  {
+        if ( ! y.hasOwnProperty( p ) && !(ignore[pathProp] || ignore["|" + p]) )  {
             if (log) {
                 console.warn("diff 3", path, p);
                 res = false;
@@ -212,7 +215,7 @@ export function objectEqualsDiff( x, y, path = "", ignore = {}, log = false ) {
         if ( x[ p ] === y[ p ] ) continue;
         // if they have the same strict value or identity then they are equal
 
-        if ( typeof( x[ p ] ) !== "object" && !ignore[pathProp] ) {
+        if ( typeof( x[ p ] ) !== "object" && !(ignore[pathProp] || ignore["|" + p]) ) {
             if (log) {
                 console.warn("diff 4", path, p, x[p], y[p]);
                 res = false;
@@ -223,7 +226,7 @@ export function objectEqualsDiff( x, y, path = "", ignore = {}, log = false ) {
         }
         // Numbers, Strings, Functions, Booleans must be strictly equal
 
-        if ( !ignore[pathProp] && ! objectEqualsDiff( x[ p ],  y[ p ], pathProp, ignore, log ) ) {
+        if ( !ignore[pathProp] && !ignore["|" + p] && ! objectEqualsDiff( x[ p ],  y[ p ], pathProp, ignore, log ) ) {
             if (log) {
                 //console.warn("diff 5", path, p, x[p], y[p]);
                 res = false;
