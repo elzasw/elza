@@ -12,6 +12,15 @@ import {
 import {validateCoordinatePoint, validateDouble, validateInt, validateDuration} from 'components/validate.jsx'
 import {valuesEquals} from 'components/Utils.jsx'
 import {DisplayType} from "../../../constants.tsx";
+import {buildIgnoreMap, endWith, startWith} from "../../../components/Utils";
+
+const FORM_KEY = "formKey"; // klíč verze formuláře
+const UID = "_uid"; // virtuální identifikátor hodnoty atributu (jedná se buď o objectId a nebo virtuální klíč v případě, že ještě hodnota atributu nebyla uložena na serveru)
+const IS_FETCHING = "isFetching"; // pokud se data načítají
+const DIRTY = "dirty"; // zneplatněná data
+
+export const SUB_NODE_FORM_CMP = buildIgnoreMap(endWith(FORM_KEY), endWith(UID));
+export const NODE_SUB_NODE_FORM_CMP = buildIgnoreMap(startWith(IS_FETCHING), startWith(DIRTY), endWith(FORM_KEY), endWith(UID));
 
 function getLoc(state, valueLocation) {
     const formData = state.formData;

@@ -37,6 +37,7 @@ import storeFromArea from "../../shared/utils/storeFromArea";
 import * as issuesActions from "../../actions/arr/issues";
 import IssueForm from "../form/IssueForm";
 import {objectEqualsDiff} from 'components/Utils'
+import {NODE_SUB_NODE_FORM_CMP} from "../../stores/app/arr/subNodeForm";
 
 require('./NodeSubNodeForm.less');
 
@@ -60,15 +61,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
         if (this.state !== nextState) {
             return true;
         } else {
-            //return true;
-            //console.warn("xxx", objectEqualsDiff(this.props, nextProps, "", {}, true));
-
-            return !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, "", {
-                ".isFetching": true,
-                ".dirty": true,
-                "|_uid": true,
-                "|formKey": true,
-            })
+            return !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, NODE_SUB_NODE_FORM_CMP)
                 || !objectEqualsDiff(this.props.descItemCopyFromPrevEnabled, nextProps.descItemCopyFromPrevEnabled)
                 || !objectEqualsDiff(this.props.focus, nextProps.focus)
                 || !objectEqualsDiff(this.props.nodeSettings, nextProps.nodeSettings);

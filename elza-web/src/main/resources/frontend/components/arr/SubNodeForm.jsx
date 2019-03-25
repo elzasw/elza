@@ -22,6 +22,7 @@ import './SubNodeForm.less'
 import {downloadFile} from "../../actions/global/download";
 import {FOCUS_KEYS} from "../../constants.tsx";
 import {objectEqualsDiff} from "../Utils";
+import {SUB_NODE_FORM_CMP} from "../../stores/app/arr/subNodeForm";
 
 const classNames = require('classnames');
 
@@ -86,10 +87,7 @@ class SubNodeForm extends AbstractReactComponent {
         if (this.state !== nextState) {
             return true;
         } else {
-            return !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, "", {
-                "|formKey": true,
-                "|_uid": true
-            })
+            return !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, SUB_NODE_FORM_CMP)
                 || !objectEqualsDiff(this.props.descItemCopyFromPrevEnabled, nextProps.descItemCopyFromPrevEnabled)
                 || !objectEqualsDiff(this.props.nodeSetting, nextProps.nodeSetting);
         }
