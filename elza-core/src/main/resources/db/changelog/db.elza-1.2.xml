@@ -78,15 +78,14 @@
     </changeSet>
 
     <changeSet id="20190318130000" author="marek">
+        <validCheckSum>ANY</validCheckSum>
 
         <addColumn tableName="arr_output_definition">
             <column name="create_change_id" type="int"/>
             <column name="delete_change_id" type="int"/>
         </addColumn>
 
-        <update tableName="arr_output_definition">
-            <column name="create_change_id" valueComputed="(select t.create_change_id from arr_output t where t.output_definition_id = output_definition_id)"/>
-        </update>
+        <sql>UPDATE arr_output_definition SET create_change_id = (select t.create_change_id from arr_output t where t.output_definition_id = arr_output_definition.output_definition_id)</sql>
 
         <addNotNullConstraint tableName="arr_output_definition" columnName="create_change_id" columnDataType="int"/>
 
