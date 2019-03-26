@@ -1,21 +1,26 @@
 package cz.tacr.elza.controller;
 
+import java.util.List;
+
+import javax.transaction.Transactional;
+
+import cz.tacr.elza.common.FactoryUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.SysExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.SysExternalSystem;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.service.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import javax.transaction.Transactional;
-import java.util.List;
 
 /**
  * Kontroler pro administraci.
@@ -72,7 +77,7 @@ public class AdminController {
 	@Transactional
     public List<SysExternalSystemVO> findAllExternalSystems() {
         List<SysExternalSystem> extSystems = externalSystemService.findAll();
-        return ApFactory.transformList(extSystems, factoryVo::createExtSystem);
+        return FactoryUtils.transformList(extSystems, factoryVo::createExtSystem);
     }
 
     /**
@@ -137,7 +142,7 @@ public class AdminController {
 	@Transactional
     public List<SysExternalSystemSimpleVO> findAllExternalSystemsSimple() {
         List<SysExternalSystem> extSystems = externalSystemService.findAllWithoutPermission();
-        return ApFactory.transformList(extSystems, factoryVo::createExtSystemSimple);
+        return FactoryUtils.transformList(extSystems, factoryVo::createExtSystemSimple);
     }
 
     /**

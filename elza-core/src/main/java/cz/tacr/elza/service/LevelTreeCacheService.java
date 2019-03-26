@@ -38,7 +38,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import com.google.common.eventbus.Subscribe;
-
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.EventBusListener;
 import cz.tacr.elza.common.ObjectListIterator;
@@ -47,19 +46,13 @@ import cz.tacr.elza.config.view.LevelConfig;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.AccordionNodeVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
-import cz.tacr.elza.controller.vo.ArrRequestVO;
-import cz.tacr.elza.controller.vo.NodeConformityVO;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.NodeData;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.SystemException;
@@ -71,14 +64,24 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventChangeMessage;
-import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
-import cz.tacr.elza.service.eventnotification.events.EventAddNode;
-import cz.tacr.elza.service.eventnotification.events.EventDeleteNode;
-import cz.tacr.elza.service.eventnotification.events.EventIdInVersion;
-import cz.tacr.elza.service.eventnotification.events.EventNodeMove;
-import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.eventnotification.events.EventVersion;
+import cz.tacr.elza.service.eventnotification.events.*;
 import cz.tacr.elza.service.vo.TitleItemsByType;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.BooleanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -135,8 +138,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     private StaticDataService staticDataService;
 
     @Autowired
-    @Lazy // TODO: odebrat a vyřešit cyklickou závislost
-    private IssueService issueService;
+    private IssueDataService issueDataService;
 
     @Autowired
     private UserService userService;
@@ -1394,7 +1396,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
             accordionNode.setVersion(n.getVersion());
 
             List<WfIssue> issues = nodeToIssueMap.getOrDefault(n.getId(), Collections.emptyList());
-            accordionNode.setIssues(issues.stream().map(clientFactoryVO::createSimpleIssueVO).collect(Collectors.toList()));
+            accordionNode.setIssues(issues.stream().map(WfSimpleIssueVO::newInstance).collect(Collectors.toList()));
 
             return accordionNode;
 
@@ -1797,8 +1799,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * Získání inkonky JP.
      *
      * @param itemCodeToValueMap převodní mapa pro získání ikonky
-     * @param defaultTitle       výchozí popisek JP
-     * @param hierarchy          hierarchie stromu
+     * @param vt                 title codes for view
      * @return text ikony
      */
     @Nullable
@@ -1886,7 +1887,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
         LinkedHashMap<Integer, Node> nodeMap = getNodes(nodesMap, parentNode, param, fundVersion);
 
-        Map<Integer, List<WfIssue>> nodeToIssueMap = issueService.groupOpenIssueByNodeId(nodeMap.keySet(), userDetail);
+        Map<Integer, List<WfIssue>> nodeToIssueMap = issueDataService.groupOpenIssueByNodeId(nodeMap.keySet(), userDetail);
 
         List<AccordionNodeVO> accordionNodes = convertToAccordionNode(nodeMap.values(), nodeToIssueMap);
 
@@ -1960,7 +1961,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * hodnoty a vytvořené referenční označení.
      *
      * @param node                uzel
-     * @param levelTypeCode       kod atributu úrovně popisu
+     * @param levelItemTypeId     id atributu úrovně popisu
      * @param viewTitles          nastavení načítání atributů
      * @param valuesMap           mapa načtených hodnot pro uzly
      * @param parentReferenceMark referenční označení rodiče
@@ -2020,7 +2021,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * Provede načtení referečního označení pro uzel. Načte označení od kořenu až po uzel.
      *
      * @param node          uzel
-     * @param levelTypeCode kod atributu úrovně popisu
+     * @param levelTypeId   id atributu úrovně popisu
      * @param viewTitles    nastavení načítání atributů
      * @param valuesMap     mapa načtených hodnot pro uzly
      * @return referenční označení
@@ -2040,6 +2041,23 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         String[] referenceMark = createClientNodeReferenceMark(node, levelTypeId, viewTitles, valuesMap,
                 parentReferenceMark);
         return referenceMark;
+    }
+
+    /**
+     * Sestaví informace o zanoření
+     *
+     * @param fundId identifikátor archivního souboru
+     * @param nodeIds seznam identifikátorů jednotek popisu
+     */
+    public Map<Integer, TreeNodeVO> findNodeReferenceMark(@NotNull Integer fundId, Collection<Integer> nodeIds) {
+        if (nodeIds != null && !nodeIds.isEmpty()) {
+            ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fundId);
+            if (fundVersion != null) {
+                List<TreeNodeVO> nodes = getNodesByIds(nodeIds, fundVersion.getFundVersionId());
+                return nodes.stream().collect(Collectors.toMap(TreeNodeVO::getId, node -> node));
+            }
+        }
+        return Collections.emptyMap();
     }
 
     /**

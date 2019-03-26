@@ -183,7 +183,6 @@ public class UsrPermissionVO {
 
     public static UsrPermissionVO newInstance(UsrPermission srcPerm, boolean inheritedPermission,
                                               StaticDataProvider staticData) {
-        UsrPermissionVO vo = new UsrPermissionVO(srcPerm, inheritedPermission, staticData);
-        return vo;
+        return new UsrPermissionVO(srcPerm, inheritedPermission, staticData);
     }
 }

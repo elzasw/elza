@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.common.FactoryUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -824,7 +825,7 @@ public class ApController {
     @Transactional
     public List<LanguageVO> getAllLanguages() {
         List<SysLanguage> languages = accessPointService.findAllLanguagesOrderByCode();
-        return ApFactory.transformList(languages, apFactory::createVO);
+        return FactoryUtils.transformList(languages, apFactory::createVO);
     }
 
     /**
@@ -835,7 +836,7 @@ public class ApController {
     public List<ApEidTypeVO> getAllExternalIdTypes() {
         StaticDataProvider data = staticDataService.getData();
         List<ApExternalIdType> types = data.getApEidTypes();
-        return ApFactory.transformList(types, apFactory::createVO);
+        return FactoryUtils.transformList(types, apFactory::createVO);
     }
 
     /**
@@ -846,7 +847,7 @@ public class ApController {
     public List<ApScopeVO> getAllScopes(){
         List<ApScope> apScopes = scopeRepository.findAllOrderByCode();
         StaticDataProvider staticData = staticDataService.getData();
-        return ApFactory.transformList(apScopes, s -> ApScopeVO.newInstance(s, staticData));
+        return FactoryUtils.transformList(apScopes, s -> ApScopeVO.newInstance(s, staticData));
     }
 
     /**
@@ -874,7 +875,7 @@ public class ApController {
 
         List<ApScope> apScopes = scopeRepository.findAll(scopeIdsByFund);
         StaticDataProvider staticData = staticDataService.getData();
-        List<ApScopeVO> result = ApFactory.transformList(apScopes, s -> ApScopeVO.newInstance(s, staticData));
+        List<ApScopeVO> result = FactoryUtils.transformList(apScopes, s -> ApScopeVO.newInstance(s, staticData));
         result.sort(Comparator.comparing(ApScopeVO::getCode));
         return result;
     }
@@ -942,7 +943,7 @@ public class ApController {
 	@Transactional
     public List<ApExternalSystemSimpleVO> findAllExternalSystems() {
 		List<ApExternalSystem> extSystems = externalSystemService.findAllApSystem();
-		return ApFactory.transformList(extSystems, ApExternalSystemSimpleVO::newInstance);
+		return FactoryUtils.transformList(extSystems, ApExternalSystemSimpleVO::newInstance);
     }
 
     /**

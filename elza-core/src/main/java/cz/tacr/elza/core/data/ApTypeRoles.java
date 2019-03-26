@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import cz.tacr.elza.common.FactoryUtils;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.controller.factory.ApFactory;
@@ -29,7 +30,7 @@ public class ApTypeRoles {
     }
     
     public List<Integer> getRoleIds() {
-        return ApFactory.transformList(roles, ParRegistryRole::getRegistryRoleId);
+        return FactoryUtils.transformList(roles, ParRegistryRole::getRegistryRoleId);
     }
 
     void addRole(ParRegistryRole role) {

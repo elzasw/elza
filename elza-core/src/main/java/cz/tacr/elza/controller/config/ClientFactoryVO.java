@@ -84,9 +84,6 @@ import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
-import cz.tacr.elza.controller.vo.WfIssueStateVO;
-import cz.tacr.elza.controller.vo.WfIssueTypeVO;
-import cz.tacr.elza.controller.vo.WfSimpleIssueVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
@@ -315,7 +312,6 @@ public class ClientFactoryVO {
     private ApFactory apFactory;
 
     @Autowired
-    @Lazy // TODO: odebrat a vyřešit cyklickou závislost
     private WfFactory wfFactory;
 
     @Autowired
@@ -2154,31 +2150,5 @@ public class ClientFactoryVO {
             return ApExternalSystemSimpleVO.newInstance((ApExternalSystem) extSystem);
         }
         return createSimpleEntity(extSystem, SysExternalSystemSimpleVO.class);
-    }
-
-    /**
-     * Seznam druhů připomínek.
-     *
-     * @returns seznam druhů připomínek
-     */
-    public List<WfIssueTypeVO> createIssueTypes(final List<WfIssueType> issueTypeList) {
-        return createList(issueTypeList, WfIssueTypeVO.class, null);
-    }
-
-    /**
-     * Seznam stavů připomínek.
-     *
-     * @returns seznam stavů připomínek
-     */
-    public List<WfIssueStateVO> createIssueStates(final List<WfIssueState> issueStateList) {
-        return createList(issueStateList, WfIssueStateVO.class, null);
-    }
-
-    public WfSimpleIssueVO createSimpleIssueVO(WfIssue issue) {
-        WfSimpleIssueVO issueVO = new WfSimpleIssueVO();
-        issueVO.setId(issue.getIssueId());
-        issueVO.setNumber(issue.getNumber());
-        issueVO.setDescription(issue.getDescription());
-        return issueVO;
     }
 }
