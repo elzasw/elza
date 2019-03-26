@@ -133,7 +133,7 @@ class LecturingTop extends React.Component {
         const issueId = issueDetail.id;
         const activeIndex = issueId !== null ? indexById(issueList.rows, issueId) : null;
 
-        const hasAdmin = userDetail.hasOne([perms.FUND_ISSUE_ADMIN_ALL]);
+        const hasAdmin = userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL);
 
         const canWrite = !!issueListId && (
              hasAdmin || (
