@@ -213,7 +213,8 @@ class NodeSubNodeForm extends AbstractReactComponent {
         const historyAllowed = userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId},
                                                  perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId});
 
-        const isProtocolLoaded = issueProtocol.fetched && issueProtocol.data;
+        const isProtocolLoaded = issueProtocol.fetched && issueProtocol.data && fundId === issueProtocol.data.fundId;
+
         const haveProtocolPermissionToWrite =
             isProtocolLoaded && (
                 userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL) || (

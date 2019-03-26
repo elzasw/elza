@@ -595,7 +595,7 @@ class ArrPage extends ArrParentPage {
 
             const {issueProtocol} = this.props;
 
-            const isProtocolLoaded = !issueProtocol.isFetching && issueProtocol.data;
+            const isProtocolLoaded = !issueProtocol.isFetching && issueProtocol.data && activeFund.id === issueProtocol.data.fundId;
 
             const haveProtocolPermissionToWrite =
                 isProtocolLoaded && (
