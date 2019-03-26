@@ -235,7 +235,7 @@ class FundPage extends AbstractReactComponent {
                         <div><span className="btnText">{i18n('ribbon.action.arr.fund.approve')}</span></div>
                     </Button>)
             }
-            if (userDetail.hasOne([perms.FUND_ISSUE_ADMIN_ALL])) {
+            if (userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL)) {
                 itemActions.push(
                     <Button key="fa-lecturing" onClick={this.handleIssuesSettings}><Icon glyph='fa-commenting' />
                         <div><span className="btnText">{i18n('arr.issues.settings.title')}</span></div>
