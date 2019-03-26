@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.service.IssueDataService;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.factory.WfFactory;
 import cz.tacr.elza.controller.vo.IssueNodeItem;
 import cz.tacr.elza.controller.vo.UsrUserVO;
@@ -57,23 +57,26 @@ public class IssueController {
     private final ArrangementService arrangementService;
 
     private final IssueService issueService;
+    private final IssueDataService issueDataService;
 
     private final UserService userService;
 
     // --- fields ---
-
-    private final ClientFactoryVO factoryVo;
 
     private final WfFactory factory;
 
     // --- constructor ---
 
     @Autowired
-    public IssueController(ArrangementService arrangementService, IssueService issueService, UserService userService, ClientFactoryVO factoryVo, WfFactory factory) {
+    public IssueController(final ArrangementService arrangementService,
+                           final IssueService issueService,
+                           final IssueDataService issueDataService,
+                           final UserService userService,
+                           final WfFactory factory) {
         this.arrangementService = arrangementService;
         this.issueService = issueService;
+        this.issueDataService = issueDataService;
         this.userService = userService;
-        this.factoryVo = factoryVo;
         this.factory = factory;
     }
 
@@ -87,7 +90,7 @@ public class IssueController {
     @RequestMapping(value = "/issue_types", method = RequestMethod.GET)
     public List<WfIssueTypeVO> findAllIssueTypes() {
         List<WfIssueType> issueTypeList = issueService.findAllIssueTypes();
-        return factoryVo.createIssueTypes(issueTypeList);
+        return factory.createIssueTypes(issueTypeList);
     }
 
     /**
@@ -98,7 +101,7 @@ public class IssueController {
     @RequestMapping(value = "/issue_states", method = RequestMethod.GET)
     public List<WfIssueStateVO> findAllIssueStates() {
         List<WfIssueState> issueStateList = issueService.findAllIssueStates();
-        return factoryVo.createIssueStates(issueStateList);
+        return factory.createIssueStates(issueStateList);
     }
 
     /**
@@ -117,7 +120,7 @@ public class IssueController {
 
         UserDetail userDetail = userService.getLoggedUserDetail();
 
-        List<WfIssueList> issueListList = issueService.findIssueListByFund(fund, open, userDetail);
+        List<WfIssueList> issueListList = issueDataService.findIssueListByFund(fund, open, userDetail);
 
         return issueListList.stream().map(issueList -> factory.createIssueListVO(issueList, false)).collect(Collectors.toList());
     }
@@ -304,7 +307,7 @@ public class IssueController {
 
         Validate.isTrue(issue.getUserCreate().getUserId().equals(user.getUserId()), "Uživatel není vlastník [userId=" + user.getUserId() + "]");
 
-        WfComment lastComment = issueService.getLastComment(issue);
+        WfComment lastComment = issueDataService.getLastComment(issue);
 
         Validate.isTrue(lastComment == null, "K připomínce již existují komentáře [issueId=" + issue.getIssueId() + "]");
 
@@ -411,7 +414,7 @@ public class IssueController {
 
         Validate.isTrue(comment.getUser().getUserId().equals(user.getUserId()), "Uživatel není vlastník [userId=" + user.getUserId() + "]");
 
-        WfComment lastComment = issueService.getLastComment(comment.getIssue());
+        WfComment lastComment = issueDataService.getLastComment(comment.getIssue());
 
         Validate.isTrue(commentId.equals(lastComment.getCommentId()), "K připomínce existuje novější komentář [issueId=" + comment.getIssue().getIssueId() + "]");
 

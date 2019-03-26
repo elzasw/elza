@@ -76,9 +76,6 @@ import cz.tacr.elza.controller.vo.UIPartyGroupVO;
 import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
-import cz.tacr.elza.controller.vo.WfIssueListBaseVO;
-import cz.tacr.elza.controller.vo.WfIssueStateVO;
-import cz.tacr.elza.controller.vo.WfIssueTypeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
@@ -186,9 +183,6 @@ import cz.tacr.elza.domain.UIPartyGroup;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.WfIssueList;
-import cz.tacr.elza.domain.WfIssueState;
-import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
@@ -1065,19 +1059,6 @@ public class ConfigMapperConfiguration {
                 byDefault().
                 exclude("nodeIds").
                 register();
-
-        mapperFactory.classMap(WfIssueList.class, WfIssueListBaseVO.class)
-                .byDefault()
-                .field("issueListId", "id")
-                .register();
-        mapperFactory.classMap(WfIssueType.class, WfIssueTypeVO.class)
-                .byDefault()
-                .field("issueTypeId", "id")
-                .register();
-        mapperFactory.classMap(WfIssueState.class, WfIssueStateVO.class)
-                .byDefault()
-                .field("issueStateId", "id")
-                .register();
     }
 
     /**
