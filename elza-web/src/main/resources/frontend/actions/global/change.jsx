@@ -113,11 +113,11 @@ export function changeNodes(versionId, nodeIds) {
     }
 }
 
-export function changeOutputs(versionId, outputDefinitionIds) {
+export function changeOutputs(versionId, getOutputIds) {
     return {
         type: types.CHANGE_OUTPUTS,
         versionId,
-        outputDefinitionIds
+        getOutputIds
     }
 }
 

@@ -208,8 +208,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/descItems/' + versionId + '/' + nodeId + '/' + nodeVersionId + '/' + descItemTypeId + '/create', null, descItem);
     }
 
-    createOutputItem(versionId, outputDefinitionId, outputDefinitionVersion, descItemTypeId, descItem) {
-        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputDefinitionId + '/' + outputDefinitionVersion + '/' + descItemTypeId + '/create', null, descItem);
+    createOutputItem(versionId, getOutputId, outputVersion, descItemTypeId, descItem) {
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + getOutputId + '/' + outputVersion + '/' + descItemTypeId + '/create', null, descItem);
     }
 
     updateDescItem(versionId, nodeVersionId, descItem) {
@@ -260,42 +260,42 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/descItems/' + versionId + '/' + nodeId + '/' + parentNodeVersion + '/notUndefined/unset', { descItemTypeId, descItemSpecId, descItemObjectId });
     }
 
-    updateOutputItem(versionId, outputDefinitionVersion, descItem) {
-        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputDefinitionVersion + '/update/true', null, descItem);
+    updateOutputItem(versionId, outputVersion, descItem) {
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputVersion + '/update/true', null, descItem);
     }
 
     deleteDescItem(versionId, nodeVersionId, descItem) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/descItems/' + versionId + '/' + nodeVersionId + '/delete', null, descItem);
     }
 
-    deleteOutputItem(versionId, outputDefinitionVersion, descItem) {
-        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputDefinitionVersion + '/delete', null, descItem);
+    deleteOutputItem(versionId, outputVersion, descItem) {
+        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputVersion + '/delete', null, descItem);
     }
 
     deleteDescItemType(versionId, nodeId, nodeVersionId, descItemTypeId) {
         return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/descItems/' + versionId + '/' + nodeId + '/' + nodeVersionId + '/' + descItemTypeId, null, null);
     }
 
-    deleteOutputItemType(versionId, outputDefinitionId, outputDefinitionVersion, descItemTypeId) {
-        return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputDefinitionId + '/' + outputDefinitionVersion + '/' + descItemTypeId, null, null);
+    deleteOutputItemType(versionId, getOutputId, outputVersion, descItemTypeId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + getOutputId + '/' + outputVersion + '/' + descItemTypeId, null, null);
     }
 
-    setNotIdentifiedOutputItem(versionId, outputDefinitionId, outputDefinitionVersion, outputItemTypeId, outputItemSpecId, outputItemObjectId) {
-        //return callWS('/arrangement/outputItems/' + versionId + '/' + outputDefinitionId + '/' + outputDefinitionVersion + '/notUndefined/set?outputItemTypeId=' + outputItemTypeId + '&outputItemSpecId=' + outputItemSpecId + '&outputItemObjectId=' + outputItemObjectId, null);
+    setNotIdentifiedOutputItem(versionId, getOutputId, outputVersion, outputItemTypeId, outputItemSpecId, outputItemObjectId) {
+        //return callWS('/arrangement/outputItems/' + versionId + '/' + getOutputId + '/' + outputVersion + '/notUndefined/set?outputItemTypeId=' + outputItemTypeId + '&outputItemSpecId=' + outputItemSpecId + '&outputItemObjectId=' + outputItemObjectId, null);
 
         // Původní volání kontroleru - zatím necháno pro testovací účely
-        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputDefinitionId + '/' + outputDefinitionVersion + '/notUndefined/set', { outputItemTypeId, outputItemSpecId, outputItemObjectId });
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + getOutputId + '/' + outputVersion + '/notUndefined/set', { outputItemTypeId, outputItemSpecId, outputItemObjectId });
     }
 
-    unsetNotIdentifiedOutputItem(versionId, outputDefinitionId, outputDefinitionVersion, outputItemTypeId, outputItemSpecId, outputItemObjectId) {
-        //return callWS('/arrangement/outputItems/' + versionId + '/' + outputDefinitionId + '/' + outputDefinitionVersion + '/notUndefined/unset?outputItemTypeId=' + outputItemTypeId + '&outputItemSpecId=' + outputItemSpecId + '&outputItemObjectId=' + outputItemObjectId, null);
+    unsetNotIdentifiedOutputItem(versionId, getOutputId, outputVersion, outputItemTypeId, outputItemSpecId, outputItemObjectId) {
+        //return callWS('/arrangement/outputItems/' + versionId + '/' + getOutputId + '/' + outputVersion + '/notUndefined/unset?outputItemTypeId=' + outputItemTypeId + '&outputItemSpecId=' + outputItemSpecId + '&outputItemObjectId=' + outputItemObjectId, null);
 
         // Původní volání kontroleru - zatím necháno pro testovací účely
-        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputDefinitionId + '/' + outputDefinitionVersion + '/notUndefined/unset', { outputItemTypeId, outputItemSpecId, outputItemObjectId });
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + getOutputId + '/' + outputVersion + '/notUndefined/unset', { outputItemTypeId, outputItemSpecId, outputItemObjectId });
     }
 
-    switchOutputCalculating(fundVersionId, outputDefinitionId, itemTypeId, strict) {
-        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/output/' + outputDefinitionId + '/' + fundVersionId + '/' + itemTypeId + '/switch', { strict }, null);
+    switchOutputCalculating(fundVersionId, getOutputId, itemTypeId, strict) {
+        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/output/' + getOutputId + '/' + fundVersionId + '/' + itemTypeId + '/switch', { strict }, null);
     }
 
     updateOutputSettings(outputId, outputSettings) {
@@ -622,8 +622,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/nodes/' + nodeId + '/' + versionId + '/form');
     }
 
-    getOutputNodeForm(versionId, outputDefinitionId) {
-        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/output/' + outputDefinitionId + '/' + versionId + '/form');
+    getOutputNodeForm(versionId, getOutputId) {
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/output/' + getOutputId + '/' + versionId + '/form');
     }
 
     getFundNodeForms(versionId, nodeIds) {
@@ -927,13 +927,13 @@ export class WebApiCls {
         return AjaxUtils.ajaxCallRaw(WebApiCls.kmlUrl + '/import/descCoordinates', {}, 'POST', formData);
     }
 
-    arrOutputCoordinatesImport(versionId, outputDefinitionId, outputDefinitionVersion, descItemTypeId, file) {
+    arrOutputCoordinatesImport(versionId, getOutputId, outputVersion, descItemTypeId, file) {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('fundVersionId', versionId);
         formData.append('descItemTypeId', descItemTypeId);
-        formData.append('outputDefinitionId', outputDefinitionId);
-        formData.append('outputDefinitionVersion', outputDefinitionVersion);
+        formData.append('getOutputId', getOutputId);
+        formData.append('outputVersion', outputVersion);
 
         return AjaxUtils.ajaxCallRaw(WebApiCls.kmlUrl + '/import/outputCoordinates', {}, 'POST', formData);
     }
@@ -952,11 +952,11 @@ export class WebApiCls {
         return AjaxUtils.ajaxCallRaw(WebApiCls.arrangementUrl + '/descItems/' + versionId + '/csv/import', {}, 'POST', formData);
     }
 
-    descOutputItemCsvImport(versionId, outputDefinitionId, outputDefinitionVersion, descItemTypeId, file) {
+    descOutputItemCsvImport(versionId, getOutputId, outputVersion, descItemTypeId, file) {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('outputDefinitionId', outputDefinitionId);
-        formData.append('outputDefinitionVersion', outputDefinitionVersion);
+        formData.append('getOutputId', getOutputId);
+        formData.append('outputVersion', outputVersion);
         formData.append('descItemTypeId', descItemTypeId);
 
         return AjaxUtils.ajaxCallRaw(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/csv/import', {}, 'POST', formData);

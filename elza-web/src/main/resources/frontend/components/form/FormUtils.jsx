@@ -131,12 +131,12 @@ export function submitForm(validate,values,props,onSubmit,dispatch,options=defau
             var submit = onSubmit(values);
             if(formSubmitted(dispatch,options)){
                 formFinished(dispatch,options);
-                resolve();
+                resolve(values);
             }
             if(typeof submit == "object"){ // if the onSubmit function returns promise object
                 submit.then((result)=>{
                     formFinished(dispatch,options);
-                    resolve();
+                    resolve(result);
                 }).catch(e=>{ // if an error happens during the submit promise
                     console.error(e);
                     formRejected(dispatch,options,e);

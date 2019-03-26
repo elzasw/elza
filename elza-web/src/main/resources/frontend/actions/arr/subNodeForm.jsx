@@ -753,8 +753,8 @@ export class ItemFormActions {
             const state = getState();
             const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
             if (fundIndex !== null) {
-                const outputDefinitionId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
-                return WebApi.switchOutputCalculating(versionId, outputDefinitionId, itemTypeId, strict);
+                const getOutputId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
+                return WebApi.switchOutputCalculating(versionId, getOutputId, itemTypeId, strict);
             }
         }
     }
@@ -772,8 +772,8 @@ export class ItemFormActions {
             const state = getState();
             const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
             if (fundIndex !== null) {
-                const outputDefinitionId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
-                WebApi.switchOutputCalculating(versionId, outputDefinitionId, itemTypeId).then(() => {
+                const getOutputId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
+                WebApi.switchOutputCalculating(versionId, getOutputId, itemTypeId).then(() => {
                     dispatch({
                         type: types.FUND_SUB_NODE_FORM_OUTPUT_CALC_SWITCH,
                         area: this.area,
@@ -1241,7 +1241,7 @@ class OutputFormActions extends ItemFormActions {
 
 // @Override
     _getParentObjIdInfo(parentObjStore, routingKey) {
-        return { parentId: parentObjStore.outputDefinition.id, parentVersion: parentObjStore.outputDefinition.version };
+        return { parentId: parentObjStore.id, parentVersion: parentObjStore.version };
     }
 }
 

@@ -107,7 +107,7 @@ export default function fundOutput(state = initialState, action = {}) {
                 fundOutputFiles: fundOutputFiles(state.fundOutputFiles, action)
             };
             for(const item of state.outputs) {
-                if(item.outputDefinition.id == action.outputId) {
+                if(item.id == action.outputId) {
                     result.currentDataKey = '';
                     break;
                 }

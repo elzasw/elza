@@ -57,7 +57,7 @@ class AddOutputForm extends AbstractReactComponent {
     submitReduxForm = (values, dispatch) => submitForm(AddOutputForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
 
     render() {
-        const {fields: {name, internalCode, temporary, templateId, outputTypeId}, create, handleSubmit, onClose, outputTypes, allTemplates} = this.props;
+        const {fields: {name, internalCode, templateId, outputTypeId}, create, handleSubmit, onClose, outputTypes, allTemplates} = this.props;
 
         let templates = false;
         if (outputTypeId.value) {
@@ -84,7 +84,6 @@ class AddOutputForm extends AbstractReactComponent {
                             <option key='-templateId'/>
                             {templates && templates.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
                         </FormInput>
-                        {create && <Checkbox {...temporary} {...decorateFormField(temporary)}>{i18n('arr.output.temporary')}</Checkbox>}
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit">{create ? i18n('global.action.create') : i18n('global.action.update')}</Button>
@@ -98,11 +97,11 @@ class AddOutputForm extends AbstractReactComponent {
 
 export default reduxForm({
         form: 'addOutputForm',
-        fields: ['name', 'internalCode', 'temporary', 'outputTypeId', "templateId"],
+        fields: ['name', 'internalCode', 'outputTypeId', "templateId"],
     },
     (state, props) => {
         return {
-            initialValues: props.create ? {temporary: false} : props.initData,
+            initialValues: props.initData,
             outputTypes: state.refTables.outputTypes.items,
             allTemplates: state.refTables.templates.items,
         }

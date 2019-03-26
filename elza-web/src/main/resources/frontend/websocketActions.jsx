@@ -438,7 +438,7 @@ function nodesChange(value) {
     }
 }
 function outputItemChange(value) {
-    store.dispatch(changeOutputs(value.versionId, [value.outputDefinitionId]));
+    store.dispatch(changeOutputs(value.versionId, [value.getOutputId]));
 }
 
 function deleteLevelChange(value) {

@@ -37,14 +37,11 @@ export default function fundOutputDetail(state = initialState, action = {}) {
             }
         }
         case types.OUTPUT_STATE_CHANGE:{
-            if (state.fetched && action.outputId === state.outputDefinition.id) {
+            if (state.fetched && action.outputId) {
                 return {
                     ...state,
                     currentDataKey: '',
-                    outputDefinition: {
-                        ...state.outputDefinition,
-                        state: action.state
-                    }
+                    state: action.state
                 }
             }
             return state
@@ -94,7 +91,7 @@ export default function fundOutputDetail(state = initialState, action = {}) {
             }
         }
         case types.CHANGE_OUTPUTS:
-            if (action.outputDefinitionIds && action.outputDefinitionIds.indexOf(state.id) >= 0) {
+            if (action.getOutputIds && action.getOutputIds.indexOf(state.id) >= 0) {
                 return {
                     ...state,
                     subNodeForm: subNodeForm(state.subNodeForm, action),
