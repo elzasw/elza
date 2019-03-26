@@ -20,7 +20,7 @@ class IssueListForm extends AbstractReactComponent {
 
     static requireFields = (...names) => data =>
         names.reduce((errors, name) => {
-            if (!data[name]) {
+            if (data[name] == null) {
                 errors[name] = i18n('global.validation.required')
             }
             return errors
