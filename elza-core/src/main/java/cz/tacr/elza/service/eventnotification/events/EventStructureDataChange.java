@@ -1,5 +1,6 @@
 package cz.tacr.elza.service.eventnotification.events;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -8,6 +9,8 @@ import java.util.List;
  * @since 16.11.2017
  */
 public class EventStructureDataChange extends AbstractEventSimple {
+
+    // --- fields ---
 
     /**
      * Identifikátor AS.
@@ -39,6 +42,8 @@ public class EventStructureDataChange extends AbstractEventSimple {
      */
     private List<Integer> deleteIds;
 
+    // --- constructor ---
+
     public EventStructureDataChange(final Integer fundId,
                                     final String structureTypeCode,
                                     final List<Integer> tempIds,
@@ -53,6 +58,8 @@ public class EventStructureDataChange extends AbstractEventSimple {
         this.updateIds = updateIds;
         this.deleteIds = deleteIds;
     }
+
+    // --- getters/setters ---
 
     public Integer getFundId() {
         return fundId;
@@ -96,5 +103,35 @@ public class EventStructureDataChange extends AbstractEventSimple {
 
     public void setDeleteIds(final List<Integer> deleteIds) {
         this.deleteIds = deleteIds;
+    }
+
+    // --- methods ---
+
+    public void addTempId(Integer id) {
+        if (tempIds == null) {
+            tempIds = new ArrayList<>();
+        }
+        tempIds.add(id);
+    }
+
+    public void addCreateId(Integer id) {
+        if (createIds == null) {
+            createIds = new ArrayList<>();
+        }
+        createIds.add(id);
+    }
+
+    public void addUpdateId(Integer id) {
+        if (updateIds == null) {
+            updateIds = new ArrayList<>();
+        }
+        updateIds.add(id);
+    }
+
+    public void addDeleteId(Integer id) {
+        if (deleteIds == null) {
+            deleteIds = new ArrayList<>();
+        }
+        deleteIds.add(id);
     }
 }
