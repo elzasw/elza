@@ -278,6 +278,8 @@ public class IssueService {
         Validate.notBlank(description, "Empty description");
         Validate.notNull(user, "User is null");
 
+        Validate.isTrue(issueList.getOpen() != null && issueList.getOpen(), "Invalid issue list state - closed");
+
         WfIssueState issueState = issueStateRepository.getStartState();
 
         int number = issueRepository.getNumberMaxByFundId(issueList.getFund().getFundId()).orElse(0) + 1;

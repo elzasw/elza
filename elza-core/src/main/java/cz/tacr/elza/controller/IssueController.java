@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.service.IssueDataService;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +41,7 @@ import cz.tacr.elza.domain.WfIssueState;
 import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.IssueDataService;
 import cz.tacr.elza.service.IssueService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.utils.CsvUtils;
@@ -274,6 +274,8 @@ public class IssueController {
 
         UsrUser user = userService.getLoggedUser();
         Validate.notNull(user, "Uživatel není přihlášený");
+
+        Validate.isTrue(issueList.getOpen(), "Neplatný stav protokolu - uzavřený");
 
         WfIssue issue = issueService.addIssue(issueList, node, issueType, issueVO.getDescription(), user);
 

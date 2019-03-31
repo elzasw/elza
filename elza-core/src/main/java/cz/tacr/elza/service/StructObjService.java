@@ -1192,7 +1192,7 @@ public class StructObjService {
                 null,
                 null));
 
-        Collection<Integer> nodeIds = arrangementService.findNodeIdsByStructuredObjectIds(structureDataIds);
+        Collection<Integer> nodeIds = arrangementService.findNodesByStructuredObjectIds(structureDataIds).keySet();
         if (!nodeIds.isEmpty()) {
             notificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundVersion.getFundVersionId(), nodeIds.toArray(new Integer[0])));
         }
