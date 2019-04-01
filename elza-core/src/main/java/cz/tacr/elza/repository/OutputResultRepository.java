@@ -1,5 +1,7 @@
 package cz.tacr.elza.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,7 +19,7 @@ import cz.tacr.elza.domain.RulTemplate;
 @Repository
 public interface OutputResultRepository extends ElzaJpaRepository<ArrOutputResult, Integer> {
 
-    ArrOutputResult findByOutput(final ArrOutput output);
+    List<ArrOutputResult> findByOutput(final ArrOutput output);
 
     // void deleteByOutput(final ArrOutput output);
 

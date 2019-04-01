@@ -1,12 +1,14 @@
 package cz.tacr.elza.service;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
@@ -36,6 +38,7 @@ import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
 import cz.tacr.elza.domain.ArrOutputItem;
+import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
@@ -50,6 +53,7 @@ import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdAndStringInVersion;
@@ -72,6 +76,8 @@ public class OutputServiceInternal {
     private final IEventNotificationService eventNotificationService;
 
     private final OutputRepository outputRepository;
+
+    private final OutputResultRepository outputResultRepository;
 
     private final NodeOutputRepository nodeOutputRepository;
 
@@ -97,12 +103,15 @@ public class OutputServiceInternal {
 
     private final BulkActionRunRepository bulkActionRunRepository;
 
+    private final RevertingChangesService revertingChangesService;
+
     @Autowired
     public OutputServiceInternal(PlatformTransactionManager transactionManager,
                                  OutputGeneratorFactory outputGeneratorFactory,
                                  IEventNotificationService eventNotificationService,
                                  FundLevelServiceInternal fundLevelServiceInternal,
                                  OutputRepository outputRepository,
+                                 OutputResultRepository outputResultRepository,
                                  NodeOutputRepository nodeOutputRepository,
                                  OutputItemRepository outputItemRepository,
                                  EntityManager em,
@@ -113,12 +122,14 @@ public class OutputServiceInternal {
                                  ItemSettingsRepository itemSettingsRepository,
                                  RuleService ruleService,
                                  ActionRepository actionRepository,
-                                 BulkActionRunRepository bulkActionRunRepository) {
+                                 BulkActionRunRepository bulkActionRunRepository,
+                                 RevertingChangesService revertingChangesService) {
         this.transactionManager = transactionManager;
         this.outputGeneratorFactory = outputGeneratorFactory;
         this.eventNotificationService = eventNotificationService;
         this.fundLevelServiceInternal = fundLevelServiceInternal;
         this.outputRepository = outputRepository;
+        this.outputResultRepository = outputResultRepository;
         this.nodeOutputRepository = nodeOutputRepository;
         this.outputItemRepository = outputItemRepository;
         this.em = em;
@@ -130,6 +141,7 @@ public class OutputServiceInternal {
         this.ruleService = ruleService;
         this.actionRepository = actionRepository;
         this.bulkActionRunRepository = bulkActionRunRepository;
+        this.revertingChangesService = revertingChangesService;
     }
 
     /**
@@ -443,10 +455,6 @@ public class OutputServiceInternal {
      * Checks if recommended bulk actions are up-to-date for specified output.
      */
     private OutputRequestStatus checkRecommendedActions(ArrOutput output, ArrFundVersion fundVersion) {
-        // find output node ids
-        List<ArrNodeOutput> outputNodes = getOutputNodes(output, fundVersion.getLockChange());
-        List<Integer> outputNodeIds = new ArrayList<>(outputNodes.size());
-        outputNodes.forEach(n -> outputNodeIds.add(n.getNodeId()));
 
         // find recommended actions
         List<RulAction> recommendedActions = actionRepository.findByRecommendedActionOutputType(output.getOutputType());
@@ -454,34 +462,48 @@ public class OutputServiceInternal {
             return OutputRequestStatus.OK;
         }
 
+        // find output node ids
+        List<Integer> nodeIds = getOutputNodes(output, fundVersion.getLockChange()).stream().map(n -> n.getNodeId()).collect(Collectors.toList());
+
         // find finished actions
-        List<ArrBulkActionRun> finishedAction = bulkActionRunRepository.findBulkActionsByNodes(fundVersion.getFundVersionId(), outputNodeIds, State.FINISHED);
-        if (recommendedActions.size() > finishedAction.size()) {
+        List<ArrBulkActionRun> finishedActions = bulkActionRunRepository.findBulkActionsByNodes(fundVersion.getFundVersionId(), nodeIds, State.FINISHED);
+        if (recommendedActions.size() > finishedActions.size()) {
             return OutputRequestStatus.RECOMMENDED_ACTION_NOT_RUN;
         }
 
-        for (RulAction ra : recommendedActions) {
-            ArrChange newestChange = null;
-            for (ArrBulkActionRun fa : finishedAction) {
-                String code = fa.getBulkActionCode();
-                // action and actionRun must match by code
-                if (ra.getCode().equals(code)) {
-                    ArrChange change = fa.getChange();
-                    // replace found if newer change
-                    if (newestChange == null || change.getChangeDate().isAfter(newestChange.getChangeDate())) {
-                        newestChange = change;
-                    }
+        ArrChange fromChange = null;
+        Map<String, ArrChange> lastChangeByCode = new HashMap<>();
+        for (ArrBulkActionRun finishedAction : finishedActions) {
+            ArrChange change = finishedAction.getChange();
+            ArrChange newestChange = lastChangeByCode.get(finishedAction.getBulkActionCode());
+            // replace if a newer change found
+            if (newestChange == null || change.getChangeDate().isAfter(newestChange.getChangeDate())) {
+                lastChangeByCode.put(finishedAction.getBulkActionCode(), change);
+                // replace to find the oldest of the last of every code
+                if (fromChange == null || change.getChangeDate().isBefore(fromChange.getChangeDate())) {
+                    fromChange = change;
                 }
             }
-            // test: bulk action not started
-            if (newestChange == null) {
+        }
+
+        for (RulAction ra : recommendedActions) {
+            // test: bulk action not started yet
+            if (!lastChangeByCode.containsKey(ra.getCode())) {
                 return OutputRequestStatus.RECOMMENDED_ACTION_NOT_RUN;
             }
-            // test: newest change is last change
-            for (Integer nodeId : outputNodeIds) {
-                if (!fundLevelServiceInternal.isLastChange(newestChange, nodeId, false, true)) {
-                    return OutputRequestStatus.DETECT_CHANGE;
-                }
+        }
+
+        if (fromChange != null) {
+            List<Integer> changeIdList = revertingChangesService.findChangesAfter(fundVersion.getFundId(), null, fromChange.getChangeId());
+            HashSet<Integer> changeIdSet = new HashSet<>(changeIdList);
+            for (ArrBulkActionRun finishedAction : finishedActions) {
+                changeIdSet.remove(finishedAction.getChange().getChangeId());
+            }
+            for (ArrOutputResult outputResult : outputResultRepository.findByOutput(output)) {
+                changeIdSet.remove(outputResult.getChange().getChangeId());
+            }
+            if (!changeIdSet.isEmpty()) {
+                return OutputRequestStatus.DETECT_CHANGE;
             }
         }
 

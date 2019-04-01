@@ -1443,6 +1443,57 @@ public class ArrangementService {
     }
 
     /**
+     * Provede přidání do front uzly, které nemají záznam v arr_node_conformity. Obvykle to jsou
+     * uzly, které se validovaly během ukončení aplikačního serveru.
+     * <p>
+     * Metoda je pouštěna po startu aplikačního serveru.
+     */
+    @Transactional(value = Transactional.TxType.MANDATORY)
+    public void startNodeValidation() {
+        // TransactionTemplate tmpl = new TransactionTemplate(txManager);
+        Map<Integer, ArrFundVersion> fundVersionMap = new HashMap<>();
+        Map<Integer, List<ArrNode>> fundNodesMap = new HashMap<>();
+
+        // zjištění všech uzlů, které nemají validaci
+        List<ArrNode> nodes = nodeRepository.findByNodeConformityIsNull();
+
+        // roztřídění podle AF
+        for (ArrNode node : nodes) {
+            Integer fundId = node.getFund().getFundId();
+            List<ArrNode> addedNodes = fundNodesMap.get(fundId);
+            if (addedNodes == null) {
+                addedNodes = new LinkedList<>();
+                fundNodesMap.put(fundId, addedNodes);
+            }
+            addedNodes.add(node);
+        }
+
+        // načtení otevřených verzí AF
+        List<ArrFundVersion> openVersions = fundVersionRepository.findAllOpenVersion();
+
+        // vytvoření převodní mapy "id AF->verze AF"
+        for (ArrFundVersion openVersion : openVersions) {
+            fundVersionMap.put(openVersion.getFund().getFundId(), openVersion);
+        }
+
+        // projde všechny fondy
+        for (Map.Entry<Integer, List<ArrNode>> entry : fundNodesMap.entrySet()) {
+            Integer fundId = entry.getKey();
+            ArrFundVersion version = fundVersionMap.get(fundId);
+
+            if (version == null) {
+                logger.error("Pro AF s ID=" + fundId + " byly nalezeny nezvalidované uzly (" + entry.getValue()
+                        + "), které nejsou z otevřené verze AF");
+                continue;
+            }
+
+            // přidávání nodů je nutné dělat ve vlastní transakci (podle updateInfoForNodesAfterCommit)
+            logger.info("Přidání " + entry.getValue().size() + " uzlů do fronty pro zvalidování");
+            updateConformityInfoService.updateInfoForNodesAfterCommit(version.getFundVersionId(), entry.getValue());
+        }
+    }
+
+    /**
      * @return vrací session uživatele
      */
     @Bean
