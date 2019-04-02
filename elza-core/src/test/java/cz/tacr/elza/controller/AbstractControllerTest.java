@@ -225,9 +225,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DESC_ITEM_CSV_EXPORT = ARRANGEMENT_CONTROLLER_URL
             + "/descItems/{fundVersionId}/csv/export";
     protected static final String UPDATE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL
-            + "/descItems/{fundVersionId}/{nodeVersion}/update/{createNewVersion}";
+            + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/{createNewVersion}";
     protected static final String DELETE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL
-            + "/descItems/{fundVersionId}/{nodeVersion}/delete";
+            + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/delete";
     protected static final String DELETE_DESC_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL
             + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}";
     protected static final String DELETE_OUTPUT_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL
@@ -1136,7 +1136,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Upravení hodnoty atributu.
      *
      * @param descItem          hodnota atributu
-     * @param fundVersion verze archivní pomůcky
+     * @param fundVersion       verze archivní pomůcky
      * @param node              uzel
      * @param createNewVersion  vytvořit novou verzi?
      * @return upravená hodnota atributu
@@ -1145,26 +1145,29 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                   final ArrFundVersionVO fundVersion,
                                                                   final ArrNodeVO node,
                                                                   final Boolean createNewVersion) {
-        return updateDescItem(descItem, fundVersion.getId(), node.getVersion(), createNewVersion);
+        return updateDescItem(descItem, fundVersion.getId(), node.getId(), node.getVersion(), createNewVersion);
     }
 
     /**
      * Upravení hodnoty atributu.
      *
      * @param descItem            hodnota atributu
-     * @param fundVersionId identifikátor verze AP
+     * @param fundVersionId       identifikátor verze AP
+     * @param node                identifikátor uzlu
      * @param nodeVersion         verze uzlu
      * @param createNewVersion    vytvořit novou verzi?
      * @return upravená hodnota atributu
      */
     protected ArrangementController.DescItemResult updateDescItem(final ArrItemVO descItem,
                                                                   final Integer fundVersionId,
+                                                                  final Integer nodeId,
                                                                   final Integer nodeVersion,
                                                                   final Boolean createNewVersion) {
         Response response = put(spec -> spec
                 .body(descItem)
                 .pathParameter("fundVersionId", fundVersionId)
                 .pathParameter("nodeVersion", nodeVersion)
+                .pathParameter("nodeId", nodeId)
                 .pathParameter("createNewVersion", createNewVersion), UPDATE_DESC_ITEM);
         return response.getBody().as(ArrangementController.DescItemResult.class);
     }
@@ -1180,23 +1183,26 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected ArrangementController.DescItemResult deleteDescItem(final ArrItemVO descItem,
                                                                   final ArrFundVersionVO fundVersion,
                                                                   final ArrNodeVO node) {
-        return deleteDescItem(descItem, fundVersion.getId(), node.getVersion());
+        return deleteDescItem(descItem, fundVersion.getId(), node.getId(), node.getVersion());
     }
 
     /**
      * Smazání hodnoty atributu.
      *
      * @param descItem            hodnota atributu
-     * @param fundVersionId identifikátor verze AP
+     * @param fundVersionId       identifikátor verze AP
+     * @param nodeId              identifikátor uzlu
      * @param nodeVersion         verze uzlu
      * @return smazaná hodnota atributu
      */
     protected ArrangementController.DescItemResult deleteDescItem(final ArrItemVO descItem,
                                                                   final Integer fundVersionId,
+                                                                  final Integer nodeId,
                                                                   final Integer nodeVersion) {
         Response response = post(spec -> spec
                 .body(descItem)
                 .pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("nodeId", nodeId)
                 .pathParameter("nodeVersion", nodeVersion), DELETE_DESC_ITEM);
         return response.getBody().as(ArrangementController.DescItemResult.class);
     }
@@ -2359,9 +2365,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param replaceDataBody seznam uzlů, ve kterých hledáme
      */
     protected void placeDataValues(final Integer versionId,
-                                     final Integer descItemTypeId,
-                                     final String text,
-                                     final ArrangementController.ReplaceDataBody replaceDataBody) {
+                                   final Integer descItemTypeId,
+                                   final String text,
+                                   final ArrangementController.ReplaceDataBody replaceDataBody) {
 
         put(spec -> spec
                 .pathParameter("versionId", versionId)
