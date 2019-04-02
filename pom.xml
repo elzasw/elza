@@ -11,7 +11,7 @@
 
     <groupId>cz.tacr.elza</groupId>
     <artifactId>elza</artifactId>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.2.3-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>ELZA</name>
     <url>http://elza.tacr.cz</url>
