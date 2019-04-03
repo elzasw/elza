@@ -188,4 +188,10 @@
 
     </changeSet>
 
+    <changeSet id="20190403140000" author="marek">
+        <addColumn tableName="arr_digital_repository">
+            <column name="view_thumbnail_url" type="nvarchar(1000)"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

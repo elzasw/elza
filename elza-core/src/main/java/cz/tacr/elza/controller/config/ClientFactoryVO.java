@@ -2023,6 +2023,7 @@ public class ClientFactoryVO {
 
         ArrDigitalRepository digitalRepository = daoFile.getDao().getDaoPackage().getDigitalRepository();
         result.setUrl(daoService.getDaoFileUrl(daoFile, digitalRepository));
+        result.setThumbnailUrl(daoService.getDaoThumbnailUrl(daoFile, digitalRepository));
 
         return result;
     }
