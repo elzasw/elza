@@ -212,11 +212,11 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + getOutputId + '/' + outputVersion + '/' + descItemTypeId + '/create', null, descItem);
     }
 
-    updateDescItem(versionId, nodeVersionId, descItem) {
-        return callWS('/arrangement/descItems/' + versionId + '/' + nodeVersionId + '/update/true', descItem);
+    updateDescItem(versionId, nodeId, nodeVersionId, descItem) {
+        return callWS('/arrangement/descItems/' + versionId + '/' + nodeId + '/' + nodeVersionId + '/update/true', descItem);
 
         // Původní volání kontroleru - zatím necháno pro testovací účely
-        // return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/descItems/' + versionId + '/' + nodeVersionId + '/update/true', null,  descItem);
+        // return AjaxUtils.ajaxPut(WebApi.arrangementUrl + '/descItems/' + versionId + '/' + nodeId + '/' + nodeVersionId + '/update/true', null,  descItem);
     }
 
     updateDescItems(fundVersionId, nodeId, nodeVersionId, createDescItem = [], updateDescItem = [], deleteDescItem = []) {
@@ -264,8 +264,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputVersion + '/update/true', null, descItem);
     }
 
-    deleteDescItem(versionId, nodeVersionId, descItem) {
-        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/descItems/' + versionId + '/' + nodeVersionId + '/delete', null, descItem);
+    deleteDescItem(versionId, nodeId, nodeVersionId, descItem) {
+        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/descItems/' + versionId + '/' + nodeId + '/' + nodeVersionId + '/delete', null, descItem);
     }
 
     deleteOutputItem(versionId, outputVersion, descItem) {
