@@ -1054,6 +1054,7 @@ var messages = {
     "admin.extSystem.interpi": "Interpi",
     "admin.extSystem.viewDaoUrl": "DaoURL",
     "admin.extSystem.viewFileUrl": "FileURL",
+    "admin.extSystem.viewThumbnailUrl": "ThumbnailURL",
     "admin.extSystem.sendNotification": "Zasílání upozornění",
     "admin.extSystem.sendNotification.true": "Ano",
     "admin.extSystem.sendNotification.false": "Ne",

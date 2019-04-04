@@ -44,6 +44,7 @@ const FIELDS = {
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: [
         'viewDaoUrl',
         'viewFileUrl',
+        'viewThumbnailUrl',
         'sendNotification'
     ],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [
@@ -102,7 +103,7 @@ class ExtSystemForm extends AbstractReactComponent {
     submitReduxForm = (values, dispatch) => submitForm(ExtSystemForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
 
     render() {
-        const {fields: {id, type, viewDaoUrl, viewFileUrl, sendNotification, code, name, url, username, password, elzaCode}, handleSubmit, submitting} = this.props;
+        const {fields: {id, type, viewDaoUrl, viewFileUrl, viewThumbnailUrl, sendNotification, code, name, url, username, password, elzaCode}, handleSubmit, submitting} = this.props;
         const classJ = this.props.fields['@class'];
         const isUpdate = !!id.value;
 
@@ -122,6 +123,7 @@ class ExtSystemForm extends AbstractReactComponent {
                 {classJ.value == EXT_SYSTEM_CLASS.ArrDigitalRepository && <div>
                     <FormInput type="text" label={i18n('admin.extSystem.viewDaoUrl')} {...viewDaoUrl} />
                     <FormInput type="text" label={i18n('admin.extSystem.viewFileUrl')} {...viewFileUrl} />
+                    <FormInput type="text" label={i18n('admin.extSystem.viewThumbnailUrl')} {...viewThumbnailUrl} />
                     <FormInput componentClass="select" label={i18n('admin.extSystem.sendNotification')} {...sendNotification} >
                         <option key={null} />
                         <option key="true" value={true}>{i18n('admin.extSystem.sendNotification.true')}</option>

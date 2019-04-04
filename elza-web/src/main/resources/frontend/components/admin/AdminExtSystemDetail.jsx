@@ -69,7 +69,7 @@ class AdminExtSystemDetail extends AbstractReactComponent {
         }
 
         let content;
-        if (extSystemDetail.fetched) {
+        if (extSystemDetail.fetched && extSystem) {
             const classJ = extSystem["@class"];
             content = <div className="ext-system-detail">
                 {classJ == EXT_SYSTEM_CLASS.ApExternalSystem && <div>
@@ -84,13 +84,24 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                     <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.ArrDigitalRepository]}</span>
 
                     {extSystem.viewDaoUrl != '' &&
-                    <h4>{i18n('admin.extSystem.viewDaoUrl')}</h4> &&
-                    <span>{extSystem.viewDaoUrl}</span>
+                    <div>
+                        <h4>{i18n('admin.extSystem.viewDaoUrl')}</h4>
+                        <span>{extSystem.viewDaoUrl}</span>
+                    </div>
                     }
 
                     {extSystem.viewFileUrl &&
-                    <h4>{i18n('admin.extSystem.viewFileUrl')}</h4> &&
-                    <span>{extSystem.viewFileUrl}</span>
+                    <div>
+                        <h4>{i18n('admin.extSystem.viewFileUrl')}</h4>
+                        <span>{extSystem.viewFileUrl}</span>
+                    </div>
+                    }
+
+                    {extSystem.viewThumbnailUrl &&
+                    <div>
+                        <h4>{i18n('admin.extSystem.viewThumbnailUrl')}</h4>
+                        <span>{extSystem.viewThumbnailUrl}</span>
+                    </div>
                     }
 
                     <h4>{i18n('admin.extSystem.sendNotification')}</h4>
