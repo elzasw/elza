@@ -392,6 +392,7 @@ export function groupDelete(id) {
 
 export function createRequest(value) {
     return (dispatch, getState) => {
+        value.nodeIds && dispatch(changeNodes(value.versionId, value.nodeIds));
         dispatch(preparedListInvalidate(value.versionId));
         dispatch(listInvalidate(value.versionId));
     }
@@ -399,6 +400,7 @@ export function createRequest(value) {
 
 export function changeRequest(value) {
     return (dispatch, getState) => {
+        value.nodeIds && dispatch(changeNodes(value.versionId, value.nodeIds));
         dispatch(preparedListInvalidate(value.versionId));
         dispatch(listInvalidate(value.versionId));
         dispatch(detailInvalidate(value.versionId, value.entityId));
@@ -407,6 +409,7 @@ export function changeRequest(value) {
 
 export function deleteRequest(value) {
     return (dispatch, getState) => {
+        value.nodeIds && dispatch(changeNodes(value.versionId, value.nodeIds));
         dispatch(preparedListInvalidate(value.versionId));
         dispatch(listInvalidate(value.versionId));
         dispatch(detailUnselect(value.versionId, value.entityId));
