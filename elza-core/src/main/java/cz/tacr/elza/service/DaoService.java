@@ -2,8 +2,12 @@ package cz.tacr.elza.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -146,54 +150,62 @@ public class DaoService {
         // kontrola, že ještě neexistuje vazba na zadaný node
         final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoAndNodeAndDeleteChangeIsNull(dao, node);
 
-        final ArrDaoLink resultDaoLink;
         if (CollectionUtils.isEmpty(daoLinkList)) {
+
+            Set<Integer> nodeIds = new HashSet<>();
+
             // Pokud má DAO jinou platnou vazbu, bude nejprve zneplatněna
             final List<ArrDaoLink> linkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(dao);
-            if (CollectionUtils.isNotEmpty(linkList)) {
-                // měla by být jen jedna, ale cyklus ošetří i případnou chybu v datech
-                for (ArrDaoLink arrDaoLink : linkList) {
-                    deleteDaoLink(fundVersion, arrDaoLink);
-                }
+            // měla by být jen jedna, ale cyklus ošetří i případnou chybu v datech
+            for (ArrDaoLink arrDaoLink : linkList) {
+                nodeIds.add(arrDaoLink.getNodeId());
+                deleteArrDaoLink(Collections.singletonList(fundVersion), arrDaoLink);
             }
 
-            // vytvořit změnu
-            final ArrChange createChange = arrangementService.createChange(ArrChange.Type.CREATE_DAO_LINK, node);
+            final ArrDaoLink resultDaoLink = createArrDaoLink(fundVersion, dao, node);
 
-            // vytvořit připojení
-            final ArrDaoLink daoLink = new ArrDaoLink();
-            daoLink.setCreateChange(createChange);
-            daoLink.setDao(dao);
-            daoLink.setNode(node);
+            nodeIds.add(node.getNodeId());
 
-            logger.debug("Založeno nové propojení mezi DAO(ID=" + dao.getDaoId() + ") a node(ID=" + node.getNodeId() + ").");
-            resultDaoLink = daoLinkRepository.save(daoLink);
+            updateNodeCacheDaoLinks(nodeIds);
 
-            arrangementCacheService.createDaoLink(daoLink.getNodeId(), resultDaoLink);
+            return resultDaoLink;
 
-            // poslat i websockety o připojení
-            EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(EventType.DAO_LINK_CREATE, fundVersion.getFundVersionId(),
-                    dao.getDaoId(), Collections.singletonList(node.getNodeId()));
-            eventNotificationService.publishEvent(event);
-
-            // poslat notifikaci pouze pokud je zapnutá u digitálního uložiště
-            if (dao.getDaoPackage().getDigitalRepository().getSendNotification()) {
-                // vytvořit požadavek pro externí systém na připojení
-                final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(fundVersion, dao, createChange, Type.LINK, node);
-                requestQueueService.sendRequest(request, fundVersion);
-            }
         } else if (daoLinkList.size() == 1) {
             logger.debug("Nalezeno existující platné propojení mezi DAO(ID=" + dao.getDaoId() + ") a node(ID=" + node.getNodeId() + ").");
-            resultDaoLink = daoLinkList.get(0); // vrací jediný prvek
+            return daoLinkList.get(0); // vrací jediný prvek
         } else {
             // Nalezeno více než jedno platné propojení mezi digitalizátem a uzlem popisu.
             throw new BusinessException("Propojení DAO(ID=" + dao.getDaoId() + ") a node(ID=" + node.getNodeId() + ") již existuje", ArrangementCode.ALREADY_ADDED);
         }
+    }
+
+    private ArrDaoLink createArrDaoLink(ArrFundVersion fundVersion, ArrDao dao, ArrNode node) {
+        // vytvořit změnu
+        final ArrChange createChange = arrangementService.createChange(ArrChange.Type.CREATE_DAO_LINK, node);
+
+        // vytvořit připojení
+        final ArrDaoLink daoLink = new ArrDaoLink();
+        daoLink.setCreateChange(createChange);
+        daoLink.setDao(dao);
+        daoLink.setNode(node);
+
+        logger.debug("Založeno nové propojení mezi DAO(ID=" + dao.getDaoId() + ") a node(ID=" + node.getNodeId() + ").");
+        ArrDaoLink resultDaoLink = daoLinkRepository.save(daoLink);
+
+        // poslat i websockety o připojení
+        EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(EventType.DAO_LINK_CREATE, fundVersion.getFundVersionId(),
+                dao.getDaoId(), Collections.singletonList(node.getNodeId()));
+        eventNotificationService.publishEvent(event);
+
+        // poslat notifikaci pouze pokud je zapnutá u digitálního uložiště
+        if (dao.getDaoPackage().getDigitalRepository().getSendNotification()) {
+            // vytvořit požadavek pro externí systém na připojení
+            final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(fundVersion, dao, createChange, Type.LINK, node);
+            requestQueueService.sendRequest(request, fundVersion);
+        }
 
         return resultDaoLink;
     }
-
-
 
     /**
      * Vytvoří změnu o zrušení vazby a nastaví ji na arrDaoLink.
@@ -204,7 +216,9 @@ public class DaoService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrDaoLink deleteDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final ArrDaoLink daoLink) {
-        return deleteArrDaoLink(Collections.singletonList(fundVersion), daoLink);
+        ArrDaoLink result = deleteArrDaoLink(Collections.singletonList(fundVersion), daoLink);
+        updateNodeCacheDaoLinks(Collections.singletonList(daoLink.getNodeId()));
+        return result;
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
@@ -213,6 +227,7 @@ public class DaoService {
         for (ArrDaoLink daoLink : daoLinks) {
             deleteArrDaoLink(Collections.singletonList(fundVersion), daoLink);
         }
+        arrangementCacheService.clearDaoLinks(node.getNodeId());
         return daoLinks;
     }
 
@@ -230,10 +245,6 @@ public class DaoService {
         final ArrDaoLink resultDaoLink = daoLinkRepository.save(daoLink);
 
         for (ArrFundVersion arrFundVersion : fundVersionList) {
-
-            if (arrFundVersion.getLockChange() == null) {
-                arrangementCacheService.deleteDaoLink(daoLink.getNodeId(), daoLink.getDaoLinkId());
-            }
 
             // poslat websockety o odpojení
             EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(EventType.DAO_LINK_DELETE, arrFundVersion.getFundVersionId(),
@@ -291,53 +302,49 @@ public class DaoService {
     }
 
     public void deleteDaoPackageWithCascade(String packageIdentifier, ArrDaoPackage arrDaoPackage) {
-            // kontrola, že neexistuje DAO navázané na požadavek ve stavu Příprava, Odesílaný, Odeslaný
-            final List<ArrDao> arrDaos = daoRepository.findByPackage(arrDaoPackage);
-            final List<ArrDaoLinkRequest> daoLinkRequests = daoLinkRequestRepository.findByDaosAndStates(arrDaos,
-                    Arrays.asList(ArrRequest.State.OPEN, ArrRequest.State.QUEUED, ArrRequest.State.SENT));
+        // kontrola, že neexistuje DAO navázané na požadavek ve stavu Příprava, Odesílaný, Odeslaný
+        final List<ArrDao> arrDaos = daoRepository.findByPackage(arrDaoPackage);
+        final List<ArrDaoLinkRequest> daoLinkRequests = daoLinkRequestRepository.findByDaosAndStates(arrDaos,
+                Arrays.asList(ArrRequest.State.OPEN, ArrRequest.State.QUEUED, ArrRequest.State.SENT));
 
-            if (daoLinkRequests.size() > 0) {
-                throw new SystemException("Nelze smazat package=" + packageIdentifier + ", počet otevřených požadavků: " + daoLinkRequests.size(), DigitizationCode.DAO_HAS_REQUEST);
-            }
-
-            for (ArrDao arrDao : arrDaos) {
-                // smazat arr_dao_link
-                final List<ArrDaoLink> arrDaoLinkList = daoLinkRepository.findByDao(arrDao);
-                for (ArrDaoLink arrDaoLink : arrDaoLinkList) {
-                    daoLinkRepository.delete(arrDaoLink);
-                }
-
-                // smazat arr_dao_file
-                final List<ArrDaoFile> daoFileList = daoFileRepository.findByDao(arrDao);
-                for (ArrDaoFile arrDaoFile : daoFileList) {
-                    daoFileRepository.delete(arrDaoFile);
-                }
-
-                // smazat arr_dao_file_group
-                final List<ArrDaoFileGroup> daoFileGroupList = daoFileGroupRepository.findByDaoOrderByCodeAsc(arrDao);
-                for (ArrDaoFileGroup arrDaoFileGroup : daoFileGroupList) {
-                    daoFileGroupRepository.delete(arrDaoFileGroup);
-                }
-
-                // smazat arr_dao_link_request
-                final List<ArrDaoLinkRequest> arrDaoLinkRequestList = daoLinkRequestRepository.findByDao(arrDao);
-                for (ArrDaoLinkRequest arrDaoLinkRequest : arrDaoLinkRequestList) {
-                    daoLinkRequestRepository.delete(arrDaoLinkRequest);
-                }
-
-                // smazat arr_dao_request_dao
-                final List<ArrDaoRequestDao> arrDaoRequestDaoList = daoRequestDaoRepository.findByDao(arrDao);
-                for (ArrDaoRequestDao arrDaoRequestDao : arrDaoRequestDaoList) {
-                    daoRequestDaoRepository.delete(arrDaoRequestDao);
-                }
-
-                // smazat dao
-                daoRepository.delete(arrDao);
-            }
-
-            // smazat package
-            daoPackageRepository.delete(arrDaoPackage);
+        if (daoLinkRequests.size() > 0) {
+            throw new SystemException("Nelze smazat package=" + packageIdentifier + ", počet otevřených požadavků: " + daoLinkRequests.size(), DigitizationCode.DAO_HAS_REQUEST);
         }
+
+        Set<Integer> nodeIds = new HashSet<>();
+
+        for (ArrDao arrDao : arrDaos) {
+            // smazat arr_dao_link
+            final List<ArrDaoLink> arrDaoLinkList = daoLinkRepository.findByDao(arrDao);
+            nodeIds.addAll(arrDaoLinkList.stream().map(arrDaoLink -> arrDaoLink.getNodeId()).collect(Collectors.toList()));
+            daoLinkRepository.delete(arrDaoLinkList);
+
+            // smazat arr_dao_file
+            final List<ArrDaoFile> daoFileList = daoFileRepository.findByDao(arrDao);
+            daoFileRepository.delete(daoFileList);
+
+            // smazat arr_dao_file_group
+            final List<ArrDaoFileGroup> daoFileGroupList = daoFileGroupRepository.findByDaoOrderByCodeAsc(arrDao);
+            daoFileGroupRepository.delete(daoFileGroupList);
+
+            // smazat arr_dao_link_request
+            final List<ArrDaoLinkRequest> arrDaoLinkRequestList = daoLinkRequestRepository.findByDao(arrDao);
+            daoLinkRequestRepository.delete(arrDaoLinkRequestList);
+
+            // smazat arr_dao_request_dao
+            final List<ArrDaoRequestDao> arrDaoRequestDaoList = daoRequestDaoRepository.findByDao(arrDao);
+            daoRequestDaoRepository.delete(arrDaoRequestDaoList);
+
+            // smazat dao
+            daoRepository.delete(arrDao);
+
+        }
+
+        // smazat package
+        daoPackageRepository.delete(arrDaoPackage);
+
+        updateNodeCacheDaoLinks(nodeIds);
+    }
 
     /**
      * Zneplatní DAO a zruší jejich návazné linky a pošle notifikace.
@@ -346,6 +353,7 @@ public class DaoService {
      * @return seznam zneplatněných ArrDao
      */
     public List<ArrDao> deleteDaos(final List<ArrDao> arrDaos) {
+        Set<Integer> nodeIds = new HashSet<>();
         List<ArrDao> result = new ArrayList<>();
         for (ArrDao arrDao : arrDaos) {
             arrDao.setValid(false);
@@ -354,9 +362,12 @@ public class DaoService {
             // zrušit linky a poslat notifikace
             final List<ArrDaoLink> arrDaoLinkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(arrDao);
             for (ArrDaoLink arrDaoLink : arrDaoLinkList) {
-                deleteArrDaoLink(arrDaoLink.getNode().getFund().getVersions(), arrDaoLink);
+                ArrNode node = arrDaoLink.getNode();
+                deleteArrDaoLink(node.getFund().getVersions(), arrDaoLink);
+                nodeIds.add(node.getNodeId());
             }
         }
+        updateNodeCacheDaoLinks(nodeIds);
         return result;
     }
 
@@ -408,5 +419,12 @@ public class DaoService {
         return arrDaoList.size() > 0
                 ? daoRepository.findIdsByDaoIdsWhereArrRequestDaoExistInState(arrDaoList, Arrays.asList(ArrRequest.State.OPEN, ArrRequest.State.QUEUED, ArrRequest.State.SENT))
                 : Collections.emptyList();
+    }
+
+    public void updateNodeCacheDaoLinks(Collection<Integer> nodeIds) {
+        if (CollectionUtils.isNotEmpty(nodeIds)) {
+            List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIds);
+            arrangementCacheService.updateDaoLinks(nodeIds, daoLinks);
+        }
     }
 }
