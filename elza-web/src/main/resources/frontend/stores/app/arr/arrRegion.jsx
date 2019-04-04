@@ -36,7 +36,6 @@ import {isStructureNodeForm} from "../../../actions/arr/structureNodeForm";
     nodeSettings: nodeSetting(undefined, {}),
     extendedView: false,
     showRegisterJp: false,
-    showDaosJp: false,
     visiblePolicy: visiblePolicy(),
     funds: [],
     customFund: customFund(),
@@ -208,12 +207,6 @@ export default function arrRegion(state = initialState, action) {
             return {
                 ...state,
                 customFund: customFund(state.customFund, action),
-            }
-        }
-        case types.SHOW_DAOS_JP: {
-            return {
-                ...state,
-                showDaosJp: action.show
             }
         }
         case types.STORE_LOAD:

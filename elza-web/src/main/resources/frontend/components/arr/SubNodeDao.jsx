@@ -87,7 +87,7 @@ class SubNodeDao extends AbstractReactComponent {
     render() {
         const {daos} = this.props;
 
-        return <div className='node-dao'>
+        return daos.data.length > 0 && <div className='node-dao'>
             <div className='node-dao-title'>{i18n('subNodeDao.title')}</div>
             <div className="actions"><Button onClick={this.handleShowDetailAll} title={i18n('subNodeDao.dao.action.showDetailAll')}><Icon glyph='fa-pencil'/></Button></div>
             {daos.isFetching ? <HorizontalLoader /> : this.renderForm() }

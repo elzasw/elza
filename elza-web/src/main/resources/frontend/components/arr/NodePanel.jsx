@@ -139,14 +139,14 @@ class NodePanel extends AbstractReactComponent {
     componentDidMount() {
         const settings = this.getSettingsFromProps();
 
-        this.requestData(this.props.versionId, this.props.node, this.props.showRegisterJp, this.props.showDaosJp, settings);
+        this.requestData(this.props.versionId, this.props.node, this.props.showRegisterJp, settings);
         this.ensureItemVisible();
         this.trySetFocus(this.props);
     }
 
     componentWillReceiveProps(nextProps) {
         const settings = this.getSettingsFromProps(nextProps);
-        this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp, nextProps.showDaosJp, settings);
+        this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp, settings);
 
         var newState = {
             focusItemIndex: this.getFocusItemIndex(nextProps, this.state.focusItemIndex)
@@ -437,7 +437,7 @@ return true
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['versionId', 'fund', 'node', 'calendarTypes', 'descItemTypes', 'rulDataTypes', 'fundId', 'showRegisterJp', 'showDaosJp', 'closed']
+        var eqProps = ['versionId', 'fund', 'node', 'calendarTypes', 'descItemTypes', 'rulDataTypes', 'fundId', 'showRegisterJp', 'closed']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -446,16 +446,15 @@ return true
      * @param versionId {String} verze AS
      * @param node {Object} node
      * @param showRegisterJp {bool} zobrazení rejstřílů vázené k jednotce popisu
-     * @param showDaosJp {bool} zobrazení digitálních entit vázené k jednotce popisu
      */
-    requestData(versionId, node, showRegisterJp, showDaosJp, settings) {
+    requestData(versionId, node, showRegisterJp, settings) {
         if (node.selectedSubNodeId != null) {
             this.dispatch(descItemTypesFetchIfNeeded());
             this.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, node.routingKey, node.dirty, settings.showChildren, settings.showParents));
             this.dispatch(refRulDataTypesFetchIfNeeded());
 
             showRegisterJp && this.dispatch(fundSubNodeRegisterFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
-            showDaosJp && this.dispatch(fundSubNodeDaosFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
+            this.dispatch(fundSubNodeDaosFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
 
         }
         this.dispatch(visiblePolicyTypesFetchIfNeeded());
@@ -843,7 +842,7 @@ return true
     render() {
         const {calendarTypes, versionId, rulDataTypes, node,
                 fundId, userDetail,
-                showRegisterJp, showDaosJp, fund, closed, descItemTypes} = this.props;
+                showRegisterJp, fund, closed, descItemTypes} = this.props;
 
         const settings = this.getSettingsFromProps();
         const readMode = settings.readMode;
@@ -906,16 +905,13 @@ return true
                         readMode={readMode}/>
         }
 
-        let daos;
-        if (showDaosJp) {
-            daos = <SubNodeDao
-                nodeId={node.id}
-                versionId={versionId}
-                selectedSubNodeId={node.selectedSubNodeId}
-                routingKey={node.routingKey}
-                readMode={readMode}
-                daos={node.subNodeDaos} />
-        }
+        const daos = <SubNodeDao
+            nodeId={node.id}
+            versionId={versionId}
+            selectedSubNodeId={node.selectedSubNodeId}
+            routingKey={node.routingKey}
+            readMode={readMode}
+            daos={node.subNodeDaos} />
 
         var cls = classNames({
             'node-panel-container': true,
@@ -1007,7 +1003,6 @@ NodePanel.propTypes = {
     rulDataTypes: React.PropTypes.object.isRequired,
     fundId: React.PropTypes.number,
     showRegisterJp: React.PropTypes.bool.isRequired,
-    showDaosJp: React.PropTypes.bool.isRequired,
     displayAccordion: React.PropTypes.bool.isRequired,
     closed: React.PropTypes.bool.isRequired,
     userDetail: React.PropTypes.object.isRequired

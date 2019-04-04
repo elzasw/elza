@@ -53,7 +53,7 @@ return true
             return true;
         }
         var eqProps = ['versionId', 'fund', 'nodes', 'activeIndex', 'fundId', 'descItemTypes',
-            'rulDataTypes', 'calendarTypes', 'showRegisterJp', 'showDaosJp', 'closed']
+            'rulDataTypes', 'calendarTypes', 'showRegisterJp', 'closed']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -66,7 +66,7 @@ return true
     }
 
     render() {
-        const {fund, nodes, activeIndex, versionId, rulDataTypes, showRegisterJp, showDaosJp,
+        const {fund, nodes, activeIndex, versionId, rulDataTypes, showRegisterJp,
                 calendarTypes, descItemTypes, fundId, closed, displayAccordion} = this.props;
 
         if (nodes.length == 0) {
@@ -109,7 +109,6 @@ return true
                             calendarTypes={calendarTypes}
                             descItemTypes={descItemTypes}
                             showRegisterJp={showRegisterJp}
-                            showDaosJp={showDaosJp}
                             displayAccordion={displayAccordion}
                         />
                     }
@@ -129,7 +128,6 @@ NodeTabs.propTypes = {
     calendarTypes: React.PropTypes.object.isRequired,
     descItemTypes: React.PropTypes.object.isRequired,
     showRegisterJp: React.PropTypes.bool.isRequired,
-    showDaosJp: React.PropTypes.bool.isRequired,
     displayAccordion: React.PropTypes.bool.isRequired,
     closed: React.PropTypes.bool.isRequired
 }

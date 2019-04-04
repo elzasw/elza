@@ -198,7 +198,6 @@ export const NODE_DESC_ITEM_TYPE_UNLOCK_ALL = 'NODE_DESC_ITEM_TYPE_UNLOCK_ALL'
 export const NODE_DESC_ITEM_TYPE_COPY = 'NODE_DESC_ITEM_TYPE_COPY'
 export const NODE_DESC_ITEM_TYPE_NOCOPY = 'NODE_DESC_ITEM_TYPE_NOCOPY'
 export const SHOW_REGISTER_JP = 'SHOW_REGISTER_JP'
-export const SHOW_DAOS_JP = 'SHOW_DAOS_JP'
 
 /**
  * Přihlášený uživatel a jeho informace.
