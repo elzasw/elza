@@ -61,7 +61,9 @@ public class ConfigRules {
     	ruleConfigs = new HashMap<>();
 
     	// read configuration from DB
-        List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, UISettings.SettingsType.TYPE_GROUPS.toString(), UISettings.EntityType.RULE);
+        List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, 
+                                                                                                    UISettings.SettingsType.TYPE_GROUPS.toString(), 
+                                                                                                    UISettings.SettingsType.TYPE_GROUPS.getEntityType());
 
         // prepare objects
         if (uiSettingsList!=null) {

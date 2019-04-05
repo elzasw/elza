@@ -158,7 +158,7 @@ public class AccessPointService {
     private UserService userService;
 
     @Autowired
-    private SettingsRepository settingsRepository;
+    private SettingsService settingsService;
     
     @Autowired
     private ArrangementCacheService arrangementCacheService;
@@ -601,17 +601,16 @@ public class AccessPointService {
 
     public List<String> getScopeCodes() {
         if (scopeCodes == null) {
-            List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, UISettings.SettingsType.RECORD.toString(), null);
-            if (uiSettingsList.size() > 0) {
-                uiSettingsList.forEach(uiSettings -> {
-                    SettingRecord setting = SettingRecord.newInstance(uiSettings);
-                    List<SettingRecord.ScopeCode> scopeCodes = setting.getScopeCodes();
-                    if (CollectionUtils.isEmpty(scopeCodes)) {
-                        this.scopeCodes = new ArrayList<>();
-                    } else {
-                        this.scopeCodes = scopeCodes.stream().map(SettingRecord.ScopeCode::getValue).collect(Collectors.toList());
-                    }
-                });
+            SettingRecord setting = settingsService.readSettings(UISettings.SettingsType.RECORD.toString(),
+                                                                 null,
+                                                                 SettingRecord.class);
+            if (setting!=null) {
+                List<SettingRecord.ScopeCode> scopeCodes = setting.getScopeCodes();
+                if (CollectionUtils.isEmpty(scopeCodes)) {
+                    this.scopeCodes = new ArrayList<>();
+                } else {
+                    this.scopeCodes = scopeCodes.stream().map(SettingRecord.ScopeCode::getValue).collect(Collectors.toList());
+                }
             }
         }
         return scopeCodes;

@@ -91,7 +91,9 @@ public class ConfigView {
         FundViewConfigs result = new FundViewConfigs();
         
         // load relevant settings
-        List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, UISettings.SettingsType.FUND_VIEW.toString(), UISettings.EntityType.RULE);
+        List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, 
+                                                                                                    UISettings.SettingsType.FUND_VIEW.toString(), 
+                                                                                                    UISettings.SettingsType.FUND_VIEW.getEntityType());
 
         uiSettingsList.forEach(uiSettings -> {
             SettingFundViews setting = SettingFundViews.newInstance(uiSettings);
