@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.FactoryUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
@@ -211,9 +212,9 @@ public class ApFactory {
         ApName prefName = names.get(0);
         ApRuleSystem ruleSystem = ap.getRuleSystem();
         Validate.isTrue(prefName.isPreferredName());
-        List<ApAccessPointNameVO> namesVO = transformList(names, n -> ApAccessPointNameVO.newInstance(n, staticData));
+        List<ApAccessPointNameVO> namesVO = FactoryUtils.transformList(names, n -> ApAccessPointNameVO.newInstance(n, staticData));
         // prepare external ids
-        List<ApExternalIdVO> eidsVO = transformList(eids, ApExternalIdVO::newInstance);
+        List<ApExternalIdVO> eidsVO = FactoryUtils.transformList(eids, ApExternalIdVO::newInstance);
         // create VO
         ApAccessPointVO vo = ApAccessPointVO.newInstance(ap);
         vo.setExternalIds(eidsVO);
@@ -391,7 +392,7 @@ public class ApFactory {
         Set<Integer> fragmentIds = fragmentMap.keySet();
         if (!fragmentIds.isEmpty()) {
             List<ApFragment> fragments = fragmentRepository.findAll(fragmentIds);
-            List<ApFragmentVO> fragmentVOList = transformList(fragments, this::createVO);
+            List<ApFragmentVO> fragmentVOList = FactoryUtils.transformList(fragments, this::createVO);
             for (ApFragmentVO fragmentVO : fragmentVOList) {
                 List<ApItemAPFragmentRefVO> fragmentRefVOS = fragmentMap.get(fragmentVO.getId());
                 for (ApItemAPFragmentRefVO fragmentRefVO : fragmentRefVOS) {
@@ -526,19 +527,4 @@ public class ApFactory {
         return new ApEidTypeVO(type.getExternalIdTypeId(), type.getCode(), type.getName());
     }
 
-    public static <S, T> List<T> transformList(List<S> src, Function<S, T> transform) {
-        if (src == null) {
-            return null;
-        }
-        int size = src.size();
-        if (size == 0) {
-            return Collections.emptyList();
-        }
-        List<T> target = new ArrayList<>(src.size());
-        for (S srcItem : src) {
-            T targetItem = transform.apply(srcItem);
-            target.add(targetItem);
-        }
-        return target;
-    }
 }

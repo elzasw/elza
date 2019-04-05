@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.common.FactoryUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.Validate;
@@ -43,7 +44,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
@@ -1383,7 +1383,7 @@ public class ArrangementController {
         Assert.notNull(arrFundVO, "AS musí být vyplněn");
 
         StaticDataProvider staticData = staticDataService.getData();
-        List<ApScope> apScopes = ApFactory.transformList(arrFundVO.getApScopes(), s -> s.createEntity(staticData));
+        List<ApScope> apScopes = FactoryUtils.transformList(arrFundVO.getApScopes(), s -> s.createEntity(staticData));
 
         return factoryVo.createFundVO(
                 arrangementService.updateFund(

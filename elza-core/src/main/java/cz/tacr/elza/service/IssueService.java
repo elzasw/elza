@@ -22,30 +22,20 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.google.common.eventbus.Subscribe;
-
-import cz.tacr.elza.EventBusListener;
 import cz.tacr.elza.controller.vo.IssueNodeItem;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.WfComment;
 import cz.tacr.elza.domain.WfIssue;
@@ -55,19 +45,14 @@ import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.packageimport.PackageService;
-import cz.tacr.elza.packageimport.xml.SettingFundIssues;
-import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.repository.WfCommentRepository;
 import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.repository.WfIssueRepository;
 import cz.tacr.elza.repository.WfIssueStateRepository;
 import cz.tacr.elza.repository.WfIssueTypeRepository;
 import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.vo.WfConfig;
 
 import static cz.tacr.elza.domain.UsrPermission.Permission;
 import static cz.tacr.elza.utils.CsvUtils.*;
@@ -75,10 +60,7 @@ import static org.apache.commons.io.IOUtils.LINE_SEPARATOR_WINDOWS;
 
 @Service
 @Transactional(readOnly = true)
-@EventBusListener
 public class IssueService {
-
-    private static final Logger logger = LoggerFactory.getLogger(IssueService.class);
 
     private static final int CVS_MAX_TEXT_LENGTH = 32760;
 
@@ -89,7 +71,7 @@ public class IssueService {
     private final WfIssueRepository issueRepository;
     private final WfIssueStateRepository issueStateRepository;
     private final WfIssueTypeRepository issueTypeRepository;
-    private final SettingsRepository settingsRepository;
+    private final IssueDataService issueDataService;
 
     // --- services ---
 
@@ -97,12 +79,6 @@ public class IssueService {
     private final ArrangementService arrangementService;
     private final LevelTreeCacheService levelTreeCacheService;
     private final IEventNotificationService eventNotificationService;
-    private final UserService userService;
-    private final StaticDataService staticDataService;
-
-    // --- fields ---
-
-    private Map<String, WfConfig> configs;
 
     // --- constructor ---
 
@@ -112,39 +88,25 @@ public class IssueService {
             ArrangementService arrangementService,
             LevelTreeCacheService levelTreeCacheService,
             IEventNotificationService eventNotificationService,
-            UserService userService,
-            StaticDataService staticDataService,
             WfCommentRepository commentRepository,
             WfIssueListRepository issueListRepository,
             WfIssueRepository issueRepository,
             WfIssueStateRepository issueStateRepository,
             WfIssueTypeRepository issueTypeRepository,
-            SettingsRepository settingsRepository) {
+            IssueDataService issueDataService) {
         this.accessPointService = accessPointService;
         this.arrangementService = arrangementService;
         this.levelTreeCacheService = levelTreeCacheService;
         this.eventNotificationService = eventNotificationService;
-        this.userService = userService;
-        this.staticDataService = staticDataService;
         this.commentRepository = commentRepository;
         this.issueListRepository = issueListRepository;
         this.issueRepository = issueRepository;
         this.issueStateRepository = issueStateRepository;
         this.issueTypeRepository = issueTypeRepository;
-        this.settingsRepository = settingsRepository;
+        this.issueDataService = issueDataService;
     }
 
     // --- methods ---
-
-    @Subscribe
-    public synchronized void invalidateCache(final CacheInvalidateEvent cacheInvalidateEvent) {
-        if (cacheInvalidateEvent.contains(CacheInvalidateEvent.Type.VIEW)) {
-            if (configs != null) {
-                logger.info("Issues configs invalidated.");
-            }
-            configs = null;
-        }
-    }
 
     /**
      * Získání stavů připomínek.
@@ -238,38 +200,13 @@ public class IssueService {
     }
 
     /**
-     * Vyhledá protokoly k danému archivní souboru - řazeno nejprve otevřené a pak uzavřené
-     *
-     * @param fund AS
-     * @param open filtr pro stav (otevřený/uzavřený)
-     * @return seznam protokolů
-     */
-    public List<WfIssueList> findIssueListByFund(@NotNull ArrFund fund, @Nullable Boolean open, @NotNull UserDetail userDetail) {
-
-        Validate.notNull(fund, "Fund is null");
-
-        if (userDetail == null) {
-            return Collections.emptyList();
-        }
-
-        Integer userId = userDetail.getId() == null // virtuální uživatel, obdobně jako superadmin
-                || userDetail.hasPermission(Permission.ADMIN)
-                || userDetail.hasPermission(Permission.FUND_ISSUE_ADMIN_ALL)
-                || userDetail.hasPermission(Permission.FUND_ISSUE_ADMIN, fund.getFundId())
-                ? null
-                : userDetail.getId();
-
-        return issueListRepository.findByFundIdWithPermission(fund.getFundId(), open, userId);
-    }
-
-    /**
      * Vyhledá připomínky k danému protokolu - řazeno vzestupně podle čísla připomínky
      *
      * @param issueList protokol
      * @param issueState stav připomínky, dle kterého filtrujeme
      * @param issueType druh připomínky, dle kterého filtrujeme
      */
-    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
     public List<WfIssue> findIssueByIssueListId(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, @Nullable WfIssueState issueState, @Nullable WfIssueType issueType) {
         Validate.notNull(issueList, "Issue list is null");
         return issueRepository.findByIssueListId(issueList.getIssueListId(), issueState, issueType);
@@ -281,7 +218,7 @@ public class IssueService {
      * @param issue připomínka
      * @return seznam komentářů
      */
-    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
     public List<WfComment> findCommentByIssueId(@AuthParam(type = AuthParam.Type.ISSUE) @NotNull WfIssue issue) {
         Validate.notNull(issue, "Issue is null");
         return commentRepository.findByIssueId(issue.getIssueId());
@@ -291,7 +228,7 @@ public class IssueService {
      * Založí nový protokol k danému AS
      */
     @Transactional
-    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN})
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_LIST_WR})
     public WfIssueList addIssueList(@AuthParam(type = AuthParam.Type.FUND) @NotNull ArrFund fund, String name, boolean open) {
 
         Validate.notNull(fund, "Fund is null");
@@ -312,7 +249,7 @@ public class IssueService {
      * Úprava vlastností existujícího protokolu
      */
     @Transactional
-    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN})
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_LIST_WR})
     public WfIssueList updateIssueList(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, @Nullable String name, @Nullable Boolean open) {
 
         Validate.notNull(issueList, "Issue list is null");
@@ -340,6 +277,8 @@ public class IssueService {
         Validate.notNull(issueList, "Issue list is null");
         Validate.notBlank(description, "Empty description");
         Validate.notNull(user, "User is null");
+
+        Validate.isTrue(issueList.getOpen() != null && issueList.getOpen(), "Invalid issue list state - closed");
 
         WfIssueState issueState = issueStateRepository.getStartState();
 
@@ -445,7 +384,7 @@ public class IssueService {
         Validate.notBlank(text, "Empty comment");
         Validate.notNull(user, "User is null");
 
-        WfComment comment = createComment(issue, nextState, text, user);
+        WfComment comment = issueDataService.createComment(issue, nextState, text, user);
 
         if (nextState != null) {
 
@@ -466,28 +405,6 @@ public class IssueService {
         publishIssueEvent(issue.getIssueList().getIssueListId(), issue.getIssueId(), EventType.ISSUE_UPDATE);
 
         return comment;
-    }
-
-    protected WfComment createComment(@NotNull WfIssue issue, @Nullable WfIssueState nextState, @NotNull String text, @NotNull UsrUser user) {
-        WfComment comment = new WfComment();
-        comment.setIssue(issue);
-        comment.setComment(text);
-        comment.setUser(user);
-        comment.setPrevState(issue.getIssueState());
-        comment.setNextState(nextState != null ? nextState : issue.getIssueState());
-        comment.setTimeCreated(LocalDateTime.now());
-        return commentRepository.save(comment);
-    }
-
-    /**
-     * Získání posledního komentáře k dané připomínce
-     *
-     * @param issue připomínka
-     * @return komentář
-     */
-    public WfComment getLastComment(WfIssue issue) {
-        List<WfComment> commentList = commentRepository.findLastByIssueId(issue.getIssueId(), new PageRequest(0, 1));
-        return !commentList.isEmpty() ? commentList.get(0) : null;
     }
 
     /**
@@ -537,17 +454,6 @@ public class IssueService {
         }
     }
 
-    protected List<WfComment> findCommentByIssueIds(List<Integer> issueIds) {
-        if (issueIds == null || issueIds.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return commentRepository.findByIssueIds(issueIds);
-    }
-
-    protected Map<Integer, List<WfComment>> groupCommentByIssueId(List<Integer> issueIds) {
-        return findCommentByIssueIds(issueIds).stream().collect(Collectors.groupingBy(comment -> comment.getIssue().getIssueId()));
-    }
-
     @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
     public void exportIssueList(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, OutputStream os) throws IOException {
 
@@ -557,7 +463,7 @@ public class IssueService {
 
         Map<Integer, TreeNodeVO> nodeMap = findNodeReferenceMark(issues);
 
-        Map<Integer, List<WfComment>> issueToCommentMap = groupCommentByIssueId(issues.stream().map(issue -> issue.getIssueId()).collect(Collectors.toList()));
+        Map<Integer, List<WfComment>> issueToCommentMap = issueDataService.groupCommentByIssueId(issues.stream().map(issue -> issue.getIssueId()).collect(Collectors.toList()));
 
         Map<Integer, ApName> userToAccessPointNameMap = findUserAccessPointNames(issues, issueToCommentMap);
 
@@ -648,7 +554,7 @@ public class IssueService {
             return Collections.emptyMap();
         }
         Validate.isTrue(fundIds.size() == 1, "Připomínky jsou z různých archivních souborů");
-        return arrangementService.findNodeReferenceMark(fundIds.iterator().next(), nodeIds);
+        return levelTreeCacheService.findNodeReferenceMark(fundIds.iterator().next(), nodeIds);
     }
 
     protected Map<Integer, ApName> findUserAccessPointNames(List<WfIssue> issues, Map<Integer, List<WfComment>> issueCommentMap) {
@@ -680,56 +586,6 @@ public class IssueService {
         return userAccessPointNameMap.get(user.getUserId()).getName();
     }
 
-    /**
-     * Seznam otevřených připomínek (tzn. nejsou v koncovém stavu) ze všech otevřených protokolů bez JP na konkrétní AS.
-     *
-     * @param fund archivní soubor
-     * @param user přihlášený uživatel
-     */
-    public List<WfIssue> findOpenIssueByFundIdAndNodeNull(@NotNull ArrFund fund, UserDetail userDetail) {
-        Validate.notNull(fund, "Fund is null");
-        if (userDetail == null) {
-            return Collections.emptyList();
-        }
-        Integer userId = userDetail.hasPermission(Permission.ADMIN) ? null : userDetail.getId();
-        return issueRepository.findOpenByFundIdAndNodeNull(fund.getFundId(), userId);
-    }
-
-    /**
-     * Seznam otevřených připomínek (tzn. nejsou v koncovém stavu) ze všech otevřených protokolů ke kontrétní JP.
-     *
-     * @param nodeId identifikátor jednotky popisu
-     * @param user přihlášený uživatel
-     */
-    public List<WfIssue> findOpenIssueByNodeId(@NotNull Integer nodeId, UserDetail userDetail) {
-        Validate.notNull(nodeId, "Node ID is null");
-        if (userDetail == null) {
-            return Collections.emptyList();
-        }
-        Integer userId = userDetail.hasPermission(Permission.ADMIN) ? null : userDetail.getId();
-        return issueRepository.findOpenByNodeId(Collections.singletonList(nodeId), userId);
-    }
-
-    /**
-     * Seznam otevřených připomínek (tzn. nejsou v koncovém stavu) ze všech otevřených protokolů ke kontrétní JP.
-     *
-     * @param nodeIds seznam identifikátorů jednotek popisu
-     * @param user přihlášený uživatel
-     * @return seznam připomínek groupovaných podle identifikátoru jednotky popisu
-     */
-    public Map<Integer, List<WfIssue>> groupOpenIssueByNodeId(@NotNull Collection<Integer> nodeIds, UserDetail userDetail) {
-        Validate.notNull(nodeIds, "Node ID list is null");
-        if (nodeIds.isEmpty()) {
-            return Collections.emptyMap();
-        }
-        if (userDetail == null) {
-            return Collections.emptyMap();
-        }
-        Integer userId = userDetail.hasPermission(Permission.ADMIN) ? null : userDetail.getId();
-        List<WfIssue> issueList = issueRepository.findOpenByNodeId(nodeIds, userId);
-        return issueList.stream().collect(Collectors.groupingBy(issue -> issue.getNode().getNodeId()));
-    }
-
     protected void publishEvent(Integer id, final EventType type) {
         eventNotificationService.publishEvent(EventFactory.createIdEvent(type, id));
     }
@@ -740,32 +596,6 @@ public class IssueService {
 
     protected void publishVersionEvent(final Integer id, final ArrFundVersion fundVersion, final EventType type) {
         eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(type, fundVersion, id));
-    }
-
-    /**
-     * Získání oprávnění podle pravidel.
-     *
-     * @param ruleSet pravidla
-     * @return nastavení
-     */
-    @Nullable
-    public WfConfig getConfig(final RulRuleSet ruleSet) {
-    	// TODO: Settings should not depend on ruleSet 
-        StaticDataProvider sdp = staticDataService.getData();
-        if (configs == null) {
-            configs = new HashMap<>();
-
-            // load relevant settings            
-            List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, 
-            		UISettings.SettingsType.FUND_ISSUES.toString(), UISettings.EntityType.RULE);
-
-            uiSettingsList.forEach(uiSettings -> {
-                RulRuleSet rulRuleSet = sdp.getRuleSetById(uiSettings.getEntityId());
-                SettingFundIssues issueSettings = SettingFundIssues.newInstance(uiSettings);
-                configs.put(rulRuleSet.getCode(), new WfConfig(issueSettings.getIssueTypeColors(), issueSettings.getIssueStateIcons()));
-            });
-        }
-        return configs.get(ruleSet.getCode());
     }
 
     private List<Integer> findNodeIdWithOpenIssue(@NotNull ArrFund fund, @NotNull UserDetail userDetail) {

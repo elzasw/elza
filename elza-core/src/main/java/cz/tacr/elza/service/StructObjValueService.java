@@ -3,13 +3,14 @@ package cz.tacr.elza.service;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
@@ -43,6 +44,7 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrSobjVrequest;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
@@ -331,11 +333,12 @@ public class StructObjValueService {
         boolean doNextCheck = false;
         List<ArrSobjVrequest> items = page.getContent();
         List<ArrSobjVrequest> delItems = new ArrayList<>(items.size());
+        List<ArrStructuredObject> changedStructObjList = new ArrayList<>(items.size());
         // now run validate
         for (ArrSobjVrequest item : items) {
             final ArrStructuredObject sobj = item.getStructuredObject();
             try {
-                doNextCheck |= generateAndValidate(sobj);
+                doNextCheck |= generateAndValidate(sobj, changedStructObjList::add);
                 delItems.add(item);
             } catch (Exception e) {
                 logger.error("Nastala chyba při validaci hodnoty strukturovaného typu -> structureDataId="
@@ -345,6 +348,11 @@ public class StructObjValueService {
 
         // drop processed items
         sobjVrequestRepository.delete(delItems);
+
+        if (!changedStructObjList.isEmpty()) {
+            sendStructDataNotifications(changedStructObjList);
+            sendNodeNotifications(changedStructObjList);
+        }
 
         boolean result = doNextCheck || page.hasNext();
 
@@ -362,10 +370,11 @@ public class StructObjValueService {
      *
      * @param structObj
      *            hodnota struktovaného datového typu
-     *
+     * @param onChange
+     *            callback volaný, pokud při zpracování dojde ke změně hodnoty strukturovaného datového typu
      * @return Return true if next check is required
      */
-    private boolean generateAndValidate(final ArrStructuredObject structObj) {
+    private boolean generateAndValidate(final ArrStructuredObject structObj, Consumer<ArrStructuredObject> onChange) {
         // do not generate for temp objects
         if (structObj.getState() == ArrStructuredObject.State.TEMP) {
             return false;
@@ -381,7 +390,7 @@ public class StructObjValueService {
         // read settings
         SettingStructTypeSettings ssts = settingsService.readSettings(settingsName, structObj.getFundId(), SettingStructTypeSettings.class);
 
-        return generateValue(structObj, ssts);
+        return generateValue(structObj, onChange, ssts);
     }
 
     /**
@@ -390,10 +399,14 @@ public class StructObjValueService {
      * Method will only check if value is empty.
      *
      * @param structObj
+     *            hodnota struktovaného datového typu
+     * @param onChange
+     *            callback volaný, pokud při zpracování dojde ke změně hodnoty strukturovaného datového typu
      * @param ssts 
      * @return Return true if next check is required
      */
-    private boolean generateValue(ArrStructuredObject structObj, SettingStructTypeSettings ssts) {
+    private boolean generateValue(ArrStructuredObject structObj, Consumer<ArrStructuredObject> onChange,
+                                  SettingStructTypeSettings ssts) {
         boolean requestNextCheck = false;
         // generate value
         String oldSortValue = structObj.getSortValue();
@@ -457,38 +470,52 @@ public class StructObjValueService {
 
         if (change) {
             structObjRepository.save(structObj);
-            sendNotification(structObj);
-            sendNodeNotification(structObj);
+            if (onChange != null) {
+                onChange.accept(structObj);
+            }
         }
 
         return requestNextCheck;
     }
 
-    private void sendNotification(ArrStructuredObject structObj) {
-        Integer structObjId = structObj.getStructuredObjectId();
-        // send notifications
-        if (structObj.getState() == ArrStructuredObject.State.TEMP) {
-            notificationService.publishEvent(new EventStructureDataChange(structObj.getFundId(),
-                    structObj.getStructuredType().getCode(),
-                    Collections.singletonList(structObjId),
-                    null,
-                    null,
-                    null));
-        } else {
-            notificationService.publishEvent(new EventStructureDataChange(structObj.getFundId(),
-                    structObj.getStructuredType().getCode(),
-                    null,
-                    null,
-                    Collections.singletonList(structObjId),
-                    null));
+    private void sendStructDataNotifications(List<ArrStructuredObject> structObjList) {
+
+        Map<Integer, EventStructureDataChange> changesByFundId = new LinkedHashMap<>(100);
+
+        for (ArrStructuredObject structObj : structObjList) {
+
+            EventStructureDataChange change = changesByFundId.computeIfAbsent(structObj.getFundId(),
+                    fundId -> new EventStructureDataChange(fundId, null, null, null, null, null));
+
+            if (structObj.getState() == State.TEMP) {
+                change.addTempId(structObj.getStructuredObjectId());
+            } else {
+                change.addUpdateId(structObj.getStructuredObjectId());
+            }
+        }
+
+        for (EventStructureDataChange change : changesByFundId.values()) {
+            notificationService.publishEvent(change);
         }
     }
 
-    private void sendNodeNotification(ArrStructuredObject structObj) {
-        Collection<Integer> nodeIds = arrangementService.findNodeIdsByStructuredObjectId(structObj.getStructuredObjectId());
-        if (!nodeIds.isEmpty()) {
-            ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(structObj.getFund().getFundId());
-            notificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundVersion.getFundVersionId(), nodeIds.toArray(new Integer[0])));
+    private void sendNodeNotifications(List<ArrStructuredObject> structObjList) {
+        Set<Integer> structuredObjectIds = structObjList.stream().map(structObj -> structObj.getStructuredObjectId()).collect(Collectors.toSet());
+
+        Map<Integer, List<ArrNode>> nodesByFundId = arrangementService.findNodesByStructuredObjectIds(structuredObjectIds)
+                .values().stream().collect(Collectors.groupingBy(node -> node.getFundId()));
+
+        if (!nodesByFundId.isEmpty()) {
+
+            List<ArrFundVersion> fundVersions = arrangementService.getOpenVersionsByFundIds(nodesByFundId.keySet());
+
+            for (ArrFundVersion fundVersion : fundVersions) {
+                List<ArrNode> nodes = nodesByFundId.get(fundVersion.getFundId());
+                if (CollectionUtils.isNotEmpty(nodes)) {
+                    Integer[] nodeIds = nodes.stream().map(node -> node.getNodeId()).toArray(Integer[]::new);
+                    notificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundVersion.getFundVersionId(), nodeIds));
+                }
+            }
         }
     }
 

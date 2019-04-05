@@ -114,7 +114,7 @@ class LecturingBottom extends React.Component {
 
 
         const canWrite = fetched && (
-            userDetail.hasOne([perms.FUND_ISSUE_ADMIN_ALL]) || (
+            userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL) || (
                 userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
                 userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
                 userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(data.issueListId) !== -1

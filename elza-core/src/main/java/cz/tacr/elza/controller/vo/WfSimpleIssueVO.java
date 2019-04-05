@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.domain.WfIssue;
+
 /**
  * Připomínka - zjednodušené VO
  */
@@ -46,5 +48,13 @@ public class WfSimpleIssueVO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public static WfSimpleIssueVO newInstance(final WfIssue issue) {
+        WfSimpleIssueVO issueVO = new WfSimpleIssueVO();
+        issueVO.setId(issue.getIssueId());
+        issueVO.setNumber(issue.getNumber());
+        issueVO.setDescription(issue.getDescription());
+        return issueVO;
     }
 }
