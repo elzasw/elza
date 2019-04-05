@@ -50,24 +50,15 @@ public class SettingTypeGroups extends Setting {
     }
 
     public SettingTypeGroups() {
-        setSettingsType(UISettings.SettingsType.TYPE_GROUPS);
-        setEntityType(UISettings.EntityType.RULE);
+        super(UISettings.SettingsType.TYPE_GROUPS.toString(), 
+        		UISettings.EntityType.RULE);
     }
 
     @Override
-    public String getValue() {
+    void store(UISettings uiSettings) {
         try {
-            return objectMapper.writeValueAsString(this);
+            uiSettings.setValue(objectMapper.writeValueAsString(this));
         } catch (JsonProcessingException e) {
-            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
-        }
-    }
-
-    @Override
-    public void setValue(final String value) {
-        try {
-            items = objectMapper.readValue(value, SettingTypeGroups.class).getItems();
-        } catch (IOException e) {
             throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
     }
@@ -174,4 +165,12 @@ public class SettingTypeGroups extends Setting {
             this.width = width;
         }
     }
+
+	public static SettingTypeGroups newInstance(UISettings uis) {
+        try {
+            return objectMapper.readValue(uis.getValue(), SettingTypeGroups.class);
+        } catch (IOException e) {
+            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
+        }
+	}
 }

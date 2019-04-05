@@ -1127,7 +1127,7 @@ public class StructObjService {
     public List<RulStructuredType> findStructureTypes(final ArrFundVersion fundVersion) {
         Validate.notNull(fundVersion);
 
-        List<UISettings> settings = settingsService.getGlobalSettings(UISettings.SettingsType.STRUCTURE_TYPES, UISettings.EntityType.RULE);
+        List<UISettings> settings = settingsService.getGlobalSettings(UISettings.SettingsType.STRUCTURE_TYPES.toString(), UISettings.EntityType.RULE);
         UISettings settingsUse = null;
         for (UISettings setting : settings) {
             if (fundVersion.getRuleSetId().equals(setting.getEntityId())) {
@@ -1139,7 +1139,7 @@ public class StructObjService {
         if (settingsUse == null) {
             return Collections.emptyList();
         } else {
-            SettingStructureTypes structureTypes = (SettingStructureTypes) PackageService.convertSetting(settingsUse, null);
+            SettingStructureTypes structureTypes = SettingStructureTypes.newInstance(settingsUse);
             Set<String> typeCodes = structureTypes.getItems().stream()
                     .map(SettingStructureTypes.Type::getCode)
                     .collect(Collectors.toSet());

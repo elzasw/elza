@@ -750,17 +750,19 @@ public class IssueService {
      */
     @Nullable
     public WfConfig getConfig(final RulRuleSet ruleSet) {
+    	// TODO: Settings should not depend on ruleSet 
         StaticDataProvider sdp = staticDataService.getData();
         if (configs == null) {
             configs = new HashMap<>();
 
-            // load relevant settings
-            List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, UISettings.SettingsType.FUND_ISSUES, UISettings.EntityType.RULE);
+            // load relevant settings            
+            List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, 
+            		UISettings.SettingsType.FUND_ISSUES.toString(), UISettings.EntityType.RULE);
 
             uiSettingsList.forEach(uiSettings -> {
                 RulRuleSet rulRuleSet = sdp.getRuleSetById(uiSettings.getEntityId());
-                SettingFundIssues setting = (SettingFundIssues) PackageService.convertSetting(uiSettings, null);
-                configs.put(rulRuleSet.getCode(), new WfConfig(setting.getIssueTypeColors(), setting.getIssueStateIcons()));
+                SettingFundIssues issueSettings = SettingFundIssues.newInstance(uiSettings);
+                configs.put(rulRuleSet.getCode(), new WfConfig(issueSettings.getIssueTypeColors(), issueSettings.getIssueStateIcons()));
             });
         }
         return configs.get(ruleSet.getCode());

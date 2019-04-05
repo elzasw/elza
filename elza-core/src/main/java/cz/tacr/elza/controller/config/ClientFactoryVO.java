@@ -1084,20 +1084,18 @@ public class ClientFactoryVO {
         itemTypes.forEach(type -> codeToId.put(type.getItemTypeId(), type.getCode()));
 
         // načtený globální oblíbených
-        List<UISettings> favoritesItemTypes = settingsService.getGlobalSettings(UISettings.SettingsType.FAVORITE_ITEM_SPECS, UISettings.EntityType.ITEM_TYPE);
+        List<UISettings> favoritesItemTypes = settingsService.getGlobalSettings(UISettings.SettingsType.FAVORITE_ITEM_SPECS.toString(), UISettings.EntityType.ITEM_TYPE);
 
         // typeId -> list<specId>
         // naplnění mapy podle oblíbených z nastavení
         Map<Integer, List<Integer>> typeSpecsMap = new HashMap<>();
         for (UISettings favoritesItemType : favoritesItemTypes) {
-            SettingFavoriteItemSpecs setting = (SettingFavoriteItemSpecs) PackageService.convertSetting(favoritesItemType, itemTypeRepository);
+            SettingFavoriteItemSpecs setting = SettingFavoriteItemSpecs.newInstance(favoritesItemType, staticDataService);
             if (CollectionUtils.isNotEmpty(setting.getFavoriteItems())) {
-                List<RulItemSpec> itemSpecs = itemSpecRepository.findOneByCodes(setting.getFavoriteItems().stream()
-                        .map(SettingFavoriteItemSpecs.FavoriteItem::getValue).collect(Collectors.toList()));
-                List<Integer> itemSpecsIds = new ArrayList<>(itemSpecs.size());
-                for (RulItemSpec itemSpec : itemSpecs) {
-                    itemSpecsIds.add(itemSpec.getItemSpecId());
-                }
+            	StaticDataProvider sdp = staticDataService.getData();
+            	List<Integer> itemSpecsIds = setting.getFavoriteItems().stream()
+            		.map(fi -> sdp.getItemSpecByCode(fi.getValue()).getItemSpecId() )
+                    .collect(Collectors.toList());
                 typeSpecsMap.put(favoritesItemType.getEntityId(), itemSpecsIds);
             }
         }

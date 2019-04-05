@@ -9,9 +9,7 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingTypeGroups;
-import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
@@ -44,9 +42,6 @@ public class ConfigRules {
     private SettingsRepository settingsRepository;
 
     @Autowired
-    private ItemTypeRepository itemTypeRepository;
-
-    @Autowired
     private RuleSetRepository ruleSetRepository;
 
     /**
@@ -66,13 +61,13 @@ public class ConfigRules {
     	ruleConfigs = new HashMap<>();
 
     	// read configuration from DB
-        List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, UISettings.SettingsType.TYPE_GROUPS, UISettings.EntityType.RULE);
+        List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, UISettings.SettingsType.TYPE_GROUPS.toString(), UISettings.EntityType.RULE);
 
         // prepare objects
         if (uiSettingsList!=null) {
             uiSettingsList.forEach(uiSettings -> {
                 RulRuleSet ruleSet = ruleSetRepository.findOne(uiSettings.getEntityId());
-                SettingTypeGroups ruleSettings = (SettingTypeGroups) PackageService.convertSetting(uiSettings, itemTypeRepository);
+                SettingTypeGroups ruleSettings = SettingTypeGroups.newInstance(uiSettings);
                 RuleConfiguration ruleConfig = new RuleConfiguration(ruleSettings);
                 ruleConfigs.put(ruleSet.getCode(), ruleConfig);
             });

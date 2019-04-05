@@ -20,10 +20,8 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingFundViews;
 import cz.tacr.elza.packageimport.xml.SettingFundViews.FundView;
-import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 
@@ -41,9 +39,6 @@ public class ConfigView {
 
     @Autowired
     private SettingsRepository settingsRepository;
-
-    @Autowired
-    private ItemTypeRepository itemTypeRepository;
 
     @Autowired
     private StaticDataService staticDataService;
@@ -96,10 +91,10 @@ public class ConfigView {
         FundViewConfigs result = new FundViewConfigs();
         
         // load relevant settings
-        List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, UISettings.SettingsType.FUND_VIEW, UISettings.EntityType.RULE);
+        List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, UISettings.SettingsType.FUND_VIEW.toString(), UISettings.EntityType.RULE);
 
         uiSettingsList.forEach(uiSettings -> {
-            SettingFundViews setting = (SettingFundViews) PackageService.convertSetting(uiSettings, itemTypeRepository);
+            SettingFundViews setting = SettingFundViews.newInstance(uiSettings);
             FundView xmlFundView = setting.getFundView();
 
             ViewTitles vt = ViewTitles.valueOf(xmlFundView, sdp);

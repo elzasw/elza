@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <settings xmlns:ns2="fund-views" xmlns:ns3="type-groups" xmlns:ns4="allow-structure-types" xmlns:ns5="fund-issues">
-    <favorite-item-specs code="ZP2015_LANGUAGE">
-        <!-- čeština -->
-        <favorite-item>ZP2015_LANGUAGE_43</favorite-item>
-        <!-- němčina -->
-        <favorite-item>ZP2015_LANGUAGE_18</favorite-item>
-        <!-- latina -->
-        <favorite-item>ZP2015_LANGUAGE_32</favorite-item>
-    </favorite-item-specs>
     <allow-structure-types settings-type="STRUCTURE_TYPES" entity-type="RULE">
         <ns4:type code="ZP2015_PACKET"/>
     </allow-structure-types>
@@ -182,30 +174,6 @@
             </group>
         </ns3:default>
     </type-groups>
-
-    <!-- Výchozí prvky pro tabulkové zobrazení -->
-    <grid-view>
-        <item-type code="ZP2015_UNIT_ID">
-            <show-default>true</show-default>
-            <width>200</width>
-        </item-type>
-        <item-type code="ZP2015_SERIAL_NUMBER">
-            <show-default>true</show-default>
-            <width>210</width>
-        </item-type>
-        <item-type code="ZP2015_LEVEL_TYPE">
-            <show-default>true</show-default>
-        </item-type>
-        <item-type code="ZP2015_TITLE">
-            <show-default>true</show-default>
-        </item-type>
-        <item-type code="ZP2015_FOLDER_TYPE">
-            <show-default>true</show-default>
-        </item-type>
-        <item-type code="ZP2015_UNIT_TYPE">
-            <show-default>true</show-default>
-        </item-type>
-    </grid-view>
 
     <!-- Barvy a ikonky připomínek -->
     <fund-issues settings-type="FUND_ISSUES" entity-type="RULE">

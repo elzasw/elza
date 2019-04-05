@@ -326,37 +326,40 @@ public class StaticDataProvider {
             // create initialized rule system item type
             ItemType rsit = new ItemType(it, dataType);
 
-            // prepare item spec
-            initItemSpecs(rsit, itemSpecRepository);
-
-            rsit.sealUp();
+            // add to lookups
             this.itemTypes.add(rsit);
-
             itemTypeIdMap.put(it.getItemTypeId(), rsit);
         }
+        
+        // get all specifications
+        List<RulItemSpec> itemSpecs = itemSpecRepository.findAll();
+        for(RulItemSpec its: itemSpecs) {
+            ItemType rsit = itemTypeIdMap.get(its.getItemTypeId());
+            addItemSpec(its, rsit);
+        }
+        
+        // seal up item types
+        this.itemTypes.forEach(ItemType::sealUp);
+        
         this.itemTypeCodeMap = StaticDataProvider.createLookup(itemTypeIdMap.values(), ItemType::getCode);
         this.itemSpecCodeMap = StaticDataProvider.createLookup(itemSpecIdMap.values(), RulItemSpec::getCode);
     }
+    
+    /**
+     * Add specification to lookup collections
+     * @param is
+     * @param rsit
+     */
+    private void addItemSpec(RulItemSpec is, ItemType rsit) {
+        Validate.isTrue(rsit.hasSpecifications(), "Type does not allow specifications, typeCode: %s", rsit.getCode());
+        
+        // prepare real object
+        is = HibernateUtils.unproxy(is);
 
-    private void initItemSpecs(ItemType rsit, ItemSpecRepository itemSpecRepository) {
-        if (!rsit.hasSpecifications()) {
-            return;
-        }
-
-        RulItemType itemType = rsit.getEntity();
-        List<RulItemSpec> itemSpecs = itemSpecRepository.findByItemType(itemType);
-        for (RulItemSpec is : itemSpecs) {
-            // check if initialized in same transaction
-            RulItemType itemTypeFromSpec = is.getItemType();
-            if (itemType != itemTypeFromSpec) {
-                Validate.isTrue(false, "Inconsistency between itemType ({}) and itemType from specification ({})",
-                                itemType, itemTypeFromSpec);
-            }
-
-            rsit.addItemSpec(is);
-            this.itemSpecs.add(is);
-            itemSpecIdMap.put(is.getItemSpecId(), is);
-        }
+        rsit.addItemSpec(is);
+        // add to the lookups
+        this.itemSpecs.add(is);
+        itemSpecIdMap.put(is.getItemSpecId(), is);        
     }
 
     private void initStructuredTypes(StructuredTypeRepository structuredTypeRepository,

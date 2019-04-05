@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -676,15 +677,21 @@ public class ItemTypeUpdater {
         List<RulItemSpecRegister> speAPTypeNew = new ArrayList<>();
 
         List<RulItemSpecRegister> rulItemSpecRegisters = new ArrayList<>();
+        
+        Map<String, ItemSpec> itemSpecLookup = itemSpecs.stream().collect(Collectors.toMap(ItemSpec::getCode, Function.identity()));
+        Validate.isTrue(itemSpecLookup.size()==itemSpecs.size(), "List of specification contains duplicated code");
 
         for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
             // Find input item spec from source
-            List<ItemSpec> findItemsSpec = itemSpecs.stream().filter(
+            /*List<ItemSpec> findItemsSpec = itemSpecs.stream().filter(
                     (r) -> r.getCode().equals(rulDescItemSpec.getCode())).collect(Collectors.toList());
 
             Validate.isTrue(findItemsSpec.size() == 1, "Cannot find code in itemSpecs, code: {}",
                             rulDescItemSpec.getCode());
-            ItemSpec item = findItemsSpec.get(0);
+            ItemSpec item = findItemsSpec.get(0);*/
+            ItemSpec item = itemSpecLookup.get(rulDescItemSpec.getCode());
+            Validate.notNull(item, "Cannot find code in itemSpecs, code: {}",
+                    rulDescItemSpec.getCode());
 
             List<RulItemSpecRegister> dbSpecs = itemSpecRegisterRepository
                     .findByDescItemSpecId(rulDescItemSpec);

@@ -33,7 +33,7 @@ public class SettingRecord extends Setting {
     private List<ScopeCode> scopeCodes;
 
     public SettingRecord() {
-        setSettingsType(UISettings.SettingsType.RECORD);
+        super(UISettings.SettingsType.RECORD.toString(), null);
     }
 
     public List<ScopeCode> getScopeCodes() {
@@ -45,19 +45,10 @@ public class SettingRecord extends Setting {
     }
 
     @Override
-    public String getValue() {
+    void store(UISettings uiSettings) {
         try {
-            return objectMapper.writeValueAsString(scopeCodes);
+            uiSettings.setValue(objectMapper.writeValueAsString(scopeCodes));
         } catch (JsonProcessingException e) {
-            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
-        }
-    }
-
-    @Override
-    public void setValue(final String value) {
-        try {
-            scopeCodes = Arrays.asList(objectMapper.readValue(value, ScopeCode[].class));
-        } catch (IOException e) {
             throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
     }
@@ -77,5 +68,15 @@ public class SettingRecord extends Setting {
             this.value = value;
         }
     }
+
+	public static SettingRecord newInstance(UISettings uis) {
+		SettingRecord sr = new SettingRecord();
+        try {
+            sr.scopeCodes = Arrays.asList(objectMapper.readValue(uis.getValue(), ScopeCode[].class));
+        } catch (IOException e) {
+            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
+        }
+		return sr;
+	}
 
 }

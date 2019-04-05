@@ -17,7 +17,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -80,7 +79,6 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
-import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBodyItemRepository;
@@ -95,7 +93,6 @@ import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PartyCreatorRepository;
@@ -162,7 +159,7 @@ public class AccessPointService {
 
     @Autowired
     private SettingsRepository settingsRepository;
-
+    
     @Autowired
     private ArrangementCacheService arrangementCacheService;
 
@@ -186,12 +183,6 @@ public class AccessPointService {
 
     @Autowired
     private DescItemRepository descItemRepository;
-
-    @Autowired
-    private ItemTypeRepository itemTypeRepository;
-
-    @Autowired
-    private EntityManager em;
 
     @Autowired
     private ApChangeRepository apChangeRepository;
@@ -610,10 +601,10 @@ public class AccessPointService {
 
     public List<String> getScopeCodes() {
         if (scopeCodes == null) {
-            List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, UISettings.SettingsType.RECORD, null);
+            List<UISettings> uiSettingsList = settingsRepository.findByUserAndSettingsTypeAndEntityType(null, UISettings.SettingsType.RECORD.toString(), null);
             if (uiSettingsList.size() > 0) {
                 uiSettingsList.forEach(uiSettings -> {
-                    SettingRecord setting = (SettingRecord) PackageService.convertSetting(uiSettings, itemTypeRepository);
+                    SettingRecord setting = SettingRecord.newInstance(uiSettings);
                     List<SettingRecord.ScopeCode> scopeCodes = setting.getScopeCodes();
                     if (CollectionUtils.isEmpty(scopeCodes)) {
                         this.scopeCodes = new ArrayList<>();

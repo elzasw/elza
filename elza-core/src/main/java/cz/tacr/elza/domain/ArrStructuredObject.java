@@ -159,11 +159,6 @@ public class ArrStructuredObject implements IArrFund, Structured {
 		this.sortValue = sortValue;
 	}
 
-	@Override
-    public String getStructureTypeCode() {
-        return structuredType == null ? null : structuredType.getCode();
-    }
-
     /**
      * @return změna při vytvoření
      */

@@ -734,7 +734,7 @@ public class ConfigMapperConfiguration {
                     @Override
                     public void mapAtoB(final RulRuleSet rulRuleSet, final RulRuleSetVO rulRuleSetVO, final MappingContext context) {
                         super.mapAtoB(rulRuleSet, rulRuleSetVO, context);
-                        List<SettingGridView.ItemType> itemTypes = ruleService.getGridView(rulRuleSet);
+                        List<SettingGridView.ItemType> itemTypes = ruleService.getGridView();
                         if (itemTypes != null) {
                             List<RulRuleSetVO.GridView> gridViews = new ArrayList<>(itemTypes.size());
                             for (SettingGridView.ItemType itemType : itemTypes) {

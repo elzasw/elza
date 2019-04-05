@@ -77,28 +77,17 @@ public class SettingFundIssues extends Setting {
     // --- constructor ---
 
     public SettingFundIssues() {
-        setSettingsType(UISettings.SettingsType.FUND_ISSUES);
-        setEntityType(UISettings.EntityType.RULE);
+    	super(UISettings.SettingsType.FUND_ISSUES.toString(), 
+    			UISettings.EntityType.RULE);
     }
 
     // --- methods ---
 
     @Override
-    public String getValue() {
+    void store(UISettings uiSettings) {
         try {
-            return objectMapper.writeValueAsString(this);
+            uiSettings.setValue(objectMapper.writeValueAsString(this));
         } catch (JsonProcessingException e) {
-            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
-        }
-    }
-
-    @Override
-    public void setValue(final String value) {
-        try {
-            SettingFundIssues settingFundIssues = objectMapper.readValue(value, SettingFundIssues.class);
-            this.issueStateIcons = settingFundIssues.getIssueStateIcons();
-            this.issueTypeColors = settingFundIssues.getIssueTypeColors();
-        } catch (IOException e) {
             throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
     }
@@ -280,4 +269,12 @@ public class SettingFundIssues extends Setting {
             return issueTypes;
         }
     }
+
+	public static SettingFundIssues newInstance(UISettings uiSettings) {
+        try {
+            return objectMapper.readValue(uiSettings.getValue(), SettingFundIssues.class);
+        } catch (IOException e) {
+            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
+        }
+	}
 }

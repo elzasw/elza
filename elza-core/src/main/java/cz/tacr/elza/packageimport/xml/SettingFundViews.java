@@ -39,8 +39,8 @@ public class SettingFundViews extends Setting {
     private FundView fundView;
 
     public SettingFundViews() {
-        setSettingsType(UISettings.SettingsType.FUND_VIEW);
-        setEntityType(UISettings.EntityType.RULE);
+        super(UISettings.SettingsType.FUND_VIEW.toString(),
+        		UISettings.EntityType.RULE);
     }
 
     public FundView getFundView() {
@@ -52,19 +52,10 @@ public class SettingFundViews extends Setting {
     }
 
     @Override
-    public String getValue() {
+    void store(UISettings uiSettings) {
         try {
-            return objectMapper.writeValueAsString(fundView);
+            uiSettings.setValue(objectMapper.writeValueAsString(fundView));
         } catch (JsonProcessingException e) {
-            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
-        }
-    }
-
-    @Override
-    public void setValue(final String value) {
-        try {
-            fundView = objectMapper.readValue(value, FundView.class);
-        } catch (IOException e) {
             throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
     }
@@ -298,4 +289,14 @@ public class SettingFundViews extends Setting {
         }
 
     }
+
+	public static SettingFundViews newInstance(UISettings uis) {
+		SettingFundViews sfv = new SettingFundViews();
+        try {
+            sfv.fundView = objectMapper.readValue(uis.getValue(), FundView.class);
+        } catch (IOException e) {
+            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
+        }
+		return sfv;
+	}
 }

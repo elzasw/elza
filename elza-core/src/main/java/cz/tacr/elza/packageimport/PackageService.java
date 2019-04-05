@@ -96,8 +96,6 @@ import cz.tacr.elza.domain.UISettings.EntityType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.WfIssueState;
 import cz.tacr.elza.domain.WfIssueType;
-import cz.tacr.elza.domain.integer.DisplayType;
-import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -219,6 +217,7 @@ import cz.tacr.elza.repository.WfIssueStateRepository;
 import cz.tacr.elza.repository.WfIssueTypeRepository;
 import cz.tacr.elza.search.IndexWorkProcessor;
 import cz.tacr.elza.service.CacheService;
+import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.StructObjValueService;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -451,6 +450,9 @@ public class PackageService {
 
     @Autowired
     private SettingsRepository settingsRepository;
+    
+    @Autowired
+    private SettingsService settingsService;
 
     @Autowired
     private CacheService cacheService;
@@ -679,7 +681,7 @@ public class PackageService {
         // NASTAVENÍ -----------------------------------------------------------------------------------------------
 
         Settings settings = pkgCtx.convertXmlStreamToObject(Settings.class, SETTING_XML);
-        List<UISettings> globalSettings = createUISettings(settings, rulPackage, null, null);
+        List<UISettings> globalSettings = createUISettings(settings, rulPackage, null, rulDescItemTypes);
         uiSettings.addAll(globalSettings);
 
         processSettings(uiSettings, rulPackage);
@@ -1199,15 +1201,18 @@ public class PackageService {
         if (settings == null) {
             return Collections.emptyList();
         }
+        Validate.notNull(settings.getSettings());
 
         List<UISettings> result = new ArrayList<>(settings.getSettings().size());
 
         for (Setting sett : settings.getSettings()) {
             UISettings uiSett = sett.createUISettings(rulPackage);
 
+            Integer entityId = null;
             if (uiSett.getEntityType() == EntityType.RULE) {
-                uiSett.setEntityId(ruleSet.getRuleSetId());
-
+                Validate.notNull(ruleSet, "Ruleset is null for settings: %1$s",sett);
+                
+                entityId = ruleSet.getRuleSetId();
             } else if (uiSett.getEntityType() == EntityType.ITEM_TYPE) {
                 SettingFavoriteItemSpecs specs = (SettingFavoriteItemSpecs) sett;
                 String specsCode = specs.getCode();
@@ -1218,8 +1223,10 @@ public class PackageService {
                         .orElseThrow(() -> new BusinessException("RulItemType s code=" + specsCode + " nenalezen", PackageCode.CODE_NOT_FOUND)
                                 .set("code", specsCode).set("file", SETTING_XML));
 
-                uiSett.setEntityId(itemType.getItemTypeId());
+                entityId = itemType.getItemTypeId();
             }
+            
+            uiSett.setEntityId(entityId);
 
             result.add(uiSett);
         }
@@ -2968,6 +2975,30 @@ public class PackageService {
             addObjectToZipFile(extensionRules, zos, ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + EXTENSION_RULE_XML);
         }
     }
+    
+    static class UISettingsExport {
+    	final List<UISettings> settings = new ArrayList<>();
+    	
+    	final Integer rulesetId;
+    	
+    	public UISettingsExport(final Integer rulesetId)
+    	{
+    		this.rulesetId = rulesetId;
+    	}
+
+		public void add(UISettings uiSetts) {
+			this.settings.add(uiSetts);
+			
+		}
+
+		public List<UISettings> getSettings() {
+			return settings;
+		}
+
+		public Integer getRuleSetId() {
+			return rulesetId;
+		}
+    }
 
 
     /**
@@ -2975,119 +3006,56 @@ public class PackageService {
      *
      * @param rulPackage balíček
      * @param zos        stream zip souboru
+     * @throws IOException 
      */
-    private void exportSettings(final RulPackage rulPackage, final ZipOutputStream zos) {
-        List<UISettings> uiSettings = settingsRepository.findByRulPackage(rulPackage);
-
-        if (uiSettings.size() == 0) {
+    private void exportSettings(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        List<UISettings> uiSettingsCol = settingsRepository.findByRulPackage(rulPackage);
+        if (uiSettingsCol.size() == 0) {
             return;
         }
-
-        Map<Integer, RulRuleSet> ruleSetMap = ruleSetRepository.findAll().stream()
-                .collect(Collectors.toMap(RulRuleSet::getRuleSetId, Function.identity()));
-        Map<Integer, RulItemType> itemTypeMap = itemTypeRepository.findAll().stream()
-                .collect(Collectors.toMap(RulItemType::getItemTypeId, Function.identity()));
-
-        List<RulRuleSet> ruleSetList = new ArrayList<>();
-        Set<Integer> ruleSetIdAdd = new HashSet<>();
-        Collection<UISettings.SettingsType> settingsTypesRule = UISettings.SettingsType.findByType(UISettings.EntityType.RULE);
-        Collection<UISettings.SettingsType> settingsTypesItemType = UISettings.SettingsType.findByType(UISettings.EntityType.ITEM_TYPE);
-
-        for (UISettings uiSetting : uiSettings) {
-            if (settingsTypesRule.contains(uiSetting.getSettingsType())) {
-                Integer ruleSetId = uiSetting.getEntityId();
-                if (!ruleSetIdAdd.contains(ruleSetId)) {
-                    ruleSetIdAdd.add(ruleSetId);
-                    ruleSetList.add(ruleSetMap.get(ruleSetId));
-                }
-            }/* else if (settingsTypesItemType.contains(uiSetting.getSettingsType())) {
-                Integer itemTypeId = uiSetting.getEntityId();
-                RulItemType rulItemType = itemTypeMap.get(itemTypeId);
-                Integer ruleSetId = rulItemType.getRuleSet().getRuleSetId();
-                if (!ruleSetIdAdd.contains(ruleSetId)) {
-                    ruleSetIdAdd.add(ruleSetId);
-                    ruleSetList.add(ruleSetMap.get(ruleSetId));
-                }
-            }*/
+        
+        HashMap<Integer, UISettingsExport> settingMap = new HashMap<>();
+        // prepare export settings per ruleset
+        for(UISettings uiSettings: uiSettingsCol) 
+        {
+        	Integer rulesetId = null;
+        	if(uiSettings.getEntityType()==EntityType.RULE) {
+        		rulesetId = uiSettings.getEntityId();
+        	}
+        	UISettingsExport expSettings = settingMap.computeIfAbsent(rulesetId, c -> new UISettingsExport(c));
+        	expSettings.add(uiSettings);        	
         }
-
-        if (!ruleSetList.contains(null)) {
-            ruleSetList.add(null);
-        }
-
-        for (RulRuleSet ruleSet : ruleSetList) {
-            String path = ruleSet == null ? SETTING_XML : ZIP_DIR_RULE_SET + "/" + ruleSet.getCode() + "/" + SETTING_XML;
-            export(rulPackage, zos, settingsRepository, Settings.class, Setting.class,
-                    (settingList, settings) -> settings.setSettings(settingList),
-                    (uiSetting, setting) -> setting.setValue(uiSetting.getValue()),
-                    (uiSetting, rulRuleSet) -> PackageService.convertSetting(uiSetting, itemTypeRepository),
-                    (s) -> filterSettingByType(s, ruleSet), path, ruleSet);
+        
+        // run export
+        for(UISettingsExport c: settingMap.values())
+        {
+        	exportSettingsForRuleset(c, zos);
         }
     }
 
-    private boolean filterSettingByType(final UISettings setting, final RulRuleSet ruleSet) {
-        EntityType entityType = setting.getEntityType();
-        if (entityType == EntityType.RULE) {
-            if (ruleSet == null) {
-                return false;
-            }
-            Integer ruleSetId = Validate.notNull(setting.getEntityId());
-            if (ruleSet.getRuleSetId().equals(ruleSetId)) {
-                return true;
-            }
-            return false;
-        }
-
-        if (entityType == EntityType.ITEM_TYPE) {
-            if (ruleSet == null) {
-                return false;
-            }
-            StaticDataProvider staticData = staticDataService.getData();
-            return staticData.getItemTypeById(setting.getEntityId()) != null;
-        }
-
-        if (ruleSet != null) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public static Setting convertSetting(final UISettings uiSettings, final ItemTypeRepository itemTypeRepository) {
-        // factory
-        Setting entity;
-        if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.FUND_VIEW)
-                && Objects.equals(uiSettings.getEntityType(), UISettings.EntityType.RULE)) {
-            entity = new SettingFundViews();
-        } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.TYPE_GROUPS)
-                && Objects.equals(uiSettings.getEntityType(), UISettings.EntityType.RULE)) {
-            entity = new SettingTypeGroups();
-        } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.FAVORITE_ITEM_SPECS)
-                && Objects.equals(uiSettings.getEntityType(), UISettings.EntityType.ITEM_TYPE)) {
-            SettingFavoriteItemSpecs settingFavoriteItemSpecs = new SettingFavoriteItemSpecs();
-            if (uiSettings.getEntityId() != null) {
-                RulItemType itemType = itemTypeRepository.findOne(uiSettings.getEntityId());
-                if (itemType != null) {
-                    settingFavoriteItemSpecs.setCode(itemType.getCode());
-                }
-            }
-            entity = settingFavoriteItemSpecs;
-        } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.RECORD)) {
-            entity = new SettingRecord();
-        } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.STRUCTURE_TYPES)) {
-            entity = new SettingStructureTypes();
-        } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.GRID_VIEW)) {
-            entity = new SettingGridView();
-        } else if (Objects.equals(uiSettings.getSettingsType(), UISettings.SettingsType.FUND_ISSUES)) {
-            entity = new SettingFundIssues();
-        } else {
-            entity = new SettingBase();
-        }
-        entity.setSettingsType(uiSettings.getSettingsType());
-        entity.setEntityType(uiSettings.getEntityType());
-        entity.setValue(uiSettings.getValue());
-        return entity;
-    }
+    private void exportSettingsForRuleset(UISettingsExport uiSettingsForRuleset, 
+    									 final ZipOutputStream zos) throws IOException 
+    {
+    	StaticDataProvider sdp = this.staticDataService.getData();
+    	RulRuleSet ruleSet = null;
+    	if(uiSettingsForRuleset.getRuleSetId()!=null) {
+    		ruleSet = sdp.getRuleSetById(uiSettingsForRuleset.getRuleSetId());
+    	}
+    	
+    	String fileName = ruleSet == null ? SETTING_XML : ZIP_DIR_RULE_SET + "/" + ruleSet.getCode() + "/" + SETTING_XML;
+    	
+    	Settings settings = new Settings();
+    	List<Setting> settingsList = new ArrayList<>();
+    	settings.setSettings(settingsList);
+    	
+    	uiSettingsForRuleset.getSettings().forEach(uiSettings -> {
+    		// export single settings
+    		Setting setting = settingsService.convertSetting(uiSettings);
+    		settingsList.add(setting);
+    	});
+    	
+    	addObjectToZipFile(settings, zos, fileName);
+	}
 
     private void exportRelationRoleTypes(final RulPackage rulPackage, final ZipOutputStream zos) {
         export(rulPackage, zos, relationRoleTypeRepository, RelationRoleTypes.class, RelationRoleType.class,

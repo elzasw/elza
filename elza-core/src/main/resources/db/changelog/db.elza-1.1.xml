@@ -161,5 +161,19 @@
             <column name="last_update" type="timestamp"/>
         </addColumn>
     </changeSet>
-
+    <changeSet id="20190330081300" author="ppyt">
+        <modifyDataType
+                columnName="settings_type"
+                newDataType="nvarchar(250)"
+                tableName="ui_settings" />
+        <modifyDataType
+                columnName="entity_type"
+                newDataType="nvarchar(250)"
+                tableName="ui_settings" />
+    </changeSet>
+    <changeSet id="20190330081301" author="ppyt">
+      <createIndex indexName="rul_item_spec_register_item_spec_idx" tableName="rul_item_spec_register">
+        <column name="item_spec_id" type="int"/>
+      </createIndex>
+    </changeSet>
 </databaseChangeLog>
