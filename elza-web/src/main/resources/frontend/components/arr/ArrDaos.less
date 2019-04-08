@@ -9,7 +9,6 @@
 
     .daos-list {
         height: 100%;
-        width: 30%;
 
         display: flex;
         flex-direction: column;
@@ -21,18 +20,32 @@
             background-color: @tree-node-active-bg;
             font-size: @font-size-base * 1.1;
         }
+
         .daos-list-items {
             flex-grow: 1;
             display: flex;
-            .listbox-container {
+
+            .tree-list {
                 flex-grow: 1;
+                background-color: @node-form-dao;
+                border: 1px solid #DDDDDD;
+                .item {
+                    .item-text {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        flex-shrink: 1;
+                        .item-name {
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                        }
+                    }
+                }
             }
         }
     }
 
     .daos-detail {
-        word-break: break-all;
-        width: 70%;
+        height: 100%;
     }
 
 }
