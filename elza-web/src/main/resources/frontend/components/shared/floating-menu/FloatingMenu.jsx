@@ -10,6 +10,7 @@ export default class FloatingMenu extends React.PureComponent {
         target: PropTypes.object,
         coordinates: PropTypes.object,
         shouldUpdate: PropTypes.bool,
+        focusable: PropTypes.bool,
         closeMenu: PropTypes.func,
         //@TODO: selectable placement direction
         //position: PropTypes.oneOf(["both", "horizontal", "vertical", "left", "right", "up", "down"])
@@ -181,7 +182,7 @@ export default class FloatingMenu extends React.PureComponent {
     }
 
     setMenuPositions() {
-        const {coordinates} = this.props;
+        const {coordinates, focusable} = this.props;
         const targetNode = ReactDOM.findDOMNode(this.props.target);
         const containerNode = ReactDOM.findDOMNode(this.menu);
         let originRect = this.getRectFromCoordinates(coordinates.x, coordinates.y);
@@ -203,6 +204,9 @@ export default class FloatingMenu extends React.PureComponent {
             width: size.width + 'px',
             ...placement
         });
+        if (focusable && this.menu.children && this.menu.children[0]) {
+            this.menu.children[0].focus();
+        }
         //this.setState({...this.state});
     }
 
