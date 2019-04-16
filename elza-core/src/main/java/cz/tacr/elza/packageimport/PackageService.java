@@ -158,14 +158,7 @@ import cz.tacr.elza.packageimport.xml.RuleSets;
 import cz.tacr.elza.packageimport.xml.RuleSystem;
 import cz.tacr.elza.packageimport.xml.RuleSystems;
 import cz.tacr.elza.packageimport.xml.Setting;
-import cz.tacr.elza.packageimport.xml.SettingBase;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
-import cz.tacr.elza.packageimport.xml.SettingFundIssues;
-import cz.tacr.elza.packageimport.xml.SettingFundViews;
-import cz.tacr.elza.packageimport.xml.SettingGridView;
-import cz.tacr.elza.packageimport.xml.SettingRecord;
-import cz.tacr.elza.packageimport.xml.SettingStructureTypes;
-import cz.tacr.elza.packageimport.xml.SettingTypeGroups;
 import cz.tacr.elza.packageimport.xml.Settings;
 import cz.tacr.elza.packageimport.xml.StructureDefinition;
 import cz.tacr.elza.packageimport.xml.StructureDefinitions;
@@ -638,7 +631,7 @@ public class PackageService {
         processRuleSets(pkgCtx);
 
         List<RulStructuredType> rulStructuredTypes = processStructureTypes(pkgCtx);
-        processStructureDefinitions(pkgCtx, rulStructuredTypes);
+        processStructureDefinitions(pkgCtx/*, rulStructuredTypes*/);
 
         for (RuleUpdateContext ruc : pkgCtx.getRuleUpdateContexts()) {
             processPolicyTypes(ruc);
@@ -935,8 +928,11 @@ public class PackageService {
         apExternalIdType.setRulPackage(rulPackage);
     }
 
-    private List<RulStructureDefinition> processStructureDefinitions(final PackageContext puc,
-                                                                     final List<RulStructuredType> rulStructureTypes) {
+    private List<RulStructureDefinition> processStructureDefinitions(final PackageContext puc/*,
+                                                                                             final List<RulStructuredType> rulStructureTypes*/) {
+        // read current structured types in DB
+        List<RulStructuredType> rulStructureTypes = this.structureTypeRepository.findAll();
+
         StructureDefinitions structureDefinitions = puc.convertXmlStreamToObject(StructureDefinitions.class,
                                                                                     STRUCTURE_DEFINITION_XML);
 
