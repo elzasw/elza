@@ -176,4 +176,13 @@
         <column name="item_spec_id" type="int"/>
       </createIndex>
     </changeSet>
+    <changeSet id="20190330081302" author="ppyt">
+      <createIndex indexName="arr_item_type_idx" tableName="arr_item">
+        <column name="item_type_id" type="int"/>
+      </createIndex>
+      <createIndex indexName="arr_item_type_spec_idx" tableName="arr_item">
+        <column name="item_type_id" type="int"/>
+        <column name="item_spec_id" type="int"/>
+      </createIndex>
+    </changeSet>
 </databaseChangeLog>
