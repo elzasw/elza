@@ -18,7 +18,7 @@ public class EnumItemConvertor extends AbstractItemConvertor {
         }
         Validate.isTrue(item.getData().getClass() == ArrDataNull.class);
         // integrity check - spec must be set for defined item
-        Validate.notNull(item.getItemSpecId());
+        Validate.notNull(item.getItemSpecId(), "Položka bez uvedení specifikace: %d", item.getData().getDataId());
 
         return new ItemEnum();
     }
