@@ -171,7 +171,7 @@
         <shortcut>fsd</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_LFI" item-type="ZP2015_UNIT_TYPE">
-        <name>Listový filmy</name>
+        <name>Listový film</name>
         <description>Listový film</description>
         <shortcut>lfi</shortcut>
     </item-spec>
