@@ -57,10 +57,8 @@ import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UISettings.EntityType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingStructTypeSettings;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.SobjVrequestRepository;
@@ -164,6 +162,8 @@ public class StructObjValueService {
      *            hodnota
      */
     public void addToValidate(final ArrStructuredObject sobj) {
+        Validate.notNull(sobj.getStructuredObjectId());
+
         ArrSobjVrequest sobjVRequest = addToValidateInternal(sobj);
         sobjVrequestRepository.save(sobjVRequest);
 

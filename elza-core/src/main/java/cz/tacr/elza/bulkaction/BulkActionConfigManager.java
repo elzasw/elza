@@ -35,6 +35,7 @@ import cz.tacr.elza.bulkaction.generator.TestDataConfig;
 import cz.tacr.elza.bulkaction.generator.GenerateUnitIdConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.CopyConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.DateRangeConfig;
+import cz.tacr.elza.bulkaction.generator.multiple.ItemGeneratorConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.NodeCountConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.TextAggregationConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.UnitCountConfig;
@@ -169,6 +170,7 @@ public class BulkActionConfigManager {
 
         // Register type descriptors
         yamlCtor.addTypeDescription(new TypeDescription(FundValidationConfig.class, "!FundValidation"));
+        yamlCtor.addTypeDescription(new TypeDescription(ItemGeneratorConfig.class, "!ItemGenerator"));
         yamlCtor.addTypeDescription(new TypeDescription(SerialNumberConfig.class, "!SerialNumberGenerator"));
         yamlCtor.addTypeDescription(new TypeDescription(GenerateUnitIdConfig.class, "!UnitIdGenerator"));
         yamlCtor.addTypeDescription(new TypeDescription(SealUnitIdConfig.class, "!SealUnitId"));
