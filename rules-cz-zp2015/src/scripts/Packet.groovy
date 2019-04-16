@@ -40,7 +40,13 @@ void generate()
         }
     }
 
-    // Packet number    
+    // Packet number
+    String startNumber = toStringValue("ZP2015_PACKET_START_NUMBER");
+    if(StringUtils.isNotBlank(startNumber)) {
+        valueBuilder.append(startNumber).append("-");
+    }
+
+    // Packet number
     String number = toStringValue("ZP2015_PACKET_NUMBER");
     if(StringUtils.isNotBlank(number)) {
         // append zeroes
