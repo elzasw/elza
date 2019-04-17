@@ -55,8 +55,8 @@ public interface StructuredItemRepository extends JpaRepository<ArrStructuredIte
     @Query("SELECT i FROM arr_structured_item i JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.descItemObjectId = :itemObjectId")
     ArrStructuredItem findOpenItemFetchData(@Param("itemObjectId") Integer itemObjectId);
 
-    @Query("SELECT i FROM arr_structured_item i WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND i.structuredObject = :structuredObject")
-    List<ArrStructuredItem> findOpenItems(@Param("itemType") RulItemType itemType,
+    @Query("SELECT i FROM arr_structured_item i WHERE i.deleteChange IS NULL AND i.itemType.itemTypeId = :itemTypeId AND i.structuredObject = :structuredObject")
+    List<ArrStructuredItem> findOpenItems(@Param("itemTypeId") Integer itemTypeId,
                                           @Param("structuredObject") ArrStructuredObject structuredObject);
 
     @Modifying

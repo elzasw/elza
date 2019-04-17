@@ -86,7 +86,6 @@ public class StructObjService {
     private final StructuredTypeRepository structureTypeRepository;
     private final ArrangementService arrangementService;
     private final DataRepository dataRepository;
-    private final RuleService ruleService;
     private final FundStructureExtensionRepository fundStructureExtensionRepository;
     private final StructObjValueService structObjService;
     private final ItemTypeRepository itemTypeRepository;
@@ -102,7 +101,6 @@ public class StructObjService {
                             final StructuredTypeRepository structureTypeRepository,
                             final ArrangementService arrangementService,
                             final DataRepository dataRepository,
-                            final RuleService ruleService,
                             final FundStructureExtensionRepository fundStructureExtensionRepository,
                             final StructObjValueService structureDataService,
                             final ItemTypeRepository itemTypeRepository,
@@ -116,7 +114,6 @@ public class StructObjService {
         this.structureTypeRepository = structureTypeRepository;
         this.arrangementService = arrangementService;
         this.dataRepository = dataRepository;
-        this.ruleService = ruleService;
         this.fundStructureExtensionRepository = fundStructureExtensionRepository;
         this.structObjService = structureDataService;
         this.itemTypeRepository = itemTypeRepository;
@@ -691,8 +688,7 @@ public class StructObjService {
                                                           final Integer structureDataId,
                                                           final Integer itemTypeId) {
         ArrStructuredObject structObj = getStructObjById(structureDataId);
-        RulItemType type = ruleService.getItemTypeById(itemTypeId);
-        List<ArrStructuredItem> structureItems = structureItemRepository.findOpenItems(type, structObj);
+        List<ArrStructuredItem> structureItems = structureItemRepository.findOpenItems(itemTypeId, structObj);
 
         ArrChange change = getChangeForStructObject(structObj, ArrChange.Type.DELETE_STRUCTURE_ITEM);
         for (ArrStructuredItem structureItem : structureItems) {
