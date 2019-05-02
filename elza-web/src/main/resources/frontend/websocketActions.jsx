@@ -254,6 +254,7 @@ let eventMap = {
     'ACCESS_POINT_UPDATE':accessPointUpdate,
     'FRAGMENT_UPDATE': fragmentUpdate,
     'ISSUE_LIST_UPDATE': issueListUpdate,
+    'ISSUE_LIST_CREATE': issueListCreate,
     'ISSUE_UPDATE': issueUpdate,
     'ISSUE_CREATE': issueCreate,
 }
@@ -533,7 +534,13 @@ function fragmentUpdate(value) {
 }
 
 function issueListUpdate({id}) {
-    store.dispatch(issuesActions.protocol.invalidate(id))
+    store.dispatch(issuesActions.protocol.invalidate(id));
+    store.dispatch(issuesActions.protocols.invalidate());
+}
+
+function issueListCreate({id}) {
+    store.dispatch(issuesActions.protocol.invalidate(id));
+    store.dispatch(issuesActions.protocols.invalidate());
 }
 
 function issueUpdate({issueListId, ids}) {
