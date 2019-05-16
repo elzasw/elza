@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.4.0.final using JasperReports Library version 6.4.1  -->
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="puvodce" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="70" bottomMargin="70" uuid="5e68af3a-e344-406e-924e-15876401d3ae">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="org.apache.commons.lang3.StringUtils"/>
@@ -152,7 +152,7 @@
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>Datum vzniku: </b>"+$F{creation}.getFrom().getValueText()+(StringUtils.isNotBlank($F{creation}.getFrom().getNote())?" "+$F{creation}.getFrom().getNote():"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>"+($F{creation}.getType().getCode().equals("CREATION")?"Datum vzniku":"Působnost od")+": </b>"+$F{creation}.getFrom().getValueText()+(StringUtils.isNotBlank($F{creation}.getFrom().getNote())?" "+$F{creation}.getFrom().getNote():"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="20" isRemoveLineWhenBlank="true" uuid="066f0355-bd2b-4328-ac97-52ec55458007">
@@ -203,7 +203,7 @@
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>Datum zániku: </b>"+$F{destruction}.getFrom().getValueText()+(StringUtils.isNotBlank($F{destruction}.getFrom().getNote())?" "+$F{destruction}.getFrom().getNote():"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>"+($F{destruction}.getType().getCode().equals("EXTINCTION")?"Datum zániku":"Působnost do") + ":</b> " + $F{destruction}.getFrom().getValueText()+(StringUtils.isNotBlank($F{destruction}.getFrom().getNote())?" "+$F{destruction}.getFrom().getNote():"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="20" isRemoveLineWhenBlank="true" uuid="6a019459-1eba-43cc-b95b-8f42c185f959">
