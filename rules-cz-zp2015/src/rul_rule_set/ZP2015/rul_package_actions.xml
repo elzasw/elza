@@ -56,4 +56,5 @@
     <package-action filename="PERZISTENTNI_RAZENI.yaml" />
     <!-- Vypocet a vizualizace EJ -->
     <package-action filename="ZP2015_INTRO_VYPOCET_EJ.yaml"/>
+    <package-action filename="GENEROVANI_PORADI_ULOZENI.yaml" />
 </package-actions>

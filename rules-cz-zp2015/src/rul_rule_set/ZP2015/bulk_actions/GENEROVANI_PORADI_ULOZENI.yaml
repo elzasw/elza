@@ -1,0 +1,8 @@
+!MultiAction
+name: Generátor pořadí uložení
+fastAction: true
+actions:
+  - !StorageOrderGenerator
+    storageItemType: ZP2015_STORAGE_ID
+    orderItemType: ZP2015_ITEM_ORDER
+    

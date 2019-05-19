@@ -26,17 +26,18 @@ import org.yaml.snakeyaml.constructor.Constructor;
 
 import cz.tacr.elza.bulkaction.generator.DeleteItemConfig;
 import cz.tacr.elza.bulkaction.generator.FundValidationConfig;
+import cz.tacr.elza.bulkaction.generator.GenerateUnitIdConfig;
 import cz.tacr.elza.bulkaction.generator.MoveDescItemConfig;
 import cz.tacr.elza.bulkaction.generator.MultiActionConfig;
 import cz.tacr.elza.bulkaction.generator.PersistentSortConfig;
 import cz.tacr.elza.bulkaction.generator.SealUnitIdConfig;
 import cz.tacr.elza.bulkaction.generator.SerialNumberConfig;
 import cz.tacr.elza.bulkaction.generator.TestDataConfig;
-import cz.tacr.elza.bulkaction.generator.GenerateUnitIdConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.CopyConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.DateRangeConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.ItemGeneratorConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.NodeCountConfig;
+import cz.tacr.elza.bulkaction.generator.multiple.StorageOrderGeneratorConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.TextAggregationConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.UnitCountConfig;
 import cz.tacr.elza.core.ResourcePathResolver;
@@ -171,6 +172,7 @@ public class BulkActionConfigManager {
         // Register type descriptors
         yamlCtor.addTypeDescription(new TypeDescription(FundValidationConfig.class, "!FundValidation"));
         yamlCtor.addTypeDescription(new TypeDescription(ItemGeneratorConfig.class, "!ItemGenerator"));
+        yamlCtor.addTypeDescription(new TypeDescription(StorageOrderGeneratorConfig.class, "!StorageOrderGenerator"));
         yamlCtor.addTypeDescription(new TypeDescription(SerialNumberConfig.class, "!SerialNumberGenerator"));
         yamlCtor.addTypeDescription(new TypeDescription(GenerateUnitIdConfig.class, "!UnitIdGenerator"));
         yamlCtor.addTypeDescription(new TypeDescription(SealUnitIdConfig.class, "!SealUnitId"));
