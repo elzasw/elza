@@ -23,12 +23,16 @@ class IssueLists extends AbstractReactComponent {
         fundId: React.PropTypes.number.isRequired
     };
 
+    componentDidMount() {
+        this.props.dispatch(issuesActions.protocolsConfig.fetchIfNeeded(this.props.fundId, true));
+    }
+
     componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
-        nextProps.dispatch(issuesActions.protocols.fetchIfNeeded(this.props.fundId));
+        nextProps.dispatch(issuesActions.protocolsConfig.fetchIfNeeded(this.props.fundId));
     }
 
     componentWillUnmount(): void {
-        this.props.dispatch(issuesActions.protocols.filter({}));
+        this.props.dispatch(issuesActions.protocolsConfig.filter({}));
     }
 
     select = ([index]) => {
@@ -41,17 +45,17 @@ class IssueLists extends AbstractReactComponent {
     };
 
     onCreate = data => {
-        this.props.dispatch(issuesActions.protocols.fetchIfNeeded(this.props.fundId, true));
+        this.props.dispatch(issuesActions.protocolsConfig.fetchIfNeeded(this.props.fundId, true));
         this.setState({id:data.id, initialValues: data});
     };
 
     onSave = data => {
-        this.props.dispatch(issuesActions.protocols.invalidate(this.props.fundId));
+        this.props.dispatch(issuesActions.protocolsConfig.invalidate(this.props.fundId));
         this.setState({id:data.id, initialValues: data});
     };
 
     filter = ({target: {value}}) => {
-        this.props.dispatch(issuesActions.protocols.filter({open: value == 'true'}));
+        this.props.dispatch(issuesActions.protocolsConfig.filter({open: value == 'true'}));
         this.setState({id: null, initialValues: IssueListForm.initialValues});
     };
 
@@ -93,7 +97,7 @@ export default connect((state) => {
     return {
         issueTypes: state.refTables.issueTypes,
         issueList: storeFromArea(state, issuesActions.AREA_LIST),
-        issueProtocols: storeFromArea(state, issuesActions.AREA_PROTOCOLS)
+        issueProtocols: storeFromArea(state, issuesActions.AREA_PROTOCOLS_CONFIG)
     }
 })(IssueLists);
 
