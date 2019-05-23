@@ -1,4 +1,4 @@
-<package-actions>
+﻿<package-actions>
     <!-- Validace pravidel ZP2015 -->
     <package-action filename="ZP2015_FUND_VALIDATION.yaml" >
         <action-recommendeds>
@@ -57,4 +57,6 @@
     <!-- Vypocet a vizualizace EJ -->
     <package-action filename="ZP2015_INTRO_VYPOCET_EJ.yaml"/>
     <package-action filename="GENEROVANI_PORADI_ULOZENI.yaml" />
+    <!-- Generování ukládacích jednotek -->
+    <package-action filename="GENEROVANI_UKL_JEDNOTEK.yaml" />
 </package-actions>
