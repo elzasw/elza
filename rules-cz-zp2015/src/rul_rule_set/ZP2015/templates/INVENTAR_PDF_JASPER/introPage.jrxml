@@ -208,6 +208,7 @@
 		</band>
 		<band height="80" splitType="Prevent">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" bookmarkLevel="1">
 				<reportElement style="Heading 1" x="0" y="0" width="455" height="30" isPrintInFirstWholeBand="true" uuid="b5ee0b4d-18bb-4beb-b7c8-34e8007d2f4d"/>
 				<textElement>
@@ -241,6 +242,9 @@
 			</textField>
 		</band>
 		<band height="95" splitType="Prevent">
+			<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{arrangerFormatter}.format($P{output}))||
+StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_DESCRIPTION_DATE" ))||
+StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" ))]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" bookmarkLevel="1">
 				<reportElement style="Heading 1" positionType="Float" x="0" y="0" width="455" height="50" isPrintInFirstWholeBand="true" uuid="94323b71-a6d1-430e-ac07-24a7cae72910">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>

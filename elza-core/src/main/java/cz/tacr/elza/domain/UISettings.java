@@ -18,11 +18,11 @@ import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
+
 /**
  * Uživatelské nastavení.
  *
- * @author Martin Šlapa
- * @since
  */
 @Entity(name = "ui_settings")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
@@ -40,12 +40,11 @@ public class UISettings {
     @Column(insertable = false, updatable = false, nullable = true)
     private Integer userId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(length = 20, nullable = false)
-    private SettingsType settingsType;
+    @Column(length = StringLength.LENGTH_250, nullable = false)
+    private String settingsType;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20, nullable = true)
+    @Column(length = StringLength.LENGTH_250, nullable = true)
     private EntityType entityType;
 
     @Column(nullable = true)
@@ -82,11 +81,11 @@ public class UISettings {
         return userId;
     }
 
-    public SettingsType getSettingsType() {
+    public String getSettingsType() {
         return settingsType;
     }
 
-    public void setSettingsType(final SettingsType settingsType) {
+    public void setSettingsType(final String settingsType) {
         this.settingsType = settingsType;
     }
 
@@ -151,7 +150,12 @@ public class UISettings {
         /**
          * Vazba na pravidla.
          */
-        RULE
+        RULE,
+        
+        /**
+         * Vazba na strukturovaný typ
+         */
+        STRUCTURE_TYPE
     }
 
     /**
@@ -159,8 +163,19 @@ public class UISettings {
      */
     public enum SettingsType {
 
+        /**
+         * Používá klient pro čtení režimu fondu (read-only vs write)
+         */
         FUND_READ_MODE(true, EntityType.FUND),
+        
+        /**
+         * Používá klient pro čtení stavu pravého panelu
+         */
         FUND_RIGHT_PANEL(true, EntityType.FUND),
+
+        /**
+         * Používá klient pro čtení režimu zobrazení (potomci, předci)
+         */
         FUND_CENTER_PANEL(true, EntityType.FUND),
 
         /**
@@ -197,6 +212,16 @@ public class UISettings {
          * Zobrazení skupin typů atributů v archivním souboru.
          */
         STRUCTURE_TYPES(false, EntityType.RULE),
+        
+        /**
+         * Settings for given structured type
+         * 
+         * Optional settings are defined for 
+         * given structured type and eventually for fund.
+         * 
+         * Settings is saved as 'STRUCT_TYPE_<CODE>`
+         */
+        STRUCT_TYPE_(false, EntityType.FUND),
 
         /**
          * Výchozí nastavení pro rejstříky.
@@ -219,7 +244,7 @@ public class UISettings {
         private final boolean global;
 
         /**
-         * Typ oprávnění
+         * Typ entity pro níž je nastavení platné
          */
         private final EntityType entityType;
 
@@ -230,6 +255,10 @@ public class UISettings {
         SettingsType(boolean global, EntityType entityType) {
             this.global = global;
             this.entityType = entityType;
+        }
+        
+        public EntityType getEntityType() {
+            return entityType;
         }
 
         public boolean isSupportedEntityType(EntityType entityType) {

@@ -48,10 +48,10 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
     @Query("DELETE FROM arr_node n WHERE n.fund = ?1")
     void deleteByFund(ArrFund fund);
 
-    @Query("select distinct di.node.nodeId" +
-            " from arr_desc_item di" +
-            " join arr_data_structure_ref dsref on dsref = di.data" +
-            " where dsref.structuredObject.structuredObjectId in :structuredObjectIds" +
-            " and di.deleteChange is null")
-    List<Integer> findNodeIdsByStructuredObjectIds(@Param(value = "structuredObjectIds") Collection<Integer> structuredObjectIds);
+    @Query("select distinct i.node" +
+            " from arr_desc_item i" +
+            " join arr_data_structure_ref dsr on dsr = i.data" +
+            " where dsr.structuredObject.structuredObjectId in :structuredObjectIds" +
+            " and i.deleteChange is null")
+    List<ArrNode> findNodesByStructuredObjectIds(@Param(value = "structuredObjectIds") Collection<Integer> structuredObjectIds);
 }

@@ -53,7 +53,6 @@ public class WfIssueListBaseVO {
     }
 
     public static WfIssueListBaseVO newInstance(WfIssueList issueList) {
-        WfIssueListBaseVO vo = new WfIssueListBaseVO(issueList);
-        return vo;
+        return new WfIssueListBaseVO(issueList);
     }
 }

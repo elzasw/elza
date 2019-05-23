@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -11,6 +12,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.concurrent.DelegatingSecurityContextCallable;
 import org.springframework.security.concurrent.DelegatingSecurityContextRunnable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -456,4 +458,15 @@ public class Authorization {
 
 	    return new DelegatingSecurityContextRunnable(runnable, ctx);
 	}
+
+    public static <T> Callable<T> createCallableWithCurrentSecurity(Callable<T> param) {
+        SecurityContext ctx = SecurityContextHolder.getContext();
+
+        // create copy of security context, see SEC-2025
+        Authentication auth = ctx.getAuthentication();
+        ctx = SecurityContextHolder.createEmptyContext();
+        ctx.setAuthentication(auth);
+
+        return DelegatingSecurityContextCallable.create(param, ctx);
+    }
 }

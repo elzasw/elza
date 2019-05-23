@@ -13,7 +13,6 @@ import javax.xml.bind.annotation.XmlType;
 /**
  * VO Settings.
  *
- * @author Martin Šlapa
  * @since 14.12.2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -30,6 +29,7 @@ public class Settings {
             @XmlElement(name = "favorite-item-specs", type = SettingFavoriteItemSpecs.class),
             @XmlElement(name = "grid-view", type = SettingGridView.class),
             @XmlElement(name = "fund-issues", type = SettingFundIssues.class),
+            @XmlElement(name = "structure-type-settings", type = SettingStructTypeSettings.class),
     })
     private List<Setting> settings;
 

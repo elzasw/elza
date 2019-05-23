@@ -8,7 +8,11 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
+import org.apache.cxf.configuration.security.AuthorizationPolicy;
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
+import org.apache.cxf.transport.http.HTTPConduit;
 import org.yaml.snakeyaml.Yaml;
 
 import cz.tacr.elza.dao.exception.DaoComponentException;
@@ -56,9 +60,21 @@ public class CoreServiceProvider {
             JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
             factory.setServiceName(serviceName);
             factory.setAddress(addr);
-            return factory.create(serviceClass);
+			T t = factory.create(serviceClass);
+			setBasicAuthorization(t);
+			return t;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+
+	private static <T> void setBasicAuthorization(final T t) {
+		Client client = ClientProxy.getClient(t);
+		HTTPConduit http = (HTTPConduit) client.getConduit();
+		AuthorizationPolicy authPolicy = new AuthorizationPolicy();
+		authPolicy.setAuthorizationType("Basic");
+		authPolicy.setUserName(EXTERNAL_SYSTEMS_CONFIG.get("user"));
+		authPolicy.setPassword(EXTERNAL_SYSTEMS_CONFIG.get("pass"));
+		http.setAuthorization(authPolicy);
+	}
 }

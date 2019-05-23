@@ -8,6 +8,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.common.string.PrepareForCompare;
 import cz.tacr.elza.print.Record;
 import cz.tacr.elza.print.UnitDate;
 
@@ -22,6 +23,7 @@ public class PartyInitHelper {
      */    
     static Comparator<PartyName> partyNameComparator = new Comparator<PartyName>() {
 
+        @Override
         public int compare(PartyName pn1, PartyName pn2) {
             if (pn1 == pn2) {
                 return 0;
@@ -43,8 +45,8 @@ public class PartyInitHelper {
             }
 
             // no usage or same usage -> compare texts
-            String text1 = pn1.formatWithAllDetails();
-            String text2 = pn2.formatWithAllDetails();
+            String text1 = PrepareForCompare.prepare(pn1.formatWithAllDetailsAsList());
+            String text2 = PrepareForCompare.prepare(pn2.formatWithAllDetailsAsList());
             return text1.compareTo(text2);
         }
 

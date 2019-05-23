@@ -4,6 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -24,7 +28,6 @@ import java.util.List;
 /**
  * VO SettingFavoriteItemSpecs.
  *
- * @author Martin Šlapa
  * @since 22.3.2016
  */
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -41,8 +44,8 @@ public class SettingFavoriteItemSpecs extends Setting {
     private String code;
 
     public SettingFavoriteItemSpecs() {
-        setSettingsType(UISettings.SettingsType.FAVORITE_ITEM_SPECS);
-        setEntityType(UISettings.EntityType.ITEM_TYPE);
+        super(UISettings.SettingsType.FAVORITE_ITEM_SPECS.toString(), 
+        		UISettings.EntityType.ITEM_TYPE);
     }
 
     public List<FavoriteItem> getFavoriteItems() {
@@ -54,19 +57,10 @@ public class SettingFavoriteItemSpecs extends Setting {
     }
 
     @Override
-    public String getValue() {
+    void store(UISettings uiSettings) {
         try {
-            return objectMapper.writeValueAsString(this);
+            uiSettings.setValue(objectMapper.writeValueAsString(this));
         } catch (JsonProcessingException e) {
-            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
-        }
-    }
-
-    @Override
-    public void setValue(final String value) {
-        try {
-            favoriteItems = objectMapper.readValue(value, SettingFavoriteItemSpecs.class).getFavoriteItems();
-        } catch (IOException e) {
             throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
     }
@@ -305,4 +299,18 @@ public class SettingFavoriteItemSpecs extends Setting {
             this.value = value;
         }
     }
+
+	public static SettingFavoriteItemSpecs newInstance(UISettings uis, StaticDataService staticDataService) {
+		SettingFavoriteItemSpecs sfis = new SettingFavoriteItemSpecs();
+		
+		StaticDataProvider sdp = staticDataService.getData();
+		ItemType itemType = sdp.getItemTypeById(uis.getEntityId());
+		sfis.setCode(itemType.getCode());
+        try {
+            sfis.favoriteItems = objectMapper.readValue(uis.getValue(), SettingFavoriteItemSpecs.class).getFavoriteItems();
+        } catch (IOException e) {
+            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
+        }
+		return sfis;
+	}
 }
