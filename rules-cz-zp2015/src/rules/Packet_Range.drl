@@ -1,0 +1,31 @@
+package ZP2015.Range;
+
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.drools.model.AvailableDescItems;
+import cz.tacr.elza.drools.model.ActiveLevel;
+import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.DescItem;
+
+import java.util.Arrays;
+import java.util.Set;
+import cz.tacr.elza.domain.RulItemType;
+
+rule "Vypnutí opakovatelnosti"
+salience 100
+no-loop
+when
+  $itemType : RulItemTypeExt(code in ( // nastaveni pro ulozeni
+        "ZP2015_PACKET_START_NUMBER"))
+then
+  $itemType.setRepeatable(false);
+end
+
+rule "Možné prvky popisu"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("ZP2015_PACKET_START_NUMBER"))
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end

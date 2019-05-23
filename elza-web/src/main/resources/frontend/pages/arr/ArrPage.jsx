@@ -595,11 +595,11 @@ class ArrPage extends ArrParentPage {
 
             const {issueProtocol} = this.props;
 
-            const isProtocolLoaded = !issueProtocol.isFetching && issueProtocol.data;
+            const isProtocolLoaded = !issueProtocol.isFetching && issueProtocol.data && activeFund.id === issueProtocol.data.fundId;
 
             const haveProtocolPermissionToWrite =
                 isProtocolLoaded && (
-                    userDetail.hasOne([perms.FUND_ISSUE_ADMIN_ALL]) || (
+                    userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL) || (
                         userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
                         userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
                         userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(issueProtocol.data.id) !== -1

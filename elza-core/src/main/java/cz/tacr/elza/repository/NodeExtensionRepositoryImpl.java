@@ -24,6 +24,7 @@ public class NodeExtensionRepositoryImpl implements NodeExtensionRepositoryCusto
     @PersistenceContext
     private EntityManager entityManager;
 
+    // TODO: Rewrite query without path
     @Override
     public List<ArrNodeExtension> findAllByNodeIdFromRoot(final Integer nodeId) {
         Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");

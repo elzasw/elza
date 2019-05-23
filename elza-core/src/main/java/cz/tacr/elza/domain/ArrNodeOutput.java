@@ -22,6 +22,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrNodeOutput {
 
+    public static final String TABLE_NAME = "arr_node_output";
+
+    public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
+
+    public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
@@ -39,11 +45,11 @@ public class ArrNodeOutput {
     private Integer nodeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "createChangeId", nullable = false)
+    @JoinColumn(name = FIELD_CREATE_CHANGE_ID, nullable = false)
     private ArrChange createChange;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "deleteChangeId")
+    @JoinColumn(name = FIELD_DELETE_CHANGE_ID)
     private ArrChange deleteChange;
 
     /**

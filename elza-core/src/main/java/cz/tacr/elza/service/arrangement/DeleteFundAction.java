@@ -4,6 +4,10 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaDelete;
+import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,9 +17,11 @@ import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionService;
+import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.WfIssueList;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -35,13 +41,13 @@ import cz.tacr.elza.repository.DataFileRefRepository;
 import cz.tacr.elza.repository.DataStructureRefRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
-import cz.tacr.elza.repository.DigitizationRequestRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundStructureExtensionRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.LockedValueRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
@@ -119,9 +125,6 @@ public class DeleteFundAction {
     private OutputItemRepository outputItemRepository;
 
     @Autowired
-    private DigitizationRequestRepository digitizationRequestRepository;
-
-    @Autowired
     private DigitizationRequestNodeRepository digitizationRequestNodeRepository;
     @Autowired
     private DaoLinkRepository daoLinkRepository;
@@ -159,6 +162,8 @@ public class DeleteFundAction {
     @Autowired
     private ChangeRepository changeRepository;
 
+    @Autowired
+    private LockedValueRepository lockedValueRepository;
     @Autowired
     private DescItemRepository descItemRepository;
     @Autowired
@@ -343,6 +348,9 @@ public class DeleteFundAction {
     }
 
     private void dropDescItems() {
+        // drop locked values
+        lockedValueRepository.deleteByFund(fund);
+
         // TODO: drop arr_data and all subtypes
 
         // drop items
@@ -372,7 +380,10 @@ public class DeleteFundAction {
 
     private void dropBulkActions() {
         // drop bulk actions
+
+        // TODO: Rewrite as criteria query
         faBulkActionNodeRepository.deleteByNodeFund(fund);
+        // TODO: Rewrite as criteria query
         faBulkActionRepository.deleteByFundVersionFund(fund);
 
         em.flush();
@@ -389,24 +400,46 @@ public class DeleteFundAction {
 
         // dao objects
         digitizationRequestNodeRepository.deleteByFund(fund);
-        digitizationRequestRepository.deleteByFund(fund);
+        // 
+        //em.createNativeQuery("delete from ");
+        CriteriaBuilder cmBuilder = em.getCriteriaBuilder();
+        CriteriaDelete<ArrDigitizationRequest> deleteDigitRequests = cmBuilder.createCriteriaDelete(
+                                                                                                    ArrDigitizationRequest.class);
+        // subquery to select request
+        Subquery<Integer> deleteDigitReqsSubquery = deleteDigitRequests.subquery(Integer.class);
+        Root<ArrRequest> fromDigitReqsSubquery = deleteDigitReqsSubquery.from(ArrRequest.class);
+        deleteDigitReqsSubquery.select(fromDigitReqsSubquery.get(ArrRequest.FIELD_REQUEST_ID));
+        deleteDigitReqsSubquery.where(cmBuilder.equal(fromDigitReqsSubquery.get(ArrRequest.FIELD_FUND), fund));
 
+        Root<ArrDigitizationRequest> fromDigitRequests = deleteDigitRequests.from(ArrDigitizationRequest.class);
+        deleteDigitRequests.where(cmBuilder.in(fromDigitRequests.get(ArrRequest.FIELD_REQUEST_ID)).value(
+                                                                                                         deleteDigitReqsSubquery));
+        em.createQuery(deleteDigitRequests).executeUpdate();
+
+        // TOOD: rewrite as criteria query
         daoLinkRepository.deleteByNodeFund(fund);
+        // TOOD: rewrite as criteria query
         daoLinkRequestRepository.deleteByFund(fund);
 
+        // Query is OK
         daoRequestDaoRepository.deleteByFund(fund);
+        // TOOD: rewrite as criteria query
         daoRequestRepository.deleteByFund(fund);
 
+        // Query is OK
         daoFileRepository.deleteByFund(fund);
+        // Query is OK
         daoFileGroupRepository.deleteByFund(fund);
+        // Query is OK
         daoRepository.deleteByFund(fund);
+        // TOOD: rewrite as criteria query
         daoPackageRepository.deleteByFund(fund);
 
         em.flush();
     }
 
     /**
-     * SmazÃ¡nÃ­ protokolÅ¯, pÅ™ipomÃ­nek, komentÃ¡Å™Å¯ a oprÃ¡vÄ›nÃ­ uÅ¾ivatelÅ¯ pro pÅ™Ã­stup k protokolÅ¯m
+     * Smazání protokolù, pøipomínek, komentáøù a oprávìní uživatelù pro pøístup k protokolùm
      */
     private void dropIssues() {
 

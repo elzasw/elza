@@ -7,6 +7,8 @@ import java.util.concurrent.Callable;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -102,6 +104,13 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
     }
 
     private void executeInTransaction() {
+        // prepare sec context
+        SecurityContext originalSecCtx = SecurityContextHolder.getContext();
+        SecurityContext ctx = bulkActionService.createSecurityContext(this.bulkActionRun);
+        SecurityContextHolder.setContext(ctx);
+        
+        try {
+        
         bulkActionRun.setDateStarted(new Date());
         setStateAndPublish(State.RUNNING);
 
@@ -118,6 +127,15 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
         bulkActionRun.setDateFinished(new Date());
         setStateAndPublish(State.FINISHED);
         bulkActionService.onFinished(bulkActionRun);
+        }
+        finally {
+            SecurityContext emptyContext = SecurityContextHolder.createEmptyContext();
+            if(emptyContext.equals(originalSecCtx)) {
+                SecurityContextHolder.clearContext();
+            } else {
+                SecurityContextHolder.setContext(originalSecCtx);
+            }            
+        }
     }
 
     private void handleException(Exception e) {

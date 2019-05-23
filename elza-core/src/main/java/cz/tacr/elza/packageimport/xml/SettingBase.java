@@ -5,6 +5,9 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UISettings.EntityType;
+
 
 /**
  * VO PolicyType.
@@ -18,15 +21,28 @@ public class SettingBase extends Setting {
 
     @XmlValue
     private String value;
-
-    @Override
-    public String getValue() {
-        return value;
+    
+    public SettingBase()
+    {
+    	
     }
 
+    public SettingBase(String settingsType, EntityType entityType,
+                       final String value) {
+		super(settingsType, entityType);
+		this.value = value;
+	}
+
+	public static SettingBase newInstance(UISettings uiSettings) {
+		SettingBase result = new SettingBase(uiSettings.getSettingsType(), uiSettings.getEntityType(), 
+		                                     uiSettings.getValue());
+		return result;
+	}
+
     @Override
-    public void setValue(final String value) {
-        this.value = value;
+    void store(UISettings uiSettings) {
+        uiSettings.setValue(value);
+        
     }
 
 }

@@ -171,7 +171,7 @@
         <shortcut>fsd</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_LFI" item-type="ZP2015_UNIT_TYPE">
-        <name>Listový filmy</name>
+        <name>Listový film</name>
         <description>Listový film</description>
         <shortcut>lfi</shortcut>
     </item-spec>
@@ -561,17 +561,17 @@
         <shortcut>ISMN</shortcut>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_1" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (indoevropské)</name>
+        <name>blíže neurčený indoevropský jazyk</name>
         <description>indoevropské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (indoevropský)</shortcut>
         <categories>
             <category>indoevropské</category>
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_2" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (baltské)</name>
+        <name>blíže neurčený baltský jazyk</name>
         <description>indoevropské - baltské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (baltský)</shortcut>
         <categories>
             <category>indoevropské</category>
             <category>baltské</category>
@@ -596,9 +596,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_5" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (germánské)</name>
+        <name>blíže neurčený germánský jazyk</name>
         <description>indoevropské - germánské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (germánský)</shortcut>
         <categories>
             <category>indoevropské</category>
             <category>germánské</category>
@@ -740,9 +740,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_21" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (keltské)</name>
+        <name>blíže neurčený keltský jazyk</name>
         <description>indoevropské - keltské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (keltský)</shortcut>
         <categories>
             <category>indoevropské</category>
             <category>keltské</category>
@@ -785,9 +785,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_26" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (románské)</name>
+        <name>blíže neurčený románský jazyk</name>
         <description>indoevropské - románské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (románský)</shortcut>
         <categories>
             <category>indoevropské</category>
             <category>románské</category>
@@ -902,9 +902,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_39" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (slovanské)</name>
+        <name>blíže neurčený slovanský jazyk</name>
         <description>indoevropské - slovanské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (slovanský)</shortcut>
         <categories>
             <category>indoevropské</category>
             <category>slovanské</category>
@@ -1073,9 +1073,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_58" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (indoevropské - ostatní)</name>
+        <name>blíže neurčený indoevropský jazyk</name>
         <description>indoevropské - ostatní - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (indoevropský)</shortcut>
         <categories>
             <category>indoevropské</category>
             <category>ostatní</category>
@@ -1109,9 +1109,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_62" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (uralské)</name>
+        <name>blíže neurčený uralský jazyk</name>
         <description>uralské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (uralský)</shortcut>
         <categories>
             <category>uralské</category>
         </categories>
@@ -1157,17 +1157,17 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_68" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (afroasijské)</name>
+        <name>blíže neurčený afroasijský jazyk</name>
         <description>afroasijské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (afroasijský)</shortcut>
         <categories>
             <category>afroasijské</category>
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_69" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (semitské)</name>
+        <name>blíže neurčený semitský jazyk</name>
         <description>afroasijské - semitské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (semitský)</shortcut>
         <categories>
             <category>afroasijské</category>
             <category>semitské</category>
@@ -1298,9 +1298,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_84" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (nigerokonžské)</name>
+        <name>blíže neurčený nigerokonžský jazyk</name>
         <description>nigerokonžské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (nigerokonžský)</shortcut>
         <categories>
             <category>nigerokonžské</category>
         </categories>
@@ -1314,9 +1314,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_86" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (altajské)</name>
+        <name>blíže neurčený altajský jazyk</name>
         <description>altajské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (altajský)</shortcut>
         <categories>
             <category>altajské</category>
         </categories>
@@ -1338,9 +1338,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_89" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (mongolské)</name>
+        <name>blíže neurčený mongolský jazyk</name>
         <description>altajské - mongolské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (mongolský)</shortcut>
         <categories>
             <category>altajské</category>
             <category>mongolské</category>
@@ -1356,9 +1356,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_91" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (turkické)</name>
+        <name>blíže neurčený turkický jazyk</name>
         <description>altajské - turkické - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (turkický)</shortcut>
         <categories>
             <category>altajské</category>
             <category>turkické</category>
@@ -1464,9 +1464,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_103" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (austroasijské)</name>
+        <name>blíže neurčený austroasijský jazyk</name>
         <description>austroasijské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (austroasijský)</shortcut>
         <categories>
             <category>austroasijské</category>
         </categories>
@@ -1497,9 +1497,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_107" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (austronéské)</name>
+        <name>blíže neurčený austronéský jazyk</name>
         <description>austronéské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (austronéský)</shortcut>
         <categories>
             <category>austronéské</category>
         </categories>
@@ -1521,9 +1521,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_110" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (drávidské)</name>
+        <name>blíže neurčený drávidský jazyk</name>
         <description>drávidské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (drávidský)</shortcut>
         <categories>
             <category>drávidské</category>
         </categories>
@@ -1531,7 +1531,7 @@
     <item-spec code="ZP2015_LANGUAGE_111" item-type="ZP2015_LANGUAGE">
         <name>kannadština (též kannarština)</name>
         <description>drávidské - kannadština (též kannarština)</description>
-        <shortcut>kannadština (též kannarština)</shortcut>
+        <shortcut>kannadština (kannarština)</shortcut>
         <categories>
             <category>drávidské</category>
         </categories>
@@ -1561,9 +1561,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_115" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (indoárijské)</name>
+        <name>blíže neurčený indoárijský jazyk</name>
         <description>indoevropské - indoárijské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (indoárijský)</shortcut>
         <categories>
             <category>indoevropské</category>
             <category>indoárijské</category>
@@ -1723,9 +1723,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_133" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (indoíránské)</name>
+        <name>blíže neurčený indoíránský jazyk</name>
         <description>indoevropské - indoíránské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (indoíránský)</shortcut>
         <categories>
             <category>indoevropské</category>
             <category>indoíránské</category>
@@ -1786,9 +1786,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_140" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (kartvelské)</name>
+        <name>blíže neurčený kartvelský jazyk</name>
         <description>kartvelské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (kartvelský)</shortcut>
         <categories>
             <category>kartvelské</category>
         </categories>
@@ -1802,9 +1802,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_142" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (severokavkazské)</name>
+        <name>blíže neurčený severokavkazský jazyk</name>
         <description>severokavkazské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (severokavkazský)</shortcut>
         <categories>
             <category>severokavkazské</category>
         </categories>
@@ -1818,9 +1818,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_144" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (tajsko-kadajské)</name>
+        <name>blíže neurčený tajsko-kadajský jazyk</name>
         <description>tajsko-kadajské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (tajsko-kadajský)</shortcut>
         <categories>
             <category>tajsko-kadajské</category>
         </categories>
@@ -1842,9 +1842,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_147" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (tibetskočínské)</name>
+        <name>blíže neurčený tibetskočínský jazyk</name>
         <description>tibetskočínské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (tibetskočínský)</shortcut>
         <categories>
             <category>tibetskočínské</category>
         </categories>
@@ -1898,9 +1898,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_154" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (aleutské)</name>
+        <name>blíže neurčený aleutský jazyk</name>
         <description>eskymácko - aleutské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (aleutský)</shortcut>
         <categories>
             <category>eskymácko</category>
             <category>aleutské</category>
@@ -1916,9 +1916,9 @@
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_156" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (indiánské)</name>
+        <name>blíže neurčený indiánský jazyk</name>
         <description>indiánské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (indiánský)</shortcut>
         <categories>
             <category>indiánské</category>
         </categories>
@@ -1926,28 +1926,28 @@
     <item-spec code="ZP2015_LANGUAGE_157" item-type="ZP2015_LANGUAGE">
         <name>blíže neurčený</name>
         <description>blíže neurčený</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený</shortcut>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_158" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (izolované)</name>
+        <name>blíže neurčený izolovaný jazyk</name>
         <description>izolované - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (izolovaný)</shortcut>
         <categories>
             <category>izolované</category>
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_159" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (kreolské)</name>
+        <name>blíže neurčený kreolský jazyk</name>
         <description>kreolské - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (kreolský)</shortcut>
         <categories>
             <category>kreolské</category>
         </categories>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_160" item-type="ZP2015_LANGUAGE">
-        <name>blíže neurčené (umělé)</name>
+        <name>blíže neurčený umělý jazyk</name>
         <description>umělé - blíže neurčené</description>
-        <shortcut></shortcut>
+        <shortcut>blíže neurčený (umělý)</shortcut>
         <categories>
             <category>umělé</category>
         </categories>

@@ -57,11 +57,13 @@ public class LevelWithItems {
 	}
 
 	/**
-	 * Return list of items with given spec
-	 * @param itemType
-	 * @param itemSpec
-	 * @return Return null if such itema does not exists
-	 */
+     * Return list of items with given spec
+     * 
+     * @param itemType
+     * @param itemSpec
+     *            if null all specs are returned
+     * @return Return null if such itema does not exists
+     */
 	public List<ArrDescItem> getDescItems(ItemType itemType, RulItemSpec itemSpec) {
 		List<ArrDescItem> result = null;
 

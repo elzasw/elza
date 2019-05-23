@@ -1,6 +1,7 @@
 package cz.tacr.elza.bulkaction.generator;
 
 import java.io.IOException;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,7 +11,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
@@ -50,6 +51,9 @@ public class PersistentSortBulkAction extends BulkAction {
     @Autowired
     private ItemSpecRepository itemSpecRepository;
 
+    @Autowired
+    private ElzaLocale elzaLocale;
+
     private PersistentSortRunConfig runConfig;
 
     private Queue<ArrLevel> queue = new LinkedList<>();
@@ -58,7 +62,7 @@ public class PersistentSortBulkAction extends BulkAction {
 
     private RulItemSpec itemSpec;
 
-    private Function<ArrDescItem, Comparable> valueFunction;
+    private Comparator<ArrDescItem> valueComparator;
 
     public PersistentSortBulkAction(PersistentSortConfig persistentSortConfig) {
         Validate.notNull(persistentSortConfig);
@@ -106,7 +110,7 @@ public class PersistentSortBulkAction extends BulkAction {
             }
         }
 
-        valueFunction = getValueFunction(dataType);
+        valueComparator = getValueComparator(dataType);
     }
 
     @Override
@@ -144,11 +148,11 @@ public class PersistentSortBulkAction extends BulkAction {
             }
         }
 
-        Map<Integer, Comparable> nodesValues = getNodeValues(nodes);
+        Map<Integer, ArrDescItem> nodesValues = getNodeValues(nodes);
 
         Comparator<ArrLevel> comparator = new PersistentSortComparator(nodesValues);
 
-        if (runConfig.isAsc()) {
+        if (!runConfig.isAsc()) {
             comparator = comparator.reversed();
         }
         children.sort(comparator);
@@ -159,7 +163,7 @@ public class PersistentSortBulkAction extends BulkAction {
     /**
      * @return mapa id node -> hodnota, pokud uzel hodnotu nemá tak v mapě není
      */
-    private Map<Integer, Comparable> getNodeValues(List<ArrNode> nodes) {
+    private Map<Integer, ArrDescItem> getNodeValues(List<ArrNode> nodes) {
         List<ArrDescItem> descItems;
         if (itemSpec == null) {
             descItems = descItemRepository.findOpenByNodesAndType(nodes, itemType);
@@ -167,21 +171,23 @@ public class PersistentSortBulkAction extends BulkAction {
             descItems = descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, itemType, Collections.singletonList(itemSpec));
         }
 
-        Map<Integer, Comparable> nodeValues = new HashMap<>();
+        Map<Integer, ArrDescItem> nodeValues = new HashMap<>();
         for (ArrDescItem arrDescItem : descItems) {
-            Comparable newValue = valueFunction.apply(arrDescItem);
-            Comparable currentValue = nodeValues.get(arrDescItem.getNodeId());
-            if (currentValue == null) { // v mapě ještě hodnota není
-                if (newValue != null) { // a nová hodnota není null tak si ji uložíme
-                    nodeValues.put(arrDescItem.getNodeId(), newValue);
+            ArrDescItem currentValue = nodeValues.get(arrDescItem.getNodeId());
+            if (currentValue != null) {
+                // hodnota je v mapě
+                // zjistíme, zda neexistuje lepší
+                int result = this.valueComparator.compare(currentValue, arrDescItem);
+                // podle způsobu řazení zjistíme jestli je nová hodnota 
+                // lepší než ta co už máme(pro typy atributů s více hodnotami)
+                if (runConfig.isAsc() && result < 0) {
+                    nodeValues.put(arrDescItem.getNodeId(), arrDescItem);
+                } else if (!runConfig.isAsc() && result > 0) {
+                    nodeValues.put(arrDescItem.getNodeId(), arrDescItem);
                 }
-            } else if (newValue != null) {
-                int compareTo = currentValue.compareTo(newValue);
-                if (runConfig.isAsc() && compareTo < 0) { // podle způsobu řazení zjistíme jestli je nová hodnota lepší než ta co už máme(pro typy atributů s více hodnotami)
-                    nodeValues.put(arrDescItem.getNodeId(), newValue);
-                } else if (!runConfig.isAsc() && compareTo > 0) {
-                    nodeValues.put(arrDescItem.getNodeId(), newValue);
-                }
+            } else {
+                // vložíme vždy
+                nodeValues.put(arrDescItem.getNodeId(), arrDescItem);
             }
         }
 
@@ -191,32 +197,32 @@ public class PersistentSortBulkAction extends BulkAction {
     /**
      * @return vrátí metodu pro získání hodnoty z {@link ArrDescItem}
      */
-    private Function<ArrDescItem,Comparable> getValueFunction(DataType dataType) {
-        Function<ArrDescItem,Comparable> valueFuncion;
+    private Comparator<ArrDescItem> getValueComparator(DataType dataType) {
         switch (dataType) {
-            case STRING:
-            case TEXT:
-            case FORMATTED_TEXT:
-                valueFuncion = ArrDescItem::getFulltextValue;
-                break;
-            case INT:
-                valueFuncion = ArrDescItem::getValueInt;
-                break;
-            case DECIMAL:
-                valueFuncion = ArrDescItem::getValueDouble;
-                break;
-            case UNITDATE:
-                valueFuncion = ArrDescItem::getNormalizedFrom;
-                break;
-            case DATE:
-                valueFuncion = ArrDescItem::getValueDate;
-                break;
-            default:
-                throw new SystemException("Hromadná akce " + getName() + " nepodporuje datový typ:", BaseCode.SYSTEM_ERROR).
-                        set("dataTypeCode", dataType.getCode());
+        case STRING:
+        case TEXT:
+        case FORMATTED_TEXT:
+            return (o1, o2) -> {
+                Collator collator = elzaLocale.getCollator();
+                String v1 = o1.getFulltextValue();
+                String v2 = o2.getFulltextValue();
+                int result = collator.compare(v1, v2);
+                return result;
+            };
+        case INT:
+            return (arg0, arg1) -> 
+                arg0.getValueInt().compareTo(arg1.getValueInt());
+        case DECIMAL:
+            return (arg0, arg1) -> 
+                arg0.getValueDouble().compareTo(arg1.getValueDouble());
+        case UNITDATE:
+            return (arg0, arg1) -> arg0.getNormalizedFrom().compareTo(arg1.getNormalizedFrom());
+        case DATE:
+            return (arg0, arg1) -> arg0.getValueDate().compareTo(arg1.getValueDate());
+        default:
+            throw new SystemException("Hromadná akce " + getName() + " nepodporuje datový typ:", BaseCode.SYSTEM_ERROR)
+                    .set("dataTypeCode", dataType.getCode());
         }
-
-        return valueFuncion;
     }
 
     @Override
@@ -226,16 +232,16 @@ public class PersistentSortBulkAction extends BulkAction {
 
     private class PersistentSortComparator implements Comparator<ArrLevel> {
 
-        private Map<Integer, Comparable> nodeValues;
+        private Map<Integer, ArrDescItem> nodeValues;
 
-        public PersistentSortComparator(Map<Integer, Comparable> nodeValues) {
-            this.nodeValues = nodeValues;
+        public PersistentSortComparator(Map<Integer, ArrDescItem> nodesValues) {
+            this.nodeValues = nodesValues;
         }
 
         @Override
         public int compare(ArrLevel o1, ArrLevel o2) {
-            Comparable v1 = nodeValues.get(o1.getNodeId());
-            Comparable v2 = nodeValues.get(o2.getNodeId());
+            ArrDescItem v1 = nodeValues.get(o1.getNodeId());
+            ArrDescItem v2 = nodeValues.get(o2.getNodeId());
 
             if (v1 == null && v2 == null) {
                 return 0;
@@ -244,7 +250,7 @@ public class PersistentSortBulkAction extends BulkAction {
             } else if (v2 == null) {
                 return -1;
             } else {
-                return v2.compareTo(v1);
+                return valueComparator.compare(v1, v2);
             }
         }
     }

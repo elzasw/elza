@@ -87,9 +87,6 @@ import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
-import cz.tacr.elza.controller.vo.WfIssueStateVO;
-import cz.tacr.elza.controller.vo.WfIssueTypeVO;
-import cz.tacr.elza.controller.vo.WfSimpleIssueVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
@@ -319,7 +316,6 @@ public class ClientFactoryVO {
     private ApFactory apFactory;
 
     @Autowired
-    @Lazy // TODO: odebrat a vyřešit cyklickou závislost
     private WfFactory wfFactory;
 
     @Autowired
@@ -1084,20 +1080,18 @@ public class ClientFactoryVO {
         itemTypes.forEach(type -> codeToId.put(type.getItemTypeId(), type.getCode()));
 
         // načtený globální oblíbených
-        List<UISettings> favoritesItemTypes = settingsService.getGlobalSettings(UISettings.SettingsType.FAVORITE_ITEM_SPECS, UISettings.EntityType.ITEM_TYPE);
+        List<UISettings> favoritesItemTypes = settingsService.getGlobalSettings(UISettings.SettingsType.FAVORITE_ITEM_SPECS.toString(), UISettings.EntityType.ITEM_TYPE);
 
         // typeId -> list<specId>
         // naplnění mapy podle oblíbených z nastavení
         Map<Integer, List<Integer>> typeSpecsMap = new HashMap<>();
         for (UISettings favoritesItemType : favoritesItemTypes) {
-            SettingFavoriteItemSpecs setting = (SettingFavoriteItemSpecs) PackageService.convertSetting(favoritesItemType, itemTypeRepository);
+            SettingFavoriteItemSpecs setting = SettingFavoriteItemSpecs.newInstance(favoritesItemType, staticDataService);
             if (CollectionUtils.isNotEmpty(setting.getFavoriteItems())) {
-                List<RulItemSpec> itemSpecs = itemSpecRepository.findOneByCodes(setting.getFavoriteItems().stream()
-                        .map(SettingFavoriteItemSpecs.FavoriteItem::getValue).collect(Collectors.toList()));
-                List<Integer> itemSpecsIds = new ArrayList<>(itemSpecs.size());
-                for (RulItemSpec itemSpec : itemSpecs) {
-                    itemSpecsIds.add(itemSpec.getItemSpecId());
-                }
+            	StaticDataProvider sdp = staticDataService.getData();
+            	List<Integer> itemSpecsIds = setting.getFavoriteItems().stream()
+            		.map(fi -> sdp.getItemSpecByCode(fi.getValue()).getItemSpecId() )
+                    .collect(Collectors.toList());
                 typeSpecsMap.put(favoritesItemType.getEntityId(), itemSpecsIds);
             }
         }
@@ -2213,31 +2207,5 @@ public class ClientFactoryVO {
             return ApExternalSystemSimpleVO.newInstance((ApExternalSystem) extSystem);
         }
         return createSimpleEntity(extSystem, SysExternalSystemSimpleVO.class);
-    }
-
-    /**
-     * Seznam druhů připomínek.
-     *
-     * @returns seznam druhů připomínek
-     */
-    public List<WfIssueTypeVO> createIssueTypes(final List<WfIssueType> issueTypeList) {
-        return createList(issueTypeList, WfIssueTypeVO.class, null);
-    }
-
-    /**
-     * Seznam stavů připomínek.
-     *
-     * @returns seznam stavů připomínek
-     */
-    public List<WfIssueStateVO> createIssueStates(final List<WfIssueState> issueStateList) {
-        return createList(issueStateList, WfIssueStateVO.class, null);
-    }
-
-    public WfSimpleIssueVO createSimpleIssueVO(WfIssue issue) {
-        WfSimpleIssueVO issueVO = new WfSimpleIssueVO();
-        issueVO.setId(issue.getIssueId());
-        issueVO.setNumber(issue.getNumber());
-        issueVO.setDescription(issue.getDescription());
-        return issueVO;
     }
 }

@@ -126,7 +126,11 @@ public class IssueControllerTest extends AbstractControllerTest {
                     assertEquals(name2, issueListVO4.getName());
                     assertFalse(issueListVO4.getOpen());
 
-                    issueListVO = issueListVO4;
+                    issueListVO.setOpen(true);
+                    WfIssueListVO issueListVO5 = updateIssueList(issueListId, issueListVO);
+                    assertTrue(issueListVO5.getOpen());
+
+                    issueListVO = issueListVO5;
                 }
 
                 return issueListId;

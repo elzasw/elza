@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -17,8 +18,6 @@ import cz.tacr.elza.domain.ArrNodeConformity.State;
 /**
  * Repozitář pro {@link ArrNodeConformity}.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 23.11.2015
  */
 @Repository
 public interface NodeConformityRepository extends JpaRepository<ArrNodeConformity, Integer> {
@@ -66,5 +65,9 @@ public interface NodeConformityRepository extends JpaRepository<ArrNodeConformit
 
     List<ArrNodeConformity> findFirst20ByFundVersionAndStateOrderByNodeConformityIdAsc(ArrFundVersion fundVersion, State state);
 
+    @Modifying
+    @Query("DELETE FROM arr_node_conformity nc WHERE nc.nodeId in (SELECT n.nodeId FROM arr_node n WHERE n.fund = ?1)")
     void deleteByNodeFund(ArrFund fund);
+
+    void deleteByNodeIdIn(List<Integer> nodeIds);
 }

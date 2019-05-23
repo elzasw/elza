@@ -20,7 +20,7 @@ class IssueListForm extends AbstractReactComponent {
 
     static requireFields = (...names) => data =>
         names.reduce((errors, name) => {
-            if (!data[name]) {
+            if (data[name] == null) {
                 errors[name] = i18n('global.validation.required')
             }
             return errors
@@ -73,11 +73,15 @@ class IssueListForm extends AbstractReactComponent {
     };
 
     render() {
-        const {fields: {name, open, rdUsers, wrUsers}} = this.props;
+        const {fields: {name, open, rdUsers, wrUsers}, id} = this.props;
+
+        const customProps = {
+            disabled: id == null
+        };
 
         return <Form onSubmit={null}>
-            <FormInput type="text" {...name} label={i18n("issueList.name")} />
-            <FormInput componentClass="select" {...open} label={i18n("issueList.open")}>
+            <FormInput type="text" {...name} {...customProps} label={i18n("issueList.name")} />
+            <FormInput componentClass="select" {...open} {...customProps} label={i18n("issueList.open")}>
                 <option value={true}>{i18n("issueList.open.true")}</option>
                 <option value={false}>{i18n("issueList.open.false")}</option>
             </FormInput>
@@ -85,12 +89,12 @@ class IssueListForm extends AbstractReactComponent {
             <Row>
                 <Col xs={6}>
                     <label>{i18n("arr.issuesList.form.permission.read")}</label>
-                    <UserField onChange={this.addUser(rdUsers)} value={null} />
+                    <UserField onChange={this.addUser(rdUsers)} {...customProps} value={null} />
                     <ListBox items={rdUsers} renderItemContent={this.renderUser(rdUsers)}/>
                 </Col>
                 <Col xs={6}>
                     <label>{i18n("arr.issuesList.form.permission.write")}</label>
-                    <UserField onChange={this.addUser(wrUsers)} value={null} />
+                    <UserField onChange={this.addUser(wrUsers)} {...customProps} value={null} />
                     <ListBox items={wrUsers} renderItemContent={this.renderUser(wrUsers)}/>
                 </Col>
             </Row>

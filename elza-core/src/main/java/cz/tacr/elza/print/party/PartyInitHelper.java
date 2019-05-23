@@ -1,22 +1,79 @@
 package cz.tacr.elza.print.party;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.common.string.PrepareForCompare;
 import cz.tacr.elza.print.Record;
+import cz.tacr.elza.print.UnitDate;
 
 /**
  * Helper object for party initialization
  */
 public class PartyInitHelper {
 
+    /**
+     * Comparator for party names
+     *
+     */    
+    static Comparator<PartyName> partyNameComparator = new Comparator<PartyName>() {
+
+        @Override
+        public int compare(PartyName pn1, PartyName pn2) {
+            if (pn1 == pn2) {
+                return 0;
+            }
+            // Compare usage
+            UnitDate validFrom1 = pn1.getValidFrom();
+            UnitDate validFrom2 = pn2.getValidFrom();
+            if (validFrom1 != null) {
+                if (validFrom2 == null) {
+                    return -1;
+                }
+                // both dates are valid
+                int result = compare(validFrom1, validFrom2);
+                if (result != 0) {
+                    return result;
+                }
+            } else if (validFrom2 != null) {
+                return 1;
+            }
+
+            // no usage or same usage -> compare texts
+            String text1 = PrepareForCompare.prepare(pn1.formatWithAllDetailsAsList());
+            String text2 = PrepareForCompare.prepare(pn2.formatWithAllDetailsAsList());
+            return text1.compareTo(text2);
+        }
+
+        private int compare(UnitDate validFrom1, UnitDate validFrom2) {
+            String value1 = validFrom1.getValueFrom();
+            String value2 = validFrom2.getValueFrom();
+            if (value1 != null) {
+                if (value2 == null) {
+                    return -1;
+                }
+                // both values exists - simply compare as strings (ISO formats)
+                return value1.compareTo(value2);
+            } else {
+                if (value2 != null) {
+                    return 1;
+                }
+            }
+            return 0;
+        }
+
+    };
+
     private final Record ap;
 
     private PartyName preferredName;
 
-    private final List<PartyName> names = new ArrayList<>();
+    private final TreeSet<PartyName> names = new TreeSet<>(partyNameComparator);
 
     private Relation creation;
 
@@ -42,7 +99,7 @@ public class PartyInitHelper {
         this.preferredName = preferredName;
     }
 
-    public List<PartyName> getNames() {
+    public Collection<PartyName> getNames() {
         return names;
     }
 

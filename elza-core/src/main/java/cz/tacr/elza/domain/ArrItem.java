@@ -36,10 +36,14 @@ import cz.tacr.elza.service.cache.NodeCacheSerializable;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public abstract class ArrItem implements NodeCacheSerializable {
 
+    public static final String TABLE_NAME = "arr_item";
+
     public static final String FIELD_DATA = "data";
     public static final String FIELD_ITEM_SPEC = "itemSpec";
     public static final String FIELD_ITEM_TYPE = "itemType";
     public static final String FIELD_POSITION = "position";
+    public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
+    public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
     public static final String DELETE_CHANGE_ID_MAX = "" + Integer.MAX_VALUE;
 
     @Id
@@ -50,19 +54,19 @@ public abstract class ArrItem implements NodeCacheSerializable {
     @JsonIgnore
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "createChangeId", nullable = false)
+    @JoinColumn(name = FIELD_CREATE_CHANGE_ID, nullable = false)
 	protected ArrChange createChange;
 
-    @Column(name = "createChangeId", nullable = false, updatable = false, insertable = false)
+    @Column(name = FIELD_CREATE_CHANGE_ID, nullable = false, updatable = false, insertable = false)
 	protected Integer createChangeId;
 
     @JsonIgnore
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "deleteChangeId", nullable = true)
+    @JoinColumn(name = FIELD_DELETE_CHANGE_ID, nullable = true)
 	protected ArrChange deleteChange;
 
-    @Column(name = "deleteChangeId", nullable = true, updatable = false, insertable = false)
+    @Column(name = FIELD_DELETE_CHANGE_ID, nullable = true, updatable = false, insertable = false)
 	protected Integer deleteChangeId;
 
     @Column(nullable = false)

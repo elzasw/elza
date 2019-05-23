@@ -23,6 +23,11 @@ import cz.tacr.elza.service.importnodes.vo.NodeExtension;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrNodeExtension implements NodeExtension {
 
+    public static final String TABLE_NAME = "arr_node_extension";
+
+    public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
+    public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
@@ -37,18 +42,18 @@ public class ArrNodeExtension implements NodeExtension {
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrChange.class)
-    @JoinColumn(name = "createChangeId", nullable = false)
+    @JoinColumn(name = FIELD_CREATE_CHANGE_ID, nullable = false)
     private ArrChange createChange;
 
-    @Column(name = "createChangeId", updatable = false, insertable = false)
+    @Column(name = FIELD_CREATE_CHANGE_ID, updatable = false, insertable = false)
     private Integer createChangeId;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.EAGER, targetEntity = ArrChange.class)
-    @JoinColumn(name = "deleteChangeId")
+    @JoinColumn(name = FIELD_DELETE_CHANGE_ID)
     private ArrChange deleteChange;
 
-    @Column(name = "deleteChangeId", updatable = false, insertable = false)
+    @Column(name = FIELD_DELETE_CHANGE_ID, updatable = false, insertable = false)
     private Integer deleteChangeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulArrangementExtension.class)

@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -70,5 +71,7 @@ public interface LevelRepository extends JpaRepository<ArrLevel, Integer>, Level
     @Query("SELECT l FROM arr_level l WHERE l.nodeParent = ?1")
     List<ArrLevel> findByParentNode(ArrNode node);
 
+    @Modifying
+    @Query("DELETE FROM arr_level l WHERE l.node IN (SELECT n FROM arr_node n WHERE n.fund = ?1)")
     void deleteByNodeFund(ArrFund fund);
 }

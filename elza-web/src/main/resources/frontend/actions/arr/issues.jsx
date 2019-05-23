@@ -9,6 +9,7 @@ import {createFundRoot} from "../../components/arr/ArrUtils";
 export const AREA_LIST = "issueList";
 export const AREA_PROTOCOL = "issueProtocol";
 export const AREA_PROTOCOLS = "issueProtocols";
+export const AREA_PROTOCOLS_CONFIG = "issueProtocolsConfig";
 export const AREA_DETAIL = "issueDetail";
 export const AREA_COMMENTS = "issueComments";
 
@@ -19,6 +20,13 @@ export const protocols = {
     fetchIfNeeded: (parent, force = false) => SimpleListActions.fetchIfNeeded(AREA_PROTOCOLS, parent, (parent, filter) => WebApi.findIssueListByFund(parent, filter.open).then(dataToRowsHelper), force),
     filter: (filter) => SimpleListActions.filter(AREA_PROTOCOLS, filter),
     invalidate: (id) => SimpleListActions.invalidate(AREA_PROTOCOLS, id),
+};
+
+// Seznam protokolů pro nastavení
+export const protocolsConfig = {
+    fetchIfNeeded: (parent, force = false) => SimpleListActions.fetchIfNeeded(AREA_PROTOCOLS_CONFIG, parent, (parent, filter) => WebApi.findIssueListByFund(parent, filter.open).then(dataToRowsHelper), force),
+    filter: (filter) => SimpleListActions.filter(AREA_PROTOCOLS_CONFIG, filter),
+    invalidate: (id) => SimpleListActions.invalidate(AREA_PROTOCOLS_CONFIG, id),
 };
 
 // Detail protokolu

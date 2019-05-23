@@ -17,8 +17,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * Validace je vždy u archivního popisu uložena celá, všechny chyby,
  * ale na UI mohu potlačit zobrazení vybraných typů chyb validace.
  *
- * @author Martin Šlapa
- * @since 22.3.2016
  */
 @Entity(name = "ui_visible_policy")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
@@ -35,6 +33,9 @@ public class UIVisiblePolicy {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
     @JoinColumn(name = "nodeId", nullable = false)
     private ArrNode node;
+
+    @Column(name = "nodeId", insertable = false, updatable = false)
+    private Integer nodeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPolicyType.class)
     @JoinColumn(name = "policyTypeId", nullable = false)
@@ -79,11 +80,16 @@ public class UIVisiblePolicy {
         return node;
     }
 
+    public Integer getNodeId() {
+        return nodeId;
+    }
+
     /**
      * @param node uzel
      */
     public void setNode(final ArrNode node) {
         this.node = node;
+        this.nodeId = node != null ? node.getNodeId() : null;
     }
 
     /**

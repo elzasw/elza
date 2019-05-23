@@ -128,7 +128,7 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers("/services").permitAll()
                 .antMatchers("/services/**").authenticated()
-                .and().httpBasic();
+                .and().httpBasic().authenticationEntryPoint(authenticationEntryPoint);;
         http.csrf().disable();
         http.sessionManagement()
                 .maximumSessions(10)

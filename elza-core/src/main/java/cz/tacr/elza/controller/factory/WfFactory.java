@@ -1,53 +1,40 @@
 package cz.tacr.elza.controller.factory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
+import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.IssueDataService;
+import cz.tacr.elza.service.IssueService;
 import cz.tacr.elza.service.vo.WfConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.domain.UsrPermission.Permission;
-import cz.tacr.elza.repository.PermissionRepository;
-import cz.tacr.elza.service.IssueService;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
 public class WfFactory {
 
-    // --- other factory ---
-
-    private final ClientFactoryVO factoryVO;
-
     // --- dao ---
 
     private final PermissionRepository permissionRepository;
+    private final IssueDataService issueDataService;
 
     // --- service ---
-
     private final IssueService issueService;
 
     // --- constructor ---
 
     @Autowired
-    public WfFactory(final ClientFactoryVO factoryVO,
-                     final PermissionRepository permissionRepository,
-                     final IssueService issueService) {
-        this.factoryVO = factoryVO;
+    public WfFactory(final PermissionRepository permissionRepository,
+                     final IssueDataService issueDataService, final IssueService issueService) {
         this.permissionRepository = permissionRepository;
+        this.issueDataService = issueDataService;
         this.issueService = issueService;
     }
 
@@ -83,8 +70,8 @@ public class WfFactory {
                 }
             }
 
-            issueListVO.setRdUsers(factoryVO.createUserList(new ArrayList<>(rdUserMap.values()), false));
-            issueListVO.setWrUsers(factoryVO.createUserList(new ArrayList<>(wrUserMap.values()), false));
+            issueListVO.setRdUsers(FactoryUtils.transformList(rdUserMap.values(), UsrUserVO::newInstance));
+            issueListVO.setWrUsers(FactoryUtils.transformList(wrUserMap.values(), UsrUserVO::newInstance));
         }
 
         return issueListVO;
@@ -117,8 +104,7 @@ public class WfFactory {
             users.add(issue.getUserCreate());
         }
 
-        Map<Integer, UsrUserVO> usersMap = factoryVO.createUserList(users, false).stream()
-                .collect(Collectors.toMap(UsrUserVO::getId, Function.identity()));
+        Map<Integer, UsrUserVO> usersMap = FactoryUtils.transformMap(users, UsrUser::getUserId, UsrUserVO::newInstance);
 
         Map<Integer, TreeNodeVO> nodeReferenceMarkMap = issueService.findNodeReferenceMark(issues);
 
@@ -181,8 +167,7 @@ public class WfFactory {
             users.add(comment.getUser());
         }
 
-        Map<Integer, UsrUserVO> usersMap = factoryVO.createUserList(users, false).stream()
-                .collect(Collectors.toMap(UsrUserVO::getId, Function.identity()));
+        Map<Integer, UsrUserVO> usersMap = FactoryUtils.transformMap(users, UsrUser::getUserId, UsrUserVO::newInstance);
 
         List<WfCommentVO> commentVOS = new ArrayList<>();
         for (WfComment comment : comments) {
@@ -201,12 +186,30 @@ public class WfFactory {
     }
 
     public List<WfSimpleIssueVO> createSimpleIssues(final ArrFund fund, final UserDetail user) {
-        List<WfIssue> issues = issueService.findOpenIssueByFundIdAndNodeNull(fund, user);
-        return issues.stream().map(factoryVO::createSimpleIssueVO).collect(Collectors.toList());
+        List<WfIssue> issues = issueDataService.findOpenIssueByFundIdAndNodeNull(fund, user);
+        return issues.stream().map(WfSimpleIssueVO::newInstance).collect(Collectors.toList());
     }
 
     public WfConfigVO createConfig(final ArrFundVersion fundVersion) {
-        WfConfig config = issueService.getConfig(fundVersion.getRuleSet());
+        WfConfig config = issueDataService.getConfig(fundVersion.getRuleSet());
         return config == null ? null : new WfConfigVO(config.getColors(), config.getIcons());
+    }
+
+    /**
+     * Seznam druhů připomínek.
+     *
+     * @return seznam druhů připomínek
+     */
+    public List<WfIssueTypeVO> createIssueTypes(final List<WfIssueType> issueTypeList) {
+        return FactoryUtils.transformList(issueTypeList, WfIssueTypeVO::newInstance);
+    }
+
+    /**
+     * Seznam stavů připomínek.
+     *
+     * @return seznam stavů připomínek
+     */
+    public List<WfIssueStateVO> createIssueStates(final List<WfIssueState> issueStateList) {
+        return FactoryUtils.transformList(issueStateList, WfIssueStateVO::newInstance);
     }
 }

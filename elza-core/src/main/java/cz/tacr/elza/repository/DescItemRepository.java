@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -231,5 +232,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     @Query("SELECT i.id FROM arr_desc_item i WHERE i.node.fund = :fund AND i.deleteChange IS NULL")
     List<Integer> findOpenIdByFundAndCreatedAfterChange(@Param("fund") final ArrFund fund);
 
+    @Modifying
+    @Query("DELETE FROM arr_desc_item di WHERE di.node IN (SELECT n FROM arr_node n WHERE n.fund = ?1)")
     void deleteByNodeFund(ArrFund fund);
 }

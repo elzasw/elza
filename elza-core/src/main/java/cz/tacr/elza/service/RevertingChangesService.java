@@ -29,6 +29,8 @@ import javax.validation.constraints.NotNull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.hibernate.cfg.ImprovedNamingStrategy;
+import org.hibernate.cfg.NamingStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,12 +41,22 @@ import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundStructureExtension;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeExtension;
+import cz.tacr.elza.domain.ArrNodeOutput;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutputResult;
+import cz.tacr.elza.domain.ArrRequest;
+import cz.tacr.elza.domain.ArrRequestQueueItem;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemType;
@@ -56,6 +68,7 @@ import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LockedValueRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -122,6 +135,9 @@ public class RevertingChangesService {
 
     @Autowired
     private StructuredObjectRepository structuredObjectRepository;
+
+    @Autowired
+    private NodeRepository nodeRepository;
 
     @Autowired
     private StructObjService structObjService;
@@ -386,15 +402,16 @@ public class RevertingChangesService {
         Query deleteNotUseChangesQuery = createDeleteNotUseChangesQuery();
         deleteNotUseChangesQuery.executeUpdate();
 
-        Set<Integer> deleteNodeIds = getNodeIdsToDelete();
+        // Drop unused node ids
+        // Find nodes
+        List<Integer> deleteNodeIds = nodeRepository.findUnusedNodeIdsByFund(fund);
         nodeIdsChange.removeAll(deleteNodeIds);
-
+        // Drop from cache
         issueService.resetIssueNode(deleteNodeIds);
 
         nodeCacheService.deleteNodes(deleteNodeIds);
-
-        Query deleteNotUseNodesQuery = createDeleteNotUseNodesQuery();
-        deleteNotUseNodesQuery.executeUpdate();
+        // Remove from DB
+        nodeRepository.deleteByNodeIdIn(deleteNodeIds);
 
         nodeCacheService.syncNodes(nodeIdsChange);
 
@@ -661,51 +678,6 @@ public class RevertingChangesService {
         return query;
     }
 
-    private Query createDeleteNotUseNodesQuery() {
-        List<String[]> nodesTables = getNodesTables();
-        List<String> unionPart = new ArrayList<>();
-        for (String[] nodeTable : nodesTables) {
-            unionPart.add(String.format("n.nodeId NOT IN (SELECT i.%2$s.nodeId FROM %1$s i WHERE i.%2$s IS NOT NULL)", nodeTable[0], nodeTable[1]));
-        }
-        String changesHql = String.join("\nAND\n", unionPart);
-
-        String hql = String.format("DELETE FROM arr_node n WHERE %1$s", changesHql);
-
-        return entityManager.createQuery(hql);
-    }
-
-    private Set<Integer> getNodeIdsToDelete() {
-        List<String[]> nodesTables = getNodesTables();
-        List<String> unionPart = new ArrayList<>();
-        for (String[] nodeTable : nodesTables) {
-            unionPart.add(String.format("n.nodeId NOT IN (SELECT i.%2$s.nodeId FROM %1$s i WHERE i.%2$s IS NOT NULL)", nodeTable[0], nodeTable[1]));
-        }
-        String changesHql = String.join("\nAND\n", unionPart);
-        String hql = String.format("SELECT n.nodeId FROM arr_node n WHERE %1$s", changesHql);
-        Query query = entityManager.createQuery(hql);
-        return new HashSet<>(query.getResultList());
-    }
-
-    private List<String[]> getNodesTables() {
-        String[][] configUnionTables = new String[][]{
-            {"arr_level", "node"},
-            {"arr_level", "nodeParent"},
-            {"arr_node_register", "node"},
-            {"arr_node_extension", "node"},
-            {"arr_node_conformity", "node"},
-            {"arr_fund_version", "rootNode"},
-            {"ui_visible_policy", "node"},
-            {"arr_node_output", "node"},
-            {"arr_bulk_action_node", "node"},
-            {"arr_desc_item", "node"},
-            {"arr_change", "primaryNode"},
-            {"arr_dao_link", "node"},
-            {"arr_digitization_request_node", "node"},
-        };
-
-        return Arrays.asList(configUnionTables);
-    }
-
     /**
      * Delete from ARR_CHANGE unused change_ids
      *
@@ -713,48 +685,58 @@ public class RevertingChangesService {
      */
     public Query createDeleteNotUseChangesQuery() {
 
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append("DELETE FROM arr_change c WHERE c.change_id NOT IN (");
+
         String[][] configUnionTables = new String[][]{
-                {"arr_level", "createChange"},
-                {"arr_level", "deleteChange"},
-                {"arr_item", "createChange"},
-                {"arr_item", "deleteChange"},
-                {"arr_node_register", "createChange"},
-                {"arr_node_register", "deleteChange"},
-                {"arr_node_extension", "createChange"},
-                {"arr_node_extension", "deleteChange"},
+                { ArrLevel.TABLE_NAME, ArrLevel.FIELD_CREATE_CHANGE_ID },
+                { ArrLevel.TABLE_NAME, ArrLevel.FIELD_DELETE_CHANGE_ID },
+                { ArrItem.TABLE_NAME, ArrItem.FIELD_CREATE_CHANGE_ID },
+                { ArrItem.TABLE_NAME, ArrItem.FIELD_DELETE_CHANGE_ID },
+                { ArrNodeRegister.TABLE_NAME, ArrNodeRegister.FIELD_CREATE_CHANGE_ID },
+                { ArrNodeRegister.TABLE_NAME, ArrNodeRegister.FIELD_DELETE_CHANGE_ID },
+                { ArrNodeExtension.TABLE_NAME, ArrNodeExtension.FIELD_CREATE_CHANGE_ID },
+                { ArrNodeExtension.TABLE_NAME, ArrNodeExtension.FIELD_DELETE_CHANGE_ID },
 
-                {"arr_fund_version", "createChange"},
-                {"arr_fund_version", "lockChange"},
-                {"arr_bulk_action_run", "change"},
-                {"arr_output", "createChange"},
-                {"arr_output", "lockChange"},
-                {"arr_node_output", "createChange"},
-                {"arr_node_output", "deleteChange"},
-                {"arr_output_result", "change"},
+                { ArrFundVersion.TABLE_NAME, ArrFundVersion.FIELD_CREATE_CHANGE_ID },
+                { ArrFundVersion.TABLE_NAME, ArrFundVersion.FIELD_LOCK_CHANGE_ID },
+                { ArrBulkActionRun.TABLE_NAME, ArrBulkActionRun.FIELD_CHANGE_ID },
+                { ArrOutput.TABLE_NAME, ArrOutput.FIELD_CREATE_CHANGE_ID },
+                { ArrOutput.TABLE_NAME, ArrOutput.FIELD_LOCK_CHANGE_ID },
+                { ArrNodeOutput.TABLE_NAME, ArrNodeOutput.FIELD_CREATE_CHANGE_ID },
+                { ArrNodeOutput.TABLE_NAME, ArrNodeOutput.FIELD_DELETE_CHANGE_ID },
+                { ArrOutputResult.TABLE_NAME, ArrOutputResult.FIELD_CHANGE_ID },
 
-                {"arr_dao_link", "createChange"},
-                {"arr_dao_link", "deleteChange"},
+                { ArrDaoLink.TABLE_NAME, ArrDaoLink.FIELD_CREATE_CHANGE_ID },
+                { ArrDaoLink.TABLE_NAME, ArrDaoLink.FIELD_DELETE_CHANGE_ID },
 
-                {"arr_request_queue_item", "createChange"},
-                {"arr_request", "createChange"},
+                { ArrRequestQueueItem.TABLE_NAME, ArrRequestQueueItem.FIELD_CREATE_CHANGE_ID },
+                { ArrRequest.TABLE_NAME, ArrRequest.FIELD_CREATE_CHANGE_ID },
 
-                { ArrStructuredObject.TABLE_NAME, ArrStructuredObject.FIELD_CREATE_CHANGE },
-                { ArrStructuredObject.TABLE_NAME, ArrStructuredObject.FIELD_DELETE_CHANGE },
+                { ArrStructuredObject.TABLE_NAME, ArrStructuredObject.FIELD_CREATE_CHANGE_ID },
+                { ArrStructuredObject.TABLE_NAME, ArrStructuredObject.FIELD_DELETE_CHANGE_ID },
 
-                { ArrFundStructureExtension.TABLE_NAME, ArrFundStructureExtension.CREATE_CHANGE },
-                { ArrFundStructureExtension.TABLE_NAME, ArrFundStructureExtension.DELETE_CHANGE }
+                { ArrFundStructureExtension.TABLE_NAME, ArrFundStructureExtension.CREATE_CHANGE_ID },
+                { ArrFundStructureExtension.TABLE_NAME, ArrFundStructureExtension.DELETE_CHANGE_ID }
         };
 
-        List<String[]> changeTables = Arrays.asList(configUnionTables);
-        List<String> unionPart = new ArrayList<>();
-        for (String[] changeTable : changeTables) {
-            unionPart.add(String.format("c.changeId NOT IN (SELECT i.%2$s.changeId FROM %1$s i WHERE i.%2$s IS NOT NULL)", changeTable[0], changeTable[1]));
+        NamingStrategy ins = ImprovedNamingStrategy.INSTANCE;
+
+        List<String> unionPart = new ArrayList<>(configUnionTables.length);
+        for (int index = 0; index < configUnionTables.length; index++) {
+            String[] changeTable = configUnionTables[index];
+
+            String columnName = ins.columnName(changeTable[1]);
+
+            unionPart.add(String.format("SELECT distinct t%1$d.%3$s FROM %2$s t%1$d", index, changeTable[0],
+                                        columnName));
         }
-        String changesHql = String.join("\nAND\n", unionPart);
+        sqlBuilder.append(String.join("\nUNION\n", unionPart));
 
-        String hql = String.format("DELETE FROM arr_change c WHERE %1$s", changesHql);
+        sqlBuilder.append(")");
+        String sql = sqlBuilder.toString();
 
-        return entityManager.createQuery(hql);
+        return entityManager.createNativeQuery(sql);
     }
 
     private Query createExtendUpdateEntityQuery(@NotNull final ArrFund fund,
@@ -767,30 +749,6 @@ public class RevertingChangesService {
 
         String hqlSubSelect = String.format("SELECT i.%2$s FROM %1$s i WHERE %2$s IN (%3$s)", subTable, changeNameColumn, nodesHql);
         String hql = String.format("UPDATE %1$s SET %2$s = NULL WHERE %2$s IN (%3$s)", table, changeNameColumn, hqlSubSelect);
-        Query query = entityManager.createQuery(hql);
-
-        // nastavení parametrů dotazu
-        query.setParameter("fund", fund);
-        query.setParameter("change", change);
-        if (node != null) {
-            query.setParameter("node", node);
-        }
-
-        return query;
-    }
-
-    private Query createDeleteForeignEntityQuery(@NotNull final ArrFund fund,
-                                                 @Nullable final ArrNode node,
-                                                 @NotNull final String changeNameColumn,
-                                                 @NotNull final String table,
-                                                 @NotNull final String joinNameColumn,
-                                                 @NotNull final String subTable,
-                                                 @NotNull final ArrChange change) {
-        String nodesHql = createHQLFindChanges(changeNameColumn, table, createHqlSubNodeQuery(fund, node));
-
-        String hqlSubSelect = String.format("SELECT i FROM %1$s i WHERE %2$s IN (%3$s)", table, changeNameColumn, nodesHql);
-        String hql = String.format("DELETE FROM %1$s WHERE %2$s IN (%3$s)", subTable, joinNameColumn, hqlSubSelect);
-
         Query query = entityManager.createQuery(hql);
 
         // nastavení parametrů dotazu

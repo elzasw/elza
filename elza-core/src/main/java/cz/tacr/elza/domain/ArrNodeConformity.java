@@ -47,6 +47,9 @@ public class ArrNodeConformity {
     @JoinColumn(name = "nodeId", nullable = false)
     private ArrNode node;
 
+    @Column(nullable = false, insertable = false, updatable = false)
+    private Integer nodeId;
+
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFundVersion.class)
     @JoinColumn(name = "fundVersionId", nullable = false)
@@ -96,6 +99,11 @@ public class ArrNodeConformity {
      */
     public void setNode(final ArrNode node) {
         this.node = node;
+        this.nodeId = node != null ? node.getNodeId() : null;
+    }
+
+    public Integer getNodeId() {
+        return nodeId;
     }
 
     /**

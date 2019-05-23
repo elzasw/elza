@@ -20,7 +20,6 @@ import java.util.List;
 /**
  * VO SettingGridView.
  *
- * @author Martin Šlapa
  * @since 19.01.2017
  */
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -45,24 +44,16 @@ public class SettingGridView extends Setting {
     }
 
     public SettingGridView() {
-        setSettingsType(UISettings.SettingsType.GRID_VIEW);
-        setEntityType(UISettings.EntityType.RULE);
+        super(UISettings.SettingsType.GRID_VIEW.toString(),
+              // bez vazby na konkretni typ entity
+              null);
     }
 
     @Override
-    public String getValue() {
+    void store(UISettings uiSettings) {
         try {
-            return objectMapper.writeValueAsString(this);
+            uiSettings.setValue(objectMapper.writeValueAsString(this));
         } catch (JsonProcessingException e) {
-            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
-        }
-    }
-
-    @Override
-    public void setValue(final String value) {
-        try {
-            itemTypes = objectMapper.readValue(value, SettingGridView.class).getItemTypes();
-        } catch (IOException e) {
             throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
         }
     }
@@ -112,5 +103,15 @@ public class SettingGridView extends Setting {
             this.width = width;
         }
     }
+
+	public static SettingGridView newInstance(UISettings uis) {
+		SettingGridView sgv = new SettingGridView();
+        try {
+            sgv.itemTypes = objectMapper.readValue(uis.getValue(), SettingGridView.class).getItemTypes();
+        } catch (IOException e) {
+            throw new SystemException(e.getMessage(), e, BaseCode.JSON_PARSE);
+        }
+		return sgv;
+	}
 
 }

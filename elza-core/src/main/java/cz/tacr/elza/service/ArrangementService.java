@@ -654,10 +654,7 @@ public class ArrangementService {
      */
     public ArrFundVersion getOpenVersionByFundId(final Integer fundId) {
         Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
-        ArrFundVersion fundVersion = fundVersionRepository
-                .findByFundIdAndLockChangeIsNull(fundId);
-
-        return fundVersion;
+        return fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);
     }
 
     /**
@@ -668,9 +665,10 @@ public class ArrangementService {
      */
     public List<ArrFundVersion> getOpenVersionsByFundIds(final Collection<Integer> fundIds) {
         Assert.notNull(fundIds, "Nebyl vyplněn identifikátor AS");
-        List<ArrFundVersion> fundVersions = fundVersionRepository.findByFundIdsAndLockChangeIsNull(fundIds);
-
-        return fundVersions;
+        if (fundIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return fundVersionRepository.findByFundIdsAndLockChangeIsNull(fundIds);
     }
 
     public ArrLevel deleteLevelCascade(final ArrLevel level, final ArrChange deleteChange) {
@@ -1427,37 +1425,21 @@ public class ArrangementService {
         }
     }
 
-    /**
-     * Sestaví informace o zanoření
-     *
-     * @param fundId identifikátor archivního souboru
-     * @param nodeIds seznam identifikátorů jednotek popisu
-     */
-    public Map<Integer, TreeNodeVO> findNodeReferenceMark(@NotNull Integer fundId, Collection<Integer> nodeIds) {
-        if (nodeIds != null && !nodeIds.isEmpty()) {
-            ArrFundVersion fundVersion = getOpenVersionByFundId(fundId);
-            if (fundVersion != null) {
-                List<TreeNodeVO> nodes = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId());
-                return nodes.stream().collect(Collectors.toMap(node -> node.getId(), node -> node));
+    public List<ArrNode> findNodesByStructuredObjectId(Integer structuredObjectId) {
+        return nodeRepository.findNodesByStructuredObjectIds(Collections.singletonList(structuredObjectId));
+    }
+
+    public Map<Integer, ArrNode> findNodesByStructuredObjectIds(Collection<Integer> structuredObjectIds) {
+        if (structuredObjectIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<Integer, ArrNode> result = new HashMap<>(1000);
+        for (List<Integer> idsPart : Iterables.partition(structuredObjectIds, 1000)) {
+            for (ArrNode node : nodeRepository.findNodesByStructuredObjectIds(idsPart)) {
+                result.put(node.getNodeId(), node);
             }
         }
-        return Collections.emptyMap();
-    }
-
-    public Collection<Integer> findNodeIdsByStructuredObjectId(Integer structuredObjectId) {
-        return nodeRepository.findNodeIdsByStructuredObjectIds(Collections.singletonList(structuredObjectId));
-    }
-
-    public Collection<Integer> findNodeIdsByStructuredObjectIds(List<Integer> structuredObjectIds) {
-        if (structuredObjectIds.isEmpty()) {
-            return Collections.emptyList();
-        }
-        List<List<Integer>> idsParts = Lists.partition(structuredObjectIds, 1000);
-        Set<Integer> nodeIds = new HashSet<>(1000);
-        for (List<Integer> idsPart : idsParts) {
-            nodeIds.addAll(nodeRepository.findNodeIdsByStructuredObjectIds(idsPart));
-        }
-        return nodeIds;
+        return result;
     }
 
     /**

@@ -14,30 +14,33 @@ import cz.tacr.elza.domain.UISettings;
 /**
  * VO Setting.
  *
- * @author Martin Šlapa
- * @since 22.3.2016
  */
 @XmlTransient
 public abstract class Setting {
 
     @XmlAttribute(name = "settings-type", required = true)
     @JsonIgnore
-    private UISettings.SettingsType settingsType;
+    private String settingsType;
 
     @XmlAttribute(name = "entity-type")
     @JsonIgnore
     private UISettings.EntityType entityType;
+    
+    protected Setting() {
+    	
+    }
+    
+    protected Setting(final String settingsType,
+    				  final UISettings.EntityType entityType) {
+    	this.settingsType = settingsType;
+    	this.entityType = entityType;
+    }
 
-    @JsonIgnore
-    public abstract String getValue();
-
-    public abstract void setValue(String value);
-
-    public UISettings.SettingsType getSettingsType() {
+    public String getSettingsType() {
         return settingsType;
     }
 
-    public void setSettingsType(final UISettings.SettingsType settingsType) {
+    public void setSettingsType(final String settingsType) {
         this.settingsType = settingsType;
     }
 
@@ -49,12 +52,18 @@ public abstract class Setting {
         this.entityType = entityType;
     }
 
+    /**
+     * Store value of object in the settings
+     * @param uiSettings
+     */
+    abstract void store(UISettings uiSettings);
+    
     public UISettings createUISettings(RulPackage rulPackage) {
         UISettings uiSettings = new UISettings();
         uiSettings.setRulPackage(Validate.notNull(rulPackage));
         uiSettings.setSettingsType(settingsType);
         uiSettings.setEntityType(entityType);
-        uiSettings.setValue(getValue());
+        store(uiSettings);
         return uiSettings;
     }
 }

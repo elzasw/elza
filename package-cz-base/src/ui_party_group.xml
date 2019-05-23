@@ -39,7 +39,7 @@
         <type>GENERAL</type>
         <content-definitions>
             <content-definition code="foundingNorm">
-                <name>Konstituční norma</name>
+                <name>Normy konstitutivní</name>
                 <desc>Zadejte</desc>
                 <type>textarea</type>
                 <definition>foundingNorm</definition>
