@@ -29,7 +29,6 @@ import cz.tacr.elza.controller.vo.PersistentSortConfigVO;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrangementService;
@@ -173,17 +172,16 @@ public class BulkActionController {
                                                  @RequestParam(required = false, defaultValue = "false") @Nullable final Boolean recommended) {
         Assert.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
         final ArrOutput output = outputService.getOutput(outputId);
-        final ArrOutputDefinition outputDefinition = output.getOutputDefinition();
-        final Set<Integer> nodeIds = outputDefinition.getOutputNodes().stream()
+        final Set<Integer> nodeIds = output.getOutputNodes().stream()
                 .filter(nodeOutput -> nodeOutput.getDeleteChange() == null)
                 .map(ArrNodeOutput::getNodeId)
                 .collect(Collectors.toSet());
         final List<ArrBulkActionRun> bulkActionsByNodes = nodeIds.isEmpty() ? Collections.EMPTY_LIST :
                 bulkActionService.findBulkActionsByNodeIds(
-                        arrangementService.getOpenVersionByFundId(outputDefinition.getFund().getFundId()),
+                        arrangementService.getOpenVersionByFundId(output.getFund().getFundId()),
                         nodeIds
                 );
-        final List<RulAction> recommendedActions = bulkActionService.getRecommendedActions(outputDefinition.getOutputType());
+        final List<RulAction> recommendedActions = bulkActionService.getRecommendedActions(output.getOutputType());
 
         bulkActionsByNodes.sort((o1, o2) -> o2.getChange().getChangeId() - o1.getChange().getChangeId());
         ArrayList<BulkActionRunVO> result = new ArrayList<>();

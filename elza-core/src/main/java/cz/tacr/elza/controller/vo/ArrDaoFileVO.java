@@ -30,6 +30,7 @@ public class ArrDaoFileVO {
     private String duration;
     private String code;
     private String url;
+    private String thumbnailUrl;
 
     public Integer getId() {
         return id;
@@ -149,5 +150,13 @@ public class ArrDaoFileVO {
 
     public void setUrl(final String url) {
         this.url = url;
+    }
+
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
+    }
+
+    public void setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
     }
 }

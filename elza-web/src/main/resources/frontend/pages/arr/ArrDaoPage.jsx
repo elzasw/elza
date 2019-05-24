@@ -66,6 +66,9 @@ class ArrDaoPage extends ArrParentPage {
         selectedUnassignedPackage: null,
         selectedPackage: null,
         selectedDaoLeft: null,  // vybrané dao v levé části
+        selectedDaoLeftFileId: null,  // vybrané dao v levé části
+        selectedDaoRight: null,  // vybrané dao v pravé části
+        selectedDaoRightFileId: null,  // vybrané dao v pravé části
     };
 
     static PropTypes = {
@@ -199,8 +202,9 @@ class ArrDaoPage extends ArrParentPage {
                 fund={fund}
                 readMode={readMode}
                 selectedDaoId={this.state.selectedDaoLeft ? this.state.selectedDaoLeft.id : null}
+                selectedDaoFileId={this.state.selectedDaoLeftFileId ? this.state.selectedDaoLeftFileId : null}
                 daoPackageId={selectedPackage ? selectedPackage.id : null}
-                onSelect={item => { this.setState({selectedDaoLeft: item}) }}
+                onSelect={(item, daoFileId) => { this.setState({selectedDaoLeft: item, selectedDaoLeftFileId: daoFileId}) }}
             />}
         </div>
     };
@@ -231,10 +235,11 @@ class ArrDaoPage extends ArrParentPage {
                 type="NODE"
                 unassigned={false}
                 selectedDaoId={this.state.selectedDaoLeft ? this.state.selectedDaoLeft.id : null}
+                selectedDaoFileId={this.state.selectedDaoLeftFileId ? this.state.selectedDaoLeftFileId : null}
                 fund={fund}
                 readMode={readMode}
                 nodeId={fund.fundTreeDaosLeft.selectedId ? fund.fundTreeDaosLeft.selectedId : null}
-                onSelect={item => { this.setState({selectedDaoLeft: item}) }}
+                onSelect={(item, daoFileId) => { this.setState({selectedDaoLeft: item, selectedDaoLeftFileId: daoFileId}) }}
             />}
         </div>
     };
@@ -312,7 +317,10 @@ class ArrDaoPage extends ArrParentPage {
                             type="NODE_ASSIGN"
                             unassigned={false}
                             fund={fund}
+                            selectedDaoId={this.state.selectedDaoRight ? this.state.selectedDaoRight.id : null}
+                            selectedDaoFileId={this.state.selectedDaoRightFileId ? this.state.selectedDaoRightFileId : null}
                             readMode={readMode}
+                            onSelect={(item, daoFileId) => { this.setState({selectedDaoRight: item, selectedDaoRightFileId: daoFileId}) }}
                             nodeId={fund.fundTreeDaosRight.selectedId ? fund.fundTreeDaosRight.selectedId : null}
                         />}
                     </div>

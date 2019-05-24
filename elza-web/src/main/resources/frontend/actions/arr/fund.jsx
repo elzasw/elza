@@ -192,17 +192,6 @@ export function showRegisterJp(show) {
 }
 
 /**
- * Zobrazení/skrytí digitálních entit.
- * @param show true, pokud se mají zobrazovat
- */
-export function showDaosJp(show) {
-    return {
-        type: types.SHOW_DAOS_JP,
-        show
-    }
-}
-
-/**
  * Nová verze AS po jeho schálení.
  * {int} versionId nová verze AS
  */

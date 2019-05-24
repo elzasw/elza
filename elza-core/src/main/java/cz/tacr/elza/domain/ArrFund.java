@@ -55,7 +55,7 @@ public class ArrFund extends AbstractVersionableEntity implements Versionable, I
 	private List<ArrFundVersion> versions;
 
 	@OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
-	private List<ArrOutputDefinition> outputDefinitions;
+	private List<ArrOutput> outputs;
 
 	public Integer getFundId() {
 		return fundId;
@@ -115,11 +115,11 @@ public class ArrFund extends AbstractVersionableEntity implements Versionable, I
 		return this;
 	}
 
-	public List<ArrOutputDefinition> getOutputDefinitions() {
-		return outputDefinitions;
+	public List<ArrOutput> getOutputs() {
+		return outputs;
 	}
 
-	public void setOutputDefinitions(final List<ArrOutputDefinition> outputDefinitions) {
-		this.outputDefinitions = outputDefinitions;
+	public void setOutputs(final List<ArrOutput> outputs) {
+		this.outputs = outputs;
 	}
 }

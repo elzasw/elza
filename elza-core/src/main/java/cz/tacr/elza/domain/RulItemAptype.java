@@ -20,25 +20,25 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
- * Vazební tabulka mezi entitami {@link ApType} a {@link RulItemSpec}.
+ * Vazební tabulka mezi entitami {@link ApType} a {@link RulItemSpec} nebo {@link RulItemType}.
  *
  * @author Martin Kužel [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
  * @since 21.10.2015
  */
-@Entity(name = "rul_item_spec_register")
+@Entity(name = "rul_item_aptype")
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulItemSpecRegister {
+public class RulItemAptype {
 
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
-    private Integer itemSpecRegisterId;
+    private Integer itemAptypeId;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApType.class)
-    @JoinColumn(name = "apTypeId", nullable = true)
+    @JoinColumn(name = "apTypeId", nullable = false)
     private ApType apType;
 
     @RestResource(exported = false)
@@ -46,12 +46,17 @@ public class RulItemSpecRegister {
     @JoinColumn(name = "itemSpecId", nullable = true)
     private RulItemSpec itemSpec;
 
-    public Integer getItemSpecRegisterId() {
-        return itemSpecRegisterId;
+    @RestResource(exported = false)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemType.class)
+    @JoinColumn(name = "itemTypeId", nullable = true)
+    private RulItemType itemType;
+
+    public Integer getItemAptypeId() {
+        return itemAptypeId;
     }
 
-    public void setItemSpecRegisterId(final Integer descItemSpecRegisterId) {
-        this.itemSpecRegisterId = descItemSpecRegisterId;
+    public void setItemAptypeId(final Integer itemAptypeId) {
+        this.itemAptypeId = itemAptypeId;
     }
 
     public ApType getApType() {
@@ -70,27 +75,35 @@ public class RulItemSpecRegister {
         this.itemSpec = descItemSpec;
     }
 
+    public RulItemType getItemType() {
+        return itemType;
+    }
+
+    public void setItemType(RulItemType itemType) {
+        this.itemType = itemType;
+    }
+
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof RulItemSpecRegister)) {
+        if (!(obj instanceof RulItemAptype)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        RulItemSpecRegister other = (RulItemSpecRegister) obj;
+        RulItemAptype other = (RulItemAptype) obj;
 
-        return new EqualsBuilder().append(itemSpecRegisterId, other.getItemSpecRegisterId()).isEquals();
+        return new EqualsBuilder().append(itemAptypeId, other.getItemAptypeId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(itemSpecRegisterId).toHashCode();
+        return new HashCodeBuilder().append(itemAptypeId).toHashCode();
     }
 
     @Override
     public String toString() {
-        return "RulItemSpecRegister pk=" + itemSpecRegisterId;
+        return "RulItemAptype pk=" + itemAptypeId;
     }
 }

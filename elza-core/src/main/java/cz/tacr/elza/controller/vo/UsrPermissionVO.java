@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.UsrPermission;
 
@@ -35,6 +36,9 @@ public class UsrPermissionVO {
     /** Scope, ke kterému se vztahuje oprávnění. */
     private ApScopeVO scope;
 
+    /** JP, ke které se vztahuje oprávnění. */
+    private ArrNodeVO node;
+
     /** Protokol, ke kterému se vztahuje oprávnění. */
     private WfIssueListBaseVO issueList;
 
@@ -59,6 +63,9 @@ public class UsrPermissionVO {
         }
         if (srcPerm.getIssueList() != null) {
             issueList = WfIssueListBaseVO.newInstance(srcPerm.getIssueList());
+        }
+        if (srcPerm.getNode() != null) {
+            node = ArrNodeVO.newInstance(srcPerm.getNode());
         }
 
         groupId = srcPerm.getGroupId();
@@ -140,6 +147,14 @@ public class UsrPermissionVO {
         this.issueList = issueList;
     }
 
+    public ArrNodeVO getNode() {
+        return node;
+    }
+
+    public void setNode(final ArrNodeVO node) {
+        this.node = node;
+    }
+
     public UsrPermission createEntity(StaticDataProvider staticData) {
         UsrPermission entity = new UsrPermission();
 
@@ -159,6 +174,9 @@ public class UsrPermissionVO {
         }
         if (issueList != null) {
             entity.setIssueList(issueList.createEntity());
+        }
+        if (node != null) {
+            entity.setNode(node.createEntity());
         }
         return entity;
     }

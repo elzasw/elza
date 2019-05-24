@@ -277,17 +277,19 @@ public class RequestService {
         if (!request.getState().equals(ArrRequest.State.OPEN)) {
             throw new BusinessException("Neplatný stav požadavku " + request + ": " + request.getState(), ArrangementCode.REQUEST_INVALID_STATE).set("state", request.getState());
         }
+        List<ArrNode> nodes = null;
         switch (request.getDiscriminator()) {
             case DAO:
                 ((ArrDaoRequest)request).setDescription(description);
                 break;
             case DIGITIZATION:
+                nodes = digitizationRequestNodeRepository.findNodesByDigitizationRequest((ArrDigitizationRequest) request);
                 ((ArrDigitizationRequest)request).setDescription(description);
                 break;
             default:
                 break;
         }
-        sendNotification(fundVersion, request, EventType.REQUEST_CHANGE, null);
+        sendNotification(fundVersion, request, EventType.REQUEST_CHANGE, nodes);
     }
 
     public ArrDigitizationRequest getDigitizationRequest(final Integer id) {
@@ -316,7 +318,11 @@ public class RequestService {
     public void sendRequest(@NotNull final ArrRequest request,
                             @AuthParam(type = AuthParam.Type.FUND) final ArrFundVersion fundVersion) {
         requestQueueService.sendRequest(request, fundVersion);
-        sendNotification(fundVersion, request, EventType.REQUEST_CHANGE, null);
+        List<ArrNode> nodes = null;
+        if (request.getDiscriminator() == ArrRequest.ClassType.DIGITIZATION) {
+            nodes = digitizationRequestNodeRepository.findNodesByDigitizationRequest((ArrDigitizationRequest) request);
+        }
+        sendNotification(fundVersion, request, EventType.REQUEST_CHANGE, nodes);
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
@@ -328,11 +334,13 @@ public class RequestService {
                     .set("fundId", request.getFund().getFundId());
         }
 
+        List<ArrNode> nodes = null;
         if (requestQueueService.isRequestInQueue(request)) {
             requestQueueService.deleteRequestFromQueue(request, openVersion);
         } else {
             switch (request.getDiscriminator()) {
                 case DIGITIZATION: {
+                    nodes = digitizationRequestNodeRepository.findNodesByDigitizationRequest((ArrDigitizationRequest) request);
                     digitizationRequestNodeRepository.deleteByDigitizationRequest((ArrDigitizationRequest) request);
                     requestRepository.delete(request);
                     break;
@@ -345,7 +353,7 @@ public class RequestService {
                 default:
                     throw new IllegalStateException("Neimplementovaný typ požadavku: " + request.getDiscriminator());
             }
-            sendNotification(openVersion, request, EventType.REQUEST_DELETE, null);
+            sendNotification(openVersion, request, EventType.REQUEST_DELETE, nodes);
         }
     }
 

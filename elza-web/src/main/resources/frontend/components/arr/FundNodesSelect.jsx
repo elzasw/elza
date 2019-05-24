@@ -37,7 +37,9 @@ class FundNodesSelect extends AbstractReactComponent {
     static defaultProps = {
         multipleSelection: true,
         multipleSelectionOneLevel: false,
-        selectedId: null
+        selectedId: null,
+        fundId: null,
+        area: types.FUND_TREE_AREA_NODES
     };
 
     state = {
@@ -45,10 +47,10 @@ class FundNodesSelect extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        const {multipleSelection, multipleSelectionOneLevel, selectedId, fund:{fundTreeNodes, versionId}, onChange} = this.props;
+        const {multipleSelection, multipleSelectionOneLevel, selectedId, fund:{fundTreeNodes, versionId}, onChange, area} = this.props;
 
-        this.props.dispatch(fundTreeConfigure(types.FUND_TREE_AREA_NODES, versionId, multipleSelection, multipleSelectionOneLevel));
-        this.props.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_NODES, versionId, selectedId, false, false));
+        this.props.dispatch(fundTreeConfigure(area, versionId, multipleSelection, multipleSelectionOneLevel));
+        this.props.dispatch(fundTreeSelectNode(area, versionId, selectedId, false, false));
 
         this.handleChange(versionId, fundTreeNodes.expandedIds, multipleSelection, onChange);
     }
@@ -94,16 +96,17 @@ class FundNodesSelect extends AbstractReactComponent {
                 }
             }
         });
-    }
+    };
 
     requestFundTreeData = (versionId, expandedIds) => {
-        return this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_NODES, versionId, expandedIds));
+        const {area} = this.props;
+        return this.props.dispatch(fundTreeFetchIfNeeded(area, versionId, expandedIds));
     };
 
     handleNodeClick = (node, ensureItemVisible, e) => {
-        const {fund} = this.props;
+        const {fund, area} = this.props;
         e.shiftKey && this.unFocus();
-        this.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_NODES, fund.versionId, node.id, e.ctrlKey, e.shiftKey, null, ensureItemVisible));
+        this.props.dispatch(fundTreeSelectNode(area, fund.versionId, node.id, e.ctrlKey, e.shiftKey, null, ensureItemVisible));
     };
 
     unFocus() {
@@ -115,38 +118,38 @@ class FundNodesSelect extends AbstractReactComponent {
     }
 
     handleFulltextChange = (value) => {
-        const {fund} = this.props;
-        this.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_NODES, fund.versionId, value));
+        const {fund, area} = this.props;
+        this.props.dispatch(fundTreeFulltextChange(area, fund.versionId, value));
     };
 
     handleFulltextSearch = () => {
-        const {fund} = this.props;
-        this.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_NODES, fund.versionId));
+        const {fund, area} = this.props;
+        this.props.dispatch(fundTreeFulltextSearch(area, fund.versionId));
     };
 
     handleFulltextPrevItem = () => {
-        const {fund} = this.props;
-        this.dispatch(fundTreeFulltextPrevItem(types.FUND_TREE_AREA_NODES, fund.versionId));
+        const {fund, area} = this.props;
+        this.props.dispatch(fundTreeFulltextPrevItem(area, fund.versionId));
     };
 
     handleFulltextNextItem = () => {
-        const {fund} = this.props;
-        this.dispatch(fundTreeFulltextNextItem(types.FUND_TREE_AREA_NODES, fund.versionId));
+        const {fund, area} = this.props;
+        this.props.dispatch(fundTreeFulltextNextItem(area, fund.versionId));
     };
 
     handleCollapse = () => {
-        const {fund} = this.props;
-        this.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_NODES,fund.versionId, fund))
+        const {fund, area} = this.props;
+        this.props.dispatch(fundTreeCollapse(area, fund.versionId, fund))
     };
 
     handleNodeExpandCollapse = (node, expand) => {
-        const {fund:{versionId}} = this.props;
+        const {fund:{versionId}, area} = this.props;
         if(expand){
-            this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_NODES, node))
+            this.props.dispatch(fundTreeNodeExpand(area, node))
         } else {
-            this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_NODES, versionId, node))
+            this.props.dispatch(fundTreeNodeCollapse(area, versionId, node))
         }
-    }
+    };
 
     render() {
         const {fund:{fundTreeNodes}} = this.props;
@@ -169,10 +172,10 @@ class FundNodesSelect extends AbstractReactComponent {
     }
 }
 
-function mapStateToProps(state) {
+function mapStateToProps(state, props) {
     const {arrRegion} = state;
     return {
-        fund: arrRegion.funds[arrRegion.activeIndex]
+        fund: props.fund ? props.fund : arrRegion.funds[arrRegion.activeIndex]
     }
 }
 

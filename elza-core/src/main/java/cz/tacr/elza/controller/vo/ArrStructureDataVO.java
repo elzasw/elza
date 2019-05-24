@@ -11,6 +11,7 @@ public class ArrStructureDataVO {
 
     protected Integer id;
     protected String value;
+    protected String complement;
     protected ArrStructuredObject.State state;
     protected Boolean assignable;
     protected String errorDescription;
@@ -30,6 +31,14 @@ public class ArrStructureDataVO {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public String getComplement() {
+        return complement;
+    }
+
+    public void setComplement(String complement) {
+        this.complement = complement;
     }
 
     public ArrStructuredObject.State getState() {
@@ -69,6 +78,7 @@ public class ArrStructureDataVO {
         structureDataVO.setId(structureData.getStructuredObjectId());
         structureDataVO.setTypeCode(structureData.getStructuredType().getCode());
         structureDataVO.setValue(structureData.getValue());
+        structureDataVO.setComplement(structureData.getComplement());
         structureDataVO.setErrorDescription(structureData.getErrorDescription());
         structureDataVO.setAssignable(structureData.getAssignable());
         structureDataVO.setState(structureData.getState());

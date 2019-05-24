@@ -29,7 +29,9 @@ public class UsrPermission {
     public static final String FIELD_USER_ID = "userId";
 	public static final String FIELD_GROUP = "group";
     public static final String FIELD_GROUP_ID = "groupId";
-	public static final String FIELD_USER_CONTROL = "userControl";
+    public static final String FIELD_NODE = "node";
+    public static final String FIELD_NODE_ID = "nodeId";
+    public static final String FIELD_USER_CONTROL = "userControl";
     public static final String FIELD_USER_CONTROL_ID = "userControlId";
     public static final String FIELD_GROUP_CONTROL_ID = "groupControlId";
 	public static final String FIELD_GROUP_CONTROL = "groupControl";
@@ -61,6 +63,14 @@ public class UsrPermission {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
     @JoinColumn(name = "fundId")
     private ArrFund fund;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
+    @JoinColumn(name = "nodeId")
+    private ArrNode node;
+
+    /** Slouží jen pro čtení. */
+    @Column(name = "nodeId", updatable = false, insertable = false, nullable = false)
+    private Integer nodeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = UsrUser.class)
     @JoinColumn(name = "userControlId")
@@ -219,6 +229,19 @@ public class UsrPermission {
         this.scopeId = scopeId;
     }
 
+    public Integer getNodeId() {
+        return nodeId;
+    }
+
+    public ArrNode getNode() {
+        return node;
+    }
+
+    public void setNode(final ArrNode node) {
+        this.node = node;
+        this.nodeId = node == null ? null : node.getNodeId();
+    }
+
     /**
      * @return protokol, ke kterému se oprávnění vztahuje
      */
@@ -297,7 +320,12 @@ public class UsrPermission {
         /**
          * Oprávnění se vztahuje na konkrétní protokol.
          */
-        ISSUE_LIST
+        ISSUE_LIST,
+
+        /**
+         * Oprávnění se vztahuje na konkrétní JP.
+         */
+        NODE
     }
 
     /**
@@ -568,7 +596,12 @@ public class UsrPermission {
         /**
          * Tvorba připomínek pro konkrétní issue list
          */
-        FUND_ISSUE_LIST_WR(PermissionType.ISSUE_LIST);
+        FUND_ISSUE_LIST_WR(PermissionType.ISSUE_LIST),
+
+        /**
+         * Pořádání na podstrom AS.
+         */
+        FUND_ARR_NODE(PermissionType.NODE);
 
         /**
          * Typ oprávnění

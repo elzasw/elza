@@ -17,6 +17,7 @@ Kód ELZA: digilinka-local
 Třída: Uložiště digitalizátů
 DaoURL:
 FileURL:
+ThumbnailURL:
 Zasílání upozornění: Ne
 Kód: repo
 Název: u-test-nazev

@@ -1,6 +1,5 @@
 package cz.tacr.elza.packageimport.xml;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,11 +13,10 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang.StringUtils;
 
+import cz.tacr.elza.domain.RulItemAptype;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemSpecRegister;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
-import cz.tacr.elza.repository.ItemSpecRegisterRepository;
-
+import cz.tacr.elza.repository.ItemAptypeRepository;
 
 /**
  * ItemSpec.
@@ -29,6 +27,8 @@ import cz.tacr.elza.repository.ItemSpecRegisterRepository;
 @XmlType(name = "item-spec")
 public class ItemSpec {
 
+    // --- fields ---
+
     @XmlAttribute(name = "code", required = true)
     private String code;
 
@@ -38,19 +38,21 @@ public class ItemSpec {
     @XmlElement(name = "name", required = true)
     private String name;
 
-    @XmlElement(name = "shortcut", required = true)
-    private String shortcut;
-
     @XmlElement(name = "description", required = true)
     private String description;
 
-    @XmlElement(name = "item-spec-register")
-    @XmlElementWrapper(name = "item-spec-registers")
-    private List<ItemSpecRegister> itemSpecRegisters;
+    @XmlElement(name = "shortcut", required = true)
+    private String shortcut;
+
+    @XmlElement(name = "item-aptype")
+    @XmlElementWrapper(name = "item-aptypes")
+    private List<ItemAptype> itemAptypes;
 
     @XmlElement(name = "category")
     @XmlElementWrapper(name = "categories")
     private List<Category> categories;
+
+    // --- getters/setters ---
 
     public String getCode() {
         return code;
@@ -76,14 +78,6 @@ public class ItemSpec {
         this.name = name;
     }
 
-    public String getShortcut() {
-        return shortcut;
-    }
-
-    public void setShortcut(final String shortcut) {
-        this.shortcut = shortcut;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -92,12 +86,20 @@ public class ItemSpec {
         this.description = description;
     }
 
-    public List<ItemSpecRegister> getItemSpecRegisters() {
-        return itemSpecRegisters;
+    public String getShortcut() {
+        return shortcut;
     }
 
-    public void setItemSpecRegisters(final List<ItemSpecRegister> itemSpecRegisters) {
-        this.itemSpecRegisters = itemSpecRegisters;
+    public void setShortcut(final String shortcut) {
+        this.shortcut = shortcut;
+    }
+
+    public List<ItemAptype> getItemAptypes() {
+        return itemAptypes;
+    }
+
+    public void setItemAptypes(final List<ItemAptype> itemAptypes) {
+        this.itemAptypes = itemAptypes;
     }
 
     public List<Category> getCategories() {
@@ -108,15 +110,15 @@ public class ItemSpec {
         this.categories = categories;
     }
 
+    // --- methods ---
+
     /**
      * Převod DAO na VO specifikace.
      *
-     * @param rulDescItemSpec
-     *            DAO specifikace
-     * @return
+     * @param rulDescItemSpec DAO specifikace
      */
-    public static ItemSpec fromEntity(RulItemSpec rulDescItemSpec,
-                                          ItemSpecRegisterRepository itemSpecRegisterRepository) {
+    public static ItemSpec fromEntity(RulItemSpec rulDescItemSpec, ItemAptypeRepository itemAptypeRepository) {
+
         ItemSpec itemSpec = new ItemSpec();
         itemSpec.setCode(rulDescItemSpec.getCode());
         itemSpec.setName(rulDescItemSpec.getName());
@@ -124,21 +126,14 @@ public class ItemSpec {
         itemSpec.setItemType(rulDescItemSpec.getItemType().getCode());
         itemSpec.setShortcut(rulDescItemSpec.getShortcut());
 
-        List<RulItemSpecRegister> rulItemSpecRegisters = itemSpecRegisterRepository
-                .findByDescItemSpecId(rulDescItemSpec);
-
-        List<ItemSpecRegister> itemSpecRegisterList = new ArrayList<>(rulItemSpecRegisters.size());
-
-        for (RulItemSpecRegister rulItemSpecRegister : rulItemSpecRegisters) {
-            ItemSpecRegister itemSpecRegister = ItemSpecRegister.fromEntity(rulItemSpecRegister);
-            itemSpecRegisterList.add(itemSpecRegister);
+        List<RulItemAptype> itemAptypes = itemAptypeRepository.findByItemSpec(rulDescItemSpec);
+        if (!itemAptypes.isEmpty()) {
+            itemSpec.setItemAptypes(itemAptypes.stream().map(ItemAptype::fromEntity).collect(Collectors.toList()));
         }
-
-        itemSpec.setItemSpecRegisters(itemSpecRegisterList);
 
         if (StringUtils.isNotEmpty(rulDescItemSpec.getCategory())) {
             String[] categoriesString = rulDescItemSpec.getCategory().split("\\" + ItemTypeUpdater.CATEGORY_SEPARATOR);
-            List<Category> categories = Arrays.asList(categoriesString).stream()
+            List<Category> categories = Arrays.stream(categoriesString)
                     .map(s -> new Category(s))
                     .collect(Collectors.toList());
             itemSpec.setCategories(categories);

@@ -73,7 +73,7 @@ import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
-import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PartyCreatorRepository;
@@ -187,7 +187,7 @@ public class PartyService {
     private ItemSpecRepository itemSpecRepository;
 
     @Autowired
-    private ItemSpecRegisterRepository itemSpecRegisterRepository;
+    private ItemAptypeRepository itemAptypeRepository;
 
     @Autowired
     private DescriptionItemService descriptionItemService;
@@ -275,7 +275,7 @@ public class PartyService {
         Set<Integer> apTypeIds = new HashSet<>();
         if (itemSpecId != null) {
             RulItemSpec spec = itemSpecRepository.getOneCheckExist(itemSpecId);
-            apTypeIds.addAll(itemSpecRegisterRepository.findIdsByItemSpecId(spec));
+            apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemSpec(spec));
         }
         return apTypeRepository.findSubtreeIds(apTypeIds);
     }

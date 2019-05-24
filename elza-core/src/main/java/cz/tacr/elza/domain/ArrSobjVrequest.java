@@ -14,7 +14,7 @@ import javax.persistence.Table;
 /**
  * Queue for structured objects
  *
- * Requests to generate value and sortValue in structured object
+ * Requests to generate value, sortValue and complement in structured object
  *
  * @since 27.10.2017
  */

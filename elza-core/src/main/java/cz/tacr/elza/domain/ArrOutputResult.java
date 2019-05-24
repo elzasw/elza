@@ -23,25 +23,23 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity(name = "arr_output_result")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"outputDefinitionId"}))
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"outputId"}))
 public class ArrOutputResult {
 
     public static final String TABLE_NAME = "arr_output_result";
-	
-	/**
-	 * Name of field with link to output definition
-	 */
-    public static final String OUTPUT_DEFINITION = "outputDefinition";
 
-    public static final String FIELD_CHANGE_ID = "changeId";
+    /**
+     * Name of field with link to output definition
+     */
+    public static final String OUTPUT = "output";
 
     @Id
     @GeneratedValue
     private Integer outputResultId;
 
-    @OneToOne(fetch = FetchType.LAZY, targetEntity = ArrOutputDefinition.class)
-    @JoinColumn(name = "outputDefinitionId", nullable = false)
-    private ArrOutputDefinition outputDefinition;
+    @OneToOne(fetch = FetchType.LAZY, targetEntity = ArrOutput.class)
+    @JoinColumn(name = "outputId", nullable = false)
+    private ArrOutput output;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulTemplate.class)
     @JoinColumn(name = "templateId", nullable = false)
@@ -62,12 +60,12 @@ public class ArrOutputResult {
         this.outputResultId = outputResultId;
     }
 
-    public ArrOutputDefinition getOutputDefinition() {
-        return outputDefinition;
+    public ArrOutput getOutput() {
+        return output;
     }
 
-    public void setOutputDefinition(final ArrOutputDefinition outputDefinition) {
-        this.outputDefinition = outputDefinition;
+    public void setOutput(final ArrOutput output) {
+        this.output = output;
     }
 
     public RulTemplate getTemplate() {

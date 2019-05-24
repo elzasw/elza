@@ -215,7 +215,7 @@ public class NodeCacheService {
      * @param cachedNodes seznam ukládaných objektů
      */
     @Transactional
-    public void saveNodes(final Collection<CachedNode> cachedNodes) {
+    public void saveNodes(final Collection<? extends CachedNode> cachedNodes) {
         readLock.lock();
         try {
             logger.debug(">saveNodes(" + cachedNodes + ")");
@@ -503,7 +503,7 @@ public class NodeCacheService {
      *
      * @param cachedNodes seznam ukládaných objektů
      */
-    private void saveNodesInternal(final Collection<CachedNode> cachedNodes) {
+    private void saveNodesInternal(final Collection<? extends CachedNode> cachedNodes) {
         Map<Integer, CachedNode> cachedNodeMap = new HashMap<>(cachedNodes.size());
         for (CachedNode cachedNode : cachedNodes) {
             cachedNodeMap.put(cachedNode.getNodeId(), cachedNode);

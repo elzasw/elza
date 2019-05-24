@@ -1,18 +1,14 @@
-require ('./ArrDao.less');
-
+import NodeLabel from "./NodeLabel";
 import React from "react";
 import {connect} from "react-redux";
-import {NoFocusButton, FormInput, Icon, AbstractReactComponent, i18n, ListBox} from 'components/shared';
-import {indexById} from "stores/app/utils.jsx";
-import {Form, Button} from "react-bootstrap";
-import {dateToString} from "components/Utils.jsx";
-import {userDetailsSaveSettings} from "actions/user/userDetail.jsx";
-import {fundChangeReadMode} from "actions/arr/fund.jsx";
-import {setSettings, getOneSettings} from "components/arr/ArrUtils.jsx";
+import {AbstractReactComponent, i18n, Icon, NoFocusButton} from 'components/shared';
+import {Button} from "react-bootstrap";
 import {humanFileSize} from "components/Utils.jsx";
 import ArrRequestForm from "./ArrRequestForm";
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {WebApi} from 'actions/index.jsx';
+
+require ('./ArrDao.less');
 
 var classNames = require('classnames');
 
@@ -20,13 +16,11 @@ class ArrDao extends AbstractReactComponent {
 
     constructor(props) {
         super(props);
-        this.state = {
-            selectedFile: null,
-        };
     }
 
     static PropTypes = {
         dao: React.PropTypes.object.isRequired,
+        daoFile: React.PropTypes.object,
         fund: React.PropTypes.object.isRequired,
         onUnlink: React.PropTypes.func.isRequired,
         readMode: React.PropTypes.bool.isRequired
@@ -37,42 +31,8 @@ class ArrDao extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.dao !== nextProps.dao) {
-            this.setState({
-                selectedFile: null,
-            });
-        }
+
     }
-
-    handleSelect = (file) => {
-        this.setState({
-            selectedFile: file
-        });
-    }
-
-    renderFileDetail = (item) => {
-
-        let itemDetail;
-
-        if (item != null) {
-            itemDetail = <Form inline>
-                {item.mimetype && <div><FormInput type="static" label={i18n("arr.daos.files.title.mimeType") + ":"}>{item.mimetype}</FormInput></div>}
-                {item.size && <div><FormInput type="static" label={i18n("arr.daos.files.title.size") + ":"}>{humanFileSize(item.size)}</FormInput></div>}
-                {item.duration && <div><FormInput type="static" label={i18n("arr.daos.files.title.duration") + ":"}>{item.duration}</FormInput></div>}
-                {item.imageWidth && item.imageHeight && <div><FormInput type="static" label={i18n("arr.daos.files.title.imageWidthHeight") + ":"}>{item.imageWidth}x{item.imageHeight} px</FormInput></div>}
-                {item.sourceXDimesionValue && item.sourceYDimesionValue &&
-                <div>
-                    <FormInput type="static" label={i18n("arr.daos.files.title.sourceXY") + ":"}>
-                        {item.sourceXDimesionValue}{i18n(`arr.daos.files.title.unitOfMeasure.${item.sourceXDimesionUnit}`)}x{item.sourceYDimesionValue}{i18n(`arr.daos.files.title.unitOfMeasure.${item.sourceYDimesionUnit}`)}
-                    </FormInput>
-                </div>
-                }
-                {item.url && <div><FormInput type="static" label={i18n("arr.daos.files.title.url") + ":"}><a target="_blank" href={item.url}>{item.url}</a></FormInput></div>}
-            </Form>
-        }
-
-        return <div className="dao-files-detail">{itemDetail}</div>
-    };
 
     handleUnlink = () => {
         const {onUnlink} = this.props;
@@ -97,65 +57,96 @@ class ArrDao extends AbstractReactComponent {
         this.dispatch(modalDialogShow(this, i18n('arr.request.dao.form.title'), form));
     };
 
+    copyToClipboard = (url) => {
+        const el = document.createElement('textarea');
+        el.value = url;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+    }
+
+    renderDaoDetail = () => {
+        const {dao, readMode} = this.props;
+
+        return <div className="dao-detail">
+            {dao.daoLink && <div key="jp-panel" className="dao-jp-panel">
+                {i18n('arr.daos.title.jp')} <NodeLabel inline node={dao.daoLink.treeNodeClient}/>
+            </div>}
+            <div key="actions" className="dao-actions">
+                {dao.url && <div key="left" className="left">
+                    <a target="_blank" href={dao.url}><NoFocusButton><Icon glyph="fa-external-link"/>{i18n('arr.daos.title.action.url')}</NoFocusButton></a>
+                    <NoFocusButton onClick={() => this.copyToClipboard(dao.url)}><Icon glyph="fa-paste"/>{i18n('arr.daos.title.action.copy')}</NoFocusButton>
+                </div>}
+                {!readMode && <div key="right" className="right">
+                    <Button bsStyle="action" disabled={!dao.daoLink} onClick={this.handleUnlink}><Icon glyph='fa-unlink'/></Button>
+                    <Button bsStyle="action" onClick={this.handleTrash} disabled={dao.existInArrDaoRequest}><Icon glyph='fa-trash'/></Button>
+                </div>}
+            </div>
+            <div key="info" className="dao-info">
+                {this.renderLabel("arr.daos.title.code", dao.code)}
+                {this.renderLabel("arr.daos.title.description", dao.label, true)}
+                {this.renderLabel("arr.daos.title.file-count", dao.fileList.length)}
+            </div>
+        </div>
+    };
+
+    renderThumbnail = () => {
+        const {daoFile} = this.props;
+        const exists = daoFile.thumbnailUrl;
+        const cls = exists ? 'thumbnail' : 'thumbnail empty';
+        const img = exists ? <img src={daoFile.thumbnailUrl} /> : <div className="empty-img"><Icon glyph="fa-remove"/></div>
+        return <div title={exists ? daoFile.thumbnailUrl : i18n('arr.daos.title.thumbnail.empty')} className={cls}>{img}</div>
+    };
+
+    renderDaoFileDetail = () => {
+        const {fund, dao, readMode, daoFile} = this.props;
+
+        const count = dao.fileList.length;
+        const curr = dao.fileList.indexOf(daoFile) + 1;
+        const leftDisable = curr <= 1;
+        const rightDisable = curr >= count;
+        return <div className="dao-file-detail">
+            <div className="dao-file-thumbnail">
+                <div className="navigation">
+                    <div className="title">{i18n('arr.daos.title.thumbnail', curr, count)}</div>
+                    <div className="arrows">
+                        <NoFocusButton disabled={leftDisable} onClick={this.props.prevDaoFile}><Icon glyph="fa-chevron-left" /></NoFocusButton>
+                        <NoFocusButton disabled={rightDisable} onClick={this.props.nextDaoFile}><Icon glyph="fa-chevron-right" /></NoFocusButton>
+                    </div>
+                </div>
+                {this.renderThumbnail()}
+            </div>
+            <div className="dao-file-info">
+                <div className="dao-file-info-base">
+                    {i18n('arr.daos.title.select-file')}
+                    <a title={i18n('arr.daos.title.action.url')} target="_blank" href={daoFile.url}><NoFocusButton><Icon glyph="fa-external-link"/></NoFocusButton></a>
+                    <NoFocusButton title={i18n('arr.daos.title.action.copy')} onClick={() => this.copyToClipboard(daoFile.url)}><Icon glyph="fa-paste"/></NoFocusButton>
+                </div>
+                <span className="file">{daoFile.code}</span>
+                {daoFile.mimetype && this.renderLabel("arr.daos.files.title.mimeType", daoFile.mimetype)}
+                {daoFile.size && this.renderLabel("arr.daos.files.title.size", humanFileSize(daoFile.size))}
+                {daoFile.duration && this.renderLabel("arr.daos.files.title.duration", daoFile.duration)}
+                {daoFile.imageWidth && daoFile.imageHeight && this.renderLabel("arr.daos.files.title.imageWidthHeight", daoFile.imageWidth + ' x ' + daoFile.imageHeight + ' px')}
+                {daoFile.sourceXDimesionValue && daoFile.sourceYDimesionValue &&
+                    this.renderLabel("arr.daos.files.title.sourceXY", daoFile.sourceXDimesionValue + i18n(`arr.daos.files.title.unitOfMeasure.${daoFile.sourceXDimesionUnit}`) + ' x ' + daoFile.sourceYDimesionValue + i18n(`arr.daos.files.title.unitOfMeasure.${daoFile.sourceYDimesionUnit}`))}
+            </div>
+        </div>
+    };
+
+    renderLabel = (label, value, block = false) => {
+        const cls = block ? "lbl block" : "lbl";
+        const val = <span className="lbl-value">{value}</span>
+        const valFinal = block ? <div className="scrollable">{val}</div> : val
+        return <div title={i18n(label) + ': ' + value} className={cls}><span className="lbl-name">{i18n(label)}</span>{valFinal}</div>
+    };
+
     render() {
-        const {fund, dao, readMode} = this.props;
-        const {selectedFile} = this.state;
-
-        // Položky souborů včetně skupin
-        const filesMap = {};    // mapa id na položku
-        const options = [];
-
-        if (dao != null) {
-            if (dao.fileList.length > 0) {
-                options.push(<optgroup className="global-group" label={i18n("arr.daos.files.title.withoutGroup")}></optgroup>);
-                dao.fileList.forEach(f => {
-                    options.push(<option selected={selectedFile && f.id === selectedFile.id} className="file" value={f.id}>{f.code}</option>);
-                    filesMap[f.id] = f;
-                });
-            }
-            if (dao.fileGroupList.length > 0) {
-                options.push(<optgroup className="global-group" label={i18n("arr.daos.files.title.inGroup")}></optgroup>);
-                dao.fileGroupList.forEach(fg => {
-                    options.push(
-                        <optgroup className="file-group" label={fg.code}>
-                            {fg.fileList.map(f => {
-                                filesMap[f.id] = f;
-                                return <option selected={selectedFile && f.id === selectedFile.id} className="file" value={f.id}>{f.code}</option>
-                            })};
-                        </optgroup>
-                    );
-                });
-            }
-        }
-
-        let daoDetail;
-
-        if (dao) {
-            daoDetail = <div><div className="title"><i>Digitalizát</i>: {dao.label}</div>
-                <div className="info">
-                    {!readMode && <Button bsStyle="action" disabled={!dao.daoLink} onClick={this.handleUnlink}><Icon glyph='fa-unlink'/></Button>}
-                    {!readMode && <Button bsStyle="action" onClick={this.handleTrash} disabled={dao.existInArrDaoRequest}><Icon glyph='fa-trash'/></Button>}
-                <Form inline>
-            <div><FormInput type="static" label={i18n("arr.daos.title.code") + ":"}>{dao.code}</FormInput></div>
-            {dao.url && <div><FormInput type="static" label={i18n("arr.daos.title.url") + ":"}><a target="_blank" href={dao.url}>{dao.url}</a></FormInput></div>}
-            {dao.daoLink && <div><FormInput type="static" label={i18n("arr.daos.title.node") + ":"}>{dao.daoLink.treeNodeClient.accordionLeft ? dao.daoLink.treeNodeClient.accordionLeft : i18n('accordion.title.left.name.undefined', dao.daoLink.treeNodeClient.id)}</FormInput></div>}
-                </Form>
-                </div></div>
-        }
-
+        const {fund, dao, readMode, daoFile} = this.props;
         return (
             <div className="dao-container">
-                <div className="dao-detail">
-                    {daoDetail}
-                </div>
-                <div className="dao-files">
-                    <div className='dao-files-list'>
-                        <select size="2" onChange={(e) => { this.handleSelect(filesMap[e.target.value]) }}>
-                            {options}
-                        </select>
-                    </div>
-                    {/*selectedFile !== null &&*/ this.renderFileDetail(selectedFile)}
-                </div>
+                {this.renderDaoDetail()}
+                {daoFile && this.renderDaoFileDetail()}
             </div>
         );
     }

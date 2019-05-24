@@ -6,6 +6,7 @@ import java.util.Collection;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.service.NodePermissionChecker;
 
 /**
  * Detail uživatele v session.
@@ -34,23 +35,28 @@ public class UserDetail {
      */
     private Collection<UserPermission> userPermission;
 
-    public UserDetail(final UsrUser user, final Collection<UserPermission> userPermission) {
+    private NodePermissionChecker nodePermChecker;
+
+    public UserDetail(final UsrUser user, final Collection<UserPermission> userPermission, final NodePermissionChecker nodePermChecker) {
         this.id = user.getUserId();
         this.username = user.getUsername();
         this.active = user.getActive();
         this.userPermission = new ArrayList<>(userPermission);
+        this.nodePermChecker = nodePermChecker;
     }
 
 	/**
 	 * Constructor for ADMIN
-	 * 
+	 *
 	 * @param systemUser
+	 * @param nodePermChecker
 	 */
-    public UserDetail(final String systemUser) {
+    public UserDetail(final String systemUser, final NodePermissionChecker nodePermChecker) {
         this.username = systemUser;
         this.active = true;
         this.userPermission = new ArrayList<>();
         this.userPermission.add(new UserPermission(UsrPermission.Permission.ADMIN));
+        this.nodePermChecker = nodePermChecker;
     }
 
     public String getUsername() {
@@ -142,6 +148,11 @@ public class UserDetail {
 						return true;
 					}
 					break;
+				case NODE:
+					if (nodePermChecker.checkPermissionInTree(entityId)) {
+						return true;
+					}
+					return true;
 				default:
 					throw new IllegalStateException(permission.getType().toString());
 				}

@@ -54,7 +54,7 @@ class OutputInlineForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {name, internalCode, temporary, templateId, outputTypeId}, disabled, outputTypes, allTemplates} = this.props;
+        const {fields: {name, internalCode, templateId, outputTypeId}, disabled, outputTypes, allTemplates} = this.props;
 
         let outputType = false;
         if (outputTypes) {

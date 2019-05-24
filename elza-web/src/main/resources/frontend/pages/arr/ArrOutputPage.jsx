@@ -9,43 +9,33 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
-import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {
     Ribbon,
-    FundNodesSelectForm,
-    FundNodesList,
     ArrOutputDetail,
     AddOutputForm,
-    FundOutputFiles,
     FundOutputFunctions,
     RunActionForm,
     FormInput,
-    ArrFundPanel
 } from '../../components/index.jsx';
 import {
     ListBox,
-    Loading,
     RibbonGroup,
     StoreHorizontalLoader,
     Icon,
     i18n,
     Tabs,
-    AbstractReactComponent,
     Utils
 } from 'components/shared';
-import {Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
-import PageLayout from "../shared/layout/PageLayout";
+import {Button} from 'react-bootstrap';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {
     fundOutputFetchIfNeeded,
-    fundOutputRemoveNodes,
     fundOutputSelectOutput,
     fundOutputCreate,
     fundOutputUsageEnd,
     fundOutputDelete,
-    fundOutputAddNodes,
     fundOutputGenerate,
     fundOutputRevert,
     fundOutputClone,
@@ -55,8 +45,6 @@ import {fundOutputActionRun} from 'actions/arr/fundOutputFunctions.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {fundActionFormShow, fundActionFormChange} from 'actions/arr/fundAction.jsx'
 import {routerNavigate} from 'actions/router.jsx'
-import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
 import AddDescItemTypeForm from 'components/arr/nodeForm/AddDescItemTypeForm.jsx'
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
@@ -66,9 +54,10 @@ import ArrParentPage from "./ArrParentPage.jsx";
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './ArrOutputPageKeymap.jsx';
 
-import {Shortcuts} from 'react-shortcuts';
 import TemplateSettingsForm from "../../components/arr/TemplateSettingsForm";
 import {FOCUS_KEYS} from "../../constants.tsx";
+import FundNodesSelectForm from "../../components/arr/FundNodesSelectForm";
+import {fundOutputAddNodes} from "../../actions/arr/fundOutput";
 
 let _selectedTab = 0
 
@@ -107,7 +96,6 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             'renderRightPanel',
             'renderFunctionsPanel',
             'renderTemplatesPanel',
-            'renderOutputPanel',
             'handleTabSelect',
             'handleGenerateOutput',
             'handleAddDescItemType',
@@ -180,20 +168,39 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         }
     }
 
+    handleAddNodes = (fundOutputDetail) => {
+        const fund = this.getActiveFund(this.props);
+
+        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
+            <FundNodesSelectForm
+                onSubmitForm={(ids, nodes) => {
+                    this.props.dispatch(fundOutputAddNodes(fund.versionId, fundOutputDetail.id, ids))
+                }}
+            />))
+    };
+
     handleAddOutput() {
         const fund = this.getActiveFund(this.props);
 
-        this.dispatch(modalDialogShow(this, i18n('arr.output.title.add'),
+        this.props.dispatch(modalDialogShow(this, i18n('arr.output.title.add'),
             <AddOutputForm
                 create
-                onSubmitForm={(data) => {return this.dispatch(fundOutputCreate(fund.versionId, data))}}/>));
+                onSubmitForm={(data) => {
+                    return this.dispatch(fundOutputCreate(fund.versionId, data))
+                        .then((output) => {
+                            return output
+                        })}}
+                onSubmitSuccess={(data) => {
+                    this.handleAddNodes(data);
+                }}
+            />));
     }
 
     handleBulkActions() {
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
 
-        this.dispatch(fundActionFormChange(fund.versionId, {nodes: fundOutputDetail.outputDefinition.nodes}));
+        this.dispatch(fundActionFormChange(fund.versionId, {nodes: fundOutputDetail.nodes}));
         this.dispatch(fundActionFormShow(fund.versionId));
         this.dispatch(routerNavigate('/arr/actions'));
     }
@@ -283,7 +290,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                 )
                 if (isDetailIdNotNull && !closed) {
                     altActions.push(
-                        <Button key="generate-output" onClick={() => {this.handleGenerateOutput(outputDetail.id)}} disabled={!isDetailLoaded || !this.isOutputGeneratingAllowed(outputDetail.outputDefinition)}><Icon glyph="fa-youtube-play" />
+                        <Button key="generate-output" onClick={() => {this.handleGenerateOutput(outputDetail.id)}} disabled={!isDetailLoaded || !this.isOutputGeneratingAllowed(outputDetail)}><Icon glyph="fa-youtube-play" />
                             <div><span className="btnText">{i18n('ribbon.action.arr.output.generate')}</span></div>
                         </Button>
                     )
@@ -292,7 +299,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
 
             if (isDetailIdNotNull && isDetailLoaded && !readMode) {
-                const runnable = !closed && outputDetail.outputDefinition.state !== OutputState.FINISHED && outputDetail.outputDefinition.state !== OutputState.OUTDATED;
+                const runnable = !closed && outputDetail.state !== OutputState.FINISHED && outputDetail.state !== OutputState.OUTDATED;
                 if (hasPersmission) {
                     if (runnable) {
                         itemActions.push(
@@ -316,7 +323,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                         </Button>
                     );
 
-                    if (outputDetail.outputDefinition.generatedDate && (outputDetail.outputDefinition.state === OutputState.FINISHED || outputDetail.outputDefinition.state === OutputState.OUTDATED)) {
+                    if (outputDetail.generatedDate && (outputDetail.state === OutputState.FINISHED || outputDetail.state === OutputState.OUTDATED)) {
                         itemActions.push(
                             <Button key="fund-output-revert" onClick={this.handleRevertToOpen} disabled={!isDetailLoaded}><Icon glyph="fa-undo"/>
                                 <div><span className="btnText">{i18n('ribbon.action.arr.output.revert')}</span></div>
@@ -330,7 +337,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                     )
                 }
 
-                if (runnable && outputDetail.outputDefinition.nodes.length > 0) {
+                if (runnable && outputDetail.nodes.length > 0) {
                     if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: fund.id})) { // právo na hromadné akce
                         itemActions.push(
                             <Button key="fund-output-other-action" onClick={this.handleOtherActionDialog}><Icon
@@ -366,12 +373,12 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         )
     }
 
-    isOutputGeneratingAllowed(outputDefinition) {
-        return outputDefinition &&
-            outputDefinition.outputResultId == null &&
-            outputDefinition.state === OutputState.OPEN &&
-            outputDefinition.templateId != null &&
-            outputDefinition.nodes.length > 0
+    isOutputGeneratingAllowed(output) {
+        return output &&
+            output.outputResultId == null &&
+            output.state === OutputState.OPEN &&
+            output.templateId != null &&
+            output.nodes.length > 0
     }
 
     handleUsageEnd() {
@@ -391,30 +398,19 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     }
 
     renderListItem(props) {
-        const {item, isActive, index} = props;
+        const {item} = props;
         const {outputTypes} = this.props;
-        const fund = this.getActiveFund(this.props);
-        const fundOutput = fund.fundOutput
 
-        var temporaryChanged = false
-
-        const currTemporary = item.outputDefinition.temporary
-        var prevTemporary = index - 1 >= 0 ? fundOutput.outputs[index - 1].outputDefinition.temporary : false
-
-        var cls = {
-            item: true,
-            'temporary-splitter': currTemporary !== prevTemporary
-        }
-        const typeIndex = indexById(outputTypes, item.outputDefinition.outputTypeId);
+        const typeIndex = indexById(outputTypes, item.outputTypeId);
 
         return (
-            <div className={classNames(cls)}>
-                <div className='name'>{item.outputDefinition.name}</div>
+            <div className={classNames("item")}>
+                <div className='name'>{item.name}</div>
                 <div className='type'>{i18n('arr.output.list.type', typeIndex !== null ? outputTypes[typeIndex].name : "")}</div>
-                <div className='state'>{i18n('arr.output.list.state.label')} {i18n('arr.output.list.state.' + item.outputDefinition.state.toLowerCase())} {
-                    item.outputDefinition.generatedDate && <span>({Utils.dateToString(new Date(item.outputDefinition.generatedDate))})</span>
+                <div className='state'>{i18n('arr.output.list.state.label')} {i18n('arr.output.list.state.' + item.state.toLowerCase())} {
+                    item.generatedDate && <span>({Utils.dateToString(new Date(item.generatedDate))})</span>
                 }</div>
-                {item.lockDate ? <div>{Utils.dateTimeToString(new Date(item.lockDate))}</div> : <div>&nbsp;</div>}
+                {item.deleteDate ? <div>{Utils.dateTimeToString(new Date(item.deleteDate))}</div> : <div>&nbsp;</div>}
             </div>
         )
     }
@@ -446,8 +442,8 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         if (_selectedTab === tabIndex) tabContent = this.renderTemplatesPanel(readMode);
         tabIndex++;
 
-        items.push({id: tabIndex, title: i18n('arr.output.panel.title.output')});
-        if (_selectedTab === tabIndex) tabContent = this.renderOutputPanel();
+        // items.push({id: tabIndex, title: i18n('arr.output.panel.title.output')});
+        // if (_selectedTab === tabIndex) tabContent = this.renderOutputPanel();
         tabIndex++;
 
         return (
@@ -467,7 +463,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     }
 
     isEditable(item) {
-        return !item.lockDate && item.outputDefinition && item.outputDefinition.state === OutputState.OPEN
+        return !item.lockDate && item.state === OutputState.OPEN
     }
 
     renderLeftPanel(readMode, closed) {
@@ -476,7 +472,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
         let activeIndex = null;
         if (fundOutput.fundOutputDetail.id !== null) {
-            activeIndex = indexById(fundOutput.outputs, fundOutput.fundOutputDetail.id)
+            activeIndex = indexById(fundOutput.outputs, fundOutput.id)
         }
 
         const filterStates = [];
@@ -549,42 +545,28 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             readMode={readMode}
             versionId={activeFund.versionId}
             outputId={fundOutput.fundOutputDetail.id}
-            outputState={fundOutput.fundOutputDetail.outputDefinition.state}
+            outputState={fundOutput.fundOutputDetail.state}
             fundOutputFunctions={fundOutput.fundOutputFunctions}
         />
     }
 
     renderTemplatesPanel(readMode) {
-        const {arrRegion, arrRegion:{activeIndex}, templates} = this.props;
-        const templateId = arrRegion.funds[activeIndex].fundOutput.fundOutputDetail.outputDefinition.templateId;
-        const outputId = arrRegion.funds[activeIndex].fundOutput.fundOutputDetail.outputDefinition.id;
-        const outputSettings = JSON.parse(arrRegion.funds[activeIndex].fundOutput.fundOutputDetail.outputDefinition.outputSettings);
+        const {arrRegion, arrRegion: {activeIndex}, templates} = this.props;
+        const templateId = arrRegion.funds[activeIndex].fundOutput.fundOutputDetail.templateId;
+        const outputId = arrRegion.funds[activeIndex].fundOutput.fundOutputDetail.id;
+        const outputSettings = JSON.parse(arrRegion.funds[activeIndex].fundOutput.fundOutputDetail.outputSettings);
 
         const template = templates.items.null.items.find((templateItem) => {
             return templateItem.id === templateId;
         });
 
-        return outputId && <TemplateSettingsForm
+        return template && outputId && <TemplateSettingsForm
             readMode={readMode}
             outputId={outputId}
             engine={template.engine}
             outputSettings={outputSettings}
         />
     }
-    renderOutputPanel() {
-        const activeFund = this.getActiveFund(this.props);
-        const {fundOutput : {fundOutputDetail, fundOutputFiles}} = activeFund;
-        if (fundOutputDetail.outputDefinition.outputResultId === null) {
-            return <div>{i18n('arr.output.panel.files.notGenerated')}</div>
-        }
-        return <FundOutputFiles
-            ref="fundOutputFiles"
-            versionId={activeFund.versionId}
-            outputResultId={fundOutputDetail.outputDefinition.outputResultId}
-            fundOutputFiles={fundOutputFiles}
-        />
-    }
-
 
     handleTabSelect(item) {
         _selectedTab = item.id;

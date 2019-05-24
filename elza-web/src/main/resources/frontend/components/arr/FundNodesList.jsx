@@ -30,7 +30,7 @@ class FuncNodesList extends AbstractReactComponent {
     };
 
     render() {
-        const {nodes, onAddNode, readOnly} = this.props;
+        const {nodes, onAddNode, readOnly, ...other} = this.props;
 
         return (
             <AddRemoveList
@@ -42,6 +42,7 @@ class FuncNodesList extends AbstractReactComponent {
                 addTitle="arr.fund.nodes.title.select"
                 removeTitle="arr.fund.nodes.title.remove"
                 renderItem={this.handleRenderItem}
+                {...other}
             />
         )
     }

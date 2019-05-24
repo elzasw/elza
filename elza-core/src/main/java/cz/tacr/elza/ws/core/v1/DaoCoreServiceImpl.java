@@ -7,7 +7,9 @@
 package cz.tacr.elza.ws.core.v1;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -118,7 +120,7 @@ public class DaoCoreServiceImpl implements DaoService {
      */
     @Override
 	@Transactional
-    public void _import(final DaoImport daoImport) throws CoreServiceException   {
+    public void _import(final DaoImport daoImport) throws CoreServiceException {
         try {
             logger.info("Executing operation _import");
             Assert.notNull(daoImport, "DAO import musí být vyplněn");
@@ -132,13 +134,18 @@ public class DaoCoreServiceImpl implements DaoService {
                 }
             }
 
+            Set<Integer> nodeIds = new HashSet<>();
+
             // založí se DaoLink bez notifikace, pokud již link existuje, tak se zruší a založí se nový (arr_change).
             final List<DaoLink> daoLinkList = daoImport.getDaoLinks().getDaoLink();
             if (CollectionUtils.isNotEmpty(daoLinkList)) {
                 for (DaoLink daoLink : daoLinkList) {
                     final ArrDaoLink arrDaoLink = createArrDaoLink(daoLink);
+                    nodeIds.add(arrDaoLink.getNodeId());
                 }
             }
+
+            daoService.updateNodeCacheDaoLinks(nodeIds);
 
             logger.info("Finished operation _import");
         } catch (Exception e) {
@@ -174,9 +181,18 @@ public class DaoCoreServiceImpl implements DaoService {
             throw new BusinessException("DAO a Node okazují na různý package", DigitizationCode.DAO_AND_NODE_HAS_DIFFERENT_PACKAGE);
         }
 
+        deleteArrDaoLink(arrDao, arrNode);
+
+        return createArrDaoLink(arrDao, arrNode);
+    }
+
+    private void deleteArrDaoLink(ArrDao arrDao, ArrNode arrNode) {
+
         // kontrola existence linku, zrušení
         final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoAndNodeAndDeleteChangeIsNull(arrDao, arrNode);
+
         for (ArrDaoLink arrDaoLink : daoLinkList) {
+
             // vytvořit změnu
             final ArrChange deleteChange = arrangementService.createChange(ArrChange.Type.DELETE_DAO_LINK, arrNode);
 
@@ -185,6 +201,9 @@ public class DaoCoreServiceImpl implements DaoService {
             logger.debug("Propojení arrDaoLink(ID=" + arrDaoLink.getDaoLinkId() + ") bylo automaticky zneplatněno novou změnou.");
             final ArrDaoLink resultDaoLink = daoLinkRepository.save(arrDaoLink);
         }
+    }
+
+    private ArrDaoLink createArrDaoLink(ArrDao arrDao, ArrNode arrNode) {
 
         // vytvořit změnu
         final ArrChange createChange = arrangementService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
@@ -194,6 +213,7 @@ public class DaoCoreServiceImpl implements DaoService {
         arrDaoLink.setCreateChange(createChange);
         arrDaoLink.setDao(arrDao);
         arrDaoLink.setNode(arrNode);
+
         logger.debug("Automaticky založeno nové propojení mezi DAO(ID=" + arrDao.getDaoId() + ") a node(ID=" + arrNode.getNodeId() + ").");
         return daoLinkRepository.save(arrDaoLink);
     }
@@ -386,6 +406,8 @@ public class DaoCoreServiceImpl implements DaoService {
             logger.info("Executing operation link");
 
             final ArrDaoLink arrDaoLink = createArrDaoLink(daoLink);
+
+            daoService.updateNodeCacheDaoLinks(Collections.singletonList(arrDaoLink.getNodeId()));
 
             logger.info("Ending operation link");
         } catch (Exception e) {

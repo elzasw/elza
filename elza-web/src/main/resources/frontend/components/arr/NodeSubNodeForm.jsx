@@ -36,6 +36,8 @@ import {CLS, CLS_ITEM_ENUM} from "../../shared/factory/factoryConsts";
 import storeFromArea from "../../shared/utils/storeFromArea";
 import * as issuesActions from "../../actions/arr/issues";
 import IssueForm from "../form/IssueForm";
+import {objectEqualsDiff} from 'components/Utils'
+import {NODE_SUB_NODE_FORM_CMP} from "../../stores/app/arr/subNodeForm";
 
 require('./NodeSubNodeForm.less');
 
@@ -53,6 +55,17 @@ class NodeSubNodeForm extends AbstractReactComponent {
             "getNodeSetting",
             "initFocus",
         );
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        if (this.state !== nextState) {
+            return true;
+        } else {
+            return !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, NODE_SUB_NODE_FORM_CMP)
+                || !objectEqualsDiff(this.props.descItemCopyFromPrevEnabled, nextProps.descItemCopyFromPrevEnabled)
+                || !objectEqualsDiff(this.props.focus, nextProps.focus)
+                || !objectEqualsDiff(this.props.nodeSettings, nextProps.nodeSettings);
+        }
     }
 
     getNodeSetting() {
@@ -557,11 +570,13 @@ class NodeSubNodeForm extends AbstractReactComponent {
     render() {
         const {singleDescItemTypeEdit, userDetail} = this.props;
         const {versionId, focus, closed, fundId, routingKey, rulDataTypes, calendarTypes, descItemTypes, structureTypes,
-            subNodeForm, conformityInfo, descItemCopyFromPrevEnabled, singleDescItemTypeId, readMode} = this.props;
+            subNodeForm, conformityInfo, descItemCopyFromPrevEnabled, singleDescItemTypeId, readMode, arrPerm} = this.props;
 
-        let formActions
-        if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
-            if (!readMode && !singleDescItemTypeEdit) {
+        console.info("{NodeSubNodeForm}");
+
+        let formActions;
+        if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) || arrPerm) {
+            if (!readMode && !singleDescItemTypeEdit && arrPerm) {
                 formActions = this.renderFormActions();
             }
         }
@@ -594,6 +609,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                     readMode={readMode}
                     showNodeAddons={true}
                     descItemFactory={DescItemFactory}
+                    arrPerm={arrPerm}
                     />
             </div>
         )
@@ -645,6 +661,7 @@ NodeSubNodeForm.propTypes = {
     singleDescItemTypeId: React.PropTypes.number,
     singleDescItemTypeEdit: React.PropTypes.bool,
     readMode: React.PropTypes.bool,
+    arrPerm: React.PropTypes.bool,
 }
 
 export default connect(mapStateToProps, null, null, { withRef: true })(NodeSubNodeForm);

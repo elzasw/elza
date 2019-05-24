@@ -21,6 +21,8 @@ import {WebApi} from 'actions/index.jsx';
 import './SubNodeForm.less'
 import {downloadFile} from "../../actions/global/download";
 import {FOCUS_KEYS} from "../../constants.tsx";
+import {objectEqualsDiff} from "../Utils";
+import {SUB_NODE_FORM_CMP} from "../../stores/app/arr/subNodeForm";
 
 const classNames = require('classnames');
 
@@ -78,7 +80,18 @@ class SubNodeForm extends AbstractReactComponent {
         focus: React.PropTypes.object,
         formActions: React.PropTypes.object.isRequired,
         showNodeAddons: React.PropTypes.bool.isRequired,
+        arrPerm: React.PropTypes.bool.isRequired,
     };
+
+    shouldComponentUpdate(nextProps, nextState) {
+        if (this.state !== nextState) {
+            return true;
+        } else {
+            return !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, SUB_NODE_FORM_CMP)
+                || !objectEqualsDiff(this.props.descItemCopyFromPrevEnabled, nextProps.descItemCopyFromPrevEnabled)
+                || !objectEqualsDiff(this.props.nodeSetting, nextProps.nodeSetting);
+        }
+    }
 
     componentDidMount() {
         this.trySetFocus(this.props);
@@ -694,7 +707,7 @@ class SubNodeForm extends AbstractReactComponent {
      */
     renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting) {
         const {fundId, subNodeForm, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, rulDataTypes, structureTypes, calendarTypes, closed,
-            showNodeAddons, conformityInfo, versionId, readMode, userDetail, arrRegion, typePrefix} = this.props;
+            showNodeAddons, conformityInfo, versionId, readMode, userDetail, arrRegion, typePrefix, arrPerm} = this.props;
 
         const refType = subNodeForm.refTypesMap[descItemType.id];
         const infoType = subNodeForm.infoTypesMap[descItemType.id];
@@ -780,6 +793,7 @@ class SubNodeForm extends AbstractReactComponent {
             versionId={versionId}
             fundId={fundId}
             readMode={readMode}
+            arrPerm={arrPerm}
             strictMode={strictMode}
             notIdentified={notIdentified}
             onDescItemNotIdentified={(descItemIndex, descItem) => this.handleDescItemNotIdentified(descItemGroupIndex, descItemTypeIndex, descItemIndex, descItem)}
@@ -815,6 +829,8 @@ class SubNodeForm extends AbstractReactComponent {
         const {nodeSetting, subNodeForm, closed, readMode} = this.props;
         const {unusedItemTypeIds} = this.state;
         const formData = subNodeForm.formData;
+
+        console.info("{SubNodeForm}");
 
         let unusedGeneratedItems;    // nepoužité vygenerované PP
         if (unusedItemTypeIds && unusedItemTypeIds.length > 0) {

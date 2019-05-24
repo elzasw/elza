@@ -1,5 +1,6 @@
 package cz.tacr.elza.security;
 
+import cz.tacr.elza.service.LevelTreeCacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,9 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
     @Autowired
     private ApiLogoutSuccessHandler apiLogoutSuccessHandler;
 
+    @Autowired
+    private LevelTreeCacheService levelTreeCacheService;
+
     @Value("${elza.security.defaultUsername:admin}")
     private String defaultUsername;
 
@@ -97,9 +101,9 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
                         throw new LockedException("User is not active");
                     }
 
-                    auth.setDetails(new UserDetail(user, userService.calcUserPermission(user)));
+                    auth.setDetails(new UserDetail(user, userService.calcUserPermission(user), levelTreeCacheService));
                 } else if (allowDefaultUser && username.equals(defaultUsername) && encodePassword.equalsIgnoreCase(defaultPassword)) {
-                    auth.setDetails(new UserDetail(defaultUsername));
+                    auth.setDetails(new UserDetail(defaultUsername, levelTreeCacheService));
                 } else {
                     // TODO: smazat po vytvoření správy uživatelů
                     logger.warn(username + ":" + encodePassword);

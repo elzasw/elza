@@ -22,6 +22,9 @@ public class ArrDigitalRepository extends SysExternalSystem {
     @Column(length = StringLength.LENGTH_1000)
     private String viewFileUrl;
 
+    @Column(length = StringLength.LENGTH_1000)
+    private String viewThumbnailUrl;
+
     @Column(nullable = false)
     private Boolean sendNotification;
 
@@ -51,6 +54,20 @@ public class ArrDigitalRepository extends SysExternalSystem {
      */
     public void setViewFileUrl(final String viewFileUrl) {
         this.viewFileUrl = viewFileUrl;
+    }
+
+    /**
+     * @return url k náhledu
+     */
+    public String getViewThumbnailUrl() {
+        return viewThumbnailUrl;
+    }
+
+    /**
+     * @param viewThumbnailUrl k náhledu
+     */
+    public void setViewThumbnailUrl(String viewThumbnailUrl) {
+        this.viewThumbnailUrl = viewThumbnailUrl;
     }
 
     /**

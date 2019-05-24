@@ -49,7 +49,7 @@ const AddNodeCross = class AddNodeCross extends AbstractReactComponent {
     }
 
     render() {
-        const { userDetail, fundId, closed} = this.props;
+        const { userDetail, fundId, closed, arrPerm} = this.props;
         let formActions
 
         var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
@@ -57,8 +57,8 @@ const AddNodeCross = class AddNodeCross extends AbstractReactComponent {
         const readMode = closed || settingsValues;
         var active = false;
 
-        if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
-            if (!readMode) {
+        if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) || arrPerm) {
+            if (!readMode && arrPerm) {
                 active = true;
                 formActions = this.renderCross();
             }

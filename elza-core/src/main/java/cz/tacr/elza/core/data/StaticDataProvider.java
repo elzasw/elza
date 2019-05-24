@@ -356,10 +356,25 @@ public class StaticDataProvider {
         // prepare real object
         is = HibernateUtils.unproxy(is);
 
-        rsit.addItemSpec(is);
-        // add to the lookups
-        this.itemSpecs.add(is);
-        itemSpecIdMap.put(is.getItemSpecId(), is);        
+    private void initItemSpecs(ItemType rsit, ItemSpecRepository itemSpecRepository) {
+        if (!rsit.hasSpecifications()) {
+            return;
+        }
+
+        RulItemType itemType = rsit.getEntity();
+        List<RulItemSpec> itemSpecs = itemSpecRepository.findByItemType(itemType);
+        for (RulItemSpec is : itemSpecs) {
+            // check if initialized in same transaction
+            RulItemType itemTypeFromSpec = HibernateUtils.unproxy(is.getItemType());
+            if (itemType != itemTypeFromSpec) {
+                Validate.isTrue(false, "Inconsistency between itemType ({}) and itemType from specification ({})",
+                                itemType, itemTypeFromSpec);
+            }
+
+            rsit.addItemSpec(is);
+            this.itemSpecs.add(is);
+            itemSpecIdMap.put(is.getItemSpecId(), is);
+        }
     }
 
     private void initStructuredTypes(StructuredTypeRepository structuredTypeRepository,

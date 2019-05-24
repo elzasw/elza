@@ -52,7 +52,7 @@ import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrNodeExtension;
-import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulComponent;
@@ -576,12 +576,12 @@ public class RuleService {
     /**
      * Vrací typy atributu.
      *
-     * @param outputDefinition výstup
+     * @param output výstup
      * @return seznam typů
      */
-    public List<RulItemTypeExt> getOutputItemTypes(final ArrOutputDefinition outputDefinition) {
-        RulOutputType outputType = outputDefinition.getOutputType();
-		List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
+    public List<RulItemTypeExt> getOutputItemTypes(final ArrOutput output) {
+        RulOutputType outputType = output.getOutputType();
+        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
 
         List<RulItemTypeAction> itemTypeActions = itemTypeActionRepository.findAll();
         Map<Integer, RulItemType> itemTypeMap = new HashMap<>();
@@ -590,7 +590,7 @@ public class RuleService {
             itemTypeMap.put(itemTypeAction.getItemType().getItemTypeId(), itemTypeAction.getItemType());
         }
 
-        List<ArrItemSettings> settings = itemSettingsRepository.findByOutputDefinition(outputDefinition);
+        List<ArrItemSettings> settings = itemSettingsRepository.findByOutput(output);
         Map<Integer, Boolean> settingsMap = new HashMap<>();
 
         for (ArrItemSettings setting : settings) {
@@ -609,7 +609,7 @@ public class RuleService {
         // check if rule exists
         RulComponent component = outputType.getComponent();
         if (component != null) {
-            return rulesExecutor.executeOutputItemTypesRules(outputDefinition, rulDescItemTypeExtList);
+            return rulesExecutor.executeOutputItemTypesRules(output, rulDescItemTypeExtList);
         } else {
             // return item types without change if rules do not exists
             return rulDescItemTypeExtList;

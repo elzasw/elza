@@ -12,10 +12,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.core.data.ItemType;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.castor.core.util.Assert;
@@ -29,9 +25,29 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Lists;
 
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundStructureExtension;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ArrStructuredObject.State;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.domain.RulStructuredTypeExtension;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -612,6 +628,7 @@ public class StructObjService {
 
         for (ArrStructuredObject structureData : structureDataList) {
             structureData.setValue(null);
+            structureData.setComplement(null);
             structureData.setErrorDescription(null);
         }
         structObjRepository.save(structureDataList);
@@ -761,6 +778,7 @@ public class StructObjService {
         }
         // reset temporary value -> final have to be calculated
         structureData.setValue(null);
+        structureData.setComplement(null);
         structureData.setState(ArrStructuredObject.State.OK);
         ArrStructuredObject savedStructObj = structObjRepository.save(structureData);
         structObjService.addToValidate(savedStructObj);

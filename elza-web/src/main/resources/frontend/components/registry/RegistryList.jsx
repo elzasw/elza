@@ -224,7 +224,7 @@ class RegistryList extends AbstractReactComponent {
                 <Autocomplete
                         inputProps={ {placeholder: !filter.registryTypeId ? this.registryTypeDefaultValue : ""} }
                         items={apTypesWithAll}
-                        disabled={!registryTypes || registryList.filter.parents.length || registryList.filter.itemSpecId ? true : false}
+                        disabled={!registryTypes || registryList.filter.parents.length || registryList.filter.itemSpecId || registryList.filter.itemTypeId ? true : false}
                         tree
                         alwaysExpanded
                         allowSelectItem={(item) => true}
@@ -251,7 +251,8 @@ class RegistryList extends AbstractReactComponent {
                 prev={this.handleFilterPrev}
                 next={this.handleFilterNext}
                 from={this.props.registryList.filter.from}
-                maxSize={this.props.registryList.count}
+                maxSize={maxSize}
+                totalCount={this.props.registryList.count}
             />}
         </div>
     }

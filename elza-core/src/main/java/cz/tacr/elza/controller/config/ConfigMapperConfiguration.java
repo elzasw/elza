@@ -37,7 +37,6 @@ import cz.tacr.elza.controller.vo.ArrFundBaseVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
@@ -147,7 +146,6 @@ import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParCreator;
@@ -764,39 +762,40 @@ public class ConfigMapperConfiguration {
                     }
                 })
                 .register();
-        mapperFactory.classMap(ArrOutputDefinition.class, ArrOutputDefinitionVO.class)
-//                .exclude("outputs")
+        mapperFactory.classMap(ArrOutput.class, ArrOutputVO.class)
                 .exclude("nodes")
                 .byDefault()
-                .field("outputDefinitionId", "id")
-                .customize(new CustomMapper<ArrOutputDefinition, ArrOutputDefinitionVO>() {
+                .field("outputId", "id")
+                .customize(new CustomMapper<ArrOutput, ArrOutputVO>() {
                     @Override
-                    public void mapAtoB(final ArrOutputDefinition outputDefinition,
-                                        final ArrOutputDefinitionVO outputDefinitionVO,
+                    public void mapAtoB(final ArrOutput output,
+                                        final ArrOutputVO outputVO,
                                         final MappingContext context) {
-                        outputDefinitionVO.setOutputTypeId(outputDefinition.getOutputType().getOutputTypeId());
-                        outputDefinitionVO.setTemplateId(outputDefinition.getTemplate() != null ? outputDefinition.getTemplate().getTemplateId() : null);
-                        if (outputDefinition.getOutputResult() != null) {
-                            outputDefinitionVO.setOutputResultId(outputDefinition.getOutputResult().getOutputResultId());
+                        outputVO.setOutputTypeId(output.getOutputType().getOutputTypeId());
+                        outputVO.setTemplateId(output.getTemplate() != null ? output.getTemplate().getTemplateId() : null);
+                        if (output.getOutputResult() != null) {
+                            outputVO.setOutputResultId(output.getOutputResult().getOutputResultId());
                         }
+                        outputVO.setCreateDate(Date.from(output.getCreateChange().getChangeDate().toInstant()));
+                        outputVO.setDeleteDate(output.getDeleteChange() != null ? Date.from(output.getDeleteChange().getChangeDate().toInstant()) : null);
+                        outputVO.setGeneratedDate(output.getOutputResult() != null ? Date.from(output.getOutputResult().getChange().getChangeDate().toInstant()) : null);
                     }
 
                     @Override
-                    public void mapBtoA(final ArrOutputDefinitionVO outputDefinitionVO,
-                                        final ArrOutputDefinition outputDefinition,
+                    public void mapBtoA(final ArrOutputVO outputVO,
+                                        final ArrOutput output,
                                         final MappingContext context) {
                         RulOutputType rulOutputType = new RulOutputType();
-                        rulOutputType.setOutputTypeId(outputDefinitionVO.getOutputTypeId());
-                        outputDefinition.setOutputType(rulOutputType);
+                        rulOutputType.setOutputTypeId(outputVO.getOutputTypeId());
+                        output.setOutputType(rulOutputType);
 
-                        if (outputDefinitionVO.getOutputResultId() != null) {
+                        if (outputVO.getOutputResultId() != null) {
                             ArrOutputResult outputResult = new ArrOutputResult();
-                            outputResult.setOutputResultId(outputDefinitionVO.getOutputResultId());
-                            outputDefinition.setOutputResult(outputResult);
+                            outputResult.setOutputResultId(outputVO.getOutputResultId());
+                            output.setOutputResult(outputResult);
                         }
                     }
                 }).register();
-        mapperFactory.classMap(ArrOutput.class, ArrOutputVO.class).byDefault().field("outputId", "id").register();
         mapperFactory.getConverterFactory().registerConverter(new PassThroughConverter(LocalDateTime.class));
 
         mapperFactory.classMap(UsrUser.class, UsrUserVO.class)

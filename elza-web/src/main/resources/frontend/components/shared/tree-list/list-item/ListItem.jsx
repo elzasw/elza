@@ -30,7 +30,8 @@ class ListItem extends React.PureComponent {
         expanded: PropTypes.bool,
         className: PropTypes.string,
         ignoreDepth: PropTypes.bool,
-        onExpandCollapse: PropTypes.func
+        onExpandCollapse: PropTypes.func,
+        renderName: PropTypes.func
     }
 
     constructor(props){
@@ -69,6 +70,7 @@ class ListItem extends React.PureComponent {
             ignoreDepth,
             hasChildren,
             indent,
+            renderName,
             ...otherProps
         } = this.props;
 
@@ -88,7 +90,7 @@ class ListItem extends React.PureComponent {
             >
                 {!ignoreDepth && depth >= 0 && <DepthIndent depth={depth} indentSize={indent}/>}
                 {!ignoreDepth && <TreeNodeToggle expanded={expanded} hidden={!hasChildren} onClick={onExpandCollapse}/>}
-                <div className="item-text">{name}</div>
+                <div className="item-text">{renderName ? renderName(item) : name}</div>
             </div>
         )
     }

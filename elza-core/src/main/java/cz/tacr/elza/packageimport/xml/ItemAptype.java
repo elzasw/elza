@@ -5,19 +5,23 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
-import cz.tacr.elza.domain.RulItemSpecRegister;
+import cz.tacr.elza.domain.RulItemAptype;
 
 /**
- * VO ItemSpecRegister.
+ * VO ItemAptype.
  *
  * @since 14.12.2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "item-spec-register")
-public class ItemSpecRegister {
+@XmlType(name = "item-aptype")
+public class ItemAptype {
+
+    // --- fields ---
 
     @XmlAttribute(name = "register-type", required = true)
     private String registerType;
+
+    // --- getters/setters ---
 
     public String getRegisterType() {
         return registerType;
@@ -27,9 +31,11 @@ public class ItemSpecRegister {
         this.registerType = registerType;
     }
 
-    public static ItemSpecRegister fromEntity(RulItemSpecRegister rulItemSpecRegister) {
-        ItemSpecRegister result = new ItemSpecRegister();
-        result.setRegisterType(rulItemSpecRegister.getApType().getCode());
+    // --- methods ---
+
+    public static ItemAptype fromEntity(RulItemAptype rulItemAptype) {
+        ItemAptype result = new ItemAptype();
+        result.setRegisterType(rulItemAptype.getApType().getCode());
         return result;
     }
 }

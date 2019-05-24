@@ -20,6 +20,7 @@ class AddRemoveList extends AbstractReactComponent {
         onRemove: React.PropTypes.func.isRequired,
         renderItem: React.PropTypes.func.isRequired,
         addTitle: React.PropTypes.string,
+        addLabel: React.PropTypes.string,
         removeTitle: React.PropTypes.string,
         readOnly: React.PropTypes.bool.isRequired,
     };
@@ -37,7 +38,7 @@ class AddRemoveList extends AbstractReactComponent {
     };
 
     render() {
-        const {addInLabel, label, items, readOnly, className, onAdd, renderItem, addTitle, removeTitle} = this.props;
+        const {addInLabel, label, items, readOnly, className, onAdd, renderItem, addTitle, removeTitle, addLabel} = this.props;
 
         const groups = items == null ? [] : items.map((item, index) => {
             return (
@@ -56,7 +57,7 @@ class AddRemoveList extends AbstractReactComponent {
         if (!readOnly) {
             addAction = <div className="actions-container">
                 <NoFocusButton onClick={onAdd} title={i18n(addTitle)}>
-                    <Icon glyph="fa-plus"/>
+                    <Icon glyph="fa-plus"/> {addLabel && i18n(addLabel)}
                 </NoFocusButton>
             </div>
         }

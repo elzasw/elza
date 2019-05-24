@@ -38,7 +38,14 @@ class ArrFundPanel extends AbstractReactComponent {
         const settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
         let readMode = settings.value != 'false';
 
-        if (fund.lockDate || !userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
+        let arrPerm = false;
+        if (fund.nodes && fund.nodes.activeIndex !== null) {
+            const node = fund.nodes.nodes[fund.nodes.activeIndex];
+            const subNodeForm = node.subNodeForm;
+            arrPerm = subNodeForm.data && subNodeForm.data.arrPerm;
+        }
+
+        if (fund.lockDate || (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) && !arrPerm)) {
             readMode = true;
             action = <div className="action"><span>{i18n('arr.fund.panel.readOnly')}</span></div>
         } else {

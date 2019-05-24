@@ -77,7 +77,7 @@ export function fundOutputActionRun(versionId, code) {
         if (index !== null) {
             const {fundOutput : {fundOutputDetail}, versionId} = funds[index];
             if (fundOutputDetail) {
-                const nodeIds = fundOutputDetail.outputDefinition.nodes.map(node => node.id);
+                const nodeIds = fundOutputDetail.nodes.map(node => node.id);
                 return WebApi.queueBulkActionWithIds(versionId, code, nodeIds);
             }
         } else {

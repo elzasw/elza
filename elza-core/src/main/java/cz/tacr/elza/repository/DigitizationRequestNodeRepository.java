@@ -6,6 +6,7 @@ import java.util.List;
 import cz.tacr.elza.domain.ArrFund;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrDigitizationRequest;
@@ -26,6 +27,9 @@ public interface DigitizationRequestNodeRepository extends ElzaJpaRepository<Arr
 
     @Query("SELECT p FROM arr_digitization_request_node p WHERE p.digitizationRequest IN (?1)")
     List<ArrDigitizationRequestNode> findByDigitizationRequest(Collection<ArrDigitizationRequest> digitizationRequest);
+
+    @Query("SELECT p.node FROM arr_digitization_request_node p WHERE p.digitizationRequest = :digitizationRequest")
+    List<ArrNode> findNodesByDigitizationRequest(@Param("digitizationRequest") ArrDigitizationRequest digitizationRequest);
 
     @Query("SELECT p FROM arr_digitization_request_node p JOIN p.node n JOIN p.digitizationRequest dr WHERE n.nodeId IN (?1) AND dr.state = ?2")
     List<ArrDigitizationRequestNode> findByNodeIds(Collection<Integer> nodeIds, final ArrRequest.State state);

@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemType;
 
@@ -26,8 +26,8 @@ public interface DataRepository extends JpaRepository<ArrData, Integer>, DataRep
     @Query("DELETE FROM arr_data d WHERE d.dataId IN :ids")
     void deleteByIds(@Param("ids") Collection<Integer> ids);
 
-    @Query("SELECT d.dataId FROM arr_data d WHERE d IN (SELECT o.data FROM arr_output_item o WHERE o.outputDefinition = :outputDefinition)")
-    Collection<Integer> findByIdsOutputDefinition(@Param("outputDefinition") ArrOutputDefinition outputDefinition);
+    @Query("SELECT d.dataId FROM arr_data d WHERE d IN (SELECT o.data FROM arr_output_item o WHERE o.output = :output)")
+    Collection<Integer> findByIdsOutput(@Param("output") ArrOutput output);
 
     @Modifying
     @Query("DELETE FROM arr_data d WHERE d.dataId IN (SELECT i.dataId FROM arr_structured_item i WHERE i.structuredObject = :structuredObject)")

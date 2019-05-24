@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,6 +35,7 @@ public interface PermissionRepository extends JpaRepository<UsrPermission, Integ
             " FROM usr_permission p" +
             " LEFT JOIN FETCH p.scope s" +
             " LEFT JOIN FETCH p.fund f" +
+            " LEFT JOIN FETCH p.node n" +
             " LEFT JOIN FETCH p.issueList il" +
             " WHERE p.user = :user OR p.group.groupId IN (SELECT gu.group.groupId FROM usr_group_user gu WHERE gu.user = :user)")
     List<UsrPermission> getAllPermissions(@Param("user") UsrUser user);
@@ -49,6 +51,7 @@ public interface PermissionRepository extends JpaRepository<UsrPermission, Integ
             " LEFT JOIN FETCH p.group g" +
             " LEFT JOIN FETCH p.scope s" +
             " LEFT JOIN FETCH p.fund f" +
+            " LEFT JOIN FETCH p.node n" +
             " LEFT JOIN FETCH p.issueList il" +
             " WHERE p.user = :user OR g.groupId IN (SELECT gu.group.groupId FROM usr_group_user gu WHERE gu.user = :user)")
     List<UsrPermission> getAllPermissionsWithGroups(@Param("user") UsrUser user);
@@ -75,4 +78,9 @@ public interface PermissionRepository extends JpaRepository<UsrPermission, Integ
             " where p.issueList.issueListId = :issueListId" +
             " and p.permission = :permission")
     List<UsrPermission> findByIssueListAndPermission(@Param(value = "issueListId") Integer issueListId, @Param(value = "permission") Permission permission);
+
+    @Query("select p" +
+            " from usr_permission p" +
+            " where p.nodeId IN :nodeIds")
+    List<UsrPermission> findByNodeIds(@Param(value = "nodeIds") List<Integer> nodeIds);
 }

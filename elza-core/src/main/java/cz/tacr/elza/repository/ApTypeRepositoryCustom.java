@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.Set;
 
 
@@ -15,5 +16,5 @@ public interface ApTypeRepositoryCustom {
      * @param apTypeIds typ, pro který hledáme potomky
      * @return množina id potomků
      */
-    Set<Integer> findSubtreeIds(Set<Integer> apTypeIds);
+    Set<Integer> findSubtreeIds(Collection<Integer> apTypeIds);
 }

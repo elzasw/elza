@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
+import cz.tacr.elza.service.*;
 import org.apache.commons.lang3.Validate;
 import org.junit.After;
 import org.junit.Assert;
@@ -30,10 +31,6 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.AccessPointService;
-import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.DescriptionItemService;
-import cz.tacr.elza.service.StructObjService;
 
 public abstract class AbstractServiceTest extends AbstractTest {
     @Autowired
@@ -66,6 +63,9 @@ public abstract class AbstractServiceTest extends AbstractTest {
 
     @Autowired
     protected StaticDataService staticDataService;
+
+    @Autowired
+    protected LevelTreeCacheService levelTreeCacheService;
 
     public class FundInfo {
 
@@ -176,7 +176,7 @@ public abstract class AbstractServiceTest extends AbstractTest {
 
     protected void authorizeAsAdmin() {
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken("", "", null);
-        auth.setDetails(new UserDetail(""));
+        auth.setDetails(new UserDetail("", levelTreeCacheService));
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 

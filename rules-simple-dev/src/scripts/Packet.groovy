@@ -18,6 +18,7 @@ return;
 
 void generate() {
     StringBuilder valueBuilder = new StringBuilder();
+    StringBuilder complementBuilder = new StringBuilder();
     StringBuilder sortValueBuilder = new StringBuilder();
     
     // Fixed prefix
@@ -43,10 +44,16 @@ void generate() {
     // Postfix
     appendValue(valueBuilder, "SRD_PACKET_POSTFIX");
     appendValue(sortValueBuilder, "SRD_PACKET_POSTFIX");
+
+    // doplněk na zkoušku
+    appendValue(complementBuilder, "SRD_PACKET_DESCRIPTION");
     
     // store result
     result.setValue(valueBuilder.toString().trim());
     result.setSortValue(sortValueBuilder.toString().trim());
+
+    String complement = complementBuilder.toString().trim();
+    result.setComplement(StringUtils.isEmpty(complement) ? null : complement);
 }
 
 String toStringValue(String itemTypeCode) {

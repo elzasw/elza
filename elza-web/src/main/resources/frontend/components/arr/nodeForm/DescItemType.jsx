@@ -27,6 +27,7 @@ import {validate, convertValue} from "stores/app/arr/subNodeForm.jsx";
 import {valuesEquals} from 'components/Utils.jsx';
 import {WebApi} from 'actions/index.jsx';
 import objectById from "../../../shared/utils/objectById";
+import DescItemRecordRef from "./DescItemRecordRef";
 
 const placeholder = document.createElement("div");
 placeholder.className = "placeholder";
@@ -610,6 +611,7 @@ class DescItemType extends AbstractReactComponent {
                 itemName: refType.shortcut,
                 specName: specName,
                 singleDescItemTypeEdit: singleDescItemTypeEdit,
+                itemTypeId: refType.id,
                 onDetail: (value)=>{this.handleDetailRecord(descItemIndex, value);},
                 onCreateRecord: (value)=>{this.handleCreateRecord(descItemIndex);},
             },
@@ -738,10 +740,10 @@ class DescItemType extends AbstractReactComponent {
     }
 
     getShowDeleteDescItem(descItem) {
-        const {fundId, userDetail, refType, infoType, descItemType, closed, locked, readMode} = this.props;
+        const {fundId, userDetail, refType, infoType, descItemType, closed, locked, readMode, arrPerm} = this.props;
 
         // Pokud nemá právo na pořádání, nelze provádět akci
-        if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
+        if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) && !arrPerm) {
             return false
         }
 
@@ -791,11 +793,11 @@ class DescItemType extends AbstractReactComponent {
     }
 
     getShowDeleteDescItemType() {
-        const {fundId, userDetail, refType, infoType, closed, readMode, hideDelete} = this.props;
+        const {fundId, userDetail, refType, infoType, closed, readMode, hideDelete, arrPerm} = this.props;
         const {descItemType} = this.state;
 
         // Pokud nemá právo na pořádání, nelze provádět akci
-        if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
+        if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) && !arrPerm) {
             return false
         }
 
@@ -832,13 +834,13 @@ class DescItemType extends AbstractReactComponent {
         const {
             fundId, showNodeAddons, userDetail, descItemCopyFromPrevEnabled, singleDescItemTypeEdit,
             copy, locked, infoType, refType, conformityInfo, closed, readMode, notIdentified,
-            rulDataType, onDescItemNotIdentified, customActions
+            rulDataType, onDescItemNotIdentified, customActions, arrPerm
         } = this.props;
         const {descItemType} = this.state;
 
         const actions = [];
 
-        const hasPermission = userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId});
+        const hasPermission = userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) || arrPerm;
         // Sestavení akcí
         if (hasPermission) {
             if (showNodeAddons && !closed && !readMode && !singleDescItemTypeEdit) {
@@ -999,7 +1001,7 @@ class DescItemType extends AbstractReactComponent {
 
     render() {
         const {fundId, userDetail, onDescItemRemove, onDescItemAdd, rulDataType, infoType,
-            locked, conformityInfo, closed, readMode, onDescItemNotIdentified} = this.props;
+            locked, conformityInfo, closed, readMode, onDescItemNotIdentified, arrPerm} = this.props;
         const {descItemType} = this.state;
 
         const label = this.renderLabel();
@@ -1058,7 +1060,7 @@ class DescItemType extends AbstractReactComponent {
             let canModifyDescItem = !(locked || closed)
 
             // Pokud nemá právo na pořádání, nelze provádět akci
-            if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
+            if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) && !arrPerm) {
                 canModifyDescItem = false
             }
             return this.renderDescItem(descItemType, descItem, descItemIndex, actions, !canModifyDescItem)
@@ -1122,6 +1124,7 @@ DescItemType.propTypes = {
     locked: PropTypes.bool.isRequired,
     hideDelete: PropTypes.bool,
     readMode: PropTypes.bool.isRequired,
+    arrPerm: PropTypes.bool.isRequired,
     notIdentified: PropTypes.bool.isRequired,
     onDescItemNotIdentified: PropTypes.func.isRequired,
     closed: PropTypes.bool.isRequired,
@@ -1132,7 +1135,7 @@ DescItemType.propTypes = {
     userDetail: PropTypes.object.isRequired,
     showNodeAddons: PropTypes.bool.isRequired,
     strictMode: PropTypes.bool.isRequired,
-    descItemFactory: PropTypes.object.isRequired
+    descItemFactory: PropTypes.func.isRequired
 };
 
 export default connect(mapStateToProps, null, null, {withRef: true})(DescItemType);

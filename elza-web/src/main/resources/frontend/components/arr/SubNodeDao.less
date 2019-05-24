@@ -12,30 +12,45 @@
 
     .node-dao-title {
         padding-left: 5px;
-        padding-top: 5px;
-        display: inline-block;
-        vertical-align: middle;
+        display: inline;
     }
 
     .actions {
         display: inline-block;
+
+        button {
+            background: transparent;
+            border: none;
+            flex-shrink: 0;
+            height: 100%;
+            &:hover {
+                background: @button-bg-hover;
+            }
+        }
     }
 
     .dao-form {
 
+        margin: 5px;
         padding: 5px;
         display: table;
+        border: 1px solid black;
+        background-color: #ebebeb;
+        min-width: 440px;
+        align-items: center;
+        justify-content: center;
 
         .links {
-            display: table-row;
+            display: flex;
+            align-items: center;
+            justify-content: center;
 
             .link {
-                display: table-cell;
-                vertical-align: middle;
+                flex-grow: 1;
             }
 
             .actions {
-                display: table-cell;
+                flex-shrink: 1;
             }
 
         }

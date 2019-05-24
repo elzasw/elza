@@ -29,9 +29,9 @@ public enum OutputCode implements ErrorCode {
     CANNOT_CLONE_DELETED,
 
     /**
-     * Výstup je již uzamčen.
+     * Výstup je již smazaný.
      */
-    LOCKED,
+    DELETED,
 
     /**
      * Tento atribut je počítán automaticky a nemůže být ručně editován
