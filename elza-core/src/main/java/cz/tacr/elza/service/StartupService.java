@@ -1,9 +1,12 @@
 package cz.tacr.elza.service;
 
+import java.util.List;
+
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +24,12 @@ import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
+import cz.tacr.elza.search.DbQueueProcessor;
 import cz.tacr.elza.search.IndexWorkProcessor;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
@@ -39,6 +42,16 @@ public class StartupService implements SmartLifecycle {
     private static final Logger logger = LoggerFactory.getLogger(StartupService.class);
 
     private final ArrangementService arrangementService;
+
+    private final NodeRepository nodeRepository;
+
+    private final VisiblePolicyRepository visiblePolicyRepository;
+
+    private final NodeConformityErrorRepository nodeConformityErrorRepository;
+
+    private final NodeConformityMissingRepository nodeConformityMissingRepository;
+
+    private final NodeConformityRepository nodeConformityRepository;
 
     private final BulkActionRunRepository bulkActionRunRepository;
 
@@ -67,15 +80,16 @@ public class StartupService implements SmartLifecycle {
     private boolean running;
 
     @Autowired
-    public StartupService(ArrangementService arrangementService,
-                          BulkActionRunRepository bulkActionRunRepository,
-                          OutputServiceInternal outputServiceInternal,
-                          RequestQueueService requestQueueService,
-                          NodeCacheService nodeCacheService,
-                          StaticDataService staticDataService,
-                          BulkActionConfigManager bulkActionConfigManager,
-                          EntityManager em,
-                          ApNameRepository apNameRepository,
+    public StartupService(final NodeRepository nodeRepository,
+                          final ArrangementService arrangementService,
+                          final BulkActionRunRepository bulkActionRunRepository,
+                          final OutputServiceInternal outputServiceInternal,
+                          final RequestQueueService requestQueueService,
+                          final NodeCacheService nodeCacheService,
+                          final StaticDataService staticDataService,
+                          final BulkActionConfigManager bulkActionConfigManager,
+                          final EntityManager em,
+                          final ApNameRepository apNameRepository,
                           final AccessPointService accessPointService,
                           final AccessPointGeneratorService accessPointGeneratorService,
                           final NodeConformityErrorRepository nodeConformityErrorRepository,
@@ -84,6 +98,7 @@ public class StartupService implements SmartLifecycle {
                           final VisiblePolicyRepository visiblePolicyRepository,
                           IndexWorkProcessor indexWorkProcessor,
                           final ApplicationContext applicationContext) {
+        this.nodeRepository = nodeRepository;
         this.arrangementService = arrangementService;
         this.bulkActionRunRepository = bulkActionRunRepository;
         this.outputServiceInternal = outputServiceInternal;

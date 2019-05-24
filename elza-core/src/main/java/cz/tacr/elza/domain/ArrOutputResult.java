@@ -28,6 +28,8 @@ public class ArrOutputResult {
 
     public static final String TABLE_NAME = "arr_output_result";
 
+    public static final String FIELD_CHANGE_ID = "changeId";
+
     /**
      * Name of field with link to output definition
      */

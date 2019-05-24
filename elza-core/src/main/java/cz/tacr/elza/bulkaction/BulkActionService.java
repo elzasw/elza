@@ -650,9 +650,9 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
         UserDetail userDetail = null;
         if (bulkActionRun.getUserId() != null) {
             UsrUser user = userService.getUser(bulkActionRun.getUserId());
-            userDetail = new UserDetail(user, userService.calcUserPermission(user));
+            userDetail = new UserDetail(user, userService.calcUserPermission(user), levelTreeCacheService);
         } else {
-            userDetail = new UserDetail("admin");
+            userDetail = new UserDetail("admin", levelTreeCacheService);
         }
 
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, encodePassword,

@@ -55,7 +55,6 @@ import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
@@ -705,7 +704,7 @@ public class RevertingChangesService {
                 { ArrFundVersion.TABLE_NAME, ArrFundVersion.FIELD_LOCK_CHANGE_ID },
                 { ArrBulkActionRun.TABLE_NAME, ArrBulkActionRun.FIELD_CHANGE_ID },
                 { ArrOutput.TABLE_NAME, ArrOutput.FIELD_CREATE_CHANGE_ID },
-                { ArrOutput.TABLE_NAME, ArrOutput.FIELD_LOCK_CHANGE_ID },
+                { ArrOutput.TABLE_NAME, ArrOutput.FIELD_DELETE_CHANGE_ID },
                 { ArrNodeOutput.TABLE_NAME, ArrNodeOutput.FIELD_CREATE_CHANGE_ID },
                 { ArrNodeOutput.TABLE_NAME, ArrNodeOutput.FIELD_DELETE_CHANGE_ID },
                 { ArrOutputResult.TABLE_NAME, ArrOutputResult.FIELD_CHANGE_ID },
