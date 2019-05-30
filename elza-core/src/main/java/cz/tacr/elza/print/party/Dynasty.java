@@ -20,7 +20,7 @@ public class Dynasty extends Party {
     }
 
     @Override
-    protected PartyType getPartyType() {
+    public PartyType getPartyType() {
         return PartyType.DYNASTY;
     }
 }

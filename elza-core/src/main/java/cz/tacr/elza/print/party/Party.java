@@ -105,5 +105,5 @@ public abstract class Party {
         return relationsByType;
     }
 
-    protected abstract PartyType getPartyType();
+    public abstract PartyType getPartyType();
 }
