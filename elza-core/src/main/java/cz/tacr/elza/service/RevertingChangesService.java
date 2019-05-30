@@ -65,6 +65,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
@@ -148,6 +149,9 @@ public class RevertingChangesService {
 
     @Autowired
     private IssueService issueService;
+
+    @Autowired
+    private ChangeRepository changeRepository;
 
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
@@ -403,16 +407,27 @@ public class RevertingChangesService {
         Query deleteNotUseChangesQuery = createDeleteNotUseChangesQuery();
         deleteNotUseChangesQuery.executeUpdate();
 
+        entityManager.flush();
+
         // Drop unused node ids
         // Find nodes
         List<Integer> deleteNodeIds = nodeRepository.findUnusedNodeIdsByFund(fund);
-        nodeIdsChange.removeAll(deleteNodeIds);
-        // Drop from cache
-        issueService.resetIssueNode(deleteNodeIds);
 
-        nodeCacheService.deleteNodes(deleteNodeIds);
-        // Remove from DB
-        nodeRepository.deleteByNodeIdIn(deleteNodeIds);
+        if (CollectionUtils.isNotEmpty(deleteNodeIds)) {
+            nodeIdsChange.removeAll(deleteNodeIds);
+
+            issueService.resetIssueNode(deleteNodeIds);
+
+            // drop changes by deleted nodes
+            changeRepository.deleteByPrimaryNodeIds(deleteNodeIds);
+
+            // Drop from cache
+            nodeCacheService.deleteNodes(deleteNodeIds);
+            // Remove from DB
+            nodeRepository.deleteByNodeIdIn(deleteNodeIds);
+        }
+
+        entityManager.flush();
 
         nodeCacheService.syncNodes(nodeIdsChange);
 

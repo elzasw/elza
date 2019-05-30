@@ -57,7 +57,6 @@ import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -647,13 +646,8 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
 
         // read user from db
         String username = null, encodePassword = null;
-        UserDetail userDetail = null;
-        if (bulkActionRun.getUserId() != null) {
-            UsrUser user = userService.getUser(bulkActionRun.getUserId());
-            userDetail = new UserDetail(user, userService.calcUserPermission(user));
-        } else {
-            userDetail = new UserDetail("admin");
-        }
+
+        UserDetail userDetail = userService.createUserDetail(bulkActionRun.getUserId());
 
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, encodePassword,
                 null);
