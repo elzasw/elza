@@ -34,6 +34,7 @@ import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.StructObjService;
+import cz.tacr.elza.service.UserService;
 
 public abstract class AbstractServiceTest extends AbstractTest {
     @Autowired
@@ -66,6 +67,9 @@ public abstract class AbstractServiceTest extends AbstractTest {
 
     @Autowired
     protected StaticDataService staticDataService;
+
+    @Autowired
+    protected UserService userService;
 
     public class FundInfo {
 
@@ -175,8 +179,9 @@ public abstract class AbstractServiceTest extends AbstractTest {
     }
 
     protected void authorizeAsAdmin() {
+        UserDetail userDetail = userService.createUserDetail((Integer) null);
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken("", "", null);
-        auth.setDetails(new UserDetail(""));
+        auth.setDetails(userDetail);
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 

@@ -41,18 +41,6 @@ public class UserDetail {
         this.userPermission = new ArrayList<>(userPermission);
     }
 
-	/**
-	 * Constructor for ADMIN
-	 * 
-	 * @param systemUser
-	 */
-    public UserDetail(final String systemUser) {
-        this.username = systemUser;
-        this.active = true;
-        this.userPermission = new ArrayList<>();
-        this.userPermission.add(new UserPermission(UsrPermission.Permission.ADMIN));
-    }
-
     public String getUsername() {
         return username;
     }

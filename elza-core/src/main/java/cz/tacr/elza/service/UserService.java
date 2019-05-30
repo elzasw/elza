@@ -54,6 +54,7 @@ import cz.tacr.elza.domain.WfIssueList;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -115,6 +116,15 @@ public class UserService {
     private String SALT;
 
     private ShaPasswordEncoder encoder = new ShaPasswordEncoder(256);
+
+    @Value("${elza.security.defaultUsername:admin}")
+    private String defaultUsername;
+
+    @Value("${elza.security.defaultPassword:0bde6ccb27aaa200002df6017ee3ddee70dacf5e9a4f99627af3447b73fde09b}")
+    private String defaultPassword;
+
+    @Value("${elza.security.allowDefaultUser:true}")
+    private Boolean allowDefaultUser;
 
     /**
      * Cache pro nakešování oprávnění uživatele.
@@ -845,7 +855,22 @@ public class UserService {
      * @throws UsernameNotFoundException
      */
     public UsrUser findByUsername(final String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username);
+        UsrUser user = userRepository.findByUsername(username);
+        if (user == null) {
+            if (allowDefaultUser && username.equals(defaultUsername)) {
+                user = createDefaultUser();
+            }
+        }
+        return user;
+    }
+
+    private UsrUser createDefaultUser() {
+        // create default admin user
+        UsrUser user = new UsrUser();
+        user.setActive(true);
+        user.setUsername(defaultUsername);
+        user.setPassword(defaultPassword);
+        return user;
     }
 
     /**
@@ -916,6 +941,11 @@ public class UserService {
      */
     public Collection<UserPermission> calcUserPermission(final UsrUser user) {
         Map<UsrPermission.Permission, UserPermission> userPermissions = new HashMap<>();
+
+        // check default user
+        if (allowDefaultUser && user.getUsername().equals(defaultUsername)) {
+            return Collections.singletonList(new UserPermission(UsrPermission.Permission.ADMIN));
+        }
 
         List<UsrPermission> permissions = permissionRepository.getAllPermissions(user);
 
@@ -1565,6 +1595,33 @@ public class UserService {
         }
 
         return update;
+    }
+
+    /**
+     * Create user detail for security context
+     * 
+     * @param user
+     * @return
+     */
+    public UserDetail createUserDetail(UsrUser user) {
+        Collection<UserPermission> perms = calcUserPermission(user);
+
+        return new UserDetail(user, perms);
+    }
+
+    public UserDetail createUserDetail(Integer userId) {
+        UsrUser user;
+        if (userId == null && allowDefaultUser) {
+            // create for default user
+            user = createDefaultUser();
+        } else {
+            user = userRepository.getOneCheckExist(userId);
+        }
+        if (user == null) {
+            throw new ObjectNotFoundException("User not found", BaseCode.ID_NOT_EXIST);
+        }
+
+        return createUserDetail(user);
     }
 
 }
