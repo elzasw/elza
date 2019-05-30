@@ -275,10 +275,12 @@ public class DeleteFundAction {
         dropDescItems();
         dropStructObjs();
 
+        // Delete levels connected by nodes to the fund
+        levelRepository.deleteByNodeFund(fund);
+
         // TODO: delete all change ids
         changeRepository.deleteByPrimaryNodeFund(fund);
 
-        levelRepository.deleteByNodeFund(fund);
         // delete all versions
         fundVersionRepository.deleteByFund(fund);
         nodeRepository.deleteByFund(fund);
@@ -439,7 +441,7 @@ public class DeleteFundAction {
     }
 
     /**
-     * Smazání protokolù, pøipomínek, komentáøù a oprávìní uživatelù pro pøístup k protokolùm
+     * Smazï¿½nï¿½ protokolï¿½, pï¿½ipomï¿½nek, komentï¿½ï¿½ï¿½ a oprï¿½vï¿½nï¿½ uï¿½ivatelï¿½ pro pï¿½ï¿½stup k protokolï¿½m
      */
     private void dropIssues() {
 
