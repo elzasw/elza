@@ -17,7 +17,6 @@ import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.security.ApplicationSecurity;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.ProcessService;
 import cz.tacr.elza.utils.TempDirectory;
@@ -28,7 +27,7 @@ import cz.tacr.elza.utils.TempDirectory;
  */
 @Service
 public class AttachmentService {
-    private static final Logger logger = LoggerFactory.getLogger(ApplicationSecurity.class);
+    private static final Logger logger = LoggerFactory.getLogger(AttachmentService.class);
 
     private static final long MAX_PROCESS_TIMEOUT = 5L * 60 * 1000;
 

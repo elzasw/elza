@@ -4,7 +4,6 @@ import cz.tacr.elza.service.LevelTreeCacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -56,18 +55,6 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
     @Autowired
     private ApiLogoutSuccessHandler apiLogoutSuccessHandler;
 
-    @Autowired
-    private LevelTreeCacheService levelTreeCacheService;
-
-    @Value("${elza.security.defaultUsername:admin}")
-    private String defaultUsername;
-
-    @Value("${elza.security.defaultPassword:0bde6ccb27aaa200002df6017ee3ddee70dacf5e9a4f99627af3447b73fde09b}")
-    private String defaultPassword;
-
-    @Value("${elza.security.allowDefaultUser:true}")
-    private Boolean allowDefaultUser;
-
     private static final Logger logger = LoggerFactory.getLogger(ApplicationSecurity.class);
 
     private SessionRegistry sessionRegistry = null;
@@ -87,11 +74,11 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
             public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
                 String username = authentication.getName();
                 String password = authentication.getCredentials().toString();
+
                 String encodePassword = userService.encodePassword(username, password);
 
                 UsrUser user = userService.findByUsername(username);
 
-                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, encodePassword, null);
                 if (user != null) {
                     if (!user.getPassword().equals(encodePassword)) {
                         throw new UsernameNotFoundException("Neplatné uživatelské jméno nebo heslo");
@@ -100,15 +87,17 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
                     if (!user.getActive()) {
                         throw new LockedException("User is not active");
                     }
-
-                    auth.setDetails(new UserDetail(user, userService.calcUserPermission(user), levelTreeCacheService));
-                } else if (allowDefaultUser && username.equals(defaultUsername) && encodePassword.equalsIgnoreCase(defaultPassword)) {
-                    auth.setDetails(new UserDetail(defaultUsername, levelTreeCacheService));
                 } else {
                     // TODO: smazat po vytvoření správy uživatelů
                     logger.warn(username + ":" + encodePassword);
                     throw new UsernameNotFoundException("Neplatné uživatelské jméno nebo heslo");
                 }
+
+                UserDetail userDetail = userService.createUserDetail(user);
+
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username,
+                        encodePassword, null);
+                auth.setDetails(userDetail);
                 return auth;
             }
 

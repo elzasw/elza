@@ -20,12 +20,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  * Seznam provedených změn v archivních pomůckách.
  *
- * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
 @Entity(name = "arr_change")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrChange {
+
+    public final static String FIELD_PRIMARY_NODE_ID = "primaryNodeId";
 
     @Id
     @GeneratedValue
@@ -40,8 +41,11 @@ public class ArrChange {
     private UsrUser user;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
-    @JoinColumn(name = "primaryNodeId", nullable = true)
+    @JoinColumn(name = FIELD_PRIMARY_NODE_ID, nullable = true)
     private ArrNode primaryNode;
+
+    @Column(name = FIELD_PRIMARY_NODE_ID, nullable = true, updatable = false, insertable = false)
+    private Integer primaryNodeId;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 25, nullable = true)
@@ -113,6 +117,15 @@ public class ArrChange {
 
     public void setPrimaryNode(final ArrNode primaryNode) {
         this.primaryNode = primaryNode;
+        this.primaryNodeId = (primaryNode == null) ? null : primaryNode.getNodeId();
+    }
+
+    public Integer getPrimaryNodeId() {
+        return primaryNodeId;
+    }
+
+    public void setPrimaryNodeId(Integer primaryNodeId) {
+        this.primaryNodeId = primaryNodeId;
     }
 
     @Override

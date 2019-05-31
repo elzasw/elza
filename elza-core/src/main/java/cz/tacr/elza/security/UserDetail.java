@@ -45,20 +45,6 @@ public class UserDetail {
         this.nodePermChecker = nodePermChecker;
     }
 
-	/**
-	 * Constructor for ADMIN
-	 *
-	 * @param systemUser
-	 * @param nodePermChecker
-	 */
-    public UserDetail(final String systemUser, final NodePermissionChecker nodePermChecker) {
-        this.username = systemUser;
-        this.active = true;
-        this.userPermission = new ArrayList<>();
-        this.userPermission.add(new UserPermission(UsrPermission.Permission.ADMIN));
-        this.nodePermChecker = nodePermChecker;
-    }
-
     public String getUsername() {
         return username;
     }

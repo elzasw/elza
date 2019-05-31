@@ -81,6 +81,8 @@ public class ArrangementFormService {
 
 	private final ArrangementService arrangementService;
 
+    private final UserService userService;
+
 	public ArrangementFormService(StaticDataService staticData,
 								  DescriptionItemServiceInternal arrangementInternal,
 								  DescriptionItemService descriptionItemService,
@@ -105,6 +107,7 @@ public class ArrangementFormService {
 		this.nodeCache = nodeCache;
 		this.wsStompService = wsStompService;
 		this.arrangementService = arrangementService;
+        this.userService = userService;
 	}
 
 	@Transactional
@@ -157,7 +160,7 @@ public class ArrangementFormService {
 		List<ArrItemVO> descItemsVOs = factoryVo.createItems(descItems);
 		List<ItemTypeLiteVO> itemTypeLites = factoryVo.createItemTypes(ruleCode, fundId, itemTypes);
 
-		boolean arrPerm = levelTreeCache.hasFullArrPerm(version.getFundId());
+        boolean arrPerm = userService.hasFullArrPerm(version.getFundId());
 		if (!arrPerm) {
 			Map<Integer, Boolean> permNodeIdMap = levelTreeCache.calcPermNodeIdMap(version, Collections.singleton(nodeId));
 			arrPerm = permNodeIdMap.get(nodeId);

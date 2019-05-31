@@ -19,9 +19,6 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
 
-import com.google.common.collect.Lists;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -39,20 +36,42 @@ import org.springframework.util.Assert;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Lists;
 
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.Authorization;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.UsrGroupUser;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.WfIssueList;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.exception.codes.UserCode;
+import cz.tacr.elza.repository.ApNameRepository;
+import cz.tacr.elza.repository.FilteredResult;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.GroupRepository;
+import cz.tacr.elza.repository.GroupUserRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PermissionRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
@@ -99,10 +118,22 @@ public class UserService {
     @Autowired
     private WfIssueListRepository issueListRepository;
 
+    @Autowired
+    LevelTreeCacheService levelTreeCacheService;
+
     @Value("${elza.security.salt:kdFss=+4Df_%}")
     private String SALT;
 
     private ShaPasswordEncoder encoder = new ShaPasswordEncoder(256);
+
+    @Value("${elza.security.defaultUsername:admin}")
+    private String defaultUsername;
+
+    @Value("${elza.security.defaultPassword:0bde6ccb27aaa200002df6017ee3ddee70dacf5e9a4f99627af3447b73fde09b}")
+    private String defaultPassword;
+
+    @Value("${elza.security.allowDefaultUser:true}")
+    private Boolean allowDefaultUser;
 
     /**
      * Cache pro nakešování oprávnění uživatele.
@@ -899,7 +930,22 @@ public class UserService {
      * @throws UsernameNotFoundException
      */
     public UsrUser findByUsername(final String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username);
+        UsrUser user = userRepository.findByUsername(username);
+        if (user == null) {
+            if (allowDefaultUser && username.equals(defaultUsername)) {
+                user = createDefaultUser();
+            }
+        }
+        return user;
+    }
+
+    private UsrUser createDefaultUser() {
+        // create default admin user
+        UsrUser user = new UsrUser();
+        user.setActive(true);
+        user.setUsername(defaultUsername);
+        user.setPassword(defaultPassword);
+        return user;
     }
 
     /**
@@ -970,6 +1016,11 @@ public class UserService {
      */
     public Collection<UserPermission> calcUserPermission(final UsrUser user) {
         Map<UsrPermission.Permission, UserPermission> userPermissions = new HashMap<>();
+
+        // check default user
+        if (allowDefaultUser && user.getUsername().equals(defaultUsername)) {
+            return Collections.singletonList(new UserPermission(UsrPermission.Permission.ADMIN));
+        }
 
         List<UsrPermission> permissions = permissionRepository.getAllPermissions(user);
 
@@ -1625,4 +1676,37 @@ public class UserService {
         return update;
     }
 
+    /**
+     * Create user detail for security context
+     * 
+     * @param user
+     * @return
+     */
+    public UserDetail createUserDetail(UsrUser user) {
+        Collection<UserPermission> perms = calcUserPermission(user);
+
+        return new UserDetail(user, perms, levelTreeCacheService);
+    }
+
+    public UserDetail createUserDetail(Integer userId) {
+        UsrUser user;
+        if (userId == null && allowDefaultUser) {
+            // create for default user
+            user = createDefaultUser();
+        } else {
+            user = userRepository.getOneCheckExist(userId);
+        }
+        if (user == null) {
+            throw new ObjectNotFoundException("User not found", BaseCode.ID_NOT_EXIST);
+        }
+
+        return createUserDetail(user);
+    }
+
+    public boolean hasFullArrPerm(final Integer fundId) {
+        UserDetail userDetail = getLoggedUserDetail();
+        AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.FUND_ADMIN)
+                .or(UsrPermission.Permission.FUND_ARR, fundId);
+        return authRequest.matches(userDetail);
+    }
 }

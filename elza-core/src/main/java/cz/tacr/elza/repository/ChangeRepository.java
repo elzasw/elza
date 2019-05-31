@@ -1,5 +1,7 @@
 package cz.tacr.elza.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -20,4 +22,8 @@ public interface ChangeRepository extends ElzaJpaRepository<ArrChange, Integer> 
     @Modifying
     @Query("DELETE FROM arr_change c WHERE c.primaryNode IN (SELECT n FROM arr_node n WHERE n.fund = ?1)")
     void deleteByPrimaryNodeFund(ArrFund fund);
+
+    @Modifying
+    @Query("DELETE FROM arr_change c WHERE c.primaryNodeId IN ?1")
+    void deleteByPrimaryNodeIds(List<Integer> deleteNodeIds);
 }
