@@ -2,8 +2,10 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -64,6 +66,11 @@ public class UnitCountAction extends Action {
 	 * Map is order according type
 	 */
 	private Map<String, Integer> resultMap = new TreeMap<>();
+
+    /**
+     * Již zapracované obaly
+     */
+    private Set<Integer> countedObjects = new HashSet<>();
 
     @Autowired
     StructuredItemRepository structureItemRepository;
@@ -244,4 +251,13 @@ public class UnitCountAction extends Action {
         }
 		descriptionItemService.createDescriptionItem(descItem, node, fundVersion, change);
 	}
+
+    public boolean isCountedObject(Integer packetId) {
+        return countedObjects.contains(packetId);
+    }
+
+    public void addCountedObject(Integer packetId) {
+        Validate.isTrue(!countedObjects.contains(packetId));
+        countedObjects.add(packetId);
+    }
 }

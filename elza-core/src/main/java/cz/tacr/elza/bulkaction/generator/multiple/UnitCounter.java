@@ -1,10 +1,8 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -55,11 +53,6 @@ public class UnitCounter {
      * Packet type mapping
      */
     Map<Integer, String> objectMapping = new HashMap<>();
-
-    /**
-     * Již zapracované obaly
-     */
-    private Set<Integer> countedObjects = new HashSet<>();
 
     UnitCounter(UnitCounterConfig counterCfg,
                 final StructuredItemRepository structureItemRepository,
@@ -215,7 +208,7 @@ public class UnitCounter {
             // fetch valid items from packet
             ArrDataStructureRef dataStructObjRef = HibernateUtils.unproxy(item.getData());
             Integer packetId = dataStructObjRef.getStructuredObjectId();
-            if (!countedObjects.contains(packetId)) {
+            if (!unitCountAction.isCountedObject(packetId)) {
                 countStructObj(packetId, level, unitCountAction);
             }
         }
@@ -239,7 +232,7 @@ public class UnitCounter {
                     }
 
                     // mark as counted
-                    countedObjects.add(packetId);
+                    unitCountAction.addCountedObject(packetId);
                 }
             }
         }
