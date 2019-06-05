@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -98,6 +99,9 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
     @Autowired
     @Qualifier("threadPoolTaskExecutorBA")
     private ThreadPoolTaskExecutor taskExecutor;
+
+    @Autowired
+    ApplicationContext appCtx;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -287,7 +291,8 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
             return;
         }
 
-        BulkActionWorker bulkActionWorker = new BulkActionWorker(bulkAction, bulkActionRun, nodeIds, this, txManager);
+        BulkActionWorker bulkActionWorker = this.appCtx.getBean(BulkActionWorker.class, bulkAction, bulkActionRun,
+                                                                nodeIds);
         runningWorkers.put(bulkActionRun.getFundVersionId(), bulkActionWorker);
 
         // změna stavu výstupů na počítání
@@ -296,7 +301,9 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
                 OutputState.COMPUTING,
                 OutputState.OPEN);
 
-        bulkActionWorker.setStateAndPublish(State.PLANNED);
+        // save and propagate action
+        bulkActionRun.setState(State.PLANNED);
+        updateAction(bulkActionRun);
         logger.info("Hromadná akce naplánována ke spuštění: " + bulkActionWorker);
 
         BulkActionService actionService = this;
@@ -515,6 +522,7 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
      *
      * @param bulkActionRun the bulk action run
      */
+    @Transactional(TxType.MANDATORY)
     public void storeBulkActionRun(final ArrBulkActionRun bulkActionRun) {
         if (bulkActionRun.getBulkActionRunId() == null) {
             BulkActionConfig bulkActionConfigOrig = bulkActionConfigManager.get(bulkActionRun.getBulkActionCode());
@@ -534,7 +542,7 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
             }
 
             bulkActionRun.setFundVersion(version);
-            }
+        }
 
         bulkActionRepository.save(bulkActionRun);
     }
@@ -655,5 +663,16 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
         ctx.setAuthentication(auth);
 
         return ctx;
+    }
+
+    /**
+     * Method will update action
+     * 
+     * @param bulkActionRun
+     */
+    @Transactional(TxType.REQUIRED)
+    public void updateAction(ArrBulkActionRun bulkActionRun) {
+        storeBulkActionRun(bulkActionRun);
+        eventPublishBulkAction(bulkActionRun);
     }
 }
