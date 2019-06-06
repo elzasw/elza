@@ -257,11 +257,9 @@ public class ItemGeneratorAction extends Action {
             ds.setStructuredObject(structObj);
 
             ArrDescItem descItem = new ArrDescItem();
-            descItem.setCreateChange(change);
             descItem.setItemType(trgItemType.getEntity());
-            descItem.setNode(level.getNode());
             descItem.setData(ds);
-            descriptionItemService.createDescriptionItem(descItem, level.getNode(), fundVersion, change);
+            descriptionItemService.createDescriptionItem(descItem, level.getNodeId(), fundVersion, change);
         }
         
     }
