@@ -7,12 +7,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UISettings.EntityType;
 import cz.tacr.elza.domain.UsrUser;
 
 /**
  * Repozitory pro {@link UISettings}
  *
- * @author Martin Šlapa
  * @since 19.07.2016
  */
 @Repository
@@ -22,16 +22,23 @@ public interface SettingsRepository extends JpaRepository<UISettings, Integer>, 
 
     List<UISettings> findByUserId(int userId);
 
+    /*
     List<UISettings> findByUserAndSettingsType(UsrUser user,
                                                Collection<UISettings.SettingsType> settingsTypes);
+                                               */
 
     List<UISettings> findByUserAndSettingsTypeAndEntityType(UsrUser user,
-                                                            UISettings.SettingsType settingsType,
+                                                            String settingsType,
                                                             UISettings.EntityType entityType);
 
     List<UISettings> findByUserAndEntityTypeAndEntityId(UsrUser user,
                                                         UISettings.EntityType entityType,
                                                         Integer entityId);
 
-    List<UISettings> findBySettingsType(UISettings.SettingsType settingsType);
+    List<UISettings> findByUserAndSettingsTypeAndEntityTypeAndEntityId(UsrUser user,
+                                                                       String settingsType,
+                                                                       EntityType entityType, 
+                                                                       Integer entityId);
+
+    //List<UISettings> findBySettingsType(UISettings.SettingsType settingsType);
 }

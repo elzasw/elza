@@ -75,7 +75,6 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.repository.ArrangementExtensionRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
@@ -556,20 +555,18 @@ public class RuleService {
     /**
      * Načtení seznamu kódů atributů - implicitní atributy pro zobrazení tabulky hromadných akcí, seznam je seřazený podle
      * pořadí, které jedefinováno u atributů.
-     * @param ruleSet pravidla
      * @return seznam kódů
      */
-    public List<SettingGridView.ItemType> getGridView(final RulRuleSet ruleSet) {
+    public List<SettingGridView.ItemType> getGridView() {
 
         // načtený globální oblíbených
-        List<UISettings> gridViews = settingsService.getGlobalSettings(UISettings.SettingsType.GRID_VIEW, UISettings.EntityType.RULE);
+        List<UISettings> gridViews = settingsService.getGlobalSettings(UISettings.SettingsType.GRID_VIEW.toString(), 
+                                                                       null);        
 
         for (UISettings gridView : gridViews) {
-            if (gridView.getRulPackage().getPackageId().equals(ruleSet.getPackage().getPackageId())) {
-                SettingGridView view = (SettingGridView) PackageService.convertSetting(gridView, itemTypeRepository);
-                if (CollectionUtils.isNotEmpty(view.getItemTypes())) {
-                    return view.getItemTypes();
-                }
+            SettingGridView view = SettingGridView.newInstance(gridView);
+            if (CollectionUtils.isNotEmpty(view.getItemTypes())) {
+                return view.getItemTypes();
             }
         }
 

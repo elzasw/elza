@@ -78,9 +78,10 @@ public class RulesExecutor {
             return descItemTypesRules
                     .execute(level, version, rulDescItemTypeExtList);
         } catch (NoSuchFileException e) {
-            logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
+            logger.error("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
 			throw new SystemException(e);
         } catch (Exception e) {
+        	logger.error("Chyba při vyhodnocení pravidel: " + e.getMessage(), e);
             throw new SystemException(e);
         }
     }

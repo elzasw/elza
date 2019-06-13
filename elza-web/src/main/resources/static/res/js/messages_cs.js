@@ -59,7 +59,7 @@ var messages = {
     "autocomplete.list.allItems": "Všechny položky",
     "autocomplete.list.favoriteItems": "Oblíbené",
 
-    "dataType.coordinates.format": "Zadávejte ve tvaru \"15.5154,49.535\"",
+    "dataType.coordinates.format": "Zadávejte ve tvaru (N, E), příklad: \"49.535,15.5154\"",
     "dataType.decimal.format": null,
     "dataType.fileRef.format": null,
     "dataType.int.format": null,

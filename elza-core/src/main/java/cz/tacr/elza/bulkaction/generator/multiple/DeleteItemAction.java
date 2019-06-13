@@ -20,7 +20,6 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.service.ArrangementCacheService;
 import cz.tacr.elza.service.DescriptionItemService;
 
 /**
@@ -35,9 +34,6 @@ public class DeleteItemAction extends Action {
 
     @Autowired
     private DescriptionItemService descriptionItemService;
-
-    @Autowired
-    private ArrangementCacheService arrangementCacheService;
 
     private DeleteItemConfig config;
 

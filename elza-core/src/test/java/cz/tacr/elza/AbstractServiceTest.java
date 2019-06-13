@@ -31,6 +31,7 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.UserService;
 
 public abstract class AbstractServiceTest extends AbstractTest {
     @Autowired
@@ -63,6 +64,9 @@ public abstract class AbstractServiceTest extends AbstractTest {
 
     @Autowired
     protected StaticDataService staticDataService;
+
+    @Autowired
+    protected UserService userService;
 
     @Autowired
     protected LevelTreeCacheService levelTreeCacheService;
@@ -175,8 +179,9 @@ public abstract class AbstractServiceTest extends AbstractTest {
     }
 
     protected void authorizeAsAdmin() {
+        UserDetail userDetail = userService.createUserDetail((Integer) null);
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken("", "", null);
-        auth.setDetails(new UserDetail("", levelTreeCacheService));
+        auth.setDetails(userDetail);
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 

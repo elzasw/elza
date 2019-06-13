@@ -67,6 +67,8 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
 
     List<ArrStructuredObject> findByFund(ArrFund fund);
 
+    @Modifying
+    @Query("DELETE FROM arr_structured_object so WHERE so.fund = ?1")
     void deleteByFund(ArrFund fund);
 
     @Query("SELECT DISTINCT so FROM arr_structured_object so " +
@@ -116,4 +118,26 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
                                     @Param("fromChangeId") Integer fromChangeId,
                                     @Param("toChangeId") Integer toChangeId);
 
+    public interface MaximalItemValues {
+        String getPrefix();
+
+        Integer getValue();
+    }
+
+    @Query(nativeQuery = true, value = "select pref_ds.value AS prefix, max(di.value) as value from arr_structured_object so "
+            +
+            "join arr_structured_item si on si.structured_object_id = so.structured_object_id " +
+            "join arr_item i on i.item_id = si.item_id and i.delete_change_id is null and i.item_type_id = :numberItemTypeId "
+            +
+            "join arr_data_integer di on di.data_id = i.data_id " +
+            "left join arr_structured_item pref_si on pref_si.structured_object_id = so.structured_object_id " +
+            "left join arr_item pref_i on pref_i.item_id = pref_si.item_id and pref_i.delete_change_id is null and pref_i.item_type_id = :prefixItemTypeId "
+            +
+            "left join arr_data_string pref_ds on pref_ds.data_id  = pref_i.data_id " +
+            "where so.fund_id = :fundId "
+            +
+            "group by pref_ds.value")
+    List<MaximalItemValues> countMaximalItemValues(@Param("fundId") Integer fundId,
+                                               @Param("prefixItemTypeId") Integer prefixItemTypeId,
+                                               @Param("numberItemTypeId") Integer numberItemTypeId);
 }

@@ -1,5 +1,6 @@
 package cz.tacr.elza.print.party;
 
+import java.util.Collection;
 import java.util.List;
 
 import cz.tacr.elza.core.data.PartyType;
@@ -16,7 +17,7 @@ public abstract class Party {
 
     private final PartyName preferredName;
 
-    private final List<PartyName> names;
+    private final Collection<PartyName> names;
 
     private final String history;
 
@@ -72,7 +73,7 @@ public abstract class Party {
         return history;
     }
 
-    public List<PartyName> getNames() {
+    public Collection<PartyName> getNames() {
         return names;
     }
 
@@ -104,5 +105,5 @@ public abstract class Party {
         return relationsByType;
     }
 
-    protected abstract PartyType getPartyType();
+    public abstract PartyType getPartyType();
 }

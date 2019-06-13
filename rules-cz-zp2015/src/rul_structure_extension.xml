@@ -2,4 +2,7 @@
     <structure-extension code="ZP2015_PACKET_PREFIX" structure-type="ZP2015_PACKET" >
         <name>Uložení s prefixem</name>
     </structure-extension>
+    <structure-extension code="ZP2015_PACKET_RANGE" structure-type="ZP2015_PACKET" >
+        <name>Uložení s rozsahem</name>
+    </structure-extension>
 </structure-extensions>

@@ -44,6 +44,10 @@ public class ArrBulkActionRun {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    public static final String TABLE_NAME = "arr_bulk_action_run";
+
+    public static final String FIELD_CHANGE_ID = "changeId";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
@@ -64,7 +68,7 @@ public class ArrBulkActionRun {
     private Integer userId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "changeId", nullable = false)
+    @JoinColumn(name = FIELD_CHANGE_ID, nullable = false)
     private ArrChange change;
 
     @Enumerated(EnumType.STRING)

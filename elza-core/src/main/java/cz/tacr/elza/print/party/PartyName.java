@@ -89,12 +89,7 @@ public class PartyName {
         return formTypeName;
     }
 
-    /**
-     * Return formatted name with all details
-     *
-     * @return obsah fieldů "mainPart otherPart degreeBefore degreeAfter" oddělený mezerou
-     */
-    public String formatWithAllDetails() {
+    public List<String> formatWithAllDetailsAsList() {
         List<String> resultList = new ArrayList<>();
         if (StringUtils.isNotBlank(mainPart)) {
             resultList.add(mainPart);
@@ -108,8 +103,19 @@ public class PartyName {
         if (StringUtils.isNotBlank(degreeAfter)) {
             resultList.add(degreeAfter);
         }
+        return resultList;
+    }
+
+    /**
+     * Return formatted name with all details
+     *
+     * @return obsah fieldů "mainPart otherPart degreeBefore degreeAfter" oddělený
+     *         mezerou
+     */
+    public String formatWithAllDetails() {
+        List<String> resultList = formatWithAllDetailsAsList();
         // TODO: add party name details
-        return StringUtils.join(resultList, " ").trim();
+        return String.join(" ", resultList);
     }
 
     /**

@@ -3,13 +3,13 @@ package cz.tacr.elza.repository;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
 
 
 /**
@@ -25,10 +25,6 @@ public interface FundVersionRepository extends ElzaJpaRepository<ArrFundVersion,
 
     @Query(value = "select v from arr_fund_version v join v.fund fa where fa.fundId = :fundId and v.lockChange is null")
     ArrFundVersion findByFundIdAndLockChangeIsNull(@Param(value = "fundId") Integer fundId);
-
-
-    ArrFundVersion findTopByRootNode(ArrNode node);
-
 
     @Query(value = "SELECT v FROM arr_fund_version v join fetch v.fund fa join fetch v.createChange left join fetch v.lockChange order by fa.name asc, v.createChange.changeId desc")
     List<ArrFundVersion> findAllFetchFunds();
@@ -50,5 +46,7 @@ public interface FundVersionRepository extends ElzaJpaRepository<ArrFundVersion,
      * 
      * @param fund
      */
+    @Modifying
+    @Query("DELETE FROM arr_fund_version fv WHERE fv.fund = ?1")
     void deleteByFund(ArrFund fund);
 }

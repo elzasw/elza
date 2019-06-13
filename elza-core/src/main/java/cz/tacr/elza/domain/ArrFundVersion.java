@@ -36,6 +36,11 @@ import cz.tacr.elza.domain.interfaces.Versionable;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrFundVersion extends AbstractVersionableEntity implements Versionable, Serializable, IArrFund {
 
+    public static final String TABLE_NAME = "arr_fund_version";
+
+    public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
+    public static final String FIELD_LOCK_CHANGE_ID = "lockChangeId";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
@@ -43,12 +48,12 @@ public class ArrFundVersion extends AbstractVersionableEntity implements Version
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "createChangeId", nullable = false)
+    @JoinColumn(name = FIELD_CREATE_CHANGE_ID, nullable = false)
     private ArrChange createChange;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "lockChangeId", nullable = true)
+    @JoinColumn(name = FIELD_LOCK_CHANGE_ID, nullable = true)
     private ArrChange lockChange;
 
     @Column(nullable = true, insertable = false, updatable = false)

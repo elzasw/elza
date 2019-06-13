@@ -26,6 +26,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"outputId"}))
 public class ArrOutputResult {
 
+    public static final String TABLE_NAME = "arr_output_result";
+
+    public static final String FIELD_CHANGE_ID = "changeId";
+
     /**
      * Name of field with link to output definition
      */
@@ -44,7 +48,7 @@ public class ArrOutputResult {
     private RulTemplate template;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "changeId", nullable = false)
+    @JoinColumn(name = FIELD_CHANGE_ID, nullable = false)
     private ArrChange change;
 
     @OneToMany(mappedBy = "outputResult", fetch = FetchType.LAZY)

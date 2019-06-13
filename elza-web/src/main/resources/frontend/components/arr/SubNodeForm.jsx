@@ -89,7 +89,8 @@ class SubNodeForm extends AbstractReactComponent {
         } else {
             return !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, SUB_NODE_FORM_CMP)
                 || !objectEqualsDiff(this.props.descItemCopyFromPrevEnabled, nextProps.descItemCopyFromPrevEnabled)
-                || !objectEqualsDiff(this.props.nodeSetting, nextProps.nodeSetting);
+                || !objectEqualsDiff(this.props.nodeSetting, nextProps.nodeSetting)
+                || !objectEqualsDiff(this.props.readMode, nextProps.readMode);
         }
     }
 

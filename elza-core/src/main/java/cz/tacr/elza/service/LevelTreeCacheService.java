@@ -23,9 +23,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.security.AuthorizationRequest;
-import cz.tacr.elza.security.UserPermission;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
@@ -33,11 +30,11 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import com.google.common.eventbus.Subscribe;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.EventBusListener;
 import cz.tacr.elza.common.ObjectListIterator;
@@ -46,13 +43,30 @@ import cz.tacr.elza.config.view.LevelConfig;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.AccordionNodeVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
+import cz.tacr.elza.controller.vo.ArrRequestVO;
+import cz.tacr.elza.controller.vo.NodeConformityVO;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNode;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.WfSimpleIssueVO;
 import cz.tacr.elza.controller.vo.nodes.NodeData;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrDigitizationRequest;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ArrRequest;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.WfIssue;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.SystemException;
@@ -62,32 +76,22 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.LevelRepositoryCustom;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventChangeMessage;
-import cz.tacr.elza.service.eventnotification.events.*;
+import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
+import cz.tacr.elza.service.eventnotification.events.EventAddNode;
+import cz.tacr.elza.service.eventnotification.events.EventDeleteNode;
+import cz.tacr.elza.service.eventnotification.events.EventIdInVersion;
+import cz.tacr.elza.service.eventnotification.events.EventNodeMove;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.eventnotification.events.EventVersion;
 import cz.tacr.elza.service.vo.TitleItemsByType;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
-import org.apache.commons.lang3.BooleanUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 
 /**
  * Servistní třída pro načtení a cachování uzlů ve stromu daných verzí.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 11.01.2016
  */
 @Service
@@ -238,15 +242,8 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
         LinkedHashMap<Integer, Node> nodes = getNodes(nodesMap, rootNode, param, version);
 
-        boolean fullArrPerm = hasFullArrPerm(version.getFundId());
+        boolean fullArrPerm = userService.hasFullArrPerm(version.getFundId());
         return new TreeData(convertToTreeNodeWithPerm(nodes.values(), version, fullArrPerm), expandedIdsExtended, fullArrPerm);
-    }
-
-    public boolean hasFullArrPerm(final Integer fundId) {
-        UserDetail userDetail = userService.getLoggedUserDetail();
-        AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.FUND_ADMIN)
-                .or(UsrPermission.Permission.FUND_ARR, fundId);
-        return authRequest.matches(userDetail);
     }
 
     /**
@@ -1291,7 +1288,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
                 .icon()
                 .referenceMark();
 
-        boolean fullArrPerm = hasFullArrPerm(fundVersion.getFundId());
+        boolean fullArrPerm = userService.hasFullArrPerm(fundVersion.getFundId());
         return convertToTreeNodeWithPerm(getNodes(nodesMap, node, param, fundVersion).values(), fundVersion, fullArrPerm);
     }
 

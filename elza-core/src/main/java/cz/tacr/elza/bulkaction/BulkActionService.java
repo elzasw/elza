@@ -21,6 +21,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -63,12 +66,14 @@ import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputItemConnector;
 import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
@@ -126,6 +131,9 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
 
     @Autowired
     private ActionRepository actionRepository;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     @Qualifier("transactionManager")
@@ -299,7 +307,7 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
                 @Override
                 public void afterCommit() {
-                    ListenableFuture<BulkActionWorker> future = taskExecutor.submitListenable(bulkActionWorker);
+                ListenableFuture<BulkActionWorker> future = taskExecutor.submitListenable(bulkActionWorker);
                     future.addCallback(actionService);
                 }
             });
@@ -630,5 +638,22 @@ public class BulkActionService implements ListenableFutureCallback<BulkActionWor
 
     public List<RulAction> getRecommendedActions(RulOutputType outputType) {
         return actionRepository.findByRecommendedActionOutputType(outputType);
+    }
+
+    public SecurityContext createSecurityContext(ArrBulkActionRun bulkActionRun) {
+
+        SecurityContext ctx = SecurityContextHolder.createEmptyContext();
+
+        // read user from db
+        String username = null, encodePassword = null;
+
+        UserDetail userDetail = userService.createUserDetail(bulkActionRun.getUserId());
+
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, encodePassword,
+                null);
+        auth.setDetails(userDetail);
+        ctx.setAuthentication(auth);
+
+        return ctx;
     }
 }

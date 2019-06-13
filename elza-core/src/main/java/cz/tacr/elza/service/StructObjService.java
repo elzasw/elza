@@ -55,7 +55,6 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.StructObjCode;
-import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingStructureTypes;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
@@ -150,17 +149,14 @@ public class StructObjService {
     }
 
     /**
-     * Vytvoření strukturovaných dat.
-     *
-     * @param fund          archivní soubor
-     * @param structureType strukturovaný typ
-     * @return vytvořená entita
+     * Vytvoření strukturovaných dat jako součást větší transakce
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
     public ArrStructuredObject createStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
-                                                   final RulStructuredType structureType,
-                                                   final ArrStructuredObject.State state) {
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_DATA);
+                                               final ArrChange change,
+                                               final RulStructuredType structureType,
+                                               final ArrStructuredObject.State state,
+                                               List<ArrStructuredItem> items) {
         ArrStructuredObject structureData = new ArrStructuredObject();
         structureData.setAssignable(true);
         structureData.setCreateChange(change);
@@ -168,23 +164,52 @@ public class StructObjService {
         structureData.setStructuredType(structureType);
         structureData.setState(state);
 
-        ArrStructuredObject createStructureData = structObjRepository.save(structureData);
+        ArrStructuredObject structObj = structObjRepository.save(structureData);
+
+        // store items
+        if (items != null) {
+            for (ArrStructuredItem item : items) {
+                createItem(item, structObj, item.getPosition(), change);
+            }
+        }
+
         if (state == ArrStructuredObject.State.TEMP) {
             notificationService.publishEvent(new EventStructureDataChange(fund.getFundId(),
                     structureType.getCode(),
-                    Collections.singletonList(createStructureData.getStructuredObjectId()),
+                    Collections.singletonList(structObj.getStructuredObjectId()),
                     null,
                     null,
                     null));
         } else {
+            if (state != State.TEMP) {
+                structObjService.addToValidate(structObj);
+            }
+
             notificationService.publishEvent(new EventStructureDataChange(fund.getFundId(),
                     structureType.getCode(),
                     null,
-                    Collections.singletonList(createStructureData.getStructuredObjectId()),
+                    Collections.singletonList(structObj.getStructuredObjectId()),
                     null,
                     null));
         }
-        return createStructureData;
+        return structObj;
+    }
+
+    /**
+     * Vytvoření strukturovaných dat.
+     *
+     * @param fund
+     *            archivní soubor
+     * @param structureType
+     *            strukturovaný typ
+     * @return vytvořená entita
+     */
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
+    public ArrStructuredObject createStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
+                                               final RulStructuredType structureType,
+                                               final ArrStructuredObject.State state) {
+        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_DATA);
+        return createStructObj(fund, change, structureType, state, null);
     }
 
     /**
@@ -328,18 +353,9 @@ public class StructObjService {
         int nextPosition = findNextPosition(structObj, structureItem.getItemType());
         Integer position = getPosition(structureItem.getPosition(), structureItem.getItemType(), structObj, change, nextPosition);
 
-        ArrData data = createData(structureItem.getData(), structureItem.getItemType().getDataType());
 
-        ArrStructuredItem createStructureItem = new ArrStructuredItem();
-        createStructureItem.setData(data);
-        createStructureItem.setCreateChange(change);
-        createStructureItem.setPosition(position);
-        createStructureItem.setStructuredObject(structObj);
-        createStructureItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
-        createStructureItem.setItemType(structureItem.getItemType());
-        createStructureItem.setItemSpec(structureItem.getItemSpec());
 
-        ArrStructuredItem save = structureItemRepository.save(createStructureItem);
+        ArrStructuredItem save = createItem(structureItem, structObj, position, change);
         structObjService.addToValidate(structObj);
         return save;
     }
@@ -375,6 +391,25 @@ public class StructObjService {
 
         }
         return position;
+    }
+
+    private ArrStructuredItem createItem(ArrStructuredItem structureItem, ArrStructuredObject structObj,
+                                         Integer position,
+                                         ArrChange change) {
+
+        ArrData data = createData(structureItem.getData(), structureItem.getItemType().getDataType());
+
+        ArrStructuredItem createStructureItem = new ArrStructuredItem();
+        createStructureItem.setData(data);
+        createStructureItem.setCreateChange(change);
+        createStructureItem.setPosition(position);
+        createStructureItem.setStructuredObject(structObj);
+        createStructureItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+        createStructureItem.setItemType(structureItem.getItemType());
+        createStructureItem.setItemSpec(structureItem.getItemSpec());
+
+        ArrStructuredItem save = structureItemRepository.save(createStructureItem);
+        return save;
     }
 
     /**
@@ -1232,7 +1267,7 @@ public class StructObjService {
     public List<RulStructuredType> findStructureTypes(final ArrFundVersion fundVersion) {
         Validate.notNull(fundVersion);
 
-        List<UISettings> settings = settingsService.getGlobalSettings(UISettings.SettingsType.STRUCTURE_TYPES, UISettings.EntityType.RULE);
+        List<UISettings> settings = settingsService.getGlobalSettings(UISettings.SettingsType.STRUCTURE_TYPES.toString(), UISettings.EntityType.RULE);
         UISettings settingsUse = null;
         for (UISettings setting : settings) {
             if (fundVersion.getRuleSetId().equals(setting.getEntityId())) {
@@ -1244,7 +1279,7 @@ public class StructObjService {
         if (settingsUse == null) {
             return Collections.emptyList();
         } else {
-            SettingStructureTypes structureTypes = (SettingStructureTypes) PackageService.convertSetting(settingsUse, null);
+            SettingStructureTypes structureTypes = SettingStructureTypes.newInstance(settingsUse);
             Set<String> typeCodes = structureTypes.getItems().stream()
                     .map(SettingStructureTypes.Type::getCode)
                     .collect(Collectors.toSet());

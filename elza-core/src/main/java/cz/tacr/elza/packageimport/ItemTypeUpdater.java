@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -655,6 +656,9 @@ public class ItemTypeUpdater {
         Map<Integer, RulItemAptype> rulItemAptypesOrig = new HashMap<>();
 
         for (ItemSpec itemSpec : itemSpecs) {
+        
+        Map<String, ItemSpec> itemSpecLookup = itemSpecs.stream().collect(Collectors.toMap(ItemSpec::getCode, Function.identity()));
+        Validate.isTrue(itemSpecLookup.size()==itemSpecs.size(), "List of specification contains duplicated code");
 
             RulItemSpec rulItemSpec = rulItemSpecsCache.get(itemSpec.getCode());
             Validate.notNull(rulItemSpec, "Cannot find code in itemSpecs, code: {}", itemSpec.getCode());

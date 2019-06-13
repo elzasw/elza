@@ -74,7 +74,7 @@ public class RecursiveQueryBuilderTest extends AbstractTest {
     private Object createEntity() {
         // create some persist entity
         UISettings settings = new UISettings();
-        settings.setSettingsType(SettingsType.RECORD);
+        settings.setSettingsType(SettingsType.RECORD.toString());
         em.persist(settings);
         return settings;
     }

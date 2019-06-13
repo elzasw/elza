@@ -41,6 +41,8 @@ import com.google.common.eventbus.Subscribe;
 
 import cz.tacr.elza.EventBusListener;
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
@@ -55,8 +57,10 @@ import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.packageimport.xml.SettingStructTypeSettings;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.SobjVrequestRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
@@ -73,7 +77,6 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 /**
  * Servisní třída pro aktualizaci hodnot strukturovaných objektů.
  *
- *
  * Pokud je do fronty zařazen smazaný uzel, tak se použije
  * pouze k validaci duplicit.
  *
@@ -84,8 +87,10 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 public class StructObjValueService {
 
     private static final Logger logger = LoggerFactory.getLogger(StructObjValueService.class);
+    
+    public static final String GROOVY_STRUCTURE_TYPE_SETTINGS = "STRUCTURE_TYPE_SETTINGS"; 
 
-    private static int QUEUE_CHECK_TIME_INTERVAL = 10000; // 10s
+    private static int QUEUE_CHECK_TIME_INTERVAL = 60000; // 60s
 
     private final EntityManager em;
     private final StructuredItemRepository structureItemRepository;
@@ -99,6 +104,7 @@ public class StructObjValueService {
     private final ResourcePathResolver resourcePathResolver;
     private final SobjVrequestRepository sobjVrequestRepository;
     private final ArrangementService arrangementService;
+    private final StaticDataService staticDataService;
 
     //private Queue<Integer> queueObjIds = new ConcurrentLinkedQueue<>();
     private final Object lock = new Object();
@@ -127,7 +133,8 @@ public class StructObjValueService {
             final ResourcePathResolver resourcePathResolver,
             final SobjVrequestRepository sobjQueueRepository,
             final ArrangementService arrangementService,
-            final EntityManager em) {
+            final EntityManager em,
+            final StaticDataService staticDataService) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
         this.structureDefinitionRepository = structureDefinitionRepository;
@@ -140,6 +147,7 @@ public class StructObjValueService {
         this.sobjVrequestRepository = sobjQueueRepository;
         this.arrangementService = arrangementService;
         this.em = em;
+        this.staticDataService = staticDataService;
     }
 
     private ArrSobjVrequest addToValidateInternal(final ArrStructuredObject sobj) {
@@ -155,6 +163,8 @@ public class StructObjValueService {
      *            hodnota
      */
     public void addToValidate(final ArrStructuredObject sobj) {
+        Validate.notNull(sobj.getStructuredObjectId());
+
         ArrSobjVrequest sobjVRequest = addToValidateInternal(sobj);
         sobjVrequestRepository.save(sobjVRequest);
 
@@ -370,8 +380,18 @@ public class StructObjValueService {
         if (structObj.getState() == ArrStructuredObject.State.TEMP) {
             return false;
         }
+        
+        Integer typeId = structObj.getStructuredTypeId();
+        StructType structType = staticDataService.getData().getStructuredTypeById(structObj.getStructuredTypeId());
+        // read settings for given fund
+        SettingsService settingsService = this.applicationContext.getBean(SettingsService.class);        
+        // Settings name
+        String settingsName = UISettings.SettingsType.STRUCT_TYPE_+structType.getCode();
+        
+        // read settings
+        SettingStructTypeSettings ssts = settingsService.readSettings(settingsName, structObj.getFundId(), SettingStructTypeSettings.class);
 
-        return generateValue(structObj, onChange);
+        return generateValue(structObj, onChange, ssts);
     }
 
     /**
@@ -383,9 +403,11 @@ public class StructObjValueService {
      *            hodnota struktovaného datového typu
      * @param onChange
      *            callback volaný, pokud při zpracování dojde ke změně hodnoty strukturovaného datového typu
+     * @param ssts 
      * @return Return true if next check is required
      */
-    private boolean generateValue(ArrStructuredObject structObj, Consumer<ArrStructuredObject> onChange) {
+    private boolean generateValue(ArrStructuredObject structObj, Consumer<ArrStructuredObject> onChange,
+                                  SettingStructTypeSettings ssts) {
         boolean requestNextCheck = false;
         // generate value
         String oldSortValue = structObj.getSortValue();
@@ -397,7 +419,7 @@ public class StructObjValueService {
 
         validateStructureItems(validationErrorDescription, structObj, structureItems);
 
-        Result result = generateValue(structObj, structureItems);
+        Result result = generateValue(structObj, structureItems, ssts);
         // Check if result is properly set (not empty)
         String value = result.getValue();
         String sortValue = result.getSortValue();
@@ -586,10 +608,12 @@ public class StructObjValueService {
      *
      * @param structureData
      *            hodnota struktovaného datového typu
+     * @param ssts 
      * @return hodnota
      */
     private Result generateValue(final ArrStructuredObject structureData,
-                                 final List<ArrStructuredItem> structureItems) {
+                                 final List<ArrStructuredItem> structureItems, 
+                                 final SettingStructTypeSettings ssts) {
 
         RulStructuredType structureType = structureData.getStructuredType();
         File groovyFile = findSerializedGroovyFile(structureType, structureData.getFund());
@@ -601,7 +625,8 @@ public class StructObjValueService {
         Map<String, Object> input = new HashMap<>();
         input.put("ITEMS", structureItems);
         input.put("RESULT", result);
-
+        input.put(GROOVY_STRUCTURE_TYPE_SETTINGS, ssts);
+        
         groovyScriptFile.evaluate(input);
 
         return result;

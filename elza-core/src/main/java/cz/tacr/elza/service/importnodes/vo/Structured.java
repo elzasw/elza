@@ -11,10 +11,4 @@ public interface Structured {
      * @return hodnota
      */
     String getValue();
-
-    /**
-     * @return kód typu
-     */
-    String getStructureTypeCode();
-
 }
