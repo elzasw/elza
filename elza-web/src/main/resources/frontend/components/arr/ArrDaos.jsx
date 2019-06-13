@@ -123,7 +123,7 @@ class ArrDaos extends AbstractReactComponent {
     };
 
     renderDao = (item) => {
-        const name = item.code + " (" + item.id + ")";
+        const name = item.code + " (" + item.daoId + ")";
         return <div className="item-name" title={name}>{name}</div>
     };
 
