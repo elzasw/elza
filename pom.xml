@@ -740,6 +740,19 @@
             </modules>
         </profile>
 
+        <!-- ELZA Integration -->
+        <profile>
+            <id>dspace-elza</id>
+            <activation>
+                <file>
+                    <exists>dspace-elza/pom.xml</exists>
+                </file>
+            </activation>
+            <modules>
+                <module>dspace-elza</module>
+            </modules>
+        </profile>
+
         <!--
          The 'release' profile is used by the 'maven-release-plugin' (see above)
          to actually perform a DSpace software release to Maven central.
@@ -765,6 +778,7 @@
                 <module>dspace-swordv2</module>
                 <module>dspace-xmlui-mirage2</module>
                 <module>dspace-xmlui</module>
+                <module>dspace-elza</module>
             </modules>
             <build>
                 <plugins>
@@ -955,6 +969,19 @@
                 <version>6.4-SNAPSHOT</version>
                 <type>war</type>
                 <classifier>skinny</classifier>
+            </dependency>
+            <dependency>
+                <groupId>org.dspace</groupId>
+                <artifactId>dspace-elza</artifactId>
+                <version>6.4-SNAPSHOT</version>
+                <type>jar</type>
+                <classifier>classes</classifier>
+            </dependency>
+            <dependency>
+                <groupId>org.dspace</groupId>
+                <artifactId>dspace-elza</artifactId>
+                <version>6.4-SNAPSHOT</version>
+                <type>war</type>
             </dependency>
 
             <!-- DSpace Localization Packages -->
@@ -1437,6 +1464,7 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
 
     <licenses>
         <license>
