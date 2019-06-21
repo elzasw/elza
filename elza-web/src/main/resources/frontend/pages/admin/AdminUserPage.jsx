@@ -2,25 +2,34 @@
 import './AdminUserPage.less';
 
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import PageLayout from "../shared/layout/PageLayout";
-import {FormControl, Button} from 'react-bootstrap';
-import {i18n, Search, ListBox, StoreHorizontalLoader, AbstractReactComponent, RibbonGroup, Icon} from 'components/shared';
-import {UserDetail, Ribbon, AddUserForm, PasswordForm} from 'components/index.jsx';
-import {usersFetchIfNeeded,
-    usersSelectUser,
-    usersSearch,
-    userCreate,
-    userUpdate,
+import {Button, FormControl} from 'react-bootstrap';
+import {
+    AbstractReactComponent,
+    i18n,
+    Icon,
+    ListBox,
+    RibbonGroup,
+    Search,
+    StoreHorizontalLoader
+} from 'components/shared';
+import {AddUserForm, Ribbon, UserDetail} from 'components/index.jsx';
+import {
     adminPasswordChange,
-    adminUserChangeActive} from 'actions/admin/user.jsx'
+    adminUserChangeActive,
+    userCreate,
+    usersFetchIfNeeded,
+    usersSearch,
+    usersSelectUser,
+    userUpdate
+} from 'actions/admin/user.jsx'
 import {indexById} from 'stores/app/utils.jsx'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
+import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
 import {renderUserItem} from 'components/admin/adminRenderUtils.jsx';
 import {partyAdd} from 'actions/party/party.jsx'
+import PasswordForm from "../../components/admin/PasswordForm";
 
 /**
  * Stránka pro správu uživatelů.
@@ -48,64 +57,75 @@ class AdminUserPage extends AbstractReactComponent{
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(requestScopesIfNeeded())
-        this.dispatch(usersFetchIfNeeded())
+        this.props.dispatch(requestScopesIfNeeded());
+        this.props.dispatch(usersFetchIfNeeded())
     }
 
     componentDidMount() {
-        this.dispatch(requestScopesIfNeeded())
-        this.dispatch(usersFetchIfNeeded())
+        this.props.dispatch(requestScopesIfNeeded());
+        this.props.dispatch(usersFetchIfNeeded())
     }
 
     handleSelect(item) {
-        this.dispatch(usersSelectUser(item.id))
+        this.props.dispatch(usersSelectUser(item.id))
     }
 
     handleSearch(filterText) {
         const {user} = this.props;
-        this.dispatch(usersSearch(filterText, user.filterState))
+        this.props.dispatch(usersSearch(filterText, user.filterState))
     }
 
     handleSearchClear() {
         const {user} = this.props;
-        this.dispatch(usersSearch('', user.filterState))
+        this.props.dispatch(usersSearch('', user.filterState))
     }
 
     handlePartyAdd(partyTypeId, callback) {
-        this.dispatch(partyAdd(partyTypeId, -1, callback));
+        this.props.dispatch(partyAdd(partyTypeId, -1, callback));
     };
 
     handleCreateUserForm() {
-        this.dispatch(modalDialogShow(this, i18n('admin.user.add.title'), <AddUserForm create onSubmitForm={this.handleCreateUser} onCreateParty={this.handlePartyAdd} />))
+        this.props.dispatch(modalDialogShow(this, i18n('admin.user.add.title'), <AddUserForm create onSubmitForm={this.handleCreateUser} onCreateParty={this.handlePartyAdd} />))
     }
 
     handleCreateUser(data) {
-        return this.dispatch(userCreate(data.username, data.password, data.party.id));
+        return this.props.dispatch(userCreate(data.username, data.password, data.party.id));
     }
 
     handleChangeUserPasswordForm() {
-        this.dispatch(modalDialogShow(this, i18n('admin.user.passwordChange.title'), <PasswordForm admin={true} onSubmitForm={this.handleChangeUserPassword} />))
+        this.props.dispatch(modalDialogShow(this, i18n('admin.user.passwordChange.title'), <PasswordForm admin={true} onSubmitForm={this.handleChangeUserPassword} />))
     }
 
     handleChangeUserPassword(data) {
         const {user: {userDetail: {id}}} = this.props;
-        return this.dispatch(adminPasswordChange(id, data.password));
+        return this.props.dispatch(adminPasswordChange(id, data.password));
     }
 
     handleUpdateUser(data) {
         const {user: {userDetail: {id}}} = this.props;
-        return this.dispatch(userUpdate(id, data.username, data.password));
+        return this.props.dispatch(userUpdate(id, data.username, data.valuesMap));
     }
 
     handleChangeUsernameForm() {
         const {user} = this.props;
-        this.dispatch(modalDialogShow(this, i18n('admin.user.update.title'), <AddUserForm initData={user.userDetail} onSubmitForm={this.handleUpdateUser} />))
+
+        const index = indexById(user.users, user.userDetail.id);
+        if (index !== null) {
+            const data = user.users[index];
+            const authTypes = data.authTypes;
+            const initData = {
+                username: data.username,
+                passwordCheckbox: authTypes.indexOf('PASSWORD') >= 0,
+                shibbolethCheckbox: authTypes.indexOf('SHIBBOLETH') >= 0
+            };
+            this.props.dispatch(modalDialogShow(this, i18n('admin.user.update.title'), <AddUserForm initialValues={initData} onSubmitForm={this.handleUpdateUser} />))
+        }
     }
 
     handleChangeUserActive() {
         if(confirm(i18n('admin.user.changeActive.confirm'))) {
             const {user} = this.props;
-            this.dispatch(adminUserChangeActive(user.userDetail.id, !user.userDetail.active));
+            this.props.dispatch(adminUserChangeActive(user.userDetail.id, !user.userDetail.active));
         }
     }
 
@@ -118,13 +138,19 @@ class AdminUserPage extends AbstractReactComponent{
             <Button key="add-user" onClick={this.handleCreateUserForm}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.admin.user.add')}</span></div></Button>
         );
 
-        if (user.userDetail.id !== null) {
+        const userDetail = user.userDetail;
+
+        if (userDetail.id != null) {
             itemActions.push(
                 <Button key="change-active-user" onClick={this.handleChangeUserActive}><Icon glyph={user.userDetail.active ? 'fa-ban' : 'fa-check'} /><div><span className="btnText">{user.userDetail.active ? i18n('ribbon.action.admin.user.deactivate') : i18n('ribbon.action.admin.user.activate')}</span></div></Button>
-            )
-            itemActions.push(
-                <Button key="password-change-user" onClick={this.handleChangeUserPasswordForm}><Icon glyph='fa-key' /><div><span className="btnText">{i18n('ribbon.action.admin.user.passwordChange')}</span></div></Button>
-            )
+            );
+            console.warn(userDetail, user);
+            const userData = user.users[indexById(user.users, userDetail.id)];
+            if (userData.authTypes.indexOf('PASSWORD') >= 0) {
+                itemActions.push(
+                    <Button key="password-change-user" onClick={this.handleChangeUserPasswordForm}><Icon glyph='fa-key' /><div><span className="btnText">{i18n('ribbon.action.admin.user.passwordChange')}</span></div></Button>
+                );
+            }
             itemActions.push(
                 <Button key="username-change-user" onClick={this.handleChangeUsernameForm}><Icon glyph='fa-edit' /><div><span className="btnText">{i18n('ribbon.action.admin.user.edit')}</span></div></Button>
             )
@@ -146,12 +172,12 @@ class AdminUserPage extends AbstractReactComponent{
 
     handleFilterStateChange(e) {
         const {user} = this.props;
-        this.dispatch(usersSearch(user.filterText, {type: e.target.value}))
+        this.props.dispatch(usersSearch(user.filterText, {type: e.target.value}))
     }
 
     render() {
         const {splitter, user} = this.props;
-        let activeIndex
+        let activeIndex;
         if (user.userDetail.id !== null) {
             activeIndex = indexById(user.users, user.userDetail.id)
         }
@@ -179,7 +205,7 @@ class AdminUserPage extends AbstractReactComponent{
                     onSelect={this.handleSelect}
                 />}
             </div>
-        )
+        );
 
         let centerPanel;
         if (user.userDetail.id) {
@@ -207,7 +233,7 @@ class AdminUserPage extends AbstractReactComponent{
  * Namapování state do properties.
  */
 function mapStateToProps(state) {
-    const {splitter, adminRegion} = state
+    const {splitter, adminRegion} = state;
 
     return {
         splitter,

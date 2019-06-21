@@ -166,18 +166,18 @@ function usersUserDetailReceive(data) {
 }
 
 
-export function userCreate(username, password, partyId) {
+export function userCreate(username, valuesMap, partyId) {
     return (dispatch, getState) => {
-        return savingApiWrapper(dispatch, WebApi.createUser(username, password, partyId)).then(response => {
+        return savingApiWrapper(dispatch, WebApi.createUser(username, valuesMap, partyId)).then(response => {
             dispatch(addToastrSuccess(i18n('admin.user.add.success')));
             dispatch(usersSelectUser(response.id))
         });
     }
 }
 
-export function userUpdate(id, username, password) {
+export function userUpdate(id, username, valuesMap) {
     return (dispatch) => {
-        return savingApiWrapper(dispatch, WebApi.updateUser(id, username, password)).then(response => {
+        return savingApiWrapper(dispatch, WebApi.updateUser(id, username, valuesMap)).then(response => {
             dispatch(addToastrSuccess(i18n('admin.user.update.success')));
             dispatch(usersSelectUser(response.id))
         });

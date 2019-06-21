@@ -1,11 +1,13 @@
 package cz.tacr.elza.controller;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.UsrAuthentication;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -307,7 +309,9 @@ public class IssueControllerTest extends AbstractControllerTest {
      */
     private UsrUserVO createUser(String username) {
         List<ParPartyVO> party = findParty(null, 0, 1, null, null);
-        return createUser(username, PASSWORD, party.get(0).getId());
+        Map<UsrAuthentication.AuthType, String> valueMap = new HashMap<>();
+        valueMap.put(UsrAuthentication.AuthType.PASSWORD, PASSWORD);
+        return createUser(username, valueMap, party.get(0).getId());
     }
 
 

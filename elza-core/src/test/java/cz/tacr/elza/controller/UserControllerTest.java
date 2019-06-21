@@ -3,12 +3,10 @@ package cz.tacr.elza.controller;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.UsrAuthentication;
 import org.junit.Test;
 
 import cz.tacr.elza.controller.vo.ApScopeVO;
@@ -215,7 +213,9 @@ public class UserControllerTest extends AbstractControllerTest {
     private UsrUserVO createUser() {
         List<ParPartyVO> party = findParty(null, 0, 1, null, null);
 
-        UsrUserVO user = createUser(USER, PASS, party.get(0).getId());
+        Map<UsrAuthentication.AuthType, String> valueMap = new HashMap<>();
+        valueMap.put(UsrAuthentication.AuthType.PASSWORD, PASS);
+        UsrUserVO user = createUser(USER, valueMap, party.get(0).getId());
 		assertNotNull(user);
 		assertNotNull(user.getId());
         return user;

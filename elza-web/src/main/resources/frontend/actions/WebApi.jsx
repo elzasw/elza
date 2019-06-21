@@ -1139,17 +1139,17 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + '/group/' + groupId + '/leave/' + userId, null, null);
     }
 
-    createUser(username, password, partyId) {
+    createUser(username, valuesMap, partyId) {
         const params = {
             username: username,
-            password: password,
+            valuesMap: valuesMap,
             partyId: partyId
         }
         return AjaxUtils.ajaxPost(WebApiCls.userUrl, null, params);
     }
 
-    updateUser(id, username, password) {
-        return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/' + id, null, { username, password });
+    updateUser(id, username, valuesMap) {
+        return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/' + id, null, { username, valuesMap });
     }
 
     changePasswordUser(oldPassword, newPassword) {

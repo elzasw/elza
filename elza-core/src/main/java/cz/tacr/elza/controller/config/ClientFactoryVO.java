@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -109,64 +111,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoBatchInfo;
-import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoFileGroup;
-import cz.tacr.elza.domain.ArrDaoLink;
-import cz.tacr.elza.domain.ArrDaoLinkRequest;
-import cz.tacr.elza.domain.ArrDaoPackage;
-import cz.tacr.elza.domain.ArrDaoRequest;
-import cz.tacr.elza.domain.ArrDaoRequestDao;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDigitalRepository;
-import cz.tacr.elza.domain.ArrDigitizationRequest;
-import cz.tacr.elza.domain.ArrDigitizationRequestNode;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.ArrNodeOutput;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.domain.ArrRequestQueueItem;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameComplement;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyTypeRelation;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemSpecExt;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulPolicyType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulStructuredTypeExtension;
-import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.domain.SysExternalSystem;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.WfIssue;
-import cz.tacr.elza.domain.WfIssueState;
-import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -174,30 +118,6 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApNameRepository;
-import cz.tacr.elza.repository.BulkActionNodeRepository;
-import cz.tacr.elza.repository.ComplementTypeRepository;
-import cz.tacr.elza.repository.DaoFileGroupRepository;
-import cz.tacr.elza.repository.DaoFileRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
-import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DaoRequestDaoRepository;
-import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.GroupRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputRepository;
-import cz.tacr.elza.repository.PartyNameRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.PermissionRepository;
-import cz.tacr.elza.repository.RelationEntityRepository;
-import cz.tacr.elza.repository.RelationRepository;
-import cz.tacr.elza.repository.RequestQueueItemRepository;
-import cz.tacr.elza.repository.UnitdateRepository;
-import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.LevelTreeCacheService;
@@ -319,6 +239,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private AttachmentService attachmentService;
+
+    @Autowired
+    private AuthenticationRepository authenticationRepository;
 
     /**
      * Vytvoření nastavení.
@@ -1508,7 +1431,7 @@ public class ClientFactoryVO {
         // Hlavní objekt
         MapperFacade mapper = mapperFactory.getMapperFacade();
         UsrUserVO result = mapper.map(user, UsrUserVO.class);
-
+        result.setAuthTypes(authenticationRepository.findByUser(user).stream().map(UsrAuthentication::getAuthType).collect(Collectors.toList()));
         // Načtení oprávnění
         if (initPermissions) {
 //        List<UsrPermission> permissions = permissionRepository.findByUserOrderByPermissionIdAsc(user);

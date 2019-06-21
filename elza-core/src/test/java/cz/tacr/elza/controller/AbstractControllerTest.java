@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.UsrAuthentication;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -43,61 +45,6 @@ import com.jayway.restassured.specification.RequestSpecification;
 
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.controller.ArrangementController.FaFilteredFulltextParam;
-import cz.tacr.elza.controller.vo.AddLevelParam;
-import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
-import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApEidTypeVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.ArrStructureDataVO;
-import cz.tacr.elza.controller.vo.CopyNodesParams;
-import cz.tacr.elza.controller.vo.CopyNodesValidate;
-import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
-import cz.tacr.elza.controller.vo.CreateFundVO;
-import cz.tacr.elza.controller.vo.FilterNode;
-import cz.tacr.elza.controller.vo.FilterNodePosition;
-import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.FulltextFundRequest;
-import cz.tacr.elza.controller.vo.FundListCountResult;
-import cz.tacr.elza.controller.vo.LanguageVO;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.OutputSettingsVO;
-import cz.tacr.elza.controller.vo.PackageVO;
-import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.RulStructureTypeVO;
-import cz.tacr.elza.controller.vo.RulTemplateVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
-import cz.tacr.elza.controller.vo.SysExternalSystemVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.UserInfoVO;
-import cz.tacr.elza.controller.vo.UsrGroupVO;
-import cz.tacr.elza.controller.vo.UsrPermissionVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
-import cz.tacr.elza.controller.vo.ValidationResult;
-import cz.tacr.elza.controller.vo.WfCommentVO;
-import cz.tacr.elza.controller.vo.WfIssueListVO;
-import cz.tacr.elza.controller.vo.WfIssueStateVO;
-import cz.tacr.elza.controller.vo.WfIssueTypeVO;
-import cz.tacr.elza.controller.vo.WfIssueVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemCoordinatesVO;
@@ -2538,7 +2485,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param params parametry pro vytvoření uživatele
      * @return vytvořený uživatel
      */
-    protected UsrUserVO createUser(final UserController.CreateUser params) {
+    protected UsrUserVO createUser(final CreateUserVO params) {
         return post(spec -> spec.body(params), CREATE_USER).as(UsrUserVO.class);
     }
 
@@ -2561,11 +2508,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return vytvořený uživatel
      */
     protected UsrUserVO createUser(final String username,
-                                   final String password,
+                                   final Map<UsrAuthentication.AuthType, String> valueMap,
                                    final Integer partyId) {
-        UserController.CreateUser params = new UserController.CreateUser();
+        CreateUserVO params = new CreateUserVO();
         params.setUsername(username);
-        params.setPassword(password);
+        params.setValuesMap(valueMap);
         params.setPartyId(partyId);
         return createUser(params);
     }

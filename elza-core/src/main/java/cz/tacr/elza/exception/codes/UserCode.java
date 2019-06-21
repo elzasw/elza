@@ -54,6 +54,11 @@ public enum UserCode implements ErrorCode {
     PASSWORD_NOT_MATCH,
 
     /**
+     * Je třeba změnit i heslo.
+     */
+    NEED_CHANGE_PASSWORD,
+
+    /**
      * Uživatel není přihlášen.
      */
     USER_NOT_LOGGED

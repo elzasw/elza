@@ -1,5 +1,6 @@
 package cz.tacr.elza.security;
 
+import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +81,12 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
                 UsrUser user = userService.findByUsername(username);
 
                 if (user != null) {
-                    if (!user.getPassword().equals(encodePassword)) {
+                    UsrAuthentication usrAuthentication = userService.findAuthentication(user, UsrAuthentication.AuthType.PASSWORD);
+                    if (usrAuthentication == null) {
+                        throw new UsernameNotFoundException("Pro uživatele není povolen tento typ přihlášení");
+                    }
+
+                    if (!usrAuthentication.getValue().equalsIgnoreCase(encodePassword)) {
                         throw new UsernameNotFoundException("Neplatné uživatelské jméno nebo heslo");
                     }
 
