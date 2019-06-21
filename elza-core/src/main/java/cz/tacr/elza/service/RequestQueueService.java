@@ -52,6 +52,7 @@ import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.RequestRepository;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdRequestIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -85,6 +86,9 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
 
     @Autowired
     private RequestService requestService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private EventNotificationService eventNotificationService;
@@ -204,6 +208,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
     private OnDaoLinked createDaoLinked(final ArrDaoLinkRequest request) {
         OnDaoLinked daoLinked = new OnDaoLinked();
         daoLinked.setDaoIdentifier(request.getDao().getCode());
+        daoLinked.setUsername(getUsername());
         daoLinked.setSystemIdentifier(request.getDigitalRepository().getElzaCode());
         List<ArrDaoLink> daoLinks = daoLinkRepository.findByDaoAndDeleteChangeIsNull(request.getDao());
         if (CollectionUtils.isNotEmpty(daoLinks)) {
@@ -224,6 +229,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
     private OnDaoUnlinked createDaoUnlinked(final ArrDaoLinkRequest request) {
         final OnDaoUnlinked daoUnlinked = new OnDaoUnlinked();
         daoUnlinked.setDaoIdentifier(request.getDao().getCode());
+        daoUnlinked.setUsername(getUsername());
         daoUnlinked.setSystemIdentifier(request.getDigitalRepository().getElzaCode());
         return daoUnlinked;
     }
@@ -238,6 +244,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
         final TransferRequest transferRequest = new TransferRequest();
         transferRequest.setIdentifier(request.getCode());
         transferRequest.setDescription(request.getDescription());
+        transferRequest.setUsername(getUsername());
         transferRequest.setSystemIdentifier(request.getDigitalRepository().getElzaCode());
         final DaoIdentifiers daoIdentifiers = new DaoIdentifiers();
         final List<ArrDaoRequestDao> daos = daoRequestDaoRepository.findByDaoRequest(request);
@@ -256,6 +263,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
         DestructionRequest destructionRequest = new DestructionRequest();
         destructionRequest.setIdentifier(request.getCode());
         destructionRequest.setDescription(request.getDescription());
+        destructionRequest.setUsername(getUsername());
         destructionRequest.setSystemIdentifier(request.getDigitalRepository().getElzaCode());
 
         final DaoIdentifiers daoIdentifiers = new DaoIdentifiers();
@@ -439,7 +447,6 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
      * Serializace objektu.
      *
      * @param data serializovaný objekt
-     * @return
      */
     public static String serializeData(final Object data) {
         try {
@@ -447,6 +454,14 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
         } catch (IOException e) {
             throw new SystemException("Nastal problém při serializaci objektu pro odeslání požadavku", e, BaseCode.JSON_PARSE);
         }
+    }
+
+    private String getUsername() {
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        if (userDetail != null && userDetail.getId() != null) {
+            return userDetail.getUsername();
+        }
+        return null;
     }
 
     class RequestExecute implements Callable<RequestExecute> {

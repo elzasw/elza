@@ -21,6 +21,8 @@ public class DaoRequestInfo {
 
 	private Status status;
 
+	private String username;
+
 	public String getRequestIdentifier() {
 		return requestIdentifier;
 	}
@@ -67,5 +69,13 @@ public class DaoRequestInfo {
 
 	public void setStatus(Status status) {
 		this.status = status;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
 	}
 }
