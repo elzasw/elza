@@ -36,6 +36,7 @@ function callWS(url, data, needResponse = true) {
 export class WebApiCls {
 
     static baseUrl = '/api';
+    static authUrl = WebApiCls.baseUrl + '/auth';
     static arrangementUrl = WebApiCls.baseUrl + '/arrangement';
     static issueUrl = WebApiCls.baseUrl + '/issue';
     static registryUrl = WebApiCls.baseUrl + '/registry';
@@ -53,6 +54,15 @@ export class WebApiCls {
     static adminUrl = WebApiCls.baseUrl + '/admin';
     static validateUrl = WebApiCls.baseUrl + '/validate';
     static structureUrl = WebApiCls.baseUrl + '/structure';
+
+    /**
+     * Seznam entit pro SSO přihlašování.
+
+     * @return seznam sso entit
+     */
+    getSsoEntities() {
+        return AjaxUtils.ajaxGet(WebApiCls.authUrl + '/sso');
+    }
 
     findInFundTree(versionId, nodeId, searchText, type, searchParams = null, luceneQuery = false) {
         const data = {

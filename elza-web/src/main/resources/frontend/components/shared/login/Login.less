@@ -2,18 +2,29 @@
 
 .login {
 
-  background-color:rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.5);
 
-  .modal-header {
-    > .close {
-      display: none;
+    .modal-header {
+        > .close {
+            display: none;
+        }
     }
-  }
 
-  .error {
-    color: #a94442;
-    font-size: @font-size-base * 1.2;
-    font-weight: bold;
-  }
+    .error {
+        color: #a94442;
+        font-size: @font-size-base * 1.2;
+        font-weight: bold;
+    }
 
+    .submit-button {
+        margin-top: 15px;
+        text-align: right;
+    }
+
+    .modal-footer {
+        .or-message {
+            margin-bottom: 5px;
+        }
+        text-align: center;
+    }
 }

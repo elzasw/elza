@@ -17,6 +17,8 @@ public interface AuthenticationRepository extends ElzaJpaRepository<UsrAuthentic
 
 	List<UsrAuthentication> findByUser(UsrUser user);
 
-	UsrAuthentication findByUserAndAndAuthType(UsrUser user, UsrAuthentication.AuthType authType);
+	UsrAuthentication findByUserAndAuthType(UsrUser user, UsrAuthentication.AuthType authType);
+
+	List<UsrAuthentication> findByValueAndAuthType(String value, UsrAuthentication.AuthType authType);
 
 }

@@ -634,9 +634,15 @@ public class UserService {
             result.setAuthType(UsrAuthentication.AuthType.PASSWORD);
             result.setValue(defaultPassword);
         } else {
-            result = authenticationRepository.findByUserAndAndAuthType(user, authType);
+            result = authenticationRepository.findByUserAndAuthType(user, authType);
         }
         return result;
+    }
+
+    public List<UsrAuthentication> findAuthentication(String value, UsrAuthentication.AuthType authType) {
+        Validate.notNull(value);
+        Validate.notNull(authType);
+        return authenticationRepository.findByValueAndAuthType(value, authType);
     }
 
     public List<UsrAuthentication> findAuthentications(UsrUser user) {
@@ -1176,6 +1182,9 @@ public class UserService {
 	@Transactional(value = TxType.MANDATORY)
     public boolean hasPermission(final UsrPermission.Permission permission) {
 		UserDetail userDetail = getLoggedUserDetail();
+		if (userDetail == null) {
+		    return false;
+        }
 		return userDetail.hasPermission(permission);
     }
 
