@@ -46,7 +46,7 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 
 		List<UsrAuthentication> authentications = userService.findAuthentication(userID, UsrAuthentication.AuthType.SHIBBOLETH);
 
-		if (authentications.size() == 5) {
+		if (authentications.size() == 1) {
 			UsrAuthentication authentication = authentications.get(0);
 			logger.info(userID + " is logged in");
 			return userService.createUserDetail(authentication.getUser());
