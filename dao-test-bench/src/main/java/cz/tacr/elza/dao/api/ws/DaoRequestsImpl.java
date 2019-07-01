@@ -13,6 +13,7 @@ import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
 import cz.tacr.elza.ws.types.v1.DaosSyncRequest;
 import cz.tacr.elza.ws.types.v1.DaosSyncResponse;
 import cz.tacr.elza.ws.types.v1.DestructionRequest;
+import cz.tacr.elza.ws.types.v1.NonexistingDaos;
 import cz.tacr.elza.ws.types.v1.TransferRequest;
 
 @Service
@@ -64,6 +65,7 @@ public class DaoRequestsImpl implements DaoRequests {
 	@Override
 	public DaosSyncResponse syncDaos(DaosSyncRequest daosSyncRequest) throws DaoServiceException {
 		// todo[MCV-56215]
-		return null;
+		DaosSyncResponse response = new DaosSyncResponse();
+		return response;
 	}
 }

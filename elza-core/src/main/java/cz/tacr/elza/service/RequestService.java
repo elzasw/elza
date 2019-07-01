@@ -25,6 +25,7 @@ import cz.tacr.elza.domain.ArrDaoLinkRequest;
 import cz.tacr.elza.domain.ArrDaoLinkRequest.Type;
 import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDaoRequestDao;
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequestNode;
@@ -48,6 +49,8 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdDaoIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Servisní třída pro obsluhu a správu požadavků
@@ -130,11 +133,12 @@ public class RequestService {
     public ArrDaoRequest createDaoRequest(@NotNull final List<ArrDao> daos,
                                           @Nullable final String description,
                                           @NotNull final ArrDaoRequest.Type type,
-                                          @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion) {
+                                          @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                          @NotNull final ArrDigitalRepository digitalRepository) {
         ArrDaoRequest daoRequest = new ArrDaoRequest();
         daoRequest.setCode(generateCode());
         daoRequest.setDescription(description);
-        daoRequest.setDigitalRepository(daos.get(0).getDaoPackage().getDigitalRepository());
+        daoRequest.setDigitalRepository(digitalRepository);
         daoRequest.setFund(fundVersion.getFund());
         daoRequest.setCreateChange(arrangementService.createChange(ArrChange.Type.CREATE_DAO_REQUEST));
         daoRequest.setState(ArrRequest.State.OPEN);
@@ -145,11 +149,9 @@ public class RequestService {
             throw new BusinessException("Existuje požadavek, který již obsahuje přidávaný digitalizát(y) a není v uzavřeném stavu.", ArrangementCode.ALREADY_ADDED);
         }
 
-
         List<ArrDaoRequestDao> requestDaos = new ArrayList<>(daos.size());
         for (ArrDao dao : daos) {
-            if (!dao.getDaoPackage().getDigitalRepository().getExternalSystemId()
-                    .equals(daoRequest.getDigitalRepository().getExternalSystemId())) {
+            if (!dao.getDaoPackage().getDigitalRepository().getExternalSystemId().equals(digitalRepository.getExternalSystemId())) {
                 throw new BusinessException("Požadavek má jiné uložiště než má dao", ArrangementCode.INVALID_REQUEST_DIGITAL_REPOSITORY_DAO);
             }
             ArrDaoRequestDao requestDao = new ArrDaoRequestDao();
@@ -231,7 +233,6 @@ public class RequestService {
         if (daosInOtherRequests.size() != 0) {
             throw new BusinessException("Existuje požadavek, který již obsahuje přidávaný digitalizát(y) a není v uzavřeném stavu.", ArrangementCode.ALREADY_ADDED);
         }
-
 
         for (ArrDao dao : daos) {
             if (!dao.getDaoPackage().getDigitalRepository().getExternalSystemId()
@@ -377,12 +378,7 @@ public class RequestService {
                                   final ArrRequest request,
                                   final EventType type,
                                   final List<ArrNode> nodes) {
-        List<Integer> nodeIds = nodes != null ? new ArrayList<>(nodes.size()) : null;
-
-        if (nodes != null) {
-            nodes.forEach(node -> nodeIds.add(node.getNodeId()));
-        }
-
+        List<Integer> nodeIds = nodes != null ? nodes.stream().map(node -> node.getNodeId()).collect(toList()) : null;
         EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(type, fundVersion.getFundVersionId(),
                 request.getRequestId(), nodeIds);
         eventNotificationService.publishEvent(event);
@@ -392,12 +388,7 @@ public class RequestService {
                                      final ArrRequest request,
                                      final EventType type,
                                      final List<ArrDao> daos) {
-        List<Integer> daoIds = daos != null ? new ArrayList<>(daos.size()) : null;
-
-        if (daos != null) {
-            daos.forEach(node -> daoIds.add(node.getDaoId()));
-        }
-
+        List<Integer> daoIds = daos != null ? daos.stream().map(dao -> dao.getDaoId()).collect(toList()) : null;
         EventIdDaoIdInVersion event = new EventIdDaoIdInVersion(type, fundVersion.getFundVersionId(),
                 request.getRequestId(), daoIds);
         eventNotificationService.publishEvent(event);

@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -51,13 +50,14 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
+import static java.util.stream.Collectors.toList;
+
 /**
  * Servisní metory pro  digitalizáty
  *
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 12.12.16
+ * Date: 12.12.16
  */
-
 @Service
 public class DaoService {
 
@@ -122,7 +122,7 @@ public class DaoService {
      * @param daoPackage  package
      * @param index       počáteční pozice pro načtení
      * @param maxResults  počet načítaných výsledků
-     * @param unassigned mají-li se získávat pouze balíčky, které obsahují DAO, které nejsou nikam přirazené (unassigned = true), a nebo úplně všechny (unassigned = false)
+     * @param unassigned  mají-li se získávat pouze balíčky, které obsahují DAO, které nejsou nikam přirazené (unassigned = true), a nebo úplně všechny (unassigned = false)
      * @return seznam digitálních entit (DAO)
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
@@ -136,9 +136,8 @@ public class DaoService {
     /**
      * Najde existující platné propojení nebo jej vytvoří.
      *
-     * @param dao digitalizát
+     * @param dao  digitalizát
      * @param node node
-     *
      * @return nalezené nebo vytvořené propojení
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
@@ -159,7 +158,7 @@ public class DaoService {
             // měla by být jen jedna, ale cyklus ošetří i případnou chybu v datech
             for (ArrDaoLink arrDaoLink : linkList) {
                 nodeIds.add(arrDaoLink.getNodeId());
-                deleteArrDaoLink(Collections.singletonList(fundVersion), arrDaoLink);
+                deleteDaoLink(Collections.singletonList(fundVersion), arrDaoLink, true);
             }
 
             final ArrDaoLink resultDaoLink = createArrDaoLink(fundVersion, dao, node);
@@ -193,9 +192,7 @@ public class DaoService {
         ArrDaoLink resultDaoLink = daoLinkRepository.save(daoLink);
 
         // poslat i websockety o připojení
-        EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(EventType.DAO_LINK_CREATE, fundVersion.getFundVersionId(),
-                dao.getDaoId(), Collections.singletonList(node.getNodeId()));
-        eventNotificationService.publishEvent(event);
+        publishEvent(EventType.DAO_LINK_CREATE, fundVersion, dao, node);
 
         // poslat notifikaci pouze pokud je zapnutá u digitálního uložiště
         if (dao.getDaoPackage().getDigitalRepository().getSendNotification()) {
@@ -216,7 +213,7 @@ public class DaoService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrDaoLink deleteDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final ArrDaoLink daoLink) {
-        ArrDaoLink result = deleteArrDaoLink(Collections.singletonList(fundVersion), daoLink);
+        ArrDaoLink result = deleteDaoLink(Collections.singletonList(fundVersion), daoLink, true);
         updateNodeCacheDaoLinks(Collections.singletonList(daoLink.getNodeId()));
         return result;
     }
@@ -225,13 +222,14 @@ public class DaoService {
     public List<ArrDaoLink> deleteDaoLinkByNode(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final ArrNode node) {
         List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdInAndDeleteChangeIsNull(Collections.singletonList(node.getNodeId()));
         for (ArrDaoLink daoLink : daoLinks) {
-            deleteArrDaoLink(Collections.singletonList(fundVersion), daoLink);
+            deleteDaoLink(Collections.singletonList(fundVersion), daoLink, true);
         }
         arrangementCacheService.clearDaoLinks(node.getNodeId());
         return daoLinks;
     }
 
-    private ArrDaoLink deleteArrDaoLink(final List<ArrFundVersion> fundVersionList, final ArrDaoLink daoLink) {
+    private ArrDaoLink deleteDaoLink(final List<ArrFundVersion> fundVersionList, final ArrDaoLink daoLink, boolean notify) {
+
         // kontrola, že ještě existuje
         if (daoLink.getDeleteChange() != null) {
             logger.debug("Zadané propojení arrDaoLink(ID=" + daoLink.getDaoLinkId() + ") je již zneplatněné.");
@@ -247,12 +245,10 @@ public class DaoService {
         for (ArrFundVersion arrFundVersion : fundVersionList) {
 
             // poslat websockety o odpojení
-            EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(EventType.DAO_LINK_DELETE, arrFundVersion.getFundVersionId(),
-                    daoLink.getDao().getDaoId(), Collections.singletonList(daoLink.getNode().getNodeId()));
-            eventNotificationService.publishEvent(event);
+            publishEvent(EventType.DAO_LINK_DELETE, arrFundVersion, daoLink.getDao(), daoLink.getNode());
 
             // poslat notifikaci pouze pokud je zapnutá u digitálního uložiště
-            if (daoLink.getDao().getDaoPackage().getDigitalRepository().getSendNotification()) {
+            if (notify && daoLink.getDao().getDaoPackage().getDigitalRepository().getSendNotification()) {
                 // vytvořit požadavek pro externí systém na odpojení
                 final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(arrFundVersion, daoLink.getDao(), deleteChange, Type.UNLINK, daoLink.getNode());
                 requestQueueService.sendRequest(request, arrFundVersion);
@@ -293,7 +289,7 @@ public class DaoService {
                 Arrays.asList(ArrRequest.State.OPEN, ArrRequest.State.QUEUED, ArrRequest.State.SENT));
 
         if (daoLinkRequests.size() == 0) {
-            result.addAll(deleteDaos(arrDaos));
+            result.addAll(deleteDaos(arrDaos, true));
         } else {
             logger.info("Nelze zneplatnit vybraná dao, počet otevřených požadavků: " + daoLinkRequests.size());
         }
@@ -316,7 +312,7 @@ public class DaoService {
         for (ArrDao arrDao : arrDaos) {
             // smazat arr_dao_link
             final List<ArrDaoLink> arrDaoLinkList = daoLinkRepository.findByDao(arrDao);
-            nodeIds.addAll(arrDaoLinkList.stream().map(arrDaoLink -> arrDaoLink.getNodeId()).collect(Collectors.toList()));
+            nodeIds.addAll(arrDaoLinkList.stream().map(arrDaoLink -> arrDaoLink.getNodeId()).collect(toList()));
             daoLinkRepository.delete(arrDaoLinkList);
 
             // smazat arr_dao_file
@@ -352,7 +348,7 @@ public class DaoService {
      * @param arrDaos seznam dao pro zneplatnění
      * @return seznam zneplatněných ArrDao
      */
-    public List<ArrDao> deleteDaos(final List<ArrDao> arrDaos) {
+    public List<ArrDao> deleteDaos(final List<ArrDao> arrDaos, boolean notify) {
         Set<Integer> nodeIds = new HashSet<>();
         List<ArrDao> result = new ArrayList<>();
         for (ArrDao arrDao : arrDaos) {
@@ -363,7 +359,7 @@ public class DaoService {
             final List<ArrDaoLink> arrDaoLinkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(arrDao);
             for (ArrDaoLink arrDaoLink : arrDaoLinkList) {
                 ArrNode node = arrDaoLink.getNode();
-                deleteArrDaoLink(node.getFund().getVersions(), arrDaoLink);
+                deleteDaoLink(node.getFund().getVersions(), arrDaoLink, notify);
                 nodeIds.add(node.getNodeId());
             }
         }
@@ -426,5 +422,11 @@ public class DaoService {
             List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIds);
             arrangementCacheService.updateDaoLinks(nodeIds, daoLinks);
         }
+    }
+
+    private void publishEvent(EventType type, ArrFundVersion fundVersion, ArrDao dao, ArrNode node) {
+        EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(type, fundVersion.getFundVersionId(),
+                dao.getDaoId(), Collections.singletonList(node.getNodeId()));
+        eventNotificationService.publishEvent(event);
     }
 }

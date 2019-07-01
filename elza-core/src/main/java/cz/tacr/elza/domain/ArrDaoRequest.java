@@ -68,6 +68,11 @@ public class ArrDaoRequest extends ArrRequest {
         /**
          * Delimitace.
          */
-        TRANSFER
+        TRANSFER,
+
+        /**
+         * Synchronizace digitalizátů
+         */
+        SYNC
     }
 }

@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -28,11 +27,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDaoLinkRequest;
 import cz.tacr.elza.domain.ArrDaoRequest;
-import cz.tacr.elza.domain.ArrDaoRequestDao;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequestNode;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -58,6 +55,8 @@ import cz.tacr.elza.service.eventnotification.events.EventIdRequestIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.ws.WsClient;
 import cz.tacr.elza.ws.types.v1.DaoIdentifiers;
+import cz.tacr.elza.ws.types.v1.DaosSyncRequest;
+import cz.tacr.elza.ws.types.v1.DaosSyncResponse;
 import cz.tacr.elza.ws.types.v1.DestructionRequest;
 import cz.tacr.elza.ws.types.v1.Did;
 import cz.tacr.elza.ws.types.v1.DigitizationRequest;
@@ -66,9 +65,10 @@ import cz.tacr.elza.ws.types.v1.OnDaoLinked;
 import cz.tacr.elza.ws.types.v1.OnDaoUnlinked;
 import cz.tacr.elza.ws.types.v1.TransferRequest;
 
+import static java.util.stream.Collectors.toList;
+
 /**
  * Servisní třída pro obsluhu a správu požadavků
- *
  */
 @Service
 public class RequestQueueService implements ListenableFutureCallback<RequestQueueService.RequestExecute> {
@@ -83,6 +83,9 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
 
     @Autowired
     private ArrangementService arrangementService;
+
+    @Autowired
+    private DaoSyncService daoSyncService;
 
     @Autowired
     private RequestService requestService;
@@ -127,7 +130,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final long RETRY_TIME = 60L * 1000;
+    private static final long RETRY_TIME = 60L * 1000L;
 
     // seznam identifikátorů externích systémů, na které se provádí odesílání požadavků
     private Set<Integer> externalSystemIds = new HashSet<>();
@@ -164,9 +167,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
                 throw new BusinessException("Neplatný požadavek, nejsou navázané žádné JP", ArrangementCode.REQUEST_INVALID);
             }
         } else if (request instanceof ArrDaoRequest) { // kontroluje, že obsahuje alespoň jedno navázané DAO
-            List<ArrDaoRequestDao> daoRequestDaos =
-                    daoRequestDaoRepository.findByDaoRequest((ArrDaoRequest) request);
-            if (daoRequestDaos.size() == 0) {
+            if (daoRequestDaoRepository.countByDaoRequest((ArrDaoRequest) request) == 0) {
                 throw new BusinessException("Neplatný požadavek, nejsou navázané žádné DAO", ArrangementCode.REQUEST_INVALID);
             }
         }
@@ -247,8 +248,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
         transferRequest.setUsername(getUsername());
         transferRequest.setSystemIdentifier(request.getDigitalRepository().getElzaCode());
         final DaoIdentifiers daoIdentifiers = new DaoIdentifiers();
-        final List<ArrDaoRequestDao> daos = daoRequestDaoRepository.findByDaoRequest(request);
-        daoIdentifiers.getIdentifier().addAll(daos.stream().map(ArrDaoRequestDao::getDao).map(ArrDao::getCode).collect(Collectors.toList()));
+        daoIdentifiers.getIdentifier().addAll(daoRequestDaoRepository.findDaoByDaoRequest(request).stream().map(dao -> dao.getCode()).collect(toList()));
         transferRequest.setDaoIdentifiers(daoIdentifiers);
         return transferRequest;
     }
@@ -265,10 +265,8 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
         destructionRequest.setDescription(request.getDescription());
         destructionRequest.setUsername(getUsername());
         destructionRequest.setSystemIdentifier(request.getDigitalRepository().getElzaCode());
-
         final DaoIdentifiers daoIdentifiers = new DaoIdentifiers();
-        final List<ArrDaoRequestDao> daos = daoRequestDaoRepository.findByDaoRequest(request);
-        daoIdentifiers.getIdentifier().addAll(daos.stream().map(ArrDaoRequestDao::getDao).map(ArrDao::getCode).collect(Collectors.toList()));
+        daoIdentifiers.getIdentifier().addAll(daoRequestDaoRepository.findDaoByDaoRequest(request).stream().map(dao -> dao.getCode()).collect(toList()));
         destructionRequest.setDaoIdentifiers(daoIdentifiers);
         return destructionRequest;
     }
@@ -301,19 +299,20 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
      * @return serializovaný požadavek
      */
     private String serializeRequest(final ArrRequest request) {
-        Object data;
+        Object data = getRequest(request);
+        return serializeData(data);
+    }
 
+    private Object getRequest(ArrRequest request) {
         if (request instanceof ArrDigitizationRequest) {
-            data = createDigitizationRequest((ArrDigitizationRequest) request);
+            return createDigitizationRequest((ArrDigitizationRequest) request);
         } else if (request instanceof ArrDaoLinkRequest) {
             ArrDaoLinkRequest daoLinkRequest = (ArrDaoLinkRequest) request;
             switch (daoLinkRequest.getType()) {
                 case LINK:
-                    data = createDaoLinked(daoLinkRequest);
-                    break;
+                    return createDaoLinked(daoLinkRequest);
                 case UNLINK:
-                    data = createDaoUnlinked(daoLinkRequest);
-                    break;
+                    return createDaoUnlinked(daoLinkRequest);
                 default:
                     throw new NotImplementedException("Neimplementovaný typ requestu pro link/unlink: " + daoLinkRequest.getType());
             }
@@ -321,19 +320,17 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
             ArrDaoRequest daoRequest = (ArrDaoRequest) request;
             switch (daoRequest.getType()) {
                 case DESTRUCTION:
-                    data = createDestructionRequest(daoRequest);
-                    break;
+                    return createDestructionRequest(daoRequest);
                 case TRANSFER:
-                    data = createTransferRequest(daoRequest);
-                    break;
+                    return createTransferRequest(daoRequest);
+                case SYNC:
+                    return daoSyncService.createDaosSyncRequest(daoRequest);
                 default:
-                    throw new NotImplementedException("Neimplementovaný typ requestu pro desctuction/transfer: " + daoRequest.getType());
+                    throw new NotImplementedException("Neimplementovaný typ requestu pro destruction/transfer/sync: " + daoRequest.getType());
             }
         } else {
             throw new NotImplementedException("Neimplementovaný typ requestu pro serializaci: " + request.getDiscriminator());
         }
-
-        return serializeData(data);
     }
 
     private void sendNotification(final ArrFundVersion fundVersion,
@@ -431,7 +428,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
     /**
      * Deserializace objektu.
      *
-     * @param data data, podle kterých sestavujeme
+     * @param data  data, podle kterých sestavujeme
      * @param clazz třída, kterou sestavujeme
      * @return vytvořený objekt
      */
@@ -530,6 +527,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
             sendNotification(openVersion, request, queueItem, EventType.REQUEST_ITEM_QUEUE_CHANGE);
 
             String externalSystemCode = null;
+
             if (ArrRequest.ClassType.DIGITIZATION == request.getDiscriminator()) {
                 ArrDigitizationRequest arrDigitizationRequest = (ArrDigitizationRequest) request;
                 DigitizationRequest digitizationRequest = deserializeData(queueItem.getData(), DigitizationRequest.class);
@@ -542,6 +540,10 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
                 } else if (ArrDaoRequest.Type.TRANSFER == arrDaoRequest.getType()) {
                     TransferRequest transferRequest = deserializeData(queueItem.getData(), TransferRequest.class);
                     externalSystemCode = wsClient.postTransferRequest(transferRequest, arrDaoRequest.getDigitalRepository());
+                } else if (ArrDaoRequest.Type.SYNC == arrDaoRequest.getType()) {
+                    DaosSyncRequest daosSyncRequest = deserializeData(queueItem.getData(), DaosSyncRequest.class);
+                    DaosSyncResponse daosSyncResponse = wsClient.syncDaos(daosSyncRequest, arrDaoRequest.getDigitalRepository());
+                    daoSyncService.processDaosSyncResponse(daosSyncResponse);
                 } else {
                     throw new SystemException("Neplatný typ: " + arrDaoRequest.getType(), BaseCode.SYSTEM_ERROR);
                 }
@@ -581,5 +583,4 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
                     '}';
         }
     }
-
 }

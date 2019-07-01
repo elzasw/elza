@@ -8,6 +8,8 @@ import cz.tacr.elza.ws.dao_service.v1.DaoRequests;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
 import cz.tacr.elza.ws.digitization.v1.DigitizationFrontdesk;
 import cz.tacr.elza.ws.digitization.v1.DigitizationServiceException;
+import cz.tacr.elza.ws.types.v1.DaosSyncRequest;
+import cz.tacr.elza.ws.types.v1.DaosSyncResponse;
 import cz.tacr.elza.ws.types.v1.DestructionRequest;
 import cz.tacr.elza.ws.types.v1.DigitizationRequest;
 import cz.tacr.elza.ws.types.v1.OnDaoLinked;
@@ -92,6 +94,17 @@ public class WsClient {
         final DaoRequests remoteInterface = getDaoRequests(digitalRepository);
         try {
             return remoteInterface.postTransferRequest(transferRequest);
+        } catch (DaoServiceException e) {
+            logger.error("Fail in call remote webservice.", e);
+            throw new SystemException(e);
+        }
+    }
+
+    public DaosSyncResponse syncDaos(final DaosSyncRequest daosSyncRequest,
+                                     final ArrDigitalRepository digitalRepository) {
+        final DaoRequests remoteInterface = getDaoRequests(digitalRepository);
+        try {
+            return remoteInterface.syncDaos(daosSyncRequest);
         } catch (DaoServiceException e) {
             logger.error("Fail in call remote webservice.", e);
             throw new SystemException(e);

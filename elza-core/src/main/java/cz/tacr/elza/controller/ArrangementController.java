@@ -15,7 +15,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
@@ -88,6 +87,7 @@ import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
@@ -115,6 +115,7 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.DigitizationCode;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
@@ -137,6 +138,7 @@ import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrangementFormService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoService;
+import cz.tacr.elza.service.DaoSyncService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.FilterTreeService;
@@ -158,6 +160,9 @@ import cz.tacr.elza.service.importnodes.vo.ValidateResult;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.service.vo.UpdateDescItemsParam;
+
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * Kontroler pro pořádání.
@@ -224,6 +229,9 @@ public class ArrangementController {
 
     @Autowired
     private DaoService daoService;
+
+    @Autowired
+    private DaoSyncService daoSyncService;
 
     @Autowired
     private DaoRepository daoRepository;
@@ -401,6 +409,51 @@ public class ArrangementController {
         final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
 
         final ArrDaoLink daoLink = daoService.createOrFindDaoLink(fundVersion, dao, node);
+    }
+
+    /**
+     * Zavolá WS pro synchronizaci digitalizátů a aktualizuje metadata pro daný node a DAO.
+     *
+     * @param fundVersionId verze AS
+     * @param daoId         DAO pro synchronizaci
+     * @param nodeId        node pro synchronizaci
+     */
+    @Transactional
+    @RequestMapping(value = "/daos/{fundVersionId}/{daoId}/{nodeId}/sync",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public void syncDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                            @PathVariable(value = "daoId") final Integer daoId,
+                            @PathVariable(value = "nodeId") final Integer nodeId) {
+        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+        Assert.notNull(daoId, "Identifikátor DAO musí být vyplněn");
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+
+        final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        final ArrDao dao = daoRepository.getOneCheckExist(daoId);
+        final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
+
+        if (!node.getFund().equals(dao.getDaoPackage().getFund())) {
+            throw new BusinessException("DAO a Node okazují na různý package", DigitizationCode.DAO_AND_NODE_HAS_DIFFERENT_PACKAGE);
+        }
+
+        daoSyncService.syncDaoLink(fundVersion, node, dao);
+    }
+
+    /**
+     * Spustí asynchronní synchronizaci digitalizátů a aktualizuje metadata pro všechny nody z AS, které mají připojené DAO.
+     *
+     * @param fundVersionId verze AS
+     */
+    @Transactional
+    @RequestMapping(value = "/daos/{fundVersionId}/_all/sync",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public void syncDaosByFund(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
+        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+        daoSyncService.syncDaosAll(fundVersionId);
     }
 
     /**
@@ -1041,7 +1094,7 @@ public class ArrangementController {
         List<ArrItemVO> descItems = factoryVo.createItems(outputItems);
         List<ItemTypeLiteVO> itemTypeLites = factoryVo.createItemTypes(ruleCode, fundId, itemTypes);
         return new OutputFormDataNewVO(outputVO, descItems, itemTypeLites,
-                hiddenItemTypes.stream().map(RulItemTypeExt::getItemTypeId).collect(Collectors.toList()));
+                hiddenItemTypes.stream().map(RulItemTypeExt::getItemTypeId).collect(toList()));
     }
 
     /**
@@ -1334,7 +1387,7 @@ public class ArrangementController {
                 // TODO: Remove stream and user more direct query
                 final Set<Integer> userIds = userService.findUserWithFundCreate(null, 0, -1).getList().stream()
                         .map(x -> x.getUserId())
-                        .collect(Collectors.toSet());
+                        .collect(toSet());
                 createFund.getAdminUsers()
                         .forEach(u -> {
                             if (!userIds.contains(u.getId())) {
@@ -1345,7 +1398,7 @@ public class ArrangementController {
             if (createFund.getAdminGroups() != null && !createFund.getAdminGroups().isEmpty()) {
                 final Set<Integer> groupIds = userService.findGroupWithFundCreate(null, 0, -1).getList().stream()
                         .map(x -> x.getGroupId())
-                        .collect(Collectors.toSet());
+                        .collect(toSet());
                 createFund.getAdminGroups()
                         .forEach(g -> {
                             if (!groupIds.contains(g.getId())) {
@@ -2446,9 +2499,14 @@ public class ArrangementController {
             throw new SystemException("Neplatný počet nalezených digitalizátů (" + daos.size() + ", " +  param.daoIds.size() + ")", BaseCode.ID_NOT_EXIST);
         }
 
+        if (daos.stream().map(o -> o.getDaoPackage().getDigitalRepository().getExternalSystemId()).collect(toSet()).size() > 1) {
+            throw new BusinessException("DAO musí mít stejná úložiště", ArrangementCode.INVALID_REQUEST_DIGITAL_REPOSITORY_DAO);
+        }
+        ArrDigitalRepository digitalRepository = daos.get(0).getDaoPackage().getDigitalRepository();
+
         ArrDaoRequest daoRequest;
         if (param.id == null) {
-            daoRequest = requestService.createDaoRequest(daos, param.description, param.type, fundVersion);
+            daoRequest = requestService.createDaoRequest(daos, param.description, param.type, fundVersion, digitalRepository);
         } else {
             daoRequest = requestService.getDaoRequest(param.id);
             requestService.addDaoDaoRequest(daoRequest, daos, fundVersion, param.getDescription());
