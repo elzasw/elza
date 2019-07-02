@@ -129,6 +129,8 @@ public class AuthorizationRequest {
 			break;
 		case AP_SCOPE_RD:
 		case AP_SCOPE_WR:
+		case AP_CONFIRM:
+		case AP_EDIT_CONFIRMED:
 			checkList.add(new AuthCheckScopeId(perm, entityId));
 			break;
 		default:

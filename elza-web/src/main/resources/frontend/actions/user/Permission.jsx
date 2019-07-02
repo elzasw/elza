@@ -7,6 +7,10 @@ export const AP_SCOPE_RD = 'AP_SCOPE_RD';
 export const AP_SCOPE_RD_ALL = 'AP_SCOPE_RD_ALL';
 export const AP_SCOPE_WR = 'AP_SCOPE_WR';
 export const AP_SCOPE_WR_ALL = 'AP_SCOPE_WR_ALL';
+export const AP_CONFIRM = 'AP_CONFIRM';
+export const AP_CONFIRM_ALL = 'AP_CONFIRM_ALL';
+export const AP_EDIT_CONFIRMED = 'AP_EDIT_CONFIRMED';
+export const AP_EDIT_CONFIRMED_ALL = 'AP_EDIT_CONFIRMED_ALL';
 export const FUND_OUTPUT_WR = 'FUND_OUTPUT_WR';
 export const FUND_OUTPUT_WR_ALL = 'FUND_OUTPUT_WR_ALL';
 export const FUND_VER_WR = 'FUND_VER_WR';
@@ -37,6 +41,10 @@ export const all = {
     AP_SCOPE_RD_ALL: {  },
     AP_SCOPE_WR: { scope: true },
     AP_SCOPE_WR_ALL: {  },
+    AP_CONFIRM: { scope: true },
+    AP_CONFIRM_ALL: {  },
+    AP_EDIT_CONFIRMED: { scope: true },
+    AP_EDIT_CONFIRMED_ALL: {  },
     FUND_OUTPUT_WR: { fund: true },
     FUND_OUTPUT_WR_ALL: {  },
     FUND_VER_WR: { fund: true },

@@ -27,6 +27,8 @@ function hasRight(right) {
                         break
                     case perms.AP_SCOPE_RD:
                     case perms.AP_SCOPE_WR:
+                    case perms.AP_CONFIRM:
+                    case perms.AP_EDIT_CONFIRMED:
                         if (perm.scopeIdsMap[right.scopeId]) {
                             return true
                         }
@@ -159,7 +161,7 @@ function userDetailInt(state, action) {
             // action.userDetail.userPermissions = [
             //     {permission: 'FUND_ARR_ALL', fundIds: [], scopeIds: [1]},
             //     {permission: 'AP_SCOPE_RD', fundIds: [], scopeIds: [1]},
-            //     {permission: 'AP_SCOPE_WR_ALL1', fundIds: [], scopeIds: []},
+            //     {permission: 'AP_SCOPE_WR_ALL', fundIds: [], scopeIds: []},
             //     {permission: 'AP_SCOPE_WR', fundIds: [], scopeIds: [2]},
             // ]
 

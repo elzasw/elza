@@ -421,19 +421,68 @@ public class UsrPermission {
         },
 
         /**
-         * zápis/úprava vybraného scope rejstříku
-         * - obdobně jako výše, ale může hesla upravovat, přidávat, rušit, ale jen pro přiřazený scope
+         * Zakládání a změny nových
+         * <ul>
+         * <li>založení nového přístupového bodu</li>
+         * <li>nastavení stavu „Nový", „Ke schválení" i „K doplnění"</li>
+         * <li>změnu přístupového bodu, pokud je ve stavu „Nový" i „Ke schválení" i „K doplnění"</li>
+         * </ul>
          */
         AP_SCOPE_WR(PermissionType.SCOPE),
 
         /**
-         * zápis/úprava všech scope rejstříků
+         * Zakládání a změny nových
          * - obdboně jako výše pro všechna rejstříková hesla
          */
         AP_SCOPE_WR_ALL {
             @Override
             public boolean isEqualOrHigher(Permission permission) {
                 if (permission == AP_SCOPE_WR_ALL || permission == AP_SCOPE_WR) {
+                    return true;
+                }
+                return false;
+            }
+        },
+
+        /**
+         * Schvalování přístupových bodů
+         * <ul>
+         * <li>změnit stav na „Schválený" ze stavu „Nový" nebo „Ke schválení" nebo "K doplnění"</li>
+         * <li>změnit stav na "K doplnění" ze stavu "Ke schválení" nebo "Nový"</li>
+         * </ul>
+         */
+        AP_CONFIRM(PermissionType.SCOPE),
+
+        /**
+         * Schvalování přístupových bodů
+         * - obdboně jako výše pro všechna rejstříková hesla
+         */
+        AP_CONFIRM_ALL {
+            @Override
+            public boolean isEqualOrHigher(Permission permission) {
+                if (permission == AP_CONFIRM_ALL || permission == AP_CONFIRM) {
+                    return true;
+                }
+                return false;
+            }
+        },
+
+        /**
+         * Změna schválených přístupových bodů
+         * <ul>
+         * <li>editace již schválených přístupových bodů</li>
+         * </ul>
+         */
+        AP_EDIT_CONFIRMED(PermissionType.SCOPE),
+
+        /**
+         * Změna schválených přístupových bodů
+         * - obdboně jako výše pro všechna rejstříková hesla
+         */
+        AP_EDIT_CONFIRMED_ALL {
+            @Override
+            public boolean isEqualOrHigher(Permission permission) {
+                if (permission == AP_EDIT_CONFIRMED_ALL || permission == AP_EDIT_CONFIRMED) {
                     return true;
                 }
                 return false;

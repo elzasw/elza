@@ -32,6 +32,7 @@ import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.UserRepository;
@@ -115,6 +116,9 @@ public class Authorization {
 
     @Autowired
     private ApAccessPointRepository accessPointRepository;
+
+    @Autowired
+	private ApStateRepository stateRepository;
 
     @Autowired
     private PartyRepository partyRepository;
@@ -361,6 +365,13 @@ public class Authorization {
 		case AP:
 			if (value instanceof Integer) {
 				return accessPointRepository.getOneCheckExist((Integer) value).getScopeId();
+			} else if (value instanceof IApScope) {
+				return ((IApScope) value).getScopeId();
+			}
+			break;
+		case AP_STATE:
+			if (value instanceof Integer) {
+				return stateRepository.getOneCheckExist((Integer) value).getScopeId();
 			} else if (value instanceof IApScope) {
 				return ((IApScope) value).getScopeId();
 			}

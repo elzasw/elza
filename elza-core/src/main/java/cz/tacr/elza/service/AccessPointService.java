@@ -1022,7 +1022,7 @@ public class AccessPointService {
      * @return založený strukturovaný přístupový bod
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public ApAccessPoint createStructuredAccessPoint(final ApScope scope, final ApType type, final SysLanguage language) {
+    public ApAccessPoint createStructuredAccessPoint(@AuthParam(type = AuthParam.Type.SCOPE) final ApScope scope, final ApType type, final SysLanguage language) {
         Assert.notNull(scope, "Třída musí být vyplněna");
         Assert.notNull(type, "Typ musí být vyplněn");
         Assert.notNull(type.getRuleSystem(), "Typ musí mít vazbu na pravidla");
