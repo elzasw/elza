@@ -45,7 +45,7 @@ import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApNameItem;
 import cz.tacr.elza.domain.ApRule;
 import cz.tacr.elza.domain.ApRuleSystem;
-import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
@@ -235,8 +235,8 @@ public class AccessPointGeneratorService {
     public void generateAndSetResult(final ApFragment fragment) {
         List<ApItem> fragmentItems = new ArrayList<>(fragmentItemRepository.findValidItemsByFragment(fragment));
         FragmentErrorDescription fragmentErrorDescription = new FragmentErrorDescription();
-        ApState stateOld = fragment.getState();
-        ApState state = ApState.OK;
+        ApStateEnum stateOld = fragment.getState();
+        ApStateEnum state = ApStateEnum.OK;
 
         validateFragmentItems(fragmentErrorDescription, fragment, fragmentItems);
 
@@ -246,20 +246,20 @@ public class AccessPointGeneratorService {
         } catch (Exception e) {
             logger.error("Selhání groovy scriptu (fragmentId: {})", fragment.getFragmentId(), e);
             fragmentErrorDescription.setScriptFail(true);
-            state = ApState.ERROR;
+            state = ApStateEnum.ERROR;
         }
 
         if (StringUtils.isEmpty(value)) {
             fragmentErrorDescription.setEmptyValue(true);
-            state = ApState.ERROR;
+            state = ApStateEnum.ERROR;
         }
         if (CollectionUtils.isNotEmpty(fragmentErrorDescription.getImpossibleItemTypeIds())
                 || CollectionUtils.isNotEmpty(fragmentErrorDescription.getRequiredItemTypeIds())) {
-            state = ApState.ERROR;
+            state = ApStateEnum.ERROR;
         }
         fragment.setValue(value);
         fragment.setErrorDescription(fragmentErrorDescription.asJsonString());
-        fragment.setState(stateOld == ApState.TEMP ? ApState.TEMP : state);
+        fragment.setState(stateOld == ApStateEnum.TEMP ? ApStateEnum.TEMP : state);
         fragmentRepository.save(fragment);
 
         eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.FRAGMENT_UPDATE, fragment.getFragmentId()));
@@ -303,8 +303,8 @@ public class AccessPointGeneratorService {
         Map<Integer, List<ApItem>> nameItemsMap = createNameItemsMap(nameItems);
 
         ApErrorDescription apErrorDescription = new ApErrorDescription();
-        ApState apStateOld = accessPoint.getState();
-        ApState apState = ApState.OK;
+        ApStateEnum apStateEnumOld = accessPoint.getState();
+        ApStateEnum apStateEnum = ApStateEnum.OK;
 
         validateApItems(apErrorDescription, accessPoint, apItems);
 
@@ -312,21 +312,21 @@ public class AccessPointGeneratorService {
             AccessPoint result = generateValue(accessPoint, apItems, apNames, nameItemsMap);
             boolean hasError = processResult(accessPoint, change, apNameMap, nameItemsMap, result);
             if (hasError) {
-                apState = ApState.ERROR;
+                apStateEnum = ApStateEnum.ERROR;
             }
         } catch (Exception e) {
             logger.error("Selhání groovy scriptu (accessPointId: {})", accessPoint.getAccessPointId(), e);
             apErrorDescription.setScriptFail(true);
-            apState = ApState.ERROR;
+            apStateEnum = ApStateEnum.ERROR;
         }
 
         if (CollectionUtils.isNotEmpty(apErrorDescription.getImpossibleItemTypeIds())
                 || CollectionUtils.isNotEmpty(apErrorDescription.getRequiredItemTypeIds())) {
-            apState = ApState.ERROR;
+            apStateEnum = ApStateEnum.ERROR;
         }
 
         accessPoint.setErrorDescription(apErrorDescription.asJsonString());
-        accessPoint.setState(apStateOld == ApState.TEMP ? ApState.TEMP : apState);
+        accessPoint.setState(apStateEnumOld == ApStateEnum.TEMP ? ApStateEnum.TEMP : apStateEnum);
         accessPointService.saveWithLock(accessPoint);
 
         eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.ACCESS_POINT_UPDATE, accessPoint.getAccessPointId()));
@@ -352,18 +352,18 @@ public class AccessPointGeneratorService {
 
             if (StringUtils.isEmpty(name.getFullName())) {
                 errorDescription.setEmptyValue(true);
-                nameContext.setState(ApState.ERROR);
+                nameContext.setState(ApStateEnum.ERROR);
             } else {
                 boolean isUnique = apDataService.isNameUnique(accessPoint.getScope(), name.getFullName());
                 if (!isUnique) {
                     errorDescription.setDuplicateValue(true);
-                    nameContext.setState(ApState.ERROR);
+                    nameContext.setState(ApStateEnum.ERROR);
                 }
             }
 
             name.setErrorDescription(errorDescription.asJsonString());
-            name.setState(nameContext.getStateOld() == ApState.TEMP ? ApState.TEMP : nameContext.getState());
-            if (name.getState() == ApState.ERROR) {
+            name.setState(nameContext.getStateOld() == ApStateEnum.TEMP ? ApStateEnum.TEMP : nameContext.getState());
+            if (name.getState() == ApStateEnum.ERROR) {
                 error = true;
             }
             apNameRepository.save(name);
@@ -386,12 +386,12 @@ public class AccessPointGeneratorService {
             }
 
             NameErrorDescription nameErrorDescription = new NameErrorDescription();
-            NameContext nameContext = new NameContext(apName, apName.getState(), ApState.OK, nameErrorDescription);
+            NameContext nameContext = new NameContext(apName, apName.getState(), ApStateEnum.OK, nameErrorDescription);
             validateNameItems(nameErrorDescription, apName, items);
 
             if (CollectionUtils.isNotEmpty(nameErrorDescription.getImpossibleItemTypeIds())
                     || CollectionUtils.isNotEmpty(nameErrorDescription.getRequiredItemTypeIds())) {
-                nameContext.setState(ApState.ERROR);
+                nameContext.setState(ApStateEnum.ERROR);
             }
 
             nameContexts.add(nameContext);
@@ -642,20 +642,20 @@ public class AccessPointGeneratorService {
 
         private ApName name;
 
-        private ApState stateOld;
+        private ApStateEnum stateOld;
 
-        private ApState state;
+        private ApStateEnum state;
 
         private NameErrorDescription errorDescription;
 
-        public NameContext(final ApName name, final ApState stateOld, final ApState state, final NameErrorDescription errorDescription) {
+        public NameContext(final ApName name, final ApStateEnum stateOld, final ApStateEnum state, final NameErrorDescription errorDescription) {
             this.name = name;
             this.stateOld = stateOld;
             this.state = state;
             this.errorDescription = errorDescription;
         }
 
-        public void setState(final ApState state) {
+        public void setState(final ApStateEnum state) {
             this.state = state;
         }
 
@@ -663,11 +663,11 @@ public class AccessPointGeneratorService {
             return name;
         }
 
-        public ApState getStateOld() {
+        public ApStateEnum getStateOld() {
             return stateOld;
         }
 
-        public ApState getState() {
+        public ApStateEnum getState() {
             return state;
         }
 

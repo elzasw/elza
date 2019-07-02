@@ -33,4 +33,49 @@
         <dropColumn tableName="usr_user" columnName="password"/>
     </changeSet>
 
+    <changeSet id="20190702113000" author="berka">
+        <createTable tableName="ap_state">
+            <column name="state_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="access_point_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap"
+                             referencedTableName="ap_access_point"
+                             referencedColumnNames="access_point_id"/>
+            </column>
+            <column name="scope_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_scope"
+                             referencedTableName="ap_scope"
+                             referencedColumnNames="scope_id"/>
+            </column>
+            <column name="type_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_type"
+                             referencedTableName="ap_type"
+                             referencedColumnNames="ap_type_id"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_change_create"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="delete_change_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_change_delete"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="state_approval" type="char(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="comment" type="text">
+                <constraints nullable="true"/>
+            </column>
+            <column name="version" type="int" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>

@@ -5,14 +5,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.*;
 
-import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApStateEnum;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -109,7 +108,7 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
 
         // search only active AP
         conjunctions.add(fromAp.get(ApAccessPoint.FIELD_DELETE_CHANGE_ID).isNull());
-        conjunctions.add(cb.or(fromAp.get(ApAccessPoint.STATE).isNull(), cb.notEqual(fromAp.get(ApAccessPoint.STATE), ApState.TEMP)));
+        conjunctions.add(cb.or(fromAp.get(ApAccessPoint.STATE).isNull(), cb.notEqual(fromAp.get(ApAccessPoint.STATE), ApStateEnum.TEMP)));
 
         // add name join
         Join<ApAccessPoint, ApName> nameJoin = fromAp.join(ApAccessPoint.FIELD_NAMES, JoinType.LEFT);

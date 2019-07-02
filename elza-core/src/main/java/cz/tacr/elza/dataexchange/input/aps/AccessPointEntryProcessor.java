@@ -15,7 +15,7 @@ import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.ApExternalIdType;
-import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.schema.v2.AccessPointEntry;
 import cz.tacr.elza.schema.v2.ExternalId;
@@ -123,7 +123,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         entity.setScope(context.getScope());
         entity.setCreateChange(context.getCreateChange());
         entity.setUuid(StringUtils.trimToNull(entry.getUuid()));
-        entity.setState(ApState.OK);
+        entity.setState(ApStateEnum.OK);
         return entity;
     }
 }

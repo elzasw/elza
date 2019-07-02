@@ -54,7 +54,7 @@ import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApNameItem;
 import cz.tacr.elza.domain.ApRuleSystem;
 import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -98,7 +98,6 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PartyCreatorRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
@@ -303,7 +302,7 @@ public class AccessPointService {
 
         ApAccessPoint ap = apRepository.findOne(accessPointId);
         apDataService.validationNotDeleted(ap);
-        if (ap.getState() == ApState.TEMP) {
+        if (ap.getState() == ApStateEnum.TEMP) {
             removeTempAccessPoint(ap);
         } else {
             if (checkUsage) {
@@ -1131,7 +1130,7 @@ public class AccessPointService {
         List<ApNameItem> itemsDb = nameItemRepository.findValidItemsByName(name);
 
         ApChange change;
-        if (name.getState() == ApState.TEMP) {
+        if (name.getState() == ApStateEnum.TEMP) {
             change = name.getCreateChange();
         } else {
             change = apDataService.createChange(ApChange.Type.NAME_UPDATE);
@@ -1156,13 +1155,13 @@ public class AccessPointService {
 
         Set<ApName> apNames = nameItemsMap.keySet();
         for (ApName name : apNames) {
-            name.setState(ApState.INIT);
+            name.setState(ApStateEnum.INIT);
         }
         apNameRepository.save(apNames);
 
         ApRuleSystem ruleSystem = accessPoint.getApType().getRuleSystem();
         accessPoint.setRuleSystem(ruleSystem);
-        accessPoint.setState(ApState.INIT);
+        accessPoint.setState(ApStateEnum.INIT);
         saveWithLock(accessPoint);
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_MIGRATE);
@@ -1203,7 +1202,7 @@ public class AccessPointService {
         apDataService.validationNotDeleted(name);
 
         ApChange change;
-        if (accessPoint.getState() == ApState.TEMP) {
+        if (accessPoint.getState() == ApStateEnum.TEMP) {
             change = accessPoint.getCreateChange();
         } else {
             change = apDataService.createChange(ApChange.Type.AP_UPDATE);
@@ -1231,7 +1230,7 @@ public class AccessPointService {
         List<ApBodyItem> itemsDb = bodyItemRepository.findValidItemsByAccessPoint(accessPoint);
 
         ApChange change;
-        if (accessPoint.getState() == ApState.TEMP) {
+        if (accessPoint.getState() == ApStateEnum.TEMP) {
             change = accessPoint.getCreateChange();
         } else {
             change = apDataService.createChange(ApChange.Type.AP_UPDATE);
@@ -1259,7 +1258,7 @@ public class AccessPointService {
         apDataService.validationNotDeleted(accessPoint);
 
         ApChange change;
-        if (accessPoint.getState() == ApState.TEMP) {
+        if (accessPoint.getState() == ApStateEnum.TEMP) {
             change = accessPoint.getCreateChange();
         } else {
             change = apDataService.createChange(ApChange.Type.AP_UPDATE);
@@ -1318,12 +1317,12 @@ public class AccessPointService {
         Validate.notNull(accessPoint);
         apDataService.validationNotDeleted(accessPoint);
 
-        if (accessPoint.getState() == ApState.TEMP) {
-            accessPoint.setState(ApState.INIT);
+        if (accessPoint.getState() == ApStateEnum.TEMP) {
+            accessPoint.setState(ApStateEnum.INIT);
             saveWithLock(accessPoint);
 
             ApName preferredName = apNameRepository.findPreferredNameByAccessPoint(accessPoint);
-            preferredName.setState(ApState.INIT);
+            preferredName.setState(ApStateEnum.INIT);
             apNameRepository.save(preferredName);
 
             //apGeneratorService.generateAndSetResult(accessPoint, accessPoint.getCreateChange());
@@ -1374,8 +1373,8 @@ public class AccessPointService {
         apDataService.validationNotDeleted(accessPoint);
         apDataService.validationNotDeleted(name);
 
-        if (name.getState() == ApState.TEMP) {
-            name.setState(ApState.INIT);
+        if (name.getState() == ApStateEnum.TEMP) {
+            name.setState(ApStateEnum.INIT);
             apNameRepository.save(name);
             //apGeneratorService.generateAndSetResult(accessPoint, name.getCreateChange());
             apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), name.getCreateChangeId());
@@ -1711,7 +1710,7 @@ public class AccessPointService {
      */
     private ApAccessPoint createAccessPoint(final ApScope scope, final ApType type, final ApChange change) {
         ApAccessPoint accessPoint = createAccessPointEntity(scope, type, change);
-        accessPoint.setState(ApState.OK);
+        accessPoint.setState(ApStateEnum.OK);
         return saveWithLock(accessPoint);
     }
 
@@ -1726,7 +1725,7 @@ public class AccessPointService {
     private ApAccessPoint createStrucuredAccessPoint(final ApScope scope, final ApType type, final ApChange change) {
         ApAccessPoint accessPoint = createAccessPointEntity(scope, type, change);
         accessPoint.setRuleSystem(type.getRuleSystem());
-        accessPoint.setState(ApState.TEMP);
+        accessPoint.setState(ApStateEnum.TEMP);
         return saveWithLock(accessPoint);
     }
 
@@ -1777,7 +1776,7 @@ public class AccessPointService {
 
         ApChange createChange = change == null ? apDataService.createChange(ApChange.Type.NAME_CREATE) : change;
         ApName apName = createNameEntity(accessPoint, preferredName, null, null, language, createChange);
-        apName.setState(ApState.TEMP);
+        apName.setState(ApStateEnum.TEMP);
 
         return apNameRepository.save(apName);
     }
