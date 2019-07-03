@@ -1,6 +1,5 @@
 package cz.tacr.elza.service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -129,19 +128,31 @@ public class DaoSyncService {
      * @param node          node pro synchronizaci
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public void syncDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion, ArrNode node, ArrDao dao) {
+    public void syncDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion, ArrNode node) {
 
-        DaosSyncRequest daosSyncRequest = createDaosSyncRequest(fundVersion, node, dao);
+        List<ArrDaoLink> daoLinks = daoLinkRepository.findActiveByNode(node);
 
-        ArrDigitalRepository digitalRepository = dao.getDaoPackage().getDigitalRepository();
-        DaosSyncResponse daosSyncResponse = wsClient.syncDaos(daosSyncRequest, digitalRepository);
+        if (!daoLinks.isEmpty()) {
 
-        processDaosSyncResponse(daosSyncResponse);
-    }
+            daoPackageRepository.findAll(daoLinks.stream().map(daoLink -> daoLink.getDao().getDaoPackageId()).collect(toList()));  // nacist do Hibernate session
 
-    public DaosSyncRequest createDaosSyncRequest(ArrFundVersion fundVersion, ArrNode node, ArrDao dao) {
-        DaoSyncRequest request = createDaoSyncRequest(node, dao);
-        return createDaosSyncRequest(fundVersion, Collections.singletonList(request));
+            Map<Integer, List<ArrDao>> daosByDigitalRepository = daoLinks.stream()
+                    .collect(groupingBy(vo -> vo.getDao().getDaoPackage().getDigitalRepository().getExternalSystemId(), mapping(vo -> vo.getDao(), toList())));
+
+            for (Map.Entry<Integer, List<ArrDao>> entry : daosByDigitalRepository.entrySet()) {
+
+                Integer externalSystemId = entry.getKey();
+                ArrDigitalRepository digitalRepository = digitalRepositoryRepository.getOneCheckExist(externalSystemId);
+
+                List<ArrDao> daos = entry.getValue();
+                List<DaoSyncRequest> list = daos.stream().map(dao -> createDaoSyncRequest(node, dao)).collect(toList());
+
+                DaosSyncRequest daosSyncRequest = createDaosSyncRequest(fundVersion, list);
+                DaosSyncResponse daosSyncResponse = wsClient.syncDaos(daosSyncRequest, digitalRepository);
+
+                processDaosSyncResponse(daosSyncResponse);
+            }
+        }
     }
 
     public DaosSyncRequest createDaosSyncRequest(ArrDaoRequest request) {
@@ -184,6 +195,7 @@ public class DaoSyncService {
 
     /**
      * Provede aktualizaci metadat.
+     *
      * @param daosSyncResponse response z WS {@code syncDaos}
      */
     public void processDaosSyncResponse(DaosSyncResponse daosSyncResponse) {

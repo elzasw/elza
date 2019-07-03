@@ -36,6 +36,13 @@ public interface DaoLinkRepository extends ElzaJpaRepository<ArrDaoLink, Integer
 
     @Query("SELECT dl" +
             " FROM arr_dao_link dl" +
+            " JOIN FETCH dl.dao" +
+            " WHERE dl.node = :node" +
+            " AND dl.deleteChange is null")
+    List<ArrDaoLink> findActiveByNode(@Param(value = "node") ArrNode node);
+
+    @Query("SELECT dl" +
+            " FROM arr_dao_link dl" +
             " JOIN FETCH dl.node" +
             " WHERE dl.dao in :daos" +
             " AND dl.deleteChange is null")

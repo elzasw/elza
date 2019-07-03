@@ -419,26 +419,19 @@ public class ArrangementController {
      * @param nodeId        node pro synchronizaci
      */
     @Transactional
-    @RequestMapping(value = "/daos/{fundVersionId}/{daoId}/{nodeId}/sync",
+    @RequestMapping(value = "/daos/{fundVersionId}/nodes/{nodeId}/sync",
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public void syncDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                            @PathVariable(value = "daoId") final Integer daoId,
                             @PathVariable(value = "nodeId") final Integer nodeId) {
         Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
-        Assert.notNull(daoId, "Identifikátor DAO musí být vyplněn");
         Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 
         final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        final ArrDao dao = daoRepository.getOneCheckExist(daoId);
         final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
 
-        if (!node.getFund().equals(dao.getDaoPackage().getFund())) {
-            throw new BusinessException("DAO a Node okazují na různý package", DigitizationCode.DAO_AND_NODE_HAS_DIFFERENT_PACKAGE);
-        }
-
-        daoSyncService.syncDaoLink(fundVersion, node, dao);
+        daoSyncService.syncDaoLink(fundVersion, node);
     }
 
     /**
