@@ -323,6 +323,7 @@ var messages = {
     "ribbon.action.registry.importExt": "Import ze systému",
     "ribbon.action.logout": "Odhlásit",
     "ribbon.action.showFundHistory": "Historie změn",
+    "ribbon.action.syncDaosByFund": "Synchronizovat DAO v AS",
 
     "ribbon.action.arr.validation.error.previous": "Předchozí chyba",
     "ribbon.action.arr.validation.error.next": "Další chyba",
@@ -672,6 +673,13 @@ var messages = {
     "arr.movements.move.before" : "Přesunout před",
     "arr.movements.move.after" : "Přesunout za",
 
+    "arr.daos.fund.sync.title" : "Synchronizovat všechny DAO v archivním souboru",
+    "arr.daos.fund.sync.confirm-message" : "Opravdu chcete synchronizovat digitální entity nad celým archivním souborem?",
+    "arr.daos.fund.sync.submitting-message" : "Vytváření požadavků na synchronizaci DAO pro AS...",
+    "arr.daos.node.sync.title" : "Synchronizovat všechny DAO přiřazené k JP",
+    "arr.daos.node.sync.confirm-message" : "Opravdu chcete synchronizovat digitální entity přiřazené k JP?",
+    "arr.daos.node.sync.submitting-message" : "Probíhá synchronizace DAO pro JP...",
+
     "arr.daos.link" : "Připojit k JP",
     "arr.daos.createUnderAndLink" : "Vytvořit podřízenou JP",
     "arr.daos.unlink.confirm" : "Opravdu chcete odpojit digitální entitu od jednotky popisu?",
@@ -836,6 +844,7 @@ var messages = {
     "subNodeForm.descItemType.notIdentified": "Nezjištěno",
     "subNodeForm.addNodeAfter": "JP za",
     "subNodeForm.digitizationRequest": "Požadavek na digitalizaci",
+    "subNodeForm.digitizationSync": "Synchronizovat DAO",
     "subNodeForm.issueAdd": "Přidat připomínku",
 
     "subNodeForm.descItem.edited": "Editováno",

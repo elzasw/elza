@@ -224,7 +224,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
         const notRoot = !isFundRootId(this.props.nodeId);
 
         const {fundId, userDetail, issueProtocol} = this.props;
-        const historyAllowed = userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId},
+        const editPermAllowed = userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId},
                                                  perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId});
 
         const isProtocolLoaded = issueProtocol.fetched && issueProtocol.data && fundId === issueProtocol.data.fundId;
@@ -251,7 +251,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                         <NoFocusButton onClick={this.props.onVisiblePolicy}>
                             <Icon glyph="fa-cogs"/>
                         </NoFocusButton>
-                        {historyAllowed &&
+                        {editPermAllowed &&
                         <NoFocusButton onClick={this.handleShowHistory}>
                             <Icon glyph="fa-history"/>
                         </NoFocusButton>}
@@ -265,6 +265,11 @@ class NodeSubNodeForm extends AbstractReactComponent {
                             <Icon glyph="fa-camera"/>
                             {i18n("subNodeForm.digitizationRequest")}
                         </NoFocusButton>
+                        {editPermAllowed &&
+                        <NoFocusButton onClick={this.props.onDigitizationSync}>
+                            <Icon glyph="fa-camera"/>
+                            {i18n("subNodeForm.digitizationSync")}
+                        </NoFocusButton>}
                     </div>
                     {isProtocolLoaded && <div className='section'>
                         <NoFocusButton onClick={this.handleCreateIssueNode} disabled={!haveProtocolPermissionToWrite} title={i18n("subNodeForm.issueAdd")}>
@@ -659,6 +664,7 @@ NodeSubNodeForm.propTypes = {
     onAddDescItemType: React.PropTypes.func.isRequired,
     onVisiblePolicy: React.PropTypes.func.isRequired,
     onDigitizationRequest: React.PropTypes.func.isRequired,
+    onDigitizationSync: React.PropTypes.func.isRequired,
     singleDescItemTypeId: React.PropTypes.number,
     singleDescItemTypeEdit: React.PropTypes.bool,
     readMode: React.PropTypes.bool,

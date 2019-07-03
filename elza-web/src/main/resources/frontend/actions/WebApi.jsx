@@ -76,6 +76,14 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/fulltext', null, data);
     }
 
+    syncDaoLink(fundVersionId, nodeId) {
+        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/daos/' + fundVersionId + '/nodes/' + nodeId + '/sync');
+    }
+
+    syncDaosByFund(fundVersionId) {
+        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/daos/' + fundVersionId + '/all/sync');
+    }
+
     /**
      * Seznam AS serazeny podle poctu vyhledanych JP.
      * Vysledek vyhledavani je ulozeny v user session pro pouziti v {@link #fundFulltext(number)}.

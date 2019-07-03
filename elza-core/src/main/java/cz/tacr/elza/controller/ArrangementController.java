@@ -447,7 +447,7 @@ public class ArrangementController {
      * @param fundVersionId verze AS
      */
     @Transactional
-    @RequestMapping(value = "/daos/{fundVersionId}/_all/sync",
+    @RequestMapping(value = "/daos/{fundVersionId}/all/sync",
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)

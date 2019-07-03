@@ -59,6 +59,7 @@ import defaultKeymap from './NodePanelKeymap.jsx'
 import './NodePanel.less';
 import NodeSettingsForm from "./NodeSettingsForm";
 import {FOCUS_KEYS} from "../../constants.tsx";
+import ConfirmForm from "../shared/form/ConfirmForm";
 // Konstance kolik se má maximálně zobrazit v seznamu parents a children záznamů
 const PARENT_CHILD_MAX_LENGTH = 250
 
@@ -341,6 +342,27 @@ class NodePanel extends AbstractReactComponent {
         />;
         this.dispatch(modalDialogShow(this, i18n('arr.request.digitizationRequest.form.title'), form));
     }
+
+    /**
+     * Zobrazení formuláře pro potvrzení synchronizace DAO.
+     */
+    handleDigitizationSync = () => {
+        const {node, versionId} = this.props;
+        const nodeId = node.selectedSubNodeId;
+
+        const confirmForm = <ConfirmForm
+            confirmMessage={i18n('arr.daos.node.sync.confirm-message')}
+            submittingMessage={i18n('arr.daos.node.sync.submitting-message')}
+            submitTitle={i18n('global.action.run')}
+            onSubmit={() => {
+                return WebApi.syncDaoLink(versionId, nodeId);
+            }}
+            onSubmitSuccess={() => {
+                this.props.dispatch(modalDialogHide());
+            }}
+        />;
+        this.props.dispatch(modalDialogShow(this, i18n('arr.daos.node.sync.title'), confirmForm));
+    };
 
     handleVisiblePolicy() {
         const {node, versionId} = this.props;
@@ -886,6 +908,7 @@ return true
                 onAddDescItemType={this.handleAddDescItemType}
                 onVisiblePolicy={this.handleVisiblePolicy}
                 onDigitizationRequest={this.handleDigitizationRequest}
+                onDigitizationSync={this.handleDigitizationSync}
                 readMode={readMode}
                 arrPerm={arrPerm}
             />
