@@ -19,6 +19,7 @@
         <!-- This is the path to the root [dspace-src] directory. -->
         <root.basedir>${basedir}/..</root.basedir>
         <spring-security.version>3.2.9.RELEASE</spring-security.version>
+        <cxf.version>3.1.11</cxf.version>
     </properties>
     <build>
         <plugins>
@@ -248,5 +249,68 @@
             <groupId>org.dspace</groupId>
             <artifactId>dspace-services</artifactId>
         </dependency>
+
+        <!-- CXF -->
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-spring-boot-starter-jaxws</artifactId>
+        </dependency>
+        <!-- END - CXF -->
+
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>generate-Elza-wsdl</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.cxf</groupId>
+                        <artifactId>cxf-codegen-plugin</artifactId>
+                        <version>${cxf.version}</version>
+                        <executions>
+                            <execution>
+                                <id>generate-sources</id>
+                                <phase>generate-sources</phase>
+                                <configuration>
+                                    <sourceRoot>${project.build.directory}/generated/cxf</sourceRoot>
+                                    <defaultOptions>
+                                        <exceptionSuper>java.lang.RuntimeException</exceptionSuper>
+                                        <!-- Note: extraargs cannot be specified inside defaultOptions due to bug in plugin -->
+                                    </defaultOptions>
+                                    <wsdlOptions>
+                                        <wsdlOption>
+                                            <wsdl>
+                                                ${basedir}/src/main/resources/wsdl/elza-core-v1.wsdl
+                                            </wsdl>
+                                            <extraargs>
+                                                <extraarg>-autoNameResolution</extraarg>
+                                                <extraarg>-p</extraarg>
+                                                <extraarg>${basedir}/src/main/java/cz/tacr/elza/ws</extraarg>
+                                            </extraargs>
+                                        </wsdlOption>
+                                        <wsdlOption>
+                                            <wsdl>
+                                                ${basedir}/src/main/resources/wsdl/elza-dao-service-v1.wsdl
+                                            </wsdl>
+                                            <extraargs>
+                                                <extraarg>-autoNameResolution</extraarg>
+                                                <extraarg>-p</extraarg>
+                                                <extraarg>${basedir}/src/main/java/cz/tacr/elza/ws</extraarg>
+                                            </extraargs>
+                                        </wsdlOption>
+                                    </wsdlOptions>
+                                </configuration>
+                                <goals>
+                                    <goal>wsdl2java</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+    </profiles>
+
 </project>
