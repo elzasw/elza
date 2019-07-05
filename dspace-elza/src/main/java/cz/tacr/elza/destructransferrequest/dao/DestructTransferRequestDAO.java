@@ -17,15 +17,8 @@ public interface DestructTransferRequestDAO extends GenericDAO<DestructTransferR
 
     public DestructTransferRequest findByIdentifier(Context context, String identifier) throws SQLException;
 
-    public DestructTransferRequest findByRequestId(Context context, Integer requestId) throws SQLException;
-
     public List<DestructTransferRequest> findByTypeAndStatus(Context context, DestructTransferRequest.Status status,
                                                              DestructTransferRequest.RequestType requestType) throws SQLException;
 
-    public void deleteByRequestId(Context context, Integer requestId) throws SQLException;
-
-    public Integer insertDestrucTransferRequest(Context context, DestructTransferRequest destructTransferRequest) throws SQLException;
-
-    public void updateDestrucTransferRequest(Context context, DestructTransferRequest destructTransferRequest) throws SQLException;
-
+    public boolean uniqueIdetifier(Context context, int destructTransferRequestId, String identifier) throws SQLException;
 }
