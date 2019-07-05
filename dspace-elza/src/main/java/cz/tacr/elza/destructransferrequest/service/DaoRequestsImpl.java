@@ -2,7 +2,6 @@ package cz.tacr.elza.destructransferrequest.service;
 
 import cz.tacr.elza.context.ContextUtils;
 import cz.tacr.elza.daoimport.DaoImportScheduler;
-import cz.tacr.elza.destructransferrequest.dao.DestructTransferRequestDAO;
 import cz.tacr.elza.ws.dao_service.v1.DaoRequests;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
 import cz.tacr.elza.ws.types.v1.*;
@@ -12,7 +11,6 @@ import org.dspace.content.Item;
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.Context;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.ProcessingException;
@@ -34,10 +32,10 @@ import java.util.UUID;
 public class DaoRequestsImpl implements DaoRequests{
     private String SEPARATOR = ";";
 
-    @Autowired
-    private DestructTransferRequestDAO destructionRequestDAO;
+    private DescructTransferRequestService descructTransferRequestService;
 
     private ItemService itemService = ContentServiceFactory.getInstance().getItemService();
+    //private DescructTransferRequestService descructTransferRequestService = cz.tacr.elza.factory.ContentServiceFactory.getInstance().getDescructTransferRequestService();
     private static Logger log = Logger.getLogger(DaoImportScheduler.class);
 
     @Override
@@ -47,11 +45,12 @@ public class DaoRequestsImpl implements DaoRequests{
         Context context = new Context();
         try {
             context = ContextUtils.createContext();
+            context.turnOffAuthorisationSystem();
         } catch (Exception e) {
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
         }
         try {
-            DestructTransferRequest destructRequest = destructionRequestDAO.findByIdentifier(context, destructionRequest.getIdentifier());
+            DestructTransferRequest destructRequest = descructTransferRequestService.findByIdentifier(context, destructionRequest.getIdentifier());
             if (destructRequest != null) {
                 throw new ProcessingException("Požadavek DestructionRequest Identifier=" + destructionRequest.getIdentifier() +
                         " již v systému existuje.");
@@ -78,7 +77,7 @@ public class DaoRequestsImpl implements DaoRequests{
             destructRequest = new DestructTransferRequest();
             destructRequest.initDestructionRequest(destructionRequest);
             destructRequest.setDaoIdentifiers(identifierStr);
-            destructionRequestDAO.insertDestrucTransferRequest(context, destructRequest);
+            descructTransferRequestService.create(context, destructRequest);
             log.info("Ukončena metoda postDestructionRequest");
             return destructRequest.getUuid();
 
@@ -99,7 +98,7 @@ public class DaoRequestsImpl implements DaoRequests{
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
         }
         try {
-            DestructTransferRequest destructRequest = destructionRequestDAO.findByIdentifier(context, transferRequest.getIdentifier());
+            DestructTransferRequest destructRequest = descructTransferRequestService.findByIdentifier(context, transferRequest.getIdentifier());
             if (destructRequest != null) {
                 throw new ProcessingException("Požadavek DestructionRequest Identifier=" + transferRequest.getIdentifier() +
                         " již v systému existuje.");
@@ -126,7 +125,7 @@ public class DaoRequestsImpl implements DaoRequests{
             destructRequest = new DestructTransferRequest();
             destructRequest.initTransferRequest(transferRequest);
             destructRequest.setDaoIdentifiers(identifierStr);
-            destructionRequestDAO.insertDestrucTransferRequest(context, destructRequest);
+            descructTransferRequestService.create(context, destructRequest);
             log.info("Ukončena metoda postTransferRequest");
             return destructRequest.getUuid();
 

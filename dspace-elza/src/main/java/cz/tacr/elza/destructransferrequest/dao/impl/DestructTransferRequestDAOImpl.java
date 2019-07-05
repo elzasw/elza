@@ -26,19 +26,10 @@ public class DestructTransferRequestDAOImpl extends AbstractHibernateDAO<Destruc
 
     @Override
     public DestructTransferRequest findByIdentifier(Context context, String identifier) throws SQLException {
-        String sqlQuery = "FROM DestructionRequest WHERE identifier = :uuid";
+        String tableName = DestructTransferRequest.class.getName();
+        String sqlQuery = "SELECT dr FROM " + tableName + " dr WHERE dr.identifier = :identifier";
         Query query = createQuery(context, sqlQuery);
-        query.setParameter("identifier", identifier);
-
-        query.setCacheable(true);
-        return singleResult(query);
-    }
-
-    @Override
-    public DestructTransferRequest findByRequestId(Context context, Integer requestId) throws SQLException {
-        String sqlQuery = "FROM DestructionRequest WHERE request_id = :requestId";
-        Query query = createQuery(context, sqlQuery);
-        query.setParameter("requestId", requestId);
+        //query.setParameter("identifier", identifier);
 
         query.setCacheable(true);
         return singleResult(query);
@@ -46,7 +37,9 @@ public class DestructTransferRequestDAOImpl extends AbstractHibernateDAO<Destruc
 
     @Override
     public List<DestructTransferRequest> findByTypeAndStatus(Context context, DestructTransferRequest.Status status, DestructTransferRequest.RequestType requestType) throws SQLException {
-        String sqlQuery = "FROM DestructionRequest WHERE request_type = :requestType AND status = :status";
+        String tableName = DestructTransferRequest.class.getName();
+        String sqlQuery = "SELECT dr FROM " + tableName + " dr WHERE dr.request_type = :requestType AND" +
+                " dr.status = :status";
         Query query = createQuery(context, sqlQuery);
         query.setParameter("requestType", requestType);
         query.setParameter("status", status);
@@ -55,47 +48,17 @@ public class DestructTransferRequestDAOImpl extends AbstractHibernateDAO<Destruc
     }
 
     @Override
-    public void deleteByRequestId(Context context, Integer requestId) throws SQLException {
-        String sqlQuery = "Delete from DestructionRequest where request_id = :requestId";
-        Query query = createQuery(context, sqlQuery);
-        query.setParameter("requestId", requestId);
-        query.executeUpdate();
-    }
+    public boolean uniqueIdetifier(Context context, int destructTransferRequestId, String identifier) throws SQLException {
+        String tableName = DestructTransferRequest.class.getName();
+        Query query = createQuery(context,
+                "SELECT dr FROM " + tableName + " dr " +
+                        "WHERE dr.identifier = :identifier and dr.request_id != :id");
 
-    @Override
-    public Integer insertDestrucTransferRequest(Context context, DestructTransferRequest destructTransferRequest) throws SQLException {
-        String sqlQuery = "INSERT INTO DestructionRequest (uuid, request_type, dao_identifiers, identifier, system_identifier, " +
-                "description, user_name, target_fund, status, request_date, processing_date, rejected_message) " +
-                "VALUES (:uuid, :requesttype, :daoIdentifiers, :identifier, :systemIdentifier, :description, :userName, :targetFund, " +
-                ":status, :requestDate, :processingDate, :rejectedMessage)";
-        Query query = createQuery(context, sqlQuery);
-        query.setParameter("uuid", UUID.randomUUID().toString());
-        query.setParameter("requesttype", destructTransferRequest.getRequestType());
-        query.setParameter("daoIdentifiers", destructTransferRequest.getDaoIdentifiers());
-        query.setParameter("identifier", destructTransferRequest.getIdentifier());
-        query.setParameter("systemIdentifier", destructTransferRequest.getSystemIdentifier());
-        query.setParameter("description", destructTransferRequest.getDescription());
-        query.setParameter("userName", destructTransferRequest.getUserName());
-        query.setParameter("targetFund", destructTransferRequest.getTargetFund());
-        query.setParameter("status", destructTransferRequest.getStatus());
-        query.setParameter("requestDate", destructTransferRequest.getRequestDate());
-        query.setParameter("processingDate", destructTransferRequest.getProcessingDate());
-        query.setParameter("rejectedMessage", destructTransferRequest.getRejectedMessage());
+        query.setParameter("identifier", identifier);
+        query.setParameter("id", destructTransferRequestId);
 
-        return query.executeUpdate();
-    }
-
-    @Override
-    public void updateDestrucTransferRequest(Context context, DestructTransferRequest destructTransferRequest) throws SQLException {
-        String sqlQuery = "UPDATE DestructionRequest SET status = :status, processing_date = :processingDate, " +
-                "error_message = :errorMessage WHERE request_id = :requestId";
-        Query query = createQuery(context, sqlQuery);
-        query.setParameter("requestId", destructTransferRequest.getRequestId());
-        query.setParameter("status", destructTransferRequest.getStatus());
-        query.setParameter("processingDate", destructTransferRequest.getProcessingDate());
-        query.setParameter("errorMessage", destructTransferRequest.getRejectedMessage());
-
-        query.executeUpdate();
+        query.setCacheable(true);
+        return singleResult(query) == null;
     }
 
 }

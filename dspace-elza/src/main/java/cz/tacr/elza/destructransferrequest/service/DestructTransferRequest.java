@@ -13,9 +13,9 @@ import java.util.UUID;
  * Created by Marbes Consulting
  * ludek.cacha@marbes.cz / 02.05.2019.
  */
+@Entity
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE, include = "non-lazy")
-@Entity
 @Table(name = "destruc_transfer_request")
 public class DestructTransferRequest {
 
@@ -42,7 +42,7 @@ public class DestructTransferRequest {
      * VARCHAR2(20)
      */
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name="request_type", nullable = false)
     private RequestType requestType;
 
     /**
@@ -84,7 +84,7 @@ public class DestructTransferRequest {
      * Target Fund.
      * VARCHAR2(50)
      */
-    @Column(name = "target_Fund", length = 50)
+    @Column(name = "target_fund", length = 50)
     private String targetFund;
 
     /**
@@ -92,7 +92,7 @@ public class DestructTransferRequest {
      * VARCHAR2(20)
      */
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private Status status;
 
     /**

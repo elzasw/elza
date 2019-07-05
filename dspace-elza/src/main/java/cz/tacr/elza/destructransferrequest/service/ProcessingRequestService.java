@@ -2,7 +2,7 @@ package cz.tacr.elza.destructransferrequest.service;
 
 import cz.tacr.elza.context.ContextUtils;
 import cz.tacr.elza.daoimport.DaoImportScheduler;
-import cz.tacr.elza.destructransferrequest.dao.DestructTransferRequestDAO;
+import cz.tacr.elza.metadataconstants.MetadataConstantService;
 import cz.tacr.elza.ws.WsClient;
 import cz.tacr.elza.ws.core.v1.CoreServiceException;
 import cz.tacr.elza.ws.types.v1.RequestRevoked;
@@ -11,10 +11,9 @@ import org.apache.log4j.Logger;
 import org.dspace.content.Collection;
 import org.dspace.content.Item;
 import org.dspace.content.MetadataValue;
-import org.dspace.content.dao.MetadataValueDAO;
+import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.CollectionService;
 import org.dspace.content.service.ItemService;
-import org.dspace.content.service.MetadataValueService;
 import org.dspace.core.Context;
 import org.dspace.services.ConfigurationService;
 import org.dspace.services.factory.DSpaceServicesFactory;
@@ -35,34 +34,19 @@ public class ProcessingRequestService {
     private String SEPARATOR = ";";
 
     @Autowired
-    private DestructTransferRequestDAO destructionRequestDAO;
-
-    @Autowired
     private WsClient wsClient;
-
-    @Autowired
-    private ItemService itemService;
-
-    @Autowired
-    private MetadataValueDAO metadataValueDAO;
 
     @Autowired
     private CollectionService collectionService;
 
-    @Autowired
-    private org.dspace.content.service.MetadataSchemaService metadataSchemaService;
-
-    @Autowired
-    private org.dspace.content.service.MetadataFieldService metadataFieldService;
-
-    @Autowired
-    private MetadataValueService metadataValueService;
-
     private ConfigurationService configurationService = DSpaceServicesFactory.getInstance().getConfigurationService();
-    private static Logger log = Logger.getLogger(DaoImportScheduler.class);
+    private ItemService itemService = ContentServiceFactory.getInstance().getItemService();
+    private DescructTransferRequestService descructTransferRequestService = cz.tacr.elza.factory.ContentServiceFactory.getInstance().getDescructTransferRequestService();
 
-    private final String ELEMENT = "isElza";
-    private final String METADATASCHEMA = "tacr";
+    private static Logger log = Logger.getLogger(DaoImportScheduler.class);
+    private MetadataConstantService metadata;
+
+    private final String METADATA_ISELZA = "ISELZA";
 
     /**
      * Zpracuje požadavky na skartaci digitalizátů, které jsou ve stavu QUEUED a odešle informaci do systému Elza
@@ -80,7 +64,7 @@ public class ProcessingRequestService {
 
         List<DestructTransferRequest> destructTransferRequest = new ArrayList<>();
         try {
-            destructTransferRequest = destructionRequestDAO.findByTypeAndStatus(context,
+            destructTransferRequest = descructTransferRequestService.findByTypeAndStatus(context,
                     DestructTransferRequest.Status.QUEUED, DestructTransferRequest.RequestType.DESTRUCTION);
         } catch (Exception e) {
             throw new ProcessingException("Chyba při vyhledání požadavků na skartaci: " + e.getMessage());
@@ -115,7 +99,7 @@ public class ProcessingRequestService {
                 processingRequest.setStatus(DestructTransferRequest.Status.PROCESSED);
                 processingRequest.setProcessingDate(new Date());
                 processingRequest.setRejectedMessage(null);
-                destructionRequestDAO.updateDestrucTransferRequest(context, processingRequest);
+                descructTransferRequestService.update(context, processingRequest);
 
                 log.info("Odesílám informaci o zpracování požadavku na skartaci do systému Elza.");
                 wsClient.destructionRequestFinished(destructRequest.getUuid());
@@ -130,7 +114,7 @@ public class ProcessingRequestService {
                 processingRequest.setStatus(DestructTransferRequest.Status.REJECTED);
                 processingRequest.setProcessingDate(new Date());
                 processingRequest.setRejectedMessage(e.getMessage());
-                destructionRequestDAO.updateDestrucTransferRequest(context, processingRequest);
+                descructTransferRequestService.update(context, processingRequest);
 
                 log.info("Odesílám chybovou zprávu do systému Elza.");
                 RequestRevoked requestRevoked = new RequestRevoked();
@@ -161,7 +145,7 @@ public class ProcessingRequestService {
 
         List<DestructTransferRequest> destructTransferRequest = new ArrayList<>();
         try {
-            destructTransferRequest = destructionRequestDAO.findByTypeAndStatus(context,
+            destructTransferRequest = descructTransferRequestService.findByTypeAndStatus(context,
                     DestructTransferRequest.Status.QUEUED, DestructTransferRequest.RequestType.TRANSFER);
         } catch (Exception e) {
             throw new ProcessingException("Chyba při vyhledání požadavků na delimitaci: " + e.getMessage());
@@ -196,30 +180,35 @@ public class ProcessingRequestService {
                     for (Collection collection : collectionList) {
                         log.info("Odstraňuji propojení digitalizátu s kolekcí " + collection.getID() + ".");
                         collectionService.removeItem(context, collection, item);
+                        collectionService.update(context, collection);
                     }
 
                     log.info("Odstraňuji propojení digitalizátu s kolekcí vlastnika.");
                     Collection owningCollection = item.getOwningCollection();
-                    collectionService.removeItem(context, owningCollection, item);
-
-                    log.info("Zakládám propojení digitalizátu Uuid=" + uuId + "na cílovou (archivní) kolekci " + targetCollection.getID() + ".");
-                    collectionService.addItem(context, targetCollection, item);
-
-                    log.info("Aktualizuji hodnotu metadat pro element=" + ELEMENT + " na FALSE.");
-                    log.info("Vyhledávám metadata pro položku digitalizátu Uuid=" + uuId + " schema=" + METADATASCHEMA +
-                            " element=" + ELEMENT + ".");
-                    List<MetadataValue> metadataList = itemService.getMetadata(item, METADATASCHEMA, ELEMENT, null, Item.ANY);
-                    if (!metadataList.isEmpty()) {
-                        itemService.removeMetadataValues(context, item, metadataList);
+                    if (owningCollection != null) {
+                        collectionService.removeItem(context, owningCollection, item);
+                        collectionService.update(context, owningCollection);
                     }
-                    itemService.addMetadata(context, item, METADATASCHEMA, ELEMENT, null, null, Boolean.FALSE.toString());
+
+                    if (owningCollection != null) {
+                        log.info("Zakládám propojení digitalizátu Uuid=" + uuId + "na cílovou (archivní) kolekci " + targetCollection.getID() + ".");
+                        collectionService.addItem(context, targetCollection, item);
+                        collectionService.update(context, targetCollection);
+                    }
+
+                    final String[] mt = metadata.getMetData(METADATA_ISELZA);
+                    log.info("Aktualizuji hodnotu metadat pro element=" + mt[1] + " na FALSE.");
+                    log.info("Vyhledávám metadata pro položku digitalizátu Uuid=" + uuId + " schema=" + mt[0] +
+                            " element=" + mt[1] + ".");
+                    List<MetadataValue> metadataList = itemService.getMetadata(item, mt[0], mt[1], mt[2], Item.ANY);
+                    setMetadataIsElza(context, item, metadataList, Boolean.FALSE);
                 }
 
                 log.info("Aktualizuji stav požadavku na delimitaci.");
                 processingRequest.setStatus(DestructTransferRequest.Status.PROCESSED);
                 processingRequest.setProcessingDate(new Date());
                 processingRequest.setRejectedMessage(null);
-                destructionRequestDAO.updateDestrucTransferRequest(context, processingRequest);
+                descructTransferRequestService.update(context, processingRequest);
 
                 log.info("Odesílám informaci o zpracování požadavku na delimitaci do systému Elza.");
                 wsClient.transferRequestFinished(destructRequest.getUuid());
@@ -234,7 +223,7 @@ public class ProcessingRequestService {
                 processingRequest.setStatus(DestructTransferRequest.Status.REJECTED);
                 processingRequest.setProcessingDate(new Date());
                 processingRequest.setRejectedMessage(e.getMessage());
-                destructionRequestDAO.updateDestrucTransferRequest(context, processingRequest);
+                descructTransferRequestService.update(context, processingRequest);
 
                 log.info("Odesílám chybovou zprávu do systému Elza.");
                 RequestRevoked requestRevoked = new RequestRevoked();
@@ -267,6 +256,32 @@ public class ProcessingRequestService {
             throw new UnsupportedOperationException("Digitalizát s Uuid=" + uuId + " nebyl v tabulce Item nalezen.");
         }
         return item;
+    }
+
+    /**
+     * Provede nastavení metadat pro pole IsElza
+     * @param context
+     * @param item
+     * @param metadataList
+     * @param isElza
+     */
+    private void setMetadataIsElza(Context context, Item item, List<MetadataValue> metadataList, Boolean isElza) {
+        final String[] mt = metadata.getMetData(METADATA_ISELZA);
+        try {
+            if (metadataList.size() == 0) {
+                itemService.addMetadata(context, item, mt[0], mt[1], mt[2], null, isElza.toString());
+            } else if (metadataList.size() == 1) {
+                MetadataValue metadataValue = metadataList.get(0);
+                metadataValue.setValue(isElza.toString());
+            } else {
+                itemService.removeMetadataValues(context, item, metadataList);
+                itemService.addMetadata(context, item, mt[0], mt[1], mt[2], null, isElza.toString());
+            }
+            itemService.update(context, item);
+        } catch (Exception e) {
+            throw new ProcessingException("Chyba při nastavení metadat  pro položku digitalizátu Uuid=" + item.getID() +
+                    " schema=" + mt[0] + " element=" + mt[1] + ": " + e.getMessage());
+        }
     }
 
 }
