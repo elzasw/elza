@@ -2,12 +2,14 @@ package cz.tacr.elza.destructransferrequest.service;
 
 import cz.tacr.elza.context.ContextUtils;
 import cz.tacr.elza.daoimport.DaoImportScheduler;
+import cz.tacr.elza.metadataconstants.MetadataConstantService;
 import cz.tacr.elza.ws.dao_service.v1.DaoRequests;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
 import cz.tacr.elza.ws.types.v1.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.dspace.content.Item;
+import org.dspace.content.MetadataValue;
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.Context;
@@ -32,11 +34,13 @@ import java.util.UUID;
 public class DaoRequestsImpl implements DaoRequests{
     private String SEPARATOR = ";";
 
+//    @Autowired
     private DescructTransferRequestService descructTransferRequestService;
 
     private ItemService itemService = ContentServiceFactory.getInstance().getItemService();
     //private DescructTransferRequestService descructTransferRequestService = cz.tacr.elza.factory.ContentServiceFactory.getInstance().getDescructTransferRequestService();
     private static Logger log = Logger.getLogger(DaoImportScheduler.class);
+    private MetadataConstantService metadata;
 
     @Override
     public String postDestructionRequest(DestructionRequest destructionRequest) throws DaoServiceException {
@@ -137,8 +141,79 @@ public class DaoRequestsImpl implements DaoRequests{
 
     @Override
     public DaosSyncResponse syncDaos(DaosSyncRequest daosSyncRequest) throws DaoServiceException {
-        throw new UnsupportedOperationException("Funkce syncDaos není implementována.");
+        log.info("Spuštěna metoda DaosSyncResponse.");
+        DaosSyncResponse daosSyncResponse = new DaosSyncResponse();
 
+        List<DaoSyncRequest> daoSyncRequestList = daosSyncRequest.getDaoSyncRequest();
+        if (daoSyncRequestList.isEmpty()) {
+            return daosSyncResponse;
+        }
+
+        Context context = new Context();
+        try {
+            context = ContextUtils.createContext();
+            context.turnOffAuthorisationSystem();
+        } catch (Exception e) {
+            throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
+        }
+
+        Daoset daoset = new Daoset();
+        List<Dao> daoList = daoset.getDao();
+
+        NonexistingDaos nonexistingDaos = new NonexistingDaos();
+        List<String> nonexistingDaoId = nonexistingDaos.getDaoId();
+        for (DaoSyncRequest daoSyncRequest : daoSyncRequestList) {
+            UUID uuId = UUID.fromString(daoSyncRequest.getDaoId());
+            log.info("Vyhledávám položku digitalizátu Uuid=" + uuId + ".");
+            Item item = getItem(context, uuId);
+            if (item != null) {
+                log.info("Aktualizuji metadata položky digitalizátu Uuid=" + uuId + ".");
+                //TODO:cacha doplnit po upřesnění vstupních dat
+
+                log.info("Zapisuji technická metadata položky digitalizátu Uuid=" + uuId + ".");
+                ItemService itemService = item.getItemService();
+                String[] techMataData = metadata.getTechMetaData();
+                for (String mataDataCode : techMataData) {
+                    final String[] mt = metadata.getMetaData(mataDataCode);
+                    List<MetadataValue> metadataList = itemService.getMetadata(item, mt[0], mt[1], mt[2], Item.ANY);
+                    for (MetadataValue metadataValue : metadataList) {
+                        Dao dao = new Dao();
+//                        dao.setFileGroup();
+                        dao.setIdentifier(Integer.toString(metadataValue.getID()));
+                        dao.setLabel(metadataValue.getValue());
+
+                        List<RelatedFileGroup> relatedFileGroupList = dao.getRelatedFileGroup();
+                        RelatedFileGroup relatedFileGroup = new RelatedFileGroup();
+//                        relatedFileGroup.setFileGroup();
+//                        relatedFileGroup.setIdentifier();
+//                        relatedFileGroup.setLabel();
+
+                        relatedFileGroupList.add(relatedFileGroup);
+                        daoList.add(dao);
+                    }
+                }
+            } else {
+                log.info("Neexistující položka digitalizátu Uuid=" + uuId + ".");
+                nonexistingDaoId.add(daoSyncRequest.getDaoId());
+            }
+
+        }
+
+        daosSyncResponse.setDaoset(daoset);
+        daosSyncResponse.setNonexistingDaos(nonexistingDaos);
+
+        log.info("Ukončena metoda DaosSyncResponse");
+        return daosSyncResponse;
+    }
+
+    private Item getItem(Context context, UUID uuId) {
+        Item item = null;
+        try {
+            item = itemService.find(context, uuId);
+        } catch (Exception e) {
+            throw new ProcessingException("Chyba při vyhledání položky digitalizátu (" + uuId + "): " + e.getMessage());
+        }
+        return item;
     }
 
     private void checkIdentifier(Context context, UUID uuId) {
