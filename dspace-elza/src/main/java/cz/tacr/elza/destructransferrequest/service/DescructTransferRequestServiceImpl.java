@@ -9,11 +9,13 @@ package cz.tacr.elza.destructransferrequest.service;
 
 import cz.tacr.elza.destructransferrequest.dao.DestructTransferRequestDAO;
 import org.apache.log4j.Logger;
+import org.dspace.authorize.factory.AuthorizeServiceFactory;
 import org.dspace.authorize.service.AuthorizeService;
 import org.dspace.content.NonUniqueMetadataException;
 import org.dspace.core.Context;
 import org.dspace.core.LogManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -25,12 +27,12 @@ import java.util.List;
  *
  * @author kevinvandevelde at atmire.com
  */
+@Service
 public class DescructTransferRequestServiceImpl implements DescructTransferRequestService {
 
     private static Logger log = Logger.getLogger(DescructTransferRequestServiceImpl.class);
 
-    @Autowired(required = true)
-    protected AuthorizeService authorizeService;
+    protected AuthorizeService authorizeService = AuthorizeServiceFactory.getInstance().getAuthorizeService();
 
     @Autowired(required = true)
     protected DestructTransferRequestDAO destructTransferRequestDAO;
