@@ -13,6 +13,7 @@ import org.dspace.content.MetadataValue;
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.Context;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.ProcessingException;
@@ -34,7 +35,7 @@ import java.util.UUID;
 public class DaoRequestsImpl implements DaoRequests{
     private String SEPARATOR = ";";
 
-//    @Autowired
+    @Autowired
     private DescructTransferRequestService descructTransferRequestService;
 
     private ItemService itemService = ContentServiceFactory.getInstance().getItemService();
