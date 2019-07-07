@@ -90,7 +90,7 @@ public class ProcessingRequestService {
                     log.info("Skartuji metadata položky digitalizátu Uuid=" + uuId + ".");
                     List<MetadataValue> metadataValueList = itemService.getMetadata(item, Item.ANY, Item.ANY, Item.ANY, Item.ANY);
                     itemService.removeMetadataValues(context, item, metadataValueList);
-
+                    itemService.update(context, item);
                     log.info("Skartuji položku digitalizátu Uuid=" + uuId + ".");
                     itemService.delete(context, item);
                 }
@@ -196,7 +196,7 @@ public class ProcessingRequestService {
                         collectionService.update(context, targetCollection);
                     }
 
-                    final String[] mt = metadata.getMetData(METADATA_ISELZA);
+                    final String[] mt = metadata.getMetaData(METADATA_ISELZA);
                     log.info("Aktualizuji hodnotu metadat pro element=" + mt[1] + " na FALSE.");
                     log.info("Vyhledávám metadata pro položku digitalizátu Uuid=" + uuId + " schema=" + mt[0] +
                             " element=" + mt[1] + ".");
@@ -266,7 +266,7 @@ public class ProcessingRequestService {
      * @param isElza
      */
     private void setMetadataIsElza(Context context, Item item, List<MetadataValue> metadataList, Boolean isElza) {
-        final String[] mt = metadata.getMetData(METADATA_ISELZA);
+        final String[] mt = metadata.getMetaData(METADATA_ISELZA);
         try {
             if (metadataList.size() == 0) {
                 itemService.addMetadata(context, item, mt[0], mt[1], mt[2], null, isElza.toString());

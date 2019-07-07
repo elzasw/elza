@@ -119,6 +119,10 @@ public class DestructTransferRequest {
     private String rejectedMessage;
 
     //***************************** CONSTRUCTOR *******************************
+    protected DestructTransferRequest()
+    {
+
+    }
 
     //*************************** ENUM DEFINICE *******************************
     public enum Status {
