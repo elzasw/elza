@@ -21,6 +21,7 @@ import java.util.UUID;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.dspace.app.mediafilter.JPEGFilter;
@@ -48,6 +49,7 @@ import org.dspace.services.factory.DSpaceServicesFactory;
 import org.dspace.workflowbasic.BasicWorkflowItem;
 import org.dspace.workflowbasic.factory.BasicWorkflowServiceFactory;
 import org.dspace.workflowbasic.service.BasicWorkflowService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.daoimport.DaoImportScheduler;
@@ -86,6 +88,12 @@ public class DaoImportService {
     private WorkspaceItemService workspaceItemService = ContentServiceFactory.getInstance().getWorkspaceItemService();
     private BasicWorkflowService basicWorkflowService = BasicWorkflowServiceFactory.getInstance().getBasicWorkflowService();
 
+    @Autowired
+    private JhoveService jhoveService;
+
+    @Autowired
+    private DroidService droidService;
+
     public List<ImportBatch> prepareImport(final Context context) throws IOException {
         String mainDir = getMainDir();
         Path inputDir = Paths.get(mainDir, INPUT_DIR);
@@ -110,7 +118,7 @@ public class DaoImportService {
             } catch (Exception e) {
                 protocol.write("Chyba při zpracování dávky: " + e.getMessage());
                 protocol.newLine();
-                protocol.write(printStackTraceToString(e));
+                protocol.write(ExceptionUtils.getStackTrace(e));
                 protocol.close();
 
                 Path errorDir = Paths.get(mainDir, ERROR_DIR, batchDir.getFileName().toString());
@@ -119,12 +127,6 @@ public class DaoImportService {
         }
 
         return batches;
-    }
-
-    private String printStackTraceToString(Exception e) {
-        StringWriter errors = new StringWriter();
-        e.printStackTrace(new PrintWriter(errors));
-        return errors.toString();
     }
 
     private String getMainDir() {
@@ -151,7 +153,7 @@ public class DaoImportService {
 
                 protocol.write("Chyba při zpracování dávky: " + e.getMessage());
                 protocol.newLine();
-                protocol.write(printStackTraceToString(e));
+                protocol.write(ExceptionUtils.getStackTrace(e));
                 protocol.close();
 
                 Path errorDir = Paths.get(mainDir, ERROR_DIR, batchDir.getFileName().toString());
@@ -172,7 +174,10 @@ public class DaoImportService {
             Bundle thumbBundle = createBundle("THUMBNAIL", item,  protocol, context);
             for (DaoFile daoFile : importDao.getFiles()) {
                 Bitstream contentBitstream = createBitstream(daoFile.getContentFile(), origBundle, CONTENT_BITSTREAM, sequence, protocol, context);
-                Bitstream metadataBitstream = createBitstream(daoFile.getMetadataFile(), metaBundle, METADATA_BITSTREAM, sequence, protocol, context);
+
+                if (daoFile.getMetadataFile() != null) {
+                    Bitstream metadataBitstream = createBitstream(daoFile.getMetadataFile(), metaBundle, METADATA_BITSTREAM, sequence, protocol, context);
+                }
                 Bitstream thumbnailBitstream = createBitstream(daoFile.getThumbnailFile(), thumbBundle, THUMBNAIL_BITSTREAM, sequence, protocol, context);
                 sequence++;
             }
@@ -191,7 +196,13 @@ public class DaoImportService {
             //bs.setDescription(context,null);
             bs.setSequenceID(sequence);
 
-            BitstreamFormat bf = bitstreamFormatService.guessFormat(context, bs);
+            String mimeType = droidService.getMimeType(file, protocol);
+            BitstreamFormat bf;
+            if (mimeType == null) {
+                bf = bitstreamFormatService.guessFormat(context, bs);
+            } else {
+                bf = bitstreamFormatService.findByMIMEType(context, mimeType);
+            }
             bitstreamService.setFormat(context, bs, bf);
 
             bitstreamService.update(context, bs);
@@ -382,7 +393,9 @@ public class DaoImportService {
                         protocol.write("Generování metadat souboru " + contentFile.getFileName().toString());
                         protocol.newLine();
 
-                        //TODO implementovat
+                        if (jhoveService.generateMetadata(contentFile, protocol, destPath)) {
+                            daoFile.setMetadataFile(destPath);
+                        }
                     }
 
                     Path thumbnailFile = Paths.get(contentFile.toAbsolutePath().toString() + THUMBNAIL_EXTENSION);
