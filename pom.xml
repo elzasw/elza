@@ -1500,11 +1500,43 @@
                 <groupId>org.openpreservation.jhove</groupId>
                 <artifactId>jhove-ext-modules</artifactId>
                 <version>1.22.1</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jwat</groupId>
+                        <artifactId>jwat-warc</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jwat</groupId>
+                        <artifactId>jwat-gzip</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jwat</groupId>
+                        <artifactId>jwat-common</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jwat</groupId>
+                        <artifactId>jwat-archive-common</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>uk.gov.nationalarchives</groupId>
                 <artifactId>droid-core</artifactId>
                 <version>6.4</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.tukaani</groupId>
+                        <artifactId>xz</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-compress</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>joda-time</groupId>
+                        <artifactId>joda-time</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <!-- END Droid a JHove -->
         </dependencies>
