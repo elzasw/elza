@@ -84,7 +84,7 @@ class ArrDao extends AbstractReactComponent {
                 </div>}
             </div>
             <div key="info" className="dao-info">
-                {this.renderLabel("arr.daos.title.code", dao.code)}
+                {this.renderLabel("arr.daos.title.code", dao.id)}
                 {this.renderLabel("arr.daos.title.description", dao.label, true)}
                 {this.renderLabel("arr.daos.title.file-count", dao.fileList.length)}
             </div>

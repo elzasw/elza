@@ -259,7 +259,8 @@ class ArrStructurePanel extends AbstractReactComponent {
                     x: e.clientX,
                     y: e.clientY
                 },
-                node
+                node,
+                focusable: e.keyCode == 13
             }
         });
     }
@@ -268,33 +269,75 @@ class ArrStructurePanel extends AbstractReactComponent {
         this.setState({
             contextMenu:{
                 ...this.state.contextMenu,
-                isOpen:false
+                isOpen:false,
+                focusable: false
             }
         });
+        if (this.list) {
+            this.list.focus();
+        }
+    }
+
+    handleKeyMenu = (e, call) => {
+        if (e.keyCode == 13) {
+            call && call();
+        } else if (e.keyCode == 27) {
+            this.closeContextMenu();
+        } else {
+            switch (e.key) {
+                case "ArrowDown":
+                    this.focusOnItem(1);
+                    break;
+                case "ArrowUp":
+                    this.focusOnItem(-1);
+                    break;
+            }
+        }
+    }
+
+    focusOnItem = (diff) => {
+        if (this.menu) {
+            const menu = this.menu.menu;
+            let curr = null;
+            let poss = [];
+            for (let i = 0; i < menu.children.length; i++) {
+                const item = menu.children[i];
+                if (item.tabIndex >= 0) {
+                    poss.push(i);
+                }
+                if (item === document.activeElement) {
+                    curr = poss.length - 1;
+                }
+            }
+            const newIndex = curr + diff;
+            if (newIndex >= 0 && poss.length > newIndex) {
+                menu.children[poss[newIndex]].focus();
+            }
+        }
     }
 
     renderContextMenu = () => {
         const { filter } = this.props.store;
-        const {coordinates, node} = this.state.contextMenu;
+        const {coordinates, node, focusable} = this.state.contextMenu;
         const {readMode} = this.props;
 
         const menuParts = [];
 
         if (readMode) {
-            menuParts.push(<div key="show" className="item" onClick={this.handleUpdate.bind(this, node)}>{i18n("arr.structure.item.contextMenu.show")}</div>);
+            menuParts.push(<div key="show" tabIndex={0} className="item" onKeyDown={e => this.handleKeyMenu(e, this.handleUpdate.bind(this, node))} onClick={this.handleUpdate.bind(this, node)}>{i18n("arr.structure.item.contextMenu.show")}</div>);
         } else {
-            if(node && node.assignable || (filter.assignable === "true" || filter.assignable === "")){
-                menuParts.push(<div key="changeToClosed" className="item" onClick={this.handleSetAssignable.bind(this, node, false)}>{i18n("arr.structure.item.contextMenu.changeToClosed")}</div>);
+            if (node.assignable) {
+                menuParts.push(<div key="changeToClosed" tabIndex={0} className="item" onKeyDown={e => this.handleKeyMenu(e, this.handleSetAssignable.bind(this, node, false))} onClick={this.handleSetAssignable.bind(this, node, false)}>{i18n("arr.structure.item.contextMenu.changeToClosed")}</div>);
             } else {
-                menuParts.push(<div key="changeToOpen" className="item" onClick={this.handleSetAssignable.bind(this, node, true)}>{i18n("arr.structure.item.contextMenu.changeToOpen")}</div>);
+                menuParts.push(<div key="changeToOpen" tabIndex={0} className="item" onKeyDown={e => this.handleKeyMenu(e, this.handleSetAssignable.bind(this, node, true))} onClick={this.handleSetAssignable.bind(this, node, true)}>{i18n("arr.structure.item.contextMenu.changeToOpen")}</div>);
             }
             menuParts.push(<div key="d1"  className="divider" />);
-            menuParts.push(<div key="update" className="item" onClick={this.handleUpdate.bind(this, node)}>{i18n("arr.structure.item.contextMenu.update")}</div>);
+            menuParts.push(<div key="update" tabIndex={0} className="item" onKeyDown={e => this.handleKeyMenu(e, this.handleUpdate.bind(this, node))} onClick={this.handleUpdate.bind(this, node)}>{i18n("arr.structure.item.contextMenu.update")}</div>);
             menuParts.push(<div key="d2" className="divider" />);
-            menuParts.push(<div key="delete" className="item" onClick={this.handleDelete.bind(this, node)}>{i18n("arr.structure.item.contextMenu.delete")}</div>);
+            menuParts.push(<div key="delete" tabIndex={0} className="item" onKeyDown={e => this.handleKeyMenu(e, this.handleDelete.bind(this, node))} onClick={this.handleDelete.bind(this, node)}>{i18n("arr.structure.item.contextMenu.delete")}</div>);
         }
         return (
-            <FloatingMenu coordinates={coordinates} closeMenu={this.closeContextMenu}>
+            <FloatingMenu ref={(ref)=>{this.menu = ref;}} coordinates={coordinates} closeMenu={this.closeContextMenu} focusable={focusable}>
                 {menuParts}
             </FloatingMenu>
         );
@@ -420,6 +463,8 @@ class ArrStructurePanel extends AbstractReactComponent {
             </div>
             {rows && rows.length > 0 
                 ? <CheckListBox
+                    ref={(ref)=>{this.list = ref;}}
+                    tabindex={0}
                     className="list"
                     key="list"
                     items={rows}
