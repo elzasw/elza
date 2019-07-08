@@ -29,7 +29,7 @@ public class DestructTransferRequestDAOImpl extends AbstractHibernateDAO<Destruc
         String tableName = DestructTransferRequest.class.getName();
         String sqlQuery = "SELECT dr FROM " + tableName + " dr WHERE dr.identifier = :identifier";
         Query query = createQuery(context, sqlQuery);
-        //query.setParameter("identifier", identifier);
+        query.setParameter("identifier", identifier);
 
         query.setCacheable(true);
         return singleResult(query);
