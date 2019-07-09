@@ -110,11 +110,7 @@
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20190708133002" />
     </changeSet>
     <changeSet id="20190708133003" author="slapa">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <sqlCheck expectedResult="0">SELECT COUNT(*) FROM arr_node_register</sqlCheck>
-            </not>
-        </preConditions>
+        <validCheckSum>ANY</validCheckSum>
         <delete tableName="arr_cached_node" />
     </changeSet>
     <changeSet id="20190708133004" author="slapa">
