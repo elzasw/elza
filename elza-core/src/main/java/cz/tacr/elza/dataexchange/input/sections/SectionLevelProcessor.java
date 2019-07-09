@@ -18,7 +18,6 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemIndexData;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.schema.v2.AccessPointRefs;
 import cz.tacr.elza.schema.v2.DescriptionItem;
@@ -79,27 +78,10 @@ public class SectionLevelProcessor implements ItemProcessor {
 
     private void processSubEntities(Level item, NodeContext node) {
         try {
-            processAccessPointRefs(item.getAprs(), node);
             processDescItems(item.getDdOrDoOrDp(), node);
         } catch (DEImportException e) {
             throw new DEImportException(
                     "Fund level cannot be processed, levelId:" + item.getId() + ", detail:" + e.getMessage(), e);
-        }
-    }
-
-    private void processAccessPointRefs(AccessPointRefs references, NodeContext node) {
-        if (references == null) {
-            return;
-        }
-        for (String apEntryId : references.getApid()) {
-            AccessPointInfo apInfo = context.getAccessPoints().getApInfo(apEntryId);
-            if (apInfo == null) {
-                throw new DEImportException("Referenced access point not found, apeId:" + apEntryId);
-            }
-            ArrNodeRegister nodeRegister = new ArrNodeRegister();
-            nodeRegister.setRecord(apInfo.getEntityRef(context.getSession()));
-            nodeRegister.setCreateChange(section.getCreateChange());
-            node.addNodeRegister(nodeRegister);
         }
     }
 

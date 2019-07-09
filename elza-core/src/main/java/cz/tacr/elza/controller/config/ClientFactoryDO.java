@@ -30,7 +30,6 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.FilterTools;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
 import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ParPartyNameVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
@@ -54,7 +53,6 @@ import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ParInstitution;
@@ -353,18 +351,6 @@ public class ClientFactoryDO {
         ParInstitution institution = institutionRepository.findOne(fundVO.getInstitutionId());
         fund.setInstitution(institution);
         return fund;
-    }
-
-    public ArrNodeRegister createRegisterLink(final ArrNodeRegisterVO nodeRegisterVO) {
-        Assert.notNull(nodeRegisterVO, "Rejstříkové heslo musí být vyplněno");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrNodeRegister nodeRegister = mapper.map(nodeRegisterVO, ArrNodeRegister.class);
-
-        if (nodeRegisterVO.getValue() != null) {
-            nodeRegister.setRecord(apAccessPointRepository.findOne(nodeRegisterVO.getValue()));
-        }
-
-        return nodeRegister;
     }
 
     public List<DescItemTypeFilter> createFilters(final Filters filters) {

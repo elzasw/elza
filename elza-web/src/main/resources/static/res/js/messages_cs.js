@@ -274,7 +274,6 @@ var messages = {
     "ribbon.action.fundAction.action.cancel": "Zrušit akci",
     "ribbon.action.fundAction.form.run": "Spustit",
     "ribbon.action.fundAction.form.clear": "Vymazat",
-    "ribbon.action.arr.show-register-jp": "Rejstříky k JP",
     "ribbon.action.arr.fund.settings.ui": "Nastavení zobrazení",
     "ribbon.action.arr.fund.settings.template": "Správa šablon",
     "ribbon.action.registry": "Přístupové body",
@@ -878,9 +877,6 @@ var messages = {
     "subNodeForm.section.item" : "Prvek popisu",
     "subNodeForm.section.createTemplate" : "Vytvořit šablonu",
     "subNodeForm.section.useTemplate" : "Použít šablonu",
-
-    "subNodeRegister.title": "Rejstříková hesla",
-    "subNodeRegister.title.add": "Přidání hesla",
 
     "subNodeDao.title": "Digitální entity",
     "subNodeDao.dao.action.showDetailAll": "Zobrazit detail digitálních entit",

@@ -33,7 +33,6 @@ import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.exception.SystemException;
@@ -83,8 +82,6 @@ class XmlSectionOutputStream implements SectionOutputStream {
         if (levelInfo.getParentNodeId() != null) {
             level.setPid(levelInfo.getParentNodeId().toString());
         }
-        // convert node APs references
-        convertNodeAPs(levelInfo.getNodeAps(), level);
         // convert description items references
         convertItems(levelInfo.getItems(), level.getDdOrDoOrDp());
 
@@ -142,19 +139,6 @@ class XmlSectionOutputStream implements SectionOutputStream {
             }
         } catch (IOException e) {
             throw new SystemException(e);
-        }
-    }
-
-    private void convertNodeAPs(Collection<ArrNodeRegister> nodeAPs, Level level) {
-        if (nodeAPs == null || nodeAPs.isEmpty()) {
-            return;
-        }
-        AccessPointRefs apRefs = new AccessPointRefs();
-        List<String> apIds = apRefs.getApid();
-        level.setAprs(apRefs);
-        for (ArrNodeRegister nodeAP : nodeAPs) {
-            sectionContext.getContext().addApId(nodeAP.getRecordId());
-            apIds.add(nodeAP.getRecordId().toString());
         }
     }
 

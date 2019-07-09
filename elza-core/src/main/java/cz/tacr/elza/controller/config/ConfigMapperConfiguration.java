@@ -36,7 +36,6 @@ import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
 import cz.tacr.elza.controller.vo.ArrFundBaseVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
@@ -144,7 +143,6 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.ParComplementType;
@@ -426,25 +424,6 @@ public class ConfigMapperConfiguration {
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrItemString.class, ArrItemStringVO.class).byDefault().register();
-
-        mapperFactory.classMap(ArrNodeRegister.class, ArrNodeRegisterVO.class)
-            .field("nodeRegisterId", "id")
-            .exclude(ArrNodeRegister.FIELD_RECORD)
-            .customize(new CustomMapper<ArrNodeRegister, ArrNodeRegisterVO>() {
-                @Override
-                public void mapAtoB(ArrNodeRegister a, ArrNodeRegisterVO b, MappingContext context) {
-                    ApAccessPointVO apVO = apFactory.createVO(a.getRecord());
-                    b.setRecord(apVO);
-                }
-                @Override
-                public void mapBtoA(ArrNodeRegisterVO b, ArrNodeRegister a, MappingContext context) {
-                    ApAccessPointVO apVO = b.getRecord();
-                    if (apVO != null) {
-                        a.setRecord(apFactory.create(apVO));
-                    }
-                }
-            })
-            .byDefault().register();
 
         mapperFactory.classMap(ArrNode.class, ArrNodeVO.class).byDefault().field("nodeId", "id").register();
 

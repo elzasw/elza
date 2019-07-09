@@ -52,7 +52,6 @@ export {default as FundTreeLazy} from 'components/arr/FundTreeLazy.jsx';
 export {default as NodeSubNodeForm} from 'components/arr/NodeSubNodeForm.jsx';
 export {default as NodeActionsBar} from 'components/arr/NodeActionsBar.jsx';
 export {default as OutputSubNodeForm} from 'components/arr/OutputSubNodeForm.jsx';
-export {default as SubNodeRegister} from 'components/arr/SubNodeRegister.jsx';
 export {default as SubNodeDao} from 'components/arr/SubNodeDao.jsx';
 export {default as FundForm} from 'components/arr/FundForm.jsx';
 export {default as FundSettingsForm} from 'components/arr/FundSettingsForm.jsx';

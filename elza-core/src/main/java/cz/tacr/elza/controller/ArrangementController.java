@@ -51,7 +51,6 @@ import cz.tacr.elza.controller.vo.ArrDaoVO;
 import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
 import cz.tacr.elza.controller.vo.ArrRequestVO;
@@ -95,7 +94,6 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
 import cz.tacr.elza.domain.ArrOutputItem;
@@ -415,7 +413,6 @@ public class ArrangementController {
      * Zavolá WS pro synchronizaci digitalizátů a aktualizuje metadata pro daný node a DAO.
      *
      * @param fundVersionId verze AS
-     * @param daoId         DAO pro synchronizaci
      * @param nodeId        node pro synchronizaci
      */
     @Transactional
@@ -1749,104 +1746,6 @@ public class ArrangementController {
     }
 
     /**
-     * Vyhledání vazeb AP - rejstříky.
-     *
-     * @param versionId id verze stromu
-     * @param nodeId    identfikátor JP
-     * @return vazby
-     */
-    @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}",
-            method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<ArrNodeRegisterVO> findRegisterLinks(final @PathVariable(value = "versionId") Integer versionId,
-                                                     final @PathVariable(value = "nodeId") Integer nodeId) {
-        List<ArrNodeRegister> registerLinks = accessPointService.findRegisterLinks(versionId, nodeId);
-        return factoryVo.createRegisterLinkList(registerLinks);
-    }
-
-    /**
-     * Vyhledání vazeb AP - rejstříky pro formulář.
-     *
-     * @param versionId id verze stromu
-     * @param nodeId    identfikátor JP
-     * @return vazby pro formulář
-     */
-    @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}/form",
-            method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public NodeRegisterDataVO findRegisterLinksForm(final @PathVariable(value = "versionId") Integer versionId,
-                                                    final @PathVariable(value = "nodeId") Integer nodeId) {
-        List<ArrNodeRegisterVO> nodeRegistersVO = findRegisterLinks(versionId, nodeId);
-        ArrNode node = nodeRepository.findOne(nodeId);
-        return new NodeRegisterDataVO(ArrNodeVO.valueOf(node), nodeRegistersVO);
-    }
-
-    /**
-     * Vytvoření vazby AP - rejstříky
-     *
-     * @param versionId         id verze stromu
-     * @param nodeId            identfikátor JP
-     * @param nodeRegisterVO    vazba
-     * @return vazba
-     */
-    @Transactional
-    @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}/create",
-            method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrNodeRegisterVO createRegisterLinks(final @PathVariable(value = "versionId") Integer versionId,
-                                                       final @PathVariable(value = "nodeId") Integer nodeId,
-                                                       final @RequestBody ArrNodeRegisterVO nodeRegisterVO) {
-        ArrNodeRegister nodeRegister = factoryDO.createRegisterLink(nodeRegisterVO);
-        nodeRegister = accessPointService.createRegisterLink(versionId, nodeId, nodeRegister);
-        return factoryVo.createRegisterLink(nodeRegister);
-    }
-
-    /**
-     * Upravení vazby AP - rejstříky.
-     *
-     * @param versionId         id verze stromu
-     * @param nodeId            identfikátor JP
-     * @param nodeRegisterVO    vazba
-     * @return vazba
-     */
-    @Transactional
-    @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}/update",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrNodeRegisterVO updateRegisterLinks(final @PathVariable(value = "versionId") Integer versionId,
-                                                 final @PathVariable(value = "nodeId") Integer nodeId,
-                                                 final @RequestBody ArrNodeRegisterVO nodeRegisterVO) {
-        ArrNodeRegister nodeRegister = factoryDO.createRegisterLink(nodeRegisterVO);
-        nodeRegister = accessPointService.updateRegisterLink(versionId, nodeId, nodeRegister);
-        return factoryVo.createRegisterLink(nodeRegister);
-    }
-
-    /**
-     * Smazání vazby AP - rejstříky.
-     *
-     * @param versionId         id verze stromu
-     * @param nodeId            identfikátor JP
-     * @param nodeRegisterVO    vazba
-     * @return  vazba
-     */
-    @Transactional
-    @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}/delete",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrNodeRegisterVO deleteRegisterLinks(final @PathVariable(value = "versionId") Integer versionId,
-                                                 final @PathVariable(value = "nodeId") Integer nodeId,
-                                                 final @RequestBody ArrNodeRegisterVO nodeRegisterVO) {
-        ArrNodeRegister nodeRegister = factoryDO.createRegisterLink(nodeRegisterVO);
-        nodeRegister = accessPointService.deleteRegisterLink(versionId, nodeId, nodeRegister);
-        return factoryVo.createRegisterLink(nodeRegister);
-    }
-
-    /**
      * Validuje verzi archivní pomůcky a vrátí list chyb.
      * Pokud je počet chyb 0 pak předpokládáme že stav AP = OK
      *
@@ -2700,46 +2599,6 @@ public class ArrangementController {
 
         public void setParent(final TreeNodeVO parent) {
             this.parent = parent;
-        }
-    }
-
-    /**
-     * Výstupní objekt pro získaná data pro formulář detailu uzlu.
-     */
-    public static class NodeRegisterDataVO {
-
-        /**
-         * Uzel
-         */
-        private ArrNodeVO node;
-
-        /**
-         * Seznam odkazů
-         */
-        private List<ArrNodeRegisterVO> nodeRegisters;
-
-        public NodeRegisterDataVO() {
-        }
-
-        public NodeRegisterDataVO(final ArrNodeVO node, final List<ArrNodeRegisterVO> nodeRegisters) {
-            this.node = node;
-            this.nodeRegisters = nodeRegisters;
-        }
-
-        public ArrNodeVO getNode() {
-            return node;
-        }
-
-        public void setNode(final ArrNodeVO node) {
-            this.node = node;
-        }
-
-        public List<ArrNodeRegisterVO> getNodeRegisters() {
-            return nodeRegisters;
-        }
-
-        public void setNodeRegisters(final List<ArrNodeRegisterVO> nodeRegisters) {
-            this.nodeRegisters = nodeRegisters;
         }
     }
 

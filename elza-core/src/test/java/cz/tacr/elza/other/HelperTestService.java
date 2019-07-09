@@ -73,8 +73,6 @@ public class HelperTestService {
     @Autowired
     protected NodeRepository nodeRepository;
     @Autowired
-    private NodeRegisterRepository nodeRegisterRepository;
-    @Autowired
     private OutputRepository outputRepository;
     @Autowired
     private ApNameRepository apNameRepository;
@@ -219,7 +217,6 @@ public class HelperTestService {
         apItemRepository.deleteAll();
         fragmentRepository.deleteAll();
         apNameRepository.deleteAll();
-        nodeRegisterRepository.deleteAll();
         fundVersionRepository.deleteAll();
         fundRegisterScopeRepository.deleteAll();
         levelRepository.deleteAll();

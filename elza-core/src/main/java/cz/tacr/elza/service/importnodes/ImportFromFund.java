@@ -107,7 +107,6 @@ public class ImportFromFund implements ImportSource {
     /**
      * Inicializace zdroje.
      *
-     * @param sourceFundVersion zdrojová verze AS
      * @param sourceNodes       uzly, které prohledáváme
      * @param ignoreRootNodes   ignorují je vrcholové uzly, které prohledáváme
      */
@@ -306,11 +305,6 @@ public class ImportFromFund implements ImportSource {
                 }
 
                 return result;
-            }
-
-            @Override
-            public Collection<? extends NodeRegister> getNodeRegisters() {
-                return cachedNode.getNodeRegisters();
             }
         };
     }

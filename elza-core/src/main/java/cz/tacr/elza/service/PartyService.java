@@ -39,7 +39,6 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParCreator;
 import cz.tacr.elza.domain.ParInstitution;
@@ -75,7 +74,6 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PartyCreatorRepository;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyGroupRepository;
@@ -148,8 +146,6 @@ public class PartyService {
     @Autowired
     private DataRecordRefRepository dataRecordRefRepository;
 
-    @Autowired
-    private NodeRegisterRepository nodeRegisterRepository;
     @Autowired
     private PartyNameComplementRepository partyNameComplementRepository;
 
@@ -250,7 +246,6 @@ public class PartyService {
      * @param maxResults   max počet vrácených osob
      * @param fund   AP, ze které se použijí třídy rejstříků
      * @param scopeId scope, pokud je vyplněno hledají se osoby pouze s tímto scope
-     * @param excludeInvalid
      */
     public List<ParParty> findPartyByTextAndType(final String searchRecord,
                                                  final Integer partyTypeId,
@@ -289,8 +284,6 @@ public class PartyService {
      * @param fund   AP, ze které se použijí třídy rejstříků
      * @param scopeId scope, pokud je vyplněno hledají se osoby pouze s tímto scope
      *
-     * @param excludeInvalid
-     * @return
      */
     public long findPartyByTextAndTypeCount(final String searchRecord,
                                             final Integer partyTypeId,
@@ -676,16 +669,8 @@ public class PartyService {
     }
 
     private boolean canBeDeleted(ParParty party) {
-        // rejstřík AS nebo arch. popis v otevřené verzi.(arr_node_register nebo arr_data_party_ref nebo arr_data_record_ref)
+        // rejstřík AS nebo arch. popis v otevřené verzi.(arr_data_party_ref nebo arr_data_record_ref)
 
-        // arr_node_register
-        List<ArrNodeRegister> nodeRegisters = nodeRegisterRepository.findByRecordAndDeleteChangeIsNull(party.getAccessPoint());
-        if (CollectionUtils.isNotEmpty(nodeRegisters)) {
-            throw new BusinessException("Nelze smazat/zneplatnit osobu, která má přiřazení rejstříkového hesla k jednotce archivního popisu.", RegistryCode.EXIST_FOREIGN_DATA)
-                    .set("partyId", party.getPartyId())
-                    .set("nodeRegisterIds", nodeRegisters.stream().map(ArrNodeRegister::getNodeRegisterId).collect(Collectors.toList()))
-                    .set("nodeIds", nodeRegisters.stream().map(ArrNodeRegister::getNodeId).collect(Collectors.toList()));
-        }
         // arr_data_party_ref
         List<ArrDescItem> arrPartyItems = descItemRepository.findArrItemByParty(party);
         if (CollectionUtils.isNotEmpty(arrPartyItems)) {
@@ -984,7 +969,7 @@ public class PartyService {
      * @param party osoba
      */
     private void checkPartyUsage(final ParParty party) {
-        // vazby ( arr_node_register, ArrDataRecordRef, ArrDataPartyRef),
+        // vazby ( ArrDataRecordRef, ArrDataPartyRef),
         Long pocet = dataPartyRefRepository.getCountByParty(party);
         if (pocet > 0) {
             throw new SystemException("Nalezeno použití party v tabulce ArrDataPartyRef.");
@@ -992,11 +977,6 @@ public class PartyService {
 
         List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByRecord(party.getAccessPoint());
         if (CollectionUtils.isNotEmpty(dataRecordRefList)) {
-            throw new SystemException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
-        }
-
-        List<ArrNodeRegister> nodeRegisterList = nodeRegisterRepository.findByRecordId(party.getAccessPoint());
-        if (CollectionUtils.isNotEmpty(nodeRegisterList)) {
             throw new SystemException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
         }
     }

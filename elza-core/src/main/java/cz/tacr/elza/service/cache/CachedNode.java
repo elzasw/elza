@@ -10,7 +10,6 @@ import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNodeExtension;
-import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
@@ -34,11 +33,6 @@ public class CachedNode implements NodeCacheSerializable {
      * Seznam hodnot atributů.
      */
     private List<ArrDescItem> descItems;
-
-    /**
-     * Seznam návazných entity z rejstříků.
-     */
-    private List<ArrNodeRegister> nodeRegisters;
 
     /**
      * Seznam návazných entity z definic řídících pravidel.
@@ -80,14 +74,6 @@ public class CachedNode implements NodeCacheSerializable {
 
     public void setDescItems(final List<ArrDescItem> descItems) {
         this.descItems = descItems;
-    }
-
-    public List<ArrNodeRegister> getNodeRegisters() {
-        return nodeRegisters;
-    }
-
-    public void setNodeRegisters(final List<ArrNodeRegister> nodeRegisters) {
-        this.nodeRegisters = nodeRegisters;
     }
 
     public List<ArrNodeExtension> getNodeExtensions() {
@@ -142,7 +128,6 @@ public class CachedNode implements NodeCacheSerializable {
             throw new NullPointerException("uuid is null");
         }
         validateDescItems();
-        validateNodeRegisters();
         validateNodeExtensions();
         validateDaoLinks();
     }
@@ -182,18 +167,6 @@ public class CachedNode implements NodeCacheSerializable {
                 throw new NullPointerException("Missing arrangement extension ID");
             }
         }
-    }
-
-    private void validateNodeRegisters() {
-        if (nodeRegisters == null) {
-            return;
-        }
-
-        for (ArrNodeRegister nodeRegister : nodeRegisters) {
-            Validate.notNull(nodeRegister.getRecord());
-            Validate.notNull(nodeRegister.getRecordId());
-        }
-
     }
 
     private void validateDescItems() {

@@ -53,7 +53,6 @@ import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputFileRepository;
@@ -96,8 +95,6 @@ public class DeleteFundAction {
     private UserService userService;
     @Autowired
     private IEventNotificationService eventNotificationService;
-    @Autowired
-    private NodeRegisterRepository nodeRegisterRepository;
     @Autowired
     private NodeConformityRepository nodeConformityInfoRepository;
     @Autowired
@@ -340,9 +337,6 @@ public class DeleteFundAction {
         // delete attached extensions
         nodeExtensionRepository.deleteByNodeFund(fund);
 
-        // delete attached access points
-        nodeRegisterRepository.deleteByNodeFund(fund);
-
         em.flush();
     }
 
@@ -389,8 +383,6 @@ public class DeleteFundAction {
 
     /**
      * Delete DAOs
-     * 
-     * @param fund
      */
     private void dropDaos() {
 

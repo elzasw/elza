@@ -11,7 +11,6 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
 
 public class NodeContext {
 
@@ -43,11 +42,6 @@ public class NodeContext {
         ArrNodeWrapper childNodeWrapper = new ArrNodeWrapper(node);
         ArrLevelWrapper childLevelWrapper = createChildLevelWrapper(childNodeWrapper.getIdHolder());
         return section.addNode(childNodeWrapper, childLevelWrapper, importId, depth + 1);
-    }
-
-    public void addNodeRegister(ArrNodeRegister nodeRegister) {
-        ArrNodeRegisterWrapper wrapper = new ArrNodeRegisterWrapper(nodeRegister, idHolder);
-        storageDispatcher.addNodeRegister(wrapper, depth);
     }
 
     /**

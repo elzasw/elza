@@ -41,7 +41,6 @@ import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
@@ -385,17 +384,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         if (descItems != null) {
             List<Item> items = convert(descItems);
             node.setItems(items);
-        }
-
-        // set direct node AP
-        List<ArrNodeRegister> arrNodeAPs = cachedNode.getNodeRegisters();
-        if (arrNodeAPs != null) {
-            List<Record> nodeAPs = new ArrayList<>(arrNodeAPs.size());
-            for (ArrNodeRegister nodeAP : arrNodeAPs) {
-                Record ap = getRecord(nodeAP.getRecord());
-                nodeAPs.add(ap);
-            }
-            node.setNodeAPs(nodeAPs);
         }
     }
 

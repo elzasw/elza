@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNodeExtension;
-import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.cache.CachedNode;
@@ -50,76 +49,6 @@ public class ArrangementCacheService {
      */
     public void deleteNodes(final Collection<Integer> nodeIds) {
         nodeCacheService.deleteNodes(nodeIds);
-    }
-
-    /**
-     * Vytvoření vazby mezi nodem a rejstříkovým heslem.
-     *
-     * @param nodeId       identifikátor JP
-     * @param nodeRegister přiřazení rejstříkových hesel
-     * @return upravený cache záznam
-     */
-    public void createNodeRegister(final Integer nodeId, final ArrNodeRegister nodeRegister) {
-        CachedNode cachedNode = nodeCacheService.getNode(nodeId);
-        List<ArrNodeRegister> nodeRegisters = cachedNode.getNodeRegisters();
-        if (nodeRegisters == null) {
-            nodeRegisters = new ArrayList<>();
-            cachedNode.setNodeRegisters(nodeRegisters);
-        }
-        nodeRegisters.add(nodeRegister);
-        nodeCacheService.saveNode(cachedNode);
-    }
-
-    /**
-     * Změna vazby mezi nodem a rejstříkovým heslem.
-     *
-     * @param nodeId          identifikátor JP
-     * @param nodeRegisterOld původní záznam
-     * @param nodeRegisterNew nový záznam
-     * @return upravený cache záznam
-     */
-    public void changeNodeRegister(final Integer nodeId, final ArrNodeRegister nodeRegisterOld, final ArrNodeRegister nodeRegisterNew) {
-        CachedNode cachedNode = nodeCacheService.getNode(nodeId);
-        List<ArrNodeRegister> nodeRegisters = cachedNode.getNodeRegisters();
-        if (nodeRegisters == null) {
-            throw new ObjectNotFoundException("Seznam je prázdný, nelze v něj měnit navázané položky z rejstříků", BaseCode.ID_NOT_EXIST);
-        }
-        int index = -1;
-        for (int i = 0; i < nodeRegisters.size(); i++) {
-            if (nodeRegisters.get(i).getNodeRegisterId().equals(nodeRegisterOld.getNodeRegisterId())) {
-                index = i;
-                break;
-            }
-        }
-        if (index < 0) {
-            throw new ObjectNotFoundException("Záznam nebyl nalezen v seznamu objektů uložených v cache", BaseCode.ID_NOT_EXIST);
-        }
-        nodeRegisters.set(index, nodeRegisterNew);
-        nodeCacheService.saveNode(cachedNode);
-    }
-
-    /**
-     * Odstranění vazby mezi nodem a rejstříkovým heslem.
-     *
-     * @param nodeId         identifikátor JP
-     * @param nodeRegisterId identifikátor mazaného záznamu
-     */
-    public void deleteNodeRegister(final Integer nodeId, final Integer nodeRegisterId) {
-        CachedNode cachedNode = nodeCacheService.getNode(nodeId);
-        List<ArrNodeRegister> nodeRegisters = cachedNode.getNodeRegisters();
-        if (nodeRegisters == null) {
-            throw new ObjectNotFoundException("Seznam je prázdný, nelze z něj odebírat navázané položky z rejstříků", BaseCode.ID_NOT_EXIST);
-        }
-        Iterator<ArrNodeRegister> iterator = nodeRegisters.iterator();
-        while (iterator.hasNext()) {
-            ArrNodeRegister item = iterator.next();
-            if (nodeRegisterId.equals(item.getNodeRegisterId())) {
-                iterator.remove();
-                nodeCacheService.saveNode(cachedNode);
-                return;
-            }
-        }
-        throw new ObjectNotFoundException("Záznam nebyl nalezen v seznamu objektů uložených v cache", BaseCode.ID_NOT_EXIST);
     }
 
     /**

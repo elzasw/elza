@@ -55,7 +55,6 @@ import cz.tacr.elza.controller.vo.ArrDaoVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
 import cz.tacr.elza.controller.vo.ArrRequestVO;
@@ -1237,19 +1236,6 @@ public class ClientFactoryVO {
         BulkActionRunVO bulkActionRunVO = mapper.map(bulkActionRun, BulkActionRunVO.class);
         bulkActionRunVO.setNodes(levelTreeCacheService.getNodesByIds(bulkActionNodeRepository.findNodeIdsByBulkActionRun(bulkActionRun), bulkActionRun.getFundVersionId()));
         return bulkActionRunVO;
-    }
-
-    public List<ArrNodeRegisterVO> createRegisterLinkList(final List<ArrNodeRegister> registerLinks) {
-        return createList(registerLinks, ArrNodeRegisterVO.class, this::createRegisterLink);
-    }
-
-    public ArrNodeRegisterVO createRegisterLink(final ArrNodeRegister nodeRegister) {
-        Assert.notNull(nodeRegister, "Rejstříkové heslo musí být vyplněno");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrNodeRegisterVO nodeRegisterVO = mapper.map(nodeRegister, ArrNodeRegisterVO.class);
-        nodeRegisterVO.setNodeId(nodeRegister.getNode().getNodeId());
-        nodeRegisterVO.setValue(nodeRegister.getRecord().getAccessPointId());
-        return nodeRegisterVO;
     }
 
     /**

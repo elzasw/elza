@@ -267,13 +267,6 @@ class ArrPage extends ArrParentPage {
         }
     }
 
-    /**
-     * Zobrazení / skrytí záznamů u JP o rejstřících.
-     */
-    handleRegisterJp() {
-        this.props.dispatch(showRegisterJp(!this.props.arrRegion.showRegisterJp));
-    }
-
     handleOpenFundActionForm(versionId, subNode) {
         this.props.dispatch(fundActionFormChange(versionId, {nodes: [subNode]}));
         this.props.dispatch(fundActionFormShow(versionId));
@@ -545,13 +538,6 @@ class ArrPage extends ArrParentPage {
         const altActions = [];
 
         const itemActions = [];
-
-        altActions.push(
-            <Button active={this.props.arrRegion.showRegisterJp} onClick={this.handleRegisterJp} key="toggle-record-jp">
-                <Icon glyph="fa-th-list"/>
-                <span className="btnText">{i18n('ribbon.action.arr.show-register-jp')}</span>
-            </Button>
-        );
 
         const indexFund = arrRegion.activeIndex;
         if (indexFund !== null) {

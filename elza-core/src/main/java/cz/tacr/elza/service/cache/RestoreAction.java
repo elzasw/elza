@@ -30,7 +30,6 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeExtension;
-import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RulArrangementExtension;
@@ -53,7 +52,6 @@ public class RestoreAction {
     private Map<Integer, List<ArrDataRecordRef>> restoreAPRef;
     private Map<Integer, List<ArrDataFileRef>> restoreFileRef;
     private Map<Integer, List<ArrDaoLink>> restoreDaoLinks;
-    private Map<Integer, List<ArrNodeRegister>> restoreNodeAPRef;
 
     final private StructuredObjectRepository structureDataRepository;
 
@@ -101,7 +99,6 @@ public class RestoreAction {
         prepareAPRefs();
         prepareFileRefs();
         preapareDaoLinks();
-        prepareNodeRegisters();
 
     }
 
@@ -232,11 +229,6 @@ public class RestoreAction {
                 restoreDaoLink(daoLink);
             }
         }
-        if (CollectionUtils.isNotEmpty(restoredNode.getNodeRegisters())) {
-            for (ArrNodeRegister nodeRegister : restoredNode.getNodeRegisters()) {
-                addNodeAPRef(nodeRegister);
-            }
-        }
         if (CollectionUtils.isNotEmpty(restoredNode.getNodeExtensions())) {
             for (ArrNodeExtension nodeExt : restoredNode.getNodeExtensions()) {
                 restoreNodeExt(nodeExt);
@@ -297,17 +289,6 @@ public class RestoreAction {
         }
         List<ArrDaoLink> dataList = restoreDaoLinks.computeIfAbsent(daoLink.getDaoId(), k -> new ArrayList<>());
         dataList.add(daoLink);
-    }
-
-    private void addNodeAPRef(ArrNodeRegister nodeRegister) {
-        Validate.notNull(nodeRegister.getRecordId());
-
-        if (restoreNodeAPRef == null) {
-            restoreNodeAPRef = new HashMap<>();
-        }
-        List<ArrNodeRegister> dataList = restoreNodeAPRef.computeIfAbsent(nodeRegister.getRecordId(),
-                                                                          k -> new ArrayList<>());
-        dataList.add(nodeRegister);
     }
 
     private void restoreNodeExt(ArrNodeExtension nodeExt) {
@@ -481,28 +462,6 @@ public class RestoreAction {
 
         Validate.isTrue(restoreDaoLinks.isEmpty());
         restoreDaoLinks = null;
-    }
-
-    /**
-     * Vyplnění návazných entity {@link ApAccessPoint}.
-     *
-     */
-    private void prepareNodeRegisters() {
-        if (restoreNodeAPRef == null) {
-            return;
-        }
-        List<ApAccessPoint> records = accessPointRepository.findAll(restoreNodeAPRef.keySet());
-        for (ApAccessPoint record : records) {
-            List<ArrNodeRegister> dataList = restoreNodeAPRef.remove(record.getAccessPointId());
-
-            for (ArrNodeRegister nodeRegister : dataList) {
-                nodeRegister.setRecord(record);
-            }
-        }
-
-        Validate.isTrue(restoreNodeAPRef.isEmpty());
-        restoreNodeAPRef = null;
-
     }
 
 }

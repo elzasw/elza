@@ -169,21 +169,6 @@ public class ArrChange {
         DELETE_LEVEL,
 
         /**
-         * Založení rejstříkového hesla k JP.
-         */
-        ADD_RECORD_NODE,
-
-        /**
-         * Zrušení rejstříkového hesla k JP.
-         */
-        DELETE_RECORD_NODE,
-
-        /**
-         * Změna rejstříkového hesla k JP.
-         */
-        UPDATE_RECORD_NODE,
-
-        /**
          * Přidání rozšíření k JP.
          */
         ADD_NODE_EXTENSION,

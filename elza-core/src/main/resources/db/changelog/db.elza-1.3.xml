@@ -78,4 +78,51 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="20190708133001" author="slapa">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <sqlCheck expectedResult="1">SELECT count(*) FROM rul_package WHERE code = 'ZP2015'</sqlCheck>
+                <sqlCheck expectedResult="0">SELECT count(*) FROM rul_item_type WHERE code = 'ZP2015_AP_REF'</sqlCheck>
+            </and>
+        </preConditions>
+        <sql>
+            INSERT INTO rul_item_type (item_type_id, data_type_id, code, name, shortcut, description, is_value_unique,
+            can_be_ordered, use_specification, view_order, package_id) VALUES (
+              (SELECT next_val FROM db_hibernate_sequences WHERE sequence_name = 'rul_item_type|item_type_id'),
+              (SELECT data_type_id FROM rul_data_type WHERE code = 'RECORD_REF'),
+              'ZP2015_AP_REF',
+              'Odkaz na přístupový bod',
+              'Přístupový bod',
+              'Přímý odkaz na přístupový bod (starší pomůcky)',
+              false,
+              false,
+              false,
+              (SELECT MAX(view_order) FROM rul_item_type) + 1, (SELECT package_id FROM rul_package WHERE code = 'ZP2015'))
+        </sql>
+        <sql>UPDATE db_hibernate_sequences SET next_val = next_val + 1 WHERE sequence_name = 'rul_item_type|item_type_id'</sql>
+    </changeSet>
+    <changeSet id="20190708133002" author="slapa">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sqlCheck expectedResult="0">SELECT COUNT(*) FROM arr_node_register</sqlCheck>
+            </not>
+        </preConditions>
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20190708133002" />
+    </changeSet>
+    <changeSet id="20190708133003" author="slapa">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sqlCheck expectedResult="0">SELECT COUNT(*) FROM arr_node_register</sqlCheck>
+            </not>
+        </preConditions>
+        <delete tableName="arr_cached_node" />
+    </changeSet>
+    <changeSet id="20190708133004" author="slapa">
+        <sql>UPDATE arr_change SET type = 'ADD_DESC_ITEM' WHERE type = 'ADD_RECORD_NODE'</sql>
+        <sql>UPDATE arr_change SET type = 'DELETE_DESC_ITEM' WHERE type = 'DELETE_RECORD_NODE'</sql>
+    </changeSet>
+    <changeSet id="20190708133005" author="slapa">
+        <dropTable tableName="arr_node_register" />
+    </changeSet>
+
 </databaseChangeLog>

@@ -17,7 +17,6 @@ import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.ImportAccessPoint;
 import org.apache.commons.collections4.CollectionUtils;
@@ -62,9 +61,6 @@ public class AccessPointService {
 
     @Autowired
     private DataRecordRefRepository dataRecordRefRepository;
-
-    @Autowired
-    private NodeRegisterRepository nodeRegisterRepository;
 
     @Autowired
     private IEventNotificationService eventNotificationService;
@@ -216,11 +212,6 @@ public class AccessPointService {
             throw new BusinessException("Nalezeno použití AP v tabulce ArrDataRecordRef.", RegistryCode.EXIST_FOREIGN_DATA).set("table", "ArrDataRecordRef");
         }
 
-        long countNodeRegister = nodeRegisterRepository.countByRecordAndDeleteChangeIsNull(accessPoint);
-        if (countNodeRegister > 0) {
-            throw new BusinessException("Nalezeno použití AP v tabulce ArrNodeRegister.", RegistryCode.EXIST_FOREIGN_DATA).set("table", "ArrNodeRegister");
-        }
-
         // vztah osoby par_relation_entity
         List<ParRelationEntity> relationEntities = relationEntityRepository.findActiveByRecord(accessPoint);
         if (CollectionUtils.isNotEmpty(relationEntities)) {
@@ -365,33 +356,6 @@ public class AccessPointService {
     }
 
     /**
-     * Vrátí vazby mezi uzlem a rejstříkovými hesly za danou verzi.
-     *
-     * @param fundVersionId   identifikátor verze AP
-     * @param nodeId                identifikátor JP
-     * @return  seznam vazeb, může být prázdný
-     */
-    public List<ArrNodeRegister> findRegisterLinks(final Integer fundVersionId,
-                                                   final Integer nodeId) {
-        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
-        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
-
-        ArrNode node = nodeRepository.findOne(nodeId);
-
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
-
-        Assert.notNull(version, "Verze AP neexistuje");
-
-        boolean open = version.getLockChange() == null;
-
-        if (open) {
-            return nodeRegisterRepository.findByNodeAndDeleteChangeIsNull(node);
-        } else {
-            return nodeRegisterRepository.findClosedVersion(node, version.getLockChange().getChangeId());
-        }
-    }
-
-    /**
      * Uložení uzlu - optimistické zámky
      *
      * @param node uzel
@@ -403,136 +367,6 @@ public class AccessPointService {
         nodeRepository.save(node);
         nodeRepository.flush();
         return node;
-    }
-
-    /**
-     * Vytvoření vazby rejstřík-jednotka popisu.
-     *
-     * @param versionId     identifikátor verze AP
-     * @param nodeId        identifikátor JP
-     * @param nodeRegister  vazba
-     * @return  vazba
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public ArrNodeRegister createRegisterLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
-                                              final Integer nodeId,
-                                              final ArrNodeRegister nodeRegister) {
-        Assert.notNull(nodeRegister, "Rejstříkové heslo musí být vyplněno");
-        Assert.isNull(nodeRegister.getNodeRegisterId(), "Identifikátor hesla musí být vyplěn");
-
-        ArrNode node = nodeRepository.findOne(nodeId);
-
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_RECORD_NODE, node);
-
-        node.setVersion(nodeRegister.getNode().getVersion());
-        saveNode(node, change);
-
-        validateNodeRegisterLink(nodeRegister);
-
-        nodeRegister.setNode(node);
-        nodeRegister.setCreateChange(change);
-        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_RECORD_CHANGE, versionId, nodeRegister.getNode().getNodeId(), nodeRegister.getNode().getVersion()));
-
-        nodeRegisterRepository.saveAndFlush(nodeRegister);
-        arrangementCacheService.createNodeRegister(nodeId, nodeRegister);
-
-        return nodeRegister;
-    }
-
-    /**
-     * Upravení vazby rejstřík-jednotka popisu.
-     *
-     * @param versionId     identifikátor verze AP
-     * @param nodeId        identifikátor JP
-     * @param nodeRegister  vazba
-     * @return  vazba
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public ArrNodeRegister updateRegisterLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
-                                              final Integer nodeId,
-                                              final ArrNodeRegister nodeRegister) {
-        Assert.notNull(nodeRegister, "Rejstříkové heslo musí být vyplněno");
-        Assert.notNull(nodeRegister.getNodeRegisterId(), "Identifikátor musí být vyplněn");
-
-        ArrNodeRegister nodeRegisterDB = nodeRegisterRepository.findOne(nodeRegister.getNodeRegisterId());
-
-        ArrNode node = nodeRepository.findOne(nodeId);
-
-        ArrChange change = arrangementService.createChange(ArrChange.Type.UPDATE_RECORD_NODE, node);
-
-        node.setVersion(nodeRegister.getNode().getVersion());
-        saveNode(node, change);
-
-        validateNodeRegisterLink(nodeRegister);
-        validateNodeRegisterLink(nodeRegisterDB);
-
-        nodeRegisterDB.setDeleteChange(change);
-        nodeRegisterRepository.save(nodeRegisterDB);
-
-
-        nodeRegister.setNodeRegisterId(null);
-        nodeRegister.setNode(node);
-        nodeRegister.setRecord(nodeRegister.getRecord());
-        nodeRegister.setCreateChange(change);
-        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_RECORD_CHANGE, versionId, nodeRegister.getNode().getNodeId(), nodeRegister.getNode().getVersion()));
-
-        nodeRegisterRepository.save(nodeRegister);
-        arrangementCacheService.changeNodeRegister(nodeId, nodeRegisterDB, nodeRegister);
-        return nodeRegister;
-    }
-
-    /**
-     * Smazání vazby rejstřík-jednotka popisu.
-     *
-     * @param versionId     identifikátor verze AP
-     * @param nodeId        identifikátor JP
-     * @param nodeRegister  vazba
-     * @return  vazba
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public ArrNodeRegister deleteRegisterLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
-                                              final Integer nodeId,
-                                              final ArrNodeRegister nodeRegister) {
-        Assert.notNull(nodeRegister, "Rejstříkové heslo musí být vyplněno");
-        Assert.notNull(nodeRegister.getNodeRegisterId(), "Identifikátor musí být vyplněn");
-
-        ArrNodeRegister nodeRegisterDB = nodeRegisterRepository.findOne(nodeRegister.getNodeRegisterId());
-
-        ArrNode node = nodeRepository.findOne(nodeId);
-
-        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_RECORD_NODE, node);
-
-        node.setVersion(nodeRegister.getNode().getVersion());
-        saveNode(node, change);
-
-        validateNodeRegisterLink(nodeRegisterDB);
-
-        nodeRegisterDB.setDeleteChange(change);
-
-        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_RECORD_CHANGE, versionId, node.getNodeId(), node.getVersion()));
-
-        nodeRegisterRepository.save(nodeRegisterDB);
-        arrangementCacheService.deleteNodeRegister(nodeId, nodeRegisterDB.getNodeRegisterId());
-        return nodeRegisterDB;
-    }
-
-    /**
-     * Validuje entitu před uložením.
-     *
-     * @param nodeRegister  entita
-     */
-    private void validateNodeRegisterLink(final ArrNodeRegister nodeRegister) {
-        if (nodeRegister.getDeleteChange() != null) {
-            throw new IllegalStateException("Nelze vytvářet či modifikovat změnu," +
-                    " která již byla smazána (má delete change).");
-        }
-
-        if (nodeRegister.getNode() == null) {
-            throw new IllegalArgumentException("Není vyplněn uzel.");
-        }
-        if (nodeRegister.getRecord() == null) {
-            throw new IllegalArgumentException("Není vyplněno rejstříkové heslo.");
-        }
     }
 
     public List<String> getScopeCodes() {
@@ -647,25 +481,20 @@ public class AccessPointService {
 			dataList.addAll(dataPartyRefRepository.findByParty(party));
 		}
 
-		List<ArrNodeRegister> nodeRegisters = nodeRegisterRepository.findByRecordAndDeleteChangeIsNull(record);
-		return createFundVOList(dataList, nodeRegisters);
+		return createFundVOList(dataList);
 	}
 
 	/**
 	 * Z předaných výskytů v archivních souborech vytvoří seznam {@link FundVO}.
 	 *
 	 * @param arrDataList hodnoty uzlů
-	 * @param nodeRegisters vazba na uzly
 	 */
-	private List<FundVO> createFundVOList(final List<? extends ArrData> arrDataList, final List<ArrNodeRegister> nodeRegisters) {
-		if (arrDataList.isEmpty() && nodeRegisters.isEmpty()) {
+	private List<FundVO> createFundVOList(final List<? extends ArrData> arrDataList) {
+		if (arrDataList.isEmpty()) {
 			return Collections.emptyList();
 		}
 
-		Map<Integer, List<ArrNodeRegister>> nodeIdToNodeRegisters = nodeRegisters.stream().collect(Collectors.groupingBy(ArrNodeRegister::getNodeId));
-		Map<Integer, Set<Integer>> fundIdToNodeIdsMap = nodeRegisters.stream()
-				.map(ArrNodeRegister::getNode)
-				.collect(Collectors.groupingBy(ArrNode::getFundId, Collectors.mapping(ArrNode::getNodeId, Collectors.toSet())));
+		Map<Integer, Set<Integer>> fundIdToNodeIdsMap = new HashMap<>();
 
 		Map<Integer, ? extends ArrData> dataIdToArrDataMap = arrDataList.stream().collect(Collectors.toMap(ArrData::getDataId, Function.identity()));
 
@@ -704,14 +533,13 @@ public class AccessPointService {
 
 		List<ArrFundVersion> fundVersions = fundVersionRepository.findByFundIdsAndLockChangeIsNull(fundIdToNodeIdsMap.keySet());
 		return fundVersions.stream()
-                .map(v -> createFundVO(nodeIdToNodeRegisters, fundIdToNodeIdsMap, dataIdToArrDataMap, nodeIdToDataIdsMap, v))
+                .map(v -> createFundVO(fundIdToNodeIdsMap, dataIdToArrDataMap, nodeIdToDataIdsMap, v))
                 .collect(Collectors.toList());
 	}
 
 	/**
 	 * Vytvoří {@link FundVO}.
 	 *
-	 * @param nodeIdToNodeRegisters mapa id node na seznam vazeb {@link ArrNodeRegister}
 	 * @param fundIdToNodeIdsMap id archivního souboru na množinu použitých uzlů
 	 * @param dataIdToArrDataMap mapa id {@link ArrData} na konkrétní instanci
 	 * @param nodeIdToDataIdsMap mapa id node na množinu {@link ArrData}
@@ -719,8 +547,7 @@ public class AccessPointService {
 	 *
 	 * @return {@link FundVO}
 	 */
-	private FundVO createFundVO(final Map<Integer, List<ArrNodeRegister>> nodeIdToNodeRegisters,
-			final Map<Integer, Set<Integer>> fundIdToNodeIdsMap, final Map<Integer, ? extends ArrData> dataIdToArrDataMap,
+	private FundVO createFundVO(final Map<Integer, Set<Integer>> fundIdToNodeIdsMap, final Map<Integer, ? extends ArrData> dataIdToArrDataMap,
 			final Map<Integer, Set<Integer>> nodeIdToDataIdsMap, final ArrFundVersion fundVersion) {
 		Set<Integer> nodeIds = fundIdToNodeIdsMap.get(fundVersion.getFundId());
 		List<Integer> nodeIdsSubList = getNodeIdsSublist(nodeIds);
@@ -728,7 +555,7 @@ public class AccessPointService {
 		Collection<TreeNodeVO> treeNodes = levelTreeCacheService.getFaTreeNodes(fundVersion.getFundVersionId(), nodeIdsSubList);
 
 		List<NodeVO> nodes = treeNodes.stream()
-			.map(n ->  createNodeVO(nodeIdToNodeRegisters, dataIdToArrDataMap, nodeIdToDataIdsMap, n))
+			.map(n ->  createNodeVO(dataIdToArrDataMap, nodeIdToDataIdsMap, n))
 			.collect(Collectors.toList());
 
 		ArrFund fund = fundVersion.getFund();
@@ -738,20 +565,15 @@ public class AccessPointService {
 	/**
 	 * Vytvoří {@link NodeVO}.
 	 *
-	 * @param nodeIdToNodeRegisters mapa id node na seznam vazeb {@link ArrNodeRegister}
 	 * @param dataIdToArrDataMap mapa id {@link ArrData} na konkrétní instanci
 	 * @param nodeIdToDataIdsMap mapa id node na množinu {@link ArrData}
 	 * @param node node
 	 *
 	 * @return {@link NodeVO}
 	 */
-	private NodeVO createNodeVO(final Map<Integer, List<ArrNodeRegister>> nodeIdToNodeRegisters,
-			final Map<Integer, ? extends ArrData> dataIdToArrDataMap, final Map<Integer, Set<Integer>> nodeIdToDataIdsMap,
+	private NodeVO createNodeVO(final Map<Integer, ? extends ArrData> dataIdToArrDataMap, final Map<Integer, Set<Integer>> nodeIdToDataIdsMap,
 			final TreeNodeVO node) {
 		List<OccurrenceVO> occurrences = new LinkedList<>();
-		if (nodeIdToNodeRegisters.containsKey(node.getId())) {
-			occurrences.addAll(createOccurrenceVOFromNodeRegisters(nodeIdToNodeRegisters.get(node.getId())));
-		}
 
 		if (nodeIdToDataIdsMap.containsKey(node.getId())) {
 			occurrences.addAll(createOccurrenceVOFromData(dataIdToArrDataMap, nodeIdToDataIdsMap.get(node.getId())));
@@ -798,20 +620,6 @@ public class AccessPointService {
 		}).collect(Collectors.toList());
 	}
 
-
-	/**
-	 * Vytvoří {@link OccurrenceVO} z předaných instancí {@link ArrNodeRegister}.
-	 *
-	 * @param nodeRegisters seznam vazeb
-	 *
-	 * @return seznam výskytů {@link OccurrenceVO}
-	 */
-	private List<OccurrenceVO> createOccurrenceVOFromNodeRegisters(final List<ArrNodeRegister> nodeRegisters) {
-		return nodeRegisters.stream()
-				.map(nr -> new OccurrenceVO(nr.getNodeRegisterId(), OccurrenceType.ARR_NODE_REGISTER))
-				.collect(Collectors.toList());
-	}
-
     /**
      * Replace record replaced by record replacement in all usages in JP, NodeRegisters
      * @param replaced
@@ -820,14 +628,9 @@ public class AccessPointService {
     public void replace(final ApAccessPoint replaced, final ApAccessPoint replacement) {
 
         final List<ArrDescItem> arrItems = descItemRepository.findArrItemByRecord(replaced);
-        List<ArrNodeRegister> nodeRegisters = nodeRegisterRepository.findByRecordAndDeleteChangeIsNull(replaced);
 
-        final Set<ArrFund> arrFunds = nodeRegisters.stream().map(arrNodeRegister -> arrNodeRegister.getNode().getFund()).collect(Collectors.toSet());
-        final Set<Integer> funds = arrFunds.stream().map(ArrFund::getFundId).collect(Collectors.toSet());
-
-        // ArrItems + nodeRegisters
+        // ArrItems
         final Collection<Integer> fundsAll = arrItems.stream().map(ArrDescItem::getFundId).collect(Collectors.toSet());
-        fundsAll.addAll(funds);
 
         // fund to scopes
         Map<Integer, Set<Integer>> fundIdsToScopes = fundsAll.stream().collect(Collectors.toMap(Function.identity(), scopeRepository::findIdsByFundId));
@@ -880,36 +683,10 @@ public class AccessPointService {
             }
             descriptionItemService.updateDescriptionItem(im, fundVersions.get(fundId), change, true);
         });
-
-
-        final AccessPointService self = applicationContext.getBean(AccessPointService.class);
-        nodeRegisters.forEach(i -> {
-            final ArrNodeRegister arrNodeRegister = new ArrNodeRegister();
-            arrNodeRegister.setRecord(replacement);
-            arrNodeRegister.setNode(i.getNode());
-            arrNodeRegister.setCreateChange(i.getCreateChange());
-            arrNodeRegister.setDeleteChange(i.getDeleteChange());
-            arrNodeRegister.setNodeRegisterId(i.getNodeRegisterId());
-
-            Integer fundId = i.getNode().getFundId();
-            Set<Integer> fundScopes = fundIdsToScopes.get(fundId);
-            if (fundScopes == null) {
-                throw new SystemException("Pro AS neexistují žádné scope.", BaseCode.INVALID_STATE)
-                        .set("fundId", fundId);
-            } else {
-                if (!fundScopes.contains(replacement.getScopeId())) {
-                    throw new BusinessException("Nelze nahradit rejsříkové heslo v AS jelikož AS nemá scope rejstříku pomocí kterého nahrazujeme.", BaseCode.INVALID_STATE)
-                            .set("fundId", fundId)
-                            .set("scopeId", replacement.getScopeId());
-                }
-            }
-            self.updateRegisterLink(fundVersions.get(fundId).getFundVersionId(), i.getNodeId(), arrNodeRegister);
-        });
     }
 
     public boolean canBeDeleted(ApAccessPoint record) {
         return dataRecordRefRepository.findByRecord(record).isEmpty() &&
-               nodeRegisterRepository.findByRecordId(record).isEmpty() &&
                relationEntityRepository.findByAccessPoint(record).isEmpty();
     }
 

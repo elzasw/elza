@@ -188,11 +188,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String FULLTEXT = ARRANGEMENT_CONTROLLER_URL + "/fulltext";
     protected static final String FUND_FULLTEXT = ARRANGEMENT_CONTROLLER_URL + "/fundFulltext";
     protected static final String FUND_FULLTEXT_LIST = ARRANGEMENT_CONTROLLER_URL + "/fundFulltext/{fundId}";
-    protected static final String FIND_REGISTER_LINKS = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}";
-    protected static final String FIND_REGISTER_LINKS_FORM = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/form";
-    protected static final String CREATE_REGISTER_LINK = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/create";
-    protected static final String UPDATE_REGISTER_LINK = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/update";
-    protected static final String DELETE_REGISTER_LINK = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/delete";
     protected static final String VALIDATE_VERSION = ARRANGEMENT_CONTROLLER_URL + "/validateVersion/{versionId}/{showAll}";
     protected static final String VALIDATE_VERSION_COUNT = ARRANGEMENT_CONTROLLER_URL + "/validateVersionCount/{versionId}";
     protected static final String FA_TREE_NODES = ARRANGEMENT_CONTROLLER_URL + "/fundTree/nodes";
@@ -1578,86 +1573,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected List<ArrCalendarTypeVO> getCalendarTypes() {
         return Arrays.asList(get(CALENDAR_TYPES).getBody().as(ArrCalendarTypeVO[].class));
-    }
-
-    /**
-     * Vyhledání vazeb AP - rejstříky.
-     *
-     * @param versionId id verze stromu
-     * @param nodeId    identfikátor JP
-     * @return vazby
-     */
-    protected List<ArrNodeRegisterVO> findRegisterLinks(final Integer versionId,
-                                                        final Integer nodeId) {
-        return Arrays.asList(get(spec -> spec
-                .pathParameter("versionId", versionId)
-                .pathParameter("nodeId", nodeId), FIND_REGISTER_LINKS).getBody().as(ArrNodeRegisterVO[].class));
-    }
-
-    /**
-     * Vyhledání vazeb AP - rejstříky pro formulář.
-     *
-     * @param versionId id verze stromu
-     * @param nodeId    identfikátor JP
-     * @return vazby pro formulář
-     */
-    protected ArrangementController.NodeRegisterDataVO findRegisterLinksForm(final Integer versionId,
-                                                                             final Integer nodeId) {
-        return get(spec -> spec
-                        .pathParameter("versionId", versionId)
-                        .pathParameter("nodeId", nodeId),
-                FIND_REGISTER_LINKS_FORM).getBody().as(ArrangementController.NodeRegisterDataVO.class);
-    }
-
-    /**
-     * Vytvoření vazby AP - rejstříky
-     *
-     * @param versionId      id verze stromu
-     * @param nodeId         identfikátor JP
-     * @param nodeRegisterVO vazba
-     * @return vazba
-     */
-    protected ArrNodeRegisterVO createRegisterLinks(final Integer versionId,
-                                                    final Integer nodeId,
-                                                    final ArrNodeRegisterVO nodeRegisterVO) {
-        return put(spec -> spec
-                .pathParameter("versionId", versionId)
-                .pathParameter("nodeId", nodeId)
-                .body(nodeRegisterVO), CREATE_REGISTER_LINK).getBody().as(ArrNodeRegisterVO.class);
-    }
-
-    /**
-     * Upravení vazby AP - rejstříky.
-     *
-     * @param versionId      id verze stromu
-     * @param nodeId         identfikátor JP
-     * @param nodeRegisterVO vazba
-     * @return vazba
-     */
-    protected ArrNodeRegisterVO updateRegisterLinks(final Integer versionId,
-                                                    final Integer nodeId,
-                                                    final ArrNodeRegisterVO nodeRegisterVO) {
-        return post(spec -> spec
-                .pathParameter("versionId", versionId)
-                .pathParameter("nodeId", nodeId)
-                .body(nodeRegisterVO), UPDATE_REGISTER_LINK).getBody().as(ArrNodeRegisterVO.class);
-    }
-
-    /**
-     * Smazání vazby AP - rejstříky.
-     *
-     * @param versionId      id verze stromu
-     * @param nodeId         identfikátor JP
-     * @param nodeRegisterVO vazba
-     * @return vazba
-     */
-    protected ArrNodeRegisterVO deleteRegisterLinks(final Integer versionId,
-                                                    final Integer nodeId,
-                                                    final ArrNodeRegisterVO nodeRegisterVO) {
-        return post(spec -> spec
-                .pathParameter("versionId", versionId)
-                .pathParameter("nodeId", nodeId)
-                .body(nodeRegisterVO), DELETE_REGISTER_LINK).getBody().as(ArrNodeRegisterVO.class);
     }
 
     /**

@@ -23,7 +23,6 @@ import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
@@ -393,31 +392,6 @@ public class ApControllerTest extends AbstractControllerTest {
         replacedRecord.setScopeId(scopeId);
         ApAccessPointVO replacedRecordCreated = createAccessPoint(replacedRecord);
         Assert.assertNotNull(replacedRecordCreated.getId());
-
-        // Vytvoření node register
-        ArrNodeRegisterVO nodeRegister = new ArrNodeRegisterVO();
-
-        nodeRegister.setValue(replacedRecordCreated.getId());
-        nodeRegister.setNodeId(rootNode.getId());
-        nodeRegister.setNode(rootNode);
-
-        ArrNodeRegisterVO createdLink = createRegisterLinks(fundVersion.getId(), rootNode.getId(), nodeRegister);
-
-        assertNotNull(createdLink);
-
-        List<ArrNodeRegisterVO> registerLinks = findRegisterLinks(fundVersion.getId(), rootNode.getId());
-        assertTrue(registerLinks.size()>0);
-
-        ArrangementController.NodeRegisterDataVO registerLinksForm = findRegisterLinksForm(fundVersion.getId(),
-                rootNode.getId());
-
-        assertNotNull(registerLinksForm.getNode());
-        assertTrue(registerLinksForm.getNodeRegisters().size()>0);
-
-        ArrNodeRegisterVO updatedLink = updateRegisterLinks(fundVersion.getId(), rootNode.getId(), createdLink);
-
-        assertTrue(!createdLink.getId().equals(updatedLink.getId()));
-
 
         // Vytvoření replacement
         ApAccessPointCreateVO replacementRecord = new ApAccessPointCreateVO();

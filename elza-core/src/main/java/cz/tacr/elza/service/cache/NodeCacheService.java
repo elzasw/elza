@@ -42,7 +42,6 @@ import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -54,7 +53,6 @@ import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundFileRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -85,9 +83,6 @@ public class NodeCacheService {
      * Maximální počet JP, které se mají dávkově zpracovávat pro synchronizaci.
      */
     private static final int SYNC_BATCH_NODE_SIZE = 800;
-
-    @Autowired
-    private NodeRegisterRepository nodeRegisterRepository;
 
     @Autowired
     private DaoLinkRepository daoLinkRepository;
@@ -342,7 +337,6 @@ public class NodeCacheService {
 
         List<ArrNode> nodes = nodeRepository.findAll(nodeIds);
         Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(nodeIds);
-        Map<Integer, List<ArrNodeRegister>> nodeIdNodeRegisters = createNodeNodeRegisterMap(nodeIds);
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(nodeIds);
 
         for (ArrNode node : nodes) {
@@ -351,7 +345,6 @@ public class NodeCacheService {
 			// serialize node data
             CachedNode cn = new CachedNode(nodeId, node.getUuid());
             cn.setDescItems(nodeIdItems.get(nodeId));
-            cn.setNodeRegisters(nodeIdNodeRegisters.get(nodeId));
             cn.setDaoLinks(nodeIdDaoLinks.get(nodeId));
 			String nodeData = serialize(cn);
 
@@ -379,7 +372,6 @@ public class NodeCacheService {
         Set<Integer> nodeIds = nodeCachedNodes.keySet();
         List<ArrNode> nodes = nodeRepository.findAll(nodeIds);
         Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(nodeIds);
-        Map<Integer, List<ArrNodeRegister>> nodeIdNodeRegisters = createNodeNodeRegisterMap(nodeIds);
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(nodeIds);
 
         for (ArrNode node : nodes) {
@@ -387,7 +379,6 @@ public class NodeCacheService {
 
             CachedNode cn = new CachedNode(nodeId, node.getUuid());
             cn.setDescItems(nodeIdItems.get(nodeId));
-            cn.setNodeRegisters(nodeIdNodeRegisters.get(nodeId));
             cn.setDaoLinks(nodeIdDaoLinks.get(nodeId));
 
             String nodeData = serialize(cn);
@@ -412,22 +403,6 @@ public class NodeCacheService {
             links.add(daoLink);
         }
         return nodeIdDaoLinks;
-    }
-
-    private Map<Integer, List<ArrNodeRegister>> createNodeNodeRegisterMap(final Collection<Integer> nodeIds) {
-        List<ArrNodeRegister> nodeRegisters = nodeRegisterRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIds);
-
-        Map<Integer, List<ArrNodeRegister>> nodeIdNodeRegisters = new HashMap<>();
-        for (ArrNodeRegister nodeRegister : nodeRegisters) {
-            nodeRegister = HibernateUtils.unproxy(nodeRegister);
-            List<ArrNodeRegister> registers = nodeIdNodeRegisters.get(nodeRegister.getNodeId());
-            if (registers == null) {
-                registers = new ArrayList<>();
-                nodeIdNodeRegisters.put(nodeRegister.getNodeId(), registers);
-            }
-            registers.add(nodeRegister);
-        }
-        return nodeIdNodeRegisters;
     }
 
     private Map<Integer, List<ArrDescItem>> createNodeDescItemMap(final Collection<Integer> nodeIds) {
