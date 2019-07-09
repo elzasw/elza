@@ -24,10 +24,20 @@ public class MetadataConstantService {
         switch (metDataCode) {
             case "ISELZA":
                 return new String[]{"tacr", "isElza", null};
-            case "TECH1":
-                return new String[]{"tacr", "format", null};
-            case "TECH2":
-                return new String[]{"tacr", "type", null};
+            case "DURATION":
+                return new String[]{"tacr", "duration", null};
+            case "IMAGEHEIGHT":
+                return new String[]{"tacr", "imageHeight", null};
+            case "IMAGEWIDTH":
+                return new String[]{"tacr", "imageWidth", null};
+            case "SOURCEXDIMUNIT":
+                return new String[]{"tacr", "sourceXdimUnit", null};
+            case "SOURCEXDIMVALUVALUE":
+                return new String[]{"tacr", "sourceXdimValue", null};
+            case "SOURCEYDIMUNIT":
+                return new String[]{"tacr", "sourceXdimUnit", null};
+            case "SOURCEYDIMVALUVALUE":
+                return new String[]{"tacr", "sourceXdimValue", null};
             default:
                 throw new ProcessingException("Pole metadat " + metDataCode + " Není podporováno.");
         }
@@ -35,9 +45,15 @@ public class MetadataConstantService {
 
     private static String[] techMetaData()  {
         // Vrátí řetězec s názvy technických metadat
-        String[] mataDataCodes = {
-                "TECH1",
-                "TECH2"};
-        return mataDataCodes;
+        String[] metaDataCodes = {
+                "DURATION",
+                "IMAGEHEIGHT",
+                "IMAGEWIDTH",
+                "SOURCEXDIMUNIT",
+                "SOURCEXDIMVALUVALUE",
+                "SOURCEYDIMUNIT",
+                "SOURCEYDIMVALUVALUE"};
+        return metaDataCodes;
+
     }
 }

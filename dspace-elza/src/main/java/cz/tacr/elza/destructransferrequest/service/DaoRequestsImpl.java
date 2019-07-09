@@ -8,15 +8,16 @@ import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
 import cz.tacr.elza.ws.types.v1.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.dspace.content.Item;
-import org.dspace.content.MetadataValue;
+import org.dspace.content.*;
 import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.service.BitstreamService;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.Context;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.ProcessingException;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,14 +35,14 @@ import java.util.UUID;
 
 public class DaoRequestsImpl implements DaoRequests{
     private String SEPARATOR = ";";
+    private String BUNDLE  = "TECHMD";
 
     @Autowired
     private DescructTransferRequestService descructTransferRequestService;
 
+    private BitstreamService bitstreamService = ContentServiceFactory.getInstance().getBitstreamService();;
     private ItemService itemService = ContentServiceFactory.getInstance().getItemService();
-    //private DescructTransferRequestService descructTransferRequestService = cz.tacr.elza.factory.ContentServiceFactory.getInstance().getDescructTransferRequestService();
     private static Logger log = Logger.getLogger(DaoImportScheduler.class);
-    private MetadataConstantService metadata;
 
     @Override
     public String postDestructionRequest(DestructionRequest destructionRequest) throws DaoServiceException {
@@ -70,7 +71,7 @@ public class DaoRequestsImpl implements DaoRequests{
             List<String> identifierList = daoIdentifiers.getIdentifier();
             String identifierStr = null;
             for (String identifier : identifierList) {
-                checkIdentifier(context, UUID.fromString(identifier));
+//                checkIdentifier(context, UUID.fromString(identifier));
                 if (StringUtils.isNotEmpty(identifierStr)) {
                     identifierStr = identifierStr + SEPARATOR + identifier;
                 } else {
@@ -118,7 +119,7 @@ public class DaoRequestsImpl implements DaoRequests{
             List<String> identifierList = daoIdentifiers.getIdentifier();
             String identifierStr = null;
             for (String identifier : identifierList) {
-                checkIdentifier(context, UUID.fromString(identifier));
+//                checkIdentifier(context, UUID.fromString(identifier));
                 if (StringUtils.isNotEmpty(identifierStr)) {
                     identifierStr = identifierStr + SEPARATOR + identifier;
                 } else {
@@ -160,7 +161,6 @@ public class DaoRequestsImpl implements DaoRequests{
 
         Daoset daoset = new Daoset();
         List<Dao> daoList = daoset.getDao();
-
         NonexistingDaos nonexistingDaos = new NonexistingDaos();
         List<String> nonexistingDaoId = nonexistingDaos.getDaoId();
         for (DaoSyncRequest daoSyncRequest : daoSyncRequestList) {
@@ -171,25 +171,66 @@ public class DaoRequestsImpl implements DaoRequests{
                 log.info("Aktualizuji metadata položky digitalizátu Uuid=" + uuId + ".");
                 //TODO:cacha doplnit po upřesnění vstupních dat
 
+
                 log.info("Zapisuji technická metadata položky digitalizátu Uuid=" + uuId + ".");
-                ItemService itemService = item.getItemService();
-                String[] techMataData = metadata.getTechMetaData();
-                for (String mataDataCode : techMataData) {
-                    final String[] mt = metadata.getMetaData(mataDataCode);
-                    List<MetadataValue> metadataList = itemService.getMetadata(item, mt[0], mt[1], mt[2], Item.ANY);
-                    for (MetadataValue metadataValue : metadataList) {
+                List<Bundle> bundleList = item.getBundles();
+                for (Bundle bundle : bundleList) {
+                    if (bundle.getName().contains(BUNDLE)) {
                         Dao dao = new Dao();
-//                        dao.setFileGroup();
-                        dao.setIdentifier(Integer.toString(metadataValue.getID()));
-                        dao.setLabel(metadataValue.getValue());
+                        FileGroup fileGroup = new FileGroup();
+                        List<File> fileList = fileGroup.getFile();
 
-                        List<RelatedFileGroup> relatedFileGroupList = dao.getRelatedFileGroup();
-                        RelatedFileGroup relatedFileGroup = new RelatedFileGroup();
-//                        relatedFileGroup.setFileGroup();
-//                        relatedFileGroup.setIdentifier();
-//                        relatedFileGroup.setLabel();
+                        List<Bitstream> bitstreamList = bundle.getBitstreams();
+                        for (Bitstream bitstream : bitstreamList) {
+                            File file = new File();
 
-                        relatedFileGroupList.add(relatedFileGroup);
+//                            file.setIdentifier();  //TODO:cacha
+                            BitstreamFormat format = null;
+                            try {
+                                format = bitstream.getFormat(context);
+                            } catch (Exception e) {
+                                throw new ProcessingException("Chyba při načtení formátu z bitstreamu: " + e.getMessage());
+                            }
+                            if (format != null) {
+                                file.setMimetype(format.getMIMEType());
+                            }
+
+                            file.setChecksumType(convertStringToChecksumType(bitstream.getChecksumAlgorithm()));
+                            file.setChecksum(bitstream.getChecksum());
+                            file.setSize(bitstream.getSizeBytes());
+//                            file.setCreated();  //TODO:cacha
+
+
+                            String[] techMataData = MetadataConstantService.getTechMetaData();
+                            for (String techMataDataCode : techMataData) {
+                                String[] mt = MetadataConstantService.getMetaData(techMataDataCode);
+
+                                List<MetadataValue> metadataValueList = bitstreamService.getMetadata(bitstream, mt[0], mt[1], mt[2], Item.ANY);
+                                for (MetadataValue metadataValue : metadataValueList) {
+                                    switch (techMataDataCode) {
+                                        case "DURATION":
+                                            file.setDuration(metadataValue.getValue());
+                                        case "IMAGEHEIGHT":
+                                            file.setImageHeight(convertStringToBigInteger(metadataValue.getValue()));
+                                        case "IMAGEWIDTH":
+                                            file.setImageWidth(convertStringToBigInteger(metadataValue.getValue()));
+                                        case "SOURCEXDIMUNIT":
+                                            file.setSourceXDimensionUnit(convertStringToUnitOfMeasure(metadataValue.getValue()));
+                                        case "SOURCEXDIMVALUVALUE":
+                                            file.setSourceXDimensionValue(Float.valueOf(metadataValue.getValue()));
+                                        case "SOURCEYDIMUNIT":
+                                            file.setSourceYDimensionUnit(convertStringToUnitOfMeasure(metadataValue.getValue()));
+                                        case "SOURCEYDIMVALUVALUE":
+                                            file.setSourceYDimensionValue(Float.valueOf(metadataValue.getValue()));
+                                    }
+                                }
+                            }
+                            if (file != null) {
+                                fileList.add(file);
+                            }
+                        }
+//                        dao.setIdentifier();  //TODO:cacha
+                        dao.setFileGroup(fileGroup);
                         daoList.add(dao);
                     }
                 }
@@ -197,7 +238,6 @@ public class DaoRequestsImpl implements DaoRequests{
                 log.info("Neexistující položka digitalizátu Uuid=" + uuId + ".");
                 nonexistingDaoId.add(daoSyncRequest.getDaoId());
             }
-
         }
 
         daosSyncResponse.setDaoset(daoset);
@@ -206,6 +246,7 @@ public class DaoRequestsImpl implements DaoRequests{
         log.info("Ukončena metoda DaosSyncResponse");
         return daosSyncResponse;
     }
+
 
     private Item getItem(Context context, UUID uuId) {
         Item item = null;
@@ -228,6 +269,65 @@ public class DaoRequestsImpl implements DaoRequests{
         if (item == null) {
             throw new UnsupportedOperationException("Digitalizát s Uuid=" + uuId + " nebyl v tabulce Item nalezen.");
         }
+    }
+
+    private static ChecksumType convertStringToChecksumType (String checksumAlgorithm) {
+        if (StringUtils.isBlank(checksumAlgorithm)) {
+            return null;
+        }
+        switch (checksumAlgorithm) {
+            case "MD5":
+                return ChecksumType.MD_5;
+            case "SHA1":
+                return ChecksumType.SHA_1;
+            case "SHA256":
+                return ChecksumType.SHA_256;
+            case "SHA384":
+                return ChecksumType.SHA_384;
+            case "SHA512":
+                return ChecksumType.SHA_512;
+        }
+        throw new ProcessingException("Pole ChecksumType " + checksumAlgorithm + " není podporováno.");
+    }
+
+    private static BigInteger convertStringToBigInteger (String bigNumber) {
+        if (StringUtils.isBlank(bigNumber)) {
+            return null;
+        }
+        return BigInteger.valueOf(Long.parseLong(bigNumber));
+    }
+
+    private static UnitOfMeasure convertStringToUnitOfMeasure (String uomCode) {
+    switch (uomCode) {
+        case "IN":
+            return UnitOfMeasure.IN;
+        case "MM":
+            return UnitOfMeasure.MM;
+    }
+    throw new ProcessingException("Kód měrné jednotky " + uomCode + " není podporován.");
+    }
+
+    private MetadataValue getBitstreamMetadata(List<MetadataValue> metadataList, String metaDataCode) {
+        final String[] mt = MetadataConstantService.getMetaData(metaDataCode);
+
+        for (MetadataValue mdValue : metadataList) {
+            MetadataField metadataField = mdValue.getMetadataField();
+            if (metadataField != null) {
+                MetadataSchema metadataSchema = metadataField.getMetadataSchema();
+                String mdSchema = null;
+                if (metadataSchema != null) {
+                    mdSchema = metadataSchema.getName();
+                }
+
+                if (StringUtils.equals(mdSchema, mt[0]) &&
+                    StringUtils.equals(metadataField.getElement(), mt[1]) &&
+                    StringUtils.equals(metadataField.getElement(), mt[2])) {
+
+                return mdValue;
+                }
+            }
+        }
+        return null;
     }
 
 }

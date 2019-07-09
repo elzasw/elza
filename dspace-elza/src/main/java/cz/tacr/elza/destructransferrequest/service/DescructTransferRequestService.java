@@ -93,4 +93,15 @@ public interface DescructTransferRequestService {
     public List<DestructTransferRequest> findByTypeAndStatus(Context context, DestructTransferRequest.Status status,
                                                              DestructTransferRequest.RequestType requestType) throws SQLException;
 
+    /**
+     * Return true if and only if the passed name is unique.
+     *
+     * @param context DSpace context
+     * @param destructTransferRequestId metadata schema id
+     * @param identifier  short name of schema
+     * @return true of false
+     * @throws SQLException if database error
+     */
+    public boolean uniqueIdetifier(Context context, int destructTransferRequestId, String identifier) throws SQLException;
+
 }
