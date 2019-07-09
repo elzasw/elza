@@ -37,6 +37,12 @@ public class DroidService {
 
     public String getMimeType(final Path file, final BufferedWriter protocol) throws IOException {
         String mimeType = null;
+
+        if (droidCore == null) {
+            log.warn("Droid nebyl inicializován a proto nejde určite MimeType.");
+            return  mimeType;
+        }
+
         try {
             File f = file.toFile();
             RequestMetaData metadata = new RequestMetaData(f.length(), f.lastModified(), f.getAbsolutePath());
@@ -72,14 +78,14 @@ public class DroidService {
         String signatureFile = configurationService.getProperty("elza.droid.signatureFile");
         if (StringUtils.isBlank(signatureFile)) {
             log.warn("Není vyplněna hodnota elza.droid.signatureFile v souboru elza.cfg.");
-        }
-
-        try {
-            droidCore = new BinarySignatureIdentifier();
-            droidCore.setSignatureFile(signatureFile);
-            droidCore.init();
-        } catch (SignatureParseException e) {
-            log.error("Chyba při inicializaci DROID.", e);
+        } else {
+            try {
+                droidCore = new BinarySignatureIdentifier();
+                droidCore.setSignatureFile(signatureFile);
+                droidCore.init();
+            } catch (Exception e) {
+                log.error("Chyba při inicializaci DROID.", e);
+            }
         }
     }
 }
