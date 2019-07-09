@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import com.mcgath.jhove.module.PngModule;
 
+import edu.harvard.hul.ois.jhove.App;
 import edu.harvard.hul.ois.jhove.JhoveBase;
 import edu.harvard.hul.ois.jhove.JhoveException;
 import edu.harvard.hul.ois.jhove.Module;
@@ -51,8 +52,6 @@ public class JhoveService {
     public boolean generateMetadata(final Path file, final BufferedWriter protocol, final Path destPath) throws IOException {
         boolean moduleFound = false;
         try {
-            JhoveBase jhoveBase = new JhoveBase();
-
             File f = file.toAbsolutePath().toFile();
             for (Module m : modules) {
                 FileInputStream inputStream = new FileInputStream(f);
@@ -65,22 +64,9 @@ public class JhoveService {
                     protocol.write("Soubor " + f.getAbsolutePath() + " byl identifikován modulem " + m.getName());
                     protocol.newLine();
 
-                    repInfo = new RepInfo("");
-                    InputStream is = new FileInputStream(f);
-                    m.parse(is, repInfo, 0);
-                    IOUtils.closeQuietly(is);
+                    parseMetadata(f, m, repInfo);
 
-                    FileWriter fileWriter = new FileWriter(destPath.toFile());
-                    PrintWriter printWriter = new PrintWriter(fileWriter);
-
-                    XmlHandler xmlHandler = new XmlHandler();
-                    xmlHandler.setBase(jhoveBase);
-                    xmlHandler.setWriter(printWriter);
-                    xmlHandler.setEncoding(CharEncoding.UTF_8);
-                    xmlHandler.show(repInfo);
-
-                    IOUtils.closeQuietly(fileWriter);
-                    IOUtils.closeQuietly(printWriter);
+                    saveMetadataFile(destPath, repInfo);
 
                     break;
                 }
@@ -96,6 +82,28 @@ public class JhoveService {
         }
 
         return moduleFound;
+    }
+
+    private void parseMetadata(File f, Module m, RepInfo repInfo) throws IOException {
+        InputStream is = new FileInputStream(f);
+        m.parse(is, repInfo, 0);
+        IOUtils.closeQuietly(is);
+    }
+
+    private void saveMetadataFile(Path destPath, RepInfo repInfo) throws IOException, JhoveException {
+        FileWriter fileWriter = new FileWriter(destPath.toFile());
+        PrintWriter printWriter = new PrintWriter(fileWriter);
+
+        XmlHandler xmlHandler = new XmlHandler();
+        xmlHandler.setBase(new JhoveBase());
+        xmlHandler.setApp(App.newAppWithName("Jhove"));
+        xmlHandler.setWriter(printWriter);
+        xmlHandler.setEncoding(CharEncoding.UTF_8);
+        xmlHandler.showHeader();
+        xmlHandler.show(repInfo);
+        xmlHandler.showFooter();
+
+        IOUtils.closeQuietly(printWriter);
     }
 
     @PostConstruct
