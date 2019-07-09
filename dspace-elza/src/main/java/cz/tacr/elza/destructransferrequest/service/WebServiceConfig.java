@@ -1,13 +1,11 @@
 package cz.tacr.elza.destructransferrequest.service;
 
-import org.apache.cxf.bus.spring.SpringBus;
-import org.apache.cxf.jaxws.EndpointImpl;
+import javax.xml.ws.Endpoint;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
-
-import javax.xml.ws.Endpoint;
 
 
 @Configuration
@@ -17,14 +15,8 @@ public class WebServiceConfig {
     @Autowired
     private DaoRequestsImpl daoRequests;
 
-    @Autowired
-    private SpringBus bus;
-
     @Bean
-    public Endpoint daoCoreServiceEndpoint() {
-        EndpointImpl endpoint = new EndpointImpl(bus, daoRequests);
-        endpoint.publish("/DaoCoreRequests");
-        return endpoint;
+    public Endpoint daoCoreServiceWS() {
+        return Endpoint.publish("http://localhost:8080/ws/DaoCoreRequests", daoRequests);
     }
-
 }
