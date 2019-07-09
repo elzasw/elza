@@ -32,8 +32,6 @@ public class DescructTransferRequestServiceImpl implements DescructTransferReque
 
     private static Logger log = Logger.getLogger(DescructTransferRequestServiceImpl.class);
 
-    protected AuthorizeService authorizeService = AuthorizeServiceFactory.getInstance().getAuthorizeService();
-
     @Autowired(required = true)
     protected DestructTransferRequestDAO destructTransferRequestDAO;
 
@@ -115,17 +113,8 @@ public class DescructTransferRequestServiceImpl implements DescructTransferReque
         return destructTransferRequestDAO.findByTypeAndStatus(context, status, requestType);
     }
 
-    /**
-     * Return true if and only if the passed name is unique.
-     *
-     * @param context DSpace context
-     * @param destructTransferRequestId metadata schema id
-     * @param identifier  short name of schema
-     * @return true of false
-     * @throws SQLException if database error
-     */
-    protected boolean uniqueIdetifier(Context context, int destructTransferRequestId, String identifier)
-            throws SQLException
+    @Override
+    public boolean uniqueIdetifier(Context context, int destructTransferRequestId, String identifier) throws SQLException
     {
         return destructTransferRequestDAO.uniqueIdetifier(context, destructTransferRequestId, identifier);
     }

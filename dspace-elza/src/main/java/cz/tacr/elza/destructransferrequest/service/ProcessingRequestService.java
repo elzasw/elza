@@ -39,9 +39,11 @@ public class ProcessingRequestService {
     @Autowired
     private CollectionService collectionService;
 
+    @Autowired
+    private DescructTransferRequestService descructTransferRequestService;
+
     private ConfigurationService configurationService = DSpaceServicesFactory.getInstance().getConfigurationService();
     private ItemService itemService = ContentServiceFactory.getInstance().getItemService();
-    private DescructTransferRequestService descructTransferRequestService = cz.tacr.elza.factory.ContentServiceFactory.getInstance().getDescructTransferRequestService();
 
     private static Logger log = Logger.getLogger(DaoImportScheduler.class);
     private MetadataConstantService metadata;
