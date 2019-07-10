@@ -150,6 +150,7 @@ public class ApFactory {
         vo.setTypeId(ap.getApTypeId());
         vo.setId(ap.getAccessPointId());
         vo.setRecord(prefName.getFullName());
+        vo.setScopeName(ap.getScope().getName());
         if (desc != null) {
             vo.setCharacteristics(desc.getDescription());
         }

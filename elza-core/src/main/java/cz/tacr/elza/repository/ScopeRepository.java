@@ -71,7 +71,7 @@ public interface ScopeRepository extends ElzaJpaRepository<ApScope, Integer>, Sc
      * @param code kód
      * @return třída
      */
-    ApScope findByCode(String string);
+    ApScope findByCode(String code);
 
     /**
      * Najde id všech tříd.
@@ -80,4 +80,13 @@ public interface ScopeRepository extends ElzaJpaRepository<ApScope, Integer>, Sc
      */
     @Query("SELECT s.scopeId FROM ap_scope s")
     Set<Integer> findAllIds();
+
+    /**
+     * Najde třídy navázané na danou třídu.
+     *
+     * @param scope třída
+     * @return navázané třídy
+     */
+    @Query("SELECT r.connectedScope FROM ap_scope_relation r WHERE r.scope = ?1")
+    List<ApScope> findConnectedByScope(final ApScope scope);
 }

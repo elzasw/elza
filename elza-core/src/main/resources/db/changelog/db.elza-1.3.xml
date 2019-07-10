@@ -121,4 +121,24 @@
         <dropTable tableName="arr_node_register" />
     </changeSet>
 
+    <changeSet id="20190703110000" author="berka">
+        <createTable tableName="ap_scope_relation">
+            <column name="scope_relation_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="scope_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_scope"
+                             referencedTableName="ap_scope"
+                             referencedColumnNames="scope_id"/>
+            </column>
+            <column name="connected_scope_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_connected_scope"
+                             referencedTableName="ap_scope"
+                             referencedColumnNames="scope_id"/>
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>

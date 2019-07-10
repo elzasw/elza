@@ -560,6 +560,30 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/scopes', null);
     }
 
+    getScopeWithConnected(scopeId = null) {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/scopes/' + scopeId + '/withConnected', null);
+    }
+
+    createScope() {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/scopes', null);
+    }
+
+    updateScope(scopeId, data) {
+        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/scopes/' + scopeId, null, data);
+    }
+
+    deleteScope(scopeId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/scopes/' + scopeId, null);
+    }
+
+    connectScope(scopeId, connectedScopeId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/scopes/' + scopeId + '/connect', null, connectedScopeId);
+    }
+
+    disconnectScope(scopeId, connectedScopeId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/scopes/' + scopeId + '/disconnect', null, connectedScopeId);
+    }
+
     getAllLanguages() {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/languages', null);
     }

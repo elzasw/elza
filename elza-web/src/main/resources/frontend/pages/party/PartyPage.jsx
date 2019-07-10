@@ -23,6 +23,7 @@ import {apExtSystemListFetchIfNeeded} from 'actions/registry/apExtSystemList';
 import PageLayout from "../shared/layout/PageLayout";
 import {PropTypes} from 'prop-types';
 import {FOCUS_KEYS} from "../../constants.tsx";
+import ScopeLists from "../../components/arr/ScopeLists";
 
 /**
  * PARTY PAGE
@@ -125,6 +126,10 @@ class PartyPage extends AbstractReactComponent {
     };
     */
 
+    handleScopeManagement = () => {
+        this.props.dispatch(modalDialogShow(this, i18n("accesspoint.scope.management.title"), <ScopeLists />));
+    };
+
     /**
      * BUILD RIBBON
      * *********************************************
@@ -158,6 +163,14 @@ class PartyPage extends AbstractReactComponent {
                     <div><span className="btnText">{i18n('ribbon.action.party.importExt')}</span></div>
                 </Button>);
             }
+        }
+        if (userDetail.hasOne(perms.FUND_ADMIN, perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
+            altActions.push(
+                <Button key='scopeManagement' onClick={this.handleScopeManagement}>
+                    <Icon glyph='fa-wrench'/>
+                    <div><span className="btnText">{i18n('ribbon.action.registry.scope.manage')}</span></div>
+                </Button>
+            );
         }
 
         const itemActions = [...parts.itemActions];

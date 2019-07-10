@@ -32,6 +32,7 @@ import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -145,6 +146,9 @@ public class AccessPointService {
 
     @Autowired
     private ApStateRepository stateRepository;
+
+    @Autowired
+    private ScopeRelationRepository scopeRelationRepository;
 
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
@@ -266,18 +270,11 @@ public class AccessPointService {
      * @param scope třída k uložení
      * @return uložená třída
      */
-    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL})
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.FUND_ADMIN})
     public ApScope saveScope(final ApScope scope) {
         Assert.notNull(scope, "Scope musí být vyplněn");
         checkScopeSave(scope);
-
-        if (scope.getScopeId() == null) {
-            return scopeRepository.save(scope);
-        } else {
-            ApScope targetScope = scopeRepository.findOne(scope.getScopeId());
-            targetScope.setName(scope.getName());
-            return scopeRepository.save(targetScope);
-        }
+        return scopeRepository.save(scope);
     }
 
     /**
@@ -285,16 +282,71 @@ public class AccessPointService {
      *
      * @param scope třída rejstříku
      */
-    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL})
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.FUND_ADMIN})
     public void deleteScope(final ApScope scope) {
         Assert.notNull(scope, "Scope musí být vyplněn");
         Assert.notNull(scope.getScopeId(), "Identifikátor scope musí být vyplněn");
 
         List<ApAccessPoint> scopeRecords = apRepository.findByScope(scope);
         ExceptionUtils.isEmptyElseBusiness(scopeRecords, "Nelze smazat třídu rejstříku, která je nastavena na rejstříku.", RegistryCode.USING_SCOPE_CANT_DELETE);
+        final List<ApScope> connectedByScope = scopeRepository.findConnectedByScope(scope);
+        ExceptionUtils.isEmptyElseBusiness(connectedByScope, "Nelze smazat oblast obsahující návazné oblasti.", RegistryCode.CANT_DELETE_SCOPE_WITH_CONNECTED);
+        final List<ApScopeRelation> byConnectedScope = scopeRelationRepository.findByConnectedScope(scope);
+        ExceptionUtils.isEmptyElseBusiness(byConnectedScope, "Nelze smazat oblast která je návaznou oblastí jiné oblasti.", RegistryCode.CANT_DELETE_CONNECTED_SCOPE);
 
         fundRegisterScopeRepository.delete(fundRegisterScopeRepository.findByScope(scope));
         scopeRepository.delete(scope);
+    }
+
+    /**
+     * Provázání tříd rejstříku.
+     *
+     * @param scope třída rejstříku
+     * @param connectedScope třída rejstříku k navázání
+     */
+    @Transactional
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.FUND_ADMIN})
+    public void connectScope(@NotNull final ApScope scope, @NotNull final ApScope connectedScope) {
+        Assert.notNull(scope, "Nebyla předána třída rejstříku");
+        Assert.notNull(connectedScope, "Nebyla předána třída rejstříku k navázání");
+        Assert.notNull(scope.getScopeId(), "Třída rejstříku nemá vyplněné ID");
+        Assert.notNull(connectedScope.getScopeId(), "Navazovaná třída rejstříku nemá vyplněné ID");
+
+        final List<ApScope> connectedByScope = scopeRepository.findConnectedByScope(scope);
+        for (ApScope apScope : connectedByScope) {
+                if (apScope.equals(connectedScope)) {
+                throw new BusinessException("Třída ID=" + scope.getScopeId() + " je již navázána na třídu ID=" + connectedScope.getScopeId(), RegistryCode.SCOPES_ALREADY_CONNECTED);
+            }
+        }
+        final ApScopeRelation apScopeRelation = new ApScopeRelation();
+        apScopeRelation.setScope(scope);
+        apScopeRelation.setConnectedScope(connectedScope);
+        scopeRelationRepository.save(apScopeRelation);
+    }
+
+    /**
+     * Zrušení provázání tříd rejstříku.
+     *
+     * @param scope třída rejstříku
+     * @param connectedScope třída rejstříku k odpojení
+     */
+    @Transactional
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.FUND_ADMIN})
+    public void disconnectScope(@NotNull final ApScope scope, @NotNull final ApScope connectedScope) {
+        Assert.notNull(scope, "Nebyla předána třída rejstříku");
+        Assert.notNull(connectedScope, "Nebyla předána třída rejstříku k navázání");
+        Assert.notNull(scope.getScopeId(), "Třída rejstříku nemá vyplněné ID");
+        Assert.notNull(connectedScope.getScopeId(), "Navazovaná třída rejstříku nemá vyplněné ID");
+
+        final ApScopeRelation scopeRelation = scopeRelationRepository.findByScopeAndConnectedScope(scope, connectedScope);
+        if (scopeRelation == null) {
+            throw new BusinessException("Třída rejstříku ID=" + scope.getScopeId() + " není navázána na třídu ID=" + connectedScope.getScopeId(), RegistryCode.SCOPES_NOT_CONNECTED);
+        }
+        final Long relationsCount = scopeRelationRepository.countExistsRelations(scope, connectedScope);
+        if (relationsCount > 0) {
+            throw new BusinessException("Nelze zrušit provázání oblastí - existuje vazba mezi osobami z těchto oblastí.", RegistryCode.CANT_DELETE_SCOPE_RELATION_EXISTS);
+        }
+        scopeRelationRepository.delete(scopeRelation);
     }
 
     /**
@@ -307,19 +359,14 @@ public class AccessPointService {
         Assert.notNull(scope.getCode(), "Třída musí mít vyplněný kod");
         Assert.notNull(scope.getName(), "Třída musí mít vyplněný název");
 
-        List<ApScope> scopes = scopeRepository.findByCodes(Arrays.asList(scope.getCode()));
-        ApScope codeScope = scopes.isEmpty() ? null : scopes.get(0);
+        List<ApScope> scopes = scopeRepository.findByCodes(Collections.singletonList(scope.getCode()));
         if (scope.getScopeId() == null) {
-            ExceptionUtils.isEmptyElseBusiness(scopes, "Kod třídy rejstříku se již nachází v databázi.", RegistryCode.SCOPE_EXISTS);
+            ExceptionUtils.isEmptyElseBusiness(scopes, "Třída rejstříku s daným kódem již existuje.", RegistryCode.SCOPE_EXISTS);
         } else {
-            if (codeScope == null) {
-                throw new ObjectNotFoundException("Záznam pro editaci nebyl nalezen.", BaseCode.ID_NOT_EXIST);
+            ApScope codeScope = scopes.isEmpty() ? null : scopes.get(0);
+            if (codeScope != null && !codeScope.getScopeId().equals(scope.getScopeId())) {
+                throw new BusinessException("Třída rejstříku s daným kódem již existuje.", RegistryCode.SCOPE_EXISTS);
             }
-
-            ExceptionUtils.equalsElseBusiness(codeScope.getScopeId(), scope.getScopeId(), "Kod třídy rejstříku se již nachází v databázi.", RegistryCode.SCOPE_EXISTS);
-
-            ApScope dbScope = scopeRepository.getOneCheckExist(scope.getScopeId());
-            ExceptionUtils.equalsElseBusiness(dbScope.getCode(), scope.getCode(), "Třídě rejstříku nelze změnít kód, pouze název.", RegistryCode.SCOPE_CODE_CANT_CHANGE);
         }
     }
 

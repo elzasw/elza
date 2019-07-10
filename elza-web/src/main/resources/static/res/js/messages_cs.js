@@ -171,12 +171,17 @@ var messages = {
     "exception.reg.EXIST_FOREIGN_PARTY": "Existuje vazba z osoby",
     "exception.reg.FOREIGN_ENTITY_INVALID_SCOPE": "Navázaná entita musí mít stejnou oblast přístupových bodů jako osoba, ke které entitu navazujeme",
     "exception.reg.FOREIGN_ENTITY_INVALID_SUBTYPE": "Navázaná entita musí mít typ rejstříku nebo podtyp, který je navázaný na roli entity",
-    "exception.reg.NOT_UNIQUE_FULL_NAME": "Jméno přístupového bodu není unikátní",
     "exception.reg.PARTY_NOT_EXIST": "Osoba neexistuje",
     "exception.reg.REGISTRY_TYPE_NOT_FOUND": "Nebyla nalezena třída přístupových bodů '{name}'",
     "exception.reg.SCOPE_CODE_CANT_CHANGE": "Kód oblasti nelze změnit",
     "exception.reg.SCOPE_EXISTS": "Kod oblasti entit již existuje",
     "exception.reg.USING_SCOPE_CANT_DELETE": "Nelze smazat oblast, která obsahuje přístupový bod",
+    "exception.reg.CANT_DELETE_SCOPE_WITH_CONNECTED": "Nelze smazat oblast obsahující návazné oblasti",
+    "exception.reg.CANT_DELETE_CONNECTED_SCOPE": "Nelze smazat oblast která je návaznou oblastí jiné oblasti",
+    "exception.reg.CANT_DELETE_SCOPE_RELATION_EXISTS": "Nelze zrušit návaznou oblast - existuje vztah mezi osobami těchto oblastí",
+    "exception.reg.CANT_CONNECT_SCOPE_TO_SELF": "Nelze navázat třídu rejstříku sama na sebe",
+    "exception.reg.SCOPES_ALREADY_CONNECTED": "Nelze provázat oblasti - vazba již existuje",
+    "exception.reg.SCOPES_NOT_CONNECTED": "Nelze zrušit návaznou oblast - vazba mezi oblastmi neexistuje",
     "exception.reg.NOT_UNIQUE_FULL_NAME": "Celé jméno není unikátní v rámci třídy",
     "exception.reg.CANT_MIGRATE_AP": "Nelze migrovat přístupový bod",
 
@@ -277,6 +282,7 @@ var messages = {
     "ribbon.action.arr.fund.settings.ui": "Nastavení zobrazení",
     "ribbon.action.arr.fund.settings.template": "Správa šablon",
     "ribbon.action.registry": "Přístupové body",
+    "ribbon.action.registry.scope.manage": "Správa oblastí přístupových bodů",
     "ribbon.action.party": "Osoby",
     "ribbon.action.admin": "Administrace",
     "ribbon.action.admin.developer": "Developer mode",
@@ -1396,6 +1402,14 @@ var messages = {
     "accesspoint.languageCode": "Jazyk",
     "accesspoint.description": "Popis",
     "accesspoint.update.description": "Úprava popisu",
+
+    "accesspoint.scope.management.title": "Správa oblastí přístupových bodů",
+    "accesspoint.scope.list": "Seznam oblastí",
+    "accesspoint.scope.code": "Kód",
+    "accesspoint.scope.language": "Jazyk",
+    "accesspoint.scope.name": "Jméno",
+    "accesspoint.scope.relatedScopes": "Návazné oblasti",
+    "accesspoint.scope.invalid.warning": "Zobrazená třída restříku je neplatná",
 
     "____": ""
 };

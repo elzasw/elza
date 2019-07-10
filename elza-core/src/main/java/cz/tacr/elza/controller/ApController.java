@@ -1,17 +1,14 @@
 package cz.tacr.elza.controller;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 import cz.tacr.elza.common.FactoryUtils;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -28,22 +25,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.factory.ApFactory;
-import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
-import cz.tacr.elza.controller.vo.ApAccessPointDescriptionVO;
-import cz.tacr.elza.controller.vo.ApAccessPointEditVO;
-import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApEidTypeVO;
-import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.ApRecordSimple;
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.InterpiMappingVO;
-import cz.tacr.elza.controller.vo.InterpiSearchVO;
-import cz.tacr.elza.controller.vo.LanguageVO;
-import cz.tacr.elza.controller.vo.RecordImportVO;
-import cz.tacr.elza.controller.vo.RelationSearchVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
@@ -228,13 +209,13 @@ public class ApController {
 
     /**
      * Najde seznam rejstříkových hesel, která jsou typu napojeného na dané relationRoleTypeId a mají třídu rejstříku
-     * stejnou jako daná osoba.
+     * stejnou jako daná osoba, nebo je jejich třída navázaná na třídu dané osoby.
      *
      * @param search     hledaný řetězec
      * @param from       odkud se mají vracet výsledka
      * @param count      počet vracených výsledků
      * @param roleTypeId id typu vztahu
-     * @param partyId    id osoby, ze které je načtena hledaná třída rejstříku
+     * @param partyId    id osoby, ze které je načtena hledaná třída rejstříku a k ní navázané třídy
      * @return seznam rejstříkových hesel s počtem všech nalezených
      */
 	@Transactional
@@ -254,8 +235,10 @@ public class ApController {
                 .stream().map(ApType::getApTypeId).collect(Collectors.toSet());
         apTypeIds = apTypeRepository.findSubtreeIds(apTypeIds);
 
+        final ApScope scope = party.getAccessPoint().getScope();
         Set<Integer> scopeIds = new HashSet<>();
-        scopeIds.add(party.getAccessPoint().getScope().getScopeId());
+        scopeIds.add(scope.getScopeId());
+        scopeRepository.findConnectedByScope(scope).forEach(cs -> scopeIds.add(cs.getScopeId()));
 
         final long foundRecordsCount = accessPointRepository.findApAccessPointByTextAndTypeCount(search, apTypeIds,
                 scopeIds);
@@ -604,7 +587,7 @@ public class ApController {
      * Aktualizace přístupového bodu.
      *
      * @param accessPointId identifikátor přístupového bodu
-     * @param accessPoint upravovaná data přístupového bodu
+     * @param editVo upravovaná data přístupového bodu
      * @return aktualizovaný záznam
      */
     @Transactional
@@ -851,6 +834,19 @@ public class ApController {
     }
 
     /**
+     * Vrátí třídu restříku, včetně na ni navázaných tříd.
+     */
+    @RequestMapping(value = "/scopes/{scopeId}/withConnected", method = RequestMethod.GET)
+    @Transactional
+    public ApScopeWithConnectedVO getScopeWithConnected(@PathVariable("scopeId") Integer scopeId) {
+        ApScope apScope = scopeRepository.findOne(scopeId);
+        Assert.notNull(apScope, "Nebyla nalezena třída rejstříku s ID=" + scopeId);
+        List<ApScope> connectedScopes = scopeRepository.findConnectedByScope(apScope);
+        StaticDataProvider staticData = staticDataService.getData();
+        return ApScopeWithConnectedVO.newInstance(apScope, staticData, connectedScopes);
+    }
+
+    /**
      * Pokud je nastavená verze, vrací třídy napojené na verzi, jinak vrací třídy nastavené v konfiguraci elzy (YAML).
      * @param versionId id verze nebo null
      * @return seznam tříd
@@ -883,18 +879,16 @@ public class ApController {
     /**
      * Vložení nové třídy.
      *
-     * @param scopeVO objekt třídy
      * @return nový objekt třídy
      */
     @Transactional
     @RequestMapping(value = "/scopes", method = RequestMethod.POST)
-    public ApScopeVO createScope(@RequestBody final ApScopeVO scopeVO) {
-        Assert.notNull(scopeVO, "Scope musí být vyplněn");
-        Assert.isNull(scopeVO.getId(), "Identifikátor scope musí být vyplněn");
-
-        StaticDataProvider staticData = staticDataService.getData();
-        ApScope apScope = scopeVO.createEntity(staticData);
+    public ApScopeVO createScope() {
+        ApScope apScope = new ApScope();
+        apScope.setCode(UUID.randomUUID().toString());
+        apScope.setName("NewScope");
         apScope = accessPointService.saveScope(apScope);
+        StaticDataProvider staticData = staticDataService.getData();
         return ApScopeVO.newInstance(apScope, staticData);
     }
 
@@ -920,6 +914,42 @@ public class ApController {
         ApScope apScope = scopeVO.createEntity(staticData);
         apScope = accessPointService.saveScope(apScope);
         return ApScopeVO.newInstance(apScope, staticData);
+    }
+
+    /**
+     * Provázání tříd.
+     *
+     * @param scopeId ID třídy ke které se bude vázat
+     * @param connectedScopeId ID třídy která bude provázána
+     */
+    @Transactional
+    @RequestMapping(value = "/scopes/{scopeId}/connect", method = RequestMethod.POST)
+    public void connectScope(@PathVariable("scopeId") final Integer scopeId, @RequestBody final Integer connectedScopeId) {
+        Assert.notNull(connectedScopeId, "Identifikátor vázaného scope musí být vyplněn");
+
+        if (scopeId.equals(connectedScopeId)) {
+            throw new BusinessException("Třídu rejstříku nelze navázat sama na sebe", RegistryCode.CANT_CONNECT_SCOPE_TO_SELF);
+        }
+
+        final ApScope scope = scopeRepository.findOne(scopeId);
+        final ApScope connectedScope = scopeRepository.findOne(connectedScopeId);
+        accessPointService.connectScope(scope, connectedScope);
+    }
+
+    /**
+     * Zrušení provázání tříd.
+     *
+     * @param scopeId ID třídy
+     * @param connectedScopeId ID třídy k odpojení
+     */
+    @Transactional
+    @RequestMapping(value = "/scopes/{scopeId}/disconnect", method = RequestMethod.POST)
+    public void disconnectScope(@PathVariable("scopeId") final Integer scopeId, @RequestBody final Integer connectedScopeId) {
+        Assert.notNull(connectedScopeId, "Identifikátor vázané třídy musí být vyplněn");
+
+        final ApScope scope = scopeRepository.findOne(scopeId);
+        final ApScope connectedScope = scopeRepository.findOne(connectedScopeId);
+        accessPointService.disconnectScope(scope, connectedScope);
     }
 
     /**

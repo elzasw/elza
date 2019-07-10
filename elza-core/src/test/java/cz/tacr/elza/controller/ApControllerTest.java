@@ -2,7 +2,6 @@ package cz.tacr.elza.controller;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +10,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.*;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -81,13 +81,23 @@ public class ApControllerTest extends AbstractControllerTest {
      */
     @Test
     public void createUpdateDeleteScopesTest() {
-        ApScopeVO scopeVO = new ApScopeVO();
+        ApScopeVO scopeVO = createScopeTest();
+        getScopeWithConnectedTest(scopeVO.getId());
         scopeVO.setName("Testing");
         scopeVO.setCode("ABCD");
-        scopeVO = createScopeTest(scopeVO);
-        scopeVO.setName("Testing2");
         scopeVO = updateScopeTest(scopeVO);
         deleteScopeTest(scopeVO.getId());
+    }
+
+    /**
+     * Testování provázání a zrušení provázání tříd.
+     */
+    @Test
+    public void connectDisconnectScopesTest() {
+        ApScopeVO scopeVO = createScopeTest();
+        ApScopeVO scopeVO2 = createScopeTest();
+        connectScopeTest(scopeVO.getId(), scopeVO2.getId());
+        disconnectScopeTest(scopeVO.getId(), scopeVO2.getId());
     }
 
     @Test
@@ -340,12 +350,19 @@ public class ApControllerTest extends AbstractControllerTest {
     }
 
     /**
-     * Vložení nové třídy.
+     * Načtení třídy včetně navázaných tříd.
      *
-     * @param scopeVO objekt třídy
+     * @param id ID třídy
      */
-    private ApScopeVO createScopeTest(final ApScopeVO scopeVO) {
-        return createScope(scopeVO);
+    private ApScopeWithConnectedVO getScopeWithConnectedTest(final int id) {
+        return getScopeWithConnected(id);
+    }
+
+    /**
+     * Vložení nové třídy.
+     */
+    private ApScopeVO createScopeTest() {
+        return createScope();
     }
 
     /**
@@ -364,6 +381,26 @@ public class ApControllerTest extends AbstractControllerTest {
      */
     private void deleteScopeTest(final int id) {
         deleteScope(id);
+    }
+
+    /**
+     * Propojení tříd.
+     *
+     * @param id ID třídy ke které se bude navazovat
+     * @param id2 ID navazované třídy
+     */
+    private void connectScopeTest(final int id, final int id2) {
+        connectScope(id, id2);
+    }
+
+    /**
+     * Zrušení propojení tříd.
+     *
+     * @param id ID třídy na které se bude rušit propojení
+     * @param id2 ID navázané třídy
+     */
+    private void disconnectScopeTest(final int id, final int id2) {
+        disconnectScope(id, id2);
     }
 
     @Test

@@ -25,6 +25,9 @@ const initialState = {
     issueProtocolsConfig: SimpleListReducer(), // Seznam protokolů v konfiguraci
     registryList: SimpleListReducer(undefined, undefined, {filter:{text: null, registryTypeId: null, versionId: null, itemSpecId: null, parents: [], typesToRoot: null, scopeId: null, from: 0, excludeInvalid: true}}),
     arrStructure: SimpleListReducer(undefined, undefined, {filter:{text:"", fundVersionId: null, structureCode: null, from: 0, state: ""}}),
+    scopeList: SimpleListReducer(), // Seznam oblastí
+    scopeDetail: DetailReducer(), // Detail oblasti
+    languageList: SimpleListReducer(), // Seznam jazyků
     shared: SharedReducer()
 };
 

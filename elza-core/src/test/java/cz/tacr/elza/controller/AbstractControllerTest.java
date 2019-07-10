@@ -247,9 +247,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String INSTITUTIONS = PARTY_CONTROLLER_URL + "/institutions";
 
     // REGISTRY
+    protected static final String GET_SCOPE_WITH_CONNECTED = AP_CONTROLLER_URL + "/scopes/{scopeId}/withConnected";
     protected static final String CREATE_SCOPE = AP_CONTROLLER_URL + "/scopes";
     protected static final String UPDATE_SCOPE = AP_CONTROLLER_URL + "/scopes/{scopeId}";
     protected static final String DELETE_SCOPE = AP_CONTROLLER_URL + "/scopes/{scopeId}";
+    protected static final String CONNECT_SCOPE = AP_CONTROLLER_URL + "/scopes/{scopeId}/connect";
+    protected static final String DISCONNECT_SCOPE = AP_CONTROLLER_URL + "/scopes/{scopeId}/disconnect";
     protected static final String FA_SCOPES = AP_CONTROLLER_URL + "/fundScopes";
     protected static final String ALL_SCOPES = AP_CONTROLLER_URL + "/scopes";
     protected static final String RECORD_TYPES = AP_CONTROLLER_URL + "/recordTypes";
@@ -1787,13 +1790,21 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
+     * Načtení třídy včetně navázaných tříd.
+     *
+     * @return objekt třídy
+     */
+    protected ApScopeWithConnectedVO getScopeWithConnected(final int id) {
+        return get(spec -> spec.pathParam("scopeId", id), GET_SCOPE_WITH_CONNECTED).getBody().as(ApScopeWithConnectedVO.class);
+    }
+
+    /**
      * Vložení nové třídy.
      *
-     * @param scope objekt třídy
      * @return nový objekt třídy
      */
-    protected ApScopeVO createScope(final ApScopeVO scope) {
-        return post(spec -> spec.body(scope), CREATE_SCOPE).getBody().as(ApScopeVO.class);
+    protected ApScopeVO createScope() {
+        return post(spec -> spec, CREATE_SCOPE).getBody().as(ApScopeVO.class);
     }
 
     /**
@@ -1813,6 +1824,26 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected Response deleteScope(final int id) {
         return delete(spec -> spec.pathParam("scopeId", id), DELETE_SCOPE);
+    }
+
+    /**
+     * Provázání tříd.
+     *
+     * @param id ID třídy ke které se bude navazovat
+     * @param id2 ID navazované třídy
+     */
+    protected void connectScope(final int id, final int id2) {
+        post(spec -> spec.body(id2).pathParam("scopeId", id), CONNECT_SCOPE);
+    }
+
+    /**
+     * Zrušení provázání tříd.
+     *
+     * @param id ID třídy na které se bude rušit provázání
+     * @param id2 ID navázané třídy
+     */
+    protected void disconnectScope(final int id, final int id2) {
+        post(spec -> spec.body(id2).pathParam("scopeId", id), DISCONNECT_SCOPE);
     }
 
     /**

@@ -17,6 +17,8 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +60,6 @@ import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
@@ -202,6 +203,9 @@ public class PartyService {
 
     @Autowired
     private ScopeRepository scopeRepository;
+
+    @Autowired
+    private ScopeRelationRepository scopeRelationRepository;
 
     /**
      * Najde osobu podle rejstříkového hesla.
@@ -939,14 +943,19 @@ public class PartyService {
         }
 
 
-        //navázaná entita stejné scope jako osoba sama
+        //navázaná entita stejné scope jako osoba sama nebo navázané entity
+        ApScope apScope = relationEntity.getRelation().getParty().getAccessPoint().getScope();
         ApScope entityScope = relationEntity.getAccessPoint().getScope();
-        if (!relationEntity.getRelation().getParty().getAccessPoint().getScope().equals(entityScope)) {
-            throw new BusinessException(
-                    "Navázaná entita musí mít stejnou třídu rejstříkového hesla jako osoba, ke které entitu navazujeme.",
-                    RegistryCode.FOREIGN_ENTITY_INVALID_SCOPE).level(Level.WARNING)
-            .set("recordScope", entityScope.getCode())
-            .set("entityScope", relationEntity.getRelation().getParty().getAccessPoint().getScope().getCode());
+        if (!apScope.equals(entityScope)) {
+            ApScopeRelation connectedScope = scopeRelationRepository.findByScopeAndConnectedScope(apScope, entityScope);
+            if (connectedScope == null) {
+                throw new BusinessException(
+                        "Navázaná entita musí mít stejnou třídu rejstříkového hesla jako osoba, ke které entitu" +
+                                " navazujeme, nebo musí její třída být navázána na třídu navazované entity.",
+                        RegistryCode.FOREIGN_ENTITY_INVALID_SCOPE).level(Level.WARNING)
+                        .set("recordScope", entityScope.getCode())
+                        .set("entityScope", relationEntity.getRelation().getParty().getAccessPoint().getScope().getCode());
+            }
         }
 
         //navázaná entita povoleného typu rejstříku dle par_registry_role (mělo by to ideálně i dědit)

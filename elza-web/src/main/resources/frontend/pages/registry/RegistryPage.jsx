@@ -27,6 +27,7 @@ import PageLayout from "../shared/layout/PageLayout";
 import defaultKeymap from './RegistryPageKeymap.jsx';
 import {FOCUS_KEYS} from "../../constants.tsx";
 import * as eidTypes from "../../actions/refTables/eidTypes";
+import ScopeLists from "../../components/arr/ScopeLists";
 
 /**
  * Stránka rejstříků.
@@ -166,6 +167,10 @@ class RegistryPage extends AbstractReactComponent {
         }}/>, "dialog-lg"));
     };
 
+    handleScopeManagement = () => {
+        this.props.dispatch(modalDialogShow(this, i18n("accesspoint.scope.management.title"), <ScopeLists />));
+    };
+
     buildRibbon = () => {
         const {registryDetail:{data}, userDetail, extSystems, module, customRibbon, registryDetail } = this.props;
 
@@ -194,6 +199,14 @@ class RegistryPage extends AbstractReactComponent {
                     </Button>
                 );
             }
+        }
+        if (userDetail.hasOne(perms.FUND_ADMIN, perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
+            altActions.push(
+                <Button key='scopeManagement' onClick={this.handleScopeManagement}>
+                    <Icon glyph='fa-wrench'/>
+                    <div><span className="btnText">{i18n('ribbon.action.registry.scope.manage')}</span></div>
+                </Button>
+            );
         }
 
         const itemActions = [...parts.itemActions];

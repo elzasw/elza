@@ -10,6 +10,7 @@ public class ApRecordSimple extends AbstractApAccessPoint {
     private Integer id;
     private String record;
     private String characteristics;
+    private String scopeName;
 
     /**
      * AccessPoint type ID
@@ -46,5 +47,13 @@ public class ApRecordSimple extends AbstractApAccessPoint {
 
     public void setTypeId(final Integer apTypeId) {
         this.typeId = apTypeId;
+    }
+
+    public String getScopeName() {
+        return scopeName;
+    }
+
+    public void setScopeName(String scopeName) {
+        this.scopeName = scopeName;
     }
 }
