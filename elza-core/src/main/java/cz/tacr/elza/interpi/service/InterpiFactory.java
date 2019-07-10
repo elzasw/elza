@@ -30,6 +30,7 @@ import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParDynasty;
@@ -83,8 +84,8 @@ import cz.tacr.elza.interpi.ws.wo.UdalostTyp;
 import cz.tacr.elza.interpi.ws.wo.UdalostTypA;
 import cz.tacr.elza.interpi.ws.wo.VedlejsiCastTyp;
 import cz.tacr.elza.interpi.ws.wo.ZdrojTyp;
-import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApNameRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
@@ -127,7 +128,7 @@ public class InterpiFactory {
     private ApTypeRepository apTypeRepository;
 
     @Autowired
-    private ApAccessPointRepository accessPointRepository;
+    private ApStateRepository apStateRepository;
 
     @Autowired
     private ApNameRepository nameRepository;
@@ -351,13 +352,14 @@ public class InterpiFactory {
                     "Do typu rejstříku s kódem " + apType.getCode() + " nelze přidávat záznamy.");
         }
 
-        ApAccessPoint accessPoint = new ApAccessPoint();
-        accessPoint.setAccessPointId(apId);
-        accessPoint.setApType(apType);
-        accessPoint.setScope(apScope);
+        ApState apState = new ApState();
+        apState.setAccessPointId(apId);
+        apState.setApType(apType);
+        apState.setScope(apScope);
 
         ApAccessPointData apData = new ApAccessPointData();
-        apData.setAccessPoint(accessPoint);
+        apData.setApState(apState);
+
         // prepare external id
         ApExternalIdType eidType = staticDataService.getData().getApEidTypeByCode(InterpiService.EID_TYPE_CODE);
         ApExternalId apExternalId = new ApExternalId();
@@ -575,8 +577,7 @@ public class InterpiFactory {
                 relationsMap.put(entityRelation.getRelationType().getCode(), entityRelation);
             }
 
-            createParRelationEntity(parParty, apExternalSystem, entityRelation, souvisejiciTyp,
-                    mappingVO.getParRelationRoleType());
+            createParRelationEntity(parParty, apExternalSystem, entityRelation, souvisejiciTyp, mappingVO.getParRelationRoleType());
         }
 
         return new ArrayList<>(relationsMap.values());
@@ -693,28 +694,27 @@ public class InterpiFactory {
      * @return rejstříkové heslo entity
      */
     private ApAccessPoint getRelationEntityRecord(final ParParty parParty, final ApExternalSystem apExternalSystem,
-                                             final SouvisejiciTyp souvisejiciTyp) {
+                                                  final SouvisejiciTyp souvisejiciTyp) {
         String interpiId = getInterpiSouvIdentifier(souvisejiciTyp.getIdentifikator());
         ApExternalIdType eidType = staticDataService.getData().getApEidTypeByCode(InterpiService.EID_TYPE_CODE);
-        ApAccessPoint entityRecord = accessPointRepository
-                .findApAccessPointByExternalIdAndExternalSystemCodeAndScope(interpiId,
-                                                                            eidType.getExternalIdTypeId(),
-                                                                            parParty.getAccessPoint().getScope());
+        ApState apState = apStateRepository.getActiveByExternalIdAndScope(interpiId, eidType, parParty.getAccessPoint().getScope());
 
-        if (entityRecord == null) { // pokud neexistiuje v db tak se importuje bez vztahů
-            EntitaTyp entitaTyp = interpiSessionHolder.getInterpiEntitySession().getRelatedEntity(interpiId);
-            if (entitaTyp == null) {
-                entitaTyp = client.findOneRecord(interpiId, apExternalSystem);
-            }
-            InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
-            ApScope apScope = parParty.getAccessPoint().getScope();
-            if (isParty(interpiEntity)) {
-                entityRecord = importParty(interpiEntity, null, interpiId, false, apScope, apExternalSystem, null);
-            } else {
-                entityRecord = importRecord(entitaTyp, interpiId, apScope, apExternalSystem);
-            }
+        if (apState != null) {
+            return apState.getAccessPoint();
         }
-        return entityRecord;
+
+        // pokud neexistiuje v db tak se importuje bez vztahů
+        EntitaTyp entitaTyp = interpiSessionHolder.getInterpiEntitySession().getRelatedEntity(interpiId);
+        if (entitaTyp == null) {
+            entitaTyp = client.findOneRecord(interpiId, apExternalSystem);
+        }
+        InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
+        ApScope apScope = parParty.getAccessPoint().getScope();
+        if (isParty(interpiEntity)) {
+            return importParty(interpiEntity, null, interpiId, false, apScope, apExternalSystem, null);
+        } else {
+            return importRecord(entitaTyp, interpiId, apScope, apExternalSystem);
+        }
     }
 
     private ParRelation createParRelation(final ParParty parParty, final UdalostTyp udalostTyp, final ParRelationType parRelationType) {
@@ -1246,10 +1246,8 @@ public class InterpiFactory {
         String interpiEntityType = null;
         if (StringUtils.isNotBlank(interpiIdentifier)) {
             ApExternalIdType eidType = staticDataService.getData().getApEidTypeByCode(InterpiService.EID_TYPE_CODE);
-            ApAccessPoint apRecord = accessPointRepository
-                    .findApAccessPointByExternalIdAndExternalSystemCodeAndScope(interpiIdentifier,
-                                                                                eidType.getExternalIdTypeId(), apScope);
-            if (apRecord == null) {
+            ApState apState = apStateRepository.getActiveByExternalIdAndScope(interpiIdentifier, eidType, apScope);
+            if (apState == null) {
                 // najít v interpi
                 EntitaTyp entitaTyp = client.findOneRecord(interpiIdentifier, apExternalSystem);
                 interpiSessionHolder.getInterpiEntitySession().addRelatedEntity(interpiIdentifier, entitaTyp);
@@ -1264,7 +1262,7 @@ public class InterpiFactory {
                     interpiEntityType = podTrida.value();
                 }
             } else {
-                interpiEntityType = apRecord.getApType().getName();
+                interpiEntityType = apState.getApType().getName();
             }
         } else {
             TridaTyp trida = souvisejiciTyp.getTrida();

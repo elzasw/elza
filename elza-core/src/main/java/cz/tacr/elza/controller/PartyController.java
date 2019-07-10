@@ -39,6 +39,7 @@ import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -57,10 +58,8 @@ import cz.tacr.elza.domain.ParRelationTypeRoleType;
 import cz.tacr.elza.domain.UIPartyGroup;
 import cz.tacr.elza.exception.DeleteException;
 import cz.tacr.elza.exception.Level;
-import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.exception.codes.UserCode;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
@@ -191,9 +190,6 @@ public class PartyController {
     public ParPartyVO getParty(@PathVariable final Integer partyId) {
         Assert.notNull(partyId, "Identifikátor osoby musí být vyplněna");
         ParParty party = partyService.getParty(partyId);
-        if (party == null) {
-            throw new ObjectNotFoundException("Osoba s ID=" + partyId + " nebyla nalezena", RegistryCode.PARTY_NOT_EXIST).set("id", partyId);
-        }
         return factoryVo.createParPartyDetail(party);
     }
 
@@ -298,18 +294,18 @@ public class PartyController {
             @RequestParam final Integer partyId) {
 
         ParParty party = partyRepository.getOneCheckExist(partyId);
-        Set<Integer> scopeIds = new HashSet<>();
-        scopeIds.add(party.getAccessPoint().getScope().getScopeId());
+        ApState apState = accessPointService.getState(party.getAccessPoint());
 
-        List<ParParty> partyList = partyRepository.findPartyByTextAndType(search, partyTypeId, null,
-                from, count, scopeIds);
+        Set<Integer> scopeIds = new HashSet<>();
+        scopeIds.add(apState.getScope().getScopeId());
+
+        List<ParParty> partyList = partyRepository.findPartyByTextAndType(search, partyTypeId, null, from, count, scopeIds);
 
         List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
 
         long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, null, scopeIds);
         return new FilteredResultVO<>(resultVo, countAll);
     }
-
 
     /**
      * Vložení vztahu spolu s vazbami.
@@ -542,11 +538,10 @@ public class PartyController {
     @RequestMapping(value = "/{partyId}/usage", method = RequestMethod.GET)
 	@Transactional
     public RecordUsageVO findUsage(@PathVariable final Integer partyId) {
-    	ParParty parParty = partyRepository.getOneCheckExist(partyId);
-    	ApAccessPoint accessPoint = parParty.getAccessPoint();
-    	return accessPointService.findRecordUsage(accessPoint, parParty);
+        ParParty parParty = partyRepository.getOneCheckExist(partyId);
+        ApAccessPoint accessPoint = parParty.getAccessPoint();
+        return accessPointService.findRecordUsage(accessPoint, parParty);
     }
-
 
     /**
      * Nahrazení osoby

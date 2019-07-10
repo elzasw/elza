@@ -3,7 +3,6 @@ package cz.tacr.elza.controller;
 import java.util.HashMap;
 import java.util.List;
 
-import cz.tacr.elza.domain.ApType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +18,9 @@ import cz.tacr.elza.controller.vo.ParPersonVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.ParUnitdateVO;
 import cz.tacr.elza.core.data.PartyType;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParRelationType;
@@ -26,9 +28,11 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 
 /**
@@ -43,6 +47,10 @@ public class ValidationVOService {
 
     @Autowired
     private PartyTypeRepository partyTypeRepository;
+    @Autowired
+    private ApAccessPointRepository apAccessPointRepository;
+    @Autowired
+    private ApStateRepository apStateRepository;
     @Autowired
     private ApTypeRepository apTypeRepository;
     @Autowired
@@ -82,6 +90,16 @@ public class ValidationVOService {
      * @param partyVO
      */
     public void checkParty(final ParPartyVO partyVO) {
+
+        Integer accessPointId = partyVO.getAccessPoint() != null ? partyVO.getAccessPoint().getId() : null;
+        if (accessPointId != null) {
+            ApAccessPoint accessPoint = apAccessPointRepository.getOneCheckExist(accessPointId);
+            ApState state = apStateRepository.findLastByAccessPoint(accessPoint);
+            if (state.getDeleteChange() != null) {
+                throw new IllegalStateException("Zneplatněné osodby není možno upravovat");
+            }
+        }
+
         final ParPartyType partyType = partyTypeRepository.getOneCheckExist(partyVO.getPartyType().getId());
 
         // Definice TypeEnum na Class
@@ -100,7 +118,6 @@ public class ValidationVOService {
     // hlavne ve vztahu k metodam, ktere ji vyuzivaji a zda by
     // rovnou nemela vracet party apod.
     public void checkPartyUpdate(final ParPartyVO partyVO) {
-        ParPartyType partyType = partyTypeRepository.getOneCheckExist(partyVO.getPartyType().getId());
 
         if (partyVO.getId() == null) {
             throw new SystemException("Není vyplněno id existující entity pro update.", BaseCode.ID_NOT_EXIST);
@@ -111,9 +128,13 @@ public class ValidationVOService {
             throw new IllegalArgumentException("Nelze měnit typ osoby.");
         }
 
-        if (parParty.getAccessPoint().getDeleteChange() != null) {
-            throw new IllegalStateException("Zneplatněné osodby není možno upravovat");
+        ApState apState = apStateRepository.findLastByAccessPoint(parParty.getAccessPoint());
+        if (apState.getDeleteChange() != null) {
+            throw new IllegalStateException("Zneplatněné osoby není možno upravovat");
         }
+
+        ParPartyType partyType = partyTypeRepository.getOneCheckExist(partyVO.getPartyType().getId());
+
         List<ApType> apTypes = apTypeRepository.findApTypeByPartyType(partyType);
         if (CollectionUtils.isEmpty(apTypes)) {
             throw new ObjectNotFoundException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode(), BaseCode.ID_NOT_EXIST);

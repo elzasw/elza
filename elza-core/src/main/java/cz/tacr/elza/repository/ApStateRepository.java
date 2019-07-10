@@ -1,24 +1,86 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApState;
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.List;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApExternalIdType;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApType;
 
 @Repository
 public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer> {
-    @Query("SELECT s FROM ap_state s WHERE s.accessPoint = ?1 AND s.deleteChangeId IS NULL")
-    ApState findByAccessPoint(ApAccessPoint accessPoint);
+
+    /*
+    @Query("SELECT s FROM ap_state s WHERE s.accessPoint = :accessPoint AND s.deleteChangeId IS NULL")
+    ApState findActiveByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);
 
     @Query("SELECT s FROM ap_state s WHERE s.accessPoint IN :accessPoints AND s.deleteChangeId IS NULL")
-    List<ApState> findByAccessPoints(@Param("accessPoints") Collection<ApAccessPoint> accessPoints);
+    List<ApState> findActiveByAccessPoints(@Param("accessPoints") Collection<ApAccessPoint> accessPoints);
+    */
+
+    @Query("SELECT s1" +
+            " FROM ap_state s1" +
+            " WHERE s1.accessPoint = :accessPoint" +
+            " AND s1.createChangeId = (SELECT max(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s1.accessPoint)")
+    ApState findLastByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);
+
+    @Query("SELECT s1" +
+            " FROM ap_state s1" +
+            " WHERE s1.accessPoint.accessPointId = :accessPointId" +
+            " AND s1.createChangeId = (SELECT max(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s1.accessPoint)")
+    ApState findLastByAccessPointId(@Param("accessPointId") Integer accessPointId);
+
+    /*
+    @Query("SELECT s1" +
+            " FROM ap_state s1" +
+            " JOIN (SELECT s.accessPointId accessPointId, max(s.createChangeId) createChangeId FROM ap_state s WHERE s.accessPoint IN :accessPoints GROUP BY s.accessPointId) s2" +
+            " ON s1.accessPointId = s2.accessPointId AND s1.createChangeId = s2.createChangeId" +
+            " WHERE s1.accessPoint IN :accessPoints")
+    */
+    @Query("SELECT s1" +
+            " FROM ap_state s1" +
+            " WHERE s1.accessPoint IN :accessPoints" +
+            " AND s1.createChangeId = (SELECT max(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s1.accessPoint)")
+    List<ApState> findLastByAccessPoints(@Param("accessPoints") Collection<ApAccessPoint> accessPoints);
+
+    @Query("SELECT s1" +
+            " FROM ap_state s1" +
+            " WHERE s1.accessPoint.accessPointId IN :accessPointIds" +
+            " AND s1.createChangeId = (SELECT max(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s1.accessPoint)")
+    List<ApState> findLastByAccessPointIds(@Param("accessPointIds") Collection<Integer> accessPointIds);
+
+    @Query("SELECT s FROM ap_state s WHERE s.accessPoint = :accessPoint")
+    List<ApState> findAllByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);
+
+    @Query("SELECT s FROM ap_state s WHERE s.accessPoint.state = 'TEMP'")
+    List<ApState> findTempStates();
 
     @Modifying
-    @Query("DELETE FROM ap_state s WHERE s.stateId IN (SELECT i.stateId FROM ap_state i JOIN i.accessPoint ap WHERE ap.state = 'TEMP' AND i.accessPoint = :accessPoint)")
-    void removeTemp(@Param("accessPoint") ApAccessPoint accessPoint);
+    @Query("UPDATE ap_state  s SET s.apType = :value WHERE s.apType = :key")
+    void updateApTypeByApType(@Param("key") ApType key, @Param("value") ApType value);
+
+    @Query("select s" +
+            " from ap_state s" +
+            " join ap_external_id eid on eid.accessPoint = s.accessPoint" +
+            " where eid.value = ?1" +
+            " and eid.externalIdType = ?2" +
+            " and eid.deleteChange is null" +
+            " and s.scope = ?3" +
+            " and s.deleteChange is null")
+    ApState getActiveByExternalIdAndScope(String eidValue, ApExternalIdType eidType, ApScope apScope);
+
+    /**
+     * Najde hesla podle třídy rejstříku.
+     *
+     * @param scope třída
+     * @return nalezená hesla
+     */
+    List<ApState> findByScope(ApScope scope);
 }

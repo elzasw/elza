@@ -45,6 +45,7 @@ import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApNameItem;
 import cz.tacr.elza.domain.ApRule;
 import cz.tacr.elza.domain.ApRuleSystem;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulItemType;
@@ -194,16 +195,14 @@ public class AccessPointGeneratorService {
      */
     @Transactional
     public void processAsyncGenerate(final Integer accessPointId, final Integer changeId) {
-        ApAccessPoint accessPoint = apRepository.findOne(accessPointId);
-        ApChange change;
-        if (changeId == null) {
-            change = apDataService.createChange(ApChange.Type.AP_REVALIDATE);
-        } else {
-            change = apChangeRepository.findOne(changeId);
-        }
-        logger.info("Asynchronní zpracování AP={} ApChache={}", accessPointId, change.getChangeId());
-        generateAndSetResult(accessPoint, change);
-        logger.info("Asynchronní zpracování AP={} ApChache={} - END - State={}", accessPointId, change.getChangeId(), accessPoint.getState());
+        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
+        ApState apState = accessPointService.getState(accessPoint);
+        ApChange apChange = changeId != null
+                ? apChangeRepository.findOne(changeId)
+                : apDataService.createChange(ApChange.Type.AP_REVALIDATE);
+        logger.info("Asynchronní zpracování AP={} ApChache={}", accessPointId, apChange.getChangeId());
+        generateAndSetResult(apState, apChange);
+        logger.info("Asynchronní zpracování AP={} ApChache={} - END - State={}", accessPointId, apChange.getChangeId(), accessPoint.getState());
     }
 
     /**
@@ -281,7 +280,9 @@ public class AccessPointGeneratorService {
         return (String) groovyScriptFile.evaluate(input);
     }
 
-    public void generateAndSetResult(final ApAccessPoint accessPoint, final ApChange change) {
+    public void generateAndSetResult(final ApState apState, final ApChange apChange) {
+
+        ApAccessPoint accessPoint = apState.getAccessPoint();
 
         if (accessPoint.getRuleSystem() == null) {
             logger.warn("Přístupový bod {} nemá vazbu na pravidla a nebude se provádět script", accessPoint.getAccessPointId());
@@ -310,7 +311,7 @@ public class AccessPointGeneratorService {
 
         try {
             AccessPoint result = generateValue(accessPoint, apItems, apNames, nameItemsMap);
-            boolean hasError = processResult(accessPoint, change, apNameMap, nameItemsMap, result);
+            boolean hasError = processResult(apState, apChange, apNameMap, nameItemsMap, result);
             if (hasError) {
                 apStateEnum = ApStateEnum.ERROR;
             }
@@ -334,17 +335,17 @@ public class AccessPointGeneratorService {
         accessPointService.reindexDescItem(accessPoint);
     }
 
-    private boolean processResult(final ApAccessPoint accessPoint, final ApChange change, final Map<Integer, ApName> apNameMap, final Map<Integer, List<ApItem>> nameItemsMap, final AccessPoint result) {
+    private boolean processResult(final ApState apState, final ApChange apChange, final Map<Integer, ApName> apNameMap, final Map<Integer, List<ApItem>> nameItemsMap, final AccessPoint result) {
 
         // zpracování změny charakteristiky
-        apDataService.changeDescription(accessPoint, result.getDescription(), change);
+        apDataService.changeDescription(apState, result.getDescription(), apChange);
 
         // zpracování jednotlivých jmen přístupového bodu
-        List<NameContext> nameContexts = createNameContextsFromResult(accessPoint, change, apNameMap, nameItemsMap, result);
-        return processNameContexts(accessPoint, nameContexts);
+        List<NameContext> nameContexts = createNameContextsFromResult(apState, apChange, apNameMap, nameItemsMap, result);
+        return processNameContexts(apState, nameContexts);
     }
 
-    private boolean processNameContexts(final ApAccessPoint accessPoint, final List<NameContext> nameContexts) {
+    private boolean processNameContexts(final ApState apState, final List<NameContext> nameContexts) {
         boolean error = false;
         for (NameContext nameContext : nameContexts) {
             ApName name = nameContext.getName();
@@ -354,7 +355,7 @@ public class AccessPointGeneratorService {
                 errorDescription.setEmptyValue(true);
                 nameContext.setState(ApStateEnum.ERROR);
             } else {
-                boolean isUnique = apDataService.isNameUnique(accessPoint.getScope(), name.getFullName());
+                boolean isUnique = apDataService.isNameUnique(apState.getScope(), name.getFullName());
                 if (!isUnique) {
                     errorDescription.setDuplicateValue(true);
                     nameContext.setState(ApStateEnum.ERROR);
@@ -371,16 +372,16 @@ public class AccessPointGeneratorService {
         return error;
     }
 
-    private List<NameContext> createNameContextsFromResult(final ApAccessPoint accessPoint, final ApChange change, final Map<Integer, ApName> apNameMap, final Map<Integer, List<ApItem>> nameItemsMap, final AccessPoint result) {
+    private List<NameContext> createNameContextsFromResult(final ApState apState, final ApChange apChange, final Map<Integer, ApName> apNameMap, final Map<Integer, List<ApItem>> nameItemsMap, final AccessPoint result) {
         List<NameContext> nameContexts = new ArrayList<>();
         for (Name name : result.getNames()) {
             ApName apName = apNameMap.get(name.getId());
             List<ApItem> items = nameItemsMap.getOrDefault(apName.getNameId(), Collections.emptyList());
 
             if (!apDataService.equalsNames(apName, name.getName(), name.getComplement(), name.getFullName(), apName.getLanguageId())) {
-                ApName apNameNew = apDataService.updateAccessPointName(accessPoint, apName, name.getName(), name.getComplement(), name.getFullName(), apName.getLanguage(), change, false);
+                ApName apNameNew = apDataService.updateAccessPointName(apState, apName, name.getName(), name.getComplement(), name.getFullName(), apName.getLanguage(), apChange, false);
                 if (apName != apNameNew) {
-                    items = apItemService.copyItems(apName, apNameNew, change);
+                    items = apItemService.copyItems(apName, apNameNew, apChange);
                     apName = apNameNew;
                 }
             }

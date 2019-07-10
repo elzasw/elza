@@ -92,7 +92,7 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
             }
         }
         // find current AP by UUID
-        List<ApAccessPointInfo> currentAps = apRepository.findInfoByUuidInAndDeleteChangeIdIsNull(uuidMap.keySet());
+        List<ApAccessPointInfo> currentAps = apRepository.findActiveByUuids(uuidMap.keySet());
         for (ApAccessPointInfo info : currentAps) {
             AccessPointWrapper ew = uuidMap.get(info.getUuid());
             ew.changeToUpdated(info);

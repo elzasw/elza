@@ -202,19 +202,4 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
         this.ruleSystemId = ruleSystemId;
     }
 
-    /**
-     * Create new instance from domain object
-     * 
-     * @param ap
-     * @return
-     */
-    public static ApAccessPointVO newInstance(ApAccessPoint ap) {
-        ApAccessPointVO apvo = new ApAccessPointVO();
-        apvo.setId(ap.getAccessPointId());
-        apvo.setInvalid(ap.getDeleteChange() != null);
-        apvo.setScopeId(ap.getScopeId());
-        apvo.setTypeId(ap.getApTypeId());
-        apvo.setUuid(ap.getUuid());
-        return apvo;
-    }
 }

@@ -21,6 +21,7 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataFileRef;
@@ -44,6 +45,7 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FundFileRepository;
@@ -81,6 +83,9 @@ public class ItemService {
 
     @Autowired
     private ApTypeRepository registerTypeRepository;
+
+    @Autowired
+    private ApStateRepository stateRepository;
 
     @Autowired
     private EntityManager em;
@@ -205,14 +210,16 @@ public class ItemService {
             if (data != null && !descItem.isUndefined()) {
                 // check record_ref
                 if (itemType.getDataType().equals(DataType.RECORD_REF)) {
+
                     ApAccessPoint apAccessPoint = ((ArrDataRecordRef) data).getRecord();
+                    ApState apState = stateRepository.findLastByAccessPoint(apAccessPoint);
 
                     // TODO: refactor and use static data
                     List<Integer> apTypeIds = itemAptypeRepository.findApTypeIdsByItemSpec(rulItemSpec);
                     apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemType(rulItemType));
                     Set<Integer> apTypeIdTree = registerTypeRepository.findSubtreeIds(apTypeIds);
 
-                    if (!apTypeIdTree.contains(apAccessPoint.getApTypeId())) {
+                    if (!apTypeIdTree.contains(apState.getApTypeId())) {
                         throw new BusinessException("Hodnota neodpovídá typu rejstříku podle specifikace nebo typu",
                                 RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING);
                     }
@@ -226,11 +233,10 @@ public class ItemService {
             } else {
                 if (itemType.getDataType().equals(DataType.RECORD_REF)) {
                     ApAccessPoint apAccessPoint = ((ArrDataRecordRef) data).getRecord();
-
+                    ApState apState = stateRepository.findLastByAccessPoint(apAccessPoint);
                     List<Integer> apTypeIds = itemAptypeRepository.findApTypeIdsByItemType(rulItemType);
                     Set<Integer> apTypeIdTree = registerTypeRepository.findSubtreeIds(apTypeIds);
-
-                    if (!apTypeIdTree.contains(apAccessPoint.getApTypeId())) {
+                    if (!apTypeIdTree.contains(apState.getApTypeId())) {
                         throw new BusinessException("Hodnota neodpovídá typu rejstříku podle specifikace nebo typu",
                                 RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING);
                     }

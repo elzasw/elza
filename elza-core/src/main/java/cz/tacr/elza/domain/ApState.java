@@ -1,19 +1,32 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.api.interfaces.IApScope;
-import cz.tacr.elza.domain.enumeration.StringLength;
-import cz.tacr.elza.domain.interfaces.Versionable;
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import javax.persistence.*;
+import cz.tacr.elza.api.interfaces.IApScope;
+import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.domain.interfaces.Versionable;
 
 @Entity(name = "ap_state")
 @Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ApState extends AbstractVersionableEntity implements IApScope, Versionable {
 
+    public static final String FIELD_ACCESS_POINT_ID = "accessPointId";
     public static final String FIELD_AP_TYPE_ID = "apTypeId";
     public static final String FIELD_SCOPE_ID = "scopeId";
+    public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
     public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
 
     @Id
@@ -22,7 +35,7 @@ public class ApState extends AbstractVersionableEntity implements IApScope, Vers
     private Integer stateId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
-    @JoinColumn(name = "accessPointId")
+    @JoinColumn(name = FIELD_ACCESS_POINT_ID, nullable = false)
     private ApAccessPoint accessPoint;
 
     @Column(nullable = false, updatable = false, insertable = false)
@@ -43,7 +56,7 @@ public class ApState extends AbstractVersionableEntity implements IApScope, Vers
     private Integer scopeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
-    @JoinColumn(name = "createChangeId", nullable = false)
+    @JoinColumn(name = FIELD_CREATE_CHANGE_ID, nullable = false)
     private ApChange createChange;
 
     @Column(nullable = false, updatable = false, insertable = false)
@@ -57,8 +70,8 @@ public class ApState extends AbstractVersionableEntity implements IApScope, Vers
     private Integer deleteChangeId;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = StringLength.LENGTH_ENUM)
-    private ApStateApproval stateApproval;
+    @Column(length = StringLength.LENGTH_ENUM, nullable = false)
+    private ApState.StateApproval stateApproval;
 
     @Column(length = StringLength.LENGTH_2000)
     private String comment;
@@ -174,11 +187,11 @@ public class ApState extends AbstractVersionableEntity implements IApScope, Vers
         this.deleteChangeId = deleteChangeId;
     }
 
-    public ApStateApproval getStateApproval() {
+    public ApState.StateApproval getStateApproval() {
         return stateApproval;
     }
 
-    public void setStateApproval(ApStateApproval stateApproval) {
+    public void setStateApproval(ApState.StateApproval stateApproval) {
         this.stateApproval = stateApproval;
     }
 
@@ -188,5 +201,31 @@ public class ApState extends AbstractVersionableEntity implements IApScope, Vers
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    /**
+     * Stav přístupového bodu.
+     */
+    public enum StateApproval {
+
+        /**
+         * Nový přístupový bod.
+         */
+        NEW,
+
+        /**
+         * Připraven ke schválení.
+         */
+        TO_APPROVE,
+
+        /**
+         * Schválený.
+         */
+        APPROVED,
+
+        /**
+         * K doplnění.
+         */
+        TO_AMEND;
     }
 }

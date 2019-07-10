@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
@@ -39,6 +40,7 @@ import cz.tacr.elza.domain.ApFragment;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -227,27 +229,24 @@ public class ApController {
                                                             @RequestParam final Integer partyId) {
 
         ParParty party = partyRepository.getOneCheckExist(partyId);
+        ApState apState = accessPointService.getState(party.getAccessPoint());
 
         ParRelationRoleType relationRoleType = relationRoleTypeRepository.getOneCheckExist(roleTypeId);
-
 
         Set<Integer> apTypeIds = apTypeRepository.findByRelationRoleType(relationRoleType)
                 .stream().map(ApType::getApTypeId).collect(Collectors.toSet());
         apTypeIds = apTypeRepository.findSubtreeIds(apTypeIds);
 
-        final ApScope scope = party.getAccessPoint().getScope();
+        final ApScope scope = apState.getScope();
         Set<Integer> scopeIds = new HashSet<>();
         scopeIds.add(scope.getScopeId());
         scopeRepository.findConnectedByScope(scope).forEach(cs -> scopeIds.add(cs.getScopeId()));
 
-        final long foundRecordsCount = accessPointRepository.findApAccessPointByTextAndTypeCount(search, apTypeIds,
-                scopeIds);
+        final long foundRecordsCount = accessPointRepository.findApAccessPointByTextAndTypeCount(search, apTypeIds, scopeIds);
 
-        final List<ApAccessPoint> foundRecords = accessPointRepository.findApAccessPointByTextAndType(search, apTypeIds,
-                from, count, scopeIds);
+        final List<ApAccessPoint> foundRecords = accessPointRepository.findApAccessPointByTextAndType(search, apTypeIds, from, count, scopeIds);
 
-        return new FilteredResultVO<>(foundRecords, ap -> apFactory.createVOSimple(ap),
-                foundRecordsCount);
+        return new FilteredResultVO<>(foundRecords, ap -> apFactory.createVOSimple(ap), foundRecordsCount);
     }
 
     /**
@@ -269,8 +268,8 @@ public class ApController {
         String description = StringUtils.isEmpty(accessPoint.getDescription()) ? null : accessPoint.getDescription();
         String complement = StringUtils.isEmpty(accessPoint.getComplement()) ? null : accessPoint.getComplement();
 
-        ApAccessPoint createdAccessPoint = accessPointService.createAccessPoint(scope, type, name, complement, language, description);
-        return apFactory.createVO(createdAccessPoint);
+        ApState apState = accessPointService.createAccessPoint(scope, type, name, complement, language, description);
+        return apFactory.createVO(apState);
     }
 
 	@Transactional
@@ -303,8 +302,8 @@ public class ApController {
         ApType type = accessPointService.getType(typeId);
         SysLanguage language = StringUtils.isEmpty(accessPoint.getLanguageCode()) ? null : accessPointService.getLanguage(accessPoint.getLanguageCode());
 
-        ApAccessPoint createdAccessPoint = accessPointService.createStructuredAccessPoint(scope, type, language);
-        return apFactory.createVO(createdAccessPoint, true);
+        ApState apState = accessPointService.createStructuredAccessPoint(scope, type, language);
+        return apFactory.createVO(apState, true);
     }
 
     /**
@@ -317,7 +316,8 @@ public class ApController {
     public void confirmStructuredAccessPoint(@PathVariable final Integer accessPointId) {
         Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        accessPointService.confirmAccessPoint(accessPoint);
+        ApState apState = accessPointService.getState(accessPoint);
+        accessPointService.confirmAccessPoint(apState);
     }
 
     /**
@@ -330,7 +330,8 @@ public class ApController {
     public void migrateAccessPoint(@PathVariable final Integer accessPointId) {
         Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        apMigrationService.migrateAccessPoint(accessPoint);
+        ApState apState = accessPointService.getState(accessPoint);
+        apMigrationService.migrateAccessPoint(apState);
     }
 
     /**
@@ -343,7 +344,8 @@ public class ApController {
     public void setRuleAccessPoint(@PathVariable final Integer accessPointId) {
         Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        accessPointService.setRuleAccessPoint(accessPoint);
+        ApState apState = accessPointService.getState(accessPoint);
+        accessPointService.setRuleAccessPoint(apState);
     }
 
     /**
@@ -358,9 +360,9 @@ public class ApController {
         Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-
-        ApName name = accessPointService.createAccessPointStructuredName(accessPoint);
-        return apFactory.createVO(name, true);
+        ApState apState = accessPointService.getState(accessPoint);
+        ApName name = accessPointService.createAccessPointStructuredName(apState);
+        return apFactory.createVO(name, apState.getApType(), true);
     }
 
     /**
@@ -377,8 +379,9 @@ public class ApController {
         Validate.notNull(objectId, "Identifikátor objektu jména musí být vyplněn");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
+        ApState apState = accessPointService.getState(accessPoint);
         ApName name = accessPointService.getName(objectId);
-        accessPointService.confirmAccessPointName(accessPoint, name);
+        accessPointService.confirmAccessPointName(apState, name);
     }
 
     /**
@@ -391,12 +394,13 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/{accessPointId}/items", method = RequestMethod.PUT)
     public List<ApItemVO> changeAccessPointItems(@PathVariable final Integer accessPointId,
-                                              @RequestBody final List<ApUpdateItemVO> items) {
+                                                 @RequestBody final List<ApUpdateItemVO> items) {
         Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
         Validate.notEmpty(items, "Musí být alespoň jedna položka ke změně");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        List<ApItem> itemsCreated = accessPointService.changeApItems(accessPoint, items);
+        ApState apState = accessPointService.getState(accessPoint);
+        List<ApItem> itemsCreated = accessPointService.changeApItems(apState, items);
         return apFactory.createItemsVO(itemsCreated);
     }
 
@@ -409,14 +413,15 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/{accessPointId}/type/{itemTypeId}", method = RequestMethod.DELETE)
     public void deleteAccessPointItemsByType(@PathVariable final Integer accessPointId,
-                                       @PathVariable final Integer itemTypeId) {
+                                             @PathVariable final Integer itemTypeId) {
         Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
         Validate.notNull(itemTypeId, "Identifikátor typu musí být vyplněn");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
+        ApState apState = accessPointService.getState(accessPoint);
         StaticDataProvider data = staticDataService.getData();
         ItemType type = data.getItemTypeById(itemTypeId);
-        accessPointService.deleteApItemsByType(accessPoint, type.getEntity());
+        accessPointService.deleteApItemsByType(apState, type.getEntity());
     }
 
     /**
@@ -437,8 +442,9 @@ public class ApController {
         Validate.notEmpty(items, "Musí být alespoň jedna položka ke změně");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
+        ApState apState = accessPointService.getState(accessPoint);
         ApName name = accessPointService.getName(objectId);
-        List<ApItem> itemsCreated = accessPointService.changeNameItems(accessPoint, name, items);
+        List<ApItem> itemsCreated = accessPointService.changeNameItems(apState, name, items);
         return apFactory.createItemsVO(itemsCreated);
     }
 
@@ -459,10 +465,11 @@ public class ApController {
         Validate.notNull(itemTypeId, "Identifikátor typu musí být vyplněn");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
+        ApState apState = accessPointService.getState(accessPoint);
         ApName name = accessPointService.getName(objectId);
         StaticDataProvider data = staticDataService.getData();
         ItemType type = data.getItemTypeById(itemTypeId);
-        accessPointService.deleteNameItemsByType(accessPoint, name, type.getEntity());
+        accessPointService.deleteNameItemsByType(apState, name, type.getEntity());
     }
 
     /**
@@ -567,16 +574,15 @@ public class ApController {
     @RequestMapping(value = "/{accessPointId}", method = RequestMethod.GET)
     public ApAccessPointVO getAccessPoint(@PathVariable final Integer accessPointId) {
         Assert.notNull(accessPointId, "Identifikátor rejstříkového hesla musí být vyplněn");
-
         ApAccessPoint ap = accessPointService.getAccessPoint(accessPointId);
-        ApAccessPointVO vo = getAccessPoint(ap);
+        ApState apState = accessPointService.getState(ap);
+        ApAccessPointVO vo = getAccessPoint(apState);
         return vo;
     }
 
-    private ApAccessPointVO getAccessPoint(ApAccessPoint ap) {
-        ApAccessPointVO vo = apFactory.createVO(ap, true);
-        
-        ParParty party = partyService.findParPartyByAccessPoint(ap);
+    private ApAccessPointVO getAccessPoint(ApState apState) {
+        ApAccessPointVO vo = apFactory.createVO(apState, true);
+        ParParty party = partyService.findParPartyByAccessPoint(apState.getAccessPoint());
         if (party != null) {
             vo.setPartyId(party.getPartyId());
         }
@@ -597,8 +603,10 @@ public class ApController {
         Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
         Validate.notNull(editVo);
 
-        ApAccessPoint ap = accessPointService.changeApType(accessPointId, editVo.getTypeId());
-        return getAccessPoint(ap);
+        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
+        ApState oldState = accessPointService.getState(accessPoint);
+        ApState newState = accessPointService.changeApType(accessPointId, editVo.getTypeId());
+        return getAccessPoint(newState);
     }
 
     /**
@@ -616,7 +624,8 @@ public class ApController {
         Assert.notNull(accessPointDescription, "Přístupový bod musí být vyplněn");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        ApAccessPoint editedAccessPoint = accessPointService.changeDescription(accessPoint, accessPointDescription.getDescription());
+        ApState apState = accessPointService.getState(accessPoint);
+        ApAccessPoint editedAccessPoint = accessPointService.changeDescription(apState, accessPointDescription.getDescription());
         return getAccessPoint(editedAccessPoint.getAccessPointId());
     }
 
@@ -629,7 +638,9 @@ public class ApController {
     @RequestMapping(value = "/{accessPointId}", method = RequestMethod.DELETE)
     public void deleteAccessPoint(@PathVariable final Integer accessPointId) {
         Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
-        accessPointService.deleteAccessPoint(accessPointId, true);
+        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
+        ApState apState = accessPointService.getState(accessPoint);
+        accessPointService.deleteAccessPoint(apState, true);
     }
 
     /**
@@ -682,11 +693,12 @@ public class ApController {
         Assert.notNull(accessPointName, "Jméno přístupového bodu musí být vyplněno");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
+        ApState apState = accessPointService.getState(accessPoint);
         SysLanguage language = StringUtils.isEmpty(accessPointName.getLanguageCode())
                 ? null
                 : accessPointService.getLanguage(accessPointName.getLanguageCode());
 
-        ApName name = accessPointService.createAccessPointName(accessPoint,
+        ApName name = accessPointService.createAccessPointName(apState,
                 accessPointName.getName(),
                 accessPointName.getComplement(),
                 language);
@@ -708,12 +720,13 @@ public class ApController {
         Assert.notNull(accessPointName, "Jméno přístupového bodu musí být vyplněno");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
+        ApState apState = accessPointService.getState(accessPoint);
         SysLanguage language = StringUtils.isEmpty(accessPointName.getLanguageCode())
                 ? null
                 : accessPointService.getLanguage(accessPointName.getLanguageCode());
 
         ApName name = accessPointService.getName(accessPointName.getObjectId());
-        ApName updatedName = accessPointService.updateAccessPointName(accessPoint,
+        ApName updatedName = accessPointService.updateAccessPointName(apState,
                 name,
                 accessPointName.getName(),
                 accessPointName.getComplement(),
@@ -737,12 +750,14 @@ public class ApController {
         Assert.notNull(accessPointName, "Jméno přístupového bodu musí být vyplněno");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
+        ApState apState = accessPointService.getState(accessPoint);
+
         SysLanguage language = StringUtils.isEmpty(accessPointName.getLanguageCode())
                 ? null
                 : accessPointService.getLanguage(accessPointName.getLanguageCode());
 
         ApName name = accessPointService.getName(accessPointName.getObjectId());
-        ApName updatedName = accessPointService.updateAccessPointName(accessPoint, name, language);
+        ApName updatedName = accessPointService.updateAccessPointName(apState, name, language);
         return apFactory.createVO(updatedName);
     }
 
@@ -761,8 +776,9 @@ public class ApController {
         Assert.notNull(objectId, "Identifikátor jména přístupového bodu musí být vyplněn");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+        ApState apState = accessPointService.getState(accessPoint);
         ApName name = accessPointService.getName(accessPoint, objectId);
-        return apFactory.createVO(name, true);
+        return apFactory.createVO(name, apState.getApType(), true);
     }
 
     /**
@@ -779,8 +795,9 @@ public class ApController {
         Assert.notNull(objectId, "Identifikátor jména přístupového bodu musí být vyplněn");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
+        ApState apState = accessPointService.getState(accessPoint);
         ApName name = accessPointService.getName(objectId);
-        accessPointService.deleteAccessPointName(accessPoint, name);
+        accessPointService.deleteAccessPointName(apState, name);
     }
 
     /**
@@ -797,8 +814,9 @@ public class ApController {
         Assert.notNull(objectId, "Identifikátor objektu jména přístupového bodu musí být vyplněn");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
+        ApState apState = accessPointService.getState(accessPoint);
         ApName name = accessPointService.getName(objectId);
-        accessPointService.setPreferredAccessPointName(accessPoint, name);
+        accessPointService.setPreferredAccessPointName(apState, name);
     }
 
     /**
@@ -1079,11 +1097,11 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/{accessPointId}/replace", method = RequestMethod.POST)
     public void replace(@PathVariable final Integer accessPointId, @RequestBody final Integer replacedId) {
+
         final ApAccessPoint replaced = accessPointService.getAccessPointInternal(accessPointId);
         final ApAccessPoint replacement = accessPointService.getAccessPointInternal(replacedId);
 
         final ParParty replacedParty = partyService.findParPartyByAccessPoint(replaced);
-
         if (replacedParty != null) {
             final ParParty replacementParty = partyService.findParPartyByAccessPoint(replacement);
             if (replacementParty == null) {
@@ -1091,7 +1109,9 @@ public class ApController {
             }
             partyService.replace(replacedParty, replacementParty);
         } else {
-            accessPointService.replace(replaced, replacement);
+            ApState replacedState = accessPointService.getState(replaced);
+            ApState replacementState = accessPointService.getState(replacement);
+            accessPointService.replace(replacedState, replacementState);
         }
     }
 }

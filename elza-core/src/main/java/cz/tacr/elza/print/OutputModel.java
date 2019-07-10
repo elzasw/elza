@@ -35,6 +35,7 @@ import cz.tacr.elza.core.fund.FundTree;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.core.fund.TreeNode;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
@@ -82,6 +83,7 @@ import cz.tacr.elza.print.party.RelationType;
 import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
 import cz.tacr.elza.repository.ApNameRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -150,6 +152,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final InstitutionRepository institutionRepository;
 
+    private final ApStateRepository apStateRepository;
+
     private final ApDescriptionRepository apDescRepository;
 
     private final ApNameRepository apNameRepository;
@@ -177,6 +181,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final FundTreeProvider fundTreeProvider,
                        final NodeCacheService nodeCacheService,
                        final InstitutionRepository institutionRepository,
+                       final ApStateRepository apStateRepository,
                        final ApDescriptionRepository apDescRepository,
                        final ApNameRepository apNameRepository,
                        final ApExternalIdRepository apEidRepository,
@@ -188,6 +193,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.fundTreeProvider = fundTreeProvider;
         this.nodeCacheService = nodeCacheService;
         this.institutionRepository = institutionRepository;
+        this.apStateRepository = apStateRepository;
         this.apDescRepository = apDescRepository;
         this.apNameRepository = apNameRepository;
         this.apEidRepository = apEidRepository;
@@ -528,8 +534,10 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             return record;
         }
 
-        RecordType type = getAPType(ap.getApTypeId());
-        record = new Record(ap, type, staticData, apDescRepository, apNameRepository, apEidRepository);
+        ApState apState = apStateRepository.findLastByAccessPoint(ap);
+
+        RecordType type = getAPType(apState.getApTypeId());
+        record = new Record(ap, type, staticData, apStateRepository, apDescRepository, apNameRepository, apEidRepository);
 
         // add to lookup
         apIdMap.put(ap.getAccessPointId(), record);
@@ -651,16 +659,16 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         PartyType partyType = PartyType.fromId(party.getPartyTypeId());
         switch (partyType) {
             case DYNASTY:
-            ParDynasty parDynasty = (ParDynasty) party;
+                ParDynasty parDynasty = (ParDynasty) party;
                 return new Dynasty(parDynasty, initHelper);
             case EVENT:
-            ParEvent parEvent = (ParEvent) party;
+                ParEvent parEvent = (ParEvent) party;
                 return new Event(parEvent, initHelper);
             case GROUP_PARTY:
-            ParPartyGroup parPartyGroup = (ParPartyGroup) party;
+                ParPartyGroup parPartyGroup = (ParPartyGroup) party;
                 return new PartyGroup(parPartyGroup, initHelper);
             case PERSON:
-            ParPerson parPerson = (ParPerson) party;
+                ParPerson parPerson = (ParPerson) party;
                 return new Person(parPerson, initHelper);
             default:
                 throw new IllegalStateException("Uknown party type: " + partyType);
@@ -784,8 +792,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         StructType structType = staticData.getStructuredTypeByCode(structTypeCode);
         List<ArrStructuredObject> sobs = structObjRepos
                 .findStructureDataBySubtreeNodeIds(this.startNodes,
-                                                   structType.getStructuredTypeId(),
-                                                   false);
+                        structType.getStructuredTypeId(),
+                        false);
 
         List<Structured> result = new ArrayList<>(sobs.size());
         for (ArrStructuredObject sob : sobs) {
@@ -798,7 +806,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     @Override
     public List<Item> loadStructItems(Integer structObjId) {
         List<ArrStructuredItem> items = structItemRepos.findByStructuredObjectAndDeleteChangeIsNullFetchData(
-                                                                                                             structObjId);
+                structObjId);
         List<Item> result = convert(items);
         return result;
     }

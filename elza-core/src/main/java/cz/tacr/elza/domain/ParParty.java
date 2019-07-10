@@ -26,6 +26,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.api.interfaces.IApAccessPoint;
 import cz.tacr.elza.api.interfaces.IApScope;
 
 
@@ -39,7 +40,7 @@ import cz.tacr.elza.api.interfaces.IApScope;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParParty extends AbstractVersionableEntity implements IApScope {
+public class ParParty extends AbstractVersionableEntity implements IApAccessPoint {
 
     /* Konstanty pro vazby a fieldy. */
     public static final String FIELD_PARTY_ID = "partyId";
@@ -152,6 +153,7 @@ public class ParParty extends AbstractVersionableEntity implements IApScope {
         this.accessPointId = accessPoint != null ? accessPoint.getAccessPointId() : null;
     }
 
+    @Override
     public Integer getAccessPointId() {
         return accessPointId;
     }
@@ -284,21 +286,5 @@ public class ParParty extends AbstractVersionableEntity implements IApScope {
     @Override
     public String toString() {
         return "ParParty pk=" + partyId;
-    }
-
-    @Override
-    @JsonIgnore
-    public Integer getScopeId() {
-        return accessPoint.getScopeId();
-    }
-
-    /**
-     * Return scope id from corresponding accessPoint
-     *
-     * @return
-     */
-    @JsonIgnore
-    public Integer getRegScopeId() {
-        return accessPoint.getScopeId();
     }
 }

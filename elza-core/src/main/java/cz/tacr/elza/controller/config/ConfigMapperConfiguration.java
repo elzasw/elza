@@ -100,6 +100,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
@@ -185,6 +186,7 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.PartyRepository;
@@ -219,6 +221,8 @@ public class ConfigMapperConfiguration {
     private PartyRepository partyRepository;
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
+    @Autowired
+    private ApStateRepository apStateRepository;
     @Autowired
     private RuleService ruleService;
     @Autowired
@@ -453,7 +457,8 @@ public class ConfigMapperConfiguration {
                 .customize(new CustomMapper<ParParty, ParPartyVO>() {
                     @Override
                     public void mapAtoB(ParParty a, ParPartyVO b, MappingContext context) {
-                        ApAccessPointVO apVO = apFactory.createVO(a.getAccessPoint());
+                        ApState apState = apStateRepository.findLastByAccessPoint(a.getAccessPoint());
+                        ApAccessPointVO apVO = apFactory.createVO(apState);
                         b.setAccessPoint(apVO);
                     }
                     @Override

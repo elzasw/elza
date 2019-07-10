@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.persistence.*;
 
+import cz.tacr.elza.api.interfaces.IApAccessPoint;
 import cz.tacr.elza.api.interfaces.IApScope;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.domain.interfaces.Versionable;
@@ -14,7 +15,7 @@ import org.hibernate.annotations.Type;
  * Rejstříkové heslo.
  */
 @Entity(name = "ap_access_point")
-public class ApAccessPoint extends AbstractVersionableEntity implements Versionable, IApScope {
+public class ApAccessPoint extends AbstractVersionableEntity implements Versionable, IApAccessPoint {
 
     public static final String FIELD_ACCESS_POINT_ID = "accessPointId";
     public static final String FIELD_UUID = "uuid";
@@ -93,6 +94,7 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
      *
      * @return id hesla
      */
+    @Override
     public Integer getAccessPointId() {
         return accessPointId;
     }
@@ -164,7 +166,6 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
         this.scopeId = scope != null ? scope.getScopeId() : null;
     }
 
-    @Override
     public Integer getScopeId() {
         return scopeId;
     }

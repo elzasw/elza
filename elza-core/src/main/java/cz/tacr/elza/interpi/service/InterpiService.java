@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.exception.ObjectNotFoundException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -26,7 +25,6 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.enums.InterpiClass;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.InterpiEntityMappingVO;
 import cz.tacr.elza.controller.vo.InterpiMappingVO;
@@ -37,6 +35,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ParInterpiMapping;
 import cz.tacr.elza.domain.ParParty;
@@ -44,6 +43,7 @@ import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParRelationTypeRoleType;
 import cz.tacr.elza.domain.projection.ApExternalIdInfo;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
@@ -61,6 +61,7 @@ import cz.tacr.elza.interpi.ws.wo.SouvisejiciMinTyp;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
 import cz.tacr.elza.repository.ApExternalSystemRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.InterpiMappingRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
@@ -105,6 +106,9 @@ public class InterpiService {
 
     @Autowired
     private ApAccessPointRepository accessPointRepository;
+
+    @Autowired
+    private ApStateRepository apStateRepository;
 
     @Autowired
     private InterpiMappingRepository interpiMappingRepository;
@@ -312,11 +316,10 @@ public class InterpiService {
         ApAccessPoint originalRecord = null;
         if (recordId == null) {
             ApExternalIdType eidType = staticDataService.getData().getApEidTypeByCode(EID_TYPE_CODE);
-            ApAccessPoint apRecord = accessPointRepository
-                    .findApAccessPointByExternalIdAndExternalSystemCodeAndScope(interpiRecordId,
-                                                                                eidType.getExternalIdTypeId(), apScope);
-            if (apRecord != null) {
-                throw new BusinessException("Záznam již existuje " + apRecord, ExternalCode.ALREADY_IMPORTED).set("id", interpiRecordId).set("scope", apScope.getName());
+            ApState apState = apStateRepository.getActiveByExternalIdAndScope(interpiRecordId, eidType, apScope);
+            if (apState != null) {
+                throw new BusinessException("Záznam již existuje", ExternalCode.ALREADY_IMPORTED)
+                        .set("id", interpiRecordId).set("scope", apScope.getName());
             }
         } else {
             originalRecord = accessPointRepository.findOne(recordId);

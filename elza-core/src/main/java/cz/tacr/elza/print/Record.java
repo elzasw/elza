@@ -19,6 +19,7 @@ import cz.tacr.elza.print.ap.Name;
 import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
 import cz.tacr.elza.repository.ApNameRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 
 /**
  * One record from registry
@@ -33,6 +34,8 @@ public class Record {
 
     private final StaticDataProvider staticData;
 
+    private final ApStateRepository stateRepository;
+
     private final ApDescriptionRepository descRepository;
 
     private final ApNameRepository nameRepository;
@@ -45,15 +48,17 @@ public class Record {
 
     private List<ExternalId> eids;
 
-    public Record(ApAccessPoint ap, 
-                  RecordType type, 
+    public Record(ApAccessPoint ap,
+                  RecordType type,
                   StaticDataProvider staticData,
-                  ApDescriptionRepository descRepository, 
+                  ApStateRepository stateRepository,
+                  ApDescriptionRepository descRepository,
                   ApNameRepository nameRepository,
                   ApExternalIdRepository eidRepository) {
         this.ap = ap;
         this.type = type;
         this.staticData = staticData;
+        this.stateRepository = stateRepository;
         this.descRepository = descRepository;
         this.nameRepository = nameRepository;
         this.eidRepository = eidRepository;
@@ -61,13 +66,12 @@ public class Record {
 
     /**
      * Copy constructor
-     *
-     * @param src
      */
     protected Record(Record src) {
         this.ap = src.ap;
         this.type = src.type;
         this.staticData = src.staticData;
+        this.stateRepository = src.stateRepository;
         this.descRepository = src.descRepository;
         this.nameRepository = src.nameRepository;
         this.eidRepository = src.eidRepository;
@@ -140,10 +144,8 @@ public class Record {
 
     /**
      * Return string with formatted list of external ids
-     * 
+     *
      * Format of the result is <type1>: <value1>, <type2>: <value2>...
-     * 
-     * @return
      */
     public String getFormattedEids() {
         List<ExternalId> eids = getEids();

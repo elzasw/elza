@@ -17,8 +17,6 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +30,8 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApDescription;
 import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApScopeRelation;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
@@ -60,8 +60,10 @@ import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
@@ -88,6 +90,7 @@ import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.ScopeRelationRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.UserRepository;
@@ -144,6 +147,7 @@ public class PartyService {
 
     @Autowired
     private DataPartyRefRepository dataPartyRefRepository;
+
     @Autowired
     private DataRecordRefRepository dataRecordRefRepository;
 
@@ -223,7 +227,6 @@ public class PartyService {
      * Najde id osob podle rejstříkových hesel.
      *
      * @param records seznam rejstříkových hesel
-     *
      * @return mapa id rejstříku -> id osoby
      */
     public Map<Integer, Integer> findParPartyIdsByRecords(final Collection<ApAccessPoint> records) {
@@ -243,12 +246,13 @@ public class PartyService {
 
     /**
      * Osobu vyhledává podle hesla v rejstříku včetně variantních hesel.
-     *  @param searchRecord hledaný řetězec, může být null
-     * @param partyTypeId  typ záznamu
+     *
+     * @param searchRecord hledaný řetězec, může být null
+     * @param partyTypeId typ záznamu
      * @param itemSpecId specifikace
-     * @param firstResult  první vrácená osoba
-     * @param maxResults   max počet vrácených osob
-     * @param fund   AP, ze které se použijí třídy rejstříků
+     * @param firstResult první vrácená osoba
+     * @param maxResults max počet vrácených osob
+     * @param fund AP, ze které se použijí třídy rejstříků
      * @param scopeId scope, pokud je vyplněno hledají se osoby pouze s tímto scope
      */
     public List<ParParty> findPartyByTextAndType(final String searchRecord,
@@ -285,15 +289,14 @@ public class PartyService {
      * @param searchRecord hledaný řetězec, může být null
      * @param partyTypeId typ osoby
      * @param itemSpecId specifikace
-     * @param fund   AP, ze které se použijí třídy rejstříků
+     * @param fund AP, ze které se použijí třídy rejstříků
      * @param scopeId scope, pokud je vyplněno hledají se osoby pouze s tímto scope
-     *
      */
     public long findPartyByTextAndTypeCount(final String searchRecord,
                                             final Integer partyTypeId,
                                             final Integer itemSpecId,
                                             @Nullable final ArrFund fund,
-                                            @Nullable final Integer scopeId){
+                                            @Nullable final Integer scopeId) {
         Set<Integer> scopeIdsForSearch = accessPointService.getScopeIdsForSearch(fund, scopeId);
 
 
@@ -368,6 +371,7 @@ public class PartyService {
 
     /**
      * V groovy scriptu vytvoří rejstříkové heslo pro osobu a upraví jej v databázi.
+     *
      * @param party osoba
      */
     private void synchRecord(final ParParty party) {
@@ -396,7 +400,7 @@ public class PartyService {
     /**
      * Provede synchronizaci tvůrců osoby. CRUD.
      *
-     * @param party       osoba
+     * @param party osoba
      * @param newCreators nový stav tvůrců
      */
     private void synchCreators(final ParParty party, final List<ParCreator> newCreators) {
@@ -427,6 +431,7 @@ public class PartyService {
 
     /**
      * Pokud se jedná o typ osoby group, dojde k synchronizaci identifikátorů osoby. CRUD.
+     *
      * @param partyGroup osoba
      * @param newPartyGroupIdentifiers nový stav identifikátorů
      */
@@ -436,7 +441,7 @@ public class PartyService {
 
 
         Map<Integer, ParPartyGroupIdentifier> dbIdentifiersMap = Collections.emptyMap();
-        if(partyGroup.getPartyId() != null){
+        if (partyGroup.getPartyId() != null) {
             dbIdentifiersMap = ElzaTools
                     .createEntityMap(partyGroupIdentifierRepository.findByParty(partyGroup), ParPartyGroupIdentifier::getPartyGroupIdentifierId);
         }
@@ -481,9 +486,10 @@ public class PartyService {
 
     /**
      * Synchronizace stavu jmen osob. CRUD
-     *  @param party       uložená osoba
+     *
+     * @param party uložená osoba
      * @param newPrefferedName preferované jméno osoby
-     * @param newPartyNames    seznam všech jmen osoby (obsahuje i preferované jméno)
+     * @param newPartyNames seznam všech jmen osoby (obsahuje i preferované jméno)
      */
     private ParParty synchPartyNames(final ParParty party,
                                      final ParPartyName newPrefferedName,
@@ -543,6 +549,7 @@ public class PartyService {
 
     /**
      * Syncoronizace doplňků jména osoby. CRUD
+     *
      * @param partyName jméno osoby
      * @param newComplementTypes stav doplňků jména
      */
@@ -588,11 +595,11 @@ public class PartyService {
     /**
      * Provede synchronizaci datace entity.
      *
-     * @param entity      entita, na kterou je datace navázaná
+     * @param entity entita, na kterou je datace navázaná
      * @param newUnitdate nová datace
-     * @param getter      getter datace z entity
-     * @param setter      setter datace do entity
-     * @param <T>         entita s datací
+     * @param getter getter datace z entity
+     * @param setter setter datace do entity
+     * @param <T> entita s datací
      * @return datace, která by měla být smazaná
      */
     public <T> ParUnitdate synchUnitdate(final T entity,
@@ -618,6 +625,7 @@ public class PartyService {
 
     /**
      * Smazání jména osoby.
+     *
      * @param partyName jméno ke smazání
      */
     public void deletePartyName(final ParPartyName partyName) {
@@ -629,9 +637,10 @@ public class PartyService {
 
     /**
      * Provede smazání osoby a navázaných entit.
+     *
      * @param party osoba ke smazání
      */
-    public void deleteParty(final ParParty party){
+    public void deleteParty(final ParParty party) {
         Assert.notNull(party, "Osoba nesmí být prázdná");
 
         if (canBeDeleted(party)) {
@@ -665,8 +674,10 @@ public class PartyService {
         } else {
             // party is used -> cannot be deleted
         }
+
         // invalidate AP
-        accessPointService.deleteAccessPoint(party.getAccessPointId(), false);
+        ApState apState = accessPointService.getState(party.getAccessPoint());
+        accessPointService.deleteAccessPoint(apState, false);
 
         // send notification
         eventNotificationService.publishEvent(new EventId(EventType.PARTY_DELETE, party.getPartyId()));
@@ -730,7 +741,7 @@ public class PartyService {
     /**
      * Provede uložení vztahu a jeho vazeb.
      *
-     * @param relationSource   zdrojový objakt vztahu
+     * @param relationSource zdrojový objakt vztahu
      * @param relationEntities seznam vazeb vztahu (Pokud je null, nedojde k aktualizaci vazeb)
      * @return uložený objekt
      */
@@ -779,7 +790,6 @@ public class PartyService {
             relation.setSource(relationSource.getSource());
         }
 
-
         ParParty party = partyRepository.findOne(relationSource.getParty().getPartyId());
         Assert.notNull(party, "Osoba nesmí být prázdná");
 
@@ -792,10 +802,7 @@ public class PartyService {
 
         saveDeleteRelationEntities(result, relationEntities);
 
-
-        for (ParUnitdate unitdate : unitdateRemove) {
-            unitdateRepository.delete(unitdate);
-        }
+        unitdateRepository.delete(unitdateRemove);
 
         entityManager.flush(); //aktualizace seznamu vztahů v osobě
         synchRecord(party);
@@ -813,7 +820,7 @@ public class PartyService {
 
         Integer calendarTypeId =
                 unitdateSource.getCalendarType() == null || unitdateSource.getCalendarType().getCalendarTypeId() == null
-                ? null : unitdateSource.getCalendarType().getCalendarTypeId();
+                        ? null : unitdateSource.getCalendarType().getCalendarTypeId();
 
 
         if (unitdateSource.getUnitdateId() == null) {
@@ -867,7 +874,7 @@ public class PartyService {
     /**
      * Provede nastavení stavu vazeb u vztahu. Dojde k vytvoření, aktualizaci a smazání přebytečných vazeb.
      *
-     * @param relation            vztah
+     * @param relation vztah
      * @param newRelationEntities seznam vazeb vztahu (pokud je null, nedojde k žádné změně)
      * @return nový seznam vazeb
      */
@@ -939,42 +946,44 @@ public class PartyService {
         if (!possibleRelationTypes.contains(relationEntity.getRelation().getRelationType())) {
             throw new SystemException(
                     "Typ role entity " + roleType.getName() + " nespadá do typu vztahu " + relationEntity.getRelation()
-                    .getRelationType().getName());
+                            .getRelationType().getName());
         }
 
+        ApState entityApState = accessPointService.getState(relationEntity.getAccessPoint());
+        ApState relationApState = accessPointService.getState(relationEntity.getRelation().getParty().getAccessPoint());
 
         //navázaná entita stejné scope jako osoba sama nebo navázané entity
-        ApScope apScope = relationEntity.getRelation().getParty().getAccessPoint().getScope();
-        ApScope entityScope = relationEntity.getAccessPoint().getScope();
-        if (!apScope.equals(entityScope)) {
-            ApScopeRelation connectedScope = scopeRelationRepository.findByScopeAndConnectedScope(apScope, entityScope);
+        ApScope entityScope = entityApState.getScope();
+        ApScope relationScope = relationApState.getScope();
+        if (!relationScope.getScopeId().equals(entityScope.getScopeId())) {
+            ApScopeRelation connectedScope = scopeRelationRepository.findByScopeAndConnectedScope(relationScope, entityScope);
             if (connectedScope == null) {
                 throw new BusinessException(
                         "Navázaná entita musí mít stejnou třídu rejstříkového hesla jako osoba, ke které entitu" +
                                 " navazujeme, nebo musí její třída být navázána na třídu navazované entity.",
                         RegistryCode.FOREIGN_ENTITY_INVALID_SCOPE).level(Level.WARNING)
                         .set("recordScope", entityScope.getCode())
-                        .set("entityScope", relationEntity.getRelation().getParty().getAccessPoint().getScope().getCode());
+                        .set("entityScope", relationScope.getCode());
             }
         }
 
         //navázaná entita povoleného typu rejstříku dle par_registry_role (mělo by to ideálně i dědit)
-        ApType entityApType = relationEntity.getAccessPoint().getApType();
-        Set<Integer> apTypeIds = apTypeRepository.findByRelationRoleType(roleType)
-                .stream().map(ApType::getApTypeId).collect(Collectors.toSet());
+        ApType entityApType = entityApState.getApType();
+        Set<Integer> apTypeIds = apTypeRepository.findByRelationRoleType(roleType).stream()
+                .map(apType -> apType.getApTypeId()).collect(Collectors.toSet());
         apTypeIds = apTypeRepository.findSubtreeIds(apTypeIds);
         if (!apTypeIds.contains(entityApType.getApTypeId())) {
             throw new BusinessException(
                     "Navázaná entita musí mít typ rejstříku nebo podtyp, který je navázaný na roli entity.",
                     RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING)
-            .set("entityApType", entityApType.getCode())
-            .set("roleType", roleType.getCode());
+                    .set("entityApType", entityApType.getCode())
+                    .set("roleType", roleType.getCode());
         }
-
     }
 
     /**
      * Prověří existenci vazeb na osobu. Pokud existují, vyhodí příslušnou výjimku, nelze mazat.
+     *
      * @param party osoba
      */
     private void checkPartyUsage(final ParParty party) {
@@ -992,8 +1001,9 @@ public class PartyService {
 
     /**
      * Promazání dvojice datumů od kterékoliv entity.
-     * @param from  od
-     * @param to    do
+     *
+     * @param from od
+     * @param to do
      */
     private void deleteUnitDates(final ParUnitdate from, final ParUnitdate to) {
         if (from != null) {
@@ -1010,7 +1020,6 @@ public class PartyService {
      * @param internalCode kód
      * @param institutionType typ instituce
      * @param party osoba
-     *
      * @return neuložená instituce
      */
     public ParInstitution createInstitution(final String internalCode, final ParInstitutionType institutionType, final ParParty party) {
@@ -1026,7 +1035,6 @@ public class PartyService {
      * Uloží instituci.
      *
      * @param institution instituce
-     *
      * @return uložená instituce
      */
     public ParInstitution saveInstitution(final ParInstitution institution, final boolean notification) {
@@ -1040,16 +1048,21 @@ public class PartyService {
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
     public ParParty getParty(@AuthParam(type = AuthParam.Type.PARTY) final Integer partyId) {
         Assert.notNull(partyId, "Identifikátor osoby musí být vyplněna");
-        return partyRepository.findOne(partyId);
+        ParParty party = partyRepository.findOne(partyId);
+        if (party == null) {
+            throw new ObjectNotFoundException("Osoba s ID=" + partyId + " nebyla nalezena", RegistryCode.PARTY_NOT_EXIST).setId(partyId);
+        }
+        return party;
     }
 
     /**
      * Replace party replaced by party replacement in all usages in JP, Party creators and ParRelation
-     * @param replaced
-     * @param replacement
      */
     @Transactional(value = TxType.MANDATORY)
     public void replace(final ParParty replaced, final ParParty replacement) {
+
+        final ApState replacedState = accessPointService.getState(replaced.getAccessPoint());
+        final ApState replacementState = accessPointService.getState(replacement.getAccessPoint());
 
         // Arr
         final List<ArrDescItem> arrItems = descItemRepository.findArrItemByParty(replaced);
@@ -1093,10 +1106,10 @@ public class PartyService {
                     throw new SystemException("Pro AS neexistují žádné scope.", BaseCode.INVALID_STATE)
                             .set("fundId", fundId);
                 } else {
-                    if (!fundScopes.contains(replacement.getScopeId())) {
+                    if (!fundScopes.contains(replacementState.getScopeId())) {
                         throw new BusinessException("Nelze nahradit osobu v AS jelikož AS nemá scope osoby pomcí které nahrazujeme.", BaseCode.INVALID_STATE)
                                 .set("fundId", fundId)
-                                .set("scopeId", replacement.getScopeId());
+                                .set("scopeId", replacementState.getScopeId());
                     }
                 }
                 descriptionItemService.updateDescriptionItem(im, fundVersions.get(i.getFundId()), change, true);
@@ -1104,27 +1117,33 @@ public class PartyService {
         }
 
         // Registry replace
-        accessPointService.replace(replaced.getAccessPoint(), replacement.getAccessPoint());
+        accessPointService.replace(replacedState, replacementState);
 
         // we have to replace relations
-        replaceRecordInRelations(replaced.getAccessPoint(), replacement.getAccessPoint());
+        replaceRecordInRelations(replacedState, replacementState);
     }
 
     /**
      * Replace record in relations
-     * @param replacedRecord
-     * @param newRecord
      */
-    private void replaceRecordInRelations(ApAccessPoint replacedRecord, ApAccessPoint newRecord) {
+    private void replaceRecordInRelations(ApState oldRecord, ApState newRecord) {
+
         UserDetail userDetail = userService.getLoggedUserDetail();
 
-        final List<ParRelationEntity> byRecord = relationEntityRepository.findByAccessPoint(replacedRecord);
-        HashMap<Integer, ParParty> modifiedParties = new HashMap<>();
+        ApAccessPoint oldAccessPoint = oldRecord.getAccessPoint();
+        ApAccessPoint newAccessPoint = newRecord.getAccessPoint();
+
+        List<ParRelationEntity> reList = relationEntityRepository.findByAccessPoint(oldAccessPoint);
+
+        Map<Integer, ApState> stateByAccessPointId = accessPointService.groupStateByAccessPointId(reList.stream().map(re -> re.getRelation().getParty().getAccessPoint()).collect(Collectors.toList()));
+
         // set of scopes accessible by user
         Set<Integer> accessibleScopes = new HashSet<>();
-        byRecord.forEach(re -> {
+        HashMap<Integer, ParParty> modifiedParties = new HashMap<>();
+        for (ParRelationEntity re : reList) {
             ParParty party = re.getRelation().getParty();
-            Integer scopeId = party.getRegScopeId();
+            ApState apState = stateByAccessPointId.get(party.getAccessPointId());
+            Integer scopeId = apState.getScopeId();
             // check permissions for scope
             if (!accessibleScopes.contains(scopeId)) {
                 if (!userDetail.hasPermission(Permission.AP_SCOPE_WR_ALL)
@@ -1136,11 +1155,11 @@ public class PartyService {
             }
 
             // update record
-            re.setAccessPoint(newRecord);
+            re.setAccessPoint(newAccessPoint);
             relationEntityRepository.save(re);
 
             modifiedParties.putIfAbsent(party.getPartyId(), party);
-        });
+        }
 
         // synchronize modified parties
         modifiedParties.forEach((id, party) -> this.synchRecord(party));

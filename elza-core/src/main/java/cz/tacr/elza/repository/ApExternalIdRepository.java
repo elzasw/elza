@@ -5,12 +5,12 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.projection.ApExternalIdInfo;
-import org.springframework.data.repository.query.Param;
 
 public interface ApExternalIdRepository extends ElzaJpaRepository<ApExternalId, Integer> {
 
@@ -25,9 +25,14 @@ public interface ApExternalIdRepository extends ElzaJpaRepository<ApExternalId, 
      *
      * @return External id and AP projections.
      */
-    @Query("SELECT eid.accessPoint as accessPoint, eid.value as value FROM ap_external_id eid "
-            + "WHERE eid.externalIdTypeId=?1 AND eid.value IN ?2 AND eid.deleteChangeId IS NULL")
-    List<ApExternalIdInfo> findInfoByExternalIdTypeIdAndValuesIn(Integer typeId, Collection<String> values);
+    @Query("SELECT new cz.tacr.elza.domain.projection.ApExternalIdInfo(eid.value, eid.accessPointId, eid.accessPoint.uuid, s.scopeId, s.apTypeId)" +
+            " FROM ap_external_id eid" +
+            " JOIN ap_state s on s.accessPointId = eid.accessPointId" +
+            " WHERE eid.externalIdTypeId = :typeId" +
+            " AND eid.value IN :values" +
+            " AND eid.deleteChangeId IS NULL" +
+            " AND s.deleteChangeId IS NULL")
+    List<ApExternalIdInfo> findInfoByExternalIdTypeIdAndValuesIn(@Param("typeId") Integer typeId, @Param("values") Collection<String> values);
 
     @Modifying
     @Query("UPDATE ap_external_id eid SET eid.deleteChange=?2 WHERE eid.accessPointId IN ?1 AND eid.deleteChangeId IS NULL")

@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import cz.tacr.elza.domain.ArrNode;
 import org.apache.commons.collections.CollectionUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -20,17 +19,24 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.api.interfaces.IApAccessPoint;
 import cz.tacr.elza.api.interfaces.IApScope;
 import cz.tacr.elza.api.interfaces.IArrFund;
 import cz.tacr.elza.api.interfaces.IWfIssueList;
 import cz.tacr.elza.core.security.AuthParam.Type;
 import cz.tacr.elza.core.security.Authorization.MethodParamBasedAccess.PermissionResult;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.AccessDeniedException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -347,37 +353,46 @@ public class Authorization {
 	 * @return
 	 */
 	private Integer loadScopeId(final Object value, final AuthParam.Type type) {
+		if (value instanceof IApScope) {
+			return ((IApScope) value).getScopeId();
+		}
+		if (value instanceof IApAccessPoint) {
+			return getScopeIdAccessPointId(((IApAccessPoint) value).getAccessPointId());
+		}
 		switch (type) {
 		case SCOPE:
 			if (value instanceof Integer) {
 				return (Integer) value;
-			} else if (value instanceof IApScope) {
-				return ((IApScope) value).getScopeId();
 			}
 			break;
 		case PARTY:
 			if (value instanceof Integer) {
-				return partyRepository.getOneCheckExist((Integer) value).getScopeId();
-			} else if (value instanceof IApScope) {
-				return ((IApScope) value).getScopeId();
+				ParParty party = partyRepository.getOneCheckExist((Integer) value);
+				return getScopeIdAccessPointId(party.getAccessPointId());
 			}
 			break;
 		case AP:
 			if (value instanceof Integer) {
-				return accessPointRepository.getOneCheckExist((Integer) value).getScopeId();
-			} else if (value instanceof IApScope) {
-				return ((IApScope) value).getScopeId();
+				ApAccessPoint accessPoint = accessPointRepository.getOneCheckExist((Integer) value);
+				return getScopeIdAccessPointId(accessPoint.getAccessPointId());
 			}
 			break;
 		case AP_STATE:
 			if (value instanceof Integer) {
 				return stateRepository.getOneCheckExist((Integer) value).getScopeId();
-			} else if (value instanceof IApScope) {
-				return ((IApScope) value).getScopeId();
 			}
 			break;
 		}
 		throw new IllegalStateException(type + ":" + value.getClass().getName());
+	}
+
+	private Integer getScopeIdAccessPointId(Integer accessPointId) {
+		ApState apState = stateRepository.findLastByAccessPointId(accessPointId);
+		if (apState == null) {
+			throw new ObjectNotFoundException("Stav pro přístupový bod neexistuje", BaseCode.INVALID_STATE)
+					.set("accessPointId", accessPointId);
+		}
+		return apState.getScopeId();
 	}
 
 	/**

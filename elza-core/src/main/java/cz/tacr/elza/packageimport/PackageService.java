@@ -172,6 +172,7 @@ import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApExternalIdTypeRepository;
 import cz.tacr.elza.repository.ApRuleRepository;
 import cz.tacr.elza.repository.ApRuleSystemRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ArrangementExtensionRepository;
 import cz.tacr.elza.repository.ArrangementRuleRepository;
@@ -434,6 +435,9 @@ public class PackageService {
 
     @Autowired
     private RelationTypeRoleTypeRepository relationTypeRoleTypeRepository;
+
+    @Autowired
+    private ApStateRepository apStateRepository;
 
     @Autowired
     private ApTypeRepository apTypeRepository;
@@ -757,8 +761,15 @@ public class PackageService {
                 .convertXmlStreamToObject(RelationTypeRoleTypes.class, RELATION_TYPE_ROLE_TYPE_XML);
         processRelationTypeRoleTypes(relationTypeRoleTypes, rulPackage, parRelationRoleTypes, parRelationTypes);
 
-        APTypeUpdater apTypeUpdater = new APTypeUpdater(apTypeRepository, registryRoleRepository,
-                this.accessPointRepository, parPartyTypes, apRuleSystems, staticDataService.getData());
+        APTypeUpdater apTypeUpdater = new APTypeUpdater(
+                apStateRepository,
+                apTypeRepository,
+                registryRoleRepository,
+                accessPointRepository,
+                parPartyTypes,
+                apRuleSystems,
+                staticDataService.getData()
+        );
         apTypeUpdater.run(pkgCtx);
         List<ApType> apTypes = apTypeUpdater.getApTypes();
 

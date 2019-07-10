@@ -106,6 +106,7 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         // prepare conjunction list
         List<Predicate> conjunctions = new ArrayList<>();
 
+        // todo[ap_state]
         // search only active AP
         conjunctions.add(fromAp.get(ApAccessPoint.FIELD_DELETE_CHANGE_ID).isNull());
         conjunctions.add(cb.or(fromAp.get(ApAccessPoint.STATE).isNull(), cb.notEqual(fromAp.get(ApAccessPoint.STATE), ApStateEnum.TEMP)));

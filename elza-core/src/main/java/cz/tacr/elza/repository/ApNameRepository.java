@@ -1,16 +1,17 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApChange;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ApScope;
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.List;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.ApScope;
 
 /**
  * Repository jmen pristupovych bodu.
@@ -39,7 +40,13 @@ public interface ApNameRepository extends ElzaJpaRepository<ApName, Integer> {
     @Query("UPDATE ap_name name SET name.deleteChange=?2 WHERE name.accessPointId IN ?1 AND name.deleteChangeId IS NULL")
     int invalidateByAccessPointIdIn(Collection<Integer> apIds, ApChange deleteChange);
 
-    @Query("SELECT COUNT(n) FROM ap_name n JOIN n.accessPoint ap WHERE ap.scope = :scope AND LOWER(n.fullName) = LOWER(:fullName) AND n.deleteChangeId IS NULL")
+    @Query("SELECT COUNT(n)" +
+            " FROM ap_name n" +
+            " JOIN ap_state s ON s.accessPoint = n.accessPoint" +
+            " WHERE s.scope = :scope" +
+            " AND s.deleteChange IS NULL" +
+            " AND LOWER(n.fullName) = LOWER(:fullName)" +
+            " AND n.deleteChange IS NULL")
     int countUniqueName(@Param("fullName") String fullName, @Param("scope") ApScope scope);
 
     @Query("SELECT n FROM ap_name n WHERE n.objectId = :objectId AND n.deleteChangeId IS NULL")

@@ -1,7 +1,28 @@
 package cz.tacr.elza.service;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.google.common.eventbus.Subscribe;
-import cz.tacr.elza.controller.vo.ap.item.*;
+
+import cz.tacr.elza.controller.vo.ap.item.ApItemFormattedTextVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemTextVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
+import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.DataType;
@@ -10,7 +31,16 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApDescription;
+import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.ApRule;
+import cz.tacr.elza.domain.ApRuleSystem;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.RulComponent;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.drools.service.ModelFactory;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -24,18 +54,6 @@ import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.vo.AccessPointMigrate;
 import cz.tacr.elza.service.vo.NameMigrate;
 import cz.tacr.elza.service.vo.SimpleItem;
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Serviska pro migrace přístupových bodů.
@@ -86,13 +104,14 @@ public class AccessPointMigrationService {
     /**
      * Provede migraci přístupového bodu na strukturovaný.
      *
-     * @param accessPoint přístupový bod
+     * @param apState přístupový bod
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public void migrateAccessPoint(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint) {
-        Validate.notNull(accessPoint);
+    public void migrateAccessPoint(@AuthParam(type = AuthParam.Type.AP_STATE) final ApState apState) {
+        Validate.notNull(apState, "Přístupový bod musí být vyplněn");
 
-        ApType apType = accessPoint.getApType();
+        ApAccessPoint accessPoint = apState.getAccessPoint();
+        ApType apType = apState.getApType();
         ApRuleSystem ruleSystem = apType.getRuleSystem();
 
         List<ApName> names = apNameRepository.findByAccessPoint(accessPoint);
@@ -116,7 +135,7 @@ public class AccessPointMigrationService {
             }
         }
 
-        accessPointService.migrateApItems(accessPoint, apItems, nameItemsMap);
+        accessPointService.migrateApItems(apState, apItems, nameItemsMap);
     }
 
     /**

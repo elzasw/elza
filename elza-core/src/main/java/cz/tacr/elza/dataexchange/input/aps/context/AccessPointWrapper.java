@@ -62,7 +62,7 @@ public class AccessPointWrapper implements EntityWrapper {
     public void changeToUpdated(ApAccessPointInfo dbInfo) {
         // check if item is not already processed
         Validate.isTrue(saveMethod != SaveMethod.UPDATE);
-        
+
         // access point id is valid (not null)
         int accessPointId = dbInfo.getAccessPointId();
 

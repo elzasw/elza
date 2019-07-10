@@ -30,19 +30,20 @@ import cz.tacr.elza.packageimport.xml.APTypes;
 import cz.tacr.elza.packageimport.xml.common.OtherCode;
 import cz.tacr.elza.packageimport.xml.common.OtherCodes;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.RegistryRoleRepository;
 
 /**
  * Update AP types
- * 
- *
  */
 public class APTypeUpdater {
 
     public static final String AP_TYPE_XML = "ap_type.xml";
 
     final private ApAccessPointRepository accessPointRepository;
+
+    final private ApStateRepository apStateRepository;
 
     final private ApTypeRepository apTypeRepository;
 
@@ -63,12 +64,14 @@ public class APTypeUpdater {
 
     private StaticDataProvider staticDataProvider;
 
-    public APTypeUpdater(final ApTypeRepository apTypeRepository,
-            final RegistryRoleRepository registryRoleRepository,
-            final ApAccessPointRepository accessPointRepository,
-            final List<ParPartyType> parPartyTypes,
-            final List<ApRuleSystem> apRuleSystems,
-            final StaticDataProvider staticDataProvider) {
+    public APTypeUpdater(final ApStateRepository apStateRepository,
+                         final ApTypeRepository apTypeRepository,
+                         final RegistryRoleRepository registryRoleRepository,
+                         final ApAccessPointRepository accessPointRepository,
+                         final List<ParPartyType> parPartyTypes,
+                         final List<ApRuleSystem> apRuleSystems,
+                         final StaticDataProvider staticDataProvider) {
+        this.apStateRepository = apStateRepository;
         this.apTypeRepository = apTypeRepository;
         this.registryRoleRepository = registryRoleRepository;
         this.accessPointRepository = accessPointRepository;
@@ -89,17 +92,13 @@ public class APTypeUpdater {
     /**
      * Konverze VO -> DO.
      *
-     * @param rulPackage
-     *            balíček
-     * @param apTypeXml
-     *            vztah typů tříd - VO
-     * @param apType
-     *            vztah typů tříd - DO
-     * @param parPartyTypes
-     *            seznam typů osob
+     * @param rulPackage    balíček
+     * @param apTypeXml     vztah typů tříd - VO
+     * @param apType        vztah typů tříd - DO
+     * @param parPartyTypes seznam typů osob
      */
     private void convertToApType(final RulPackage rulPackage,
-                                         final APTypeXml apTypeXml,
+                                 final APTypeXml apTypeXml,
                                  final ApType apType) {
         apType.setRulPackage(rulPackage);
         apType.setCode(apTypeXml.getCode());
@@ -109,7 +108,7 @@ public class APTypeUpdater {
         // read rules
         if (StringUtils.isNotEmpty(apTypeXml.getRuleSystem())) {
             ApRuleSystem apRuleSystem = PackageService.findEntity(apRuleSystems, apTypeXml.getRuleSystem(),
-                                                                  ApRuleSystem::getCode);
+                    ApRuleSystem::getCode);
             if (apRuleSystem == null) {
                 throw new ObjectNotFoundException("Cannot find rules for access point type", BaseCode.ID_NOT_EXIST)
                         .setId(apTypeXml.getRuleSystem());
@@ -135,9 +134,9 @@ public class APTypeUpdater {
                     if (parentPkgCode.equals(updatePkgCode)) {
                         throw new BusinessException("Parent ApType not found in new package.",
                                 PackageCode.CODE_NOT_FOUND)
-                                        .set("code", apTypeXml.getCode())
-                                        .set("parentCode", parentCode)
-                                        .set("file", AP_TYPE_XML);
+                                .set("code", apTypeXml.getCode())
+                                .set("parentCode", parentCode)
+                                .set("file", AP_TYPE_XML);
                     }
                 }
             }
@@ -145,9 +144,9 @@ public class APTypeUpdater {
             if (parent == null) {
                 throw new BusinessException("Parent ApType not found.",
                         PackageCode.CODE_NOT_FOUND)
-                                .set("code", apTypeXml.getCode())
-                                .set("parentCode", parentCode)
-                                .set("file", AP_TYPE_XML);
+                        .set("code", apTypeXml.getCode())
+                        .set("parentCode", parentCode)
+                        .set("file", AP_TYPE_XML);
             }
         }
         apType.setParentApType(parent);
@@ -156,11 +155,11 @@ public class APTypeUpdater {
         if (apTypeXml.getPartyType() != null) {
             // check party type - if exists
             ParPartyType parPartyType = PackageService.findEntity(parPartyTypes, apTypeXml.getPartyType(),
-                                                                  ParPartyType::getCode);
+                    ParPartyType::getCode);
             if (parPartyType == null) {
                 throw new BusinessException("ParPartyType s code=" + apTypeXml.getPartyType() + " nenalezen",
                         PackageCode.CODE_NOT_FOUND).set("code", apTypeXml.getPartyType()).set("file",
-                                                                                              AP_TYPE_XML);
+                        AP_TYPE_XML);
             }
             apType.setPartyType(parPartyType);
         }
@@ -169,30 +168,27 @@ public class APTypeUpdater {
     /**
      * Zpracování vztahy typu třídy.
      *
-     * @param registerTypes
-     *            vztahy typů tříd
-     * @param rulPackage
-     *            balíček
-     * @param parPartyTypes
-     *            seznam typů osob
+     * @param registerTypes vztahy typů tříd
+     * @param rulPackage    balíček
+     * @param parPartyTypes seznam typů osob
      */
     private void processApTypes(
-                                        @NotNull final RulPackage rulPackage,
-                                        @NotNull final List<ParPartyType> parPartyTypes) {
+            @NotNull final RulPackage rulPackage,
+            @NotNull final List<ParPartyType> parPartyTypes) {
         // TODO: nacitani AP type musi byt serazeno podle urovni (recursive query) aby mohl byt zbytek
         // (nezaktualizovane typy) odstranen hierarchicky (linked hash map uchova poradi)
         Map<String, ApType> oldTypeCodeMap = apTypeRepository.findByRulPackage(rulPackage)
                 .stream().collect(Collectors.toMap(
-                                                   ApType::getCode,
-                                                   (input) -> {
-                                                       return HibernateUtils.unproxy(input);
-                                                   },
-                                                   (v1, v2) -> {
-                                                       throw new SystemException(
-                                                               "Duplicate AP code, value=" + v1.getCode(),
-                                                               BaseCode.DB_INTEGRITY_PROBLEM);
-                                                   },
-                                                   LinkedHashMap::new));
+                        ApType::getCode,
+                        (input) -> {
+                            return HibernateUtils.unproxy(input);
+                        },
+                        (v1, v2) -> {
+                            throw new SystemException(
+                                    "Duplicate AP code, value=" + v1.getCode(),
+                                    BaseCode.DB_INTEGRITY_PROBLEM);
+                        },
+                        LinkedHashMap::new));
 
         Map<ApType, ApType> mapTypes = new HashMap<>();
 
@@ -224,7 +220,9 @@ public class APTypeUpdater {
 
         // map old types to new types
         for (Entry<ApType, ApType> mapType : mapTypes.entrySet()) {
+            // todo[ap_state]
             accessPointRepository.updateApTypeByApType(mapType.getKey(), mapType.getValue());
+            apStateRepository.updateApTypeByApType(mapType.getKey(), mapType.getValue());
         }
 
         // drop old types
@@ -236,7 +234,7 @@ public class APTypeUpdater {
 
     public void run(PackageContext pkgCtx) {
         this.apXmlTypes = pkgCtx.convertXmlStreamToObject(APTypes.class,
-                                                       AP_TYPE_XML);
+                AP_TYPE_XML);
 
         processApTypes(pkgCtx.getPackage(), parPartyTypes);
 

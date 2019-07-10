@@ -141,4 +141,17 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="20190704133000" author="marek">
+        <sql>
+            INSERT INTO ap_state
+            (state_id, access_point_id, scope_id, type_id, create_change_id, delete_change_id, state_approval, comment, version)
+            SELECT
+            (access_point_id, access_point_id, scope_id, ap_type_id, create_change_id, delete_change_id, 'NEW', null, version)
+            FROM ap_access_point
+        </sql>
+        <sql>
+            INSERT INTO db_hibernate_sequences (sequence_name, next_val)
+            SELECT 'ap_state|state_id', COALESCE(MAX(state_id), 0) + 1 FROM ap_state
+        </sql>
+    </changeSet>
 </databaseChangeLog>
