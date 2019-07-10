@@ -89,7 +89,7 @@ class AdminUserPage extends AbstractReactComponent{
     }
 
     handleCreateUser(data) {
-        return this.props.dispatch(userCreate(data.username, data.password, data.party.id));
+        return this.props.dispatch(userCreate(data.username, data.valuesMap, data.party.id));
     }
 
     handleChangeUserPasswordForm() {
@@ -144,9 +144,8 @@ class AdminUserPage extends AbstractReactComponent{
             itemActions.push(
                 <Button key="change-active-user" onClick={this.handleChangeUserActive}><Icon glyph={user.userDetail.active ? 'fa-ban' : 'fa-check'} /><div><span className="btnText">{user.userDetail.active ? i18n('ribbon.action.admin.user.deactivate') : i18n('ribbon.action.admin.user.activate')}</span></div></Button>
             );
-            console.warn(userDetail, user);
             const userData = user.users[indexById(user.users, userDetail.id)];
-            if (userData.authTypes.indexOf('PASSWORD') >= 0) {
+            if (userData && userData.authTypes.indexOf('PASSWORD') >= 0) {
                 itemActions.push(
                     <Button key="password-change-user" onClick={this.handleChangeUserPasswordForm}><Icon glyph='fa-key' /><div><span className="btnText">{i18n('ribbon.action.admin.user.passwordChange')}</span></div></Button>
                 );
