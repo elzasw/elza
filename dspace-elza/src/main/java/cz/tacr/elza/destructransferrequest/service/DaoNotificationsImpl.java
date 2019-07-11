@@ -17,6 +17,7 @@ import org.dspace.core.Context;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.ProcessingException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,8 +48,8 @@ public class DaoNotificationsImpl implements DaoNotifications {
         Context context = new Context();
         try {
             context = ContextUtils.createContext();
-            context.turnOffAuthorisationSystem();
-        } catch (Exception e) {
+            //context.turnOffAuthorisationSystem(); //TODO:cacha
+        } catch (SQLException e) {
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
         }
 
@@ -71,9 +72,8 @@ public class DaoNotificationsImpl implements DaoNotifications {
 
         try {
             context.complete();
-        } catch (Exception e) {
-            throw new ProcessingException("Chyba při nastavení metadat pro položku digitalizátu Uuid=" + uuId + " schema=" +
-                    mt[0] + " element=" + mt[1] + ": " + e.getMessage());
+        } catch (SQLException e) {
+            throw new ProcessingException("Chyba při ukončení contextu: " + e.getMessage());
         }
 
         log.info("Ukončena metoda onDaoLinked");
@@ -85,8 +85,8 @@ public class DaoNotificationsImpl implements DaoNotifications {
         Context context = new Context();
         try {
             context = ContextUtils.createContext();
-            context.turnOffAuthorisationSystem();
-        } catch (Exception e) {
+            //context.turnOffAuthorisationSystem(); //TODO:cacha
+        } catch (SQLException e) {
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
         }
 
@@ -114,6 +114,12 @@ public class DaoNotificationsImpl implements DaoNotifications {
                 mt[0] + ".");
         List<MetadataValue> metadataList = itemService.getMetadata(item, mt[0], mt[1], mt[2], Item.ANY);
         setMetadataIsElza(context, item, metadataList, Boolean.FALSE);
+
+        try {
+            context.complete();
+        } catch (SQLException e) {
+            throw new ProcessingException("Chyba při ukončení contextu: " + e.getMessage());
+        }
 
         log.info("Ukončena metoda onDaoUnlinked");
     }
@@ -152,7 +158,11 @@ public class DaoNotificationsImpl implements DaoNotifications {
                 itemService.addMetadata(context, item, mt[0], mt[1], mt[2], null, isElza.toString());
             }
             itemService.update(context, item);
-        } catch (Exception e) {
+        }
+        catch (SQLException es) {
+                throw new DaoServiceException("Chyba při ukládání položky " + item.getID() + " do databáze: " + es);
+        }
+        catch (Exception e) {
             throw new ProcessingException("Chyba při nastavení metadat  pro položku digitalizátu Uuid=" + item.getID() +
                     " schema=" + mt[0] + " element=" + mt[1] + ": " + e.getMessage());
         }
