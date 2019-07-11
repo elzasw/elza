@@ -1,4 +1,4 @@
-package cz.tacr.elza.destructransferrequest.service;
+package org.dspace.elza;
 
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -119,7 +119,7 @@ public class DestructTransferRequest {
     private String rejectedMessage;
 
     //***************************** CONSTRUCTOR *******************************
-    protected DestructTransferRequest()
+    public DestructTransferRequest()
     {
 
     }
@@ -250,28 +250,5 @@ public class DestructTransferRequest {
 
     public void setRejectedMessage(String rejectedMessage) {
         this.rejectedMessage = rejectedMessage;
-    }
-
-    //****************************** METODY ********************************
-    public void initDestructionRequest(cz.tacr.elza.ws.types.v1.DestructionRequest destructRequest) {
-        this.setUuid(UUID.randomUUID().toString());
-        this.setRequestType(RequestType.DESTRUCTION);
-        this.setIdentifier(destructRequest.getIdentifier());
-        this.setSystemIdentifier(destructRequest.getSystemIdentifier());
-        this.setDescription(destructRequest.getDescription());
-        this.setUserName(destructRequest.getUsername());
-        this.setStatus(Status.QUEUED);
-        this.setRequestDate(new Date());
-    }
-
-    public void initTransferRequest(cz.tacr.elza.ws.types.v1.TransferRequest transferRequest) {
-        this.setUuid(UUID.randomUUID().toString());
-        this.setRequestType(RequestType.TRANSFER);
-        this.setIdentifier(transferRequest.getIdentifier());
-        this.setSystemIdentifier(transferRequest.getSystemIdentifier());
-        this.setDescription(transferRequest.getDescription());
-        this.setUserName(transferRequest.getUsername());
-        this.setStatus(Status.QUEUED);
-        this.setRequestDate(new Date());
     }
 }

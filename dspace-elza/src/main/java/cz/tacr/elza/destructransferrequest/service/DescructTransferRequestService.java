@@ -10,6 +10,7 @@ package cz.tacr.elza.destructransferrequest.service;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.content.NonUniqueMetadataException;
 import org.dspace.core.Context;
+import org.dspace.elza.DestructTransferRequest;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -32,7 +33,7 @@ public interface DescructTransferRequestService {
      * @throws AuthorizeException if authorization error
      * @throws NonUniqueMetadataException
      */
-    public DestructTransferRequest create(Context context, DestructTransferRequest destructTransferRequest) throws SQLException, NonUniqueMetadataException;
+    public void create(Context context, DestructTransferRequest destructTransferRequest) throws SQLException, NonUniqueMetadataException;
 
     /**
      * Update the destruct transfer request in the database.

@@ -7,13 +7,13 @@
  */
 package cz.tacr.elza.destructransferrequest.service;
 
+
 import cz.tacr.elza.destructransferrequest.dao.DestructTransferRequestDAO;
 import org.apache.log4j.Logger;
-import org.dspace.authorize.factory.AuthorizeServiceFactory;
-import org.dspace.authorize.service.AuthorizeService;
 import org.dspace.content.NonUniqueMetadataException;
 import org.dspace.core.Context;
 import org.dspace.core.LogManager;
+import org.dspace.elza.DestructTransferRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +41,7 @@ public class DescructTransferRequestServiceImpl implements DescructTransferReque
     }
 
     @Override
-    public DestructTransferRequest create(Context context, DestructTransferRequest destructTransferRequest) throws SQLException, NonUniqueMetadataException {
+    public void create(Context context, DestructTransferRequest destructTransferRequest) throws SQLException, NonUniqueMetadataException {
         // Kontrola unikátnosti pole identifier
         if (!uniqueIdetifier(context, destructTransferRequest.getRequestId(), destructTransferRequest.getIdentifier()))
         {
@@ -51,6 +51,7 @@ public class DescructTransferRequestServiceImpl implements DescructTransferReque
 
         // Create a table row and update it with the values
         DestructTransferRequest destructTransfRequest = destructTransferRequestDAO.create(context, new DestructTransferRequest());
+        destructTransfRequest.setUuid(destructTransferRequest.getUuid());
         destructTransfRequest.setDaoIdentifiers(destructTransferRequest.getDaoIdentifiers());
         destructTransfRequest.setDescription(destructTransferRequest.getDescription());
         destructTransfRequest.setIdentifier(destructTransferRequest.getIdentifier());
@@ -66,7 +67,7 @@ public class DescructTransferRequestServiceImpl implements DescructTransferReque
         destructTransferRequestDAO.save(context, destructTransfRequest);
         log.info(LogManager.getHeader(context, "create_destruct_transfer_request",
                 "destruct_transfer_request_id=" + destructTransfRequest.getRequestId()));
-        return destructTransfRequest;
+
     }
 
     @Override

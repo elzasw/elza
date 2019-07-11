@@ -72,7 +72,7 @@
         <mapping class="org.dspace.workflowbasic.BasicWorkflowItem"/>
         <mapping class="org.dspace.workflowbasic.TaskListItem"/>
 
-        <mapping class="cz.tacr.elza.destructransferrequest.service.DestructTransferRequest"/>
+        <mapping class="org.dspace.elza.DestructTransferRequest"/>
 
         <!--Configurable workflow services, uncomment the xml workflow classes below to enable the configurable workflow-->
         <!--<mapping class="org.dspace.xmlworkflow.storedcomponents.ClaimedTask"/>

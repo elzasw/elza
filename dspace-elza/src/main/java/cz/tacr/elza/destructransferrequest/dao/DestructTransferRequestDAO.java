@@ -1,8 +1,8 @@
 package cz.tacr.elza.destructransferrequest.dao;
 
-import cz.tacr.elza.destructransferrequest.service.DestructTransferRequest;
 import org.dspace.core.Context;
 import org.dspace.core.GenericDAO;
+import org.dspace.elza.DestructTransferRequest;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -20,5 +20,5 @@ public interface DestructTransferRequestDAO extends GenericDAO<DestructTransferR
     public List<DestructTransferRequest> findByTypeAndStatus(Context context, DestructTransferRequest.Status status,
                                                              DestructTransferRequest.RequestType requestType) throws SQLException;
 
-    public boolean uniqueIdetifier(Context context, int destructTransferRequestId, String identifier) throws SQLException;
+    public boolean uniqueIdetifier(Context context, Integer requestId, String identifier) throws SQLException;
 }

@@ -15,11 +15,13 @@ import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.CollectionService;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.Context;
+import org.dspace.elza.DestructTransferRequest;
 import org.dspace.services.ConfigurationService;
 import org.dspace.services.factory.DSpaceServicesFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.ProcessingException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -60,7 +62,7 @@ public class ProcessingRequestService {
         Context context = new Context();
         try {
             context = ContextUtils.createContext();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
         }
 
@@ -68,7 +70,7 @@ public class ProcessingRequestService {
         try {
             destructTransferRequest = descructTransferRequestService.findByTypeAndStatus(context,
                     DestructTransferRequest.Status.QUEUED, DestructTransferRequest.RequestType.DESTRUCTION);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new ProcessingException("Chyba při vyhledání požadavků na skartaci: " + e.getMessage());
         }
 
@@ -102,6 +104,7 @@ public class ProcessingRequestService {
                 processingRequest.setProcessingDate(new Date());
                 processingRequest.setRejectedMessage(null);
                 descructTransferRequestService.update(context, processingRequest);
+                context.complete();
 
                 log.info("Odesílám informaci o zpracování požadavku na skartaci do systému Elza.");
                 wsClient.destructionRequestFinished(destructRequest.getUuid());
@@ -117,6 +120,7 @@ public class ProcessingRequestService {
                 processingRequest.setProcessingDate(new Date());
                 processingRequest.setRejectedMessage(e.getMessage());
                 descructTransferRequestService.update(context, processingRequest);
+                context.complete();
 
                 log.info("Odesílám chybovou zprávu do systému Elza.");
                 RequestRevoked requestRevoked = new RequestRevoked();
@@ -141,7 +145,7 @@ public class ProcessingRequestService {
         Context context = new Context();
         try {
             context = ContextUtils.createContext();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
         }
 
@@ -149,7 +153,7 @@ public class ProcessingRequestService {
         try {
             destructTransferRequest = descructTransferRequestService.findByTypeAndStatus(context,
                     DestructTransferRequest.Status.QUEUED, DestructTransferRequest.RequestType.TRANSFER);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new ProcessingException("Chyba při vyhledání požadavků na delimitaci: " + e.getMessage());
         }
 

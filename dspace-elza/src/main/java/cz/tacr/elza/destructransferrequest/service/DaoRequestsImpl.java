@@ -13,11 +13,14 @@ import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.BitstreamService;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.Context;
+import org.dspace.elza.DestructTransferRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.ProcessingException;
 import java.math.BigInteger;
+import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,7 +38,7 @@ import java.util.UUID;
 
 public class DaoRequestsImpl implements DaoRequests{
     private String SEPARATOR = ";";
-    private String BUNDLE  = "TECHMD";
+    private String BUNDLE  = "ORIGINAL";
 
     @Autowired
     private DescructTransferRequestService descructTransferRequestService;
@@ -51,7 +54,7 @@ public class DaoRequestsImpl implements DaoRequests{
         Context context = new Context();
         try {
             context = ContextUtils.createContext();
-            context.turnOffAuthorisationSystem();
+            //context.turnOffAuthorisationSystem(); //TODO:cacha
         } catch (Exception e) {
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
         }
@@ -71,7 +74,7 @@ public class DaoRequestsImpl implements DaoRequests{
             List<String> identifierList = daoIdentifiers.getIdentifier();
             String identifierStr = null;
             for (String identifier : identifierList) {
-//                checkIdentifier(context, UUID.fromString(identifier));
+                checkItemIdentifier(context, UUID.fromString(identifier));
                 if (StringUtils.isNotEmpty(identifierStr)) {
                     identifierStr = identifierStr + SEPARATOR + identifier;
                 } else {
@@ -81,16 +84,22 @@ public class DaoRequestsImpl implements DaoRequests{
 
             log.info("Ukládám požadavek na skartaci digitalizátu.");
             destructRequest = new DestructTransferRequest();
-            destructRequest.initDestructionRequest(destructionRequest);
+            initDestructionRequest(destructionRequest, destructRequest);
             destructRequest.setDaoIdentifiers(identifierStr);
             descructTransferRequestService.create(context, destructRequest);
-            log.info("Ukončena metoda postDestructionRequest");
-            return destructRequest.getUuid();
+            context.complete();
 
-        } catch (Exception e) {
-            throw new DaoServiceException(e.getLocalizedMessage(), e);
+            result = destructRequest.getUuid();
+        }
+        catch (SQLException es) {
+            throw new DaoServiceException("Chyba při ukládání požadavku " + destructionRequest.getIdentifier() + " do databáze: " + es);
+        }
+        catch (Exception e) {
+            throw new ProcessingException(e.getLocalizedMessage(), e);
         }
 
+        log.info("Ukončena metoda postDestructionRequest");
+        return result;
     }
 
     @Override
@@ -100,10 +109,6 @@ public class DaoRequestsImpl implements DaoRequests{
         Context context = new Context();
         try {
             context = ContextUtils.createContext();
-        } catch (Exception e) {
-            throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
-        }
-        try {
             DestructTransferRequest destructRequest = descructTransferRequestService.findByIdentifier(context, transferRequest.getIdentifier());
             if (destructRequest != null) {
                 throw new ProcessingException("Požadavek DestructionRequest Identifier=" + transferRequest.getIdentifier() +
@@ -119,7 +124,7 @@ public class DaoRequestsImpl implements DaoRequests{
             List<String> identifierList = daoIdentifiers.getIdentifier();
             String identifierStr = null;
             for (String identifier : identifierList) {
-//                checkIdentifier(context, UUID.fromString(identifier));
+                checkItemIdentifier(context, UUID.fromString(identifier));
                 if (StringUtils.isNotEmpty(identifierStr)) {
                     identifierStr = identifierStr + SEPARATOR + identifier;
                 } else {
@@ -129,16 +134,21 @@ public class DaoRequestsImpl implements DaoRequests{
 
             log.info("Ukládám požadavek na delimitaci digitalizátu.");
             destructRequest = new DestructTransferRequest();
-            destructRequest.initTransferRequest(transferRequest);
+            initTransferRequest(transferRequest, destructRequest);
             destructRequest.setDaoIdentifiers(identifierStr);
             descructTransferRequestService.create(context, destructRequest);
-            log.info("Ukončena metoda postTransferRequest");
-            return destructRequest.getUuid();
+            context.complete();
 
+            result = destructRequest.getUuid();
+        }
+        catch (SQLException es) {
+            throw new DaoServiceException("Chyba při ukládání požadavku " + transferRequest.getIdentifier() + " do databáze: " + es);
         } catch (Exception e) {
             throw new DaoServiceException(e.getLocalizedMessage(), e);
         }
 
+        log.info("Ukončena metoda postTransferRequest");
+        return result;
     }
 
     @Override
@@ -154,7 +164,7 @@ public class DaoRequestsImpl implements DaoRequests{
         Context context = new Context();
         try {
             context = ContextUtils.createContext();
-            context.turnOffAuthorisationSystem();
+            //context.turnOffAuthorisationSystem(); //TODO:cacha
         } catch (Exception e) {
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
         }
@@ -184,7 +194,7 @@ public class DaoRequestsImpl implements DaoRequests{
                         for (Bitstream bitstream : bitstreamList) {
                             File file = new File();
 
-//                            file.setIdentifier();  //TODO:cacha
+                            file.setIdentifier(bitstream.getID().toString());
                             BitstreamFormat format = null;
                             try {
                                 format = bitstream.getFormat(context);
@@ -229,7 +239,7 @@ public class DaoRequestsImpl implements DaoRequests{
                                 fileList.add(file);
                             }
                         }
-//                        dao.setIdentifier();  //TODO:cacha
+                        dao.setIdentifier(bundle.getID().toString());
                         dao.setFileGroup(fileGroup);
                         daoList.add(dao);
                     }
@@ -258,7 +268,7 @@ public class DaoRequestsImpl implements DaoRequests{
         return item;
     }
 
-    private void checkIdentifier(Context context, UUID uuId) {
+    private void checkItemIdentifier(Context context, UUID uuId) {
         Item item = null;
         try {
             item = itemService.find(context, uuId);
@@ -328,6 +338,28 @@ public class DaoRequestsImpl implements DaoRequests{
             }
         }
         return null;
+    }
+
+    private void initDestructionRequest(DestructionRequest destructRequest, DestructTransferRequest destTransfRequest) {
+        destTransfRequest.setUuid(UUID.randomUUID().toString());
+        destTransfRequest.setRequestType(DestructTransferRequest.RequestType.DESTRUCTION);
+        destTransfRequest.setIdentifier(destructRequest.getIdentifier());
+        destTransfRequest.setSystemIdentifier(destructRequest.getSystemIdentifier());
+        destTransfRequest.setDescription(destructRequest.getDescription());
+        destTransfRequest.setUserName(destructRequest.getUsername());
+        destTransfRequest.setStatus(DestructTransferRequest.Status.QUEUED);
+        destTransfRequest.setRequestDate(new Date());
+    }
+
+    private void initTransferRequest(TransferRequest transferRequest,DestructTransferRequest destTransfRequest) {
+        destTransfRequest.setUuid(UUID.randomUUID().toString());
+        destTransfRequest.setRequestType(DestructTransferRequest.RequestType.TRANSFER);
+        destTransfRequest.setIdentifier(transferRequest.getIdentifier());
+        destTransfRequest.setSystemIdentifier(transferRequest.getSystemIdentifier());
+        destTransfRequest.setDescription(transferRequest.getDescription());
+        destTransfRequest.setUserName(transferRequest.getUsername());
+        destTransfRequest.setStatus(DestructTransferRequest.Status.QUEUED);
+        destTransfRequest.setRequestDate(new Date());
     }
 
 }
