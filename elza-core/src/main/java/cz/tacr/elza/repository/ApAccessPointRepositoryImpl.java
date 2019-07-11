@@ -11,7 +11,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.*;
 
-import cz.tacr.elza.domain.ApStateEnum;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -19,6 +18,8 @@ import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApStateEnum;
 
 /**
  * Implementace respozitory pro aprecord.
@@ -40,6 +41,7 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
             return Collections.emptyList();
         }
 
+        // todo[ap_state]: predelat na ap_state!!!
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<ApAccessPoint> query = builder.createQuery(ApAccessPoint.class);
         Root<ApAccessPoint> record = query.from(ApAccessPoint.class);
@@ -56,6 +58,7 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
             query.where(condition, builder.in(record.get(ApAccessPoint.FIELD_ACCESS_POINT_ID)).value(subquery));
         }
 
+        // todo[ap_state]: vracet List<ApState>
         return entityManager.createQuery(query)
                 .setFirstResult(firstResult)
                 .setMaxResults(maxResults)
@@ -106,7 +109,7 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         // prepare conjunction list
         List<Predicate> conjunctions = new ArrayList<>();
 
-        // todo[ap_state]
+        // todo[ap_state]: predelat query na AP_STATE
         // search only active AP
         conjunctions.add(fromAp.get(ApAccessPoint.FIELD_DELETE_CHANGE_ID).isNull());
         conjunctions.add(cb.or(fromAp.get(ApAccessPoint.STATE).isNull(), cb.notEqual(fromAp.get(ApAccessPoint.STATE), ApStateEnum.TEMP)));

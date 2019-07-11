@@ -85,21 +85,21 @@ public class ValidationVOService {
         }
     }
 
-    /**
-     *
-     * @param partyVO
-     */
-    public void checkParty(final ParPartyVO partyVO) {
-
-        Integer accessPointId = partyVO.getAccessPoint() != null ? partyVO.getAccessPoint().getId() : null;
+    public ApState checkAccessPoint(Integer accessPointId) {
         if (accessPointId != null) {
-            ApAccessPoint accessPoint = apAccessPointRepository.getOneCheckExist(accessPointId);
-            ApState state = apStateRepository.findLastByAccessPoint(accessPoint);
-            if (state.getDeleteChange() != null) {
-                throw new IllegalStateException("Zneplatněné osodby není možno upravovat");
+            ApAccessPoint accessPoint = apAccessPointRepository.findOne(accessPointId);
+            if (accessPoint != null) {
+                ApState state = apStateRepository.findLastByAccessPoint(accessPoint);
+                if (state.getDeleteChange() != null) {
+                    throw new IllegalStateException("Zneplatněné osodby není možno upravovat");
+                }
+                return state;
             }
         }
+        return null;
+    }
 
+    public void checkParty(ParPartyVO partyVO) {
         final ParPartyType partyType = partyTypeRepository.getOneCheckExist(partyVO.getPartyType().getId());
 
         // Definice TypeEnum na Class
@@ -113,11 +113,10 @@ public class ValidationVOService {
         checkPreferredNameExist(partyVO.getPartyNames());
     }
 
-
     // TODO: tuto metodu bude vhodne asi dale prozkoumat
     // hlavne ve vztahu k metodam, ktere ji vyuzivaji a zda by
     // rovnou nemela vracet party apod.
-    public void checkPartyUpdate(final ParPartyVO partyVO) {
+    public ApState checkPartyUpdate(final ParPartyVO partyVO) {
 
         if (partyVO.getId() == null) {
             throw new SystemException("Není vyplněno id existující entity pro update.", BaseCode.ID_NOT_EXIST);
@@ -143,8 +142,9 @@ public class ValidationVOService {
         if (partyVO.getPartyNames() != null) {
             checkPreferredNameExist(partyVO.getPartyNames());
         }
-    }
 
+        return apState;
+    }
 
     public void checkRelation(final ParRelationVO relation) {
         Assert.notNull(relation);

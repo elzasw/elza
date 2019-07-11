@@ -313,7 +313,7 @@ public class InterpiService {
         ApExternalSystem apExternalSystem = apExternalSystemRepository.findOne(systemId);
         ApScope apScope = scopeRepository.findOne(scopeId);
 
-        ApAccessPoint originalRecord = null;
+        ApState originalRecord;
         if (recordId == null) {
             ApExternalIdType eidType = staticDataService.getData().getApEidTypeByCode(EID_TYPE_CODE);
             ApState apState = apStateRepository.getActiveByExternalIdAndScope(interpiRecordId, eidType, apScope);
@@ -321,8 +321,10 @@ public class InterpiService {
                 throw new BusinessException("Záznam již existuje", ExternalCode.ALREADY_IMPORTED)
                         .set("id", interpiRecordId).set("scope", apScope.getName());
             }
+            originalRecord = null;
         } else {
-            originalRecord = accessPointRepository.findOne(recordId);
+            ApAccessPoint accessPoint = accessPointRepository.findOne(recordId);
+            originalRecord = apStateRepository.findLastByAccessPoint(accessPoint);
         }
 
         InterpiEntitySession interpiEntitySession = interpiSessionHolder.getInterpiEntitySession();

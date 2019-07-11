@@ -382,8 +382,8 @@ public class AccessPointDataService {
      */
     public void validationMigrateAp(final ApState apState) {
         validationNotDeleted(apState);
+        validateStructureType(apState.getApType());
         ApAccessPoint accessPoint = apState.getAccessPoint();
-        validateStructureType(accessPoint.getApType());
         if (accessPoint.getRuleSystem() != null) {
             throw new BusinessException("Nelze migrovat přístupový bod", RegistryCode.CANT_MIGRATE_AP)
                     .set("accessPointId", accessPoint.getAccessPointId())

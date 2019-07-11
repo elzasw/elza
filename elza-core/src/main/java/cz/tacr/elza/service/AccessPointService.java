@@ -829,21 +829,20 @@ public class AccessPointService {
 
         apDataService.validateNotStructureType(type);
 
-        ApChange change = apDataService.createChange(ApChange.Type.AP_CREATE);
-        ApState state = createAccessPoint(scope, type, change);
-
-        ApAccessPoint accessPoint = state.getAccessPoint();
+        ApChange apChange = apDataService.createChange(ApChange.Type.AP_CREATE);
+        ApState apState = createAccessPoint(scope, type, apChange);
 
         // založení hlavního jména
-        createName(accessPoint, true, name, complement, language, change, true);
+        createName(apState, true, name, complement, language, apChange, true);
 
+        ApAccessPoint accessPoint = apState.getAccessPoint();
         if (description != null) {
-            apDataService.createDescription(accessPoint, description, change);
+            apDataService.createDescription(accessPoint, description, apChange);
         }
 
         publishAccessPointCreateEvent(accessPoint);
 
-        return state;
+        return apState;
     }
 
     /**
@@ -1139,9 +1138,8 @@ public class AccessPointService {
         Validate.notNull(apState, "Přístupový bod musí být vyplněn");
         apDataService.validationNotDeleted(apState);
 
-        ApAccessPoint accessPoint = apState.getAccessPoint();
-        ApName apName = createName(accessPoint, false, name, complement, language, null, true);
-        reindexDescItem(accessPoint);
+        ApName apName = createName(apState, false, name, complement, language, null, true);
+        reindexDescItem(apState.getAccessPoint());
         return apName;
     }
 
@@ -1554,10 +1552,11 @@ public class AccessPointService {
         return state;
     }
 
-    public Map<Integer, ApState> groupStateByAccessPointId(final List<ApAccessPoint> accessPoints) {
-        if (accessPoints.isEmpty()) {
+    public Map<Integer, ApState> groupStateByAccessPointId(final List<Integer> accessPointIds) {
+        if (accessPointIds.isEmpty()) {
             return Collections.emptyMap();
         }
+        List<ApAccessPoint> accessPoints = apAccessPointRepository.findAll(accessPointIds); // nahrat vsechny potrebne AP do Hibernate session
         Map<Integer, ApState> result = stateRepository.findLastByAccessPoints(accessPoints).stream()
                 .collect(toMap(o -> o.getAccessPointId(), o -> o));
         for (ApAccessPoint accessPoint : accessPoints) {
@@ -1653,15 +1652,29 @@ public class AccessPointService {
         apState.setAccessPoint(ap);
         apState.setApType(type);
         apState.setScope(scope);
+        apState.setStateApproval(ApState.StateApproval.NEW);
+        // apState.setComment(comment);
         apState.setCreateChange(change);
         apState.setDeleteChange(null);
         return stateRepository.save(apState);
     }
 
+    private ApState createNewState(ApState oldState, ApChange change) {
+        ApState newState = new ApState();
+        newState.setAccessPoint(oldState.getAccessPoint());
+        newState.setApType(oldState.getApType());
+        newState.setScope(oldState.getScope());
+        newState.setStateApproval(oldState.getStateApproval());
+        newState.setComment(oldState.getComment());
+        newState.setCreateChange(change);
+        newState.setDeleteChange(null);
+        return newState;
+    }
+
     /**
      * Založení jména.
      *
-     * @param accessPoint přístupový bod
+     * @param apState přístupový bod
      * @param preferredName zda-li se jedná o preferované jméno
      * @param name jméno přístupového bodu
      * @param complement doplněk přístupového bodu
@@ -1669,21 +1682,21 @@ public class AccessPointService {
      * @param change změna
      * @return jméno
      */
-    private ApName createName(final ApAccessPoint accessPoint,
+    private ApName createName(final ApState apState,
                               final boolean preferredName,
                               final String name,
                               @Nullable final String complement,
                               @Nullable final SysLanguage language,
                               @Nullable final ApChange change,
                               final boolean validate) {
-        Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Validate.notNull(apState, "Přístupový bod musí být vyplněn");
         Validate.notNull(name, "Jméno musí být vyplněno");
 
         ApChange createChange = change == null ? apDataService.createChange(ApChange.Type.NAME_CREATE) : change;
-        ApName apName = createNameEntity(accessPoint, preferredName, name, complement, language, createChange);
+        ApName apName = createNameEntity(apState.getAccessPoint(), preferredName, name, complement, language, createChange);
         apNameRepository.save(apName);
         if (validate) {
-            apDataService.validationNameUnique(accessPoint.getScope(), apName.getFullName());
+            apDataService.validationNameUnique(apState.getScope(), apName.getFullName());
         }
         return apName;
     }
@@ -1750,10 +1763,6 @@ public class AccessPointService {
     public static ApAccessPoint createAccessPointEntity(final ApScope scope, final ApType type, final ApChange change) {
         ApAccessPoint accessPoint = new ApAccessPoint();
         accessPoint.setUuid(UUID.randomUUID().toString());
-        accessPoint.setApType(type);
-        accessPoint.setScope(scope);
-        accessPoint.setCreateChange(change);
-        accessPoint.setDeleteChange(null);
         return accessPoint;
     }
 
@@ -1884,7 +1893,7 @@ public class AccessPointService {
         Set<String> uniqueNames = new HashSet<>();
 
         // založení preferovaného jména
-        ApName nameCreated = createName(accessPoint, true, preferredName.getName(), preferredName.getComplement(), preferredName.getLanguage(), change, false);
+        ApName nameCreated = createName(apState, true, preferredName.getName(), preferredName.getComplement(), preferredName.getLanguage(), change, false);
         uniqueNames.add(nameCreated.getFullName().toLowerCase());
 
         List<ApName> newNames = new ArrayList<>();
@@ -1893,7 +1902,7 @@ public class AccessPointService {
         // založení další jmen
         if (CollectionUtils.isNotEmpty(names)) {
             for (ImportAccessPoint.Name name : names) {
-                nameCreated = createName(accessPoint, false, name.getName(), name.getComplement(), name.getLanguage(), change, false);
+                nameCreated = createName(apState, false, name.getName(), name.getComplement(), name.getLanguage(), change, false);
                 newNames.add(nameCreated);
                 String compareName = nameCreated.getFullName().toLowerCase();
                 if (uniqueNames.contains(compareName)) {
@@ -1906,7 +1915,7 @@ public class AccessPointService {
         }
 
         for (ApName name : newNames) {
-            apDataService.validationNameUnique(accessPoint.getScope(), name.getFullName());
+            apDataService.validationNameUnique(apState.getScope(), name.getFullName());
         }
 
         reindexDescItem(accessPoint);
@@ -1964,16 +1973,16 @@ public class AccessPointService {
     /**
      * Synchronizace přístupového bodu.
      *
-     * @param accessPointCmp porovnávaný přístupový bod (v případě, že není uložen v DB, zakládáme nový)
+     * @param apStateCmp porovnávaný přístupový bod (v případě, že není uložen v DB, zakládáme nový)
      * @param names jména přístupového bodu (musí existovat alespoň jedna hodnota - preferované jméno,
      * které je vždy první)
      * @param description popis přístupového bodu
      * @return synchronizovaný přístupový bod
      */
-    public ApAccessPoint syncAccessPoint(final ApAccessPoint accessPointCmp,
-                                         final List<ApName> names,
-                                         @Nullable final ApDescription description) {
-        Assert.notNull(accessPointCmp, "Přístupový bod musí být vyplněn");
+    public ApState syncAccessPoint(final ApState apStateCmp,
+                                   final List<ApName> names,
+                                   @Nullable final ApDescription description) {
+        Assert.notNull(apStateCmp, "Přístupový bod musí být vyplněn");
         Assert.notEmpty(names, "Musí být vyplněno alespoň jedno jméno");
 
         Iterator<ApName> namesIterator = names.iterator();
@@ -1981,27 +1990,27 @@ public class AccessPointService {
 
         ApChangeNeed change = new ApChangeNeed(ApChange.Type.AP_SYNCH);
 
-        ApAccessPoint accessPoint;
         ApState apState;
+        ApAccessPoint accessPoint;
 
         // pokud není uložen v DB, zakládáme nový
-        if (accessPointCmp.getAccessPointId() == null) {
+        if (apStateCmp.getStateId() == null) {
 
-            apState = createAccessPoint(accessPointCmp.getScope(), accessPointCmp.getApType(), change.get());
+            apState = createAccessPoint(apStateCmp.getScope(), apStateCmp.getApType(), change.get());
             accessPoint = apState.getAccessPoint();
 
-            createName(accessPoint, true, preferredName.getName(), preferredName.getComplement(), preferredName.getLanguage(), change.get(), true);
+            createName(apState, true, preferredName.getName(), preferredName.getComplement(), preferredName.getLanguage(), change.get(), true);
             while (namesIterator.hasNext()) {
                 ApName name = namesIterator.next();
-                createName(accessPoint, false, name.getName(), name.getComplement(), name.getLanguage(), change.get(), true);
+                createName(apState, false, name.getName(), name.getComplement(), name.getLanguage(), change.get(), true);
             }
 
             publishAccessPointCreateEvent(accessPoint);
 
         } else {
 
-            accessPoint = accessPointCmp;
-            apState = getState(accessPoint);
+            apState = apStateCmp;
+            accessPoint = apState.getAccessPoint();
 
             List<ApName> existsNames = apNameRepository.findByAccessPoint(accessPoint);
 
@@ -2022,7 +2031,7 @@ public class AccessPointService {
                     newNames.add(updateAccessPointNameWhenChanged(change, apState, existsName, apName));
                 } else if (nHas) { // pokud existuje pouze nový, zakládáme
                     ApName name = namesIterator.next();
-                    newNames.add(createName(accessPoint, false, name.getName(), name.getComplement(), name.getLanguage(), change.get(), false));
+                    newNames.add(createName(apState, false, name.getName(), name.getComplement(), name.getLanguage(), change.get(), false));
                 } else if (eNHas) { // pokud existuje pouze v db, mažeme
                     ApName existsName = existsNamesIterator.next();
                     deleteName(apState, existsName, change.get());
@@ -2045,7 +2054,7 @@ public class AccessPointService {
 
         reindexDescItem(accessPoint);
 
-        return accessPoint;
+        return apState;
     }
 
     /**
@@ -2090,18 +2099,6 @@ public class AccessPointService {
             return Collections.emptyList();
         }
         return apNameRepository.findPreferredNamesByAccessPointIds(accessPointIds);
-    }
-
-
-    private ApState createNewState(ApState oldState, ApChange change) {
-        ApState newState = new ApState();
-        newState.setAccessPoint(oldState.getAccessPoint());
-        newState.setApType(oldState.getApType());
-        newState.setScope(oldState.getScope());
-        newState.setStateApproval(oldState.getStateApproval());
-        newState.setComment(oldState.getComment());
-        newState.setCreateChange(change);
-        return newState;
     }
 
     /**

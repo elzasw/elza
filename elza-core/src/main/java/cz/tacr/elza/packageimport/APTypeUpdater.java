@@ -220,8 +220,7 @@ public class APTypeUpdater {
 
         // map old types to new types
         for (Entry<ApType, ApType> mapType : mapTypes.entrySet()) {
-            // todo[ap_state]
-            accessPointRepository.updateApTypeByApType(mapType.getKey(), mapType.getValue());
+            // todo[ap_state]: verzovat state?
             apStateRepository.updateApTypeByApType(mapType.getKey(), mapType.getValue());
         }
 

@@ -307,7 +307,7 @@ public class AccessPointGeneratorService {
         ApStateEnum apStateEnumOld = accessPoint.getState();
         ApStateEnum apStateEnum = ApStateEnum.OK;
 
-        validateApItems(apErrorDescription, accessPoint, apItems);
+        validateApItems(apErrorDescription, apState, apItems);
 
         try {
             AccessPoint result = generateValue(accessPoint, apItems, apNames, nameItemsMap);
@@ -388,7 +388,7 @@ public class AccessPointGeneratorService {
 
             NameErrorDescription nameErrorDescription = new NameErrorDescription();
             NameContext nameContext = new NameContext(apName, apName.getState(), ApStateEnum.OK, nameErrorDescription);
-            validateNameItems(nameErrorDescription, apName, items);
+            validateNameItems(nameErrorDescription, apState, items);
 
             if (CollectionUtils.isNotEmpty(nameErrorDescription.getImpossibleItemTypeIds())
                     || CollectionUtils.isNotEmpty(nameErrorDescription.getRequiredItemTypeIds())) {
@@ -473,16 +473,16 @@ public class AccessPointGeneratorService {
     }
 
     private void validateNameItems(final ErrorDescription errorDescription,
-                                   final ApName name,
+                                   final ApState apState,
                                    final List<ApItem> items) {
-        List<RulItemTypeExt> nameItemTypes = ruleService.getApItemTypesInternal(name.getAccessPoint().getApType(), items, ApRule.RuleType.NAME_ITEMS);
+        List<RulItemTypeExt> nameItemTypes = ruleService.getApItemTypesInternal(apState.getApType(), items, ApRule.RuleType.NAME_ITEMS);
         validateItems(errorDescription, items, nameItemTypes);
     }
 
     private void validateApItems(final ErrorDescription errorDescription,
-                                 final ApAccessPoint accessPoint,
+                                 final ApState apState,
                                  final List<ApItem> items) {
-        List<RulItemTypeExt> bodyItemTypes = ruleService.getApItemTypesInternal(accessPoint.getApType(), items, ApRule.RuleType.BODY_ITEMS);
+        List<RulItemTypeExt> bodyItemTypes = ruleService.getApItemTypesInternal(apState.getApType(), items, ApRule.RuleType.BODY_ITEMS);
         validateItems(errorDescription, items, bodyItemTypes);
     }
 

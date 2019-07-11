@@ -47,6 +47,7 @@ import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
@@ -170,7 +171,7 @@ public class ClientFactoryDO {
      * @param partyVO VO osoby
      * @return objekt osoby
      */
-    public ParParty createParty(final ParPartyVO partyVO) {
+    public ParParty createParty(final ParPartyVO partyVO, final ApState apState) {
         if (partyVO == null) {
             return null;
         }
@@ -189,6 +190,8 @@ public class ClientFactoryDO {
             }
             party.setPartyNames(partyNames);
         }
+
+        party.setAccessPoint(apState.getAccessPoint());
 
         return party;
     }

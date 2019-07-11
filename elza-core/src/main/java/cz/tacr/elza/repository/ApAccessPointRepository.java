@@ -54,11 +54,6 @@ public interface ApAccessPointRepository
             " AND s.deleteChangeId IS NULL")
     List<ApAccessPointInfo> findActiveByUuids(@Param("uuids") Collection<String> uuids);
 
-    // todo[ap_state]
-    @Modifying
-    @Query("UPDATE ap_access_point ap SET ap.apType = :value WHERE ap.apType = :key")
-    void updateApTypeByApType(@Param("key") ApType key, @Param("value") ApType value);
-
     @Modifying
     @Query("DELETE FROM ap_access_point ap WHERE ap.state = 'TEMP'")
     void removeTemp();

@@ -166,19 +166,26 @@ public class PartyController {
     public ParPartyVO createParty(@RequestBody final ParPartyVO partyVO) {
         Assert.notNull(partyVO, "Osoba musí být vyplněna");
 
-        if(partyVO.getId() != null){
+        if (partyVO.getId() != null) {
             throw new SystemException("Nová osoba nesmí mít nastaveno ID", BaseCode.ID_EXIST).set("id", partyVO.getId());
         }
 
         //CHECK
+        if (partyVO.getAccessPoint() == null) {
+            throw new SystemException("Není vyplněn přístupový bod", BaseCode.ID_NOT_EXIST);
+        }
+        ApState apState = validationVOService.checkAccessPoint(partyVO.getAccessPoint().getId());
+        if (apState == null) {
+            // zalozit novy
+            apState = apFactory.create(partyVO.getAccessPoint());
+        }
         validationVOService.checkParty(partyVO);
 
-        ParParty party = factoryDO.createParty(partyVO);
+        ParParty party = factoryDO.createParty(partyVO, apState);
 
-        ParParty savedParty = partyService.saveParty(party);
+        ParParty savedParty = partyService.saveParty(party, apState);
         return factoryVo.createParPartyDetail(savedParty);
     }
-
 
     /**
      * Načte osobu podle id.
@@ -208,13 +215,25 @@ public class PartyController {
 
         Assert.isTrue(
                 partyId.equals(partyVO.getId()),
-            "V url požadavku je odkazováno na jiné ID (" + partyId + ") než ve VO (" + partyVO.getId() + ")."
+                "V url požadavku je odkazováno na jiné ID (" + partyId + ") než ve VO (" + partyVO.getId() + ")."
         );
-        validationVOService.checkPartyUpdate(partyVO);
 
-        ParParty party = factoryDO.createParty(partyVO);
+        ApState apState = validationVOService.checkPartyUpdate(partyVO);
+        if (partyVO.getAccessPoint() != null) {
+            if (partyVO.getAccessPoint().getId() != null) {
+                ApAccessPoint accessPoint = accessPointService.getAccessPoint(partyVO.getAccessPoint().getId());
+                apState = accessPointService.getState(accessPoint);
+                if (apState.getDeleteChange() != null) {
+                    throw new IllegalStateException("Zneplatněné osoby není možno upravovat");
+                }
+            } else {
+                apState = apFactory.create(partyVO.getAccessPoint());
+            }
+        }
 
-        ParParty savedParty = partyService.saveParty(party);
+        ParParty party = factoryDO.createParty(partyVO, apState);
+
+        ParParty savedParty = partyService.saveParty(party, apState);
         return factoryVo.createParPartyDetail(savedParty);
     }
 

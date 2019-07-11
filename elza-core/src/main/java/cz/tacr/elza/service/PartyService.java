@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -316,7 +317,7 @@ public class PartyService {
      * @param newParty nová osoba s navázanými daty
      * @return uložená osoba
      */
-    public ParParty saveParty(final ParParty newParty) {
+    public ParParty saveParty(final ParParty newParty, final ApState apState) {
         Assert.notNull(newParty, "Osoba musí být vyplněna");
 
         ParPartyType partyType = partyTypeRepository.findOne(newParty.getPartyType().getPartyTypeId());
@@ -325,13 +326,14 @@ public class PartyService {
 
         ParParty saveParty;
         if (isNewParty) {
-            saveParty = newParty;
-            saveParty.setPartyType(partyType);
+            newParty.setPartyType(partyType);
             // Rejstříkové heslo pro založení
-            synchRecord(newParty);
+            synchRecord(newParty, apState);
+            saveParty = newParty;
         } else {
             saveParty = partyRepository.findOne(newParty.getPartyId());
             Assert.notNull(saveParty, "Osoba neexistuje");
+            Assert.isTrue(Objects.equals(saveParty.getAccessPointId(), apState.getAccessPointId()), "Přístupový bod neodpovídá");
 
             // TODO: prepracovat - kopirovat rucne
             BeanUtils.copyProperties(newParty, saveParty, "partyGroupIdentifiers", "record",
@@ -356,7 +358,7 @@ public class PartyService {
         synchCreators(saveParty, newParty.getPartyCreators() == null ? Collections.emptyList() : newParty.getPartyCreators());
 
         //synchronizace rejstříkového hesla
-        synchRecord(saveParty);
+        synchRecord(saveParty, apState);
 
         ParParty result = partyRepository.save(saveParty);
         entityManager.flush();
@@ -374,13 +376,12 @@ public class PartyService {
      *
      * @param party osoba
      */
-    private void synchRecord(final ParParty party) {
+    private void synchRecord(final ParParty party, final ApState apState) {
         Assert.notNull(party, "Osoba nesmí být prázdná");
+        Assert.notNull(apState, "Přístupový bod musí být vyplněn");
 
-        ApAccessPoint accessPoint = party.getAccessPoint();
-        Assert.notNull(accessPoint, "Osoba nemá zadané rejstříkové heslo.");
-        Assert.notNull(accessPoint.getApType(), "Není vyplněný typ rejstříkového hesla.");
-        Assert.notNull(accessPoint.getScope(), "Není nastavena třída rejstříkového hesla");
+        Assert.notNull(apState.getApType(), "Není vyplněný typ rejstříkového hesla.");
+        Assert.notNull(apState.getScope(), "Není nastavena třída rejstříkového hesla");
 
         if (party.getRelations() != null) {
             party.getRelations().sort(new ParRelation.ParRelationComparator());
@@ -388,13 +389,12 @@ public class PartyService {
 
         //vytvoření rejstříkového hesla v groovy
         List<ParComplementType> complementTypes = complementTypeRepository.findByPartyType(party.getPartyType());
-        ApConvResult convResult = groovyScriptService.convertPartyToAp(party, complementTypes);
+        ApConvResult convResult = groovyScriptService.convertPartyToAp(party, apState, complementTypes);
 
         List<ApName> names = convResult.createNames();
         ApDescription description = convResult.createDesc();
 
-        accessPoint = accessPointService.syncAccessPoint(accessPoint, names, description);
-        party.setAccessPoint(accessPoint);
+        party.setAccessPoint(accessPointService.syncAccessPoint(apState, names, description).getAccessPoint());
     }
 
     /**
@@ -656,7 +656,6 @@ public class PartyService {
 
             partyCreatorRepository.deleteByPartyBoth(party);
 
-
             ParPartyGroup partyGroup = partyGroupRepository.findOne(party.getPartyId());
             if (partyGroup != null) {
                 partyGroupIdentifierRepository.findByParty(partyGroup).forEach((pg) -> {
@@ -805,7 +804,9 @@ public class PartyService {
         unitdateRepository.delete(unitdateRemove);
 
         entityManager.flush(); //aktualizace seznamu vztahů v osobě
-        synchRecord(party);
+
+        ApState apState = accessPointService.getState(party.getAccessPoint());
+        synchRecord(party, apState);
 
         return result;
     }
@@ -846,13 +847,13 @@ public class PartyService {
     }
 
     public void deleteRelationAndSync(final ParRelation relation) {
-        ParParty parParty = deleteRelation(relation);
-        synchRecord(parParty);
+        ParParty parParty  = relation.getParty();
+        deleteRelation(relation);
+        ApState apState = accessPointService.getState(parParty.getAccessPoint());
+        synchRecord(parParty, apState);
     }
 
-    private ParParty deleteRelation(final ParRelation relation) {
-
-        ParParty party = relation.getParty();
+    private void deleteRelation(ParRelation relation) {
 
         ParUnitdate from = relation.getFrom();
         ParUnitdate to = relation.getTo();
@@ -866,10 +867,7 @@ public class PartyService {
 
         deleteUnitDates(from, to);
         entityManager.flush();      //aktualizace seznamu vztahů
-
-        return party;
     }
-
 
     /**
      * Provede nastavení stavu vazeb u vztahu. Dojde k vytvoření, aktualizaci a smazání přebytečných vazeb.
@@ -1135,34 +1133,38 @@ public class PartyService {
 
         List<ParRelationEntity> reList = relationEntityRepository.findByAccessPoint(oldAccessPoint);
 
-        Map<Integer, ApState> stateByAccessPointId = accessPointService.groupStateByAccessPointId(reList.stream().map(re -> re.getRelation().getParty().getAccessPoint()).collect(Collectors.toList()));
+        if (!reList.isEmpty()) {
 
-        // set of scopes accessible by user
-        Set<Integer> accessibleScopes = new HashSet<>();
-        HashMap<Integer, ParParty> modifiedParties = new HashMap<>();
-        for (ParRelationEntity re : reList) {
-            ParParty party = re.getRelation().getParty();
-            ApState apState = stateByAccessPointId.get(party.getAccessPointId());
-            Integer scopeId = apState.getScopeId();
-            // check permissions for scope
-            if (!accessibleScopes.contains(scopeId)) {
-                if (!userDetail.hasPermission(Permission.AP_SCOPE_WR_ALL)
-                        && !userDetail.hasPermission(Permission.AP_SCOPE_WR, scopeId)) {
-                    throw new SystemException("Uživatel nemá oprávnění na scope.", BaseCode.INSUFFICIENT_PERMISSIONS)
-                            .set("scopeId", scopeId);
+            Map<Integer, ApState> stateByAccessPointId = accessPointService.groupStateByAccessPointId(
+                    reList.stream().map(re -> re.getRelation().getParty().getAccessPointId()).collect(Collectors.toList()));
+
+            // set of scopes accessible by user
+            Set<Integer> accessibleScopes = new HashSet<>();
+            Map<Integer, PartyApState> modifiedParties = new HashMap<>();
+            for (ParRelationEntity re : reList) {
+                ParParty party = re.getRelation().getParty();
+                ApState apState = stateByAccessPointId.get(party.getAccessPointId());
+                Integer scopeId = apState.getScopeId();
+                // check permissions for scope
+                if (!accessibleScopes.contains(scopeId)) {
+                    if (!userDetail.hasPermission(Permission.AP_SCOPE_WR_ALL)
+                            && !userDetail.hasPermission(Permission.AP_SCOPE_WR, scopeId)) {
+                        throw new SystemException("Uživatel nemá oprávnění na scope.", BaseCode.INSUFFICIENT_PERMISSIONS)
+                                .set("scopeId", scopeId);
+                    }
+                    accessibleScopes.add(scopeId);
                 }
-                accessibleScopes.add(scopeId);
+
+                // update record
+                re.setAccessPoint(newAccessPoint);
+                relationEntityRepository.save(re);
+
+                modifiedParties.putIfAbsent(party.getPartyId(), new PartyApState(party, apState));
             }
 
-            // update record
-            re.setAccessPoint(newAccessPoint);
-            relationEntityRepository.save(re);
-
-            modifiedParties.putIfAbsent(party.getPartyId(), party);
+            // synchronize modified parties
+            modifiedParties.values().forEach(pas -> synchRecord(pas.getParty(), pas.getApState()));
         }
-
-        // synchronize modified parties
-        modifiedParties.forEach((id, party) -> this.synchRecord(party));
     }
 
     public void reindexDescItem(ParParty party) {
@@ -1170,4 +1172,28 @@ public class PartyService {
         descriptionItemService.reindexDescItem(itemIds);
     }
 
+    private class PartyApState {
+
+        // --- fields ---
+
+        private final ParParty party;
+        private final ApState apState;
+
+        // --- getters/setters ---
+
+        public ParParty getParty() {
+            return party;
+        }
+
+        public ApState getApState() {
+            return apState;
+        }
+
+        // --- constructor ---
+
+        public PartyApState(ParParty party, ApState apState) {
+            this.party = party;
+            this.apState = apState;
+        }
+    }
 }

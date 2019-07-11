@@ -149,15 +149,15 @@ public class ApFactory {
      * Creates simple value object from AP.
      */
     public ApRecordSimple createVOSimple(ApAccessPoint ap) {
-        ApState state = stateRepository.findLastByAccessPoint(ap);
+        ApState apState = stateRepository.findLastByAccessPoint(ap);
         ApName prefName = nameRepository.findPreferredNameByAccessPoint(ap);
         ApDescription desc = descRepository.findByAccessPoint(ap);
         // create VO
         ApRecordSimple vo = new ApRecordSimple();
-        vo.setTypeId(state.getApTypeId());
+        vo.setTypeId(apState.getApTypeId());
         vo.setId(ap.getAccessPointId());
         vo.setRecord(prefName.getFullName());
-        vo.setScopeName(ap.getScope().getName());
+        vo.setScopeName(apState.getScope().getName());
         if (desc != null) {
             vo.setCharacteristics(desc.getDescription());
         }
@@ -169,11 +169,13 @@ public class ApFactory {
      * If id is present persist entity must be found.
      * If id is null new AP is created without create change.
      */
-    public ApAccessPoint create(ApAccessPointVO apVO) {
+    public ApState create(ApAccessPointVO apVO) {
         Integer id = apVO.getId();
         if (id != null) {
             ApAccessPoint ap = apRepository.findOne(id);
-            return Validate.notNull(ap);
+            Validate.notNull(ap);
+            ApState apState = stateRepository.findLastByAccessPoint(ap);
+            return Validate.notNull(apState);
         }
         Validate.isTrue(!apVO.isInvalid());
         // prepare type and scope
@@ -181,14 +183,17 @@ public class ApFactory {
         ApType type = staticData.getApTypeById(apVO.getTypeId());
         ApScope scope = scopeRepository.findOne(apVO.getScopeId());
         // create new AP
-        ApAccessPoint entity = new ApAccessPoint();
-        //entity.setAccessPointId(accessPointId);
-        entity.setApType(Validate.notNull(type));
-        //entity.setCreateChange(createChange);
-        //entity.setDeleteChange(deleteChange);
-        entity.setScope(Validate.notNull(scope));
-        entity.setUuid(apVO.getUuid());
-        return entity;
+        ApAccessPoint accessPoint = new ApAccessPoint();
+        //accessPoint.setAccessPointId(accessPointId);
+        //accessPoint.setCreateChange(createChange);
+        //accessPoint.setDeleteChange(deleteChange);
+        accessPoint.setUuid(apVO.getUuid());
+        ApState apState = new ApState();
+        apState.setStateApproval(ApState.StateApproval.NEW);
+        apState.setApType(Validate.notNull(type));
+        apState.setScope(Validate.notNull(scope));
+        apState.setAccessPoint(accessPoint);
+        return apState;
     }
 
     /**

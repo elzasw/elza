@@ -465,8 +465,10 @@ public class ConfigMapperConfiguration {
                     public void mapBtoA(final ParPartyVO parPartyVO,
                                         final ParParty party,
                                         final MappingContext context) {
-                        ApAccessPoint ap = apFactory.create(parPartyVO.getAccessPoint());
-                        party.setAccessPoint(ap);
+
+                        if (parPartyVO.getAccessPoint() != null && parPartyVO.getAccessPoint().getId() != null) {
+                            party.setAccessPoint(apAccessPointRepository.getOneCheckExist(parPartyVO.getAccessPoint().getId()));
+                        }
 
                         if (CollectionUtils.isNotEmpty(parPartyVO.getCreators())) {
                             List<ParCreator> creators = new ArrayList<>(parPartyVO.getCreators().size());

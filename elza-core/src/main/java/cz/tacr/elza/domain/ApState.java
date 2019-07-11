@@ -157,34 +157,15 @@ public class ApState extends AbstractVersionableEntity implements IApScope, Vers
 
     public void setAccessPoint(ApAccessPoint accessPoint) {
         this.accessPoint = accessPoint;
+        this.accessPointId = accessPoint != null ? accessPoint.getAccessPointId() : null;
     }
 
     public Integer getAccessPointId() {
         return accessPointId;
     }
 
-    public void setAccessPointId(Integer accessPointId) {
-        this.accessPointId = accessPointId;
-    }
-
-    public void setApTypeId(Integer apTypeId) {
-        this.apTypeId = apTypeId;
-    }
-
-    public void setScopeId(Integer scopeId) {
-        this.scopeId = scopeId;
-    }
-
-    public void setCreateChangeId(Integer createChangeId) {
-        this.createChangeId = createChangeId;
-    }
-
     public Integer getDeleteChangeId() {
         return deleteChangeId;
-    }
-
-    public void setDeleteChangeId(Integer deleteChangeId) {
-        this.deleteChangeId = deleteChangeId;
     }
 
     public ApState.StateApproval getStateApproval() {

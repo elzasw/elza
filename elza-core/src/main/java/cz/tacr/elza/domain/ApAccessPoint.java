@@ -6,7 +6,6 @@ import java.util.List;
 import javax.persistence.*;
 
 import cz.tacr.elza.api.interfaces.IApAccessPoint;
-import cz.tacr.elza.api.interfaces.IApScope;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.domain.interfaces.Versionable;
 import org.hibernate.annotations.Type;
@@ -26,6 +25,7 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
     public static final String FIELD_NAMES = "names";
     public static final String FIELD_DESCRIPTIONS = "descriptions";
     public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
+    public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
     public static final String STATE = "state";
     public static final String RULE_SYSTEM_ID = "ruleSystemId";
 
@@ -52,7 +52,7 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
     private Integer scopeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
-    @JoinColumn(name = "createChangeId", nullable = false)
+    @JoinColumn(name = FIELD_CREATE_CHANGE_ID, nullable = false)
     private ApChange createChange;
 
     @Column(nullable = false, updatable = false, insertable = false)

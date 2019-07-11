@@ -1,10 +1,10 @@
 import cz.tacr.elza.domain.*
 import cz.tacr.elza.domain.convertor.UnitDateConvertor
+import cz.tacr.elza.service.party.ApConvName
+import cz.tacr.elza.service.party.ApConvResult
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang.StringUtils
-import cz.tacr.elza.service.party.ApConvResult;
-import cz.tacr.elza.service.party.ApConvName;
-import org.apache.commons.lang3.Validate;
+import org.apache.commons.lang3.Validate
 
 /**
  * Skript pro vytvoření rejstříkového hesla z osoby.
@@ -12,6 +12,7 @@ import org.apache.commons.lang3.Validate;
 
 final ApConvResult convResult = new ApConvResult();
 
+checkApState(AP_STATE);
 checkParty(PARTY);
 
 String desc = generateCharacteristics(PARTY);
@@ -170,12 +171,20 @@ String generateCharacteristics(ParParty party) {
  * @param party osoba
  */
 void checkParty(ParParty party) {
-	Validate.notNull(party);
-
-    if (party.getAccessPoint() == null || party.getAccessPoint().getScope() == null) {
-        throw new IllegalArgumentException("Není nastavena třída rejstříku.");
-    }
+    Validate.notNull(party);
     if (party.getPreferredName() == null) {
         throw new IllegalArgumentException("Osoba nemá nastaveno preferované jméno.");
+    }
+}
+
+/**
+ * Kontrola zadaných dat přístupového bodu.
+ * @param apState přístupový bod
+ */
+void checkApState(ApState apState) {
+    Validate.notNull(apState);
+    Validate.notNull(apState.getAccessPoint());
+    if (apState.getScope() == null) {
+        throw new IllegalArgumentException("Není nastavena třída rejstříku.");
     }
 }
