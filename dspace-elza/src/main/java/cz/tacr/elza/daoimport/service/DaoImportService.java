@@ -56,6 +56,8 @@ import cz.tacr.elza.daoimport.DaoImportScheduler;
 import cz.tacr.elza.daoimport.service.vo.DaoFile;
 import cz.tacr.elza.daoimport.service.vo.ImportBatch;
 import cz.tacr.elza.daoimport.service.vo.ImportDao;
+import cz.tacr.elza.destructransferrequest.service.ProcessingRequestService;
+import cz.tacr.elza.metadataconstants.MetadataConstantService;
 
 @Service
 public class DaoImportService {
@@ -244,6 +246,9 @@ public class DaoImportService {
             DCDate dcDate = new DCDate(new Date());
             String date = dcDate.displayDate(false, true, Locale.getDefault());
             itemService.setMetadataSingleValue(context, item, MetadataSchema.DC_SCHEMA, "date", "issued", null, date);
+
+            String[] metaData = MetadataConstantService.getMetaData(ProcessingRequestService.METADATA_ISELZA);
+            itemService.addMetadata(context, item, metaData[0], metaData[1], metaData[2], null, "false");
 
             itemService.update(context, item);
             // set metadata?
