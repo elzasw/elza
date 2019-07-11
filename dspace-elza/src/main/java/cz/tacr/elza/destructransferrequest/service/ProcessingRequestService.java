@@ -50,7 +50,7 @@ public class ProcessingRequestService {
     private static Logger log = Logger.getLogger(DaoImportScheduler.class);
     private MetadataConstantService metadata;
 
-    private final String METADATA_ISELZA = "ISELZA";
+    public final static String METADATA_ISELZA = "ISELZA";
 
     /**
      * Zpracuje požadavky na skartaci digitalizátů, které jsou ve stavu QUEUED a odešle informaci do systému Elza
