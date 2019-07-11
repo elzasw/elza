@@ -537,6 +537,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/history');
     }
 
+    changeState(accessPointId, data) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/state', null, data);
+    }
+
     updateAccessPoint(accessPointId, data) {
         return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + accessPointId, null, data);
     }

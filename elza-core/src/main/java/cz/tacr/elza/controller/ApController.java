@@ -1109,4 +1109,16 @@ public class ApController {
 
         return results;
     }
+
+    /**
+     * Změna stavu přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     */
+    @Transactional
+    @RequestMapping(value = "/{accessPointId}/state", method = RequestMethod.POST)
+    public void changeState(@PathVariable("accessPointId") final Integer accessPointId,
+                            @RequestBody ApStateChangeVO stateChange) {
+        // TODO marek
+    }
 }

@@ -25,6 +25,9 @@ import {PropTypes} from 'prop-types';
 import {FOCUS_KEYS} from "../../constants.tsx";
 import ScopeLists from "../../components/arr/ScopeLists";
 import ApStateHistoryForm from "../../components/registry/ApStateHistoryForm";
+import ApStateChangeForm from "../../components/registry/ApStateChangeForm";
+import {WebApi} from "../../actions";
+import {partyDetailInvalidate} from "../../actions/party/party";
 
 /**
  * PARTY PAGE
@@ -119,6 +122,23 @@ class PartyPage extends AbstractReactComponent {
         this.props.dispatch(modalDialogShow(this, i18n('ap.history.title'), form, "dialog-lg"));
     };
 
+    handleChangeApState = () => {
+        const {partyDetail:{data:{accessPoint: {id}}}} = this.props;
+        const form = <ApStateChangeForm onSubmit={(data) => {
+            const finalData = {
+                comment: data.comment,
+                //state: data.state,
+                typeId: data.typeId,
+                scopeId: data.scopeId !== "" ? parseInt(data.scopeId) : null,
+            };
+            return WebApi.changeState(id, finalData);
+        }} onSubmitSuccess={() => {
+            this.props.dispatch(modalDialogHide());
+            this.props.dispatch(partyDetailInvalidate());
+            this.props.dispatch(partyListInvalidate());
+        }} accessPointId={id} />;
+        this.props.dispatch(modalDialogShow(this, i18n('ap.state.change'), form));
+    };
 
     /**
      * HANDLE DELETE PARTY
@@ -214,6 +234,14 @@ class PartyPage extends AbstractReactComponent {
             <Button key='show-state-history' onClick={this.handleShowApHistory}>
                 <Icon glyph="fa-clock-o"/>
                 <div><span className="btnText">{i18n('ap.stateHistory')}</span></div>
+            </Button>
+        );
+
+        // TODO: oprávnění
+        itemActions.push(
+            <Button key='change-state' onClick={this.handleChangeApState}>
+                <Icon glyph="fa-pencil"/>
+                <div><span className="btnText">{i18n('ap.changeState')}</span></div>
             </Button>
         );
 

@@ -948,6 +948,13 @@ var messages = {
     "ap.history.title.state.APPROVED": "Schválený",
     "ap.history.title.state.TO_AMEND": "K doplnění",
 
+    "ap.changeState": "Změna stavu",
+    "ap.state.change": "Změna stavu",
+    "ap.state.title.scope": "Oblast",
+    "ap.state.title.type": "Třída přístupového bodu",
+    "ap.state.title.state": "Stav",
+    "ap.state.title.comment": "Komentář",
+
     "registryField.noItemsFound": "Záznamy nebyly nalezeny.",
     "registryField.visibleCount": "Zobrazeno {0} z {1} záznamů",
 
