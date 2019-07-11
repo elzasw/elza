@@ -490,7 +490,6 @@ public class PartyControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @Ignore // TODO berka - opravit test
     public void replacePartyTest() {
         // Vytvoření fund
         ArrFundVO fund = createFund("RegisterLinks Test AP", "IC3");

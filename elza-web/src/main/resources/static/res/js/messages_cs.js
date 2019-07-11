@@ -934,6 +934,27 @@ var messages = {
     "registry.addRegistryVariant": "Přidání varianty jména",
     "registry.placePath": "Cesta k umístění: ",
 
+    "ap.stateHistory": "Historie stavů",
+    "ap.history.title": "Historie stavů",
+    "ap.history.title.change.date": "Datum",
+    "ap.history.title.change.time": "Čas",
+    "ap.history.title.change.state": "Stav",
+    "ap.history.title.change.scope": "Oblast",
+    "ap.history.title.change.comment": "Komentář",
+    "ap.history.title.change.type": "Typ",
+    "ap.history.title.change.user": "Uživatel",
+    "ap.history.title.state.NEW": "Nový",
+    "ap.history.title.state.TO_APPROVE": "Ke schválení",
+    "ap.history.title.state.APPROVED": "Schválený",
+    "ap.history.title.state.TO_AMEND": "K doplnění",
+
+    "ap.changeState": "Změna stavu",
+    "ap.state.change": "Změna stavu",
+    "ap.state.title.scope": "Oblast",
+    "ap.state.title.type": "Třída přístupového bodu",
+    "ap.state.title.state": "Stav",
+    "ap.state.title.comment": "Komentář",
+
     "registryField.noItemsFound": "Záznamy nebyly nalezeny.",
     "registryField.visibleCount": "Zobrazeno {0} z {1} záznamů",
 
@@ -969,6 +990,7 @@ var messages = {
     "party.detail.formNames" : "Formy jména",
     "party.detail.formNames.prefferedName" : "(Preferovaná forma jména)",
     "party.detail.partyGroupIdentifiers" : "Identifikátory korporace",
+    "party.apState" : "Všechny stavy",
 
     "party.detail.errors.undefinedCreator": "Nebyl vybrán autor",
 

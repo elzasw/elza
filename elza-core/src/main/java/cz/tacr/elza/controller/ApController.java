@@ -93,6 +93,60 @@ import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.FragmentService;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.StructObjService;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+
+import cz.tacr.elza.common.FactoryUtils;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.exception.codes.RegistryCode;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import cz.tacr.elza.controller.factory.ApFactory;
+import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
+import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
+import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.interpi.service.InterpiService;
+import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemAptypeRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.PartyTypeRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.service.AccessPointMigrationService;
+import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.FragmentService;
+import cz.tacr.elza.service.PartyService;
+import cz.tacr.elza.service.StructObjService;
 
 
 /**
@@ -171,6 +225,7 @@ public class ApController {
      * @param apTypeId   IDčka typu záznamu, může být null
      * @param versionId   id verze, podle které se budou filtrovat třídy rejstříků, null - výchozí třídy
      * @param itemSpecId   id specifikace
+     * @param state             stav schválení přístupového bodu
      * @param scopeId           id scope, pokud je vyplněn vrací se jen rejstříky s tímto scope
      * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
      */
@@ -183,8 +238,10 @@ public class ApController {
                                                              @RequestParam(required = false) @Nullable final Integer versionId,
                                                              @RequestParam(required = false) @Nullable final Integer itemSpecId,
                                                              @RequestParam(required = false) @Nullable final Integer itemTypeId,
+                                                             @RequestParam(required = false) @Nullable final ApStateApproval state,
                                                              @RequestParam(required = false) @Nullable final Integer scopeId,
                                                              @RequestParam(required = false) @Nullable final Integer lastRecordNr) {
+        // TODO marek - filtrovat dle state
 
         if (apTypeId != null && (itemSpecId != null || itemTypeId != null)) {
             throw new SystemException("Nelze použít více kritérií zároveň (specifikace/typ a typ rejstříku).", BaseCode.SYSTEM_ERROR);
@@ -1134,5 +1191,45 @@ public class ApController {
             ApState replacementState = accessPointService.getState(replacement);
             accessPointService.replace(replacedState, replacementState);
         }
+    }
+
+    /**
+     * Vyhledání historie stavů seřazené sestupně dle stáří (první je tedy aktuální).
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @return seznam stavů v historii
+     */
+    @Transactional
+    @RequestMapping(value = "/{accessPointId}/history", method = RequestMethod.GET)
+    public List<ApStateHistoryVO> findStateHistories(@PathVariable("accessPointId") final Integer accessPointId) {
+        ApAccessPoint apAccessPoint = accessPointRepository.getOneCheckExist(accessPointId);
+
+        // TODO marek
+        List<ApStateHistoryVO> results = new ArrayList<>();
+        ApStateHistoryVO result = new ApStateHistoryVO();
+        result.setChangeDate(new Date());
+        result.setComment("Testovací komentář");
+        result.setType("Typ1");
+        result.setUsername("admin");
+        result.setScope("Oblast1");
+        result.setState(ApStateApproval.NOVY);
+        results.add(result);results.add(result);results.add(result);results.add(result);results.add(result);
+        results.add(result);results.add(result);results.add(result);results.add(result);results.add(result);
+        results.add(result);results.add(result);results.add(result);results.add(result);results.add(result);
+        // TODO marek - END
+
+        return results;
+    }
+
+    /**
+     * Změna stavu přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     */
+    @Transactional
+    @RequestMapping(value = "/{accessPointId}/state", method = RequestMethod.POST)
+    public void changeState(@PathVariable("accessPointId") final Integer accessPointId,
+                            @RequestBody ApStateChangeVO stateChange) {
+        // TODO marek
     }
 }

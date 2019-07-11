@@ -31,7 +31,7 @@ import('../../components/registry/AddRegistryForm').then((a) => {
  * @param size {number} počet položek v seznamu - velikost jedné stránky
  */
 export function registryListFetchIfNeeded(from = 0, size = DEFAULT_REGISTRY_LIST_MAX_SIZE) {
-    return SimpleListActions.fetchIfNeeded(AREA_REGISTRY_LIST, true, (parent, filter) => WebApi.findRegistry(filter.text, filter.registryParentId, filter.registryTypeId, filter.versionId, filter.itemTypeId, filter.itemSpecId, filter.from, size, filter.scopeId, filter.excludeInvalid));
+    return SimpleListActions.fetchIfNeeded(AREA_REGISTRY_LIST, true, (parent, filter) => WebApi.findRegistry(filter.text, filter.registryParentId, filter.registryTypeId, filter.versionId, filter.itemTypeId, filter.itemSpecId, filter.from, size, filter.scopeId, filter.excludeInvalid, filter.state));
 }
 
 /**

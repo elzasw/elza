@@ -98,6 +98,8 @@ public class ApControllerTest extends AbstractControllerTest {
         ApScopeVO scopeVO2 = createScopeTest();
         connectScopeTest(scopeVO.getId(), scopeVO2.getId());
         disconnectScopeTest(scopeVO.getId(), scopeVO2.getId());
+        deleteScopeTest(scopeVO.getId());
+        deleteScopeTest(scopeVO2.getId());
     }
 
     @Test
