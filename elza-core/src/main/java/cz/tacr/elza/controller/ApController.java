@@ -8,6 +8,7 @@ import javax.transaction.Transactional;
 
 import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -32,23 +33,6 @@ import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApExternalIdType;
-import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApFragment;
-import cz.tacr.elza.domain.ApItem;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulStructuredType;
-import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -148,6 +132,7 @@ public class ApController {
      * @param apTypeId   IDčka typu záznamu, může být null
      * @param versionId   id verze, podle které se budou filtrovat třídy rejstříků, null - výchozí třídy
      * @param itemSpecId   id specifikace
+     * @param state             stav schválení přístupového bodu
      * @param scopeId           id scope, pokud je vyplněn vrací se jen rejstříky s tímto scope
      * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
      */
@@ -160,8 +145,10 @@ public class ApController {
                                                              @RequestParam(required = false) @Nullable final Integer versionId,
                                                              @RequestParam(required = false) @Nullable final Integer itemSpecId,
                                                              @RequestParam(required = false) @Nullable final Integer itemTypeId,
+                                                             @RequestParam(required = false) @Nullable final ApStateApproval state,
                                                              @RequestParam(required = false) @Nullable final Integer scopeId,
                                                              @RequestParam(required = false) @Nullable final Integer lastRecordNr) {
+        // TODO marek - filtrovat dle state
 
         if (apTypeId != null && (itemSpecId != null || itemTypeId != null)) {
             throw new SystemException("Nelze použít více kritérií zároveň (specifikace/typ a typ rejstříku).", BaseCode.SYSTEM_ERROR);
@@ -1093,5 +1080,33 @@ public class ApController {
         } else {
             accessPointService.replace(replaced, replacement);
         }
+    }
+
+    /**
+     * Vyhledání historie stavů seřazené sestupně dle stáří (první je tedy aktuální).
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @return seznam stavů v historii
+     */
+    @Transactional
+    @RequestMapping(value = "/{accessPointId}/history", method = RequestMethod.GET)
+    public List<ApStateHistoryVO> findStateHistories(@PathVariable("accessPointId") final Integer accessPointId) {
+        ApAccessPoint apAccessPoint = accessPointRepository.getOneCheckExist(accessPointId);
+
+        // TODO marek
+        List<ApStateHistoryVO> results = new ArrayList<>();
+        ApStateHistoryVO result = new ApStateHistoryVO();
+        result.setChangeDate(new Date());
+        result.setComment("Testovací komentář");
+        result.setType("Typ1");
+        result.setUsername("admin");
+        result.setScope("Oblast1");
+        result.setState(ApStateApproval.NOVY);
+        results.add(result);results.add(result);results.add(result);results.add(result);results.add(result);
+        results.add(result);results.add(result);results.add(result);results.add(result);results.add(result);
+        results.add(result);results.add(result);results.add(result);results.add(result);results.add(result);
+        // TODO marek - END
+
+        return results;
     }
 }

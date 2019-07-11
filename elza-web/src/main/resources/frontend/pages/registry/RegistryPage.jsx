@@ -28,6 +28,7 @@ import defaultKeymap from './RegistryPageKeymap.jsx';
 import {FOCUS_KEYS} from "../../constants.tsx";
 import * as eidTypes from "../../actions/refTables/eidTypes";
 import ScopeLists from "../../components/arr/ScopeLists";
+import ApStateHistoryForm from "../../components/registry/ApStateHistoryForm";
 
 /**
  * Stránka rejstříků.
@@ -171,6 +172,12 @@ class RegistryPage extends AbstractReactComponent {
         this.props.dispatch(modalDialogShow(this, i18n("accesspoint.scope.management.title"), <ScopeLists />));
     };
 
+    handleShowApHistory = () => {
+        const {registryDetail:{data:{id}}} = this.props;
+        const form = <ApStateHistoryForm accessPointId={id} />;
+        this.props.dispatch(modalDialogShow(this, i18n('ap.history.title'), form, "dialog-lg"));
+    };
+
     buildRibbon = () => {
         const {registryDetail:{data}, userDetail, extSystems, module, customRibbon, registryDetail } = this.props;
 
@@ -250,6 +257,13 @@ class RegistryPage extends AbstractReactComponent {
                 );
             }
         }
+
+        itemActions.push(
+            <Button key='show-state-history' onClick={this.handleShowApHistory}>
+                <Icon glyph="fa-clock-o"/>
+                <div><span className="btnText">{i18n('ap.stateHistory')}</span></div>
+            </Button>
+        );
 
         let altSection;
         if (altActions.length > 0) {

@@ -11,6 +11,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -38,23 +39,6 @@ import cz.tacr.elza.controller.vo.UIPartyGroupVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParPartyTypeComplementType;
-import cz.tacr.elza.domain.ParPartyTypeRelation;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.ParRelationTypeRoleType;
-import cz.tacr.elza.domain.UIPartyGroup;
 import cz.tacr.elza.exception.DeleteException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -260,7 +244,9 @@ public class PartyController {
                                        @Nullable @RequestParam(required = false) final Integer partyTypeId,
                                        @Nullable @RequestParam(required = false) final Integer itemSpecId,
                                        @RequestParam(required = false) @Nullable final Integer versionId,
-                                       @RequestParam(required = false) @Nullable final Integer scopeId) {
+                                       @RequestParam(required = false) @Nullable final Integer scopeId,
+                                       @RequestParam(required = false) @Nullable final ApStateApproval state) {
+        // TODO marek - filtrovat dle state
 
         ArrFund fund;
         if (versionId == null) {

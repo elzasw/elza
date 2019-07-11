@@ -141,8 +141,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/' + partyId);
     }
 
-    findParty(search = null, versionId = null, partyTypeId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId, excludeInvalid) {
-        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/', { search, from, count, partyTypeId, versionId, itemSpecId, scopeId, excludeInvalid });
+    findParty(search = null, versionId = null, partyTypeId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId, excludeInvalid, state) {
+        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/', { search, from, count, partyTypeId, versionId, itemSpecId, scopeId, excludeInvalid, state });
     }
 
     findPartyUsage(partyId) {
@@ -499,7 +499,7 @@ export class WebApiCls {
     }
 
 
-    findRegistry(search = null, registryParent = null, apTypeId = null, versionId = null, itemTypeId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId = null, excludeInvalid = true) {
+    findRegistry(search = null, registryParent = null, apTypeId = null, versionId = null, itemTypeId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId = null, excludeInvalid = true, state = null) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/', {
             search,
             from,
@@ -510,7 +510,8 @@ export class WebApiCls {
             apTypeId,
             versionId,
             scopeId,
-            excludeInvalid
+            excludeInvalid,
+            state
         });
     }
 
@@ -530,6 +531,10 @@ export class WebApiCls {
 
     getAccessPoint(accessPointId) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId);
+    }
+
+    findStateHistories(accessPointId) {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/history');
     }
 
     updateAccessPoint(accessPointId, data) {

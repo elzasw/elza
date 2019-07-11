@@ -24,6 +24,7 @@ import PageLayout from "../shared/layout/PageLayout";
 import {PropTypes} from 'prop-types';
 import {FOCUS_KEYS} from "../../constants.tsx";
 import ScopeLists from "../../components/arr/ScopeLists";
+import ApStateHistoryForm from "../../components/registry/ApStateHistoryForm";
 
 /**
  * PARTY PAGE
@@ -110,6 +111,14 @@ class PartyPage extends AbstractReactComponent {
             this.dispatch(partyListInvalidate());
         }} />, "dialog-lg"));
     };
+
+
+    handleShowApHistory = () => {
+        const {partyDetail:{data:{accessPoint: {id}}}} = this.props;
+        const form = <ApStateHistoryForm accessPointId={id} />;
+        this.props.dispatch(modalDialogShow(this, i18n('ap.history.title'), form, "dialog-lg"));
+    };
+
 
     /**
      * HANDLE DELETE PARTY
@@ -200,6 +209,13 @@ class PartyPage extends AbstractReactComponent {
             }
 
         }
+
+        itemActions.push(
+            <Button key='show-state-history' onClick={this.handleShowApHistory}>
+                <Icon glyph="fa-clock-o"/>
+                <div><span className="btnText">{i18n('ap.stateHistory')}</span></div>
+            </Button>
+        );
 
         let altSection;
         if (altActions.length > 0) {

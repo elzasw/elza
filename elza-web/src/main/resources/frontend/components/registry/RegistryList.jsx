@@ -11,8 +11,7 @@ import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {WebApi} from 'actions/index.jsx';
 import {getTreeItemById} from "./../../components/registry/registryUtils";
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
-
-
+import * as StateApproval from './../../components/enum/StateApproval';
 
 import './RegistryList.less';
 import RegistryListItem from "./RegistryListItem";
@@ -90,7 +89,11 @@ class RegistryList extends AbstractReactComponent {
     };
 
     handleFilterRegistryScope = (item) => {
-        this.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, scopeId: item ? item.id : null}));
+        this.props.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, scopeId: item ? item.id : null}));
+    };
+
+    handleFilterRegistryState = (item) => {
+        this.props.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, state: item ? item.id : null}));
     };
 
     handleFilterPrev = () => {
@@ -172,6 +175,16 @@ class RegistryList extends AbstractReactComponent {
         return [defaultValue];
     }
 
+    getStateWithAll() {
+        const defaultValue = {name: i18n('party.apState')};
+        return [defaultValue, ...StateApproval.values.map(item => {
+            return {
+                id: item,
+                name: StateApproval.getCaption(item)
+            }
+        })]
+    }
+
     getScopeById(scopeId, scopes){
         return scopeId && scopes && scopes.length > 0 && scopes[0].scopes.find(scope => (scope.id === scopeId)).name;
     }
@@ -220,6 +233,12 @@ class RegistryList extends AbstractReactComponent {
                     items={this.getScopesWithAll(scopes)}
                     onChange={this.handleFilterRegistryScope}
                     value={this.getScopeById(filter.scopeId, scopes)}
+                />
+                <Autocomplete
+                    inputProps={ {placeholder: filter.state ? StateApproval.getCaption(filter.state) : i18n("party.apState")} }
+                    items={this.getStateWithAll()}
+                    onChange={this.handleFilterRegistryState}
+                    value={filter.state}
                 />
                 <Autocomplete
                         inputProps={ {placeholder: !filter.registryTypeId ? this.registryTypeDefaultValue : ""} }
