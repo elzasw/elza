@@ -1,11 +1,16 @@
 package cz.tacr.elza.ws;
 
 import cz.tacr.elza.ws.core.v1.DaoRequestsService;
+import cz.tacr.elza.ws.core.v1.DaoService;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
-import cz.tacr.elza.ws.types.v1.RequestRevoked;
+import cz.tacr.elza.ws.types.v1.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.feature.FastInfosetFeature;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
+import org.dspace.content.Bitstream;
+import org.dspace.content.Bundle;
+import org.dspace.content.Item;
+import org.dspace.content.service.ItemService;
 import org.dspace.services.ConfigurationService;
 import org.dspace.services.factory.DSpaceServicesFactory;
 import org.slf4j.Logger;
@@ -17,6 +22,7 @@ import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.xml.bind.helpers.DefaultValidationEventHandler;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by Marbes Consulting
@@ -110,6 +116,36 @@ public class WsClient {
         }
     }
 
+    public void sendItemToElza(Item item){
+
+        DaoPackage daoPackage = new DaoPackage();
+        daoPackage.setIdentifier(item.getID().toString());
+
+        daoPackage.setFundIdentifier(item.getID().toString());
+        daoPackage.setRepositoryIdentifier("2");
+
+
+        Daoset daoset = daoPackage.getDaoset();
+        Dao dao = new Dao();
+
+        FileGroup fileGroup = new FileGroup();
+
+        List<Bundle> bundles = item.getBundles();
+        for (Bundle bundle : bundles) {
+            Bitstream bitstream = bundle.getPrimaryBitstream();
+            File file = new File();
+            file.setChecksum(bitstream.getChecksum());
+            file.setIdentifier(bitstream.getInternalId());
+            file.setSize(bitstream.getSizeBytes());
+            fileGroup.getFile().add(file);
+        }
+
+        dao.setFileGroup(fileGroup);
+        daoset.getDao().add(dao);
+
+        getDaoService().addPackage(daoPackage);
+    }
+
     private DaoRequestsService getDaoRequests() {
         final String url = configurationService.getProperty("elza.base.url") + "DaoRequestsService";
         final String username = configurationService.getProperty("elza.base.username");
@@ -117,5 +153,11 @@ public class WsClient {
         return getJaxWsRemoteInterface(DaoRequestsService.class, url, username, password);
     }
 
+    private DaoService getDaoService() {
+        final String url = configurationService.getProperty("elza.base.url") + "DaoService";
+        final String username = configurationService.getProperty("elza.base.username");
+        final String password = configurationService.getProperty("elza.base.password");
+        return getJaxWsRemoteInterface(DaoService.class, url, username, password);
+    }
 
 }
