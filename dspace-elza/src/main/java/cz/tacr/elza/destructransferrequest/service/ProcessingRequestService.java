@@ -36,9 +36,6 @@ public class ProcessingRequestService {
     private String SEPARATOR = ";";
 
     @Autowired
-    private WsClient wsClient;
-
-    @Autowired
     private CollectionService collectionService;
 
     @Autowired
@@ -107,7 +104,7 @@ public class ProcessingRequestService {
                 context.complete();
 
                 log.info("Odesílám informaci o zpracování požadavku na skartaci do systému Elza.");
-                wsClient.destructionRequestFinished(destructRequest.getUuid());
+                WsClient.destructionRequestFinished(destructRequest.getUuid());
                 log.info("Informaci o zpracování požadavku na skartaci byla úspěšně odeslána do systému Elza.");
             }
         } catch (Exception e) {
@@ -126,7 +123,7 @@ public class ProcessingRequestService {
                 RequestRevoked requestRevoked = new RequestRevoked();
                 requestRevoked.setIdentifier(processingRequest.getUuid());
                 requestRevoked.setDescription(e.getMessage());
-                wsClient.destructionRequestRevoked(requestRevoked);
+                WsClient.destructionRequestRevoked(requestRevoked);
             } catch (Exception e1) {
                 throw new ProcessingException("Chyba při zpracování chybového stavu požadavku na skartaci: " + e1.getMessage());
             }
@@ -217,7 +214,7 @@ public class ProcessingRequestService {
                 descructTransferRequestService.update(context, processingRequest);
 
                 log.info("Odesílám informaci o zpracování požadavku na delimitaci do systému Elza.");
-                wsClient.transferRequestFinished(destructRequest.getUuid());
+                WsClient.transferRequestFinished(destructRequest.getUuid());
                 log.info("Informaci o zpracování požadavku na delimitaci byla úspěšně odeslána do systému Elza.");
             }
         } catch (Exception e) {
@@ -235,7 +232,7 @@ public class ProcessingRequestService {
                 RequestRevoked requestRevoked = new RequestRevoked();
                 requestRevoked.setIdentifier(processingRequest.getUuid());
                 requestRevoked.setDescription(e.getMessage());
-                wsClient.transferRequestRevoked(requestRevoked);
+                WsClient.transferRequestRevoked(requestRevoked);
             } catch (Exception e1) {
                 throw new ProcessingException("Chyba při zpracování chybového stavu požadavku na delimitaci: " + e1.getMessage());
             }

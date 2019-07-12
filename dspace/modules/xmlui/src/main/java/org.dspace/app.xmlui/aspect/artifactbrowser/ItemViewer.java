@@ -52,6 +52,8 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cz.tacr.elza.ws.WsClient;
+
 /**
  * Display a single item.
  *
@@ -460,7 +462,7 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
             }
 
             Item item = (Item) dso;
-            //TODO volat service
+            WsClient.sendItemToElza(item);
 
         } catch (SQLException e) {
             // Ignore all errors and just return that the component is not cachable.
