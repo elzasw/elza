@@ -1,5 +1,8 @@
 package cz.tacr.elza.ws;
 
+import cz.tacr.elza.context.ContextUtils;
+import cz.tacr.elza.destructransferrequest.service.ProcessingRequestService;
+import cz.tacr.elza.metadataconstants.MetadataConstantService;
 import cz.tacr.elza.ws.core.v1.DaoRequestsService;
 import cz.tacr.elza.ws.core.v1.DaoService;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
@@ -10,12 +13,14 @@ import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.dspace.content.Bitstream;
 import org.dspace.content.Bundle;
 import org.dspace.content.Item;
+import org.dspace.content.MetadataValue;
+import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.ItemService;
+import org.dspace.core.Context;
 import org.dspace.services.ConfigurationService;
 import org.dspace.services.factory.DSpaceServicesFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
@@ -32,6 +37,7 @@ public class WsClient {
 
     private static final Logger logger = LoggerFactory.getLogger(WsClient.class);
     private static ConfigurationService configurationService = DSpaceServicesFactory.getInstance().getConfigurationService();
+    private static ItemService itemService = ContentServiceFactory.getInstance().getItemService();
 
     /**
      * Vytvoří JaxWs klienta webové služby a vrátí proxy rozhraní.
@@ -144,6 +150,25 @@ public class WsClient {
         daoset.getDao().add(dao);
 
         getDaoService().addPackage(daoPackage);
+
+        Context context = null;
+        try {
+            context = ContextUtils.createContext();
+            context.turnOffAuthorisationSystem();
+
+            String[] metaData = MetadataConstantService.getMetaData(ProcessingRequestService.METADATA_ISELZA);
+            List<MetadataValue> metadata = itemService.getMetadata(item, metaData[0], metaData[1], metaData[2], Item.ANY);
+            itemService.removeMetadataValues(context, item, metadata);
+            itemService.addMetadata(context, item, metaData[0], metaData[1], metaData[2], null, "true");
+            context.complete();
+        } catch (Exception e) {
+            context.abort();
+            throw new IllegalStateException("Nastala chyba při zápisu metadat isElza k Item " + item + " odesílané do ELZA", e);
+        } finally {
+            if (context != null) {
+                context.restoreAuthSystemState();
+            }
+        }
     }
 
     private static DaoRequestsService getDaoRequests() {

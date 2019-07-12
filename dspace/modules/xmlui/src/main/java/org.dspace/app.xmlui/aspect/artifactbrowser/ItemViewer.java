@@ -52,7 +52,12 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.service.ItemService;
+import org.dspace.core.Context;
 import cz.tacr.elza.ws.WsClient;
+import cz.tacr.elza.metadataconstants.MetadataConstantService;
+import cz.tacr.elza.destructransferrequest.service.ProcessingRequestService;
 
 /**
  * Display a single item.
@@ -419,13 +424,25 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
 
         showfullPara = division.addPara(null,"item-view-toggle item-view-toggle-bottom");
 
-        Para sendToElzaPara = division.addPara(null, "item-view-send-to-elza");
+        ItemService itemService = ContentServiceFactory.getInstance().getItemService();
+        String[] metaData = MetadataConstantService.getMetaData(ProcessingRequestService.METADATA_ISELZA);
+        List<MetadataValue> metadata = itemService.getMetadata(item, metaData[0], metaData[1], metaData[2], Item.ANY);
 
-        String linkToElza = contextPath + "/handle/" + item.getHandle()
-                + "?sendToElza=true" + "?idemId=" + item.getID();
+        boolean isElza = false;
+        if (!metadata.isEmpty()) {
+            MetadataValue mv = metadata.iterator().next();
+            String value = mv.getValue();
+            isElza = Boolean.valueOf(value);
+        }
 
-        sendToElzaPara.addXref(linkToElza).addContent(T_send_to_elza);
+        if (!isElza) {
+            Para sendToElzaPara = division.addPara(null, "item-view-send-to-elza");
 
+            String linkToElza = contextPath + "/handle/" + item.getHandle()
+                    + "?sendToElza=true" + "?idemId=" + item.getID();
+
+            sendToElzaPara.addXref(linkToElza).addContent(T_send_to_elza);
+        }
     }
 
     /**
