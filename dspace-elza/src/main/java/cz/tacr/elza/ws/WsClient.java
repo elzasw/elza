@@ -28,11 +28,10 @@ import java.util.List;
  * Created by Marbes Consulting
  * ludek.cacha@marbes.cz / 02.05.2019.
  */
-@Service
 public class WsClient {
 
     private static final Logger logger = LoggerFactory.getLogger(WsClient.class);
-    private ConfigurationService configurationService = DSpaceServicesFactory.getInstance().getConfigurationService();
+    private static ConfigurationService configurationService = DSpaceServicesFactory.getInstance().getConfigurationService();
 
     /**
      * Vytvoří JaxWs klienta webové služby a vrátí proxy rozhraní.
@@ -76,7 +75,7 @@ public class WsClient {
         }
     }
 
-    public void destructionRequestRevoked(final RequestRevoked requestRevoked) {
+    public static void destructionRequestRevoked(final RequestRevoked requestRevoked) {
         final DaoRequestsService remoteInterface = getDaoRequests();
         try {
             remoteInterface.destructionRequestRevoked(requestRevoked);
@@ -86,7 +85,7 @@ public class WsClient {
         }
     }
 
-    public void destructionRequestFinished(final String requestIdentifier) {
+    public static void destructionRequestFinished(final String requestIdentifier) {
         final DaoRequestsService remoteInterface = getDaoRequests();
         try {
             remoteInterface.destructionRequestFinished(requestIdentifier);
@@ -96,7 +95,7 @@ public class WsClient {
         }
     }
 
-    public void transferRequestRevoked(final RequestRevoked requestRevoked) {
+    public static void transferRequestRevoked(final RequestRevoked requestRevoked) {
         final DaoRequestsService remoteInterface = getDaoRequests();
         try {
             remoteInterface.transferRequestRevoked(requestRevoked);
@@ -106,7 +105,7 @@ public class WsClient {
         }
     }
 
-    public void transferRequestFinished(final String requestIdentifier) {
+    public static void transferRequestFinished(final String requestIdentifier) {
         final DaoRequestsService remoteInterface = getDaoRequests();
         try {
             remoteInterface.transferRequestFinished(requestIdentifier);
@@ -116,7 +115,7 @@ public class WsClient {
         }
     }
 
-    public void sendItemToElza(Item item){
+    public static void sendItemToElza(Item item){
 
         DaoPackage daoPackage = new DaoPackage();
         daoPackage.setIdentifier(item.getID().toString());
@@ -132,12 +131,13 @@ public class WsClient {
 
         List<Bundle> bundles = item.getBundles();
         for (Bundle bundle : bundles) {
-            Bitstream bitstream = bundle.getPrimaryBitstream();
-            File file = new File();
-            file.setChecksum(bitstream.getChecksum());
-            file.setIdentifier(bitstream.getInternalId());
-            file.setSize(bitstream.getSizeBytes());
-            fileGroup.getFile().add(file);
+            for (Bitstream bitstream : bundle.getBitstreams()) {
+                File file = new File();
+                file.setChecksum(bitstream.getChecksum());
+                file.setIdentifier(bitstream.getInternalId());
+                file.setSize(bitstream.getSizeBytes());
+                fileGroup.getFile().add(file);
+            }
         }
 
         dao.setFileGroup(fileGroup);
@@ -146,14 +146,14 @@ public class WsClient {
         getDaoService().addPackage(daoPackage);
     }
 
-    private DaoRequestsService getDaoRequests() {
+    private static DaoRequestsService getDaoRequests() {
         final String url = configurationService.getProperty("elza.base.url") + "DaoRequestsService";
         final String username = configurationService.getProperty("elza.base.username");
         final String password = configurationService.getProperty("elza.base.password");
         return getJaxWsRemoteInterface(DaoRequestsService.class, url, username, password);
     }
 
-    private DaoService getDaoService() {
+    private static DaoService getDaoService() {
         final String url = configurationService.getProperty("elza.base.url") + "DaoService";
         final String username = configurationService.getProperty("elza.base.username");
         final String password = configurationService.getProperty("elza.base.password");
