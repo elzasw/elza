@@ -83,4 +83,14 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer> {
      * @return nalezená hesla
      */
     List<ApState> findByScope(ApScope scope);
+
+    @Query("SELECT s" +
+            " FROM ap_state s" +
+            " JOIN FETCH s.apType t" +
+            " JOIN FETCH s.scope sc" +
+            " JOIN FETCH s.createChange cc" +
+            " LEFT JOIN FETCH cc.user" +
+            " WHERE s.accessPoint = :accessPoint" +
+            " ORDER BY s.createChange DESC")
+    List<ApState> findByAccessPointFetch(@Param("accessPoint") ApAccessPoint accessPoint);
 }

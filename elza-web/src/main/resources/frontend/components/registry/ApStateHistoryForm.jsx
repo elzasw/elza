@@ -65,8 +65,8 @@ class ApStateHistoryForm extends AbstractReactComponent {
                 <div className="col col1">{dateToString(new Date(item.changeDate))}</div>
                 <div className="col col2">{timeToString(new Date(item.changeDate))}</div>
                 <div className="col col3">{this.getState(item.state)}</div>
-                <div className="col col4">{item.type}</div>
-                <div className="col col5">{item.scope}</div>
+                <div className="col col4" title={item.scope}>{item.scope}</div>
+                <div className="col col5" title={item.type}>{item.type}</div>
                 <div className="col col6" title={item.comment}>{item.comment}</div>
                 <div className="col col7">{item.username ? item.username : <i>System</i>}</div>
             </div>
@@ -87,11 +87,11 @@ class ApStateHistoryForm extends AbstractReactComponent {
                             <div className="col col1">{i18n("ap.history.title.change.date")}</div>
                             <div className="col col2">{i18n("ap.history.title.change.time")}</div>
                             <div className="col col3">{i18n("ap.history.title.change.state")}</div>
-                            <div className="col col4">{i18n("ap.history.title.change.type")}</div>
-                            <div className="col col5">{i18n("ap.history.title.change.scope")}</div>
+                            <div className="col col4">{i18n("ap.history.title.change.scope")}</div>
+                            <div className="col col5">{i18n("ap.history.title.change.type")}</div>
                             <div className="col col6">{i18n("ap.history.title.change.comment")}</div>
                             <div className="col col7">{i18n("ap.history.title.change.user")}</div>
-                            <div className="colScrollbar" style={{width: getScrollbarWidth()}}></div>
+                            {/*<div className="colScrollbar" style={{width: getScrollbarWidth()}}></div>*/}
                         </div>
                         {fetched ? content : <HorizontalLoader/>}
                     </div>

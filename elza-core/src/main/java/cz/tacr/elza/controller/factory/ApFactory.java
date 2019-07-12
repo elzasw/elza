@@ -1,16 +1,11 @@
 package cz.tacr.elza.controller.factory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
@@ -19,14 +14,6 @@ import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApEidTypeVO;
-import cz.tacr.elza.controller.vo.ApExternalIdVO;
-import cz.tacr.elza.controller.vo.ApRecordSimple;
-import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.LanguageVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ap.ApFormVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.ApStateVO;
@@ -50,22 +37,6 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApDescription;
-import cz.tacr.elza.domain.ApExternalId;
-import cz.tacr.elza.domain.ApExternalIdType;
-import cz.tacr.elza.domain.ApFragment;
-import cz.tacr.elza.domain.ApItem;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ApRule;
-import cz.tacr.elza.domain.ApRuleSystem;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBodyItemRepository;
 import cz.tacr.elza.repository.ApDescriptionRepository;
@@ -215,6 +186,30 @@ public class ApFactory {
         // prepare external ids
         List<ApExternalId> eids = eidRepository.findByAccessPoint(ap);
         return createVO(apState, desc, names, eids);
+    }
+
+    public List<ApStateHistoryVO> createStateHistoriesVO(final Collection<ApState> states) {
+        if (CollectionUtils.isEmpty(states)) {
+            return Collections.emptyList();
+        }
+
+        List<ApStateHistoryVO> results = new ArrayList<>();
+
+        for (ApState state : states) {
+            ApStateHistoryVO result = new ApStateHistoryVO();
+            ApChange createChange = state.getCreateChange();
+            ApScope scope = state.getScope();
+            UsrUser user = createChange.getUser();
+            result.setChangeDate(Date.from(createChange.getChangeDate().toInstant()));
+            result.setComment(state.getComment());
+            result.setType(state.getApType().getName());
+            result.setUsername(user == null ? null : user.getUsername());
+            result.setScope(scope.getName());
+            result.setState(state.getStateApproval());
+            results.add(result);
+        }
+
+        return results;
     }
 
     public ApAccessPointVO createVO(ApState apState, boolean fillForm) {

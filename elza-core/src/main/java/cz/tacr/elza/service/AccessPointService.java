@@ -2101,6 +2101,11 @@ public class AccessPointService {
         return apNameRepository.findPreferredNamesByAccessPointIds(accessPointIds);
     }
 
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
+    public List<ApState> findApStates(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint apAccessPoint) {
+        return apStateRepository.findByAccessPointFetch(apAccessPoint);
+    }
+
     /**
      * Pomocná třída pro založení změny až při její první potřebě.
      */

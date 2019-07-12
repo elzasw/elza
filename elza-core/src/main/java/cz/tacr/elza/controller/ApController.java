@@ -1157,21 +1157,8 @@ public class ApController {
     public List<ApStateHistoryVO> findStateHistories(@PathVariable("accessPointId") final Integer accessPointId) {
         ApAccessPoint apAccessPoint = accessPointRepository.getOneCheckExist(accessPointId);
 
-        // TODO marek
-        List<ApStateHistoryVO> results = new ArrayList<>();
-        ApStateHistoryVO result = new ApStateHistoryVO();
-        result.setChangeDate(new Date());
-        result.setComment("Testovací komentář");
-        result.setType("Typ1");
-        result.setUsername("admin");
-        result.setScope("Oblast1");
-        result.setState(ApState.StateApproval.NEW);
-        results.add(result);results.add(result);results.add(result);results.add(result);results.add(result);
-        results.add(result);results.add(result);results.add(result);results.add(result);results.add(result);
-        results.add(result);results.add(result);results.add(result);results.add(result);results.add(result);
-        // TODO marek - END
-
-        return results;
+        List<ApState> states = accessPointService.findApStates(apAccessPoint);
+        return apFactory.createStateHistoriesVO(states);
     }
 
     /**
