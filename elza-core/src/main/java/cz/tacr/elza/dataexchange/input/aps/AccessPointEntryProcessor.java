@@ -67,10 +67,10 @@ public class AccessPointEntryProcessor implements ItemProcessor {
     protected void processEntry(AccessPointEntry entry) {
         entryId = entry.getId();
         // create AP and prepare AP info
-        ApAccessPoint entity = createEntity(entry);
+        ApEntity entity = createEntity(entry);
         List<ApExternalId> eids = createExternalIds(entry.getEid());
         // todo[dataexchange]: ApState je null!!!
-        info = context.addAccessPoint(entity, entry.getId(), null, eids);
+        info = context.addAccessPoint(entity.accessPoint, entry.getId(), entity.state, eids);
     }
 
     private List<ApExternalId> createExternalIds(Collection<ExternalId> eids) {
@@ -99,7 +99,18 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         return entities;
     }
 
-    private ApAccessPoint createEntity(AccessPointEntry entry) {
+    private class ApEntity {
+
+        ApAccessPoint accessPoint;
+        ApState state;
+
+        ApEntity(final ApAccessPoint accessPoint, final ApState state) {
+            this.accessPoint = accessPoint;
+            this.state = state;
+        }
+    }
+
+    private ApEntity createEntity(AccessPointEntry entry) {
         if (StringUtils.isEmpty(entry.getId())) {
             throw new DEImportException("AP entry id is empty");
         }
@@ -134,8 +145,9 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         apState.setAccessPoint(accessPoint);
         apState.setApType(apType);
         apState.setScope(context.getScope());
+        apState.setStateApproval(ApState.StateApproval.APPROVED);
         apState.setCreateChange(context.getCreateChange());
 
-        return accessPoint;
+        return new ApEntity(accessPoint, apState);
     }
 }

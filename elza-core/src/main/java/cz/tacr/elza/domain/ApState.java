@@ -20,7 +20,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.domain.interfaces.Versionable;
 
 @Entity(name = "ap_state")
-@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
+//@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ApState extends AbstractVersionableEntity implements IApScope, Versionable {
 
     public static final String FIELD_ACCESS_POINT_ID = "accessPointId";

@@ -5,7 +5,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import cz.tacr.elza.repository.*;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
@@ -17,10 +19,6 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 import cz.tacr.elza.domain.projection.ApExternalIdInfo;
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApDescriptionRepository;
-import cz.tacr.elza.repository.ApExternalIdRepository;
-import cz.tacr.elza.repository.ApNameRepository;
 
 public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
 
@@ -34,6 +32,8 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
 
     private final ApChangeHolder changeHolder;
 
+    private final ApStateRepository apStateRepository;
+
     public ApAccessPointStorage(Session session, StoredEntityCallback persistEntityListener,
             ApChangeHolder changeHolder,
             ImportInitHelper initHelper) {
@@ -42,6 +42,7 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
         this.apNameRepository = initHelper.getApNameRepository();
         this.apDescRepository = initHelper.getApDescRepository();
         this.apEidRepository = initHelper.getApEidRepository();
+        this.apStateRepository = initHelper.getApStateRepository();
         this.changeHolder = changeHolder;
     }
 
@@ -51,6 +52,7 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
         pairAccessPointsByEid(apws);
         // store all wrappers as persist or merge
         super.store(apws);
+        apStateRepository.save(apws.stream().map(AccessPointWrapper::getApState).collect(Collectors.toList()));
     }
 
     @Override

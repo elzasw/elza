@@ -106,7 +106,7 @@ public class AccessPointsContext {
     public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId, ApState apState, Collection<ApExternalId> eids) {
         // todo[dataexchange]: ApState se nikde neplni
         // AccessPointInfo info = new AccessPointInfo(entity.getApType(), entity.getScope());
-        AccessPointInfo info = new AccessPointInfo(apState.getApType(), apState.getScope());
+        AccessPointInfo info = new AccessPointInfo(apState);
         if (entryIdApInfoMap.putIfAbsent(entryId, info) != null) {
             throw new DEImportException("Access point has duplicate id, apeId:" + entryId);
         }

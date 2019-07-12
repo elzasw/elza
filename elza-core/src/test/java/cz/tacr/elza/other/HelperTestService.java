@@ -152,6 +152,8 @@ public class HelperTestService {
     private WfIssueRepository issueRepository;
     @Autowired
     private AuthenticationRepository authenticationRepository;
+    @Autowired
+    private ApStateRepository apStateRepository;
 
     @Autowired
     private PackageService packageService;
@@ -231,6 +233,7 @@ public class HelperTestService {
         partyRepository.deleteAll();
         apDescRepository.deleteAll();
         apEidRepository.deleteAll();
+        apStateRepository.deleteAll();
         apRepository.deleteAll();
         apChangeRepository.deleteAll();
         externalSystemRepository.deleteAll();
