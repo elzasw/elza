@@ -2,6 +2,7 @@ package cz.tacr.elza.validation.impl;
 
 import java.util.List;
 
+import cz.tacr.elza.repository.ApStateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -48,6 +49,9 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
 	@Autowired
 	NodeCacheService nodeCache;
 
+	@Autowired
+    private ApStateRepository stateRepository;
+
     @Override
     public List<DataValidationResult> postValidateNodeDescItems(final ArrLevel level,
                                                                 final ArrFundVersion version) {
@@ -71,7 +75,7 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
         List<RulItemTypeExt> nodeTypes = ruleService.getDescriptionItemTypes(version, level.getNode());
 
         // Create validator and validate
-        Validator validator = new Validator(nodeTypes, descItems, descItemFactory);
+        Validator validator = new Validator(nodeTypes, descItems, descItemFactory, stateRepository);
         validator.validate();
 
         List<DataValidationResult> validationResultList = validator.getValidationResultList();
