@@ -323,7 +323,7 @@ public class PartyService {
      * @param newParty nová osoba s navázanými daty
      * @return uložená osoba
      */
-    public ParParty saveParty(final ParParty newParty, final ApState apState) {
+    public ParParty saveParty(final ParParty newParty, ApState apState) {
         Assert.notNull(newParty, "Osoba musí být vyplněna");
 
         ParPartyType partyType = partyTypeRepository.findOne(newParty.getPartyType().getPartyTypeId());
@@ -334,7 +334,7 @@ public class PartyService {
         if (isNewParty) {
             newParty.setPartyType(partyType);
             // Rejstříkové heslo pro založení
-            synchRecord(newParty, apState);
+            apState = synchRecord(newParty, apState);
             saveParty = newParty;
         } else {
             saveParty = partyRepository.findOne(newParty.getPartyId());
@@ -382,7 +382,7 @@ public class PartyService {
      *
      * @param party osoba
      */
-    private void synchRecord(final ParParty party, final ApState apState) {
+    private ApState synchRecord(final ParParty party, final ApState apState) {
         Assert.notNull(party, "Osoba nesmí být prázdná");
         Assert.notNull(apState, "Přístupový bod musí být vyplněn");
 
@@ -400,7 +400,9 @@ public class PartyService {
         List<ApName> names = convResult.createNames();
         ApDescription description = convResult.createDesc();
 
-        party.setAccessPoint(accessPointService.syncAccessPoint(apState, names, description).getAccessPoint());
+        ApState result = accessPointService.syncAccessPoint(apState, names, description);
+        party.setAccessPoint(result.getAccessPoint());
+        return result;
     }
 
     /**
