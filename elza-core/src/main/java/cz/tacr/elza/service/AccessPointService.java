@@ -239,17 +239,17 @@ public class AccessPointService {
      * @param scopeId id scope, pokud je vyplněno hledají se rejstříky pouze s tímto scope
      * @return vybrané záznamy dle popisu seřazené za record, nbeo prázdná množina
      */
-    public List<ApAccessPoint> findApAccessPointByTextAndType(@Nullable final String searchRecord,
+    public List<ApState> findApAccessPointByTextAndType(@Nullable final String searchRecord,
                                                               @Nullable final Collection<Integer> apTypeIds,
                                                               final Integer firstResult,
                                                               final Integer maxResults,
                                                               @Nullable final ArrFund fund,
-                                                              @Nullable final Integer scopeId) {
+                                                              @Nullable final Integer scopeId,
+                                                              @Nullable final Collection<ApState.StateApproval> approvalStates) {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
-        return apAccessPointRepository.findApAccessPointByTextAndType(searchRecord, apTypeIds, firstResult,
-                maxResults, scopeIdsForSearch);
+        return apAccessPointRepository.findApAccessPointByTextAndType(searchRecord, apTypeIds, firstResult, maxResults, scopeIdsForSearch, approvalStates);
     }
 
 
@@ -265,12 +265,12 @@ public class AccessPointService {
     public long findApAccessPointByTextAndTypeCount(@Nullable final String searchRecord,
                                                     @Nullable final Collection<Integer> apTypeIds,
                                                     @Nullable final ArrFund fund,
-                                                    final Integer scopeId) {
+                                                    @Nullable final Integer scopeId,
+                                                    @Nullable final Collection<ApState.StateApproval> approvalStates) {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
-        return apAccessPointRepository.findApAccessPointByTextAndTypeCount(searchRecord, apTypeIds,
-                scopeIdsForSearch);
+        return apAccessPointRepository.findApAccessPointByTextAndTypeCount(searchRecord, apTypeIds, scopeIdsForSearch, approvalStates);
     }
 
     /**

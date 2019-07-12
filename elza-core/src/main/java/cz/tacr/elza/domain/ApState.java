@@ -26,6 +26,7 @@ public class ApState extends AbstractVersionableEntity implements IApScope, Vers
     public static final String FIELD_ACCESS_POINT_ID = "accessPointId";
     public static final String FIELD_AP_TYPE_ID = "apTypeId";
     public static final String FIELD_SCOPE_ID = "scopeId";
+    public static final String FIELD_STATE_APPROVAL = "stateApproval";
     public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
     public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
 
@@ -70,7 +71,7 @@ public class ApState extends AbstractVersionableEntity implements IApScope, Vers
     private Integer deleteChangeId;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = StringLength.LENGTH_ENUM, nullable = false)
+    @Column(name = FIELD_STATE_APPROVAL, length = StringLength.LENGTH_ENUM, nullable = false)
     private ApState.StateApproval stateApproval;
 
     @Column(length = StringLength.LENGTH_2000)

@@ -277,8 +277,6 @@ public class PartyController {
                                        @RequestParam(required = false) @Nullable final Integer versionId,
                                        @RequestParam(required = false) @Nullable final Integer scopeId,
                                        @RequestParam(required = false) @Nullable final ApState.StateApproval state) {
-        // TODO marek - filtrovat dle state
-
         ArrFund fund;
         if (versionId == null) {
             fund = null;
@@ -287,11 +285,10 @@ public class PartyController {
             fund = version.getFund();
         }
 
-        List<ParParty> partyList = partyService.findPartyByTextAndType(search, partyTypeId, itemSpecId, from, count,
-                fund, scopeId);
+        List<ParParty> partyList = partyService.findPartyByTextAndType(search, partyTypeId, itemSpecId, from, count, fund, scopeId, state);
         List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
 
-        long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, itemSpecId, fund, scopeId);
+        long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, itemSpecId, fund, scopeId, state);
         return new FilteredResultVO<>(resultVo, countAll);
     }
 
@@ -317,14 +314,17 @@ public class PartyController {
         ParParty party = partyRepository.getOneCheckExist(partyId);
         ApState apState = accessPointService.getState(party.getAccessPoint());
 
+        Set<Integer> apTypeIds = null;
+
         Set<Integer> scopeIds = new HashSet<>();
         scopeIds.add(apState.getScope().getScopeId());
 
-        List<ParParty> partyList = partyRepository.findPartyByTextAndType(search, partyTypeId, null, from, count, scopeIds);
+        Set<ApState.StateApproval> states = null;
+
+        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, apTypeIds, scopeIds, states);
+        List<ParParty> partyList = partyRepository.findPartyByTextAndType(search, partyTypeId, apTypeIds, from, count, scopeIds, states);
 
         List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
-
-        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, null, scopeIds);
         return new FilteredResultVO<>(resultVo, countAll);
     }
 

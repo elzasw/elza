@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -262,7 +263,9 @@ public class PartyService {
                                                  final Integer firstResult,
                                                  final Integer maxResults,
                                                  @Nullable final ArrFund fund,
-                                                 @Nullable final Integer scopeId) {
+                                                 @Nullable final Integer scopeId,
+                                                 @Nullable ApState.StateApproval state) {
+
         Set<Integer> scopeIdsForSearch = accessPointService.getScopeIdsForSearch(fund, scopeId);
 
         Set<Integer> apTypesIds = null;
@@ -270,8 +273,9 @@ public class PartyService {
             apTypesIds = this.find(itemSpecId);
         }
 
-        return partyRepository.findPartyByTextAndType(searchRecord, partyTypeId, apTypesIds, firstResult,
-                maxResults, scopeIdsForSearch);
+        Set<ApState.StateApproval> states = state != null ? EnumSet.of(state) : null;
+
+        return partyRepository.findPartyByTextAndType(searchRecord, partyTypeId, apTypesIds, firstResult, maxResults, scopeIdsForSearch, states);
     }
 
     private Set<Integer> find(final Integer itemSpecId) {
@@ -297,17 +301,19 @@ public class PartyService {
                                             final Integer partyTypeId,
                                             final Integer itemSpecId,
                                             @Nullable final ArrFund fund,
-                                            @Nullable final Integer scopeId) {
-        Set<Integer> scopeIdsForSearch = accessPointService.getScopeIdsForSearch(fund, scopeId);
+                                            @Nullable final Integer scopeId,
+                                            @Nullable final ApState.StateApproval state) {
 
+        Set<Integer> scopeIdsForSearch = accessPointService.getScopeIdsForSearch(fund, scopeId);
 
         Set<Integer> apTypesIds = null;
         if (itemSpecId != null) {
             apTypesIds = this.find(itemSpecId);
         }
 
-        return partyRepository.findPartyByTextAndTypeCount(searchRecord, partyTypeId, apTypesIds,
-                scopeIdsForSearch);
+        Set<ApState.StateApproval> states = state != null ? EnumSet.of(state) : null;
+
+        return partyRepository.findPartyByTextAndTypeCount(searchRecord, partyTypeId, apTypesIds, scopeIdsForSearch, states);
     }
 
     /**
@@ -847,7 +853,7 @@ public class PartyService {
     }
 
     public void deleteRelationAndSync(final ParRelation relation) {
-        ParParty parParty  = relation.getParty();
+        ParParty parParty = relation.getParty();
         deleteRelation(relation);
         ApState apState = accessPointService.getState(parParty.getAccessPoint());
         synchRecord(parParty, apState);

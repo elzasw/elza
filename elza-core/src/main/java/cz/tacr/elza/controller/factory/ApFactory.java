@@ -148,8 +148,8 @@ public class ApFactory {
     /**
      * Creates simple value object from AP.
      */
-    public ApRecordSimple createVOSimple(ApAccessPoint ap) {
-        ApState apState = stateRepository.findLastByAccessPoint(ap);
+    public ApRecordSimple createVOSimple(ApState apState) {
+        ApAccessPoint ap = apState.getAccessPoint();
         ApName prefName = nameRepository.findPreferredNameByAccessPoint(ap);
         ApDescription desc = descRepository.findByAccessPoint(ap);
         // create VO
@@ -207,14 +207,14 @@ public class ApFactory {
     /**
      * Creates value object from AP. Party Id is not set.
      */
-    public ApAccessPointVO createVO(ApState state) {
-        ApAccessPoint ap = state.getAccessPoint();
+    public ApAccessPointVO createVO(ApState apState) {
+        ApAccessPoint ap = apState.getAccessPoint();
         ApDescription desc = descRepository.findByAccessPoint(ap);
         // prepare names
         List<ApName> names = nameRepository.findByAccessPoint(ap);
         // prepare external ids
         List<ApExternalId> eids = eidRepository.findByAccessPoint(ap);
-        return createVO(state, desc, names, eids);
+        return createVO(apState, desc, names, eids);
     }
 
     public ApAccessPointVO createVO(ApState apState, boolean fillForm) {

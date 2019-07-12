@@ -3,9 +3,11 @@ package cz.tacr.elza.repository;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.AbstractQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Join;
@@ -20,6 +22,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ParParty;
 
 /**
@@ -39,20 +42,22 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
                                                  final Set<Integer> apTypeIds,
                                                  final Integer firstResult,
                                                  final Integer maxResults,
-                                                 final Set<Integer> scopeIds) {
+                                                 final Set<Integer> scopeIds,
+                                                 final Set<ApState.StateApproval> approvalStates) {
 
         if (CollectionUtils.isEmpty(scopeIds)) {
             return Collections.emptyList();
         }
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+
         CriteriaQuery<ParParty> query = builder.createQuery(ParParty.class);
         Subquery<Integer> subquery = query.subquery(Integer.class);
         Root<ParParty> partySubquery = subquery.from(ParParty.class);
         Root<ParParty> party = query.from(ParParty.class);
 
-        Predicate condition = preparePartyApSearchPredicate(searchRecord, partyTypeId, apTypeIds, scopeIds, party, builder, query, false, true);
-        Predicate conditionSubquery = preparePartyApSearchPredicate(searchRecord, partyTypeId, apTypeIds, scopeIds, partySubquery, builder, null, true, false);
+        Predicate condition = preparePartyApSearchPredicate(searchRecord, partyTypeId, apTypeIds, scopeIds, approvalStates, party, builder, query, query::orderBy, true);
+        Predicate conditionSubquery = preparePartyApSearchPredicate(searchRecord, partyTypeId, apTypeIds, scopeIds, approvalStates, partySubquery, builder, subquery, null, false);
 
         subquery.where(conditionSubquery);
         subquery.select(partySubquery.get(ParParty.FIELD_PARTY_ID));
@@ -76,17 +81,18 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
     public long findPartyByTextAndTypeCount(final String searchRecord,
                                             final Integer partyTypeId,
                                             final Set<Integer> apTypeIds,
-                                            final Set<Integer> scopeIds) {
+                                            final Set<Integer> scopeIds,
+                                            final Set<ApState.StateApproval> approvalStates) {
 
         if (CollectionUtils.isEmpty(scopeIds)) {
-            return 0;
+            return 0L;
         }
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
         Root<ParParty> party = query.from(ParParty.class);
 
-        Predicate condition = preparePartyApSearchPredicate(searchRecord, partyTypeId, apTypeIds, scopeIds, party, builder, query, true, false);
+        Predicate condition = preparePartyApSearchPredicate(searchRecord, partyTypeId, apTypeIds, scopeIds, approvalStates, party, builder, query, null, false);
 
         query.select(builder.countDistinct(party));
         if (condition != null) {
@@ -102,34 +108,32 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
     public void unsetAllPreferredName() {
         entityManager.createQuery("update par_party set " + ParParty.FIELD_PARTY_PREFERRED_NAME + " = null").executeUpdate();
     }
-    
+
     /**
      * Připraví dotaz pro nalezení rejstříkových záznamů.
      *
-     * @param searchValue
-     *            hledaný řetězec, může být null
-     * @param partyTypeId
-     *            typ záznamu
-     * @param scopeIds
-     *            seznam tříd rejstříků, ve kterých se vyhledává
-     * @param cb
-     *            buider pro vytváření podmínek
-     * @param query
+     * @param searchValue hledaný řetězec, může být null
+     * @param partyTypeId typ záznamu
+     * @param scopeIds seznam tříd rejstříků, ve kterých se vyhledává
+     * @param cb buider pro vytváření podmínek
      * @return výsledné podmínky pro dotaz, nebo null pokud není za co filtrovat
      */
     private static Predicate preparePartyApSearchPredicate(final String searchValue,
                                                            final Integer partyTypeId,
                                                            final Set<Integer> apTypeIds,
                                                            final Set<Integer> scopeIds,
+                                                           final Set<ApState.StateApproval> approvalStates,
                                                            final Root<ParParty> partyRoot,
                                                            final CriteriaBuilder cb,
-                                                           final CriteriaQuery<?> query,
-                                                           final boolean count,
+                                                           final AbstractQuery<?> query,
+                                                           final Consumer<Order> accessPointNameCallback,
                                                            final boolean onlyPrefferedName) {
         // join AP which must always exists
-        Join<ParParty, ApAccessPoint> apJoin = partyRoot.join(ParParty.FIELD_RECORD, JoinType.INNER);
+        Join<ParParty, ApAccessPoint> accessPoint = partyRoot.join(ParParty.FIELD_RECORD, JoinType.INNER);
+        Root<ApState> apState = query.from(ApState.class);
 
-        Predicate cond = ApAccessPointRepositoryImpl.prepareApSearchPredicate(searchValue, apTypeIds, scopeIds, apJoin, cb, query, count, onlyPrefferedName);
+        Predicate cond = ApAccessPointRepositoryImpl.prepareApSearchPredicate(searchValue, apTypeIds, scopeIds, approvalStates, accessPoint, apState, cb, accessPointNameCallback, onlyPrefferedName);
+
         // add party type condition
         if (partyTypeId != null) {
             Predicate typeCond = cb.equal(partyRoot.get(ParParty.FIELD_PARTY_TYPE_ID), partyTypeId);

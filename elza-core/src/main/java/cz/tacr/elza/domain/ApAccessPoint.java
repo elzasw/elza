@@ -16,17 +16,10 @@ import org.hibernate.annotations.Type;
 @Entity(name = "ap_access_point")
 public class ApAccessPoint extends AbstractVersionableEntity implements Versionable, IApAccessPoint {
 
-    // todo[ap_state]: odtranit konstanty pro fieldy apType, scope, deleteChange, createChange
     public static final String FIELD_ACCESS_POINT_ID = "accessPointId";
     public static final String FIELD_UUID = "uuid";
-    public static final String FIELD_AP_TYPE = "apType";
-    public static final String FIELD_AP_TYPE_ID = "apTypeId";
-    public static final String FIELD_SCOPE = "scope";
-    public static final String FIELD_SCOPE_ID = "scopeId";
     public static final String FIELD_NAMES = "names";
     public static final String FIELD_DESCRIPTIONS = "descriptions";
-    public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
-    public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
     public static final String STATE = "state";
     public static final String RULE_SYSTEM_ID = "ruleSystemId";
 

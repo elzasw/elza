@@ -1,9 +1,11 @@
 package cz.tacr.elza.controller;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -191,7 +193,6 @@ public class ApController {
                                                              @RequestParam(required = false) @Nullable final ApState.StateApproval state,
                                                              @RequestParam(required = false) @Nullable final Integer scopeId,
                                                              @RequestParam(required = false) @Nullable final Integer lastRecordNr) {
-        // TODO marek - filtrovat dle state
 
         if (apTypeId != null && (itemSpecId != null || itemTypeId != null)) {
             throw new SystemException("Nelze použít více kritérií zároveň (specifikace/typ a typ rejstříku).", BaseCode.SYSTEM_ERROR);
@@ -221,17 +222,15 @@ public class ApController {
             fund = version.getFund();
         }
 
-        final long foundRecordsCount = accessPointService.findApAccessPointByTextAndTypeCount(search, apTypeIdTree, fund, scopeId);
+        Set<ApState.StateApproval> states = state != null ? EnumSet.of(state) : null;
 
-        List<ApAccessPoint> foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIdTree, from, count, fund, scopeId);
+        final long foundRecordsCount = accessPointService.findApAccessPointByTextAndTypeCount(search, apTypeIdTree, fund, scopeId, states);
 
-        // todo[ap_state]: ve foundRecords vracet primo List<ApState>
-        Map<Integer, ApState> apStateMap = accessPointService.groupStateByAccessPointId(foundRecords.stream().map(ap -> ap.getAccessPointId()).collect(Collectors.toList()));
+        final List<ApState> foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIdTree, from, count, fund, scopeId, states);
 
-        Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(foundRecords);
+        Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(foundRecords.stream().map(apState -> apState.getAccessPoint()).collect(Collectors.toList()));
 
-        return new FilteredResultVO<>(foundRecords, ap -> {
-            ApState apState = apStateMap.get(ap.getAccessPointId());
+        return new FilteredResultVO<>(foundRecords, apState -> {
             ApAccessPointVO vo = apFactory.createVO(apState);
             vo.setPartyId(recordIdPartyIdMap.get(vo.getId()));
             return vo;
@@ -272,9 +271,11 @@ public class ApController {
         scopeIds.add(scope.getScopeId());
         scopeRepository.findConnectedByScope(scope).forEach(cs -> scopeIds.add(cs.getScopeId()));
 
-        final long foundRecordsCount = accessPointRepository.findApAccessPointByTextAndTypeCount(search, apTypeIds, scopeIds);
+        Collection<ApState.StateApproval> states = null;
 
-        final List<ApAccessPoint> foundRecords = accessPointRepository.findApAccessPointByTextAndType(search, apTypeIds, from, count, scopeIds);
+        final long foundRecordsCount = accessPointRepository.findApAccessPointByTextAndTypeCount(search, apTypeIds, scopeIds, states);
+
+        final List<ApState> foundRecords = accessPointRepository.findApAccessPointByTextAndType(search, apTypeIds, from, count, scopeIds, states);
 
         return new FilteredResultVO<>(foundRecords, ap -> apFactory.createVOSimple(ap), foundRecordsCount);
     }
