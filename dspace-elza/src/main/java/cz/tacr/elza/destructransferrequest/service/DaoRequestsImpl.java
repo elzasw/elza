@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 
 import javax.ws.rs.ProcessingException;
 import java.math.BigInteger;
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -55,6 +54,7 @@ public class DaoRequestsImpl implements DaoRequests{
         try {
             context = ContextUtils.createContext();
         } catch (Exception e) {
+            context.abort();
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
         }
         try {
@@ -90,11 +90,9 @@ public class DaoRequestsImpl implements DaoRequests{
 
             result = destructRequest.getUuid();
         }
-        catch (SQLException es) {
-            throw new DaoServiceException("Chyba při ukládání požadavku " + destructionRequest.getIdentifier() + " do databáze: " + es);
-        }
         catch (Exception e) {
-            throw new ProcessingException(e.getLocalizedMessage(), e);
+            context.abort();
+            throw new DaoServiceException("Chyba při ukládání požadavku " + destructionRequest.getIdentifier() + " do databáze: " + e);
         }
 
         log.info("Ukončena metoda postDestructionRequest");
@@ -139,11 +137,9 @@ public class DaoRequestsImpl implements DaoRequests{
             context.complete();
 
             result = destructRequest.getUuid();
-        }
-        catch (SQLException es) {
-            throw new DaoServiceException("Chyba při ukládání požadavku " + transferRequest.getIdentifier() + " do databáze: " + es);
         } catch (Exception e) {
-            throw new DaoServiceException(e.getLocalizedMessage(), e);
+            context.abort();
+            throw new DaoServiceException("Chyba při ukládání požadavku " + transferRequest.getIdentifier() + " do databáze: " + e);
         }
 
         log.info("Ukončena metoda postTransferRequest");
@@ -164,6 +160,7 @@ public class DaoRequestsImpl implements DaoRequests{
         try {
             context = ContextUtils.createContext();
         } catch (Exception e) {
+            context.abort();
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
         }
 
@@ -197,6 +194,7 @@ public class DaoRequestsImpl implements DaoRequests{
                             try {
                                 format = bitstream.getFormat(context);
                             } catch (Exception e) {
+                                context.abort();
                                 throw new ProcessingException("Chyba při načtení formátu z bitstreamu: " + e.getMessage());
                             }
                             if (format != null) {

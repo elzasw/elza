@@ -51,6 +51,7 @@ public class DaoNotificationsImpl implements DaoNotifications {
             context = ContextUtils.createContext();
             context.turnOffAuthorisationSystem(); //TODO:cacha - zrušit
         } catch (SQLException e) {
+            context.abort();
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
         }
 
@@ -69,7 +70,7 @@ public class DaoNotificationsImpl implements DaoNotifications {
         log.info("Aktualizuji metadata element=" + mt[1] + " pro položku digitalizátu Uuid=" + uuId + " schema=" +
                 mt[0] + ".");
         List<MetadataValue> metadataList = itemService.getMetadata(item, mt[0], mt[1], mt[2], Item.ANY);
-        setMetadataValue(context, item, metadataList, Boolean.TRUE.toString());
+        setMetadataValue(context, item, metadataList, Boolean.TRUE.toString(), METADATA_ISELZA);
 
         Did did = onDaoLinked.getDid();
         if (did != null) {
@@ -78,13 +79,14 @@ public class DaoNotificationsImpl implements DaoNotifications {
                 log.info("Aktualizuji metadata element=" + mt[1] + " pro položku digitalizátu Uuid=" + uuId + " schema=" +
                         mt[0] + ".");
                 metadataList = itemService.getMetadata(item, mt[0], mt[1], mt[2], Item.ANY);
-                setMetadataValue(context, item, metadataList, did.getIdentifier());
+                setMetadataValue(context, item, metadataList, did.getIdentifier(), METADATA_ELZADIDID);
             }
         }
 
         try {
             context.complete();
-        } catch (SQLException e) {
+        } catch (Exception e) {
+            context.abort();
             throw new ProcessingException("Chyba při ukončení contextu: " + e.getMessage());
         }
 
@@ -99,6 +101,7 @@ public class DaoNotificationsImpl implements DaoNotifications {
             context = ContextUtils.createContext();
             context.turnOffAuthorisationSystem(); //TODO:cacha - zrušit
         } catch (SQLException e) {
+            context.abort();
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
         }
 
@@ -117,6 +120,7 @@ public class DaoNotificationsImpl implements DaoNotifications {
                 itemService.removeMetadataValues(context, item, metadataValueList);
                 itemService.update(context, item);
             } catch (Exception e) {
+                context.abort();
                 throw new ProcessingException("Chyba při odstranění metadat položky digitalizátu (" + uuId + "): " + e.getMessage());
             }
         }
@@ -125,11 +129,12 @@ public class DaoNotificationsImpl implements DaoNotifications {
         log.info("Aktualizuji metadata element=" + mt[1] + " pro položku digitalizátu Uuid=" + uuId + " schema=" +
                 mt[0] + ".");
         List<MetadataValue> metadataList = itemService.getMetadata(item, mt[0], mt[1], mt[2], Item.ANY);
-        setMetadataValue(context, item, metadataList, Boolean.FALSE.toString());
+        setMetadataValue(context, item, metadataList, Boolean.FALSE.toString(), METADATA_ISELZA);
 
         try {
             context.complete();
-        } catch (SQLException e) {
+        } catch (Exception e) {
+            context.abort();
             throw new ProcessingException("Chyba při ukončení contextu: " + e.getMessage());
         }
 
@@ -157,8 +162,8 @@ public class DaoNotificationsImpl implements DaoNotifications {
      * @param metadataList
      * @param mdValue
      */
-    private void setMetadataValue(Context context, Item item, List<MetadataValue> metadataList, String mdValue) {
-        final String[] mt = MetadataConstantService.getMetaData(METADATA_ISELZA);
+    private void setMetadataValue(Context context, Item item, List<MetadataValue> metadataList, String mdValue, String mdField) {
+        final String[] mt = MetadataConstantService.getMetaData(mdField);
         try {
             ItemService itemService = item.getItemService();
             if (metadataList.size() == 0) {
@@ -176,7 +181,7 @@ public class DaoNotificationsImpl implements DaoNotifications {
                 throw new DaoServiceException("Chyba při ukládání položky " + item.getID() + " do databáze: " + es);
         }
         catch (Exception e) {
-            throw new ProcessingException("Chyba při nastavení metadat  pro položku digitalizátu Uuid=" + item.getID() +
+            throw new ProcessingException("Chyba při nastavení metadat pro položku digitalizátu Uuid=" + item.getID() +
                     " schema=" + mt[0] + " element=" + mt[1] + ": " + e.getMessage());
         }
     }
