@@ -451,9 +451,6 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
         Request request = ObjectModelHelper.getRequest(objectModel);
         String show = request.getParameter("sendToElza");
 
-
-
-        //elzaRequestService.sendItemToElza(objectModel);
         try {
             DSpaceObject dso = HandleUtil.obtainHandle(objectModel);
             if (!(dso instanceof Item))
