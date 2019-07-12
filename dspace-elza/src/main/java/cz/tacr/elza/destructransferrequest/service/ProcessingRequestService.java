@@ -140,6 +140,7 @@ public class ProcessingRequestService {
             destructTransferRequest = descructTransferRequestService.findByTypeAndStatus(context,
                     DestructTransferRequest.Status.QUEUED, DestructTransferRequest.RequestType.TRANSFER);
         } catch (SQLException e) {
+            context.abort();
             throw new ProcessingException("Chyba při vyhledání požadavků na delimitaci: " + e.getMessage());
         }
 
@@ -191,7 +192,7 @@ public class ProcessingRequestService {
                     log.info("Vyhledávám metadata pro položku digitalizátu Uuid=" + uuId + " schema=" + mt[0] +
                             " element=" + mt[1] + ".");
                     List<MetadataValue> metadataList = itemService.getMetadata(item, mt[0], mt[1], mt[2], Item.ANY);
-                    setMetadataValue(context, item, metadataList, Boolean.FALSE.toString());
+                    setMetadataValue(context, item, metadataList, Boolean.FALSE.toString(), METADATA_ISELZA);
                 }
 
                 log.info("Aktualizuji stav požadavku na delimitaci.");
@@ -223,6 +224,7 @@ public class ProcessingRequestService {
                 requestRevoked.setDescription(e.getMessage());
                 WsClient.transferRequestRevoked(requestRevoked);
             } catch (Exception e1) {
+                context.abort();
                 throw new ProcessingException("Chyba při zpracování chybového stavu požadavku na delimitaci: " + e1.getMessage());
             }
         }
@@ -257,8 +259,8 @@ public class ProcessingRequestService {
      * @param metadataList
      * @param mdValue
      */
-    private void setMetadataValue(Context context, Item item, List<MetadataValue> metadataList, String mdValue) {
-        final String[] mt = MetadataConstantService.getMetaData(METADATA_ISELZA);
+    private void setMetadataValue(Context context, Item item, List<MetadataValue> metadataList, String mdValue, String mdField) {
+        final String[] mt = MetadataConstantService.getMetaData(mdField);
         try {
             ItemService itemService = item.getItemService();
             if (metadataList.size() == 0) {
