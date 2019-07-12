@@ -142,7 +142,7 @@
     </changeSet>
 
     <changeSet id="20190704130000" author="marek">
-        <dropNotNullConstraint tableName="ap_state" columnName="delete_change_id"/>
+        <dropNotNullConstraint tableName="ap_state" columnName="delete_change_id" columnDataType="int"/>
     </changeSet>
     <changeSet id="20190704133000" author="marek">
         <sql>
@@ -162,6 +162,6 @@
         <dropColumn tableName="ap_access_point" columnName="delete_change_id"/>
     </changeSet>
     <changeSet id="20190711200000" author="marek">
-        <renameColumn tableName="ap_state" oldColumnName="type_id" newColumnName="ap_type_id"/>
+        <renameColumn tableName="ap_state" oldColumnName="type_id" newColumnName="ap_type_id" columnDataType="int"/>
     </changeSet>
 </databaseChangeLog>
