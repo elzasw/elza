@@ -457,8 +457,7 @@ public class ConfigMapperConfiguration {
                 .customize(new CustomMapper<ParParty, ParPartyVO>() {
                     @Override
                     public void mapAtoB(ParParty a, ParPartyVO b, MappingContext context) {
-                        ApState apState = apStateRepository.findLastByAccessPoint(a.getAccessPoint());
-                        ApAccessPointVO apVO = apFactory.createVO(apState);
+                        ApAccessPointVO apVO = apFactory.createVO(a.getAccessPoint());
                         b.setAccessPoint(apVO);
                     }
                     @Override
@@ -592,7 +591,6 @@ public class ConfigMapperConfiguration {
                                         final MappingContext context) {
                         ParRelation relation = parRelationEntity.getRelation();
                         parRelationEntityVO.setRelationId(relation.getRelationId());
-
                         ApAccessPointVO apVO = apFactory.createVO(parRelationEntity.getAccessPoint());
                         parRelationEntityVO.setRecord(apVO);
                     }

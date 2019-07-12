@@ -199,6 +199,14 @@ public class ApFactory {
     /**
      * Creates value object from AP. Party Id is not set.
      */
+    public ApAccessPointVO createVO(ApAccessPoint accessPoint) {
+        ApState apState = stateRepository.findLastByAccessPoint(accessPoint);
+        return createVO(apState);
+    }
+
+    /**
+     * Creates value object from AP. Party Id is not set.
+     */
     public ApAccessPointVO createVO(ApState state) {
         ApAccessPoint ap = state.getAccessPoint();
         ApDescription desc = descRepository.findByAccessPoint(ap);

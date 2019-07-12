@@ -1,8 +1,5 @@
 package cz.tacr.elza.print;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +28,7 @@ import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
 import cz.tacr.elza.repository.ApNameRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -39,6 +37,9 @@ import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.output.OutputParams;
 import cz.tacr.elza.service.output.generator.OutputGeneratorFactory;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class OutputModelTest extends AbstractServiceTest {
 
@@ -53,6 +54,9 @@ public class OutputModelTest extends AbstractServiceTest {
 
     @Autowired
     NodeCacheService nodeCacheService;
+
+    @Autowired
+    ApStateRepository apStateRepository;
 
     @Autowired
     ApDescriptionRepository apDescRepository;
@@ -136,7 +140,7 @@ public class OutputModelTest extends AbstractServiceTest {
         assertNotNull(descItemResult2);
 
         OutputModel outputModel = new OutputModel(staticDataService, elzaLocale,
-                fundTreeProvider, nodeCacheService, institutionRepository,
+                fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
                 apDescRepository, apNameRepository, apEidRepository,
                 null, structObjRepos, structItemRepos);
 

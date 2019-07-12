@@ -78,69 +78,6 @@ import cz.tacr.elza.repository.UIPartyGroupRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.UserService;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-
-import cz.tacr.elza.domain.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import cz.tacr.elza.controller.config.ClientFactoryDO;
-import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.factory.ApFactory;
-import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.ParComplementTypeVO;
-import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.UIPartyGroupVO;
-import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.exception.DeleteException;
-import cz.tacr.elza.exception.Level;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.RegistryCode;
-import cz.tacr.elza.exception.codes.UserCode;
-import cz.tacr.elza.repository.ApTypeRepository;
-import cz.tacr.elza.repository.ComplementTypeRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.InstitutionRepository;
-import cz.tacr.elza.repository.PartyNameFormTypeRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
-import cz.tacr.elza.repository.PartyTypeRelationRepository;
-import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.RelationRepository;
-import cz.tacr.elza.repository.RelationRoleTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
-import cz.tacr.elza.repository.UIPartyGroupRepository;
-import cz.tacr.elza.service.AccessPointService;
-import cz.tacr.elza.service.PartyService;
-import cz.tacr.elza.service.UserService;
 
 
 /**
@@ -339,7 +276,7 @@ public class PartyController {
                                        @Nullable @RequestParam(required = false) final Integer itemSpecId,
                                        @RequestParam(required = false) @Nullable final Integer versionId,
                                        @RequestParam(required = false) @Nullable final Integer scopeId,
-                                       @RequestParam(required = false) @Nullable final ApStateApproval state) {
+                                       @RequestParam(required = false) @Nullable final ApState.StateApproval state) {
         // TODO marek - filtrovat dle state
 
         ArrFund fund;

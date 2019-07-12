@@ -58,6 +58,12 @@ public interface RelationEntityRepository extends ElzaJpaRepository<ParRelationE
      * @param record rejstřík
      * @return seznam aktivních vazeb
      */
-    @Query("SELECT re FROM par_relation_entity re JOIN FETCH re.relation r JOIN FETCH r.party p WHERE re.accessPoint = ?1 AND p.accessPoint.deleteChangeId IS NULL")
+    @Query("SELECT re" +
+            " FROM par_relation_entity re" +
+            " JOIN FETCH re.relation r" +
+            " JOIN FETCH r.party p" +
+            " JOIN ap_state s ON s.accessPoint = p.accessPoint" +
+            " WHERE re.accessPoint = ?1" +
+            " AND s.deleteChange IS NULL")
 	List<ParRelationEntity> findActiveByRecord(ApAccessPoint record);
 }

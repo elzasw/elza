@@ -1,8 +1,8 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.domain.ApStateApproval;
-
 import java.util.Date;
+
+import cz.tacr.elza.domain.ApState;
 
 public class ApStateHistoryVO {
 
@@ -29,7 +29,7 @@ public class ApStateHistoryVO {
     /**
      * Stav změny.
      */
-    private ApStateApproval state;
+    private ApState.StateApproval state;
 
     /**
      * Komentář změny.
@@ -68,11 +68,11 @@ public class ApStateHistoryVO {
         this.type = type;
     }
 
-    public ApStateApproval getState() {
+    public ApState.StateApproval getState() {
         return state;
     }
 
-    public void setState(final ApStateApproval state) {
+    public void setState(final ApState.StateApproval state) {
         this.state = state;
     }
 

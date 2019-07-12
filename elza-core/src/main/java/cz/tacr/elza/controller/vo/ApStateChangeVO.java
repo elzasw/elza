@@ -1,11 +1,11 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.domain.ApStateApproval;
+import cz.tacr.elza.domain.ApState;
 
 public class ApStateChangeVO {
 
     private String comment;
-    private ApStateApproval state;
+    private ApState.StateApproval state;
     private Integer scopeId;
     private Integer typeId;
 
@@ -17,11 +17,11 @@ public class ApStateChangeVO {
         this.comment = comment;
     }
 
-    public ApStateApproval getState() {
+    public ApState.StateApproval getState() {
         return state;
     }
 
-    public void setState(final ApStateApproval state) {
+    public void setState(final ApState.StateApproval state) {
         this.state = state;
     }
 

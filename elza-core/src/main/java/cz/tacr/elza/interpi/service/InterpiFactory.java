@@ -237,7 +237,7 @@ public class InterpiFactory {
         // creates new AP
         // ApAccessPointData apData = createPartyApData(interpiEntity, interpiRecordId, apScope, apId);
 
-        ParParty newParty = createParty(apState.getAccessPoint(), interpiEntity, isOriginator, apExternalSystem, mappings);
+        ParParty newParty = createParty(apState, interpiEntity, isOriginator, apExternalSystem, mappings);
         newParty.setPartyId(partyId);
         newParty.setVersion(partyVersion);
 
@@ -507,9 +507,9 @@ public class InterpiFactory {
      * @param apExternalSystem externí systém
      * @param mappings mapování vztahů
      */
-    private void fillParty(final ParParty parParty, final InterpiEntity interpiEntity,
+    private void fillParty(final ParParty parParty, ApState apState, final InterpiEntity interpiEntity,
                            final ApExternalSystem apExternalSystem, final List<MappingVO> mappings) {
-//        parParty.setPartyCreators(null); // po dohodě s Honzou Vejskalem neimportovat, není jak
+        //        parParty.setPartyCreators(null); // po dohodě s Honzou Vejskalem neimportovat, není jak
 
         List<ParPartyName> partyNames = new LinkedList<>();
         List<OznaceniTyp> variantniOznaceniList = interpiEntity.getVariantniOznaceni();
@@ -534,11 +534,11 @@ public class InterpiFactory {
         fillAdditionalInfo(parParty, interpiEntity);
 
         if (parParty.isOriginator() && CollectionUtils.isNotEmpty(mappings)) {
-            fillRelations(parParty, interpiEntity, apExternalSystem, mappings);
+            fillRelations(parParty, apState.getScope(), interpiEntity, apExternalSystem, mappings);
         }
     }
 
-    private void fillRelations(final ParParty parParty, final InterpiEntity interpiEntity,
+    private void fillRelations(final ParParty parParty, final ApScope apScope, final InterpiEntity interpiEntity,
                                final ApExternalSystem apExternalSystem, final List<MappingVO> mappings) {
         List<UdalostTyp> pocatekExistence = interpiEntity.getPocatekExistence();
         List<UdalostTyp> konecExistence = interpiEntity.getKonecExistence();
@@ -547,27 +547,27 @@ public class InterpiFactory {
         List<SouvisejiciTyp> souvisejiciEntitaList = interpiEntity.getSouvisejiciEntita();
 
         List<ParRelation> relations = new LinkedList<>();
-        List<ParRelation> createRelations = createRelations(pocatekExistence, parParty, InterpiClass.POCATEK_EXISTENCE,
+        List<ParRelation> createRelations = createRelations(pocatekExistence, parParty, apScope, InterpiClass.POCATEK_EXISTENCE,
                 apExternalSystem, mappings);
         if (CollectionUtils.isNotEmpty(createRelations)) {
             relations.addAll(createRelations);
         }
-        List<ParRelation> endRelations = createRelations(konecExistence, parParty, InterpiClass.KONEC_EXISTENCE,
+        List<ParRelation> endRelations = createRelations(konecExistence, parParty, apScope, InterpiClass.KONEC_EXISTENCE,
                 apExternalSystem, mappings);
         if (CollectionUtils.isNotEmpty(endRelations)) {
             relations.addAll(endRelations);
         }
-        List<ParRelation> relRelations = createRelations(udalostList, parParty, InterpiClass.UDALOST,
+        List<ParRelation> relRelations = createRelations(udalostList, parParty, apScope, InterpiClass.UDALOST,
                 apExternalSystem, mappings);
         if (CollectionUtils.isNotEmpty(relRelations)) {
             relations.addAll(relRelations);
         }
-        List<ParRelation> changeRelations = createRelations(zmenaList, parParty, InterpiClass.ZMENA,
+        List<ParRelation> changeRelations = createRelations(zmenaList, parParty, apScope, InterpiClass.ZMENA,
                 apExternalSystem, mappings);
         if (CollectionUtils.isNotEmpty(changeRelations)) {
             relations.addAll(changeRelations);
         }
-        List<ParRelation> entityRelations = createEntityRelations(souvisejiciEntitaList, parParty, InterpiClass.SOUVISEJICI_ENTITA,
+        List<ParRelation> entityRelations = createEntityRelations(souvisejiciEntitaList, parParty, apScope, InterpiClass.SOUVISEJICI_ENTITA,
                 apExternalSystem, mappings);
         if (CollectionUtils.isNotEmpty(entityRelations)) {
             relations.addAll(entityRelations);
@@ -578,7 +578,7 @@ public class InterpiFactory {
     }
 
     private List<ParRelation> createEntityRelations(final List<SouvisejiciTyp> souvisejiciEntitaList,
-                                                    final ParParty parParty, final InterpiClass interpiClass,
+                                                    final ParParty parParty, final ApScope apScope, final InterpiClass interpiClass,
                                                     final ApExternalSystem apExternalSystem, final List<MappingVO> mappings) {
         if (CollectionUtils.isEmpty(souvisejiciEntitaList)) {
             return Collections.emptyList();
@@ -600,13 +600,13 @@ public class InterpiFactory {
                 relationsMap.put(entityRelation.getRelationType().getCode(), entityRelation);
             }
 
-            createParRelationEntity(parParty, apExternalSystem, entityRelation, souvisejiciTyp, mappingVO.getParRelationRoleType());
+            createParRelationEntity(parParty, apExternalSystem, entityRelation, souvisejiciTyp, mappingVO.getParRelationRoleType(), apScope);
         }
 
         return new ArrayList<>(relationsMap.values());
     }
 
-    private List<ParRelation> createRelations(final List<UdalostTyp> udalostList, final ParParty parParty, final InterpiClass interpiClass,
+    private List<ParRelation> createRelations(final List<UdalostTyp> udalostList, final ParParty parParty, final ApScope apScope, final InterpiClass interpiClass,
                                               final ApExternalSystem apExternalSystem, final List<MappingVO> mappings) {
         List<ParRelation> relations = new LinkedList<>();
         if (CollectionUtils.isEmpty(udalostList)) {
@@ -645,7 +645,7 @@ public class InterpiFactory {
                         relations.add(parRelation);
                     }
 
-                    createParRelationEntity(parParty, apExternalSystem, parRelation, souvisejiciTyp, mappingVO.getParRelationRoleType());
+                    createParRelationEntity(parParty, apExternalSystem, parRelation, souvisejiciTyp, mappingVO.getParRelationRoleType(), apScope);
                 }
             }
         }
@@ -694,12 +694,13 @@ public class InterpiFactory {
     }
 
     private void createParRelationEntity(final ParParty parParty, final ApExternalSystem apExternalSystem,
-            final ParRelation parRelation, final SouvisejiciTyp souvisejiciTyp, final ParRelationRoleType parRelationRoleType) {
+            final ParRelation parRelation, final SouvisejiciTyp souvisejiciTyp, final ParRelationRoleType parRelationRoleType,
+            final ApScope apScope) {
         ParRelationEntity parRelationEntity = new ParRelationEntity();
         parRelationEntity.setNote(souvisejiciTyp.getPoznamka());
         parRelationEntity.setRelation(parRelation);
 
-        ApAccessPoint entityRecord = getRelationEntityRecord(parParty, apExternalSystem, souvisejiciTyp);
+        ApAccessPoint entityRecord = getRelationEntityRecord(parParty, apExternalSystem, souvisejiciTyp, apScope);
         parRelationEntity.setAccessPoint(entityRecord);
 
         parRelationEntity.setRoleType(parRelationRoleType);
@@ -1078,14 +1079,14 @@ public class InterpiFactory {
     /**
      * Vytvoří osobu.
      *
-     * @param accessPoint rejstříkové heslo osoby
+     * @param apState rejstříkové heslo osoby
      * @param isOriginator příznak původce
      * @param apExternalSystem systém ze kterého je osoba
      * @param mappings mapování vztahů
      *
      * @return osoba
      */
-    private ParParty createParty(final ApAccessPoint accessPoint, final InterpiEntity interpiEntity,
+    private ParParty createParty(final ApState apState, final InterpiEntity interpiEntity,
                                  final boolean isOriginator, final ApExternalSystem apExternalSystem, final List<MappingVO> mappings) {
         TridaTyp trida = interpiEntity.getTrida();
 
@@ -1113,10 +1114,10 @@ public class InterpiFactory {
         }
 
         parParty.setPartyType(parPartyType);
-        parParty.setAccessPoint(accessPoint);
+        parParty.setAccessPoint(apState.getAccessPoint());
         parParty.setOriginator(isOriginator);
 
-        fillParty(parParty, interpiEntity, apExternalSystem, mappings);
+        fillParty(parParty, apState, interpiEntity, apExternalSystem, mappings);
 
         return parParty;
     }

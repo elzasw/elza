@@ -20,6 +20,7 @@ import cz.tacr.elza.print.OutputModel;
 import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
 import cz.tacr.elza.repository.ApNameRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -43,7 +44,8 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
                               FundTreeProvider fundTreeProvider,
                               NodeCacheService nodeCacheService,
                               InstitutionRepository institutionRepository,
-                              ApDescriptionRepository apDescRepository, 
+                              ApStateRepository apStateRepository,
+                              ApDescriptionRepository apDescRepository,
                               ApNameRepository apNameRepository,
                               ApExternalIdRepository apEidRepository,
                               EntityManager em,
@@ -54,7 +56,7 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
         StructuredItemRepository structItemRepos = applicationContext.getBean(StructuredItemRepository.class);
 
         outputModel = new OutputModel(staticDataService, elzaLocale,
-                fundTreeProvider, nodeCacheService, institutionRepository,
+                fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
                 apDescRepository, apNameRepository, apEidRepository, null, structObjRepos, structItemRepos);
     }
 
