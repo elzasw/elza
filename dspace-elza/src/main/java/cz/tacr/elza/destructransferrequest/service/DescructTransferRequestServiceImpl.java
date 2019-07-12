@@ -50,21 +50,7 @@ public class DescructTransferRequestServiceImpl implements DescructTransferReque
         }
 
         // Create a table row and update it with the values
-        DestructTransferRequest destructTransfRequest = destructTransferRequestDAO.create(context, new DestructTransferRequest());
-        destructTransfRequest.setUuid(destructTransferRequest.getUuid());
-        destructTransfRequest.setDaoIdentifiers(destructTransferRequest.getDaoIdentifiers());
-        destructTransfRequest.setDescription(destructTransferRequest.getDescription());
-        destructTransfRequest.setIdentifier(destructTransferRequest.getIdentifier());
-        destructTransfRequest.setProcessingDate(destructTransferRequest.getProcessingDate());
-        destructTransfRequest.setRejectedMessage(destructTransferRequest.getRejectedMessage());
-        destructTransfRequest.setRequestDate(destructTransferRequest.getRequestDate());
-        destructTransfRequest.setRequestType(destructTransferRequest.getRequestType());
-        destructTransfRequest.setStatus(destructTransferRequest.getStatus());
-        destructTransfRequest.setSystemIdentifier(destructTransferRequest.getSystemIdentifier());
-        destructTransfRequest.setTargetFund(destructTransferRequest.getTargetFund());
-        destructTransfRequest.setUserName(destructTransferRequest.getUserName());
-
-        destructTransferRequestDAO.save(context, destructTransfRequest);
+        DestructTransferRequest destructTransfRequest = destructTransferRequestDAO.create(context, destructTransferRequest);
         log.info(LogManager.getHeader(context, "create_destruct_transfer_request",
                 "destruct_transfer_request_id=" + destructTransfRequest.getRequestId()));
 
