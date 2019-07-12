@@ -22,6 +22,7 @@ import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode.ChildNodeType;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.schema.v2.AccessPoint;
 import cz.tacr.elza.schema.v2.AccessPointEntry;
@@ -89,9 +90,11 @@ public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStr
 
     public static AccessPointEntry createEntry(BaseApInfo apInfo) {
         ApAccessPoint ap = apInfo.getAp();
+        // todo[dataexchange]: ApState se nikde neplni
+        ApState apState = apInfo.getApState();
         AccessPointEntry entry = new AccessPointEntry();
         entry.setId(ap.getAccessPointId().toString());
-        entry.setT(ap.getApType().getCode());
+        entry.setT(apState.getApType().getCode());
         entry.setUuid(ap.getUuid());
 
         // prepare external id

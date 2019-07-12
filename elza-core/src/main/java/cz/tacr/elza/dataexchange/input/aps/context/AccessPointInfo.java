@@ -9,6 +9,7 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
 import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApType;
 
 /**
@@ -21,6 +22,8 @@ public class AccessPointInfo implements EntityIdHolder<ApAccessPoint> {
 
     private final ApType apType;
 
+    private final ApScope apScope;
+
     private Integer entityId;
 
     private SaveMethod saveMethod;
@@ -31,8 +34,9 @@ public class AccessPointInfo implements EntityIdHolder<ApAccessPoint> {
 
     private boolean processed;
 
-    public AccessPointInfo(ApType apType) {
+    public AccessPointInfo(ApType apType, ApScope apScope) {
         this.apType = apType;
+        this.apScope = apScope;
     }
 
     @Override
@@ -55,6 +59,10 @@ public class AccessPointInfo implements EntityIdHolder<ApAccessPoint> {
 
     public ApType getApType() {
         return apType;
+    }
+
+    public ApScope getApScope() {
+        return apScope;
     }
 
     public SaveMethod getSaveMethod() {

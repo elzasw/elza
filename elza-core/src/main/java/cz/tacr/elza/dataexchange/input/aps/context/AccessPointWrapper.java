@@ -10,6 +10,7 @@ import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
 import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApExternalId;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 import cz.tacr.elza.service.ArrangementService;
 
@@ -20,6 +21,9 @@ public class AccessPointWrapper implements EntityWrapper {
 
     private final ApAccessPoint entity;
 
+    // todo[dataexchange]: odstranit ApState
+    private final ApState apState;
+
     private final AccessPointInfo apInfo;
 
     private final Collection<ApExternalId> externalIds;
@@ -28,11 +32,13 @@ public class AccessPointWrapper implements EntityWrapper {
 
     private SaveMethod saveMethod = SaveMethod.CREATE;
 
-    AccessPointWrapper(ApAccessPoint entity, 
+    AccessPointWrapper(ApAccessPoint entity,
+                       ApState apState,
                        AccessPointInfo apInfo,
-                       Collection<ApExternalId> externalIds, 
+                       Collection<ApExternalId> externalIds,
                        ArrangementService arrangementService) {
         this.entity = Validate.notNull(entity);
+        this.apState = apState;
         this.apInfo = Validate.notNull(apInfo);
         this.externalIds = externalIds;
         this.arrangementService = arrangementService;
@@ -66,13 +72,19 @@ public class AccessPointWrapper implements EntityWrapper {
         // access point id is valid (not null)
         int accessPointId = dbInfo.getAccessPointId();
 
-        if (!entity.getScopeId().equals(dbInfo.getScopeId())) {
+        // todo[dataexchange]: ApState se nikde neplni
+        // Integer entityScopeId = entity.getScopeId();
+        Integer entityScopeId = apState.getScopeId();
+        if (!entityScopeId.equals(dbInfo.getScopeId())) {
             throw new DEImportException("Scope of importing AP doesn't match with scope of existing AP, import scopeId:"
-                    + entity.getScopeId() + ", existing scopeId:" + dbInfo.getScopeId());
+                    + entityScopeId + ", existing scopeId:" + dbInfo.getScopeId());
         }
-        if (!entity.getApTypeId().equals(dbInfo.getApTypeId())) {
+        // todo[dataexchange]: ApState se nikde neplni
+        // Integer entityTypeId = entity.getApTypeId();
+        Integer entityTypeId = apState.getApTypeId();
+        if (!entityTypeId.equals(dbInfo.getApTypeId())) {
             throw new DEImportException("Type of importing AP doesn't match with type of existing AP, import typeId:"
-                    + entity.getApTypeId() + ", existing typeId:" + dbInfo.getApTypeId());
+                    + entityTypeId + ", existing typeId:" + dbInfo.getApTypeId());
         }
         // TODO: implement how to detect older AP and which versionable sub-entity
         // should be updated.

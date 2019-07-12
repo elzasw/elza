@@ -15,6 +15,7 @@ import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.ApExternalIdType;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.schema.v2.AccessPointEntry;
@@ -68,7 +69,8 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         // create AP and prepare AP info
         ApAccessPoint entity = createEntity(entry);
         List<ApExternalId> eids = createExternalIds(entry.getEid());
-        info = context.addAccessPoint(entity, entry.getId(), eids);
+        // todo[dataexchange]: ApState je null!!!
+        info = context.addAccessPoint(entity, entry.getId(), null, eids);
     }
 
     private List<ApExternalId> createExternalIds(Collection<ExternalId> eids) {
@@ -117,13 +119,23 @@ public class AccessPointEntryProcessor implements ItemProcessor {
                             + (partyRelated ? "must be used" : "can be used only")
                             + " for party related AP entry, apeId:" + entry.getId());
         }
+
+        // todo[dataexchange]: save ApState!!!
+
         // create AP
-        ApAccessPoint entity = new ApAccessPoint();
-        entity.setApType(apType);
-        entity.setScope(context.getScope());
-        entity.setCreateChange(context.getCreateChange());
-        entity.setUuid(StringUtils.trimToNull(entry.getUuid()));
-        entity.setState(ApStateEnum.OK);
-        return entity;
+        ApAccessPoint accessPoint = new ApAccessPoint();
+        // accessPoint.setApType(apType);
+        // accessPoint.setScope(context.getScope());
+        // accessPoint.setCreateChange(context.getCreateChange());
+        accessPoint.setUuid(StringUtils.trimToNull(entry.getUuid()));
+        accessPoint.setState(ApStateEnum.OK);
+
+        ApState apState = new ApState();
+        apState.setAccessPoint(accessPoint);
+        apState.setApType(apType);
+        apState.setScope(context.getScope());
+        apState.setCreateChange(context.getCreateChange());
+
+        return accessPoint;
     }
 }

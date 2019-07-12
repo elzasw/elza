@@ -23,10 +23,10 @@ import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApFulltextProviderImpl;
 import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.SequenceService;
 
 /**
  * Context for data exchange access points.
@@ -103,13 +103,16 @@ public class AccessPointsContext {
      *            AP external ids, can be null
      * @return Return access point import info
      */
-    public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId, Collection<ApExternalId> eids) {
-        AccessPointInfo info = new AccessPointInfo(entity.getApType());
+    public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId, ApState apState, Collection<ApExternalId> eids) {
+        // todo[dataexchange]: ApState se nikde neplni
+        // AccessPointInfo info = new AccessPointInfo(entity.getApType(), entity.getScope());
+        AccessPointInfo info = new AccessPointInfo(apState.getApType(), apState.getScope());
         if (entryIdApInfoMap.putIfAbsent(entryId, info) != null) {
             throw new DEImportException("Access point has duplicate id, apeId:" + entryId);
         }
         // add to queue
-        apQueue.add(new AccessPointWrapper(entity, info, eids, arrangementService));
+        // todo[dataexchange]: ApState se nikde neplni
+        apQueue.add(new AccessPointWrapper(entity, apState, info, eids, arrangementService));
         info.onEntityQueued();
         if (apQueue.size() >= batchSize) {
             storeAccessPoints();

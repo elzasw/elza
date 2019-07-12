@@ -10,6 +10,7 @@ import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.service.UserService;
@@ -57,16 +58,18 @@ public class ApInfoLoader extends AbstractEntityLoader<ApInfoImpl> {
     @Override
     protected void onBatchEntryLoad(LoadDispatcher<ApInfoImpl> dispatcher, ApInfoImpl result) {
         ApAccessPoint ap = result.getAp();
+        // todo[dataexchange]: ApState se nikde neplni
+        ApState apState = result.getApState();
 
         // check scope permissions
-        if (!globalScopePermission && checkedScopeIds.add(ap.getScopeId())) {
-            if (!userService.hasPermission(Permission.AP_SCOPE_RD, ap.getScopeId())) {
+        if (!globalScopePermission && checkedScopeIds.add(apState.getScopeId())) {
+            if (!userService.hasPermission(Permission.AP_SCOPE_RD, apState.getScopeId())) {
                 throw Authorization.createAccessDeniedException(Permission.AP_SCOPE_RD);
             }
         }
 
         // we must ignore party AP (AP type initialized by dispatcher)
-        ParPartyType partyType = ap.getApType().getPartyType();
+        ParPartyType partyType = apState.getApType().getPartyType();
         if (partyType != null) {
             context.addPartyApId(ap.getAccessPointId());
             result.setPartyAp(true);
