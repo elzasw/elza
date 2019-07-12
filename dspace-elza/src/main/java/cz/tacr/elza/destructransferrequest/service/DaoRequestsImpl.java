@@ -54,7 +54,6 @@ public class DaoRequestsImpl implements DaoRequests{
         Context context = new Context();
         try {
             context = ContextUtils.createContext();
-            //context.turnOffAuthorisationSystem(); //TODO:cacha
         } catch (Exception e) {
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
         }
@@ -78,7 +77,7 @@ public class DaoRequestsImpl implements DaoRequests{
                 if (StringUtils.isNotEmpty(identifierStr)) {
                     identifierStr = identifierStr + SEPARATOR + identifier;
                 } else {
-                    identifierStr = identifierStr + identifier;
+                    identifierStr = identifier;
                 }
             }
 
@@ -128,7 +127,7 @@ public class DaoRequestsImpl implements DaoRequests{
                 if (StringUtils.isNotEmpty(identifierStr)) {
                     identifierStr = identifierStr + SEPARATOR + identifier;
                 } else {
-                    identifierStr = identifierStr + identifier;
+                    identifierStr = identifier;
                 }
             }
 
@@ -164,7 +163,6 @@ public class DaoRequestsImpl implements DaoRequests{
         Context context = new Context();
         try {
             context = ContextUtils.createContext();
-            //context.turnOffAuthorisationSystem(); //TODO:cacha
         } catch (Exception e) {
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
         }
@@ -220,18 +218,25 @@ public class DaoRequestsImpl implements DaoRequests{
                                     switch (techMataDataCode) {
                                         case "DURATION":
                                             file.setDuration(metadataValue.getValue());
+                                            break;
                                         case "IMAGEHEIGHT":
                                             file.setImageHeight(convertStringToBigInteger(metadataValue.getValue()));
+                                            break;
                                         case "IMAGEWIDTH":
                                             file.setImageWidth(convertStringToBigInteger(metadataValue.getValue()));
+                                            break;
                                         case "SOURCEXDIMUNIT":
                                             file.setSourceXDimensionUnit(convertStringToUnitOfMeasure(metadataValue.getValue()));
+                                            break;
                                         case "SOURCEXDIMVALUVALUE":
                                             file.setSourceXDimensionValue(Float.valueOf(metadataValue.getValue()));
+                                            break;
                                         case "SOURCEYDIMUNIT":
                                             file.setSourceYDimensionUnit(convertStringToUnitOfMeasure(metadataValue.getValue()));
+                                            break;
                                         case "SOURCEYDIMVALUVALUE":
                                             file.setSourceYDimensionValue(Float.valueOf(metadataValue.getValue()));
+                                            break;
                                     }
                                 }
                             }
@@ -308,7 +313,7 @@ public class DaoRequestsImpl implements DaoRequests{
     }
 
     private static UnitOfMeasure convertStringToUnitOfMeasure (String uomCode) {
-    switch (uomCode) {
+    switch (StringUtils.upperCase(uomCode)) {
         case "IN":
             return UnitOfMeasure.IN;
         case "MM":
@@ -358,6 +363,7 @@ public class DaoRequestsImpl implements DaoRequests{
         destTransfRequest.setSystemIdentifier(transferRequest.getSystemIdentifier());
         destTransfRequest.setDescription(transferRequest.getDescription());
         destTransfRequest.setUserName(transferRequest.getUsername());
+        destTransfRequest.setTargetFund(transferRequest.getTargetFund());
         destTransfRequest.setStatus(DestructTransferRequest.Status.QUEUED);
         destTransfRequest.setRequestDate(new Date());
     }

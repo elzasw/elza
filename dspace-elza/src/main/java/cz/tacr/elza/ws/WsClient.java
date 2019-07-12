@@ -10,12 +10,10 @@ import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.dspace.content.Bitstream;
 import org.dspace.content.Bundle;
 import org.dspace.content.Item;
-import org.dspace.content.service.ItemService;
 import org.dspace.services.ConfigurationService;
 import org.dspace.services.factory.DSpaceServicesFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
@@ -26,7 +24,7 @@ import java.util.List;
 
 /**
  * Created by Marbes Consulting
- * ludek.cacha@marbes.cz / 02.05.2019.
+ * ludek.cacha@marbes.cz / 03.07.2019.
  */
 public class WsClient {
 

@@ -24,6 +24,8 @@ public class MetadataConstantService {
         switch (metDataCode) {
             case "ISELZA":
                 return new String[]{"tacr", "isElza", null};
+            case "ELZADIDID":
+                return new String[]{"tacr", "elzaDidId", null};
             case "DURATION":
                 return new String[]{"tacr", "duration", null};
             case "IMAGEHEIGHT":
