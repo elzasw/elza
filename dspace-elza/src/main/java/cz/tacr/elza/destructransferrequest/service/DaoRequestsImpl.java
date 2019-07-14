@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.context.ContextUtils;
 import cz.tacr.elza.daoimport.DaoImportScheduler;
+import cz.tacr.elza.daoimport.service.DaoImportService;
 import cz.tacr.elza.metadataconstants.MetadataEnum;
 import cz.tacr.elza.ws.dao_service.v1.DaoRequests;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
@@ -54,7 +55,6 @@ import cz.tacr.elza.ws.types.v1.UnitOfMeasure;
 
 public class DaoRequestsImpl implements DaoRequests{
     private String SEPARATOR = ";";
-    private String BUNDLE  = "ORIGINAL";
 
     @Autowired
     private DescructTransferRequestService descructTransferRequestService;
@@ -197,7 +197,7 @@ public class DaoRequestsImpl implements DaoRequests{
                 log.info("Zapisuji technická metadata položky digitalizátu Uuid=" + uuId + ".");
                 List<Bundle> bundleList = item.getBundles();
                 for (Bundle bundle : bundleList) {
-                    if (bundle.getName().contains(BUNDLE)) {
+                    if (bundle.getName().contains(DaoImportService.CONTENT_BITSTREAM)) {
                         Dao dao = new Dao();
                         FileGroup fileGroup = new FileGroup();
                         List<File> fileList = fileGroup.getFile();
