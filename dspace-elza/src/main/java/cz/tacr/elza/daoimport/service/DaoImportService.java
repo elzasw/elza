@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
@@ -26,6 +27,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.dspace.app.mediafilter.JPEGFilter;
+import org.dspace.authorize.AuthorizeException;
 import org.dspace.content.Bitstream;
 import org.dspace.content.BitstreamFormat;
 import org.dspace.content.Bundle;
@@ -55,7 +57,7 @@ import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
 import cz.tacr.elza.daoimport.DaoImportScheduler;
-import cz.tacr.elza.daoimport.parser.MDParser;
+import cz.tacr.elza.daoimport.parser.TechnicalMDParser;
 import cz.tacr.elza.daoimport.service.vo.DaoFile;
 import cz.tacr.elza.daoimport.service.vo.ImportBatch;
 import cz.tacr.elza.daoimport.service.vo.ImportDao;
@@ -166,37 +168,61 @@ public class DaoImportService {
         }
     }
 
-    private void importBatch(final ImportBatch batch, final BufferedWriter protocol, final Context context) throws IOException {
+    private void importBatch(final ImportBatch batch, final BufferedWriter protocol, final Context context) throws IOException, SQLException {
         protocol.write("Import dávky " + batch.getBatchName());
         protocol.newLine();
 
         for (ImportDao importDao : batch.getDaos()) {
             int sequence = 0;
             Item item = createItem(importDao.getCollectionId(), importDao.getDaoId(), protocol, context);
-            Bundle origBundle = createBundle("ORIGINAL", item,  protocol, context);
-            Bundle metaBundle = createBundle("METADATA", item,  protocol, context);
-            Bundle thumbBundle = createBundle("THUMBNAIL", item,  protocol, context);
+            Bundle origBundle = createBundle(CONTENT_BITSTREAM, item,  protocol, context);
+            Bundle metaBundle = createBundle(METADATA_BITSTREAM, item,  protocol, context);
+            Bundle thumbBundle = createBundle(THUMBNAIL_BITSTREAM, item,  protocol, context);
             for (DaoFile daoFile : importDao.getFiles()) {
-                Bitstream contentBitstream = createBitstream(daoFile.getContentFile(), origBundle, CONTENT_BITSTREAM, sequence, protocol, context);
-
+                String bsName = daoFile.getContentFile().getFileName().toString();
+                Bitstream contentBitstream = createBitstream(bsName, daoFile.getContentFile(), origBundle, CONTENT_BITSTREAM, sequence, protocol, context);
+                // TODO vanek - datum vytvoření = datum vytvoření souboru? nebo importu do DSpace?
                 if (daoFile.getMetadataFile() != null) {
-                    Bitstream metadataBitstream = createBitstream(daoFile.getMetadataFile(), metaBundle, METADATA_BITSTREAM, sequence, protocol, context);
+                    Bitstream metadataBitstream = createBitstream(bsName, daoFile.getMetadataFile(), metaBundle, METADATA_BITSTREAM, sequence, protocol, context);
+                    Map<MetadataEnum, String> techMD = daoFile.getTechMD();
+                    storeTechMD(contentBitstream, techMD, protocol, context);
                 }
-                Bitstream thumbnailBitstream = createBitstream(daoFile.getThumbnailFile(), thumbBundle, THUMBNAIL_BITSTREAM, sequence, protocol, context);
+                Bitstream thumbnailBitstream = createBitstream(bsName, daoFile.getThumbnailFile(), thumbBundle, THUMBNAIL_BITSTREAM, sequence, protocol, context);
                 sequence++;
             }
         }
     }
 
-    private Bitstream createBitstream(final Path file, final Bundle bundle, final String bitstreamName, final int sequence,
-                                      final BufferedWriter protocol, final Context context) {
+    private void storeTechMD(Bitstream contentBitstream, Map<MetadataEnum, String> techMD, BufferedWriter protocol, Context context) throws IOException, SQLException {
+        if (!techMD.isEmpty()) {
+            protocol.write("Ukládám technická metadata pro bitstream " + contentBitstream.getName());
+            protocol.newLine();
+        }
+
+        for (MetadataEnum mt : techMD.keySet()) {
+            String value = techMD.get(mt);
+
+            protocol.write("Ukládám technická metadata " + mt.name() + " s hodnotou " + value);
+            protocol.newLine();
+
+            bitstreamService.addMetadata(context, contentBitstream, mt.getSchema(), mt.getElement(), mt.getQualifier(), null, value);
+            try {
+                bitstreamService.update(context, contentBitstream);
+            } catch (AuthorizeException e) {
+                throw new IllegalStateException("Chyba při ukládání technických metadat bitstreamu " + contentBitstream.getName(), e);
+            }
+        }
+    }
+
+    private Bitstream createBitstream(final String name, final Path file, final Bundle bundle, final String bitstreamName,
+                                      final int sequence, final BufferedWriter protocol, final Context context) {
         try {
             protocol.write("Vytváření Bitstream " + bitstreamName + " pro Bundle " + bundle.getName());
             protocol.newLine();
 
             InputStream inputStream = Files.newInputStream(file);
             Bitstream bs = bitstreamService.create(context, bundle, inputStream);
-            bs.setName(context, file.getFileName().toString());
+            bs.setName(context, name);
             //bs.setDescription(context,null);
             bs.setSequenceID(sequence);
 
@@ -395,8 +421,7 @@ public class DaoImportService {
                         protocol.write("Kopírování souboru " + metadataFile.getFileName().toString()  + " do adresáře " + GENERATED_DIR);
                         protocol.newLine();
 
-//                        parseMetadata(metadataFile, false);
-
+                        daoFile.setTechMD(parseMetadata(metadataFile));
                         daoFile.setMetadataFile(Files.copy(metadataFile, destPath, StandardCopyOption.REPLACE_EXISTING));
                     } else {
                         protocol.write("Generování metadat souboru " + contentFile.getFileName().toString());
@@ -404,7 +429,7 @@ public class DaoImportService {
 
                         if (jhoveService.generateMetadata(contentFile, protocol, destPath)) {
                             daoFile.setMetadataFile(destPath);
-//                            parseMetadata(destPath, true);
+                            daoFile.setTechMD(parseMetadata(destPath));
                         }
                     }
 
@@ -447,11 +472,12 @@ public class DaoImportService {
         return importDao;
     }
 
-    private void parseMetadata(Path mdFile, boolean fromJhove) {
+    private Map<MetadataEnum, String> parseMetadata(Path mdFile) {
         try {
             SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
-            saxParser.parse(mdFile.toFile(), new MDParser());
-
+            TechnicalMDParser technicalMdParser = new TechnicalMDParser();
+            saxParser.parse(mdFile.toFile(), technicalMdParser);
+            return technicalMdParser.getMd();
         } catch (ParserConfigurationException e) {
             throw new IllegalStateException("Chyba při parsování technických metadat.", e);
         } catch (SAXException e) {
