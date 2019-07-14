@@ -405,9 +405,9 @@
                     <xsl:choose>
                         <xsl:when test="$context/mets:fileSec/mets:fileGrp[@USE='THUMBNAIL']/
                         mets:file[@GROUPID=current()/@GROUPID]">
-                            <xsl:variable name="src" 
+                            <xsl:variable name="src"
                               select="$context/mets:fileSec/mets:fileGrp[@USE='THUMBNAIL']/mets:file[@GROUPID=current()/@GROUPID]/mets:FLocat[@LOCTYPE='URL']/@xlink:href"/>
-                            <!-- Checking if Thumbnail is restricted and if so, show a restricted image --> 
+                            <!-- Checking if Thumbnail is restricted and if so, show a restricted image -->
                             <xsl:choose>
                               <xsl:when test="contains($src,'isAllowed=n')"/>
                               <xsl:otherwise>
@@ -519,12 +519,6 @@
                 </xsl:choose>
             </div>
 
-            <!--nove tlacitko-->
-            <br/><br/><br/>
-            <p class="ds-paragraph item-view-send-to-elsa">
-              <!--  <xsl:call-template name="send-item-to-elsa"/>-->
-            </p>
-
         </div>
     </xsl:template>
 
@@ -535,13 +529,6 @@
             </xsl:attribute>
             <i18n:text>xmlui.dri2xhtml.METS-1.0.item-files-viewOpen</i18n:text>
         </a>
-    </xsl:template>
-
-    <xsl:template name="send-item-to-elsa">
-            <a>
-                <xsl:attribute name="href"></xsl:attribute>
-                <i18n:text>xmlui.ArtifactBrowser.ItemViewer.send_item_to_elza</i18n:text>
-            </a>
     </xsl:template>
 
     <xsl:template name="display-rights">

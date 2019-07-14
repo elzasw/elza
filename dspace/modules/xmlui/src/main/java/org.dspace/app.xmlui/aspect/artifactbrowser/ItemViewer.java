@@ -87,6 +87,9 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
     private static final Message T_send_to_elza =
             message("xmlui.ArtifactBrowser.ItemViewer.send_item_to_elza");
 
+    private static final Message T_view_in_elza =
+            message("xmlui.ArtifactBrowser.ItemViewer.view_did_in_elza");
+
 	/** Cached validity object */
 	private SourceValidity validity = null;
 
@@ -119,8 +122,11 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
             Request request = ObjectModelHelper.getRequest(objectModel);
             String show = request.getParameter("show");
             String sendToElza = request.getParameter("sendToElza");
+            String viewInElza = request.getParameter("viewInElza");
             if (sendToElza != null && sendToElza.length() > 0) {
                 return HashUtil.hash(dso.getHandle() + "sendToElza:" + sendItemToElza(objectModel));
+            } else if (viewInElza != null && viewInElza.length() > 0) {
+                return HashUtil.hash(dso.getHandle() + "viewInElza:" + viewItemInElza(objectModel));
             } else {
                 return HashUtil.hash(dso.getHandle() + "full:" + showFullItem(objectModel));
             }
@@ -443,6 +449,23 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
 
             sendToElzaPara.addXref(linkToElza).addContent(T_send_to_elza);
         }
+
+        metaData = MetadataConstantService.getMetaData("ELZADIDID");
+        metadata = itemService.getMetadata(item, metaData[0], metaData[1], metaData[2], Item.ANY);
+        String did = null;
+        if (!metadata.isEmpty()) {
+            MetadataValue mv = metadata.iterator().next();
+            did = mv.getValue();
+        }
+        
+        if (did != null) {
+            Para sendToElzaPara = division.addPara(null, "did-view-in-elsa");
+
+            String linkToElza = "http://www.seznam.cz" + "/handle/" + item.getHandle()
+                    + "?viewInElza=true" + "?idemId=" + did; // poslota didId
+
+            sendToElzaPara.addXref(linkToElza, T_view_in_elza);
+        }
     }
 
     /**
@@ -461,12 +484,40 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
 
     /**
      * send item to elza in package
-     * @param objectModel to get the request.
+     * @param objectModel to get the request.|
      */
     public boolean sendItemToElza(Map objectModel)
     {
         Request request = ObjectModelHelper.getRequest(objectModel);
         String show = request.getParameter("sendToElza");
+
+        try {
+            DSpaceObject dso = HandleUtil.obtainHandle(objectModel);
+            if (!(dso instanceof Item))
+            {
+               return false;
+            }
+
+            Item item = (Item) dso;
+            WsClient.sendItemToElza(item);
+
+        } catch (SQLException e) {
+            // Ignore all errors and just return that the component is not cachable.
+            return false;
+        }
+
+
+        return show != null && show.length() > 0;
+    }
+
+    /**
+     * view item in elza
+     * @param objectModel to get the request.
+     */
+    public boolean viewItemInElza(Map objectModel)
+    {
+        Request request = ObjectModelHelper.getRequest(objectModel);
+        String show = request.getParameter("viewInElza");
 
         try {
             DSpaceObject dso = HandleUtil.obtainHandle(objectModel);
