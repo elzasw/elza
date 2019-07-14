@@ -2,7 +2,7 @@ package cz.tacr.elza.destructransferrequest.service;
 
 import cz.tacr.elza.context.ContextUtils;
 import cz.tacr.elza.daoimport.DaoImportScheduler;
-import cz.tacr.elza.metadataconstants.MetadataConstantService;
+import cz.tacr.elza.metadataconstants.MetadataEnum;
 import cz.tacr.elza.ws.WsClient;
 import cz.tacr.elza.ws.core.v1.CoreServiceException;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
@@ -43,9 +43,6 @@ public class ProcessingRequestService {
     private CollectionService collectionService = ContentServiceFactory.getInstance().getCollectionService();
 
     private static Logger log = Logger.getLogger(DaoImportScheduler.class);
-    private MetadataConstantService metadata;
-
-    public final static String METADATA_ISELZA = "ISELZA";
 
     /**
      * Zpracuje požadavky na skartaci digitalizátů, které jsou ve stavu QUEUED a odešle informaci do systému Elza
@@ -187,12 +184,12 @@ public class ProcessingRequestService {
                     collectionService.addItem(context, targetCollection, item);
                     collectionService.update(context, targetCollection);
 
-                    final String[] mt = metadata.getMetaData(METADATA_ISELZA);
-                    log.info("Aktualizuji hodnotu metadat pro element=" + mt[1] + " na FALSE.");
-                    log.info("Vyhledávám metadata pro položku digitalizátu Uuid=" + uuId + " schema=" + mt[0] +
-                            " element=" + mt[1] + ".");
-                    List<MetadataValue> metadataList = itemService.getMetadata(item, mt[0], mt[1], mt[2], Item.ANY);
-                    setMetadataValue(context, item, metadataList, Boolean.FALSE.toString(), METADATA_ISELZA);
+                    final MetadataEnum mt = MetadataEnum.ISELZA;
+                    log.info("Aktualizuji hodnotu metadat pro element=" + mt.getElement() + " na FALSE.");
+                    log.info("Vyhledávám metadata pro položku digitalizátu Uuid=" + uuId + " schema=" + mt.getSchema() +
+                            " element=" + mt.getElement() + ".");
+                    List<MetadataValue> metadataList = itemService.getMetadata(item, mt.getSchema(), mt.getElement(), mt.getQualifier(), Item.ANY);
+                    setMetadataValue(context, item, metadataList, Boolean.FALSE.toString(), mt);
                 }
 
                 log.info("Aktualizuji stav požadavku na delimitaci.");
@@ -258,19 +255,19 @@ public class ProcessingRequestService {
      * @param item
      * @param metadataList
      * @param mdValue
+     * @param mdField
      */
-    private void setMetadataValue(Context context, Item item, List<MetadataValue> metadataList, String mdValue, String mdField) {
-        final String[] mt = MetadataConstantService.getMetaData(mdField);
+    private void setMetadataValue(Context context, Item item, List<MetadataValue> metadataList, String mdValue, MetadataEnum mdField) {
         try {
             ItemService itemService = item.getItemService();
             if (metadataList.size() == 0) {
-                itemService.addMetadata(context, item, mt[0], mt[1], mt[2], null, mdValue);
+                itemService.addMetadata(context, item, mdField.getSchema(), mdField.getElement(), mdField.getQualifier(), null, mdValue);
             } else if (metadataList.size() == 1) {
                 MetadataValue metadataValue = metadataList.get(0);
                 metadataValue.setValue(mdValue);
             } else {
                 itemService.removeMetadataValues(context, item, metadataList);
-                itemService.addMetadata(context, item, mt[0], mt[1], mt[2], null, mdValue);
+                itemService.addMetadata(context, item, mdField.getSchema(), mdField.getElement(), mdField.getQualifier(), null, mdValue);
             }
             itemService.update(context, item);
         }
@@ -279,7 +276,7 @@ public class ProcessingRequestService {
         }
         catch (Exception e) {
             throw new ProcessingException("Chyba při nastavení metadat  pro položku digitalizátu Uuid=" + item.getID() +
-                    " schema=" + mt[0] + " element=" + mt[1] + ": " + e.getMessage());
+                    " schema=" + mdField.getSchema() + " element=" + mdField.getElement() + ": " + e.getMessage());
         }
     }
 }

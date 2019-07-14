@@ -2,7 +2,7 @@ package cz.tacr.elza.destructransferrequest.service;
 
 import cz.tacr.elza.context.ContextUtils;
 import cz.tacr.elza.daoimport.DaoImportScheduler;
-import cz.tacr.elza.metadataconstants.MetadataConstantService;
+import cz.tacr.elza.metadataconstants.MetadataEnum;
 import cz.tacr.elza.ws.dao_service.v1.DaoNotifications;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
 import cz.tacr.elza.ws.types.v1.Did;
@@ -40,9 +40,6 @@ public class DaoNotificationsImpl implements DaoNotifications {
     private ItemService itemService = ContentServiceFactory.getInstance().getItemService();
     private static Logger log = Logger.getLogger(DaoImportScheduler.class);
 
-    private final String METADATA_ISELZA = "ISELZA";
-    private final String METADATA_ELZADIDID = "ELZADIDID";
-
     @Override
     public void onDaoLinked(OnDaoLinked onDaoLinked) throws DaoServiceException {
         log.info("Spuštěna metoda onDaoLinked.");
@@ -66,20 +63,20 @@ public class DaoNotificationsImpl implements DaoNotifications {
         log.info("Aktualizuji metadata položky digitalizátu Uuid=" + uuId + ".");
         //TODO:cacha doplnit po upřesnění vstupních dat
 
-        String[] mt = MetadataConstantService.getMetaData(METADATA_ISELZA);
-        log.info("Aktualizuji metadata element=" + mt[1] + " pro položku digitalizátu Uuid=" + uuId + " schema=" +
-                mt[0] + ".");
-        List<MetadataValue> metadataList = itemService.getMetadata(item, mt[0], mt[1], mt[2], Item.ANY);
-        setMetadataValue(context, item, metadataList, Boolean.TRUE.toString(), METADATA_ISELZA);
+        MetadataEnum mt = MetadataEnum.ISELZA;
+        log.info("Aktualizuji metadata element=" + mt.getElement() + " pro položku digitalizátu Uuid=" + uuId + " schema=" +
+                mt.getSchema() + ".");
+        List<MetadataValue> metadataList = itemService.getMetadata(item, mt.getSchema(), mt.getElement(), mt.getQualifier(), Item.ANY);
+        setMetadataValue(context, item, metadataList, Boolean.TRUE.toString(), mt);
 
         Did did = onDaoLinked.getDid();
         if (did != null) {
             if (StringUtils.isNotBlank(did.getIdentifier())) {
-                mt = MetadataConstantService.getMetaData(METADATA_ELZADIDID);
-                log.info("Aktualizuji metadata element=" + mt[1] + " pro položku digitalizátu Uuid=" + uuId + " schema=" +
-                        mt[0] + ".");
-                metadataList = itemService.getMetadata(item, mt[0], mt[1], mt[2], Item.ANY);
-                setMetadataValue(context, item, metadataList, did.getIdentifier(), METADATA_ELZADIDID);
+                mt = MetadataEnum.ELZADIDID;
+                log.info("Aktualizuji metadata element=" + mt.getElement() + " pro položku digitalizátu Uuid=" + uuId + " schema=" +
+                        mt.getSchema() + ".");
+                metadataList = itemService.getMetadata(item, mt.getSchema(), mt.getElement(), mt.getQualifier(), Item.ANY);
+                setMetadataValue(context, item, metadataList, did.getIdentifier(), mt);
             }
         }
 
@@ -125,11 +122,11 @@ public class DaoNotificationsImpl implements DaoNotifications {
             }
         }
 
-        final String[] mt = MetadataConstantService.getMetaData(METADATA_ISELZA);
-        log.info("Aktualizuji metadata element=" + mt[1] + " pro položku digitalizátu Uuid=" + uuId + " schema=" +
-                mt[0] + ".");
-        List<MetadataValue> metadataList = itemService.getMetadata(item, mt[0], mt[1], mt[2], Item.ANY);
-        setMetadataValue(context, item, metadataList, Boolean.FALSE.toString(), METADATA_ISELZA);
+        final MetadataEnum mt = MetadataEnum.ISELZA;
+        log.info("Aktualizuji metadata element=" + mt.getElement() + " pro položku digitalizátu Uuid=" + uuId + " schema=" +
+                mt.getSchema() + ".");
+        List<MetadataValue> metadataList = itemService.getMetadata(item, mt.getSchema(), mt.getElement(), mt.getQualifier(), Item.ANY);
+        setMetadataValue(context, item, metadataList, Boolean.FALSE.toString(), mt);
 
         try {
             context.complete();
@@ -161,19 +158,19 @@ public class DaoNotificationsImpl implements DaoNotifications {
      * @param item
      * @param metadataList
      * @param mdValue
+     * @param mt
      */
-    private void setMetadataValue(Context context, Item item, List<MetadataValue> metadataList, String mdValue, String mdField) {
-        final String[] mt = MetadataConstantService.getMetaData(mdField);
+    private void setMetadataValue(Context context, Item item, List<MetadataValue> metadataList, String mdValue, MetadataEnum mt) {
         try {
             ItemService itemService = item.getItemService();
             if (metadataList.size() == 0) {
-                itemService.addMetadata(context, item, mt[0], mt[1], mt[2], null, mdValue);
+                itemService.addMetadata(context, item, mt.getSchema(), mt.getElement(), mt.getQualifier(), null, mdValue);
             } else if (metadataList.size() == 1) {
                 MetadataValue metadataValue = metadataList.get(0);
                 metadataValue.setValue(mdValue);
             } else {
                 itemService.removeMetadataValues(context, item, metadataList);
-                itemService.addMetadata(context, item, mt[0], mt[1], mt[2], null, mdValue);
+                itemService.addMetadata(context, item, mt.getSchema(), mt.getElement(), mt.getQualifier(), null, mdValue);
             }
             itemService.update(context, item);
         }
@@ -182,7 +179,7 @@ public class DaoNotificationsImpl implements DaoNotifications {
         }
         catch (Exception e) {
             throw new ProcessingException("Chyba při nastavení metadat pro položku digitalizátu Uuid=" + item.getID() +
-                    " schema=" + mt[0] + " element=" + mt[1] + ": " + e.getMessage());
+                    " schema=" + mt.getSchema() + " element=" + mt.getElement() + ": " + e.getMessage());
         }
     }
 }

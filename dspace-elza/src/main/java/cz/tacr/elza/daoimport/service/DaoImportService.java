@@ -3,8 +3,6 @@ package cz.tacr.elza.daoimport.service;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -19,6 +17,9 @@ import java.util.Locale;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -51,13 +52,14 @@ import org.dspace.workflowbasic.factory.BasicWorkflowServiceFactory;
 import org.dspace.workflowbasic.service.BasicWorkflowService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.xml.sax.SAXException;
 
 import cz.tacr.elza.daoimport.DaoImportScheduler;
+import cz.tacr.elza.daoimport.parser.MDParser;
 import cz.tacr.elza.daoimport.service.vo.DaoFile;
 import cz.tacr.elza.daoimport.service.vo.ImportBatch;
 import cz.tacr.elza.daoimport.service.vo.ImportDao;
-import cz.tacr.elza.destructransferrequest.service.ProcessingRequestService;
-import cz.tacr.elza.metadataconstants.MetadataConstantService;
+import cz.tacr.elza.metadataconstants.MetadataEnum;
 
 @Service
 public class DaoImportService {
@@ -247,8 +249,8 @@ public class DaoImportService {
             String date = dcDate.displayDate(false, true, Locale.getDefault());
             itemService.setMetadataSingleValue(context, item, MetadataSchema.DC_SCHEMA, "date", "issued", null, date);
 
-            String[] metaData = MetadataConstantService.getMetaData(ProcessingRequestService.METADATA_ISELZA);
-            itemService.addMetadata(context, item, metaData[0], metaData[1], metaData[2], null, "false");
+            MetadataEnum metaData = MetadataEnum.ISELZA;
+            itemService.addMetadata(context, item, metaData.getSchema(), metaData.getElement(), metaData.getQualifier(), null, "false");
 
             itemService.update(context, item);
             // set metadata?
@@ -393,6 +395,8 @@ public class DaoImportService {
                         protocol.write("Kopírování souboru " + metadataFile.getFileName().toString()  + " do adresáře " + GENERATED_DIR);
                         protocol.newLine();
 
+//                        parseMetadata(metadataFile, false);
+
                         daoFile.setMetadataFile(Files.copy(metadataFile, destPath, StandardCopyOption.REPLACE_EXISTING));
                     } else {
                         protocol.write("Generování metadat souboru " + contentFile.getFileName().toString());
@@ -400,6 +404,7 @@ public class DaoImportService {
 
                         if (jhoveService.generateMetadata(contentFile, protocol, destPath)) {
                             daoFile.setMetadataFile(destPath);
+//                            parseMetadata(destPath, true);
                         }
                     }
 
@@ -423,7 +428,7 @@ public class DaoImportService {
                             Files.copy(thumbnailIS, destPath, StandardCopyOption.REPLACE_EXISTING);
                             daoFile.setThumbnailFile(destPath);
                         } catch (Exception e) {
-
+                            throw new IllegalStateException("Chyba při generování náhledu souboru " + contentFile.getFileName() + ". ", e);
                         } finally {
                             if (is != null) {
                                 IOUtils.closeQuietly(is);
@@ -440,6 +445,20 @@ public class DaoImportService {
         }
 
         return importDao;
+    }
+
+    private void parseMetadata(Path mdFile, boolean fromJhove) {
+        try {
+            SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
+            saxParser.parse(mdFile.toFile(), new MDParser());
+
+        } catch (ParserConfigurationException e) {
+            throw new IllegalStateException("Chyba při parsování technických metadat.", e);
+        } catch (SAXException e) {
+            throw new IllegalStateException("Chyba při parsování technických metadat.", e);
+        } catch (IOException e) {
+            throw new IllegalStateException("Chyba při parsování technických metadat.", e);
+        }
     }
 
     private List<Path> getBatchDirs(Path inputDir) throws IOException {
