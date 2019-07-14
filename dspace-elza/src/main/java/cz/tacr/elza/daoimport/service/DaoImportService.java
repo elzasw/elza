@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,6 +23,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -60,6 +62,7 @@ import cz.tacr.elza.daoimport.DaoImportScheduler;
 import cz.tacr.elza.daoimport.parser.TechnicalMDParser;
 import cz.tacr.elza.daoimport.service.vo.DaoFile;
 import cz.tacr.elza.daoimport.service.vo.ImportBatch;
+import cz.tacr.elza.daoimport.service.vo.ImportConfig;
 import cz.tacr.elza.daoimport.service.vo.ImportDao;
 import cz.tacr.elza.metadataconstants.MetadataEnum;
 
@@ -101,8 +104,8 @@ public class DaoImportService {
     private DroidService droidService;
 
     public List<ImportBatch> prepareImport(final Context context) throws IOException {
-        String mainDir = getMainDir();
-        Path inputDir = Paths.get(mainDir, INPUT_DIR);
+        ImportConfig config = getImportConfig();
+        Path inputDir = Paths.get(config.getMainDir(), INPUT_DIR);
         log.info("Hledání dávek v adresáři " + inputDir.toAbsolutePath());
 
         List<Path> possibleBatches = getBatchDirs(inputDir);
@@ -112,7 +115,7 @@ public class DaoImportService {
             BufferedWriter protocol = createProtocolWriter(batchDir);
 
             try {
-                ImportBatch importBatch = checkAndPrepareBatch(batchDir, protocol, context);
+                ImportBatch importBatch = checkAndPrepareBatch(batchDir, config, protocol, context);
                 if (!importBatch.getDaos().isEmpty()) {
                     batches.add(importBatch);
                 } else {
@@ -127,7 +130,7 @@ public class DaoImportService {
                 protocol.write(ExceptionUtils.getStackTrace(e));
                 protocol.close();
 
-                Path errorDir = Paths.get(mainDir, ERROR_DIR, batchDir.getFileName().toString());
+                Path errorDir = Paths.get(config.getMainDir(), ERROR_DIR, batchDir.getFileName().toString());
                 Files.move(batchDir, errorDir);
             }
         }
@@ -135,8 +138,26 @@ public class DaoImportService {
         return batches;
     }
 
+    private ImportConfig getImportConfig() {
+        ImportConfig config = new ImportConfig();
+        config.setMainDir(getMainDir());
+        config.setSupportedMimeTypes(getSupportedMimeTypes());
+
+        return config;
+    }
+
     private String getMainDir() {
         return configurationService.getProperty("elza.daoimport.dir");
+    }
+
+    private List<String> getSupportedMimeTypes() {
+        String mimeTypes = configurationService.getProperty("elza.daoimport.supportedMimeTypes");
+        String[] split = mimeTypes.split(" ");
+        List<String> supportedMimeTypes = new ArrayList<>(split.length);
+        for (String mimeType : split) {
+            supportedMimeTypes.add(mimeType.toLowerCase());
+        }
+        return supportedMimeTypes;
     }
 
     public void importBatches(final List<ImportBatch> importBatches, final Context context) throws IOException {
@@ -295,7 +316,7 @@ public class DaoImportService {
         return Files.newBufferedWriter(protocolPath, Charset.forName("UTF-8"));
     }
 
-    private ImportBatch checkAndPrepareBatch(Path batchDir, BufferedWriter protocol, Context context) throws IOException, SQLException {
+    private ImportBatch checkAndPrepareBatch(Path batchDir, ImportConfig config, BufferedWriter protocol, Context context) throws IOException, SQLException {
         protocol.write("Kontrola a příprava dávky " + batchDir.toAbsolutePath());
         protocol.newLine();
 
@@ -316,7 +337,7 @@ public class DaoImportService {
         }
 
         for (Path daoDir : daoDirs) {
-            ImportDao importDao = checkAndPrepareDao(daoDir, protocol, context);
+            ImportDao importDao = checkAndPrepareDao(daoDir, config, protocol, context);
             if (!importDao.getFiles().isEmpty()) {
                 importBatch.addDao(importDao);
             } else {
@@ -328,7 +349,7 @@ public class DaoImportService {
         return importBatch;
     }
 
-    private ImportDao checkAndPrepareDao(Path daoDir, BufferedWriter protocol, Context context) throws IOException, SQLException {
+    private ImportDao checkAndPrepareDao(Path daoDir, ImportConfig config, BufferedWriter protocol, Context context) throws IOException, SQLException {
         protocol.write("Kontrola a příprava DAO " + daoDir.getFileName());
         protocol.newLine();
 
@@ -410,10 +431,14 @@ public class DaoImportService {
                         || contentFile.getFileName().toString().endsWith(THUMBNAIL_EXTENSION))) {
                     DaoFile daoFile = new DaoFile();
 
-                    protocol.write("Kopírování souboru " + contentFile.getFileName().toString()  + " do adresáře " + GENERATED_DIR);
-                    protocol.newLine();
                     Path destPath = Paths.get(generatedDir.toString(), contentFile.getFileName().toString());
-                    daoFile.setContentFile(Files.copy(contentFile, destPath, StandardCopyOption.REPLACE_EXISTING));
+                    if (isFileMimeTypeSupported(contentFile, config, protocol)) {
+                        protocol.write("Kopírování souboru " + contentFile.getFileName().toString()  + " do adresáře " + GENERATED_DIR);
+                        protocol.newLine();
+                        daoFile.setContentFile(Files.copy(contentFile, destPath, StandardCopyOption.REPLACE_EXISTING));
+                    } else {
+                        continue;
+                    }
 
                     Path metadataFile = Paths.get(contentFile.toAbsolutePath().toString() + METADATA_EXTENSION);
                     destPath = Paths.get(generatedDir.toString(), metadataFile.getFileName().toString());
@@ -470,6 +495,30 @@ public class DaoImportService {
         }
 
         return importDao;
+    }
+
+    private boolean isFileMimeTypeSupported(Path contentFile, ImportConfig config, BufferedWriter protocol) throws IOException {
+        List<String> supportedMimeTypes = config.getSupportedMimeTypes();
+        String mimeType = droidService.getMimeType(contentFile, protocol);
+        if (CollectionUtils.isEmpty(supportedMimeTypes)) {
+            return true;
+        }
+
+        if (StringUtils.isBlank(mimeType)) {
+            protocol.write("Nebyl zjištěn MimeType souboru " + contentFile.toAbsolutePath() +
+                    " a proto nelze ověřit zda je mezi povolenými typy pro import. Soubor nebude importován.");
+            protocol.newLine();
+            return false;
+        }
+
+        boolean isSupported = supportedMimeTypes.contains(mimeType);
+        if (!isSupported) {
+            protocol.write("MimeType " + mimeType + " souboru " + contentFile.toAbsolutePath() +
+                    " není mezi podporovanými typy. Soubor proto nebude importován.");
+            protocol.newLine();
+        }
+
+        return isSupported;
     }
 
     private Map<MetadataEnum, String> parseMetadata(Path mdFile) {
