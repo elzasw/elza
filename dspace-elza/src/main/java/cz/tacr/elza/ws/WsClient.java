@@ -2,7 +2,7 @@ package cz.tacr.elza.ws;
 
 import cz.tacr.elza.context.ContextUtils;
 import cz.tacr.elza.destructransferrequest.service.ProcessingRequestService;
-import cz.tacr.elza.metadataconstants.MetadataConstantService;
+import cz.tacr.elza.metadataconstants.MetadataEnum;
 import cz.tacr.elza.ws.core.v1.DaoRequestsService;
 import cz.tacr.elza.ws.core.v1.DaoService;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
@@ -156,10 +156,10 @@ public class WsClient {
             context = ContextUtils.createContext();
             context.turnOffAuthorisationSystem();
 
-            String[] metaData = MetadataConstantService.getMetaData(ProcessingRequestService.METADATA_ISELZA);
-            List<MetadataValue> metadata = itemService.getMetadata(item, metaData[0], metaData[1], metaData[2], Item.ANY);
+            MetadataEnum metaData = MetadataEnum.ISELZA;
+            List<MetadataValue> metadata = itemService.getMetadata(item, metaData.getSchema(), metaData.getElement(), metaData.getQualifier(), Item.ANY);
             itemService.removeMetadataValues(context, item, metadata);
-            itemService.addMetadata(context, item, metaData[0], metaData[1], metaData[2], null, "true");
+            itemService.addMetadata(context, item, metaData.getSchema(), metaData.getElement(), metaData.getQualifier(), null, "true");
             context.complete();
         } catch (Exception e) {
             context.abort();

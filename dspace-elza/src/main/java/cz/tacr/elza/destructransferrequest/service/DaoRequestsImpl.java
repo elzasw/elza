@@ -1,14 +1,18 @@
 package cz.tacr.elza.destructransferrequest.service;
 
-import cz.tacr.elza.context.ContextUtils;
-import cz.tacr.elza.daoimport.DaoImportScheduler;
-import cz.tacr.elza.metadataconstants.MetadataConstantService;
-import cz.tacr.elza.ws.dao_service.v1.DaoRequests;
-import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
-import cz.tacr.elza.ws.types.v1.*;
+import java.math.BigInteger;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
+import javax.ws.rs.ProcessingException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.dspace.content.*;
+import org.dspace.content.Bitstream;
+import org.dspace.content.BitstreamFormat;
+import org.dspace.content.Bundle;
+import org.dspace.content.Item;
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.BitstreamService;
 import org.dspace.content.service.ItemService;
@@ -17,11 +21,24 @@ import org.dspace.elza.DestructTransferRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.ProcessingException;
-import java.math.BigInteger;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import cz.tacr.elza.context.ContextUtils;
+import cz.tacr.elza.daoimport.DaoImportScheduler;
+import cz.tacr.elza.metadataconstants.MetadataEnum;
+import cz.tacr.elza.ws.dao_service.v1.DaoRequests;
+import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
+import cz.tacr.elza.ws.types.v1.ChecksumType;
+import cz.tacr.elza.ws.types.v1.Dao;
+import cz.tacr.elza.ws.types.v1.DaoIdentifiers;
+import cz.tacr.elza.ws.types.v1.DaoSyncRequest;
+import cz.tacr.elza.ws.types.v1.DaosSyncRequest;
+import cz.tacr.elza.ws.types.v1.DaosSyncResponse;
+import cz.tacr.elza.ws.types.v1.Daoset;
+import cz.tacr.elza.ws.types.v1.DestructionRequest;
+import cz.tacr.elza.ws.types.v1.File;
+import cz.tacr.elza.ws.types.v1.FileGroup;
+import cz.tacr.elza.ws.types.v1.NonexistingDaos;
+import cz.tacr.elza.ws.types.v1.TransferRequest;
+import cz.tacr.elza.ws.types.v1.UnitOfMeasure;
 
 /**
  * Implementace webových služeb pro komunikaci se systému Elza (server)
@@ -207,35 +224,32 @@ public class DaoRequestsImpl implements DaoRequests{
 //                            file.setCreated();  //TODO:cacha
 
 
-                            String[] techMataData = MetadataConstantService.getTechMetaData();
-                            for (String techMataDataCode : techMataData) {
-                                String[] mt = MetadataConstantService.getMetaData(techMataDataCode);
+                            List<MetadataEnum> techMataData = MetadataEnum.getTechMetaData();
+                            for (MetadataEnum mt : techMataData) {
 
-                                List<MetadataValue> metadataValueList = bitstreamService.getMetadata(bitstream, mt[0], mt[1], mt[2], Item.ANY);
-                                for (MetadataValue metadataValue : metadataValueList) {
-                                    switch (techMataDataCode) {
-                                        case "DURATION":
-                                            file.setDuration(metadataValue.getValue());
-                                            break;
-                                        case "IMAGEHEIGHT":
-                                            file.setImageHeight(convertStringToBigInteger(metadataValue.getValue()));
-                                            break;
-                                        case "IMAGEWIDTH":
-                                            file.setImageWidth(convertStringToBigInteger(metadataValue.getValue()));
-                                            break;
-                                        case "SOURCEXDIMUNIT":
-                                            file.setSourceXDimensionUnit(convertStringToUnitOfMeasure(metadataValue.getValue()));
-                                            break;
-                                        case "SOURCEXDIMVALUVALUE":
-                                            file.setSourceXDimensionValue(Float.valueOf(metadataValue.getValue()));
-                                            break;
-                                        case "SOURCEYDIMUNIT":
-                                            file.setSourceYDimensionUnit(convertStringToUnitOfMeasure(metadataValue.getValue()));
-                                            break;
-                                        case "SOURCEYDIMVALUVALUE":
-                                            file.setSourceYDimensionValue(Float.valueOf(metadataValue.getValue()));
-                                            break;
-                                    }
+                                String value = bitstreamService.getMetadataFirstValue(bitstream, mt.getSchema(), mt.getElement(), mt.getQualifier(), Item.ANY);
+                                switch (mt) {
+                                    case DURATION:
+                                        file.setDuration(value);
+                                        break;
+                                    case IMAGEHEIGHT:
+                                        file.setImageHeight(convertStringToBigInteger(value));
+                                        break;
+                                    case IMAGEWIDTH:
+                                        file.setImageWidth(convertStringToBigInteger(value));
+                                        break;
+                                    case SOURCEXDIMUNIT:
+                                        file.setSourceXDimensionUnit(convertStringToUnitOfMeasure(value));
+                                        break;
+                                    case SOURCEXDIMVALUVALUE:
+                                        file.setSourceXDimensionValue(Float.valueOf(value));
+                                        break;
+                                    case SOURCEYDIMUNIT:
+                                        file.setSourceYDimensionUnit(convertStringToUnitOfMeasure(value));
+                                        break;
+                                    case SOURCEYDIMVALUVALUE:
+                                        file.setSourceYDimensionValue(Float.valueOf(value));
+                                        break;
                                 }
                             }
                             if (file != null) {
@@ -318,29 +332,6 @@ public class DaoRequestsImpl implements DaoRequests{
             return UnitOfMeasure.MM;
     }
     throw new ProcessingException("Kód měrné jednotky " + uomCode + " není podporován.");
-    }
-
-    private MetadataValue getBitstreamMetadata(List<MetadataValue> metadataList, String metaDataCode) {
-        final String[] mt = MetadataConstantService.getMetaData(metaDataCode);
-
-        for (MetadataValue mdValue : metadataList) {
-            MetadataField metadataField = mdValue.getMetadataField();
-            if (metadataField != null) {
-                MetadataSchema metadataSchema = metadataField.getMetadataSchema();
-                String mdSchema = null;
-                if (metadataSchema != null) {
-                    mdSchema = metadataSchema.getName();
-                }
-
-                if (StringUtils.equals(mdSchema, mt[0]) &&
-                    StringUtils.equals(metadataField.getElement(), mt[1]) &&
-                    StringUtils.equals(metadataField.getElement(), mt[2])) {
-
-                return mdValue;
-                }
-            }
-        }
-        return null;
     }
 
     private void initDestructionRequest(DestructionRequest destructRequest, DestructTransferRequest destTransfRequest) {

@@ -52,11 +52,10 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.ItemService;
-import org.dspace.core.Context;
+
+import cz.tacr.elza.metadataconstants.MetadataEnum;
 import cz.tacr.elza.ws.WsClient;
-import cz.tacr.elza.metadataconstants.MetadataConstantService;
 import cz.tacr.elza.destructransferrequest.service.ProcessingRequestService;
 
 /**
@@ -431,8 +430,8 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
         showfullPara = division.addPara(null,"item-view-toggle item-view-toggle-bottom");
 
         ItemService itemService = ContentServiceFactory.getInstance().getItemService();
-        String[] metaData = MetadataConstantService.getMetaData(ProcessingRequestService.METADATA_ISELZA);
-        List<MetadataValue> metadata = itemService.getMetadata(item, metaData[0], metaData[1], metaData[2], Item.ANY);
+        MetadataEnum metaData = MetadataEnum.ISELZA;
+        List<MetadataValue> metadata = itemService.getMetadata(item, metaData.getSchema(), metaData.getElement(), metaData.getQualifier(), Item.ANY);
 
         boolean isElza = false;
         if (!metadata.isEmpty()) {
@@ -450,8 +449,8 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
             sendToElzaPara.addXref(linkToElza).addContent(T_send_to_elza);
         }
 
-        metaData = MetadataConstantService.getMetaData("ELZADIDID");
-        metadata = itemService.getMetadata(item, metaData[0], metaData[1], metaData[2], Item.ANY);
+        metaData = MetadataEnum.ELZADIDID;
+        metadata = itemService.getMetadata(item, metaData.getSchema(), metaData.getElement(), metaData.getQualifier(), Item.ANY);
         String did = null;
         if (!metadata.isEmpty()) {
             MetadataValue mv = metadata.iterator().next();
