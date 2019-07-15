@@ -18,6 +18,7 @@ import org.dspace.content.service.ItemService;
 import org.dspace.core.Context;
 import org.dspace.elza.DestructTransferRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.ProcessingException;
@@ -49,12 +50,14 @@ public class ProcessingRequestService {
      * Created by Marbes Consulting
      * ludek.cacha@marbes.cz / 25.06.2019.
      */
+    @Scheduled(initialDelay = 5000, fixedDelay = 30000)
     public void processingDestructionRequest() throws CoreServiceException {
         log.info("Spuštěna metoda processingDestructionRequest.");
         List<DestructTransferRequest> destructTransferRequest = new ArrayList<>();
-        Context context = new Context();
+        Context context;
         try {
             context = ContextUtils.createContext();
+            context.turnOffAuthorisationSystem();
             destructTransferRequest = descructTransferRequestService.findByTypeAndStatus(context,
                 DestructTransferRequest.Status.QUEUED, DestructTransferRequest.RequestType.DESTRUCTION);
         } catch (SQLException e) {
@@ -76,7 +79,6 @@ public class ProcessingRequestService {
                     UUID uuId = UUID.fromString(identifier);
                     log.info("Vyhledávám položku digitalizátu Uuid=" + uuId + ".");
                     Item item = getItem(context, uuId);
-                    ItemService itemService = item.getItemService();
 
                     log.info("Skartuji (ruším) metadata položky digitalizátu Uuid=" + uuId + ".");
                     List<MetadataValue> metadataValueList = itemService.getMetadata(item, Item.ANY, Item.ANY, Item.ANY, Item.ANY);
@@ -127,6 +129,7 @@ public class ProcessingRequestService {
      * Created by Marbes Consulting
      * ludek.cacha@marbes.cz / 25.06.2019.
      */
+    @Scheduled(initialDelay = 5000, fixedDelay = 30000)
     public void processingTransferRequest() throws CoreServiceException {
         log.info("Spuštěna metoda processingTransferRequest.");
         List<DestructTransferRequest> destructTransferRequest = new ArrayList<>();
@@ -156,7 +159,6 @@ public class ProcessingRequestService {
                     UUID uuId = UUID.fromString(identifier);
                     log.info("Vyhledávám položku digitalizátu Uuid=" + uuId + ".");
                     Item item = getItem(context, uuId);
-                    ItemService itemService = item.getItemService();
 
                     log.info("Vyhledávám cílovou kolekci " + destructRequest.getTargetFund() + "pro položku digitalizátu.");
                     Collection targetCollection = collectionService.find(context, UUID.fromString(destructRequest.getTargetFund()));
@@ -165,24 +167,29 @@ public class ProcessingRequestService {
                                 " nebyla nalezena.");
                     }
 
-                    log.info("Odstraňuji propojení digitalizátu s aktuálními kolekcemi.");
-                    List<Collection> collectionList = item.getCollections();
-                    for (Collection collection : collectionList) {
-                        log.info("Odstraňuji propojení digitalizátu s kolekcí " + collection.getID() + ".");
-                        collectionService.removeItem(context, collection, item);
-                        collectionService.update(context, collection);
-                    }
-
-                    log.info("Odstraňuji propojení digitalizátu s kolekcí vlastnika.");
                     Collection owningCollection = item.getOwningCollection();
-                    if (owningCollection != null) {
-                        collectionService.removeItem(context, owningCollection, item);
-                        collectionService.update(context, owningCollection);
-                    }
+                    log.info("Přesouvám item " + item.getName() + " z kolekce " + owningCollection.getName()
+                            + " do kolekce " + targetCollection.getName());
+                    itemService.move(context, item, owningCollection, targetCollection);
 
-                    log.info("Zakládám propojení digitalizátu Uuid=" + uuId + "na cílovou (archivní) kolekci " + targetCollection.getID() + ".");
-                    collectionService.addItem(context, targetCollection, item);
-                    collectionService.update(context, targetCollection);
+//                    log.info("Odstraňuji propojení digitalizátu s aktuálními kolekcemi.");
+//                    List<Collection> collectionList = item.getCollections();
+//                    for (Collection collection : collectionList) {
+//                        log.info("Odstraňuji propojení digitalizátu s kolekcí " + collection.getID() + ".");
+//                        collectionService.removeItem(context, collection, item);
+//                        collectionService.update(context, collection);
+//                    }
+//
+//                    log.info("Odstraňuji propojení digitalizátu s kolekcí vlastnika.");
+//                    Collection owningCollection = item.getOwningCollection();
+//                    if (owningCollection != null) {
+//                        collectionService.removeItem(context, owningCollection, item);
+//                        collectionService.update(context, owningCollection);
+//                    }
+//
+//                    log.info("Zakládám propojení digitalizátu Uuid=" + uuId + "na cílovou (archivní) kolekci " + targetCollection.getID() + ".");
+//                    collectionService.addItem(context, targetCollection, item);
+//                    collectionService.update(context, targetCollection);
 
                     final MetadataEnum mt = MetadataEnum.ISELZA;
                     log.info("Aktualizuji hodnotu metadat pro element=" + mt.getElement() + " na FALSE.");
@@ -259,7 +266,6 @@ public class ProcessingRequestService {
      */
     private void setMetadataValue(Context context, Item item, List<MetadataValue> metadataList, String mdValue, MetadataEnum mdField) {
         try {
-            ItemService itemService = item.getItemService();
             if (metadataList.size() == 0) {
                 itemService.addMetadata(context, item, mdField.getSchema(), mdField.getElement(), mdField.getQualifier(), null, mdValue);
             } else if (metadataList.size() == 1) {
