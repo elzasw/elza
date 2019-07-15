@@ -6,6 +6,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -13,17 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApChange;
-import cz.tacr.elza.domain.ApDescription;
-import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.SysLanguage;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -243,6 +233,19 @@ public class AccessPointDataService {
         if (name.getDeleteChange() != null) {
             throw new BusinessException("Nelze upravit jméno přístupového bodu", RegistryCode.CANT_CHANGE_DELETED_NAME)
                     .set("nameId", name.getNameId());
+        }
+    }
+
+    /**
+     * Validace přístupového bodu, že nemá vazbu na osobu.
+     *
+     * @param accessPoint přístupový bod
+     */
+    public void validationPartyType(final ApAccessPoint accessPoint, final ApType type) {
+        ParParty parParty = partyService.findParPartyByAccessPoint(accessPoint);
+        ParPartyType partyType = type.getPartyType();
+        if (partyType == null || !partyType.getPartyTypeId().equals(parParty.getPartyType().getPartyTypeId())) {
+            throw new BusinessException("Typ musí být ze stejného skupiny", BaseCode.INVALID_STATE);
         }
     }
 

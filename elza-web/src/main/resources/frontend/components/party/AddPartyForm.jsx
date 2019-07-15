@@ -279,6 +279,7 @@ class AddPartyForm extends AbstractReactComponent {
         }
 
         const treeItems = recordTypes.fetched ? recordTypes.item : [];
+        console.warn(treeItems)
         const value = typeId.value === null ? null : getTreeItemById(typeId.value, treeItems);
         const complementsList = complementsTypes && complementsTypes.map(i => <option value={i.complementTypeId} key={'index' + i.complementTypeId}>{i.name}</option>);
 

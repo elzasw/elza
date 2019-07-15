@@ -182,8 +182,8 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleChangeApState = () => {
-        const {registryDetail:{data:{id}}} = this.props;
-        const form = <ApStateChangeForm onSubmit={(data) => {
+        const {registryDetail:{data:{id, partyId}}} = this.props;
+        const form = <ApStateChangeForm hideType={partyId !== null} onSubmit={(data) => {
             const finalData = {
                 comment: data.comment,
                 state: data.state,

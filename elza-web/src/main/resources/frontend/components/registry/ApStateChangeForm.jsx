@@ -28,6 +28,12 @@ class ApStateChangeForm extends AbstractReactComponent {
 
     static propTypes = {
         accessPointId: React.PropTypes.number.isRequired,
+        partyTypeId: React.PropTypes.number,
+        hideType: React.PropTypes.bool,
+    };
+
+    static defultProps = {
+        hideType: false,
     };
 
     getStateWithAll() {
@@ -40,16 +46,16 @@ class ApStateChangeForm extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.props.dispatch(getRegistryRecordTypesIfNeeded());
+        this.props.dispatch(getRegistryRecordTypesIfNeeded(nextProps.partyTypeId));
     }
 
     componentDidMount() {
-        this.props.dispatch(getRegistryRecordTypesIfNeeded());
+        this.props.dispatch(getRegistryRecordTypesIfNeeded(this.props.partyTypeId));
     }
 
 
     render() {
-        const {fields: {typeId, scopeId, state, comment}, handleSubmit, onClose, versionId, refTables: {scopesData}, submitting, registryRegionRecordTypes} = this.props;
+        const {fields: {typeId, scopeId, state, comment}, handleSubmit, onClose, hideType, versionId, refTables: {scopesData}, submitting, registryRegionRecordTypes} = this.props;
 
         const items = registryRegionRecordTypes.item ? registryRegionRecordTypes.item : [];
 
@@ -68,7 +74,7 @@ class ApStateChangeForm extends AbstractReactComponent {
                 <Form onSubmit={handleSubmit}>
                     <Modal.Body>
                         <Scope disabled={submitting} versionId={versionId} label={i18n('ap.state.title.scope')} {...scopeId} value={scopeIdValue} {...decorateFormField(scopeId)}/>
-                        <Autocomplete
+                        {!hideType && <Autocomplete
                             label={i18n('ap.state.title.type')}
                             items={items}
                             tree
@@ -84,8 +90,9 @@ class ApStateChangeForm extends AbstractReactComponent {
                             }}
                             value={value}
                             disabled={submitting}
-                            />
+                            />}
                         <Autocomplete
+                            disabled={submitting}
                             label={i18n('ap.state.title.state')}
                             items={this.getStateWithAll()}
                             {...state}
@@ -96,7 +103,7 @@ class ApStateChangeForm extends AbstractReactComponent {
                                 state.onBlur(item ? item.id : null);
                             }}
                         />
-                        <FormInput type="text" label={i18n('ap.state.title.comment')} {...comment} {...decorateFormField(comment)}/>
+                        <FormInput disabled={submitting} type="text" label={i18n('ap.state.title.comment')} {...comment} {...decorateFormField(comment)}/>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit" disabled={submitting}>{i18n('global.action.store')}</Button>

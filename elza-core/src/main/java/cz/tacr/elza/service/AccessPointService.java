@@ -2189,8 +2189,8 @@ public class AccessPointService {
             return oldApState;
         }
 
-        if (validateParty) {
-            apDataService.validationNotParty(accessPoint);
+        if (validateParty && newApType != null) {
+            apDataService.validationPartyType(accessPoint, newApType);
         }
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);

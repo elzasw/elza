@@ -123,8 +123,8 @@ class PartyPage extends AbstractReactComponent {
     };
 
     handleChangeApState = () => {
-        const {partyDetail:{data:{accessPoint: {id}}}} = this.props;
-        const form = <ApStateChangeForm onSubmit={(data) => {
+        const {partyDetail:{data:{accessPoint: {id}, partyType}}} = this.props;
+        const form = <ApStateChangeForm partyTypeId={partyType.id} onSubmit={(data) => {
             const finalData = {
                 comment: data.comment,
                 state: data.state,

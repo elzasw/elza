@@ -963,9 +963,10 @@ export function updateFormData(state : IItemFormState, data: ItemData, refTypesM
         // Překopírování seznam id nepoužitých PP pro výstupy
         //state.unusedItemTypeIds = data.unusedItemTypeIds; // Tohle je potřeba ?
 
-        if (!data.itemTypes) {
-            return state;
-        }
+        // TODO: vyřešit problém s AP strukturovaný/nestrukturovaný
+        // if (!data.itemTypes) {
+        //     return state;
+        // }
 
         const dataItemTypeMap = getMapFromList(data.itemTypes);
 
