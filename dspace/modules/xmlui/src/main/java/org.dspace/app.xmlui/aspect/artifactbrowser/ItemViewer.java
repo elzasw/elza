@@ -440,14 +440,14 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
             isElza = Boolean.valueOf(value);
         }
 
-        if (!isElza) {
+//        if (!isElza) {
             Para sendToElzaPara = division.addPara(null, "item-view-send-to-elza");
 
             String linkToElza = contextPath + "/handle/" + item.getHandle()
                     + "?sendToElza=true" + "?idemId=" + item.getID();
 
             sendToElzaPara.addXref(linkToElza).addContent(T_send_to_elza);
-        }
+//        }
 
         metaData = MetadataEnum.ELZADIDID;
         metadata = itemService.getMetadata(item, metaData.getSchema(), metaData.getElement(), metaData.getQualifier(), Item.ANY);
@@ -458,12 +458,13 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
         }
         
         if (did != null) {
-            Para sendToElzaPara = division.addPara(null, "did-view-in-elsa");
+            Para viewInElzaPara = division.addPara(null, "did-view-in-elsa");
 
-            String linkToElza = "http://www.seznam.cz" + "/handle/" + item.getHandle()
-                    + "?viewInElza=true" + "?idemId=" + did; // poslota didId
+            // TODO upravit formát podle skutečné adresy v ELZA
+            String baseUrl = DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("elza.base.url");
+            String viewInElzaLink = baseUrl + "?idemId=" + did; // poslat didId
 
-            sendToElzaPara.addXref(linkToElza, T_view_in_elza);
+            viewInElzaPara.addXref(viewInElzaLink, T_view_in_elza);
         }
     }
 
