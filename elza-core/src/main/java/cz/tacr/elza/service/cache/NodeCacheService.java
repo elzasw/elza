@@ -469,7 +469,8 @@ public class NodeCacheService {
                                  partyNameRepository,*/
                 accessPointRepository,
                 fundFileRepository,
-                daoRepository);
+                daoRepository,
+                nodeRepository);
         ra.restore(cachedNodes);
     }
 
