@@ -2112,6 +2112,16 @@ public class AccessPointService {
         return apStateRepository.findByAccessPointFetch(apAccessPoint);
     }
 
+    /**
+     * Změna stavu přístupového bodu
+     *
+     * @param accessPoint přístupový bod
+     * @param newStateApproval nový stav schvalování
+     * @param newComment komentář k stavu (nepovinně)
+     * @param newTypeId ID typu - <b>pokud je {@code null}, typ se nemění</b>
+     * @param newScopeId ID oblasti entit - <b>pokud je {@code null}, oblast se nemění</b>
+     * @return nový stav přístupového bodu (nebo starý, pokud nedošlo k žádné změně)
+     */
     @Transactional
     public ApState updateApState(@NotNull ApAccessPoint accessPoint,
                                  @NotNull StateApproval newStateApproval,
@@ -2210,7 +2220,19 @@ public class AccessPointService {
         return newApState;
     }
 
-    public boolean hasApPermission(@NotNull ApScope apScope, StateApproval oldStateApproval, @NotNull StateApproval newStateApproval) {
+    /**
+     * Vyhodnocuje oprávnění přihlášeného uživatele k úpravám na přístupovém bodu dle uvedené oblasti entit.
+     *
+     * @param apScope oblast entit
+     * @param oldStateApproval původní stav schvalování - při zakládání AP může být {@code null}
+     * @param newStateApproval nový stav schvalování - pokud v rámci změny AP nedochází ke změně stavu schvalovaní, musí být stejný jako {@code oldStateApproval}
+     * @return oprávění přihášeného uživatele ke změně AP
+     * @throws BusinessException přechod mezi uvedenými stavy není povolen
+     * @throws SystemException přechod mezi uvedenými stavy není povolen
+     */
+    public boolean hasApPermission(@NotNull ApScope apScope, StateApproval oldStateApproval, @NotNull StateApproval newStateApproval)
+            throws BusinessException, SystemException {
+
         Assert.notNull(apScope, "AP Scope is null");
         Assert.notNull(newStateApproval, "New State Approval is null");
 
