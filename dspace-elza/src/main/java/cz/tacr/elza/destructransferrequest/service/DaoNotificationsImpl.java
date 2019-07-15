@@ -59,7 +59,6 @@ public class DaoNotificationsImpl implements DaoNotifications {
         UUID uuId = UUID.fromString(daoIdentifier);
         log.info("Vyhledávám položku digitalizátu Uuid=" + uuId + ".");
         Item item = getItem(context, uuId);
-        ItemService itemService = item.getItemService();
         log.info("Aktualizuji metadata položky digitalizátu Uuid=" + uuId + ".");
         //TODO:cacha doplnit po upřesnění vstupních dat
 
@@ -115,16 +114,18 @@ public class DaoNotificationsImpl implements DaoNotifications {
         MetadataEnum mt = MetadataEnum.ELZADIDID;
         log.info("Aktualizuji metadata element=" + mt.getElement() + " pro položku digitalizátu Uuid=" + uuId + " schema=" +
                 mt.getSchema() + ".");
-        List<MetadataValue> metadataList = itemService.getMetadata(item, mt.getSchema(), mt.getElement(), mt.getQualifier(), Item.ANY);
-        setMetadataValue(context, item, metadataList, Boolean.FALSE.toString(), mt);
-
-        mt = MetadataEnum.ISELZA;
-        log.info("Aktualizuji metadata element=" + mt.getElement() + " pro položku digitalizátu Uuid=" + uuId + " schema=" +
-                mt.getSchema() + ".");
-        metadataList = itemService.getMetadata(item, mt.getSchema(), mt.getElement(), mt.getQualifier(), Item.ANY);
-        setMetadataValue(context, item, metadataList, Boolean.FALSE.toString(), mt);
-
         try {
+            List<MetadataValue> metadataList = itemService.getMetadata(item, mt.getSchema(), mt.getElement(), mt.getQualifier(), Item.ANY);
+            itemService.removeMetadataValues(context, item, metadataList);
+            itemService.update(context, item);
+
+            mt = MetadataEnum.ISELZA;
+            log.info("Aktualizuji metadata element=" + mt.getElement() + " pro položku digitalizátu Uuid=" + uuId + " schema=" +
+                    mt.getSchema() + ".");
+            metadataList = itemService.getMetadata(item, mt.getSchema(), mt.getElement(), mt.getQualifier(), Item.ANY);
+            setMetadataValue(context, item, metadataList, Boolean.FALSE.toString(), mt);
+
+
             context.complete();
         } catch (Exception e) {
             context.abort();
@@ -158,7 +159,6 @@ public class DaoNotificationsImpl implements DaoNotifications {
      */
     private void setMetadataValue(Context context, Item item, List<MetadataValue> metadataList, String mdValue, MetadataEnum mt) {
         try {
-            ItemService itemService = item.getItemService();
             if (metadataList.size() == 0) {
                 itemService.addMetadata(context, item, mt.getSchema(), mt.getElement(), mt.getQualifier(), null, mdValue);
             } else if (metadataList.size() == 1) {

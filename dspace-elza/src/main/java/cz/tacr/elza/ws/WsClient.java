@@ -146,7 +146,7 @@ public class WsClient {
         Daoset daoset = new Daoset();
         daoPackage.setDaoset(daoset);
         Dao dao = new Dao();
-        dao.setLabel(item.getName());
+        dao.setIdentifier(item.getID().toString());
 
         FileGroup fileGroup = new FileGroup();
 
@@ -157,7 +157,7 @@ public class WsClient {
         String fileParam = null;
         if (index > 0) {
             fileParam = uriMD.substring(index + 8);
-            dao.setIdentifier(fileParam);
+            dao.setLabel(fileParam);
         }
         //"http://localhost:8080/xmlui/handle/123456789/8"
         for (Bundle bundle : bundles) {
