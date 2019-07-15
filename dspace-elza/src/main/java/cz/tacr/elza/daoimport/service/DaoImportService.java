@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -114,9 +115,11 @@ public class DaoImportService {
         for (Path batchDir : possibleBatches) {
             BufferedWriter protocol = createProtocolWriter(batchDir);
 
+            boolean emptyBatch = false;
             try {
                 ImportBatch importBatch = checkAndPrepareBatch(batchDir, config, protocol, context);
-                if (!importBatch.getDaos().isEmpty()) {
+                emptyBatch = importBatch.getDaos().isEmpty();
+                if (!emptyBatch) {
                     batches.add(importBatch);
                 } else {
                     protocol.write("Dávka " + batchDir.toAbsolutePath() + " neobsahuje žádné digitalizáty a proto nebude dále zpracovávána.");
@@ -132,6 +135,10 @@ public class DaoImportService {
 
                 Path errorDir = Paths.get(config.getMainDir(), ERROR_DIR, batchDir.getFileName().toString());
                 Files.move(batchDir, errorDir);
+            } finally {
+                if (emptyBatch) {
+                    protocol.close();
+                }
             }
         }
 
@@ -152,6 +159,9 @@ public class DaoImportService {
 
     private List<String> getSupportedMimeTypes() {
         String mimeTypes = configurationService.getProperty("elza.daoimport.supportedMimeTypes");
+        if (StringUtils.isBlank(mimeTypes)) {
+            return Collections.emptyList();
+        }
         String[] split = mimeTypes.split(" ");
         List<String> supportedMimeTypes = new ArrayList<>(split.length);
         for (String mimeType : split) {
@@ -201,14 +211,14 @@ public class DaoImportService {
             Bundle thumbBundle = createBundle(THUMBNAIL_BITSTREAM, item,  protocol, context);
             for (DaoFile daoFile : importDao.getFiles()) {
                 String bsName = daoFile.getContentFile().getFileName().toString();
-                Bitstream contentBitstream = createBitstream(bsName, daoFile.getContentFile(), origBundle, CONTENT_BITSTREAM, sequence, protocol, context);
+                Bitstream contentBitstream = createBitstream(bsName, daoFile.getContentFile(), origBundle, sequence, protocol, context);
                 // TODO vanek - datum vytvoření = datum vytvoření souboru? nebo importu do DSpace?
                 if (daoFile.getMetadataFile() != null) {
-                    Bitstream metadataBitstream = createBitstream(bsName, daoFile.getMetadataFile(), metaBundle, METADATA_BITSTREAM, sequence, protocol, context);
+                    Bitstream metadataBitstream = createBitstream(bsName, daoFile.getMetadataFile(), metaBundle, sequence, protocol, context);
                     Map<MetadataEnum, String> techMD = daoFile.getTechMD();
                     storeTechMD(contentBitstream, techMD, protocol, context);
                 }
-                Bitstream thumbnailBitstream = createBitstream(bsName, daoFile.getThumbnailFile(), thumbBundle, THUMBNAIL_BITSTREAM, sequence, protocol, context);
+                Bitstream thumbnailBitstream = createBitstream(bsName, daoFile.getThumbnailFile(), thumbBundle, sequence, protocol, context);
                 sequence++;
             }
         }
@@ -235,10 +245,10 @@ public class DaoImportService {
         }
     }
 
-    private Bitstream createBitstream(final String name, final Path file, final Bundle bundle, final String bitstreamName,
-                                      final int sequence, final BufferedWriter protocol, final Context context) {
+    private Bitstream createBitstream(final String name, final Path file, final Bundle bundle, final int sequence,
+                                      final BufferedWriter protocol, final Context context) {
         try {
-            protocol.write("Vytváření Bitstream " + bitstreamName + " pro Bundle " + bundle.getName());
+            protocol.write("Vytváření Bitstream " + name + " pro Bundle " + bundle.getName());
             protocol.newLine();
 
             InputStream inputStream = Files.newInputStream(file);
@@ -259,7 +269,7 @@ public class DaoImportService {
             bitstreamService.update(context, bs);
             return bs;
         } catch (Exception e) {
-            throw new IllegalStateException("Chyba při vytváření Bitstream " + bitstreamName + " pro Bundle " + bundle.getName(), e);
+            throw new IllegalStateException("Chyba při vytváření Bitstream " + name + " pro Bundle " + bundle.getName(), e);
         }
     }
 
