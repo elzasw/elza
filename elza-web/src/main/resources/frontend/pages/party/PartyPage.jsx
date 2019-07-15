@@ -127,7 +127,7 @@ class PartyPage extends AbstractReactComponent {
         const form = <ApStateChangeForm onSubmit={(data) => {
             const finalData = {
                 comment: data.comment,
-                //state: data.state,
+                state: data.state,
                 typeId: data.typeId,
                 scopeId: data.scopeId !== "" ? parseInt(data.scopeId) : null,
             };
@@ -228,22 +228,21 @@ class PartyPage extends AbstractReactComponent {
                 */
             }
 
+            itemActions.push(
+                <Button key='show-state-history' onClick={this.handleShowApHistory}>
+                    <Icon glyph="fa-clock-o"/>
+                    <div><span className="btnText">{i18n('ap.stateHistory')}</span></div>
+                </Button>
+            );
+
+            // TODO: oprávnění
+            itemActions.push(
+                <Button key='change-state' onClick={this.handleChangeApState}>
+                    <Icon glyph="fa-pencil"/>
+                    <div><span className="btnText">{i18n('ap.changeState')}</span></div>
+                </Button>
+            );
         }
-
-        itemActions.push(
-            <Button key='show-state-history' onClick={this.handleShowApHistory}>
-                <Icon glyph="fa-clock-o"/>
-                <div><span className="btnText">{i18n('ap.stateHistory')}</span></div>
-            </Button>
-        );
-
-        // TODO: oprávnění
-        itemActions.push(
-            <Button key='change-state' onClick={this.handleChangeApState}>
-                <Icon glyph="fa-pencil"/>
-                <div><span className="btnText">{i18n('ap.changeState')}</span></div>
-            </Button>
-        );
 
         let altSection;
         if (altActions.length > 0) {

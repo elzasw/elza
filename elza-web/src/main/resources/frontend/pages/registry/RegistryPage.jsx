@@ -200,7 +200,7 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     buildRibbon = () => {
-        const {registryDetail:{data}, userDetail, extSystems, module, customRibbon, registryDetail } = this.props;
+        const {registryDetail:{data, id}, userDetail, extSystems, module, customRibbon, registryDetail } = this.props;
 
         const parts = module && customRibbon ? customRibbon : {altActions: [], itemActions: [], primarySection: null};
 
@@ -279,20 +279,23 @@ class RegistryPage extends AbstractReactComponent {
             }
         }
 
-        itemActions.push(
-            <Button key='show-state-history' onClick={this.handleShowApHistory}>
-                <Icon glyph="fa-clock-o"/>
-                <div><span className="btnText">{i18n('ap.stateHistory')}</span></div>
-            </Button>
-        );
+        if (id && data) {
+            itemActions.push(
+                <Button key='show-state-history' onClick={this.handleShowApHistory}>
+                    <Icon glyph="fa-clock-o"/>
+                    <div><span className="btnText">{i18n('ap.stateHistory')}</span></div>
+                </Button>
+            );
 
-        // TODO: oprávnění
-        itemActions.push(
-            <Button key='change-state' onClick={this.handleChangeApState}>
-                <Icon glyph="fa-pencil"/>
-                <div><span className="btnText">{i18n('ap.changeState')}</span></div>
-            </Button>
-        );
+            // TODO: oprávnění
+            itemActions.push(
+                <Button key='change-state' onClick={this.handleChangeApState}>
+                    <Icon glyph="fa-pencil"/>
+                    <div><span className="btnText">{i18n('ap.changeState')}</span></div>
+                </Button>
+            );
+        }
+
 
         let altSection;
         if (altActions.length > 0) {
