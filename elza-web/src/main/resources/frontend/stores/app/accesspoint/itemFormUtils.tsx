@@ -963,6 +963,10 @@ export function updateFormData(state : IItemFormState, data: ItemData, refTypesM
         // Překopírování seznam id nepoužitých PP pro výstupy
         //state.unusedItemTypeIds = data.unusedItemTypeIds; // Tohle je potřeba ?
 
+        if (!data.itemTypes) {
+            return state;
+        }
+
         const dataItemTypeMap = getMapFromList(data.itemTypes);
 
         // Info skupiny - ty, které jsou jako celek definované pro konkrétní JP - obsahují všechny atributy včetně např. typu - POSSIBLE atp.

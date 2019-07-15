@@ -949,6 +949,7 @@ var messages = {
     "ap.history.title.state.TO_AMEND": "K doplnění",
 
     "ap.changeState": "Změna stavu",
+    "ap.state.title.noComment": "[bez komentáře]",
     "ap.state.change": "Změna stavu",
     "ap.state.title.scope": "Oblast",
     "ap.state.title.type": "Třída přístupového bodu",

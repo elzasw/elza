@@ -240,6 +240,8 @@ public class ApFactory {
         vo.setInvalid(apState.getDeleteChange() != null);
         vo.setScopeId(apState.getScopeId());
         vo.setTypeId(apState.getApTypeId());
+        vo.setComment(apState.getComment());
+        vo.setStateApproval(apState.getStateApproval());
         vo.setUuid(ap.getUuid());
         vo.setExternalIds(eidsVO);
         vo.setNames(namesVO);

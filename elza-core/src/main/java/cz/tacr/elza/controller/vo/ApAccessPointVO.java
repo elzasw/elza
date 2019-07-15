@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApState;
 
 
 /**
@@ -30,6 +31,16 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
      * Id třídy rejstříku.
      */
     private Integer scopeId;
+
+    /**
+     * Stav schválení.
+     */
+    private ApState.StateApproval stateApproval;
+
+    /**
+     * Komentář ke stavu schválení.
+     */
+    private String comment;
 
     /**
      * Rejstříkové heslo.
@@ -106,6 +117,22 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 
     public void setTypeId(Integer typeId) {
         this.typeId = typeId;
+    }
+
+    public ApState.StateApproval getStateApproval() {
+        return stateApproval;
+    }
+
+    public void setStateApproval(final ApState.StateApproval stateApproval) {
+        this.stateApproval = stateApproval;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(final String comment) {
+        this.comment = comment;
     }
 
     public Integer getScopeId() {
