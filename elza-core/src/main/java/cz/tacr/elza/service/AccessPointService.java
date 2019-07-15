@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -73,6 +74,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ExceptionUtils;
@@ -105,6 +107,7 @@ import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.ImportAccessPoint;
 
+import static cz.tacr.elza.domain.ApState.StateApproval;
 import static java.util.stream.Collectors.*;
 
 
@@ -240,12 +243,12 @@ public class AccessPointService {
      * @return vybrané záznamy dle popisu seřazené za record, nbeo prázdná množina
      */
     public List<ApState> findApAccessPointByTextAndType(@Nullable final String searchRecord,
-                                                              @Nullable final Collection<Integer> apTypeIds,
-                                                              final Integer firstResult,
-                                                              final Integer maxResults,
-                                                              @Nullable final ArrFund fund,
-                                                              @Nullable final Integer scopeId,
-                                                              @Nullable final Collection<ApState.StateApproval> approvalStates) {
+                                                        @Nullable final Collection<Integer> apTypeIds,
+                                                        final Integer firstResult,
+                                                        final Integer maxResults,
+                                                        @Nullable final ArrFund fund,
+                                                        @Nullable final Integer scopeId,
+                                                        @Nullable final Collection<StateApproval> approvalStates) {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
@@ -266,7 +269,7 @@ public class AccessPointService {
                                                     @Nullable final Collection<Integer> apTypeIds,
                                                     @Nullable final ArrFund fund,
                                                     @Nullable final Integer scopeId,
-                                                    @Nullable final Collection<ApState.StateApproval> approvalStates) {
+                                                    @Nullable final Collection<StateApproval> approvalStates) {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
@@ -885,14 +888,12 @@ public class AccessPointService {
         Validate.notNull(accessPointId);
         Validate.notNull(apTypeId);
 
-        // get ap type
-        StaticDataProvider sdp = this.staticDataService.createProvider();
-        ApType apType = sdp.getApTypeById(apTypeId);
-        Validate.notNull(apType, "AP Type not found, id={}", apTypeId);
-
         // get ap
         ApAccessPoint accessPoint = getAccessPoint(accessPointId);
         ApState oldState = getState(accessPoint);
+
+        // todo[ELZA-1727]
+        // return updateState(accessPoint, oldState.getStateApproval(), oldState.getComment(), apTypeId, oldState.getScopeId());
 
         apDataService.validationNotDeleted(oldState);
         apDataService.validationNotParty(accessPoint);
@@ -902,11 +903,16 @@ public class AccessPointService {
             return oldState;
         }
 
+        // get ap type
+        StaticDataProvider sdp = this.staticDataService.createProvider();
+        ApType apType = sdp.getApTypeById(apTypeId);
+        Validate.notNull(apType, "AP Type not found, id={}", apTypeId);
+
         ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
         oldState.setDeleteChange(change);
         apStateRepository.save(oldState);
 
-        ApState newState = createNewState(oldState, change);
+        ApState newState = copyState(oldState, change);
         newState.setApType(apType);
         apStateRepository.save(newState);
 
@@ -1652,14 +1658,14 @@ public class AccessPointService {
         apState.setAccessPoint(ap);
         apState.setApType(type);
         apState.setScope(scope);
-        apState.setStateApproval(ApState.StateApproval.NEW);
+        apState.setStateApproval(StateApproval.NEW);
         // apState.setComment(comment);
         apState.setCreateChange(change);
         apState.setDeleteChange(null);
         return stateRepository.save(apState);
     }
 
-    private ApState createNewState(ApState oldState, ApChange change) {
+    private ApState copyState(ApState oldState, ApChange change) {
         ApState newState = new ApState();
         newState.setAccessPoint(oldState.getAccessPoint());
         newState.setApType(oldState.getApType());
@@ -2104,6 +2110,164 @@ public class AccessPointService {
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
     public List<ApState> findApStates(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint apAccessPoint) {
         return apStateRepository.findByAccessPointFetch(apAccessPoint);
+    }
+
+    @Transactional
+    public ApState updateApState(@NotNull ApAccessPoint accessPoint,
+                                 @NotNull StateApproval newStateApproval,
+                                 @Nullable String newComment,
+                                 @Nullable Integer newTypeId,
+                                 @Nullable Integer newScopeId) {
+
+        Validate.notNull(newStateApproval, "AP State is null");
+
+        ApState oldApState = getState(accessPoint);
+        apDataService.validationNotDeleted(oldApState);
+
+        boolean update = false;
+        boolean validateParty = false;
+
+        StateApproval oldStateApproval = oldApState.getStateApproval();
+        if (!newStateApproval.equals(oldStateApproval)) {
+            update = true;
+        }
+
+        if (!Objects.equals(newComment, oldApState.getComment())) {
+            update = true;
+        }
+
+        ApScope oldApScope = oldApState.getScope();
+        if (!hasApPermission(oldApScope, oldStateApproval, newStateApproval)) {
+            throw new SystemException("Uživatel nemá oprávnění na změnu přístupového bodu", BaseCode.INSUFFICIENT_PERMISSIONS)
+                    .set("accessPointId", accessPoint.getAccessPointId())
+                    .set("scopeId", oldApScope.getScopeId());
+        }
+
+        ApScope newApScope;
+        if (newScopeId != null && !newScopeId.equals(oldApScope.getScopeId())) {
+            newApScope = getScope(newScopeId);
+            if (!hasApPermission(newApScope, oldStateApproval, newStateApproval)) {
+                throw new SystemException("Uživatel nemá oprávnění na změnu přístupového bodu", BaseCode.INSUFFICIENT_PERMISSIONS)
+                        .set("accessPointId", accessPoint.getAccessPointId())
+                        .set("scopeId", newApScope.getScopeId());
+            }
+            update = true;
+            validateParty = true;
+        } else {
+            newApScope = null;
+        }
+
+        ApType newApType;
+        if (newTypeId != null && !newTypeId.equals(oldApState.getApTypeId())) {
+            // get ap type
+            StaticDataProvider sdp = staticDataService.createProvider();
+            newApType = sdp.getApTypeById(newTypeId);
+            Validate.notNull(newApType, "AP Type not found, id={}", newTypeId);
+            update = true;
+            validateParty = true;
+        } else {
+            newApType = null;
+        }
+
+        if (!update) {
+            // nothing to update
+            /*
+            throw new BusinessException("Přístupový bod je v aktuálním stavu", BaseCode.INVALID_STATE)
+                    .set("accessPointId", accessPoint.getAccessPointId())
+                    .set("stateChange", stateChange);
+            */
+            return oldApState;
+        }
+
+        if (validateParty) {
+            apDataService.validationNotParty(accessPoint);
+        }
+
+        ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
+        oldApState.setDeleteChange(change);
+        apStateRepository.save(oldApState);
+
+        ApState newApState = copyState(oldApState, change);
+        if (newApScope != null) {
+            newApState.setScope(newApScope);
+        }
+        if (newApType != null) {
+            newApState.setApType(newApType);
+        }
+        newApState.setStateApproval(newStateApproval);
+        newApState.setComment(newComment);
+        apStateRepository.save(newApState);
+
+        if (newApType != null) {
+            accessPoint.setRuleSystem(newApType.getRuleSystem());
+            saveWithLock(accessPoint);
+        }
+        apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
+
+        publishAccessPointUpdateEvent(accessPoint);
+        reindexDescItem(accessPoint);
+
+        return newApState;
+    }
+
+    public boolean hasApPermission(@NotNull ApScope apScope, StateApproval oldStateApproval, @NotNull StateApproval newStateApproval) {
+        Assert.notNull(apScope, "AP Scope is null");
+        Assert.notNull(newStateApproval, "New State Approval is null");
+
+        if (oldStateApproval != null) {
+            if (!newStateApproval.equals(oldStateApproval)) {
+                // změna stavu
+                if (newStateApproval.equals(StateApproval.NEW)) {
+                    throw new BusinessException("Změna stavu přístupového bodu na \"Nový\" z jiného není povolená", BaseCode.INVALID_STATE)
+                            .set("oldStateApproval", oldStateApproval).set("newStateApproval", newStateApproval);
+                }
+                if (oldStateApproval.equals(StateApproval.APPROVED)) {
+                    throw new BusinessException("Změna stavu již schváleného přístupového bodu není povolená", BaseCode.INVALID_STATE)
+                            .set("oldStateApproval", oldStateApproval).set("newStateApproval", newStateApproval);
+                }
+            }
+        } else {
+            if (!newStateApproval.equals(StateApproval.NEW)) {
+                // přístupové body se zakládají ve stavu "Nový"
+                throw new SystemException("Přístupový bod musí být založen ve stavu \"Nový\"", BaseCode.INVALID_STATE)
+                        .set("newStateApproval", newStateApproval);
+            }
+        }
+
+        // admin může cokoliv
+        if (userService.hasPermission(Permission.ADMIN)) {
+            return true;
+        }
+
+        if (oldStateApproval != null && oldStateApproval.equals(StateApproval.APPROVED) && newStateApproval.equals(StateApproval.APPROVED)) {
+
+            // k editaci již schválených přístupových bodů je potřeba "Změna schválených přístupových bodů"
+            return userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
+                    || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, apScope.getScopeId());
+
+        } else {
+
+            // "Schvalování přístupových bodů" může:
+            // - změnit stav na "Schválený"
+            // - změnit stav na "K doplnění"
+            if (newStateApproval.equals(StateApproval.APPROVED) || newStateApproval.equals(StateApproval.TO_AMEND)) {
+                if (userService.hasPermission(Permission.AP_CONFIRM_ALL)
+                        || userService.hasPermission(Permission.AP_CONFIRM, apScope.getScopeId())) {
+                    return true;
+                }
+            }
+
+            // "Zakládání a změny nových" může:
+            // - nastavení stavu "Nový", "Ke schválení" i "K doplnění"
+            if (newStateApproval.equals(StateApproval.TO_AMEND) || newStateApproval.equals(StateApproval.TO_APPROVE) || newStateApproval.equals(StateApproval.NEW)) {
+                if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
+                        || userService.hasPermission(Permission.AP_SCOPE_WR, apScope.getScopeId())) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 
     /**

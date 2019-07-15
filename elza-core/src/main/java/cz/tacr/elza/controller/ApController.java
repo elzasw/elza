@@ -1,10 +1,8 @@
 package cz.tacr.elza.controller;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -1155,8 +1153,7 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/{accessPointId}/history", method = RequestMethod.GET)
     public List<ApStateHistoryVO> findStateHistories(@PathVariable("accessPointId") final Integer accessPointId) {
-        ApAccessPoint apAccessPoint = accessPointRepository.getOneCheckExist(accessPointId);
-
+        ApAccessPoint apAccessPoint = accessPointService.getAccessPoint(accessPointId);
         List<ApState> states = accessPointService.findApStates(apAccessPoint);
         return apFactory.createStateHistoriesVO(states);
     }
@@ -1170,6 +1167,11 @@ public class ApController {
     @RequestMapping(value = "/{accessPointId}/state", method = RequestMethod.POST)
     public void changeState(@PathVariable("accessPointId") final Integer accessPointId,
                             @RequestBody ApStateChangeVO stateChange) {
-        // TODO marek
+        Validate.notNull(stateChange.getState(), "AP State is null");
+        Validate.notBlank(stateChange.getComment(), "AP State Comment is empty");
+
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+
+        accessPointService.updateApState(accessPoint, stateChange.getState(), stateChange.getComment(), stateChange.getTypeId(), stateChange.getScopeId());
     }
 }
