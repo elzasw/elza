@@ -33,7 +33,7 @@ import java.util.UUID;
         serviceName = "CoreService",
         portName = "DaoCoreRequests",
         targetNamespace = "http://dspace.tacr.cz/ws/core/v1",
-        endpointInterface = "cz.tacr.elza.ws.dao_service.v1.DaoRequests")
+        endpointInterface = "cz.tacr.elza.ws.dao_service.v1.DaoNotifications")
 
 public class DaoNotificationsImpl implements DaoNotifications {
 

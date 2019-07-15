@@ -12,9 +12,12 @@ import org.apache.cxf.feature.FastInfosetFeature;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.dspace.content.Bitstream;
 import org.dspace.content.Bundle;
+import org.dspace.content.Collection;
 import org.dspace.content.Item;
+import org.dspace.content.MetadataSchema;
 import org.dspace.content.MetadataValue;
 import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.service.CollectionService;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.Context;
 import org.dspace.services.ConfigurationService;
@@ -38,6 +41,7 @@ public class WsClient {
     private static final Logger logger = LoggerFactory.getLogger(WsClient.class);
     private static ConfigurationService configurationService = DSpaceServicesFactory.getInstance().getConfigurationService();
     private static ItemService itemService = ContentServiceFactory.getInstance().getItemService();
+    private static CollectionService collectionService = ContentServiceFactory.getInstance().getCollectionService();
 
     /**
      * Vytvoří JaxWs klienta webové služby a vrátí proxy rozhraní.
@@ -126,12 +130,22 @@ public class WsClient {
         DaoPackage daoPackage = new DaoPackage();
         daoPackage.setIdentifier(item.getID().toString());
 
-        daoPackage.setFundIdentifier(item.getID().toString());
-        daoPackage.setRepositoryIdentifier("2");
+        Collection collection = item.getOwningCollection();
+        String fundId = collectionService.getMetadataFirstValue(collection, MetadataSchema.DC_SCHEMA, "description", "abstract", Item.ANY);
+        daoPackage.setFundIdentifier(fundId);
+        daoPackage.setFundIdentifier("393b642a-4f5a-467f-aae4-3d129f04a6cb");
+        daoPackage.setRepositoryIdentifier(configurationService.getProperty("elza.repositoryCode"));
 
+        String daoId = itemService.getMetadataFirstValue(item, MetadataSchema.DC_SCHEMA, "description", null, null);
+        DaoBatchInfo daoBatchInfo = new DaoBatchInfo();
+        daoBatchInfo.setIdentifier(daoId);
+        daoBatchInfo.setLabel(daoId);
+        daoPackage.setDaoBatchInfo(daoBatchInfo);
 
-        Daoset daoset = daoPackage.getDaoset();
+        Daoset daoset = new Daoset();
+        daoPackage.setDaoset(daoset);
         Dao dao = new Dao();
+        dao.setIdentifier(item.getID().toString());
 
         FileGroup fileGroup = new FileGroup();
 
@@ -179,7 +193,7 @@ public class WsClient {
     }
 
     private static DaoService getDaoService() {
-        final String url = configurationService.getProperty("elza.base.url") + "DaoService";
+        final String url = configurationService.getProperty("elza.base.url") + "DaoCoreService";
         final String username = configurationService.getProperty("elza.base.username");
         final String password = configurationService.getProperty("elza.base.password");
         return getJaxWsRemoteInterface(DaoService.class, url, username, password);
