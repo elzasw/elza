@@ -81,9 +81,9 @@ public class DaoImportService {
     public static final String METADATA_EXTENSION = ".meta";
     public static final String THUMBNAIL_EXTENSION = ".thumb";
 
-    public static final String CONTENT_BITSTREAM = "ORIGINAL";
-    public static final String METADATA_BITSTREAM = "METADATA";
-    public static final String THUMBNAIL_BITSTREAM = "THUMBNAIL";
+    public static final String CONTENT_BUNDLE = "ORIGINAL";
+    public static final String METADATA_BUNDLE = "METADATA";
+    public static final String THUMBNAIL_BUNDLE = "THUMBNAIL";
 
     private static Logger log = Logger.getLogger(DaoImportScheduler.class);
 
@@ -206,9 +206,9 @@ public class DaoImportService {
         for (ImportDao importDao : batch.getDaos()) {
             int sequence = 0;
             Item item = createItem(importDao.getCollectionId(), importDao.getDaoId(), protocol, context);
-            Bundle origBundle = createBundle(CONTENT_BITSTREAM, item,  protocol, context);
-            Bundle metaBundle = createBundle(METADATA_BITSTREAM, item,  protocol, context);
-            Bundle thumbBundle = createBundle(THUMBNAIL_BITSTREAM, item,  protocol, context);
+            Bundle origBundle = createBundle(CONTENT_BUNDLE, item,  protocol, context);
+            Bundle metaBundle = createBundle(METADATA_BUNDLE, item,  protocol, context);
+            Bundle thumbBundle = createBundle(THUMBNAIL_BUNDLE, item,  protocol, context);
             for (DaoFile daoFile : importDao.getFiles()) {
                 String bsName = daoFile.getContentFile().getFileName().toString();
                 Bitstream contentBitstream = createBitstream(bsName, daoFile.getContentFile(), origBundle, sequence, protocol, context);

@@ -1,6 +1,7 @@
 package cz.tacr.elza.ws;
 
 import cz.tacr.elza.context.ContextUtils;
+import cz.tacr.elza.daoimport.service.DaoImportService;
 import cz.tacr.elza.destructransferrequest.service.ProcessingRequestService;
 import cz.tacr.elza.metadataconstants.MetadataEnum;
 import cz.tacr.elza.ws.core.v1.DaoRequestsService;
@@ -145,16 +146,25 @@ public class WsClient {
         Daoset daoset = new Daoset();
         daoPackage.setDaoset(daoset);
         Dao dao = new Dao();
-        dao.setIdentifier(item.getID().toString());
+        dao.setLabel(item.getName());
 
         FileGroup fileGroup = new FileGroup();
 
-        List<Bundle> bundles = item.getBundles();
+        List<Bundle> bundles = item.getBundles(DaoImportService.CONTENT_BUNDLE);
+
+        String uriMD = itemService.getMetadataFirstValue(item, MetadataSchema.DC_SCHEMA, "identifier", "uri", Item.ANY);
+        int index = uriMD.lastIndexOf("/handle/");
+        String fileParam = null;
+        if (index > 0) {
+            fileParam = uriMD.substring(index + 8);
+            dao.setIdentifier(fileParam);
+        }
+        //"http://localhost:8080/xmlui/handle/123456789/8"
         for (Bundle bundle : bundles) {
             for (Bitstream bitstream : bundle.getBitstreams()) {
                 File file = new File();
                 file.setChecksum(bitstream.getChecksum());
-                file.setIdentifier(bitstream.getInternalId());
+                file.setIdentifier(fileParam + "/" + bitstream.getName());
                 file.setSize(bitstream.getSizeBytes());
                 fileGroup.getFile().add(file);
             }
@@ -186,14 +196,14 @@ public class WsClient {
     }
 
     private static DaoRequestsService getDaoRequests() {
-        final String url = configurationService.getProperty("elza.base.url") + "DaoRequestsService";
+        final String url = configurationService.getProperty("elza.base.url") + "services/DaoRequestsService";
         final String username = configurationService.getProperty("elza.base.username");
         final String password = configurationService.getProperty("elza.base.password");
         return getJaxWsRemoteInterface(DaoRequestsService.class, url, username, password);
     }
 
     private static DaoService getDaoService() {
-        final String url = configurationService.getProperty("elza.base.url") + "DaoCoreService";
+        final String url = configurationService.getProperty("elza.base.url") + "services/DaoCoreService";
         final String username = configurationService.getProperty("elza.base.username");
         final String password = configurationService.getProperty("elza.base.password");
         return getJaxWsRemoteInterface(DaoService.class, url, username, password);

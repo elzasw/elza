@@ -197,7 +197,7 @@ public class DaoRequestsImpl implements DaoRequests{
                 log.info("Zapisuji technická metadata položky digitalizátu Uuid=" + uuId + ".");
                 List<Bundle> bundleList = item.getBundles();
                 for (Bundle bundle : bundleList) {
-                    if (bundle.getName().contains(DaoImportService.CONTENT_BITSTREAM)) {
+                    if (bundle.getName().contains(DaoImportService.CONTENT_BUNDLE)) {
                         Dao dao = new Dao();
                         FileGroup fileGroup = new FileGroup();
                         List<File> fileList = fileGroup.getFile();
