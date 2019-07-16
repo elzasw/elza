@@ -2135,7 +2135,6 @@ public class AccessPointService {
         apDataService.validationNotDeleted(oldApState);
 
         boolean update = false;
-        boolean validateParty = false;
 
         StateApproval oldStateApproval = oldApState.getStateApproval();
         if (!newStateApproval.equals(oldStateApproval)) {
@@ -2162,7 +2161,6 @@ public class AccessPointService {
                         .set("scopeId", newApScope.getScopeId());
             }
             update = true;
-            validateParty = true;
         } else {
             newApScope = null;
         }
@@ -2174,7 +2172,6 @@ public class AccessPointService {
             newApType = sdp.getApTypeById(newTypeId);
             Validate.notNull(newApType, "AP Type not found, id={}", newTypeId);
             update = true;
-            validateParty = true;
         } else {
             newApType = null;
         }
@@ -2189,6 +2186,7 @@ public class AccessPointService {
             return oldApState;
         }
 
+        boolean validateParty = apDataService.hasParty(accessPoint);
         if (validateParty && newApType != null) {
             apDataService.validationPartyType(accessPoint, newApType);
         }

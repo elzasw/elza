@@ -250,6 +250,17 @@ public class AccessPointDataService {
     }
 
     /**
+     * Exstuje vazba z osob?
+     *
+     * @param accessPoint přístupový bod
+     * @return true - existuje
+     */
+    public boolean hasParty(final ApAccessPoint accessPoint) {
+        ParParty parParty = partyService.findParPartyByAccessPoint(accessPoint);
+        return parParty != null;
+    }
+
+    /**
      * Validace přístupového bodu, že nemá vazbu na osobu.
      *
      * @param accessPoint přístupový bod
