@@ -1168,7 +1168,6 @@ public class ApController {
     public void changeState(@PathVariable("accessPointId") final Integer accessPointId,
                             @RequestBody ApStateChangeVO stateChange) {
         Validate.notNull(stateChange.getState(), "AP State is null");
-        Validate.notBlank(stateChange.getComment(), "AP State Comment is empty");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
 

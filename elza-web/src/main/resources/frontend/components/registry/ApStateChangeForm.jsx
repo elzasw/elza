@@ -19,10 +19,6 @@ class ApStateChangeForm extends AbstractReactComponent {
             errors.state = i18n('global.validation.required');
         }
 
-        if (!values.comment) {
-            errors.comment = i18n('global.validation.required');
-        }
-
         return errors;
     };
 
