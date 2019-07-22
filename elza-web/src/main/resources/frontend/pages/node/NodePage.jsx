@@ -8,7 +8,7 @@ import {AbstractReactComponent} from 'components/shared';
 import PageLayout from "../shared/layout/PageLayout";
 import Ribbon from "../../components/page/Ribbon";
 import {fundsSelectFund} from "../../actions/fund/fund";
-import {getFundFromFundAndVersion} from "../../components/arr/ArrUtils";
+import {createFundRoot, getFundFromFundAndVersion} from "../../components/arr/ArrUtils";
 import {selectFundTab} from "../../actions/arr/fund";
 import {WebApi} from "../../actions";
 import {routerNavigate} from "../../actions/router";
@@ -62,7 +62,10 @@ class NodePage extends AbstractReactComponent {
                 if (selectFund.fundTree.fetched) { // čekáme na načtení stromu, potom můžeme vybrat JP
                     const nodeWithParent = data.nodeWithParent;
                     const node = nodeWithParent.node;
-                    const parentNode = nodeWithParent.parentNode;
+                    let parentNode = nodeWithParent.parentNode;
+                    if (parentNode == null) {   // root
+                        parentNode = createFundRoot(selectFund);
+                    }
                     this.props.dispatch(fundSelectSubNode(fundVersion.id, node.id, parentNode, false, null, false));
                     return false;
                 } else {

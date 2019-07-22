@@ -316,11 +316,15 @@ public class ArrangementController {
                     .setId(fund.getId());
         }
 
-        Collection<TreeNodeVO> parentNodes = levelTreeCacheService
-                .getNodesByIds(Collections.singletonList(level.getNodeParent().getNodeId()), fundVersion.getId());
-        Assert.notEmpty(parentNodes, "Kolekce JP nesmí být prázdná");
+        TreeNodeVO parentNode = null;
+        if (level.getNodeParent() != null) {
+            Collection<TreeNodeVO> parentNodes = levelTreeCacheService
+                    .getNodesByIds(Collections.singletonList(level.getNodeParent().getNodeId()), fundVersion.getId());
+            Assert.notEmpty(parentNodes, "Kolekce JP nesmí být prázdná");
+            parentNode = parentNodes.iterator().next();
+        }
 
-        NodeWithParent nodeWithParent = new NodeWithParent(ArrNodeVO.valueOf(node), parentNodes.iterator().next());
+        NodeWithParent nodeWithParent = new NodeWithParent(ArrNodeVO.valueOf(node), parentNode);
 
         SelectNodeResult result = new SelectNodeResult();
         result.setFund(fund);
