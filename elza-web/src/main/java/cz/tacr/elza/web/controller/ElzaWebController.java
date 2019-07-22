@@ -75,6 +75,12 @@ public class ElzaWebController {
         return "web";
     }
 
+    @RequestMapping(value = "/node/**", method = RequestMethod.GET)
+    public String nodePage(final HttpServletRequest request, final Model model) {
+        initDefaults(request, model);
+        return "web";
+    }
+
     @RequestMapping(value = "/registry", method = RequestMethod.GET)
     public String recordPage(final HttpServletRequest request, final Model model) {
         initDefaults(request, model);

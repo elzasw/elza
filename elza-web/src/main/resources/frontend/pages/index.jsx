@@ -19,6 +19,8 @@ export PartyPage from 'pages/party/PartyPage.jsx';
 export HomePage from 'pages/home/HomePage.jsx';
 export FundPage from 'pages/fund/FundPage.jsx';
 
+export NodePage from 'pages/node/NodePage.jsx';
+
 export RegistrySelectPage from 'pages/select/RegistrySelectPage';
 export PartySelectPage from 'pages/select/PartySelectPage';
 export SelectPage from 'pages/select/SelectPage';

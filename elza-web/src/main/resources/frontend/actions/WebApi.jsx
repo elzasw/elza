@@ -76,6 +76,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/fulltext', null, data);
     }
 
+    selectNode(nodeUuid) {
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/selectNode/' + nodeUuid);
+    }
+
     syncDaoLink(fundVersionId, nodeId) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/daos/' + fundVersionId + '/nodes/' + nodeId + '/sync');
     }

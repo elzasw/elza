@@ -5,20 +5,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.Validate;
@@ -44,30 +36,6 @@ import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.AddLevelParam;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
-import cz.tacr.elza.controller.vo.ArrDaoVO;
-import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
-import cz.tacr.elza.controller.vo.ArrRequestVO;
-import cz.tacr.elza.controller.vo.CopyNodesParams;
-import cz.tacr.elza.controller.vo.CopyNodesValidate;
-import cz.tacr.elza.controller.vo.CreateFundVO;
-import cz.tacr.elza.controller.vo.DataGridExportType;
-import cz.tacr.elza.controller.vo.FilterNode;
-import cz.tacr.elza.controller.vo.FilterNodePosition;
-import cz.tacr.elza.controller.vo.FulltextFundRequest;
-import cz.tacr.elza.controller.vo.FundListCountResult;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.OutputSettingsVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
@@ -310,6 +278,54 @@ public class ArrangementController {
         final List<ArrDaoPackage> arrDaoList = daoService.findDaoPackages(fundVersion, search, unassigned, maxResults);
 
         return factoryVo.createDaoPackageList(arrDaoList, unassigned);
+    }
+
+    /**
+     * Získání potřebných dat pro vybrání JP podle UUID v klientovi.
+     *
+     * @param nodeUuid unikátní identifikátor JP
+     * @return data pro vybranou JP
+     */
+    @RequestMapping(value = "/selectNode/{nodeUuid}",
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    public SelectNodeResult selectNode(@PathVariable(value = "nodeUuid") final String nodeUuid) {
+        ArrNode node = arrangementService.findNodeByUuid(nodeUuid);
+
+        if (node == null) {
+            throw new ObjectNotFoundException("JP neexistuje", BaseCode.ID_NOT_EXIST)
+                    .setId(nodeUuid);
+        }
+
+        ArrFundVO fund = getFund(node.getFundId());
+
+        ArrFundVersionVO fundVersion = fund.getVersions().stream()
+                .filter(v -> v.getLockDate() == null)
+                .findFirst().orElse(null);
+
+        if (fundVersion == null) {
+            throw new ObjectNotFoundException("AS nemá otevřenou verzi", BaseCode.ID_NOT_EXIST)
+                    .setId(fund.getId());
+        }
+
+        ArrLevel level = moveLevelService.findLevelByNode(node);
+        if (level == null) {
+            throw new ObjectNotFoundException("JP nebylo dohledáno zařazení v hierarchii AS", BaseCode.ID_NOT_EXIST)
+                    .setId(fund.getId());
+        }
+
+        Collection<TreeNodeVO> parentNodes = levelTreeCacheService
+                .getNodesByIds(Collections.singletonList(level.getNodeParent().getNodeId()), fundVersion.getId());
+        Assert.notEmpty(parentNodes, "Kolekce JP nesmí být prázdná");
+
+        NodeWithParent nodeWithParent = new NodeWithParent(ArrNodeVO.valueOf(node), parentNodes.iterator().next());
+
+        SelectNodeResult result = new SelectNodeResult();
+        result.setFund(fund);
+        result.setNodeWithParent(nodeWithParent);
+        return result;
     }
 
     /**
