@@ -462,7 +462,8 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
 
             // TODO upravit formát podle skutečné adresy v ELZA
             String baseUrl = DSpaceServicesFactory.getInstance().getConfigurationService().getProperty("elza.base.url");
-            String viewInElzaLink = baseUrl + "?nodeId=" + did; // poslat didId
+            baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
+            String viewInElzaLink = baseUrl + "node/" + did; // poslat didId
 
             viewInElzaPara.addXref(viewInElzaLink, T_view_in_elza);
         }
