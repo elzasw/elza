@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.repository.*;
@@ -94,10 +95,13 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
             }
         }
         // find current AP by UUID
-        List<ApAccessPointInfo> currentAps = apRepository.findActiveByUuids(uuidMap.keySet());
-        for (ApAccessPointInfo info : currentAps) {
-            AccessPointWrapper ew = uuidMap.get(info.getUuid());
-            ew.changeToUpdated(info);
+        Set<String> uuids = uuidMap.keySet();
+        if (!uuids.isEmpty()) {
+            List<ApAccessPointInfo> currentAps = apRepository.findActiveByUuids(uuids);
+            for (ApAccessPointInfo info : currentAps) {
+                AccessPointWrapper ew = uuidMap.get(info.getUuid());
+                ew.changeToUpdated(info);
+            }
         }
     }
 

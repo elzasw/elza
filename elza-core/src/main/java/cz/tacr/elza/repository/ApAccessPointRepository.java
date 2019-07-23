@@ -50,7 +50,7 @@ public interface ApAccessPointRepository
      */
     @Query("SELECT new cz.tacr.elza.domain.projection.ApAccessPointInfo(s.accessPointId, s.accessPoint.uuid, s.scopeId, s.apTypeId)" +
             " FROM ap_state s" +
-            " WHERE s.accessPoint.uuid IN :uuids" +
+            " WHERE s.accessPoint.uuid IN (:uuids)" +
             " AND s.deleteChangeId IS NULL")
     List<ApAccessPointInfo> findActiveByUuids(@Param("uuids") Collection<String> uuids);
 
