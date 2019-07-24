@@ -183,8 +183,8 @@ public class PartyController {
 
         ParParty party = factoryDO.createParty(partyVO, apState);
 
-        ParParty savedParty = partyService.saveParty(party, apState);
-        return factoryVo.createParPartyDetail(savedParty);
+        PartyService.PartyApState result = partyService.saveParty(party, apState);
+        return factoryVo.createParPartyDetail(result.getParty());
     }
 
     /**
@@ -233,8 +233,8 @@ public class PartyController {
 
         ParParty party = factoryDO.createParty(partyVO, apState);
 
-        ParParty savedParty = partyService.saveParty(party, apState);
-        return factoryVo.createParPartyDetail(savedParty);
+        PartyService.PartyApState result = partyService.saveParty(party, apState);
+        return factoryVo.createParPartyDetail(result.getParty());
     }
 
     /**

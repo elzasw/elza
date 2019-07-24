@@ -1037,10 +1037,13 @@ public class ApController {
         Assert.notNull(recordImportVO.getScopeId(), "Identifikátor scope musí být vyplněn");
         Assert.notNull(recordImportVO.getSystemId(), "Identifikátor systému musí být vyplněn");
 
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+        ApState apState = accessPointService.getState(accessPoint);
+
         interpiService.importRecord(accessPointId, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
                 recordImportVO.getSystemId(), recordImportVO.getOriginator(), recordImportVO.getMappings());
 
-        return getAccessPoint(accessPointId);
+        return getAccessPoint(apState);
     }
 
     /**
@@ -1055,10 +1058,10 @@ public class ApController {
         Assert.notNull(recordImportVO.getScopeId(), "Identifikátor scope musí být vyplněn");
         Assert.notNull(recordImportVO.getSystemId(), "Identifikátor systému musí být vyplněn");
 
-        ApAccessPoint apRecord = interpiService.importRecord(null, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
+        ApState apState = interpiService.importRecord(null, recordImportVO.getInterpiRecordId(), recordImportVO.getScopeId(),
                 recordImportVO.getSystemId(), recordImportVO.getOriginator(), recordImportVO.getMappings());
 
-        return getAccessPoint(apRecord.getAccessPointId());
+        return getAccessPoint(apState);
     }
 
     /**

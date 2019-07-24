@@ -323,20 +323,26 @@ public class PartyService {
      * @param newParty nová osoba s navázanými daty
      * @return uložená osoba
      */
-    public ParParty saveParty(final ParParty newParty, ApState apState) {
+    public PartyApState saveParty(final ParParty newParty, ApState apState) {
         Assert.notNull(newParty, "Osoba musí být vyplněna");
 
         ParPartyType partyType = partyTypeRepository.findOne(newParty.getPartyType().getPartyTypeId());
 
-        boolean isNewParty = newParty.getPartyId() == null;
-
         ParParty saveParty;
+
+        boolean isNewParty = newParty.getPartyId() == null;
         if (isNewParty) {
+
             newParty.setPartyType(partyType);
+
             // Rejstříkové heslo pro založení
             apState = synchRecord(newParty, apState);
+            newParty.setAccessPoint(apState.getAccessPoint());
+
             saveParty = newParty;
+
         } else {
+
             saveParty = partyRepository.findOne(newParty.getPartyId());
             Assert.notNull(saveParty, "Osoba neexistuje");
             Assert.isTrue(Objects.equals(saveParty.getAccessPointId(), apState.getAccessPointId()), "Přístupový bod neodpovídá");
@@ -364,17 +370,17 @@ public class PartyService {
         synchCreators(saveParty, newParty.getPartyCreators() == null ? Collections.emptyList() : newParty.getPartyCreators());
 
         //synchronizace rejstříkového hesla
-        synchRecord(saveParty, apState);
+        apState = synchRecord(saveParty, apState);
 
-        ParParty result = partyRepository.save(saveParty);
+        saveParty = partyRepository.save(saveParty);
         entityManager.flush();
 
         EventType eventType = isNewParty ? EventType.PARTY_CREATE : EventType.PARTY_UPDATE;
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(eventType, result.getPartyId()));
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(eventType, saveParty.getPartyId()));
 
         reindexDescItem(saveParty);
 
-        return result;
+        return new PartyApState(saveParty, apState);
     }
 
     /**
@@ -400,9 +406,7 @@ public class PartyService {
         List<ApName> names = convResult.createNames();
         ApDescription description = convResult.createDesc();
 
-        ApState result = accessPointService.syncAccessPoint(apState, names, description);
-        party.setAccessPoint(result.getAccessPoint());
-        return result;
+        return accessPointService.syncAccessPoint(apState, names, description);
     }
 
     /**
@@ -1180,7 +1184,7 @@ public class PartyService {
         descriptionItemService.reindexDescItem(itemIds);
     }
 
-    private class PartyApState {
+    public class PartyApState {
 
         // --- fields ---
 

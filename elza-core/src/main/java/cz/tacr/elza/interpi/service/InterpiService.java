@@ -302,8 +302,8 @@ public class InterpiService {
      *
      * @return nový/aktualizovaný rejstřík
      */
-    public ApAccessPoint importRecord(final Integer recordId, final String interpiRecordId, final Integer scopeId, final Integer systemId, final boolean isOriginator,
-                                 final List<InterpiRelationMappingVO> mappings) {
+    public ApState importRecord(final Integer recordId, final String interpiRecordId, final Integer scopeId, final Integer systemId, final boolean isOriginator,
+                                final List<InterpiRelationMappingVO> mappings) {
         Assert.notNull(interpiRecordId, "Identifikátor systému interpi musí být vyplněn");
         Assert.notNull(scopeId, "Identifikátor scope musí být vyplněn");
         Assert.notNull(systemId, "Identifikátor systému musí být vyplněn");
@@ -334,7 +334,7 @@ public class InterpiService {
         }
         InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
 
-        ApAccessPoint result;
+        ApState result;
         if (interpiFactory.isParty(interpiEntity)) {
             List<MappingVO> updatedMappings = processMappings(mappings);
             result = interpiFactory.importParty(interpiEntity, originalRecord, interpiRecordId, isOriginator, apScope, apExternalSystem, updatedMappings);

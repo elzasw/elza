@@ -1857,10 +1857,10 @@ public class AccessPointService {
      */
     @Transactional
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public ApAccessPoint importAccessPoint(final String externalId,
-                                           final String externalIdTypeCode,
-                                           final ApExternalSystem externalSystem,
-                                           @AuthParam(type = AuthParam.Type.SCOPE) final ImportAccessPoint data) {
+    public ApState importAccessPoint(final String externalId,
+                                     final String externalIdTypeCode,
+                                     final ApExternalSystem externalSystem,
+                                     @AuthParam(type = AuthParam.Type.SCOPE) final ImportAccessPoint data) {
         Assert.notNull(externalId, "Identifikátor z externího systému musí být vyplněn");
         Assert.notNull(externalIdTypeCode, "Kód typu externího identifikátoru musí být vyplněn");
         Assert.notNull(externalSystem, "Externí systém, ze kterého importujeme přístupový bod musí být vyplněn");
@@ -1926,7 +1926,7 @@ public class AccessPointService {
 
         reindexDescItem(accessPoint);
 
-        return accessPoint;
+        return apState;
     }
 
     /**

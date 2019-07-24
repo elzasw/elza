@@ -151,10 +151,10 @@ public class InterpiFactory {
      *
      * @return uložené rejstříkové heslo
      */
-    public ApAccessPoint importRecord(final EntitaTyp entitaTyp,
-                                      final String interpiRecordId,
-                                      final ApScope scope,
-                                      final ApExternalSystem apExternalSystem) {
+    public ApState importRecord(final EntitaTyp entitaTyp,
+                                final String interpiRecordId,
+                                final ApScope scope,
+                                final ApExternalSystem apExternalSystem) {
         InterpiEntity interpiEntity = new InterpiEntity(entitaTyp);
         ExternalRecordVO externalRecordVO = groovyScriptService.convertListToExternalRecordVO(Collections.singletonList(entitaTyp), true, this)
                 .iterator().next();
@@ -192,9 +192,9 @@ public class InterpiFactory {
      *
      * @return uložené rejstříkové heslo osoby
      */
-    public ApAccessPoint importParty(final InterpiEntity interpiEntity, final ApState originalRecord,
-                                     final String interpiRecordId, final boolean isOriginator, final ApScope apScope,
-                                     final ApExternalSystem apExternalSystem, final List<MappingVO> mappings) {
+    public ApState importParty(final InterpiEntity interpiEntity, final ApState originalRecord,
+                               final String interpiRecordId, final boolean isOriginator, final ApScope apScope,
+                               final ApExternalSystem apExternalSystem, final List<MappingVO> mappings) {
 
         ApType apType = getApType(interpiEntity);
         if (apType.isReadOnly()) {
@@ -226,7 +226,8 @@ public class InterpiFactory {
             partyId = originalParty.getPartyId();
             partyVersion = originalParty.getVersion();
         } else {
-            // todo[ap_state]: zalozit novy AP, nebo co vlastne znamena metoda createPartyApData()
+            // vytvorit docasny AP, k ulozeni do DB dojde v cz.tacr.elza.service.PartyService.synchRecord(),
+            // ktera zaroven vraci zalozeny AP
             ApAccessPoint accessPoint = new ApAccessPoint();
             apState = new ApState();
             apState.setAccessPoint(accessPoint);
@@ -243,7 +244,8 @@ public class InterpiFactory {
 
         List<ParRelation> relations = newParty.getRelations();
         newParty.setRelations(null);
-        ParParty parParty = partyService.saveParty(newParty, apState);
+
+        PartyService.PartyApState result = partyService.saveParty(newParty, apState);
 
         if (CollectionUtils.isNotEmpty(relations)) {
             for (ParRelation relation : relations) {
@@ -253,7 +255,7 @@ public class InterpiFactory {
             }
         }
 
-        return parParty.getAccessPoint();
+        return result.getApState();
     }
 
     public String createSearchQuery(final List<ConditionVO> conditions, final boolean isParty) {
@@ -694,15 +696,15 @@ public class InterpiFactory {
     }
 
     private void createParRelationEntity(final ParParty parParty, final ApExternalSystem apExternalSystem,
-            final ParRelation parRelation, final SouvisejiciTyp souvisejiciTyp, final ParRelationRoleType parRelationRoleType,
-            final ApScope apScope) {
+                                         final ParRelation parRelation, final SouvisejiciTyp souvisejiciTyp, final ParRelationRoleType parRelationRoleType,
+                                         final ApScope apScope) {
+
+        ApState entityRecord = getRelationEntityRecord(parParty, apExternalSystem, souvisejiciTyp, apScope);
+
         ParRelationEntity parRelationEntity = new ParRelationEntity();
         parRelationEntity.setNote(souvisejiciTyp.getPoznamka());
         parRelationEntity.setRelation(parRelation);
-
-        ApAccessPoint entityRecord = getRelationEntityRecord(parParty, apExternalSystem, souvisejiciTyp, apScope);
-        parRelationEntity.setAccessPoint(entityRecord);
-
+        parRelationEntity.setAccessPoint(entityRecord.getAccessPoint());
         parRelationEntity.setRoleType(parRelationRoleType);
 
         parRelation.getRelationEntities().add(parRelationEntity);
@@ -717,14 +719,14 @@ public class InterpiFactory {
      *
      * @return rejstříkové heslo entity
      */
-    private ApAccessPoint getRelationEntityRecord(final ParParty parParty, final ApExternalSystem apExternalSystem,
-                                                  final SouvisejiciTyp souvisejiciTyp, final ApScope apScope) {
+    private ApState getRelationEntityRecord(final ParParty parParty, final ApExternalSystem apExternalSystem,
+                                            final SouvisejiciTyp souvisejiciTyp, final ApScope apScope) {
         String interpiId = getInterpiSouvIdentifier(souvisejiciTyp.getIdentifikator());
         ApExternalIdType eidType = staticDataService.getData().getApEidTypeByCode(InterpiService.EID_TYPE_CODE);
         ApState apState = apStateRepository.getActiveByExternalIdAndScope(interpiId, eidType, apScope);
 
         if (apState != null) {
-            return apState.getAccessPoint();
+            return apState;
         }
 
         // pokud neexistiuje v db tak se importuje bez vztahů
