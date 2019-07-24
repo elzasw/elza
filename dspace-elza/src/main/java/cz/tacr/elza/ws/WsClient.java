@@ -2,7 +2,6 @@ package cz.tacr.elza.ws;
 
 import cz.tacr.elza.context.ContextUtils;
 import cz.tacr.elza.daoimport.service.DaoImportService;
-import cz.tacr.elza.destructransferrequest.service.ProcessingRequestService;
 import cz.tacr.elza.metadataconstants.MetadataEnum;
 import cz.tacr.elza.ws.core.v1.DaoRequestsService;
 import cz.tacr.elza.ws.core.v1.DaoService;
@@ -162,10 +161,7 @@ public class WsClient {
         //"http://localhost:8080/xmlui/handle/123456789/8"
         for (Bundle bundle : bundles) {
             for (Bitstream bitstream : bundle.getBitstreams()) {
-                File file = new File();
-                file.setChecksum(bitstream.getChecksum());
-                file.setIdentifier(fileParam + "/" + bitstream.getName());
-                file.setSize(bitstream.getSizeBytes());
+                File file = createFile(fileParam, bitstream);
                 fileGroup.getFile().add(file);
             }
         }
@@ -193,6 +189,15 @@ public class WsClient {
                 context.restoreAuthSystemState();
             }
         }
+    }
+
+    private static File createFile(String fileParam, Bitstream bitstream) {
+        File file = new File();
+        file.setChecksum(bitstream.getChecksum());
+        file.setIdentifier(fileParam + "/" + bitstream.getName());
+        file.setSize(bitstream.getSizeBytes());
+
+        return file;
     }
 
     private static DaoRequestsService getDaoRequests() {
