@@ -12,17 +12,14 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import cz.tacr.elza.api.interfaces.IApScope;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.domain.interfaces.Versionable;
 
 @Entity(name = "ap_state")
-//@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ApState extends AbstractVersionableEntity implements IApScope, Versionable {
 
+    public static final String FIELD_ACCESS_POINT = "accessPoint";
     public static final String FIELD_ACCESS_POINT_ID = "accessPointId";
     public static final String FIELD_AP_TYPE_ID = "apTypeId";
     public static final String FIELD_SCOPE_ID = "scopeId";

@@ -13,9 +13,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.Validate;
 
 import cz.tacr.elza.common.XmlUtils;
-import cz.tacr.elza.dataexchange.output.writer.ApInfo;
+import cz.tacr.elza.dataexchange.output.aps.ApInfo;
 import cz.tacr.elza.dataexchange.output.writer.ApOutputStream;
-import cz.tacr.elza.dataexchange.output.writer.BaseApInfo;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.FileNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode.ChildNodeType;
@@ -49,7 +48,7 @@ public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStr
         Validate.isTrue(!isProcessed());
 
         AccessPoint element = new AccessPoint();
-        element.setApe(createEntry(apInfo));
+        element.setApe(createEntry(apInfo.getApState(), apInfo.getExternalIds()));
         element.setChr(apInfo.getDesc().getDescription());
         element.setNms(createNames(apInfo.getNames()));
 
@@ -88,17 +87,15 @@ public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStr
         marshaller.marshal(jaxbElement, sw);
     }
 
-    public static AccessPointEntry createEntry(BaseApInfo apInfo) {
-        ApAccessPoint ap = apInfo.getAp();
-        // todo[dataexchange]: ApState se nikde neplni
-        ApState apState = apInfo.getApState();
+    public static AccessPointEntry createEntry(ApState apState, Collection<ApExternalId> eids) {
+        ApAccessPoint ap = apState.getAccessPoint();
+
         AccessPointEntry entry = new AccessPointEntry();
         entry.setId(ap.getAccessPointId().toString());
         entry.setT(apState.getApType().getCode());
         entry.setUuid(ap.getUuid());
 
         // prepare external id
-        Collection<ApExternalId> eids = apInfo.getExternalIds();
         if (CollectionUtils.isNotEmpty(eids)) {
             List<ExternalId> elementList = entry.getEid();
             for (ApExternalId eid : eids) {

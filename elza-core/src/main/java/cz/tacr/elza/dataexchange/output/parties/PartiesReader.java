@@ -44,13 +44,12 @@ public class PartiesReader implements ExportReader {
     private Set<Integer> readPartyIds(PartiesOutputStream os) {
         Set<Integer> exportedApIds = new HashSet<>();
 
-        PartyInfoLoader loader = PartyInfoLoader.createPartyIdLoader(em, context.getBatchSize(),
-                                                                     context.getStaticData());
+        PartyInfoLoader loader = PartyInfoLoader.createPartyIdLoader(em, context.getBatchSize(), context.getStaticData());
         for (Integer partyId : context.getPartyIds()) {
             PartyInfoDispatcher dispatcher = new PartyInfoDispatcher(context.getStaticData()) {
                 @Override
                 protected void onCompleted() {
-                    PartyInfoImpl partyInfo = Validate.notNull(getPartyInfo());
+                    PartyInfo partyInfo = Validate.notNull(getPartyInfo());
                     exportedApIds.add(partyInfo.getParty().getAccessPointId());
                     os.addParty(partyInfo);
                 }
@@ -70,7 +69,7 @@ public class PartiesReader implements ExportReader {
             PartyInfoDispatcher dispatcher = new PartyInfoDispatcher(context.getStaticData()) {
                 @Override
                 protected void onCompleted() {
-                    PartyInfoImpl partyInfo = Validate.notNull(getPartyInfo());
+                    PartyInfo partyInfo = Validate.notNull(getPartyInfo());
                     os.addParty(partyInfo);
                 }
             };

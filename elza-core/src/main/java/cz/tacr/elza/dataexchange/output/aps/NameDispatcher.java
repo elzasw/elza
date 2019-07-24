@@ -13,18 +13,23 @@ import cz.tacr.elza.domain.SysLanguage;
 
 public class NameDispatcher extends NestedLoadDispatcher<ApName> {
 
+    // --- fields ---
+
     private final List<ApName> names = new ArrayList<>();
 
-    private final ApInfoImpl apInfo;
+    private final ApInfo apInfo;
 
     private final StaticDataProvider staticData;
 
-    public NameDispatcher(ApInfoImpl apInfo, LoadDispatcher<ApInfoImpl> apInfoDispatcher,
-            StaticDataProvider staticData) {
+    // --- constructor ---
+
+    public NameDispatcher(ApInfo apInfo, LoadDispatcher<ApInfo> apInfoDispatcher, StaticDataProvider staticData) {
         super(apInfoDispatcher);
         this.apInfo = apInfo;
         this.staticData = staticData;
     }
+
+    // --- methods ---
 
     @Override
     public void onLoad(ApName result) {

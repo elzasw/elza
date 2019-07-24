@@ -6,7 +6,8 @@ public class ApAccessPointInfo {
 
     private final int accessPointId;
     private final String uuid;
-    private final int scopeId;
+    private final int apStateId;
+    private final int apScopeId;
     private final Integer apTypeId;
 
     // --- getters/setters ---
@@ -19,8 +20,8 @@ public class ApAccessPointInfo {
         return uuid;
     }
 
-    public int getScopeId() {
-        return scopeId;
+    public int getApScopeId() {
+        return apScopeId;
     }
 
     public Integer getApTypeId() {
@@ -29,10 +30,11 @@ public class ApAccessPointInfo {
 
     // --- constructor ---
 
-    public ApAccessPointInfo(int accessPointId, String uuid, int scopeId, Integer apTypeId) {
+    public ApAccessPointInfo(int accessPointId, String uuid, int apStateId, int apScopeId, Integer apTypeId) {
         this.accessPointId = accessPointId;
         this.uuid = uuid;
-        this.scopeId = scopeId;
+        this.apStateId = apStateId;
+        this.apScopeId = apScopeId;
         this.apTypeId = apTypeId;
     }
 }

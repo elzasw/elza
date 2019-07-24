@@ -20,8 +20,8 @@ public class ApExternalIdInfo {
 
     // --- constructor ---
 
-    public ApExternalIdInfo(String value, int accessPointId, String uuid, int scopeId, Integer apTypeId) {
+    public ApExternalIdInfo(String value, int accessPointId, String uuid, int apStateId, int apScopeId, Integer apTypeId) {
         this.value = value;
-        this.accessPoint = new ApAccessPointInfo(accessPointId, uuid, scopeId, apTypeId);
+        this.accessPoint = new ApAccessPointInfo(accessPointId, uuid, apStateId, apScopeId, apTypeId);
     }
 }

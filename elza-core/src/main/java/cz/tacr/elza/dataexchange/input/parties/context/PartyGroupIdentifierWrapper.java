@@ -63,7 +63,7 @@ public class PartyGroupIdentifierWrapper implements EntityWrapper {
     }
 
     @Override
-    public void afterEntitySave() {
+    public void afterEntitySave(Session session) {
         // update party info
         partyInfo.onEntityPersist();
     }

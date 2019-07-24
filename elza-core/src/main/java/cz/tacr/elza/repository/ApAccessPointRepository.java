@@ -10,10 +10,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApExternalIdType;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 
@@ -48,11 +44,13 @@ public interface ApAccessPointRepository
      *
      * @return AP projection
      */
-    @Query("SELECT new cz.tacr.elza.domain.projection.ApAccessPointInfo(s.accessPointId, s.accessPoint.uuid, s.scopeId, s.apTypeId)" +
+    @SuppressWarnings("SpringDataRepositoryMethodReturnTypeInspection")
+    @Query("SELECT new cz.tacr.elza.domain.projection.ApAccessPointInfo(ap.accessPointId, ap.uuid, s.stateId, s.scopeId, s.apTypeId)" +
             " FROM ap_state s" +
+            " JOIN s.accessPoint ap" +
             " WHERE s.accessPoint.uuid IN (:uuids)" +
             " AND s.deleteChangeId IS NULL")
-    List<ApAccessPointInfo> findActiveByUuids(@Param("uuids") Collection<String> uuids);
+    List<ApAccessPointInfo> findActiveInfoByUuids(@Param("uuids") Collection<String> uuids);
 
     @Modifying
     @Query("DELETE FROM ap_access_point ap WHERE ap.state = 'TEMP'")

@@ -599,14 +599,14 @@ public class InterpiService {
                     .set("externalIdTypeCode", EID_TYPE_CODE);
         }
         List<ApExternalIdInfo> eidInfoList = apEidRepository
-                .findInfoByExternalIdTypeIdAndValuesIn(eidType.getExternalIdTypeId(), externalRecords.keySet());
+                .findActiveInfoByTypeIdAndValues(eidType.getExternalIdTypeId(), externalRecords.keySet());
 
         StaticDataProvider staticData = staticDataService.getData();
         Map<Integer, ApScopeVO> convertedScopes = new HashMap<>();
         for (ApExternalIdInfo eidInfo : eidInfoList) {
             ExternalRecordVO recordVO = externalRecords.get(eidInfo.getValue());
 
-            Integer apScopeId = eidInfo.getAccessPoint().getScopeId();
+            Integer apScopeId = eidInfo.getAccessPoint().getApScopeId();
             ApScopeVO apScopeVO = convertedScopes.get(apScopeId);
             if (apScopeVO == null) {
                 ApScope apScope = scopeRepository.findOne(apScopeId);

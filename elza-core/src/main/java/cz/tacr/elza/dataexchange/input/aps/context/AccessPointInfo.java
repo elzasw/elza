@@ -1,6 +1,5 @@
 package cz.tacr.elza.dataexchange.input.aps.context;
 
-import cz.tacr.elza.domain.ApState;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 import org.slf4j.Logger;
@@ -10,8 +9,7 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
 import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ApState;
 
 /**
  * Access point import info which primarily stores id and result of record
@@ -20,6 +18,8 @@ import cz.tacr.elza.domain.ApType;
 public class AccessPointInfo implements EntityIdHolder<ApAccessPoint> {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessPointInfo.class);
+
+    private final ApState apState;
 
     private Integer entityId;
 
@@ -31,10 +31,8 @@ public class AccessPointInfo implements EntityIdHolder<ApAccessPoint> {
 
     private boolean processed;
 
-    private ApState state;
-
-    public AccessPointInfo(final ApState state) {
-        this.state = state;
+    public AccessPointInfo(ApState apState) {
+        this.apState = apState;
     }
 
     @Override
@@ -55,8 +53,8 @@ public class AccessPointInfo implements EntityIdHolder<ApAccessPoint> {
         return HibernateUtils.getEntityRef(entityId, ApAccessPoint.class, session, false);
     }
 
-    public ApState getState() {
-        return state;
+    public ApState getApState() {
+        return apState;
     }
 
     public SaveMethod getSaveMethod() {

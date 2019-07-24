@@ -40,7 +40,7 @@ public class PartyWrapper implements EntityWrapper {
     }
 
     @Override
-    public void afterEntitySave() {
+    public void afterEntitySave(Session session) {
         // update party info
         partyInfo.setEntityId(entity.getPartyId());
         partyInfo.onEntityPersist();

@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cz.tacr.elza.domain.*;
 import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +25,13 @@ import cz.tacr.elza.dataexchange.input.context.ImportPhase;
 import cz.tacr.elza.dataexchange.input.context.ImportPhaseChangeListener;
 import cz.tacr.elza.dataexchange.input.context.ObservableImport;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
+import cz.tacr.elza.domain.ApDescription;
+import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyGroupIdentifier;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameComplement;
+import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.service.party.ApConvResult;
 
@@ -176,12 +182,10 @@ public class PartiesContext {
         String partyTypeCode = partyInfo.getPartyType().getCode();
         PartyTypeCmplTypes cmplTypes = staticData.getCmplTypesByPartyTypeCode(partyTypeCode);
         // execute groovy script
-        // todo[dataexchange]: ApState je null!!!
-        ApState state = partyInfo.getApInfo().getState();
-        ApConvResult convResult = gsService.convertPartyToAp(entity, state, cmplTypes.getCmplTypes());
+        AccessPointInfo apInfo = partyInfo.getApInfo();
+        ApConvResult convResult = gsService.convertPartyToAp(entity, apInfo.getApState(), cmplTypes.getCmplTypes());
         // TODO: clear loaded entities by groovy
         // add converted description and names
-        AccessPointInfo apInfo = partyInfo.getApInfo();
         ApDescription apDesc = convResult.createDesc();
         if (apDesc != null) {
             apDesc.setCreateChange(apContext.getCreateChange());

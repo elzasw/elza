@@ -53,7 +53,6 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
         pairAccessPointsByEid(apws);
         // store all wrappers as persist or merge
         super.store(apws);
-        apStateRepository.save(apws.stream().map(AccessPointWrapper::getApState).collect(Collectors.toList()));
     }
 
     @Override
@@ -97,7 +96,7 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
         // find current AP by UUID
         Set<String> uuids = uuidMap.keySet();
         if (!uuids.isEmpty()) {
-            List<ApAccessPointInfo> currentAps = apRepository.findActiveByUuids(uuids);
+            List<ApAccessPointInfo> currentAps = apRepository.findActiveInfoByUuids(uuids);
             for (ApAccessPointInfo info : currentAps) {
                 AccessPointWrapper ew = uuidMap.get(info.getUuid());
                 ew.changeToUpdated(info);
@@ -128,7 +127,7 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
         // find pairs by external ids
         typeIdMap.forEach((typeId, group) -> {
             List<ApExternalIdInfo> currentEids = apEidRepository
-                    .findInfoByExternalIdTypeIdAndValuesIn(typeId, group.getValues());
+                    .findActiveInfoByTypeIdAndValues(typeId, group.getValues());
             for (ApExternalIdInfo info : currentEids) {
                 AccessPointWrapper apw = group.getWrapper(info.getValue());
                 apw.changeToUpdated(info.getAccessPoint());

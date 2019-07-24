@@ -48,4 +48,8 @@ public class ArrStructItemWrapper implements EntityWrapper {
             entity.setData(dataIdHolder.getEntityRef(session));
         }
     }
+
+    @Override
+    public void afterEntitySave(Session session) {
+    }
 }

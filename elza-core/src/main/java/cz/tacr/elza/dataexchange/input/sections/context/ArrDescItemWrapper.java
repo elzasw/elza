@@ -31,12 +31,12 @@ public class ArrDescItemWrapper implements EntityWrapper {
     public Object getEntity() {
         return entity;
     }
-    
+
     @Override
     public SaveMethod getSaveMethod() {
         return SaveMethod.CREATE;
     }
-    
+
     @Override
     public void beforeEntitySave(Session session) {
         // prepare node reference
@@ -46,6 +46,10 @@ public class ArrDescItemWrapper implements EntityWrapper {
         Validate.isTrue(entity.isUndefined());
         if (dataIdHolder != null) {
             entity.setData(dataIdHolder.getEntityRef(session));
-        }   
+        }
+    }
+
+    @Override
+    public void afterEntitySave(Session session) {
     }
 }

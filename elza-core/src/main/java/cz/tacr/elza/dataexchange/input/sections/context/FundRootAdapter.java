@@ -1,5 +1,7 @@
 package cz.tacr.elza.dataexchange.input.sections.context;
 
+import org.hibernate.Session;
+
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
@@ -65,11 +67,11 @@ class FundRootAdapter implements SectionRootAdapter {
 
         ArrNodeWrapper nodeWrapper = new ArrNodeWrapper(rootNode) {
             @Override
-            public void afterEntitySave() {
+            public void afterEntitySave(Session session) {
                 // fund version requires rootNode, 
                 // can be created only after persist of root node
                 fundVersion = arrangementService.createVersion(createChange, fund, ruleSet, rootNode, timeRange);
-                super.afterEntitySave();
+                super.afterEntitySave(session);
             }
         };
 

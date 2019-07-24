@@ -18,8 +18,8 @@ import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.dataexchange.common.CalendarTypeConvertor;
+import cz.tacr.elza.dataexchange.output.parties.PartyInfo;
 import cz.tacr.elza.dataexchange.output.writer.PartiesOutputStream;
-import cz.tacr.elza.dataexchange.output.writer.PartyInfo;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.FileNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode.ChildNodeType;
@@ -54,8 +54,7 @@ public class XmlPartiesOutputStream extends BaseFragmentStream
 
     private final static Logger logger = LoggerFactory.getLogger(XmlPartiesOutputStream.class);
 
-    private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(Person.class, PartyGroup.class, Family.class,
-                                                                       Event.class);
+    private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(Person.class, PartyGroup.class, Family.class, Event.class);
 
     private final RootNode rootNode;
 
@@ -137,7 +136,7 @@ public class XmlPartiesOutputStream extends BaseFragmentStream
         element.setNms(createPartyNames(party));
         element.setSrc(party.getSourceInformation());
         // init entry
-        element.setApe(XmlApOutputStream.createEntry(partyInfo.getBaseApInfo()));
+        element.setApe(XmlApOutputStream.createEntry(partyInfo.getApState(), partyInfo.getExternalIds()));
     }
 
     private static void initPartyGroup(PartyGroup element, PartyInfo partyInfo) {

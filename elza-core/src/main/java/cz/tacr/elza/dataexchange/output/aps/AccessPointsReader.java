@@ -55,7 +55,7 @@ public class AccessPointsReader implements ExportReader {
             ApInfoDispatcher dispatcher = new ApInfoDispatcher(context.getStaticData()) {
                 @Override
                 protected void onCompleted() {
-                    ApInfoImpl apInfo = getApInfo();
+                    ApInfo apInfo = getApInfo();
                     if (!apInfo.isPartyAp()) {
                         os.addAccessPoint(apInfo);
                     }
