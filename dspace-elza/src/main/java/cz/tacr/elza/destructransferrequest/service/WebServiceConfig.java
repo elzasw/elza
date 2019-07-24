@@ -19,10 +19,20 @@ public class WebServiceConfig {
     @Autowired
     private DaoRequestsImpl daoRequests;
 
-    @Bean
-    public Endpoint daoCoreServiceWS() {
-        String baseUrl = configurationService.getProperty("dspace.baseUrl");
+    @Autowired
+    private DaoNotificationsImpl daoNotifications;
 
-        return Endpoint.publish(baseUrl + "/ws/DaoCoreRequests", daoRequests);
-    }
+//    @Bean
+//    public Endpoint daoRequestsWS() {
+//        String baseUrl = configurationService.getProperty("dspace.baseUrl");
+//
+//        return Endpoint.publish(baseUrl + "/ws/DaoRequests", daoRequests);
+//    }
+//
+//    @Bean
+//    public Endpoint daoNotificationsWS() {
+//        String baseUrl = configurationService.getProperty("dspace.baseUrl");
+//
+//        return Endpoint.publish(baseUrl + "/ws/DaoNotifications", daoNotifications);
+//    }
 }
