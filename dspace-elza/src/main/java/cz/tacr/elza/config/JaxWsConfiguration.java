@@ -2,25 +2,22 @@ package cz.tacr.elza.config;
 
 import javax.annotation.PostConstruct;
 import javax.jws.WebService;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.feature.FastInfosetFeature;
 import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
-import org.apache.cxf.transport.servlet.CXFServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
+import cz.tacr.elza.destructransferrequest.service.DaoNotificationsImpl;
 import cz.tacr.elza.destructransferrequest.service.DaoRequestsImpl;
+import cz.tacr.elza.ws.dao_service.v1.DaoNotifications;
+import cz.tacr.elza.ws.dao_service.v1.DaoRequests;
 
 
 @Configuration
@@ -33,27 +30,10 @@ public class JaxWsConfiguration {
     private Bus bus;
 
     @Autowired
-    private DaoRequestsImpl daoRequests;
+    private DaoRequests daoRequests;
 
-
-//    @Bean
-//    public ServletRegistration.Dynamic onStartup(ServletContext servletContext) throws ServletException {
-//        lazyStartServices();
-//
-//        return serviceServlet;
-//    }
-
-//    @Bean
-//    public ServletRegistrationBean cxfServletRegistrationBean() {
-//        ServletRegistrationBean bean = new ServletRegistrationBean(new CXFServlet() {
-//            @Override
-//            public void init(ServletConfig sc) throws ServletException {
-//                lazyStartServices();
-//                super.init(sc);
-//            }
-//        }, "/ws/*");
-//        return bean;
-//    }
+    @Autowired
+    private DaoNotifications daoNotifications;
 
     /**
      * Zavola se pri prvnim pristupu na CXF servlet (/ws/*).
@@ -69,7 +49,8 @@ public class JaxWsConfiguration {
      */
     public void startServices() {
         try {
-            startService(daoRequests, DaoRequestsImpl.class, "/ws/DaoCoreRequests");
+            startService(daoRequests, DaoRequestsImpl.class, "DaoCoreRequests");
+            startService(daoNotifications, DaoNotificationsImpl.class, "DaoNotifications");
         } catch (Exception e) {
             logger.error("Webovou službu " + DaoRequestsImpl.class.getName() + " nelze spustit "
                     + e.getMessage(), e);
@@ -92,8 +73,7 @@ public class JaxWsConfiguration {
         serverFactoryBean.setServiceBean(service);
         serverFactoryBean.setAddress("/" + url);
         serverFactoryBean.setBus(bus);
-        //serverFactoryBean.setBindingId(SOAPBinding.SOAP12HTTP_MTOM_BINDING);
-        //serverFactoryBean.getProperties(true).put("mtom-enabled", "true");
+
         try {
             serverFactoryBean.create();
         }catch (Exception ex) {
