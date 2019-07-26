@@ -65,6 +65,115 @@
         </plugins>
     </build>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- CXF -->
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-transports-http</artifactId>
+                <version>${cxf.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.ow2.asm</groupId>
+                        <artifactId>asm</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.woodstox</groupId>
+                        <artifactId>woodstox-core-asl</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-jaxws</artifactId>
+                <version>${cxf.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.ow2.asm</groupId>
+                        <artifactId>asm</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.woodstox</groupId>
+                        <artifactId>woodstox-core-asl</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <!-- END - CXF -->
+            <!-- Droid a JHove -->
+            <dependency>
+                <groupId>org.openpreservation.jhove</groupId>
+                <artifactId>jhove-core</artifactId>
+                <version>1.22.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openpreservation.jhove</groupId>
+                <artifactId>jhove-modules</artifactId>
+                <version>1.20.1</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.openpreservation.jhove</groupId>
+                        <artifactId>jhove-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.openpreservation.jhove</groupId>
+                <artifactId>jhove-ext-modules</artifactId>
+                <version>1.22.1</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jwat</groupId>
+                        <artifactId>jwat-warc</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jwat</groupId>
+                        <artifactId>jwat-gzip</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jwat</groupId>
+                        <artifactId>jwat-common</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jwat</groupId>
+                        <artifactId>jwat-archive-common</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.openpreservation.jhove</groupId>
+                        <artifactId>jhove-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>uk.gov.nationalarchives</groupId>
+                <artifactId>droid-core</artifactId>
+                <version>6.4</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.tukaani</groupId>
+                        <artifactId>xz</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-compress</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>joda-time</groupId>
+                        <artifactId>joda-time</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <!-- END Droid a JHove -->
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <!-- Jersey, for RESTful web services -->
         <dependency>
@@ -276,10 +385,6 @@
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-frontend-jaxws</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-transports-http-jetty</artifactId>
         </dependency>
         <!-- END - CXF -->
         <!-- Droid a JHove -->

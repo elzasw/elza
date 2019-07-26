@@ -48,11 +48,9 @@ import cz.tacr.elza.ws.types.v1.UnitOfMeasure;
  */
 @Component
 @javax.jws.WebService(
-        serviceName = "CoreService",
-        portName = "DaoCoreRequests",
-        targetNamespace = "http://dspace.tacr.cz/ws/core/v1",
+        serviceName = "DaoCoreRequests",
+        targetNamespace = "http://dspace.tacr.cz/ws/core/v1/DaoRequests",
         endpointInterface = "cz.tacr.elza.ws.dao_service.v1.DaoRequests")
-
 public class DaoRequestsImpl implements DaoRequests{
     private String SEPARATOR = ";";
 
