@@ -29,11 +29,9 @@ import java.util.UUID;
 
 @Component
 @javax.jws.WebService(
-        serviceName = "CoreService",
-        portName = "DaoCoreRequests",
-        targetNamespace = "http://dspace.tacr.cz/ws/core/v1",
-        endpointInterface = "cz.tacr.elza.ws.dao_service.v1.DaoRequests")
-
+        serviceName = "DaoNotifications",
+        targetNamespace = "http://dspace.tacr.cz/ws/core/v1/DaoNotifications",
+        endpointInterface = "cz.tacr.elza.ws.dao_service.v1.DaoNotifications")
 public class DaoNotificationsImpl implements DaoNotifications {
 
     private MetadataConstantService metadata;
