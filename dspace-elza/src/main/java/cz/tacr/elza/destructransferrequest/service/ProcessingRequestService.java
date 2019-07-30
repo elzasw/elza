@@ -96,7 +96,7 @@ public class ProcessingRequestService {
                 context.complete();
 
                 log.info("Odesílám informaci o zpracování požadavku na skartaci do systému Elza.");
-                WsClient.destructionRequestFinished(destructRequest.getUuid());
+                WsClient.destructionRequestFinished(destructRequest.getIdentifier());
                 log.info("Informaci o zpracování požadavku na skartaci byla úspěšně odeslána do systému Elza.");
             }
         } catch (Exception e) {
@@ -113,7 +113,7 @@ public class ProcessingRequestService {
 
                 log.info("Odesílám chybovou zprávu do systému Elza.");
                 RequestRevoked requestRevoked = new RequestRevoked();
-                requestRevoked.setIdentifier(processingRequest.getUuid());
+                requestRevoked.setIdentifier(processingRequest.getIdentifier());
                 requestRevoked.setDescription(e.getMessage());
                 WsClient.destructionRequestRevoked(requestRevoked);
             } catch (Exception e1) {
@@ -207,7 +207,7 @@ public class ProcessingRequestService {
                 context.complete();
 
                 log.info("Odesílám informaci o zpracování požadavku na delimitaci do systému Elza.");
-                WsClient.transferRequestFinished(destructRequest.getUuid());
+                WsClient.transferRequestFinished(destructRequest.getIdentifier());
                 log.info("Informaci o zpracování požadavku na delimitaci byla úspěšně odeslána do systému Elza.");
             }
         } catch (Exception e) {
@@ -224,7 +224,7 @@ public class ProcessingRequestService {
 
                 log.info("Odesílám chybovou zprávu do systému Elza.");
                 RequestRevoked requestRevoked = new RequestRevoked();
-                requestRevoked.setIdentifier(processingRequest.getUuid());
+                requestRevoked.setIdentifier(processingRequest.getIdentifier());
                 requestRevoked.setDescription(e.getMessage());
                 WsClient.transferRequestRevoked(requestRevoked);
             } catch (Exception e1) {
