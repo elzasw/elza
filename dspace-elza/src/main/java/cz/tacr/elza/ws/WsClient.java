@@ -10,14 +10,10 @@ import cz.tacr.elza.ws.types.v1.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.feature.FastInfosetFeature;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
-import org.dspace.content.Bitstream;
-import org.dspace.content.Bundle;
-import org.dspace.content.Collection;
-import org.dspace.content.Item;
-import org.dspace.content.MetadataSchema;
-import org.dspace.content.MetadataValue;
+import org.dspace.content.*;
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.CollectionService;
+import org.dspace.content.service.DSpaceObjectService;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.Context;
 import org.dspace.services.ConfigurationService;
@@ -29,6 +25,15 @@ import org.springframework.util.Assert;
 import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.xml.bind.helpers.DefaultValidationEventHandler;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.math.BigInteger;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 
@@ -125,7 +130,7 @@ public class WsClient {
         }
     }
 
-    public static void sendItemToElza(Item item){
+    public static void sendItemToElza(Item item) {
 
         DaoPackage daoPackage = new DaoPackage();
         daoPackage.setIdentifier(item.getID().toString());
@@ -162,13 +167,45 @@ public class WsClient {
         for (Bundle bundle : bundles) {
             for (Bitstream bitstream : bundle.getBitstreams()) {
                 File file = createFile(fileParam, bitstream);
+                List<MetadataEnum> techMataData = MetadataEnum.getTechMetaData();
+                DSpaceObjectService dSpaceObjectService = ContentServiceFactory.getInstance().getDSpaceObjectService(item);
+                for (MetadataEnum mt : techMataData) {
+                    String value = dSpaceObjectService.getMetadataFirstValue(bitstream, mt.getSchema(), mt.getElement(), mt.getQualifier(), Item.ANY);
+                    switch (mt) {
+                        case DURATION:
+                            file.setDuration(value);
+                            break;
+                        case IMAGEHEIGHT:
+                            file.setImageHeight(convertStringToBigInteger(value));
+                            break;
+                        case IMAGEWIDTH:
+                            file.setImageWidth(convertStringToBigInteger(value));
+                            break;
+                        case SOURCEXDIMUNIT:
+                            file.setSourceXDimensionUnit(convertStringToUnitOfMeasure(value));
+                            break;
+                        case SOURCEXDIMVALUVALUE:
+                            file.setSourceXDimensionValue(Float.valueOf(value));
+                            break;
+                        case SOURCEYDIMUNIT:
+                            file.setSourceYDimensionUnit(convertStringToUnitOfMeasure(value));
+                            break;
+                        case SOURCEYDIMVALUVALUE:
+                            file.setSourceYDimensionValue(Float.valueOf(value));
+                            break;
+                    }
+                }
+                String createdDate = dSpaceObjectService.getMetadataFirstValue(bitstream, Item.ANY, "date", "created", Item.ANY);
+                if (createdDate != null) {
+                    XMLGregorianCalendar xmlGregCalDate = concertStringToXMLGregorianCalendar(createdDate);
+                    file.setCreated(xmlGregCalDate);
+                }
                 fileGroup.getFile().add(file);
             }
         }
 
         dao.setFileGroup(fileGroup);
         daoset.getDao().add(dao);
-
         getDaoService().addPackage(daoPackage);
 
         Context context = null;
@@ -214,4 +251,43 @@ public class WsClient {
         return getJaxWsRemoteInterface(DaoService.class, url, username, password);
     }
 
+    private static BigInteger convertStringToBigInteger (String bigNumber) {
+        if (StringUtils.isBlank(bigNumber)) {
+            return null;
+        }
+        return BigInteger.valueOf(Long.parseLong(bigNumber));
+    }
+
+    private static UnitOfMeasure convertStringToUnitOfMeasure (String uomCode) {
+        switch (StringUtils.upperCase(uomCode)) {
+            case "IN":
+                return UnitOfMeasure.IN;
+            case "MM":
+                return UnitOfMeasure.MM;
+        }
+        throw new ProcessingException("Kód měrné jednotky " + uomCode + " není podporován.");
+    }
+
+    private static XMLGregorianCalendar concertStringToXMLGregorianCalendar(String date) {
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        Date parseDate = null;
+        try {
+            date = date.replace("T", " ");
+            date = date.replace("Z", "");
+            parseDate = format.parse(date);
+        } catch (ParseException e) {
+            logger.error("Fail in convert String value of created date to XMLGregorianCalendar", e);
+        }
+
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(parseDate);
+
+        XMLGregorianCalendar xmlGregCalDate = null;
+        try {
+            xmlGregCalDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
+        } catch (DatatypeConfigurationException e) {
+            logger.error("Fail in convert String value of created date to XMLGregorianCalendar", e);
+        }
+        return xmlGregCalDate;
+    }
 }
