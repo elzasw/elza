@@ -1,29 +1,12 @@
 package cz.tacr.elza.daoimport.service;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
-
-import javax.annotation.PostConstruct;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
+import cz.tacr.elza.daoimport.DaoImportScheduler;
+import cz.tacr.elza.daoimport.parser.TechnicalMDParser;
+import cz.tacr.elza.daoimport.service.vo.DaoFile;
+import cz.tacr.elza.daoimport.service.vo.ImportBatch;
+import cz.tacr.elza.daoimport.service.vo.ImportConfig;
+import cz.tacr.elza.daoimport.service.vo.ImportDao;
+import cz.tacr.elza.metadataconstants.MetadataEnum;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -31,24 +14,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.dspace.app.mediafilter.JPEGFilter;
 import org.dspace.authorize.AuthorizeException;
-import org.dspace.content.Bitstream;
-import org.dspace.content.BitstreamFormat;
-import org.dspace.content.Bundle;
+import org.dspace.content.*;
 import org.dspace.content.Collection;
-import org.dspace.content.Community;
-import org.dspace.content.DCDate;
-import org.dspace.content.Item;
-import org.dspace.content.MetadataSchema;
-import org.dspace.content.WorkspaceItem;
 import org.dspace.content.factory.ContentServiceFactory;
-import org.dspace.content.service.BitstreamFormatService;
-import org.dspace.content.service.BitstreamService;
-import org.dspace.content.service.BundleService;
-import org.dspace.content.service.CollectionService;
-import org.dspace.content.service.CommunityService;
-import org.dspace.content.service.ItemService;
-import org.dspace.content.service.MetadataValueService;
-import org.dspace.content.service.WorkspaceItemService;
+import org.dspace.content.service.*;
 import org.dspace.core.Context;
 import org.dspace.services.ConfigurationService;
 import org.dspace.services.factory.DSpaceServicesFactory;
@@ -59,13 +28,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
-import cz.tacr.elza.daoimport.DaoImportScheduler;
-import cz.tacr.elza.daoimport.parser.TechnicalMDParser;
-import cz.tacr.elza.daoimport.service.vo.DaoFile;
-import cz.tacr.elza.daoimport.service.vo.ImportBatch;
-import cz.tacr.elza.daoimport.service.vo.ImportConfig;
-import cz.tacr.elza.daoimport.service.vo.ImportDao;
-import cz.tacr.elza.metadataconstants.MetadataEnum;
+import javax.annotation.PostConstruct;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.file.*;
+import java.sql.SQLException;
+import java.util.*;
 
 @Service
 public class DaoImportService {
@@ -80,6 +53,7 @@ public class DaoImportService {
 
     public static final String METADATA_EXTENSION = ".meta";
     public static final String THUMBNAIL_EXTENSION = ".thumb";
+    public static final String JPEG_SURFIX = ".jpeg";
 
     public static final String CONTENT_BUNDLE = "ORIGINAL";
     public static final String METADATA_BUNDLE = "METADATA";
@@ -106,11 +80,17 @@ public class DaoImportService {
 
     public List<ImportBatch> prepareImport(final Context context) throws IOException {
         ImportConfig config = getImportConfig();
-        Path inputDir = Paths.get(config.getMainDir(), INPUT_DIR);
+        Path  inputDir= Paths.get(config.getMainDir(), INPUT_DIR);
         log.info("Hledání dávek v adresáři " + inputDir.toAbsolutePath());
+
+
+        //todo smazaz
+        inputDir= Paths.get("c:\\dspace\\tmp\\daoimport\\inputDir\\");
 
         List<Path> possibleBatches = getBatchDirs(inputDir);
 
+        //todo smazaz
+        possibleBatches.add(inputDir);
         List<ImportBatch> batches = new LinkedList<>();
         for (Path batchDir : possibleBatches) {
             BufferedWriter protocol = createProtocolWriter(batchDir);
@@ -376,9 +356,9 @@ public class DaoImportService {
         Files.createDirectory(generatedDir);
 
         String daoDirName = daoDir.getFileName().toString();
-        String[] names = daoDirName.split("_");
+        String[] names = daoDirName.split("_"); //String[] names = daoDirName.split("/_");
         if (names.length != 3) {
-            throw new IllegalStateException("Název DAO není ve formátu CisloArchivu_CisloAS_DAO");
+            throw new IllegalStateException("Název DAO není ve formátu CisloArchivu_CisloAS_DAO1");
         }
 
         String archiveId = names[0];
@@ -439,67 +419,100 @@ public class DaoImportService {
                 if (Files.isRegularFile(contentFile)
                         && !(contentFile.getFileName().toString().endsWith(METADATA_EXTENSION)
                         || contentFile.getFileName().toString().endsWith(THUMBNAIL_EXTENSION))) {
+
                     DaoFile daoFile = new DaoFile();
 
-                    Path destPath = Paths.get(generatedDir.toString(), contentFile.getFileName().toString());
-                    if (isFileMimeTypeSupported(contentFile, config, protocol)) {
-                        protocol.write("Kopírování souboru " + contentFile.getFileName().toString()  + " do adresáře " + GENERATED_DIR);
-                        protocol.newLine();
-                        daoFile.setContentFile(Files.copy(contentFile, destPath, StandardCopyOption.REPLACE_EXISTING));
-                    } else {
-                        continue;
-                    }
+                    //nejedna se o jpeg soubor a proto se provede pokus o automatickou konverzi
+                    if (!contentFile.getFileName().toString().endsWith(JPEG_SURFIX)) {
+                        String convertAppPath = configurationService.getProperty("convert.files.app.path");
+                        Path convertApp = Paths.get(convertAppPath);
+                        if (!Files.exists(convertApp)) {
+                            protocol.write("Nebyla nalezena aplikace pro převod souborů do formátu jpg: " + convertAppPath);
+                        } else {
+                            String convertAppCommand = configurationService.getProperty("convert.files.app.command");
+                            String supportedConfig = configurationService.getProperty("convert.files.app.supported.types");
+                            if (convertAppCommand != null && !convertAppCommand.isEmpty() && supportedConfig != null && !supportedConfig.isEmpty()) {
+                                List<String> supportedTypes = Arrays.asList(supportedConfig.split("\\s*,\\s*"));
+                                for (String supportedType : supportedTypes) {
+                                    if (contentFile.getFileName().toString().endsWith(supportedType)) {
+                                        protocol.write("Následující soubor bude automaticky konvertován do jpg: " + contentFile.getFileName().toString());
+                                        protocol.newLine();
+                                        convertAppCommand = convertAppCommand.replace("{input}", "'" + contentFile.toString()) + "'";
+                                        Path outputPath = Paths.get(generatedDir.toString(), contentFile.getFileName().toString());
+                                        String outputPathString = outputPath.toString().replace("." + supportedType, "." + "jpg");
+                                        convertAppCommand = convertAppCommand.replace("{output}", "'" + outputPathString + "'");
+                                        Process process = new ProcessBuilder(convertAppPath, convertAppCommand).start();
+                                        InputStream inputStream = process.getInputStream();
+                                        int result = inputStream.read();
+                                        Path convertedPath = Paths.get(outputPathString);
+                                        if (result == 0 && Files.exists(convertedPath)) {
+                                            protocol.write("Došlo k úspěšné konverzi souboru: " + contentFile.getFileName().toString());
+                                            protocol.newLine();
+                                            daoFile.setContentFile(convertedPath);
+                                            protocol.write("Generování metadat souboru " + outputPath.getFileName().toString());
+                                            protocol.newLine();
+                                            Path metadataFile = Paths.get(convertedPath.toAbsolutePath().toString() + METADATA_EXTENSION);
+                                            Path destPath = Paths.get(generatedDir.toString(), metadataFile.getFileName().toString());
+                                            if (jhoveService.generateMetadata(convertedPath, protocol, destPath)) {
+                                                daoFile.setMetadataFile(destPath);
+                                                daoFile.setTechMD(parseMetadata(destPath));
+                                            }
+                                            Path thumbnailFile = Paths.get(convertedPath.toAbsolutePath().toString() + METADATA_EXTENSION);
+                                            destPath = Paths.get(generatedDir.toString(), thumbnailFile.getFileName().toString());
+                                            generateThumbnailFile(protocol, convertedPath, destPath, daoFile);
 
-                    Path metadataFile = Paths.get(contentFile.toAbsolutePath().toString() + METADATA_EXTENSION);
-                    destPath = Paths.get(generatedDir.toString(), metadataFile.getFileName().toString());
-                    if (Files.exists(metadataFile)) {
-                        protocol.write("Kopírování souboru " + metadataFile.getFileName().toString()  + " do adresáře " + GENERATED_DIR);
-                        protocol.newLine();
-
-                        daoFile.setTechMD(parseMetadata(metadataFile));
-                        daoFile.setMetadataFile(Files.copy(metadataFile, destPath, StandardCopyOption.REPLACE_EXISTING));
-                    } else {
-                        protocol.write("Generování metadat souboru " + contentFile.getFileName().toString());
-                        protocol.newLine();
-
-                        if (jhoveService.generateMetadata(contentFile, protocol, destPath)) {
-                            daoFile.setMetadataFile(destPath);
-                            daoFile.setTechMD(parseMetadata(destPath));
-                        }
-                    }
-
-                    Path thumbnailFile = Paths.get(contentFile.toAbsolutePath().toString() + THUMBNAIL_EXTENSION);
-                    destPath = Paths.get(generatedDir.toString(), thumbnailFile.getFileName().toString());
-                    if (Files.exists(thumbnailFile)) {
-                        protocol.write("Kopírování souboru " + thumbnailFile.getFileName().toString()  + " do adresáře " + GENERATED_DIR);
-                        protocol.newLine();
-
-                        daoFile.setThumbnailFile(Files.copy(thumbnailFile, destPath, StandardCopyOption.REPLACE_EXISTING));
-                    } else {
-                        protocol.write("Generování náhledu souboru " + contentFile.getFileName().toString());
-                        protocol.newLine();
-
-                        JPEGFilter jpegFilter = new JPEGFilter();
-                        InputStream is = null;
-                        InputStream thumbnailIS = null;
-                        try {
-                            is = Files.newInputStream(contentFile);
-                            thumbnailIS = jpegFilter.getDestinationStream(null, is, false);
-                            Files.copy(thumbnailIS, destPath, StandardCopyOption.REPLACE_EXISTING);
-                            daoFile.setThumbnailFile(destPath);
-                        } catch (Exception e) {
-                            throw new IllegalStateException("Chyba při generování náhledu souboru " + contentFile.getFileName() + ". ", e);
-                        } finally {
-                            if (is != null) {
-                                IOUtils.closeQuietly(is);
-                            }
-                            if (thumbnailIS != null) {
-                                IOUtils.closeQuietly(thumbnailIS);
+                                            importDao.addFile(daoFile);
+                                        } else {
+                                            protocol.write("Došlo k chybě při pokusu o konverzi souboru " + contentFile.getFileName().toString());
+                                            protocol.newLine();
+                                        }
+                                    }
+                                }
                             }
                         }
-                        //TODO implementovat
+
+
+                    } else {
+                        Path destPath = Paths.get(generatedDir.toString(), contentFile.getFileName().toString());
+/*                        if (isFileMimeTypeSupported(contentFile, config, protocol)) {
+                            protocol.write("Kopírování souboru " + contentFile.getFileName().toString()  + " do adresáře " + GENERATED_DIR);
+                            protocol.newLine();
+                            daoFile.setContentFile(Files.copy(contentFile, destPath, StandardCopyOption.REPLACE_EXISTING));
+                        } else {
+                            continue;
+                        }*/
+
+                        Path metadataFile = Paths.get(contentFile.toAbsolutePath().toString() + METADATA_EXTENSION);
+                        destPath = Paths.get(generatedDir.toString(), metadataFile.getFileName().toString());
+                        if (Files.exists(metadataFile)) {
+                            protocol.write("Kopírování souboru " + metadataFile.getFileName().toString()  + " do adresáře " + GENERATED_DIR);
+                            protocol.newLine();
+
+                            daoFile.setTechMD(parseMetadata(metadataFile));
+                            daoFile.setMetadataFile(Files.copy(metadataFile, destPath, StandardCopyOption.REPLACE_EXISTING));
+                        } else {
+                            protocol.write("Generování metadat souboru " + contentFile.getFileName().toString());
+                            protocol.newLine();
+
+                            if (jhoveService.generateMetadata(contentFile, protocol, destPath)) {
+                                daoFile.setMetadataFile(destPath);
+                                daoFile.setTechMD(parseMetadata(destPath));
+                            }
+                        }
+
+                        Path thumbnailFile = Paths.get(contentFile.toAbsolutePath().toString() + THUMBNAIL_EXTENSION);
+                        destPath = Paths.get(generatedDir.toString(), thumbnailFile.getFileName().toString());
+                        if (Files.exists(thumbnailFile)) {
+                            protocol.write("Kopírování souboru " + thumbnailFile.getFileName().toString()  + " do adresáře " + GENERATED_DIR);
+                            protocol.newLine();
+
+                            daoFile.setThumbnailFile(Files.copy(thumbnailFile, destPath, StandardCopyOption.REPLACE_EXISTING));
+                        } else {
+                                generateThumbnailFile(protocol, contentFile, destPath, daoFile);
+                            //TODO implementovat
+                        }
+                        importDao.addFile(daoFile);
                     }
-                    importDao.addFile(daoFile);
                 }
             }
         }
@@ -543,6 +556,30 @@ public class DaoImportService {
             throw new IllegalStateException("Chyba při parsování technických metadat.", e);
         } catch (IOException e) {
             throw new IllegalStateException("Chyba při parsování technických metadat.", e);
+        }
+    }
+
+    private void generateThumbnailFile(BufferedWriter protocol, Path contentFile, Path destPath, DaoFile daoFile) throws IOException {
+        protocol.write("Generování náhledu souboru " + contentFile.getFileName().toString());
+        protocol.newLine();
+
+        JPEGFilter jpegFilter = new JPEGFilter();
+        InputStream is = null;
+        InputStream thumbnailIS = null;
+        try {
+            is = Files.newInputStream(contentFile);
+            thumbnailIS = jpegFilter.getDestinationStream(null, is, false);
+            Files.copy(thumbnailIS, destPath, StandardCopyOption.REPLACE_EXISTING);
+            daoFile.setThumbnailFile(destPath);
+        } catch (Exception e) {
+            throw new IllegalStateException("Chyba při generování náhledu souboru " + contentFile.getFileName() + ". ", e);
+        } finally {
+            if (is != null) {
+                IOUtils.closeQuietly(is);
+            }
+            if (thumbnailIS != null) {
+                IOUtils.closeQuietly(thumbnailIS);
+            }
         }
     }
 

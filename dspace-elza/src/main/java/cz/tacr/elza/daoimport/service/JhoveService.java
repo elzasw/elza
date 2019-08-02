@@ -7,7 +7,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -65,6 +68,8 @@ public class JhoveService {
                     protocol.newLine();
 
                     parseMetadata(f, m, repInfo);
+                    BasicFileAttributes fileAttributes = Files.readAttributes(file, BasicFileAttributes.class);
+                    repInfo.setCreated(new Date(fileAttributes.creationTime().toMillis()));
 
                     saveMetadataFile(destPath, repInfo);
 
