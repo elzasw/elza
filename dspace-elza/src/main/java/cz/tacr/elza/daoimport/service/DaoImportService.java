@@ -83,14 +83,8 @@ public class DaoImportService {
         Path  inputDir= Paths.get(config.getMainDir(), INPUT_DIR);
         log.info("Hledání dávek v adresáři " + inputDir.toAbsolutePath());
 
-
-        //todo smazaz
-        inputDir= Paths.get("c:\\dspace\\tmp\\daoimport\\inputDir\\");
-
         List<Path> possibleBatches = getBatchDirs(inputDir);
 
-        //todo smazaz
-        possibleBatches.add(inputDir);
         List<ImportBatch> batches = new LinkedList<>();
         for (Path batchDir : possibleBatches) {
             BufferedWriter protocol = createProtocolWriter(batchDir);
@@ -356,9 +350,9 @@ public class DaoImportService {
         Files.createDirectory(generatedDir);
 
         String daoDirName = daoDir.getFileName().toString();
-        String[] names = daoDirName.split("_"); //String[] names = daoDirName.split("/_");
+        String[] names = daoDirName.split("_");
         if (names.length != 3) {
-            throw new IllegalStateException("Název DAO není ve formátu CisloArchivu_CisloAS_DAO1");
+            throw new IllegalStateException("Název DAO není ve formátu CisloArchivu_CisloAS_DAO");
         }
 
         String archiveId = names[0];
@@ -474,13 +468,13 @@ public class DaoImportService {
 
                     } else {
                         Path destPath = Paths.get(generatedDir.toString(), contentFile.getFileName().toString());
-/*                        if (isFileMimeTypeSupported(contentFile, config, protocol)) {
+                        if (isFileMimeTypeSupported(contentFile, config, protocol)) {
                             protocol.write("Kopírování souboru " + contentFile.getFileName().toString()  + " do adresáře " + GENERATED_DIR);
                             protocol.newLine();
                             daoFile.setContentFile(Files.copy(contentFile, destPath, StandardCopyOption.REPLACE_EXISTING));
                         } else {
                             continue;
-                        }*/
+                        }
 
                         Path metadataFile = Paths.get(contentFile.toAbsolutePath().toString() + METADATA_EXTENSION);
                         destPath = Paths.get(generatedDir.toString(), metadataFile.getFileName().toString());
