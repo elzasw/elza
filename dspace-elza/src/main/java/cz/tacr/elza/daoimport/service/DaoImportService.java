@@ -32,11 +32,10 @@ import javax.annotation.PostConstruct;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -144,6 +143,20 @@ public class DaoImportService {
         return supportedMimeTypes;
     }
 
+    private List<String> getSupportedTypesForConvertion() {
+        String mimeTypes = configurationService.getProperty("elza.daoimport.convert.supportedMimeTypes");
+        if (StringUtils.isBlank(mimeTypes)) {
+            return Collections.emptyList();
+        }
+        String[] split = mimeTypes.split(" ");
+        List<String> supportedTypes = new ArrayList<>(split.length);
+        for (String mimeType : split) {
+            String supportedType = mimeType.replace("image/", ".");
+            supportedTypes.add(supportedType.toLowerCase());
+        }
+        return supportedTypes;
+    }
+
     public void importBatches(final List<ImportBatch> importBatches, final Context context) throws IOException {
         for (ImportBatch batch : importBatches) {
             BufferedWriter protocol = batch.getProtocol();
@@ -186,7 +199,10 @@ public class DaoImportService {
             for (DaoFile daoFile : importDao.getFiles()) {
                 String bsName = daoFile.getContentFile().getFileName().toString();
                 Bitstream contentBitstream = createBitstream(bsName, daoFile.getContentFile(), origBundle, sequence, protocol, context);
-                // TODO vanek - datum vytvoření = datum vytvoření souboru? nebo importu do DSpace?
+                //pridani casu vytvoreni souboru do metadat
+                if (daoFile.getCreatedDate() != null) {
+                    bitstreamService.addMetadata(context, contentBitstream, Item.ANY, "date", "created", null, daoFile.getCreatedDate().toString());
+                }
                 if (daoFile.getMetadataFile() != null) {
                     Bitstream metadataBitstream = createBitstream(bsName, daoFile.getMetadataFile(), metaBundle, sequence, protocol, context);
                     Map<MetadataEnum, String> techMD = daoFile.getTechMD();
@@ -415,51 +431,49 @@ public class DaoImportService {
                         || contentFile.getFileName().toString().endsWith(THUMBNAIL_EXTENSION))) {
 
                     DaoFile daoFile = new DaoFile();
+                    BasicFileAttributes fileAttributes = Files.readAttributes(contentFile, BasicFileAttributes.class);
+                    daoFile.setCreatedDate(new Date(fileAttributes.creationTime().toMillis()));
 
                     //nejedna se o jpeg soubor a proto se provede pokus o automatickou konverzi
                     if (!contentFile.getFileName().toString().endsWith(JPEG_SURFIX)) {
-                        String convertAppPath = configurationService.getProperty("convert.files.app.path");
-                        Path convertApp = Paths.get(convertAppPath);
-                        if (!Files.exists(convertApp)) {
-                            protocol.write("Nebyla nalezena aplikace pro převod souborů do formátu jpg: " + convertAppPath);
+                        String convertAppCommand = configurationService.getProperty("convert.files.app.command");
+                        if (convertAppCommand != null && convertAppCommand.isEmpty()) {
+                            protocol.write("V konfiguraci není definován příkaz pro konverzi souborů. Nelze zahájit konverzi souborů.");
                         } else {
-                            String convertAppCommand = configurationService.getProperty("convert.files.app.command");
-                            String supportedConfig = configurationService.getProperty("convert.files.app.supported.types");
-                            if (convertAppCommand != null && !convertAppCommand.isEmpty() && supportedConfig != null && !supportedConfig.isEmpty()) {
-                                List<String> supportedTypes = Arrays.asList(supportedConfig.split("\\s*,\\s*"));
-                                for (String supportedType : supportedTypes) {
-                                    if (contentFile.getFileName().toString().endsWith(supportedType)) {
-                                        protocol.write("Následující soubor bude automaticky konvertován do jpg: " + contentFile.getFileName().toString());
+                            for (String supportedType : getSupportedTypesForConvertion()) {
+                                if (contentFile.getFileName().toString().endsWith(supportedType)) {
+                                    protocol.write("Následující soubor bude automaticky konvertován do jpg: " + contentFile.getFileName().toString());
+                                    protocol.newLine();
+                                    convertAppCommand = convertAppCommand.replace("{input}", "'" + contentFile.toString()) + "'";
+                                    Path outputPath = Paths.get(generatedDir.toString(), contentFile.getFileName().toString());
+                                    String outputPathString = outputPath.toString().replace("." + supportedType, "." + "jpg");
+                                    convertAppCommand = convertAppCommand.replace("{output}", "'" + outputPathString + "'");
+                                    ProcessBuilder builder = new ProcessBuilder("cmd.exe", convertAppCommand);
+                                    builder.redirectErrorStream(true);
+                                    Process p = builder.start();
+                                    BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                                    int result = r.read();
+                                    Path convertedPath = Paths.get(outputPathString);
+                                    if (result == 0 && Files.exists(convertedPath)) {
+                                        protocol.write("Došlo k úspěšné konverzi souboru: " + contentFile.getFileName().toString());
                                         protocol.newLine();
-                                        convertAppCommand = convertAppCommand.replace("{input}", "'" + contentFile.toString()) + "'";
-                                        Path outputPath = Paths.get(generatedDir.toString(), contentFile.getFileName().toString());
-                                        String outputPathString = outputPath.toString().replace("." + supportedType, "." + "jpg");
-                                        convertAppCommand = convertAppCommand.replace("{output}", "'" + outputPathString + "'");
-                                        Process process = new ProcessBuilder(convertAppPath, convertAppCommand).start();
-                                        InputStream inputStream = process.getInputStream();
-                                        int result = inputStream.read();
-                                        Path convertedPath = Paths.get(outputPathString);
-                                        if (result == 0 && Files.exists(convertedPath)) {
-                                            protocol.write("Došlo k úspěšné konverzi souboru: " + contentFile.getFileName().toString());
-                                            protocol.newLine();
-                                            daoFile.setContentFile(convertedPath);
-                                            protocol.write("Generování metadat souboru " + outputPath.getFileName().toString());
-                                            protocol.newLine();
-                                            Path metadataFile = Paths.get(convertedPath.toAbsolutePath().toString() + METADATA_EXTENSION);
-                                            Path destPath = Paths.get(generatedDir.toString(), metadataFile.getFileName().toString());
-                                            if (jhoveService.generateMetadata(convertedPath, protocol, destPath)) {
-                                                daoFile.setMetadataFile(destPath);
-                                                daoFile.setTechMD(parseMetadata(destPath));
-                                            }
-                                            Path thumbnailFile = Paths.get(convertedPath.toAbsolutePath().toString() + METADATA_EXTENSION);
-                                            destPath = Paths.get(generatedDir.toString(), thumbnailFile.getFileName().toString());
-                                            generateThumbnailFile(protocol, convertedPath, destPath, daoFile);
-
-                                            importDao.addFile(daoFile);
-                                        } else {
-                                            protocol.write("Došlo k chybě při pokusu o konverzi souboru " + contentFile.getFileName().toString());
-                                            protocol.newLine();
+                                        daoFile.setContentFile(convertedPath);
+                                        protocol.write("Generování metadat souboru " + outputPath.getFileName().toString());
+                                        protocol.newLine();
+                                        Path metadataFile = Paths.get(convertedPath.toAbsolutePath().toString() + METADATA_EXTENSION);
+                                        Path destPath = Paths.get(generatedDir.toString(), metadataFile.getFileName().toString());
+                                        if (jhoveService.generateMetadata(convertedPath, protocol, destPath)) {
+                                            daoFile.setMetadataFile(destPath);
+                                            daoFile.setTechMD(parseMetadata(destPath));
                                         }
+                                        Path thumbnailFile = Paths.get(convertedPath.toAbsolutePath().toString() + METADATA_EXTENSION);
+                                        destPath = Paths.get(generatedDir.toString(), thumbnailFile.getFileName().toString());
+                                        generateThumbnailFile(protocol, convertedPath, destPath, daoFile);
+
+                                        importDao.addFile(daoFile);
+                                    } else {
+                                        protocol.write("Došlo k chybě při pokusu o konverzi souboru " + contentFile.getFileName().toString());
+                                        protocol.newLine();
                                     }
                                 }
                             }
@@ -503,7 +517,6 @@ public class DaoImportService {
                             daoFile.setThumbnailFile(Files.copy(thumbnailFile, destPath, StandardCopyOption.REPLACE_EXISTING));
                         } else {
                                 generateThumbnailFile(protocol, contentFile, destPath, daoFile);
-                            //TODO implementovat
                         }
                         importDao.addFile(daoFile);
                     }

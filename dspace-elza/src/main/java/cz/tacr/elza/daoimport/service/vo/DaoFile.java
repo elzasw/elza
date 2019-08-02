@@ -1,6 +1,7 @@
 package cz.tacr.elza.daoimport.service.vo;
 
 import java.nio.file.Path;
+import java.util.Date;
 import java.util.Map;
 
 import cz.tacr.elza.metadataconstants.MetadataEnum;
@@ -10,6 +11,7 @@ public class DaoFile {
     private Path contentFile;
     private Path metadataFile;
     private Path thumbnailFile;
+    private Date createdDate;
     private Map<MetadataEnum, String> techMD;
 
     public Path getContentFile() {
@@ -30,6 +32,14 @@ public class DaoFile {
 
     public Path getThumbnailFile() {
         return thumbnailFile;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
     }
 
     public void setThumbnailFile(Path thumbnailFile) {
