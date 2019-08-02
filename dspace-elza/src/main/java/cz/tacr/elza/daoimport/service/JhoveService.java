@@ -1,49 +1,20 @@
 package cz.tacr.elza.daoimport.service;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-
-import javax.annotation.PostConstruct;
-
+import com.mcgath.jhove.module.PngModule;
+import edu.harvard.hul.ois.jhove.*;
+import edu.harvard.hul.ois.jhove.handler.XmlHandler;
+import edu.harvard.hul.ois.jhove.module.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
-import com.mcgath.jhove.module.PngModule;
-
-import edu.harvard.hul.ois.jhove.App;
-import edu.harvard.hul.ois.jhove.JhoveBase;
-import edu.harvard.hul.ois.jhove.JhoveException;
-import edu.harvard.hul.ois.jhove.Module;
-import edu.harvard.hul.ois.jhove.RepInfo;
-import edu.harvard.hul.ois.jhove.handler.XmlHandler;
-import edu.harvard.hul.ois.jhove.module.AiffModule;
-import edu.harvard.hul.ois.jhove.module.AsciiModule;
-import edu.harvard.hul.ois.jhove.module.BytestreamModule;
-import edu.harvard.hul.ois.jhove.module.GifModule;
-import edu.harvard.hul.ois.jhove.module.GzipModule;
-import edu.harvard.hul.ois.jhove.module.HtmlModule;
-import edu.harvard.hul.ois.jhove.module.Jpeg2000Module;
-import edu.harvard.hul.ois.jhove.module.JpegModule;
-import edu.harvard.hul.ois.jhove.module.PdfModule;
-import edu.harvard.hul.ois.jhove.module.TiffModule;
-import edu.harvard.hul.ois.jhove.module.Utf8Module;
-import edu.harvard.hul.ois.jhove.module.WarcModule;
-import edu.harvard.hul.ois.jhove.module.WaveModule;
-import edu.harvard.hul.ois.jhove.module.XmlModule;
+import javax.annotation.PostConstruct;
+import java.io.*;
+import java.nio.file.Path;
+import java.util.LinkedList;
+import java.util.List;
 
 @Service
 public class JhoveService {
@@ -68,8 +39,6 @@ public class JhoveService {
                     protocol.newLine();
 
                     parseMetadata(f, m, repInfo);
-                    BasicFileAttributes fileAttributes = Files.readAttributes(file, BasicFileAttributes.class);
-                    repInfo.setCreated(new Date(fileAttributes.creationTime().toMillis()));
 
                     saveMetadataFile(destPath, repInfo);
 
