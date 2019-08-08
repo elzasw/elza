@@ -2,10 +2,9 @@ package cz.tacr.elza.daoimport.service;
 
 import cz.tacr.elza.daoimport.DaoImportScheduler;
 import cz.tacr.elza.daoimport.parser.TechnicalMDParser;
-import cz.tacr.elza.daoimport.service.vo.DaoFile;
-import cz.tacr.elza.daoimport.service.vo.ImportBatch;
-import cz.tacr.elza.daoimport.service.vo.ImportConfig;
-import cz.tacr.elza.daoimport.service.vo.ImportDao;
+import cz.tacr.elza.daoimport.schema.dao.Dao;
+import cz.tacr.elza.daoimport.schema.dao.Page;
+import cz.tacr.elza.daoimport.service.vo.*;
 import cz.tacr.elza.metadataconstants.MetadataEnum;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
@@ -29,6 +28,9 @@ import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
 import javax.annotation.PostConstruct;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -53,6 +55,7 @@ public class DaoImportService {
     public static final String METADATA_EXTENSION = ".meta";
     public static final String THUMBNAIL_EXTENSION = ".thumb";
     public static final String JPEG_SURFIX = ".jpeg";
+    public static final String DAO_XML = "dao.xml";
 
     public static final String CONTENT_BUNDLE = "ORIGINAL";
     public static final String METADATA_BUNDLE = "METADATA";
@@ -207,7 +210,11 @@ public class DaoImportService {
                     Bitstream metadataBitstream = createBitstream(bsName, daoFile.getMetadataFile(), metaBundle, sequence, protocol, context);
                     Map<MetadataEnum, String> techMD = daoFile.getTechMD();
                     storeTechMD(contentBitstream, techMD, protocol, context);
+                    if (daoFile.getDescription() != null) {
+                        bitstreamService.addMetadata(context, metadataBitstream, Item.ANY, "description", null, null, daoFile.getDescription());
+                    }
                 }
+
                 Bitstream thumbnailBitstream = createBitstream(bsName, daoFile.getThumbnailFile(), thumbBundle, sequence, protocol, context);
                 sequence++;
             }
@@ -423,8 +430,21 @@ public class DaoImportService {
         importDao.setCommunityId(community.getID());
         importDao.setDaoId(daoId);
 
+
         // zpracování souborů
         try (DirectoryStream<Path> fileStream = Files.newDirectoryStream(daoDir)) {
+            Dao daoXmlSpecification = null;
+            Path daoXmlFile = Paths.get(daoDir.toAbsolutePath() + DAO_XML);
+            if(Files.exists(daoXmlFile)) {
+                protocol.write("Byl nalezen volitelný soubor dao.xml.");
+                try {
+                    JAXBContext jaxbContext = JAXBContext.newInstance(Dao.class);
+                    Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+                    daoXmlSpecification = (Dao) unmarshaller.unmarshal(daoXmlFile.toFile());
+                } catch (JAXBException e) {
+                    protocol.write("Nepodařilo se načíst data ze souboru dao.xml.");
+                }
+            }
             for (Path contentFile : fileStream) {
                 if (Files.isRegularFile(contentFile)
                         && !(contentFile.getFileName().toString().endsWith(METADATA_EXTENSION)
@@ -458,11 +478,13 @@ public class DaoImportService {
                                         protocol.write("Došlo k úspěšné konverzi souboru: " + contentFile.getFileName().toString());
                                         protocol.newLine();
                                         daoFile.setContentFile(convertedPath);
+
+                                        MetadataInfo metadataInfo = fillBasicdaoXmlSpecification(daoXmlSpecification, daoFile, contentFile.getFileName().getFileName().toString());
                                         protocol.write("Generování metadat souboru " + outputPath.getFileName().toString());
                                         protocol.newLine();
                                         Path metadataFile = Paths.get(convertedPath.toAbsolutePath().toString() + METADATA_EXTENSION);
                                         Path destPath = Paths.get(generatedDir.toString(), metadataFile.getFileName().toString());
-                                        if (jhoveService.generateMetadata(convertedPath, protocol, destPath)) {
+                                        if (jhoveService.generateMetadata(convertedPath, protocol, destPath, metadataInfo)) {
                                             daoFile.setMetadataFile(destPath);
                                             daoFile.setTechMD(parseMetadata(destPath));
                                         }
@@ -499,10 +521,10 @@ public class DaoImportService {
                             daoFile.setTechMD(parseMetadata(metadataFile));
                             daoFile.setMetadataFile(Files.copy(metadataFile, destPath, StandardCopyOption.REPLACE_EXISTING));
                         } else {
+                            MetadataInfo metadataInfo = fillBasicdaoXmlSpecification(daoXmlSpecification, daoFile, contentFile.getFileName().getFileName().toString());
                             protocol.write("Generování metadat souboru " + contentFile.getFileName().toString());
                             protocol.newLine();
-
-                            if (jhoveService.generateMetadata(contentFile, protocol, destPath)) {
+                            if (jhoveService.generateMetadata(contentFile, protocol, destPath, metadataInfo)) {
                                 daoFile.setMetadataFile(destPath);
                                 daoFile.setTechMD(parseMetadata(destPath));
                             }
@@ -651,5 +673,24 @@ public class DaoImportService {
         } else {
             Files.createDirectory(directory);
         }
+    }
+
+    private MetadataInfo fillBasicdaoXmlSpecification(Dao daoXmlSpecification, DaoFile daoFile, String fileName) {
+        MetadataInfo metadataInfo = null;
+        if (daoXmlSpecification != null && daoXmlSpecification.getPages() != null) {
+            List<Page> pageInfoList = daoXmlSpecification.getPages().getPage();
+            Integer pageNumber = 1;
+            for (Page pageInfo : pageInfoList) {
+                if(pageInfo.getFile() != null && fileName.contains(pageInfo.getFile())) {
+                    metadataInfo = new MetadataInfo();
+                    metadataInfo.setMimeType(pageInfo.getMimetype());
+                    metadataInfo.setCheckSum(pageInfo.getChecksum());
+                    daoFile.setOrderNumber(pageNumber);
+                    daoFile.setDescription(pageInfo.getDescription());
+                }
+                pageNumber++;
+            }
+        }
+        return metadataInfo;
     }
 }
