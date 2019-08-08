@@ -12,6 +12,8 @@ public class DaoFile {
     private Path metadataFile;
     private Path thumbnailFile;
     private Date createdDate;
+    private Integer orderNumber;
+    private String description;
     private Map<MetadataEnum, String> techMD;
 
     public Path getContentFile() {
@@ -46,6 +48,21 @@ public class DaoFile {
         this.thumbnailFile = thumbnailFile;
     }
 
+    public Integer getOrderNumber() {
+        return orderNumber;
+    }
+
+    public void setOrderNumber(Integer orderNumber) {
+        this.orderNumber = orderNumber;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
     public Map<MetadataEnum, String> getTechMD() {
         return techMD;
     }

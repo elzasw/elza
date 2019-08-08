@@ -1,6 +1,8 @@
 package cz.tacr.elza.daoimport.service;
 
 import com.mcgath.jhove.module.PngModule;
+import cz.tacr.elza.daoimport.schema.dao.Dao;
+import cz.tacr.elza.daoimport.service.vo.MetadataInfo;
 import edu.harvard.hul.ois.jhove.*;
 import edu.harvard.hul.ois.jhove.handler.XmlHandler;
 import edu.harvard.hul.ois.jhove.module.*;
@@ -23,7 +25,7 @@ public class JhoveService {
 
     private List<Module> modules = new LinkedList<>();
 
-    public boolean generateMetadata(final Path file, final BufferedWriter protocol, final Path destPath) throws IOException {
+    public boolean generateMetadata(final Path file, final BufferedWriter protocol, final Path destPath, final MetadataInfo metadataInfo) throws IOException {
         boolean moduleFound = false;
         try {
             File f = file.toAbsolutePath().toFile();
@@ -39,6 +41,14 @@ public class JhoveService {
                     protocol.newLine();
 
                     parseMetadata(f, m, repInfo);
+                    if (metadataInfo != null) {
+                        if (metadataInfo.getMimeType() != null ) {
+                            repInfo.setMimeType(metadataInfo.getMimeType() );
+                        }
+                        if (metadataInfo.getCheckSum()  != null ) {
+                            repInfo.setMimeType(metadataInfo.getCheckSum());
+                        }
+                    }
 
                     saveMetadataFile(destPath, repInfo);
 
