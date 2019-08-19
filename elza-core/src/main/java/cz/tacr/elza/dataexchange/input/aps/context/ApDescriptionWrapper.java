@@ -41,7 +41,7 @@ public class ApDescriptionWrapper implements EntityWrapper {
     }
 
     @Override
-    public void afterEntitySave() {
+    public void afterEntitySave(Session session) {
         // update AP info
         apInfo.onEntityPersist();
     }

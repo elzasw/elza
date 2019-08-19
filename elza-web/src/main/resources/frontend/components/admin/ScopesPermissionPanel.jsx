@@ -36,11 +36,15 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     static permCodesMap = {
         [perms.AP_SCOPE_RD_ALL]: perms.AP_SCOPE_RD,
         [perms.AP_SCOPE_WR_ALL]: perms.AP_SCOPE_WR,
+        [perms.AP_CONFIRM_ALL]: perms.AP_CONFIRM,
+        [perms.AP_EDIT_CONFIRMED_ALL]: perms.AP_EDIT_CONFIRMED,
     };
 
     static permCodesMapRev = {
         [perms.AP_SCOPE_RD]: perms.AP_SCOPE_RD_ALL,
         [perms.AP_SCOPE_WR]: perms.AP_SCOPE_WR_ALL,
+        [perms.AP_CONFIRM]: perms.AP_CONFIRM_ALL,
+        [perms.AP_EDIT_CONFIRMED]: perms.AP_EDIT_CONFIRMED_ALL,
     };
 
     static ALL_ID = "ALL_ID";
@@ -92,11 +96,15 @@ class ScopesPermissionPanel extends AbstractReactComponent {
                 switch (p.permission) {
                     case perms.AP_SCOPE_RD_ALL:
                     case perms.AP_SCOPE_WR_ALL:
+                    case perms.AP_CONFIRM_ALL:
+                    case perms.AP_EDIT_CONFIRMED_ALL:
                         id = ScopesPermissionPanel.ALL_ID;
                         permissionCode = ScopesPermissionPanel.permCodesMap[p.permission];
                         break;
                     case perms.AP_SCOPE_RD:
                     case perms.AP_SCOPE_WR:
+                    case perms.AP_CONFIRM:
+                    case perms.AP_EDIT_CONFIRMED:
                         id = p.scope.id;
                         permissionCode = p.permission;
                         break;

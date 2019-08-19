@@ -37,9 +37,6 @@ public class UsrUser {
     @Column(length = 250, nullable = false, unique = true)
     private String username;
 
-    @Column(length = 64, nullable = false)
-    private String password;
-
     @Column(nullable = false)
     private Boolean active;
 
@@ -93,20 +90,6 @@ public class UsrUser {
      */
     public void setUsername(final String username) {
         this.username = username;
-    }
-
-    /**
-     * @return uživatelské heslo
-     */
-    public String getPassword() {
-        return password;
-    }
-
-    /**
-     * @param password uživatelské heslo
-     */
-    public void setPassword(final String password) {
-        this.password = password;
     }
 
     /**

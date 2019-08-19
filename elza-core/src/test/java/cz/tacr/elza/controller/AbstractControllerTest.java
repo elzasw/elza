@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.UsrAuthentication;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -43,61 +45,6 @@ import com.jayway.restassured.specification.RequestSpecification;
 
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.controller.ArrangementController.FaFilteredFulltextParam;
-import cz.tacr.elza.controller.vo.AddLevelParam;
-import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
-import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApEidTypeVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.ArrStructureDataVO;
-import cz.tacr.elza.controller.vo.CopyNodesParams;
-import cz.tacr.elza.controller.vo.CopyNodesValidate;
-import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
-import cz.tacr.elza.controller.vo.CreateFundVO;
-import cz.tacr.elza.controller.vo.FilterNode;
-import cz.tacr.elza.controller.vo.FilterNodePosition;
-import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.FulltextFundRequest;
-import cz.tacr.elza.controller.vo.FundListCountResult;
-import cz.tacr.elza.controller.vo.LanguageVO;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.OutputSettingsVO;
-import cz.tacr.elza.controller.vo.PackageVO;
-import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.RulStructureTypeVO;
-import cz.tacr.elza.controller.vo.RulTemplateVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
-import cz.tacr.elza.controller.vo.SysExternalSystemVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.UserInfoVO;
-import cz.tacr.elza.controller.vo.UsrGroupVO;
-import cz.tacr.elza.controller.vo.UsrPermissionVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
-import cz.tacr.elza.controller.vo.ValidationResult;
-import cz.tacr.elza.controller.vo.WfCommentVO;
-import cz.tacr.elza.controller.vo.WfIssueListVO;
-import cz.tacr.elza.controller.vo.WfIssueStateVO;
-import cz.tacr.elza.controller.vo.WfIssueTypeVO;
-import cz.tacr.elza.controller.vo.WfIssueVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemCoordinatesVO;
@@ -241,11 +188,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String FULLTEXT = ARRANGEMENT_CONTROLLER_URL + "/fulltext";
     protected static final String FUND_FULLTEXT = ARRANGEMENT_CONTROLLER_URL + "/fundFulltext";
     protected static final String FUND_FULLTEXT_LIST = ARRANGEMENT_CONTROLLER_URL + "/fundFulltext/{fundId}";
-    protected static final String FIND_REGISTER_LINKS = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}";
-    protected static final String FIND_REGISTER_LINKS_FORM = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/form";
-    protected static final String CREATE_REGISTER_LINK = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/create";
-    protected static final String UPDATE_REGISTER_LINK = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/update";
-    protected static final String DELETE_REGISTER_LINK = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/delete";
     protected static final String VALIDATE_VERSION = ARRANGEMENT_CONTROLLER_URL + "/validateVersion/{versionId}/{showAll}";
     protected static final String VALIDATE_VERSION_COUNT = ARRANGEMENT_CONTROLLER_URL + "/validateVersionCount/{versionId}";
     protected static final String FA_TREE_NODES = ARRANGEMENT_CONTROLLER_URL + "/fundTree/nodes";
@@ -305,9 +247,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String INSTITUTIONS = PARTY_CONTROLLER_URL + "/institutions";
 
     // REGISTRY
+    protected static final String GET_SCOPE_WITH_CONNECTED = AP_CONTROLLER_URL + "/scopes/{scopeId}/withConnected";
     protected static final String CREATE_SCOPE = AP_CONTROLLER_URL + "/scopes";
     protected static final String UPDATE_SCOPE = AP_CONTROLLER_URL + "/scopes/{scopeId}";
     protected static final String DELETE_SCOPE = AP_CONTROLLER_URL + "/scopes/{scopeId}";
+    protected static final String CONNECT_SCOPE = AP_CONTROLLER_URL + "/scopes/{scopeId}/connect";
+    protected static final String DISCONNECT_SCOPE = AP_CONTROLLER_URL + "/scopes/{scopeId}/disconnect";
     protected static final String FA_SCOPES = AP_CONTROLLER_URL + "/fundScopes";
     protected static final String ALL_SCOPES = AP_CONTROLLER_URL + "/scopes";
     protected static final String RECORD_TYPES = AP_CONTROLLER_URL + "/recordTypes";
@@ -1634,86 +1579,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
-     * Vyhledání vazeb AP - rejstříky.
-     *
-     * @param versionId id verze stromu
-     * @param nodeId    identfikátor JP
-     * @return vazby
-     */
-    protected List<ArrNodeRegisterVO> findRegisterLinks(final Integer versionId,
-                                                        final Integer nodeId) {
-        return Arrays.asList(get(spec -> spec
-                .pathParameter("versionId", versionId)
-                .pathParameter("nodeId", nodeId), FIND_REGISTER_LINKS).getBody().as(ArrNodeRegisterVO[].class));
-    }
-
-    /**
-     * Vyhledání vazeb AP - rejstříky pro formulář.
-     *
-     * @param versionId id verze stromu
-     * @param nodeId    identfikátor JP
-     * @return vazby pro formulář
-     */
-    protected ArrangementController.NodeRegisterDataVO findRegisterLinksForm(final Integer versionId,
-                                                                             final Integer nodeId) {
-        return get(spec -> spec
-                        .pathParameter("versionId", versionId)
-                        .pathParameter("nodeId", nodeId),
-                FIND_REGISTER_LINKS_FORM).getBody().as(ArrangementController.NodeRegisterDataVO.class);
-    }
-
-    /**
-     * Vytvoření vazby AP - rejstříky
-     *
-     * @param versionId      id verze stromu
-     * @param nodeId         identfikátor JP
-     * @param nodeRegisterVO vazba
-     * @return vazba
-     */
-    protected ArrNodeRegisterVO createRegisterLinks(final Integer versionId,
-                                                    final Integer nodeId,
-                                                    final ArrNodeRegisterVO nodeRegisterVO) {
-        return put(spec -> spec
-                .pathParameter("versionId", versionId)
-                .pathParameter("nodeId", nodeId)
-                .body(nodeRegisterVO), CREATE_REGISTER_LINK).getBody().as(ArrNodeRegisterVO.class);
-    }
-
-    /**
-     * Upravení vazby AP - rejstříky.
-     *
-     * @param versionId      id verze stromu
-     * @param nodeId         identfikátor JP
-     * @param nodeRegisterVO vazba
-     * @return vazba
-     */
-    protected ArrNodeRegisterVO updateRegisterLinks(final Integer versionId,
-                                                    final Integer nodeId,
-                                                    final ArrNodeRegisterVO nodeRegisterVO) {
-        return post(spec -> spec
-                .pathParameter("versionId", versionId)
-                .pathParameter("nodeId", nodeId)
-                .body(nodeRegisterVO), UPDATE_REGISTER_LINK).getBody().as(ArrNodeRegisterVO.class);
-    }
-
-    /**
-     * Smazání vazby AP - rejstříky.
-     *
-     * @param versionId      id verze stromu
-     * @param nodeId         identfikátor JP
-     * @param nodeRegisterVO vazba
-     * @return vazba
-     */
-    protected ArrNodeRegisterVO deleteRegisterLinks(final Integer versionId,
-                                                    final Integer nodeId,
-                                                    final ArrNodeRegisterVO nodeRegisterVO) {
-        return post(spec -> spec
-                .pathParameter("versionId", versionId)
-                .pathParameter("nodeId", nodeId)
-                .body(nodeRegisterVO), DELETE_REGISTER_LINK).getBody().as(ArrNodeRegisterVO.class);
-    }
-
-    /**
      * Validuje verzi archivní pomůcky a vrátí list chyb.
      * Pokud je počet chyb 0 pak předpokládáme že stav AP = OK
      *
@@ -1925,13 +1790,21 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
+     * Načtení třídy včetně navázaných tříd.
+     *
+     * @return objekt třídy
+     */
+    protected ApScopeWithConnectedVO getScopeWithConnected(final int id) {
+        return get(spec -> spec.pathParam("scopeId", id), GET_SCOPE_WITH_CONNECTED).getBody().as(ApScopeWithConnectedVO.class);
+    }
+
+    /**
      * Vložení nové třídy.
      *
-     * @param scope objekt třídy
      * @return nový objekt třídy
      */
-    protected ApScopeVO createScope(final ApScopeVO scope) {
-        return post(spec -> spec.body(scope), CREATE_SCOPE).getBody().as(ApScopeVO.class);
+    protected ApScopeVO createScope() {
+        return post(spec -> spec, CREATE_SCOPE).getBody().as(ApScopeVO.class);
     }
 
     /**
@@ -1951,6 +1824,26 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected Response deleteScope(final int id) {
         return delete(spec -> spec.pathParam("scopeId", id), DELETE_SCOPE);
+    }
+
+    /**
+     * Provázání tříd.
+     *
+     * @param id ID třídy ke které se bude navazovat
+     * @param id2 ID navazované třídy
+     */
+    protected void connectScope(final int id, final int id2) {
+        post(spec -> spec.body(id2).pathParam("scopeId", id), CONNECT_SCOPE);
+    }
+
+    /**
+     * Zrušení provázání tříd.
+     *
+     * @param id ID třídy na které se bude rušit provázání
+     * @param id2 ID navázané třídy
+     */
+    protected void disconnectScope(final int id, final int id2) {
+        post(spec -> spec.body(id2).pathParam("scopeId", id), DISCONNECT_SCOPE);
     }
 
     /**
@@ -2538,7 +2431,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param params parametry pro vytvoření uživatele
      * @return vytvořený uživatel
      */
-    protected UsrUserVO createUser(final UserController.CreateUser params) {
+    protected UsrUserVO createUser(final CreateUserVO params) {
         return post(spec -> spec.body(params), CREATE_USER).as(UsrUserVO.class);
     }
 
@@ -2561,11 +2454,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return vytvořený uživatel
      */
     protected UsrUserVO createUser(final String username,
-                                   final String password,
+                                   final Map<UsrAuthentication.AuthType, String> valueMap,
                                    final Integer partyId) {
-        UserController.CreateUser params = new UserController.CreateUser();
+        CreateUserVO params = new CreateUserVO();
         params.setUsername(username);
-        params.setPassword(password);
+        params.setValuesMap(valueMap);
         params.setPartyId(partyId);
         return createUser(params);
     }

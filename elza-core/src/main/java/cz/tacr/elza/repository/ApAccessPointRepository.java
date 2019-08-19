@@ -4,19 +4,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.LockModeType;
-import javax.persistence.QueryHint;
-
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 
@@ -27,11 +20,6 @@ import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 public interface ApAccessPointRepository
         extends ElzaJpaRepository<ApAccessPoint, Integer>, ApAccessPointRepositoryCustom {
 
-    @Query("select ap from ap_access_point ap "
-            + "join ap_external_id eid on ap.accessPointId = eid.accessPointId and eid.value=?1 and eid.externalIdTypeId=?2 and eid.deleteChangeId is null "
-            + "WHERE ap.scope = ?3")
-    ApAccessPoint findApAccessPointByExternalIdAndExternalSystemCodeAndScope(String eidValue, Integer eidTypeId, ApScope scope);
-
     /**
      * Najde rejstříková hesla pro dané osoby.
      *
@@ -41,15 +29,6 @@ public interface ApAccessPointRepository
      */
     @Query("SELECT p.accessPoint FROM par_party p WHERE p IN (?1)")
     List<ApAccessPoint> findByParties(Collection<ParParty> parties);
-
-    /**
-     * Najde hesla podle třídy rejstříku.
-     *
-     * @param scope
-     *            třída
-     * @return nalezená hesla
-     */
-    List<ApAccessPoint> findByScope(ApScope scope);
 
     /**
      * Najde heslo podle UUID.
@@ -65,11 +44,13 @@ public interface ApAccessPointRepository
      *
      * @return AP projection
      */
-    List<ApAccessPointInfo> findInfoByUuidInAndDeleteChangeIdIsNull(Collection<String> uuids);
-
-    @Modifying
-    @Query("UPDATE ap_access_point ap SET ap.apType = :value WHERE ap.apType = :key")
-    void updateApTypeByApType(@Param("key") ApType key, @Param("value") ApType value);
+    @SuppressWarnings("SpringDataRepositoryMethodReturnTypeInspection")
+    @Query("SELECT new cz.tacr.elza.domain.projection.ApAccessPointInfo(ap.accessPointId, ap.uuid, s.stateId, s.scopeId, s.apTypeId)" +
+            " FROM ap_state s" +
+            " JOIN s.accessPoint ap" +
+            " WHERE s.accessPoint.uuid IN (:uuids)" +
+            " AND s.deleteChangeId IS NULL")
+    List<ApAccessPointInfo> findActiveInfoByUuids(@Param("uuids") Collection<String> uuids);
 
     @Modifying
     @Query("DELETE FROM ap_access_point ap WHERE ap.state = 'TEMP'")

@@ -6,7 +6,6 @@ import java.util.List;
 
 import cz.tacr.elza.dataexchange.output.writer.LevelInfo;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrNodeRegister;
 
 public class LevelInfoImpl implements LevelInfo {
 
@@ -17,8 +16,6 @@ public class LevelInfoImpl implements LevelInfo {
     private final Integer parentNodeId;
 
     private String nodeUuid;
-
-    private List<ArrNodeRegister> nodeAps;
 
     public LevelInfoImpl(int nodeId, Integer parentNodeId) {
         this.nodeId = nodeId;
@@ -53,12 +50,4 @@ public class LevelInfoImpl implements LevelInfo {
         items.add(item);
     }
 
-    @Override
-    public List<ArrNodeRegister> getNodeAps() {
-        return nodeAps;
-    }
-
-    public void setNodeAps(List<ArrNodeRegister> nodeAps) {
-        this.nodeAps = nodeAps;
-    }
 }

@@ -2,6 +2,7 @@ package cz.tacr.elza.controller.vo;
 
 import java.util.List;
 
+import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.security.UserDetail;
 
@@ -28,6 +29,8 @@ public class UsrUserVO {
 	//TODO: Should be moved to other object
     private List<UsrGroupVO> groups;
 
+    private List<UsrAuthentication.AuthType> authTypes;
+
 	/**
 	 * Empty constructor
 	 */
@@ -52,6 +55,7 @@ public class UsrUserVO {
 		this.username = userDetail.getUsername();
 		this.id = userDetail.getId();
 		this.active = userDetail.getActive();
+		this.authTypes = userDetail.getAuthTypes();
 	}
 
 	public String getUsername() {
@@ -100,6 +104,14 @@ public class UsrUserVO {
 
     public void setPermissions(final List<UsrPermissionVO> permissions) {
         this.permissions = permissions;
+    }
+
+    public List<UsrAuthentication.AuthType> getAuthTypes() {
+        return authTypes;
+    }
+
+    public void setAuthTypes(final List<UsrAuthentication.AuthType> authTypes) {
+        this.authTypes = authTypes;
     }
 
     public List<UsrGroupVO> getGroups() {

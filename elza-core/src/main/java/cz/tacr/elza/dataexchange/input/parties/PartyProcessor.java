@@ -85,7 +85,7 @@ public class PartyProcessor<P extends Party, E extends ParParty> implements Item
         if (StringUtils.isEmpty(party.getId())) {
             throw new DEImportException("Party id is empty");
         }
-        ParPartyType apPartyType = apInfo.getApType().getPartyType();
+        ParPartyType apPartyType = apInfo.getApState().getApType().getPartyType();
         // references should match (both initialized from static data)
         if (apPartyType != type.getEntity()) {
             throw new DEImportException("Party type does not match with AP type, partyId=" + party.getId());

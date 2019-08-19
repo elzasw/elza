@@ -1,6 +1,19 @@
 package cz.tacr.elza.service;
 
+import java.time.OffsetDateTime;
+import java.util.Objects;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+
 import cz.tacr.elza.domain.*;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -9,17 +22,6 @@ import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.security.UserDetail;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import java.time.OffsetDateTime;
-import java.util.Objects;
 
 
 /**
@@ -110,16 +112,18 @@ public class AccessPointDataService {
      * Změna popisu přístupového bodu.
      * Podle vstupních a aktuálních dat se rozhodne, zda-li se bude popis mazat, vytvářet nebo jen upravovat - verzovaně.
      *
-     * @param accessPoint přístupový bod
+     * @param apState     přístupový bod
      * @param description popis přístupového bodu
      * @param change      změna pod kterou se provádí změna (pokud null, volí se individuelně)
      * @return přístupový bod
      */
-    public ApAccessPoint changeDescription(final ApAccessPoint accessPoint,
+    public ApAccessPoint changeDescription(final ApState apState,
                                            @Nullable final String description,
                                            @Nullable final ApChange change) {
-        Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
-        validationNotDeleted(accessPoint);
+        Validate.notNull(apState, "Přístupový bod musí být vyplněn");
+        validationNotDeleted(apState);
+
+        ApAccessPoint accessPoint = apState.getAccessPoint();
 
         // aktuálně platný popis přístupového bodu
         ApDescription apDescription = descriptionRepository.findByAccessPoint(accessPoint);
@@ -153,15 +157,15 @@ public class AccessPointDataService {
     /**
      * Aktualizace jména přístupového bodu - verzovaně.
      *
-     * @param accessPoint přístupový bod
-     * @param apName      upravované jméno přístupového bodu
-     * @param name        jméno přístupového bodu
-     * @param complement  doplněk přístupového bodu
-     * @param language    jazyk jména
-     * @param change      změna
+     * @param apState    přístupový bod
+     * @param apName     upravované jméno přístupového bodu
+     * @param name       jméno přístupového bodu
+     * @param complement doplněk přístupového bodu
+     * @param language   jazyk jména
+     * @param change     změna
      * @return upravený jméno
      */
-    public ApName updateAccessPointName(final ApAccessPoint accessPoint,
+    public ApName updateAccessPointName(final ApState apState,
                                         final ApName apName,
                                         final @Nullable String name,
                                         final @Nullable String complement,
@@ -169,10 +173,10 @@ public class AccessPointDataService {
                                         final @Nullable SysLanguage language,
                                         final ApChange change,
                                         final boolean validateUnique) {
-        Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
+        Validate.notNull(apState, "Přístupový bod musí být vyplněn");
         Validate.notNull(apName, "Upravované jméno musí být vyplněno");
         Validate.notNull(change, "Změna musí být vyplněna");
-        validationNotDeleted(accessPoint);
+        validationNotDeleted(apState);
         validationNotDeleted(apName);
 
         if (apName.getCreateChangeId().equals(change.getChangeId())) {
@@ -182,7 +186,7 @@ public class AccessPointDataService {
             apName.setLanguage(language);
             apNameRepository.save(apName);
             if (validateUnique) {
-                validationNameUnique(accessPoint.getScope(), apName.getFullName());
+                validationNameUnique(apState.getScope(), apName.getFullName());
             }
             return apName;
         } else {
@@ -201,7 +205,7 @@ public class AccessPointDataService {
 
             apNameRepository.save(apNameNew);
             if (validateUnique) {
-                validationNameUnique(accessPoint.getScope(), apNameNew.getFullName());
+                validationNameUnique(apState.getScope(), apNameNew.getFullName());
             }
             return apNameNew;
         }
@@ -210,13 +214,13 @@ public class AccessPointDataService {
     /**
      * Validace přístupového bodu, že není smazaný.
      *
-     * @param accessPoint přístupový bod
+     * @param state stav přístupového bodu
      */
-    public void validationNotDeleted(final ApAccessPoint accessPoint) {
-        if (accessPoint.getDeleteChange() != null) {
+    public void validationNotDeleted(final ApState state) {
+        if (state.getDeleteChange() != null) {
             throw new BusinessException("Nelze upravit přístupový bod", RegistryCode.CANT_CHANGE_DELETED_AP)
-                    .set("accessPointId", accessPoint.getAccessPointId())
-                    .set("uuid", accessPoint.getUuid());
+                    .set("accessPointId", state.getAccessPointId())
+                    .set("uuid", state.getAccessPoint().getUuid());
         }
     }
 
@@ -230,6 +234,30 @@ public class AccessPointDataService {
             throw new BusinessException("Nelze upravit jméno přístupového bodu", RegistryCode.CANT_CHANGE_DELETED_NAME)
                     .set("nameId", name.getNameId());
         }
+    }
+
+    /**
+     * Validace přístupového bodu, že nemá vazbu na osobu.
+     *
+     * @param accessPoint přístupový bod
+     */
+    public void validationPartyType(final ApAccessPoint accessPoint, final ApType type) {
+        ParParty parParty = partyService.findParPartyByAccessPoint(accessPoint);
+        ParPartyType partyType = type.getPartyType();
+        if (partyType == null || !partyType.getPartyTypeId().equals(parParty.getPartyType().getPartyTypeId())) {
+            throw new BusinessException("Typ musí být ze stejného skupiny", BaseCode.INVALID_STATE);
+        }
+    }
+
+    /**
+     * Exstuje vazba z osob?
+     *
+     * @param accessPoint přístupový bod
+     * @return true - existuje
+     */
+    public boolean hasParty(final ApAccessPoint accessPoint) {
+        ParParty parParty = partyService.findParPartyByAccessPoint(accessPoint);
+        return parParty != null;
     }
 
     /**
@@ -311,7 +339,7 @@ public class AccessPointDataService {
     public boolean isNameUnique(final ApScope scope, final String fullName) {
         Validate.notNull(scope, "Přístupový bod musí být vyplněn");
         Validate.notNull(fullName, "Plné jméno musí být vyplněno");
-        long count = apNameRepository.countUniqueName(fullName, scope);
+        int count = apNameRepository.countUniqueName(fullName, scope);
         return count <= 1;
     }
 
@@ -364,11 +392,12 @@ public class AccessPointDataService {
     /**
      * Validace přístupového bodu pro migraci.
      *
-     * @param accessPoint přístupový bod
+     * @param apState přístupový bod
      */
-    public void validationMigrateAp(final ApAccessPoint accessPoint) {
-        validationNotDeleted(accessPoint);
-        validateStructureType(accessPoint.getApType());
+    public void validationMigrateAp(final ApState apState) {
+        validationNotDeleted(apState);
+        validateStructureType(apState.getApType());
+        ApAccessPoint accessPoint = apState.getAccessPoint();
         if (accessPoint.getRuleSystem() != null) {
             throw new BusinessException("Nelze migrovat přístupový bod", RegistryCode.CANT_MIGRATE_AP)
                     .set("accessPointId", accessPoint.getAccessPointId())

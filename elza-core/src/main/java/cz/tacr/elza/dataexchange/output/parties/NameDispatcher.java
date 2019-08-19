@@ -15,18 +15,23 @@ import cz.tacr.elza.domain.ParPartyNameFormType;
 
 public class NameDispatcher extends NestedLoadDispatcher<ParPartyName> {
 
+    // --- fields ---
+
     private final List<ParPartyName> names = new ArrayList<>();
 
     private final ParParty party;
 
     private final StaticDataProvider staticData;
 
-    public NameDispatcher(ParParty party, LoadDispatcher<PartyInfoImpl> partyInfoDispatcher,
-            StaticDataProvider staticData) {
+    // --- constructor ---
+
+    public NameDispatcher(ParParty party, LoadDispatcher<PartyInfo> partyInfoDispatcher, StaticDataProvider staticData) {
         super(partyInfoDispatcher);
         this.party = party;
         this.staticData = staticData;
     }
+
+    // --- methods ---
 
     @Override
     public void onLoad(ParPartyName result) {

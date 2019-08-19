@@ -8,23 +8,29 @@ import org.apache.commons.lang.Validate;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.dataexchange.output.loaders.NestedLoadDispatcher;
+import cz.tacr.elza.dataexchange.output.writer.ExternalIdApInfo;
 import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.ApExternalIdType;
 
 public class ExternalIdDispatcher extends NestedLoadDispatcher<ApExternalId> {
 
-    private final List<ApExternalId> externalIds = new ArrayList<>();
+    // --- fields ---
 
-    private final BaseApInfoImpl baseApInfo;
+    private final ExternalIdApInfo info;
 
     private final StaticDataProvider staticData;
 
-    public ExternalIdDispatcher(BaseApInfoImpl baseApInfo, LoadDispatcher<?> apInfoDispatcher,
-            StaticDataProvider staticData) {
+    private final List<ApExternalId> externalIds = new ArrayList<>();
+
+    // --- constructor ---
+
+    public ExternalIdDispatcher(ExternalIdApInfo info, LoadDispatcher<?> apInfoDispatcher, StaticDataProvider staticData) {
         super(apInfoDispatcher);
-        this.baseApInfo = baseApInfo;
+        this.info = info;
         this.staticData = staticData;
     }
+
+    // --- methods ---
 
     @Override
     public void onLoad(ApExternalId result) {
@@ -38,6 +44,6 @@ public class ExternalIdDispatcher extends NestedLoadDispatcher<ApExternalId> {
 
     @Override
     protected void onCompleted() {
-        baseApInfo.setExternalIds(externalIds);
+        info.setExternalIds(externalIds);
     }
 }

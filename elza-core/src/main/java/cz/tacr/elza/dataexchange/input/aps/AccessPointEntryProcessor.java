@@ -16,6 +16,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.schema.v2.AccessPointEntry;
 import cz.tacr.elza.schema.v2.ExternalId;
@@ -23,7 +24,7 @@ import cz.tacr.elza.schema.v2.ExternalId;
 /**
  * Processing access point entries for access points or parties. Implementation
  * is not thread-safe.
- * 
+ *
  * When AP storage updates persist type: <br>
  * 1) CREATE -> all sub entities (also party) will be created <br>
  * 2) UPDATE -> <br>
@@ -66,9 +67,9 @@ public class AccessPointEntryProcessor implements ItemProcessor {
     protected void processEntry(AccessPointEntry entry) {
         entryId = entry.getId();
         // create AP and prepare AP info
-        ApAccessPoint entity = createEntity(entry);
+        ApEntity entity = createEntity(entry);
         List<ApExternalId> eids = createExternalIds(entry.getEid());
-        info = context.addAccessPoint(entity, entry.getId(), eids);
+        info = context.addAccessPoint(entity.accessPoint, entry.getId(), entity.state, eids);
     }
 
     private List<ApExternalId> createExternalIds(Collection<ExternalId> eids) {
@@ -97,7 +98,18 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         return entities;
     }
 
-    private ApAccessPoint createEntity(AccessPointEntry entry) {
+    private class ApEntity {
+
+        ApAccessPoint accessPoint;
+        ApState state;
+
+        ApEntity(final ApAccessPoint accessPoint, final ApState state) {
+            this.accessPoint = accessPoint;
+            this.state = state;
+        }
+    }
+
+    private ApEntity createEntity(AccessPointEntry entry) {
         if (StringUtils.isEmpty(entry.getId())) {
             throw new DEImportException("AP entry id is empty");
         }
@@ -113,17 +125,23 @@ public class AccessPointEntryProcessor implements ItemProcessor {
             throw new DEImportException("AP type is read only, apeId:" + entry.getId());
         }
         if (partyRelated ? apType.getPartyType() == null : apType.getPartyType() != null) {
-            throw new DEImportException("AP type with defined party type " 
+            throw new DEImportException("AP type with defined party type "
                             + (partyRelated ? "must be used" : "can be used only")
                             + " for party related AP entry, apeId:" + entry.getId());
         }
+
         // create AP
-        ApAccessPoint entity = new ApAccessPoint();
-        entity.setApType(apType);
-        entity.setScope(context.getScope());
-        entity.setCreateChange(context.getCreateChange());
-        entity.setUuid(StringUtils.trimToNull(entry.getUuid()));
-        entity.setState(ApState.OK);
-        return entity;
+        ApAccessPoint accessPoint = new ApAccessPoint();
+        accessPoint.setUuid(StringUtils.trimToNull(entry.getUuid()));
+        accessPoint.setState(ApStateEnum.OK);
+
+        ApState apState = new ApState();
+        apState.setAccessPoint(accessPoint);
+        apState.setApType(apType);
+        apState.setScope(context.getScope());
+        apState.setStateApproval(ApState.StateApproval.APPROVED);
+        apState.setCreateChange(context.getCreateChange());
+
+        return new ApEntity(accessPoint, apState);
     }
 }

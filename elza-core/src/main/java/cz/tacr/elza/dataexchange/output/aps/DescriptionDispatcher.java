@@ -8,14 +8,20 @@ import cz.tacr.elza.domain.ApDescription;
 
 public class DescriptionDispatcher extends NestedLoadDispatcher<ApDescription> {
 
-    private final ApInfoImpl apInfo;
+    // --- fields ---
+
+    private final ApInfo apInfo;
 
     private ApDescription description;
 
-    public DescriptionDispatcher(ApInfoImpl apInfo, LoadDispatcher<ApInfoImpl> apInfoDispatcher) {
+    // --- constructor ---
+
+    public DescriptionDispatcher(ApInfo apInfo, LoadDispatcher<ApInfo> apInfoDispatcher) {
         super(apInfoDispatcher);
         this.apInfo = apInfo;
     }
+
+    // --- methods ---
 
     @Override
     public void onLoad(ApDescription result) {

@@ -56,11 +56,6 @@ public class ScopeRepositoryImpl implements ScopeRepositoryCustom {
 	JOIN arr_data_record_ref dr ON it.data_id = dr.data_id
 	JOIN ap_record r ON r.record_id = dr.record_id
 	JOIN ap_scope s ON s.scope_id = r.scope_id
-	UNION
-	SELECT distinct s.* FROM treeData t
-	JOIN arr_node_apister nr ON nr.node_id = t.node_id
-	JOIN ap_record r ON r.record_id = nr.record_id
-	JOIN ap_scope s ON s.scope_id = r.scope_id
 	 */
 
 	static String FIND_SCOPE_PART1 = "WITH RECURSIVE treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS \n"
@@ -75,20 +70,16 @@ public class ScopeRepositoryImpl implements ScopeRepositoryCustom {
 	        + "JOIN arr_data_party_ref dp ON it.data_id = dp.data_id \n"
 	        + "JOIN par_party p ON p.party_id = dp.party_id \n"
 	        + "JOIN ap_access_point r ON r.access_point_id = p.access_point_id \n"
-	        + "JOIN ap_scope s ON s.scope_id = r.scope_id \n";
+	        + "JOIN ap_state st ON (st.access_point_id = r.access_point_id AND st.delete_change_id IS NULL) \n"
+	        + "JOIN ap_scope s ON s.scope_id = st.scope_id \n";
 	static String FIND_SCOPE_PART2 = "UNION \n"
 	        + "SELECT distinct s.* FROM treeData t \n"
 	        + "JOIN arr_desc_item di ON di.node_id = t.node_id \n"
 	        + "JOIN arr_item it ON it.item_id = di.item_id \n"
 	        + "JOIN arr_data_record_ref dr ON it.data_id = dr.data_id \n"
 	        + "JOIN ap_access_point r ON r.access_point_id = dr.record_id \n"
-	        + "JOIN ap_scope s ON s.scope_id = r.scope_id \n";
-	static String FIND_SCOPE_PART3 = "UNION \n"
-	        + "SELECT distinct s.* FROM treeData t \n"
-	        + "JOIN arr_node_register nr ON nr.node_id = t.node_id \n"
-	        + "JOIN ap_access_point r ON r.access_point_id = nr.record_id \n"
-	        + "JOIN ap_scope s ON s.scope_id = r.scope_id \n";
-
+			+ "JOIN ap_state st ON (st.access_point_id = r.access_point_id AND st.delete_change_id IS NULL) \n"
+	        + "JOIN ap_scope s ON s.scope_id = st.scope_id \n";
 	static String FIND_SCOPE_NOT_INCLUDE_ROOT = "WHERE t.node_id NOT IN (:nodeIds) \n";
 
 	@Override
@@ -107,11 +98,6 @@ public class ScopeRepositoryImpl implements ScopeRepositoryCustom {
         if (ignoreRootNode) {
             rqBuilder.addSqlPart(FIND_SCOPE_NOT_INCLUDE_ROOT);
         }
-
-		rqBuilder.addSqlPart(FIND_SCOPE_PART3);
-        if (ignoreRootNode) {
-            rqBuilder.addSqlPart(FIND_SCOPE_NOT_INCLUDE_ROOT);
-		}
 
         rqBuilder.prepareQuery(entityManager);
         rqBuilder.setParameter("nodeIds", nodeIds);

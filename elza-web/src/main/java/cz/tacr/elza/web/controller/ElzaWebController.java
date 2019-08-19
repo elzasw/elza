@@ -57,6 +57,12 @@ public class ElzaWebController {
         return "web";
     }
 
+    @RequestMapping(value = "/error", method = RequestMethod.GET)
+    public String errorPage(final HttpServletRequest request, final Model model) {
+        initDefaults(request, model);
+        return "error";
+    }
+
     @RequestMapping(value = "/arr/**", method = RequestMethod.GET)
     public String arrPage(final HttpServletRequest request, final Model model) {
         initDefaults(request, model);
@@ -65,6 +71,12 @@ public class ElzaWebController {
 
     @RequestMapping(value = "/fund", method = RequestMethod.GET)
     public String fundPage(final HttpServletRequest request, final Model model) {
+        initDefaults(request, model);
+        return "web";
+    }
+
+    @RequestMapping(value = "/node/**", method = RequestMethod.GET)
+    public String nodePage(final HttpServletRequest request, final Model model) {
         initDefaults(request, model);
         return "web";
     }

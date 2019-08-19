@@ -39,6 +39,7 @@ import defaultKeymap from './PartyDetailKeymap.jsx';
 import './PartyDetail.less';
 import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
 import {addToastrWarning} from "../shared/toastr/ToastrActions";
+import * as StateApproval from "../enum/StateApproval";
 
 
 const SETTINGS_PARTY_PIN = "PARTY_PIN";
@@ -347,9 +348,12 @@ class PartyDetail extends AbstractReactComponent {
                 </div>
                 <div className="party-type">
                     {party.partyType.description}
-                    {party.accessPoint.scopeId && <span className="scope-label">
-                        {this.getScopeLabel(partyDetail.data.accessPoint.scopeId, scopes)}
-                    </span>}
+                    <div className="right-part" title={party.accessPoint.comment ? party.accessPoint.comment : i18n('ap.state.title.noComment')}>
+                        <span className="state-approval-label">{StateApproval.getCaption(party.accessPoint.stateApproval)}</span>
+                        {party.accessPoint.scopeId && <span className="scope-label">
+                            {this.getScopeLabel(partyDetail.data.accessPoint.scopeId, scopes)}
+                        </span>}
+                    </div>
                 </div>
                 <Form className="party-body">
                     {parts.map((i, index) => {

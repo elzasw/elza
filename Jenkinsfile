@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    options {
+        disableConcurrentBuilds()
+    }
+
     stages {
         stage('Build') {
             steps {
@@ -19,7 +23,7 @@ pipeline {
         }
         stage('Image') {
             when {
-                 branch 'elza-1.2'
+                 branch 'elza-1.3'
              }
             steps {
                 sh "cp distrib/elza-war/target/elza-*.war distrib/elza-docker/elza.war"

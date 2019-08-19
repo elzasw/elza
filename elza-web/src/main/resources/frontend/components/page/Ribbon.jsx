@@ -271,8 +271,9 @@ class Ribbon extends AbstractReactComponent {
                         {userDetail.username} <Icon glyph="fa-user" />
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
-                        <MenuItem eventKey="1" onClick={this.handlePasswordChangeForm}>{i18n('ribbon.action.admin.user.passwordChange')}</MenuItem>
-                        <MenuItem divider/>
+                        { userDetail.authTypes.indexOf('PASSWORD') >= 0 &&
+                            [<MenuItem eventKey="1" onClick={this.handlePasswordChangeForm}>{i18n('ribbon.action.admin.user.passwordChange')}</MenuItem>,<MenuItem divider/>]
+                        }
                         <MenuItem eventKey="2" onClick={this.handleLogout}>{i18n('ribbon.action.logout')}</MenuItem>
                     </Dropdown.Menu>
                 </Dropdown>

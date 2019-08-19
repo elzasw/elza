@@ -55,6 +55,7 @@ public class MessageBrokerConfigurer extends AbstractSecurityWebSocketMessageBro
     public void registerStompEndpoints(final StompEndpointRegistry registry) {
         registry.setErrorHandler(new StompSubProtocolErrorHandler());
         registry.addEndpoint("/stomp")
+                .setAllowedOrigins("*") // kvůli reverse-proxy
                 // copy HTTP session attributes to simpSessionAttributes
                 .addInterceptors(new HttpSessionHandshakeInterceptor());
     }

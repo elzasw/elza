@@ -14,6 +14,7 @@ import cz.tacr.elza.domain.RulTemplate.Engine;
 import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
 import cz.tacr.elza.repository.ApNameRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -34,11 +35,13 @@ public class OutputGeneratorFactory {
     private final DEExportService exportService;
 
     private final InstitutionRepository institutionRepository;
-    
+
+    private final ApStateRepository apStateRepository;
+
     private final ApDescriptionRepository apDescRepository;
-    
+
     private final ApNameRepository apNameRepository;
-    
+
     private final ApExternalIdRepository apEidRepository;
 
     private final ApplicationContext applicationContext;
@@ -48,10 +51,11 @@ public class OutputGeneratorFactory {
     @Autowired
     public OutputGeneratorFactory(ApplicationContext applicationContext,
             StaticDataService staticDataService,
-                                  ElzaLocale elzaLocale,
+            ElzaLocale elzaLocale,
             FundTreeProvider fundTreeProvider,
             NodeCacheService nodeCacheService,
             InstitutionRepository institutionRepository,
+            ApStateRepository apStateRepository,
             ApDescriptionRepository apDescRepository,
             ApNameRepository apNameRepository,
             ApExternalIdRepository apEidRepository,
@@ -64,6 +68,7 @@ public class OutputGeneratorFactory {
         this.fundTreeProvider = fundTreeProvider;
         this.nodeCacheService = nodeCacheService;
         this.institutionRepository = institutionRepository;
+        this.apStateRepository = apStateRepository;
         this.apDescRepository = apDescRepository;
         this.apNameRepository = apNameRepository;
         this.apEidRepository = apEidRepository;
@@ -88,13 +93,13 @@ public class OutputGeneratorFactory {
     public FreemarkerOutputGenerator createFreemarkerOutputGenerator() {
         return new FreemarkerOutputGenerator(applicationContext, staticDataService, elzaLocale, fundTreeProvider,
                 nodeCacheService,
-                institutionRepository, apDescRepository, apNameRepository, apEidRepository, em, dmsService);
+                institutionRepository, apStateRepository, apDescRepository, apNameRepository, apEidRepository, em, dmsService);
     }
 
     public JasperOutputGenerator createJasperOutputGenerator() {
         return new JasperOutputGenerator(applicationContext, staticDataService, elzaLocale,
                 fundTreeProvider, nodeCacheService,
-                institutionRepository,
+                institutionRepository, apStateRepository,
                 apDescRepository, apNameRepository, apEidRepository, em, dmsService);
     }
 

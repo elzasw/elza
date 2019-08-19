@@ -5,7 +5,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import cz.tacr.elza.repository.*;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
@@ -17,10 +20,6 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 import cz.tacr.elza.domain.projection.ApExternalIdInfo;
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApDescriptionRepository;
-import cz.tacr.elza.repository.ApExternalIdRepository;
-import cz.tacr.elza.repository.ApNameRepository;
 
 public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
 
@@ -34,6 +33,8 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
 
     private final ApChangeHolder changeHolder;
 
+    private final ApStateRepository apStateRepository;
+
     public ApAccessPointStorage(Session session, StoredEntityCallback persistEntityListener,
             ApChangeHolder changeHolder,
             ImportInitHelper initHelper) {
@@ -42,6 +43,7 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
         this.apNameRepository = initHelper.getApNameRepository();
         this.apDescRepository = initHelper.getApDescRepository();
         this.apEidRepository = initHelper.getApEidRepository();
+        this.apStateRepository = initHelper.getApStateRepository();
         this.changeHolder = changeHolder;
     }
 
@@ -92,10 +94,13 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
             }
         }
         // find current AP by UUID
-        List<ApAccessPointInfo> currentAps = apRepository.findInfoByUuidInAndDeleteChangeIdIsNull(uuidMap.keySet());
-        for (ApAccessPointInfo info : currentAps) {
-            AccessPointWrapper ew = uuidMap.get(info.getUuid());
-            ew.changeToUpdated(info);
+        Set<String> uuids = uuidMap.keySet();
+        if (!uuids.isEmpty()) {
+            List<ApAccessPointInfo> currentAps = apRepository.findActiveInfoByUuids(uuids);
+            for (ApAccessPointInfo info : currentAps) {
+                AccessPointWrapper ew = uuidMap.get(info.getUuid());
+                ew.changeToUpdated(info);
+            }
         }
     }
 
@@ -122,7 +127,7 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
         // find pairs by external ids
         typeIdMap.forEach((typeId, group) -> {
             List<ApExternalIdInfo> currentEids = apEidRepository
-                    .findInfoByExternalIdTypeIdAndValuesIn(typeId, group.getValues());
+                    .findActiveInfoByTypeIdAndValues(typeId, group.getValues());
             for (ApExternalIdInfo info : currentEids) {
                 AccessPointWrapper apw = group.getWrapper(info.getValue());
                 apw.changeToUpdated(info.getAccessPoint());

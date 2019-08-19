@@ -10,7 +10,10 @@ import cz.tacr.elza.dao.exception.DaoComponentException;
 import cz.tacr.elza.dao.service.StorageDaoRequestService;
 import cz.tacr.elza.ws.dao_service.v1.DaoRequests;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
+import cz.tacr.elza.ws.types.v1.DaosSyncRequest;
+import cz.tacr.elza.ws.types.v1.DaosSyncResponse;
 import cz.tacr.elza.ws.types.v1.DestructionRequest;
+import cz.tacr.elza.ws.types.v1.NonexistingDaos;
 import cz.tacr.elza.ws.types.v1.TransferRequest;
 
 @Service
@@ -34,6 +37,7 @@ public class DaoRequestsImpl implements DaoRequests {
 		requestInfo.setRequestIdentifier(destructionRequest.getIdentifier());
 		requestInfo.setSystemIdentifier(destructionRequest.getSystemIdentifier());
 		requestInfo.setDescription(destructionRequest.getDescription());
+		requestInfo.setUsername(destructionRequest.getUsername());
 		try {
 			return storageDaoRequestService.createRequest(requestInfo, true);
 		} catch (DaoComponentException e) {
@@ -49,11 +53,19 @@ public class DaoRequestsImpl implements DaoRequests {
 		requestInfo.setRequestIdentifier(transferRequest.getIdentifier());
 		requestInfo.setSystemIdentifier(transferRequest.getSystemIdentifier());
 		requestInfo.setDescription(transferRequest.getDescription());
+		requestInfo.setUsername(transferRequest.getUsername());
 		requestInfo.setTargetFund(transferRequest.getTargetFund());
 		try {
 			return storageDaoRequestService.createRequest(requestInfo, false);
 		} catch (DaoComponentException e) {
 			throw new DaoServiceException(e.getMessage(), e.getCause());
 		}
+	}
+
+	@Override
+	public DaosSyncResponse syncDaos(DaosSyncRequest daosSyncRequest) throws DaoServiceException {
+		// todo[MCV-56215]
+		DaosSyncResponse response = new DaosSyncResponse();
+		return response;
 	}
 }

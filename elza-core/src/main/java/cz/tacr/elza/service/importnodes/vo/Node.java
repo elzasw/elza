@@ -18,6 +18,4 @@ public interface Node {
 
     Collection<? extends Item> getItems();
 
-    Collection<? extends NodeRegister> getNodeRegisters();
-
 }

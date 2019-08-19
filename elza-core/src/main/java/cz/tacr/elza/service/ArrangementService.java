@@ -1502,6 +1502,10 @@ public class ArrangementService {
         return new Holder<>();
     }
 
+    public ArrNode findNodeByUuid(final String nodeUuid) {
+        return nodeRepository.findOneByUuid(nodeUuid);
+    }
+
     public static class Holder<T> {
 
         private T object;

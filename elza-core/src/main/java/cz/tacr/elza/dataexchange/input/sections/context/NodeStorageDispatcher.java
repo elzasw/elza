@@ -54,13 +54,6 @@ public class NodeStorageDispatcher {
         }
     }
 
-    public void addNodeRegister(ArrNodeRegisterWrapper nodeRegister, int depth) {
-        NodeDepthBatch batch = getBatch(depth);
-        if (batch.addNodeRegister(nodeRegister)) {
-            batch.storeNodeRegistry(true);
-        }
-    }
-
     public void addLevel(ArrLevelWrapper level, int depth) {
         NodeDepthBatch batch = getBatch(depth);
         if (batch.addLevel(level)) {
@@ -109,8 +102,6 @@ public class NodeStorageDispatcher {
 
         private final List<ArrNodeWrapper> nodes;
 
-        private final List<ArrNodeRegisterWrapper> nodeRegistery;
-
         private final List<ArrLevelWrapper> levels;
 
         private final List<ArrDescItemWrapper> descItems;
@@ -125,7 +116,6 @@ public class NodeStorageDispatcher {
             this.levels = new ArrayList<>(batchSize);
             this.descItems = new ArrayList<>(batchSize);
             this.dataTypeMap = new ArrayListValuedHashMap<>(batchSize);
-            this.nodeRegistery = new ArrayList<>(batchSize);
         }
 
         /**
@@ -134,14 +124,6 @@ public class NodeStorageDispatcher {
         public boolean addNode(ArrNodeWrapper node) {
             nodes.add(node);
             return nodes.size() >= batchSize;
-        }
-
-        /**
-         * @return True when node register batch is full.
-         */
-        public boolean addNodeRegister(ArrNodeRegisterWrapper nodeRegister) {
-            nodeRegistery.add(nodeRegister);
-            return nodeRegistery.size() >= batchSize;
         }
 
         /**
@@ -175,7 +157,6 @@ public class NodeStorageDispatcher {
 
         public void storeAll() {
             storeNodes();
-            storeNodeRegistry(false);
             storeLevels(false);
             storeData();
             storeDescItems(false);
@@ -187,17 +168,6 @@ public class NodeStorageDispatcher {
             }
             storageManager.storeGeneric(nodes);
             nodes.clear();
-        }
-
-        public void storeNodeRegistry(boolean storeReferenced) {
-            if (nodeRegistery.isEmpty()) {
-                return;
-            }
-            if (storeReferenced) {
-                storeNodes();
-            }
-            storageManager.storeGeneric(nodeRegistery);
-            nodeRegistery.clear();
         }
 
         public void storeLevels(boolean storeReferenced) {

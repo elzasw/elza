@@ -19,7 +19,7 @@ public @interface AuthParam {
      * Typy vstupního parametru
      */
     enum Type {
-        FUND, FUND_VERSION, SCOPE, PARTY, AP, USER, GROUP, ISSUE_LIST, ISSUE, COMMENT, NODE
+        FUND, FUND_VERSION, SCOPE, PARTY, AP, AP_STATE, USER, GROUP, ISSUE_LIST, ISSUE, COMMENT, NODE
     }
 
     Type type();

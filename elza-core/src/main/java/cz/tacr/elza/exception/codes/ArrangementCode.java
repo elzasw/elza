@@ -129,6 +129,11 @@ public enum ArrangementCode implements ErrorCode {
     INVALID_REQUEST_DIGITAL_REPOSITORY_DAO,
 
     /**
+     * Propojení DAO neexistuje
+     */
+    DAO_LINK_NOT_FOUND,
+
+    /**
      * Položku není možné nastavit jako 'Nezjištěno'.
      */
     CANT_SET_INDEFINABLE,

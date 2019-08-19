@@ -2,7 +2,9 @@ package cz.tacr.elza.security;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
+import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
@@ -37,17 +39,25 @@ public class UserDetail {
 
     private NodePermissionChecker nodePermChecker;
 
-    public UserDetail(final UsrUser user, final Collection<UserPermission> userPermission, final NodePermissionChecker nodePermChecker) {
+    private List<UsrAuthentication.AuthType> authTypes;
+
+    public UserDetail(final UsrUser user, final Collection<UserPermission> userPermission, final NodePermissionChecker nodePermChecker,
+					  final List<UsrAuthentication.AuthType> authTypes) {
         this.id = user.getUserId();
         this.username = user.getUsername();
         this.active = user.getActive();
         this.userPermission = new ArrayList<>(userPermission);
         this.nodePermChecker = nodePermChecker;
+        this.authTypes = authTypes;
     }
 
     public String getUsername() {
         return username;
     }
+
+	public List<UsrAuthentication.AuthType> getAuthTypes() {
+		return authTypes;
+	}
 
 	/**
 	 * Return DB id of user.

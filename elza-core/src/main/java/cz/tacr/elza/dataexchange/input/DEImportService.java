@@ -15,6 +15,7 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.xml.stream.XMLStreamException;
 
+import cz.tacr.elza.repository.*;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
@@ -54,21 +55,6 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApDescriptionRepository;
-import cz.tacr.elza.repository.ApExternalIdRepository;
-import cz.tacr.elza.repository.ApExternalSystemRepository;
-import cz.tacr.elza.repository.ApNameRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.InstitutionRepository;
-import cz.tacr.elza.repository.InstitutionTypeRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
-import cz.tacr.elza.repository.PartyNameComplementRepository;
-import cz.tacr.elza.repository.PartyNameRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
@@ -106,35 +92,36 @@ public class DEImportService {
 
     @Autowired
     public DEImportService(EntityManager em,
-            ApAccessPointRepository apRepository,
-            ArrangementService arrangementService,
-            ApNameRepository apNameRepository,
-            ApDescriptionRepository apDescRepository,
-            ApExternalIdRepository apEidRepository,
-            PartyRepository partyRepository,
-            PartyNameRepository nameRepository,
-            PartyNameComplementRepository nameComplementRepository,
-            PartyGroupIdentifierRepository groupIdentifierRepository,
-            UnitdateRepository unitdateRepository,
-            InstitutionRepository institutionRepository,
-            UserService userService,
-            StaticDataService staticDataService,
-            NodeCacheService nodeCacheService,
-            ApExternalSystemRepository externalSystemRepository,
-            InstitutionTypeRepository institutionTypeRepository,
-            GroovyScriptService groovyScriptService,
-            ScopeRepository scopeRepository,
-            FundVersionRepository fundVersionRepository,
-            LevelRepository levelRepository,
-            LevelTreeCacheService levelTreeCacheService,
-            StructObjValueService structObjService,
-            AccessPointService accessPointService,
-            AccessPointDataService apDataService,
-            ResourcePathResolver resourcePathResolver) {
+                           ApAccessPointRepository apRepository,
+                           ArrangementService arrangementService,
+                           ApNameRepository apNameRepository,
+                           ApDescriptionRepository apDescRepository,
+                           ApExternalIdRepository apEidRepository,
+                           PartyRepository partyRepository,
+                           PartyNameRepository nameRepository,
+                           PartyNameComplementRepository nameComplementRepository,
+                           PartyGroupIdentifierRepository groupIdentifierRepository,
+                           UnitdateRepository unitdateRepository,
+                           InstitutionRepository institutionRepository,
+                           UserService userService,
+                           StaticDataService staticDataService,
+                           NodeCacheService nodeCacheService,
+                           ApExternalSystemRepository externalSystemRepository,
+                           InstitutionTypeRepository institutionTypeRepository,
+                           GroovyScriptService groovyScriptService,
+                           ScopeRepository scopeRepository,
+                           FundVersionRepository fundVersionRepository,
+                           LevelRepository levelRepository,
+                           LevelTreeCacheService levelTreeCacheService,
+                           StructObjValueService structObjService,
+                           AccessPointService accessPointService,
+                           AccessPointDataService apDataService,
+                           ResourcePathResolver resourcePathResolver,
+                           ApStateRepository apStateRepository) {
         this.initHelper = new ImportInitHelper(groovyScriptService, institutionRepository, institutionTypeRepository,
                 arrangementService, levelRepository, apRepository, apNameRepository, apDescRepository, apEidRepository,
                 partyRepository, nameRepository, nameComplementRepository, groupIdentifierRepository,
-                unitdateRepository, structObjService, accessPointService);
+                unitdateRepository, structObjService, accessPointService, apStateRepository);
         this.em = em;
         this.userService = userService;
         this.staticDataService = staticDataService;

@@ -10,15 +10,20 @@ import cz.tacr.elza.domain.ParPartyGroupIdentifier;
 
 public class PartyGroupIdentifierDispatcher extends NestedLoadDispatcher<ParPartyGroupIdentifier> {
 
+    // --- fields ---
+
     private final List<ParPartyGroupIdentifier> partyGroupIdentifiers = new ArrayList<>();
 
     private final ParPartyGroup partyGroup;
 
-    public PartyGroupIdentifierDispatcher(ParPartyGroup partyGroup,
-            LoadDispatcher<PartyInfoImpl> partyInfoDispatcher) {
+    // --- constructor ---
+
+    public PartyGroupIdentifierDispatcher(ParPartyGroup partyGroup, LoadDispatcher<PartyInfo> partyInfoDispatcher) {
         super(partyInfoDispatcher);
         this.partyGroup = partyGroup;
     }
+
+    // --- methods ---
 
     @Override
     public void onLoad(ParPartyGroupIdentifier result) {

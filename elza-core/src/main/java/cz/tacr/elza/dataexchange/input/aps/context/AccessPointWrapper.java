@@ -10,6 +10,7 @@ import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
 import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApExternalId;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 import cz.tacr.elza.service.ArrangementService;
 
@@ -28,9 +29,9 @@ public class AccessPointWrapper implements EntityWrapper {
 
     private SaveMethod saveMethod = SaveMethod.CREATE;
 
-    AccessPointWrapper(ApAccessPoint entity, 
+    AccessPointWrapper(ApAccessPoint entity,
                        AccessPointInfo apInfo,
-                       Collection<ApExternalId> externalIds, 
+                       Collection<ApExternalId> externalIds,
                        ArrangementService arrangementService) {
         this.entity = Validate.notNull(entity);
         this.apInfo = Validate.notNull(apInfo);
@@ -48,6 +49,10 @@ public class AccessPointWrapper implements EntityWrapper {
         return entity;
     }
 
+    public ApState getApState() {
+        return apInfo.getApState();
+    }
+
     public Collection<ApExternalId> getExternalIds() {
         return externalIds;
     }
@@ -55,24 +60,25 @@ public class AccessPointWrapper implements EntityWrapper {
     /**
      * Updates wrapper with given AP. When given AP is older then importing entity
      * no operation is needed.
-     * 
-     * @throws DEImportException
-     *             When scopes or types does not match.
+     *
+     * @throws DEImportException When scopes or types does not match.
      */
     public void changeToUpdated(ApAccessPointInfo dbInfo) {
         // check if item is not already processed
         Validate.isTrue(saveMethod != SaveMethod.UPDATE);
-        
+
         // access point id is valid (not null)
         int accessPointId = dbInfo.getAccessPointId();
 
-        if (!entity.getScopeId().equals(dbInfo.getScopeId())) {
+        Integer entityScopeId = getApState().getScopeId();
+        if (!entityScopeId.equals(dbInfo.getApScopeId())) {
             throw new DEImportException("Scope of importing AP doesn't match with scope of existing AP, import scopeId:"
-                    + entity.getScopeId() + ", existing scopeId:" + dbInfo.getScopeId());
+                    + entityScopeId + ", existing scopeId:" + dbInfo.getApScopeId());
         }
-        if (!entity.getApTypeId().equals(dbInfo.getApTypeId())) {
+        Integer entityTypeId = getApState().getApTypeId();
+        if (!entityTypeId.equals(dbInfo.getApTypeId())) {
             throw new DEImportException("Type of importing AP doesn't match with type of existing AP, import typeId:"
-                    + entity.getApTypeId() + ", existing typeId:" + dbInfo.getApTypeId());
+                    + entityTypeId + ", existing typeId:" + dbInfo.getApTypeId());
         }
         // TODO: implement how to detect older AP and which versionable sub-entity
         // should be updated.
@@ -84,13 +90,30 @@ public class AccessPointWrapper implements EntityWrapper {
     }
 
     @Override
+    public void persist(Session session) {
+        session.persist(getEntity());
+        session.persist(getApState());
+    }
+
+    @Override
+    public void merge(Session session) {
+        // actual AP update is not needed
+    }
+
+    @Override
+    public void evictFrom(Session session) {
+        session.evict(getApState());
+        session.evict(getEntity());
+    }
+
+    @Override
     public void beforeEntitySave(Session session) {
         // generate UUID
         entity.setUuid(arrangementService.generateUuid());
     }
 
     @Override
-    public void afterEntitySave() {
+    public void afterEntitySave(Session session) {
         // update AP info
         apInfo.setSaveMethod(saveMethod);
         apInfo.setEntityId(entity.getAccessPointId());

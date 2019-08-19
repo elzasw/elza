@@ -9,16 +9,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.ApStateRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemSpecExt;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.DataValidationResults;
@@ -29,7 +26,7 @@ import cz.tacr.elza.service.ArrangementService;
  */
 public class Validator {
 
-	DataValidationResults validationResults = new DataValidationResults();
+    DataValidationResults validationResults = new DataValidationResults();
 
     /**
      * List of required types
@@ -43,8 +40,12 @@ public class Validator {
 
     final DescItemFactory descItemFactory;
 
-    public Validator(final List<RulItemTypeExt> requiredItemTypes, final List<ArrDescItem> descItems,
-            final DescItemFactory descItemFactory) {
+    private final ApStateRepository stateRepository;
+
+    public Validator(final List<RulItemTypeExt> requiredItemTypes,
+                     final List<ArrDescItem> descItems,
+                     final DescItemFactory descItemFactory,
+                     final ApStateRepository stateRepository) {
         this.requiredItemTypes = requiredItemTypes;
         if (descItems == null) {
             this.descItems = Collections.emptyList();
@@ -52,6 +53,7 @@ public class Validator {
             this.descItems = descItems;
         }
 		this.descItemFactory = descItemFactory;
+        this.stateRepository = stateRepository;
 	}
 
 	public DataValidationResults getValidationResults() {
@@ -178,15 +180,30 @@ public class Validator {
         Map<Integer, List<ArrDescItem>> descItemsInTypeMap = new HashMap<>();
 
         if (descItems != null) {
+
             for (ArrDescItem descItem : descItems) {
-                if (!extNodeTypes.containsKey(descItem.getItemType().getItemTypeId())) {
-                    validationResults.createError(descItem, "Prvek " + descItem.getItemType().getName()
-                                + " není možný u této jednotky popisu.", extNodeTypes.get(descItem.getItemType().getItemTypeId()).getPolicyTypeCode());
+
+                ArrData data = descItem.getData();
+                RulItemType itemType = descItem.getItemType();
+                Integer itemTypeId = itemType.getItemTypeId();
+                String name = itemType.getName();
+                String policyTypeCode = extNodeTypes.get(itemTypeId).getPolicyTypeCode();
+
+                if (data instanceof ArrDataRecordRef) {
+                    ApAccessPoint accessPoint = ((ArrDataRecordRef) data).getRecord();
+                    ApState apState = stateRepository.findLastByAccessPoint(accessPoint);
+                    if (apState.getStateApproval() != ApState.StateApproval.APPROVED) {
+                        validationResults.createError(descItem, "Prvek " + name + " není schválený.", policyTypeCode);
+                        continue;
+                    }
+                }
+
+                if (!extNodeTypes.containsKey(itemTypeId)) {
+                    validationResults.createError(descItem, "Prvek " + name + " není možný u této jednotky popisu.", policyTypeCode);
                     continue;
                 }
 
-                List<ArrDescItem> itemsInType = descItemsInTypeMap
-                        .computeIfAbsent(descItem.getItemType().getItemTypeId(), k -> new LinkedList<>());
+                List<ArrDescItem> itemsInType = descItemsInTypeMap.computeIfAbsent(itemTypeId, k -> new LinkedList<>());
                 itemsInType.add(descItem);
             }
         }

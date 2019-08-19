@@ -6,8 +6,6 @@ package cz.tacr.elza.controller.vo.usage;
  */
 public enum OccurrenceType {
 
-	ARR_NODE_REGISTER,
-
 	ARR_DATA_PARTY_REF,
 
 	ARR_DATA_RECORD_REF,

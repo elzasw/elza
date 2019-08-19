@@ -5,21 +5,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.Validate;
@@ -45,31 +36,6 @@ import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.AddLevelParam;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
-import cz.tacr.elza.controller.vo.ArrDaoVO;
-import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
-import cz.tacr.elza.controller.vo.ArrRequestVO;
-import cz.tacr.elza.controller.vo.CopyNodesParams;
-import cz.tacr.elza.controller.vo.CopyNodesValidate;
-import cz.tacr.elza.controller.vo.CreateFundVO;
-import cz.tacr.elza.controller.vo.DataGridExportType;
-import cz.tacr.elza.controller.vo.FilterNode;
-import cz.tacr.elza.controller.vo.FilterNodePosition;
-import cz.tacr.elza.controller.vo.FulltextFundRequest;
-import cz.tacr.elza.controller.vo.FundListCountResult;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.OutputSettingsVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
@@ -88,6 +54,7 @@ import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
@@ -95,7 +62,6 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
 import cz.tacr.elza.domain.ArrOutputItem;
@@ -115,6 +81,7 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.DigitizationCode;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
@@ -137,6 +104,7 @@ import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrangementFormService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoService;
+import cz.tacr.elza.service.DaoSyncService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.FilterTreeService;
@@ -158,6 +126,9 @@ import cz.tacr.elza.service.importnodes.vo.ValidateResult;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.service.vo.UpdateDescItemsParam;
+
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * Kontroler pro pořádání.
@@ -224,6 +195,9 @@ public class ArrangementController {
 
     @Autowired
     private DaoService daoService;
+
+    @Autowired
+    private DaoSyncService daoSyncService;
 
     @Autowired
     private DaoRepository daoRepository;
@@ -304,6 +278,58 @@ public class ArrangementController {
         final List<ArrDaoPackage> arrDaoList = daoService.findDaoPackages(fundVersion, search, unassigned, maxResults);
 
         return factoryVo.createDaoPackageList(arrDaoList, unassigned);
+    }
+
+    /**
+     * Získání potřebných dat pro vybrání JP podle UUID v klientovi.
+     *
+     * @param nodeUuid unikátní identifikátor JP
+     * @return data pro vybranou JP
+     */
+    @RequestMapping(value = "/selectNode/{nodeUuid}",
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    public SelectNodeResult selectNode(@PathVariable(value = "nodeUuid") final String nodeUuid) {
+        ArrNode node = arrangementService.findNodeByUuid(nodeUuid);
+
+        if (node == null) {
+            throw new ObjectNotFoundException("JP neexistuje", BaseCode.ID_NOT_EXIST)
+                    .setId(nodeUuid);
+        }
+
+        ArrFundVO fund = getFund(node.getFundId());
+
+        ArrFundVersionVO fundVersion = fund.getVersions().stream()
+                .filter(v -> v.getLockDate() == null)
+                .findFirst().orElse(null);
+
+        if (fundVersion == null) {
+            throw new ObjectNotFoundException("AS nemá otevřenou verzi", BaseCode.ID_NOT_EXIST)
+                    .setId(fund.getId());
+        }
+
+        ArrLevel level = moveLevelService.findLevelByNode(node);
+        if (level == null) {
+            throw new ObjectNotFoundException("JP nebylo dohledáno zařazení v hierarchii AS", BaseCode.ID_NOT_EXIST)
+                    .setId(fund.getId());
+        }
+
+        TreeNodeVO parentNode = null;
+        if (level.getNodeParent() != null) {
+            Collection<TreeNodeVO> parentNodes = levelTreeCacheService
+                    .getNodesByIds(Collections.singletonList(level.getNodeParent().getNodeId()), fundVersion.getId());
+            Assert.notEmpty(parentNodes, "Kolekce JP nesmí být prázdná");
+            parentNode = parentNodes.iterator().next();
+        }
+
+        NodeWithParent nodeWithParent = new NodeWithParent(ArrNodeVO.valueOf(node), parentNode);
+
+        SelectNodeResult result = new SelectNodeResult();
+        result.setFund(fund);
+        result.setNodeWithParent(nodeWithParent);
+        return result;
     }
 
     /**
@@ -401,6 +427,43 @@ public class ArrangementController {
         final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
 
         final ArrDaoLink daoLink = daoService.createOrFindDaoLink(fundVersion, dao, node);
+    }
+
+    /**
+     * Zavolá WS pro synchronizaci digitalizátů a aktualizuje metadata pro daný node a DAO.
+     *
+     * @param fundVersionId verze AS
+     * @param nodeId        node pro synchronizaci
+     */
+    @Transactional
+    @RequestMapping(value = "/daos/{fundVersionId}/nodes/{nodeId}/sync",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public void syncDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                            @PathVariable(value = "nodeId") final Integer nodeId) {
+        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+
+        final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
+
+        daoSyncService.syncDaoLink(fundVersion, node);
+    }
+
+    /**
+     * Spustí asynchronní synchronizaci digitalizátů a aktualizuje metadata pro všechny nody z AS, které mají připojené DAO.
+     *
+     * @param fundVersionId verze AS
+     */
+    @Transactional
+    @RequestMapping(value = "/daos/{fundVersionId}/all/sync",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public void syncDaosByFund(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
+        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+        daoSyncService.syncDaosAll(fundVersionId);
     }
 
     /**
@@ -1041,7 +1104,7 @@ public class ArrangementController {
         List<ArrItemVO> descItems = factoryVo.createItems(outputItems);
         List<ItemTypeLiteVO> itemTypeLites = factoryVo.createItemTypes(ruleCode, fundId, itemTypes);
         return new OutputFormDataNewVO(outputVO, descItems, itemTypeLites,
-                hiddenItemTypes.stream().map(RulItemTypeExt::getItemTypeId).collect(Collectors.toList()));
+                hiddenItemTypes.stream().map(RulItemTypeExt::getItemTypeId).collect(toList()));
     }
 
     /**
@@ -1334,7 +1397,7 @@ public class ArrangementController {
                 // TODO: Remove stream and user more direct query
                 final Set<Integer> userIds = userService.findUserWithFundCreate(null, 0, -1).getList().stream()
                         .map(x -> x.getUserId())
-                        .collect(Collectors.toSet());
+                        .collect(toSet());
                 createFund.getAdminUsers()
                         .forEach(u -> {
                             if (!userIds.contains(u.getId())) {
@@ -1345,7 +1408,7 @@ public class ArrangementController {
             if (createFund.getAdminGroups() != null && !createFund.getAdminGroups().isEmpty()) {
                 final Set<Integer> groupIds = userService.findGroupWithFundCreate(null, 0, -1).getList().stream()
                         .map(x -> x.getGroupId())
-                        .collect(Collectors.toSet());
+                        .collect(toSet());
                 createFund.getAdminGroups()
                         .forEach(g -> {
                             if (!groupIds.contains(g.getId())) {
@@ -1700,104 +1763,6 @@ public class ArrangementController {
     public List<TreeNodeVO> fundFulltext(final @PathVariable(value = "fundId") Integer fundId) {
         // vybereš ze session seznam nodeId podle AS a vytvoří TreeNodeVO
         return arrangementService.getNodeListByFulltext(fundId);
-    }
-
-    /**
-     * Vyhledání vazeb AP - rejstříky.
-     *
-     * @param versionId id verze stromu
-     * @param nodeId    identfikátor JP
-     * @return vazby
-     */
-    @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}",
-            method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<ArrNodeRegisterVO> findRegisterLinks(final @PathVariable(value = "versionId") Integer versionId,
-                                                     final @PathVariable(value = "nodeId") Integer nodeId) {
-        List<ArrNodeRegister> registerLinks = accessPointService.findRegisterLinks(versionId, nodeId);
-        return factoryVo.createRegisterLinkList(registerLinks);
-    }
-
-    /**
-     * Vyhledání vazeb AP - rejstříky pro formulář.
-     *
-     * @param versionId id verze stromu
-     * @param nodeId    identfikátor JP
-     * @return vazby pro formulář
-     */
-    @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}/form",
-            method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public NodeRegisterDataVO findRegisterLinksForm(final @PathVariable(value = "versionId") Integer versionId,
-                                                    final @PathVariable(value = "nodeId") Integer nodeId) {
-        List<ArrNodeRegisterVO> nodeRegistersVO = findRegisterLinks(versionId, nodeId);
-        ArrNode node = nodeRepository.findOne(nodeId);
-        return new NodeRegisterDataVO(ArrNodeVO.valueOf(node), nodeRegistersVO);
-    }
-
-    /**
-     * Vytvoření vazby AP - rejstříky
-     *
-     * @param versionId         id verze stromu
-     * @param nodeId            identfikátor JP
-     * @param nodeRegisterVO    vazba
-     * @return vazba
-     */
-    @Transactional
-    @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}/create",
-            method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrNodeRegisterVO createRegisterLinks(final @PathVariable(value = "versionId") Integer versionId,
-                                                       final @PathVariable(value = "nodeId") Integer nodeId,
-                                                       final @RequestBody ArrNodeRegisterVO nodeRegisterVO) {
-        ArrNodeRegister nodeRegister = factoryDO.createRegisterLink(nodeRegisterVO);
-        nodeRegister = accessPointService.createRegisterLink(versionId, nodeId, nodeRegister);
-        return factoryVo.createRegisterLink(nodeRegister);
-    }
-
-    /**
-     * Upravení vazby AP - rejstříky.
-     *
-     * @param versionId         id verze stromu
-     * @param nodeId            identfikátor JP
-     * @param nodeRegisterVO    vazba
-     * @return vazba
-     */
-    @Transactional
-    @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}/update",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrNodeRegisterVO updateRegisterLinks(final @PathVariable(value = "versionId") Integer versionId,
-                                                 final @PathVariable(value = "nodeId") Integer nodeId,
-                                                 final @RequestBody ArrNodeRegisterVO nodeRegisterVO) {
-        ArrNodeRegister nodeRegister = factoryDO.createRegisterLink(nodeRegisterVO);
-        nodeRegister = accessPointService.updateRegisterLink(versionId, nodeId, nodeRegister);
-        return factoryVo.createRegisterLink(nodeRegister);
-    }
-
-    /**
-     * Smazání vazby AP - rejstříky.
-     *
-     * @param versionId         id verze stromu
-     * @param nodeId            identfikátor JP
-     * @param nodeRegisterVO    vazba
-     * @return  vazba
-     */
-    @Transactional
-    @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}/delete",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrNodeRegisterVO deleteRegisterLinks(final @PathVariable(value = "versionId") Integer versionId,
-                                                 final @PathVariable(value = "nodeId") Integer nodeId,
-                                                 final @RequestBody ArrNodeRegisterVO nodeRegisterVO) {
-        ArrNodeRegister nodeRegister = factoryDO.createRegisterLink(nodeRegisterVO);
-        nodeRegister = accessPointService.deleteRegisterLink(versionId, nodeId, nodeRegister);
-        return factoryVo.createRegisterLink(nodeRegister);
     }
 
     /**
@@ -2446,9 +2411,14 @@ public class ArrangementController {
             throw new SystemException("Neplatný počet nalezených digitalizátů (" + daos.size() + ", " +  param.daoIds.size() + ")", BaseCode.ID_NOT_EXIST);
         }
 
+        if (daos.stream().map(o -> o.getDaoPackage().getDigitalRepository().getExternalSystemId()).collect(toSet()).size() > 1) {
+            throw new BusinessException("DAO musí mít stejná úložiště", ArrangementCode.INVALID_REQUEST_DIGITAL_REPOSITORY_DAO);
+        }
+        ArrDigitalRepository digitalRepository = daos.get(0).getDaoPackage().getDigitalRepository();
+
         ArrDaoRequest daoRequest;
         if (param.id == null) {
-            daoRequest = requestService.createDaoRequest(daos, param.description, param.type, fundVersion);
+            daoRequest = requestService.createDaoRequest(daos, param.description, param.type, fundVersion, digitalRepository);
         } else {
             daoRequest = requestService.getDaoRequest(param.id);
             requestService.addDaoDaoRequest(daoRequest, daos, fundVersion, param.getDescription());
@@ -2649,46 +2619,6 @@ public class ArrangementController {
 
         public void setParent(final TreeNodeVO parent) {
             this.parent = parent;
-        }
-    }
-
-    /**
-     * Výstupní objekt pro získaná data pro formulář detailu uzlu.
-     */
-    public static class NodeRegisterDataVO {
-
-        /**
-         * Uzel
-         */
-        private ArrNodeVO node;
-
-        /**
-         * Seznam odkazů
-         */
-        private List<ArrNodeRegisterVO> nodeRegisters;
-
-        public NodeRegisterDataVO() {
-        }
-
-        public NodeRegisterDataVO(final ArrNodeVO node, final List<ArrNodeRegisterVO> nodeRegisters) {
-            this.node = node;
-            this.nodeRegisters = nodeRegisters;
-        }
-
-        public ArrNodeVO getNode() {
-            return node;
-        }
-
-        public void setNode(final ArrNodeVO node) {
-            this.node = node;
-        }
-
-        public List<ArrNodeRegisterVO> getNodeRegisters() {
-            return nodeRegisters;
-        }
-
-        public void setNodeRegisters(final List<ArrNodeRegisterVO> nodeRegisters) {
-            this.nodeRegisters = nodeRegisters;
         }
     }
 

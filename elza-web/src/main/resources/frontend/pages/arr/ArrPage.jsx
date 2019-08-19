@@ -77,6 +77,7 @@ import storeFromArea from "../../shared/utils/storeFromArea";
 import * as issuesActions from "../../actions/arr/issues";
 import {nodeWithIssueByFundVersion} from "../../actions/arr/issues";
 import IssueForm from "../../components/form/IssueForm";
+import ConfirmForm from "../../components/shared/form/ConfirmForm";
 
 const keyModifier = Utils.getKeyModifier();
 
@@ -266,13 +267,6 @@ class ArrPage extends ArrParentPage {
         }
     }
 
-    /**
-     * Zobrazení / skrytí záznamů u JP o rejstřících.
-     */
-    handleRegisterJp() {
-        this.props.dispatch(showRegisterJp(!this.props.arrRegion.showRegisterJp));
-    }
-
     handleOpenFundActionForm(versionId, subNode) {
         this.props.dispatch(fundActionFormChange(versionId, {nodes: [subNode]}));
         this.props.dispatch(fundActionFormShow(versionId));
@@ -438,6 +432,26 @@ class ArrPage extends ArrParentPage {
         this.props.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, "dialog-lg"));
     };
 
+    /**
+     * Zobrazení formuláře pro synchronizaci DAOS pro celé AS.
+     *
+     * @param versionId verze AS
+     */
+    handleShowSyncDaosByFund = (versionId) => {
+        const confirmForm = <ConfirmForm
+            confirmMessage={i18n('arr.daos.fund.sync.confirm-message')}
+            submittingMessage={i18n('arr.daos.fund.sync.submitting-message')}
+            submitTitle={i18n('global.action.run')}
+            onSubmit={() => {
+                return WebApi.syncDaosByFund(versionId);
+            }}
+            onSubmitSuccess={() => {
+                this.props.dispatch(modalDialogHide());
+            }}
+        />;
+        this.props.dispatch(modalDialogShow(this, i18n('arr.daos.fund.sync.title'), confirmForm));
+    };
+
     handleDeleteChanges = (nodeId, fromChangeId, toChangeId) => {
         const activeFund = this.getActiveFund(this.props);
         const versionId = activeFund.versionId;
@@ -525,13 +539,6 @@ class ArrPage extends ArrParentPage {
 
         const itemActions = [];
 
-        altActions.push(
-            <Button active={this.props.arrRegion.showRegisterJp} onClick={this.handleRegisterJp} key="toggle-record-jp">
-                <Icon glyph="fa-th-list"/>
-                <span className="btnText">{i18n('ribbon.action.arr.show-register-jp')}</span>
-            </Button>
-        );
-
         const indexFund = arrRegion.activeIndex;
         if (indexFund !== null) {
             const activeFund = arrRegion.funds[indexFund];
@@ -555,6 +562,17 @@ class ArrPage extends ArrParentPage {
                         <Icon glyph="fa-clock-o"/>
                         <div>
                             <span className="btnText">{i18n('ribbon.action.showFundHistory')}</span>
+                        </div>
+                    </Button>
+                )
+            }
+
+            if (userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId: activeFund.id}, perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})) {
+                altActions.push(
+                    <Button onClick={() => this.handleShowSyncDaosByFund(activeFund.versionId)} key="show-sync-daos-by-fund">
+                        <Icon glyph="fa-camera"/>
+                        <div>
+                            <span className="btnText">{i18n('ribbon.action.syncDaosByFund')}</span>
                         </div>
                     </Button>
                 )

@@ -41,7 +41,6 @@ import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
@@ -952,60 +951,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         test.getParent();
 
         assertNotNull(fulltext);
-    }
-
-
-    @Test
-    public void registerLinksTest() {
-
-        ArrFundVO fund = createFund("RegisterLinks Test AP", "IC3");
-
-        ArrFundVersionVO fundVersion = getOpenVersion(fund);
-
-        ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
-        input.setVersionId(fundVersion.getId());
-        TreeData treeData = getFundTree(input);
-
-        List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
-        ArrNodeVO rootNode = nodes.get(0);
-
-        List<ApTypeVO> types = getRecordTypes();
-        List<ApScopeVO> scopes = getAllScopes();
-        Integer scopeId = scopes.iterator().next().getId();
-
-        ApAccessPointCreateVO ap = new ApAccessPointCreateVO();
-        ap.setTypeId(getNonHierarchicalApType(types, false, false).getId());
-        ap.setName("ApRecordA name");
-        ap.setComplement("ApRecordA complement");
-        ap.setScopeId(scopeId);
-        ApAccessPointVO accessPointCreated = createAccessPoint(ap);
-
-        ArrNodeRegisterVO nodeRegister = new ArrNodeRegisterVO();
-
-        nodeRegister.setValue(accessPointCreated.getId());
-        nodeRegister.setNodeId(rootNode.getId());
-        nodeRegister.setNode(rootNode);
-
-        ArrNodeRegisterVO createdLink = createRegisterLinks(fundVersion.getId(), rootNode.getId(), nodeRegister);
-
-        assertNotNull(createdLink);
-
-        List<ArrNodeRegisterVO> registerLinks = findRegisterLinks(fundVersion.getId(), rootNode.getId());
-        assertTrue(registerLinks.size()>0);
-
-        ArrangementController.NodeRegisterDataVO registerLinksForm = findRegisterLinksForm(fundVersion.getId(),
-                rootNode.getId());
-
-        assertNotNull(registerLinksForm.getNode());
-        assertTrue(registerLinksForm.getNodeRegisters().size()>0);
-
-        ArrNodeRegisterVO updatedLink = updateRegisterLinks(fundVersion.getId(), rootNode.getId(), createdLink);
-
-        assertTrue(!createdLink.getId().equals(updatedLink.getId()));
-
-        ArrNodeRegisterVO deletedLink = deleteRegisterLinks(fundVersion.getId(), rootNode.getId(), updatedLink);
-
-        assertTrue(updatedLink.getId().equals(deletedLink.getId()));
     }
 
     private ApTypeVO getNonHierarchicalApType(final List<ApTypeVO> list, final boolean hasPartyType, final boolean hasRuleSystem) {

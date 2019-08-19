@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.*;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
@@ -21,12 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.ArrFundBaseVO;
-import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.UISettingsVO;
-import cz.tacr.elza.controller.vo.UserInfoVO;
-import cz.tacr.elza.controller.vo.UsrPermissionVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFund;
@@ -118,10 +113,10 @@ public class UserController {
      */
     @RequestMapping(method = RequestMethod.POST)
     @Transactional
-    public UsrUserVO createUser(@RequestBody final CreateUser params) {
+    public UsrUserVO createUser(@RequestBody final CreateUserVO params) {
         Assert.notNull(params, "Parametry musí být vyplněny");
-
-        UsrUser user = userService.createUser(params.getUsername(), params.getPassword(), params.getPartyId());
+        Assert.notNull(params.getValuesMap(), "Typy autentizací musí být vyplněny");
+        UsrUser user = userService.createUser(params.getUsername(), params.getValuesMap(), params.getPartyId());
         return factoryVO.createUser(user, true, true);
     }
 
@@ -134,7 +129,7 @@ public class UserController {
     @RequestMapping(value = "/{userId}",method = RequestMethod.PUT)
     @Transactional
     public UsrUserVO changeUser(@PathVariable("userId") final Integer userId,
-                                @RequestBody final CreateUser params) {
+                                @RequestBody final CreateUserVO params) {
         Assert.notNull(params, "Parametry musí být vyplněny");
 
         UsrUser user = userService.getUser(userId);
@@ -143,7 +138,7 @@ public class UserController {
             throw new ObjectNotFoundException("Uživatel neexistuje", UserCode.USER_NOT_FOUND).set("id", userId);
         }
 
-        user = userService.changeUser(user, params.getUsername(), params.getPassword());
+        user = userService.changeUser(user, params.getUsername(), params.getValuesMap());
         return factoryVO.createUser(user, true, true);
     }
 
@@ -440,51 +435,6 @@ public class UserController {
     public void deleteUserScopePermission(@PathVariable(value = "userId") final Integer userId, @PathVariable("scopeId") final Integer scopeId) {
         UsrUser user = userService.getUser(userId);
         userService.deleteUserScopePermissions(user, scopeId);
-    }
-
-    /**
-     * Pomocná struktura pro vytvoření uživatele.
-     */
-    public static class CreateUser {
-
-        /**
-         * Identifikátor osoby
-         */
-        private Integer partyId;
-
-        /**
-         * Uživatelské jméno
-         */
-        private String username;
-
-        /**
-         * Heslo
-         */
-        private String password;
-
-        public Integer getPartyId() {
-            return partyId;
-        }
-
-        public void setPartyId(final Integer partyId) {
-            this.partyId = partyId;
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        public void setUsername(final String username) {
-            this.username = username;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(final String password) {
-            this.password = password;
-        }
     }
 
     /**

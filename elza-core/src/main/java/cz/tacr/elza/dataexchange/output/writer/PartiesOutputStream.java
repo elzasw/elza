@@ -1,5 +1,7 @@
 package cz.tacr.elza.dataexchange.output.writer;
 
+import cz.tacr.elza.dataexchange.output.parties.PartyInfo;
+
 /**
  * Output stream for parties export.
  */

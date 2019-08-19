@@ -29,7 +29,7 @@ public class ApFragment {
 
     @Enumerated(EnumType.STRING)
     @Column(length = StringLength.LENGTH_ENUM)
-    private ApState state;
+    private ApStateEnum state;
 
     @Column
     @Lob
@@ -56,11 +56,11 @@ public class ApFragment {
         this.value = value;
     }
 
-    public ApState getState() {
+    public ApStateEnum getState() {
         return state;
     }
 
-    public void setState(final ApState state) {
+    public void setState(final ApStateEnum state) {
         this.state = state;
     }
 

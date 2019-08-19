@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApState;
 
 
 /**
@@ -30,6 +31,16 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
      * Id třídy rejstříku.
      */
     private Integer scopeId;
+
+    /**
+     * Stav schválení.
+     */
+    private ApState.StateApproval stateApproval;
+
+    /**
+     * Komentář ke stavu schválení.
+     */
+    private String comment;
 
     /**
      * Rejstříkové heslo.
@@ -106,6 +117,22 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 
     public void setTypeId(Integer typeId) {
         this.typeId = typeId;
+    }
+
+    public ApState.StateApproval getStateApproval() {
+        return stateApproval;
+    }
+
+    public void setStateApproval(final ApState.StateApproval stateApproval) {
+        this.stateApproval = stateApproval;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(final String comment) {
+        this.comment = comment;
     }
 
     public Integer getScopeId() {
@@ -202,19 +229,4 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
         this.ruleSystemId = ruleSystemId;
     }
 
-    /**
-     * Create new instance from domain object
-     * 
-     * @param ap
-     * @return
-     */
-    public static ApAccessPointVO newInstance(ApAccessPoint ap) {
-        ApAccessPointVO apvo = new ApAccessPointVO();
-        apvo.setId(ap.getAccessPointId());
-        apvo.setInvalid(ap.getDeleteChange() != null);
-        apvo.setScopeId(ap.getScopeId());
-        apvo.setTypeId(ap.getApTypeId());
-        apvo.setUuid(ap.getUuid());
-        return apvo;
-    }
 }

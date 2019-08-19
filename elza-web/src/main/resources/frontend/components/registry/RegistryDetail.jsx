@@ -48,6 +48,7 @@ import AddDescItemTypeForm from "../arr/nodeForm/AddDescItemTypeForm";
 import {accessPointFormActions} from "../accesspoint/AccessPointFormActions";
 import TooltipTrigger from "../shared/tooltip/TooltipTrigger";
 import {structureTypesFetchIfNeeded} from "../../actions/refTables/structureTypes";
+import * as StateApproval from './../../components/enum/StateApproval';
 
 class RegistryDetail extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
@@ -519,9 +520,12 @@ class RegistryDetail extends AbstractReactComponent {
                     </div>
                     <div className="registry-type">
 						{apTypeNames}
-                        {data.scopeId && <span className="scope-label">
-                            {scopes && this.getScopeLabel(data.scopeId, scopes)}
-                        </span>}
+						<div className="right-part" title={data.comment ? data.comment : i18n('ap.state.title.noComment')}>
+                            <span className="state-approval-label">{StateApproval.getCaption(data.stateApproval)}</span>
+                            {data.scopeId && <span className="scope-label">
+                                {scopes && this.getScopeLabel(data.scopeId, scopes)}
+                            </span>}
+                        </div>
                     </div>
                     <CollapsablePanel tabIndex={0} key={"NAMES"} isOpen={activeIndexes && activeIndexes["NAMES"] === true} header={<div>{i18n("accesspoint.detail.formNames")}{this.renderApNamesError(data.names)}</div>} eventKey={"NAMES"} onPin={this.handlePinToggle} onSelect={this.handleToggleActive}>
                         <div className={"cp-15"}>

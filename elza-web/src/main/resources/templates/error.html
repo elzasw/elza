@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorator="layout"
+      >
+
+    <head>
+        <title>ELZA - Chyba</title>
+
+        <script type="text/javascript" src="" th:src="@{/res/js/messages_cs.js}"></script>
+        <link rel="stylesheet" href="" th:href="@{/res/font-awesome/css/font-awesome.min.css}"/>
+        <link rel="stylesheet" href="" th:href="@{/res/elza-iconset/ez-icons.css}"/>
+        <link rel="stylesheet" href="" th:href="@{/res/js/main.css}"/>
+        <meta name="format-detection" content="telephone=no"/>
+        <meta name="theme-color" content="#ffffff"/>
+
+        <script>
+        </script>
+    </head>
+
+    <body tabindex="-1">
+        <section layout:fragment="page-content" th:remove="tag">
+            <div id="content">
+                Chyba
+            </div>
+        </section>
+    </body>
+</html>

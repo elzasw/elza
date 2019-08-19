@@ -13,6 +13,7 @@ import ListPager from "../shared/listPager/ListPager";
 import * as perms from "../../actions/user/Permission";
 import {FOCUS_KEYS} from "../../constants.tsx";
 import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
+import * as StateApproval from "../enum/StateApproval";
 
 /**
  * Komponenta list osob
@@ -84,7 +85,11 @@ class PartyList extends AbstractReactComponent {
     };
 
     handleFilterPartyScope = (item) => {
-        this.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, scopeId: item ? item.id : null}));
+        this.props.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, scopeId: item ? item.id : null}));
+    };
+
+    handleFilterPartyState = (item) => {
+        this.props.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, state: item ? item.id : null}));
     };
 
     handleFilterPrev = () => {
@@ -118,6 +123,16 @@ class PartyList extends AbstractReactComponent {
 
     getScopeById(scopeId, scopes){
         return scopeId && scopes && scopes.length > 0 && scopes[0].scopes.find(scope => (scope.id === scopeId)).name;
+    }
+
+    getStateWithAll() {
+        const defaultValue = {name: i18n('party.apState')};
+        return [defaultValue, ...StateApproval.values.map(item => {
+            return {
+                id: item,
+                name: StateApproval.getCaption(item)
+            }
+        })]
     }
 
     renderListItem = (props) => {
@@ -164,6 +179,12 @@ class PartyList extends AbstractReactComponent {
                     items={this.getScopesWithAll(scopes)}
                     onChange={this.handleFilterPartyScope}
                     value={scopes && partyList.filter.scopeId ? this.getScopeById(partyList.filter.scopeId, scopes) : 'registry.all'}
+                />
+                <Autocomplete
+                    inputProps={ {placeholder: partyList.filter.state ? StateApproval.getCaption(partyList.filter.state) : i18n("party.apState")} }
+                    items={this.getStateWithAll()}
+                    onChange={this.handleFilterPartyState}
+                    value={partyList.filter.state}
                 />
                 <FormInput componentClass="select" className="type" onChange={this.handleFilterType} value={partyList.filter.type} disabled={!partyTypesFetched}>
                     <option value={-1}>{i18n('global.all')}</option>

@@ -69,7 +69,7 @@ public class PartyNameWrapper implements EntityWrapper {
     }
 
     @Override
-    public void afterEntitySave() {
+    public void afterEntitySave(Session session) {
         // init id holder
         idHolder.setEntityId(entity.getPartyNameId());
         // update party info

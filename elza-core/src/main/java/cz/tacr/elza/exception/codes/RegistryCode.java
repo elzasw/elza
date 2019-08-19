@@ -82,5 +82,35 @@ public enum RegistryCode implements ErrorCode {
     /**
      * Nelze smazat třídu rejstříku, která je nastavena na rejstříku.
      */
-    USING_SCOPE_CANT_DELETE;
+    USING_SCOPE_CANT_DELETE,
+
+    /**
+     * Nelze smazat třídu rejstříku na kterou je navázána jiná třída rejstříku.
+     */
+    CANT_DELETE_CONNECTED_SCOPE,
+
+    /**
+     * Nelze smazat třídu rejstříku která je navázána na jinou třídu rejstříku.
+     */
+    CANT_DELETE_SCOPE_WITH_CONNECTED,
+
+    /**
+     * Nelze navázat třídu rejstříku sama na sebe.
+     */
+    CANT_CONNECT_SCOPE_TO_SELF,
+
+    /**
+     * Nelze navázat třídu, protože je již navázána.
+     */
+    SCOPES_ALREADY_CONNECTED,
+
+    /**
+     * Nelze zrušit provázání tříd, protože vazba neexistuje.
+     */
+    SCOPES_NOT_CONNECTED,
+
+    /**
+     * Nelze zrušit provázání tříd, protože existuje vztah mezi osobami těchto tříd.
+     */
+    CANT_DELETE_SCOPE_RELATION_EXISTS,
 }

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="20190612101300" author="slapa">
+        <createTable tableName="usr_authentication">
+            <column name="authentication_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="user_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_usr_authentication_user"
+                             referencedTableName="usr_user"
+                             referencedColumnNames="user_id"/>
+            </column>
+            <column name="auth_type" type="char(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="20190612101301" author="slapa">
+        <sql>INSERT INTO usr_authentication (authentication_id, user_id, auth_type, value) SELECT user_id, user_id, 'PASSWORD', password FROM usr_user</sql>
+    </changeSet>
+    <changeSet id="20190612101302" author="slapa">
+        <sql>INSERT INTO db_hibernate_sequences (sequence_name, next_val) SELECT 'usr_authentication|authentication_id', COALESCE(MAX(authentication_id),0)+1 FROM usr_authentication</sql>
+    </changeSet>
+    <changeSet id="20190612101303" author="slapa">
+        <dropColumn tableName="usr_user" columnName="password"/>
+    </changeSet>
+
+    <changeSet id="20190702113000" author="berka">
+        <createTable tableName="ap_state">
+            <column name="state_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="access_point_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap"
+                             referencedTableName="ap_access_point"
+                             referencedColumnNames="access_point_id"/>
+            </column>
+            <column name="scope_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_scope"
+                             referencedTableName="ap_scope"
+                             referencedColumnNames="scope_id"/>
+            </column>
+            <column name="type_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_type"
+                             referencedTableName="ap_type"
+                             referencedColumnNames="ap_type_id"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_change_create"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="delete_change_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_change_delete"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="state_approval" type="char(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="comment" type="text">
+                <constraints nullable="true"/>
+            </column>
+            <column name="version" type="int" defaultValueNumeric="0"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="20190708133001" author="slapa">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <sqlCheck expectedResult="1">SELECT count(*) FROM rul_package WHERE code = 'ZP2015'</sqlCheck>
+                <sqlCheck expectedResult="0">SELECT count(*) FROM rul_item_type WHERE code = 'ZP2015_AP_REF'</sqlCheck>
+            </and>
+        </preConditions>
+        <sql>
+            INSERT INTO rul_item_type (item_type_id, data_type_id, code, name, shortcut, description, is_value_unique,
+            can_be_ordered, use_specification, view_order, package_id) VALUES (
+              (SELECT next_val FROM db_hibernate_sequences WHERE sequence_name = 'rul_item_type|item_type_id'),
+              (SELECT data_type_id FROM rul_data_type WHERE code = 'RECORD_REF'),
+              'ZP2015_AP_REF',
+              'Odkaz na přístupový bod',
+              'Přístupový bod',
+              'Přímý odkaz na přístupový bod (starší pomůcky)',
+              false,
+              false,
+              false,
+              (SELECT MAX(view_order) FROM rul_item_type) + 1, (SELECT package_id FROM rul_package WHERE code = 'ZP2015'))
+        </sql>
+        <sql>UPDATE db_hibernate_sequences SET next_val = next_val + 1 WHERE sequence_name = 'rul_item_type|item_type_id'</sql>
+    </changeSet>
+    <changeSet id="20190708133002" author="slapa">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sqlCheck expectedResult="0">SELECT COUNT(*) FROM arr_node_register</sqlCheck>
+            </not>
+        </preConditions>
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20190708133002" />
+    </changeSet>
+    <changeSet id="20190708133003" author="slapa">
+        <validCheckSum>ANY</validCheckSum>
+        <delete tableName="arr_cached_node" />
+    </changeSet>
+    <changeSet id="20190708133004" author="slapa">
+        <sql>UPDATE arr_change SET type = 'ADD_DESC_ITEM' WHERE type = 'ADD_RECORD_NODE'</sql>
+        <sql>UPDATE arr_change SET type = 'DELETE_DESC_ITEM' WHERE type = 'DELETE_RECORD_NODE'</sql>
+    </changeSet>
+    <changeSet id="20190708133005" author="slapa">
+        <dropTable tableName="arr_node_register" />
+    </changeSet>
+
+    <changeSet id="20190703110000" author="berka">
+        <createTable tableName="ap_scope_relation">
+            <column name="scope_relation_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="scope_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_scope"
+                             referencedTableName="ap_scope"
+                             referencedColumnNames="scope_id"/>
+            </column>
+            <column name="connected_scope_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_connected_scope"
+                             referencedTableName="ap_scope"
+                             referencedColumnNames="scope_id"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="20190704130000" author="marek">
+        <dropNotNullConstraint tableName="ap_state" columnName="delete_change_id" columnDataType="int"/>
+    </changeSet>
+    <changeSet id="20190704133000" author="marek">
+        <sql>
+            INSERT INTO ap_state (state_id, access_point_id, scope_id, type_id, create_change_id, delete_change_id, state_approval, comment, version)
+            SELECT access_point_id, access_point_id, scope_id, ap_type_id, create_change_id, delete_change_id, 'NEW', null, version
+            FROM ap_access_point
+        </sql>
+        <sql>
+            INSERT INTO db_hibernate_sequences (sequence_name, next_val)
+            SELECT 'ap_state|state_id', COALESCE(MAX(state_id), 0) + 1 FROM ap_state
+        </sql>
+    </changeSet>
+    <changeSet id="20190711193000" author="marek">
+        <dropColumn tableName="ap_access_point" columnName="ap_type_id"/>
+        <dropColumn tableName="ap_access_point" columnName="scope_id"/>
+        <dropColumn tableName="ap_access_point" columnName="create_change_id"/>
+        <dropColumn tableName="ap_access_point" columnName="delete_change_id"/>
+    </changeSet>
+    <changeSet id="20190711200000" author="marek">
+        <renameColumn tableName="ap_state" oldColumnName="type_id" newColumnName="ap_type_id" columnDataType="int"/>
+    </changeSet>
+</databaseChangeLog>

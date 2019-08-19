@@ -36,6 +36,7 @@ function callWS(url, data, needResponse = true) {
 export class WebApiCls {
 
     static baseUrl = '/api';
+    static authUrl = WebApiCls.baseUrl + '/auth';
     static arrangementUrl = WebApiCls.baseUrl + '/arrangement';
     static issueUrl = WebApiCls.baseUrl + '/issue';
     static registryUrl = WebApiCls.baseUrl + '/registry';
@@ -54,6 +55,15 @@ export class WebApiCls {
     static validateUrl = WebApiCls.baseUrl + '/validate';
     static structureUrl = WebApiCls.baseUrl + '/structure';
 
+    /**
+     * Seznam entit pro SSO přihlašování.
+
+     * @return seznam sso entit
+     */
+    getSsoEntities() {
+        return AjaxUtils.ajaxGet(WebApiCls.authUrl + '/sso');
+    }
+
     findInFundTree(versionId, nodeId, searchText, type, searchParams = null, luceneQuery = false) {
         const data = {
             versionId: versionId,
@@ -64,6 +74,18 @@ export class WebApiCls {
             luceneQuery: luceneQuery
         };
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/fulltext', null, data);
+    }
+
+    selectNode(nodeUuid) {
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/selectNode/' + nodeUuid);
+    }
+
+    syncDaoLink(fundVersionId, nodeId) {
+        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/daos/' + fundVersionId + '/nodes/' + nodeId + '/sync');
+    }
+
+    syncDaosByFund(fundVersionId) {
+        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/daos/' + fundVersionId + '/all/sync');
     }
 
     /**
@@ -123,8 +145,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/' + partyId);
     }
 
-    findParty(search = null, versionId = null, partyTypeId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId, excludeInvalid) {
-        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/', { search, from, count, partyTypeId, versionId, itemSpecId, scopeId, excludeInvalid });
+    findParty(search = null, versionId = null, partyTypeId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId, excludeInvalid, state) {
+        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/', { search, from, count, partyTypeId, versionId, itemSpecId, scopeId, excludeInvalid, state });
     }
 
     findPartyUsage(partyId) {
@@ -481,7 +503,7 @@ export class WebApiCls {
     }
 
 
-    findRegistry(search = null, registryParent = null, apTypeId = null, versionId = null, itemTypeId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId = null, excludeInvalid = true) {
+    findRegistry(search = null, registryParent = null, apTypeId = null, versionId = null, itemTypeId = null, itemSpecId = null, from = 0, count = DEFAULT_LIST_SIZE, scopeId = null, excludeInvalid = true, state = null) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/', {
             search,
             from,
@@ -492,7 +514,8 @@ export class WebApiCls {
             apTypeId,
             versionId,
             scopeId,
-            excludeInvalid
+            excludeInvalid,
+            state
         });
     }
 
@@ -512,6 +535,14 @@ export class WebApiCls {
 
     getAccessPoint(accessPointId) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId);
+    }
+
+    findStateHistories(accessPointId) {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/history');
+    }
+
+    changeState(accessPointId, data) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/state', null, data);
     }
 
     updateAccessPoint(accessPointId, data) {
@@ -540,6 +571,30 @@ export class WebApiCls {
 
     getAllScopes() {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/scopes', null);
+    }
+
+    getScopeWithConnected(scopeId = null) {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/scopes/' + scopeId + '/withConnected', null);
+    }
+
+    createScope() {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/scopes', null);
+    }
+
+    updateScope(scopeId, data) {
+        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/scopes/' + scopeId, null, data);
+    }
+
+    deleteScope(scopeId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/scopes/' + scopeId, null);
+    }
+
+    connectScope(scopeId, connectedScopeId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/scopes/' + scopeId + '/connect', null, connectedScopeId);
+    }
+
+    disconnectScope(scopeId, connectedScopeId) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/scopes/' + scopeId + '/disconnect', null, connectedScopeId);
     }
 
     getAllLanguages() {
@@ -1139,17 +1194,17 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + '/group/' + groupId + '/leave/' + userId, null, null);
     }
 
-    createUser(username, password, partyId) {
+    createUser(username, valuesMap, partyId) {
         const params = {
             username: username,
-            password: password,
+            valuesMap: valuesMap,
             partyId: partyId
         }
         return AjaxUtils.ajaxPost(WebApiCls.userUrl, null, params);
     }
 
-    updateUser(id, username, password) {
-        return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/' + id, null, { username, password });
+    updateUser(id, username, valuesMap) {
+        return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/' + id, null, { username, valuesMap });
     }
 
     changePasswordUser(oldPassword, newPassword) {

@@ -47,7 +47,6 @@ import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -65,7 +64,6 @@ import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -125,9 +123,6 @@ public class ImportProcess {
 
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
-
-    @Autowired
-    private NodeRegisterRepository nodeRegisterRepository;
 
     @Autowired
     private NodeCacheService nodeCacheService;
@@ -205,7 +200,6 @@ public class ImportProcess {
     private FundLevelService.AddLevelDirection selectedDirection;
 
     private List<ArrLevel> levels = new ArrayList<>();
-    private List<ArrNodeRegister> nodeRegisters = new ArrayList<>();
     private List<ArrDescItem> descItems = new ArrayList<>();
     private List<ArrData> dataList = new ArrayList<>();
     private List<Integer> nodeIds = new ArrayList<>();
@@ -277,8 +271,6 @@ public class ImportProcess {
 
             ArrLevel level = arrangementService.createLevelSimple(change, deepData.getParentNode(), deepData.getPosition(), node.getUuid(), targetFundVersion.getFund());
             levels.add(level);
-
-            processNodeRegisters(node, level.getNode());
 
             Collection<? extends Item> items = node.getItems();
             if (CollectionUtils.isNotEmpty(items)) {
@@ -422,25 +414,6 @@ public class ImportProcess {
             data = null;
         }
         return data;
-    }
-
-    /**
-     * Zpracování rejstříkových hesel u JP.
-     *
-     * @param sourceNode zdrojová JP
-     * @param node       cílová JP
-     */
-    private void processNodeRegisters(final Node sourceNode, final ArrNode node) {
-        Collection<? extends NodeRegister> registers = sourceNode.getNodeRegisters();
-        if (CollectionUtils.isNotEmpty(registers)) {
-            for (NodeRegister register : registers) {
-                ArrNodeRegister nodeRegister = new ArrNodeRegister();
-                nodeRegister.setCreateChange(change);
-                nodeRegister.setNode(node);
-                nodeRegister.setRecord(apAccessPointRepository.getOne(register.getRecordId()));
-                nodeRegisters.add(nodeRegister);
-            }
-        }
     }
 
     /**
@@ -753,9 +726,6 @@ public class ImportProcess {
             levelRepository.save(levels);
             levelRepository.flush();
 
-            nodeRegisterRepository.save(nodeRegisters);
-            nodeRegisterRepository.flush();
-
             dataRepository.save(dataList);
             dataRepository.flush();
 
@@ -763,7 +733,6 @@ public class ImportProcess {
             descItemRepository.flush();
 
             levels = new ArrayList<>();
-            nodeRegisters = new ArrayList<>();
             descItems = new ArrayList<>();
             dataList = new ArrayList<>();
             needFlush = false;

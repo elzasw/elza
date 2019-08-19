@@ -10,7 +10,6 @@ import {isBulkAction} from 'actions/arr/bulkActions.jsx'
 import {isFundTreeAction} from 'actions/arr/fundTree.jsx'
 import {isFundSearchAction} from '../../../actions/arr/fundSearch.jsx'
 import {nodeFormActions, outputFormActions, structureFormActions} from 'actions/arr/subNodeForm.jsx'
-import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister.jsx'
 import {isSubNodeDaosAction} from 'actions/arr/subNodeDaos.jsx'
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx'
 import {isNodeInfoAction} from 'actions/arr/nodeInfo.jsx'
@@ -123,7 +122,6 @@ export default function arrRegion(state = initialState, action) {
         || (isFundTreeAction(action) && (action.area !== types.FUND_TREE_AREA_COPY && action.area !== types.FUND_TREE_AREA_USAGE && action.area !== types.CUSTOM_FUND_TREE_AREA_NODES))
         || nodeFormActions.isSubNodeFormAction(action) || outputFormActions.isSubNodeFormAction(action) ||  structureFormActions.isSubNodeFormAction(action)
         || nodeFormActions.isSubNodeFormCacheAction(action) || outputFormActions.isSubNodeFormCacheAction(action) || structureFormActions.isSubNodeFormCacheAction(action)
-        || isSubNodeRegisterAction(action)
         || isSubNodeDaosAction(action)
         || isSubNodeInfoAction(action)
         || isNodeInfoAction(action)

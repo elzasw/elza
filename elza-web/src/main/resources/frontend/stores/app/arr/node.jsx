@@ -2,13 +2,11 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 import subNodeForm from './subNodeForm.jsx'
 import subNodeFormCache from './subNodeFormCache.jsx'
-import subNodeRegister from './subNodeRegister.jsx'
 import subNodeDaos from './subNodeDaos.jsx'
 import subNodeInfo from './subNodeInfo.jsx'
 import {consolidateState} from 'components/Utils.jsx'
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx'
-import {isSubNodeRegisterAction} from 'actions/arr/subNodeRegister.jsx'
 import {isSubNodeDaosAction} from 'actions/arr/subNodeDaos.jsx'
 
 let _nextRoutingKey = 1;
@@ -47,14 +45,12 @@ export function nodeInitState(node, prevNodesNode) {
         result.subNodeForm = prevNodesNode.subNodeForm;
         result.subNodeFormCache = prevNodesNode.subNodeFormCache;
         result.subNodeInfo = prevNodesNode.subNodeInfo;
-        result.subNodeRegister = prevNodesNode.subNodeRegister;
         result.subNodeDaos = prevNodesNode.subNodeDaos;
     } else {
         result.routingKey = _routingKeyAreaPrefix + _nextRoutingKey++;
         result.subNodeForm = subNodeForm(undefined, {type:''});
         result.subNodeFormCache = subNodeFormCache(undefined, {type:''});
         result.subNodeInfo = subNodeInfo(undefined, {type:''});
-        result.subNodeRegister = subNodeRegister(undefined, {type:''});
         result.subNodeDaos = subNodeDaos();
     }
 
@@ -117,7 +113,6 @@ const nodeInitialState = {
     selectedSubNodeId: null,
     subNodeForm: subNodeForm(undefined, {type:''}),
     subNodeFormCache: subNodeFormCache(undefined, {type:''}),
-    subNodeRegister: subNodeRegister(undefined, {type:''}),
     subNodeDaos: subNodeDaos(),
     subNodeInfo: subNodeInfo(undefined, {type:''}),
     isNodeInfoFetching: false,
@@ -164,14 +159,6 @@ export function node(state = nodeInitialState, action) {
         return consolidateState(state, result);
     }
 
-    if (isSubNodeRegisterAction(action)) {
-        const result = {
-            ...state,
-            subNodeRegister: subNodeRegister(state.subNodeRegister, action),
-        };
-        return consolidateState(state, result);
-    }
-
     if (isSubNodeDaosAction(action)) {
         const result = {
             ...state,
@@ -196,7 +183,6 @@ export function node(state = nodeInitialState, action) {
                 pageSize: _pageSize,
                 subNodeForm: subNodeForm(undefined, {type:''}),
                 subNodeFormCache: subNodeFormCache(undefined, {type:''}),
-                subNodeRegister: subNodeRegister(undefined, {type:''}),
                 subNodeDaos: subNodeDaos(),
                 subNodeInfo: subNodeInfo(undefined, {type:''}),
                 routingKey: _routingKeyAreaPrefix + _nextRoutingKey++,
@@ -266,7 +252,6 @@ export function node(state = nodeInitialState, action) {
             let result = {
                 ...state,
                 subNodeForm: subNodeForm(state.subNodeForm, action),
-                subNodeRegister: subNodeRegister(state.subNodeRegister, action),
                 subNodeDaos: subNodeDaos(state.subNodeDaos, action),
                 subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
             };
@@ -314,7 +299,6 @@ export function node(state = nodeInitialState, action) {
                 ...state,
 
                 subNodeForm: subNodeForm(state.subNodeForm, action),
-                subNodeRegister: subNodeRegister(state.subNodeRegister, action),
                 subNodeDaos: subNodeDaos(state.subNodeDaos, action),
                 subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
             }
@@ -461,7 +445,6 @@ export function node(state = nodeInitialState, action) {
 
             // Data vztahující se k vybranému ID
             if (state.selectedSubNodeId != action.subNodeId) {
-                result.subNodeRegister = subNodeRegister(undefined, {type:''});
                 result.subNodeDaos = subNodeDaos();
                 result.subNodeForm = subNodeForm(undefined, {type:''});
                 result.subNodeInfo = subNodeInfo(undefined, {type:''});

@@ -65,7 +65,6 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
 
         LevelInfoImpl levelInfo = new LevelInfoImpl(nodeId, parentNodeId);
         levelInfo.setNodeUuid(cachedNode.getUuid());
-        levelInfo.setNodeAps(cachedNode.getNodeRegisters());
         List<ArrDescItem> descItems = cachedNode.getDescItems();
         // sort items by item type and position
         descItems.stream().sorted((item1, item2) -> {

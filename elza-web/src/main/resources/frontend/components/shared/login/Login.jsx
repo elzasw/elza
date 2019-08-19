@@ -1,9 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Modal, Button, Form} from 'react-bootstrap';
+import {Modal, Button, Form, Row, Col} from 'react-bootstrap';
 import {decorateFormField} from 'components/form/FormUtils.jsx'
 import {login, checkUserLogged} from 'actions/global/login.jsx';
+import {WebApi} from 'actions/index.jsx';
 
 import './Login.less';
 import ModalDialogWrapper from "../dialog/ModalDialogWrapper";
@@ -31,12 +32,20 @@ const getDefaultLogin = () => {
 class Login extends AbstractReactComponent {
     defaultState = {
         ...getDefaultLogin(),
-        error: null
+        error: null,
+        sso: []
     };
 
     componentWillMount(){
-        this.dispatch(checkUserLogged());
+        this.props.dispatch(checkUserLogged());
+        this.fetch();
     }
+
+    fetch = () => {
+        WebApi.getSsoEntities().then((data) => {
+            this.setState({sso: data});
+        });
+    };
 
     state = {
         ...this.defaultState
@@ -53,14 +62,14 @@ class Login extends AbstractReactComponent {
         } else {
             this.setState({error: i18n('login.error.unknown')});
         }
-    }
+    };
 
     handleLogin = (e) => {
         e.preventDefault();
-        const {username, password} = this.state;
+        const {username, password, sso} = this.state;
 
-        this.dispatch(login(username, password)).then((data) => {
-            this.setState(this.defaultState);
+        this.props.dispatch(login(username, password)).then((data) => {
+            this.setState({...this.defaultState, sso});
         }).catch((err) => {
             this.handleLoginError(err);
         });
@@ -68,7 +77,7 @@ class Login extends AbstractReactComponent {
 
     render() {
         const {login, submitting, userDetail} = this.props;
-        const {error, username, password} = this.state;
+        const {error, username, password, sso} = this.state;
 
         // Login dialog is shown only when user is not logged in and data about user have been fetched
         // to prevent flicker on page reload
@@ -82,10 +91,16 @@ class Login extends AbstractReactComponent {
                         {error && <div className="error">{error}</div>}
                         <FormInput type="text" value={username} onChange={this.handleChange.bind(this, 'username')} label={i18n('login.field.username')} />
                         <FormInput type="password" value={password} onChange={this.handleChange.bind(this, 'password')} label={i18n('login.field.password')} />
+                        <div className="submit-button">
+                            <Button type="submit" onClick={this.handleLogin} disabled={submitting}>{i18n('login.action.login')}</Button>
+                        </div>
                     </Modal.Body>
-                    <Modal.Footer>
-                        <Button type="submit" onClick={this.handleLogin} disabled={submitting}>{i18n('login.action.login')}</Button>
-                    </Modal.Footer>
+                    {sso && sso.length > 0 && <Modal.Footer>
+                        <div className="or-message">{i18n('login.or-message')}</div>
+                        <div>{sso.map(((l, i) => {
+                            return <a key={i} href={l.url} className="btn btn-default" role="button">{l.name}</a>
+                        }))}</div>
+                    </Modal.Footer>}
                 </Form>
             </ModalDialogWrapper>}
         </div>;

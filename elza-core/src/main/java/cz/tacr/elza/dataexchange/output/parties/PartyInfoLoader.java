@@ -9,7 +9,6 @@ import org.apache.commons.lang.Validate;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.dataexchange.output.aps.BaseApInfoImpl;
 import cz.tacr.elza.dataexchange.output.aps.ExternalIdDispatcher;
 import cz.tacr.elza.dataexchange.output.aps.ExternalIdLoader;
 import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
@@ -18,7 +17,9 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
 
-public class PartyInfoLoader extends AbstractEntityLoader<PartyInfoImpl> {
+public class PartyInfoLoader extends AbstractEntityLoader<PartyInfo> {
+
+    private final ApStateLoader apStateLoader;
 
     private final UnitdateLoader unitdateLoader;
 
@@ -30,9 +31,9 @@ public class PartyInfoLoader extends AbstractEntityLoader<PartyInfoImpl> {
 
     private final StaticDataProvider staticData;
 
-    private PartyInfoLoader(String subEntityQueryIdPath, EntityManager em, int batchSize,
-            StaticDataProvider staticData) {
+    private PartyInfoLoader(String subEntityQueryIdPath, EntityManager em, int batchSize, StaticDataProvider staticData) {
         super(ParParty.class, subEntityQueryIdPath, em, batchSize);
+        this.apStateLoader = new ApStateLoader(em, batchSize);
         this.unitdateLoader = new UnitdateLoader(em, batchSize);
         this.nameLoader = new NameLoader(em, batchSize, unitdateLoader, staticData);
         this.groupIndentifierLoader = new PartyGroupIndentifierLoader(em, batchSize, unitdateLoader);
@@ -43,6 +44,7 @@ public class PartyInfoLoader extends AbstractEntityLoader<PartyInfoImpl> {
     @Override
     public void flush() {
         super.flush();
+        apStateLoader.flush();
         nameLoader.flush();
         groupIndentifierLoader.flush();
         // flush unit-date after name and identifier loader!
@@ -56,21 +58,20 @@ public class PartyInfoLoader extends AbstractEntityLoader<PartyInfoImpl> {
     }
 
     @Override
-    protected PartyInfoImpl createResult(Object entity) {
+    protected PartyInfo createResult(Object entity) {
         ParParty party = (ParParty) entity;
-        PartyInfoImpl partyInfo = new PartyInfoImpl(party);
-
         ApAccessPoint ap = party.getAccessPoint();
         Validate.isTrue(HibernateUtils.isInitialized(ap));
-        BaseApInfoImpl baseApInfo = new BaseApInfoImpl(ap);
-        partyInfo.setBaseApInfo(baseApInfo);
-
+        PartyInfo partyInfo = new PartyInfo(party);
         return partyInfo;
     }
 
     @Override
-    protected void onBatchEntryLoad(LoadDispatcher<PartyInfoImpl> dispatcher, PartyInfoImpl result) {
+    protected void onBatchEntryLoad(LoadDispatcher<PartyInfo> dispatcher, PartyInfo result) {
         ParParty party = result.getParty();
+
+        ApStateDispatcher apsd = new ApStateDispatcher(result, dispatcher, staticData);
+        apStateLoader.addRequest(party.getAccessPointId(), apsd);
 
         NameDispatcher nd = new NameDispatcher(party, dispatcher, staticData);
         nameLoader.addRequest(party.getPartyId(), nd);
@@ -81,7 +82,7 @@ public class PartyInfoLoader extends AbstractEntityLoader<PartyInfoImpl> {
             groupIndentifierLoader.addRequest(party.getPartyId(), pgid);
         }
 
-        ExternalIdDispatcher eidd = new ExternalIdDispatcher(result.getBaseApInfo(), dispatcher, staticData);
+        ExternalIdDispatcher eidd = new ExternalIdDispatcher(result, dispatcher, staticData);
         externalIdLoader.addRequest(party.getAccessPointId(), eidd);
     }
 

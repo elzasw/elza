@@ -1,32 +1,19 @@
 package cz.tacr.elza.controller.factory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.common.FactoryUtils;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApEidTypeVO;
-import cz.tacr.elza.controller.vo.ApExternalIdVO;
-import cz.tacr.elza.controller.vo.ApRecordSimple;
-import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.LanguageVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ap.ApFormVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.ApStateVO;
@@ -50,21 +37,6 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApDescription;
-import cz.tacr.elza.domain.ApExternalId;
-import cz.tacr.elza.domain.ApExternalIdType;
-import cz.tacr.elza.domain.ApFragment;
-import cz.tacr.elza.domain.ApItem;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ApRule;
-import cz.tacr.elza.domain.ApRuleSystem;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBodyItemRepository;
 import cz.tacr.elza.repository.ApDescriptionRepository;
@@ -73,6 +45,7 @@ import cz.tacr.elza.repository.ApFragmentItemRepository;
 import cz.tacr.elza.repository.ApFragmentRepository;
 import cz.tacr.elza.repository.ApNameItemRepository;
 import cz.tacr.elza.repository.ApNameRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.RuleService;
@@ -81,6 +54,8 @@ import cz.tacr.elza.service.RuleService;
 public class ApFactory {
 
     private final ApAccessPointRepository apRepository;
+
+    private final ApStateRepository stateRepository;
 
     private final ApNameRepository nameRepository;
 
@@ -110,6 +85,7 @@ public class ApFactory {
 
     @Autowired
     public ApFactory(final ApAccessPointRepository apRepository,
+                     final ApStateRepository stateRepository,
                      final ApNameRepository nameRepository,
                      final ApDescriptionRepository descRepository,
                      final ApExternalIdRepository eidRepository,
@@ -124,6 +100,7 @@ public class ApFactory {
                      final PartyRepository partyRepository,
                      final ClientFactoryVO factoryVO) {
         this.apRepository = apRepository;
+        this.stateRepository = stateRepository;
         this.nameRepository = nameRepository;
         this.descRepository = descRepository;
         this.eidRepository = eidRepository;
@@ -142,14 +119,16 @@ public class ApFactory {
     /**
      * Creates simple value object from AP.
      */
-    public ApRecordSimple createVOSimple(ApAccessPoint ap) {
+    public ApRecordSimple createVOSimple(ApState apState) {
+        ApAccessPoint ap = apState.getAccessPoint();
         ApName prefName = nameRepository.findPreferredNameByAccessPoint(ap);
         ApDescription desc = descRepository.findByAccessPoint(ap);
         // create VO
         ApRecordSimple vo = new ApRecordSimple();
-        vo.setTypeId(ap.getApTypeId());
+        vo.setTypeId(apState.getApTypeId());
         vo.setId(ap.getAccessPointId());
         vo.setRecord(prefName.getFullName());
+        vo.setScopeName(apState.getScope().getName());
         if (desc != null) {
             vo.setCharacteristics(desc.getDescription());
         }
@@ -161,11 +140,13 @@ public class ApFactory {
      * If id is present persist entity must be found.
      * If id is null new AP is created without create change.
      */
-    public ApAccessPoint create(ApAccessPointVO apVO) {
+    public ApState create(ApAccessPointVO apVO) {
         Integer id = apVO.getId();
         if (id != null) {
             ApAccessPoint ap = apRepository.findOne(id);
-            return Validate.notNull(ap);
+            Validate.notNull(ap);
+            ApState apState = stateRepository.findLastByAccessPoint(ap);
+            return Validate.notNull(apState);
         }
         Validate.isTrue(!apVO.isInvalid());
         // prepare type and scope
@@ -173,50 +154,95 @@ public class ApFactory {
         ApType type = staticData.getApTypeById(apVO.getTypeId());
         ApScope scope = scopeRepository.findOne(apVO.getScopeId());
         // create new AP
-        ApAccessPoint entity = new ApAccessPoint();
-        //entity.setAccessPointId(accessPointId);
-        entity.setApType(Validate.notNull(type));
-        //entity.setCreateChange(createChange);
-        //entity.setDeleteChange(deleteChange);
-        entity.setScope(Validate.notNull(scope));
-        entity.setUuid(apVO.getUuid());
-        return entity;
+        ApAccessPoint accessPoint = new ApAccessPoint();
+        //accessPoint.setAccessPointId(accessPointId);
+        //accessPoint.setCreateChange(createChange);
+        //accessPoint.setDeleteChange(deleteChange);
+        accessPoint.setUuid(apVO.getUuid());
+        ApState apState = new ApState();
+        apState.setStateApproval(ApState.StateApproval.NEW);
+        apState.setApType(Validate.notNull(type));
+        apState.setScope(Validate.notNull(scope));
+        apState.setAccessPoint(accessPoint);
+        return apState;
     }
 
     /**
      * Creates value object from AP. Party Id is not set.
      */
-    public ApAccessPointVO createVO(ApAccessPoint ap) {
+    public ApAccessPointVO createVO(ApAccessPoint accessPoint) {
+        ApState apState = stateRepository.findLastByAccessPoint(accessPoint);
+        return createVO(apState);
+    }
+
+    /**
+     * Creates value object from AP. Party Id is not set.
+     */
+    public ApAccessPointVO createVO(ApState apState) {
+        ApAccessPoint ap = apState.getAccessPoint();
         ApDescription desc = descRepository.findByAccessPoint(ap);
         // prepare names
         List<ApName> names = nameRepository.findByAccessPoint(ap);
         // prepare external ids
         List<ApExternalId> eids = eidRepository.findByAccessPoint(ap);
-        return createVO(ap, desc, names, eids);
+        return createVO(apState, desc, names, eids);
     }
 
-    public ApAccessPointVO createVO(final ApAccessPoint ap, final boolean fillForm) {
-        ApAccessPointVO apVO = createVO(ap);
-        ApType apType = ap.getApType();
+    public List<ApStateHistoryVO> createStateHistoriesVO(final Collection<ApState> states) {
+        if (CollectionUtils.isEmpty(states)) {
+            return Collections.emptyList();
+        }
+
+        List<ApStateHistoryVO> results = new ArrayList<>();
+
+        for (ApState state : states) {
+            ApStateHistoryVO result = new ApStateHistoryVO();
+            ApChange createChange = state.getCreateChange();
+            ApScope scope = state.getScope();
+            UsrUser user = createChange.getUser();
+            result.setChangeDate(Date.from(createChange.getChangeDate().toInstant()));
+            result.setComment(state.getComment());
+            result.setType(state.getApType().getName());
+            result.setUsername(user == null ? null : user.getUsername());
+            result.setScope(scope.getName());
+            result.setState(state.getStateApproval());
+            results.add(result);
+        }
+
+        return results;
+    }
+
+    public ApAccessPointVO createVO(ApState apState, boolean fillForm) {
+        ApAccessPointVO apVO = createVO(apState);
+        ApType apType = apState.getApType();
         if (fillForm && apType.getRuleSystem() != null) {
-            apVO.setForm(createFormVO(ap));
+            apVO.setForm(createFormVO(apState.getAccessPoint(), apType));
         }
         return apVO;
     }
 
-    public ApAccessPointVO createVO(final ApAccessPoint ap,
+    public ApAccessPointVO createVO(final ApState apState,
                                     final ApDescription desc,
                                     final List<ApName> names,
                                     final List<ApExternalId> eids) {
         StaticDataProvider staticData = staticDataService.getData();
+        ApAccessPoint ap = apState.getAccessPoint();
         ApName prefName = names.get(0);
         ApRuleSystem ruleSystem = ap.getRuleSystem();
         Validate.isTrue(prefName.isPreferredName());
         List<ApAccessPointNameVO> namesVO = FactoryUtils.transformList(names, n -> ApAccessPointNameVO.newInstance(n, staticData));
         // prepare external ids
         List<ApExternalIdVO> eidsVO = FactoryUtils.transformList(eids, ApExternalIdVO::newInstance);
+
         // create VO
-        ApAccessPointVO vo = ApAccessPointVO.newInstance(ap);
+        ApAccessPointVO vo = new ApAccessPointVO();
+        vo.setId(ap.getAccessPointId());
+        vo.setInvalid(apState.getDeleteChange() != null);
+        vo.setScopeId(apState.getScopeId());
+        vo.setTypeId(apState.getApTypeId());
+        vo.setComment(apState.getComment());
+        vo.setStateApproval(apState.getStateApproval());
+        vo.setUuid(ap.getUuid());
         vo.setExternalIds(eidsVO);
         vo.setNames(namesVO);
         vo.setErrorDescription(ap.getErrorDescription());
@@ -227,15 +253,14 @@ public class ApFactory {
         if (desc != null) {
             vo.setCharacteristics(desc.getDescription());
         }
-
         return vo;
     }
 
     /**
      * Create collection of VO from APs
-     * 
+     *
      * Function guarantees ordering of APs between input and output
-     * 
+     *
      * @param accessPoints
      * @return Collection of VOs
      */
@@ -246,19 +271,22 @@ public class ApFactory {
 
         List<ApAccessPointVO> result = new ArrayList<>(accessPoints.size());
 
+        Map<Integer, ApState> apStateMap = stateRepository.findLastByAccessPoints(accessPoints).stream()
+                .collect(Collectors.toMap(o -> o.getAccessPointId(), Function.identity()));
         Map<Integer, List<ApExternalId>> apEidsMap = eidRepository.findByAccessPoints(accessPoints).stream()
-                .collect(Collectors.groupingBy(ApExternalId::getAccessPointId));
+                .collect(Collectors.groupingBy(o -> o.getAccessPointId()));
         Map<Integer, ApDescription> apDescriptionMap = descRepository.findByAccessPoints(accessPoints).stream()
-                .collect(Collectors.toMap(ApDescription::getAccessPointId, Function.identity()));
+                .collect(Collectors.toMap(o -> o.getAccessPointId(), Function.identity()));
         Map<Integer, List<ApName>> apNamesMap = nameRepository.findByAccessPoints(accessPoints).stream()
-                .collect(Collectors.groupingBy(ApName::getAccessPointId));
+                .collect(Collectors.groupingBy(o -> o.getAccessPointId()));
 
         for (ApAccessPoint accessPoint : accessPoints) {
-            Integer id = accessPoint.getAccessPointId();
-            List<ApExternalId> apExternalIds = apEidsMap.getOrDefault(id, Collections.emptyList());
-            ApDescription apDescription = apDescriptionMap.get(id);
-            List<ApName> apNames = apNamesMap.getOrDefault(id, Collections.emptyList());
-            result.add(createVO(accessPoint, apDescription, apNames, apExternalIds));
+            Integer accessPointId = accessPoint.getAccessPointId();
+            ApState apState = apStateMap.get(accessPointId);
+            List<ApExternalId> apExternalIds = apEidsMap.getOrDefault(accessPointId, Collections.emptyList());
+            ApDescription apDescription = apDescriptionMap.get(accessPointId);
+            List<ApName> apNames = apNamesMap.getOrDefault(accessPointId, Collections.emptyList());
+            result.add(createVO(apState, apDescription, apNames, apExternalIds));
         }
 
         return result;
@@ -277,10 +305,10 @@ public class ApFactory {
         return fragmentVO;
     }
 
-    public ApAccessPointNameVO createVO(final ApName name, final boolean fillForm) {
+    public ApAccessPointNameVO createVO(final ApName name, final ApType type, boolean fillForm) {
         ApAccessPointNameVO nameVO = createVO(name);
         if (fillForm) {
-            nameVO.setForm(createFormVO(name));
+            nameVO.setForm(createFormVO(name, type));
         }
         return nameVO;
     }
@@ -299,9 +327,9 @@ public class ApFactory {
         return form;
     }
 
-    private ApFormVO createFormVO(final ApAccessPoint accessPoint) {
+    private ApFormVO createFormVO(ApAccessPoint accessPoint, ApType apType) {
         List<ApItem> bodyItems = new ArrayList<>(bodyItemRepository.findValidItemsByAccessPoint(accessPoint));
-        List<RulItemTypeExt> rulItemTypes = ruleService.getApItemTypesInternal(accessPoint.getApType(), bodyItems, ApRule.RuleType.BODY_ITEMS);
+        List<RulItemTypeExt> rulItemTypes = ruleService.getApItemTypesInternal(apType, bodyItems, ApRule.RuleType.BODY_ITEMS);
 
         ApFormVO form = new ApFormVO();
         form.setItemTypes(createItemTypesVO(rulItemTypes));
@@ -309,9 +337,9 @@ public class ApFactory {
         return form;
     }
 
-    private ApFormVO createFormVO(final ApName name) {
+    private ApFormVO createFormVO(ApName name, ApType type) {
         List<ApItem> nameItems = new ArrayList<>(nameItemRepository.findValidItemsByName(name));
-        List<RulItemTypeExt> rulItemTypes = ruleService.getApItemTypesInternal(name.getAccessPoint().getApType(), nameItems, ApRule.RuleType.NAME_ITEMS);
+        List<RulItemTypeExt> rulItemTypes = ruleService.getApItemTypesInternal(type, nameItems, ApRule.RuleType.NAME_ITEMS);
 
         ApFormVO form = new ApFormVO();
         form.setItemTypes(createItemTypesVO(rulItemTypes));

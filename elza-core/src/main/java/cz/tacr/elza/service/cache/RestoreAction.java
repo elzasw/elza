@@ -1,13 +1,12 @@
 package cz.tacr.elza.service.cache;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 
@@ -30,7 +29,6 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeExtension;
-import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RulArrangementExtension;
@@ -38,11 +36,6 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.FundFileRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.StructuredObjectRepository;
 
 public class RestoreAction {
 
@@ -53,7 +46,6 @@ public class RestoreAction {
     private Map<Integer, List<ArrDataRecordRef>> restoreAPRef;
     private Map<Integer, List<ArrDataFileRef>> restoreFileRef;
     private Map<Integer, List<ArrDaoLink>> restoreDaoLinks;
-    private Map<Integer, List<ArrNodeRegister>> restoreNodeAPRef;
 
     final private StructuredObjectRepository structureDataRepository;
 
@@ -69,17 +61,20 @@ public class RestoreAction {
 
     final private DaoRepository daoRepository;
 
+    final private NodeRepository nodeRepository;
+
     final private EntityManager em;
 
     public RestoreAction(final StaticDataProvider sdp,
-            final EntityManager em,
-            final StructuredObjectRepository structureDataRepository,
-            final PartyRepository partyRepository,
+                         final EntityManager em,
+                         final StructuredObjectRepository structureDataRepository,
+                         final PartyRepository partyRepository,
             /*final PartyNameComplementRepository partyNameComplementRepository,
             final PartyNameRepository partyNameRepository,*/
-            final ApAccessPointRepository accessPointRepository,
-            final FundFileRepository fundFileRepository,
-            final DaoRepository daoRepository) {
+                         final ApAccessPointRepository accessPointRepository,
+                         final FundFileRepository fundFileRepository,
+                         final DaoRepository daoRepository,
+                         final NodeRepository nodeRepository) {
         this.sdp = sdp;
         this.em = em;
         this.structureDataRepository = structureDataRepository;
@@ -89,6 +84,7 @@ public class RestoreAction {
         this.accessPointRepository = accessPointRepository;
         this.fundFileRepository = fundFileRepository;
         this.daoRepository = daoRepository;
+        this.nodeRepository = nodeRepository;
     }
 
     public void restore(Collection<RestoredNode> cachedNodes) {
@@ -101,7 +97,6 @@ public class RestoreAction {
         prepareAPRefs();
         prepareFileRefs();
         preapareDaoLinks();
-        prepareNodeRegisters();
 
     }
 
@@ -232,11 +227,6 @@ public class RestoreAction {
                 restoreDaoLink(daoLink);
             }
         }
-        if (CollectionUtils.isNotEmpty(restoredNode.getNodeRegisters())) {
-            for (ArrNodeRegister nodeRegister : restoredNode.getNodeRegisters()) {
-                addNodeAPRef(nodeRegister);
-            }
-        }
         if (CollectionUtils.isNotEmpty(restoredNode.getNodeExtensions())) {
             for (ArrNodeExtension nodeExt : restoredNode.getNodeExtensions()) {
                 restoreNodeExt(nodeExt);
@@ -297,17 +287,6 @@ public class RestoreAction {
         }
         List<ArrDaoLink> dataList = restoreDaoLinks.computeIfAbsent(daoLink.getDaoId(), k -> new ArrayList<>());
         dataList.add(daoLink);
-    }
-
-    private void addNodeAPRef(ArrNodeRegister nodeRegister) {
-        Validate.notNull(nodeRegister.getRecordId());
-
-        if (restoreNodeAPRef == null) {
-            restoreNodeAPRef = new HashMap<>();
-        }
-        List<ArrNodeRegister> dataList = restoreNodeAPRef.computeIfAbsent(nodeRegister.getRecordId(),
-                                                                          k -> new ArrayList<>());
-        dataList.add(nodeRegister);
     }
 
     private void restoreNodeExt(ArrNodeExtension nodeExt) {
@@ -471,38 +450,24 @@ public class RestoreAction {
             return;
         }
         List<ArrDao> daos = daoRepository.findAll(restoreDaoLinks.keySet());
+        Set<Integer> nodeIds = restoreDaoLinks.values().stream()
+                .flatMap(Collection::stream)
+                .map(ArrDaoLink::getNodeId)
+                .collect(Collectors.toSet());
+        Map<Integer, ArrNode> nodesMap = nodeRepository.findAll(nodeIds).stream()
+                .collect(Collectors.toMap(ArrNode::getNodeId, Function.identity()));
+
         for (ArrDao dao : daos) {
             List<ArrDaoLink> dataList = restoreDaoLinks.remove(dao.getDaoId());
 
             for (ArrDaoLink daoLink : dataList) {
                 daoLink.setDao(dao);
+                daoLink.setNode(nodesMap.get(daoLink.getNodeId()));
             }
         }
 
         Validate.isTrue(restoreDaoLinks.isEmpty());
         restoreDaoLinks = null;
-    }
-
-    /**
-     * Vyplnění návazných entity {@link ApAccessPoint}.
-     *
-     */
-    private void prepareNodeRegisters() {
-        if (restoreNodeAPRef == null) {
-            return;
-        }
-        List<ApAccessPoint> records = accessPointRepository.findAll(restoreNodeAPRef.keySet());
-        for (ApAccessPoint record : records) {
-            List<ArrNodeRegister> dataList = restoreNodeAPRef.remove(record.getAccessPointId());
-
-            for (ArrNodeRegister nodeRegister : dataList) {
-                nodeRegister.setRecord(record);
-            }
-        }
-
-        Validate.isTrue(restoreNodeAPRef.isEmpty());
-        restoreNodeAPRef = null;
-
     }
 
 }

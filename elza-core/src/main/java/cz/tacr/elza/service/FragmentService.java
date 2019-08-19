@@ -48,7 +48,7 @@ public class FragmentService {
 
         ApFragment fragment = new ApFragment();
         fragment.setFragmentType(fragmentType);
-        fragment.setState(ApState.TEMP);
+        fragment.setState(ApStateEnum.TEMP);
 
         return fragmentRepository.save(fragment);
     }
@@ -103,7 +103,7 @@ public class FragmentService {
     }
 
     public void deleteFragment(final ApFragment fragment) {
-        if (fragment.getState() == ApState.TEMP) {
+        if (fragment.getState() == ApStateEnum.TEMP) {
             List<ApFragmentItem> items = fragmentItemRepository.findValidItemsByFragment(fragment);
             Set<ApChange> changes = new HashSet<>();
             for (ApFragmentItem item : items) {
@@ -119,8 +119,8 @@ public class FragmentService {
     }
 
     public void confirmFragment(final ApFragment fragment) {
-        if (fragment.getState() == ApState.TEMP) {
-            fragment.setState(ApState.INIT);
+        if (fragment.getState() == ApStateEnum.TEMP) {
+            fragment.setState(ApStateEnum.INIT);
             apGeneratorService.generateAndSetResult(fragment);
             fragmentRepository.save(fragment);
         } else {

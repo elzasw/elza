@@ -6,31 +6,31 @@ import java.util.List;
 
 import org.apache.commons.lang3.Validate;
 
-import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApDescription;
 import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.ApState;
 
 public class ApAccessPointData {
+
+    // --- fields ---
 
     private final LinkedList<ApName> names = new LinkedList<>();
 
     private final List<ApExternalId> externalIds = new ArrayList<>();
 
-    private ApAccessPoint accessPoint;
+    private ApState apState;
 
     private ApDescription description;
 
-    public ApAccessPoint getAccessPoint() {
-        return accessPoint;
+    // --- getters/setters ---
+
+    public ApState getApState() {
+        return apState;
     }
 
-    public void setAccessPoint(ApAccessPoint accessPoint) {
-        this.accessPoint = accessPoint;
-    }
-
-    public Integer getAccessPointId() {
-        return accessPoint.getAccessPointId();
+    public void setApState(ApState apState) {
+        this.apState = apState;
     }
 
     public ApDescription getDescription() {
@@ -53,7 +53,7 @@ public class ApAccessPointData {
             names.add(name);
         }
     }
-    
+
     public ApName getPreferredName() {
         if (names.size() > 0) {
             ApName name = names.getFirst();

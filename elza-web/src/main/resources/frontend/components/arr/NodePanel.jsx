@@ -9,33 +9,24 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {
     AbstractReactComponent,
-    Accordion,
     HorizontalLoader,
     i18n,
     Icon,
     ListBox,
-    Loading,
     TooltipTrigger,
     Utils
 } from 'components/shared';
 import SubNodeDao from './SubNodeDao'
-import SubNodeRegister from './SubNodeRegister'
 import NodeActionsBar from './NodeActionsBar'
 import NodeSubNodeForm from './NodeSubNodeForm'
 import {Button} from 'react-bootstrap';
 import {addNodeFormArr} from 'actions/arr/addNodeForm.jsx';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
-import {fundSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister.jsx'
 import {fundSubNodeDaosFetchIfNeeded} from 'actions/arr/subNodeDaos.jsx'
-import {fundSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo.jsx'
-import {fundNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo.jsx'
 import {
-    fundNodeSubNodeFulltextSearch,
     fundSelectSubNode,
     fundSubNodesNext,
-    fundSubNodesNextPage,
     fundSubNodesPrev,
-    fundSubNodesPrevPage
 } from 'actions/arr/node.jsx';
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {indexById} from 'stores/app/utils.jsx'
@@ -59,6 +50,7 @@ import defaultKeymap from './NodePanelKeymap.jsx'
 import './NodePanel.less';
 import NodeSettingsForm from "./NodeSettingsForm";
 import {FOCUS_KEYS} from "../../constants.tsx";
+import ConfirmForm from "../shared/form/ConfirmForm";
 // Konstance kolik se má maximálně zobrazit v seznamu parents a children záznamů
 const PARENT_CHILD_MAX_LENGTH = 250
 
@@ -139,14 +131,14 @@ class NodePanel extends AbstractReactComponent {
     componentDidMount() {
         const settings = this.getSettingsFromProps();
 
-        this.requestData(this.props.versionId, this.props.node, this.props.showRegisterJp, settings);
+        this.requestData(this.props.versionId, this.props.node, settings);
         this.ensureItemVisible();
         this.trySetFocus(this.props);
     }
 
     componentWillReceiveProps(nextProps) {
         const settings = this.getSettingsFromProps(nextProps);
-        this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp, settings);
+        this.requestData(nextProps.versionId, nextProps.node, settings);
 
         var newState = {
             focusItemIndex: this.getFocusItemIndex(nextProps, this.state.focusItemIndex)
@@ -342,6 +334,27 @@ class NodePanel extends AbstractReactComponent {
         this.dispatch(modalDialogShow(this, i18n('arr.request.digitizationRequest.form.title'), form));
     }
 
+    /**
+     * Zobrazení formuláře pro potvrzení synchronizace DAO.
+     */
+    handleDigitizationSync = () => {
+        const {node, versionId} = this.props;
+        const nodeId = node.selectedSubNodeId;
+
+        const confirmForm = <ConfirmForm
+            confirmMessage={i18n('arr.daos.node.sync.confirm-message')}
+            submittingMessage={i18n('arr.daos.node.sync.submitting-message')}
+            submitTitle={i18n('global.action.run')}
+            onSubmit={() => {
+                return WebApi.syncDaoLink(versionId, nodeId);
+            }}
+            onSubmitSuccess={() => {
+                this.props.dispatch(modalDialogHide());
+            }}
+        />;
+        this.props.dispatch(modalDialogShow(this, i18n('arr.daos.node.sync.title'), confirmForm));
+    };
+
     handleVisiblePolicy() {
         const {node, versionId} = this.props;
         const form = <NodeSettingsForm nodeId={node.selectedSubNodeId} fundVersionId={versionId} onSubmit={this.handleSetVisiblePolicy}
@@ -437,7 +450,7 @@ return true
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['versionId', 'fund', 'node', 'calendarTypes', 'descItemTypes', 'rulDataTypes', 'fundId', 'showRegisterJp', 'closed']
+        var eqProps = ['versionId', 'fund', 'node', 'calendarTypes', 'descItemTypes', 'rulDataTypes', 'fundId', 'closed']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -445,15 +458,13 @@ return true
      * Načtení dat, pokud je potřeba.
      * @param versionId {String} verze AS
      * @param node {Object} node
-     * @param showRegisterJp {bool} zobrazení rejstřílů vázené k jednotce popisu
      */
-    requestData(versionId, node, showRegisterJp, settings) {
+    requestData(versionId, node, settings) {
         if (node.selectedSubNodeId != null) {
             this.dispatch(descItemTypesFetchIfNeeded());
             this.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, node.routingKey, node.dirty, settings.showChildren, settings.showParents));
             this.dispatch(refRulDataTypesFetchIfNeeded());
 
-            showRegisterJp && this.dispatch(fundSubNodeRegisterFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
             this.dispatch(fundSubNodeDaosFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
 
         }
@@ -720,11 +731,10 @@ return true
     /**
      * Renderování Accordion.
      * @param form {Object} editační formulář, pokud je k dispozici (k dispozici je, pokud je nějaká položka Accordion vybraná)
-     * @param recordInfo rejstříky k JP
      * @param daos digitální entity k JP
      * @return {Object} view
      */
-    renderAccordion(form, recordInfo, daos, readMode, arrPerm) {
+    renderAccordion(form, daos, readMode, arrPerm) {
         const {node, versionId, userDetail, fund, fundId, closed, displayAccordion} = this.props;
         const {focusItemIndex} = this.state;
         var rows = [];
@@ -782,7 +792,6 @@ return true
                             </div>
                             <div key="body" className='accordion-body'>
                                 {form}
-                                {recordInfo}
                                 {daos}
                             </div>
                         </div>
@@ -841,8 +850,7 @@ return true
 
     render() {
         const {calendarTypes, versionId, rulDataTypes, node,
-                fundId, userDetail,
-                showRegisterJp, fund, closed, descItemTypes} = this.props;
+                fundId, userDetail, fund, closed, descItemTypes} = this.props;
 
         const settings = this.getSettingsFromProps();
         const readMode = settings.readMode;
@@ -886,23 +894,12 @@ return true
                 onAddDescItemType={this.handleAddDescItemType}
                 onVisiblePolicy={this.handleVisiblePolicy}
                 onDigitizationRequest={this.handleDigitizationRequest}
+                onDigitizationSync={this.handleDigitizationSync}
                 readMode={readMode}
                 arrPerm={arrPerm}
             />
         } else {
             form = <HorizontalLoader text={i18n('global.data.loading.form')}/>
-        }
-
-        let record;
-        if (showRegisterJp) {
-            record = <SubNodeRegister
-                        nodeId={node.id}
-                        versionId={versionId}
-                        selectedSubNodeId={node.selectedSubNodeId}
-                        routingKey={node.routingKey}
-                        register={node.subNodeRegister}
-                        closed={closed}
-                        readMode={readMode}/>
         }
 
         const daos = <SubNodeDao
@@ -921,7 +918,7 @@ return true
             <Shortcuts name='NodePanel' key={'node-panel'} className={cls} handler={this.handleShortcuts} tabIndex={0} global stopPropagation={false}>
                 <div key='main' className='main'>
                     {settings.showParents && this.renderParents()}
-                    {this.renderAccordion(form, record, daos, readMode, arrPerm)}
+                    {this.renderAccordion(form, daos, readMode, arrPerm)}
                     {settings.showChildren &&  this.renderChildren()}
                 </div>
             </Shortcuts>
@@ -1002,7 +999,6 @@ NodePanel.propTypes = {
     descItemTypes: React.PropTypes.object.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
     fundId: React.PropTypes.number,
-    showRegisterJp: React.PropTypes.bool.isRequired,
     displayAccordion: React.PropTypes.bool.isRequired,
     closed: React.PropTypes.bool.isRequired,
     userDetail: React.PropTypes.object.isRequired

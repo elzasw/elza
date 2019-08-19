@@ -53,7 +53,6 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.domain.ArrNodeOutput;
-import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.ArrRequest;
@@ -314,13 +313,6 @@ public class RevertingChangesService {
         }
 
         {
-            Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_register", toChange);
-            Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_register", toChange);
-            updateEntityQuery.executeUpdate();
-            deleteEntityQuery.executeUpdate();
-        }
-
-        {
             Query updateEntityQuery = createSimpleUpdateEntityQuery(fund, node, "deleteChange", "arr_node_extension", toChange);
             Query deleteEntityQuery = createSimpleDeleteEntityQuery(fund, node, "createChange", "arr_node_extension", toChange);
             updateEntityQuery.executeUpdate();
@@ -501,8 +493,6 @@ public class RevertingChangesService {
         Query query = createFindChangeQuery(selectParams, fundId, nodeId, querySpecification);
 
         List<String> allowedChangeTypes = new ArrayList<>();
-        allowedChangeTypes.add(ArrChange.Type.ADD_RECORD_NODE.name());
-        allowedChangeTypes.add(ArrChange.Type.DELETE_RECORD_NODE.name());
         allowedChangeTypes.add(ArrChange.Type.UPDATE_DESC_ITEM.name());
         allowedChangeTypes.add(ArrChange.Type.ADD_DESC_ITEM.name());
         allowedChangeTypes.add(ArrChange.Type.DELETE_DESC_ITEM.name());
@@ -710,8 +700,6 @@ public class RevertingChangesService {
                 { ArrLevel.TABLE_NAME, ArrLevel.FIELD_DELETE_CHANGE_ID },
                 { ArrItem.TABLE_NAME, ArrItem.FIELD_CREATE_CHANGE_ID },
                 { ArrItem.TABLE_NAME, ArrItem.FIELD_DELETE_CHANGE_ID },
-                { ArrNodeRegister.TABLE_NAME, ArrNodeRegister.FIELD_CREATE_CHANGE_ID },
-                { ArrNodeRegister.TABLE_NAME, ArrNodeRegister.FIELD_DELETE_CHANGE_ID },
                 { ArrNodeExtension.TABLE_NAME, ArrNodeExtension.FIELD_CREATE_CHANGE_ID },
                 { ArrNodeExtension.TABLE_NAME, ArrNodeExtension.FIELD_DELETE_CHANGE_ID },
 
@@ -869,7 +857,6 @@ public class RevertingChangesService {
                                          @NotNull final ArrChange change) {
         String[][] tables = new String[][]{
             {"arr_level", "node"},
-            {"arr_node_register", "node"},
             {"arr_node_extension", "node"},
             {"arr_dao_link", "node"},
             {"arr_desc_item", "node"},
@@ -1048,8 +1035,6 @@ public class RevertingChangesService {
         Map<Integer, UsrUser> users = userService.findUserMap(userIds);
 
         List<ArrChange.Type> allowedNodeChangeTypes = Arrays.asList(
-                ArrChange.Type.ADD_RECORD_NODE,
-                ArrChange.Type.DELETE_RECORD_NODE,
                 ArrChange.Type.UPDATE_DESC_ITEM,
                 ArrChange.Type.ADD_DESC_ITEM,
                 ArrChange.Type.DELETE_DESC_ITEM);
@@ -1241,10 +1226,6 @@ public class RevertingChangesService {
                 "      SELECT create_change_id, node_id, 1 AS weight FROM arr_desc_item di JOIN arr_item i ON i.item_id = di.item_id WHERE node_id IN (%2$s)\n" +
                 "      UNION ALL\n" +
                 "      SELECT delete_change_id, node_id, 1 AS weight FROM arr_desc_item di JOIN arr_item i ON i.item_id = di.item_id WHERE node_id IN (%2$s)\n" +
-                "      UNION ALL\n" +
-                "      SELECT create_change_id, node_id, 1 AS weight FROM arr_node_register WHERE node_id IN (%2$s)\n" +
-                "      UNION ALL\n" +
-                "      SELECT delete_change_id, node_id, 1 AS weight FROM arr_node_register WHERE node_id IN (%2$s)\n" +
                 "      UNION ALL\n" +
                 "      SELECT delete_change_id, node_id, 1 AS weight FROM arr_node_extension WHERE node_id IN (%2$s)\n" +
                 "      UNION ALL\n" +

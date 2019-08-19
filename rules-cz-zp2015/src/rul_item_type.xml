@@ -805,4 +805,12 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <item-type code="ZP2015_AP_REF" data-type="RECORD_REF">
+        <name>Odkaz na přístupový bod</name>
+        <shortcut>Přístupový bod</shortcut>
+        <description>Přímý odkaz na přístupový bod (starší pomůcky)</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
 </item-types>

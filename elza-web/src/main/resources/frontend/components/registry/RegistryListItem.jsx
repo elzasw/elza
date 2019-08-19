@@ -47,7 +47,7 @@ class RegistryListItem extends AbstractReactComponent {
     }
 
     render() {
-        const {className, isActive, id, record, invalid} = this.props;
+        const {className, isActive, id, record, invalid, scopeName} = this.props;
 
         const cls = classNames(className, 'registry-list-item', {
             active: isActive,
@@ -66,6 +66,9 @@ class RegistryListItem extends AbstractReactComponent {
 				<span className="types" title={typeNames}>{typeNames}</span>
 				<span className="ids" title={displayId}>{displayId}</span>
 			</div>
+            <div>
+                {scopeName}
+            </div>
 		</div>;
     };
 }

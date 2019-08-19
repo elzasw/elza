@@ -33,6 +33,14 @@ public interface EntityWrapper {
         session.evict(getEntity());
     }
 
+    default void persist(Session session) {
+        session.persist(getEntity());
+    }
+
+    default void merge(Session session) {
+        session.merge(getEntity());
+    }
+
     /**
      * Callback is used by storage to notify wrapper before entity saves.
      */
@@ -41,6 +49,5 @@ public interface EntityWrapper {
     /**
      * Callback is used by storage to notify wrapper after entity saves.
      */
-    default void afterEntitySave() {
-    }
+    void afterEntitySave(Session session);
 }

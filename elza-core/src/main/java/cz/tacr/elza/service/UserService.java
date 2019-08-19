@@ -1,14 +1,6 @@
 package cz.tacr.elza.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -19,7 +11,10 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,17 +37,7 @@ import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.Authorization;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrGroupUser;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.WfIssueList;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
@@ -62,16 +47,6 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.exception.codes.UserCode;
-import cz.tacr.elza.repository.ApNameRepository;
-import cz.tacr.elza.repository.FilteredResult;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.GroupRepository;
-import cz.tacr.elza.repository.GroupUserRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PermissionRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.UserRepository;
-import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
@@ -120,6 +95,9 @@ public class UserService {
 
     @Autowired
     LevelTreeCacheService levelTreeCacheService;
+
+    @Autowired
+    private AuthenticationRepository authenticationRepository;
 
     @Value("${elza.security.salt:kdFss=+4Df_%}")
     private String SALT;
@@ -646,6 +624,32 @@ public class UserService {
         deleteGroupPermission(group, permissionsToDelete);
     }
 
+    public UsrAuthentication findAuthentication(UsrUser user, UsrAuthentication.AuthType authType) {
+        Validate.notNull(user);
+        Validate.notNull(authType);
+        UsrAuthentication result;
+        if (allowDefaultUser && user.getUsername().equalsIgnoreCase(defaultUsername)) {
+            result = new UsrAuthentication();
+            result.setUser(user);
+            result.setAuthType(UsrAuthentication.AuthType.PASSWORD);
+            result.setValue(defaultPassword);
+        } else {
+            result = authenticationRepository.findByUserAndAuthType(user, authType);
+        }
+        return result;
+    }
+
+    public List<UsrAuthentication> findAuthentication(String value, UsrAuthentication.AuthType authType) {
+        Validate.notNull(value);
+        Validate.notNull(authType);
+        return authenticationRepository.findByValueAndAuthType(value, authType);
+    }
+
+    public List<UsrAuthentication> findAuthentications(UsrUser user) {
+        Validate.notNull(user);
+        return authenticationRepository.findByUser(user);
+    }
+
     /**
      * Provede přenačtení oprávnění uživatele.
      *
@@ -813,23 +817,64 @@ public class UserService {
     /**
      * Změna uživatele.
      *
-     * @param user     upravovaný uživatel
-     * @param username uživatelské jméno
-     * @param password heslo (v plaintextu)
+     * @param user      upravovaný uživatel
+     * @param username  uživatelské jméno
+     * @param valuesMap data autentizací
      * @return upravený uživatel
      */
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
     public UsrUser changeUser(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
                               @NotEmpty final String username,
-                              @NotEmpty final String password) {
+                              @NotNull final Map<UsrAuthentication.AuthType, String> valuesMap) {
+        Validate.notNull(valuesMap);
+        Validate.notNull(username);
+        Validate.notNull(user);
 
-        /*String passwordDB = encodePassword(user.getUsername(), password);
-        if (!passwordDB.equals(user.getPassword())) {
-            throw new IllegalArgumentException("Neplatné heslo");
-        }*/
+        Map<UsrAuthentication.AuthType, UsrAuthentication> authTypeMap = findAuthentications(user).stream()
+                .collect(Collectors.toMap(UsrAuthentication::getAuthType, Function.identity()));
+        Set<UsrAuthentication> removeAuthentications = new HashSet<>(authTypeMap.values());
+        Set<UsrAuthentication> changeAuthentications = new HashSet<>();
 
-        user.setUsername(username);
-        user.setPassword(encodePassword(username, password));
+        if (!Objects.equals(user.getUsername(), username)) {
+            UsrAuthentication authType = authTypeMap.get(UsrAuthentication.AuthType.PASSWORD);
+            if (authType != null) { // kontrola jen pokud uživatel má autentizaci heslem
+                String newPassword = valuesMap.get(UsrAuthentication.AuthType.PASSWORD);
+                if (newPassword == null) {
+                    throw new BusinessException("Při změně jména se musí změnit i heslo", UserCode.NEED_CHANGE_PASSWORD)
+                            .level(Level.WARNING);
+                }
+            }
+            user.setUsername(username);
+        }
+
+        for (Map.Entry<UsrAuthentication.AuthType, String> entry : valuesMap.entrySet()) {
+            UsrAuthentication.AuthType authType = entry.getKey();
+            String value = entry.getValue();
+
+            UsrAuthentication usrAuthentication = authTypeMap.get(authType);
+            if (usrAuthentication == null) {
+                usrAuthentication = new UsrAuthentication();
+                if (StringUtils.isEmpty(value)) {
+                    throw new BusinessException("Hodnota musí být vyplněna", BaseCode.PROPERTY_IS_INVALID)
+                            .set("type", authType);
+                }
+            } else {
+                removeAuthentications.remove(usrAuthentication);
+            }
+            if (value == null) {
+                continue;
+            }
+            updateAuth(user, authType, value, usrAuthentication);
+            changeAuthentications.add(usrAuthentication);
+        }
+
+        if (changeAuthentications.size() > 0) {
+            authenticationRepository.save(changeAuthentications);
+        }
+
+        if (removeAuthentications.size() > 0) {
+            authenticationRepository.delete(removeAuthentications);
+        }
 
         userRepository.save(user);
 
@@ -841,13 +886,13 @@ public class UserService {
      * Vytvoření uživatele.
      *
      * @param username uživatelské jméno
-     * @param password heslo (v plaintextu)
+     * @param valuesMap mapa typů autentizace + hodnota
      * @param partyId  identifikátor osoby
      * @return vytvořený uživatel
      */
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public UsrUser createUser(@NotEmpty final String username,
-                              @NotEmpty final String password,
+                              @NotNull final Map<UsrAuthentication.AuthType, String> valuesMap,
                               @NotNull final Integer partyId) {
 
         ParParty party = partyService.getParty(partyId);
@@ -864,12 +909,36 @@ public class UserService {
         user.setActive(true);
         user.setParty(party);
         user.setUsername(username);
-        user.setPassword(encodePassword(username, password));
 
-        userRepository.save(user);
+        user = userRepository.save(user);
+
+        for (Map.Entry<UsrAuthentication.AuthType, String> entry : valuesMap.entrySet()) {
+            UsrAuthentication.AuthType authType = entry.getKey();
+            String value = entry.getValue();
+            if (StringUtils.isEmpty(value)) {
+                throw new BusinessException("Hodnota musí být vyplněna", BaseCode.PROPERTY_IS_INVALID)
+                        .set("type", authType);
+            }
+            UsrAuthentication authentication = new UsrAuthentication();
+            updateAuth(user, authType, value, authentication);
+            authenticationRepository.save(authentication);
+        }
 
         createUserEvent(user);
         return user;
+    }
+
+    private void updateAuth(final UsrUser user,
+                            final UsrAuthentication.AuthType authType,
+                            final String value,
+                            final UsrAuthentication authentication) {
+        authentication.setUser(user);
+        authentication.setAuthType(authType);
+        if (authType == UsrAuthentication.AuthType.PASSWORD) {
+            authentication.setValue(encodePassword(user.getUsername(), value));
+        } else {
+            authentication.setValue(value);
+        }
     }
 
     /**
@@ -884,9 +953,14 @@ public class UserService {
                                   @NotEmpty final String oldPassword,
                                   @NotEmpty final String newPassword) {
         if (oldPassword != null) {
+            UsrAuthentication authentication = findAuthentication(user, UsrAuthentication.AuthType.PASSWORD);
+            if (authentication == null) {
+                throw new BusinessException("Uživatel nemá povolené přihlášení heslem", BaseCode.INVALID_STATE);
+            }
+
             String oldPasswordHash = encodePassword(user.getUsername(), oldPassword);
 
-            if (!oldPasswordHash.equals(user.getPassword())) {
+            if (!oldPasswordHash.equals(authentication.getValue())) {
                 throw new BusinessException("Původní heslo se neshoduje", UserCode.PASSWORD_NOT_MATCH);
             }
         }
@@ -916,8 +990,12 @@ public class UserService {
      */
     private UsrUser changePasswordPrivate(@NotNull final UsrUser user,
                                           @NotEmpty final String newPassword) {
-        user.setPassword(encodePassword(user.getUsername(), newPassword));
-        userRepository.save(user);
+        UsrAuthentication authentication = findAuthentication(user, UsrAuthentication.AuthType.PASSWORD);
+        if (authentication == null) {
+            throw new BusinessException("Uživatel nemá povolené přihlášení heslem", BaseCode.INVALID_STATE);
+        }
+        authentication.setValue(encodePassword(user.getUsername(), newPassword));
+        authenticationRepository.save(authentication);
         changeUserEvent(user);
         return user;
     }
@@ -944,7 +1022,6 @@ public class UserService {
         UsrUser user = new UsrUser();
         user.setActive(true);
         user.setUsername(defaultUsername);
-        user.setPassword(defaultPassword);
         return user;
     }
 
@@ -1105,6 +1182,9 @@ public class UserService {
 	@Transactional(value = TxType.MANDATORY)
     public boolean hasPermission(final UsrPermission.Permission permission) {
 		UserDetail userDetail = getLoggedUserDetail();
+		if (userDetail == null) {
+		    return false;
+        }
 		return userDetail.hasPermission(permission);
     }
 
@@ -1685,7 +1765,16 @@ public class UserService {
     public UserDetail createUserDetail(UsrUser user) {
         Collection<UserPermission> perms = calcUserPermission(user);
 
-        return new UserDetail(user, perms, levelTreeCacheService);
+        List<UsrAuthentication.AuthType> authTypes = new ArrayList<>();
+        if (allowDefaultUser && user.getUsername().equalsIgnoreCase(defaultUsername)) {
+            authTypes.add(UsrAuthentication.AuthType.PASSWORD);
+        } else {
+            authTypes.addAll(findAuthentications(user).stream()
+                    .map(UsrAuthentication::getAuthType)
+                    .collect(Collectors.toList()));
+        }
+
+        return new UserDetail(user, perms, levelTreeCacheService, authTypes);
     }
 
     public UserDetail createUserDetail(Integer userId) {

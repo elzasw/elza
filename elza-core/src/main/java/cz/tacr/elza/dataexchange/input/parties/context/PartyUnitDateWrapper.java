@@ -44,7 +44,7 @@ public class PartyUnitDateWrapper implements EntityWrapper {
     }
 
     @Override
-    public void afterEntitySave() {
+    public void afterEntitySave(Session session) {
         // init id holder
         idHolder.setEntityId(entity.getUnitdateId());
         // update party info

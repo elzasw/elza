@@ -293,6 +293,13 @@
             <version>3.5</version>
         </dependency>
 
+        <!-- SAML / Shibboleth -->
+        <dependency>
+            <groupId>org.springframework.security.extensions</groupId>
+            <artifactId>spring-security-saml2-core</artifactId>
+        </dependency>
+        <!-- END - SAML / Shibboleth -->
+
         <!-- CXF -->
         <dependency>
             <groupId>org.apache.cxf</groupId>

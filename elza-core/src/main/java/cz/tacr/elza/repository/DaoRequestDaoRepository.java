@@ -7,11 +7,11 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrRequest;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;
-
 
 /**
  * @author Martin Šlapa
@@ -19,6 +19,13 @@ import java.util.List;
  */
 @Repository
 public interface DaoRequestDaoRepository extends ElzaJpaRepository<ArrDaoRequestDao, Integer>, DaoRequestDaoRepositoryCustom {
+
+    @SuppressWarnings("SpringDataRepositoryMethodReturnTypeInspection")
+    @Query("SELECT dd.dao FROM arr_dao_request_dao dd WHERE dd.daoRequest = :daoRequest")
+    List<ArrDao> findDaoByDaoRequest(@Param(value = "daoRequest") ArrDaoRequest arrDaoRequest);
+
+    @Query("SELECT count(dd) FROM arr_dao_request_dao dd WHERE dd.daoRequest = :daoRequest")
+    int countByDaoRequest(@Param(value = "daoRequest") ArrDaoRequest arrDaoRequest);
 
     List<ArrDaoRequestDao> findByDaoRequest(ArrDaoRequest arrDaoRequest);
 

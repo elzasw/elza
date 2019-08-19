@@ -27,6 +27,11 @@ import PageLayout from "../shared/layout/PageLayout";
 import defaultKeymap from './RegistryPageKeymap.jsx';
 import {FOCUS_KEYS} from "../../constants.tsx";
 import * as eidTypes from "../../actions/refTables/eidTypes";
+import ScopeLists from "../../components/arr/ScopeLists";
+import ApStateHistoryForm from "../../components/registry/ApStateHistoryForm";
+import ApStateChangeForm from "../../components/registry/ApStateChangeForm";
+import {registryDetailInvalidate} from "../../actions/registry/registry";
+import {WebApi} from "../../actions";
 
 /**
  * Stránka rejstříků.
@@ -166,8 +171,39 @@ class RegistryPage extends AbstractReactComponent {
         }}/>, "dialog-lg"));
     };
 
+    handleScopeManagement = () => {
+        this.props.dispatch(modalDialogShow(this, i18n("accesspoint.scope.management.title"), <ScopeLists />));
+    };
+
+    handleShowApHistory = () => {
+        const {registryDetail:{data:{id}}} = this.props;
+        const form = <ApStateHistoryForm accessPointId={id} />;
+        this.props.dispatch(modalDialogShow(this, i18n('ap.history.title'), form, "dialog-lg"));
+    };
+
+    handleChangeApState = () => {
+        const {registryDetail:{data:{id, partyId, typeId, scopeId}}} = this.props;
+        const form = <ApStateChangeForm initialValues={{
+            typeId: partyId === null ? typeId : null,
+            scopeId: scopeId,
+        }} hideType={partyId !== null} onSubmit={(data) => {
+            const finalData = {
+                comment: data.comment,
+                state: data.state,
+                typeId: data.typeId,
+                scopeId: data.scopeId !== "" ? parseInt(data.scopeId) : null,
+            };
+            return WebApi.changeState(id, finalData);
+        }} onSubmitSuccess={() => {
+            this.props.dispatch(modalDialogHide());
+            this.props.dispatch(registryDetailInvalidate());
+            this.props.dispatch(registryListInvalidate());
+        }} accessPointId={id} />;
+        this.props.dispatch(modalDialogShow(this, i18n('ap.state.change'), form));
+    };
+
     buildRibbon = () => {
-        const {registryDetail:{data}, userDetail, extSystems, module, customRibbon, registryDetail } = this.props;
+        const {registryDetail:{data, id}, userDetail, extSystems, module, customRibbon, registryDetail } = this.props;
 
         const parts = module && customRibbon ? customRibbon : {altActions: [], itemActions: [], primarySection: null};
 
@@ -194,6 +230,14 @@ class RegistryPage extends AbstractReactComponent {
                     </Button>
                 );
             }
+        }
+        if (userDetail.hasOne(perms.FUND_ADMIN, perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
+            altActions.push(
+                <Button key='scopeManagement' onClick={this.handleScopeManagement}>
+                    <Icon glyph='fa-wrench'/>
+                    <div><span className="btnText">{i18n('ribbon.action.registry.scope.manage')}</span></div>
+                </Button>
+            );
         }
 
         const itemActions = [...parts.itemActions];
@@ -237,6 +281,24 @@ class RegistryPage extends AbstractReactComponent {
                 );
             }
         }
+
+        if (id && data) {
+            itemActions.push(
+                <Button key='show-state-history' onClick={this.handleShowApHistory}>
+                    <Icon glyph="fa-clock-o"/>
+                    <div><span className="btnText">{i18n('ap.stateHistory')}</span></div>
+                </Button>
+            );
+
+            // TODO: oprávnění
+            itemActions.push(
+                <Button key='change-state' onClick={this.handleChangeApState}>
+                    <Icon glyph="fa-pencil"/>
+                    <div><span className="btnText">{i18n('ap.changeState')}</span></div>
+                </Button>
+            );
+        }
+
 
         let altSection;
         if (altActions.length > 0) {

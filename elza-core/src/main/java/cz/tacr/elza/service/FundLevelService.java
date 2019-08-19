@@ -188,6 +188,9 @@ public class FundLevelService {
 
     }
 
+    public ArrLevel findLevelByNode(final ArrNode staticNode) {
+        return levelRepository.findByNode(staticNode, null);
+    }
 
     /**
      * Přesunutí uzlů za jiný.

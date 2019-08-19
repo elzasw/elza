@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
@@ -78,13 +79,15 @@ public class GroovyScriptService {
      * @param complementTypes available complement types for party type
      * @return vytvořené rejstříkové heslo s nastavenými variantními hesly
      */
-    public ApConvResult convertPartyToAp(final ParParty party, 
+    public ApConvResult convertPartyToAp(final ParParty party,
+                                         final ApState apState,
                                          final Collection<ParComplementType> complementTypes) {
         Map<Integer, ParComplementType> complementTypeMap = ElzaTools.createEntityMap(complementTypes,
                 ParComplementType::getComplementTypeId);
 
         Map<String, Object> input = new HashMap<>();
         input.put("PARTY", party);
+        input.put("AP_STATE", apState);
         input.put("COMPLEMENT_TYPE_MAP", complementTypeMap);
 
         return (ApConvResult) createRecordScriptFile.evaluate(input);

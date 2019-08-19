@@ -46,7 +46,7 @@ public class ArrStructObjectWrapper implements EntityWrapper {
     }
 
     @Override
-    public void afterEntitySave() {
+    public void afterEntitySave(Session session) {
         idHolder.setEntityId(entity.getStructuredObjectId());
     }
 }

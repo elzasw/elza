@@ -2,7 +2,6 @@ package cz.tacr.elza.controller;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +10,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.*;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -23,7 +23,6 @@ import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
@@ -82,13 +81,25 @@ public class ApControllerTest extends AbstractControllerTest {
      */
     @Test
     public void createUpdateDeleteScopesTest() {
-        ApScopeVO scopeVO = new ApScopeVO();
+        ApScopeVO scopeVO = createScopeTest();
+        getScopeWithConnectedTest(scopeVO.getId());
         scopeVO.setName("Testing");
         scopeVO.setCode("ABCD");
-        scopeVO = createScopeTest(scopeVO);
-        scopeVO.setName("Testing2");
         scopeVO = updateScopeTest(scopeVO);
         deleteScopeTest(scopeVO.getId());
+    }
+
+    /**
+     * Testování provázání a zrušení provázání tříd.
+     */
+    @Test
+    public void connectDisconnectScopesTest() {
+        ApScopeVO scopeVO = createScopeTest();
+        ApScopeVO scopeVO2 = createScopeTest();
+        connectScopeTest(scopeVO.getId(), scopeVO2.getId());
+        disconnectScopeTest(scopeVO.getId(), scopeVO2.getId());
+        deleteScopeTest(scopeVO.getId());
+        deleteScopeTest(scopeVO2.getId());
     }
 
     @Test
@@ -341,12 +352,19 @@ public class ApControllerTest extends AbstractControllerTest {
     }
 
     /**
-     * Vložení nové třídy.
+     * Načtení třídy včetně navázaných tříd.
      *
-     * @param scopeVO objekt třídy
+     * @param id ID třídy
      */
-    private ApScopeVO createScopeTest(final ApScopeVO scopeVO) {
-        return createScope(scopeVO);
+    private ApScopeWithConnectedVO getScopeWithConnectedTest(final int id) {
+        return getScopeWithConnected(id);
+    }
+
+    /**
+     * Vložení nové třídy.
+     */
+    private ApScopeVO createScopeTest() {
+        return createScope();
     }
 
     /**
@@ -365,6 +383,26 @@ public class ApControllerTest extends AbstractControllerTest {
      */
     private void deleteScopeTest(final int id) {
         deleteScope(id);
+    }
+
+    /**
+     * Propojení tříd.
+     *
+     * @param id ID třídy ke které se bude navazovat
+     * @param id2 ID navazované třídy
+     */
+    private void connectScopeTest(final int id, final int id2) {
+        connectScope(id, id2);
+    }
+
+    /**
+     * Zrušení propojení tříd.
+     *
+     * @param id ID třídy na které se bude rušit propojení
+     * @param id2 ID navázané třídy
+     */
+    private void disconnectScopeTest(final int id, final int id2) {
+        disconnectScope(id, id2);
     }
 
     @Test
@@ -393,31 +431,6 @@ public class ApControllerTest extends AbstractControllerTest {
         replacedRecord.setScopeId(scopeId);
         ApAccessPointVO replacedRecordCreated = createAccessPoint(replacedRecord);
         Assert.assertNotNull(replacedRecordCreated.getId());
-
-        // Vytvoření node register
-        ArrNodeRegisterVO nodeRegister = new ArrNodeRegisterVO();
-
-        nodeRegister.setValue(replacedRecordCreated.getId());
-        nodeRegister.setNodeId(rootNode.getId());
-        nodeRegister.setNode(rootNode);
-
-        ArrNodeRegisterVO createdLink = createRegisterLinks(fundVersion.getId(), rootNode.getId(), nodeRegister);
-
-        assertNotNull(createdLink);
-
-        List<ArrNodeRegisterVO> registerLinks = findRegisterLinks(fundVersion.getId(), rootNode.getId());
-        assertTrue(registerLinks.size()>0);
-
-        ArrangementController.NodeRegisterDataVO registerLinksForm = findRegisterLinksForm(fundVersion.getId(),
-                rootNode.getId());
-
-        assertNotNull(registerLinksForm.getNode());
-        assertTrue(registerLinksForm.getNodeRegisters().size()>0);
-
-        ArrNodeRegisterVO updatedLink = updateRegisterLinks(fundVersion.getId(), rootNode.getId(), createdLink);
-
-        assertTrue(!createdLink.getId().equals(updatedLink.getId()));
-
 
         // Vytvoření replacement
         ApAccessPointCreateVO replacementRecord = new ApAccessPointCreateVO();
