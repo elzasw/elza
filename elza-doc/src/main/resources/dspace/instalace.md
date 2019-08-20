@@ -13,4 +13,4 @@ Po vyplnění parametrů v **_elza.cfg_** je instalace hotova.
 - VM: Popsat parametry
 
 Signature file pro DROID lze stáhnout na adrese https://www.nationalarchives.gov.uk/aboutapps/pronom/droid-signature-files.htm
-- Tohle jsem nepochopil, proč bych to chtěl?
+- VM: Tohle jsem nepochopil, proč bych to chtěl?
