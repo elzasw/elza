@@ -185,13 +185,13 @@ public class WsClient {
                             file.setSourceXDimensionUnit(convertStringToUnitOfMeasure(value));
                             break;
                         case SOURCEXDIMVALUVALUE:
-                            file.setSourceXDimensionValue(Float.valueOf(value));
+                            file.setSourceXDimensionValue(convertStringToFloat(value));
                             break;
                         case SOURCEYDIMUNIT:
                             file.setSourceYDimensionUnit(convertStringToUnitOfMeasure(value));
                             break;
                         case SOURCEYDIMVALUVALUE:
-                            file.setSourceYDimensionValue(Float.valueOf(value));
+                            file.setSourceYDimensionValue(convertStringToFloat(value));
                             break;
                     }
                 }
@@ -251,14 +251,24 @@ public class WsClient {
         return getJaxWsRemoteInterface(DaoService.class, url, username, password);
     }
 
-    private static BigInteger convertStringToBigInteger (String bigNumber) {
+    private static BigInteger convertStringToBigInteger(String bigNumber) {
         if (StringUtils.isBlank(bigNumber)) {
             return null;
         }
         return BigInteger.valueOf(Long.parseLong(bigNumber));
     }
 
-    private static UnitOfMeasure convertStringToUnitOfMeasure (String uomCode) {
+    private static Float convertStringToFloat(String floatNumber) {
+        if (StringUtils.isBlank(floatNumber)) {
+            return null;
+        }
+        return Float.valueOf(floatNumber);
+    }
+
+    private static UnitOfMeasure convertStringToUnitOfMeasure(String uomCode) {
+        if (StringUtils.isBlank(uomCode)) {
+            return null;
+        }
         switch (StringUtils.upperCase(uomCode)) {
             case "IN":
                 return UnitOfMeasure.IN;
