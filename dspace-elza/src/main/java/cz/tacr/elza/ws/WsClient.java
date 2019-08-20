@@ -138,7 +138,7 @@ public class WsClient {
         Collection collection = item.getOwningCollection();
         String fundId = collectionService.getMetadataFirstValue(collection, MetadataSchema.DC_SCHEMA, "description", "abstract", Item.ANY);
         daoPackage.setFundIdentifier(fundId);
-        daoPackage.setFundIdentifier("393b642a-4f5a-467f-aae4-3d129f04a6cb");
+//        daoPackage.setFundIdentifier("393b642a-4f5a-467f-aae4-3d129f04a6cb");
         daoPackage.setRepositoryIdentifier(configurationService.getProperty("elza.repositoryCode"));
 
         String daoId = itemService.getMetadataFirstValue(item, MetadataSchema.DC_SCHEMA, "description", null, null);
