@@ -17,4 +17,6 @@ public interface FundRepository extends ElzaJpaRepository<ArrFund, Integer> , Fu
 
     @Query("SELECT fa FROM arr_fund fa JOIN fa.outputs o WHERE o.outputId=?1")
     ArrFund findByOutputId(Integer outputId);
+
+    ArrFund findByInternalCode(String fundIdentifier);
 }
