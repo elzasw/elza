@@ -1,6 +1,6 @@
 # Návod na instalaci modulů do DSpace
-- V nainstalovaném DSpace je potřeba najít soubor _**dspace.cfg**_
-- V souboru **_dspace.cfg_** zjistit adresář který je nastavený v proměnné _**dspace.dir**_
+- V nainstalovaném DSpace je potřeba najít soubor _**local.cfg**_
+- V souboru **_local.cfg_** zjistit adresář který je nastavený v proměnné _**dspace.dir**_
 ## Kopie souborů
 - Naše moduly budeme distribuovat jako **_war_** soubory
 - Soubory je potřeba rozbalit do adresáře **_${dspace.dir}/webapps_** do adresářů **_elza_** a **_xmlui_**
