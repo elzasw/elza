@@ -1976,9 +1976,7 @@ when $activeLevel: ActiveLevel( )
         "ZP2015_EXERQUE",
         // ZP5.7.2 Popis obrazu v poli typáře či otisku
         "ZP2015_PAINTING_CHAR",
-        "ZP2015_ENTITY_ROLE",
-        // ostatní entity zachycené jednotkami popisu
-        "ZP2015_ENTITY_ROLE_65"        
+        "ZP2015_ENTITY_ROLE"        
     ) )
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
@@ -2054,7 +2052,9 @@ when $activeLevel: ActiveLevel( )
         // místa vzniku jednotek popisu
         "ZP2015_ENTITY_ROLE_61",
         // místa vzniku předloh popisovaných kopií
-        "ZP2015_ENTITY_ROLE_62"
+        "ZP2015_ENTITY_ROLE_62",
+        // ostatní entity zachycené jednotkami popisu
+        "ZP2015_ENTITY_ROLE_65"
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
