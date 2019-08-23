@@ -163,13 +163,13 @@ class LecturingTop extends React.Component {
             <Row>
                 <Col xs={12} sm={6}>
                     <FormControl componentClass={"select"} name={"state"} disabled={!issueListId} onChange={({target: {value}}) => this.filter({state:value})} value={issueList.filter.state}>
-                        <option value={""}>{i18n("global.all")}</option>
+                        <option value={""}>{i18n("arr.lecturing.states_all")}</option>
                         {issueStates.fetched && issueStates.data.map(basicOptionMap)}
                     </FormControl>
                 </Col>
                 <Col xs={12} sm={6}>
                     <FormControl componentClass={"select"} name={"type"} disabled={!issueListId} onChange={({target: {value}}) => this.filter({type:value})} value={issueList.filter.type}>
-                        <option value={""}>{i18n("global.all")}</option>
+                        <option value={""}>{i18n("arr.lecturing.severity_all")}</option>
                         {issueTypes.fetched && issueTypes.data.map(basicOptionMap)}
                     </FormControl>
                 </Col>
