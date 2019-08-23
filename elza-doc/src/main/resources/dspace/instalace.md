@@ -4,27 +4,28 @@
 - Pro import digitalizátů je potřeba znát e-mail existujícího uživatele s právy na zápis
   - pokud žádný takový uživatel neexistuje je možné ho vytvořit příkazem  
     ```${dspace.dir}/bin/dspace create-administrator```
-- Vypnout DSpace a po provedení změn ho zase spustit 
-## Kopie souborů
+- Vypnout tomcat na kterém běží DSpace a po provedení změn ho zase spustit 
+## Kopie souborů 
 - Naše moduly budeme distribuovat jako **_war_** soubory - VM: Kde je vezmu? Popsal bych i to, jak se budou jmenovat...
-- Soubory je potřeba rozbalit do adresáře **_${dspace.dir}/webapps_** do adresářů **_elza_** a **_xmlui_** - VM: Asi přeformulovat - v adresáři ... vytvořím podadresáře X a Y a do nich rozbalím warka A a B
+- Soubory je potřeba nakopírovat do adresáře **_webapps_** v tomcatu
+- JV: Celou kapitolu upravíme až budeme vědět jak budeme soubory distribuovat
 ## Nastavení modulu ELZA
 - Do adresáře **_${dspace.dir}/config/modules_** nahrát **_elza.cfg_**
 - Na konec souboru **_dspace.cfg_** je potřeba vložit vazbu na **_elza.cfg_**
   - ```include = ${module_dir}/elza.cfg```
 
 Vyplnit parametry v **_elza.cfg_** 
-- Připojení k aplikaci ELZA
+- Připojení k aplikaci ELZA, **_povinné_**
   - **_elza.base.url_** - URL, na kterém běží aplikace ELZA
-  - **_elza.base.username_** - uživatel ELZA, pod kterým se provádějí všechny operace v ELZA. VM: Musí mít nějaké oprávnění nastavené?
+  - **_elza.base.username_** - uživatel z aplikace ELZA, pod kterým se provádějí všechny operace v ELZA. VM: Musí mít nějaké oprávnění nastavené?
   - **_elza.base.password_** - heslo uživatele
-- Kód externího systému v ELZA
+- Kód externího systému v ELZA, **_povinné_**
   - **_elza.repositoryCode_** - musí zde být stejná hodnota jako je v ELZA uvedena v atributu kód u externího systému
-  - v ELZA se nastavuje v Administrace -> Externí systémy
-- Pracovní adresář pro import
+  - v ELZA se nastavuje v Administrace -> Externí systémy. Zde se buď upraví existují záznam nebo se založí nový.
+- Pracovní adresář pro import, **_povinné_**
   - **_elza.daoimport.dir_** - VM: Přidat doporučení, jak nastavit 
-- E-mail osoby založené v DSpace pod kterou spouští import
-  - **_elza.daoimport.email_** - e-mail osoby s právy na zápis
+- E-mail osoby založené v DSpace pod kterou spouští import, **_povinné_**
+  - **_elza.daoimport.email_** - e-mail osoby z DSpace s právy na zápis. Může být e-mail administrátora kterého jsme založili na začátku.
 - Cesta k souboru se vzory typů souborů, pokud nebude nastaven nelze určit MimeType importovaných souborů
   - **_elza.droid.signatureFile_** - Příklad: elza.droid.signatureFile=/DROID_SignatureFile_V95.xml
   - soubor lze stáhnout na adrese https://www.nationalarchives.gov.uk/aboutapps/pronom/droid-signature-files.htm
