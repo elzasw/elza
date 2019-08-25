@@ -764,6 +764,9 @@ var messages = {
     "arr.history.action.deleteChanges": "Odstranit změny",
     "arr.history.action.goToDate": "Zobrazit",
 
+    "arr.lecturing.states_all": "Stav",
+    "arr.lecturing.severity_all": "Závažnost",
+
     "dms.file.title.file.add": "Přidání přílohy ze souboru",
     "dms.file.title.editable.add": "Přidání přílohy jako text",
     "dms.file.title.editable.edit": "Upravení přílohy",
