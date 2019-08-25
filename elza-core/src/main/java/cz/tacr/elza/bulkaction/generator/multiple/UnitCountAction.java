@@ -26,7 +26,6 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
@@ -233,7 +232,7 @@ public class UnitCountAction extends Action {
 		return config.isLocal();
 	}
 
-	public void createDescItem(ArrNode node, String value, int count) {
+    public void createDescItem(Integer nodeId, String value, int count) {
 		ArrDataInteger arrDataInteger = new ArrDataInteger();
 		arrDataInteger.setValue(count);
 
@@ -249,7 +248,7 @@ public class UnitCountAction extends Action {
             }
             descItem.setItemSpec(rulItemSpec);
         }
-		descriptionItemService.createDescriptionItem(descItem, node, fundVersion, change);
+        descriptionItemService.createDescriptionItem(descItem, nodeId, fundVersion, change);
 	}
 
     public boolean isCountedObject(Integer packetId) {

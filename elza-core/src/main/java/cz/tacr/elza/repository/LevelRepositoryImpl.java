@@ -228,14 +228,14 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
 
     @Override
-    public List<LevelInfo> readTree(final ArrFundVersion version){
+    public List<LevelInfo> readTree(final ArrChange change, final Integer rootNodeId) {
         Set<Integer> leaves = new HashSet<>();
-        leaves.add(version.getRootNode().getNodeId());
+        leaves.add(rootNodeId);
 
         Set<Integer> allIds = new HashSet<>();
         while (!leaves.isEmpty()){
 
-            List<Object[]> resultList = subTree(version, leaves);
+            List<Object[]> resultList = subTree(change, leaves);
             leaves.clear();
 
             for (Object[] row : (List<Object[]>) (List<?>) resultList) {
@@ -258,11 +258,13 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     /**
      * Načte potomky daných uzlů. Vždy načítá 4 generace uzlů.
      *
-     * @param version verze stromu
-     * @param rootIds seznam id uzlů, pro které se mají načíst potomci
+     * @param change
+     *            do které změny se má načítat, null načte poslední verzi
+     * @param rootIds
+     *            seznam id uzlů, pro které se mají načíst potomci
      * @return 4 generace potomků
      */
-    private List<Object[]> subTree(final ArrFundVersion version, final Set<Integer> rootIds) {
+    private List<Object[]> subTree(final ArrChange change, final Set<Integer> rootIds) {
 
         List<Object[]> result = new LinkedList<>();
 
@@ -278,7 +280,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
             builder.append("a4.level_id as a4, ");
             builder.append("a4.node_id as n4 ");
 
-            if (version.getLockChange() == null) {
+            if (change == null) {
                 builder.append("FROM arr_level a1 ");
                 builder.append("LEFT JOIN arr_level a2 ON a2.node_id_parent = a1.node_id AND a2.delete_change_id IS NULL ");
                 builder.append("LEFT JOIN arr_level a3 ON a3.node_id_parent = a2.node_id AND a3.delete_change_id IS NULL ");
@@ -299,8 +301,8 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
             builder.append("a1.node_id_parent IN (:ids)");
 
             Query query = entityManager.createNativeQuery(builder.toString());
-            if (version.getLockChange() != null) {
-                query.setParameter("closeDate", version.getLockChange().getChangeId());
+            if (change != null) {
+                query.setParameter("closeDate", change.getChangeId());
             }
 
             query.setParameter("ids", partIds);
@@ -407,7 +409,9 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         rqBuilder.setParameter("nodeId", nodeId);
         NativeQuery<ArrLevel> query = rqBuilder.getQuery();
         query.setFirstResult(skip);
-        query.setMaxResults(max);
+        if (max > 0) {
+            query.setMaxResults(max);
+        }
 
         return query.getResultList();
     }

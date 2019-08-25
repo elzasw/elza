@@ -177,7 +177,7 @@ public class UnitCounter {
                 String value = itemSpecMapping.get(item.getItemSpecId());
                 if (value != null) {
                     if (unitCountAction.isLocal()) {
-                        unitCountAction.createDescItem(level.getNode(), value, count);
+                        unitCountAction.createDescItem(level.getNodeId(), value, count);
                     } else {
                         unitCountAction.addValue(value, count);
                     }
@@ -226,7 +226,7 @@ public class UnitCounter {
                 String value = objectMapping.get(structObjItem.getItemSpecId());
                 if (value != null) {
                     if (unitCountAction.isLocal()) {
-                        unitCountAction.createDescItem(level.getNode(), value, 1);
+                        unitCountAction.createDescItem(level.getNodeId(), value, 1);
                     } else {
                         unitCountAction.addValue(value, 1);
                     }

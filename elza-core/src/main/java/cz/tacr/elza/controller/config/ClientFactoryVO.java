@@ -24,7 +24,6 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -164,15 +163,11 @@ import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.WfIssue;
-import cz.tacr.elza.domain.WfIssueState;
-import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
-import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApNameRepository;
@@ -1516,7 +1511,9 @@ public class ClientFactoryVO {
 
             StaticDataProvider staticData = staticDataService.getData();
             List<UsrPermissionVO> permissionsVOs = permissions.stream().map(
-                                                                            p -> UsrPermissionVO.newInstance(p, false,
+                                                                            // if has groupId -> it is inheritted
+                                                                            p -> UsrPermissionVO.newInstance(p,
+                                                                                                             p.getGroupId() != null,
                                                                                                              staticData))
                     .collect(Collectors.toList());
 
@@ -1550,7 +1547,8 @@ public class ClientFactoryVO {
 
             StaticDataProvider staticData = staticDataService.getData();
             List<UsrPermissionVO> permissionsVOs = permissions.stream().map(
-                                                                  p -> UsrPermissionVO.newInstance(p, true, staticData))
+                                                                            p -> UsrPermissionVO.newInstance(p, false,
+                                                                                                             staticData))
                     .collect(Collectors.toList());
 
             result.setPermissions(permissionsVOs);

@@ -1513,6 +1513,7 @@ when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PPR", "ZP2015_UNIT_TYPE_IND",
         "ZP2015_UNIT_TYP_ELE", "ZP2015_UNIT_TYPE_REP",
         "ZP2015_UNIT_TYPE_UKN", "ZP2015_UNIT_TYPE_KTT") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     $itemType: RulItemTypeExt( code in ("ZP2015_ENTITY_ROLE") )
     // Rodic je KAT
     $level: Level( $items: descItems )
@@ -1557,6 +1558,7 @@ when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PPR", "ZP2015_UNIT_TYPE_IND",
         "ZP2015_UNIT_TYP_ELE", "ZP2015_UNIT_TYPE_REP",
         "ZP2015_UNIT_TYPE_UKN", "ZP2015_UNIT_TYPE_KTT") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -1627,6 +1629,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_RKP") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV nebo KAT
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $items
@@ -1645,6 +1648,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_RKP") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -1666,6 +1670,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_RKP") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -1740,6 +1745,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_HDB") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV nebo KAT
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $items
@@ -1787,6 +1793,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_HDB") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -1924,6 +1931,7 @@ when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in (
                    "ZP2015_UNIT_TYPE_PEC", "ZP2015_UNIT_TYPE_RAZ", "ZP2015_UNIT_TYPE_OTC"
     ) ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -1945,6 +1953,7 @@ when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in (
                    "ZP2015_UNIT_TYPE_OTD"
     ) ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -1967,6 +1976,7 @@ when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in (
                    "ZP2015_UNIT_TYPE_PEC", "ZP2015_UNIT_TYPE_RAZ"
     ) ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -1976,9 +1986,7 @@ when $activeLevel: ActiveLevel( )
         "ZP2015_EXERQUE",
         // ZP5.7.2 Popis obrazu v poli typáře či otisku
         "ZP2015_PAINTING_CHAR",
-        "ZP2015_ENTITY_ROLE",
-        // ostatní entity zachycené jednotkami popisu
-        "ZP2015_ENTITY_ROLE_65"        
+        "ZP2015_ENTITY_ROLE"        
     ) )
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
@@ -1991,6 +1999,7 @@ when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in (
                    "ZP2015_UNIT_TYPE_OTD", "ZP2015_UNIT_TYPE_OTC"
     ) ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -2017,6 +2026,7 @@ salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in (
         "ZP2015_UNIT_TYPE_PEC", "ZP2015_UNIT_TYPE_RAZ") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -2039,6 +2049,7 @@ salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in (
         "ZP2015_UNIT_TYPE_PEC", "ZP2015_UNIT_TYPE_RAZ") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -2054,7 +2065,9 @@ when $activeLevel: ActiveLevel( )
         // místa vzniku jednotek popisu
         "ZP2015_ENTITY_ROLE_61",
         // místa vzniku předloh popisovaných kopií
-        "ZP2015_ENTITY_ROLE_62"
+        "ZP2015_ENTITY_ROLE_62",
+        // ostatní entity zachycené jednotkami popisu
+        "ZP2015_ENTITY_ROLE_65"
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
@@ -2067,6 +2080,7 @@ salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in (
         "ZP2015_UNIT_TYPE_OTD") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -2087,6 +2101,7 @@ salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in (
         "ZP2015_UNIT_TYPE_OTD") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -2111,6 +2126,7 @@ salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in (
         "ZP2015_UNIT_TYPE_OTC") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -2137,6 +2153,7 @@ salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in (
         "ZP2015_UNIT_TYPE_OTC") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -2182,6 +2199,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV nebo KAT
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $items
@@ -2240,6 +2258,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -2261,6 +2280,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -2320,6 +2340,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_TVY") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV nebo KAT 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $items
@@ -2367,6 +2388,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_TVY") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -2390,6 +2412,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_TVY") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -2475,6 +2498,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_GLI", "ZP2015_UNIT_TYPE_KRE") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -2493,6 +2517,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_GLI", "ZP2015_UNIT_TYPE_KRE") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -2512,6 +2537,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_GLI", "ZP2015_UNIT_TYPE_KRE") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -2533,6 +2559,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_GLI", "ZP2015_UNIT_TYPE_KRE") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -2626,6 +2653,7 @@ when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_FSN", "ZP2015_UNIT_TYPE_FSD",
     "ZP2015_UNIT_TYPE_LFI", "ZP2015_UNIT_TYPE_SFI", "ZP2015_UNIT_TYPE_KIN", "ZP2015_UNIT_TYPE_MF", "ZP2015_UNIT_TYPE_MFS",
     "ZP2015_UNIT_TYPE_FAL", "ZP2015_UNIT_TYPE_DFO") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -2672,6 +2700,7 @@ when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_FSN", "ZP2015_UNIT_TYPE_FSD",
     "ZP2015_UNIT_TYPE_LFI", "ZP2015_UNIT_TYPE_SFI", "ZP2015_UNIT_TYPE_KIN", "ZP2015_UNIT_TYPE_MF", "ZP2015_UNIT_TYPE_MFS",
     "ZP2015_UNIT_TYPE_FAL", "ZP2015_UNIT_TYPE_DFO") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -2695,6 +2724,7 @@ when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_FSN", "ZP2015_UNIT_TYPE_FSD",
     "ZP2015_UNIT_TYPE_LFI", "ZP2015_UNIT_TYPE_SFI", "ZP2015_UNIT_TYPE_KIN", "ZP2015_UNIT_TYPE_MF", "ZP2015_UNIT_TYPE_MFS",
     "ZP2015_UNIT_TYPE_FAL", "ZP2015_UNIT_TYPE_DFO") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV
     $level: Level( $items: descItems )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -2764,7 +2794,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_KZA") ) from $activeLevel.descItems
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems    
     // Rodic je INV 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -2786,6 +2816,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_KZA") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -2866,6 +2897,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_KZA") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -2897,6 +2929,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_KZA") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -2980,6 +3013,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_ZZA") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -3001,6 +3035,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_ZZA") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -3078,6 +3113,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_ZZA") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -3107,6 +3143,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_ZZA") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -3182,6 +3219,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
 	$descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_TIO", "ZP2015_UNIT_TYPE_TIP") ) from $activeLevel.descItems
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
 	// Rodic je INV nebo KAT 
 	$level: Level( $items: descItems ) 
 	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $items
@@ -3238,6 +3276,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
 	$descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_TIO", "ZP2015_UNIT_TYPE_TIP") ) from $activeLevel.descItems
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
 	// Rodic je INV 
 	$level: Level( $items: descItems ) 
 	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -3262,6 +3301,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
 	$descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_TIO", "ZP2015_UNIT_TYPE_TIP") ) from $activeLevel.descItems
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
 	// Rodic je KAT 
 	$level: Level( $items: descItems ) 
 	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -3326,6 +3366,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_POH") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -3369,6 +3410,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_POH") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -3408,6 +3450,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PKT") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -3449,6 +3492,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PKT") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -3486,6 +3530,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_STO") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -3527,6 +3572,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_STO") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -3564,6 +3610,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
 	$descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_CPA") ) from $activeLevel.descItems
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
 	// Rodic je INV nebo KAT 
 	$level: Level( $items: descItems ) 
 	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $items
@@ -3604,6 +3651,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
 	$descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_CPA") ) from $activeLevel.descItems
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
 	// Rodic je INV 
 	$level: Level( $items: descItems ) 
 	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -3623,6 +3671,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
 	$descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_CPA") ) from $activeLevel.descItems
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
 	// Rodic je KAT 
 	$level: Level( $items: descItems ) 
 	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -3657,6 +3706,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PFP") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV nebo KAT 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $items
@@ -3696,6 +3746,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PFP") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -3716,6 +3767,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PFP") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -3750,6 +3802,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PNP") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV nebo KAT 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $items
@@ -3762,7 +3815,7 @@ end
 rule "Možné role entit pro Numizmatické předměty (vždy)"
 no-loop
 when $activeLevel: ActiveLevel( )
-    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PNP") ) from $activeLevel.descItems
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PNP") ) from $activeLevel.descItems    
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
         // vydavatelé
@@ -3791,6 +3844,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PNP") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je INV
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -3809,6 +3863,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PNP") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
@@ -3920,6 +3975,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_JIN") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
     // Rodic je KAT 
     $level: Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items

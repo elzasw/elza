@@ -3,10 +3,9 @@ package cz.tacr.elza.bulkaction.generator;
 import java.util.ArrayList;
 import java.util.List;
 
+import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 
 
@@ -15,24 +14,24 @@ import cz.tacr.elza.domain.RulItemSpec;
  */
 public class LevelWithItems {
 	LevelWithItems parent;
-    final ArrLevel level;
+    final TreeNode treeNode;
     
     /**
      * Description items
      */
     final List<ArrDescItem> descItems = new ArrayList<>();
 
-    public LevelWithItems(final ArrLevel level) {
-        this.level = level;
+    public LevelWithItems(final TreeNode n) {
+        this.treeNode = n;
     }
     
-    public LevelWithItems(final ArrLevel level, final LevelWithItems parentLevel) {
-    	this.level = level;
+    public LevelWithItems(final TreeNode n, final LevelWithItems parentLevel) {
+        this.treeNode = n;
 		this.parent = parentLevel;
 	}
 
-	public LevelWithItems(final ArrLevel level, final LevelWithItems parentLevel, final List<ArrDescItem> items) {
-    	this.level = level;
+    public LevelWithItems(final TreeNode n, final LevelWithItems parentLevel, final List<ArrDescItem> items) {
+        this.treeNode = n;
 		this.parent = parentLevel;
         if (items != null) {
             descItems.addAll(items);
@@ -44,16 +43,16 @@ public class LevelWithItems {
     	return parent;
     }
 
-	public ArrLevel getLevel() {
-		return level;
+    public TreeNode getTreeNode() {
+        return treeNode;
 	}
 
 	public List<ArrDescItem> getDescItems() {
 		return descItems;
 	}
 
-	public ArrNode getNode() {
-		return level.getNode();
+    public Integer getNodeId() {
+        return treeNode.getId();
 	}
 
 	/**
