@@ -49,7 +49,7 @@ public class JaxWsConfiguration {
      */
     public void startServices() {
         try {
-            startService(daoRequests, DaoRequestsImpl.class, "DaoCoreRequests");
+            startService(daoRequests, DaoRequestsImpl.class, "DaoRequests");
             startService(daoNotifications, DaoNotificationsImpl.class, "DaoNotifications");
         } catch (Exception e) {
             logger.error("Webovou službu " + DaoRequestsImpl.class.getName() + " nelze spustit "
