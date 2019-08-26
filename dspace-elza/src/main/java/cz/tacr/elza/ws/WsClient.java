@@ -1,9 +1,6 @@
 package cz.tacr.elza.ws;
 
 import java.math.BigInteger;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -23,6 +20,7 @@ import org.dspace.content.Bitstream;
 import org.dspace.content.BitstreamFormat;
 import org.dspace.content.Bundle;
 import org.dspace.content.Collection;
+import org.dspace.content.DCDate;
 import org.dspace.content.Item;
 import org.dspace.content.MetadataSchema;
 import org.dspace.content.MetadataValue;
@@ -317,15 +315,8 @@ public class WsClient {
     }
 
     private static XMLGregorianCalendar concertStringToXMLGregorianCalendar(String date) {
-        DateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        Date parseDate = null;
-        try {
-            date = date.replace("T", " ");
-            date = date.replace("Z", "");
-            parseDate = format.parse(date);
-        } catch (ParseException e) {
-            logger.error("Fail in convert String value of created date to XMLGregorianCalendar", e);
-        }
+        DCDate dcDate = new DCDate(date);
+        Date parseDate = dcDate.toDate();
 
         GregorianCalendar cal = new GregorianCalendar();
         cal.setTime(parseDate);
