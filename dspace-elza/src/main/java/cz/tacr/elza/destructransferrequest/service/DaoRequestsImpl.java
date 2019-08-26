@@ -6,6 +6,7 @@ import cz.tacr.elza.daoimport.service.DaoImportService;
 import cz.tacr.elza.destructransferrequest.DestructTransferRequest;
 import cz.tacr.elza.destructransferrequest.dao.DestructTransferRequestDAO;
 import cz.tacr.elza.metadataconstants.MetadataEnum;
+import cz.tacr.elza.ws.WsClient;
 import cz.tacr.elza.ws.dao_service.v1.DaoRequests;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
 import cz.tacr.elza.ws.types.v1.*;
@@ -278,7 +279,7 @@ public class DaoRequestsImpl implements DaoRequests{
                 log.debug("Aktualizuji metadata položky digitalizátu Uuid=" + uuId + ".");
                 //TODO:cacha doplnit po upřesnění vstupních dat
 
-
+                String fileParam = WsClient.createFileParam(item);
                 log.debug("Zapisuji technická metadata položky digitalizátu Uuid=" + uuId + ".");
                 List<Bundle> bundleList = item.getBundles();
                 for (Bundle bundle : bundleList) {
@@ -289,56 +290,12 @@ public class DaoRequestsImpl implements DaoRequests{
 
                         List<Bitstream> bitstreamList = bundle.getBitstreams();
                         for (Bitstream bitstream : bitstreamList) {
-                            File file = new File();
-
-                            file.setIdentifier(bitstream.getID().toString());
-                            BitstreamFormat format = null;
                             try {
-                                format = bitstream.getFormat(context);
+                                File file = WsClient.createFile(fileParam, bitstream, context);
+                                fileList.add(file);
                             } catch (Exception e) {
                                 context.abort();
-                                throw new ProcessingException("Chyba při načtení formátu z bitstreamu: " + e.getMessage());
-                            }
-                            if (format != null) {
-                                file.setMimetype(format.getMIMEType());
-                            }
-
-                            file.setChecksumType(convertStringToChecksumType(bitstream.getChecksumAlgorithm()));
-                            file.setChecksum(bitstream.getChecksum());
-                            file.setSize(bitstream.getSizeBytes());
-//                            file.setCreated();  //TODO:cacha
-
-
-                            List<MetadataEnum> techMataData = MetadataEnum.getTechMetaData();
-                            for (MetadataEnum mt : techMataData) {
-
-                                String value = bitstreamService.getMetadataFirstValue(bitstream, mt.getSchema(), mt.getElement(), mt.getQualifier(), Item.ANY);
-                                switch (mt) {
-                                    case DURATION:
-                                        file.setDuration(value);
-                                        break;
-                                    case IMAGEHEIGHT:
-                                        file.setImageHeight(convertStringToBigInteger(value));
-                                        break;
-                                    case IMAGEWIDTH:
-                                        file.setImageWidth(convertStringToBigInteger(value));
-                                        break;
-                                    case SOURCEXDIMUNIT:
-                                        file.setSourceXDimensionUnit(convertStringToUnitOfMeasure(value));
-                                        break;
-                                    case SOURCEXDIMVALUVALUE:
-                                        file.setSourceXDimensionValue(Float.valueOf(value));
-                                        break;
-                                    case SOURCEYDIMUNIT:
-                                        file.setSourceYDimensionUnit(convertStringToUnitOfMeasure(value));
-                                        break;
-                                    case SOURCEYDIMVALUVALUE:
-                                        file.setSourceYDimensionValue(Float.valueOf(value));
-                                        break;
-                                }
-                            }
-                            if (file != null) {
-                                fileList.add(file);
+                                throw new ProcessingException("Chyba při vytváření souboru z bitstreamu: " + e.getMessage());
                             }
                         }
                         dao.setIdentifier(bundle.getID().toString());
