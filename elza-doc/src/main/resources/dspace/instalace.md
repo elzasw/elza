@@ -5,6 +5,12 @@
   - pokud žádný takový uživatel neexistuje je možné ho vytvořit příkazem  
     ```${dspace.dir}/bin/dspace create-administrator```
 - Vypnout tomcat na kterém běží DSpace a po provedení změn ho zase spustit 
+## Nastavení tomcatu
+- Ve složce **_tomcat\bin_** otevřít .exe soubor s parametry služby JV: Je nějaké pravidlo podle kterého se soubor jmenuje?
+- Na záložce Java vložit na nový řádek do pole Java Options následující:
+  - -Ddspace.dir=c:\dspace\
+  - -Dorg.apache.cxf.stax.allowInsecureParser=1
+- Uložit
 ## Kopie souborů 
 - Naše moduly budeme distribuovat jako **_war_** soubory - VM: Kde je vezmu? Popsal bych i to, jak se budou jmenovat...
 - Soubory je potřeba nakopírovat do adresáře **_webapps_** v tomcatu
@@ -37,3 +43,23 @@ Vyplnit parametry v **_elza.cfg_**
   - **_elza.daoimport.convert.command_** - Příklad: elza.daoimport.convert.command=“conv” {input} {output}
   - “conv” - nahradit příkazem s parametry na spuštění externí konverzní aplikace. Výběr a zprovoznění konverzní aplikace je na zákazníkovi. Lze použít například aplikaci ImageMagick.
   - v příkazu pro konverzi lze použít proměnné {input} a {output} za které DSpace dosadí název vstupního a výstupního souboru
+
+## Spárování entit v aplikacích DSpace a ELZA 
+### ELZA
+- Vytvoření externího systému
+- V ELZA se nastavuje v Administrace -> Externí systémy -> Přidat systém
+  - položka **_Třída_** - vybrat hodnotu **_Uložiště digitalizátů_** 
+  - položka **_DaoURL_** - zadat hodnotu **_http(s)://server:port/xmlui/handle/{label}_**
+  - položka **_FileURL_** - zadat hodnotu **_http(s)://server:port/xmlui/handle/{code}_**
+  - položka **_ThumbnailURL_** - zadat hodnotu **_http(s)://server:port/xmlui/handle/{code}_**
+  - položka **_Zasílání upozornění_** - vybrat hodnotu **_Ano_**
+  - položka **_Název_** - zadat název externího systému (například: DSpace)
+  - položka **_Kód_** - zadat kód externího systému (například: dspace), musí být stejný jako je v souboru **_elza.cfg_**, v proměnné **_elza.repositoryCode_** 
+  - položka **_URL_** - zadat hodnotu **_http(s)://server:port/elza/ws/_**
+### DSpace
+- Komunity
+  - Pro každý archiv se v DSpace musí vytvořit komunita
+  - V atributu **_Krátký popis_** v DSpace musí být **_číslo archivu_**
+- Kolekce
+  - Pro každý archivní soubor v ELZA do kterého chceme přes DSpace importovat digitalizáty musíme v DSpace vytvořit kolekci
+  - V atributu **_Krátký popis_** v DSpace musí být **_kód archivního souboru_** nebo jeho **_identifikátor_** 
