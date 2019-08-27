@@ -63,6 +63,7 @@ public class DaoRequestsImpl implements DaoRequests{
         Context context = new Context();
         try {
             context = ContextUtils.createContext();
+            context.turnOffAuthorisationSystem();
         } catch (Exception e) {
             context.abort();
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
@@ -106,7 +107,7 @@ public class DaoRequestsImpl implements DaoRequests{
         }
         catch (Exception e) {
             context.abort();
-            log.info("Chyba při zpracování požadavku na skartaci Identifier=" + destructionRequest.getIdentifier() + ".");
+            log.info("Chyba při zpracování požadavku na skartaci Identifier=" + destructionRequest.getIdentifier() + ".", e);
             log.debug("Ukládám zpracování požadavku na delimitaci digitalizátu (REJECTED).");
             processingRequest.setStatus(DestructTransferRequest.Status.REJECTED);
             processingRequest.setRejectedMessage(e.getMessage());
@@ -138,6 +139,7 @@ public class DaoRequestsImpl implements DaoRequests{
         Context context = new Context();
         try {
             context = ContextUtils.createContext();
+            context.turnOffAuthorisationSystem();
         } catch (Exception e) {
             context.abort();
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
@@ -226,7 +228,7 @@ public class DaoRequestsImpl implements DaoRequests{
 
         } catch (Exception e) {
             context.abort();
-            log.info("Chyba při zpracování požadavku na delimitaci Identifier=" + transferRequest.getIdentifier() + ".");
+            log.info("Chyba při zpracování požadavku na delimitaci Identifier=" + transferRequest.getIdentifier() + ".", e);
             log.debug("Ukládám zpracování požadavku na delimitaci digitalizátu (REJECTED).");
             processingRequest.setStatus(DestructTransferRequest.Status.REJECTED);
             processingRequest.setRejectedMessage(e.getMessage());
@@ -262,6 +264,7 @@ public class DaoRequestsImpl implements DaoRequests{
         Context context = new Context();
         try {
             context = ContextUtils.createContext();
+            context.turnOffAuthorisationSystem();
         } catch (Exception e) {
             context.abort();
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
