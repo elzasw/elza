@@ -27,7 +27,14 @@ public class ArrNodeVO {
 		this.version = node.getVersion();
 	}
 
-	public Integer getId() {
+    public static ArrNodeVO newInstance(final ArrNode node) {
+        ArrNodeVO result = new ArrNodeVO();
+        result.setId(node.getNodeId());
+        result.setVersion(node.getVersion());
+        return result;
+    }
+
+    public Integer getId() {
         return id;
     }
 

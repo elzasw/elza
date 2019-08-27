@@ -36,7 +36,7 @@ public class FundLevelServiceInternal {
                                 final int nodeId,
                                 final boolean includeParents,
                                 final boolean includeChildren) {
-        Timestamp lastChange = Timestamp.valueOf(change.getChangeDate());
+        Timestamp lastChange = Timestamp.valueOf(change.getChangeDate().toLocalDateTime());
         if (includeChildren) {
             List<Integer> newerNodeIds = levelRepository.findNewerNodeIdsInSubtree(nodeId, lastChange);
             if (newerNodeIds.size() > 0) {

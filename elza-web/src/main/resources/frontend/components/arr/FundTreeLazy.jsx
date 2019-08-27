@@ -168,6 +168,7 @@ class FundTreeLazy extends AbstractReactComponent {
         const {onNodeDoubleClick, onOpenCloseNode, onContextMenu} = this.props;
 
         const expanded = node.hasChildren && this.props.expandedIds[node.id];
+        const arrPerm = node.arrPerm;
 
         const clickProps = {
             onClick: (e)=>this.handleNodeClick(node, false, e),
@@ -193,6 +194,7 @@ class FundTreeLazy extends AbstractReactComponent {
             closed: !expanded,
             active: active,
             focus: this.props.focusId === node.id,
+            "without-arr-perm": !arrPerm,
             "node-color": this.props.colorCoded
         });
         const iconClass = classNames({

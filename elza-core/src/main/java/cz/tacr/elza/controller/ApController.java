@@ -65,6 +65,7 @@ import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.exception.BusinessException;
@@ -75,8 +76,9 @@ import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
@@ -135,7 +137,10 @@ public class ApController {
     private ItemSpecRepository itemSpecRepository;
 
     @Autowired
-    private ItemSpecRegisterRepository itemSpecRegisterRepository;
+    private ItemTypeRepository itemTypeRepository;
+
+    @Autowired
+    private ItemAptypeRepository itemAptypeRepository;
 
     @Autowired
     private InterpiService interpiService;
@@ -173,23 +178,29 @@ public class ApController {
                                                              @RequestParam(required = false) @Nullable final Integer apTypeId,
                                                              @RequestParam(required = false) @Nullable final Integer versionId,
                                                              @RequestParam(required = false) @Nullable final Integer itemSpecId,
+                                                             @RequestParam(required = false) @Nullable final Integer itemTypeId,
                                                              @RequestParam(required = false) @Nullable final Integer scopeId,
                                                              @RequestParam(required = false) @Nullable final Integer lastRecordNr) {
 
-        Set<Integer> apTypeIdTree = Collections.emptySet();
+        if (apTypeId != null && (itemSpecId != null || itemTypeId != null)) {
+            throw new SystemException("Nelze použít více kritérií zároveň (specifikace/typ a typ rejstříku).", BaseCode.SYSTEM_ERROR);
+        }
 
-        if (itemSpecId != null && apTypeId != null) {
-            throw new SystemException("Nelze použít specifikaci a typ rejstříku zároveň.", BaseCode.SYSTEM_ERROR);
-        } else if (itemSpecId != null || apTypeId != null) {
-            Set<Integer> apTypeIds = new HashSet<>();
+        Set<Integer> apTypeIds = new HashSet<>();
+        if (apTypeId != null) {
+            apTypeIds.add(apTypeId);
+        } else {
             if (itemSpecId != null) {
                 RulItemSpec spec = itemSpecRepository.getOneCheckExist(itemSpecId);
-                apTypeIds.addAll(itemSpecRegisterRepository.findIdsByItemSpecId(spec));
-            } else {
-                apTypeIds.add(apTypeId);
+                apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemSpec(spec));
             }
-            apTypeIdTree = apTypeRepository.findSubtreeIds(apTypeIds);
+            if (itemTypeId != null) {
+                RulItemType type = itemTypeRepository.getOneCheckExist(itemTypeId);
+                apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemType(type));
+            }
         }
+
+        Set<Integer> apTypeIdTree = apTypeRepository.findSubtreeIds(apTypeIds);
 
         ArrFund fund;
         if (versionId == null) {
@@ -285,7 +296,7 @@ public class ApController {
         Assert.notNull(itemSpecId, "Identifikátor specifikace musí být vyplněn");
 
         RulItemSpec spec = itemSpecRepository.getOneCheckExist(itemSpecId);
-        Set<Integer> apTypeIds = itemSpecRegisterRepository.findIdsByItemSpecId(spec);
+        List<Integer> apTypeIds = itemAptypeRepository.findApTypeIdsByItemSpec(spec);
         Set<Integer> apTypeIdTree = apTypeRepository.findSubtreeIds(apTypeIds);
 
         Integer byItemSpecId = apTypeRepository.findCountPartyTypeNotNullByIds(apTypeIdTree);

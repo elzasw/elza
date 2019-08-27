@@ -540,8 +540,8 @@ export abstract class ItemFormActions {
             const state = getState();
             const fundIndex = indexById(state.arrRegion.funds, "versionId");
             if (fundIndex !== null) {
-                const outputDefinitionId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
-                WebApi.switchOutputCalculating(outputDefinitionId, itemTypeId).then(() => {
+                const getOutputId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
+                WebApi.switchOutputCalculating(getOutputId, itemTypeId).then(() => {
                     dispatch({
                         type: types.ITEM_FORM_OUTPUT_CALC_SWITCH,
                         area: this.area,

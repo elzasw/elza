@@ -40,15 +40,15 @@ public class KmlController {
     public List<Integer> importArrCoordinates(
             @RequestParam(required = false, value = "fundVersionId") final Integer fundVersionId,
             @RequestParam(required = false, value = "descItemTypeId") final Integer descItemTypeId,
-            @RequestParam(required = false, value = "outputDefinitionId") final Integer outputDefinitionId,
-            @RequestParam(required = false, value = "outputDefinitionVersion") final Integer outputDefinitionVersion,
+            @RequestParam(required = false, value = "outputId") final Integer outputId,
+            @RequestParam(required = false, value = "outputVersion") final Integer outputVersion,
             @RequestParam(required = true, value = "file") final MultipartFile importFile) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         Assert.notNull(descItemTypeId, "Nebyl vyplněn identifikátor typu atributu");
-        Assert.notNull(outputDefinitionId, "Identifikátor definice výstupu musí být vyplněn");
-        Assert.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
+        Assert.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
+        Assert.notNull(outputVersion, "Verze výstupu musí být vyplněna");
 
-        return arrIOService.coordinatesOutputImport(fundVersionId, descItemTypeId, outputDefinitionId, outputDefinitionVersion, importFile);
+        return arrIOService.coordinatesOutputImport(fundVersionId, descItemTypeId, outputId, outputVersion, importFile);
     }
 
     @Transactional

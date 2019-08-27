@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="20190212133500" author="slapa">
+        <modifyDataType columnName="change_date"
+                        newDataType="timestamp with time zone"
+                        tableName="ap_change"/>
+    </changeSet>
+
+    <changeSet id="20190212142000" author="slapa">
+        <modifyDataType columnName="change_date"
+                        newDataType="timestamp with time zone"
+                        tableName="arr_change"/>
+    </changeSet>
+
+    <changeSet id="20190225150000" author="marek">
+
+        <dropForeignKeyConstraint baseTableName="rul_item_spec_register"
+            constraintName="fk_rulDescItemSpecRegister_apType"/>
+
+        <dropForeignKeyConstraint baseTableName="rul_item_spec_register"
+            constraintName="fk_rulDescItemSpecRegister_descItemSpec"/>
+
+        <dropPrimaryKey tableName="rul_item_spec_register"
+            constraintName="pk_rul_desc_item_spec_register"/>
+
+        <dropNotNullConstraint tableName="rul_item_spec_register" columnName="item_spec_id" columnDataType="int"/>
+
+        <renameTable
+            oldTableName="rul_item_spec_register"
+            newTableName="rul_item_aptype"/>
+
+        <renameColumn tableName="rul_item_aptype"
+            oldColumnName="item_spec_register_id"
+            newColumnName="item_aptype_id"
+            columnDataType="int"/>
+
+        <update tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_item_aptype|item_aptype_id"/>
+            <where>sequence_name = 'rul_item_spec_register|item_spec_register_id'</where>
+        </update>
+
+        <addColumn tableName="rul_item_aptype">
+            <column name="item_type_id" type="int"/>
+        </addColumn>
+
+        <addPrimaryKey constraintName="pk_item_aptype" tableName="rul_item_aptype" columnNames="item_aptype_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_item_aptype_ap_type"
+            baseTableName="rul_item_aptype" baseColumnNames="ap_type_id"
+            referencedTableName="ap_type" referencedColumnNames="ap_type_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_item_aptype_item_spec"
+            baseTableName="rul_item_aptype" baseColumnNames="item_spec_id"
+            referencedTableName="rul_item_spec" referencedColumnNames="item_spec_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_item_aptype_item_type"
+            baseTableName="rul_item_aptype" baseColumnNames="item_type_id"
+            referencedTableName="rul_item_type" referencedColumnNames="item_type_id"/>
+
+    </changeSet>
+
+    <changeSet id="20190301130000" author="marek">
+        <addColumn tableName="arr_structured_object">
+            <column name="complement" type="nvarchar(1000)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20190306144900" author="slapa">
+        <addColumn tableName="usr_permission">
+            <column name="node_id" type="int">
+                <constraints foreignKeyName="fk_usr_permission_node" referencedTableName="arr_node" referencedColumnNames="node_id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20190318130000" author="marek">
+        <validCheckSum>ANY</validCheckSum>
+
+        <addColumn tableName="arr_output_definition">
+            <column name="create_change_id" type="int"/>
+            <column name="delete_change_id" type="int"/>
+        </addColumn>
+
+        <sql>UPDATE arr_output_definition SET create_change_id = (select t.create_change_id from arr_output t where t.output_definition_id = arr_output_definition.output_definition_id)</sql>
+
+        <addNotNullConstraint tableName="arr_output_definition" columnName="create_change_id" columnDataType="int"/>
+
+        <update tableName="arr_output_definition">
+            <column name="delete_change_id" valueComputed="create_change_id"/>
+            <where>deleted</where>
+        </update>
+
+        <dropColumn tableName="arr_output_definition" columnName="temporary"/>
+        <dropColumn tableName="arr_output_definition" columnName="deleted"/>
+
+        <!-- Drop all "Associations From" Foreign Key Constraints -->
+
+        <dropForeignKeyConstraint baseTableName="arr_output_item" constraintName="fk_outputItem_output_definition"/>
+
+        <dropForeignKeyConstraint baseTableName="arr_item_settings" constraintName="fk_itemSettings_output_definition"/>
+
+        <dropForeignKeyConstraint baseTableName="arr_node_output" constraintName="fk_node_output_named_output"/>
+
+        <dropForeignKeyConstraint baseTableName="arr_output_result" constraintName="fk_arrOutputResult_arrOutputDefinition"/>
+
+        <!-- Drop "Associations To" Foreign Key Constraints -->
+
+        <dropForeignKeyConstraint baseTableName="arr_output_definition" constraintName="fk_named_output_fund"/>
+
+        <dropForeignKeyConstraint baseTableName="arr_output_definition" constraintName="fk_arr_output_definition_output_type"/>
+
+        <dropForeignKeyConstraint baseTableName="arr_output_definition" constraintName="fk_arrOutputDefinition_rulTemplate"/>
+
+        <!-- Drop table arr_output -->
+
+        <delete tableName="db_hibernate_sequences">
+            <where>sequence_name = 'arr_output|output_id'</where>
+        </delete>
+
+        <dropTable tableName="arr_output"/>
+
+        <!-- Drop Primary Key -->
+
+        <dropPrimaryKey tableName="arr_output_definition" constraintName="pk_arr_named_output"/>
+
+        <!-- Rename table -->
+
+        <renameColumn tableName="arr_output_definition" oldColumnName="output_definition_id" newColumnName="output_id" columnDataType="int"/>
+
+        <renameTable oldTableName="arr_output_definition" newTableName="arr_output"/>
+
+        <update tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="arr_output|output_id"/>
+            <where>sequence_name = 'arr_output_definition|output_definition_id'</where>
+        </update>
+
+        <!-- Recreate Primary Key -->
+
+        <addPrimaryKey tableName="arr_output" columnNames="output_id" constraintName="pk_arr_output"/>
+
+        <!-- Recreate "Associations To" Foreign Key Constraints -->
+
+        <addForeignKeyConstraint constraintName="fk_arr_output_fund"
+            baseTableName="arr_output" baseColumnNames="fund_id"
+            referencedTableName="arr_fund" referencedColumnNames="fund_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_arr_output_type"
+            baseTableName="arr_output" baseColumnNames="output_type_id"
+            referencedTableName="rul_output_type" referencedColumnNames="output_type_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_arr_output_template"
+            baseTableName="arr_output" baseColumnNames="template_id"
+            referencedTableName="rul_template" referencedColumnNames="template_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_arr_output_create_change"
+            baseTableName="arr_output" baseColumnNames="create_change_id"
+            referencedTableName="arr_change" referencedColumnNames="change_id"/>
+
+        <addForeignKeyConstraint constraintName="fk_arr_output_delete_change"
+            baseTableName="arr_output" baseColumnNames="delete_change_id"
+            referencedTableName="arr_change" referencedColumnNames="change_id"/>
+
+        <!-- Recreate "Associations From" Foreign Key Constraints -->
+
+        <renameColumn tableName="arr_output_item" oldColumnName="output_definition_id" newColumnName="output_id" columnDataType="int"/>
+        <addForeignKeyConstraint constraintName="fk_arr_output_item_output"
+            baseTableName="arr_output_item" baseColumnNames="output_id"
+            referencedTableName="arr_output" referencedColumnNames="output_id"/>
+
+        <renameColumn tableName="arr_item_settings" oldColumnName="output_definition_id" newColumnName="output_id" columnDataType="int"/>
+        <addForeignKeyConstraint constraintName="fk_arr_item_settings_output"
+            baseTableName="arr_item_settings" baseColumnNames="output_id"
+            referencedTableName="arr_output" referencedColumnNames="output_id"/>
+
+        <renameColumn tableName="arr_node_output" oldColumnName="output_definition_id" newColumnName="output_id" columnDataType="int"/>
+        <addForeignKeyConstraint constraintName="fk_arr_node_output"
+            baseTableName="arr_node_output" baseColumnNames="output_id"
+            referencedTableName="arr_output" referencedColumnNames="output_id"/>
+
+        <renameColumn tableName="arr_output_result" oldColumnName="output_definition_id" newColumnName="output_id" columnDataType="int"/>
+        <addForeignKeyConstraint constraintName="fk_arr_output_result_output"
+            baseTableName="arr_output_result" baseColumnNames="output_id"
+            referencedTableName="arr_output" referencedColumnNames="output_id"/>
+
+    </changeSet>
+
+    <changeSet id="20190403140000" author="marek">
+        <addColumn tableName="arr_digital_repository">
+            <column name="view_thumbnail_url" type="nvarchar(1000)"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

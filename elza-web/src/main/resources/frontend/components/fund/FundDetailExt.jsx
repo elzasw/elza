@@ -51,13 +51,13 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
             return <div className='fund-detail-container'></div>
         }
 
-        const validOutputs = fundDetail.validNamedOutputs.map((outputDefinition, index) => {
-            if(outputDefinition.state === "FINISHED"){
+        const validOutputs = fundDetail.validNamedOutputs.map((arrOutput, index) => {
+            if(arrOutput.state === "FINISHED"){
                 return (
                     <div className="output" key={index}>
-                        <div className="output-label">{outputDefinition.name}</div>
+                        <div className="output-label">{arrOutput.name}</div>
                         <Button
-                            onClick={()=>{this.handleDownload(outputDefinition.outputResultId);}}
+                            onClick={()=>{this.handleDownload(arrOutput.outputResultId);}}
                             bsStyle="link"
                         >
                             {i18n('global.action.download')}
@@ -67,16 +67,16 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
             }
         })
 
-        const histOutputs = fundDetail.historicalNamedOutputs.map((outputDefinition, index) => {
+        const histOutputs = fundDetail.historicalNamedOutputs.map((output, index) => {
             return (
                 <div className="output with-versions"  key={index}>
-                    <div className="output-label">{outputDefinition.name}</div>
+                    <div className="output-label">{output.name}</div>
                     <div className="versions-container">
-                        {outputDefinition.outputs.map(output => (
+                        {output.outputs.map(output => (
                             <div className="version">
-                                <div className="version-label">{i18n('arr.fund.outputDefinition.version', dateToString(new Date(output.lockDate)))}</div>
+                                <div className="version-label">{i18n('arr.fund.outputDefinition.version', dateToString(new Date(output.deleteDate)))}</div>
                                 <Button
-                                    onClick={()=>{this.handleDownload(outputDefinition.outputResultId);}}
+                                    onClick={()=>{this.handleDownload(output.outputResultId);}}
                                     bsStyle="link"
                                 >
                                     {i18n('global.action.download')}
@@ -86,7 +86,7 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
                     </div>
                 </div>
             )
-        })
+        });
 
         return (
             <div className='fund-detail-ext-container'>

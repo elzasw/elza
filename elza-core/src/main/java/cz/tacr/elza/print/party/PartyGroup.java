@@ -41,7 +41,7 @@ public class PartyGroup extends Party {
     }
 
     @Override
-    protected PartyType getPartyType() {
+    public PartyType getPartyType() {
         return PartyType.GROUP_PARTY;
     }
 }

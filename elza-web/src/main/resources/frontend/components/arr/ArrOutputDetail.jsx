@@ -19,6 +19,8 @@ import OutputSubNodeForm from "./OutputSubNodeForm";
 import FundNodesList from "./FundNodesList";
 import FundNodesSelectForm from "./FundNodesSelectForm";
 import defaultKeymap from './ArrOutputDetailKeymap.jsx';
+import FundOutputFiles from "./FundOutputFiles";
+import ToggleContent from "../shared/toggle-content/ToggleContent";
 
 const OutputState = {
     OPEN: 'OPEN',
@@ -152,8 +154,24 @@ class ArrOutputDetail extends AbstractReactComponent {
     };
 
     isEditable = (item = this.props.fundOutputDetail) => {
-        return !item.lockDate && item.outputDefinition.state === OutputState.OPEN
+        return !item.lockDate && item.state === OutputState.OPEN
     };
+
+    renderOutputFiles() {
+        const {fundOutputDetail, versionId, fund} = this.props;
+        const {fundOutput : {fundOutputFiles}} = fund;
+
+        if (fundOutputDetail.outputResultId === null) {
+            return null;
+        }
+
+        return <FundOutputFiles
+            ref="fundOutputFiles"
+            versionId={versionId}
+            outputResultId={fundOutputDetail.outputResultId}
+            fundOutputFiles={fundOutputFiles}
+        />
+    }
 
     render() {
         const {fundOutputDetail, focus,
@@ -177,7 +195,7 @@ class ArrOutputDetail extends AbstractReactComponent {
         let form= <OutputSubNodeForm
             versionId={versionId}
             fundId={fund.id}
-            selectedSubNodeId={fundOutputDetail.outputDefinition.id}
+            selectedSubNodeId={fundOutputDetail.id}
             rulDataTypes={rulDataTypes}
             calendarTypes={calendarTypes}
             descItemTypes={descItemTypes}
@@ -191,24 +209,28 @@ class ArrOutputDetail extends AbstractReactComponent {
             <div className="output-definition-commons">
                 <OutputInlineForm
                     disabled={closed || readMode || !this.isEditable()}
-                    initData={fundOutputDetail.outputDefinition}
+                    initData={fundOutputDetail}
                     onSave={this.handleSaveOutput}
                 />
-                {fundOutputDetail.outputDefinition.error && <div>
-                    <FormInput componentClass="textarea" value={fundOutputDetail.outputDefinition.error} disabled label={i18n('arr.output.title.error')}/>
+                {fundOutputDetail.error && <div>
+                    <FormInput componentClass="textarea" value={fundOutputDetail.error} disabled label={i18n('arr.output.title.error')}/>
                 </div>}
             </div>
             <div>
                 <label className="control-label">{i18n("arr.output.title.nodes")}</label>
                 <FundNodesList
-                    nodes={fundOutputDetail.outputDefinition.nodes}
+                    nodes={fundOutputDetail.nodes}
                     onDeleteNode={this.handleRemoveNode}
                     onAddNode={this.handleAddNodes}
                     readOnly={closed || readMode || !this.isEditable()}
                 />
             </div>
             <hr className="small"/>
-            {form}
+            {this.renderOutputFiles()}
+            <h4 className={"desc-items-title"}>{i18n("developer.title.descItems")}</h4>
+            <ToggleContent opened={false} withText>
+                {form}
+            </ToggleContent>
         </Shortcuts>;
     }
 }

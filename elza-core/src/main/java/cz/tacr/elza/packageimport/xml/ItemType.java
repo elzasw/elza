@@ -2,6 +2,7 @@ package cz.tacr.elza.packageimport.xml;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -11,14 +12,16 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlType;
 
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.RulItemAptype;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaColumn;
-
+import cz.tacr.elza.repository.ItemAptypeRepository;
 
 /**
  * VO ItemType from XML
  *
  * View order is based on position in the list
+ *
  * @author Martin Šlapa
  * @author Petr Pytelka
  * @since 14.12.2015
@@ -26,6 +29,8 @@ import cz.tacr.elza.domain.table.ElzaColumn;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "item-type")
 public class ItemType {
+
+    // --- fields ---
 
     @XmlAttribute(name = "code", required = true)
     private String code;
@@ -63,6 +68,12 @@ public class ItemType {
 
     @XmlElement(name = "display-type")
     private DisplayType displayType;
+
+    @XmlElement(name = "item-aptype")
+    @XmlElementWrapper(name = "item-aptypes")
+    private List<ItemAptype> itemAptypes;
+
+    // --- getters/setters ---
 
     public String getCode() {
         return code;
@@ -160,15 +171,24 @@ public class ItemType {
         this.displayType = displayType;
     }
 
+    public List<ItemAptype> getItemAptypes() {
+        return itemAptypes;
+    }
+
+    public void setItemAptypes(List<ItemAptype> itemAptypes) {
+        this.itemAptypes = itemAptypes;
+    }
+
+    // --- methods ---
+
     /**
      * Převod DAO na VO typů atributu.
      *
-     * @param rulDescItemType
-     *            DAO typy
-     * @param itemType
-     *            VO typu
+     * @param rulDescItemType DAO typy
+     * @param itemType VO typu
      */
-    public static ItemType fromEntity(RulItemType rulDescItemType) {
+    public static ItemType fromEntity(RulItemType rulDescItemType, ItemAptypeRepository itemAptypeRepository) {
+
         ItemType itemType = new ItemType();
         itemType.setCode(rulDescItemType.getCode());
         itemType.setName(rulDescItemType.getName());
@@ -201,6 +221,11 @@ public class ItemType {
             if (displayType != null) {
                 itemType.displayType = cz.tacr.elza.packageimport.xml.DisplayType.valueOf(displayType.name());
             }
+        }
+
+        List<RulItemAptype> itemAptypes = itemAptypeRepository.findByItemType(rulDescItemType);
+        if (!itemAptypes.isEmpty()) {
+            itemType.setItemAptypes(itemAptypes.stream().map(ItemAptype::fromEntity).collect(Collectors.toList()));
         }
 
         return itemType;

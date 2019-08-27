@@ -5,22 +5,20 @@ import './ArrDaos.less';
 
 import React from "react";
 import {connect} from "react-redux";
-import {Icon, HorizontalLoader, AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent, HorizontalLoader, Icon, Splitter} from 'components/shared';
 import {indexById} from "stores/app/utils.jsx";
-import {Button} from "react-bootstrap";
-import {dateToString} from "components/Utils.jsx";
-import {userDetailsSaveSettings} from "actions/user/userDetail.jsx";
 import * as daoActions from "actions/arr/daoActions.jsx";
-import {fundChangeReadMode} from "actions/arr/fund.jsx";
-import {setSettings, getOneSettings} from "components/arr/ArrUtils.jsx";
-import {LazyListBox, ListBox} from 'components/shared';
 import {WebApi} from 'actions/index.jsx';
 import ArrDao from "./ArrDao";
+
+import flattenItems from "components/shared/utils/itemFilter.jsx";
+import List from "components/shared/tree-list/TreeList.jsx";
+import ListItem from "../shared/tree-list/list-item/ListItem";
 
 class ArrDaos extends AbstractReactComponent {
 
     state = {
-        selectedItemId: null,
+        leftSize: 240,
     };
 
     static PropTypes = {
@@ -76,44 +74,14 @@ class ArrDaos extends AbstractReactComponent {
                 this.props.dispatch(daoActions.fetchDaoPackageDaoListIfNeeded(fund.versionId, daoPackageId, unassigned));
             }
         }
-
-        if ((prevProps.fund && prevDaoList.isFetching || !prevProps.fund) && nextDaoList.fetched && !nextDaoList.isFetching || prevProps.selectedDaoId !== nextProps.selectedDaoId) {  // donačetl data, pokusíme se nastavit aktuálně vybranou položku
-            const index = indexById(nextDaoList.rows, nextProps.selectedDaoId);
-            if (index !== null) {
-                const selectedItem = nextDaoList.rows[index];
-                this.setState({
-                    selectedItemId: selectedItem.id
-                });
-                onSelect && onSelect(selectedItem);
-            } else {
-                if (nextProps.selectedDaoId == null) {
-                    this.setState({
-                        selectedItemId: nextProps.selectedDaoId
-                    });
-                }
-            }
-        }
     };
 
     renderItem = (props) => {
-        const {item} = props;
-        return <div key={"daos" + item.id} className="item">{item.label}<br /><i><small>{item.code}</small></i></div>
+        return <ListItem renderName={props.item.renderName} {...props}/>;
     };
 
     handleSelect = (item) => {
-        const {onSelect} = this.props;
-        this.setState({ selectedItemId: item.id });
-        onSelect && onSelect(item);
-    };
-
-    handleUnlink = (dao) => {
-        const {fund} = this.props;
-        WebApi.deleteDaoLink(fund.versionId, dao.daoLink.id);
-    };
-
-    render() {
-        const {type, fund, nodeId, daoPackageId, readMode} = this.props;
-        const {selectedItemId} = this.state;
+        const {onSelect, type, fund} = this.props;
 
         let daoList = {};
         if (type === "NODE") {
@@ -124,33 +92,124 @@ class ArrDaos extends AbstractReactComponent {
             daoList = fund.packageDaoList;
         }
 
-        let activeIndex = null;
-        let selectedItem;
-        if (selectedItemId !== null) {
-            activeIndex = indexById(daoList.rows, selectedItemId);
-            if (activeIndex !== null) {
-                selectedItem = daoList.rows[activeIndex];
-            }
+        const index = indexById(daoList.rows, item.daoId);
+        const daoItem = daoList.rows[index];
+        const daoFileId = item.id.startsWith("f_") ? parseInt(item.id.replace("f_", "")) : null;
+
+        onSelect && onSelect(daoItem, daoFileId);
+    };
+
+    handlePrevDaoFile = (daoItem) => {
+        const {selectedDaoFileId, onSelect} = this.props;
+        const index = indexById(daoItem.fileList, selectedDaoFileId);
+        if (index != null) {
+            const file = daoItem.fileList[index - 1];
+            onSelect && onSelect(daoItem, file.id);
+        }
+    };
+
+    handleNextDaoFile = (daoItem) => {
+        const {selectedDaoFileId, onSelect} = this.props;
+        const index = indexById(daoItem.fileList, selectedDaoFileId);
+        if (index != null) {
+            const file = daoItem.fileList[index + 1];
+            onSelect && onSelect(daoItem, file.id);
+        }
+    };
+
+    handleUnlink = (dao) => {
+        const {fund} = this.props;
+        WebApi.deleteDaoLink(fund.versionId, dao.daoLink.id);
+    };
+
+    renderDao = (item) => {
+        const name = item.code + " (" + item.daoId + ")";
+        return <div className="item-name" title={name}>{name}</div>
+    };
+
+    renderFile = (file) => {
+        return <div className="item-file" title={file.code}><Icon glyph='fa-file-o' /> {file.code}</div>;
+    };
+
+    render() {
+        const {type, fund, nodeId, daoPackageId, readMode, selectedDaoId, selectedDaoFileId, splitter} = this.props;
+
+        let daoList = {};
+        if (type === "NODE") {
+            daoList = fund.nodeDaoList;
+        } else if (type === "NODE_ASSIGN") {
+            daoList = fund.nodeDaoListAssign;
+        } else if (type === "PACKAGE") {
+            daoList = fund.packageDaoList;
+        }
+
+        const showPart = !(!daoList.fetched && daoPackageId);
+
+        let items = {ids:[]};
+
+        let selectedDao = null;
+        let selectedDaoFile = null;
+        let selectedItemId = null;
+
+        if (showPart) {
+            const preItems = [];
+            daoList.rows.forEach(item => {
+                const children = [];
+                item.fileList.forEach(file => {
+                    const id = 'f_' + file.id;
+                    if (item.id === selectedDaoId && selectedDaoFileId == file.id) {
+                        selectedItemId = id;
+                        selectedDao = item;
+                        selectedDaoFile = file;
+                    }
+                    children.push({
+                        ...file,
+                        id: id,
+                        daoId: item.id,
+                        renderName: this.renderFile,
+                    });
+                });
+                const id = 'd_' + item.id;
+                if (item.id === selectedDaoId && selectedDaoFileId == null) {
+                    selectedItemId = id;
+                    selectedDao = item;
+                    selectedDaoFile = null;
+                }
+                preItems.push({
+                    ...item,
+                    id: id,
+                    daoId: item.id,
+                    renderName: this.renderDao,
+                    children: children
+                });
+            });
+
+            items = flattenItems(preItems, {getItemId: i => i.id})
         }
 
         return (
             <div className="daos-container">
-                <div className="daos-list">
+                <Splitter
+                    leftSize={this.state.leftSize}
+                    onChange={({leftSize, rightSize}) => { this.setState({leftSize: leftSize}); }}
+                    left={<div className="daos-list">
                     <div className="title">Digitální entity</div>
                     <div className="daos-list-items">
-                        {!(!daoList.fetched && daoPackageId) && <ListBox
-                            activeIndex={activeIndex}
-                            className="data-container"
-                            items={daoList.rows}
-                            renderItemContent={this.renderItem}
-                            onFocus={this.handleSelect}
-                        />}
+                        <List
+                            items={items}
+                            onChange={this.handleSelect}
+                            expandAll={true}
+                            selectedItemId={selectedItemId}
+                            ref={(list)=>{this.list = list;}}
+                            renderItem={this.renderItem}
+                        />
                         {!daoList.fetched && daoPackageId && <HorizontalLoader/>}
                     </div>
-                </div>
-                <div className="daos-detail">
-                    {/*selectedItem &&*/ <ArrDao fund={fund} readMode={readMode} dao={selectedItem} onUnlink={() => this.handleUnlink(selectedItem) } />}
-                </div>
+                </div>}
+                    center={<div className="daos-detail">
+                        {selectedDao && <ArrDao fund={fund} readMode={readMode} dao={selectedDao} prevDaoFile={() => this.handlePrevDaoFile(selectedDao)} nextDaoFile={() => this.handleNextDaoFile(selectedDao)} daoFile={selectedDaoFile} onUnlink={() => this.handleUnlink(selectedDao) } />}
+                    </div>}
+                />
             </div>
         );
     }

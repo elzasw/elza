@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutput.OutputState;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulTemplate;
@@ -24,7 +24,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.xml.TemplateXml;
 import cz.tacr.elza.packageimport.xml.Templates;
 import cz.tacr.elza.packageimport.xml.common.OtherCode;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
+import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.TemplateRepository;
 
@@ -43,7 +43,7 @@ public class TemplateUpdater {
     private Map<String, RulOutputType> outputTypesMap = new HashMap<>();
 
     private final TemplateRepository templateRepository;
-    private final OutputDefinitionRepository outputDefinitionRepository;
+    private final OutputRepository outputRepository;
     private final OutputResultRepository outputResultRepository;
 
     /**
@@ -61,12 +61,12 @@ public class TemplateUpdater {
     private final Map<RulTemplate, RulTemplate> otherTemplMapping = new HashMap<>();
 
     public TemplateUpdater(final TemplateRepository templateRepository,
-            final OutputDefinitionRepository outputDefinitionRepository,
+            final OutputRepository outputRepository,
             final OutputResultRepository outputResultRepository,
             final List<RulOutputType> rulOutputTypesNew) {
         this.outputTypes = rulOutputTypesNew;
         this.templateRepository = templateRepository;
-        this.outputDefinitionRepository = outputDefinitionRepository;
+        this.outputRepository = outputRepository;
         this.outputResultRepository = outputResultRepository;
 
         // initialize lookup
@@ -107,23 +107,23 @@ public class TemplateUpdater {
         // Run mapping
         for (Entry<RulTemplate, RulTemplate> itemMapping : otherTemplMapping.entrySet()) {
             outputResultRepository.updateTemplateByTemplate(itemMapping.getKey(), itemMapping.getValue());
-            outputDefinitionRepository.updateTemplateByTemplate(itemMapping.getKey(), itemMapping.getValue());
+            outputRepository.updateTemplateByTemplate(itemMapping.getKey(), itemMapping.getValue());
         }
 
         List<RulTemplate> rulTemplateToDelete = new ArrayList<>(oldDBTemplates);
         rulTemplateToDelete.removeAll(this.templates);
         if (!rulTemplateToDelete.isEmpty()) {
             // Check if there exists non deleted templates
-            List<ArrOutputDefinition> byTemplate = outputDefinitionRepository
+            List<ArrOutput> byTemplate = outputRepository
                     .findNonDeletedByTemplatesAndStates(rulTemplateToDelete, Arrays
                             .asList(OutputState.OPEN, OutputState.GENERATING, OutputState.COMPUTING));
             if (!byTemplate.isEmpty()) {
                 StringBuilder sb = new StringBuilder()
                         .append("Existuje výstup(y), který nebyl vygenerován či smazán a je navázán na šablonu, která je v novém balíčku smazána.");
-                byTemplate.forEach((a) -> {
-                    ArrFund fund = a.getFund();
-                    sb.append("\noutputDefinitionId: ").append(a.getOutputDefinitionId())
-                            .append(", outputName: ").append(a.getName())
+                byTemplate.forEach((o) -> {
+                    ArrFund fund = o.getFund();
+                    sb.append("\noutputId: ").append(o.getOutputId())
+                            .append(", outputName: ").append(o.getName())
                             .append(", fundId: ").append(fund.getFundId())
                             .append(", fundName: ").append(fund.getName()).toString();
 

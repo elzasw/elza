@@ -31,9 +31,9 @@ public class ArrItemSettings {
     @Column(nullable = false, insertable = false, updatable = false)
     private Integer itemTypeId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrOutputDefinition.class)
-    @JoinColumn(name = "outputDefinitionId", nullable = false)
-    private ArrOutputDefinition outputDefinition;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrOutput.class)
+    @JoinColumn(name = "outputId", nullable = false)
+    private ArrOutput output;
 
     @Column(nullable = false)
     private Boolean blockActionResult;
@@ -74,15 +74,15 @@ public class ArrItemSettings {
     /**
      * @return výstup
      */
-    public ArrOutputDefinition getOutputDefinition() {
-        return outputDefinition;
+    public ArrOutput getOutput() {
+        return output;
     }
 
     /**
-     * @param outputDefinition výstup
+     * @param output výstup
      */
-    public void setOutputDefinition(final ArrOutputDefinition outputDefinition) {
-        this.outputDefinition = outputDefinition;
+    public void setOutput(final ArrOutput output) {
+        this.output = output;
     }
 
     /**

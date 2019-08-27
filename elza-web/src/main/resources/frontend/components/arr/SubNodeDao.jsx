@@ -37,7 +37,7 @@ class SubNodeDao extends AbstractReactComponent {
         }
 
         let actions = [];
-        actions.push(<Button onClick={() => { this.handleShowDetailOne(dao) }} title={i18n('subNodeDao.dao.action.showDetailOne')}><Icon glyph='fa-pencil'/></Button>)
+        actions.push(<Button onClick={() => { this.handleShowDetailOne(dao) }} title={i18n('subNodeDao.dao.action.showDetailOne')}><Icon glyph='fa-eye'/></Button>)
         daoResults.push(<div className="actions">{actions}</div>);
 
         return <div className='links'>{daoResults}</div>
@@ -87,9 +87,9 @@ class SubNodeDao extends AbstractReactComponent {
     render() {
         const {daos} = this.props;
 
-        return <div className='node-dao'>
+        return daos.data.length > 0 && <div className='node-dao'>
             <div className='node-dao-title'>{i18n('subNodeDao.title')}</div>
-            <div className="actions"><Button onClick={this.handleShowDetailAll} title={i18n('subNodeDao.dao.action.showDetailAll')}><Icon glyph='fa-pencil'/></Button></div>
+            <div className="actions"><Button onClick={this.handleShowDetailAll} title={i18n('subNodeDao.dao.action.showDetailAll')}><Icon glyph='fa-eye'/></Button></div>
             {daos.isFetching ? <HorizontalLoader /> : this.renderForm() }
         </div>
     }

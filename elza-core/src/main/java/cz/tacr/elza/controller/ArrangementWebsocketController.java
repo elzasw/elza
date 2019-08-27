@@ -1,5 +1,30 @@
 package cz.tacr.elza.controller;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.transaction.Transactional;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
@@ -19,29 +44,6 @@ import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.vo.UpdateDescItemsParam;
 import cz.tacr.elza.websocket.WebSocketAwareController;
 import cz.tacr.elza.websocket.service.WebScoketStompService;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextImpl;
-import org.springframework.stereotype.Controller;
-import org.springframework.util.Assert;
-
-import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Kontroler pro zpracování websocket požadavků pro některé kritické modifikace v pořádíní.
@@ -67,15 +69,17 @@ public class ArrangementWebsocketController {
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
 
-	@MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeVersion}/update/{createNewVersion}")
+	@MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/{createNewVersion}")
 	public void updateDescItem(
 	        @Payload final ArrItemVO descItemVO,
 	        @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
+	        @DestinationVariable(value = "nodeId") final Integer nodeId,
 	        @DestinationVariable(value = "nodeVersion") final Integer nodeVersion,
 	        @DestinationVariable(value = "createNewVersion") final Boolean createNewVersion,
 	        final StompHeaderAccessor requestHeaders) {
 
 		Validate.notNull(fundVersionId);
+		Validate.notNull(nodeId);
 		Validate.notNull(nodeVersion);
 		Validate.notNull(descItemVO);
 
@@ -86,7 +90,7 @@ public class ArrangementWebsocketController {
 		sc.setAuthentication(token);
 		SecurityContextHolder.setContext(sc);
 
-		arrangementFormService.updateDescItem(fundVersionId, nodeVersion, descItemVO,
+		arrangementFormService.updateDescItem(fundVersionId, nodeId, nodeVersion, descItemVO,
 		        BooleanUtils.isNotFalse(createNewVersion),
 		        requestHeaders);
 	}
@@ -122,12 +126,11 @@ public class ArrangementWebsocketController {
             }
         }
 
-        UpdateDescItemsParam params = new UpdateDescItemsParam(nodeId,
-                nodeVersion,
+        UpdateDescItemsParam params = new UpdateDescItemsParam(
                 createItems,
                 updateItems,
                 deleteItems);
-        arrangementFormService.updateDescItems(fundVersionId, params, requestHeaders);
+        arrangementFormService.updateDescItems(fundVersionId, nodeId, nodeVersion, params, requestHeaders);
     }
 
     /**
@@ -142,7 +145,7 @@ public class ArrangementWebsocketController {
                          final StompHeaderAccessor requestHeaders) {
 
         Assert.notNull(addLevelParam, "Parametry musí být vyplněny");
-        Assert.notNull(addLevelParam.getVersionId(), "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(addLevelParam.getVersionId(), "Nebyl vyplněn identifikátor verze AS");
         Assert.notNull(addLevelParam.getDirection(), "Směr musí být vyplněn");
 
         ArrFundVersion version = fundVersionRepository.findOne(addLevelParam.getVersionId());
@@ -162,12 +165,11 @@ public class ArrangementWebsocketController {
                 descItemCopyTypes);
 
         if (CollectionUtils.isNotEmpty(addLevelParam.getCreateItems())) {
-            UpdateDescItemsParam params = new UpdateDescItemsParam(newLevel.getNodeId(),
-                    newLevel.getNode().getVersion(),
+            UpdateDescItemsParam params = new UpdateDescItemsParam(
                     addLevelParam.getCreateItems(),
                     Collections.emptyList(),
                     Collections.emptyList());
-            arrangementFormService.updateDescItems(version.getFundVersionId(), params, null);
+            arrangementFormService.updateDescItems(version.getFundVersionId(), newLevel.getNodeId(), newLevel.getNode().getVersion(), params, null);
         }
 
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService

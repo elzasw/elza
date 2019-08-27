@@ -1,5 +1,5 @@
 import React from 'react';
-import {AbstractReactComponent, i18n, Icon, Loading, ListBox, FormInput, TooltipTrigger} from 'components/shared';
+import {AbstractReactComponent, i18n, Icon, Loading, CheckListBox, FormInput, TooltipTrigger} from 'components/shared';
 import FloatingMenu from "components/shared/floating-menu/FloatingMenu.jsx";
 import {objectById} from "shared/utils";
 import {Button, DropdownButton, FormControl, MenuItem} from 'react-bootstrap';
@@ -7,11 +7,10 @@ import {connect} from 'react-redux';
 import {WebApi} from "../../actions/WebApi";
 import {
     structureTypeFetchIfNeeded, AREA, structureTypeFilter,
-    structureTypeInvalidate
+    structureTypeInvalidate,
+    DEFAULT_STRUCTURE_TYPE_MAX_SIZE
 } from "../../actions/arr/structureType";
 import storeFromArea from "../../shared/utils/storeFromArea";
-import debounce from "../../shared/utils/debounce";
-
 import './ArrStructurePanel.less'
 import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
 import AddStructureDataForm from "./structure/AddStructureDataForm";
@@ -21,23 +20,30 @@ import PropTypes from 'prop-types';
 import UpdateMultipleSub from "./structure/UpdateMultipleSub";
 import {addToastrWarning} from "../shared/toastr/ToastrActions";
 import DescItemFactory from "components/arr/nodeForm/DescItemFactory.jsx";
+import ListPager from "components/shared/listPager/ListPager";
+
 
 class ArrStructurePanel extends AbstractReactComponent {
-
     static propTypes = {
         code: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
         id: PropTypes.number.isRequired,
         fundVersionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
+        maxSize: React.PropTypes.number
+    };
+
+    static defaultProps = {
+        maxSize: DEFAULT_STRUCTURE_TYPE_MAX_SIZE
     };
 
     state = {
-        activeIndexes: [],
+        checkedIndexes: [],
         contextMenu: {
             isOpen: false,
             coordinates: {x:0,y:0}
-        }
+        },
+        multiselect: false
     };
 
     componentDidMount() {
@@ -74,8 +80,8 @@ class ArrStructurePanel extends AbstractReactComponent {
         })
     };
 
-    handleChangeSelection = (activeIndexes) => {
-        this.setState({activeIndexes});
+    handleChangeSelection = (checkedIndexes) => {
+        this.setState({ checkedIndexes });
     };
 
     handleCreate = () => {
@@ -119,13 +125,14 @@ class ArrStructurePanel extends AbstractReactComponent {
      *
      */
     getActiveSelection = (clickedItem = null) => {
-        const {activeIndexes} = this.state;
-        if (activeIndexes) {
+        const {multiselect, checkedIndexes} = this.state;
+
+        if (checkedIndexes) {
             const {store: {rows}} = this.props;
-            if (activeIndexes.length === 1) { // Vybrána pouze 1 položka
-                return [rows[parseInt(activeIndexes[0])].id];
-            } else if (activeIndexes.length > 1) { // Vybráno více položek
-                return activeIndexes.map(i => rows[i].id);
+            if (checkedIndexes.length === 1) { // Vybrána pouze 1 položka
+                return [rows[parseInt(checkedIndexes[0])].id];
+            } else if (checkedIndexes.length > 1) { // Vybráno více položek
+                return checkedIndexes.map(i => rows[i].id);
             } else { // Vybráno 0 položek
                 console.warn("Invalid state");
                 return null;
@@ -182,6 +189,26 @@ class ArrStructurePanel extends AbstractReactComponent {
         this.props.dispatch(structureTypeFilter({...filter, ...toFilter}));
     };
 
+    handleFilterPrev = () => {
+        const { filter } = this.props.store;
+        let { from } = filter;
+
+        if (from >= DEFAULT_STRUCTURE_TYPE_MAX_SIZE) {
+            from = from - DEFAULT_STRUCTURE_TYPE_MAX_SIZE;
+            this.dispatch(structureTypeFilter({...filter, from}));
+        }
+    };
+
+    handleFilterNext = () => {
+        const { filter, count } = this.props.store;
+        let { from } = filter;
+
+        if (from < count - DEFAULT_STRUCTURE_TYPE_MAX_SIZE) {
+            from = from + DEFAULT_STRUCTURE_TYPE_MAX_SIZE;
+            this.dispatch(structureTypeFilter({...filter, from}));
+        }
+    };
+
     /**
      *
      * @param clickItem
@@ -189,18 +216,31 @@ class ArrStructurePanel extends AbstractReactComponent {
      */
     handleSetAssignable = (clickItem, assignableState) => {
         const {fundVersionId} = this.props;
-        const ids = this.getActiveSelection(clickItem);
+        const selection = this.getActiveSelection(clickItem);
+        const ids = selection ? this.getActiveSelection(clickItem) : [clickItem.id];
+
         WebApi.setAssignableStructureDataList(fundVersionId, assignableState, ids).then(() => {
             this.props.dispatch(structureTypeInvalidate());
         });
         this.closeContextMenu();
     };
 
-    handleDelete = ({id}) => {
+    deleteItem = (itemId) => {
         const {fundVersionId} = this.props;
-        WebApi.deleteStructureData(fundVersionId, id).then(() => {
+        WebApi.deleteStructureData(fundVersionId, itemId).then(() => {
             this.props.dispatch(structureTypeInvalidate());
         });
+    };
+
+    handleDelete = (clickItem) => {
+        const ids = this.getActiveSelection(clickItem);
+
+        if (ids) {
+            ids.forEach((id) => this.deleteItem(id));
+        } else {
+            this.deleteItem(clickItem.id);
+        }
+
         this.closeContextMenu();
     };
 
@@ -219,7 +259,8 @@ class ArrStructurePanel extends AbstractReactComponent {
                     x: e.clientX,
                     y: e.clientY
                 },
-                node
+                node,
+                focusable: e.keyCode == 13
             }
         });
     }
@@ -228,33 +269,75 @@ class ArrStructurePanel extends AbstractReactComponent {
         this.setState({
             contextMenu:{
                 ...this.state.contextMenu,
-                isOpen:false
+                isOpen:false,
+                focusable: false
             }
         });
+        if (this.list) {
+            this.list.focus();
+        }
+    }
+
+    handleKeyMenu = (e, call) => {
+        if (e.keyCode == 13) {
+            call && call();
+        } else if (e.keyCode == 27) {
+            this.closeContextMenu();
+        } else {
+            switch (e.key) {
+                case "ArrowDown":
+                    this.focusOnItem(1);
+                    break;
+                case "ArrowUp":
+                    this.focusOnItem(-1);
+                    break;
+            }
+        }
+    }
+
+    focusOnItem = (diff) => {
+        if (this.menu) {
+            const menu = this.menu.menu;
+            let curr = null;
+            let poss = [];
+            for (let i = 0; i < menu.children.length; i++) {
+                const item = menu.children[i];
+                if (item.tabIndex >= 0) {
+                    poss.push(i);
+                }
+                if (item === document.activeElement) {
+                    curr = poss.length - 1;
+                }
+            }
+            const newIndex = curr + diff;
+            if (newIndex >= 0 && poss.length > newIndex) {
+                menu.children[poss[newIndex]].focus();
+            }
+        }
     }
 
     renderContextMenu = () => {
-        const {coordinates, node} = this.state.contextMenu;
+        const { filter } = this.props.store;
+        const {coordinates, node, focusable} = this.state.contextMenu;
         const {readMode} = this.props;
 
         const menuParts = [];
 
         if (readMode) {
-            menuParts.push(<div key="show" className="item" onClick={this.handleUpdate.bind(this, node)}>{i18n("arr.structure.item.contextMenu.show")}</div>);
+            menuParts.push(<div key="show" tabIndex={0} className="item" onKeyDown={e => this.handleKeyMenu(e, this.handleUpdate.bind(this, node))} onClick={this.handleUpdate.bind(this, node)}>{i18n("arr.structure.item.contextMenu.show")}</div>);
         } else {
-            if(node.assignable){
-                menuParts.push(<div key="changeToClosed" className="item" onClick={this.handleSetAssignable.bind(this, node, false)}>{i18n("arr.structure.item.contextMenu.changeToClosed")}</div>);
-            }
-            else {
-                menuParts.push(<div key="changeToOpen" className="item" onClick={this.handleSetAssignable.bind(this, node, true)}>{i18n("arr.structure.item.contextMenu.changeToOpen")}</div>);
+            if (node.assignable) {
+                menuParts.push(<div key="changeToClosed" tabIndex={0} className="item" onKeyDown={e => this.handleKeyMenu(e, this.handleSetAssignable.bind(this, node, false))} onClick={this.handleSetAssignable.bind(this, node, false)}>{i18n("arr.structure.item.contextMenu.changeToClosed")}</div>);
+            } else {
+                menuParts.push(<div key="changeToOpen" tabIndex={0} className="item" onKeyDown={e => this.handleKeyMenu(e, this.handleSetAssignable.bind(this, node, true))} onClick={this.handleSetAssignable.bind(this, node, true)}>{i18n("arr.structure.item.contextMenu.changeToOpen")}</div>);
             }
             menuParts.push(<div key="d1"  className="divider" />);
-            menuParts.push(<div key="update" className="item" onClick={this.handleUpdate.bind(this, node)}>{i18n("arr.structure.item.contextMenu.update")}</div>);
+            menuParts.push(<div key="update" tabIndex={0} className="item" onKeyDown={e => this.handleKeyMenu(e, this.handleUpdate.bind(this, node))} onClick={this.handleUpdate.bind(this, node)}>{i18n("arr.structure.item.contextMenu.update")}</div>);
             menuParts.push(<div key="d2" className="divider" />);
-            menuParts.push(<div key="delete" className="item" onClick={this.handleDelete.bind(this, node)}>{i18n("arr.structure.item.contextMenu.delete")}</div>);
+            menuParts.push(<div key="delete" tabIndex={0} className="item" onKeyDown={e => this.handleKeyMenu(e, this.handleDelete.bind(this, node))} onClick={this.handleDelete.bind(this, node)}>{i18n("arr.structure.item.contextMenu.delete")}</div>);
         }
         return (
-            <FloatingMenu coordinates={coordinates} closeMenu={this.closeContextMenu}>
+            <FloatingMenu ref={(ref)=>{this.menu = ref;}} coordinates={coordinates} closeMenu={this.closeContextMenu} focusable={focusable}>
                 {menuParts}
             </FloatingMenu>
         );
@@ -273,19 +356,19 @@ class ArrStructurePanel extends AbstractReactComponent {
         let parts = [];
         error = JSON.parse(error);
         if(error.emptyValue){
-            parts.push(<div className="error-item">{i18n("arr.structure.item.error.emptyValue")}</div>);
+            parts.push(<div key="empty" className="error-item">{i18n("arr.structure.item.error.emptyValue")}</div>);
         }
         if(error.duplicateValue){
-            parts.push(<div className="error-item">{i18n("arr.structure.item.error.duplicateValue")}</div>);
+            parts.push(<div key="duplicate" className="error-item">{i18n("arr.structure.item.error.duplicateValue")}</div>);
         }
         if(error.impossibleItemTypeIds.length > 0){
             const items = [];
-            error.impossibleItemTypeIds.map((id)=>{
+            error.impossibleItemTypeIds.map((id, index)=>{
                 const descItem = objectById(descItemTypes, id);
-                items.push(<li>{descItem.name}</li>);
+                items.push(<li key={index}>{descItem.name}</li>);
             });
             parts.push(
-                <div className="error-list error-item">
+                <div key="items" className="error-list error-item">
                   <div>{i18n("arr.structure.item.error.impossibleItemTypes")}</div>
                   <ul>{items}</ul>
                 </div>
@@ -308,27 +391,44 @@ class ArrStructurePanel extends AbstractReactComponent {
     }
 
     renderItemContent = (props) => {
-        const {item, ...otherProps} = props;
+        const {item, active, index, ...otherProps} = props;
+
         const hasError = item.state === 'ERROR' && item.errorDescription;
+        const {complement} = item;
+
         return (
-            <div {...otherProps} onContextMenu={this.openContextMenu.bind(this, item)}>
-              <div className="structure-name">
-                {item.value || <em>{i18n("arr.structure.list.item.noValue")}</em>}
-              </div>
+            <div {...otherProps} key={index} onContextMenu={this.openContextMenu.bind(this, item)}>
+                <div className="structure-name">
+                    {item.value || <em key="no-val">{i18n("arr.structure.list.item.noValue")}</em>}
+                    {complement &&
+                    <div key="complement" className="structure-name-complement">
+                        {complement}
+                    </div>
+                    }
+                </div>
                 {
                     hasError &&
-                        <TooltipTrigger tooltipClass="error-message" content={this.renderErrorContent(item.errorDescription)} placement="left">
-                            <Icon glyph="fa-exclamation-triangle" />
-                        </TooltipTrigger>
+                    <TooltipTrigger key="tooltip" tooltipClass="error-message" content={this.renderErrorContent(item.errorDescription)} placement="left">
+                        <Icon glyph="fa-exclamation-triangle" />
+                    </TooltipTrigger>
                 }
+                <Button className="btn--context-menu" bsStyle="default" onClick={this.openContextMenu.bind(this, item)}>
+                    <Icon glyph="fa-ellipsis-v" />
+                </Button>
             </div>
         )
     }
 
+    handleMultiselect = () => {
+        const {multiselect} = this.state;
+        this.setState({multiselect: !multiselect});
+    }
+
     render() {
-        const {rows, filter, fetched} = this.props.store;
-        const {readMode} = this.props;
-        const {activeIndexes, contextMenu} = this.state;
+        const {rows, filter, fetched, count} = this.props.store;
+        const {readMode, maxSize} = this.props;
+        const {checkedIndexes, contextMenu, multiselect} = this.state;
+
         if (!fetched) {
             return <Loading />
         }
@@ -339,9 +439,14 @@ class ArrStructurePanel extends AbstractReactComponent {
                     <MenuItem eventKey="1" onClick={this.handleCreate}>{i18n("arr.structure.addOne")}</MenuItem>
                     <MenuItem eventKey="2" onClick={this.handleCreateMulti}>{i18n("arr.structure.addMany")}</MenuItem>
                 </DropdownButton>
-                <Button bsStyle="default" onClick={this.handleUpdate} disabled={activeIndexes.length < 1}>
-                    <Icon glyph="fa-edit" />
+                <Button  className="btn--multiselect" bsStyle="default" onClick={this.handleMultiselect}>
+                    <Icon glyph={multiselect ? "fa-check-square" : "fa-check-square-o"} />
                 </Button>
+                {multiselect &&
+                    <Button bsStyle="default" onClick={(e) => this.openContextMenu(null, e)} disabled={!checkedIndexes || checkedIndexes.length < 1 || rows.length < 1 }>
+                        <Icon glyph="fa-bars" />
+                    </Button>
+                }
                 <Button bsStyle="default" onClick={this.handleExtensionsSettings} className={"pull-right"}>
                     <Icon glyph="fa-cogs" />
                 </Button>
@@ -356,17 +461,33 @@ class ArrStructurePanel extends AbstractReactComponent {
                 </div>
                 <FormInput className="text-filter" name={"text"} type="text" onChange={({target: {value}}) => this.filter({text:value})} value={filter.text} placeholder={i18n("arr.structure.filter.text.placholder")}/>
             </div>
-            {rows && rows.length > 0 ? <ListBox
-                className="list"
-                items={rows}
-                onChangeSelection={this.handleChangeSelection}
-                renderItemContent={this.renderItemContent}
-                multiselect={true}
-            /> : <div className="list listbox-wrapper no-result text-center">{i18n('search.action.noResult')}</div>}
-             {contextMenu.isOpen && this.renderContextMenu()}
+            {rows && rows.length > 0 
+                ? <CheckListBox
+                    ref={(ref)=>{this.list = ref;}}
+                    tabindex={0}
+                    className="list"
+                    key="list"
+                    items={rows}
+                    filter={filter}
+                    onSelect={(item, itemIndex, e) => this.openContextMenu(item, e)}
+                    onChangeSelection={this.handleChangeSelection}
+                    renderItemContent={this.renderItemContent}
+                    multiselect={multiselect}
+                />
+                : <div key="no-result" className="list listbox-wrapper no-result text-center">{i18n('search.action.noResult')}</div>
+            }
+            {contextMenu.isOpen && this.renderContextMenu()}
+            {count > maxSize && 
+                <ListPager
+                    key="pager"
+                    prev={this.handleFilterPrev}
+                    next={this.handleFilterNext}
+                    from={filter.from}
+                    maxSize={maxSize}
+                    totalCount={count}
+                />
+            }
         </div>
-
-
     }
 }
 

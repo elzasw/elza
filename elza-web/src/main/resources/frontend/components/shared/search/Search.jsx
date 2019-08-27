@@ -76,7 +76,7 @@ class Search extends React.Component {
     }
 
     render() {                          // metoda pro renderovani obsahu komponenty
-        const {textAreaInput, tabIndex, placeholder, extendedSearch, onClickExtendedSearch, extendedReadOnly, filter} = this.props;
+        const {disabled, textAreaInput, tabIndex, placeholder, extendedSearch, onClickExtendedSearch, extendedReadOnly, filter} = this.props;
 
         const readOnly = extendedSearch && extendedReadOnly;
 
@@ -103,7 +103,7 @@ class Search extends React.Component {
         }
 
         if (!readOnly) {
-            actions.push(<NoFocusButton key='handleSearch' className='search-button' onClick={this.handleSearch.bind(this, false, false)}>{searchIcon}</NoFocusButton>)
+            actions.push(<NoFocusButton disabled={disabled} key='handleSearch' className='search-button' onClick={this.handleSearch.bind(this, false, false)}>{searchIcon}</NoFocusButton>)
         }
 
         if (this.state.filterText) {
@@ -119,6 +119,7 @@ class Search extends React.Component {
                 {beforeInput}
                 <div className='search-input'>
                     {textAreaInput ? <FormInput
+                        disabled={disabled}
                         componentClass='textarea'
                         tabIndex={tabIndex}
                         value={this.state.filterText}
@@ -127,6 +128,7 @@ class Search extends React.Component {
                         onChange={this.handleChange}
                         onKeyUp={this.handleKeyUp}
                     />:<FormInput
+                        disabled={disabled}
                         type='text'
                         tabIndex={tabIndex}
                         value={this.state.filterText}

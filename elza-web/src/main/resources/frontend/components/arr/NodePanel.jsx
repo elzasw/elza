@@ -133,20 +133,20 @@ class NodePanel extends AbstractReactComponent {
         if (node.selectedSubNodeId !== null) {
             focusItemIndex = indexById(node.childNodes, node.selectedSubNodeId)
         }
-        return focusItemIndex
+        return focusItemIndex || prevFocusItemIndex;
     }
 
     componentDidMount() {
         const settings = this.getSettingsFromProps();
 
-        this.requestData(this.props.versionId, this.props.node, this.props.showRegisterJp, this.props.showDaosJp, settings);
+        this.requestData(this.props.versionId, this.props.node, this.props.showRegisterJp, settings);
         this.ensureItemVisible();
         this.trySetFocus(this.props);
     }
 
     componentWillReceiveProps(nextProps) {
         const settings = this.getSettingsFromProps(nextProps);
-        this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp, nextProps.showDaosJp, settings);
+        this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp, settings);
 
         var newState = {
             focusItemIndex: this.getFocusItemIndex(nextProps, this.state.focusItemIndex)
@@ -171,8 +171,7 @@ class NodePanel extends AbstractReactComponent {
      * Returns fund settings object built from userDetail in props
      */
     getSettingsFromProps(props=this.props){
-        const {userDetail, fundId, closed} = props;
-
+        const {userDetail, fundId, closed, node} = props;
         // center panel settings
         var settings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
         var settingsValues = settings.value ? JSON.parse(settings.value) : null;
@@ -186,15 +185,19 @@ class NodePanel extends AbstractReactComponent {
 
         let readMode = closed || settingsValues;
 
+        const subNodeForm = node.subNodeForm;
+        const arrPerm = subNodeForm.data && subNodeForm.data.arrPerm;
+
         // sets read mode when user does not have permissions to arrange fund
-        if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
+        if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) && !arrPerm) {
             readMode = true;
         }
 
         return {
             showParents,
             showChildren,
-            readMode
+            readMode,
+            arrPerm
         };
     }
 
@@ -434,7 +437,7 @@ return true
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['versionId', 'fund', 'node', 'calendarTypes', 'descItemTypes', 'rulDataTypes', 'fundId', 'showRegisterJp', 'showDaosJp', 'closed']
+        var eqProps = ['versionId', 'fund', 'node', 'calendarTypes', 'descItemTypes', 'rulDataTypes', 'fundId', 'showRegisterJp', 'closed']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -443,16 +446,15 @@ return true
      * @param versionId {String} verze AS
      * @param node {Object} node
      * @param showRegisterJp {bool} zobrazení rejstřílů vázené k jednotce popisu
-     * @param showDaosJp {bool} zobrazení digitálních entit vázené k jednotce popisu
      */
-    requestData(versionId, node, showRegisterJp, showDaosJp, settings) {
+    requestData(versionId, node, showRegisterJp, settings) {
         if (node.selectedSubNodeId != null) {
             this.dispatch(descItemTypesFetchIfNeeded());
             this.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, node.routingKey, node.dirty, settings.showChildren, settings.showParents));
             this.dispatch(refRulDataTypesFetchIfNeeded());
 
             showRegisterJp && this.dispatch(fundSubNodeRegisterFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
-            showDaosJp && this.dispatch(fundSubNodeDaosFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
+            this.dispatch(fundSubNodeDaosFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
 
         }
         this.dispatch(visiblePolicyTypesFetchIfNeeded());
@@ -722,8 +724,8 @@ return true
      * @param daos digitální entity k JP
      * @return {Object} view
      */
-    renderAccordion(form, recordInfo, daos, readMode) {
-        const {node, versionId, userDetail, fund, fundId, closed} = this.props;
+    renderAccordion(form, recordInfo, daos, readMode, arrPerm) {
+        const {node, versionId, userDetail, fund, fundId, closed, displayAccordion} = this.props;
         const {focusItemIndex} = this.state;
         var rows = [];
 
@@ -734,7 +736,7 @@ return true
                 rows.push(<HorizontalLoader key="loading" text={i18n('global.data.loading.node')}/>);
             }
         } else{
-            if (node.viewStartIndex > 0) {
+            if (node.viewStartIndex > 0 && displayAccordion) {
                 rows.push(
                     <Button key="prev" onClick={()=>this.dispatch(fundSubNodesPrev(versionId, node.id, node.routingKey))}>
                         <Icon glyph="fa-chevron-left" />{i18n('arr.fund.prev')}
@@ -749,7 +751,8 @@ return true
                 const accordionLeft = item.accordionLeft ? item.accordionLeft : i18n('accordion.title.left.name.undefined', item.id)
                 const accordionRight = item.accordionRight ? item.accordionRight : ''
                 const referenceMark = <span className="reference-mark">{createReferenceMarkString(item)}</span>
-                const focused = a === this.state.focusItemIndex
+                const focused = a === this.state.focusItemIndex;
+                const disabled = !displayAccordion;
 
                 let digitizationInfo;
                 if (item.digitizationRequests && item.digitizationRequests.length > 0) {
@@ -761,11 +764,11 @@ return true
                     </div>
                 }
 
-                if (node.selectedSubNodeId == item.id) {
+                if (node.selectedSubNodeId === item.id) {
                     rows.push(
-                        <div key={item.id} ref={'accheader-' + item.id} className={'accordion-item opened' + (focused ? ' focused' : '')}>
-                            <div key='header' className='accordion-header-container' onClick={this.handleCloseItem.bind(this, item)}>
-                                <div className='accordion-header'>
+                        <div key={item.id} ref={'accheader-' + item.id} className={'accordion-item opened' + (focused ? ' focused' : '') + (disabled ? ' disabled' : '')}>
+                            <div key='header' className='accordion-header-container' onClick={displayAccordion ? this.handleCloseItem.bind(this, item) : () => ''}>
+                                <div className={'accordion-header'}>
                                     <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
                                         {referenceMark} <span className="title" title={accordionLeft}>{accordionLeft}</span>
                                     </div>
@@ -784,7 +787,7 @@ return true
                             </div>
                         </div>
                     )
-                } else {
+                } else if (displayAccordion) {
                     rows.push(
                         <div key={item.id} ref={'accheader-' + item.id} className={'accordion-item closed' + (focused ? ' focused' : '')}>
                             <div key='header' className='accordion-header-container' onClick={this.handleOpenItem.bind(this, item)}>
@@ -805,17 +808,27 @@ return true
                 }
             }
 
-            if (node.nodeCount > node.pageSize && node.viewStartIndex + node.pageSize/2 < node.nodeCount && node.nodeCount - node.viewStartIndex > node.pageSize) {
+            if (node.nodeCount > node.pageSize && node.viewStartIndex + node.pageSize/2 < node.nodeCount && node.nodeCount - node.viewStartIndex > node.pageSize && displayAccordion) {
                 rows.push(
                     <Button key="next" onClick={()=>this.dispatch(fundSubNodesNext(versionId, node.id, node.routingKey))}><Icon glyph="fa-chevron-right" />{i18n('arr.fund.next')}</Button>
                 )
             }
         }
         return (
-            <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={(action,e)=>this.handleAccordionShortcuts(action,e)} tabIndex={0} global stopPropagation={false}>
+            <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={(action,e) => this.handleAccordionShortcuts(action,e)} tabIndex={0} global stopPropagation={false}>
                 <div  className='inner-wrapper' ref="innerAccordionWrapper">
                     <div className="menu-wrapper">
-                        <NodeActionsBar node={node} selectedSubNodeIndex={focusItemIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} closed={closed}/>
+                        <NodeActionsBar 
+                            simplified={!displayAccordion} 
+                            node={node}
+                            selectedSubNodeIndex={focusItemIndex}
+                            versionId={versionId}
+                            userDetail={userDetail}
+                            fundId={fundId}
+                            closed={closed}
+                            arrPerm={arrPerm}
+                            onSwitchNode={this.handleAccordionShortcuts.bind(this)}
+                        />
                     </div>
                     <div className='content-wrapper' ref='accordionContent'>
                         {rows}
@@ -829,10 +842,11 @@ return true
     render() {
         const {calendarTypes, versionId, rulDataTypes, node,
                 fundId, userDetail,
-                showRegisterJp, showDaosJp, fund, closed, descItemTypes} = this.props;
+                showRegisterJp, fund, closed, descItemTypes} = this.props;
 
         const settings = this.getSettingsFromProps();
         const readMode = settings.readMode;
+        const arrPerm = settings.arrPerm || false;
         var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
 
         var form;
@@ -873,6 +887,7 @@ return true
                 onVisiblePolicy={this.handleVisiblePolicy}
                 onDigitizationRequest={this.handleDigitizationRequest}
                 readMode={readMode}
+                arrPerm={arrPerm}
             />
         } else {
             form = <HorizontalLoader text={i18n('global.data.loading.form')}/>
@@ -890,16 +905,13 @@ return true
                         readMode={readMode}/>
         }
 
-        let daos;
-        if (showDaosJp) {
-            daos = <SubNodeDao
-                nodeId={node.id}
-                versionId={versionId}
-                selectedSubNodeId={node.selectedSubNodeId}
-                routingKey={node.routingKey}
-                readMode={readMode}
-                daos={node.subNodeDaos} />
-        }
+        const daos = <SubNodeDao
+            nodeId={node.id}
+            versionId={versionId}
+            selectedSubNodeId={node.selectedSubNodeId}
+            routingKey={node.routingKey}
+            readMode={readMode}
+            daos={node.subNodeDaos} />
 
         var cls = classNames({
             'node-panel-container': true,
@@ -909,7 +921,7 @@ return true
             <Shortcuts name='NodePanel' key={'node-panel'} className={cls} handler={this.handleShortcuts} tabIndex={0} global stopPropagation={false}>
                 <div key='main' className='main'>
                     {settings.showParents && this.renderParents()}
-                    {this.renderAccordion(form, record, daos, readMode)}
+                    {this.renderAccordion(form, record, daos, readMode, arrPerm)}
                     {settings.showChildren &&  this.renderChildren()}
                 </div>
             </Shortcuts>
@@ -991,9 +1003,9 @@ NodePanel.propTypes = {
     rulDataTypes: React.PropTypes.object.isRequired,
     fundId: React.PropTypes.number,
     showRegisterJp: React.PropTypes.bool.isRequired,
-    showDaosJp: React.PropTypes.bool.isRequired,
+    displayAccordion: React.PropTypes.bool.isRequired,
     closed: React.PropTypes.bool.isRequired,
-    userDetail: React.PropTypes.object.isRequired,
+    userDetail: React.PropTypes.object.isRequired
 };
 
 export default connect(mapStateToProps)(NodePanel);

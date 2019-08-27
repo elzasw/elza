@@ -58,7 +58,7 @@ public class ArrStructuredItem extends ArrItem {
     }
 
     @Override
-    public ArrOutputDefinition getOutputDefinition() {
+    public ArrOutput getOutput() {
         return null;
     }
 

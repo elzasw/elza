@@ -1,13 +1,17 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {indexById} from 'stores/app/utils.jsx'
-import {consolidateState} from 'components/Utils.jsx'
-import {isFundTreeAction} from 'actions/arr/fundTree.jsx'
+import { indexById } from 'stores/app/utils.jsx'
+import { consolidateState } from 'components/Utils.jsx'
+import { isFundTreeAction } from 'actions/arr/fundTree.jsx'
 import fundDetail from './fundDetail.jsx'
+
 
 const initialState = {
     fetched: false,
     fetching: false,
     filterText: '',
+    filter: {
+        from: 0,
+    },
     currentDataKey: '',
     funds: [],
     fundsCount: 0,
@@ -82,7 +86,18 @@ export default function fundRegion(state = initialState, action = {}) {
             return {
                 ...state,
                 filterText: typeof action.filterText !== 'undefined' ? action.filterText : '',
+                filter: {
+                    from: 0,
+                },
                 currentDataKey: '',
+            }
+        case types.FUNDS_FILTER:
+            return {
+                ...state,
+                filter: {
+                    from: typeof action.filter.from !== 'undefined' ? action.filter.from : '',
+                },
+                currentDataKey: ''
             }
         case types.FUNDS_REQUEST:
             return {

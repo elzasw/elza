@@ -200,7 +200,7 @@ public class ArrDescItem extends ArrItem {
     }
 
     @Override
-    public ArrOutputDefinition getOutputDefinition() {
+    public ArrOutput getOutput() {
         return null; //throw new NotImplementedException();
     }
 

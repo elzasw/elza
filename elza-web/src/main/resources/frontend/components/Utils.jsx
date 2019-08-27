@@ -1,5 +1,5 @@
 
-import {normalizeDoubleWithDot} from 'components/validate.jsx'
+import {normalizeDoubleWithDot, pad2} from 'components/validate.jsx'
 import {ShortcutManager} from 'react-shortcuts';
 
 /**
@@ -154,7 +154,7 @@ export function objectEquals( x, y ) {
     if ( typeof( x[ p ] ) !== "object" ) return false;
       // Numbers, Strings, Functions, Booleans must be strictly equal
 
-    if ( ! Object.equals( x[ p ],  y[ p ] ) ) return false;
+    if ( ! objectEquals( x[ p ],  y[ p ] ) ) return false;
       // Objects and Arrays must be tested recursively
   }
 
@@ -163,6 +163,118 @@ export function objectEquals( x, y ) {
       // allows x[ p ] to be set to undefined
   }
   return true;
+}
+
+/**
+ * Porovnání objektů.
+ *
+ * @param x      porovnávaná entita
+ * @param y      porovnávaná entita
+ * @param path   cesta zanoření
+ * @param ignore cesty ignorovaných entit např {'.a.b:true', '|id':true}
+ * @param log    true/false - zda-li se má logovat; POZOR, v případě, že je true se prochází vždy celé porovávání; může způsobit pokles výkonu
+ * @returns {boolean} true pokud se shodují
+ */
+export function objectEqualsDiff( x, y, ignore = {}, path = "", log = false ) {
+    // if ( x === y || ignore[path] ) return true;
+    // if both x and y are null or undefined and exactly the same
+
+    // fast compare
+    if ( JSON.stringify(x) === JSON.stringify(y) || ignore[path] ) return true;
+
+    if ( ! ( x instanceof Object ) || ! ( y instanceof Object ) ) {
+        log && console.warn("diff 1", path, x, y);
+        return false;
+    }
+    // if they are not strictly equal, they both need to be Objects
+
+    if ( x.constructor !== y.constructor ) {
+        log && console.warn("diff 2", path, x.constructor, y.constructor);
+        return false;
+    }
+    // they must have the exact same prototype chain, the closest we can do is
+    // test there constructor.
+
+    let res = true;
+    for ( var p in x ) {
+        let pathProp = path + "." + p;
+        if ( ! x.hasOwnProperty( p ) ) continue;
+        // other properties were tested using x.constructor === y.constructor
+
+        if ( ! y.hasOwnProperty( p ) && !(ignore[pathProp] || ignore[endWith(p)]) )  {
+            if (log) {
+                console.warn("diff 3", path, p);
+                res = false;
+                continue;
+            } else {
+                return false;
+            }
+        }
+        // allows to compare x[ p ] and y[ p ] when set to undefined
+
+        if ( x[ p ] === y[ p ] ) continue;
+        // if they have the same strict value or identity then they are equal
+
+        if ( typeof( x[ p ] ) !== "object" && !(ignore[pathProp] || ignore[endWith(p)]) ) {
+            if (log) {
+                console.warn("diff 4", path, p, x[p], y[p]);
+                res = false;
+                continue;
+            } else {
+                return false;
+            }
+        }
+        // Numbers, Strings, Functions, Booleans must be strictly equal
+
+        if ( !ignore[pathProp] && !ignore[endWith(p)] && ! objectEqualsDiff( x[ p ],  y[ p ], ignore, pathProp, log ) ) {
+            if (log) {
+                //console.warn("diff 5", path, p, x[p], y[p]);
+                res = false;
+                continue;
+            } else {
+                return false;
+            }
+        }
+        // Objects and Arrays must be tested recursively
+    }
+
+    for ( p in y ) {
+        let pathProp = path + "." + p;
+        if ( !(ignore[pathProp] || ignore[endWith(p)]) && y.hasOwnProperty( p ) && ! x.hasOwnProperty( p ) ) {
+            if (log) {
+                //console.warn("diff 6", path, p);
+                res = false;
+                continue;
+            } else {
+                return false;
+            }
+        }
+        // allows x[ p ] to be set to undefined
+    }
+    return res;
+}
+
+export function endWith(prop) {
+    return "|" + prop;
+}
+
+export function startWith(prop) {
+    return "." + prop;
+}
+
+/**
+ * Sestavení mapy pro ignorování položek v objektu.
+ *
+ * @param items pole položek
+ */
+export function buildIgnoreMap(...items) {
+    if (items === null || items.length === 0) {
+        return {}
+    } else {
+        const result = {};
+        items.forEach(item => result[item] = true);
+        return result;
+    }
 }
 
 export function lenToBytesStr(len) {
@@ -640,6 +752,36 @@ export function dateTimeToLocalUTC(date) {
         + ':' + _dtpad( date.getMinutes())
         + ':' + _dtpad( date.getSeconds())
         + '.' + _dtpad( date.getMilliseconds());
+}
+
+/**
+ * Převede datum a čas na datum a čas v UTC se zónou.
+ * @param date
+ * @return {*}
+ */
+export function dateTimeToZonedUTC(date) {
+    if (!date) {
+        return date;
+    }
+
+    const zone = date.getTimezoneOffset();
+
+    return date.getFullYear()
+        + '-' + _dtpad( date.getMonth() + 1)
+        + '-' + _dtpad( date.getDate())
+        + 'T' + _dtpad( date.getHours())
+        + ':' + _dtpad( date.getMinutes())
+        + ':' + _dtpad( date.getSeconds())
+        + '.' + _dtpad( date.getMilliseconds())
+        + toZoneString(zone);
+}
+
+function toZoneString(zone) {
+    const positive = zone >= 0;
+    const zoneTmp = positive ? zone : -zone;
+    let h = Math.floor(zoneTmp / 60);
+    let m = Math.floor(zoneTmp % 60);
+    return (positive ? "-" : "+") + pad2(h) + ":" + pad2(m);
 }
 
 export const removeUndefined = (obj) => {

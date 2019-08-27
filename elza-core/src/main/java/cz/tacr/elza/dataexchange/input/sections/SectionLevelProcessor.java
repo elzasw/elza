@@ -51,7 +51,7 @@ public class SectionLevelProcessor implements ItemProcessor {
     private ArrNode createNode(Level item) {
         ArrNode node = new ArrNode();
         node.setFund(section.getFund());
-        node.setLastUpdate(section.getCreateChange().getChangeDate());
+        node.setLastUpdate(section.getCreateChange().getChangeDate().toLocalDateTime());
         node.setUuid(section.generateNodeUuid());
         return node;
     }

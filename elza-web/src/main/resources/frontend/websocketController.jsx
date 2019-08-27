@@ -94,8 +94,8 @@ class DescItemUpdateRequest {
     }
     sendUpdate(requestData){
         this.running = requestData;
-        const {fundVersionId, nodeVersionId, descItem, onSuccess, onError} = requestData;
-        let realRequest = WebApi.updateDescItem(fundVersionId,nodeVersionId,descItem);
+        const {fundVersionId, nodeId, nodeVersionId, descItem, onSuccess, onError} = requestData;
+        let realRequest = WebApi.updateDescItem(fundVersionId,nodeId,nodeVersionId,descItem);
         realRequest.then((response) => {
             onSuccess && onSuccess(response);
             onUpdateResponse(requestData,response);

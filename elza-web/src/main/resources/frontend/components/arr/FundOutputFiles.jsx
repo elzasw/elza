@@ -6,6 +6,7 @@ import {fetchFundOutputFilesIfNeeded, fundOutputFilesFilterByText} from 'actions
 import {UrlFactory} from 'actions/index.jsx';
 
 import './FundFiles.less';
+import './FundOutputFiles.less';
 import {downloadFile} from "../../actions/global/download";
 
 /**
@@ -20,7 +21,7 @@ class FundOutputFiles extends AbstractReactComponent {
     };
 
     state = {
-        selectedId:0
+        selectedId: 0
     };
 
     componentDidMount() {
@@ -57,15 +58,20 @@ class FundOutputFiles extends AbstractReactComponent {
     render() {
         const {fundOutputFiles} = this.props;
 
-        return <div className='fund-files'>
-            <Button onClick={this.handleDownloadAll}>{i18n('global.action.downloadAll')}</Button>
+        return <div className='fund-files fund-output-files'>
+            <div className={"fund-files-header"}>
+                <h4 className={"fund-files-title"}>{i18n("arr.output.title.complete")}</h4>
+                <Button bsStyle="action" className={"fund-files-download-all"} onClick={this.handleDownloadAll}>
+                    <Icon className={"fund-files-download-icon"} title={i18n("global.action.download")} glyph='fa-download'/>
+                    {i18n('global.action.downloadAll')}
+                </Button>
+            </div>
 
-            <StoreHorizontalLoader store={fundOutputFiles} />
+            <StoreHorizontalLoader store={fundOutputFiles}/>
 
             {fundOutputFiles.fetched && <FileListBox
                 ref="listBox"
                 items={fundOutputFiles.data.rows}
-                searchable
                 filterText={fundOutputFiles.filterText}
                 onSearch={this.handleTextSearch}
                 onDownload={this.handleDownload}
@@ -75,4 +81,4 @@ class FundOutputFiles extends AbstractReactComponent {
 }
 
 
-export default connect(null, null, null, { withRef: true })(FundOutputFiles);
+export default connect(null, null, null, {withRef: true})(FundOutputFiles);

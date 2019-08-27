@@ -77,7 +77,7 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
         try {
             template.process(dataModel, writter);
         } catch (TemplateException e) {
-            throw new ProcessException(params.getDefinitionId(), "Failed to generate output from Freemarker template", e);
+            throw new ProcessException(params.getOutputId(), "Failed to generate output from Freemarker template", e);
         }
     }
 

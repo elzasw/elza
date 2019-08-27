@@ -5,7 +5,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +20,7 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.cache.RestoredNode;
 
 /**
  * Serviska pro operace nad JP, která současně propisuje změny do cache.
@@ -156,6 +160,36 @@ public class ArrangementCacheService {
             cachedNode.setDaoLinks(daoLinks);
         }
         daoLinks.add(daoLink);
+        nodeCacheService.saveNode(cachedNode);
+    }
+
+    /**
+     * Aktualizace vazeb mezi nodem a digitalizátem.
+     *
+     * @param nodeDaoLinkMap mapa identifikátor JP -> seznam vazeb
+     */
+    public void updateDaoLinks(Collection<Integer> nodeIds, Collection<ArrDaoLink> daoLinks) {
+        if (CollectionUtils.isEmpty(nodeIds)) {
+            return;
+        }
+        Map<Integer, List<ArrDaoLink>> nodeDaoLinkMap = daoLinks != null
+                ? daoLinks.stream().collect(Collectors.groupingBy(daoLink -> daoLink.getNodeId()))
+                : Collections.emptyMap();
+        Collection<RestoredNode> cachedNodes = nodeCacheService.getNodes(nodeIds).values();
+        for (RestoredNode cachedNode : cachedNodes) {
+            cachedNode.setDaoLinks(nodeDaoLinkMap.get(cachedNode.getNodeId()));
+        }
+        nodeCacheService.saveNodes(cachedNodes);
+    }
+
+    /**
+     * Zrušení všech vazeb mezi nodem a digitalizátem.
+     *
+     * @param nodeId  identifikátor JP
+     */
+    public void clearDaoLinks(final Integer nodeId) {
+        CachedNode cachedNode = nodeCacheService.getNode(nodeId);
+        cachedNode.setDaoLinks(null);
         nodeCacheService.saveNode(cachedNode);
     }
 

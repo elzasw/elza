@@ -1,5 +1,22 @@
 package cz.tacr.elza.service;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+import javax.validation.constraints.NotNull;
+
+import org.apache.commons.lang3.Validate;
+import org.hibernate.validator.constraints.NotEmpty;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -16,6 +33,7 @@ import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -26,28 +44,13 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FundFileRepository;
+import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ItemRepository;
-import cz.tacr.elza.repository.ItemSpecRegisterRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
-import org.apache.commons.lang3.Validate;
-import org.hibernate.validator.constraints.NotEmpty;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import javax.validation.constraints.NotNull;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Serviska pro správu hodnot atributů.
@@ -74,7 +77,7 @@ public class ItemService {
     private ApAccessPointRepository recordRepository;
 
     @Autowired
-    private ItemSpecRegisterRepository itemSpecRegisterRepository;
+    private ItemAptypeRepository itemAptypeRepository;
 
     @Autowired
     private ApTypeRepository registerTypeRepository;
@@ -170,50 +173,68 @@ public class ItemService {
     /**
      * Kontrola typu a specifikace.
      *
-     * @param sdp
      * @param descItem hodnota atributu
      */
     @Transactional(TxType.MANDATORY)
-    public void checkValidTypeAndSpec(final StaticDataProvider sdp, final ArrItem descItem) {
-        ItemType descItemType = sdp.getItemTypeById(descItem.getItemTypeId());
-        Validate.notNull(descItemType, "Invalid description item type");
+    public void checkValidTypeAndSpec(@NotNull final StaticDataProvider sdp, @NotNull final ArrItem descItem) {
 
-        Integer descItemSpecId = descItem.getItemSpecId();
+        Integer itemTypeId = descItem.getItemTypeId();
+        Validate.notNull(itemTypeId, "Invalid description item type: " + itemTypeId);
+
+        ItemType itemType = sdp.getItemTypeById(itemTypeId);
+        Validate.notNull(itemType, "Invalid description item type: " + itemTypeId);
+
+        // extra check for data
+        ArrData data = descItem.getData();
+        RulItemType rulItemType = descItem.getItemType();
 
         // check if defined specification
-        if (descItemType.hasSpecifications()) {
-            if (descItemSpecId == null) {
+        Integer itemSpecId = descItem.getItemSpecId();
+        if (itemType.hasSpecifications()) {
+
+            if (itemSpecId == null) {
                 throw new BusinessException("Pro typ atributu je nutné specifikaci vyplnit",
                         ArrangementCode.ITEM_SPEC_NOT_FOUND).level(Level.WARNING);
             }
 
-            RulItemSpec descItemSpec = descItemType.getItemSpecById(descItemSpecId);
-            if (descItemSpec == null) {
+            RulItemSpec rulItemSpec = itemType.getItemSpecById(itemSpecId);
+            if (rulItemSpec == null) {
                 throw new SystemException("Specifikace neodpovídá typu hodnoty atributu");
             }
 
-            // extra check for data
-            ArrData data = descItem.getData();
             if (data != null && !descItem.isUndefined()) {
                 // check record_ref
-                if (descItemType.getDataType().equals(DataType.RECORD_REF)) {
-                    ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) data;
+                if (itemType.getDataType().equals(DataType.RECORD_REF)) {
+                    ApAccessPoint apAccessPoint = ((ArrDataRecordRef) data).getRecord();
 
                     // TODO: refactor and use static data
-                    Set<Integer> registerTypeIds = itemSpecRegisterRepository.findIdsByItemSpecId(descItemSpec);
-                    Set<Integer> registerTypeIdTree = registerTypeRepository.findSubtreeIds(registerTypeIds);
+                    List<Integer> apTypeIds = itemAptypeRepository.findApTypeIdsByItemSpec(rulItemSpec);
+                    apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemType(rulItemType));
+                    Set<Integer> apTypeIdTree = registerTypeRepository.findSubtreeIds(apTypeIds);
 
-                    if (!registerTypeIdTree.contains(dataRecordRef.getRecord().getApTypeId())) {
-                        throw new BusinessException("Hodnota neodpovídá typu rejstříku podle specifikace",
+                    if (!apTypeIdTree.contains(apAccessPoint.getApTypeId())) {
+                        throw new BusinessException("Hodnota neodpovídá typu rejstříku podle specifikace nebo typu",
                                 RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING);
                     }
                 }
             }
 
         } else {
-            if (descItemSpecId != null) {
+            if (itemSpecId != null) {
                 throw new BusinessException("Pro typ atributu nesmí být specifikace vyplněná",
                         ArrangementCode.ITEM_SPEC_FOUND).level(Level.WARNING);
+            } else {
+                if (itemType.getDataType().equals(DataType.RECORD_REF)) {
+                    ApAccessPoint apAccessPoint = ((ArrDataRecordRef) data).getRecord();
+
+                    List<Integer> apTypeIds = itemAptypeRepository.findApTypeIdsByItemType(rulItemType);
+                    Set<Integer> apTypeIdTree = registerTypeRepository.findSubtreeIds(apTypeIds);
+
+                    if (!apTypeIdTree.contains(apAccessPoint.getApTypeId())) {
+                        throw new BusinessException("Hodnota neodpovídá typu rejstříku podle specifikace nebo typu",
+                                RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING);
+                    }
+                }
             }
         }
     }

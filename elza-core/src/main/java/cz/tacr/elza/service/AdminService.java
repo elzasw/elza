@@ -1,10 +1,16 @@
 package cz.tacr.elza.service;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Future;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import org.apache.commons.collections4.CollectionUtils;
 import org.hibernate.search.MassIndexer;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
@@ -29,7 +35,13 @@ public class AdminService {
     private EntityManager entityManager;
 
     @Autowired
+    private LevelTreeCacheService levelTreeCacheService;
+
+    @Autowired
     private IndexerProgressMonitor indexerProgressMonitor;
+
+    @Autowired
+    private ArrangementService arrangementService;
 
     private Future<?> indexerStatus;
 
@@ -60,5 +72,13 @@ public class AdminService {
         }
 
         return false;
+    }
+
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
+    public List<TreeNodeVO> findNodeByIds(final ArrFundVersion fundVersion, final List<Integer> nodeIds) {
+        if (CollectionUtils.isEmpty(nodeIds)) {
+            return Collections.emptyList();
+        }
+        return levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId());
     }
 }

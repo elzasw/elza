@@ -2,7 +2,8 @@ package cz.tacr.elza.service;
 
 import java.math.BigInteger;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -54,7 +55,6 @@ import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
@@ -106,7 +106,7 @@ public class RevertingChangesService {
     private UpdateConformityInfoService updateConformityInfoService;
 
     @Autowired
-    private StartupService startupService;
+    private ArrangementService arrangementService;
 
     @Autowired
     private IEventNotificationService eventNotificationService;
@@ -238,7 +238,7 @@ public class RevertingChangesService {
     public ChangesResult findChangesByDate(@NotNull final ArrFundVersion fundVersion,
                                            @Nullable final ArrNode node,
                                            final int maxSize,
-                                           @NotNull final LocalDateTime fromDate,
+                                           @NotNull final OffsetDateTime fromDate,
                                            @NotNull final ArrChange fromChange) {
         Validate.notNull(fundVersion, "Verze AS musí být vyplněna");
         Validate.notNull(fromDate, "Datum od musí být vyplněn");
@@ -412,7 +412,7 @@ public class RevertingChangesService {
         // Drop unused node ids
         // Find nodes
         List<Integer> deleteNodeIds = nodeRepository.findUnusedNodeIdsByFund(fund);
-
+        userService.deletePermissionByNodeIds(deleteNodeIds);
         if (CollectionUtils.isNotEmpty(deleteNodeIds)) {
             nodeIdsChange.removeAll(deleteNodeIds);
 
@@ -446,7 +446,7 @@ public class RevertingChangesService {
         }
 
         levelTreeCacheService.invalidateFundVersion(fund);
-        startupService.startNodeValidation();
+        arrangementService.startNodeValidation();
     }
 
     private TypedQuery<ArrData> findChangeArrDataQuery(final ArrFund fund, final ArrNode node, final ArrChange change) {
@@ -471,13 +471,13 @@ public class RevertingChangesService {
     }
 
     /**
-     * Vytvoří dotaz pro zjištění počtu položek, po kterých nelze provést revert v rámci JP.
+     * Zjištění počtu položek, po kterých nelze provést revert v rámci JP.
      *
      * @param fundId       identifikátor AS
      * @param nodeId       identifikátor JP
      * @param fromChangeId identifikátor změny, vůči které provádíme vyhledávání
      * @param toChangeId   identifikátor změny, vůči které provádíme vyhledávání
-     * @return query objekt
+     * @return počet změn
      */
     private int countChangeBefore(@NotNull Integer fundId, @Nullable Integer nodeId, @Nullable Integer fromChangeId, @NotNull Integer toChangeId) {
 
@@ -584,15 +584,16 @@ public class RevertingChangesService {
     }
 
     private Query createUpdateOutputQuery(final @NotNull ArrFund fund, final @Nullable ArrNode node, final @NotNull ArrChange toChange) {
-        Query query = entityManager.createQuery("UPDATE arr_output_definition d SET d.state = :stateNew WHERE d.state IN (:stateOld) AND d IN (" +
-                "SELECT no.outputDefinition FROM arr_node_output no WHERE no.node IN (" + createHqlSubNodeQuery(fund, node) + ") AND no.createChange >= :change OR no.deleteChange >= :change" +
-                ")");
+        Query query = entityManager.createQuery("UPDATE arr_output o" +
+                " SET o.state = :stateNew" +
+                " WHERE o.state IN (:stateOld)" +
+                " AND o IN (SELECT no.output FROM arr_node_output no WHERE no.node IN (" + createHqlSubNodeQuery(fund, node) + ") AND no.createChange >= :change OR no.deleteChange >= :change)");
 
         // nastavení parametrů dotazu
         query.setParameter("fund", fund);
         query.setParameter("change", toChange);
-        query.setParameter("stateNew", ArrOutputDefinition.OutputState.OUTDATED);
-        query.setParameter("stateOld", Collections.singletonList(ArrOutputDefinition.OutputState.FINISHED));
+        query.setParameter("stateNew", ArrOutput.OutputState.OUTDATED);
+        query.setParameter("stateOld", Collections.singletonList(ArrOutput.OutputState.FINISHED));
         if (node != null) {
             query.setParameter("node", node);
         }
@@ -718,7 +719,7 @@ public class RevertingChangesService {
                 { ArrFundVersion.TABLE_NAME, ArrFundVersion.FIELD_LOCK_CHANGE_ID },
                 { ArrBulkActionRun.TABLE_NAME, ArrBulkActionRun.FIELD_CHANGE_ID },
                 { ArrOutput.TABLE_NAME, ArrOutput.FIELD_CREATE_CHANGE_ID },
-                { ArrOutput.TABLE_NAME, ArrOutput.FIELD_LOCK_CHANGE_ID },
+                { ArrOutput.TABLE_NAME, ArrOutput.FIELD_DELETE_CHANGE_ID },
                 { ArrNodeOutput.TABLE_NAME, ArrNodeOutput.FIELD_CREATE_CHANGE_ID },
                 { ArrNodeOutput.TABLE_NAME, ArrNodeOutput.FIELD_DELETE_CHANGE_ID },
                 { ArrOutputResult.TABLE_NAME, ArrOutputResult.FIELD_CHANGE_ID },
@@ -1057,7 +1058,7 @@ public class RevertingChangesService {
             Change change = new Change();
             change.setChangeId(changeResult.changeId);
             change.setNodeChanges(changeResult.nodeChanges == null ? null : changeResult.nodeChanges.intValue());
-            change.setChangeDate(Date.from(changeResult.changeDate.atZone(ZoneId.systemDefault()).toInstant()));
+            change.setChangeDate(Date.from(changeResult.changeDate.toInstant()));
             change.setPrimaryNodeId(changeResult.primaryNodeId);
             change.setType(StringUtils.isEmpty(changeResult.type) ? null : ArrChange.Type.valueOf(changeResult.type));
             change.setUserId(changeResult.userId);
@@ -1168,7 +1169,8 @@ public class RevertingChangesService {
     private @NotNull ChangeResult convertResult(@NotNull final Object[] o) {
         ChangeResult change = new ChangeResult();
         change.setChangeId((Integer) o[0]);
-        change.setChangeDate(((Timestamp) o[1]).toLocalDateTime());
+        Timestamp ts = (Timestamp) o[1];
+        change.setChangeDate(OffsetDateTime.ofInstant(Instant.ofEpochMilli(ts.getTime()), ZoneId.systemDefault()));
         change.setUserId((Integer) o[2]);
         change.setType(o[3] == null ? null : ((String) o[3]).trim());
         change.setPrimaryNodeId((Integer) o[4]);
@@ -1202,6 +1204,18 @@ public class RevertingChangesService {
      * @return SQL řetězec
      */
     private Query createFindChangeQuery(String selectParams, @NotNull Integer fundId, @Nullable Integer nodeId, String querySpecification) {
+        return createFindChangeQuery(selectParams, fundId, nodeId, false, querySpecification);
+    }
+
+    /**
+     * Sestavení řetězce pro vnořený dotaz, který vrací seznam JP omezený AS nebo JP.
+     *
+     * @param fundId identifikátor AS
+     * @param nodeId identifikátor JP
+     * @param excludeAction vynechat změny, které byly provedeny v rámci hromadných akcí
+     * @return SQL řetězec
+     */
+    private Query createFindChangeQuery(String selectParams, @NotNull Integer fundId, @Nullable Integer nodeId, boolean excludeAction, String querySpecification) {
 
         Validate.notNull(fundId, "Identifikátor AS musí být vyplněn");
 
@@ -1247,23 +1261,28 @@ public class RevertingChangesService {
         if (nodeId == null) {
             sqlTemplate.append(
                     "      UNION ALL\n" +
-                            "      SELECT i.create_change_id, null, 1 AS weight FROM arr_structured_item si\n" +
-                            "            JOIN arr_item i ON i.item_id = si.item_id\n" +
-                            "            JOIN arr_structured_object so ON so.structured_object_id = si.structured_object_id\n" +
-                            "            WHERE so.fund_id = :fundId\n" +
-                            "      UNION ALL\n" +
-                            "      SELECT i.delete_change_id, null, 1 AS weight FROM arr_structured_item si\n" +
-                            "            JOIN arr_item i ON i.item_id = si.item_id\n" +
-                            "            JOIN arr_structured_object so ON so.structured_object_id = si.structured_object_id\n" +
-                            "            WHERE so.fund_id = :fundId\n" +
-                            "      UNION ALL\n" +
-                            "      SELECT delete_change_id, null, 1 AS weight FROM arr_structured_object so WHERE so.fund_id = :fundId AND so.state <> '" + ArrStructuredObject.State.TEMP.name() + "'\n" +
-                            "      UNION ALL\n" +
-                            "      SELECT create_change_id, null, 1 AS weight FROM arr_structured_object so WHERE so.fund_id = :fundId AND so.state <> '" + ArrStructuredObject.State.TEMP.name() + "'\n");
+                    "      SELECT i.create_change_id, null, 1 AS weight FROM arr_structured_item si\n" +
+                    "            JOIN arr_item i ON i.item_id = si.item_id\n" +
+                    "            JOIN arr_structured_object so ON so.structured_object_id = si.structured_object_id\n" +
+                    "            WHERE so.fund_id = :fundId\n" +
+                    "      UNION ALL\n" +
+                    "      SELECT i.delete_change_id, null, 1 AS weight FROM arr_structured_item si\n" +
+                    "            JOIN arr_item i ON i.item_id = si.item_id\n" +
+                    "            JOIN arr_structured_object so ON so.structured_object_id = si.structured_object_id\n" +
+                    "            WHERE so.fund_id = :fundId\n" +
+                    "      UNION ALL\n" +
+                    "      SELECT delete_change_id, null, 1 AS weight FROM arr_structured_object so WHERE so.fund_id = :fundId AND so.state <> '" + ArrStructuredObject.State.TEMP.name() + "'\n" +
+                    "      UNION ALL\n" +
+                    "      SELECT create_change_id, null, 1 AS weight FROM arr_structured_object so WHERE so.fund_id = :fundId AND so.state <> '" + ArrStructuredObject.State.TEMP.name() + "'\n");
         }
 
-        sqlTemplate.append("      UNION ALL\n" +
-                "      SELECT change_id, null, 0 AS weight FROM arr_bulk_action_run r JOIN arr_fund_version v ON r.fund_version_id = v.fund_version_id WHERE v.fund_id = :fundId AND r.state = '" + ArrBulkActionRun.State.FINISHED + "'\n" +
+        if (!excludeAction) {
+            sqlTemplate.append(
+                    "      UNION ALL\n" +
+                    "      SELECT change_id, null, 0 AS weight FROM arr_bulk_action_run r JOIN arr_fund_version v ON r.fund_version_id = v.fund_version_id WHERE v.fund_id = :fundId AND r.state = '" + ArrBulkActionRun.State.FINISHED + "'\n");
+        }
+
+        sqlTemplate.append(
                 //                "    ) chlx ORDER BY change_id DESC\n" +
                 "    ) chlx \n" +
                 "  ) chlxx GROUP BY change_id \n" +
@@ -1277,14 +1296,14 @@ public class RevertingChangesService {
     }
 
     /**
-     * Sestavení dotazu na vyhledání změn.
+     * Vyhledání změn.
      *
      * @param fundId       identifikátor AS
      * @param nodeId       identifikátor JP
      * @param maxSize      maximální počet záznamů
      * @param offset       počet přeskočených záznamů
      * @param fromChangeId identifikátor změny, vůči které provádíme vyhledávání
-     * @return query objekt
+     * @return počet změn
      */
     private List<ChangeResult> findChange(@NotNull Integer fundId, @Nullable Integer nodeId, int maxSize, int offset, @Nullable Integer fromChangeId) {
 
@@ -1318,7 +1337,7 @@ public class RevertingChangesService {
      * @param fundId       identifikátor AS
      * @param nodeId       identifikátor JP
      * @param fromChangeId identifikátor změny, vůči které provádíme vyhledávání
-     * @return query objekt
+     * @return počet změn
      */
     private int countUserChange(@NotNull Integer fundId, @Nullable Integer nodeId, int maxSize, @Nullable Integer fromChangeId) {
 
@@ -1360,15 +1379,15 @@ public class RevertingChangesService {
     }
 
     /**
-     * Sestavení dotazu pro zjištění počtu změn, které se mují přeskočit na základě vyhledání podle datumu.
+     * Zjištění počtu změn, které se mují přeskočit na základě vyhledání podle datumu.
      *
      * @param fundId       identifikátor AS
      * @param nodeId       identifikátor JP
      * @param fromChangeId identifikátor změny, vůči které provádíme vyhledávání
-     * @param fromDate     datum podle kterého počítám změny k přeskočení
-     * @return query objekt
+     * @param fromDate     datum, od kterého počítám změny k přeskočení (včetně)
+     * @return počet změn
      */
-    private int countChangeIndex(@NotNull Integer fundId, @Nullable Integer nodeId, @NotNull Integer fromChangeId, @NotNull LocalDateTime fromDate) {
+    private int countChangeIndex(@NotNull Integer fundId, @Nullable Integer nodeId, @NotNull Integer fromChangeId, @NotNull OffsetDateTime fromDate) {
 
         // doplňující parametry dotazu
         String selectParams = "COUNT(*)";
@@ -1383,17 +1402,17 @@ public class RevertingChangesService {
             query.setParameter("nodeId", nodeId);
         }
         query.setParameter("fromChangeId", fromChangeId);
-        query.setParameter("changeDate", Timestamp.valueOf(fromDate), TemporalType.TIMESTAMP);
+        query.setParameter("changeDate", Timestamp.valueOf(fromDate.atZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime()), TemporalType.TIMESTAMP);
 
         return ((Number) query.getSingleResult()).intValue();
     }
 
     /**
-     * Sestavení dotazu pro zjištění poslední provedené změny.
+     * Zjištění poslední provedené změny.
      *
      * @param fundId identifikátor AS
      * @param nodeId identifikátor JP
-     * @return query objekt
+     * @return změna
      */
     private ChangeResult getLastChange(@NotNull Integer fundId, @Nullable Integer nodeId) {
         List<ChangeResult> changeResultList = findChange(fundId, nodeId, 1, 0, null);
@@ -1401,12 +1420,12 @@ public class RevertingChangesService {
     }
 
     /**
-     * Sestavení dotazu pro zjištění celkového počtu změn.
+     * Zjištění celkového počtu změn.
      *
      * @param fundId       identifikátor AS
      * @param nodeId       identifikátor JP
      * @param fromChangeId identifikátor změny, vůči které provádíme vyhledávání
-     * @return query objekt
+     * @return počet změn
      */
     private int countChange(@NotNull Integer fundId, @Nullable Integer nodeId, @Nullable Integer fromChangeId) {
 
@@ -1431,6 +1450,36 @@ public class RevertingChangesService {
     }
 
     /**
+     * Vyhledání změn na AS.
+     *
+     * @param fundId identifikátor AS
+     * @param nodeId identifikátor JP
+     * @param changeId identifikátor změny, od které provádíme vyhledávání (včetně).
+     * @return seznam ID změn
+     */
+    public List<Integer> findChangesAfter(@NotNull Integer fundId, @Nullable Integer nodeId, @Nullable Integer changeId) {
+
+        String selectParams = "ch.change_id";
+        String querySpecification = "";
+
+        if (changeId != null) {
+            querySpecification = "WHERE ch.change_id >= :changeId " + querySpecification;
+        }
+
+        Query query = createFindChangeQuery(selectParams, fundId, nodeId, querySpecification);
+
+        query.setParameter("fundId", fundId);
+        if (nodeId != null) {
+            query.setParameter("nodeId", nodeId);
+        }
+        if (changeId != null) {
+            query.setParameter("changeId", changeId);
+        }
+
+        return ((List<? extends Number>) query.getResultList()).stream().map(Number::intValue).collect(Collectors.toList());
+    }
+
+    /**
      * Pomocná struktura změn získaných z DB.
      */
     private class ChangeResult {
@@ -1443,7 +1492,7 @@ public class RevertingChangesService {
         /**
          * Datum a čas změny.
          */
-        private LocalDateTime changeDate;
+        private OffsetDateTime changeDate;
 
         /**
          * Identifikátor uživatele, který změnu provedl.
@@ -1473,11 +1522,11 @@ public class RevertingChangesService {
             this.changeId = changeId;
         }
 
-        public LocalDateTime getChangeDate() {
+        public OffsetDateTime getChangeDate() {
             return changeDate;
         }
 
-        public void setChangeDate(final LocalDateTime changeDate) {
+        public void setChangeDate(final OffsetDateTime changeDate) {
             this.changeDate = changeDate;
         }
 

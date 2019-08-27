@@ -1,7 +1,47 @@
 package cz.tacr.elza.service;
 
+import java.text.Normalizer;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
+import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionService;
@@ -18,47 +58,55 @@ import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.AuthParam.Type;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundRegisterScope;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeConformity.State;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UIVisiblePolicy;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.exception.*;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ConcurrentUpdateException;
+import cz.tacr.elza.exception.InvalidQueryException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.*;
+import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FundRegisterScopeRepository;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.arrangement.DeleteFundAction;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.transaction.Transactional;
-import javax.validation.constraints.NotNull;
-import java.text.Normalizer;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Main arrangement service.
@@ -424,7 +472,7 @@ public class ArrangementService {
 
     public ArrNode createNode(final ArrFund fund, final ArrChange createChange) {
         ArrNode node = new ArrNode();
-        node.setLastUpdate(createChange.getChangeDate());
+        node.setLastUpdate(createChange.getChangeDate().toLocalDateTime());
         node.setUuid(generateUuid());
         node.setFund(fund);
         nodeRepository.save(node);
@@ -434,7 +482,7 @@ public class ArrangementService {
 
     public ArrNode createNodeSimple(final ArrFund fund, final String uuid, final ArrChange createChange) {
         ArrNode node = new ArrNode();
-        node.setLastUpdate(createChange.getChangeDate());
+        node.setLastUpdate(createChange.getChangeDate().toLocalDateTime());
         node.setUuid(uuid == null ? generateUuid() : uuid);
         node.setFund(fund);
         nodeRepository.save(node);
@@ -448,7 +496,7 @@ public class ArrangementService {
             return createNode(fund, change);
         }
         ArrNode node = new ArrNode();
-        node.setLastUpdate(change.getChangeDate());
+        node.setLastUpdate(change.getChangeDate().toLocalDateTime());
         node.setUuid(uuid);
         node.setFund(fund);
         nodeRepository.save(node);
@@ -467,7 +515,7 @@ public class ArrangementService {
                                   @Nullable final ArrNode primaryNode) {
         ArrChange change = new ArrChange();
         UserDetail userDetail = userService.getLoggedUserDetail();
-        change.setChangeDate(LocalDateTime.now());
+        change.setChangeDate(OffsetDateTime.now());
 
         if (userDetail != null && userDetail.getId() != null) {
 			UsrUser user = em.getReference(UsrUser.class, userDetail.getId());
@@ -502,7 +550,7 @@ public class ArrangementService {
         Validate.notNull(newType);
         Validate.notNull(change.getChangeId());
         UserDetail userDetail = userService.getLoggedUserDetail();
-        change.setChangeDate(LocalDateTime.now());
+        change.setChangeDate(OffsetDateTime.now());
         if (userDetail != null && userDetail.getId() != null) {
             UsrUser user = em.getReference(UsrUser.class, userDetail.getId());
             change.setUser(user);
@@ -641,7 +689,7 @@ public class ArrangementService {
         Assert.notNull(level, "Musí být vyplněno");
 
         ArrNode node = level.getNode();
-        node.setLastUpdate(deleteChange.getChangeDate());
+        node.setLastUpdate(deleteChange.getChangeDate().toLocalDateTime());
         nodeRepository.save(node);
 
         level.setDeleteChange(deleteChange);
@@ -933,7 +981,7 @@ public class ArrangementService {
         Assert.notNull(lockNode, "Musí být vyplněno");
 
         lockNode.setUuid(dbNode.getUuid());
-        lockNode.setLastUpdate(change.getChangeDate());
+        lockNode.setLastUpdate(change.getChangeDate().toLocalDateTime());
         lockNode.setFund(dbNode.getFund());
 
         return nodeRepository.save(lockNode);
@@ -1392,6 +1440,57 @@ public class ArrangementService {
             }
         }
         return result;
+    }
+
+    /**
+     * Provede přidání do front uzly, které nemají záznam v arr_node_conformity. Obvykle to jsou
+     * uzly, které se validovaly během ukončení aplikačního serveru.
+     * <p>
+     * Metoda je pouštěna po startu aplikačního serveru.
+     */
+    @Transactional(value = Transactional.TxType.MANDATORY)
+    public void startNodeValidation() {
+        // TransactionTemplate tmpl = new TransactionTemplate(txManager);
+        Map<Integer, ArrFundVersion> fundVersionMap = new HashMap<>();
+        Map<Integer, List<ArrNode>> fundNodesMap = new HashMap<>();
+
+        // zjištění všech uzlů, které nemají validaci
+        List<ArrNode> nodes = nodeRepository.findByNodeConformityIsNull();
+
+        // roztřídění podle AF
+        for (ArrNode node : nodes) {
+            Integer fundId = node.getFund().getFundId();
+            List<ArrNode> addedNodes = fundNodesMap.get(fundId);
+            if (addedNodes == null) {
+                addedNodes = new LinkedList<>();
+                fundNodesMap.put(fundId, addedNodes);
+            }
+            addedNodes.add(node);
+        }
+
+        // načtení otevřených verzí AF
+        List<ArrFundVersion> openVersions = fundVersionRepository.findAllOpenVersion();
+
+        // vytvoření převodní mapy "id AF->verze AF"
+        for (ArrFundVersion openVersion : openVersions) {
+            fundVersionMap.put(openVersion.getFund().getFundId(), openVersion);
+        }
+
+        // projde všechny fondy
+        for (Map.Entry<Integer, List<ArrNode>> entry : fundNodesMap.entrySet()) {
+            Integer fundId = entry.getKey();
+            ArrFundVersion version = fundVersionMap.get(fundId);
+
+            if (version == null) {
+                logger.error("Pro AF s ID=" + fundId + " byly nalezeny nezvalidované uzly (" + entry.getValue()
+                        + "), které nejsou z otevřené verze AF");
+                continue;
+            }
+
+            // přidávání nodů je nutné dělat ve vlastní transakci (podle updateInfoForNodesAfterCommit)
+            logger.info("Přidání " + entry.getValue().size() + " uzlů do fronty pro zvalidování");
+            updateConformityInfoService.updateInfoForNodesAfterCommit(version.getFundVersionId(), entry.getValue());
+        }
     }
 
     /**

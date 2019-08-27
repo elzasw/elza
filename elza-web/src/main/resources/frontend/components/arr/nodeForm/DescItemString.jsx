@@ -7,7 +7,7 @@ import ReactDOM from 'react-dom';
 import {AbstractReactComponent, i18n} from 'components/shared';
 import {connect} from 'react-redux'
 import {normalizeString} from 'components/validate.jsx'
-import {decorateValue} from './DescItemUtils.jsx'
+import {decorateValue, inputValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
@@ -34,7 +34,7 @@ const DescItemString = class DescItemString extends AbstractReactComponent {
 
     render() {
         const {descItem, locked, readMode, cal} = this.props;
-        let value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : descItem.value;
+        let value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : inputValue(descItem.value);
 
         if (readMode) {
             return (

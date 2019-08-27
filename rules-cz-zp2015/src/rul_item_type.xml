@@ -772,7 +772,7 @@
         <use-specification>true</use-specification>
     </item-type>
 
-	<!-- Technika, adjustace, nosič a látka záznamu - strukturovaný popis -->
+    <!-- Technika, adjustace, nosič a látka záznamu - strukturovaný popis -->
     <item-type code="ZP2015_ITEM_MAT_TECHNIKA" data-type="TEXT">
         <name>Technika záznamu</name>
         <shortcut>Techn. záznamu</shortcut>

@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 
@@ -93,7 +93,7 @@ public class AccessPointDataService {
     public ApChange createChange(@Nullable final ApChange.Type type, @Nullable ApExternalSystem externalSystem) {
         ApChange change = new ApChange();
         UserDetail userDetail = userService.getLoggedUserDetail();
-        change.setChangeDate(LocalDateTime.now());
+        change.setChangeDate(OffsetDateTime.now());
 
         if (userDetail != null && userDetail.getId() != null) {
             UsrUser user = em.getReference(UsrUser.class, userDetail.getId());

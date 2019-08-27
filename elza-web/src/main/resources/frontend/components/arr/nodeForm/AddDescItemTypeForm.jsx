@@ -65,8 +65,8 @@ class AddDescItemTypeForm extends AbstractReactComponent {
         return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                 <Modal.Body>
                     <div>
-                        {possibleItemTypes.map(node => {
-                            return <FormGroup>
+                        {possibleItemTypes.map((node, index) => {
+                            return <FormGroup key={index}>
                                 <ControlLabel>{node.name}</ControlLabel>
                                 <div>
                                     {node.children.map(item => {

@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
@@ -422,6 +423,7 @@ public class StructObjValueService {
         // Check if result is properly set (not empty)
         String value = result.getValue();
         String sortValue = result.getSortValue();
+        String complement = result.getComplement();
         if (StringUtils.isEmpty(value)) {
             validationErrorDescription.setEmptyValue(true);
         }
@@ -456,6 +458,10 @@ public class StructObjValueService {
         }
         if (!StringUtils.equals(structObj.getSortValue(), sortValue)) {
             structObj.setSortValue(sortValue);
+            change = true;
+        }
+        if (!StringUtils.equals(structObj.getComplement(), complement)) {
+            structObj.setComplement(complement);
             change = true;
         }
         if (!Objects.equals(structObj.getState(), state)) {
@@ -610,13 +616,9 @@ public class StructObjValueService {
                                  final SettingStructTypeSettings ssts) {
 
         RulStructuredType structureType = structureData.getStructuredType();
-        File groovyFile = findGroovyFile(structureType, structureData.getFund());
+        File groovyFile = findSerializedGroovyFile(structureType, structureData.getFund());
 
-        GroovyScriptService.GroovyScriptFile groovyScriptFile = groovyScriptMap.get(groovyFile);
-        if (groovyScriptFile == null) {
-            groovyScriptFile = new GroovyScriptFile(groovyFile);
-            groovyScriptMap.put(groovyFile, groovyScriptFile);
-        }
+        GroovyScriptFile groovyScriptFile = getGroovyScriptFile(groovyFile);
 
         Result result = new Result();
 
@@ -631,6 +633,92 @@ public class StructObjValueService {
     }
 
     /**
+     * Parsování hodnoty pro strukturovaný typ.
+     *
+     * @param structureData hodnota struktovaného datového typu
+     * @param value         parsovaná hodnota
+     * @return výsledek parsování
+     */
+    @Nullable
+    public ParseResult parseValue(final ArrStructuredObject structureData,
+                                   final String value) {
+
+        RulStructuredType structureType = structureData.getStructuredType();
+        File groovyFile = findParseGroovyFile(structureType, structureData.getFund());
+
+        if (groovyFile == null) {
+            return null;
+        }
+
+        GroovyScriptFile groovyScriptFile = getGroovyScriptFile(groovyFile);
+
+        ParseResult result = new ParseResult();
+
+        Map<String, Object> input = new HashMap<>();
+        input.put("VALUE", value);
+        input.put("RESULT", result);
+
+        groovyScriptFile.evaluate(input);
+
+        return result;
+    }
+
+    /**
+     * Načtení groovy souboru.
+     *
+     * @param groovyFile groovy soubor
+     * @return struktura pro práci s groovy souborem
+     */
+    private GroovyScriptService.GroovyScriptFile getGroovyScriptFile(final File groovyFile) {
+        GroovyScriptFile groovyScriptFile = groovyScriptMap.get(groovyFile);
+        if (groovyScriptFile == null) {
+            groovyScriptFile = new GroovyScriptFile(groovyFile);
+            groovyScriptMap.put(groovyFile, groovyScriptFile);
+        }
+        return groovyScriptFile;
+    }
+
+    /**
+     * Vyhledání groovy scriptu pro parsování podle strukturovaného typu k AS.
+     *
+     * @param structureType
+     *            strukturovaný typ
+     * @param fund
+     *            archivní soubor
+     * @return nalezený groovy soubor
+     */
+    @Nullable
+    private File findParseGroovyFile(final RulStructuredType structureType, final ArrFund fund) {
+        List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository
+                .findByStructureTypeAndDefTypeAndFundOrderByPriority(structureType,
+                        RulStructureExtensionDefinition.DefType.PARSE_VALUE,
+                        fund);
+        RulComponent component;
+        RulPackage rulPackage;
+        if (structureExtensionDefinitions.size() > 0) {
+            RulStructureExtensionDefinition structureExtensionDefinition = structureExtensionDefinitions
+                    .get(structureExtensionDefinitions.size() - 1);
+            component = structureExtensionDefinition.getComponent();
+            rulPackage = structureExtensionDefinition.getRulPackage();
+        } else {
+            List<RulStructureDefinition> structureDefinitions = structureDefinitionRepository
+                    .findByStructTypeAndDefTypeOrderByPriority(structureType,
+                            RulStructureDefinition.DefType.PARSE_VALUE);
+            if (structureDefinitions.size() > 0) {
+                RulStructureDefinition structureDefinition = structureDefinitions.get(structureDefinitions.size() - 1);
+                component = structureDefinition.getComponent();
+                rulPackage = structureDefinition.getRulPackage();
+            } else {
+                return null;
+            }
+        }
+
+        return resourcePathResolver.getGroovyDir(rulPackage)
+                .resolve(component.getFilename())
+                .toFile();
+    }
+
+    /**
      * Vyhledání groovy scriptu podle strukturovaného typu k AS.
      *
      * @param structureType
@@ -639,7 +727,7 @@ public class StructObjValueService {
      *            archivní soubor
      * @return nalezený groovy soubor
      */
-    private File findGroovyFile(final RulStructuredType structureType, final ArrFund fund) {
+    private File findSerializedGroovyFile(final RulStructuredType structureType, final ArrFund fund) {
         List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository
                 .findByStructureTypeAndDefTypeAndFundOrderByPriority(structureType,
                                                                      RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE,
@@ -715,6 +803,7 @@ public class StructObjValueService {
     public static class Result {
         private String value;
         private String sortValue;
+        private String complement;
 
         public String getValue() {
             return value;
@@ -730,6 +819,31 @@ public class StructObjValueService {
 
         public void setSortValue(String sortValue) {
             this.sortValue = sortValue;
+        }
+
+        public String getComplement() {
+            return complement;
+        }
+
+        public void setComplement(String complement) {
+            this.complement = complement;
+        }
+    }
+
+    /**
+     * Result of parse value for structured object
+     */
+    public static class ParseResult {
+        private final Map<String, Object> items = new HashMap<>();
+
+        public void addItem(String itemTypeCode, Object value) {
+            Validate.notNull(itemTypeCode);
+            Validate.notBlank(itemTypeCode);
+            items.put(itemTypeCode, value);
+        }
+
+        public Map<String, Object> getItems() {
+            return items;
         }
     }
 

@@ -1,22 +1,21 @@
 package cz.tacr.elza.packageimport;
 
-import static cz.tacr.elza.packageimport.PackageService.ITEM_TYPE_XML;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,8 +32,8 @@ import cz.tacr.elza.common.datetime.MultiFormatParser;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.RulItemAptype;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemSpecRegister;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPackageDependency;
@@ -47,8 +46,8 @@ import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.packageimport.xml.Category;
 import cz.tacr.elza.packageimport.xml.Column;
 import cz.tacr.elza.packageimport.xml.DisplayType;
+import cz.tacr.elza.packageimport.xml.ItemAptype;
 import cz.tacr.elza.packageimport.xml.ItemSpec;
-import cz.tacr.elza.packageimport.xml.ItemSpecRegister;
 import cz.tacr.elza.packageimport.xml.ItemSpecs;
 import cz.tacr.elza.packageimport.xml.ItemType;
 import cz.tacr.elza.packageimport.xml.ItemTypes;
@@ -59,19 +58,20 @@ import cz.tacr.elza.repository.DataDateRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.DataStringRepository.OnlyValues;
+import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ItemRepository;
-import cz.tacr.elza.repository.ItemSpecRegisterRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.PackageDependencyRepository;
 import cz.tacr.elza.repository.PackageRepository;
 
+import static cz.tacr.elza.packageimport.PackageService.ITEM_TYPE_XML;
+import static java.util.stream.Collectors.toMap;
+
 /**
  * Class to update item types in DB
  *
  * Class will use types from XML and try to synchronize them in DB
- *
- *
  */
 @Component
 @Scope("prototype")
@@ -79,18 +79,13 @@ public class ItemTypeUpdater {
 
     private static Logger logger = LoggerFactory.getLogger(ItemTypeUpdater.class);
 
-	/**
-	 * Item types loaded from the given package
-	 */
-	List<RulItemType> rulItemTypesOrig;
-
     @Autowired
     private ElzaLocale elzaLocale;
 
-	@Autowired
-	private ItemTypeRepository itemTypeRepository;
+    @Autowired
+    private ItemTypeRepository itemTypeRepository;
 
-	@Autowired
+    @Autowired
     private ItemRepository itemRepository;
 
     @Autowired
@@ -100,7 +95,7 @@ public class ItemTypeUpdater {
     private ItemSpecRepository itemSpecRepository;
 
     @Autowired
-    private ItemSpecRegisterRepository itemSpecRegisterRepository;
+    private ItemAptypeRepository itemAptypeRepository;
 
     @Autowired
     private DataRepository dataRepository;
@@ -112,19 +107,16 @@ public class ItemTypeUpdater {
     private DataStringRepository dataStringRepository;
 
     @Autowired
-    CachedNodeRepository cachedNodeRepository;
+    private CachedNodeRepository cachedNodeRepository;
 
     @Autowired
-	private ApTypeRepository apTypeRepository;
+    private ApTypeRepository apTypeRepository;
 
     @Autowired
     private PackageRepository packageRepository;
 
     @Autowired
     private PackageDependencyRepository packageDependencyRepository;
-
-    @Autowired
-    private EntityManager em;
 
     public static final String CATEGORY_SEPARATOR = "|";
 
@@ -137,7 +129,7 @@ public class ItemTypeUpdater {
 
     /**
      * Number of nodes dropped in arr_cached_node table
-     * 
+     *
      * If this number is greater then zero Node cache has to be
      * reconstructed
      */
@@ -173,93 +165,153 @@ public class ItemTypeUpdater {
 
     /**
      * Zpracování specifikací atributů.
-     * @param itemSpecs        seznam importovaných specifikací
-     * @param rulDescItemTypes  seznam typů atributů
-     * @param rulPackage
+     *
+     * @param itemSpecs seznam importovaných specifikací
      */
-    private void processDescItemSpecs(
-                                      @Nullable final ItemSpecs itemSpecs,
-            final List<RulItemType> rulDescItemTypes, RulPackage rulPackage)
-    {
+    private void processItemSpecs(ItemSpecs itemSpecs,
+                                  @Nonnull Map<String, RulItemType> rulItemTypesCache,
+                                  @Nonnull Map<String, ApType> apTypeCache,
+                                  @Nonnull RulPackage rulPackage) {
 
-        List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
-        List<RulItemSpec> rulDescItemSpecsNew = new ArrayList<>();
+        Map<String, RulItemSpec> rulItemSpecOrig = itemSpecRepository.findByRulPackage(rulPackage).stream()
+                .collect(toMap(rulItemSpec -> rulItemSpec.getCode(), rulItemSpec -> rulItemSpec));
+
+        Map<String, RulItemSpec> rulItemSpecNew = new LinkedHashMap<>();
 
         // item type code -> local view order
         Map<String, Integer> viewOrderMap = new HashMap<>();
 
-        if (itemSpecs != null && !CollectionUtils.isEmpty(itemSpecs.getItemSpecs())) {
+        if (itemSpecs != null && CollectionUtils.isNotEmpty(itemSpecs.getItemSpecs())) {
+
+            Set<String> rulItemSpecCodes = new HashSet<>();
+            List<RulItemSpec> rulItemSpecsSave = new ArrayList<>();
+
             for (ItemSpec itemSpec : itemSpecs.getItemSpecs()) {
-                List<RulItemSpec> findItems = rulDescItemSpecs.stream()
-                        .filter((r) -> r.getCode().equals(itemSpec.getCode())).collect(
-                                Collectors.toList());
-                RulItemSpec item;
-                if (findItems.size() > 0) {
-                    item = findItems.get(0);
-                } else {
-                    item = new RulItemSpec();
+
+                String itemSpecCode = itemSpec.getCode();
+                if (rulItemSpecCodes.contains(itemSpecCode)) {
+                    throw new SystemException("Duplicitní kód specifikace: " + itemSpecCode, BaseCode.DB_INTEGRITY_PROBLEM)
+                            .set("code", itemSpecCode);
                 }
 
-                convertRulDescItemSpec(rulPackage, itemSpec, item, rulDescItemTypes);
+                // pouzijeme remove() - co zbyde nechame nakonec smazat z DB !!!
+                RulItemSpec rulItemSpec = rulItemSpecOrig.remove(itemSpecCode);
 
-                Integer nextViewOrder = viewOrderMap.computeIfAbsent(item.getItemType().getCode(), next -> 1);
-                item.setViewOrder(nextViewOrder);
-                viewOrderMap.put(item.getItemType().getCode(), ++nextViewOrder);
+                if (rulItemSpec == null) {
+                    rulItemSpec = new RulItemSpec();
+                }
 
-                rulDescItemSpecsNew.add(item);
+                convertRulItemSpec(rulPackage, itemSpec, rulItemSpec, rulItemTypesCache);
+
+                Integer nextViewOrder = viewOrderMap.computeIfAbsent(rulItemSpec.getItemType().getCode(), next -> 1);
+                rulItemSpec.setViewOrder(nextViewOrder);
+                viewOrderMap.put(rulItemSpec.getItemType().getCode(), ++nextViewOrder);
+
+                rulItemSpecCodes.add(itemSpecCode);
+                rulItemSpecsSave.add(rulItemSpec);
             }
+
+            // try to save updated items
+            for (RulItemSpec rulItemSpec : itemSpecRepository.save(rulItemSpecsSave)) {
+                rulItemSpecNew.put(rulItemSpec.getCode(), rulItemSpec);
+            }
+
+            processItemAptypesByItemSpecs(itemSpecs.getItemSpecs(), rulItemSpecNew, apTypeCache);
         }
 
-        rulDescItemSpecsNew = itemSpecRepository.save(rulDescItemSpecsNew);
-
-        processDescItemSpecsRegister((itemSpecs != null) ? itemSpecs.getItemSpecs() : Collections.emptyList(),
-                                     rulDescItemSpecsNew);
-
-        List<RulItemSpec> rulDescItemSpecsDelete = new ArrayList<>(rulDescItemSpecs);
-        rulDescItemSpecsDelete.removeAll(rulDescItemSpecsNew);
-        for (RulItemSpec descItemSpec : rulDescItemSpecsDelete) {
-            itemSpecRegisterRepository.deleteByItemSpec(descItemSpec);
+        // delete unused item specs
+        if (!rulItemSpecOrig.isEmpty()) {
+            for (RulItemSpec rulItemSpec : rulItemSpecOrig.values()) {
+                itemAptypeRepository.deleteByItemSpec(rulItemSpec);
+            }
+            itemSpecRepository.delete(rulItemSpecOrig.values());
         }
-        itemSpecRepository.delete(rulDescItemSpecsDelete);
     }
 
-	/**
-	 * Do the update
-	 * @param itemTypes
-	 * @param itemSpecs
-     * @param puc
+    /**
+     * Do the update
+     *
      * @return return list of updated types
-	 */
-    public List<RulItemType> update(final ItemTypes itemTypes,
-                                    final ItemSpecs itemSpecs,
-                                    final PackageContext puc) {
-		prepareForUpdate(puc);
+     */
+    public void update(ItemTypes itemTypes,
+                       ItemSpecs itemSpecs,
+                       @Nonnull final PackageContext puc) {
 
-        List<RulItemType> rulItemTypesUpdated = new ArrayList<>();
-        if (itemTypes != null) {
-            // prepare list of updated/new items
-            List<ItemType> itemTypesList = itemTypes.getItemTypes();
-            if (!CollectionUtils.isEmpty(itemTypesList)) {
-                rulItemTypesUpdated = updateItemTypes(itemTypesList, puc);
-                // try to save updated items
-                rulItemTypesUpdated = itemTypeRepository.save(rulItemTypesUpdated);
+        prepareForUpdate();
+
+        Map<String, ApType> apTypeCache = apTypeRepository.findAll().stream()
+                .collect(toMap(apType -> apType.getCode(), apType -> apType));
+
+        processItemTypes(itemTypes, itemSpecs, puc, apTypeCache);
+    }
+
+    private void processItemTypes(ItemTypes itemTypes, ItemSpecs itemSpecs, @Nonnull PackageContext puc, @Nonnull Map<String, ApType> apTypeCache) {
+
+        Map<String, RulItemType> rulItemTypesOrig = itemTypeRepository.findByRulPackage(puc.getPackage()).stream()
+                .collect(toMap(rulItemType -> rulItemType.getCode(), rulItemType -> rulItemType));
+
+        Map<String, RulItemType> rulItemTypeNew = new LinkedHashMap<>();
+
+        // prepare list of updated/new items
+        if (itemTypes != null && CollectionUtils.isNotEmpty(itemTypes.getItemTypes())) {
+
+            Set<String> rulItemTypeCodes = new HashSet<>();
+            List<RulItemType> rulItemTypesSave = new ArrayList<>();
+
+            for (ItemType itemType : itemTypes.getItemTypes()) {
+
+                String itemTypeCode = itemType.getCode();
+                if (rulItemTypeCodes.contains(itemTypeCode)) {
+                    throw new SystemException("Duplicitní kód typu: " + itemTypeCode, BaseCode.ID_EXIST)
+                            .set("code", itemTypeCode);
+                }
+
+                // type already exists
+                DataType newDataType = DataType.fromCode(itemType.getDataType());
+                if (newDataType == null) {
+                    throw new SystemException("Incorrect data type: " + itemType.getDataType(), BaseCode.ID_NOT_EXIST)
+                            .set("dataType", itemType.getDataType())
+                            .set("code", itemTypeCode);
+                }
+
+                // pouzijeme remove() - co zbyde nechame nakonec smazat z DB !!!
+                RulItemType rulItemType = rulItemTypesOrig.remove(itemTypeCode);
+                if (rulItemType != null) {
+                    updateDBItemType(rulItemType, itemType, newDataType);
+                } else {
+                    rulItemType = prepareNewItemType(itemType, newDataType);
+                }
+
+                // copy values from VO
+                convertRulItemType(itemType, rulItemType, puc);
+
+                // update view order
+                rulItemType.setViewOrder(lastUsedViewOrder);
+
+                rulItemTypeCodes.add(itemTypeCode);
+                rulItemTypesSave.add(rulItemType);
             }
 
+            // try to save updated items
+            for (RulItemType rulItemType : itemTypeRepository.save(rulItemTypesSave)) {
+                rulItemTypeNew.put(rulItemType.getCode(), rulItemType);
+            }
+
+            processItemAptypesByItemTypes(itemTypes.getItemTypes(), rulItemTypeNew, apTypeCache);
         }
-        List<RulItemType> rulItemTypesAllByRules = new ArrayList<>(rulItemTypesUpdated);
-        rulItemTypesAllByRules.addAll(itemTypeRepository.findByRulPackage(puc.getPackage()));
 
         // update specifications
-        processDescItemSpecs(itemSpecs, rulItemTypesAllByRules, puc.getPackage());
+        processItemSpecs(itemSpecs, rulItemTypeNew, apTypeCache, puc.getPackage());
         postSpecsOrder();
 
-		// delete unused item types
-		List<RulItemType> rulDescItemTypesDelete = new ArrayList<>(rulItemTypesOrig);
-		rulDescItemTypesDelete.removeAll(rulItemTypesUpdated);
-		itemTypeRepository.delete(rulDescItemTypesDelete);
-
-		return rulItemTypesUpdated;
-	}
+        // delete unused item types
+        if (!rulItemTypesOrig.isEmpty()) {
+            for (RulItemType rulItemType : rulItemTypesOrig.values()) {
+                itemAptypeRepository.deleteByItemType(rulItemType);
+            }
+            itemTypeRepository.delete(rulItemTypesOrig.values());
+        }
+    }
 
     /**
      * Seřazení specifikací podle balíčků.
@@ -312,55 +364,6 @@ public class ItemTypeUpdater {
         return g.topologicalSort();
     }
 
-    /**
-	 * Update items types
-	 * @param itemTypes
-     * @param puc
-     * @return Return new list of active item types
-	 */
-    private List<RulItemType> updateItemTypes(List<ItemType> itemTypes,
-                                              PackageContext puc) {
-        List<RulItemType> rulItemTypesUpdated = new ArrayList<>();
-		for (ItemType itemType : itemTypes) {
-            RulItemType dbItemType = updateItemType(itemType, puc);
-            rulItemTypesUpdated.add(dbItemType);
-        }
-        return rulItemTypesUpdated;
-    }
-
-    /**
-     * Update single item type
-     * 
-     * @param itemType
-     * @param puc
-     * @return
-     */
-    private RulItemType updateItemType(ItemType itemType, PackageContext puc) {
-        // type already exists
-        DataType newDataType = DataType.fromCode(itemType.getDataType());
-        if (newDataType == null) {
-            throw new SystemException("Incorrect data type: " + itemType.getDataType(), BaseCode.ID_NOT_EXIST)
-                    .set("dataType", itemType.getDataType())
-                    .set("code", itemType.getCode());
-        }
-
-        RulItemType dbItemType = getItemTypeByCode(rulItemTypesOrig, itemType.getCode());
-        if (dbItemType != null) {
-            updateDBItemType(dbItemType, itemType, newDataType);
-        } else {
-            dbItemType = prepareNewItemType(itemType, newDataType);
-        }
-
-        // copy values from VO
-        converItemType(itemType, dbItemType, puc);
-
-        // update view order
-        dbItemType.setViewOrder(lastUsedViewOrder);
-
-        return dbItemType;
-    }
-
-
     private RulItemType prepareNewItemType(ItemType itemType, DataType newDataType) {
         RulItemType dbItemType = new RulItemType();
         dbItemType.setDataType(newDataType.getEntity());
@@ -372,17 +375,13 @@ public class ItemTypeUpdater {
 
     /**
      * Update existing item type with new values
-     * 
-     * @param dbItemType
-     * @param itemType
-     * @param newDataType
      */
     private void updateDBItemType(RulItemType dbItemType, ItemType itemType, DataType newDataType) {
         DataType currDataType = DataType.fromId(dbItemType.getDataTypeId());
         if (!currDataType.equals(newDataType)) {
             // check if such item exists
             long countDescItems = countUsage(dbItemType);
-            if (countDescItems > 0) {
+            if (countDescItems > 0L) {
                 switch (newDataType) {
                 case DATE:
                     changeDataType2Date(currDataType, dbItemType);
@@ -398,13 +397,13 @@ public class ItemTypeUpdater {
             // type was updated
             dbItemType.setDataType(newDataType.getEntity());
         }
-        
+
         // provedla se změna pro použití specifikace?
         if (!dbItemType.getUseSpecification().equals(itemType.getUseSpecification())) {
 
             // je nutné zkontrolovat, jestli neexistuje nějaký záznam                
             long countDescItems = countUsage(dbItemType);
-            if (countDescItems > 0) {
+            if (countDescItems > 0L) {
                 throw new SystemException("Nelze změnit použití specifikace u typu " + dbItemType.getCode()
                         + ", protože existují záznamy, které typ využívají");
             }
@@ -416,7 +415,7 @@ public class ItemTypeUpdater {
             case JSON_TABLE: {
                 if (!equalsColumns((List<ElzaColumn>) viewDefinition, itemType.getColumnsDefinition())) {
                     long countDescItems = countUsage(dbItemType);
-                    if (countDescItems > 0) {
+                    if (countDescItems > 0L) {
                         throw new SystemException("Nelze změnit definici sloupců (datový typ a kód) u typu "
                                 + dbItemType.getCode() + ", protože existují záznamy, které typ využívají");
                     }
@@ -489,7 +488,7 @@ public class ItemTypeUpdater {
 
     /**
      * Process data partition
-     * 
+     *
      * @param ids
      * @param mfp
      */
@@ -512,32 +511,16 @@ public class ItemTypeUpdater {
 
     /**
      * Return next view_order position
-     * 
+     *
      * @return next value
      */
     private int getNextViewOrderPos() {
     	return ++this.maxViewOrderPos;
 	}
 
-
-	/**
-     * Get item type by code
-     * @param rulItemTypes list of item types
-     * @param code Item type code
-     * @return Return first item type with given code or null if does not exists
-     */
-	private RulItemType getItemTypeByCode(List<RulItemType> rulItemTypes, String code) {
-		for(RulItemType itemType: rulItemTypes) {
-			if(code.equals(itemType.getCode())) {
-				return itemType;
-			}
-		}
-		return null;
-	}
-
     /**
      * Count how many times is type used
-     * 
+     *
      * @param dbItemType
      * @return
      */
@@ -549,17 +532,18 @@ public class ItemTypeUpdater {
     }
 
 
-	/**
+    /**
      * Převod VO na DAO typu atributu.
-     * @param itemType    VO typu
+     *
+     * @param itemType VO typu
      * @param dbItemType DAO typy
-     * @param puc      balíček
+     * @param puc balíček
      */
-    private void converItemType(final ItemType itemType,
-                                        final RulItemType dbItemType,
-                                        PackageContext puc) {
+    private void convertRulItemType(final ItemType itemType,
+                                    final RulItemType dbItemType,
+                                    final PackageContext puc) {
 
-        Validate.notNull(dbItemType.getDataTypeId() != null);
+        Validate.notNull(dbItemType.getDataTypeId());
 
         dbItemType.setCode(itemType.getCode());
         dbItemType.setName(itemType.getName());
@@ -621,161 +605,192 @@ public class ItemTypeUpdater {
     /**
      * Převod VO na DAO specifikace atributu.
      *
-     * @param rulPackage       balíček
-     * @param itemSpec     VO specifikace
-     * @param rulDescItemSpec  DAO specifikace
-     * @param rulDescItemTypes seznam typů atributů
+     * @param rulPackage balíček
+     * @param itemSpec VO specifikace
+     * @param rulItemSpec DAO specifikace
+     * @param rulItemTypes seznam typů atributů
      */
-    private void convertRulDescItemSpec(final RulPackage rulPackage,
-                                        final ItemSpec itemSpec,
-                                        final RulItemSpec rulDescItemSpec,
-                                        final List<RulItemType> rulDescItemTypes) {
-        rulDescItemSpec.setName(itemSpec.getName());
-        rulDescItemSpec.setCode(itemSpec.getCode());
-        rulDescItemSpec.setDescription(itemSpec.getDescription());
-        rulDescItemSpec.setShortcut(itemSpec.getShortcut());
-        rulDescItemSpec.setPackage(rulPackage);
+    private void convertRulItemSpec(final RulPackage rulPackage,
+                                    final ItemSpec itemSpec,
+                                    final RulItemSpec rulItemSpec,
+                                    final Map<String, RulItemType> rulItemTypesMap) {
 
-        List<RulItemType> findItems = rulDescItemTypes.stream()
-                .filter((r) -> r.getCode().equals(itemSpec.getItemType()))
-                .collect(Collectors.toList());
+        rulItemSpec.setName(itemSpec.getName());
+        rulItemSpec.setCode(itemSpec.getCode());
+        rulItemSpec.setDescription(itemSpec.getDescription());
+        rulItemSpec.setShortcut(itemSpec.getShortcut());
+        rulItemSpec.setPackage(rulPackage);
 
-        RulItemType item;
+        RulItemType rulItemType = rulItemTypesMap.get(itemSpec.getItemType());
 
-        if (findItems.size() > 0) {
-            item = findItems.get(0);
-        } else {
+        if (rulItemType == null) {
             throw new BusinessException("Typ s kódem " + itemSpec.getItemType() + " nenalezen",
                     PackageCode.CODE_NOT_FOUND)
-                            .set("code", itemSpec.getItemType()).set("file", ITEM_TYPE_XML);
+                    .set("code", itemSpec.getItemType()).set("file", ITEM_TYPE_XML);
         }
+
+        rulItemSpec.setItemType(rulItemType);
 
         if (CollectionUtils.isNotEmpty(itemSpec.getCategories())) {
             List<String> categories = itemSpec.getCategories().stream().map(Category::getValue).collect(Collectors.toList());
-            rulDescItemSpec.setCategory(StringUtils.join(categories, CATEGORY_SEPARATOR));
+            rulItemSpec.setCategory(StringUtils.join(categories, CATEGORY_SEPARATOR));
         } else {
-            rulDescItemSpec.setCategory(null);
+            rulItemSpec.setCategory(null);
         }
-
-        rulDescItemSpec.setItemType(item);
     }
-
 
     /**
      * Zpracování napojení specifikací na ap.
      *
-     * @param itemSpecs
-     *            seznam importovaných specifikací
-     * @param rulDescItemSpecs
-     *            seznam specifikací atributů (nový v DB)
+     * @param itemSpecs seznam importovaných specifikací
+     * @param rulItemSpecs seznam specifikací atributů (nový v DB)
      */
-    private void processDescItemSpecsRegister(@Nonnull final List<ItemSpec> itemSpecs,
-                                              @Nonnull final List<RulItemSpec> rulDescItemSpecs) {
+    private void processItemAptypesByItemSpecs(List<ItemSpec> itemSpecs,
+                                               @Nonnull Map<String, RulItemSpec> rulItemSpecsCache,
+                                               @Nonnull Map<String, ApType> apTypeCache) {
 
-        List<ApType> apTypes = apTypeRepository.findAll();
+        if (CollectionUtils.isEmpty(itemSpecs)) {
+            return;
+        }
 
-        List<RulItemSpecRegister> speAPTypeNew = new ArrayList<>();
+        Map<Integer, RulItemAptype> rulItemAptypesOrig = new HashMap<>();
 
-        List<RulItemSpecRegister> rulItemSpecRegisters = new ArrayList<>();
+        for (ItemSpec itemSpec : itemSpecs) {
         
         Map<String, ItemSpec> itemSpecLookup = itemSpecs.stream().collect(Collectors.toMap(ItemSpec::getCode, Function.identity()));
         Validate.isTrue(itemSpecLookup.size()==itemSpecs.size(), "List of specification contains duplicated code");
 
-        for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
-            // Find input item spec from source
-            /*List<ItemSpec> findItemsSpec = itemSpecs.stream().filter(
-                    (r) -> r.getCode().equals(rulDescItemSpec.getCode())).collect(Collectors.toList());
+            RulItemSpec rulItemSpec = rulItemSpecsCache.get(itemSpec.getCode());
+            Validate.notNull(rulItemSpec, "Cannot find code in itemSpecs, code: {}", itemSpec.getCode());
 
-            Validate.isTrue(findItemsSpec.size() == 1, "Cannot find code in itemSpecs, code: {}",
-                            rulDescItemSpec.getCode());
-            ItemSpec item = findItemsSpec.get(0);*/
-            ItemSpec item = itemSpecLookup.get(rulDescItemSpec.getCode());
-            Validate.notNull(item, "Cannot find code in itemSpecs, code: {}",
-                    rulDescItemSpec.getCode());
+            List<RulItemAptype> rulItemAptypeDb = itemAptypeRepository.findByItemSpec(rulItemSpec);
 
-            List<RulItemSpecRegister> dbSpecs = itemSpecRegisterRepository
-                    .findByDescItemSpecId(rulDescItemSpec);
-            rulItemSpecRegisters.addAll(dbSpecs);
+            for (RulItemAptype rulItemAptype : rulItemAptypeDb) {
+                rulItemAptypesOrig.put(rulItemAptype.getItemAptypeId(), rulItemAptype);
+            }
 
-            if (!CollectionUtils.isEmpty(item.getItemSpecRegisters())) {
-                for (ItemSpecRegister itemSpecRegister : item.getItemSpecRegisters()) {
-                    List<RulItemSpecRegister> findItems = dbSpecs.stream()
-                            .filter((r) -> r.getApType().getCode().equals(
-                                    itemSpecRegister.getRegisterType())).collect(Collectors.toList());
-                    RulItemSpecRegister itemRegister;
-                    if (findItems.size() > 0) {
-                        itemRegister = findItems.get(0);
-                    } else {
-                        itemRegister = new RulItemSpecRegister();
-                    }
+            List<RulItemAptype> rulItemAptypesNew = updateItemAptypes(itemSpec.getItemAptypes(), rulItemAptypeDb, rulItemSpec, null, apTypeCache);
 
-                    convertRulDescItemSpecsRegister(rulDescItemSpec, itemRegister, apTypes,
-                            itemSpecRegister);
+            // Collection of APTypes to delete
+            for (RulItemAptype rulItemAptype : itemAptypeRepository.save(rulItemAptypesNew)) {
+                rulItemAptypesOrig.remove(rulItemAptype.getItemAptypeId());
+            }
+        }
 
-                    speAPTypeNew.add(itemRegister);
+        if (!rulItemAptypesOrig.isEmpty()) {
+            if (logger.isInfoEnabled()) {
+                for (RulItemAptype rulItemAptype : rulItemAptypesOrig.values()) {
+                    logger.info("Dropping specification to accesss point, spec: {}, apType: {}",
+                            rulItemAptype.getItemSpec().getCode(), rulItemAptype.getApType().getCode());
                 }
             }
+            itemAptypeRepository.delete(rulItemAptypesOrig.values());
         }
-
-        speAPTypeNew = itemSpecRegisterRepository.save(speAPTypeNew);
-
-        // Collection of APTypes for spec to remove
-        List<RulItemSpecRegister> specAPTypeDel = new ArrayList<>(rulItemSpecRegisters);
-        specAPTypeDel.removeAll(speAPTypeNew);
-        if(specAPTypeDel.size()>0) {
-            for (RulItemSpecRegister specAPType : specAPTypeDel) {
-                logger.info("Dropping specification to accesss point, spec: {}, apType: {}", specAPType.getApType()
-                        .getCode(), specAPType.getApType().getCode());
-            }
-            itemSpecRegisterRepository.delete(specAPTypeDel);
-        }
-
     }
 
-
     /**
-     * Převod VO na DAO napojení specifikací na ap.
+     * Zpracování napojení typů na ap.
      *
-     * @param rulDescItemSpec         seznam specifikací
-     * @param rulItemSpecRegister seznam DAO napojení
-     * @param apTypes        seznam typů ap.
-     * @param itemSpecRegister    seznam VO napojení
+     * @param itemTypes seznam importovaných typů
+     * @param rulItemTypes seznam typů atributů (nový v DB)
      */
-    private void convertRulDescItemSpecsRegister(final RulItemSpec rulDescItemSpec,
-                                                 final RulItemSpecRegister rulItemSpecRegister,
-                                                 final List<ApType> apTypes,
-                                                 final ItemSpecRegister itemSpecRegister) {
+    private void processItemAptypesByItemTypes(List<ItemType> itemTypes,
+                                               @Nonnull Map<String, RulItemType> rulItemTypesCache,
+                                               @Nonnull Map<String, ApType> apTypeCache) {
 
-        rulItemSpecRegister.setItemSpec(rulDescItemSpec);
-
-        List<ApType> findItems = apTypes.stream()
-                .filter((r) -> r.getCode().equals(itemSpecRegister.getRegisterType()))
-                .collect(Collectors.toList());
-
-        ApType item;
-
-        if (findItems.size() > 0) {
-            item = findItems.get(0);
-        } else {
-            throw new SystemException(
-                    "Kód " + itemSpecRegister.getRegisterType() + " neexistuje v ApType", BaseCode.ID_NOT_EXIST);
+        if (CollectionUtils.isEmpty(itemTypes)) {
+            return;
         }
 
-        rulItemSpecRegister.setApType(item);
+        Map<Integer, RulItemAptype> rulItemAptypesOrig = new HashMap<>();
 
+        for (ItemType itemType : itemTypes) {
+
+            RulItemType rulItemType = rulItemTypesCache.get(itemType.getCode());
+            Validate.notNull(rulItemType, "Cannot find code in itemTypes, code: {}", itemType.getCode());
+
+            List<RulItemAptype> rulItemAptypeDb = itemAptypeRepository.findByItemType(rulItemType);
+
+            for (RulItemAptype rulItemAptype : rulItemAptypeDb) {
+                rulItemAptypesOrig.put(rulItemAptype.getItemAptypeId(), rulItemAptype);
+            }
+
+            List<RulItemAptype> rulItemAptypesNew = updateItemAptypes(itemType.getItemAptypes(), rulItemAptypeDb, null, rulItemType, apTypeCache);
+
+            // Collection of APTypes to delete
+            for (RulItemAptype rulItemAptype : itemAptypeRepository.save(rulItemAptypesNew)) {
+                rulItemAptypesOrig.remove(rulItemAptype.getItemAptypeId());
+            }
+        }
+
+        if (!rulItemAptypesOrig.isEmpty()) {
+            if (logger.isInfoEnabled()) {
+                for (RulItemAptype rulItemAptype : rulItemAptypesOrig.values()) {
+                    logger.info("Dropping type to accesss point, type: {}, apType: {}",
+                            rulItemAptype.getItemType().getCode(), rulItemAptype.getApType().getCode());
+                }
+            }
+            itemAptypeRepository.delete(rulItemAptypesOrig.values());
+        }
+    }
+
+    private List<RulItemAptype> updateItemAptypes(List<ItemAptype> itemAptypes, List<RulItemAptype> rulItemAptypeDb, RulItemSpec rulItemSpec, RulItemType rulItemType, @Nonnull Map<String, ApType> apTypeCache) {
+
+        List<RulItemAptype> rulItemAptypes = new ArrayList<>();
+
+        if (CollectionUtils.isNotEmpty(itemAptypes)) {
+
+            for (ItemAptype itemAptype : itemAptypes) {
+
+                RulItemAptype rulItemAptype = getRulItemAptype(rulItemAptypeDb, itemAptype.getRegisterType());
+
+                if (rulItemAptype == null) {
+
+                    ApType apType = getApType(apTypeCache, itemAptype.getRegisterType());
+
+                    rulItemAptype = prepareNewRulItemAptype(apType, rulItemSpec, rulItemType);
+                }
+
+                rulItemAptypes.add(rulItemAptype);
+            }
+        }
+
+        return rulItemAptypes;
+    }
+
+    @Nullable
+    private RulItemAptype getRulItemAptype(@Nonnull List<RulItemAptype> rulItemAptypesDb, @Nonnull String apTypeCode) {
+        List<RulItemAptype> findItems = rulItemAptypesDb.stream()
+                .filter(rulItemAptype -> rulItemAptype.getApType().getCode().equals(apTypeCode))
+                .collect(Collectors.toList());
+        return findItems.size() > 0 ? findItems.get(0) : null;
+    }
+
+    private ApType getApType(@Nonnull Map<String, ApType> apTypeCache, String apTypeCode) {
+        ApType apType = apTypeCache.get(apTypeCode);
+        if (apType == null) {
+            throw new SystemException("Kód " + apTypeCode + " neexistuje v ApType", BaseCode.ID_NOT_EXIST).set("apTypeCode", apTypeCode);
+        }
+        return apType;
+    }
+
+    private RulItemAptype prepareNewRulItemAptype(@Nonnull ApType apType, RulItemSpec rulItemSpec, RulItemType rulItemType) {
+        Validate.notNull(apType, "ApType is null");
+        Validate.isTrue((rulItemSpec != null ? 1 : 0) + (rulItemType != null ? 1 : 0) == 1, "Exactly one of RulItemSpec and RulItemType must be set");
+        // Převod VO na DAO napojení specifikací a typů na ap.
+        RulItemAptype rulItemAptype = new RulItemAptype();
+        rulItemAptype.setApType(apType);
+        rulItemAptype.setItemSpec(rulItemSpec);
+        rulItemAptype.setItemType(rulItemType);
+        return rulItemAptype;
     }
 
     /**
      * Prepare item types to be updated
-     * 
+     *
      * Read items from DB
-     * 
-     * @param rulPackage
      */
-    private void prepareForUpdate(final PackageContext rulPackage) {
-
-        // read current items types from DB
-        rulItemTypesOrig = itemTypeRepository.findByRulPackage(rulPackage.getPackage());
+    private void prepareForUpdate() {
 
         // read first free view-order id
         RulItemType itemTypeHighest = itemTypeRepository.findFirstByOrderByViewOrderDesc();
@@ -787,8 +802,6 @@ public class ItemTypeUpdater {
 
     /**
      * Return number of dropped cache nodes
-     * 
-     * @return
      */
     public int getNumDroppedCachedNode() {
         return this.numDroppedCachedNode;

@@ -265,7 +265,7 @@ class TreeList extends React.Component {
 
     highlightItem = (id) => {
         let itemId = id;
-        console.log("highlight item "+id);
+        //console.log("highlight item "+id);
         if(!this.itemRefs[id]){
             itemId = this.getHighPriorityRenderedId(id);
         }

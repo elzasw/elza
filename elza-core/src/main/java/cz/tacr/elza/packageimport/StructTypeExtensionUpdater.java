@@ -71,6 +71,7 @@ public class StructTypeExtensionUpdater
         switch (extensionDefinition.getDefType()) {
             case ATTRIBUTE_TYPES:
                 return PackageService.ZIP_DIR_RULES;
+			case PARSE_VALUE:
             case SERIALIZED_VALUE:
                 return PackageService.ZIP_DIR_SCRIPTS;
             default:

@@ -1,18 +1,19 @@
 package cz.tacr.elza.service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import cz.tacr.elza.common.TaskExecutor;
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -33,9 +35,10 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItemSettings;
 import cz.tacr.elza.domain.ArrNodeOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutput.OutputState;
 import cz.tacr.elza.domain.ArrOutputItem;
+import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
@@ -48,8 +51,9 @@ import cz.tacr.elza.repository.ActionRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
+import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdAndStringInVersion;
@@ -71,7 +75,9 @@ public class OutputServiceInternal {
 
     private final IEventNotificationService eventNotificationService;
 
-    private final OutputDefinitionRepository outputDefinitionRepository;
+    private final OutputRepository outputRepository;
+
+    private final OutputResultRepository outputResultRepository;
 
     private final NodeOutputRepository nodeOutputRepository;
 
@@ -97,12 +103,15 @@ public class OutputServiceInternal {
 
     private final BulkActionRunRepository bulkActionRunRepository;
 
+    private final RevertingChangesService revertingChangesService;
+
     @Autowired
     public OutputServiceInternal(PlatformTransactionManager transactionManager,
                                  OutputGeneratorFactory outputGeneratorFactory,
                                  IEventNotificationService eventNotificationService,
                                  FundLevelServiceInternal fundLevelServiceInternal,
-                                 OutputDefinitionRepository outputDefinitionRepository,
+                                 OutputRepository outputRepository,
+                                 OutputResultRepository outputResultRepository,
                                  NodeOutputRepository nodeOutputRepository,
                                  OutputItemRepository outputItemRepository,
                                  EntityManager em,
@@ -113,12 +122,14 @@ public class OutputServiceInternal {
                                  ItemSettingsRepository itemSettingsRepository,
                                  RuleService ruleService,
                                  ActionRepository actionRepository,
-                                 BulkActionRunRepository bulkActionRunRepository) {
+                                 BulkActionRunRepository bulkActionRunRepository,
+                                 RevertingChangesService revertingChangesService) {
         this.transactionManager = transactionManager;
         this.outputGeneratorFactory = outputGeneratorFactory;
         this.eventNotificationService = eventNotificationService;
         this.fundLevelServiceInternal = fundLevelServiceInternal;
-        this.outputDefinitionRepository = outputDefinitionRepository;
+        this.outputRepository = outputRepository;
+        this.outputResultRepository = outputResultRepository;
         this.nodeOutputRepository = nodeOutputRepository;
         this.outputItemRepository = outputItemRepository;
         this.em = em;
@@ -130,6 +141,7 @@ public class OutputServiceInternal {
         this.ruleService = ruleService;
         this.actionRepository = actionRepository;
         this.bulkActionRunRepository = bulkActionRunRepository;
+        this.revertingChangesService = revertingChangesService;
     }
 
     /**
@@ -138,9 +150,9 @@ public class OutputServiceInternal {
      */
     @Transactional(TxType.MANDATORY)
     public void init() {
-        // output definition in generating state must be recovered to open state
+        // output in generating state must be recovered to open state
         List<OutputState> states = Arrays.asList(OutputState.GENERATING, OutputState.COMPUTING);
-        int affected = outputDefinitionRepository.setStateFromStateWithError(states, OutputState.OPEN,
+        int affected = outputRepository.updateStateFromStateWithError(states, OutputState.OPEN,
                 "Server shutdown during process");
         if (affected > 0) {
             logger.warn("{} interrupted outputs by server shutdown were recovered to opened state", affected);
@@ -151,103 +163,100 @@ public class OutputServiceInternal {
     }
 
     /**
-     * Searches definition.
+     * Searches output.
      *
-     * @throws SystemException When definition not found.
+     * @throws SystemException When output not found.
      */
     @Transactional
-    public ArrOutputDefinition getOutputDefinition(int outputDefinitionId) {
-        ArrOutputDefinition definition = outputDefinitionRepository.findOne(outputDefinitionId);
-        if (definition == null) {
-            throw new SystemException("Output definition not found", BaseCode.ID_NOT_EXIST).set("outputDefinitionId",
-                    outputDefinitionId);
+    public ArrOutput getOutput(int outputId) {
+        ArrOutput output = outputRepository.findOne(outputId);
+        if (output == null) {
+            throw new SystemException("Output not found", BaseCode.ID_NOT_EXIST).set("outputId", outputId);
         }
-        return definition;
+        return output;
     }
 
     /**
-     * Searches definition in generating state and fetches entities for output generator (fund,
+     * Searches output in generating state and fetches entities for output generator (fund,
      * template and output type).
      *
-     * @throws SystemException When definition not found or it has other than generating state.
+     * @throws SystemException When output not found or it has other than generating state.
      */
     @Transactional
-    public ArrOutputDefinition getOutputDefinitionForGenerator(int outputDefinitionId) {
-        ArrOutputDefinition definition = outputDefinitionRepository.findOneFetchTypeAndTemplateAndFund(outputDefinitionId);
-        if (definition == null) {
-            throw new SystemException("Output definition not found", BaseCode.ID_NOT_EXIST).set("outputDefinitionId",
-                    outputDefinitionId);
+    public ArrOutput getOutputForGenerator(int outputId) {
+        ArrOutput output = outputRepository.findOneFetchTypeAndTemplateAndFund(outputId);
+        if (output == null) {
+            throw new SystemException("Output not found", BaseCode.ID_NOT_EXIST).set("outputId", outputId);
         }
-        if (definition.getState() != OutputState.GENERATING) {
+        if (output.getState() != OutputState.GENERATING) {
             throw new SystemException("Processing output must be in GENERATING state", BaseCode.INVALID_STATE)
-                    .set("outputDefinitionId", outputDefinitionId).set("outputState", definition.getState());
+                    .set("outputId", outputId).set("outputState", output.getState());
         }
-        return definition;
+        return output;
     }
 
     /**
-     * Searches output nodes for specified definition. Nodes must be valid by specified lock change.
+     * Searches output nodes for specified output. Nodes must be valid by specified lock change.
      *
      * @param lockChange null for open version
      */
     @Transactional
-    public List<ArrNodeOutput> getOutputNodes(ArrOutputDefinition outputDefinition, ArrChange lockChange) {
-        Validate.notNull(outputDefinition);
+    public List<ArrNodeOutput> getOutputNodes(ArrOutput output, ArrChange lockChange) {
+        Validate.notNull(output);
         if (lockChange == null) {
-            return nodeOutputRepository.findByOutputDefinitionAndDeleteChangeIsNull(outputDefinition);
+            return nodeOutputRepository.findByOutputAndDeleteChangeIsNull(output);
         }
-        return nodeOutputRepository.findByOutputDefinitionAndChange(outputDefinition, lockChange);
+        return nodeOutputRepository.findByOutputAndChange(output, lockChange);
     }
 
     /**
      * Searches direct output items and fetches their data. Items must be valid by specified lock
      * change.
      *
-     * @param lockChange null for open version
+     * @param change null for open version
      */
     @Transactional
-    public List<ArrOutputItem> getOutputItems(ArrOutputDefinition outputDefinition, ArrChange lockChange) {
-        Validate.notNull(outputDefinition);
-        if (lockChange == null) {
-            return outputItemRepository.findByOutputAndDeleteChangeIsNull(outputDefinition);
+    public List<ArrOutputItem> getOutputItems(ArrOutput output, ArrChange change) {
+        Validate.notNull(output);
+        if (change == null) {
+            return outputItemRepository.findByOutputAndDeleteChangeIsNull(output);
         }
-        return outputItemRepository.findByOutputAndChange(outputDefinition, lockChange);
+        return outputItemRepository.findByOutputAndChange(output, change);
     }
 
     /**
      * Publish event when output item was changed.
      *
-     * @param fundVersion
-     * @param outputItem related definition is needed (should be fetched)
+     * @param outputItem related output is needed (should be fetched)
      */
     @Transactional(TxType.MANDATORY)
     public void publishOutputItemChanged(ArrOutputItem outputItem, int fundVersionId) {
-        ArrOutputDefinition definition = outputItem.getOutputDefinition();
+        ArrOutput output = outputItem.getOutput();
         eventNotificationService.publishEvent(new EventChangeOutputItem(EventType.OUTPUT_ITEM_CHANGE, fundVersionId,
-                outputItem.getDescItemObjectId(), definition.getOutputDefinitionId(), definition.getVersion()));
+                outputItem.getDescItemObjectId(), output.getOutputId(), output.getVersion()));
     }
 
     /**
-     * Publish event when output state was changed. Current output definition state is used.
+     * Publish event when output state was changed. Current output state is used.
      */
     @Transactional(TxType.MANDATORY)
-    public void publishOutputStateChanged(ArrOutputDefinition outputDefinition, int fundVersionId) {
-        int outputDefinitionId = outputDefinition.getOutputDefinitionId();
-        String outputState = outputDefinition.getState().name();
-        publishOutputStateChangedInternal(outputDefinitionId, fundVersionId, outputState);
+    public void publishOutputStateChanged(ArrOutput output, int fundVersionId) {
+        int outputId = output.getOutputId();
+        String outputState = output.getState().name();
+        publishOutputStateChangedInternal(outputId, fundVersionId, outputState);
     }
 
     /**
      * Publish event when output generation failed, it's special "ERROR" state for client.
      */
     @Transactional(TxType.MANDATORY)
-    public void publishOutputFailed(ArrOutputDefinition outputDefinition, int fundVersionId) {
-        publishOutputStateChangedInternal(outputDefinition.getOutputDefinitionId(), fundVersionId, "ERROR");
+    public void publishOutputFailed(ArrOutput output, int fundVersionId) {
+        publishOutputStateChangedInternal(output.getOutputId(), fundVersionId, "ERROR");
     }
 
-    private void publishOutputStateChangedInternal(int outputDefinitionId, int fundVersionId, String outputState) {
+    private void publishOutputStateChangedInternal(int outputId, int fundVersionId, String outputState) {
         EventIdAndStringInVersion stateChangedEvent = EventFactory.createStringAndIdInVersionEvent(EventType.OUTPUT_STATE_CHANGE,
-                fundVersionId, outputDefinitionId, outputState);
+                fundVersionId, outputId, outputState);
         eventNotificationService.publishEvent(stateChangedEvent);
     }
 
@@ -259,7 +268,7 @@ public class OutputServiceInternal {
     @Transactional(TxType.MANDATORY)
     public ArrChange createGenerateChange(Integer userId) {
         ArrChange change = new ArrChange();
-        change.setChangeDate(LocalDateTime.now());
+        change.setChangeDate(OffsetDateTime.now());
         change.setType(ArrChange.Type.GENERATE_OUTPUT);
         if (userId != null) {
             change.setUser(em.getReference(UsrUser.class, userId));
@@ -270,34 +279,31 @@ public class OutputServiceInternal {
 
     /**
      * Add request for output generation.
-     *
-     * @param outputDefinitionId
-     * @param fundVersionId
      */
     @Transactional(TxType.MANDATORY)
-    public OutputRequestStatus addRequest(int outputDefinitionId,
+    public OutputRequestStatus addRequest(int outputId,
                                           ArrFundVersion fundVersion,
                                           boolean checkBulkActions) {
-        // find open output definition
-        ArrOutputDefinition definition = getOutputDefinition(outputDefinitionId);
-        if (definition.getState() != OutputState.OPEN) {
+        // find open output
+        ArrOutput output = getOutput(outputId);
+        if (output.getState() != OutputState.OPEN) {
             throw new SystemException("Requested output must be in OPEN state", BaseCode.INVALID_STATE)
-                    .set("expectedState", OutputState.OPEN).set("givenState", definition.getState());
+                    .set("expectedState", OutputState.OPEN).set("givenState", output.getState());
         }
 
         // check recommended bulk action
         if (checkBulkActions) {
-            OutputRequestStatus status = checkRecommendedActions(definition, fundVersion);
+            OutputRequestStatus status = checkRecommendedActions(output, fundVersion);
             if (status != OutputRequestStatus.OK) {
                 return status;
             }
         }
 
         // save generating state only when caller transaction is committed
-        definition.setState(OutputState.GENERATING);
+        output.setState(OutputState.GENERATING);
 
         // create worker
-        OutputGeneratorWorker worker = new OutputGeneratorWorker(outputDefinitionId, fundVersion.getFundVersionId(), em,
+        OutputGeneratorWorker worker = new OutputGeneratorWorker(outputId, fundVersion.getFundVersionId(), em,
                 outputGeneratorFactory, this, resourcePathResolver, fundLevelServiceInternal, transactionManager, arrangementService);
 
         // delegate security context
@@ -310,8 +316,8 @@ public class OutputServiceInternal {
                 if (status == TransactionSynchronization.STATUS_COMMITTED) {
                     taskExecutor.addTask(runnable);
                 } else {
-                    logger.warn("Request for output is cancelled due to rollback of source transaction, outputDefinitionId:{}",
-                            worker.getOutputDefinitionId());
+                    logger.warn("Request for output is cancelled due to rollback of source transaction, outputId:{}",
+                            worker.getOutputId());
                 }
             }
         });
@@ -320,19 +326,19 @@ public class OutputServiceInternal {
     }
 
     /**
-     * Finds all outputs defined on specified nodes.
+     * Finds all outputs on specified nodes.
      *
      * @param currentStates state filter, null allows all output states
      */
     @Transactional
-    public List<ArrOutputDefinition> findOutputsByNodes(ArrFundVersion fundVersion,
-                                                        Collection<Integer> nodeIds,
-                                                        OutputState... currentStates) {
-        return outputDefinitionRepository.findOutputsByNodes(fundVersion, nodeIds, currentStates);
+    public List<ArrOutput> findOutputsByNodes(ArrFundVersion fundVersion,
+                                              Collection<Integer> nodeIds,
+                                              OutputState... currentStates) {
+        return outputRepository.findOutputsByNodes(fundVersion, nodeIds, currentStates);
     }
 
     /**
-     * Updates state for all outputs defined on specified nodes.
+     * Updates state for all outputs on specified nodes.
      *
      * @param newState new state
      * @param currentStates state filter, null allows all output states
@@ -343,30 +349,30 @@ public class OutputServiceInternal {
                                           OutputState newState,
                                           OutputState... currentStates) {
 
-        List<ArrOutputDefinition> outputDefinitions = findOutputsByNodes(fundVersion, nodeIds, currentStates);
+        List<ArrOutput> outputs = findOutputsByNodes(fundVersion, nodeIds, currentStates);
         int fundVersionId = fundVersion.getFundVersionId();
 
-        for (ArrOutputDefinition outputDefinition : outputDefinitions) {
-            outputDefinition.setState(newState); // saved by commit
-            publishOutputStateChanged(outputDefinition, fundVersionId);
+        for (ArrOutput output : outputs) {
+            output.setState(newState); // saved by commit
+            publishOutputStateChanged(output, fundVersionId);
         }
     }
 
     @Transactional(TxType.MANDATORY)
-    public OutputItemConnector createItemConnector(ArrFundVersion fundVersion, ArrOutputDefinition outputDefinition) {
-        OutputItemConnectorImpl connector = new OutputItemConnectorImpl(fundVersion, outputDefinition, staticDataService, this, itemService);
+    public OutputItemConnector createItemConnector(ArrFundVersion fundVersion, ArrOutput output) {
+        OutputItemConnectorImpl connector = new OutputItemConnectorImpl(fundVersion, output, staticDataService, this, itemService);
 
-        Set<Integer> ignoredItemTypeIds = getIgnoredItemTypeIds(outputDefinition);
+        Set<Integer> ignoredItemTypeIds = getIgnoredItemTypeIds(output);
         connector.setIgnoredItemTypeIds(ignoredItemTypeIds);
 
         return connector;
     }
 
-    protected Set<Integer> getIgnoredItemTypeIds(ArrOutputDefinition outputDefinition) {
+    protected Set<Integer> getIgnoredItemTypeIds(ArrOutput output) {
         Set<Integer> ignoredItemTypeIds = new HashSet<>();
 
         // add all manually calculating items from settings
-        List<ArrItemSettings> itemSettingsList = itemSettingsRepository.findByOutputDefinition(outputDefinition);
+        List<ArrItemSettings> itemSettingsList = itemSettingsRepository.findByOutput(output);
         for (ArrItemSettings itemSettings : itemSettingsList) {
             if (itemSettings.getBlockActionResult()) {
                 ignoredItemTypeIds.add(itemSettings.getItemTypeId());
@@ -374,7 +380,7 @@ public class OutputServiceInternal {
         }
 
         // add all impossible types
-        List<RulItemTypeExt> outputItemTypes = ruleService.getOutputItemTypes(outputDefinition);
+        List<RulItemTypeExt> outputItemTypes = ruleService.getOutputItemTypes(output);
         for (RulItemTypeExt itemType : outputItemTypes) {
             if (itemType.getType().equals(RulItemType.Type.IMPOSSIBLE)) {
                 ignoredItemTypeIds.add(itemType.getItemTypeId());
@@ -396,14 +402,14 @@ public class OutputServiceInternal {
         StaticDataProvider sdp = this.staticDataService.getData();
         itemService.checkValidTypeAndSpec(sdp, outputItem);
 
-        int maxPosition = outputItemRepository.findMaxItemPosition(outputItem.getItemType(), outputItem.getOutputDefinition());
+        int maxPosition = outputItemRepository.findMaxItemPosition(outputItem.getItemType(), outputItem.getOutput());
 
         if (outputItem.getPosition() == null || outputItem.getPosition() > maxPosition) {
             outputItem.setPosition(maxPosition + 1);
         } else {
             // find items which must be moved up
             List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItemsAfterPosition(outputItem.getItemType(),
-                    outputItem.getOutputDefinition(), outputItem.getPosition() - 1);
+                    outputItem.getOutput(), outputItem.getPosition() - 1);
             for (ArrOutputItem item : outputItems) {
                 itemService.copyItem(item, createChange, item.getPosition() + 1);
             }
@@ -417,16 +423,16 @@ public class OutputServiceInternal {
     }
 
     /**
-     * Deletes all output items by type for specified definition and fund version.
+     * Deletes all output items by type for specified output and fund version.
      *
      * @return Count of affected items
      */
     @Transactional(TxType.MANDATORY)
     public int deleteOutputItemsByType(ArrFundVersion fundVersion,
-                                       ArrOutputDefinition outputDefinition,
+                                       ArrOutput output,
                                        Integer itemTypeId,
                                        ArrChange deleteChange) {
-        Validate.notNull(outputDefinition);
+        Validate.notNull(output);
         Validate.notNull(itemTypeId);
         Validate.notNull(deleteChange);
 
@@ -435,7 +441,7 @@ public class OutputServiceInternal {
                     ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
-        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(itemTypeId, outputDefinition);
+        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(itemTypeId, output);
 
         for (ArrOutputItem item : outputItems) {
             item.setDeleteChange(deleteChange); // saved by commit
@@ -446,52 +452,58 @@ public class OutputServiceInternal {
     }
 
     /**
-     * Checks if recommended bulk actions are up-to-date for specified output definition.
-     *
-     * @param definition
-     * @param fundVersion
-     * @return
+     * Checks if recommended bulk actions are up-to-date for specified output.
      */
-    private OutputRequestStatus checkRecommendedActions(ArrOutputDefinition definition, ArrFundVersion fundVersion) {
-        // find output node ids
-        List<ArrNodeOutput> outputNodes = getOutputNodes(definition, fundVersion.getLockChange());
-        List<Integer> outputNodeIds = new ArrayList<>(outputNodes.size());
-        outputNodes.forEach(n -> outputNodeIds.add(n.getNodeId()));
+    private OutputRequestStatus checkRecommendedActions(ArrOutput output, ArrFundVersion fundVersion) {
 
         // find recommended actions
-        List<RulAction> recommendedActions = actionRepository.findByRecommendedActionOutputType(definition.getOutputType());
+        List<RulAction> recommendedActions = actionRepository.findByRecommendedActionOutputType(output.getOutputType());
         if (recommendedActions.isEmpty()) {
             return OutputRequestStatus.OK;
         }
 
+        // find output node ids
+        List<Integer> nodeIds = getOutputNodes(output, fundVersion.getLockChange()).stream().map(n -> n.getNodeId()).collect(Collectors.toList());
+
         // find finished actions
-        List<ArrBulkActionRun> finishedAction = bulkActionRunRepository.findBulkActionsByNodes(fundVersion.getFundVersionId(), outputNodeIds, State.FINISHED);
-        if (recommendedActions.size() > finishedAction.size()) {
+        List<ArrBulkActionRun> finishedActions = bulkActionRunRepository.findBulkActionsByNodes(fundVersion.getFundVersionId(), nodeIds, State.FINISHED);
+        if (recommendedActions.size() > finishedActions.size()) {
             return OutputRequestStatus.RECOMMENDED_ACTION_NOT_RUN;
         }
 
-        for (RulAction ra : recommendedActions) {
-            ArrChange newestChange = null;
-            for (ArrBulkActionRun fa : finishedAction) {
-                String code = fa.getBulkActionCode();
-                // action and actionRun must match by code
-                if (ra.getCode().equals(code)) {
-                    ArrChange change = fa.getChange();
-                    // replace found if newer change
-                    if (newestChange == null || change.getChangeDate().isAfter(newestChange.getChangeDate())) {
-                        newestChange = change;
-                    }
+        ArrChange fromChange = null;
+        Map<String, ArrChange> lastChangeByCode = new HashMap<>();
+        for (ArrBulkActionRun finishedAction : finishedActions) {
+            ArrChange change = finishedAction.getChange();
+            ArrChange newestChange = lastChangeByCode.get(finishedAction.getBulkActionCode());
+            // replace if a newer change found
+            if (newestChange == null || change.getChangeDate().isAfter(newestChange.getChangeDate())) {
+                lastChangeByCode.put(finishedAction.getBulkActionCode(), change);
+                // replace to find the oldest of the last of every code
+                if (fromChange == null || change.getChangeDate().isBefore(fromChange.getChangeDate())) {
+                    fromChange = change;
                 }
             }
-            // test: bulk action not started
-            if (newestChange == null) {
+        }
+
+        for (RulAction ra : recommendedActions) {
+            // test: bulk action not started yet
+            if (!lastChangeByCode.containsKey(ra.getCode())) {
                 return OutputRequestStatus.RECOMMENDED_ACTION_NOT_RUN;
             }
-            // test: newest change is last change
-            for (Integer nodeId : outputNodeIds) {
-                if (!fundLevelServiceInternal.isLastChange(newestChange, nodeId, false, true)) {
-                    return OutputRequestStatus.DETECT_CHANGE;
-                }
+        }
+
+        if (fromChange != null) {
+            List<Integer> changeIdList = revertingChangesService.findChangesAfter(fundVersion.getFundId(), null, fromChange.getChangeId());
+            HashSet<Integer> changeIdSet = new HashSet<>(changeIdList);
+            for (ArrBulkActionRun finishedAction : finishedActions) {
+                changeIdSet.remove(finishedAction.getChange().getChangeId());
+            }
+            for (ArrOutputResult outputResult : outputResultRepository.findByOutput(output)) {
+                changeIdSet.remove(outputResult.getChange().getChangeId());
+            }
+            if (!changeIdSet.isEmpty()) {
+                return OutputRequestStatus.DETECT_CHANGE;
             }
         }
 

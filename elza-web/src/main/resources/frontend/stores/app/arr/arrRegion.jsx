@@ -29,18 +29,50 @@ import processAreaStores from "shared/utils/processAreaStores";
 import isCommonArea from "stores/utils/isCommonArea";
 import globalFundTree from "./globalFundTree";
 import {isStructureNodeForm} from "../../../actions/arr/structureNodeForm";
+ import fundTree from "./fundTree";
 
  const initialState = {
     activeIndex: null,
     nodeSettings: nodeSetting(undefined, {}),
     extendedView: false,
     showRegisterJp: false,
-    showDaosJp: false,
     visiblePolicy: visiblePolicy(),
     funds: [],
+    customFund: customFund(),
     globalFundTree: globalFundTree(undefined, {}),
     fundSearch: fundSearch(undefined, {})
 };
+
+ const initialCustomFundState = {
+     fundTreeNodes: fundTree(),
+     versionId: null,
+     fundId: null,
+ };
+
+ function customFund(state = initialCustomFundState, action = {}) {
+     if (isFundTreeAction(action)) {
+         return {
+             ...state,
+             fundTreeNodes: fundTree(state.fundTreeNodes, action)
+         }
+     }
+
+     switch (action.type) {
+         case types.CUSTOM_FUND_ACTION_SELECT_VERSION: {
+             return {
+                 ...state,
+                 versionId: action.version.id,
+                 fundId: action.fundId,
+                 customFund: customFund(),
+             }
+         }
+         default:
+             return {
+                 ...state,
+                 fundTreeNodes: fundTree(),
+             }
+     }
+ }
 
 function selectFundTab(state, action) {
     return {
@@ -88,7 +120,7 @@ export default function arrRegion(state = initialState, action) {
     }
 
     if (isBulkAction(action)
-        || (isFundTreeAction(action) && (action.area !== types.FUND_TREE_AREA_COPY && action.area !== types.FUND_TREE_AREA_USAGE))
+        || (isFundTreeAction(action) && (action.area !== types.FUND_TREE_AREA_COPY && action.area !== types.FUND_TREE_AREA_USAGE && action.area !== types.CUSTOM_FUND_TREE_AREA_NODES))
         || nodeFormActions.isSubNodeFormAction(action) || outputFormActions.isSubNodeFormAction(action) ||  structureFormActions.isSubNodeFormAction(action)
         || nodeFormActions.isSubNodeFormCacheAction(action) || outputFormActions.isSubNodeFormCacheAction(action) || structureFormActions.isSubNodeFormCacheAction(action)
         || isSubNodeRegisterAction(action)
@@ -118,6 +150,13 @@ export default function arrRegion(state = initialState, action) {
         return {
             ...state,
             globalFundTree: globalFundTree(state.globalFundTree, action)
+        }
+    }
+
+    if (isFundTreeAction(action) && action.area === types.CUSTOM_FUND_TREE_AREA_NODES) {
+        return {
+            ...state,
+            customFund: customFund(state.customFund, action),
         }
     }
 
@@ -164,10 +203,10 @@ export default function arrRegion(state = initialState, action) {
                 showRegisterJp: action.showRegisterJp
             }
         }
-        case types.SHOW_DAOS_JP: {
+        case types.CUSTOM_FUND_ACTION_SELECT_VERSION: {
             return {
                 ...state,
-                showDaosJp: action.show
+                customFund: customFund(state.customFund, action),
             }
         }
         case types.STORE_LOAD:

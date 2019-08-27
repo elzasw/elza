@@ -22,7 +22,7 @@ import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ArrStructuredObject.State;
@@ -140,11 +140,11 @@ public class OutputModelTest extends AbstractServiceTest {
                 apDescRepository, apNameRepository, apEidRepository,
                 null, structObjRepos, structItemRepos);
 
-        ArrOutputDefinition od = new ArrOutputDefinition();
-        od.setFund(fi.getFund());
-        od.setOutputType(outputType);
+        ArrOutput output = new ArrOutput();
+        output.setFund(fi.getFund());
+        output.setOutputType(outputType);
 
-        OutputParams params = new OutputParams(od, null, fi.getFundVersion(),
+        OutputParams params = new OutputParams(output, null, fi.getFundVersion(),
                 Collections.singletonList(level1.getNodeId()),
                 Collections.emptyList(),
                 Paths.get("test"));

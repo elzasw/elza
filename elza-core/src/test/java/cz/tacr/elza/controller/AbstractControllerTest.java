@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,8 +55,6 @@ import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
-import cz.tacr.elza.controller.vo.ArrOutputExtVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.CopyNodesParams;
@@ -227,19 +225,19 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DESC_ITEM_CSV_EXPORT = ARRANGEMENT_CONTROLLER_URL
             + "/descItems/{fundVersionId}/csv/export";
     protected static final String UPDATE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL
-            + "/descItems/{fundVersionId}/{nodeVersion}/update/{createNewVersion}";
+            + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/{createNewVersion}";
     protected static final String DELETE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL
-            + "/descItems/{fundVersionId}/{nodeVersion}/delete";
+            + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/delete";
     protected static final String DELETE_DESC_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL
             + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}";
     protected static final String DELETE_OUTPUT_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL
-            + "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/{itemTypeId}";
+            + "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}";
     protected static final String CREATE_OUTPUT_ITEM = ARRANGEMENT_CONTROLLER_URL
-            + "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/{itemTypeId}/create";
+            + "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}/create";
     protected static final String UPDATE_OUTPUT_ITEM = ARRANGEMENT_CONTROLLER_URL
-            + "/outputItems/{fundVersionId}/{outputDefinitionVersion}/update/{createNewVersion}";
+            + "/outputItems/{fundVersionId}/{outputVersion}/update/{createNewVersion}";
     protected static final String DELETE_OUTPUT_ITEM = ARRANGEMENT_CONTROLLER_URL
-            + "/outputItems/{fundVersionId}/{outputDefinitionVersion}/delete";
+            + "/outputItems/{fundVersionId}/{outputVersion}/delete";
     protected static final String FULLTEXT = ARRANGEMENT_CONTROLLER_URL + "/fulltext";
     protected static final String FUND_FULLTEXT = ARRANGEMENT_CONTROLLER_URL + "/fundFulltext";
     protected static final String FUND_FULLTEXT_LIST = ARRANGEMENT_CONTROLLER_URL + "/fundFulltext/{fundId}";
@@ -253,7 +251,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String FA_TREE_NODES = ARRANGEMENT_CONTROLLER_URL + "/fundTree/nodes";
     protected static final String NODE_DATA = ARRANGEMENT_CONTROLLER_URL + "/nodeData";
     protected static final String NODE_FORM_DATA = ARRANGEMENT_CONTROLLER_URL + "/nodes/{nodeId}/{versionId}/form";
-    protected static final String OUTPUT_FORM_DATA = ARRANGEMENT_CONTROLLER_URL + "/output/{outputDefinitionId}/{versionId}/form";
+    protected static final String OUTPUT_FORM_DATA = ARRANGEMENT_CONTROLLER_URL + "/output/{outputId}/{versionId}/form";
     protected static final String NODE_FORMS_DATA = ARRANGEMENT_CONTROLLER_URL + "/nodes/{versionId}/forms";
     protected static final String NODE_FORMS_DATA_AROUND = ARRANGEMENT_CONTROLLER_URL + "/nodes/{versionId}/{nodeId}/{around}/forms";
     protected static final String NODES = ARRANGEMENT_CONTROLLER_URL + "/nodes";
@@ -268,7 +266,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String GET_OUTPUTS = OUTPUTS + "/{fundVersionId}";
     protected static final String GET_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}";
     protected static final String CREATE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}";
-    protected static final String OUTPUT_LOCK = OUTPUTS + "/{fundVersionId}/{outputId}/lock";
     protected static final String ADD_NODES_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}/add";
     protected static final String REMOVE_NODES_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}/remove";
     protected static final String DELETE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}";
@@ -285,8 +282,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String REVERT_CHANGES = ARRANGEMENT_CONTROLLER_URL + "/changes/{fundVersionId}/revert";
     protected static final String SET_NOT_IDENTIFIED_DESCITEM = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/notUndefined/set";
     protected static final String UNSET_NOT_IDENTIFIED_DESCITEM = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/notUndefined/unset";
-    protected static final String SET_NOT_IDENTIFIED_OUTPUTITEM = ARRANGEMENT_CONTROLLER_URL + "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/notUndefined/set";
-    protected static final String UNSET_NOT_IDENTIFIED_OUTPUTITEM = ARRANGEMENT_CONTROLLER_URL + "/outputItems/{fundVersionId}/{outputDefinitionId}/{outputDefinitionVersion}/notUndefined/unset";
+    protected static final String SET_NOT_IDENTIFIED_OUTPUTITEM = ARRANGEMENT_CONTROLLER_URL + "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/notUndefined/set";
+    protected static final String UNSET_NOT_IDENTIFIED_OUTPUTITEM = ARRANGEMENT_CONTROLLER_URL + "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/notUndefined/unset";
     protected static final String COPY_LEVELS_VALIDATE = ARRANGEMENT_CONTROLLER_URL + "/levels/copy/validate";
     protected static final String COPY_LEVELS = ARRANGEMENT_CONTROLLER_URL + "/levels/copy";
 
@@ -414,7 +411,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String UPDATE_COMMENT = ISSUE_CONTROLLER_URL + "/comments/{commentId}";
     protected static final String EXPORT_ISSUE_LIST = ISSUE_CONTROLLER_URL + "/issue_lists/{issueListId}/export";
 
-    protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.00");
+    protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.000ZZZZZ");
 
     @Value("${local.server.port}")
     private int port;
@@ -1067,36 +1064,36 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected ArrangementController.OutputItemResult createOutputItem(final ArrItemVO outputItemVO,
                                                                    final Integer fundVersionId,
                                                                    final Integer itemTypeId,
-                                                                   final Integer outputDefinitionId,
-                                                                   final Integer outputDefinitionVersion) {
+                                                                   final Integer outputId,
+                                                                   final Integer outputVersion) {
         Response response = put(spec -> spec
                 .body(outputItemVO)
                 .pathParameter("fundVersionId", fundVersionId)
                 .pathParameter("itemTypeId", itemTypeId)
-                .pathParameter("outputDefinitionId", outputDefinitionId)
-                .pathParameter("outputDefinitionVersion", outputDefinitionVersion), CREATE_OUTPUT_ITEM);
+                .pathParameter("outputId", outputId)
+                .pathParameter("outputVersion", outputVersion), CREATE_OUTPUT_ITEM);
         return response.getBody().as(ArrangementController.OutputItemResult.class);
     }
 
     protected ArrangementController.OutputItemResult updateOutputItem(final ArrItemVO outputItemVO,
                                                                       final Integer fundVersionId,
-                                                                      final Integer outputDefinitionVersion,
+                                                                      final Integer outputVersion,
                                                                       final Boolean createNewVersion) {
         Response response = put(spec -> spec
                 .body(outputItemVO)
                 .pathParameter("fundVersionId", fundVersionId)
                 .pathParameter("createNewVersion", createNewVersion)
-                .pathParameter("outputDefinitionVersion", outputDefinitionVersion), UPDATE_OUTPUT_ITEM);
+                .pathParameter("outputVersion", outputVersion), UPDATE_OUTPUT_ITEM);
         return response.getBody().as(ArrangementController.OutputItemResult.class);
     }
 
     public ArrangementController.OutputItemResult deleteOutputItem(final ArrItemVO outputItemVO,
                                                                    final Integer fundVersionId,
-                                                                   final Integer outputDefinitionVersion) {
+                                                                   final Integer outputVersion) {
         Response response = post(spec -> spec
                 .body(outputItemVO)
                 .pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("outputDefinitionVersion", outputDefinitionVersion), DELETE_OUTPUT_ITEM);
+                .pathParameter("outputVersion", outputVersion), DELETE_OUTPUT_ITEM);
         return response.getBody().as(ArrangementController.OutputItemResult.class);
     }
 
@@ -1139,7 +1136,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Upravení hodnoty atributu.
      *
      * @param descItem          hodnota atributu
-     * @param fundVersion verze archivní pomůcky
+     * @param fundVersion       verze archivní pomůcky
      * @param node              uzel
      * @param createNewVersion  vytvořit novou verzi?
      * @return upravená hodnota atributu
@@ -1148,26 +1145,29 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                   final ArrFundVersionVO fundVersion,
                                                                   final ArrNodeVO node,
                                                                   final Boolean createNewVersion) {
-        return updateDescItem(descItem, fundVersion.getId(), node.getVersion(), createNewVersion);
+        return updateDescItem(descItem, fundVersion.getId(), node.getId(), node.getVersion(), createNewVersion);
     }
 
     /**
      * Upravení hodnoty atributu.
      *
      * @param descItem            hodnota atributu
-     * @param fundVersionId identifikátor verze AP
+     * @param fundVersionId       identifikátor verze AP
+     * @param node                identifikátor uzlu
      * @param nodeVersion         verze uzlu
      * @param createNewVersion    vytvořit novou verzi?
      * @return upravená hodnota atributu
      */
     protected ArrangementController.DescItemResult updateDescItem(final ArrItemVO descItem,
                                                                   final Integer fundVersionId,
+                                                                  final Integer nodeId,
                                                                   final Integer nodeVersion,
                                                                   final Boolean createNewVersion) {
         Response response = put(spec -> spec
                 .body(descItem)
                 .pathParameter("fundVersionId", fundVersionId)
                 .pathParameter("nodeVersion", nodeVersion)
+                .pathParameter("nodeId", nodeId)
                 .pathParameter("createNewVersion", createNewVersion), UPDATE_DESC_ITEM);
         return response.getBody().as(ArrangementController.DescItemResult.class);
     }
@@ -1183,23 +1183,26 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected ArrangementController.DescItemResult deleteDescItem(final ArrItemVO descItem,
                                                                   final ArrFundVersionVO fundVersion,
                                                                   final ArrNodeVO node) {
-        return deleteDescItem(descItem, fundVersion.getId(), node.getVersion());
+        return deleteDescItem(descItem, fundVersion.getId(), node.getId(), node.getVersion());
     }
 
     /**
      * Smazání hodnoty atributu.
      *
      * @param descItem            hodnota atributu
-     * @param fundVersionId identifikátor verze AP
+     * @param fundVersionId       identifikátor verze AP
+     * @param nodeId              identifikátor uzlu
      * @param nodeVersion         verze uzlu
      * @return smazaná hodnota atributu
      */
     protected ArrangementController.DescItemResult deleteDescItem(final ArrItemVO descItem,
                                                                   final Integer fundVersionId,
+                                                                  final Integer nodeId,
                                                                   final Integer nodeVersion) {
         Response response = post(spec -> spec
                 .body(descItem)
                 .pathParameter("fundVersionId", fundVersionId)
+                .pathParameter("nodeId", nodeId)
                 .pathParameter("nodeVersion", nodeVersion), DELETE_DESC_ITEM);
         return response.getBody().as(ArrangementController.DescItemResult.class);
     }
@@ -1773,14 +1776,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Získání dat pro formulář.
      *
-     * @param outputDefinitionId identfikátor outputu
+     * @param outputId identfikátor outputu
      * @param versionId          id verze stromu
      * @return formulář
      */
-    protected ArrangementController.OutputFormDataNewVO getOutputFormData(final Integer outputDefinitionId,
+    protected ArrangementController.OutputFormDataNewVO getOutputFormData(final Integer outputId,
                                                                           final Integer versionId) {
         return get(spec -> spec
-                        .pathParameter("outputDefinitionId", outputDefinitionId)
+                        .pathParameter("outputId", outputId)
                         .pathParameter("versionId", versionId),
                 OUTPUT_FORM_DATA).getBody().as(ArrangementController.OutputFormDataNewVO.class);
     }
@@ -1860,18 +1863,18 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Smazání hodnot atributu podle typu.
      *
      * @param fundVersionId   identfikátor verze AP
-     * @param outputDefinitionId                identfikátor výstupu
-     * @param outputDefinitionVersion           verze výstupu
+     * @param outputId                identfikátor výstupu
+     * @param outputVersion           verze výstupu
      * @param itemTypeId        identfikátor typu hodnoty atributu
      */
     protected ArrangementController.OutputItemResult deleteOutputItemsByType(final Integer fundVersionId,
-                                                                         final Integer outputDefinitionId,
-                                                                         final Integer outputDefinitionVersion,
+                                                                         final Integer outputId,
+                                                                         final Integer outputVersion,
                                                                          final Integer itemTypeId) {
         return delete(spec -> spec
                         .pathParameter("fundVersionId", fundVersionId)
-                        .pathParameter("outputDefinitionId", outputDefinitionId)
-                        .pathParameter("outputDefinitionVersion", outputDefinitionVersion)
+                        .pathParameter("outputId", outputId)
+                        .pathParameter("outputVersion", outputVersion)
                         .pathParameter("itemTypeId", itemTypeId),
                 DELETE_OUTPUT_ITEM_BY_TYPE).getBody().as(ArrangementController.OutputItemResult.class);
     }
@@ -2362,9 +2365,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param replaceDataBody seznam uzlů, ve kterých hledáme
      */
     protected void placeDataValues(final Integer versionId,
-                                     final Integer descItemTypeId,
-                                     final String text,
-                                     final ArrangementController.ReplaceDataBody replaceDataBody) {
+                                   final Integer descItemTypeId,
+                                   final String text,
+                                   final ArrangementController.ReplaceDataBody replaceDataBody) {
 
         put(spec -> spec
                 .pathParameter("versionId", versionId)
@@ -2796,10 +2799,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param fundVersionId identfikátor verze AS
      * @return  seznam outputů
      */
-    protected List<ArrOutputExtVO> getOutputs(final Integer fundVersionId) {
+    protected List<ArrOutputVO> getOutputs(final Integer fundVersionId) {
         return Arrays.asList(get(spec -> spec
                 .pathParam("fundVersionId", fundVersionId), GET_OUTPUTS)
-                .getBody().as(ArrOutputExtVO[].class));
+                .getBody().as(ArrOutputVO[].class));
     }
 
     /**
@@ -2809,11 +2812,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param outputId      identifikátor výstupu
      * @return output
      */
-    protected ArrOutputExtVO getOutput(final Integer fundVersionId, final Integer outputId) {
+    protected ArrOutputVO getOutput(final Integer fundVersionId, final Integer outputId) {
         return get(spec -> spec
                 .pathParam("fundVersionId", fundVersionId)
                 .pathParam("outputId", outputId), GET_OUTPUT)
-                .getBody().as(ArrOutputExtVO.class);
+                .getBody().as(ArrOutputVO.class);
     }
 
     /**
@@ -2823,12 +2826,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param param         vstupní parametry pro vytvoření outputu
      * @return vytvořený výstup
      */
-    protected ArrOutputDefinitionVO createNamedOutput(final Integer fundVersionId,
-                                                      final ArrangementController.OutputNameParam param) {
+    protected ArrOutputVO createNamedOutput(final Integer fundVersionId,
+                                            final ArrangementController.OutputNameParam param) {
         return put(spec -> spec
                 .pathParam("fundVersionId", fundVersionId)
                 .body(param), CREATE_NAMED_OUTPUT)
-                .getBody().as(ArrOutputDefinitionVO.class);
+                .getBody().as(ArrOutputVO.class);
     }
 
     /**
@@ -2837,33 +2840,17 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param fundVersion verze AS
      * @param name        název výstupu
      * @param code        kód výstupu
-     * @param temporary   dočasný výstup?
      * @return vytvořený výstup
      */
-    protected ArrOutputDefinitionVO createNamedOutput(final ArrFundVersionVO fundVersion,
-                                                      final String name,
-                                                      final String code,
-                                                      final Boolean temporary,
-                                                      final Integer outputTypeId) {
+    protected ArrOutputVO createNamedOutput(final ArrFundVersionVO fundVersion,
+                                            final String name,
+                                            final String code,
+                                            final Integer outputTypeId) {
         ArrangementController.OutputNameParam param = new ArrangementController.OutputNameParam();
         param.setInternalCode(code);
         param.setName(name);
-        param.setTemporary(temporary);
         param.setOutputTypeId(outputTypeId);
         return createNamedOutput(fundVersion.getId(), param);
-    }
-
-    /**
-     * Zamknutí verze výstupu.
-     *
-     * @param fundVersionId identfikátor verze AS
-     * @param outputId      identifikátor výstupu
-     */
-    protected void outputLock(final Integer fundVersionId,
-                              final Integer outputId) {
-        post(spec -> spec
-                .pathParam("fundVersionId", fundVersionId)
-                .pathParam("outputId", outputId), OUTPUT_LOCK);
     }
 
     /**
@@ -3075,12 +3062,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected ChangesResult findChangesByDate(final Integer fundVersionId,
                                               final Integer maxSize,
-                                              final LocalDateTime fromDate,
+                                              final OffsetDateTime fromDate,
                                               final Integer changeId,
                                               final Integer nodeId) {
+        String strDate = fromDate.format(FORMATTER);
         return get(spec -> spec.pathParam("fundVersionId", fundVersionId)
                         .queryParameter("maxSize", maxSize)
-                        .queryParameter("fromDate", fromDate.format(FORMATTER))
+                        .queryParameter("fromDate", strDate)
                         .queryParameter("changeId", changeId)
                         .queryParameter("nodeId", nodeId), FIND_CHANGE_BY_DATE).as(ChangesResult.class);
     }
@@ -3160,22 +3148,22 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @param fundVersionId    id archivního souboru
      * @param fundVersionId           id archivního souboru
-     * @param outputDefinitionId      identifikátor výstupu
-     * @param outputDefinitionVersion verze výstupu
+     * @param outputId      identifikátor výstupu
+     * @param outputVersion verze výstupu
      * @param outputItemTypeId        dentfikátor typu hodnoty atributu
      * @param outputItemSpecId        identfikátor specifikace hodnoty atributu
      * @param outputItemObjectId      identifikátor existující hodnoty atributu
      * @return upravená hodnota atributu nastavená na nezjištěno
      */
     protected ArrangementController.OutputItemResult setNotIdentifiedOutputItem(final Integer fundVersionId,
-                                                                            final Integer outputDefinitionId,
-                                                                            final Integer outputDefinitionVersion,
+                                                                            final Integer outputId,
+                                                                            final Integer outputVersion,
                                                                             final Integer outputItemTypeId,
                                                                             final Integer outputItemSpecId,
                                                                             final Integer outputItemObjectId) {
         return put(spec -> spec.pathParameter("fundVersionId", fundVersionId)
-                        .pathParameter("outputDefinitionId", outputDefinitionId)
-                        .pathParameter("outputDefinitionVersion", outputDefinitionVersion)
+                        .pathParameter("outputId", outputId)
+                        .pathParameter("outputVersion", outputVersion)
                         .queryParameter("outputItemTypeId", outputItemTypeId)
                         .queryParameter("outputItemSpecId", outputItemSpecId)
                         .queryParameter("outputItemObjectId", outputItemObjectId)
@@ -3186,22 +3174,22 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Zrušení nastavení atributu na "Nezjištěno".
      *
      * @param fundVersionId           id archivního souboru
-     * @param outputDefinitionId      identifikátor výstupu
-     * @param outputDefinitionVersion verze výstupu
+     * @param outputId      identifikátor výstupu
+     * @param outputVersion verze výstupu
      * @param outputItemTypeId        dentfikátor typu hodnoty atributu
      * @param outputItemSpecId        identfikátor specifikace hodnoty atributu
      * @param outputItemObjectId      identifikátor existující hodnoty atributu
      * @return odstraněný atribut
      */
     protected ArrangementController.OutputItemResult unsetNotIdentifiedOutputItem(final Integer fundVersionId,
-                                                                                  final Integer outputDefinitionId,
-                                                                                  final Integer outputDefinitionVersion,
+                                                                                  final Integer outputId,
+                                                                                  final Integer outputVersion,
                                                                                   final Integer outputItemTypeId,
                                                                                   final Integer outputItemSpecId,
                                                                                   final Integer outputItemObjectId) {
         return put(spec -> spec.pathParameter("fundVersionId", fundVersionId)
-                        .pathParameter("outputDefinitionId", outputDefinitionId)
-                        .pathParameter("outputDefinitionVersion", outputDefinitionVersion)
+                        .pathParameter("outputId", outputId)
+                        .pathParameter("outputVersion", outputVersion)
                         .queryParameter("outputItemTypeId", outputItemTypeId)
                         .queryParameter("outputItemSpecId", outputItemSpecId)
                         .queryParameter("outputItemObjectId", outputItemObjectId)

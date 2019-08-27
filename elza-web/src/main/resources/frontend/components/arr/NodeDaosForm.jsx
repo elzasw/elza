@@ -16,6 +16,10 @@ import ArrDaos from "./ArrDaos.jsx";
 class NodeDaosForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
+        this.state = {
+            daoId: props.daoId,
+            daoFileId: null
+        }
     }
 
     static PropTypes = {
@@ -25,18 +29,28 @@ class NodeDaosForm extends AbstractReactComponent {
         readMode: React.PropTypes.bool.isRequired
     }
 
+    handleSelectDao = (dao, fileId) => {
+        this.setState({
+            daoId: dao.id,
+            daoFileId: fileId
+        });
+    };
+
     render() {
-        const {fund, nodeId, daoId, readMode} = this.props;
+        const {fund, nodeId, readMode} = this.props;
+        const {daoId, daoFileId} = this.state;
 
         return (
             <Form>
                 <Modal.Body>
                     <ArrDaos
+                        onSelect={this.handleSelectDao}
                         fund={fund}
                         type="NODE"
                         nodeId={nodeId}
                         readMode={readMode}
                         selectedDaoId={daoId}
+                        selectedDaoFileId={daoFileId}
                         />
                 </Modal.Body>
                 <Modal.Footer>

@@ -175,15 +175,15 @@ public class ArrIOService {
      * Import csv do output item, která bude nahrazena.
      *
      * @param fundVersionId           verze souboru
-     * @param outputDefinitionId      id outputu
-     * @param outputDefinitionVersion verze outputu
+     * @param outputId      id outputu
+     * @param outputVersion verze outputu
      * @param descItemTypeId          id typu atributu
      * @param is                      stream s csv souborem
      * @return vytvořená položka
      */
     public ArrOutputItem csvOutputImport(final Integer fundVersionId,
-                                         final Integer outputDefinitionId,
-                                         final Integer outputDefinitionVersion,
+                                         final Integer outputId,
+                                         final Integer outputVersion,
                                          final Integer descItemTypeId,
                                          final InputStream is) throws IOException {
 
@@ -193,7 +193,7 @@ public class ArrIOService {
             ArrOutputItem outputItem = csvImport(descItemTypeId, in, ArrOutputItem.class);
 
             // Vyvoření nové s naimportovanými daty
-            return outputService.createOutputItem(outputItem, outputDefinitionId, outputDefinitionVersion, fundVersionId);
+            return outputService.createOutputItem(outputItem, outputId, outputVersion, fundVersionId);
         }
     }
 
@@ -240,13 +240,12 @@ public class ArrIOService {
         return item;
     }
 
-
     public List<Integer> coordinatesOutputImport(final Integer fundVersionId,
                                                  final Integer descItemTypeId,
-                                                 final Integer outputDefinitionId,
-                                                 final Integer outputDefinitionVersion,
+                                                 final Integer outputId,
+                                                 final Integer outputVersion,
                                                  final MultipartFile importFile) throws ParserConfigurationException, SAXException, IOException {
-        return coordinatesImport(fundVersionId, descItemTypeId, outputDefinitionId, outputDefinitionVersion, importFile, ArrOutputItem.class);
+        return coordinatesImport(fundVersionId, descItemTypeId, outputId, outputVersion, importFile, ArrOutputItem.class);
     }
 
     public List<Integer> coordinatesDescImport(final Integer fundVersionId,

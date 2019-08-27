@@ -280,6 +280,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
 
                         let data = {
                             ...descItemProps,
+                            itemTypeId: refType.id,
                             itemName: refType.shortcut,
                             specName: specName,
                             descItem: {

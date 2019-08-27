@@ -20,7 +20,7 @@ import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -33,7 +33,7 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
 
     private final ArrFundVersion fundVersion;
 
-    private final ArrOutputDefinition outputDefinition;
+    private final ArrOutput output;
 
     private Supplier<ArrChange> changeSupplier;
 
@@ -50,12 +50,12 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
     private final ItemService itemService;
 
     public OutputItemConnectorImpl(ArrFundVersion fundVersion,
-                                   ArrOutputDefinition outputDefinition,
+                                   ArrOutput output,
                                    StaticDataService staticDataService,
                                    OutputServiceInternal outputServiceInternal,
                                    ItemService itemService) {
         this.fundVersion = fundVersion;
-        this.outputDefinition = outputDefinition;
+        this.output = output;
         this.staticDataService = staticDataService;
         this.outputServiceInternal = outputServiceInternal;
         this.itemService = itemService;
@@ -172,7 +172,7 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
         // create output item
         ArrOutputItem outputItem = new ArrOutputItem();
         outputItem.setData(data);
-        outputItem.setOutputDefinition(outputDefinition);
+        outputItem.setOutput(output);
         outputItem.setItemType(rsit.getEntity());
         if (itemSpecId != null) {
             RulItemSpec spec = rsit.getItemSpecById(itemSpecId);
@@ -184,7 +184,7 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
 
         // check if not already deleted
         if (deleteItemTypeIds.add(rsit.getItemTypeId())) {
-            outputServiceInternal.deleteOutputItemsByType(fundVersion, outputDefinition, rsit.getItemTypeId(), change);
+            outputServiceInternal.deleteOutputItemsByType(fundVersion, output, rsit.getItemTypeId(), change);
         }
 
         outputServiceInternal.createOutputItem(outputItem, fundVersion, change);
@@ -194,13 +194,13 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
         Integer itemTypeId = rsit.getItemTypeId();
 
         if (ignoredItemTypeIds != null && ignoredItemTypeIds.contains(itemTypeId)) {
-            logger.warn("Output item " + outputDefinition.getName() + " [ID=" + outputDefinition.getOutputDefinitionId()
+            logger.warn("Output item " + output.getName() + " [ID=" + output.getOutputId()
                     + "] with type " + rsit.getEntity().getName() + " [CODE=" + rsit.getCode()
                     + "] was skipped because the type was registered as ignored");
             return true;
         }
         if (allowedItemTypeId != null && !allowedItemTypeId.equals(itemTypeId)) {
-            logger.warn("Output item " + outputDefinition.getName() + " [ID=" + outputDefinition.getOutputDefinitionId()
+            logger.warn("Output item " + output.getName() + " [ID=" + output.getOutputId()
                     + "] with type " + rsit.getEntity().getName() + " [CODE=" + rsit.getCode()
                     + "] was skipped because the type was filtered out");
             return true;

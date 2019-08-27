@@ -84,7 +84,6 @@ import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.search.IndexWorkProcessor;
@@ -116,9 +115,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
-
-    @Autowired
-    private FundVersionRepository fundVersionRepository;
 
     @Autowired
     private DataRepository dataRepository;
@@ -189,6 +185,18 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     }
 
     /**
+     * Ověření oprávnění na zápis JP.
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
+    public void checkNodeWritePermission(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
+                                         @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
+                                         Integer nodeVersion) {
+        Assert.notNull(fundVersionId, "Identifikátor verze AS musí být vyplněn");
+        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        // Assert.notNull(nodeVersion, "Verze JP musí být vyplněná");
+    }
+
+    /**
      * Uložení uzlu - optimistické zámky
      *
      * @param node uzel
@@ -196,7 +204,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @return uložený uzel
      */
     public ArrNode saveNode(final ArrNode node, final ArrChange change) {
-        node.setLastUpdate(change.getChangeDate());
+        node.setLastUpdate(change.getChangeDate().toLocalDateTime());
         nodeRepository.save(node);
         nodeRepository.flush();
         return node;
@@ -212,40 +220,42 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param fundVersionId    identifikátor verze archivní pomůcky
      * @return smazaná hodnota atributu
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
     public ArrDescItem deleteDescriptionItem(final Integer descItemObjectId,
                                              final Integer nodeVersion,
+                                             @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
                                              @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
         Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
-        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
+        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
 
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-        List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemObjectId);
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+        ArrNode node = arrangementService.getNode(nodeId);
+        ArrDescItem descItem = fetchOpenItemFromDB(descItemObjectId);
 
-        if (descItems.size() > 1) {
-            throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
-        } else if (descItems.size() == 0) {
-            throw new SystemException("Hodnota neexistuje, pravděpodobně byla již smazána");
+        if (!node.getFundId().equals(fundVersion.getFundId())) {
+            throw new BusinessException("Verze JP neodpovídá dané verzi AS", BaseCode.INVALID_STATE);
+        }
+        if (!descItem.getNodeId().equals(node.getNodeId())) {
+            throw new BusinessException("Hodnota atributu neodpovídá dané JP", BaseCode.INVALID_STATE);
         }
 
-        ArrDescItem descItem = descItems.get(0);
-        descItem.getNode().setVersion(nodeVersion);
-        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_DESC_ITEM, descItem.getNode());
+        node.setVersion(nodeVersion);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_DESC_ITEM, node);
 
         // uložení uzlu (kontrola optimistických zámků)
-        saveNode(descItem.getNode(), change);
+        saveNode(node, change);
 
         ArrDescItem descItemDeleted = deleteDescriptionItem(descItem, fundVersion, change, true);
-        arrangementCacheService.deleteDescItem(descItem.getNodeId(), descItemObjectId);
+        arrangementCacheService.deleteDescItem(nodeId, descItemObjectId);
 
         // validace uzlu
-        ruleService.conformityInfo(fundVersionId, Arrays.asList(descItem.getNode().getNodeId()),
+        ruleService.conformityInfo(fundVersionId, Arrays.asList(nodeId),
                 NodeTypeOperation.SAVE_DESC_ITEM, null, null, Arrays.asList(descItem));
 
         return descItemDeleted;
     }
-
 
     /**
      * Smaže hodnoty atributu podle typu.
@@ -258,20 +268,27 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param descItemTypeId identifikátor typu hodnoty atributu
      * @return upravený uzel
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
     public ArrNode deleteDescriptionItemsByType(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
-                                                final Integer nodeId,
+                                                @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
                                                 final Integer nodeVersion,
                                                 final Integer descItemTypeId) {
+        Assert.notNull(descItemTypeId, "Nebyl vyplněn typ hodnoty atributu");
+        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+        Assert.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
+        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
 
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-        Validate.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+        ArrNode node = arrangementService.getNode(nodeId);
+
+        if (!node.getFundId().equals(fundVersion.getFundId())) {
+            throw new BusinessException("Verze JP neodpovídá dané verzi AS", BaseCode.INVALID_STATE);
+        }
 
         StaticDataProvider sdp = staticDataService.getData();
         ItemType descItemType = sdp.getItemTypeById(descItemTypeId);
         Validate.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
-        ArrNode node = nodeRepository.findOne(nodeId);
         ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_DESC_ITEM, node);
         node.setVersion(nodeVersion);
 
@@ -312,20 +329,28 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param descItemTypeId identifikátor typu hodnoty atributu
      * @return upravený uzel
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
     public ArrNode deleteDescriptionItemsByTypeWithoutVersion(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
-                                                              final Integer nodeId,
+                                                              @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
                                                               final Integer nodeVersion,
                                                               final Integer descItemTypeId) {
 
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-        Validate.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
+        Assert.notNull(descItemTypeId, "Nebyl vyplněn typ hodnoty atributu");
+        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+        Assert.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
+        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+        ArrNode node = arrangementService.getNode(nodeId);
+
+        if (!node.getFundId().equals(fundVersion.getFundId())) {
+            throw new BusinessException("Verze JP neodpovídá dané verzi AS", BaseCode.INVALID_STATE);
+        }
 
         StaticDataProvider sdp = staticDataService.getData();
         ItemType descItemType = sdp.getItemTypeById(descItemTypeId);
         Validate.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
-        ArrNode node = nodeRepository.findOne(nodeId);
         ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_DESC_ITEM, node);
 
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemType.getEntity(), node);
@@ -362,20 +387,22 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param fundVersionId identifikátor verze archivní pomůcky
      * @return vytvořená hodnota atributu
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
     public ArrDescItem createDescriptionItem(final ArrDescItem descItem,
-                                             final Integer nodeId,
+                                             @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
                                              final Integer nodeVersion,
                                              @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
-        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
         Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
-        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
+        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
 
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+        ArrNode node = arrangementService.getNode(nodeId);
 
-        ArrNode node = nodeRepository.findOne(nodeId);
-        Assert.notNull(node, "JP musí být vyplněna");
+        if (!node.getFundId().equals(fundVersion.getFundId())) {
+            throw new BusinessException("Verze JP neodpovídá dané verzi AS", BaseCode.INVALID_STATE);
+        }
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
 
@@ -383,7 +410,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         node.setVersion(nodeVersion);
         saveNode(node, change);
 
-        return createDescriptionItem(descItem, node, version, change);
+        return createDescriptionItem(descItem, node, fundVersion, change);
     }
 
     /**
@@ -397,21 +424,23 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param fundVersionId identifikátor verze archivní pomůcky
      * @return vytvořená hodnota atributu
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
     public List<ArrDescItem> createDescriptionItems(final List<ArrDescItem> descItems,
-                                                    final Integer nodeId,
+                                                    @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
                                                     final Integer nodeVersion,
                                                     @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         Assert.notNull(descItems, "Hodnoty atributů musí být vyplněny");
         Assert.notEmpty(descItems, "Alespoň jedna hodnota atributu musí být vyplněna");
-        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
         Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
-        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
+        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
 
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+        ArrNode node = arrangementService.getNode(nodeId);
 
-        ArrNode node = nodeRepository.findOne(nodeId);
-        Assert.notNull(node, "JP musí být vyplněna");
+        if (!node.getFundId().equals(fundVersion.getFundId())) {
+            throw new BusinessException("Verze JP neodpovídá dané verzi AS", BaseCode.INVALID_STATE);
+        }
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
 
@@ -419,7 +448,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         node.setVersion(nodeVersion);
         saveNode(node, change);
 
-        return createDescriptionItemsWithValidate(descItems, node, version, change);
+        return createDescriptionItemsWithValidate(descItems, node, fundVersion, change);
     }
 
     /**
@@ -819,33 +848,32 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param createNewVersion vytvořit novou verzi?
      * @return upravená výsledná hodnota atributu
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
     public ArrDescItem updateDescriptionItem(final ArrDescItem descItem,
                                              final Integer nodeVersion,
-                                             final @AuthParam(type = AuthParam.Type.FUND_VERSION) Integer fundVersionId,
+                                             @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
+                                             @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
                                              final Boolean createNewVersion) {
         Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
         Assert.notNull(descItem.getPosition(), "Pozice musí být vyplněna");
         Assert.notNull(descItem.getDescItemObjectId(), "Identifikátor hodnoty atributu musí být vyplněn");
         Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
-        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Assert.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
+        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
         Assert.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
 
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+        ArrNode node = arrangementService.getNode(nodeId);
+        ArrDescItem descItemDB = fetchOpenItemFromDB(descItem.getDescItemObjectId());
 
-        List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItem.getDescItemObjectId());
-
-        if (descItems.size() > 1) {
-            throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
-        } else if (descItems.size() == 0) {
-            throw new SystemException("Hodnota neexistuje, pravděpodobně byla již smazána");
+        if (!node.getFundId().equals(fundVersion.getFundId())) {
+            throw new BusinessException("Verze JP neodpovídá dané verzi AS", BaseCode.INVALID_STATE);
         }
-        ArrDescItem descItemDB = descItems.get(0);
+        if (!descItemDB.getNodeId().equals(node.getNodeId())) {
+            throw new BusinessException("Hodnota atributu neodpovídá dané JP", BaseCode.INVALID_STATE);
+        }
 
-        ArrNode node = descItemDB.getNode();
-        Assert.notNull(node, "JP musí být vyplněna");
-
-		ArrChange change = null;
+        ArrChange change = null;
 		ArrDescItem descItemUpdated;
         if (createNewVersion) {
             node.setVersion(nodeVersion);
@@ -927,8 +955,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      */
     public List<ScenarioOfNewLevel> getDescriptionItemTypesForNewLevel(final Integer nodeId, final DirectionLevel directionLevel, final Integer fundVersionId) {
 
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
-        ArrNode node = nodeRepository.findOne(nodeId);
+        ArrFundVersion version = arrangementService.getFundVersion(fundVersionId);
+        ArrNode node = arrangementService.getNode(nodeId);
         ArrLevel level = levelRepository.findByNode(node, version.getLockChange());
 
         return getDescriptionItemTypesForNewLevel(level, directionLevel, version);
@@ -988,18 +1016,16 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 	 * @param descItemObjectId
 	 * @return
 	 */
-	protected ArrDescItem fetchOpenItemFromDB(int descItemObjectId) {
-		// fetch item from DB
-		List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemObjectId);
-
-		if (descItems.size() > 1) {
-			throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
-		} else if (descItems.size() == 0) {
-			throw new SystemException("Hodnota neexistuje, pravděpodobně byla již smazána");
-		}
-		ArrDescItem descItem = descItems.get(0);
-		return descItem;
-	}
+    protected ArrDescItem fetchOpenItemFromDB(int descItemObjectId) {
+        // fetch item from DB
+        List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemObjectId);
+        if (descItems.size() > 1) {
+            throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
+        } else if (descItems.size() == 0) {
+            throw new SystemException("Hodnota neexistuje, pravděpodobně byla již smazána");
+        }
+        return descItems.get(0);
+    }
 
 	/**
 	 * Update value without creating new version
@@ -1639,21 +1665,22 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param descItemObjectId  identifikátor hodnoty atributu
      * @return vytvořený atribut s příznamek "Nezjištěno"
      */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
     public ArrDescItem setNotIdentifiedDescItem(final Integer descItemTypeId,
-                                                final Integer nodeId,
+                                                @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
                                                 final Integer nodeVersion,
-                                                final Integer fundVersionId,
+                                                @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
                                                 final Integer descItemSpecId,
                                                 final Integer descItemObjectId) {
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-        if (fundVersion == null) {
-            throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + fundVersionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", fundVersionId);
-        }
+        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
+        Assert.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
+        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
 
-        ArrNode node = nodeRepository.findOne(nodeId);
-        if (node == null) {
-            throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND)
-                    .set("id", nodeId);
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+        ArrNode node = arrangementService.getNode(nodeId);
+
+        if (!node.getFundId().equals(fundVersion.getFundId())) {
+            throw new BusinessException("Verze JP neodpovídá dané verzi AS", BaseCode.INVALID_STATE);
         }
 
         StaticDataProvider sdp = staticDataService.getData();

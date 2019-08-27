@@ -38,7 +38,7 @@ import {
 import {Button, DropdownButton, MenuItem} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx'
-import {fundsFetchIfNeeded, showDaosJp, showRegisterJp} from 'actions/arr/fund.jsx'
+import {fundsFetchIfNeeded, showRegisterJp} from 'actions/arr/fund.jsx'
 import {fundExtendedView} from 'actions/arr/fundExtended.jsx'
 import {
     versionValidate,
@@ -267,13 +267,6 @@ class ArrPage extends ArrParentPage {
     }
 
     /**
-     * Zobrazení skrytí digitálních entit.
-     */
-    handleToggleDaos = () => {
-        this.props.dispatch(showDaosJp(!this.props.arrRegion.showDaosJp));
-    };
-
-    /**
      * Zobrazení / skrytí záznamů u JP o rejstřících.
      */
     handleRegisterJp() {
@@ -338,19 +331,27 @@ class ArrPage extends ArrParentPage {
                     {
                         name: i18n('arr.fund.settings.panel.center.parents'),
                         key: 'parents',
-                        checked: dataCenter && dataCenter.parents},
+                        checked: dataCenter && dataCenter.parents
+                    },
                     {
                         name: i18n('arr.fund.settings.panel.center.children'),
                         key: 'children',
-                        checked: dataCenter && dataCenter.children},
+                        checked: dataCenter && dataCenter.children
+                    },
                     {
                         name: i18n('arr.fund.settings.panel.rightPanel'),
                         key: 'rightPanel',
-                        checked: dataCenter && dataCenter.rightPanel !== undefined ? dataCenter.rightPanel : true},
+                        checked: dataCenter && dataCenter.rightPanel !== undefined ? dataCenter.rightPanel : true
+                    },
                     {
                         name: i18n('arr.fund.settings.panel.treeColorCoding'),
                         key: "treeColorCoding",
                         checked: dataCenter && dataCenter.treeColorCoding !== undefined ? dataCenter.treeColorCoding : true
+                    },
+                    {
+                        name: i18n('arr.fund.settings.panel.acordeon'),
+                        key: "acordeon",
+                        checked: dataCenter && dataCenter.acordeon !== undefined ? dataCenter.acordeon : false
                     }
                 ]
             },
@@ -528,12 +529,6 @@ class ArrPage extends ArrParentPage {
             <Button active={this.props.arrRegion.showRegisterJp} onClick={this.handleRegisterJp} key="toggle-record-jp">
                 <Icon glyph="fa-th-list"/>
                 <span className="btnText">{i18n('ribbon.action.arr.show-register-jp')}</span>
-            </Button>
-        );
-        altActions.push(
-            <Button active={this.props.arrRegion.showDaosJp} onClick={this.handleToggleDaos} key="toggle-daos-jp">
-                <Icon glyph="fa-th-list"/>
-                <span className="btnText">{i18n('ribbon.action.arr.show-daos')}</span>
             </Button>
         );
 
@@ -1112,13 +1107,14 @@ class ArrPage extends ArrParentPage {
     renderCenterPanel(readMode, closed) {
         const {focus, arrRegion, rulDataTypes, calendarTypes, descItemTypes, userDetail} = this.props;
         const showRegisterJp = arrRegion.showRegisterJp;
-        const showDaosJp = arrRegion.showDaosJp;
         const activeFund = this.getActiveFund(this.props);
 
+        const centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
+        const centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
+
         if (arrRegion.extendedView) {   // extended view - jiné větší zobrazení stromu, renderuje se zde
-            let centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
-            let centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
-            let colorCoded = !(centerSettingsValues && centerSettingsValues.treeColorCoding === false);
+            const colorCoded = !(centerSettingsValues && centerSettingsValues.treeColorCoding === false);
+
             return (
                 <FundTreeMain
                     focus={focus}
@@ -1141,6 +1137,8 @@ class ArrPage extends ArrParentPage {
                 </div>
             );
         } else {    // standardní zobrazení pořádání - záložky node
+            const accordion = centerSettingsValues && centerSettingsValues.acordeon === true;
+
             return (
                 <NodeTabs
                     versionId={activeFund.versionId}
@@ -1153,7 +1151,7 @@ class ArrPage extends ArrParentPage {
                     descItemTypes={descItemTypes}
                     fundId={activeFund.id}
                     showRegisterJp={showRegisterJp}
-                    showDaosJp={showDaosJp}
+                    displayAccordion={accordion}
                 />
             )
         }

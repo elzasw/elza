@@ -15,6 +15,8 @@ import javax.annotation.Nullable;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.castor.core.util.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -23,11 +25,16 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Lists;
 
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundStructureExtension;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -71,19 +78,20 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 @Service
 public class StructObjService {
 
+    private final Logger logger = LoggerFactory.getLogger(StructObjService.class);
     private final StructuredItemRepository structureItemRepository;
     private final StructuredTypeExtensionRepository structureExtensionRepository;
     private final StructuredObjectRepository structObjRepository;
     private final StructuredTypeRepository structureTypeRepository;
     private final ArrangementService arrangementService;
     private final DataRepository dataRepository;
-    private final RuleService ruleService;
     private final FundStructureExtensionRepository fundStructureExtensionRepository;
     private final StructObjValueService structObjService;
     private final ItemTypeRepository itemTypeRepository;
     private final ChangeRepository changeRepository;
     private final EventNotificationService notificationService;
     private final SettingsService settingsService;
+    private final StaticDataService staticDataService;
 
     @Autowired
     public StructObjService(final StructuredItemRepository structureItemRepository,
@@ -92,26 +100,26 @@ public class StructObjService {
                             final StructuredTypeRepository structureTypeRepository,
                             final ArrangementService arrangementService,
                             final DataRepository dataRepository,
-                            final RuleService ruleService,
                             final FundStructureExtensionRepository fundStructureExtensionRepository,
                             final StructObjValueService structureDataService,
                             final ItemTypeRepository itemTypeRepository,
                             final ChangeRepository changeRepository,
                             final EventNotificationService notificationService,
-                            final SettingsService settingsService) {
+                            final SettingsService settingsService,
+                            final StaticDataService staticDataService) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionRepository = structureExtensionRepository;
         this.structObjRepository = structureDataRepository;
         this.structureTypeRepository = structureTypeRepository;
         this.arrangementService = arrangementService;
         this.dataRepository = dataRepository;
-        this.ruleService = ruleService;
         this.fundStructureExtensionRepository = fundStructureExtensionRepository;
         this.structObjService = structureDataService;
         this.itemTypeRepository = itemTypeRepository;
         this.changeRepository = changeRepository;
         this.notificationService = notificationService;
         this.settingsService = settingsService;
+        this.staticDataService = staticDataService;
     }
 
     /**
@@ -340,16 +348,29 @@ public class StructObjService {
 
         ArrStructuredObject structObj = getStructObjById(structObjId);
 
-        ArrChange change = structObj.getState() == ArrStructuredObject.State.TEMP ? structObj.getCreateChange()
-                : arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_ITEM);
+        ArrChange change = getChangeForStructObject(structObj, ArrChange.Type.ADD_STRUCTURE_ITEM);
 
         int nextPosition = findNextPosition(structObj, structureItem.getItemType());
-        Integer position;
+        Integer position = getPosition(structureItem.getPosition(), structureItem.getItemType(), structObj, change, nextPosition);
 
-        if (structureItem.getPosition() == null) {
+
+
+        ArrStructuredItem save = createItem(structureItem, structObj, position, change);
+        structObjService.addToValidate(structObj);
+        return save;
+    }
+
+    protected ArrChange getChangeForStructObject(final ArrStructuredObject structObj, final ArrChange.Type type) {
+        return structObj.getState() == State.TEMP ? structObj.getCreateChange()
+                : arrangementService.createChange(type);
+    }
+
+    protected Integer getPosition(final Integer positionWant, final RulItemType type, final ArrStructuredObject structObj, final ArrChange change, final int nextPosition) {
+        Integer position;
+        if (positionWant == null) {
             position = nextPosition;
         } else {
-            position = structureItem.getPosition();
+            position = positionWant;
 
             if (position <= 0) {
                 throw new SystemException("Neplatný formát dat", BaseCode.PROPERTY_IS_INVALID).set("property", "position");
@@ -357,7 +378,7 @@ public class StructObjService {
 
             // pokud je požadovaná pozice menší než další volná, bude potřeba posunou níž položky
             if (position < nextPosition) {
-                List<ArrStructuredItem> structureItemsToMove = structureItemRepository.findOpenItemsAfterPositionFetchData(structureItem.getItemType(),
+                List<ArrStructuredItem> structureItemsToMove = structureItemRepository.findOpenItemsAfterPositionFetchData(type,
                                                              structObj, position - 1, null);
 
                 nextVersionStructureItems(1, structureItemsToMove, change, true);
@@ -369,10 +390,7 @@ public class StructObjService {
             }
 
         }
-
-        ArrStructuredItem save = createItem(structureItem, structObj, position, change);
-        structObjService.addToValidate(structObj);
-        return save;
+        return position;
     }
 
     private ArrStructuredItem createItem(ArrStructuredItem structureItem, ArrStructuredObject structObj,
@@ -479,7 +497,7 @@ public class StructObjService {
         }
 
         ArrStructuredObject structObj = structureItemDB.getStructuredObject();
-        ArrChange change = structObj.getState() == ArrStructuredObject.State.TEMP ? structObj.getCreateChange() : arrangementService.createChange(ArrChange.Type.UPDATE_STRUCTURE_ITEM);
+        ArrChange change = getChangeForStructObject(structObj, ArrChange.Type.UPDATE_STRUCTURE_ITEM);
 
         ArrStructuredItem updateStructureItem;
 
@@ -561,7 +579,7 @@ public class StructObjService {
         }
 
         ArrStructuredObject structObj = structureItemDB.getStructuredObject();
-        ArrChange change = structObj.getState() == ArrStructuredObject.State.TEMP ? structObj.getCreateChange() : arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_ITEM);
+        ArrChange change = getChangeForStructObject(structObj, ArrChange.Type.DELETE_STRUCTURE_ITEM);
 
         structureItemDB.setDeleteChange(change);
 
@@ -607,6 +625,7 @@ public class StructObjService {
 
         for (ArrStructuredObject structureData : structureDataList) {
             structureData.setValue(null);
+            structureData.setComplement(null);
             structureData.setErrorDescription(null);
         }
         structObjRepository.save(structureDataList);
@@ -704,10 +723,9 @@ public class StructObjService {
                                                           final Integer structureDataId,
                                                           final Integer itemTypeId) {
         ArrStructuredObject structObj = getStructObjById(structureDataId);
-        RulItemType type = ruleService.getItemTypeById(itemTypeId);
-        List<ArrStructuredItem> structureItems = structureItemRepository.findOpenItems(type, structObj);
+        List<ArrStructuredItem> structureItems = structureItemRepository.findOpenItems(itemTypeId, structObj);
 
-        ArrChange change = structObj.getState() == ArrStructuredObject.State.TEMP ? structObj.getCreateChange() : arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_ITEM);
+        ArrChange change = getChangeForStructObject(structObj, ArrChange.Type.DELETE_STRUCTURE_ITEM);
         for (ArrStructuredItem structureItem : structureItems) {
             structureItem.setDeleteChange(change);
         }
@@ -756,6 +774,7 @@ public class StructObjService {
         }
         // reset temporary value -> final have to be calculated
         structureData.setValue(null);
+        structureData.setComplement(null);
         structureData.setState(ArrStructuredObject.State.OK);
         ArrStructuredObject savedStructObj = structObjRepository.save(structureData);
         structObjService.addToValidate(savedStructObj);
@@ -841,6 +860,94 @@ public class StructObjService {
 
             revalidateStructObjs(structureType, fundVersion.getFund());
         }
+    }
+
+    /**
+     * Přidání položek struk. objektu z textové hodnoty.
+     *
+     * @param structuredObject strukturovaný objekt pro který zakládáme položky
+     * @param value textová hodnota, která je parsována
+     */
+    public void addItemsFromValue(final ArrStructuredObject structuredObject, final String value) {
+        Validate.notNull(structuredObject);
+        Validate.notNull(value);
+        StructObjValueService.ParseResult parseResult = structObjService.parseValue(structuredObject, value.trim());
+        if (parseResult == null) {
+            return; // typ nemá parsovací script, nic neděláme
+        }
+        Map<String, Object> items = parseResult.getItems();
+        if (items.size() == 0) {
+            logger.warn("Nepodařilo se získá žádné položky z '{}' pro strukturovaný objekt '{}'", value, structuredObject.getStructuredType().getCode());
+            return;
+        }
+        addItemsFromMap(items, structuredObject);
+        structObjService.addToValidate(structuredObject);
+    }
+
+    /**
+     * Přidání položek struk. objektu.
+     *
+     * @param items            položky pro přidání [key - kód typu atributu, value - hodnota]
+     * @param structuredObject strukturovaný objekt pro který zakládáme položky
+     */
+    private void addItemsFromMap(final Map<String, Object> items, final ArrStructuredObject structuredObject) {
+        StaticDataProvider sdp = staticDataService.getData();
+
+        for (Map.Entry<String, Object> entry : items.entrySet()) {
+            ItemType itemType = sdp.getItemTypeByCode(entry.getKey());
+            createStructureItem(itemType, entry.getValue(), structuredObject);
+        }
+    }
+
+    /**
+     * Vytvoření položky k hodnotě strukt. datového typu.
+     *
+     * @param itemType  typ atributu
+     * @param value     hodnota atributu
+     * @param structObj struk. objekt ke kterému zakládáme položku
+     */
+    private void createStructureItem(final ItemType itemType, final Object value, final ArrStructuredObject structObj) {
+
+        ArrChange change = getChangeForStructObject(structObj, ArrChange.Type.ADD_STRUCTURE_ITEM);
+
+        int nextPosition = findNextPosition(structObj, itemType.getEntity());
+        Integer position = getPosition(null, itemType.getEntity(), structObj, change, nextPosition);
+
+        DataType dataType = itemType.getDataType();
+        ArrData data;
+        switch (dataType) {
+            case INT:
+                data = new ArrDataInteger((Integer) value);
+                break;
+            case FORMATTED_TEXT:
+            case TEXT:
+                data = new ArrDataText((String) value);
+                break;
+            case STRING:
+                data = new ArrDataString((String) value);
+                break;
+            default:
+                data = null;
+                break;
+        }
+
+        if (data == null) {
+            logger.error("Nepodporovaný typ {} pro založení strukturované hodnoty z řetězce", dataType.getCode());
+            return;
+        }
+
+        data.setDataType(dataType.getEntity());
+        ArrData savedData = createData(data, dataType.getEntity());
+
+        ArrStructuredItem structuredItem = new ArrStructuredItem();
+        structuredItem.setItemType(itemType.getEntity());
+        structuredItem.setItemSpec(null);
+        structuredItem.setCreateChange(change);
+        structuredItem.setData(savedData);
+        structuredItem.setPosition(position);
+        structuredItem.setStructuredObject(structObj);
+        structuredItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+        structureItemRepository.save(structuredItem);
     }
 
     /**

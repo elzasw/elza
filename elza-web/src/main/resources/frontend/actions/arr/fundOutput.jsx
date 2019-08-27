@@ -2,6 +2,7 @@
  * Akce pro výstupy - named output.
  */
 
+import React from "react";
 import * as types from '../../actions/constants/ActionTypes.js';
 import {WebApi} from '../../actions/index.jsx'
 import {i18n} from '../../components/shared';
@@ -11,6 +12,8 @@ import {isFundOutputFunctionsAction} from './fundOutputFunctions.jsx';
 import {addToastrSuccess} from '../../components/shared/toastr/ToastrActions.jsx'
 import {modalDialogHide} from '../../actions/global/modalDialog.jsx'
 import {savingApiWrapper} from '../../actions/global/status.jsx';
+import {modalDialogShow} from "../../actions/global/modalDialog";
+import FundNodesSelectForm from "../../components/arr/FundNodesSelectForm";
 
 export function isFundOutput(action) {
     if (isFundOutputDetail(action)) {
@@ -111,12 +114,27 @@ export function fundOutputClone(versionId, outputId) {
     }
 }
 
+// const handleAddNodes = (fundOutputDetail, dispatch) => {
+//     const fund = this.getActiveFund(this.props);
+//
+//     this.props.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
+//         <FundNodesSelectForm
+//             onSubmitForm={(ids, nodes) => {
+//                 dispatch(fundOutputAddNodes(fund.versionId, fundOutputDetail.id, ids))
+//             }}
+//         />))
+// };
+
+
 export function fundOutputCreate(versionId, data) {
     return (dispatch, getState) => {
         return savingApiWrapper(dispatch, WebApi.createOutput(versionId, data))
             .then((json) => {
                 dispatch(addToastrSuccess(i18n("arr.output.title.added")));
-                dispatch(fundOutputSelectOutput(versionId, json.outputs[0].id))
+                dispatch(fundOutputSelectOutput(versionId, json.id));
+                // handleAddNodes(json, dispatch);
+                return json;
+
             });
     }
 }

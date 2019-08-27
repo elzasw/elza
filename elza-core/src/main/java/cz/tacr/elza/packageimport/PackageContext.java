@@ -230,6 +230,7 @@ public class PackageContext {
 		switch (definition.getDefType()) {
 			case ATTRIBUTE_TYPES:
 				return dirRules;
+			case PARSE_VALUE:
 			case SERIALIZED_VALUE:
 				return dirGroovies;
 			default:
@@ -254,6 +255,7 @@ public class PackageContext {
 		switch (def.getDefType()) {
 			case ATTRIBUTE_TYPES:
 				return dirRules;
+			case PARSE_VALUE:
 			case SERIALIZED_VALUE:
 				return dirGroovies;
 			default:

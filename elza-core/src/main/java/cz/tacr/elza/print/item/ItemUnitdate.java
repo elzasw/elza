@@ -23,4 +23,8 @@ public class ItemUnitdate extends AbstractItem {
     protected UnitDate getValue() {
         return value;
     }
+
+    public UnitDate getUnitDate() {
+        return value;
+    }
 }

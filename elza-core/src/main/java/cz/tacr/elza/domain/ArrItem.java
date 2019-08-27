@@ -260,7 +260,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
 
     public abstract ArrNode getNode();
 
-    public abstract ArrOutputDefinition getOutputDefinition();
+    public abstract ArrOutput getOutput();
 
     public void setCreateChangeId(final Integer createChangeId) {
         this.createChangeId = createChangeId;

@@ -42,7 +42,7 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParDynasty;
@@ -406,17 +406,17 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         Validate.isTrue(TransactionSynchronizationManager.isActualTransactionActive());
         Validate.isTrue(!isInitialized());
 
-        logger.info("Output model initialization started, outputDefinitionId:{}", params.getDefinitionId());
+        logger.info("Output model initialization started, outputId:{}", params.getOutputId());
 
         // prepare internal fields
         this.fundVersion = params.getFundVersion();
         this.staticData = staticDataService.getData();
 
         // init general description
-        ArrOutputDefinition definition = params.getDefinition();
-        RulOutputType outputType = definition.getOutputType();
-        this.name = definition.getName();
-        this.internalCode = definition.getInternalCode();
+        ArrOutput output = params.getOutput();
+        RulOutputType outputType = output.getOutputType();
+        this.name = output.getName();
+        this.internalCode = output.getInternalCode();
         this.typeCode = outputType.getCode();
         this.type = outputType.getName();
 
@@ -424,7 +424,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         NodeId rootNodeId = createNodeIdTree(params.getOutputNodeIds(), params.getFundVersionId());
 
         // init fund
-        ArrFund arrFund = definition.getFund();
+        ArrFund arrFund = output.getFund();
         this.fund = new Fund(rootNodeId, this);
         this.fund.setName(arrFund.getName());
         this.fund.setInternalCode(arrFund.getInternalCode());
@@ -442,7 +442,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        logger.info("Output model initialization ended, outputDefinitionId:{}", params.getDefinitionId());
+        logger.info("Output model initialization ended, outputId:{}", params.getOutputId());
     }
 
     private Institution createInstitution(ArrFund arrFund) {
@@ -521,7 +521,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         // add to lookup
         if (nodeIdMap.putIfAbsent(arrNodeId, nodeId) != null) {
             throw new SystemException("Node already defined for output", BaseCode.INVALID_STATE).set("nodeId", arrNodeId)
-                    .set("outputDefinitionName", name);
+                    .set("outputName", name);
         }
 
         for (TreeNode child : treeNode.getChildren()) {

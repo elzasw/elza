@@ -26,6 +26,10 @@ public class ArrDataString extends ArrData {
 
 	}
 
+    public ArrDataString(final String value) {
+        setValue(value);
+    }
+
 	protected ArrDataString(ArrDataString src) {
 		super(src);
         copyValue(src);

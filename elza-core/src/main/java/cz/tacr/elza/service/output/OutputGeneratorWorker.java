@@ -17,8 +17,8 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrChange.Type;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNodeOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutput.OutputState;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.RulTemplate.Engine;
 import cz.tacr.elza.exception.ExceptionResponse;
@@ -35,7 +35,7 @@ public class OutputGeneratorWorker implements Runnable {
 
     private final static Logger logger = LoggerFactory.getLogger(OutputGeneratorWorker.class);
 
-    private final int outputDefinitionId;
+    private final int outputId;
 
     private final int fundVersionId;
 
@@ -55,7 +55,7 @@ public class OutputGeneratorWorker implements Runnable {
 
     private final ArrangementService arrangementService;
 
-    public OutputGeneratorWorker(int outputDefinitionId,
+    public OutputGeneratorWorker(int outputId,
                                  int fundVersionId,
                                  EntityManager em,
                                  OutputGeneratorFactory outputGeneratorFactory,
@@ -64,7 +64,7 @@ public class OutputGeneratorWorker implements Runnable {
                                  FundLevelServiceInternal fundLevelServiceInternal,
                                  PlatformTransactionManager transactionManager,
                                  ArrangementService arrangementService) {
-        this.outputDefinitionId = outputDefinitionId;
+        this.outputId = outputId;
         this.fundVersionId = fundVersionId;
         this.em = em;
         this.outputGeneratorFactory = outputGeneratorFactory;
@@ -75,8 +75,8 @@ public class OutputGeneratorWorker implements Runnable {
         this.arrangementService = arrangementService;
     }
 
-    public int getOutputDefinitionId() {
-        return outputDefinitionId;
+    public int getOutputId() {
+        return outputId;
     }
 
     @Override
@@ -99,23 +99,23 @@ public class OutputGeneratorWorker implements Runnable {
      * @throws
      */
     private void generateOutput() {
-        ArrOutputDefinition definition = outputServiceInternal.getOutputDefinitionForGenerator(outputDefinitionId);
+        ArrOutput output = outputServiceInternal.getOutputForGenerator(outputId);
 
-        Engine engine = definition.getTemplate().getEngine();
+        Engine engine = output.getTemplate().getEngine();
         try (OutputGenerator generator = outputGeneratorFactory.createOutputGenerator(engine);) {
-            OutputParams params = createOutputParams(definition);
+            OutputParams params = createOutputParams(output);
             generator.init(params);
             generator.generate();
 
             // reset error
-            definition.setError(null);
+            output.setError(null);
             OutputState state = resolveEndState(params);
-            definition.setState(state); // saved by commit
+            output.setState(state); // saved by commit
         } catch (IOException e) {
             throw new SystemException("Failed to generate output", e, BaseCode.INVALID_STATE);
         }
 
-        outputServiceInternal.publishOutputStateChanged(definition, fundVersionId);
+        outputServiceInternal.publishOutputStateChanged(output, fundVersionId);
     }
 
     private OutputState resolveEndState(OutputParams params) {
@@ -128,7 +128,7 @@ public class OutputGeneratorWorker implements Runnable {
         return OutputState.FINISHED;
     }
 
-    private OutputParams createOutputParams(ArrOutputDefinition definition) {
+    private OutputParams createOutputParams(ArrOutput output) {
         ArrFundVersion fundVersion = em.find(ArrFundVersion.class, fundVersionId);
         if (fundVersion == null) {
             throw new SystemException("Fund version for output not found", BaseCode.ID_NOT_EXIST).set("fundVersionId",
@@ -137,14 +137,14 @@ public class OutputGeneratorWorker implements Runnable {
 
         ArrChange change = arrangementService.createChange(Type.GENERATE_OUTPUT);
 
-        List<ArrNodeOutput> outputNodes = outputServiceInternal.getOutputNodes(definition, fundVersion.getLockChange());
+        List<ArrNodeOutput> outputNodes = outputServiceInternal.getOutputNodes(output, fundVersion.getLockChange());
         List<Integer> nodeIds = outputNodes.stream().map(no -> no.getNodeId()).collect(Collectors.toList());
 
-        List<ArrOutputItem> outputItems = outputServiceInternal.getOutputItems(definition, fundVersion.getLockChange());
+        List<ArrOutputItem> outputItems = outputServiceInternal.getOutputItems(output, fundVersion.getLockChange());
 
-        Path templateDir = resourcePathResolver.getTemplateDir(definition.getTemplate()).toAbsolutePath();
+        Path templateDir = resourcePathResolver.getTemplateDir(output.getTemplate()).toAbsolutePath();
 
-        return new OutputParams(definition, change, fundVersion, nodeIds, outputItems, templateDir);
+        return new OutputParams(output, change, fundVersion, nodeIds, outputItems, templateDir);
     }
 
     /**
@@ -154,12 +154,12 @@ public class OutputGeneratorWorker implements Runnable {
         ExceptionResponseBuilder builder = ExceptionResponseBuilder.createFrom(t);
         builder.logError(logger);
 
-        ArrOutputDefinition definition = em.find(ArrOutputDefinition.class, outputDefinitionId);
-        if (definition != null) {
+        ArrOutput output = em.find(ArrOutput.class, outputId);
+        if (output != null) {
             ExceptionResponse er = builder.build();
-            definition.setError(er.toJson());
-            definition.setState(OutputState.OPEN); // saved by commit
+            output.setError(er.toJson());
+            output.setState(OutputState.OPEN); // saved by commit
         }
-        outputServiceInternal.publishOutputFailed(definition, fundVersionId);
+        outputServiceInternal.publishOutputFailed(output, fundVersionId);
     }
 }

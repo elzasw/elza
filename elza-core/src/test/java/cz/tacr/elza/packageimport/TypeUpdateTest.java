@@ -1,7 +1,5 @@
 package cz.tacr.elza.packageimport;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,8 +31,10 @@ import cz.tacr.elza.packageimport.xml.ItemType;
 import cz.tacr.elza.packageimport.xml.ItemTypes;
 import cz.tacr.elza.repository.DataDateRepository;
 import cz.tacr.elza.repository.DataDateRepository.OnlyValues;
-import cz.tacr.elza.repository.ItemSpecRegisterRepository;
+import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
+
+import static org.junit.Assert.assertNotNull;
 
 public class TypeUpdateTest extends AbstractServiceTest {
 
@@ -42,7 +42,7 @@ public class TypeUpdateTest extends AbstractServiceTest {
     ApplicationContext appCtx;
 
     @Autowired
-    private ItemSpecRegisterRepository itemSpecRegisterRepository;
+    private ItemAptypeRepository itemAptypeRepository;
 
     @Autowired
     private DataDateRepository dataDateRepository;
@@ -143,12 +143,12 @@ public class TypeUpdateTest extends AbstractServiceTest {
     private ItemType createItemTypeFor(String itemTypeCode, List<ItemSpec> itemSpecList) {
         RulItemType dbItemType = itemTypeRepository.findOneByCode(itemTypeCode);
 
-        ItemType itemType = ItemType.fromEntity(dbItemType);
+        ItemType itemType = ItemType.fromEntity(dbItemType, itemAptypeRepository);
         if (Boolean.TRUE.equals(dbItemType.getUseSpecification())) {
             // Copy specifications
             List<RulItemSpec> dbSpecs = this.itemSpecRepository.findByItemType(dbItemType);
             for (RulItemSpec dbSpec : dbSpecs) {
-                ItemSpec itemSpec = ItemSpec.fromEntity(dbSpec, itemSpecRegisterRepository);
+                ItemSpec itemSpec = ItemSpec.fromEntity(dbSpec, itemAptypeRepository);
                 itemSpecList.add(itemSpec);
             }
         }

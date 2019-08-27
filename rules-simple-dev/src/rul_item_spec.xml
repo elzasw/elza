@@ -1565,571 +1565,571 @@
         <name>autoři</name>
         <description>autoři</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_2" item-type="SRD_ENTITY_ROLE">
         <name>autoři dialogů</name>
         <description>autoři dialogů</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_3" item-type="SRD_ENTITY_ROLE">
         <name>autoři doprovodných textů</name>
         <description>autoři doprovodných textů</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_4" item-type="SRD_ENTITY_ROLE">
         <name>autoři fotografií</name>
         <description>autoři fotografií</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_5" item-type="SRD_ENTITY_ROLE">
         <name>autoři hudební složky</name>
         <description>autoři hudební složky</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_6" item-type="SRD_ENTITY_ROLE">
         <name>autoři hudby</name>
         <description>autoři hudby</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_7" item-type="SRD_ENTITY_ROLE">
         <name>autoři choreografií</name>
         <description>autoři choreografií</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_8" item-type="SRD_ENTITY_ROLE">
         <name>autoři komentářů</name>
         <description>autoři komentářů</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_9" item-type="SRD_ENTITY_ROLE">
         <name>autoři námětů</name>
         <description>autoři námětů</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_10" item-type="SRD_ENTITY_ROLE">
         <name>autoři textové složky</name>
         <description>autoři textové složky</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_11" item-type="SRD_ENTITY_ROLE">
         <name>autoři textů</name>
         <description>autoři textů</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_12" item-type="SRD_ENTITY_ROLE">
         <name>autoři triků a speciálních efektů</name>
         <description>autoři triků a speciálních efektů</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_13" item-type="SRD_ENTITY_ROLE">
         <name>autoři výtvarné a obrazové stránky</name>
         <description>autoři výtvarné a obrazové stránky</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_14" item-type="SRD_ENTITY_ROLE">
         <name>autoři výtvarné stránky</name>
         <description>autoři výtvarné stránky</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_15" item-type="SRD_ENTITY_ROLE">
         <name>vydavatelé</name>
         <description>vydavatelé</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_16" item-type="SRD_ENTITY_ROLE">
         <name>vydavatelé / nakladatelé</name>
         <description>vydavatelé / nakladatelé</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_17" item-type="SRD_ENTITY_ROLE">
         <name>pečetitelé</name>
         <description>pečetitelé</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_18" item-type="SRD_ENTITY_ROLE">
         <name>produkční společnosti/producenti</name>
         <description>produkční společnosti/producenti</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_19" item-type="SRD_ENTITY_ROLE">
         <name>objednatelé / příjemci</name>
         <description>objednatelé / příjemci</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_20" item-type="SRD_ENTITY_ROLE">
         <name>distributoři</name>
         <description>distributoři</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_21" item-type="SRD_ENTITY_ROLE">
         <name>příjemci</name>
         <description>příjemci</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_22" item-type="SRD_ENTITY_ROLE">
         <name>žadatelé</name>
         <description>žadatelé</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_23" item-type="SRD_ENTITY_ROLE">
         <name>držitelé</name>
         <description>držitelé</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_24" item-type="SRD_ENTITY_ROLE">
         <name>odesilatelé</name>
         <description>odesilatelé</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_25" item-type="SRD_ENTITY_ROLE">
         <name>schvalovatelé</name>
         <description>schvalovatelé</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_26" item-type="SRD_ENTITY_ROLE">
         <name>stavitelé</name>
         <description>stavitelé</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_27" item-type="SRD_ENTITY_ROLE">
         <name>režiséři</name>
         <description>režiséři</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_28" item-type="SRD_ENTITY_ROLE">
         <name>scénáristé</name>
         <description>scénáristé</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_29" item-type="SRD_ENTITY_ROLE">
         <name>kameramani</name>
         <description>kameramani</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_30" item-type="SRD_ENTITY_ROLE">
         <name>interpreti hudby</name>
         <description>interpreti hudby</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_31" item-type="SRD_ENTITY_ROLE">
         <name>fotografové</name>
         <description>fotografové</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_32" item-type="SRD_ENTITY_ROLE">
         <name>redaktoři</name>
         <description>redaktoři</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_33" item-type="SRD_ENTITY_ROLE">
         <name>kartografové</name>
         <description>kartografové</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_34" item-type="SRD_ENTITY_ROLE">
         <name>editoři</name>
         <description>editoři</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_35" item-type="SRD_ENTITY_ROLE">
         <name>editoři / redaktoři</name>
         <description>editoři / redaktoři</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_36" item-type="SRD_ENTITY_ROLE">
         <name>kresliči</name>
         <description>kresliči</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_37" item-type="SRD_ENTITY_ROLE">
         <name>majitelé typářů</name>
         <description>majitelé typářů</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_38" item-type="SRD_ENTITY_ROLE">
         <name>tvůrci technického zpracování</name>
         <description>tvůrci technického zpracování</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_39" item-type="SRD_ENTITY_ROLE">
         <name>tvůrci výtvarné stránky</name>
         <description>tvůrci výtvarné stránky</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_40" item-type="SRD_ENTITY_ROLE">
         <name>dramaturgové</name>
         <description>dramaturgové</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_41" item-type="SRD_ENTITY_ROLE">
         <name>střih</name>
         <description>střih</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_42" item-type="SRD_ENTITY_ROLE">
         <name>zvuk</name>
         <description>zvuk</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_43" item-type="SRD_ENTITY_ROLE">
         <name>účinkující</name>
         <description>účinkující</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_44" item-type="SRD_ENTITY_ROLE">
         <name>překladatelé</name>
         <description>překladatelé</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_45" item-type="SRD_ENTITY_ROLE">
         <name>lektoři</name>
         <description>lektoři</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_46" item-type="SRD_ENTITY_ROLE">
         <name>svědci</name>
         <description>svědci</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_47" item-type="SRD_ENTITY_ROLE">
         <name>ručitelé (rukojmě)</name>
         <description>ručitelé (rukojmě)</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_48" item-type="SRD_ENTITY_ROLE">
         <name>písaři</name>
         <description>písaři</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_49" item-type="SRD_ENTITY_ROLE">
         <name>zpracovatelé nosičů záznamů</name>
         <description>zpracovatelé nosičů záznamů</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_50" item-type="SRD_ENTITY_ROLE">
         <name>výrobci nosičů záznamů</name>
         <description>výrobci nosičů záznamů</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_51" item-type="SRD_ENTITY_ROLE">
         <name>tiskárny</name>
         <description>tiskárny</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_52" item-type="SRD_ENTITY_ROLE">
         <name>tiskárny/tiskaři</name>
         <description>tiskárny/tiskaři</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_53" item-type="SRD_ENTITY_ROLE">
         <name>výrobci</name>
         <description>výrobci</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_54" item-type="SRD_ENTITY_ROLE">
         <name>výrobci typářů</name>
         <description>výrobci typářů</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_55" item-type="SRD_ENTITY_ROLE">
         <name>výrobci odlitků otisků / otisků typářů</name>
         <description>výrobci odlitků otisků / otisků typářů</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_56" item-type="SRD_ENTITY_ROLE">
         <name>místa vzniku záznamů</name>
         <description>místa vzniku záznamů</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="GEO"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_57" item-type="SRD_ENTITY_ROLE">
         <name>místa vydavatelů</name>
         <description>místa vydavatelů</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="GEO"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_58" item-type="SRD_ENTITY_ROLE">
         <name>místa vydání</name>
         <description>místa vydání</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="GEO"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_59" item-type="SRD_ENTITY_ROLE">
         <name>místa vydání dokumentů</name>
         <description>místa vydání dokumentů</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="GEO"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_60" item-type="SRD_ENTITY_ROLE">
         <name>místa výroby jednotek popisu</name>
         <description>místa výroby jednotek popisu</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="GEO"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_61" item-type="SRD_ENTITY_ROLE">
         <name>místa vzniku jednotek popisu</name>
         <description>místa vzniku jednotek popisu</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="GEO"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_62" item-type="SRD_ENTITY_ROLE">
         <name>místa vzniku předloh popisovaných kopií</name>
         <description>místa vzniku předloh popisovaných kopií</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="GEO"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_63" item-type="SRD_ENTITY_ROLE">
         <name>typová označení a názvy výrobků a typových staveb</name>
         <description>typová označení a názvy výrobků a typových staveb</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="ARTWORK"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="ARTWORK"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_64" item-type="SRD_ENTITY_ROLE">
         <name>entity zachycené jednotkami popisu</name>
         <description>entity zachycené jednotkami popisu</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-            <item-spec-register register-type="GEO"/>
-            <item-spec-register register-type="EVENT"/>
-            <item-spec-register register-type="ARTWORK"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="GEO"/>
+            <item-aptype register-type="EVENT"/>
+            <item-aptype register-type="ARTWORK"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ENTITY_ROLE_65" item-type="SRD_ENTITY_ROLE">
         <name>ostatní entity zachycené jednotkami popisu</name>
         <description>ostatní entity zachycené jednotkami popisu</description>
         <shortcut></shortcut>
-        <item-spec-registers>
-            <item-spec-register register-type="PARTY_GROUP"/>
-            <item-spec-register register-type="PERSON"/>
-            <item-spec-register register-type="GEO"/>
-            <item-spec-register register-type="EVENT"/>
-            <item-spec-register register-type="ARTWORK"/>
-        </item-spec-registers>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="GEO"/>
+            <item-aptype register-type="EVENT"/>
+            <item-aptype register-type="ARTWORK"/>
+        </item-aptypes>
     </item-spec>
     <item-spec code="SRD_ARRANGEMENT_MAN" item-type="SRD_ARRANGEMENT_TYPE">
         <name>Manipulační seznam</name>

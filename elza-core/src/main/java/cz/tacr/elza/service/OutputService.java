@@ -1,8 +1,5 @@
 package cz.tacr.elza.service;
 
-import static cz.tacr.elza.domain.RulItemType.Type.RECOMMENDED;
-import static cz.tacr.elza.domain.RulItemType.Type.REQUIRED;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,8 +40,7 @@ import cz.tacr.elza.domain.ArrItemSettings;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
-import cz.tacr.elza.domain.ArrOutputDefinition.OutputState;
+import cz.tacr.elza.domain.ArrOutput.OutputState;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrOutputResult;
@@ -70,7 +66,6 @@ import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
 import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.OutputRepository;
@@ -83,13 +78,13 @@ import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 
+import static cz.tacr.elza.domain.RulItemType.Type.RECOMMENDED;
+import static cz.tacr.elza.domain.RulItemType.Type.REQUIRED;
+
 @Service
 public class OutputService {
 
     private static final Logger logger = LoggerFactory.getLogger(OutputService.class);
-
-    @Autowired
-    private OutputDefinitionRepository outputDefinitionRepository;
 
     @Autowired
     private OutputRepository outputRepository;
@@ -145,88 +140,87 @@ public class OutputService {
     @Autowired
     private StaticDataService staticDataService;
 
-    public ArrOutputDefinition getOutputDefinition(int outputDefinitionId) {
-        return outputServiceInternal.getOutputDefinition(outputDefinitionId);
+    public ArrOutput getOutput(int outputId) {
+        return outputServiceInternal.getOutput(outputId);
     }
 
-    public OutputRequestStatus addRequest(int outputDefinitionId, ArrFundVersion fundVersion, boolean checkBulkActions) {
-        return outputServiceInternal.addRequest(outputDefinitionId, fundVersion, checkBulkActions);
-        }
+    public OutputRequestStatus addRequest(int outputId, ArrFundVersion fundVersion, boolean checkBulkActions) {
+        return outputServiceInternal.addRequest(outputId, fundVersion, checkBulkActions);
+    }
 
     /**
      * Smazat pojmenovaný výstup.
      *
-     * @param fundVersion      verze AS
-     * @param outputDefinition pojmenovaný výstup
+     * @param fundVersion verze AS
+     * @param output pojmenovaný výstup
      * @return smazaný pojmenovaný výstup
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
-    public ArrOutputDefinition deleteNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                                 final ArrOutputDefinition outputDefinition) {
+    public ArrOutput deleteNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final ArrOutput output) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
-        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
+        Assert.notNull(output, "Výstup musí být vyplněn");
 
         if (fundVersion.getLockChange() != null) {
             throw new BusinessException("Nelze smazat výstup v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
-        checkFund(fundVersion, outputDefinition);
+        checkFund(fundVersion, output);
 
-        if (outputDefinition.getDeleted()) {
+        if (output.getDeleteChange() != null) {
             throw new BusinessException("Nelze smazat již smazaný výstup", OutputCode.ALREADY_DELETED);
         }
 
         List<OutputState> allowedState = Arrays.asList(OutputState.OPEN, OutputState.FINISHED, OutputState.OUTDATED);
 
-        if (!allowedState.contains(outputDefinition.getState())) {
-            throw new BusinessException("Nelze smazat výstup v tomto stavu: " + outputDefinition.getState(),
-                    OutputCode.CANNOT_DELETED_IN_STATE).set("state", outputDefinition.getState());
+        if (!allowedState.contains(output.getState())) {
+            throw new BusinessException("Nelze smazat výstup v tomto stavu: " + output.getState(),
+                    OutputCode.CANNOT_DELETED_IN_STATE).set("state", output.getState());
         }
 
-        outputDefinition.setDeleted(true);
+        ArrChange change = arrangementService.createChange(null);
+        output.setDeleteChange(change);
 
-        Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
-        EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, outputIds);
+        EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, output.getOutputId());
         eventNotificationService.publishEvent(event);
 
-        return outputDefinitionRepository.save(outputDefinition);
+        return outputRepository.save(output);
     }
 
     /**
      * Vrátí stav do Otevřeno
      *
-     * @param fundVersion      verze AS
-     * @param outputDefinition pojmenovaný výstup
+     * @param fundVersion verze AS
+     * @param output pojmenovaný výstup
      * @return pojmenovaný výstup
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
-    public ArrOutputDefinition revertToOpenState(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                                 final ArrOutputDefinition outputDefinition) {
+    public ArrOutput revertToOpenState(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                       final ArrOutput output) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
-        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
+        Assert.notNull(output, "Výstup musí být vyplněn");
 
         if (fundVersion.getLockChange() != null) {
             throw new BusinessException("Nelze vrátit do přípravy výstup v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
-        checkFund(fundVersion, outputDefinition);
+        checkFund(fundVersion, output);
 
-        if (outputDefinition.getDeleted()) {
+        if (output.getDeleteChange() != null) {
             throw new BusinessException("Nelze vrátit do přípravy smazaný výstup", OutputCode.CANNOT_CHANGE_STATE);
         }
 
         List<OutputState> allowedState = Arrays.asList(OutputState.FINISHED, OutputState.OUTDATED);
-        if (!allowedState.contains(outputDefinition.getState())) {
+        if (!allowedState.contains(output.getState())) {
             throw new BusinessException("Do stavu \"V přípravě\" lze vrátit pouze \"Neaktuální\" či \"Vygenerované\" výstupy", OutputCode.CANNOT_CHANGE_STATE);
         }
 
-        outputDefinition.setState(OutputState.OPEN);
+        output.setState(OutputState.OPEN);
         // reset previous error
-        outputDefinition.setError(null);
+        output.setError(null);
 
-        ArrOutputResult outputResult = outputDefinition.getOutputResult();
+        ArrOutputResult outputResult = output.getOutputResult();
         if (outputResult != null) {
             List<ArrOutputFile> outputFiles = outputResult.getOutputFiles();
             if (outputFiles != null && !outputFiles.isEmpty()) {
@@ -235,213 +229,125 @@ public class OutputService {
             outputResultRepository.delete(outputResult);
         }
 
-        Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
-        EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, outputIds);
+        EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, output.getOutputId());
         eventNotificationService.publishEvent(event);
 
-        return outputDefinitionRepository.save(outputDefinition);
+        return outputRepository.save(output);
     }
 
     /**
      * Vytvoří kopii výstupu s nody bez resultů
      *
-     * @param fundVersion       verze AS
-     * @param originalOutputDef pojmenovaný výstup originál
+     * @param fundVersion verze AS
+     * @param originalOutput pojmenovaný výstup originál
      * @return pojmenovaný výstup kopie
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
-    public ArrOutputDefinition cloneOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                           final ArrOutputDefinition originalOutputDef) {
+    public ArrOutput cloneOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                 final ArrOutput originalOutput) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
-        Assert.notNull(originalOutputDef, "Musí být vyplněna definice výstupu");
+        Assert.notNull(originalOutput, "Výstup musí být vyplněn");
 
-        checkFund(fundVersion, originalOutputDef);
+        checkFund(fundVersion, originalOutput);
 
-        if (originalOutputDef.getDeleted()) {
+        if (originalOutput.getDeleteChange() != null) {
             throw new BusinessException("Nelze klonovat smazaný výstup", OutputCode.CANNOT_CLONE_DELETED);
         }
 
         String copy = " - kopie";
-        String newName = originalOutputDef.getName() + copy;
-        if (outputDefinitionRepository.existsByName(newName)) {
+        String newName = originalOutput.getName() + copy;
+        if (outputRepository.existsByName(newName)) {
             int num = 1;
             String newNameWithNum;
             do {
                 newNameWithNum = newName + " " + num++;
-            } while(outputDefinitionRepository.existsByName(newNameWithNum));
+            } while (outputRepository.existsByName(newNameWithNum));
             newName = newNameWithNum;
         }
 
-        final ArrOutputDefinition newOutputDef = createOutputDefinition(fundVersion,
+        final ArrOutput newOutput = createOutput(fundVersion,
                 newName,
-                originalOutputDef.getInternalCode(),
-                originalOutputDef.getTemporary(),
-                originalOutputDef.getOutputType().getOutputTypeId(),
-                originalOutputDef.getTemplate() != null ? originalOutputDef.getTemplate().getTemplateId() : null
-                );
+                originalOutput.getInternalCode(),
+                originalOutput.getOutputType().getOutputTypeId(),
+                originalOutput.getTemplate() != null ? originalOutput.getTemplate().getTemplateId() : null
+        );
 
-        final ArrChange change = newOutputDef.getOutputs().get(0).getCreateChange();
+        final ArrChange change = newOutput.getCreateChange();
         final ArrayList<ArrNodeOutput> newNodes = new ArrayList<>();
-        originalOutputDef.getOutputNodes().forEach(node -> {
+        originalOutput.getOutputNodes().forEach(node -> {
             if (node.getDeleteChange() == null) {
                 ArrNodeOutput newNode = new ArrNodeOutput();
                 newNode.setCreateChange(change);
                 newNode.setNode(node.getNode());
-                newNode.setOutputDefinition(newOutputDef);
+                newNode.setOutput(newOutput);
                 newNodes.add(newNode);
             }
         });
 
         nodeOutputRepository.save(newNodes);
 
-        return newOutputDef;
-    }
-
-    /**
-     * Získání výstupu podle identifikátoru.
-     *
-     * @param outputId identifikátor výstupu
-     * @return výstup
-     */
-    public ArrOutput getOutput(final Integer outputId) {
-        return outputRepository.getOneCheckExist(outputId);
-    }
-
-    /**
-     * Zamknutí výstupu.
-     *
-     * @param fundVersion verze AS
-     * @param output      výstup
-     * @return zamknutý výstup
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
-            UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
-    public ArrOutput outputLock(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                final ArrOutput output) {
-        ArrChange change = arrangementService.createChange(null);
-        return outputLock(fundVersion, output, change);
-    }
-
-    /**
-     * Zamknutí výstupu.
-     *
-     * @param fundVersion verze AS
-     * @param output      výstup
-     * @param change      změna
-     * @return výstup
-     */
-    private ArrOutput outputLock(final ArrFundVersion fundVersion,
-                                 final ArrOutput output,
-                                 final ArrChange change) {
-        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
-        Assert.notNull(output, "Výstup musí být vyplněn");
-        Assert.notNull(change, "Změna musí být vyplněna");
-
-        if (fundVersion.getLockChange() != null) {
-            throw new BusinessException("Nelze zamknout výstup v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
-        }
-
-        checkFund(fundVersion, output.getOutputDefinition());
-
-        if (output.getLockChange() != null) {
-            throw new BusinessException("Výstup je již zamknutý", ArrangementCode.VERSION_ALREADY_CLOSED);
-        }
-
-        output.setLockChange(change);
-
-        EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, output.getOutputId());
-        eventNotificationService.publishEvent(event);
-
-        return outputRepository.save(output);
+        return newOutput;
     }
 
     /**
      * Vytvoření pojmenovaného výstupu.
      *
-     * @param fundVersion  verze AS
-     * @param name         název výstupu
+     * @param fundVersion verze AS
+     * @param name název výstupu
      * @param internalCode kód výstupu
-     * @param temporary    dočasný výstup?
-     * @param outputTypeId
-     * @param templateId   id šablony
+     * @param templateId id šablony
      * @return vytvořený výstup
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
-    public ArrOutputDefinition createOutputDefinition(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                                      final String name,
-                                                      final String internalCode,
-                                                      final Boolean temporary,
-                                                      final Integer outputTypeId,
-                                                      final Integer templateId) {
+    public ArrOutput createOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                  final String name,
+                                  final String internalCode,
+                                  final Integer outputTypeId,
+                                  final Integer templateId) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         Assert.notNull(name, "Název musí být vyplněn");
-        Assert.notNull(temporary, "Musí být vyplněno");
         Assert.notNull(outputTypeId, "Identifikátor typu vystupu musí být vyplněn");
 
         if (fundVersion.getLockChange() != null) {
             throw new BusinessException("Nelze vytvořit výstup v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
-        ArrOutputDefinition outputDefinition = new ArrOutputDefinition();
-        outputDefinition.setFund(fundVersion.getFund());
-        outputDefinition.setName(name);
-        outputDefinition.setInternalCode(internalCode);
-        outputDefinition.setDeleted(false);
-        outputDefinition.setTemporary(temporary);
-        outputDefinition.setState(OutputState.OPEN);
+        ArrOutput output = new ArrOutput();
+        output.setFund(fundVersion.getFund());
+        output.setName(name);
+        output.setInternalCode(internalCode);
+        output.setState(OutputState.OPEN);
 
         RulOutputType type = outputTypeRepository.findOne(outputTypeId);
         Assert.notNull(type, "Typ musí být vyplněn");
-        outputDefinition.setOutputType(type);
+        output.setOutputType(type);
 
         if (templateId != null) {
-            outputDefinition.setTemplate(templateRepository.findOne(templateId));
+            output.setTemplate(templateRepository.findOne(templateId));
         } else {
-            outputDefinition.setTemplate(null);
+            output.setTemplate(null);
         }
 
-        outputDefinitionRepository.save(outputDefinition);
-
         ArrChange change = arrangementService.createChange(null);
-        ArrOutput output = createOutputWithChange(outputDefinition, change);
-        List<ArrOutput> outputs = new ArrayList<>();
-        outputs.add(output);
-        outputDefinition.setOutputs(outputs);
-        outputDefinitionRepository.save(outputDefinition);
+        output.setCreateChange(change);
+        output.setDeleteChange(null);
+
+        outputRepository.save(output);
 
         EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, output.getOutputId());
         eventNotificationService.publishEvent(event);
 
-        return outputDefinition;
-    }
-
-    /**
-     * Vytvoření výstupu.
-     *
-     * @param outputDefinition pojmenovaný výstup
-     * @param change           změna
-     * @return vytvořený výstup
-     */
-    private ArrOutput createOutputWithChange(final ArrOutputDefinition outputDefinition,
-                                             final ArrChange change) {
-        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
-        Assert.notNull(change, "Změna musí být vyplněna");
-
-        ArrOutput output = new ArrOutput();
-        output.setCreateChange(change);
-        output.getOutputDefinition(outputDefinition);
-
-        return outputRepository.save(output);
+        return output;
     }
 
     /**
      * Odstranění uzlů z výstupu.
      *
      * @param fundVersion verze AS
-     * @param output      výstup
-     * @param nodeIds     seznam identifikátorů uzlů
+     * @param output výstup
+     * @param nodeIds seznam identifikátorů uzlů
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
@@ -456,9 +362,9 @@ public class OutputService {
      * Odstranění uzlů z výstupu.
      *
      * @param fundVersion verze AS
-     * @param output      pojmenovaný výstup
-     * @param nodeIds     seznam identifikátorů uzlů
-     * @param change      změna
+     * @param output pojmenovaný výstup
+     * @param nodeIds seznam identifikátorů uzlů
+     * @param change změna
      */
     private void removeNodesNamedOutput(final ArrFundVersion fundVersion,
                                         final ArrOutput output,
@@ -473,33 +379,31 @@ public class OutputService {
             throw new BusinessException("Nelze odebrat uzly u výstupu v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
-        if (output.getLockChange() != null) {
-            throw new BusinessException("Nelze odebrat uzly u zamčeného výstupu", OutputCode.LOCKED);
+        if (output.getDeleteChange() != null) {
+            throw new BusinessException("Nelze odebrat uzly u smazaného výstupu", OutputCode.DELETED);
         }
 
-        final ArrOutputDefinition outputDefinition = output.getOutputDefinition();
-
         List<OutputState> allowedState = Collections.singletonList(OutputState.OPEN);
-        if (!allowedState.contains(outputDefinition.getState())) {
+        if (!allowedState.contains(output.getState())) {
             throw new BusinessException("Nelze odebrat uzly z výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
 
-        checkFund(fundVersion, outputDefinition);
+        checkFund(fundVersion, output);
 
         // get current live nodes
-        List<ArrNodeOutput> outputNodes = nodeOutputRepository.findByOutputDefinitionAndDeleteChangeIsNull(outputDefinition);
+        List<ArrNodeOutput> outputNodes = nodeOutputRepository.findByOutputAndDeleteChangeIsNull(output);
 
         // mark nodes as deleted
         List<Integer> remainingNodeIds = new ArrayList<>();
         List<ArrNodeOutput> removedNodes = new ArrayList<>();
         for (ArrNodeOutput nodeOutput : outputNodes) {
             if (nodeIds.contains(nodeOutput.getNodeId())) {
-                    nodeOutput.setDeleteChange(change);
+                nodeOutput.setDeleteChange(change);
                 removedNodes.add(nodeOutput);
             } else {
                 remainingNodeIds.add(nodeOutput.getNodeId());
-                }
             }
+        }
 
         if (nodeIds.size() != removedNodes.size()) {
             throw new BusinessException("Byl předán seznam s neplatným identifikátorem uzlu: " + nodeIds, ArrangementCode.NODE_NOT_FOUND).set("id", nodeIds);
@@ -507,30 +411,29 @@ public class OutputService {
 
         nodeOutputRepository.save(removedNodes);
 
-        updateCalculatedItems(fundVersion, change, remainingNodeIds, outputDefinition);
+        updateCalculatedItems(fundVersion, change, remainingNodeIds, output);
 
-        Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
-        EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
+        EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, output.getOutputId());
         eventNotificationService.publishEvent(event);
     }
 
     /**
      * Upravení výstupu.
      *
-     * @param fundVersion  verze AS
-     * @param output       pojmenovaný výstup
-     * @param name         název výstupu
+     * @param fundVersion verze AS
+     * @param output pojmenovaný výstup
+     * @param name název výstupu
      * @param internalCode kód výstupu
-     * @param templateId   id šablony
+     * @param templateId id šablony
      * @return upravený výstup
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
-    public ArrOutputDefinition updateNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                                 final ArrOutput output,
-                                                 final String name,
-                                                 final String internalCode,
-                                                 final Integer templateId) {
+    public ArrOutput updateNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                       final ArrOutput output,
+                                       final String name,
+                                       final String internalCode,
+                                       final Integer templateId) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         Assert.notNull(output, "Výstup musí být vyplněn");
         Assert.notNull(name, "Název musí být vyplněn");
@@ -539,42 +442,39 @@ public class OutputService {
             throw new BusinessException("Nelze upravovat výstup v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
-        if (output.getLockChange() != null) {
-            throw new BusinessException("Nelze upravit uzavřený výstup", OutputCode.LOCKED);
+        if (output.getDeleteChange() != null) {
+            throw new BusinessException("Nelze upravit smazaný výstup", OutputCode.DELETED);
         }
 
-        final ArrOutputDefinition outputDefinition = output.getOutputDefinition();
-
         List<OutputState> allowedState = Collections.singletonList(OutputState.OPEN);
-        if (!allowedState.contains(outputDefinition.getState())) {
+        if (!allowedState.contains(output.getState())) {
             throw new BusinessException("Nelze upravit výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
 
-        outputDefinition.setName(name);
-        outputDefinition.setInternalCode(internalCode);
+        output.setName(name);
+        output.setInternalCode(internalCode);
         if (templateId != null) {
-            outputDefinition.setTemplate(templateRepository.findOne(templateId));
+            output.setTemplate(templateRepository.findOne(templateId));
         } else {
-            outputDefinition.setTemplate(null);
+            output.setTemplate(null);
         }
 
-        outputDefinitionRepository.save(outputDefinition);
+        outputRepository.save(output);
 
-        Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId).toArray(Integer[]::new);
-        EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, outputIds);
+        EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, output.getOutputId());
         eventNotificationService.publishEvent(event);
 
-        return outputDefinition;
+        return output;
     }
 
     /**
      * Kontrola AS u verze a výstupu.
      *
-     * @param fundVersion      verze AS
-     * @param outputDefinition pojmenovaný výstup
+     * @param fundVersion verze AS
+     * @param output pojmenovaný výstup
      */
-    private void checkFund(final ArrFundVersion fundVersion, final ArrOutputDefinition outputDefinition) {
-        if (!outputDefinition.getFund().equals(fundVersion.getFund())) {
+    private void checkFund(final ArrFundVersion fundVersion, final ArrOutput output) {
+        if (!output.getFund().equals(fundVersion.getFund())) {
             throw new SystemException("Output a verze AS nemají společný AS", BaseCode.DB_INTEGRITY_PROBLEM);
         }
     }
@@ -615,31 +515,29 @@ public class OutputService {
                     ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
-        if (output.getLockChange() != null) {
-            throw new BusinessException("Nelze přidat uzly u zamčeného výstupu", OutputCode.LOCKED);
+        if (output.getDeleteChange() != null) {
+            throw new BusinessException("Nelze přidat uzly u smazaného výstupu", OutputCode.DELETED);
         }
 
-        final ArrOutputDefinition outputDefinition = output.getOutputDefinition();
-
         List<OutputState> allowedState = Collections.singletonList(OutputState.OPEN);
-        if (!allowedState.contains(outputDefinition.getState())) {
+        if (!allowedState.contains(output.getState())) {
             throw new BusinessException("Nelze přidat uzly k výstupu, který není ve stavu otevřený",
                     OutputCode.NOT_PROCESS_IN_STATE);
         }
 
-        checkFund(fundVersion, outputDefinition);
+        checkFund(fundVersion, output);
 
         // seznam aktuálních (nesmazaných) uzlů
         List<ArrNodeOutput> currOutputNodes = nodeOutputRepository
-                .findByOutputDefinitionAndDeleteChangeIsNull(outputDefinition);
+                .findByOutputAndDeleteChangeIsNull(output);
         Set<Integer> currNodeIds = currOutputNodes.stream().map(ArrNodeOutput::getNodeId).collect(Collectors.toSet());
 
         for (Integer nodeIdAdd : connectNodeIds) {
             if (currNodeIds.contains(nodeIdAdd)) {
                 throw new BusinessException("Nelze přidat již přidaný uzel. (ID=" + nodeIdAdd + ")",
                         ArrangementCode.ALREADY_ADDED);
-                }
             }
+        }
 
         List<ArrNode> nodes = nodeRepository.findAll(connectNodeIds);
 
@@ -652,7 +550,7 @@ public class OutputService {
         for (ArrNode node : nodes) {
             ArrNodeOutput nodeOutput = new ArrNodeOutput();
             nodeOutput.setNode(node);
-            nodeOutput.setOutputDefinition(outputDefinition);
+            nodeOutput.setOutput(output);
             nodeOutput.setCreateChange(change);
             nodeOutputs.add(nodeOutput);
         }
@@ -660,12 +558,9 @@ public class OutputService {
         nodeOutputRepository.save(nodeOutputs);
 
         currNodeIds.addAll(connectNodeIds);
-        updateCalculatedItems(fundVersion, change, currNodeIds, outputDefinition);
+        updateCalculatedItems(fundVersion, change, currNodeIds, output);
 
-        Integer[] outputIds = outputDefinition.getOutputs().stream().map(ArrOutput::getOutputId)
-                .toArray(Integer[]::new);
-        EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion,
-                outputIds);
+        EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES_DETAIL, fundVersion, output.getOutputId());
         eventNotificationService.publishEvent(event);
     }
 
@@ -673,20 +568,20 @@ public class OutputService {
      * Update counted results after assigned nodes were updated
      *
      * @param fundVersion verze AS
-     * @param change      změna překlopení
-     * @param nodeIds    kompletní seznam uzlů
+     * @param change změna překlopení
+     * @param nodeIds kompletní seznam uzlů
      */
     private void updateCalculatedItems(final ArrFundVersion fundVersion, final ArrChange change,
-                                          final Collection<Integer> nodeIds,
-                                          final ArrOutputDefinition outputDefinition) {
+                                       final Collection<Integer> nodeIds,
+                                       final ArrOutput output) {
         // nalezeni automaticky vypoctenych hodnot a jejich vymazani
 
         // get recommended actions -> calculated item type
         List<RulItemTypeAction> itemTypeLinks = itemTypeActionRepository
-                .findByOutputType(outputDefinition.getOutputType());
+                .findByOutputType(output.getOutputType());
 
         // remove itemtypes which do not have extra settings
-        List<ArrItemSettings> itemSettings = this.itemSettingsRepository.findByOutputDefinition(outputDefinition);
+        List<ArrItemSettings> itemSettings = this.itemSettingsRepository.findByOutput(output);
         // Collection of item types to not delete
         Set<Integer> preserveItemTypeIds = itemSettings.stream()
                 .filter(is -> Boolean.TRUE.equals(is.getBlockActionResult())).map(is -> is.getItemTypeId())
@@ -695,7 +590,7 @@ public class OutputService {
         for (RulItemTypeAction ria : itemTypeLinks) {
             Integer itemTypeId = ria.getItemTypeId();
             if (!preserveItemTypeIds.contains(itemTypeId)) {
-                outputServiceInternal.deleteOutputItemsByType(fundVersion, outputDefinition, itemTypeId, change);
+                outputServiceInternal.deleteOutputItemsByType(fundVersion, output, itemTypeId, change);
             }
         }
 
@@ -706,21 +601,17 @@ public class OutputService {
     }
 
     /**
-     *
-     * @param fundVersion
-     * @param nodes
-     * @param outputDefinition
      * @return Return true if some item was modified
      */
     private boolean storeResults(final ArrFundVersion fundVersion,
                                  final Collection<Integer> nodes,
-                                 final ArrOutputDefinition outputDefinition,
+                                 final ArrOutput output,
                                  final OutputItemConnector connector) {
 
         List<ArrBulkActionRun> bulkActionRunList = bulkActionService.findFinishedBulkActionsByNodeIds(fundVersion,
-                                                                                                      nodes);
+                nodes);
         List<RulActionRecommended> actionRecommendeds = actionRecommendedRepository
-                .findByOutputType(outputDefinition.getOutputType());
+                .findByOutputType(output.getOutputType());
 
         for (ArrBulkActionRun bulkActionRun : bulkActionRunList) {
             RulAction action = bulkActionService.getBulkActionByCode(bulkActionRun.getBulkActionCode());
@@ -769,7 +660,7 @@ public class OutputService {
      * Získání výstupů podle verze AS.
      *
      * @param fundVersion verze AS
-     * @param state       stav outputu
+     * @param state stav outputu
      * @return seznam výstupů
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
@@ -783,17 +674,15 @@ public class OutputService {
      * Získání pojmenovaného výstupu.
      *
      * @param fundVersion verze AS
-     * @param output      výstup
+     * @param output výstup
      * @return pojmenovaný výstup
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
-            UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public ArrOutputDefinition getNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                              final ArrOutput output) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public ArrOutput getOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final ArrOutput output) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         Assert.notNull(output, "Výstup musí být vyplněn");
-        checkFund(fundVersion, output.getOutputDefinition());
-        return output.getOutputDefinition();
+        checkFund(fundVersion, output);
+        return output;
     }
 
     /**
@@ -809,68 +698,66 @@ public class OutputService {
     /**
      * Vytvoření hodnoty atributu.
      *
-     * @param item                    data pro hodnotu atributu
-     * @param outputDefinitionId      identifikátor výstupu
-     * @param outputDefinitionVersion verze výstupu
-     * @param fundVersionId           identifikátor verze fondu
+     * @param item data pro hodnotu atributu
+     * @param outputId identifikátor výstupu
+     * @param outputVersion verze výstupu
+     * @param fundVersionId identifikátor verze fondu
      * @return vytvořená hodnota atributu
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
     public ArrOutputItem createOutputItem(final ArrOutputItem item,
-                                          final Integer outputDefinitionId,
-                                          final Integer outputDefinitionVersion,
+                                          final Integer outputId,
+                                          final Integer outputVersion,
                                           @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         Assert.notNull(item, "Hodnota musí být vyplněna");
-        Assert.notNull(outputDefinitionId, "Identifikátor definice výstupu musí být vyplněn");
-        Assert.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
+        Assert.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
+        Assert.notNull(outputVersion, "Verze výstupu musí být vyplněna");
 
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
 
-        ArrOutputDefinition outputDefinition = outputDefinitionRepository.findOne(outputDefinitionId);
-        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
-        outputDefinition.setVersion(outputDefinitionVersion);
-        saveOutputDefinition(outputDefinition);
+        ArrOutput output = getOutput(outputId);
+        output.setVersion(outputVersion);
+        saveOutput(output);
 
         List<OutputState> allowedState = Collections.singletonList(OutputState.OPEN);
-        if (!allowedState.contains(outputDefinition.getState())) {
+        if (!allowedState.contains(output.getState())) {
             throw new BusinessException("Nelze upravit výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
 
-        checkCalculatingAttribute(outputDefinition, item.getItemType());
-        return createOutputItem(item, outputDefinition, fundVersion, null);
+        checkCalculatingAttribute(output, item.getItemType());
+        return createOutputItem(item, output, fundVersion, null);
     }
 
     /**
-     * Uložení definice výstupu - zámky.
+     * Uložení výstupu - zámky.
      *
-     * @param outputDefinition pojmenovaný výstup
+     * @param output pojmenovaný výstup
      * @return pojmenovaný výstup
      */
-    private ArrOutputDefinition saveOutputDefinition(final ArrOutputDefinition outputDefinition) {
-        outputDefinition.setLastUpdate(LocalDateTime.now());
-        outputDefinitionRepository.save(outputDefinition);
-        outputDefinitionRepository.flush();
-        return outputDefinition;
+    private ArrOutput saveOutput(final ArrOutput output) {
+        output.setLastUpdate(LocalDateTime.now());
+        outputRepository.save(output);
+        outputRepository.flush();
+        return output;
     }
 
     /**
      * Vytvoření výstupu.
      *
-     * @param outputItem       hodnota atributu
-     * @param outputDefinition pojmenovaný výstup
-     * @param fundVersion      verze AS
-     * @param createChange     použitá změna
-     * @return
+     * @param outputItem hodnota atributu
+     * @param output pojmenovaný výstup
+     * @param fundVersion verze AS
+     * @param createChange použitá změna
      */
     public ArrOutputItem createOutputItem(final ArrOutputItem outputItem,
-                                          final ArrOutputDefinition outputDefinition,
+                                          final ArrOutput output,
                                           final ArrFundVersion fundVersion,
                                           @Nullable final ArrChange createChange) {
         ArrChange change = createChange == null ? arrangementService.createChange(null) : createChange;
 
-        outputItem.setOutputDefinition(outputDefinition);
+        outputItem.setOutput(output);
 
-        outputItem.setOutputDefinition(outputDefinition);
+        outputItem.setOutput(output);
         outputItem.setCreateChange(change);
         outputItem.setDeleteChange(null);
         outputItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
@@ -886,9 +773,9 @@ public class OutputService {
     /**
      * Vytvoření hodnoty atributu pro výstup.
      *
-     * @param outputItem  hodnota atributu
+     * @param outputItem hodnota atributu
      * @param fundVersion verze AS
-     * @param change      změna
+     * @param change změna
      * @return vytvořená hodnota atributu
      */
     private ArrOutputItem createOutputItem(final ArrOutputItem outputItem,
@@ -906,7 +793,7 @@ public class OutputService {
         StaticDataProvider sdp = staticDataService.getData();
         itemService.checkValidTypeAndSpec(sdp, outputItem);
 
-        int maxPosition = outputItemRepository.findMaxItemPosition(outputItem.getItemType(), outputItem.getOutputDefinition());
+        int maxPosition = outputItemRepository.findMaxItemPosition(outputItem.getItemType(), outputItem.getOutput());
 
         if (outputItem.getPosition() == null || (outputItem.getPosition() > maxPosition)) {
             outputItem.setPosition(maxPosition + 1);
@@ -915,7 +802,7 @@ public class OutputService {
         // načtení hodnot, které je potřeba přesunout níž
         List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItemsAfterPosition(
                 outputItem.getItemType(),
-                outputItem.getOutputDefinition(),
+                outputItem.getOutput(),
                 outputItem.getPosition() - 1);
 
         // posun prvků
@@ -931,8 +818,8 @@ public class OutputService {
      * Vytvoření hodnoty atributu pro výstup.
      *
      * @param descItemObjectId identfikátor hodnoty
-     * @param outputVersion    verze výstupu
-     * @param fundVersionId    identifikátor verze fondu
+     * @param outputVersion verze výstupu
+     * @param fundVersionId identifikátor verze fondu
      * @return vytvořená hodnota atributu
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
@@ -954,20 +841,20 @@ public class OutputService {
         }
 
         ArrOutputItem outputItem = outputItems.get(0);
-        ArrOutputDefinition outputDefinition = outputItem.getOutputDefinition();
+        ArrOutput output = outputItem.getOutput();
 
-        if (outputDefinition.getState() != OutputState.OPEN) {
+        if (output.getState() != OutputState.OPEN) {
             throw new IllegalArgumentException("Nelze upravit výstupu, který není ve stavu otevřený");
         }
 
-        checkCalculatingAttribute(outputDefinition, outputItem.getItemType());
+        checkCalculatingAttribute(output, outputItem.getItemType());
 
-        outputDefinition.setVersion(outputVersion);
+        output.setVersion(outputVersion);
 
-        saveOutputDefinition(outputDefinition);
+        saveOutput(output);
 
         List<OutputState> allowedState = Collections.singletonList(OutputState.OPEN);
-        if (!allowedState.contains(outputDefinition.getState())) {
+        if (!allowedState.contains(output.getState())) {
             throw new BusinessException("Nelze upravit výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
 
@@ -1002,11 +889,11 @@ public class OutputService {
             // načtení hodnot, které je potřeba přesunout výš
             List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItemsAfterPosition(
                     outputItem.getItemType(),
-                    outputItem.getOutputDefinition(),
+                    outputItem.getOutput(),
                     outputItem.getPosition());
             for (ArrOutputItem item : outputItems) {
                 itemService.copyItem(item, change, item.getPosition() - 1);
-        }
+            }
         }
 
         outputItem.setDeleteChange(change);
@@ -1020,19 +907,19 @@ public class OutputService {
     /**
      * Úprava hodnoty atributu.
      *
-     * @param outputItem              hodnota atributu
-     * @param outputDefinitionVersion verze outputu
-     * @param fundVersionId           identifikátor verze fondu
+     * @param outputItem hodnota atributu
+     * @param outputVersion verze outputu
+     * @param fundVersionId identifikátor verze fondu
      * @return upravená hodnota atributu
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
     public ArrOutputItem updateOutputItem(final ArrOutputItem outputItem,
-                                          final Integer outputDefinitionVersion,
+                                          final Integer outputVersion,
                                           @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         Validate.notNull(outputItem, "Výstup musí být vyplněn");
         Validate.notNull(outputItem.getPosition(), "Pozice musí být vyplněna");
         Validate.notNull(outputItem.getDescItemObjectId(), "Unikátní identifikátor hodnoty atributu musí být vyplněna");
-        Validate.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
+        Validate.notNull(outputVersion, "Verze výstupu musí být vyplněna");
         Validate.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
         ArrChange change = null;
@@ -1047,11 +934,11 @@ public class OutputService {
         }
         ArrOutputItem outputItemDB = outputItems.get(0);
 
-        final ArrOutputDefinition outputDefinition = outputItemDB.getOutputDefinition();
-        Validate.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
+        final ArrOutput output = outputItemDB.getOutput();
+        Validate.notNull(output, "Výstup musí být vyplněn");
 
         List<OutputState> allowedState = Collections.singletonList(OutputState.OPEN);
-        if (!allowedState.contains(outputDefinition.getState())) {
+        if (!allowedState.contains(output.getState())) {
             throw new BusinessException("Nelze upravit výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
 
@@ -1059,19 +946,19 @@ public class OutputService {
         if (!outputItemDB.getItemTypeId().equals(outputItem.getItemTypeId())) {
             throw new BusinessException("Received item has different itemType from item in DB",
                     OutputCode.NOT_PROCESS_IN_STATE)
-                            .set("dbItemTypeId", outputItemDB.getItemTypeId())
-                            .set("receivedItemTypeId", outputItem.getItemTypeId());
+                    .set("dbItemTypeId", outputItemDB.getItemTypeId())
+                    .set("receivedItemTypeId", outputItem.getItemTypeId());
         }
 
-        checkCalculatingAttribute(outputDefinition, outputItemDB.getItemType());
+        checkCalculatingAttribute(output, outputItemDB.getItemType());
 
-            outputDefinition.setVersion(outputDefinitionVersion);
+        output.setVersion(outputVersion);
 
-            // uložení uzlu (kontrola optimistických zámků)
-            saveOutputDefinition(outputDefinition);
+        // uložení uzlu (kontrola optimistických zámků)
+        saveOutput(output);
 
-            // vytvoření změny
-            change = arrangementService.createChange(null);
+        // vytvoření změny
+        change = arrangementService.createChange(null);
 
         ArrOutputItem outputItemUpdated = updateOutputItem(outputItem, outputItemDB, fundVersion, change);
 
@@ -1105,7 +992,7 @@ public class OutputService {
         if (positionOrig != positionNew) {
 
             int maxPosition = outputItemRepository.findMaxItemPosition(outputItemDB.getItemType(),
-                                                                       outputItemDB.getOutputDefinition());
+                    outputItemDB.getOutput());
 
             if (outputItem.getPosition() == null || (outputItem.getPosition() > maxPosition)) {
                 outputItem.setPosition(maxPosition + 1);
@@ -1165,75 +1052,73 @@ public class OutputService {
                                                                final Integer positionTo) {
 
         List<ArrOutputItem> descItems = outputItemRepository.findOpenOutputItemsBetweenPositions(outputItem.getItemType(),
-                outputItem.getOutputDefinition(), positionFrom, positionTo);
+                outputItem.getOutput(), positionFrom, positionTo);
         return descItems;
     }
 
     /**
      * Vyhledání hodnot atributu výstupu.
      *
-     * @param fundVersion      verze AS
-     * @param outputDefinition pojmenovaný výstup
+     * @param fundVersion verze AS
+     * @param output pojmenovaný výstup
      * @return seznam hodnot atrubutů
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public List<ArrOutputItem> getOutputItems(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                              final ArrOutputDefinition outputDefinition) {
-        return outputServiceInternal.getOutputItems(outputDefinition, fundVersion.getLockChange());
+    public List<ArrOutputItem> getOutputItems(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final ArrOutput output) {
+        return outputServiceInternal.getOutputItems(output, fundVersion.getLockChange());
     }
 
     /**
      * Vytvoření hodnoty atributu výstupu.
      *
-     * @param outputItems             seznam hodnot
-     * @param outputDefinitionId      identifikátor výstupu
-     * @param outputDefinitionVersion verze výstupu
-     * @param fundVersionId           identifikátor verze fondu
+     * @param outputItems seznam hodnot
+     * @param outputId identifikátor výstupu
+     * @param outputVersion verze výstupu
+     * @param fundVersionId identifikátor verze fondu
      * @return seznam hodnot
      */
     public List<ArrOutputItem> createOutputItems(final List<ArrOutputItem> outputItems,
-                                                 final Integer outputDefinitionId,
-                                                 final Integer outputDefinitionVersion,
+                                                 final Integer outputId,
+                                                 final Integer outputVersion,
                                                  final Integer fundVersionId) {
         Assert.notNull(outputItems, "Výstupy musí být vyplněny");
         Assert.notEmpty(outputItems, "Musí být zadán alespoň jeden výstup");
-        Assert.notNull(outputDefinitionId, "Identifikátor definice výstupu musí být vyplněn");
-        Assert.notNull(outputDefinitionVersion, "Verze definice výstupu musí být vyplněna");
+        Assert.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
+        Assert.notNull(outputVersion, "Verze výstupu musí být vyplněna");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
-        ArrOutputDefinition outputDefinition = outputServiceInternal.getOutputDefinition(outputDefinitionId);
+        ArrOutput output = getOutput(outputId);
 
         // uložení uzlu (kontrola optimistických zámků)
-        outputDefinition.setVersion(outputDefinitionVersion);
-        saveOutputDefinition(outputDefinition);
+        output.setVersion(outputVersion);
+        saveOutput(output);
 
-        return createOutputItems(outputItems, outputDefinition, version, null);
+        return createOutputItems(outputItems, output, version, null);
     }
 
     /**
      * Vytvoření hodnoty atributu výstupu.
      *
-     * @param outputItems      seznam hodnot
-     * @param outputDefinition pojmenovaný výstup
-     * @param version          verze AS
-     * @param createChange     použitá změna
+     * @param outputItems seznam hodnot
+     * @param output pojmenovaný výstup
+     * @param version verze AS
+     * @param createChange použitá změna
      * @return seznam hodnot
      */
     public List<ArrOutputItem> createOutputItems(final List<ArrOutputItem> outputItems,
-                                                 final ArrOutputDefinition outputDefinition,
+                                                 final ArrOutput output,
                                                  final ArrFundVersion version,
                                                  @Nullable final ArrChange createChange) {
         List<OutputState> allowStates = Collections.singletonList(OutputState.OPEN);
-        if (!allowStates.contains(outputDefinition.getState())) {
+        if (!allowStates.contains(output.getState())) {
             throw new BusinessException("Nelze upravit výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
         ArrChange change = createChange == null ? arrangementService.createChange(null) : createChange;
         List<ArrOutputItem> createdItems = new ArrayList<>();
-        for (ArrOutputItem outputItem :
-            outputItems) {
-            outputItem.setOutputDefinition(outputDefinition);
+        for (ArrOutputItem outputItem : outputItems) {
+            outputItem.setOutput(output);
             outputItem.setCreateChange(change);
             outputItem.setDeleteChange(null);
             outputItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
@@ -1251,18 +1136,18 @@ public class OutputService {
     /**
      * Smazání hodnot podle typu atributu.
      *
-     * @param fundVersionId           identifikátor verze fondu
-     * @param outputDefinitionId      identifikátor výstupu
-     * @param outputDefinitionVersion verze výstupu
-     * @param itemTypeId              identifikátor typu atributu
+     * @param fundVersionId identifikátor verze fondu
+     * @param outputId identifikátor výstupu
+     * @param outputVersion verze výstupu
+     * @param itemTypeId identifikátor typu atributu
      * @return výstup
      */
     @Transactional
-    @AuthMethod(permission= {Permission.FUND_OUTPUT_WR, Permission.FUND_OUTPUT_WR_ALL, Permission.FUND_ADMIN})
-    public ArrOutputDefinition deleteOutputItemsByType(@AuthParam(type=Type.FUND_VERSION) final Integer fundVersionId,
-                                                       final Integer outputDefinitionId,
-                                                       final Integer outputDefinitionVersion,
-                                                       final Integer itemTypeId) {
+    @AuthMethod(permission = {Permission.FUND_OUTPUT_WR, Permission.FUND_OUTPUT_WR_ALL, Permission.FUND_ADMIN})
+    public ArrOutput deleteOutputItemsByType(@AuthParam(type = Type.FUND_VERSION) final Integer fundVersionId,
+                                             final Integer outputId,
+                                             final Integer outputVersion,
+                                             final Integer itemTypeId) {
 
         ArrChange change = arrangementService.createChange(null);
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
@@ -1270,24 +1155,22 @@ public class OutputService {
 
         StaticDataProvider sdp = staticDataService.getData();
         ItemType itemType = sdp.getItemTypeById(itemTypeId);
-
         Validate.notNull(itemType, "Typ atributu neexistuje");
 
-        ArrOutputDefinition outputDefinition = outputDefinitionRepository.findOne(outputDefinitionId);
-        Validate.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
+        ArrOutput output = getOutput(outputId);
 
         List<OutputState> allowStates = Collections.singletonList(OutputState.OPEN);
-        if (!allowStates.contains(outputDefinition.getState())) {
+        if (!allowStates.contains(output.getState())) {
             throw new BusinessException("Nelze upravit výstup, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
 
-        checkCalculatingAttribute(outputDefinition, itemType.getEntity());
+        checkCalculatingAttribute(output, itemType.getEntity());
 
-        outputDefinition.setVersion(outputDefinitionVersion);
-        saveOutputDefinition(outputDefinition);
+        output.setVersion(outputVersion);
+        saveOutput(output);
 
 
-        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(itemTypeId, outputDefinition);
+        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(itemTypeId, output);
 
         if (outputItems.size() == 0) {
             throw new IllegalStateException("Nebyla nalezena žádná hodnota atributu ke smazání");
@@ -1298,31 +1181,31 @@ public class OutputService {
                 .map(descItem -> deleteOutputItem(descItem, fundVersion, change, false))
                 .collect(Collectors.toList()));
 
-        return outputDefinition;
+        return output;
     }
 
     /**
      * Změnit typ kalkulace typu atributu - uživatelsky/automaticky.
-     *  @param outputDefinition pojmenovaný výstup
-     * @param fundVersion      verze AS
-     * @param itemType         typ atributu
-     * @param strict
+     *
+     * @param output pojmenovaný výstup
+     * @param fundVersion verze AS
+     * @param itemType typ atributu
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
-    public void switchOutputCalculating(final ArrOutputDefinition outputDefinition,
+    public void switchOutputCalculating(final ArrOutput output,
                                         @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                         final RulItemType itemType,
                                         final Boolean strict) {
-        Assert.notNull(outputDefinition, "Neplatný výstup");
+        Assert.notNull(output, "Neplatný výstup");
         Assert.notNull(fundVersion, "Neplatná verze fondu");
         Assert.notNull(itemType, "Neplatný typ atributu");
 
         List<OutputState> allowStates = Collections.singletonList(OutputState.OPEN);
-        if (!allowStates.contains(outputDefinition.getState())) {
+        if (!allowStates.contains(output.getState())) {
             throw new BusinessException("Nelze upravit výstup, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
 
-        ArrItemSettings itemSettings = itemSettingsRepository.findOneByOutputDefinitionAndItemType(outputDefinition, itemType);
+        ArrItemSettings itemSettings = itemSettingsRepository.findOneByOutputAndItemType(output, itemType);
 
         ArrChange change = arrangementService.createChange(null);
 
@@ -1334,34 +1217,34 @@ public class OutputService {
             itemSettings = new ArrItemSettings();
             itemSettings.setBlockActionResult(true);
             itemSettings.setItemType(itemType);
-            itemSettings.setOutputDefinition(outputDefinition);
+            itemSettings.setOutput(output);
             itemSettingsRepository.save(itemSettings);
 
-            List<ArrOutputItem> items = outputItemRepository.findOpenOutputItems(itemType.getItemTypeId(), outputDefinition);
+            List<ArrOutputItem> items = outputItemRepository.findOpenOutputItems(itemType.getItemTypeId(), output);
             for (ArrOutputItem item : items) {
                 outputServiceInternal.publishOutputItemChanged(item, fundVersion.getFundVersionId());
             }
         } else {
             itemSettingsRepository.delete(itemSettings);
             // delete old items
-            outputServiceInternal.deleteOutputItemsByType(fundVersion, outputDefinition, itemType.getItemTypeId(), change);
+            outputServiceInternal.deleteOutputItemsByType(fundVersion, output, itemType.getItemTypeId(), change);
 
             // get current nodes for output
-            List<ArrNodeOutput> nodes = nodeOutputRepository.findByOutputDefinitionAndDeleteChangeIsNull(outputDefinition);
+            List<ArrNodeOutput> nodes = nodeOutputRepository.findByOutputAndDeleteChangeIsNull(output);
             boolean changed = false;
-            if(nodes.size()>0) {
+            if (nodes.size() > 0) {
                 List<Integer> nodeIds = nodes.stream().map(n -> n.getNodeId()).collect(Collectors.toList());
 
                 // create item connector
                 OutputItemConnector connector = outputServiceInternal.createItemConnector(fundVersion,
-                                                                                          outputDefinition);
+                        output);
                 connector.setChangeSupplier(() -> change);
                 // set item type as filter if present
                 if (itemType != null) {
                     connector.setItemTypeFilter(itemType.getItemTypeId());
                 }
 
-                changed = storeResults(fundVersion, nodeIds, outputDefinition, connector);
+                changed = storeResults(fundVersion, nodeIds, output, connector);
             }
 
             if (strict && !changed) {
@@ -1373,14 +1256,14 @@ public class OutputService {
     /**
      * Kontrola, že neměníme typ atributu, který je počítán automaticky.
      *
-     * @param outputDefinition pojmenovaný výstup
-     * @param itemType         typ atributu
+     * @param output pojmenovaný výstup
+     * @param itemType typ atributu
      */
-    private void checkCalculatingAttribute(final ArrOutputDefinition outputDefinition,
+    private void checkCalculatingAttribute(final ArrOutput output,
                                            final RulItemType itemType) {
         List<RulItemTypeAction> itemTypeActionList = itemTypeActionRepository.findOneByItemTypeCode(itemType.getCode());
         if (itemTypeActionList != null && !itemTypeActionList.isEmpty()) {
-            ArrItemSettings itemSettings = itemSettingsRepository.findOneByOutputDefinitionAndItemType(outputDefinition, itemType);
+            ArrItemSettings itemSettings = itemSettingsRepository.findOneByOutputAndItemType(output, itemType);
             if (itemSettings == null || !itemSettings.getBlockActionResult()) {
                 throw new BusinessException("Tento atribut je počítán automaticky a nemůže být ručně editován", OutputCode.ITEM_TYPE_CALC);
             }
@@ -1391,13 +1274,13 @@ public class OutputService {
      * Vyhledá typy atributů ručně smazané a mají dopočítávanou hodnotu.
      */
     public List<RulItemTypeExt> findHiddenItemTypes(final ArrFundVersion version,
-                                                    final ArrOutputDefinition outputDefinition,
+                                                    final ArrOutput output,
                                                     final List<RulItemTypeExt> itemTypes,
                                                     final List<ArrOutputItem> outputItems) {
         List<RulItemTypeExt> itemTypesResult = new ArrayList<>(itemTypes);
         Iterator<RulItemTypeExt> itemTypeIterator = itemTypesResult.iterator();
 
-        final Set<Integer> nodeIds = outputDefinition.getOutputNodes().stream()
+        final Set<Integer> nodeIds = output.getOutputNodes().stream()
                 .filter(nodeOutput -> nodeOutput.getDeleteChange() == null)
                 .map(ArrNodeOutput::getNodeId)
                 .collect(Collectors.toSet());
@@ -1425,7 +1308,7 @@ public class OutputService {
         }
 
         // ručně vypnuté typy atributů
-        List<ArrItemSettings> itemSettingses = itemSettingsRepository.findByOutputDefinition(outputDefinition);
+        List<ArrItemSettings> itemSettingses = itemSettingsRepository.findByOutput(output);
         for (ArrItemSettings itemSettingse : itemSettingses) {
             if (itemSettingse.getBlockActionResult()) {
                 rulItemTypes.add(itemSettingse.getItemType());
@@ -1454,23 +1337,23 @@ public class OutputService {
     /**
      * Nastavení hodnoty atributu na "Nezjištěno".
      *
-     * @param outputItemTypeId        identifikátor typu atributu
-     * @param outputDefinitionId      identifikátor výstupu
-     * @param outputDefinitionVersion verze výstupu
-     * @param fundVersionId           identifikátor verze fondu
-     * @param outputItemSpecId        identifikátor specifikace atributu
-     * @param outputItemObjectId      identifikátor atributu
+     * @param outputItemTypeId identifikátor typu atributu
+     * @param outputId identifikátor výstupu
+     * @param outputVersion verze výstupu
+     * @param fundVersionId identifikátor verze fondu
+     * @param outputItemSpecId identifikátor specifikace atributu
+     * @param outputItemObjectId identifikátor atributu
      * @return atribut s "Nezjištěnou" hodnotou
      */
     public ArrOutputItem setNotIdentifiedDescItem(final Integer outputItemTypeId,
-                                                  final Integer outputDefinitionId,
-                                                  final Integer outputDefinitionVersion,
+                                                  final Integer outputId,
+                                                  final Integer outputVersion,
                                                   final Integer fundVersionId,
                                                   final Integer outputItemSpecId,
                                                   final Integer outputItemObjectId) {
-        ArrOutputDefinition outputDefinition = outputDefinitionRepository.findOne(outputDefinitionId);
-        if (outputDefinition == null) {
-            throw new ObjectNotFoundException("Nebyl nalezen výstup s ID=" + outputDefinitionId, OutputCode.OUTPUT_NOT_EXISTS).set("id", outputDefinitionId);
+        ArrOutput output = outputRepository.findOne(outputId);
+        if (output == null) {
+            throw new ObjectNotFoundException("Nebyl nalezen výstup s ID=" + outputId, OutputCode.OUTPUT_NOT_EXISTS).set("id", outputId);
         }
 
         ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
@@ -1506,13 +1389,13 @@ public class OutputService {
             outputItemRepository.save(openOutputItem);
         }
 
-        outputDefinition.setVersion(outputDefinitionVersion);
-        saveOutputDefinition(outputDefinition);
+        output.setVersion(outputVersion);
+        saveOutput(output);
 
         ArrOutputItem outputItem = new ArrOutputItem();
         outputItem.setItemType(itemType.getEntity());
         outputItem.setItemSpec(outputItemSpec);
-        outputItem.setOutputDefinition(outputDefinition);
+        outputItem.setOutput(output);
         outputItem.setCreateChange(change);
         outputItem.setDeleteChange(null);
         outputItem.setDescItemObjectId(outputItemObjectId == null ? arrangementService.getNextDescItemObjectId() : outputItemObjectId);
@@ -1520,11 +1403,11 @@ public class OutputService {
         ArrOutputItem outputItemCreated = createOutputItem(outputItem, fundVersion, change);
 
         List<OutputState> allowedState = Collections.singletonList(OutputState.OPEN);
-        if (!allowedState.contains(outputDefinition.getState())) {
+        if (!allowedState.contains(output.getState())) {
             throw new BusinessException("Nelze upravit výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
 
-        checkCalculatingAttribute(outputDefinition, outputItem.getItemType());
+        checkCalculatingAttribute(output, outputItem.getItemType());
         //outputItemCreated.setItem(descItemFactory.createItemByType(outputItemType.getDataType()));
 
         // sockety
@@ -1533,10 +1416,10 @@ public class OutputService {
     }
 
     public void setOutputSettings(OutputSettingsVO outputConfig, Integer outputId) throws JsonProcessingException {
-        ArrOutputDefinition outputDefinition = outputDefinitionRepository.findByOutputId(outputId);
+        ArrOutput output = outputRepository.findByOutputId(outputId);
         ObjectMapper mapper = new ObjectMapper();
         String s = mapper.writeValueAsString(outputConfig);
-        outputDefinition.setOutputSettings(s);
-        outputDefinitionRepository.save(outputDefinition);
+        output.setOutputSettings(s);
+        outputRepository.save(output);
     }
 }

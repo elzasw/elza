@@ -51,6 +51,11 @@ public class TreeNodeVO {
      */
     private Integer version;
 
+    /**
+     * Oprávnění pořádat v dané JP. Nevyhodnocuje se, pokud {@link TreeData#fullArrPerm} je true.
+     */
+    private boolean arrPerm;
+
     public TreeNodeVO() {
     }
 
@@ -131,6 +136,14 @@ public class TreeNodeVO {
 
     public void setIcon(final String icon) {
         this.icon = icon;
+    }
+
+    public boolean isArrPerm() {
+        return arrPerm;
+    }
+
+    public void setArrPerm(final boolean arrPerm) {
+        this.arrPerm = arrPerm;
     }
 
     @Override

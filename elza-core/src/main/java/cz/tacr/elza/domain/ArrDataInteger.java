@@ -24,6 +24,10 @@ public class ArrDataInteger extends ArrData {
 
 	}
 
+    public ArrDataInteger(final Integer value) {
+        setValue(value);
+    }
+
 	protected ArrDataInteger(ArrDataInteger src) {
 		super(src);
         copyValue(src);

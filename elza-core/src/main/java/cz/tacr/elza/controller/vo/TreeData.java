@@ -22,12 +22,19 @@ public class TreeData {
      */
     private Set<Integer> expandedIdsExtension;
 
+    /**
+     * Příznak, zda-li mám oprávnění pořádat v celém AS.
+     * Pokud je true, nevyhodnocuje se pro jednotlivé JP v {@link TreeNodeVO}
+     */
+    private boolean fullArrPerm;
+
     public TreeData() {
     }
 
-    public TreeData(final Collection<TreeNodeVO> nodes, final Set<Integer> expandedIdsExtension) {
+    public TreeData(final Collection<TreeNodeVO> nodes, final Set<Integer> expandedIdsExtension, final boolean fullArrPerm) {
         this.nodes = nodes;
         this.expandedIdsExtension = expandedIdsExtension;
+        this.fullArrPerm = fullArrPerm;
     }
 
     public Collection<TreeNodeVO> getNodes() {
@@ -44,5 +51,13 @@ public class TreeData {
 
     public void setExpandedIdsExtension(final Set<Integer> expandedIdsExtension) {
         this.expandedIdsExtension = expandedIdsExtension;
+    }
+
+    public boolean isFullArrPerm() {
+        return fullArrPerm;
+    }
+
+    public void setFullArrPerm(final boolean fullArrPerm) {
+        this.fullArrPerm = fullArrPerm;
     }
 }

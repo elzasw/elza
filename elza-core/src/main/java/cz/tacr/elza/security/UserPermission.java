@@ -1,8 +1,6 @@
 package cz.tacr.elza.security;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.lang3.Validate;
 
@@ -41,6 +39,11 @@ public class UserPermission {
      * Seznam identifikátorů scopů, ke kterým se vztahuje oprávnění.
      */
     private Set<Integer> scopeIds = new HashSet<>();
+
+    /**
+     * Seznam identifikátorů JP, ke kterým se vztahuje oprávnění.
+     */
+    private Map<Integer, Set<Integer>> fundNodeIds = new HashMap<>();
 
     /**
      * Seznam identifikátorů protokolů, ke kterým se vztahuje oprávnění.
@@ -84,6 +87,11 @@ public class UserPermission {
         fundIds.add(fundId);
     }
 
+    public void addNodeId(final Integer fundId, final Integer nodeId) {
+        Set<Integer> nodeIds = fundNodeIds.computeIfAbsent(fundId, k -> new HashSet<>());
+        nodeIds.add(nodeId);
+    }
+
     public void addControlGroupId(final Integer groupId) {
         controlGroupIds.add(groupId);
     }
@@ -98,6 +106,15 @@ public class UserPermission {
 
     public void addIssueListId(final Integer issueListId) {
         issueListIds.add(issueListId);
+    }
+
+    public Map<Integer, Set<Integer>> getFundNodeIds() {
+        return fundNodeIds;
+    }
+
+    public Set<Integer> getNodeIdsByFund(final Integer fundId) {
+        Set<Integer> nodeIds = fundNodeIds.get(fundId);
+        return nodeIds == null ? Collections.emptySet() : nodeIds;
     }
 
     public Set<Integer> getControlUserIds() {
@@ -216,6 +233,11 @@ public class UserPermission {
             break;
         case ISSUE_LIST:
             if (issueListIds.contains(usrPermission.getIssueListId())) {
+                return true;
+            }
+        case NODE:
+            Set<Integer> nodeIds = fundNodeIds.get(usrPermission.getFundId());
+            if (nodeIds != null && nodeIds.contains(usrPermission.getNodeId())) {
                 return true;
             }
             break;

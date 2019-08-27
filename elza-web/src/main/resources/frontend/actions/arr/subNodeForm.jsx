@@ -353,12 +353,13 @@ export class ItemFormActions {
 
             const state = getState();
             const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
+            const parentId = subNodeForm.data.parent.id;
             const parentVersionId = subNodeForm.data.parent.version;
 
             if(!undef){
                 this._formValueStore(dispatch, getState, versionId, routingKey, valueLocation, descItem);
             } else {
-                this._callDeleteDescItem(versionId, parentVersionId, descItem);
+                this._callDeleteDescItem(versionId, parentId, parentVersionId, descItem);
             }
             /*
             let loc = subNodeForm.getLoc(subNodeForm, valueLocation);
@@ -633,7 +634,7 @@ export class ItemFormActions {
 
     /** Metoda pro volání API. */
     // @Abstract
-    _callDeleteDescItem(versionId, parentVersionId, descItem) {}
+    _callDeleteDescItem(versionId, parentId, parentVersionId, descItem) {}
 
     /**
      * Smazání hodnoty atributu.
@@ -656,7 +657,7 @@ export class ItemFormActions {
             });
 
             if (typeof loc.descItem.id !== 'undefined') {
-                this._callDeleteDescItem(versionId, subNodeForm.data.parent.version, loc.descItem)
+                this._callDeleteDescItem(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc.descItem)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'DELETE'));
                     })
@@ -753,8 +754,8 @@ export class ItemFormActions {
             const state = getState();
             const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
             if (fundIndex !== null) {
-                const outputDefinitionId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
-                return WebApi.switchOutputCalculating(versionId, outputDefinitionId, itemTypeId, strict);
+                const getOutputId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
+                return WebApi.switchOutputCalculating(versionId, getOutputId, itemTypeId, strict);
             }
         }
     }
@@ -772,8 +773,8 @@ export class ItemFormActions {
             const state = getState();
             const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
             if (fundIndex !== null) {
-                const outputDefinitionId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
-                WebApi.switchOutputCalculating(versionId, outputDefinitionId, itemTypeId).then(() => {
+                const getOutputId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
+                WebApi.switchOutputCalculating(versionId, getOutputId, itemTypeId).then(() => {
                     dispatch({
                         type: types.FUND_SUB_NODE_FORM_OUTPUT_CALC_SWITCH,
                         area: this.area,
@@ -1113,8 +1114,8 @@ class NodeFormActions extends ItemFormActions {
     }
 
     // @Override
-    _callDeleteDescItem(versionId, parentVersionId, descItem) {
-        return WebApi.deleteDescItem(versionId, parentVersionId, descItem);
+    _callDeleteDescItem(versionId, parentId, parentVersionId, descItem) {
+        return WebApi.deleteDescItem(versionId, parentId, parentVersionId, descItem);
     }
 
     // @Override
@@ -1205,8 +1206,8 @@ class OutputFormActions extends ItemFormActions {
     }
 
     // @Override
-    _callDeleteDescItem(versionId, parentVersionId, descItem) {
-        return WebApi.deleteOutputItem(versionId, parentVersionId, descItem);
+    _callDeleteDescItem(versionId, parentId, parentVersionId, descItem) {
+        return WebApi.deleteOutputItem(versionId, parentId, parentVersionId, descItem);
     }
 
     // @Override
@@ -1241,7 +1242,7 @@ class OutputFormActions extends ItemFormActions {
 
 // @Override
     _getParentObjIdInfo(parentObjStore, routingKey) {
-        return { parentId: parentObjStore.outputDefinition.id, parentVersion: parentObjStore.outputDefinition.version };
+        return { parentId: parentObjStore.id, parentVersion: parentObjStore.version };
     }
 }
 
@@ -1292,7 +1293,7 @@ class StructureFormActions extends ItemFormActions {
     }
 
     // @Override
-    _callDeleteDescItem(versionId, parentVersionId, descItem) {
+    _callDeleteDescItem(versionId, parentId, parentVersionId, descItem) {
         return WebApi.deleteStructureItem(versionId, descItem);
     }
 

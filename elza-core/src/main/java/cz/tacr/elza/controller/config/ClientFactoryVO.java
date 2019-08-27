@@ -1,6 +1,5 @@
 package cz.tacr.elza.controller.config;
 
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -54,8 +53,6 @@ import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
-import cz.tacr.elza.controller.vo.ArrOutputExtVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
 import cz.tacr.elza.controller.vo.ArrRequestVO;
@@ -139,7 +136,6 @@ import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputDefinition;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
 import cz.tacr.elza.domain.ParComplementType;
@@ -188,7 +184,7 @@ import cz.tacr.elza.repository.GroupRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputDefinitionRepository;
+import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PermissionRepository;
@@ -257,7 +253,7 @@ public class ClientFactoryVO {
     private ConfigRules elzaRules;
 
     @Autowired
-    private OutputDefinitionRepository outputDefinitionRepository;
+    private OutputRepository outputRepository;
 
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
@@ -679,8 +675,9 @@ public class ClientFactoryVO {
             }
             fundVO.setVersions(versionVOs);
 
-            fundVO.setValidNamedOutputs(createOutputDefinitions(outputDefinitionRepository.findValidOutputDefinitionByFund(fund), false));
-            fundVO.setHistoricalNamedOutputs(createOutputDefinitions(outputDefinitionRepository.findHistoricalOutputDefinitionByFund(fund), true));
+            fundVO.setValidNamedOutputs(createOutputList(outputRepository.findValidOutputByFund(fund)));
+            // fundVO.setHistoricalNamedOutputs(createOutputs(outputRepository.findHistoricalOutputByFund(fund)));
+            fundVO.setHistoricalNamedOutputs(Collections.emptyList());
         }
 
         return fundVO;
@@ -699,7 +696,7 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrFundVersionVO fundVersionVO = mapper.map(fundVersion, ArrFundVersionVO.class);
         Date createDate = Date.from(
-                fundVersion.getCreateChange().getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
+                fundVersion.getCreateChange().getChangeDate().toInstant());
         fundVersionVO.setCreateDate(createDate);
         ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSetId(),
                                                                     fundVersion.getFundId());
@@ -707,7 +704,7 @@ public class ClientFactoryVO {
 
         ArrChange lockChange = fundVersion.getLockChange();
         if (lockChange != null) {
-            Date lockDate = Date.from(lockChange.getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
+            Date lockDate = Date.from(lockChange.getChangeDate().toInstant());
             fundVersionVO.setLockDate(lockDate);
         } else {
             fundVersionVO.setIssues(wfFactory.createSimpleIssues(fundVersion.getFund(), user));
@@ -722,26 +719,16 @@ public class ClientFactoryVO {
     /**
      * Vytvoří třídy výstupů archivního souboru.
      *
-     * @param outputDefinitions seznam DO
+     * @param outputs seznam DO
      * @param loadOutputs  mají se do objektu načíst verze? (arr_output)
      * @return seznam VO
      */
-    public List<ArrOutputDefinitionVO> createOutputDefinitions(final Collection<ArrOutputDefinition> outputDefinitions,
-                                                               final boolean loadOutputs) {
-        Assert.notNull(outputDefinitions, "Musí být vyplněny definice výstupů");
-
+    public List<ArrOutputVO> createOutputList(final Collection<ArrOutput> outputs) {
+        Assert.notNull(outputs, "Musí být vyplněny výstupy");
         MapperFacade mapper = mapperFactory.getMapperFacade();
-
-        List<ArrOutputDefinitionVO> result = new ArrayList<>(outputDefinitions.size());
-        for (ArrOutputDefinition outputDefinition : outputDefinitions) {
-
-            ArrOutputDefinitionVO outputDefinitionVO = mapper.map(outputDefinition, ArrOutputDefinitionVO.class);
-
-            if (loadOutputs) {
-                outputDefinitionVO.setOutputs(createOutputsVO(outputDefinition.getOutputs()));
-            }
-
-            result.add(outputDefinitionVO);
+        List<ArrOutputVO> result = new ArrayList<>(outputs.size());
+        for (ArrOutput output : outputs) {
+            result.add(mapper.map(output, ArrOutputVO.class));
         }
         return result;
     }
@@ -749,43 +736,14 @@ public class ClientFactoryVO {
     /**
      * Vytvoří třídy výstupů archivního souboru.
      *
-     * @param outputDefinition DO
+     * @param output DO
      * @return VO
      */
-    public ArrOutputDefinitionVO createOutputDefinition(final ArrOutputDefinition outputDefinition) {
-        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
+    public ArrOutputVO createOutput(final ArrOutput output) {
+        Assert.notNull(output, "Výstup musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrOutputDefinitionVO outputDefinitionVO = mapper.map(outputDefinition, ArrOutputDefinitionVO.class);
-        return outputDefinitionVO;
-    }
-
-    /**
-     * Vytvoření objektů verzí výstupu archivního souboru.
-     *
-     * @param outputs verze výstupu archivního souboru
-     * @return seznam verzí seřazený od nejstarší po nejmladší
-     */
-    private List<ArrOutputVO> createOutputsVO(final List<ArrOutput> outputs) {
-        Assert.notNull(outputs, "Výstupy musí být vyplněny");
-
-        List<ArrOutputVO> result = new ArrayList<>(outputs.size());
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-
-        for (ArrOutput output : outputs) {
-            result.add(mapper.map(output, ArrOutputVO.class));
-        }
-
-        Collections.sort(result, (lock1, lock2) -> {
-            if (lock1 != null && lock2 != null) {
-                return lock1.getLockDate().compareTo(lock2.getLockDate());
-            } else if (lock1 == null) {
-                return 1;
-            } else {
-                return -1;
-            }
-        });
-
-        return result;
+        ArrOutputVO outputVO = mapper.map(output, ArrOutputVO.class);
+        return outputVO;
     }
 
     /**
@@ -1495,12 +1453,11 @@ public class ClientFactoryVO {
      * @param fundVersion
      * @return seznam VO výstupů
      */
-    public List<ArrOutputExtVO> createOutputExtList(final List<ArrOutput> outputs, final ArrFundVersion fundVersion) {
+    public List<ArrOutputVO> createOutputExtList(final List<ArrOutput> outputs, final ArrFundVersion fundVersion) {
         Assert.notNull(outputs, "Výstupy musí být vyplněny");
-        List<ArrOutputExtVO> outputExtList = new ArrayList<>();
+        List<ArrOutputVO> outputExtList = new ArrayList<>();
         for (ArrOutput output : outputs) {
-            ArrOutputExtVO outputExt = createOutputExt(output, fundVersion);
-            outputExtList.add(outputExt);
+            outputExtList.add(createOutputExt(output, fundVersion));
         }
         return outputExtList;
     }
@@ -1512,17 +1469,11 @@ public class ClientFactoryVO {
      * @param fundVersion
      * @return VO výstup
      */
-    public ArrOutputExtVO createOutputExt(final ArrOutput output, final ArrFundVersion fundVersion) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrOutputExtVO outputExt = mapper.map(output, ArrOutputExtVO.class);
-        outputExt.setOutputDefinition(createArrOutputDefinition(output.getOutputDefinition()));
-        outputExt.setCreateDate(mapper.map(output.getCreateChange().getChangeDate(), Date.class));
-        outputExt.setLockDate(output.getLockChange() != null ? mapper.map(output.getLockChange().getChangeDate(), Date.class) : null);
-
-        List<ArrNodeOutput> nodes = outputServiceInternal.getOutputNodes(output.getOutputDefinition(), fundVersion.getLockChange());
+    public ArrOutputVO createOutputExt(final ArrOutput output, final ArrFundVersion fundVersion) {
+        ArrOutputVO outputExt = createOutput(output);
+        List<ArrNodeOutput> nodes = outputServiceInternal.getOutputNodes(output, fundVersion.getLockChange());
         List<Integer> nodeIds = nodes.stream().map(ArrNodeOutput::getNodeId).collect(Collectors.toList());
-        outputExt.getOutputDefinition().setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()));
-
+        outputExt.setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()));
         return outputExt;
     }
 
@@ -1609,16 +1560,6 @@ public class ClientFactoryVO {
             result.setUsers(createUserList(users, false));
         }
 
-        return result;
-    }
-
-    public ArrOutputDefinitionVO createArrOutputDefinition(final ArrOutputDefinition outputDefinition) {
-        Assert.notNull(outputDefinition, "Definice výstupu musí být vyplněna");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrOutputDefinitionVO result = mapper.map(outputDefinition, ArrOutputDefinitionVO.class);
-        if (outputDefinition.getOutputResult() != null) {
-            result.setGeneratedDate(mapper.map(outputDefinition.getOutputResult().getChange().getChangeDate(), Date.class));
-        }
         return result;
     }
 
@@ -2078,6 +2019,7 @@ public class ClientFactoryVO {
 
         ArrDigitalRepository digitalRepository = daoFile.getDao().getDaoPackage().getDigitalRepository();
         result.setUrl(daoService.getDaoFileUrl(daoFile, digitalRepository));
+        result.setThumbnailUrl(daoService.getDaoThumbnailUrl(daoFile, digitalRepository));
 
         return result;
     }

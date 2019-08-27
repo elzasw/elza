@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrItemSettings;
-import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.RulItemType;
 
 
@@ -17,11 +17,11 @@ import cz.tacr.elza.domain.RulItemType;
  */
 public interface ItemSettingsRepository extends JpaRepository<ArrItemSettings, Integer> {
 
-    List<ArrItemSettings> findByOutputDefinition(ArrOutputDefinition outputDefinition);
+    List<ArrItemSettings> findByOutput(ArrOutput output);
 
-    ArrItemSettings findOneByOutputDefinitionAndItemType(ArrOutputDefinition outputDefinition, RulItemType itemType);
+    ArrItemSettings findOneByOutputAndItemType(ArrOutput output, RulItemType itemType);
 
-    // void deleteByOutputDefinition(ArrOutputDefinition outputDefinition);
+    // void deleteByOutput(ArrOutput output);
 
-    void deleteByOutputDefinitionFund(ArrFund fund);
+    void deleteByOutputFund(ArrFund fund);
 }

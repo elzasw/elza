@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -80,6 +81,8 @@ public class ArrangementFormService {
 
 	private final ArrangementService arrangementService;
 
+    private final UserService userService;
+
 	public ArrangementFormService(StaticDataService staticData,
 								  DescriptionItemServiceInternal arrangementInternal,
 								  DescriptionItemService descriptionItemService,
@@ -104,6 +107,7 @@ public class ArrangementFormService {
 		this.nodeCache = nodeCache;
 		this.wsStompService = wsStompService;
 		this.arrangementService = arrangementService;
+        this.userService = userService;
 	}
 
 	@Transactional
@@ -155,16 +159,23 @@ public class ArrangementFormService {
 		ArrNodeVO nodeVO = ArrNodeVO.valueOf(node);
 		List<ArrItemVO> descItemsVOs = factoryVo.createItems(descItems);
 		List<ItemTypeLiteVO> itemTypeLites = factoryVo.createItemTypes(ruleCode, fundId, itemTypes);
-		return new DescFormDataNewVO(nodeVO, descItemsVOs, itemTypeLites);
+
+        boolean arrPerm = userService.hasFullArrPerm(version.getFundId());
+		if (!arrPerm) {
+			Map<Integer, Boolean> permNodeIdMap = levelTreeCache.calcPermNodeIdMap(version, Collections.singleton(nodeId));
+			arrPerm = permNodeIdMap.get(nodeId);
+		}
+		return new DescFormDataNewVO(nodeVO, descItemsVOs, itemTypeLites, arrPerm);
 	}
 
 	@Transactional
-	@AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
+	@AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
 	public void updateDescItem(@AuthParam(type = AuthParam.Type.FUND_VERSION) int fundVersionId,
-	        int nodeVersion, ArrItemVO descItemVO, boolean createVersion,
-	        StompHeaderAccessor requestHeaders) {
+							   @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
+							   int nodeVersion, ArrItemVO descItemVO, boolean createVersion,
+							   StompHeaderAccessor requestHeaders) {
 		ArrFundVersion version = arrangementService.getFundVersion(fundVersionId);
-		updateDescItem(version, nodeVersion, descItemVO, createVersion, requestHeaders);
+		updateDescItem(version, nodeId, nodeVersion, descItemVO, createVersion, requestHeaders);
 	}
 
 	/**
@@ -175,18 +186,22 @@ public class ArrangementFormService {
 	 * @param requestHeaders reqh
 	 */
 	@Transactional
-	@AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
+	@AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
 	public void updateDescItems(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
+								@AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
+								final Integer nodeVersion,
 								final UpdateDescItemsParam params,
 								@Nullable final StompHeaderAccessor requestHeaders) {
+
 		ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
-		ArrNode node = arrangementService.getNode(params.getNodeId());
+		ArrNode node = arrangementService.getNode(nodeId);
+
 		final StaticDataProvider dataProvider = this.staticData.getData();
 		List<ArrDescItem> createItems = params.getCreateItemVOs().stream().map(itemVO -> convertDescItem(dataProvider, itemVO)).collect(Collectors.toList());
 		List<ArrDescItem> updateItems = params.getUpdateItemVOs().stream().map(itemVO -> convertDescItem(dataProvider, itemVO)).collect(Collectors.toList());
 		List<ArrDescItem> deleteItems = params.getDeleteItemVOs().stream().map(itemVO -> convertDescItem(dataProvider, itemVO)).collect(Collectors.toList());
 
-		List<ArrDescItem> arrDescItems = updateDescItems(fundVersion, node, params.getNodeVersion(), createItems, updateItems, deleteItems);
+		List<ArrDescItem> arrDescItems = updateDescItems(fundVersion, node, nodeVersion, createItems, updateItems, deleteItems);
 
 		if (requestHeaders != null) {
 			List<UpdateItemResult> results = new ArrayList<>();
@@ -197,7 +212,7 @@ public class ArrangementFormService {
 			RulRuleSet rs = dataProvider.getRuleSetById(fundVersion.getRuleSetId());
 			List<ItemTypeLiteVO> itemTypesVO = factoryVo.createItemTypes(rs.getCode(), fundVersion.getFundId(), itemTypes);
 
-			LevelTreeCacheService.Node simpleNode = levelTreeCache.getSimpleNode(params.getNodeId(), fundVersion);
+			LevelTreeCacheService.Node simpleNode = levelTreeCache.getSimpleNode(nodeId, fundVersion);
 			for (ArrDescItem descItem : arrDescItems) {
 				ArrItemVO descItemVo = factoryVo.createItem(descItem);
 				results.add(new UpdateItemResult(descItem, descItemVo, itemTypesVO, simpleNode));
@@ -267,10 +282,13 @@ public class ArrangementFormService {
 	 * @param createVersion
 	 */
 	@Transactional
-	@AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
+	@AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
 	public void updateDescItem(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
-	        int nodeVersion, ArrItemVO descItemVO, boolean createVersion,
-	        StompHeaderAccessor requestHeaders) {
+							   @AuthParam(type = AuthParam.Type.NODE) int nodeId,
+							   int nodeVersion,
+							   ArrItemVO descItemVO,
+							   boolean createVersion,
+							   StompHeaderAccessor requestHeaders) {
 
 		// alternative way of authorization - not finished
 		/*
@@ -286,7 +304,7 @@ public class ArrangementFormService {
 
 		// store updated value
 		ArrDescItem descItemUpdated = descriptionItemService
-		        .updateDescriptionItem(descItem, nodeVersion, fundVersion.getFundVersionId(), createVersion);
+		        .updateDescriptionItem(descItem, nodeVersion, nodeId, fundVersion.getFundVersionId(), createVersion);
 
 		// prepare form data
 		List<RulItemTypeExt> itemTypes = ruleService.getDescriptionItemTypes(fundVersion, descItemUpdated.getNode());
@@ -304,13 +322,12 @@ public class ArrangementFormService {
 	}
 
 	// TODO: Refactorize return value to contain nodeId instead of parent
-	public DescItemResult updateDescItem(int fundVersionId, int nodeVersion, ArrItemVO descItemVO,
-	        boolean createNewVersion) {
+	public DescItemResult updateDescItem(int fundVersionId, int nodeId, int nodeVersion, ArrItemVO descItemVO, boolean createNewVersion) {
 
 		ArrDescItem descItem = factoryDo.createDescItem(descItemVO);
 
 		ArrDescItem descItemUpdated = descriptionItemService
-		        .updateDescriptionItem(descItem, nodeVersion, fundVersionId, createNewVersion);
+				.updateDescriptionItem(descItem, nodeVersion, nodeId, fundVersionId, createNewVersion);
 
 		DescItemResult descItemResult = new DescItemResult();
 		descItemResult.setItem(factoryVo.createItem(descItemUpdated));

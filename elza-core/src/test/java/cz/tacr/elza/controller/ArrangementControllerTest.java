@@ -1,16 +1,12 @@
 package cz.tacr.elza.controller;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,8 +42,7 @@ import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrOutputDefinitionVO;
-import cz.tacr.elza.controller.vo.ArrOutputExtVO;
+import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
@@ -69,7 +64,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrOutputDefinition;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -77,6 +72,8 @@ import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.utils.CsvUtils;
+
+import static org.junit.Assert.*;
 
 public class ArrangementControllerTest extends AbstractControllerTest {
 
@@ -225,7 +222,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         final Integer lastChangeId = changesAll.getChanges().get(0).getChangeId();
         final Integer firstChangeId = changesAll.getChanges().get(changesAll.getChanges().size() - 1).getChangeId();
-        ChangesResult changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, LocalDateTime.now(), lastChangeId, null);
+        ChangesResult changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, OffsetDateTime.now(), lastChangeId, null);
         assertNotNull(changesByDate);
         assertNotNull(changesByDate.getChanges());
 
@@ -233,10 +230,10 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         try {
             logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
             Thread.sleep(5000);
-            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, LocalDateTime.now(), lastChangeId, null);
+            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, OffsetDateTime.now(), lastChangeId, null);
             logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
             Thread.sleep(5000);
-            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, LocalDateTime.now(), lastChangeId, null);
+            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, OffsetDateTime.now(), lastChangeId, null);
             logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -298,23 +295,31 @@ public class ArrangementControllerTest extends AbstractControllerTest {
      * @param fundVersion verze archivní pomůcky
      */
     private void outputs(final ArrFundVersionVO fundVersion) {
-        List<ArrOutputExtVO> outputs = getOutputs(fundVersion.getId());
-        assertTrue(outputs.size() == 0);
 
-        List<RulOutputTypeVO> outputTypes = getOutputTypes(fundVersion.getId());
-        assertTrue(CollectionUtils.isNotEmpty(outputTypes));
+        {
+            List<ArrOutputVO> outputs = getOutputs(fundVersion.getId());
+            assertTrue(outputs.size() == 0);
+        }
 
-        ArrOutputDefinitionVO outputDefinition = createNamedOutput(fundVersion, "Test", "TST", false, outputTypes.iterator().next().getId());
-        assertNotNull(outputDefinition);
+        {
+            List<RulOutputTypeVO> outputTypes = getOutputTypes(fundVersion.getId());
+            assertTrue(CollectionUtils.isNotEmpty(outputTypes));
 
-        outputs = getOutputs(fundVersion.getId());
-        assertTrue(outputs.size() == 1);
-        ArrOutputExtVO output = outputs.get(0);
+            ArrOutputVO output1 = createNamedOutput(fundVersion, "Test", "TST", outputTypes.iterator().next().getId());
+            assertNotNull(output1);
+        }
 
-        ArrOutputExtVO outputDetail = getOutput(fundVersion.getId(), output.getId());
+        ArrOutputVO output2;
+        {
+            List<ArrOutputVO> outputs = getOutputs(fundVersion.getId());
+            assertTrue(outputs.size() == 1);
+            output2 = outputs.get(0);
+        }
+
+        ArrOutputVO outputDetail = getOutput(fundVersion.getId(), output2.getId());
 
         assertNotNull(outputDetail);
-        assertTrue(outputDetail.getId().equals(output.getId()));
+        assertTrue(outputDetail.getId().equals(output2.getId()));
 
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());
@@ -324,31 +329,29 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         addNodesNamedOutput(fundVersion.getId(), outputDetail.getId(), nodeIds);
 
-        outputDetail = getOutput(fundVersion.getId(), output.getId());
-        assertTrue(outputDetail.getOutputDefinition().getNodes().size() == nodeIds.size());
+        outputDetail = getOutput(fundVersion.getId(), output2.getId());
+        assertTrue(outputDetail.getNodes().size() == nodeIds.size());
 
         removeNodesNamedOutput(fundVersion.getId(), outputDetail.getId(), nodeIds);
 
-        outputDetail = getOutput(fundVersion.getId(), output.getId());
-        assertTrue(outputDetail.getOutputDefinition().getNodes().size() == 0);
+        outputDetail = getOutput(fundVersion.getId(), output2.getId());
+        assertTrue(outputDetail.getNodes().size() == 0);
 
         updateNamedOutput(fundVersion, outputDetail, "Test 2", "TST2");
-        outputDetail = getOutput(fundVersion.getId(), output.getId());
-        assertTrue(outputDetail.getOutputDefinition().getName().equals("Test 2"));
-        assertTrue(outputDetail.getOutputDefinition().getInternalCode().equals("TST2"));
+        outputDetail = getOutput(fundVersion.getId(), output2.getId());
+        assertTrue(outputDetail.getName().equals("Test 2"));
+        assertTrue(outputDetail.getInternalCode().equals("TST2"));
 
-        outputLock(fundVersion.getId(), outputDetail.getId());
-        outputDetail = getOutput(fundVersion.getId(), output.getId());
-        assertTrue(outputDetail.getLockDate() != null);
-
-
-        outputs = getOutputs(fundVersion.getId());
-        outputDefinition = outputs.get(0).getOutputDefinition();
+        ArrOutputVO output3;
+        {
+            List<ArrOutputVO> outputs = getOutputs(fundVersion.getId());
+            output3 = outputs.get(0);
+        }
 
         ArrItemTextVO item = new ArrItemTextVO();
         item.setValue("test1");
         RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_SCALE");
-        ArrangementController.OutputItemResult outputItem = createOutputItem(item, fundVersion.getId(), typeVo.getId(), outputDefinition.getId(), outputDefinition.getVersion());
+        ArrangementController.OutputItemResult outputItem = createOutputItem(item, fundVersion.getId(), typeVo.getId(), output3.getId(), output3.getVersion());
         ArrItemVO itemCreated = outputItem.getItem();
         assertNotNull(itemCreated);
         assertNotNull(itemCreated.getDescItemObjectId());
@@ -372,14 +375,14 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(outputFormData.getParent());
 
         outputItem = deleteOutputItem(itemCreated, fundVersion.getId(), outputItem.getParent().getVersion());
-        ArrOutputDefinitionVO parent = outputItem.getParent();
+        ArrOutputVO parent = outputItem.getParent();
 
         ArrItemVO itemDeleted = outputItem.getItem();
         Assert.assertNull(itemDeleted);
 
         item = new ArrItemTextVO();
         item.setValue("test1");
-        outputItem = createOutputItem(item, fundVersion.getId(), typeVo.getId(), outputDefinition.getId(), parent.getVersion());
+        outputItem = createOutputItem(item, fundVersion.getId(), typeVo.getId(),    output3.getId(), parent.getVersion());
         parent = outputItem.getParent();
         itemCreated = outputItem.getItem();
 
@@ -414,9 +417,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         outputSettings.setOddPageOffsetY(42);
 
 
-        super.setOutputSettings(outputDetail.getOutputDefinition().getId(), outputSettings);
-        ArrOutputDefinition one = this.helperTestService.getOutputDefinitionRepository()
-                .findOne(outputDetail.getOutputDefinition().getId());
+        super.setOutputSettings(outputDetail.getId(), outputSettings);
+        ArrOutput one = this.helperTestService.getOutputRepository()
+                .findOne(outputDetail.getId());
 
         String outputSettings1 = one.getOutputSettings();
         ObjectMapper mapper = new ObjectMapper();
@@ -430,10 +433,14 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        deleteNamedOutput(fundVersion.getId(), output.getId());
+        deleteNamedOutput(fundVersion.getId(), output2.getId());
+        outputDetail = getOutput(fundVersion.getId(), output2.getId());
+        assertTrue(outputDetail.getDeleteDate() != null);
 
-        outputs = getOutputs(fundVersion.getId());
-        assertTrue(outputs.size() == 0);
+        {
+            List<ArrOutputVO> outputs = getOutputs(fundVersion.getId());
+            assertTrue(outputs.size() == 0);
+        }
     }
 
     /**

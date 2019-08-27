@@ -71,6 +71,26 @@ class FundsPermissionPanel extends AbstractReactComponent {
         return obj;
     };
 
+    buildNodePermission = (currObj, permission) => {
+        let obj = currObj || {groupIds: {}};
+
+        if (permission.groupId) {   // je zděděné ze skupiny
+            if (!obj.groupIds[permission.groupId]) {
+                obj.groupIds[permission.groupId] = {
+                    [permission.fund.id]: []
+                }
+            }
+            obj.groupIds[permission.groupId][permission.fund.id].push(permission.node.id);
+        } else {    // je přímo přiřazen
+            if (!obj.ids) {
+                obj.ids = [];
+            }
+            obj.ids.push(permission.node.id);
+        }
+
+        return obj;
+    };
+
     componentDidMount() {
         const {userId, groupId} = this.props;
 
@@ -102,6 +122,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
             nextProps.entityPermissions.data.permissions.forEach(p => {
                 let id = null;
                 let permissionCode;
+                let node;
                 switch (p.permission) {
                     case perms.FUND_ARR_ALL:
                     case perms.FUND_EXPORT_ALL:
@@ -122,13 +143,22 @@ class FundsPermissionPanel extends AbstractReactComponent {
                         id = p.fund.id;
                         permissionCode = p.permission;
                         break;
+                    case perms.FUND_ARR_NODE:
+                        id = p.fund.id;
+                        node = p.node.id;
+                        permissionCode = p.permission;
+                        break;
                 }
 
                 if (id !== null) {
                     if (!permFundMap[id]) {
                         permFundMap[id] = {};
                     }
-                    permFundMap[id][permissionCode] = this.buildPermission(permFundMap[id][permissionCode], p);
+                    if (node) {
+                        permFundMap[id][permissionCode] = this.buildNodePermission(permFundMap[id][permissionCode], p);
+                    } else {
+                        permFundMap[id][permissionCode] = this.buildPermission(permFundMap[id][permissionCode], p);
+                    }
                     permFundMap[id].fund = p.fund;
                     permFundMap[id].id = id;
                 }
@@ -175,6 +205,48 @@ class FundsPermissionPanel extends AbstractReactComponent {
             }
         });
     }
+
+    removeNodePermission = (fundId, node) => {
+        const {onDeletePermission, entityPermissions, userId, groupId} = this.props;
+        const permission = this.getPermission();
+
+        entityPermissions.data.permissions.forEach(perm => {
+            if (perm.permission === 'FUND_ARR_NODE' && perm.fund.id === fundId && perm.node.id === node.id) {
+                onDeletePermission(perm).then(data => {
+                    if (userId) {
+                        this.props.dispatch(adminPermissions.fetchUser(userId));
+                    } else {
+                        this.props.dispatch(adminPermissions.fetchGroup(groupId));
+                    }
+                });
+            }
+        });
+
+    };
+
+    addNodePermission = (fundId, nodes) => {
+        const {onAddPermission, userId, groupId} = this.props;
+        const permission = this.getPermission();
+
+        const usrPermissions = nodes.map(node => {return {
+            fund: permission.fund,
+            permission: 'FUND_ARR_NODE',
+            node: {
+                id: node.id,
+                version: node.version
+            }
+        }});
+        if (usrPermissions.length > 0) {
+            onAddPermission(usrPermissions).then(data => {
+                this.props.dispatch(modalDialogHide());
+                if (userId) {
+                    this.props.dispatch(adminPermissions.fetchUser(userId));
+                } else {
+                    this.props.dispatch(adminPermissions.fetchGroup(groupId));
+                }
+            });
+        }
+    };
 
     changePermission = (e, permCode) => {
         const {onAddPermission, onDeletePermission} = this.props;
@@ -391,7 +463,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
 
     render() {
         const {selectedPermission, permissions} = this.state;
-        const {fundId, entityPermissions, onSelectItem, userId} = this.props;
+        const {fundId, entityPermissions, onSelectItem, userId, groupId} = this.props;
 
         if (!entityPermissions.fetched) {
             return <HorizontalLoader/>
@@ -431,11 +503,15 @@ class FundsPermissionPanel extends AbstractReactComponent {
             {permission && <PermissionCheckboxsForm
                 permCodes={permCodes}
                 onChangePermission={this.changePermission}
+                onAddNodePermission={this.addNodePermission}
+                onRemoveNodePermission={this.removeNodePermission}
                 labelPrefix="admin.perms.tabs.funds.perm."
                 permission={permission}
                 groups={groups}
                 permissionAll={permission.id !== FundsPermissionPanel.ALL_ID ? permissionAll : null}
                 permissionAllTitle="admin.perms.tabs.funds.items.fundAll"
+                fundId={selectedPermission.id === FundsPermissionPanel.ALL_ID ? null : selectedPermission.id}
+                groupId={groupId}
             />}
         </AdminRightsContainer>;
     }

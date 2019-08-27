@@ -15,7 +15,7 @@ class TemplateSettingsForm extends React.Component {
     static propTypes = {
         engine: React.PropTypes.string.isRequired,
         outputId: React.PropTypes.number.isRequired,
-        outputSettings: React.PropTypes.object.isRequired
+        outputSettings: React.PropTypes.object
     };
 
     handleSubmit = settings => {
