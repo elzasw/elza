@@ -1,11 +1,35 @@
 package cz.tacr.elza.daoimport.service;
 
-import cz.tacr.elza.daoimport.DaoImportScheduler;
-import cz.tacr.elza.daoimport.parser.TechnicalMDParser;
-import cz.tacr.elza.daoimport.schema.dao.Dao;
-import cz.tacr.elza.daoimport.schema.dao.Page;
-import cz.tacr.elza.daoimport.service.vo.*;
-import cz.tacr.elza.metadataconstants.MetadataEnum;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+
+import javax.annotation.PostConstruct;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -13,10 +37,24 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.dspace.app.mediafilter.JPEGFilter;
 import org.dspace.authorize.AuthorizeException;
-import org.dspace.content.*;
+import org.dspace.content.Bitstream;
+import org.dspace.content.BitstreamFormat;
+import org.dspace.content.Bundle;
 import org.dspace.content.Collection;
+import org.dspace.content.Community;
+import org.dspace.content.DCDate;
+import org.dspace.content.Item;
+import org.dspace.content.MetadataSchema;
+import org.dspace.content.WorkspaceItem;
 import org.dspace.content.factory.ContentServiceFactory;
-import org.dspace.content.service.*;
+import org.dspace.content.service.BitstreamFormatService;
+import org.dspace.content.service.BitstreamService;
+import org.dspace.content.service.BundleService;
+import org.dspace.content.service.CollectionService;
+import org.dspace.content.service.CommunityService;
+import org.dspace.content.service.ItemService;
+import org.dspace.content.service.MetadataValueService;
+import org.dspace.content.service.WorkspaceItemService;
 import org.dspace.core.Context;
 import org.dspace.services.ConfigurationService;
 import org.dspace.services.factory.DSpaceServicesFactory;
@@ -27,19 +65,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
-import javax.annotation.PostConstruct;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.SQLException;
-import java.util.*;
+import cz.tacr.elza.daoimport.DaoImportScheduler;
+import cz.tacr.elza.daoimport.parser.TechnicalMDParser;
+import cz.tacr.elza.daoimport.schema.dao.Dao;
+import cz.tacr.elza.daoimport.schema.dao.Page;
+import cz.tacr.elza.daoimport.service.vo.DaoFile;
+import cz.tacr.elza.daoimport.service.vo.ImportBatch;
+import cz.tacr.elza.daoimport.service.vo.ImportConfig;
+import cz.tacr.elza.daoimport.service.vo.ImportDao;
+import cz.tacr.elza.daoimport.service.vo.MetadataInfo;
+import cz.tacr.elza.metadataconstants.MetadataEnum;
 
 @Service
 public class DaoImportService {
@@ -204,14 +239,14 @@ public class DaoImportService {
                 Bitstream contentBitstream = createBitstream(bsName, daoFile.getContentFile(), origBundle, sequence, protocol, context);
                 //pridani casu vytvoreni souboru do metadat
                 if (daoFile.getCreatedDate() != null) {
-                    bitstreamService.addMetadata(context, contentBitstream, Item.ANY, "date", "created", null, daoFile.getCreatedDate().toString());
+                    bitstreamService.addMetadata(context, contentBitstream, MetadataSchema.DC_SCHEMA, "date", "created", null, daoFile.getCreatedDate());
                 }
                 if (daoFile.getMetadataFile() != null) {
                     Bitstream metadataBitstream = createBitstream(bsName, daoFile.getMetadataFile(), metaBundle, sequence, protocol, context);
                     Map<MetadataEnum, String> techMD = daoFile.getTechMD();
                     storeTechMD(contentBitstream, techMD, protocol, context);
                     if (daoFile.getDescription() != null) {
-                        bitstreamService.addMetadata(context, metadataBitstream, Item.ANY, "description", null, null, daoFile.getDescription());
+                        bitstreamService.addMetadata(context, metadataBitstream, MetadataSchema.DC_SCHEMA, "description", null, null, daoFile.getDescription());
                     }
                 }
 
