@@ -101,7 +101,7 @@ public class DaoRequestsImpl implements DaoRequests{
             processingRequest.setStatus(DestructTransferRequest.Status.PROCESSED);
             processingRequest.setRejectedMessage(null);
             destructTransferRequestDAO.insert(context, processingRequest);
-            context.complete();
+            context.commit();
             log.info("Požadavek na skartaci Identifier=" + destructionRequest.getIdentifier() + " byl úspěšně zpracován.");
 
         }
@@ -114,7 +114,7 @@ public class DaoRequestsImpl implements DaoRequests{
             try {
                 context = ContextUtils.createContext();
                 destructTransferRequestDAO.insert(context, processingRequest);
-                context.complete();
+                context.commit();
             } catch (Exception ex) {
                 throw new ProcessingException("Chyba při ukládání požadavku " + destructionRequest.getIdentifier() + " do databáze: " + ex);
             }
@@ -223,7 +223,7 @@ public class DaoRequestsImpl implements DaoRequests{
             processingRequest.setStatus(DestructTransferRequest.Status.PROCESSED);
             processingRequest.setRejectedMessage(null);
             destructTransferRequestDAO.insert(context, processingRequest);
-            context.complete();
+            context.commit();
             log.info("Požadavek na skartaci Identifier=" + transferRequest.getIdentifier() + " byl úspěšně zpracován.");
 
         } catch (Exception e) {
@@ -235,7 +235,7 @@ public class DaoRequestsImpl implements DaoRequests{
             try {
                 context = ContextUtils.createContext();
                 destructTransferRequestDAO.insert(context, processingRequest);
-                context.complete();
+                context.commit();
             } catch (Exception ex) {
                 throw new DaoServiceException("Chyba při ukládání požadavku " + transferRequest.getIdentifier() + " do databáze: " + ex);
             }

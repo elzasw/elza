@@ -94,7 +94,7 @@ public class ProcessingRequestService {
                 log.info("Informace o zpracování požadavku na skartaci/delimitaci requestID=" + processingRequest.getRequestId() +
                         "byla úspěšně odeslána do systému Elza.");
             }
-            context.complete();
+            context.commit();
         } catch (Exception e) {
             context.abort();
             log.debug("Chyba při zpracovávání požadavku na skartaci/delimitaci requestID=" + processingRequest.getRequestId() + "ERROR: " +
