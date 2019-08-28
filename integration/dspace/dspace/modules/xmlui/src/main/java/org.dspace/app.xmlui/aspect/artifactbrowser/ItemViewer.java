@@ -440,14 +440,14 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
             isElza = Boolean.valueOf(value);
         }
 
-//        if (!isElza) {
+        if (!isElza) {
             Para sendToElzaPara = division.addPara(null, "item-view-send-to-elza");
 
             String linkToElza = contextPath + "/handle/" + item.getHandle()
                     + "?sendToElza=true" + "?idemId=" + item.getID();
 
             sendToElzaPara.addXref(linkToElza).addContent(T_send_to_elza);
-//        }
+        }
 
         metaData = MetadataEnum.ELZADIDID;
         metadata = itemService.getMetadata(item, metaData.getSchema(), metaData.getElement(), metaData.getQualifier(), Item.ANY);
