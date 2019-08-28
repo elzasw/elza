@@ -199,7 +199,7 @@ public class WsClient {
             List<MetadataValue> metadata = itemService.getMetadata(item, metaData.getSchema(), metaData.getElement(), metaData.getQualifier(), Item.ANY);
             itemService.removeMetadataValues(context, item, metadata);
             itemService.addMetadata(context, item, metaData.getSchema(), metaData.getElement(), metaData.getQualifier(), null, "true");
-            context.complete();
+            context.commit();
         } catch (Exception e) {
             context.abort();
             throw new IllegalStateException("Nastala chyba při zápisu metadat isElza k Item " + item + " odesílané do ELZA", e);

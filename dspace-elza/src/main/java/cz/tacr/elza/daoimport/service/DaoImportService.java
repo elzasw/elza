@@ -203,7 +203,7 @@ public class DaoImportService {
             Path batchDir = batch.getBatchDir();
             try {
                 importBatch(batch, protocol, context);
-                context.complete();
+                context.commit();
 
                 protocol.write("Konec zpracování dávky: " + batchDir.toAbsolutePath());
                 protocol.close();
