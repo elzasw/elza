@@ -56,7 +56,6 @@ import org.dspace.content.service.ItemService;
 
 import cz.tacr.elza.metadataconstants.MetadataEnum;
 import cz.tacr.elza.ws.WsClient;
-import cz.tacr.elza.destructransferrequest.service.ProcessingRequestService;
 
 /**
  * Display a single item.
@@ -124,8 +123,6 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
             String viewInElza = request.getParameter("viewInElza");
             if (sendToElza != null && sendToElza.length() > 0) {
                 return HashUtil.hash(dso.getHandle() + "sendToElza:" + sendItemToElza(objectModel));
-            } else if (viewInElza != null && viewInElza.length() > 0) {
-                return HashUtil.hash(dso.getHandle() + "viewInElza:" + viewItemInElza(objectModel));
             } else {
                 return HashUtil.hash(dso.getHandle() + "full:" + showFullItem(objectModel));
             }
@@ -499,35 +496,7 @@ public class ItemViewer extends AbstractDSpaceTransformer implements CacheablePr
             }
 
             Item item = (Item) dso;
-            WsClient.sendItemToElza(item);
-
-        } catch (SQLException e) {
-            // Ignore all errors and just return that the component is not cachable.
-            return false;
-        }
-
-
-        return show != null && show.length() > 0;
-    }
-
-    /**
-     * view item in elza
-     * @param objectModel to get the request.
-     */
-    public boolean viewItemInElza(Map objectModel)
-    {
-        Request request = ObjectModelHelper.getRequest(objectModel);
-        String show = request.getParameter("viewInElza");
-
-        try {
-            DSpaceObject dso = HandleUtil.obtainHandle(objectModel);
-            if (!(dso instanceof Item))
-            {
-               return false;
-            }
-
-            Item item = (Item) dso;
-            WsClient.sendItemToElza(item);
+            WsClient.sendItemToElza(item, context);
 
         } catch (SQLException e) {
             // Ignore all errors and just return that the component is not cachable.

@@ -145,7 +145,7 @@ public class WsClient {
         }
     }
 
-    public static void sendItemToElza(Item item) {
+    public static void sendItemToElza(Item item, Context context) {
 
         DaoPackage daoPackage = new DaoPackage();
         daoPackage.setIdentifier(item.getID().toString());
@@ -174,9 +174,7 @@ public class WsClient {
         dao.setLabel(fileParam);
         //"http://localhost:8080/xmlui/handle/123456789/8"
 
-        Context context = null;
         try {
-            context = ContextUtils.createContext();
             context.turnOffAuthorisationSystem();
 
             for (Bundle bundle : bundles) {
@@ -187,6 +185,7 @@ public class WsClient {
             }
         } catch (Exception e) {
             context.abort();
+            context.restoreAuthSystemState();
             throw new IllegalStateException("Nastala chyba při zápisu metadat isElza k Item " + item + " odesílané do ELZA", e);
         }
 
@@ -204,9 +203,7 @@ public class WsClient {
             context.abort();
             throw new IllegalStateException("Nastala chyba při zápisu metadat isElza k Item " + item + " odesílané do ELZA", e);
         } finally {
-            if (context != null) {
-                context.restoreAuthSystemState();
-            }
+            context.restoreAuthSystemState();
         }
     }
 
