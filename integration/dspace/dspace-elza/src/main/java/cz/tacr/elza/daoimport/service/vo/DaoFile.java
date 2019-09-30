@@ -4,6 +4,8 @@ import java.nio.file.Path;
 import java.util.Date;
 import java.util.Map;
 
+import org.dspace.content.DCDate;
+
 import cz.tacr.elza.metadataconstants.MetadataEnum;
 
 public class DaoFile {
@@ -11,7 +13,7 @@ public class DaoFile {
     private Path contentFile;
     private Path metadataFile;
     private Path thumbnailFile;
-    private Date createdDate;
+    private String createdDate;
     private Integer orderNumber;
     private String description;
     private Map<MetadataEnum, String> techMD;
@@ -36,12 +38,17 @@ public class DaoFile {
         return thumbnailFile;
     }
 
-    public Date getCreatedDate() {
+    public String getCreatedDate() {
         return createdDate;
     }
 
     public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
+        String date = null;
+        if (createdDate != null) {
+            DCDate dcDate = new DCDate(createdDate);
+            date = dcDate.toString();
+        }
+        this.createdDate = date;
     }
 
     public void setThumbnailFile(Path thumbnailFile) {

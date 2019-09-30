@@ -44,7 +44,7 @@ public class DaoNotificationsImpl implements DaoNotifications {
         Context context = new Context();
         try {
             context = ContextUtils.createContext();
-            context.turnOffAuthorisationSystem(); //TODO:cacha - zrušit
+            context.turnOffAuthorisationSystem();
         } catch (SQLException e) {
             context.abort();
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
@@ -78,7 +78,7 @@ public class DaoNotificationsImpl implements DaoNotifications {
         }
 
         try {
-            context.complete();
+            context.commit();
         } catch (Exception e) {
             context.abort();
             throw new ProcessingException("Chyba při ukončení contextu: " + e.getMessage());
@@ -93,7 +93,7 @@ public class DaoNotificationsImpl implements DaoNotifications {
         Context context = new Context();
         try {
             context = ContextUtils.createContext();
-            context.turnOffAuthorisationSystem(); //TODO:cacha - zrušit
+            context.turnOffAuthorisationSystem();
         } catch (SQLException e) {
             context.abort();
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
@@ -124,7 +124,7 @@ public class DaoNotificationsImpl implements DaoNotifications {
             setMetadataValue(context, item, metadataList, Boolean.FALSE.toString(), mt);
 
 
-            context.complete();
+            context.commit();
         } catch (Exception e) {
             context.abort();
             throw new ProcessingException("Chyba při ukončení contextu: " + e.getMessage());

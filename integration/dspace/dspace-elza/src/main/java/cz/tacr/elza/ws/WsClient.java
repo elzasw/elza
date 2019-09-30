@@ -1,19 +1,32 @@
 package cz.tacr.elza.ws;
 
-import cz.tacr.elza.context.ContextUtils;
-import cz.tacr.elza.daoimport.service.DaoImportService;
-import cz.tacr.elza.metadataconstants.MetadataEnum;
-import cz.tacr.elza.ws.core.v1.DaoRequestsService;
-import cz.tacr.elza.ws.core.v1.DaoService;
-import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
-import cz.tacr.elza.ws.types.v1.*;
+import java.math.BigInteger;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.annotation.Nullable;
+import javax.ws.rs.ProcessingException;
+import javax.xml.bind.helpers.DefaultValidationEventHandler;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.feature.FastInfosetFeature;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
-import org.dspace.content.*;
+import org.dspace.content.Bitstream;
+import org.dspace.content.BitstreamFormat;
+import org.dspace.content.Bundle;
+import org.dspace.content.Collection;
+import org.dspace.content.DCDate;
+import org.dspace.content.Item;
+import org.dspace.content.MetadataSchema;
+import org.dspace.content.MetadataValue;
 import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.service.BitstreamService;
 import org.dspace.content.service.CollectionService;
-import org.dspace.content.service.DSpaceObjectService;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.Context;
 import org.dspace.services.ConfigurationService;
@@ -22,20 +35,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
-import javax.ws.rs.ProcessingException;
-import javax.xml.bind.helpers.DefaultValidationEventHandler;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-import java.math.BigInteger;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.List;
+import cz.tacr.elza.context.ContextUtils;
+import cz.tacr.elza.daoimport.service.DaoImportService;
+import cz.tacr.elza.metadataconstants.MetadataEnum;
+import cz.tacr.elza.ws.core.v1.DaoRequestsService;
+import cz.tacr.elza.ws.core.v1.DaoService;
+import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
+import cz.tacr.elza.ws.types.v1.ChecksumType;
+import cz.tacr.elza.ws.types.v1.Dao;
+import cz.tacr.elza.ws.types.v1.DaoBatchInfo;
+import cz.tacr.elza.ws.types.v1.DaoPackage;
+import cz.tacr.elza.ws.types.v1.Daoset;
+import cz.tacr.elza.ws.types.v1.File;
+import cz.tacr.elza.ws.types.v1.FileGroup;
+import cz.tacr.elza.ws.types.v1.RequestRevoked;
+import cz.tacr.elza.ws.types.v1.UnitOfMeasure;
 
 /**
  * Created by Marbes Consulting
@@ -46,6 +60,7 @@ public class WsClient {
     private static final Logger logger = LoggerFactory.getLogger(WsClient.class);
     private static ConfigurationService configurationService = DSpaceServicesFactory.getInstance().getConfigurationService();
     private static ItemService itemService = ContentServiceFactory.getInstance().getItemService();
+    private static BitstreamService bitstreamService = ContentServiceFactory.getInstance().getBitstreamService();
     private static CollectionService collectionService = ContentServiceFactory.getInstance().getCollectionService();
 
     /**
@@ -130,7 +145,7 @@ public class WsClient {
         }
     }
 
-    public static void sendItemToElza(Item item) {
+    public static void sendItemToElza(Item item, Context context) {
 
         DaoPackage daoPackage = new DaoPackage();
         daoPackage.setIdentifier(item.getID().toString());
@@ -138,7 +153,6 @@ public class WsClient {
         Collection collection = item.getOwningCollection();
         String fundId = collectionService.getMetadataFirstValue(collection, MetadataSchema.DC_SCHEMA, "description", "abstract", Item.ANY);
         daoPackage.setFundIdentifier(fundId);
-//        daoPackage.setFundIdentifier("393b642a-4f5a-467f-aae4-3d129f04a6cb");
         daoPackage.setRepositoryIdentifier(configurationService.getProperty("elza.repositoryCode"));
 
         String daoId = itemService.getMetadataFirstValue(item, MetadataSchema.DC_SCHEMA, "description", null, null);
@@ -156,84 +170,103 @@ public class WsClient {
 
         List<Bundle> bundles = item.getBundles(DaoImportService.CONTENT_BUNDLE);
 
-        String uriMD = itemService.getMetadataFirstValue(item, MetadataSchema.DC_SCHEMA, "identifier", "uri", Item.ANY);
-        int index = uriMD.lastIndexOf("/handle/");
-        String fileParam = null;
-        if (index > 0) {
-            fileParam = uriMD.substring(index + 8);
-            dao.setLabel(fileParam);
-        }
+        String fileParam = createFileParam(item);
+        dao.setLabel(fileParam);
         //"http://localhost:8080/xmlui/handle/123456789/8"
-        for (Bundle bundle : bundles) {
-            for (Bitstream bitstream : bundle.getBitstreams()) {
-                File file = createFile(fileParam, bitstream);
-                List<MetadataEnum> techMataData = MetadataEnum.getTechMetaData();
-                DSpaceObjectService dSpaceObjectService = ContentServiceFactory.getInstance().getDSpaceObjectService(item);
-                for (MetadataEnum mt : techMataData) {
-                    String value = dSpaceObjectService.getMetadataFirstValue(bitstream, mt.getSchema(), mt.getElement(), mt.getQualifier(), Item.ANY);
-                    switch (mt) {
-                        case DURATION:
-                            file.setDuration(value);
-                            break;
-                        case IMAGEHEIGHT:
-                            file.setImageHeight(convertStringToBigInteger(value));
-                            break;
-                        case IMAGEWIDTH:
-                            file.setImageWidth(convertStringToBigInteger(value));
-                            break;
-                        case SOURCEXDIMUNIT:
-                            file.setSourceXDimensionUnit(convertStringToUnitOfMeasure(value));
-                            break;
-                        case SOURCEXDIMVALUVALUE:
-                            file.setSourceXDimensionValue(Float.valueOf(value));
-                            break;
-                        case SOURCEYDIMUNIT:
-                            file.setSourceYDimensionUnit(convertStringToUnitOfMeasure(value));
-                            break;
-                        case SOURCEYDIMVALUVALUE:
-                            file.setSourceYDimensionValue(Float.valueOf(value));
-                            break;
-                    }
+
+        try {
+            context.turnOffAuthorisationSystem();
+
+            for (Bundle bundle : bundles) {
+                for (Bitstream bitstream : bundle.getBitstreams()) {
+                    File file = createFile(fileParam, bitstream, context);
+                    fileGroup.getFile().add(file);
                 }
-                String createdDate = dSpaceObjectService.getMetadataFirstValue(bitstream, Item.ANY, "date", "created", Item.ANY);
-                if (createdDate != null) {
-                    XMLGregorianCalendar xmlGregCalDate = concertStringToXMLGregorianCalendar(createdDate);
-                    file.setCreated(xmlGregCalDate);
-                }
-                fileGroup.getFile().add(file);
             }
+        } catch (Exception e) {
+            context.abort();
+            context.restoreAuthSystemState();
+            throw new IllegalStateException("Nastala chyba při zápisu metadat isElza k Item " + item + " odesílané do ELZA", e);
         }
 
         dao.setFileGroup(fileGroup);
         daoset.getDao().add(dao);
         getDaoService().addPackage(daoPackage);
 
-        Context context = null;
         try {
-            context = ContextUtils.createContext();
-            context.turnOffAuthorisationSystem();
-
             MetadataEnum metaData = MetadataEnum.ISELZA;
             List<MetadataValue> metadata = itemService.getMetadata(item, metaData.getSchema(), metaData.getElement(), metaData.getQualifier(), Item.ANY);
             itemService.removeMetadataValues(context, item, metadata);
             itemService.addMetadata(context, item, metaData.getSchema(), metaData.getElement(), metaData.getQualifier(), null, "true");
-            context.complete();
+            context.commit();
         } catch (Exception e) {
             context.abort();
             throw new IllegalStateException("Nastala chyba při zápisu metadat isElza k Item " + item + " odesílané do ELZA", e);
         } finally {
-            if (context != null) {
-                context.restoreAuthSystemState();
-            }
+            context.restoreAuthSystemState();
         }
     }
 
-    private static File createFile(String fileParam, Bitstream bitstream) {
+    public static String createFileParam(Item item) {
+        String uriMD = itemService.getMetadataFirstValue(item, MetadataSchema.DC_SCHEMA, "identifier", "uri", Item.ANY);
+        int index = uriMD.lastIndexOf("/handle/");
+        String fileParam = null;
+        if (index > 0) {
+            fileParam = uriMD.substring(index + 8);
+        }
+        return fileParam;
+    }
+
+    public static File createFile(String fileParam, Bitstream bitstream, Context context) {
         File file = new File();
+        file.setChecksumType(convertStringToChecksumType(bitstream.getChecksumAlgorithm()));
         file.setChecksum(bitstream.getChecksum());
         file.setIdentifier(fileParam + "/" + bitstream.getName());
         file.setSize(bitstream.getSizeBytes());
 
+        BitstreamFormat format = null;
+        try {
+            format = bitstream.getFormat(context);
+        } catch (Exception e) {
+            context.abort();
+            throw new ProcessingException("Chyba při načtení formátu z bitstreamu: " + e.getMessage());
+        }
+        if (format != null) {
+            file.setMimetype(format.getMIMEType());
+        }
+
+        List<MetadataEnum> techMataData = MetadataEnum.getTechMetaData();
+        for (MetadataEnum mt : techMataData) {
+            String value = bitstreamService.getMetadataFirstValue(bitstream, mt.getSchema(), mt.getElement(), mt.getQualifier(), Item.ANY);
+            switch (mt) {
+                case DURATION:
+                    file.setDuration(value);
+                    break;
+                case IMAGEHEIGHT:
+                    file.setImageHeight(convertStringToBigInteger(value));
+                    break;
+                case IMAGEWIDTH:
+                    file.setImageWidth(convertStringToBigInteger(value));
+                    break;
+                case SOURCEXDIMUNIT:
+                    file.setSourceXDimensionUnit(convertStringToUnitOfMeasure(value));
+                    break;
+                case SOURCEXDIMVALUVALUE:
+                    file.setSourceXDimensionValue(convertStringToFloat(value));
+                    break;
+                case SOURCEYDIMUNIT:
+                    file.setSourceYDimensionUnit(convertStringToUnitOfMeasure(value));
+                    break;
+                case SOURCEYDIMVALUVALUE:
+                    file.setSourceYDimensionValue(convertStringToFloat(value));
+                    break;
+            }
+        }
+        String createdDate = bitstreamService.getMetadataFirstValue(bitstream, Item.ANY, "date", "created", Item.ANY);
+        if (createdDate != null) {
+            XMLGregorianCalendar xmlGregCalDate = concertStringToXMLGregorianCalendar(createdDate);
+            file.setCreated(xmlGregCalDate);
+        }
         return file;
     }
 
@@ -251,14 +284,24 @@ public class WsClient {
         return getJaxWsRemoteInterface(DaoService.class, url, username, password);
     }
 
-    private static BigInteger convertStringToBigInteger (String bigNumber) {
+    private static BigInteger convertStringToBigInteger(String bigNumber) {
         if (StringUtils.isBlank(bigNumber)) {
             return null;
         }
         return BigInteger.valueOf(Long.parseLong(bigNumber));
     }
 
-    private static UnitOfMeasure convertStringToUnitOfMeasure (String uomCode) {
+    private static Float convertStringToFloat(String floatNumber) {
+        if (StringUtils.isBlank(floatNumber)) {
+            return null;
+        }
+        return Float.valueOf(floatNumber);
+    }
+
+    private static UnitOfMeasure convertStringToUnitOfMeasure(String uomCode) {
+        if (StringUtils.isBlank(uomCode)) {
+            return null;
+        }
         switch (StringUtils.upperCase(uomCode)) {
             case "IN":
                 return UnitOfMeasure.IN;
@@ -269,15 +312,8 @@ public class WsClient {
     }
 
     private static XMLGregorianCalendar concertStringToXMLGregorianCalendar(String date) {
-        DateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        Date parseDate = null;
-        try {
-            date = date.replace("T", " ");
-            date = date.replace("Z", "");
-            parseDate = format.parse(date);
-        } catch (ParseException e) {
-            logger.error("Fail in convert String value of created date to XMLGregorianCalendar", e);
-        }
+        DCDate dcDate = new DCDate(date);
+        Date parseDate = dcDate.toDate();
 
         GregorianCalendar cal = new GregorianCalendar();
         cal.setTime(parseDate);
@@ -289,5 +325,29 @@ public class WsClient {
             logger.error("Fail in convert String value of created date to XMLGregorianCalendar", e);
         }
         return xmlGregCalDate;
+    }
+
+    /**
+     * Konvertuje hodnotu typu String na ChecksumType
+     * @param checksumAlgorithm
+     * @return
+     */
+    private static ChecksumType convertStringToChecksumType (String checksumAlgorithm) {
+        if (StringUtils.isBlank(checksumAlgorithm)) {
+            return null;
+        }
+        switch (checksumAlgorithm) {
+            case "MD5":
+                return ChecksumType.MD_5;
+            case "SHA1":
+                return ChecksumType.SHA_1;
+            case "SHA256":
+                return ChecksumType.SHA_256;
+            case "SHA384":
+                return ChecksumType.SHA_384;
+            case "SHA512":
+                return ChecksumType.SHA_512;
+        }
+        throw new ProcessingException("Pole ChecksumType " + checksumAlgorithm + " není podporováno.");
     }
 }

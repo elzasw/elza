@@ -1,22 +1,62 @@
 package cz.tacr.elza.daoimport.service;
 
-import cz.tacr.elza.daoimport.DaoImportScheduler;
-import cz.tacr.elza.daoimport.parser.TechnicalMDParser;
-import cz.tacr.elza.daoimport.schema.dao.Dao;
-import cz.tacr.elza.daoimport.schema.dao.Page;
-import cz.tacr.elza.daoimport.service.vo.*;
-import cz.tacr.elza.metadataconstants.MetadataEnum;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+
+import javax.annotation.PostConstruct;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.dspace.app.mediafilter.JPEGFilter;
 import org.dspace.authorize.AuthorizeException;
-import org.dspace.content.*;
+import org.dspace.content.Bitstream;
+import org.dspace.content.BitstreamFormat;
+import org.dspace.content.Bundle;
 import org.dspace.content.Collection;
+import org.dspace.content.Community;
+import org.dspace.content.DCDate;
+import org.dspace.content.Item;
+import org.dspace.content.MetadataSchema;
+import org.dspace.content.WorkspaceItem;
 import org.dspace.content.factory.ContentServiceFactory;
-import org.dspace.content.service.*;
+import org.dspace.content.service.BitstreamFormatService;
+import org.dspace.content.service.BitstreamService;
+import org.dspace.content.service.BundleService;
+import org.dspace.content.service.CollectionService;
+import org.dspace.content.service.CommunityService;
+import org.dspace.content.service.ItemService;
+import org.dspace.content.service.MetadataValueService;
+import org.dspace.content.service.WorkspaceItemService;
 import org.dspace.core.Context;
 import org.dspace.services.ConfigurationService;
 import org.dspace.services.factory.DSpaceServicesFactory;
@@ -27,19 +67,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
-import javax.annotation.PostConstruct;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.SQLException;
-import java.util.*;
+import cz.tacr.elza.daoimport.DaoImportScheduler;
+import cz.tacr.elza.daoimport.parser.TechnicalMDParser;
+import cz.tacr.elza.daoimport.schema.dao.Dao;
+import cz.tacr.elza.daoimport.schema.dao.Page;
+import cz.tacr.elza.daoimport.service.vo.DaoFile;
+import cz.tacr.elza.daoimport.service.vo.ImportBatch;
+import cz.tacr.elza.daoimport.service.vo.ImportConfig;
+import cz.tacr.elza.daoimport.service.vo.ImportDao;
+import cz.tacr.elza.daoimport.service.vo.MetadataInfo;
+import cz.tacr.elza.metadataconstants.MetadataEnum;
 
 @Service
 public class DaoImportService {
@@ -54,7 +91,6 @@ public class DaoImportService {
 
     public static final String METADATA_EXTENSION = ".meta";
     public static final String THUMBNAIL_EXTENSION = ".thumb";
-    public static final String JPEG_SURFIX = ".jpeg";
     public static final String DAO_XML = "dao.xml";
 
     public static final String CONTENT_BUNDLE = "ORIGINAL";
@@ -125,12 +161,16 @@ public class DaoImportService {
         ImportConfig config = new ImportConfig();
         config.setMainDir(getMainDir());
         config.setSupportedMimeTypes(getSupportedMimeTypes());
+        config.setMimeTypesForConversion(getSupportedTypesForConvertion());
+        config.setConversionCommand(getConversionCommand());
+        config.setMimeTypeAferConversion(getMimeTypeAferConversion());
+        config.setFileExtensionAferConversion(getFileExtensionAferConversion());
 
         return config;
     }
 
     private String getMainDir() {
-        return configurationService.getProperty("elza.daoimport.dir");
+        return StringUtils.trimToNull(configurationService.getProperty("elza.daoimport.dir"));
     }
 
     private List<String> getSupportedMimeTypes() {
@@ -154,10 +194,23 @@ public class DaoImportService {
         String[] split = mimeTypes.split(" ");
         List<String> supportedTypes = new ArrayList<>(split.length);
         for (String mimeType : split) {
-            String supportedType = mimeType.replace("image/", ".");
-            supportedTypes.add(supportedType.toLowerCase());
+            if (StringUtils.isNotBlank(mimeType)) {
+                supportedTypes.add(mimeType.toLowerCase().trim());
+            }
         }
         return supportedTypes;
+    }
+
+    private String getConversionCommand() {
+        return StringUtils.trimToNull(configurationService.getProperty("convert.files.app.command"));
+    }
+
+    private String getMimeTypeAferConversion() {
+        return StringUtils.trimToNull(configurationService.getProperty("elza.daoimport.convert.outputMimeType"));
+    }
+
+    private String getFileExtensionAferConversion() {
+        return StringUtils.trimToNull(configurationService.getProperty("elza.daoimport.convert.outputExtension"));
     }
 
     public void importBatches(final List<ImportBatch> importBatches, final Context context) throws IOException {
@@ -168,7 +221,7 @@ public class DaoImportService {
             Path batchDir = batch.getBatchDir();
             try {
                 importBatch(batch, protocol, context);
-                context.complete();
+                context.commit();
 
                 protocol.write("Konec zpracování dávky: " + batchDir.toAbsolutePath());
                 protocol.close();
@@ -204,14 +257,14 @@ public class DaoImportService {
                 Bitstream contentBitstream = createBitstream(bsName, daoFile.getContentFile(), origBundle, sequence, protocol, context);
                 //pridani casu vytvoreni souboru do metadat
                 if (daoFile.getCreatedDate() != null) {
-                    bitstreamService.addMetadata(context, contentBitstream, Item.ANY, "date", "created", null, daoFile.getCreatedDate().toString());
+                    bitstreamService.addMetadata(context, contentBitstream, MetadataSchema.DC_SCHEMA, "date", "created", null, daoFile.getCreatedDate());
                 }
                 if (daoFile.getMetadataFile() != null) {
                     Bitstream metadataBitstream = createBitstream(bsName, daoFile.getMetadataFile(), metaBundle, sequence, protocol, context);
                     Map<MetadataEnum, String> techMD = daoFile.getTechMD();
                     storeTechMD(contentBitstream, techMD, protocol, context);
                     if (daoFile.getDescription() != null) {
-                        bitstreamService.addMetadata(context, metadataBitstream, Item.ANY, "description", null, null, daoFile.getDescription());
+                        bitstreamService.addMetadata(context, metadataBitstream, MetadataSchema.DC_SCHEMA, "description", null, null, daoFile.getDescription());
                     }
                 }
 
@@ -454,94 +507,62 @@ public class DaoImportService {
                     BasicFileAttributes fileAttributes = Files.readAttributes(contentFile, BasicFileAttributes.class);
                     daoFile.setCreatedDate(new Date(fileAttributes.creationTime().toMillis()));
 
-                    //nejedna se o jpeg soubor a proto se provede pokus o automatickou konverzi
-                    if (!contentFile.getFileName().toString().endsWith(JPEG_SURFIX)) {
-                        String convertAppCommand = configurationService.getProperty("convert.files.app.command");
-                        if (convertAppCommand != null && convertAppCommand.isEmpty()) {
-                            protocol.write("V konfiguraci není definován příkaz pro konverzi souborů. Nelze zahájit konverzi souborů.");
-                        } else {
-                            for (String supportedType : getSupportedTypesForConvertion()) {
-                                if (contentFile.getFileName().toString().endsWith(supportedType)) {
-                                    protocol.write("Následující soubor bude automaticky konvertován do jpg: " + contentFile.getFileName().toString());
-                                    protocol.newLine();
-                                    convertAppCommand = convertAppCommand.replace("{input}", "'" + contentFile.toString()) + "'";
-                                    Path outputPath = Paths.get(generatedDir.toString(), contentFile.getFileName().toString());
-                                    String outputPathString = outputPath.toString().replace("." + supportedType, "." + "jpg");
-                                    convertAppCommand = convertAppCommand.replace("{output}", "'" + outputPathString + "'");
-                                    ProcessBuilder builder = new ProcessBuilder("cmd.exe", convertAppCommand);
-                                    builder.redirectErrorStream(true);
-                                    Process p = builder.start();
-                                    BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                                    int result = r.read();
-                                    Path convertedPath = Paths.get(outputPathString);
-                                    if (result == 0 && Files.exists(convertedPath)) {
-                                        protocol.write("Došlo k úspěšné konverzi souboru: " + contentFile.getFileName().toString());
-                                        protocol.newLine();
-                                        daoFile.setContentFile(convertedPath);
+                    boolean isConvertedFile = false;
+                    Path destPath = Paths.get(generatedDir.toString(), contentFile.getFileName().toString());
+                    String mimeType = droidService.getMimeType(contentFile, protocol);
+                    if (isFileMimeTypeSupported(contentFile, mimeType, config, protocol)) {
+                        if (config.getMimeTypesForConversion().contains(mimeType)) {
+                            protocol.write("Soubor " + contentFile.getFileName().toString()  + " bude převeden na požaadovaný typ ");
+                            protocol.newLine();
 
-                                        MetadataInfo metadataInfo = fillBasicdaoXmlSpecification(daoXmlSpecification, daoFile, contentFile.getFileName().getFileName().toString());
-                                        protocol.write("Generování metadat souboru " + outputPath.getFileName().toString());
-                                        protocol.newLine();
-                                        Path metadataFile = Paths.get(convertedPath.toAbsolutePath().toString() + METADATA_EXTENSION);
-                                        Path destPath = Paths.get(generatedDir.toString(), metadataFile.getFileName().toString());
-                                        if (jhoveService.generateMetadata(convertedPath, protocol, destPath, metadataInfo)) {
-                                            daoFile.setMetadataFile(destPath);
-                                            daoFile.setTechMD(parseMetadata(destPath));
-                                        }
-                                        Path thumbnailFile = Paths.get(convertedPath.toAbsolutePath().toString() + METADATA_EXTENSION);
-                                        destPath = Paths.get(generatedDir.toString(), thumbnailFile.getFileName().toString());
-                                        generateThumbnailFile(protocol, convertedPath, destPath, daoFile);
-
-                                        importDao.addFile(daoFile);
-                                    } else {
-                                        protocol.write("Došlo k chybě při pokusu o konverzi souboru " + contentFile.getFileName().toString());
-                                        protocol.newLine();
-                                    }
-                                }
+                            String convertAppCommand = config.getConversionCommand();
+                            if (StringUtils.isBlank(convertAppCommand)) {
+                                protocol.write("V konfiguraci není definován příkaz pro konverzi souborů. Nelze zahájit konverzi souboru.");
+                                protocol.newLine();
+                                continue;
                             }
-                        }
 
-
-                    } else {
-                        Path destPath = Paths.get(generatedDir.toString(), contentFile.getFileName().toString());
-                        if (isFileMimeTypeSupported(contentFile, config, protocol)) {
+                            contentFile = convertFile(contentFile, config, generatedDir, protocol);
+                            daoFile.setContentFile(contentFile);
+                            isConvertedFile = true;
+                        } else {
                             protocol.write("Kopírování souboru " + contentFile.getFileName().toString()  + " do adresáře " + GENERATED_DIR);
                             protocol.newLine();
                             daoFile.setContentFile(Files.copy(contentFile, destPath, StandardCopyOption.REPLACE_EXISTING));
-                        } else {
-                            continue;
                         }
-
-                        Path metadataFile = Paths.get(contentFile.toAbsolutePath().toString() + METADATA_EXTENSION);
-                        destPath = Paths.get(generatedDir.toString(), metadataFile.getFileName().toString());
-                        if (Files.exists(metadataFile)) {
-                            protocol.write("Kopírování souboru " + metadataFile.getFileName().toString()  + " do adresáře " + GENERATED_DIR);
-                            protocol.newLine();
-
-                            daoFile.setTechMD(parseMetadata(metadataFile));
-                            daoFile.setMetadataFile(Files.copy(metadataFile, destPath, StandardCopyOption.REPLACE_EXISTING));
-                        } else {
-                            MetadataInfo metadataInfo = fillBasicdaoXmlSpecification(daoXmlSpecification, daoFile, contentFile.getFileName().getFileName().toString());
-                            protocol.write("Generování metadat souboru " + contentFile.getFileName().toString());
-                            protocol.newLine();
-                            if (jhoveService.generateMetadata(contentFile, protocol, destPath, metadataInfo)) {
-                                daoFile.setMetadataFile(destPath);
-                                daoFile.setTechMD(parseMetadata(destPath));
-                            }
-                        }
-
-                        Path thumbnailFile = Paths.get(contentFile.toAbsolutePath().toString() + THUMBNAIL_EXTENSION);
-                        destPath = Paths.get(generatedDir.toString(), thumbnailFile.getFileName().toString());
-                        if (Files.exists(thumbnailFile)) {
-                            protocol.write("Kopírování souboru " + thumbnailFile.getFileName().toString()  + " do adresáře " + GENERATED_DIR);
-                            protocol.newLine();
-
-                            daoFile.setThumbnailFile(Files.copy(thumbnailFile, destPath, StandardCopyOption.REPLACE_EXISTING));
-                        } else {
-                                generateThumbnailFile(protocol, contentFile, destPath, daoFile);
-                        }
-                        importDao.addFile(daoFile);
+                    } else {
+                        continue;
                     }
+
+                    Path metadataFile = Paths.get(contentFile.toAbsolutePath().toString() + METADATA_EXTENSION);
+                    destPath = Paths.get(generatedDir.toString(), metadataFile.getFileName().toString());
+                    if (!isConvertedFile && Files.exists(metadataFile)) {
+                        protocol.write("Kopírování souboru " + metadataFile.getFileName().toString()  + " do adresáře " + GENERATED_DIR);
+                        protocol.newLine();
+
+                        daoFile.setTechMD(parseMetadata(metadataFile));
+                        daoFile.setMetadataFile(Files.copy(metadataFile, destPath, StandardCopyOption.REPLACE_EXISTING));
+                    } else {
+                        MetadataInfo metadataInfo = fillBasicdaoXmlSpecification(daoXmlSpecification, daoFile, contentFile.getFileName().getFileName().toString());
+                        protocol.write("Generování metadat souboru " + contentFile.getFileName().toString());
+                        protocol.newLine();
+                        if (jhoveService.generateMetadata(contentFile, protocol, destPath, metadataInfo)) {
+                            daoFile.setMetadataFile(destPath);
+                            daoFile.setTechMD(parseMetadata(destPath));
+                        }
+                    }
+
+                    Path thumbnailFile = Paths.get(contentFile.toAbsolutePath().toString() + THUMBNAIL_EXTENSION);
+                    destPath = Paths.get(generatedDir.toString(), thumbnailFile.getFileName().toString());
+                    if (!isConvertedFile && Files.exists(thumbnailFile)) {
+                        protocol.write("Kopírování souboru " + thumbnailFile.getFileName().toString()  + " do adresáře " + GENERATED_DIR);
+                        protocol.newLine();
+
+                        daoFile.setThumbnailFile(Files.copy(thumbnailFile, destPath, StandardCopyOption.REPLACE_EXISTING));
+                    } else {
+                        generateThumbnailFile(protocol, contentFile, destPath, daoFile);
+                    }
+                    importDao.addFile(daoFile);
                 }
             }
         }
@@ -549,9 +570,34 @@ public class DaoImportService {
         return importDao;
     }
 
-    private boolean isFileMimeTypeSupported(Path contentFile, ImportConfig config, BufferedWriter protocol) throws IOException {
+    private Path convertFile(Path file, ImportConfig config, Path generatedDir, BufferedWriter protocol) throws IOException {
+        String convertAppCommand = config.getConversionCommand();
+        convertAppCommand = convertAppCommand.replace("{input}", "'" + file.toString()) + "'";
+        Path outputPath = Paths.get(generatedDir.toString(), file.getFileName().toString());
+        String output = FilenameUtils.removeExtension(outputPath.toString());
+        output += config.getFileExtensionAferConversion();
+        convertAppCommand = convertAppCommand.replace("{output}", "'" + output + "'");
+        ProcessBuilder builder = new ProcessBuilder(convertAppCommand);
+        builder.redirectErrorStream(true);
+        try {
+            Process p = builder.start();
+            BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            int result = r.read();
+            Path convertedPath = Paths.get(output);
+            if (result == 0 && Files.exists(convertedPath)) {
+                protocol.write("Došlo k úspěšné konverzi souboru: " + file.getFileName().toString() + " na " + output);
+                protocol.newLine();
+                return convertedPath;
+            } else {
+                throw new IllegalStateException("Došlo k chybě při pokusu o konverzi souboru " + file.getFileName().toString());
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Došlo k chybě při pokusu o konverzi souboru " + file.getFileName().toString());
+        }
+    }
+
+    private boolean isFileMimeTypeSupported(Path contentFile, String mimeType, ImportConfig config, BufferedWriter protocol) throws IOException {
         List<String> supportedMimeTypes = config.getSupportedMimeTypes();
-        String mimeType = droidService.getMimeType(contentFile, protocol);
         if (CollectionUtils.isEmpty(supportedMimeTypes)) {
             return true;
         }
@@ -618,11 +664,16 @@ public class DaoImportService {
         try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(inputDir)) {
             for (Path path : directoryStream) {
                 if (Files.isDirectory(path)) {
-                    DirectoryStream<Path> paths = Files.newDirectoryStream(path, BATCH_READY_FILE);
-                    log.info("Kontrola dávky " + path.getFileName());
-                    if (paths.iterator().hasNext()) {
-                        log.info("Dávka " + path.getFileName() + " obsahuje soubor " + BATCH_READY_FILE);
-                        possibleBatches.add(path);
+                    try (DirectoryStream<Path> paths = Files.newDirectoryStream(path, BATCH_READY_FILE)) {
+                        log.info("Kontrola dávky " + path.getFileName());
+                        Iterator<Path> it = paths.iterator();
+                        if (it.hasNext()) {
+                            log.info("Dávka " + path.getFileName() + " obsahuje soubor " + BATCH_READY_FILE);
+                            possibleBatches.add(path);
+
+                            Path batchReadyFile = it.next();
+                            Files.delete(batchReadyFile);
+                        }
                     }
                 }
             }
