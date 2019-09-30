@@ -219,11 +219,11 @@ public class DaoCoreServiceImpl implements DaoService {
     private ArrDaoPackage createArrDaoPackage(final DaoPackage daoPackage) {
         Assert.notNull(daoPackage, "DAO obal musí být vyplněn");
 
-        ArrFund fund = fundRepository.findByRootNodeUuid(daoPackage.getFundIdentifier());
+        ArrFund fund = getArrFund(daoPackage.getFundIdentifier());
         ArrDigitalRepository repository = digitalRepositoryRepository.findOneByCode(daoPackage.getRepositoryIdentifier());
 
         if (fund == null) {
-            throw new ObjectNotFoundException("Nepodařilo se dohledat AS: " + daoPackage.getFundIdentifier(), ArrangementCode.FUND_NOT_FOUND).set("uuid", daoPackage.getFundIdentifier());
+            throw new ObjectNotFoundException("Nepodařilo se dohledat AS: " + daoPackage.getFundIdentifier(), ArrangementCode.FUND_NOT_FOUND).set("code/id", daoPackage.getFundIdentifier());
         }
         if (repository == null) {
             throw new ObjectNotFoundException("Nepodařilo se dohledat digitalRepository: " + daoPackage.getRepositoryIdentifier(), DigitizationCode.REPOSITORY_NOT_FOUND).set("code", daoPackage.getRepositoryIdentifier());
@@ -261,6 +261,15 @@ public class DaoCoreServiceImpl implements DaoService {
         createDaos(daoPackage.getDaoset(), arrDaoPackage);
 
         return arrDaoPackage;
+    }
+
+    private ArrFund getArrFund(String fundIdentifier) {
+        ArrFund arrFund = fundRepository.findByInternalCode(fundIdentifier);
+        if (arrFund == null) {
+            Integer id = Integer.valueOf(fundIdentifier);
+            arrFund = fundRepository.findOne(id);
+        }
+        return arrFund;
     }
 
     private void createDaos(Daoset daoset, ArrDaoPackage arrDaoPackage) {
