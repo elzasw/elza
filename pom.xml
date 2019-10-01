@@ -242,6 +242,10 @@
 						<groupId>bouncycastle</groupId>
 						<artifactId>bcprov-jdk14</artifactId>
 					</exclusion>
+                    <exclusion>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcprov-jdk15on</artifactId>
+                    </exclusion>
 					<exclusion>
 						<groupId>javax.xml.stream</groupId>
 						<artifactId>stax-api</artifactId>
