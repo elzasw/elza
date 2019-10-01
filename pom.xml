@@ -269,6 +269,12 @@
                 <groupId>org.springframework.security.extensions</groupId>
                 <artifactId>spring-security-saml2-core</artifactId>
                 <version>1.0.3.RELEASE</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcprov-jdk15</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <!-- END - SAML / Shibboleth -->
 
