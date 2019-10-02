@@ -1,4 +1,4 @@
-package cz.tacr.elza.srd.packet.parse
+package scripts
 
 import groovy.transform.Field
 import org.apache.commons.lang3.StringUtils

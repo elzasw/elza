@@ -1,4 +1,4 @@
-package cz.tacr.elza.zp2015.packet.generator
+package scripts
 
 import groovy.transform.Field
 import cz.tacr.elza.domain.ArrData
@@ -33,7 +33,7 @@ void generate() {
     String number = toStringValue("SRD_PACKET_NUMBER");
     if(StringUtils.isNotBlank(number)) {
         // append zeroes
-        int addZeros = packetLeadingZeros - number.length();
+        int addZeros = Packet.packetLeadingZeros - number.length();
         if (addZeros > 0) {
             sortValueBuilder.append(StringUtils.repeat("0", addZeros));
         }
