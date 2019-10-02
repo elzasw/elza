@@ -1,3 +1,5 @@
+package script.groovy
+
 import cz.tacr.elza.domain.*
 import cz.tacr.elza.domain.convertor.UnitDateConvertor
 import cz.tacr.elza.service.party.ApConvName
