@@ -1,0 +1,44 @@
+!MultiAction
+name: Vícenásobný generátor
+
+actions:
+  - !DateRange
+    inputType: SRD_UNIT_DATE
+    bulkRangeType: SRD_UNIT_DATE_PRE
+    outputType: SRD_TITLE
+
+  - !NodeCount
+    outputType: SRD_UNIT_COUNT
+
+  - !TextAggregation
+    ignoreDuplicated: false
+    inputTypes:
+      - SRD_TITLE
+      - SRD_UNIT_DATE_TEXT
+      - SRD_LEGEND
+    outputType: SRD_TITLE
+
+  # Generated item not mentioned in actions
+  - !TextAggregation
+    ignoreDuplicated: false
+    inputTypes:
+      - SRD_UNIT_ARR
+    outputType: SRD_UNIT_ARR
+
+  # Generated item which is obligatory
+  - !TextAggregation
+    ignoreDuplicated: false
+    inputTypes:
+      - SRD_UNIT_HIST
+    outputType: SRD_UNIT_HIST
+
+  - !Copy
+    inputType:
+      - SRD_TITLE
+    outputType: SRD_TITLE
+
+  - !Copy
+    distinct: true
+    inputType:
+      - SRD_TITLE
+    outputType: SRD_UNIT_ARR

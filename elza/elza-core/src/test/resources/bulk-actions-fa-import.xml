@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:edx xmlns:ns2="http://elza.tacr.cz/schema/v2">
+  <fs>
+    <s rule="SIMPLE-DEV">
+      <fi n="Import z XML" ic="in1" />
+      <lvls>
+        <lvl id="1" uuid="44a39a98-79c5-48c2-8515-af93758fad15">
+          <de s="SRD_LEVEL_ROOT" t="SRD_LEVEL_TYPE"/>
+          <de s="SRD_LANGUAGE_3" t="SRD_LANGUAGE"/>
+        </lvl>
+        <lvl id="2" pid="1" uuid="f4b883cd-b140-4282-9d42-5a080a7a8333">
+          <de s="SRD_LEVEL_SERIES" t="SRD_LEVEL_TYPE"/>
+          <de s="SRD_LANGUAGE_3" t="SRD_LANGUAGE"/>
+          <ds t="SRD_UNIT_ID">
+            <v>1//11/1</v>
+          </ds>
+        </lvl>
+        <lvl id="3" pid="1" uuid="bc0d5237-c921-4ab3-88f5-87dc1fb199aa">
+          <de s="SRD_LEVEL_SERIES" t="SRD_LEVEL_TYPE"/>
+          <de s="SRD_LANGUAGE_3" t="SRD_LANGUAGE"/>
+        </lvl>
+        <lvl id="4" pid="1" uuid="9ab651f6-a278-4486-b45e-180cd19ab3b9">
+          <de s="SRD_LEVEL_SERIES" t="SRD_LEVEL_TYPE"/>
+          <de s="SRD_LANGUAGE_3" t="SRD_LANGUAGE"/>
+        </lvl>
+      </lvls>
+    </s>
+  </fs>
+</ns2:edx>

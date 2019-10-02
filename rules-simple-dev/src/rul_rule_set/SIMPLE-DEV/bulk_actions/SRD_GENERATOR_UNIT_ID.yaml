@@ -1,7 +1,0 @@
-!UnitIdGenerator
-name: Generátor referenčního označení
-itemType: SRD_UNIT_ID
-previousIdCode: SRD_OTHER_ID
-previousIdSpecCode: SRD_OTHERID_INVALID_REFNO
-levelTypeCode: SRD_LEVEL_TYPE
-extraDelimiterAfter: SRD_LEVEL_SERIES

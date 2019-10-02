@@ -1,0 +1,139 @@
+package ZP2015;
+
+
+import java.util.Arrays;
+import cz.tacr.elza.drools.model.Level
+import cz.tacr.elza.drools.model.ActiveLevel
+import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.domain.vo.DataValidationResult;
+import cz.tacr.elza.domain.vo.DataValidationResults;
+
+global DataValidationResults results;
+
+// Kontrola, zda každý list má ukládací jednotku
+rule "List musí mít ukládací jednotku směrem ke kořeni"
+when
+	$activeLevel: ActiveLevel( !hasChildren )
+	not ( $level: Level( $items: descItems ) and
+		DescItem(type=="ZP2015_STORAGE_ID") from $items )
+then
+	results.createMissing("ZP2015_STORAGE_ID", "Chybí ukládací jednotka", "ZP2015_POL_STORAGE_ID");
+end
+
+// Kontrola, zda každý list má dataci
+rule "List musí mít dataci směrem ke kořeni"
+when
+	$activeLevel: ActiveLevel( !hasChildren )
+	not ( $level: Level( $items: descItems ) and
+		DescItem(type in
+		  ( "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_TEXT" ) )
+		  from $items )
+then
+	results.createMissing("ZP2015_UNIT_DATE", "Není uvedena datace", "ZP2015_POL_BASIC");
+end
+
+// Kontrola, zda každá hromadina s EJ má uvedenu ukládací jednotku s druhem KAR,FAS,DAJ
+// TODO slapa: upravit na nové entity
+/*rule "Každá hromadina s EJ má uvedenu ukládací jednotku"
+when
+	$activeLevel: ActiveLevel( $items: descItems )
+	DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE") ) ) from $items
+	not ( DescItem(type=="ZP2015_STORAGE_ID"&&packet!=null&&packet.packetType!=null&&
+	                 (packet.packetType.code in ("ZP2015_BOX", "ZP2015_FASCICLE") ) ) from $items )
+then
+	results.createMissing("ZP2015_STORAGE_ID", "Ukládací jednotka bez uvedení typu hromadiny", "ZP2015_POL_STORAGE_ID");
+end*/
+
+// uplatni se jen pro pomucky dle ZP
+rule "Počet jednotek musí být větší roven než 2"
+when
+	$activeLevel: ActiveLevel( $items: descItems )
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $items
+    $descItem: DescItem(type=="ZP2015_UNIT_COUNT"  && integer.intValue()<2 ) from $items
+then
+	results.createError($descItem.getDescItemId(), "Počet jednotek musí být větší roven 2", "ZP2015_POL_BASIC");
+end
+
+// Povinné pokud je nastaven typ pořádání
+// výjimkou je kořen nebo hlavní série pokud mají nastaveno ref.označení
+// Možné zlepšení: Kontrolovat, že žádný rodič nemá pořadové číslo, pokud ho nemá posuzovaná JP
+rule "Pořadové číslo - povinné"
+no-loop
+when
+	$activeLevel : ActiveLevel( $items: descItems )
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $items
+	not DescItem(type=="ZP2015_SERIAL_NUMBER" && !isInherited()) from $items
+	// Výjimka pro nejvyšší série a kořen
+	not (
+	  DescItem(type=="ZP2015_UNIT_ID" && !isInherited() ) from $items
+	  and DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES") ) from $items
+	)
+then
+	results.createMissing("ZP2015_SERIAL_NUMBER",
+	"Pořadové číslo musí být nastaveno (případně ref. označení pro nejvyšší úrovně popisu)",
+	"ZP2015_POL_SERIAL_NO");
+end
+
+// referenční označení v INV|KAT - povinné pro uzly mimo kořen
+rule "Referenční označení - povinné"
+no-loop
+when
+	$activeLevel: ActiveLevel( parent!=null )
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
+	not DescItem(type=="ZP2015_UNIT_ID" && !isInherited()) from $activeLevel.descItems
+then
+	results.createMissing("ZP2015_UNIT_ID", "Referenční označení musí byt přiřazeno", "ZP2015_POL_REF_NO");
+end
+
+// Kontrola, zda každý list má v hierarchii zdroj akvizice
+rule "List musí mít zdroj akvizice směrem ke kořeni"
+when
+	$activeLevel: ActiveLevel( !hasChildren )
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
+	not ( $level: Level( $items: descItems ) and 
+		DescItem(type in 
+		  ( "ZP2015_UNIT_SOURCE" ) )
+		  from $items )
+then
+	results.createMissing("ZP2015_UNIT_SOURCE", "Není uveden zdroj akvizice", "ZP2015_POL_BASIC");
+end
+
+// Kontrola, zda každý list má v hierarchii fyzický stav
+rule "List musí mít popsán fyzický stav směrem ke kořeni"
+when
+	$activeLevel: ActiveLevel( !hasChildren )
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
+	not ( $level: Level( $items: descItems ) and 
+		DescItem(type in 
+		  ( "ZP2015_UNIT_CURRENT_STATUS" ) )
+		  from $items )
+then
+	results.createMissing("ZP2015_UNIT_CURRENT_STATUS",
+	"Není uveden fyzický stav jednotky popisu a technické požadavky", "ZP2015_POL_BASIC");
+end
+
+// Kontrola, zda každý list má zpracovatele
+rule "List musí mít směrem ke kořeni alespoň jednoho zpracovatele"
+when
+	$activeLevel: ActiveLevel( !hasChildren )
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
+	not ( $level: Level( $items: descItems ) and 
+		DescItem(type in 
+		  ( "ZP2015_ARRANGER" ) )
+		  from $items )
+then
+	results.createMissing("ZP2015_ARRANGER", "Není uveden zpracovatel", "ZP2015_POL_BASIC");
+end
+
+// Kontrola, zda každý list má určen jazyk
+rule "List musí mít směrem ke kořeni alespoň jeden jazyk"
+when
+	$activeLevel: ActiveLevel( !hasChildren )
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
+	not ( $level: Level( $items: descItems ) and 
+		DescItem(type in 
+		  ( "ZP2015_LANGUAGE" ) )
+		  from $items )
+then
+	results.createMissing("ZP2015_LANGUAGE", "Není uveden jazyk", "ZP2015_POL_BASIC");
+end
