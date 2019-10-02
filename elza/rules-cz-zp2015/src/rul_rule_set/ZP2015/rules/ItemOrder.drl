@@ -1,0 +1,26 @@
+package MZA.ItemOrder;
+
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.drools.model.AvailableDescItems;
+import cz.tacr.elza.drools.model.ActiveLevel;
+import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.drools.model.StructObjItem;
+
+//----------------------------------------------
+// Pořadí uložení
+//----------------------------------------------
+
+rule "Pořadí uložení - doporučené pro kar, fas"
+no-loop
+when $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_STORAGE_ID" && structured!=null && !inherited ) from $activeLevel.descItems
+    StructObjItem(type=="ZP2015_PACKET_TYPE" && specCode in ("ZP2015_PACKET_TYPE_KAR", "ZP2015_PACKET_TYPE_FAS")) from $descItem.structured.items
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $activeLevel.descItems
+    $itemType: RulItemTypeExt( code in ("ZP2015_ITEM_ORDER") )
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
+end

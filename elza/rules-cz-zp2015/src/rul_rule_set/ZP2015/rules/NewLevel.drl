@@ -1,0 +1,111 @@
+package ZP2015;
+
+import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.NewLevel;
+import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.drools.model.NewLevelApproach;
+
+global cz.tacr.elza.drools.model.NewLevelApproaches results;
+
+/*
+ * Implementační poznámky:
+ * 
+ * Nový uzel se pozná podle chybějícího nodeId nebo je typu NewLevel
+ */
+
+/*
+ * Kořen archivní pomůcky
+ *
+ * Součástí kořene je i výchozí nastavení způsobu pořádání
+ */
+rule "Archivní soubor"
+when
+    NewLevel( parent==null )
+then
+	NewLevelApproach approach = results.create("Archivní soubor");
+	approach.addDescItem("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_ROOT");
+	// vychozí způsob pořádání
+	approach.addDescItem("ZP2015_ARRANGEMENT_TYPE", "ZP2015_ARRANGEMENT_MAN");
+end
+
+rule "Dílčí list"
+when
+	$level: NewLevel( parent!=null && $items: parent.descItems )
+    DescItem( type == "ZP2015_LEVEL_TYPE" && specCode == "ZP2015_LEVEL_ROOT" ) from $items
+then
+	NewLevelApproach approach = results.create("Dílčí list");
+	approach.addDescItem("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_SECTION");
+end
+
+rule "Série"
+when
+	$level: NewLevel( parent!=null && $items: parent.descItems )
+    DescItem( type == "ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES") ) from $items
+	// Serii nelze pridat pokud pred existuje neco jineho nez serie
+	not ( NewLevel ( siblingBefore!=null && $itemsBefore: siblingBefore.descItems ) and
+		DescItem( type == "ZP2015_LEVEL_TYPE" && specCode != "ZP2015_LEVEL_SERIES" ) from $itemsBefore )
+	// Serii nelze pridat pokud za existuje neco jineho nez serie 
+	not ( NewLevel ( siblingAfter!=null && $itemsAfter: siblingAfter.descItems ) and
+		DescItem( type == "ZP2015_LEVEL_TYPE" && specCode != "ZP2015_LEVEL_SERIES" ) from $itemsAfter ) 
+then
+	NewLevelApproach approach = results.create("Série");
+	approach.addDescItem("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_SERIES");
+end
+
+//
+// Pravidlo pro přidání složky
+//
+rule "Složka"
+when
+	$level: NewLevel( parent!=null && $items: parent.descItems)
+	// rodič je série nebo složka
+	DescItem( type == "ZP2015_LEVEL_TYPE" && ( specCode in ("ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_FOLDER") ) ) from $items
+	// rodič nesmí být složka jednotlivostí
+	not DescItem( type == "ZP2015_FOLDER_TYPE" && specCode == "ZP2015_FOLDER_SINGLE_TYPE" ) from $items
+    // Složku nelze přidat pokud "sourozenec před" je série
+    not ( NewLevel ( siblingBefore!=null && $itemsBefore: siblingBefore.descItems ) and
+          DescItem( type == "ZP2015_LEVEL_TYPE" && specCode == "ZP2015_LEVEL_SERIES" ) from $itemsBefore )
+    // Složku nelze přidat pokud "sourozenec za" je série
+    not ( NewLevel ( siblingAfter!=null && $itemsAfter: siblingAfter.descItems ) and
+          DescItem( type == "ZP2015_LEVEL_TYPE" && specCode == "ZP2015_LEVEL_SERIES" ) from $itemsAfter )
+	// rodič nesmi byt slozka manip seznamu s vice prvky popisu
+	not ( DescItem( type == "ZP2015_EXTRA_UNITS" ) from $items )
+then
+	NewLevelApproach approach = results.create("Složka");
+	approach.addDescItem("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_FOLDER");
+end
+
+rule "Jednotlivost pod sérii"
+when
+	$level: NewLevel( parent!=null && $items: parent.descItems )
+	DescItem( type == "ZP2015_LEVEL_TYPE" && specCode == "ZP2015_LEVEL_SERIES" ) from $items 
+	// Jednotlivost nejde pridat pokud pred existuje serie
+	 not ( NewLevel ( siblingBefore!=null && $itemsBefore: siblingBefore.descItems ) and
+		DescItem( type == "ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_SECTION") ) from $itemsBefore )
+	// Jednotlivost nejde pridat pokud za existuje serie 
+	not ( NewLevel ( siblingAfter!=null && $itemsAfter: siblingAfter.descItems ) and
+		DescItem( type == "ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_SECTION") ) from $itemsAfter ) 
+then
+    NewLevelApproach approach = results.create("Jednotlivost");
+    approach.addDescItem("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_ITEM");
+end
+
+rule "Jednotlivost pod složkou"
+when
+	$level: NewLevel( parent!=null && $items: parent.descItems )
+	DescItem( type == "ZP2015_LEVEL_TYPE" && specCode == "ZP2015_LEVEL_FOLDER" ) from $items 
+	// Nesmi byt slozka manip seznamu s vice prvky popisu
+	not ( DescItem( type == "ZP2015_EXTRA_UNITS" ) from $items )
+then
+    NewLevelApproach approach = results.create("Jednotlivost");
+    approach.addDescItem("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_ITEM");
+end
+
+rule "Část jednotlivosti"
+when
+	$level: NewLevel( parent!=null && $items: parent.descItems)
+	DescItem( type == "ZP2015_LEVEL_TYPE" && ( specCode == "ZP2015_LEVEL_ITEM" || specCode == "ZP2015_LEVEL_PART" ) ) from $items
+then
+    NewLevelApproach approach = results.create("Část jednotlivosti");
+    approach.addDescItem("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_PART");
+end

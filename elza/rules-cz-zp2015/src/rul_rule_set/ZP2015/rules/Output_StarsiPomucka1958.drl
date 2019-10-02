@@ -1,0 +1,101 @@
+package ZP2015;
+
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.drools.model.AvailableDescItems;
+import cz.tacr.elza.drools.model.ActiveLevel;
+import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.DescItem;
+
+import java.util.Arrays;
+import java.util.Set;
+import cz.tacr.elza.domain.RulItemType;
+
+rule "Možné neopakovatelné prvky"
+no-loop
+when
+    $itemType : RulItemTypeExt( code in (
+        "ZP2015_RELATED_UNITS",
+        "ZP2015_ARRANGEMENT_INFO"
+    ) )
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+    $itemType.setRepeatable(false);
+end
+
+rule "Možné opakovatelné prvky - přílohy"
+no-loop
+when
+    $itemType : RulItemTypeExt( code in (
+        "ZP2015_ATTACHMENT"
+    ) )
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+    $itemType.setRepeatable(true);
+end
+
+rule "Doporučené neopakovatelné prvky"
+no-loop
+when
+    $itemType : RulItemTypeExt( code in (
+        "ZP2015_UNIT_CONTENT"
+    ) )
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
+    $itemType.setRepeatable(false);
+end
+
+// Povinné prvky popisu
+rule "Vybrané jsou povinné"
+no-loop
+when
+    $itemType : RulItemTypeExt( code in (
+		"ZP2015_UNIT_CURRENT_STATUS",
+		"ZP2015_UNIT_SOURCE",
+        "ZP2015_UNIT_HIST",
+        "ZP2015_FUTURE_UNITS",
+        "ZP2015_UNIT_ARR",
+        "ZP2015_ARRANGE_RULES",
+        "ZP2015_DESCRIPTION_DATE",
+        "ZP2015_DATE_RANGE",
+        "ZP2015_UNIT_COUNT_TABLE",
+        "ZP2015_UNIT_COUNT_SUM",
+        "ZP2015_UNITS_AMOUNT",
+        "ZP2015_FINDING_AID_DATE",
+        "ZP2015_ARRANGER_TEXT",
+        "ZP2015_FINDING_AID_EDITOR",
+        "ZP2015_FINDING_AID_APPROVED_BY",
+        // Je nutne urcit typ vystupu
+        "ZP2015_OUTPUT_TYPE",
+        "ZP2015_RELEASE_DATE_PLACE"
+        ) )
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
+    $itemType.setRepeatable(false);
+end
+
+// Povinné opakovatelné prvky popisu
+rule "Povinné opakovatelné prvky popisu"
+no-loop
+when
+    $itemType : RulItemTypeExt( code in (
+        "ZP2015_ARRANGER",
+        "ZP2015_ORIGINATOR", 
+        "ZP2015_LANGUAGE" ) )
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
+    $itemType.setRepeatable(true);
+end
+
+//
+// Typ vystupu - jen Inventar a Katalog
+//
+rule "Typy výstupů dle ZP2015"
+no-loop
+when
+    $itemType : RulItemTypeExt( code == "ZP2015_OUTPUT_TYPE" )
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_OUTPUT_INV", "ZP2015_OUTPUT_KAT", "ZP2015_OUTPUT_PROV_INV") ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
