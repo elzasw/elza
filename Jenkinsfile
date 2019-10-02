@@ -8,14 +8,12 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh "cd elza"
-                sh "mvn -Prelease clean install"
+                sh "cd elza && mvn -Prelease clean install"
             }
         }
         stage('Test') {
             steps {
-            sh "cd elza"
-                sh "mvn -Ptest test"
+                sh "cd elza && mvn -Ptest test"
             }
             post {
                 always {
@@ -28,9 +26,8 @@ pipeline {
                  branch 'elza-1.3'
              }
             steps {
-                sh "cd elza"
-                sh "cp distrib/elza-war/target/elza-*.war distrib/elza-docker/elza.war"
-                sh "$HOME/docker-buildtag.sh elza distrib/elza-docker"
+                sh "cd elza && cp distrib/elza-war/target/elza-*.war distrib/elza-docker/elza.war"
+                sh "cd elza && $HOME/docker-buildtag.sh elza distrib/elza-docker"
             }
         }
     }
