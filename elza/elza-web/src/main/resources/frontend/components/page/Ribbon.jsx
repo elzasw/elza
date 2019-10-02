@@ -121,6 +121,12 @@ class Ribbon extends AbstractReactComponent {
                             <Icon glyph="fa-external-link"/>
                             <span className="btnText">{i18n('ribbon.action.admin.externalSystems')}</span>
                         </Button>
+                    </LinkContainer>,
+                    <LinkContainer key="ribbon-btn-admin-show-logs" to="/admin/logs">
+                        <Button>
+                            <Icon glyph="fa-file-text-o"/>
+                            <span className="btnText">{i18n('ribbon.action.admin.showLogs')}</span>
+                        </Button>
                     </LinkContainer>]}
                 </RibbonGroup>
             );

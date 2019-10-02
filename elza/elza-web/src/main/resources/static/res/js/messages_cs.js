@@ -317,6 +317,7 @@ var messages = {
     "ribbon.action.admin.deleteSettings": "Smazat nastavení",
     "ribbon.action.admin.deleteSettings.title": "Smazat nastavení",
     "ribbon.action.admin.externalSystems": "Externí systémy",
+    "ribbon.action.admin.showLogs": "Zobrazení logu",
     "ribbon.action.admin.extSystem.add": "Přidat systém",
     "ribbon.action.admin.extSystem.edit": "Editovat systém",
     "ribbon.action.admin.extSystem.delete": "Smazat systém",
