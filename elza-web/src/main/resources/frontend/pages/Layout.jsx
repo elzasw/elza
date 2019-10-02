@@ -35,6 +35,7 @@ import {
     AdminGroupPage,
     AdminFundPage,
     AdminExtSystemPage,
+    AdminLogsPage,
     AdminRequestsQueuePage,
     NodePage,
 } from 'pages'
@@ -164,6 +165,7 @@ class Layout extends AbstractReactComponent {
                             <Route path="/admin/packages" component={AdminPackagesPage} />
                             <Route path="/admin/requestsQueue" component={AdminRequestsQueuePage} />
                             <Route path="/admin/extSystem" component={AdminExtSystemPage} />
+                            <Route path="/admin/logs" component={AdminLogsPage} />
                             <Route component={AdminPage} />
                         </Switch>
                     </Route>

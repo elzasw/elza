@@ -1,6 +1,7 @@
 export AdminPage from 'pages/admin/AdminPage.jsx';
 export AdminPackagesPage from 'pages/admin/AdminPackagesPage.jsx';
 export AdminExtSystemPage from 'pages/admin/AdminExtSystemPage.jsx';
+export AdminLogsPage from 'pages/admin/AdminLogsPage.jsx';
 export AdminUserPage from 'pages/admin/AdminUserPage.jsx';
 export AdminGroupPage from 'pages/admin/AdminGroupPage.jsx';
 export AdminFundPage from 'pages/admin/AdminFundPage.jsx';

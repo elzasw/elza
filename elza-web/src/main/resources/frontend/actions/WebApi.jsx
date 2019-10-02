@@ -887,6 +887,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.adminUrl + '/externalSystems/simple');
     }
 
+    getLogs(lineCount, firstLine) {
+        return AjaxUtils.ajaxGet(WebApiCls.adminUrl + '/logs', {lineCount, firstLine});
+    }
+
     getRuleSets() {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/getRuleSets');
     }
