@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--suppress XmlUnusedNamespaceDeclaration -->
+<jaxb:bindings
+        xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+        xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        version="2.1">
+
+    <jaxb:globalBindings
+            choiceContentProperty="true"
+            fixedAttributeAsConstantProperty="true"
+            generateElementClass="false"
+            generateElementProperty="false"
+            generateIsSetMethod="false"
+            mapSimpleTypeDef="false"
+            typesafeEnumMemberName="generateName">
+    </jaxb:globalBindings>
+    <jaxb:bindings schemaLocation="dspace-import-dao.xsd" node="//xs:schema">
+        <jaxb:schemaBindings>
+            <jaxb:package name="cz.tacr.elza.daoimport.schema.dao"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+</jaxb:bindings>
