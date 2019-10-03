@@ -197,15 +197,17 @@ public class AdminController {
                     if (c == '\n') {
                         ArrayUtils.reverse(lineArray);
                         lines.add(new String(lineArray, "UTF8"));
+                        lineArray = new byte[0];
                         if (count == lineCount) break;
                         count++;
-                        lineArray = new byte[0];
                     } else {
                         lineArray = ArrayUtils.add(lineArray, c);
                     }
                 }
-                ArrayUtils.reverse(lineArray);
-                lines.add(new String(lineArray, "UTF8"));
+                if (lineArray.length > 0) {
+                    ArrayUtils.reverse(lineArray);
+                    lines.add(new String(lineArray, "UTF8"));
+                }
                 channel.close();
             }
         } catch (FileNotFoundException e) {
@@ -216,7 +218,7 @@ public class AdminController {
             logger.error("Chyba při čtení souboru logu " + logFilePath + ".", e);
         }
 
-        logger.info("Z logu načteno " + lineCount + " řádek.");
+//        logger.info("Z logu načteno " + lineCount + " řádek.");
 
         LogVO result = new LogVO();
         Collections.reverse(lines);

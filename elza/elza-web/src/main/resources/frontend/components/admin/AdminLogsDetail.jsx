@@ -22,6 +22,7 @@ import {WebApi} from 'actions/index.jsx';
 import './AdminLogsDetail.less';
 import {Col, Row} from "react-bootstrap";
 
+
 /**
  * Komponenta detailu osoby
  */
@@ -141,25 +142,24 @@ class AdminLogsDetail extends AbstractReactComponent {
 
         const isOnEnd = this.isOnEnd();
 
-        let cls = "";
+        let cls = "btn";
         if (isOnEnd) {
             cls += " active";
         }
 
         return <section className="logs-detail">
             <Row className="log-controll-buttons">
-                <Col xs={1}>
+                <Col xs="1">
                     <div className="">
                         <button className={cls} onClick={this.scrollDown}>
                             <Icon glyph="fa-sort-desc"/>
                         </button>
-                        <button onClick={this.pauseContinue}>{this.stop ? 'Pokračovat' : 'Pozastavit'}</button>
+                        <button className="btn" onClick={this.pauseContinue}>{this.stop ? 'Pokračovat' : 'Pozastavit'}</button>
                     </div>
                 </Col>
-                <Col xs={2}>
-                    <input type="number" value={lineCount} onChange={this.changeLineCount} className="form-control input-lg" min="1" max="10000" />
+                <Col xs="3">
+                    <FormInput type="number" value={lineCount} min="1" max="10000" onChange={this.changeLineCount} label={false} />
                 </Col>
-                <Col xs={9}/>
             </Row>
             <Row className="">
                 <Col xs={12}>
