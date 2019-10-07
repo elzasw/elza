@@ -126,14 +126,18 @@ class NodePanel extends AbstractReactComponent {
         }
     }
 
+    // get new focus item
     getFocusItemIndex(props, prevFocusItemIndex) {
         const {node} = props
 
-        var focusItemIndex = prevFocusItemIndex
         if (node.selectedSubNodeId !== null) {
-            focusItemIndex = indexById(node.childNodes, node.selectedSubNodeId)
+            var focusItemIndex = indexById(node.childNodes, node.selectedSubNodeId);
+            // check if index found and defined
+            if(Number.isInteger(focusItemIndex)) {
+                return focusItemIndex
+            }
         }
-        return focusItemIndex || prevFocusItemIndex;
+        return prevFocusItemIndex;
     }
 
     componentDidMount() {
