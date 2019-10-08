@@ -1,3 +1,34 @@
+# Sestavení
+
+Předpokládané softwarové vybavení:
+
+* [Git 1.9+](https://git-scm.com/download/win)
+* [Oracle JDK 8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
+* [Apache Maven 3.2.+](https://maven.apache.org/download.cgi)
+
+## Získání zdrojových kódů
+Příkaz:
+```
+git clone https://elza-developer@bitbucket.org/tacr/elza-release.git
+```
+
+## Sestavení
+Před sestavením modulů je nutné mít v mvn repository ostatní moduly projektu DSpace. Proto je potřeba stáhnout a sestavit kompletní projekt
+DSpace. Pak je teprve možné sestavit integrační moduly.
+
+* clone projektu [DSpace](https://github.com/DSpace/DSpace.git)
+* přepnutí na větev dspace-6_x
+* sestavení:
+```
+mvn install
+```
+
+Nyní je možné sestavit integrační moduly. Sestavení se provádí pro každý modul zvlášť. V adresářích **_dspace\modules\xmlui_** a **_dspace-elza_** spuštěním příkazu:
+```
+mvn clean package
+```
+Ve složce /target v každém z adresářů vzniknou soubory **_xmlui-6.4-SNAPSHOT.war_** a **_dspace-elza-6.4-SNAPSHOT.war_**.
+
 # Návod na instalaci modulů do DSpace
 - V nainstalovaném DSpace je potřeba najít soubor _**local.cfg**_
 - V souboru **_local.cfg_** zjistit adresář který je nastavený v proměnné _**dspace.dir**_
@@ -12,9 +43,10 @@
   - -Dorg.apache.cxf.stax.allowInsecureParser=1
 - Uložit
 ## Kopie souborů 
-- Naše moduly budeme distribuovat jako **_war_** soubory - VM: Kde je vezmu? Popsal bych i to, jak se budou jmenovat...
-- Soubory je potřeba nakopírovat do adresáře **_webapps_** v tomcatu
-- JV: Celou kapitolu upravíme až budeme vědět jak budeme soubory distribuovat
+- Naše moduly budeme distribuovat jako **_war_** soubory
+- Soubory se po sestavení budou nacházet v aresářích **_dspace\modules\xmlui\target_** a **_dspace-elza\target_**  a budou
+se jmenovat **_xmlui-6.4-SNAPSHOT.war_** a **_dspace-elza-6.4-SNAPSHOT.war_**
+- Soubory je potřeba nakopírovat do adresáře **_webapps_** v tomcatu a přejmenovat je na **_xmlui.war_** a **_elza.war_**
 ## Nastavení modulu ELZA
 - Do adresáře **_${dspace.dir}/config/modules_** nahrát **_elza.cfg_**
 - Na konec souboru **_dspace.cfg_** je potřeba vložit vazbu na **_elza.cfg_**
