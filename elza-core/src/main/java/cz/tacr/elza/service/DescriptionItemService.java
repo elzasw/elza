@@ -1564,7 +1564,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
 		ArrDescItem descItemNew = prepareNewDescItem(descItem, dataNew, change);
 		descItemNew = descItemRepository.save(descItemNew);
-        arrangementCacheService.changeDescItem(descItem.getNodeId(), descItem, false);
+        arrangementCacheService.changeDescItem(descItem.getNodeId(), descItemNew, false);
     }
 
 
