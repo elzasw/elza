@@ -1,0 +1,17 @@
+<output-types>
+    <output-type code="ZP2015_MANIP_SEZNAM" filename="Output_ManipSeznam.drl">
+        <name>Archivní pomůcka (manipulační seznam)</name>
+    </output-type>
+    <output-type code="ZP2015_INVENTAR" filename="Output_Inventar.drl">
+        <name>Archivní pomůcka (inventář, katalog)</name>
+    </output-type>
+    <output-type code="ZP2015_STITKY">
+        <name>Štítky a košilky</name>
+    </output-type>
+    <output-type code="STARSI_POMUCKA_1958" filename="Output_StarsiPomucka1958.drl">
+        <name>Starší archivní pomůcka (dle pravidel 1958)</name>
+    </output-type>
+    <!--<output-type code="SOUPIS" >
+        <name>Soupis</name>
+    </output-type>-->
+</output-types>
