@@ -1,3 +1,5 @@
+package script.groovy
+
 import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import cz.tacr.elza.domain.ParPartyNameComplement;

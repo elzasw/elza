@@ -1,3 +1,5 @@
+package script.groovy
+
 import cz.tacr.elza.domain.ArrNode
 import cz.tacr.elza.ws.types.v1.Did
 import org.springframework.util.Assert
