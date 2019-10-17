@@ -121,8 +121,8 @@ Original source: EAD3
 Note: Some types of DAO does not have to have link to any file.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
+			<xs:element name="folderGroup" type="eat:folderGroup" minOccurs="0" maxOccurs="1"/>
 			<xs:element name="fileGroup" type="eat:fileGroup" minOccurs="0" maxOccurs="1"/>
-			<xs:element name="relatedFileGroup" type="eat:relatedFileGroup" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 		<xs:attribute name="identifier" use="required" type="eat:identifier">
 			<xs:annotation>
@@ -341,7 +341,9 @@ Source: EAD3</xs:documentation>
 		<xs:annotation>
 			<xs:documentation>The file element provides access to the content files for the digital object being described.</xs:documentation>
 		</xs:annotation>
-		<xs:sequence/>
+		<xs:sequence>
+			<xs:element name="description" type="eat:description" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
 		<xs:attributeGroup ref="eat:fileCore"/>
 		<xs:attribute name="identifier" use="required" type="eat:identifier">
 			<xs:annotation>
@@ -357,6 +359,33 @@ Source: EAD3</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
 			<xs:element name="file" type="eat:file" minOccurs="1" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="foder">
+		<xs:annotation>
+			<xs:documentation>Digital archival object might have several related files. Several related files are connected to digital archival object wrapped in this named container.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="fileGroup" type="eat:fileGroup" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="folderGroup" type="eat:folderGroup" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+		<xs:attribute name="identifier" use="optional" type="eat:identifier">
+			<xs:annotation>
+				<xs:documentation>Identifier for related set of digitial data object is optional.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="label" use="optional" type="eat:label">
+			<xs:annotation>
+				<xs:documentation>Optional name of the related file group. It is recommended to name related files.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="folderGroup">
+		<xs:annotation>
+			<xs:documentation>Group of foders</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="foder" type="eat:foder" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="materials">
@@ -395,24 +424,6 @@ Source: EAD3</xs:documentation>
 			<xs:element name="username" type="eat:username" minOccurs="0" maxOccurs="1"/>
 		</xs:sequence>
 		<xs:attribute name="systemIdentifier" use="optional" type="eat:systemIdentifier"/>
-	</xs:complexType>
-	<xs:complexType name="relatedFileGroup">
-		<xs:annotation>
-			<xs:documentation>Digital archival object might have several related files. Several related files are connected to digital archival object wrapped in this named container.</xs:documentation>
-		</xs:annotation>
-		<xs:sequence>
-			<xs:element name="fileGroup" type="eat:fileGroup" minOccurs="1" maxOccurs="1"/>
-		</xs:sequence>
-		<xs:attribute name="identifier" use="optional" type="eat:identifier">
-			<xs:annotation>
-				<xs:documentation>Identifier for related set of digitial data object is optional.</xs:documentation>
-			</xs:annotation>
-		</xs:attribute>
-		<xs:attribute name="label" use="optional" type="eat:label">
-			<xs:annotation>
-				<xs:documentation>Optional name of the related file group. It is recommended to name related files.</xs:documentation>
-			</xs:annotation>
-		</xs:attribute>
 	</xs:complexType>
 	<xs:complexType name="requestRevoked">
 		<xs:annotation>
@@ -495,6 +506,11 @@ Source: METS, version 3.0</xs:documentation>
 		<xs:attribute name="mimetype" use="optional" type="xs:string">
 			<xs:annotation>
 				<xs:documentation>MIMETYPE (string/O): The IANA MIME media type for the associated file or wrapped content. Some values for this attribute can be found on the IANA website.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="name" use="optional" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>File name</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 		<xs:attribute name="size" use="optional" type="xs:long">
