@@ -84,7 +84,6 @@ import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.search.IndexWorkProcessor;
@@ -485,6 +484,13 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         return descItemCreated;
     }
 
+    public ArrDescItem createDescriptionItem(final ArrDescItem descItem,
+                                             final Integer nodeId,
+                                             final ArrFundVersion version,
+                                             final ArrChange createChange) {
+        ArrNode node = nodeRepository.getOne(nodeId);
+        return createDescriptionItem(descItem, node, version, createChange);
+    }
     /**
      * Vytvoření hodnoty atributu. Při ukládání nedojde ke zvýšení verze uzlu.
      * - se spuštěním validace uzlu
@@ -1558,6 +1564,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
 		ArrDescItem descItemNew = prepareNewDescItem(descItem, dataNew, change);
 		descItemNew = descItemRepository.save(descItemNew);
+        arrangementCacheService.changeDescItem(descItem.getNodeId(), descItemNew, false);
     }
 
 

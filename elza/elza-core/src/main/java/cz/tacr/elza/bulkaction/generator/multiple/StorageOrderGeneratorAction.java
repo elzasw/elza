@@ -110,11 +110,9 @@ public class StorageOrderGeneratorAction extends Action {
         di.setValue(lastUsedValue);
 
         ArrDescItem descItem = new ArrDescItem();
-        descItem.setCreateChange(change);
         descItem.setItemType(orderItemType.getEntity());
-        descItem.setNode(level.getNode());
         descItem.setData(di);
-        descriptionItemService.createDescriptionItem(descItem, level.getNode(), fundVersion, change);
+        descriptionItemService.createDescriptionItem(descItem, level.getNodeId(), fundVersion, change);
     }
 
     private void storeLastUsedOrder(Integer structObjId, ArrDescItem orderItem) {

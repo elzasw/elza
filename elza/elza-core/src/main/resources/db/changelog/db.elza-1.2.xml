@@ -193,5 +193,32 @@
             <column name="view_thumbnail_url" type="nvarchar(1000)"/>
         </addColumn>
     </changeSet>
+    
+    <changeSet id="20190503100000" author="ppyta">
+        <createIndex indexName="rul_item_aptype_item_type_idx" tableName="rul_item_aptype">
+            <column name="item_type_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="arr_output_item_output_idx" tableName="arr_output_item">
+            <column name="output_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="arr_output_result_output_idx" tableName="arr_output_result">
+            <column name="output_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="arr_output_result_chnage_idx" tableName="arr_output_result">
+            <column name="change_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="arr_output_file_result_idx" tableName="arr_output_file">
+            <column name="output_result_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="arr_output_fund_idx" tableName="arr_output">
+            <column name="fund_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="arr_output_create_change_idx" tableName="arr_output">
+            <column name="create_change_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="arr_output_delete_change_idx" tableName="arr_output">
+            <column name="delete_change_id" type="int"/>
+        </createIndex>
+    </changeSet>
 
 </databaseChangeLog>
