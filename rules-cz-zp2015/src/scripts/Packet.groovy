@@ -14,7 +14,7 @@ import org.apache.commons.lang3.StringUtils
 
 @Field SettingStructTypeSettings structTypeSettings = STRUCTURE_TYPE_SETTINGS;
 
-@Field static int packetLeadingZeros = 8;
+@Field int packetLeadingZeros = 8;
 
 generate()
 return;
@@ -62,10 +62,13 @@ void generate()
     appendValue(valueBuilder, "ZP2015_PACKET_POSTFIX");
     appendValue(sortValueBuilder, "ZP2015_PACKET_POSTFIX");
     
+    // Prepare complement
+    String complement = toStringValue("ZP2015_PACKET_TYPE");
+    
     // store result
     result.setValue(valueBuilder.toString().trim());
     result.setSortValue(sortValueBuilder.toString().trim());
-    // result.setComplement("xxx");
+    result.setComplement(complement);
 }
 
 String toStringValue(String itemTypeCode) {
@@ -84,7 +87,10 @@ void appendValue(StringBuilder sb, String itemTypeCode)
             }
             ArrData data = item.getData();
             if(data!=null) {
-                sb.append(data.getFulltextValue());
+                String fullText = data.getFulltextValue();
+                if(fullText!=null) {
+                    sb.append(fullText);
+                }
             }
         }
     }

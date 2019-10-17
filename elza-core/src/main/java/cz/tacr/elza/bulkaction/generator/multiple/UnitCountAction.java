@@ -2,8 +2,10 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -24,7 +26,6 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
@@ -64,6 +65,11 @@ public class UnitCountAction extends Action {
 	 * Map is order according type
 	 */
 	private Map<String, Integer> resultMap = new TreeMap<>();
+
+    /**
+     * Již zapracované obaly
+     */
+    private Set<Integer> countedObjects = new HashSet<>();
 
     @Autowired
     StructuredItemRepository structureItemRepository;
@@ -226,7 +232,7 @@ public class UnitCountAction extends Action {
 		return config.isLocal();
 	}
 
-	public void createDescItem(ArrNode node, String value, int count) {
+    public void createDescItem(Integer nodeId, String value, int count) {
 		ArrDataInteger arrDataInteger = new ArrDataInteger();
 		arrDataInteger.setValue(count);
 
@@ -242,6 +248,15 @@ public class UnitCountAction extends Action {
             }
             descItem.setItemSpec(rulItemSpec);
         }
-		descriptionItemService.createDescriptionItem(descItem, node, fundVersion, change);
+        descriptionItemService.createDescriptionItem(descItem, nodeId, fundVersion, change);
 	}
+
+    public boolean isCountedObject(Integer packetId) {
+        return countedObjects.contains(packetId);
+    }
+
+    public void addCountedObject(Integer packetId) {
+        Validate.isTrue(!countedObjects.contains(packetId));
+        countedObjects.add(packetId);
+    }
 }

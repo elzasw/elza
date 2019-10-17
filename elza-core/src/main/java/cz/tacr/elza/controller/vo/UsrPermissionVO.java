@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
+import org.apache.commons.lang3.Validate;
+
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.UsrPermission;
@@ -71,6 +73,7 @@ public class UsrPermissionVO {
         groupId = srcPerm.getGroupId();
         if (inheritedPermission) {
             inherited = true;
+            Validate.notNull(groupId);
         }
     }
 
