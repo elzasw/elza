@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(prefix = "dcstorage")
+@ConfigurationProperties("dcstorage")
 public class DCStorageConfig implements InitializingBean {
 
 	private static DCStorageConfig instance;
@@ -15,6 +15,10 @@ public class DCStorageConfig implements InitializingBean {
 	private String basePath = "storage";
 
 	private boolean rejectMode = false;
+
+    public DCStorageConfig() {
+
+    }
 
 	public String getRepositoryIdentifier() {
 		return repositoryIdentifier;
