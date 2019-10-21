@@ -309,11 +309,15 @@ public class Authorization {
 
 	private boolean checkNodePermission(final Permission permission, final MethodInfo methodInfo, final UserDetail userDetail) {
 		return hasPermission(methodInfo, (authParam, parameterValue) -> {
-			Integer entityId = loadNodeId(parameterValue, authParam.type());
-			if (userDetail.hasPermission(permission, entityId)) {
-				return PermissionResult.GRANT_ACCESS;
+			if (Type.NODE == authParam.type()) {
+				Integer entityId = loadNodeId(parameterValue, authParam.type());
+				if (userDetail.hasPermission(permission, entityId)) {
+					return PermissionResult.GRANT_ACCESS;
+				}
+				return PermissionResult.DENY_ACCESS;
+			} else {
+				return PermissionResult.DENY_ACCESS;
 			}
-			return PermissionResult.DENY_ACCESS;
 		});
 	}
 

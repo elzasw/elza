@@ -445,139 +445,141 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         let validateField
         let normalizeField
         var items = []
-        switch (dataType.code) {
-            case 'TEXT':
-            case 'STRING':
-            case 'FORMATTED_TEXT':
-            case 'UNITID':
-                renderFields = renderTextFields
-                validateField = (code, valuesCount, value, index) => {
-                    return value ? null : i18n('global.validation.required')
-                }
-                items = [
-                    {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
-                    {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
-                    {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
-                    {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
-                    {values: 1, code: 'CONTAIN', name: i18n('arr.fund.filterSettings.condition.string.contain')},
-                    {values: 1, code: 'NOT_CONTAIN', name: i18n('arr.fund.filterSettings.condition.string.notContain')},
-                    {values: 1, code: 'BEGIN', name: i18n('arr.fund.filterSettings.condition.begin')},
-                    {values: 1, code: 'END', name: i18n('arr.fund.filterSettings.condition.end')},
-                    {values: 1, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
-                ]
-                break
-            case 'INT':
-            case 'DECIMAL':
-                renderFields = renderTextFields
-                normalizeField = (code, valuesCount, value, index) => {
-                    return dataType.code === 'INT' ? normalizeInt(value) : normalizeDouble(value)
-                }
-                validateField = (code, valuesCount, value, index) => {
-                    if (!value) return i18n('global.validation.required')
-                    return dataType.code === 'INT' ? validateInt(value) : validateDouble(value)
-                }
-                items = [
-                    {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
-                    {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
-                    {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
-                    {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
-                    {values: 1, code: 'GT', name: i18n('arr.fund.filterSettings.condition.gt')},
-                    {values: 1, code: 'GE', name: i18n('arr.fund.filterSettings.condition.ge')},
-                    {values: 1, code: 'LT', name: i18n('arr.fund.filterSettings.condition.lt')},
-                    {values: 1, code: 'LE', name: i18n('arr.fund.filterSettings.condition.le')},
-                    {values: 1, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
-                    {values: 1, code: 'NE', name: i18n('arr.fund.filterSettings.condition.ne')},
-                    {values: 2, code: 'INTERVAL', name: i18n('arr.fund.filterSettings.condition.interval')},
-                    {values: 2, code: 'NOT_INTERVAL', name: i18n('arr.fund.filterSettings.condition.notInterval')},
-                ]
-                break
-            case 'DATE':
-                renderFields = renderDateFields;
-                normalizeField = (code, valuesCount, value, index) => {
-                    return value
-                };
-                validateField = (code, valuesCount, value, index) => {
-                    if (!value) return i18n('global.validation.required')
-                };
-                items = [
-                    {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
-                    {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
-                    {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
-                    {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
-                    {values: 1, code: 'GT', name: i18n('arr.fund.filterSettings.condition.gt')},
-                    {values: 1, code: 'GE', name: i18n('arr.fund.filterSettings.condition.ge')},
-                    {values: 1, code: 'LT', name: i18n('arr.fund.filterSettings.condition.lt')},
-                    {values: 1, code: 'LE', name: i18n('arr.fund.filterSettings.condition.le')},
-                    {values: 1, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
-                    {values: 1, code: 'NE', name: i18n('arr.fund.filterSettings.condition.ne')},
-                    {values: 2, code: 'INTERVAL', name: i18n('arr.fund.filterSettings.condition.interval')},
-                    {values: 2, code: 'NOT_INTERVAL', name: i18n('arr.fund.filterSettings.condition.notInterval')},
-                ]
-                break
-            case 'PARTY_REF':
-            case 'RECORD_REF':
-                renderFields = renderTextFields
-                validateField = (code, valuesCount, value, index) => {
-                    return value ? null : i18n('global.validation.required')
-                }
-                items = [
-                    {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
-                    {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
-                    {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
-                    {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
-                    {values: 1, code: 'CONTAIN', name: i18n('arr.fund.filterSettings.condition.string.contain')},
-                ]
-                break
-            case 'UNITDATE':
-                renderFields = renderUnitdateFields.bind(this, calendarTypes)
-                validateField = (code, valuesCount, value, index) => {
-                    return new Promise(function (resolve, reject) {
-                        if (_ffs_validateTimer) {
-                            clearTimeout(_ffs_validateTimer)
-                            if (_ffs_prevReject) {
-                                _ffs_prevReject()
-                                _ffs_prevReject = null
+        if (dataType) {
+            switch (dataType.code) {
+                case 'TEXT':
+                case 'STRING':
+                case 'FORMATTED_TEXT':
+                case 'UNITID':
+                    renderFields = renderTextFields
+                    validateField = (code, valuesCount, value, index) => {
+                        return value ? null : i18n('global.validation.required')
+                    }
+                    items = [
+                        {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
+                        {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
+                        {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                        {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
+                        {values: 1, code: 'CONTAIN', name: i18n('arr.fund.filterSettings.condition.string.contain')},
+                        {values: 1, code: 'NOT_CONTAIN', name: i18n('arr.fund.filterSettings.condition.string.notContain')},
+                        {values: 1, code: 'BEGIN', name: i18n('arr.fund.filterSettings.condition.begin')},
+                        {values: 1, code: 'END', name: i18n('arr.fund.filterSettings.condition.end')},
+                        {values: 1, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
+                    ]
+                    break
+                case 'INT':
+                case 'DECIMAL':
+                    renderFields = renderTextFields
+                    normalizeField = (code, valuesCount, value, index) => {
+                        return dataType.code === 'INT' ? normalizeInt(value) : normalizeDouble(value)
+                    }
+                    validateField = (code, valuesCount, value, index) => {
+                        if (!value) return i18n('global.validation.required')
+                        return dataType.code === 'INT' ? validateInt(value) : validateDouble(value)
+                    }
+                    items = [
+                        {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
+                        {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
+                        {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                        {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
+                        {values: 1, code: 'GT', name: i18n('arr.fund.filterSettings.condition.gt')},
+                        {values: 1, code: 'GE', name: i18n('arr.fund.filterSettings.condition.ge')},
+                        {values: 1, code: 'LT', name: i18n('arr.fund.filterSettings.condition.lt')},
+                        {values: 1, code: 'LE', name: i18n('arr.fund.filterSettings.condition.le')},
+                        {values: 1, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
+                        {values: 1, code: 'NE', name: i18n('arr.fund.filterSettings.condition.ne')},
+                        {values: 2, code: 'INTERVAL', name: i18n('arr.fund.filterSettings.condition.interval')},
+                        {values: 2, code: 'NOT_INTERVAL', name: i18n('arr.fund.filterSettings.condition.notInterval')},
+                    ]
+                    break
+                case 'DATE':
+                    renderFields = renderDateFields;
+                    normalizeField = (code, valuesCount, value, index) => {
+                        return value
+                    };
+                    validateField = (code, valuesCount, value, index) => {
+                        if (!value) return i18n('global.validation.required')
+                    };
+                    items = [
+                        {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
+                        {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
+                        {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                        {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
+                        {values: 1, code: 'GT', name: i18n('arr.fund.filterSettings.condition.gt')},
+                        {values: 1, code: 'GE', name: i18n('arr.fund.filterSettings.condition.ge')},
+                        {values: 1, code: 'LT', name: i18n('arr.fund.filterSettings.condition.lt')},
+                        {values: 1, code: 'LE', name: i18n('arr.fund.filterSettings.condition.le')},
+                        {values: 1, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
+                        {values: 1, code: 'NE', name: i18n('arr.fund.filterSettings.condition.ne')},
+                        {values: 2, code: 'INTERVAL', name: i18n('arr.fund.filterSettings.condition.interval')},
+                        {values: 2, code: 'NOT_INTERVAL', name: i18n('arr.fund.filterSettings.condition.notInterval')},
+                    ]
+                    break
+                case 'PARTY_REF':
+                case 'RECORD_REF':
+                    renderFields = renderTextFields
+                    validateField = (code, valuesCount, value, index) => {
+                        return value ? null : i18n('global.validation.required')
+                    }
+                    items = [
+                        {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
+                        {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
+                        {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                        {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
+                        {values: 1, code: 'CONTAIN', name: i18n('arr.fund.filterSettings.condition.string.contain')},
+                    ]
+                    break
+                case 'UNITDATE':
+                    renderFields = renderUnitdateFields.bind(this, calendarTypes)
+                    validateField = (code, valuesCount, value, index) => {
+                        return new Promise(function (resolve, reject) {
+                            if (_ffs_validateTimer) {
+                                clearTimeout(_ffs_validateTimer)
+                                if (_ffs_prevReject) {
+                                    _ffs_prevReject()
+                                    _ffs_prevReject = null
+                                }
                             }
-                        }
-                        _ffs_prevReject = reject
-                        var fc = () => {
-                            WebApi.validateUnitdate(value)
-                                .then(json => {
-                                    resolve(json.message)
-                                })
-                        }
-                        _ffs_validateTimer = setTimeout(fc, 250);
-                    })
-                }
-                items = [
-                    {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
-                    {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
-                    {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
-                    {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
-                    {values: 2, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
-                    {values: 2, code: 'LT', name: i18n('arr.fund.filterSettings.condition.unitdate.lt')},
-                    {values: 2, code: 'GT', name: i18n('arr.fund.filterSettings.condition.unitdate.gt')},
-                    {values: 2, code: 'SUBSET', name: i18n('arr.fund.filterSettings.condition.unitdate.subset')},
-                    {values: 2, code: 'INTERSECT', name: i18n('arr.fund.filterSettings.condition.unitdate.intersect')},
-                ]
-                break
-            case 'COORDINATES':
-                renderFields = renderCoordinatesFields
-                validateField = (code, valuesCount, value, index) => {
-                    return validateCoordinatePoint(value)
-                }
-                items = [
-                    {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
-                    {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
-                    {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
-                    {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
-                    {values: 1, code: 'SUBSET', name: i18n('arr.fund.filterSettings.condition.coordinates.subset')},
-                    {values: 2, code: 'NEAR', name: i18n('arr.fund.filterSettings.condition.coordinates.near')},
-                ]
-                break
-            case 'JSON_TABLE':
-            case 'ENUM':
-                break
+                            _ffs_prevReject = reject
+                            var fc = () => {
+                                WebApi.validateUnitdate(value)
+                                    .then(json => {
+                                        resolve(json.message)
+                                    })
+                            }
+                            _ffs_validateTimer = setTimeout(fc, 250);
+                        })
+                    }
+                    items = [
+                        {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
+                        {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
+                        {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                        {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
+                        {values: 2, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
+                        {values: 2, code: 'LT', name: i18n('arr.fund.filterSettings.condition.unitdate.lt')},
+                        {values: 2, code: 'GT', name: i18n('arr.fund.filterSettings.condition.unitdate.gt')},
+                        {values: 2, code: 'SUBSET', name: i18n('arr.fund.filterSettings.condition.unitdate.subset')},
+                        {values: 2, code: 'INTERSECT', name: i18n('arr.fund.filterSettings.condition.unitdate.intersect')},
+                    ]
+                    break
+                case 'COORDINATES':
+                    renderFields = renderCoordinatesFields
+                    validateField = (code, valuesCount, value, index) => {
+                        return validateCoordinatePoint(value)
+                    }
+                    items = [
+                        {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
+                        {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
+                        {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
+                        {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
+                        {values: 1, code: 'SUBSET', name: i18n('arr.fund.filterSettings.condition.coordinates.subset')},
+                        {values: 2, code: 'NEAR', name: i18n('arr.fund.filterSettings.condition.coordinates.near')},
+                    ]
+                    break
+                case 'JSON_TABLE':
+                case 'ENUM':
+                    break
+            }
         }
 
         return {
