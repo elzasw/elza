@@ -161,7 +161,7 @@ class Ribbon extends AbstractReactComponent {
                     </LinkContainer>);
             }
 
-            if (userDetail.hasArrOutputPage(fundId) && userDetail.hasArrPage(fundId)) {    // právo na výstupy
+            if (userDetail.hasArrOutputPage(fundId)) {    // právo na výstupy
                 arrParts.push(
                     <LinkContainer key="ribbon-btn-arr-output" to="/arr/output">
                         <Button>
@@ -171,7 +171,7 @@ class Ribbon extends AbstractReactComponent {
                     </LinkContainer>);
             }
 
-            if (userDetail.hasFundActionPage(fundId) && userDetail.hasArrPage(fundId)) {    // právo na hromadné akce
+            if (userDetail.hasFundActionPage(fundId)) {    // právo na hromadné akce
                 arrParts.push(
                     <LinkContainer key="ribbon-btn-arr-actions" to="/arr/actions">
                         <Button>
