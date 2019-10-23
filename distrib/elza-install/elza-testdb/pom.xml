@@ -12,6 +12,13 @@
     <artifactId>elza-testdb</artifactId>
     <packaging>jar</packaging>
 
+    <dependencies>
+        <dependency>
+            <groupId>javax.xml.ws</groupId>
+            <artifactId>jaxws-api</artifactId>
+        </dependency>
+    </dependencies>
+
     <build>
         <finalName>db</finalName>
         <plugins>

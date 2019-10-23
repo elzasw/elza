@@ -1,19 +1,22 @@
 pipeline {
     agent any
-
     options {
         disableConcurrentBuilds()
+    }
+    environment {
+        JAVA_HOME = "/opt/jdk-11.0.4+11"
+        MAVEN_HOME = "/opt/apache-maven-3.6.2"
     }
 
     stages {
         stage('Build') {
             steps {
-                sh "cd elza && mvn -Prelease clean install"
+                sh "cd elza && $MAVEN_HOME/bin/mvn -Prelease,skiptest clean install"
             }
         }
         stage('Test') {
             steps {
-                sh "cd elza && mvn -Ptest test"
+                sh "cd elza && $MAVEN_HOME/bin/mvn -Ptest test"
             }
             post {
                 always {
@@ -23,6 +26,7 @@ pipeline {
         }
         stage('Image') {
             when {
+                 branch 'master'
                  branch 'elza-1.3'
              }
             steps {
