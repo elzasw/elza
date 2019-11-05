@@ -15,6 +15,13 @@
 	</properties>
 
 	<dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <!-- Verze se uvadi povinne z duvodu reseni konfliktu s jinymi komponentami,
+                 bez jejiho uvedeni se vytvari WAR bez CXF -->
+            <version>3.9</version>
+        </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -36,11 +43,6 @@
 			<artifactId>cxf-rt-transports-http</artifactId>
 			<version>${cxf.version}</version>
 		</dependency>
-
-<!--        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>-->
 	</dependencies>
 
 	<build>
@@ -60,8 +62,8 @@
 								<extraargs>
 <!--									<extraarg>-verbose</extraarg>-->
 									<extraarg>-autoNameResolution</extraarg>
-									<extraarg>-wsdlLocation</extraarg>
-									<wsdlurl />
+<!--									<extraarg>-wsdlLocation</extraarg>
+									<wsdlurl />-->
 								</extraargs>
                             	<exceptionSuper>java.lang.RuntimeException</exceptionSuper>
 							</defaultOptions>

@@ -290,6 +290,9 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
+            <!-- Verze se uvadi povinne z duvodu reseni konfliktu s jinymi komponentami,
+                 bez jejiho uvedeni se vytvari WAR bez CXF -->
+            <version>3.9</version>
         </dependency>
 
         <!-- CXF -->
