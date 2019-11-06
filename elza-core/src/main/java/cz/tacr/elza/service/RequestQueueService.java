@@ -18,8 +18,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.transaction.support.*;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
@@ -364,33 +363,38 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
 
         final RequestQueueService thiz = this;
 
-        try {
-            (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                try {
+                    (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
 
-                @Override
-                protected void doInTransactionWithoutResult(final TransactionStatus transactionStatus) {
+                        @Override
+                        protected void doInTransactionWithoutResult(final TransactionStatus transactionStatus) {
 
-                    ArrRequestQueueItem queueItem = requestQueueItemRepository.findNext(externalSystemId);
+                            ArrRequestQueueItem queueItem = requestQueueItemRepository.findNext(externalSystemId);
 
-                    if (queueItem != null) {
-                        synchronized (lock) {
-                            if (!externalSystemIds.contains(externalSystemId)) {
-                                externalSystemIds.add(externalSystemId);
-                                RequestExecute requestExecute = new RequestExecute(queueItem.getRequestQueueItemId(), externalSystemId);
-                                ListenableFuture<RequestExecute> future = taskExecutor.submitListenable(requestExecute);
-                                future.addCallback(thiz);
+                            if (queueItem != null) {
+                                synchronized (lock) {
+                                    if (!externalSystemIds.contains(externalSystemId)) {
+                                        externalSystemIds.add(externalSystemId);
+                                        RequestExecute requestExecute = new RequestExecute(queueItem.getRequestQueueItemId(), externalSystemId);
+                                        ListenableFuture<RequestExecute> future = taskExecutor.submitListenable(requestExecute);
+                                        future.addCallback(thiz);
+                                    } else {
+                                        logger.info("Externí systém " + externalSystemId + " již zpracovává požadavek");
+                                    }
+                                }
                             } else {
-                                logger.info("Externí systém " + externalSystemId + " již zpracovává požadavek");
+                                logger.info("Fronta pro externí systém " + externalSystemId + " je prazdná");
                             }
                         }
-                    } else {
-                        logger.info("Fronta pro externí systém " + externalSystemId + " je prazdná");
-                    }
+                    });
+                } catch (Exception e) {
+                    logger.error("Nastala chyba při předávání požadavku ke zpracování", e);
                 }
-            });
-        } catch (Exception e) {
-            logger.error("Nastala chyba při předávání požadavku ke zpracování", e);
-        }
+            }
+        });
     }
 
     @Override
