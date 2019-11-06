@@ -794,7 +794,7 @@ class SubNodeForm extends AbstractReactComponent {
             versionId={versionId}
             fundId={fundId}
             readMode={readMode}
-            arrPerm={arrPerm}
+            arrPerm={arrPerm || subNodeForm.data && subNodeForm.data.arrPerm}
             strictMode={strictMode}
             notIdentified={notIdentified}
             onDescItemNotIdentified={(descItemIndex, descItem) => this.handleDescItemNotIdentified(descItemGroupIndex, descItemTypeIndex, descItemIndex, descItem)}

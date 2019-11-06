@@ -100,6 +100,7 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
         const groupMap = groups ? getMapFromList(groups) : {};
 
         return <div className="permission-checkbox-form">
+            <div className="items-left">
             {permCodes.map(permCode => {
                 const obj = permission[permCode] || {groupIds: {}};
                 let checked = false;
@@ -148,7 +149,8 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
                     <Checkbox inline checked={checked} onChange={e => onChangePermission(e, permCode)}>{i18n(`${labelPrefix}${permCode}`)}</Checkbox>
                 </div>
             })}
-            {this.props.fundId && this.renderNodes()}
+            </div>
+            {this.props.fundId && <div className="items-right">{this.renderNodes()}</div>}
         </div>
     }
 }
