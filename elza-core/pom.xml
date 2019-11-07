@@ -294,7 +294,13 @@
                  bez jejiho uvedeni se vytvari WAR bez CXF -->
             <version>3.9</version>
         </dependency>
-
+        <!-- Pridano kvuli tride com.sun.xml.txw2.output.IndentingXMLStreamWriter v exportu
+             Asi lepe zvazit jeji nahradu vlastni impl a odstraneni dependency -->
+        <dependency>
+	        <groupId>org.glassfish.jaxb</groupId>
+        	<artifactId>txw2</artifactId>
+        	<version>2.2.11</version>
+        </dependency>
         <!-- CXF -->
         <dependency>
             <groupId>org.apache.cxf</groupId>

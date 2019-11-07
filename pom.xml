@@ -26,7 +26,7 @@
              has to be configured separately because of JaCoCo -->
         <argLine>-Dfile.encoding=UTF-8</argLine>
 
-        <cxf.version>3.3.4</cxf.version>
+        <cxf.version>3.2.11</cxf.version>
         <hibernate.version>5.2.17.Final</hibernate.version>
         <hibernate.search.orm.version>5.7.1.Final</hibernate.search.orm.version>
         <hibernate.lucene.version>5.5.4</hibernate.lucene.version>  <!-- nelze zvednout na 6.6.0, protože hibernate.search.orm.version nemá ani

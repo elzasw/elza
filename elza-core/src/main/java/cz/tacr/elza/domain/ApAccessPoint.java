@@ -3,12 +3,25 @@ package cz.tacr.elza.domain;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import javax.persistence.*;
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+
+import org.hibernate.annotations.Type;
 
 import cz.tacr.elza.api.interfaces.IApScope;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.domain.interfaces.Versionable;
-import org.hibernate.annotations.Type;
 
 /**
  * Rejstříkové heslo.
@@ -155,7 +168,7 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
         return scope;
     }
 
-    /**
+    /*
      * @param scope
      *            třída rejstříku
      */
@@ -177,16 +190,22 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
         return createChangeId;
     }
 
-    public void setCreateChange(ApChange createChange) {
+    public void setCreateChange(final ApChange createChange) {
         this.createChange = createChange;
+        this.createChangeId = createChange == null ? null : createChange.getChangeId();
     }
 
     public ApChange getDeleteChange() {
         return deleteChange;
     }
 
-    public void setDeleteChange(ApChange deleteChange) {
+    public Integer getDeleteChangeId() {
+        return deleteChangeId;
+    }
+
+    public void setDeleteChange(final ApChange deleteChange) {
         this.deleteChange = deleteChange;
+        this.deleteChangeId = deleteChange == null ? null : deleteChange.getChangeId();
     }
 
     public ApRuleSystem getRuleSystem() {
