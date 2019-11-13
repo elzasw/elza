@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.common.FactoryUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -27,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApAccessPointDescriptionVO;
@@ -65,11 +65,12 @@ import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.interpi.service.InterpiService;
 import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
@@ -98,7 +99,7 @@ import cz.tacr.elza.service.StructObjService;
 @RequestMapping(value = "/api/registry", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public class ApController {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ApController.class);
 
     @Autowired
     private ApAccessPointRepository accessPointRepository;
@@ -186,17 +187,35 @@ public class ApController {
             throw new SystemException("Nelze použít více kritérií zároveň (specifikace/typ a typ rejstříku).", BaseCode.SYSTEM_ERROR);
         }
 
+        StaticDataProvider sdp = staticDataService.getData();
+
         Set<Integer> apTypeIds = new HashSet<>();
         if (apTypeId != null) {
             apTypeIds.add(apTypeId);
-        } else {
-            if (itemSpecId != null) {
-                RulItemSpec spec = itemSpecRepository.getOneCheckExist(itemSpecId);
-                apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemSpec(spec));
+        } else if (itemSpecId != null) {
+            RulItemSpec spec = sdp.getItemSpecById(itemSpecId);
+            if (spec == null) {
+                throw new ObjectNotFoundException("Specification not found", ArrangementCode.ITEM_SPEC_NOT_FOUND)
+                        .setId(itemSpecId);
             }
-            if (itemTypeId != null) {
-                RulItemType type = itemTypeRepository.getOneCheckExist(itemTypeId);
-                apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemType(type));
+            apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemSpec(spec));
+            if (apTypeIds.size() == 0) {
+                logger.error("Specification has no associated classes, itemSpecId={}", itemSpecId);
+                throw new SystemException("Configuration error, specification without associated classes",
+                        BaseCode.SYSTEM_ERROR).set("itemSpecId", itemSpecId);
+            }
+        } else
+        if (itemTypeId != null) {
+            ItemType itemType = sdp.getItemTypeById(itemTypeId);
+            if (itemType == null) {
+                throw new ObjectNotFoundException("Item type not found", ArrangementCode.ITEM_TYPE_NOT_FOUND)
+                        .setId(itemTypeId);
+            }
+            apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemType(itemType.getEntity()));
+            if (apTypeIds.size() == 0) {
+                logger.error("Item type has no associated classes, itemTypeId={}", itemTypeId);
+                throw new SystemException("Configuration error, item type without associated classes",
+                        BaseCode.SYSTEM_ERROR).set("itemTypeId", itemTypeId);
             }
         }
 
