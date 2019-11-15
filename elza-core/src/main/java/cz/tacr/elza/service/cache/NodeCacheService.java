@@ -550,9 +550,17 @@ public class NodeCacheService {
 	private RestoredNode deserialize(final ArrCachedNode cachedNode) {
         try {
 			RestoredNode restoredNode = mapper.readValue(cachedNode.getData(), RestoredNode.class);
+
 			// restore node ref
+            ArrNode node = cachedNode.getNode();
+            List<ArrDaoLink> daoLinks = restoredNode.getDaoLinks();
+            if (daoLinks != null) {
+                daoLinks.forEach(daoLink -> {
+                    daoLink.setNode(node);
+                });
+            }
 			restoredNode.setNodeId(cachedNode.getNodeId());
-			restoredNode.setNode(cachedNode.getNode());
+            restoredNode.setNode(node);
 			return restoredNode;
         } catch (IOException e) {
             throw new SystemException("Nastal problém při deserializaci objektu", e);
