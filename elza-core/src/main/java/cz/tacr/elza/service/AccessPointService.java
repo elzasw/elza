@@ -98,7 +98,6 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PartyCreatorRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.SettingsRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
@@ -942,7 +941,7 @@ public class AccessPointService {
                             .set("scopeId", replacement.getScopeId());
                 }
             }
-            descriptionItemService.updateDescriptionItem(im, fundVersions.get(fundId), change, true);
+            descriptionItemService.updateDescriptionItem(im, fundVersions.get(fundId), change);
         });
 
 

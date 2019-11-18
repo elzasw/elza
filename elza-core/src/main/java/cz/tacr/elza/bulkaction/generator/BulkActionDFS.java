@@ -3,6 +3,7 @@ package cz.tacr.elza.bulkaction.generator;
 import java.util.List;
 
 import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.BulkAction;
@@ -12,6 +13,9 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.repository.CachedNodeRepository;
+import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
 
 /**
  * Base implementation for Depth First Search
@@ -22,6 +26,15 @@ public abstract class BulkActionDFS extends BulkAction {
 
 	protected Result result;
 
+    @Autowired
+    protected CachedNodeRepository cacheNodeRepository;
+
+    @Autowired
+    protected RuleService ruleService;
+
+    @Autowired
+    protected EventNotificationService notificationService;
+
     ActionRunContext runContext;
 
 	@Override
@@ -31,13 +44,17 @@ public abstract class BulkActionDFS extends BulkAction {
 
 		result = new Result();
 
-		for (Integer nodeId : runContext.getInputNodeIds()) {
-			ArrNode nodeRef = nodeRepository.getOne(nodeId);
-			ArrLevel level = levelRepository.findByNodeAndDeleteChangeIsNull(nodeRef);
-			Validate.notNull(level);
+        for (Integer nodeId : runContext.getInputNodeIds()) {
+            ArrNode nodeRef = nodeRepository.getOne(nodeId);
+            ArrLevel level = levelRepository.findByNodeAndDeleteChangeIsNull(nodeRef);
+            Validate.notNull(level);
 
-			run(level);
+            run(level);
 		}
+
+        if (multipleItemChangeContext != null) {
+            multipleItemChangeContext.flush();
+        }
 
 		done();
 

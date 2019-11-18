@@ -212,14 +212,17 @@ public class NodeCacheService {
     /**
      * Uložení záznamů.
      *
-     * @param cachedNodes seznam ukládaných objektů
+     * @param cachedNodes
+     *            seznam ukládaných objektů
+     * @param flush
+     *            Priznak, zda se ma provest flush tabulky
      */
     @Transactional
-    public void saveNodes(final Collection<? extends CachedNode> cachedNodes) {
+    public void saveNodes(final Collection<? extends CachedNode> cachedNodes, boolean flush) {
         readLock.lock();
         try {
             logger.debug(">saveNodes(" + cachedNodes + ")");
-            saveNodesInternal(cachedNodes);
+            saveNodesInternal(cachedNodes, flush);
             logger.debug("<saveNodes(" + cachedNodes + ")");
         } finally {
             readLock.unlock();
@@ -230,14 +233,17 @@ public class NodeCacheService {
     /**
      * Uložení záznamu.
      *
-     * @param cachedNode ukládaný objekt
+     * @param cachedNode
+     *            ukládaný objekt
+     * @param flush
+     *            Priznak, zda se ma provest flush tabulky
      */
     @Transactional
-    public void saveNode(final CachedNode cachedNode) {
+    public void saveNode(final CachedNode cachedNode, boolean flush) {
         readLock.lock();
         try {
             logger.debug(">saveNode(" + cachedNode + ")");
-			saveNodesInternal(Collections.singletonList(cachedNode));
+            saveNodesInternal(Collections.singletonList(cachedNode), flush);
             logger.debug("<saveNode(" + cachedNode + ")");
         } finally {
             readLock.unlock();
@@ -501,9 +507,12 @@ public class NodeCacheService {
     /**
      * Uložení záznamů.
      *
-     * @param cachedNodes seznam ukládaných objektů
+     * @param cachedNodes
+     *            seznam ukládaných objektů
+     * @param flush
+     *            Priznak, zda se ma provest flush tabulky
      */
-    private void saveNodesInternal(final Collection<? extends CachedNode> cachedNodes) {
+    private void saveNodesInternal(final Collection<? extends CachedNode> cachedNodes, boolean flush) {
         Map<Integer, CachedNode> cachedNodeMap = new HashMap<>(cachedNodes.size());
         for (CachedNode cachedNode : cachedNodes) {
             cachedNodeMap.put(cachedNode.getNodeId(), cachedNode);
@@ -522,7 +531,9 @@ public class NodeCacheService {
 			record.setData(data);
 			cachedNodeRepository.save(record);
         }
-		cachedNodeRepository.flush();
+        if (flush) {
+            cachedNodeRepository.flush();
+        }
     }
 
     /**
