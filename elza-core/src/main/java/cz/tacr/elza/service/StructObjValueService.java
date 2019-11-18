@@ -1043,4 +1043,21 @@ public class StructObjValueService {
             this.impossibleItemTypeIds = impossibleItemTypeIds;
         }
     }
+
+    /**
+     * Delete pending request for fund
+     * 
+     * This operation will temporarily stop generator
+     * 
+     * @param fundId
+     */
+    public void deleteFundRequests(Integer fundId) {
+        stopGenerator();
+        int numDeleted = sobjVrequestRepository.deleteByStructuredObjectFundId(fundId);
+        if (numDeleted > 0) {
+            logger.debug("Deleted structured object revalidation requests, fundId: {}, count: {}", fundId, numDeleted);
+            sobjVrequestRepository.flush();
+        }
+        startGenerator();
+    }
 }
