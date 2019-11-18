@@ -454,8 +454,8 @@ public class RuleService {
     private void deleteConformityInfo(final Integer fundVersionId,
                                       final Collection<Integer> nodeIds,
                                       final Collection<RelatedNodeDirection> deleteDirections) {
-        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
-        Assert.notEmpty(nodeIds, "Musí být vyplněna alespoň jedna JP");
+        Validate.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+        Validate.notEmpty(nodeIds, "Musí být vyplněna alespoň jedna JP");
 
         List<ArrNode> nodes = nodeRepository.findAll(nodeIds);
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
