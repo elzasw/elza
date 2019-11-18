@@ -70,6 +70,7 @@ import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.PolicyService;
 import cz.tacr.elza.service.RevertingChangesService;
+import cz.tacr.elza.service.StructObjValueService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -120,6 +121,9 @@ public class DeleteFundAction {
     private StructuredObjectRepository structureDataRepository;
     @Autowired
     private StructuredItemRepository structureItemRepository;
+    @Autowired
+    private StructObjValueService structObjValueService;
+
     @Autowired
     private OutputItemRepository outputItemRepository;
 
@@ -254,6 +258,8 @@ public class DeleteFundAction {
 
             bulkActionService.terminateBulkActions(version.getFundVersionId());
         }
+
+        structObjValueService.deleteFundRequests(fundId);
     }
 
     public void run(Integer fundId) {
