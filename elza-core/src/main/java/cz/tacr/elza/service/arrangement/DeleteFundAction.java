@@ -55,9 +55,9 @@ import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
+import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
@@ -348,7 +348,11 @@ public class DeleteFundAction {
 
     private void dropDescItems() {
         // drop locked values
-        lockedValueRepository.deleteByFund(fund);
+        int numDeleted = lockedValueRepository.deleteByFund(fund);
+        if (numDeleted > 0) {
+            logger.debug("Deleted locked values fundId: {}, count: {}", fund.getFundId(), numDeleted);
+            lockedValueRepository.flush();
+        }
 
         // TODO: drop arr_data and all subtypes
 
