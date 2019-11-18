@@ -1706,6 +1706,7 @@ public class UserService {
     public boolean hasFullArrPerm(final Integer fundId) {
         UserDetail userDetail = getLoggedUserDetail();
         AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.FUND_ADMIN)
+                .or(UsrPermission.Permission.FUND_ARR_ALL)
                 .or(UsrPermission.Permission.FUND_ARR, fundId);
         return authRequest.matches(userDetail);
     }
