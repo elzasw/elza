@@ -3,9 +3,11 @@ package cz.tacr.elza.service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -210,25 +212,13 @@ public class ArrangementCacheService {
     }
 
     /**
-     * Vytvoření hodnot atributu u nodu.
-     *
-     * @param nodeId   identifikátor JP
-     * @param newDescItems vytvářené hodnoty atributu
-     */
-    public void createDescItems(final Integer nodeId, final Collection<ArrDescItem> newDescItems) {
-        CachedNode cachedNode = nodeCacheService.getNode(nodeId);
-		cachedNode.addDescItems(newDescItems);
-        nodeCacheService.saveNode(cachedNode, true);
-    }
-
-    /**
      * Mazaná hodnota atributu u nodu.
      *
      * @param nodeId           identifikátor JP
      * @param descItemObjectId identifikátor hodnoty atributu
      */
-    public void deleteDescItem(final Integer nodeId, final Integer descItemObjectId) {
-        deleteDescItems(nodeId, Collections.singletonList(descItemObjectId));
+    public void deleteDescItem(final Integer nodeId, final Integer descItemObjectId, BatchChangeContext changeContext) {
+        deleteDescItems(nodeId, Collections.singletonList(descItemObjectId), changeContext);
     }
 
     /**
@@ -237,30 +227,35 @@ public class ArrangementCacheService {
      * @param nodeId            identifikátor JP
      * @param descItemObjectIds identifikátory hodnot atributů
      */
-    public void deleteDescItems(final Integer nodeId, final List<Integer> descItemObjectIds) {
+    public void deleteDescItems(final Integer nodeId, final List<Integer> descItemObjectIds,
+                                BatchChangeContext changeContext) {
+        Set<Integer> objIdsToRemove = new HashSet<>(descItemObjectIds);
+
         CachedNode cachedNode = nodeCacheService.getNode(nodeId);
         List<ArrDescItem> descItems = cachedNode.getDescItems();
         if (descItems == null) {
             throw new ObjectNotFoundException("Seznam je prázdný, nelze z něj odebírat navázané položky z hodnot atributů", BaseCode.ID_NOT_EXIST);
         }
         Iterator<ArrDescItem> iterator = descItems.iterator();
-        List<Integer> descItemObjectIdsToRemove = new ArrayList<>(descItemObjectIds);
         while (iterator.hasNext()) {
             ArrDescItem item = iterator.next();
-            if (descItemObjectIdsToRemove.contains(item.getDescItemObjectId())) {
-                descItemObjectIdsToRemove.remove(item.getDescItemObjectId());
+            if (objIdsToRemove.contains(item.getDescItemObjectId())) {
+                objIdsToRemove.remove(item.getDescItemObjectId());
                 iterator.remove();
-            }
-            if (descItemObjectIdsToRemove.size() == 0) {
-                nodeCacheService.saveNode(cachedNode, true);
-                return;
+                if (objIdsToRemove.size() == 0) {
+                    break;
+                }
             }
         }
 
-        throw new ObjectNotFoundException("Záznam nebyl nalezen v seznamu objektů uložených v cache",
-                BaseCode.ID_NOT_EXIST)
-                        .set("nodeId", nodeId)
-                        .set("descItemObjectIdsToRemove", descItemObjectIdsToRemove);
+        if (objIdsToRemove.size() > 0) {
+            throw new ObjectNotFoundException("Záznam nebyl nalezen v seznamu objektů uložených v cache",
+                    BaseCode.ID_NOT_EXIST)
+                            .set("nodeId", nodeId)
+                            .set("descItemObjectIdsToRemove", objIdsToRemove);
+        }
+
+        nodeCacheService.saveNode(cachedNode, changeContext.getFlushNodeCache());
     }
 
     /**

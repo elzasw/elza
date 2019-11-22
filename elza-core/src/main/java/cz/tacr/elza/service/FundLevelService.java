@@ -38,6 +38,7 @@ import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventDeleteNode;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -548,6 +549,8 @@ public class FundLevelService {
         Map<Integer, RulItemType> descItemTypeCopyMap = ElzaTools
                 .createEntityMap(descItemCopyTypes, t -> t.getItemTypeId());
 
+        MultiplItemChangeContext changeContext = descriptionItemService.createChangeContext(version.getFundVersionId());
+
         if (StringUtils.isNotBlank(scenarionName)) {
             ScenarioOfNewLevel scenario = descriptionItemService
                     .getDescriptionItamsOfScenario(scenarionName, staticLevel, direction.getDirectionLevel(), version);
@@ -560,7 +563,9 @@ public class FundLevelService {
                 }
 
                 descItem.setNode(newLevel.getNode());
-                descriptionItemService.createDescriptionItem(descItem, newLevel.getNode(), version, change);
+                descriptionItemService.createDescriptionItemInBatch(descItem,
+                                                                    newLevel.getNode(), version, change,
+                                                                    changeContext);
             }
         }
 
@@ -569,16 +574,21 @@ public class FundLevelService {
         if(olderSibling != null && !descItemCopyTypes.isEmpty()){
             List<ArrDescItem> siblingDescItems = descItemRepository
                     .findOpenByNodeAndTypes(olderSibling.getNode(), descItemCopyTypes);
-            descriptionItemService.copyDescItemWithDataToNode(newLevel.getNode(), siblingDescItems, change, version);
+            descriptionItemService.copyDescItemWithDataToNode(newLevel.getNode(),
+                                                              siblingDescItems, change, version,
+                                                              changeContext);
         }
 
+        changeContext.flush();
 
-        ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(newLevel.getNode().getNodeId()),
-                NodeTypeOperation.CREATE_NODE, null, null, null);
+        ruleService.conformityInfo(version.getFundVersionId(),
+                                   Arrays.asList(newLevel.getNode().getNodeId()),
+                                   NodeTypeOperation.CREATE_NODE, null, null, null);
 
         entityManager.flush(); //aktualizace verzí v nodech
         eventNotificationService
-                .publishEvent(EventFactory.createAddNodeEvent(direction.getEventType(), version, staticLevel, newLevel));
+                .publishEvent(EventFactory.createAddNodeEvent(direction.getEventType(), version, staticLevel, newLevel)
+                              );
 
         return newLevel;
     }

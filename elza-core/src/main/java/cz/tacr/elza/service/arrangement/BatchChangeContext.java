@@ -12,6 +12,8 @@ public interface BatchChangeContext {
 
     void addUpdatedItem(ArrDescItem descItemUpdated);
 
+    void addRemovedItem(ArrDescItem item);
+
     /**
      * Vraci zda se ma ihned po zmene provest flush do nodeCache
      * 

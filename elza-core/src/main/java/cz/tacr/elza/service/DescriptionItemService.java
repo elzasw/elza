@@ -3,7 +3,6 @@ package cz.tacr.elza.service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -81,7 +80,6 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -92,9 +90,9 @@ import cz.tacr.elza.search.SearchIndexSupport;
 import cz.tacr.elza.service.arrangement.BatchChangeContext;
 import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
 import cz.tacr.elza.service.arrangement.SingleItemChangeContext;
+import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
-import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.TitleItemsByType;
 
 
@@ -111,7 +109,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     private NodeRepository nodeRepository;
 
     @Autowired
-    private CachedNodeRepository cacheNodeRepository;
+    private NodeCacheService nodeCacheService;
 
     @Autowired
     private ArrangementService arrangementService;
@@ -253,12 +251,11 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         // uložení uzlu (kontrola optimistických zámků)
         saveNode(node, change);
 
-        ArrDescItem descItemDeleted = deleteDescriptionItem(descItem, fundVersion, change, true);
-        arrangementCacheService.deleteDescItem(nodeId, descItemObjectId);
+        MultiplItemChangeContext changeContext = createChangeContext(fundVersionId);
 
-        // validace uzlu
-        ruleService.conformityInfo(fundVersionId, Arrays.asList(nodeId),
-                NodeTypeOperation.SAVE_DESC_ITEM, null, null, Arrays.asList(descItem));
+        ArrDescItem descItemDeleted = deleteDescriptionItem(descItem, fundVersion, change, true, changeContext);
+
+        changeContext.flush();
 
         return descItemDeleted;
     }
@@ -307,20 +304,15 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             throw new SystemException("Nebyla nalezena žádná hodnota atributu ke smazání");
         }
 
-        List<ArrDescItem> descItemsDeleted = new ArrayList<>(descItems.size());
-        List<Integer> descItemObjectIds = new ArrayList<>(descItems.size());
+        MultiplItemChangeContext changeContext = createChangeContext(fundVersionId);
+
         for (ArrDescItem descItem : descItems) {
-            ArrDescItem arrDescItem = deleteDescriptionItem(descItem, fundVersion, change, false);
-            descItemObjectIds.add(arrDescItem.getDescItemObjectId());
-            descItemsDeleted.add(arrDescItem);
+            deleteDescriptionItem(descItem, fundVersion, change, false, changeContext);
+
+            changeContext.flushIfNeeded();
         }
 
-        arrangementCacheService.deleteDescItems(nodeId, descItemObjectIds);
-
-        // validace uzlu
-        ruleService.conformityInfo(fundVersionId, Arrays.asList(node.getNodeId()),
-                NodeTypeOperation.SAVE_DESC_ITEM, null, null, descItemsDeleted);
-
+        changeContext.flush();
         return node;
     }
 
@@ -365,19 +357,15 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             throw new SystemException("Nebyla nalezena žádná hodnota atributu ke smazání");
         }
 
-        List<ArrDescItem> descItemsDeleted = new ArrayList<>(descItems.size());
-        List<Integer> descItemObjectIds = new ArrayList<>(descItems.size());
+        MultiplItemChangeContext changeContext = createChangeContext(fundVersionId);
+
         for (ArrDescItem descItem : descItems) {
-            ArrDescItem arrDescItem = deleteDescriptionItem(descItem, fundVersion, change, false);
-            descItemObjectIds.add(arrDescItem.getDescItemObjectId());
-            descItemsDeleted.add(arrDescItem);
+            deleteDescriptionItem(descItem, fundVersion, change, false, changeContext);
+
+            changeContext.flushIfNeeded();
         }
 
-        arrangementCacheService.deleteDescItems(nodeId, descItemObjectIds);
-
-        // validace uzlu
-        ruleService.conformityInfo(fundVersionId, Arrays.asList(node.getNodeId()),
-                NodeTypeOperation.SAVE_DESC_ITEM, null, null, descItemsDeleted);
+        changeContext.flush();
 
         return node;
     }
@@ -562,8 +550,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                                     final ArrFundVersion version,
                                                     @Nullable final ArrChange createChange) {
 
-        MultiplItemChangeContext changeContext = new MultiplItemChangeContext(cacheNodeRepository, ruleService,
-                notificationService, version.getFundVersionId());
+        MultiplItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
 
         ArrChange change = createChange == null ? arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM, node) : createChange;
         List<ArrDescItem> createdItems = new ArrayList<>();
@@ -655,10 +642,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     /**
      * Smaže hodnotu atributu.
      *
-     * Funkce současně posílá notifikaci přes WS
-     * 
-     * Function do not synchronize nodeCache !!!! Have to be synchronized manually
-     * !!!
      * 
      * @param descItem
      *            hodnota atributu
@@ -668,14 +651,13 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      *            změna operace
      * @param moveAfter
      *            posunout hodnoty po?
+     * @param changeContext
      * @return smazaná hodnota atributu
      */
-    //
-    // Consider/TODO: Function should not sent WS events if nodeCache is not also synchronized?
-    private ArrDescItem deleteDescriptionItem(final ArrDescItem descItem,
+    ArrDescItem deleteDescriptionItem(final ArrDescItem descItem,
                                              final ArrFundVersion version,
                                              final ArrChange change,
-                                             final boolean moveAfter) {
+                                              final boolean moveAfter, BatchChangeContext changeContext) {
         Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(change, "Změna musí být vyplněna");
@@ -691,15 +673,17 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     descItem.getNode(),
                     descItem.getPosition());
 
-            copyDescItemsWithData(change, descItems, -1, version);
+            copyDescItemsWithData(change, descItems, -1, version, changeContext);
         }
 
         descItem.setDeleteChange(change);
 
         ArrDescItem retDescItem = descItemRepository.save(descItem);
 
-        // sockety
-        publishChangeDescItem(version, retDescItem);
+        changeContext.addRemovedItem(descItem);
+
+        arrangementCacheService.deleteDescItem(descItem.getNodeId(),
+                                               descItem.getDescItemObjectId(), changeContext);
 
         return retDescItem;
     }
@@ -729,41 +713,43 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         Validate.notNull(fundVersion);
         Validate.notNull(change);
 
+        MultiplItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
+
         List<Integer> itemObjectIds = descItemsToDelete.stream().map(ArrDescItem::getDescItemObjectId).collect(Collectors.toList());
         List<ArrDescItem> deleteDescItems = descItemRepository.findOpenDescItems(itemObjectIds);
 
+        Validate.isTrue(deleteDescItems.size() == descItemsToDelete.size(),
+                        "Některý z prvků popisu pro vymazání nebyl nalezen, %s", itemObjectIds);
+
         List<ArrDescItem> results = new ArrayList<>();
         for (ArrDescItem deleteDescItem : deleteDescItems) {
-            ArrDescItem deletedItem = deleteDescriptionItem(deleteDescItem, fundVersion, change, moveAfter);
+            ArrDescItem deletedItem = deleteDescriptionItem(deleteDescItem, fundVersion, change, moveAfter,
+                                                            changeContext);
 
             results.add(deletedItem);
         }
-        descItemRepository.flush();
 
-        arrangementCacheService.deleteDescItems(node.getNodeId(), itemObjectIds);
+        changeContext.flush();
 
         return results;
     }
 
     /**
-	 * Provede posun (a odverzování) hodnot atributů jednoho uzlu s daty o
-	 * požadovaný počet.
-	 *
-	 * @param change
-	 *            změna operace
-	 * @param descItems
-	 *            seznam posunovaných hodnot atributu
-	 * @param diff
-	 *            počet a směr posunu
-	 */
+     * Provede posun (a odverzování) hodnot atributů jednoho uzlu s daty o
+     * požadovaný počet.
+     *
+     * @param change
+     *            změna operace
+     * @param descItems
+     *            seznam posunovaných hodnot atributu
+     * @param diff
+     *            počet a směr posunu
+     * @param changeContext
+     */
     private void copyDescItemsWithData(final ArrChange change, final List<ArrDescItem> descItems,
                                        final Integer diff,
-                                       final ArrFundVersion version) {
-
-        MultiplItemChangeContext changeContext = new MultiplItemChangeContext(cacheNodeRepository, ruleService,
-                notificationService, version.getFundVersionId());
-
-        changeContext.setPublishNodeChanges(false);
+                                       final ArrFundVersion version,
+                                       final BatchChangeContext changeContext) {
 
         List<ArrDescItem> descItemNews = new ArrayList<>(descItems.size());
         for (ArrDescItem descItemMove : descItems) {
@@ -782,7 +768,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                                     descItemNews, true,
                                                     changeContext);
         }
-        changeContext.flush();
     }
 
     /**
@@ -821,15 +806,23 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * Vytvoří kopii prvků popisu. Kopírovaný atribut patří zvolenému uzlu.
      *
      * Method will also update nodeCache.
-     *  @param node            uzel, který dostane kopírované atributy
-     * @param sourceDescItems zdrojové atributy ke zkopírování
-     * @param createChange    čas vytvoření nové kopie
+     * 
+     * @param node
+     *            uzel, který dostane kopírované atributy
+     * @param sourceDescItems
+     *            zdrojové atributy ke zkopírování
+     * @param createChange
+     *            čas vytvoření nové kopie
+     * @param changeContext
      */
     public List<ArrDescItem> copyDescItemWithDataToNode(final ArrNode node,
                                                         final List<ArrDescItem> sourceDescItems,
                                                         final ArrChange createChange,
-                                                        final ArrFundVersion version) {
+                                                        final ArrFundVersion version,
+                                                        final BatchChangeContext changeContext) {
+
         List<ArrDescItem> result = new ArrayList<>(sourceDescItems.size());
+
         for (ArrDescItem sourceDescItem : sourceDescItems) {
 
 			// copy and save data
@@ -849,13 +842,15 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 			// prepare new object id
             descItemNew.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
 
-            descItemRepository.save(descItemNew);
+            ArrDescItem savedItem = descItemRepository.save(descItemNew);
 
-            result.add(descItemNew);
+            result.add(savedItem);
+
+            changeContext.addCreatedItem(savedItem);
+
+            arrangementCacheService.createDescItem(node.getNodeId(), savedItem, changeContext);
         }
-        if (CollectionUtils.isNotEmpty(result)) {
-            arrangementCacheService.createDescItems(node.getNodeId(), result);
-        }
+
         return result;
     }
 
@@ -867,8 +862,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      */
     private void publishChangeDescItem(final ArrFundVersion version, final ArrDescItem descItem) {
         notificationService.publishEvent(
-                new EventChangeDescItem(EventType.DESC_ITEM_CHANGE, version.getFundVersionId(),
-                        descItem.getDescItemObjectId(), descItem.getNode().getNodeId(), descItem.getNode().getVersion()));
+                                         new EventChangeDescItem(version.getFundVersionId(),
+                                                 descItem.getDescItemObjectId(), descItem.getNode().getNodeId(),
+                                                 descItem.getNode().getVersion()));
     }
 
     /**
@@ -1049,15 +1045,13 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     public List<ArrDescItem> updateDescriptionItems(final List<ArrDescItem> updateDescItems,
                                                     final ArrFundVersion fundVersion,
                                                     final ArrChange change) {
-        MultiplItemChangeContext changeContext = new MultiplItemChangeContext(cacheNodeRepository, ruleService,
-                eventNotificationService, fundVersion.getFundVersionId());
+        MultiplItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
 
         List<ArrDescItem> results = new ArrayList<>();
         for (ArrDescItem updateDescItem : updateDescItems) {
             results.add(updateValueAsNewVersion(fundVersion, change, updateDescItem, changeContext));
         }
         changeContext.flush();
-        descItemRepository.flush();
         return results;
     }
 
@@ -1299,8 +1293,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
             ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
-            MultiplItemChangeContext changeContext = new MultiplItemChangeContext(cacheNodeRepository, ruleService,
-                    eventNotificationService, version.getFundVersionId());
+            MultiplItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
 
             for (ArrDescItem descItem: descItemsToReplaceText) {
                 ArrNode clientNode = nodesMap.get(descItem.getNodeId());
@@ -1385,16 +1378,12 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
-        Map<Integer, List<Integer>> nodeDescItems = new HashMap<>();
+        MultiplItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
         for (ArrDescItem descItem : descItems) {
-            List<Integer> descItemList = nodeDescItems.computeIfAbsent(descItem.getNodeId(), k -> new ArrayList<>());
-            descItemList.add(descItem.getDescItemObjectId());
-            deleteDescriptionItem(descItem, version, change, false);
+            deleteDescriptionItem(descItem, version, change, false, changeContext);
+            changeContext.flushIfNeeded();
         }
-
-        for (Map.Entry<Integer, List<Integer>> entry : nodeDescItems.entrySet()) {
-            arrangementCacheService.deleteDescItems(entry.getKey(), entry.getValue());
-        }
+        changeContext.flush();
 
         //pokud má specifikaci a není opakovatelný, musíme zkontrolovat,
         //jestli nemá již nějakou hodnotu specifikace nastavenou (jinou než přišla v parametru seznamu specifikací)
@@ -1469,14 +1458,12 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             newDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
             newDescItem.setPosition(1);
 
-            SingleItemChangeContext changeContext = new SingleItemChangeContext(ruleService, notificationService,
-                    version.getFundVersionId(), dbNode.getNodeId());
-
             descItemFactory.saveItemVersionWithData(newDescItem, true);
             arrangementCacheService.createDescItem(newDescItem.getNodeId(), newDescItem, changeContext);
 
-            changeContext.validateAndPublish();
+            changeContext.flushIfNeeded();
         }
+        changeContext.flush();
     }
 
     /**
@@ -1531,9 +1518,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
-        MultiplItemChangeContext changeContext = new MultiplItemChangeContext(cacheNodeRepository,
-                ruleService, notificationService,
-                fundVersion.getFundVersionId());
+        MultiplItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
 
         for (ArrDescItem descItem : descItems) {
 			ArrDescItem updatedDescItem = updateItemValueAsNewVersion(fundVersion, change, descItem, setSpecification,
@@ -1683,17 +1668,13 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         if (!descItems.isEmpty()) {
             ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_DELETE_DESC_ITEM);
 
-            Map<Integer, List<Integer>> nodeDescItems = new HashMap<>();
+            MultiplItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
 
             for (ArrDescItem descItem : descItems) {
-                List<Integer> descItemList = nodeDescItems.computeIfAbsent(descItem.getNodeId(), k -> new ArrayList<>());
-                descItemList.add(descItem.getDescItemObjectId());
-                deleteDescriptionItem(descItem, version, change, false);
+                deleteDescriptionItem(descItem, version, change, false, changeContext);
             }
 
-            for (Map.Entry<Integer, List<Integer>> entry : nodeDescItems.entrySet()) {
-                arrangementCacheService.deleteDescItems(entry.getKey(), entry.getValue());
-            }
+            changeContext.flush();
         }
     }
 
@@ -1842,4 +1823,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         }
     }
 
+    public MultiplItemChangeContext createChangeContext(int fundVersionId) {
+        return new MultiplItemChangeContext(fundVersionId,
+                descItemRepository, nodeCacheService, ruleService,
+                eventNotificationService);
+    }
 }
