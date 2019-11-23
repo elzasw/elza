@@ -220,5 +220,42 @@
             <column name="delete_change_id" type="int"/>
         </createIndex>
     </changeSet>
+    <changeSet id="20191123100000" author="ppyta">
+        <!-- Odstraneni duplicitnich zaznamu -->
+        <sql>delete from arr_desc_item 
+             where item_id in (
+              select i.item_id from arr_item i
+              join arr_item i2 on i.delete_change_id = i2.delete_change_id and i.desc_item_object_id = i2.desc_item_object_id
+                           and i.item_id&lt;i2.item_id
+             )
+        </sql>
+        <sql>delete from arr_structured_item 
+             where item_id in (
+              select i.item_id from arr_item i
+              join arr_item i2 on i.delete_change_id = i2.delete_change_id and i.desc_item_object_id = i2.desc_item_object_id
+                           and i.item_id&lt;i2.item_id
+             )
+        </sql>
+        <sql>delete from arr_item 
+             where item_id in (
+              select i.item_id from arr_item i
+              join arr_item i2 on i.delete_change_id = i2.delete_change_id and i.desc_item_object_id = i2.desc_item_object_id
+                           and i.item_id&lt;i2.item_id
+             )
+        </sql>
+        <createIndex indexName="ap_description_ap_id_delchng_id_idx" tableName="ap_description" unique="true">
+            <column name="access_point_id" type="int"/>
+            <column name="delete_change_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="arr_item_dscitemobj_delchng_idx" tableName="arr_item" unique="true">
+            <column name="desc_item_object_id" type="int"/>
+            <column name="delete_change_id" type="int"/>
+        </createIndex>
+        <dropIndex tableName="arr_level" indexName="arr_level_node_delete_change_idx"/>
+        <createIndex tableName="arr_level" indexName="arr_level_node_delete_change_idx" unique="true">
+            <column name="node_id" type="int"/>
+            <column name="delete_change_id" type="int"/>            
+        </createIndex>
+    </changeSet>
 
 </databaseChangeLog>
