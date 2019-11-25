@@ -10,9 +10,8 @@ import {
     updateFormData
 } from './subNodeFormUtils.jsx'
 import {validateCoordinatePoint, validateDouble, validateInt, validateDuration} from 'components/validate.jsx'
-import {valuesEquals} from 'components/Utils.jsx'
 import {DisplayType} from "../../../constants.tsx";
-import {buildIgnoreMap, endWith, startWith} from "../../../components/Utils";
+import {valuesEquals, buildIgnoreMap, endWith, startWith, objectEqualsDiff} from "../../../components/Utils";
 
 const FORM_KEY = "formKey"; // klíč verze formuláře
 const UID = "_uid"; // virtuální identifikátor hodnoty atributu (jedná se buď o objectId a nebo virtuální klíč v případě, že ještě hodnota atributu nebyla uložena na serveru)
@@ -718,11 +717,22 @@ export default function subNodeForm(state = initialState, action = {}) {
                 fetched: true,
                 dirty: false,
                 versionId: action.versionId,
-                nodeId: nodeId,
                 needClean: false,
             };
 
-            mergeAfterUpdate(result, action.data, action.refTables); // merges result with data from action
+             // merges result with data from action
+            if(!mergeAfterUpdate(result, action.data, action.refTables))
+            {
+                // kontrola, zda doslo ke zmene priznaku
+                if(result.isFetching===state.isFetching&&
+                    result.fetched===state.fetched&&
+                    result.dirty===state.dirty&&
+                    result.versionId===state.versionId&&
+                    result.needClean===state.needClean)
+                {
+                    return state;
+                }
+            }
 
             return result;
 
