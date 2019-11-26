@@ -60,7 +60,10 @@ class SubNodeForm extends AbstractReactComponent {
     }
 
     state = {
-        unusedItemTypeIds: []
+        unusedItemTypeIds: [],
+        // Priznak pro podrobne logovani
+        // standardne false
+        detailLogging: false
     };
 
     static PropTypes = {
@@ -83,14 +86,38 @@ class SubNodeForm extends AbstractReactComponent {
         arrPerm: React.PropTypes.bool.isRequired,
     };
 
+    log(logMsg) {
+        if(this.state.detailLogging) {
+            console.log(logMsg);
+        }
+    }
+
     shouldComponentUpdate(nextProps, nextState) {
+        this.log("Called shouldComponentUpdate");
+
         if (this.state !== nextState) {
+            this.log(" - different state -> shouldUpdate");
             return true;
         } else {
-            return !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, SUB_NODE_FORM_CMP)
-                || !objectEqualsDiff(this.props.descItemCopyFromPrevEnabled, nextProps.descItemCopyFromPrevEnabled)
-                || !objectEqualsDiff(this.props.nodeSetting, nextProps.nodeSetting)
-                || !objectEqualsDiff(this.props.readMode, nextProps.readMode);
+            if(!objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, SUB_NODE_FORM_CMP, "", 
+                    false/*this.state.detailLogging*/)) {
+                this.log(" - different props (subNodeForm) -> shouldUpdate");
+                return true;
+            }
+            if(!objectEqualsDiff(this.props.descItemCopyFromPrevEnabled, nextProps.descItemCopyFromPrevEnabled)) {
+                this.log(" - different props (descItemCopyFromPrevEnabled) -> shouldUpdate");
+                return true;
+            }
+            if(!objectEqualsDiff(this.props.nodeSetting, nextProps.nodeSetting)) {
+                this.log(" - different props (nodeSetting) -> shouldUpdate");
+                return true;                
+            }
+            if(!objectEqualsDiff(this.props.readMode, nextProps.readMode)) {
+                this.log(" - different props (readMode) -> shouldUpdate");
+                return true;                
+            }
+            this.log(" - form up-to-date");
+            return false;
         }
     }
 

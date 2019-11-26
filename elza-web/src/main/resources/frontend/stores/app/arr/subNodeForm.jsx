@@ -18,7 +18,19 @@ const UID = "_uid"; // virtuální identifikátor hodnoty atributu (jedná se bu
 const IS_FETCHING = "isFetching"; // pokud se data načítají
 const DIRTY = "dirty"; // zneplatněná data
 
-export const SUB_NODE_FORM_CMP = buildIgnoreMap(endWith(FORM_KEY), endWith(UID));
+/**
+ * Pouziva se pro porovnani pri shouldComponentUpdate
+ * Umoznuje ignorovat nepodstatne zmeny
+ */
+export const SUB_NODE_FORM_CMP = buildIgnoreMap(endWith(FORM_KEY), endWith(UID), 
+                                        // jen zmena verze rodice bez dalsich zmen                                        
+                                        ".data.parent.version",
+                                        // jen zmena ID - neni podstatna pro ui
+                                        "|id",
+                                        "|prevValue",
+                                        "|visited",
+                                        "|touched");
+
 export const NODE_SUB_NODE_FORM_CMP = buildIgnoreMap(startWith(IS_FETCHING), startWith(DIRTY), endWith(FORM_KEY), endWith(UID));
 
 function getLoc(state, valueLocation) {
