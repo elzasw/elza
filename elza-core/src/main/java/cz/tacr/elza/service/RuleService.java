@@ -383,6 +383,7 @@ public class RuleService {
      * @param deleteDescItems   hodnoty atributů ke smazání
      * @return seznam dopadů
      */
+    // TODO: Funkce nedava smysl pokud kombinuje vice uzlu a vice item z techto uzlu
     public Set<RelatedNodeDirection> conformityInfo(final Integer fundVersionId,
                                                     final Collection<Integer> nodeIds,
                                                     final NodeTypeOperation nodeTypeOperation,

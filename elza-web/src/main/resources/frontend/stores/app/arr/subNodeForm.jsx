@@ -10,16 +10,27 @@ import {
     updateFormData
 } from './subNodeFormUtils.jsx'
 import {validateCoordinatePoint, validateDouble, validateInt, validateDuration} from 'components/validate.jsx'
-import {valuesEquals} from 'components/Utils.jsx'
 import {DisplayType} from "../../../constants.tsx";
-import {buildIgnoreMap, endWith, startWith} from "../../../components/Utils";
+import {valuesEquals, buildIgnoreMap, endWith, startWith, objectEqualsDiff} from "../../../components/Utils";
 
 const FORM_KEY = "formKey"; // klíč verze formuláře
 const UID = "_uid"; // virtuální identifikátor hodnoty atributu (jedná se buď o objectId a nebo virtuální klíč v případě, že ještě hodnota atributu nebyla uložena na serveru)
 const IS_FETCHING = "isFetching"; // pokud se data načítají
 const DIRTY = "dirty"; // zneplatněná data
 
-export const SUB_NODE_FORM_CMP = buildIgnoreMap(endWith(FORM_KEY), endWith(UID));
+/**
+ * Pouziva se pro porovnani pri shouldComponentUpdate
+ * Umoznuje ignorovat nepodstatne zmeny
+ */
+export const SUB_NODE_FORM_CMP = buildIgnoreMap(endWith(FORM_KEY), endWith(UID), 
+                                        // jen zmena verze rodice bez dalsich zmen                                        
+                                        ".data.parent.version",
+                                        // jen zmena ID - neni podstatna pro ui
+                                        "|id",
+                                        "|prevValue",
+                                        "|visited",
+                                        "|touched");
+
 export const NODE_SUB_NODE_FORM_CMP = buildIgnoreMap(startWith(IS_FETCHING), startWith(DIRTY), endWith(FORM_KEY), endWith(UID));
 
 function getLoc(state, valueLocation) {
@@ -718,11 +729,22 @@ export default function subNodeForm(state = initialState, action = {}) {
                 fetched: true,
                 dirty: false,
                 versionId: action.versionId,
-                nodeId: nodeId,
                 needClean: false,
             };
 
-            mergeAfterUpdate(result, action.data, action.refTables); // merges result with data from action
+             // merges result with data from action
+            if(!mergeAfterUpdate(result, action.data, action.refTables))
+            {
+                // kontrola, zda doslo ke zmene priznaku
+                if(result.isFetching===state.isFetching&&
+                    result.fetched===state.fetched&&
+                    result.dirty===state.dirty&&
+                    result.versionId===state.versionId&&
+                    result.needClean===state.needClean)
+                {
+                    return state;
+                }
+            }
 
             return result;
 

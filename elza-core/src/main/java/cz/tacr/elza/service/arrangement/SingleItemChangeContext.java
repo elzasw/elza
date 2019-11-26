@@ -10,8 +10,15 @@ import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
-import cz.tacr.elza.service.eventnotification.events.EventType;
 
+/**
+ * Zjednodusseny context
+ * 
+ * Vhodny jen pro pridani nebo zmenu jednoho prvku popisu
+ * 
+ * Nelze pouzit pro vymazani prvku popisu
+ * 
+ */
 public class SingleItemChangeContext implements BatchChangeContext {
 
     private Integer nodeId;
@@ -59,7 +66,7 @@ public class SingleItemChangeContext implements BatchChangeContext {
                                    NodeTypeOperation.SAVE_DESC_ITEM, createdDescItems, updatedDescItems, null);
 
         // sockety        
-        EventChangeDescItem event = new EventChangeDescItem(EventType.DESC_ITEM_CHANGE, fundVersionId,
+        EventChangeDescItem event = new EventChangeDescItem(fundVersionId,
                 descItemObjectId,
                 nodeId, nodeVersion);
         notificationService.publishEvent(event);
@@ -68,6 +75,12 @@ public class SingleItemChangeContext implements BatchChangeContext {
     @Override
     public boolean getFlushNodeCache() {
         return true;
+    }
+
+    @Override
+    public void addRemovedItem(ArrDescItem item) {
+        throw new IllegalStateException("Unsupported operation");
+
     }
 
 }

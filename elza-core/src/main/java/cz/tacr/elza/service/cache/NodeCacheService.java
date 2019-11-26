@@ -649,4 +649,11 @@ public class NodeCacheService {
 		}
 		cachedNodeRepository.save(records);
 	}
+
+    /**
+     * Flush repository
+     */
+    public void flushChanges() {
+        cachedNodeRepository.flush();
+    }
 }

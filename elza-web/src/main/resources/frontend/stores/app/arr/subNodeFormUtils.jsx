@@ -6,6 +6,8 @@ import {
     normalizeDurationLength,
     toDuration
 } from "../../../components/validate";
+import {stateEqualsRecursive} from '../../../components/Utils.jsx'
+import { fundSubNodesPrev } from '../../../actions/arr/node';
 
 const availability = {
     REQUIRED : "REQUIRED",
@@ -370,6 +372,19 @@ function prepareFlatData(data){
     data.types = replaceIdsWithString(data.types, typesNumToStrMap);
     data.specs = replaceIdsWithString(data.specs, typesNumToStrMap);
     data.types = insertDescItemSpecsMap(data.types,data.specs);
+
+    // oprava skupin, prevod ciselne hodnoty typu na string
+    for(let g=0; g<data.groups.ids.length; g++)
+    {
+        let gi = data.groups.ids[g];
+        let group = data.groups[gi];
+        for(let t=0; t<group.types.length; t++) {
+            let type = group.types[t];
+            if(typeof type.type === "number"){
+                type.type = typesNumToStrMap[type.type];
+            }
+        }
+    }
     return data;
 }
 /**
@@ -429,10 +444,17 @@ function insertItemType(item, items){
     return item;
 }
 
-export function mergeAfterUpdate(state, data, refTables) {
+/*
+ * Slouceni zmen po aktualizaci uzlu
+ *
+ * Vraci, zda byl stav modifikovan
+ * true - stav byl zmenen
+ * false - stav beze zmeny
+ */
+export function mergeAfterUpdate(state, dataIn, refTables) {
 	// Hotfix pro Bug 4620 - Chyba při změně Složky na Jednotlivost
 	// Potreba upravit ve funkci update ve FlatFormData
-    data = fillImpossibleTypes(data, state.refTypesMap);
+    let data = fillImpossibleTypes(dataIn, state.refTypesMap);
 
     let changedItem = data.item;
     let flatForm = new FlatFormData(refTables);
@@ -454,29 +476,53 @@ export function mergeAfterUpdate(state, data, refTables) {
     flatLocalForm.update(flatForm);
 
     // Update info about descItemTypes
-    state.infoTypesMap = flatLocalForm.types;
-    // Update form with new data
-    state.formData = restoreFormDataStructure(flatLocalForm, state.refTypesMap);
+    let result = false;
+    if(!stateEqualsRecursive(state.infoTypesMap, flatLocalForm.types)) {
+        state.infoTypesMap = flatLocalForm.types;
+        result = true;
+    }
 
-    return state;
+    // Update form with new data
+    let updatedFormData = restoreFormDataStructure(flatLocalForm, state.refTypesMap, state.formData);
+    if(!stateEqualsRecursive(state.formData, updatedFormData)) {
+        state.formData = updatedFormData;
+        result = true;
+    }
+
+    return result;
 }
 /**
  * Inserts map of specifications for descItems
  */
 function insertDescItemSpecsMap(types, specs){
+    // Kazdy typ musi mit descItemSpecsMap
+    for(let t=0; t<types.ids.length; t++) {
+        let typeId = types.ids[t];
+        let type = types[typeId];
+
+        if(!type.descItemSpecsMap){
+            type.descItemSpecsMap = {};
+        }
+    }
+
     for(let s = 0; s < specs.ids.length; s++){
 
         let specId = specs.ids[s];
         let spec = specs[specId];
         let type = types[spec.itemType];
 
+        // if asi neni nutny, type by mel vzdy existovat
         if(type){
-
-            if(!type.descItemSpecsMap){
-                type.descItemSpecsMap = {};
-            }
-
             type.descItemSpecsMap[spec.id] = spec;
+
+            // aktualizace pole specifikaci
+            for(let i=0; i<type.specs.length; i++)
+            {
+                if(type.specs[i].id===spec.id) {
+                    type.specs[i]=spec;
+                    break;
+                }
+            }
         }
     }
     return types;
@@ -488,7 +534,7 @@ function insertDescItemSpecsMap(types, specs){
  *
  * @return Object
  * */
-function restoreFormDataStructure(data, refTypesMap){
+function restoreFormDataStructure(data, refTypesMap, oldFormData){
     let groupId, group, typeId, type, descItemId, descItem, specId, spec;
     let usedTypes = {ids:[]};
     let usedGroups = {ids:[]};
@@ -499,7 +545,10 @@ function restoreFormDataStructure(data, refTypesMap){
         descItem = data.descItems[descItemId];
 
         if(!usedTypes[descItem.itemType]){
-            type = data.types[descItem.itemType];
+            type = {
+                ...data.types[descItem.itemType],
+                hasFocus: false
+            };
             type.descItems = [];
             type.specs = [];
             usedTypes[descItem.itemType] = type;
@@ -537,8 +586,28 @@ function restoreFormDataStructure(data, refTypesMap){
         type = usedTypes[typeId];
 
         if(!usedGroups[type.group]){
-            group = data.groups[type.group];
-            group.descItemTypes = [];
+            // calculate position
+            let position = 1;
+            for(let gi=0; gi<data.groups.ids.length; gi++) {
+                if(data.groups.ids[gi]===type.group) {
+                    position = gi+1;
+                    break;
+                }
+            }
+
+            group = {
+                ...data.groups[type.group],
+                hasFocus: false,
+                descItemTypes: [],
+                position: position
+            }
+            group.types = group.types.map(type => {
+                return {
+                    ...type,
+                    descItemSpecsMap: getMapFromList(type.specs)
+                }                                    
+            })
+
             usedGroups[type.group] = group;
             usedGroups.ids.push(type.group);
         }
@@ -548,6 +617,27 @@ function restoreFormDataStructure(data, refTypesMap){
     for(let g = 0; g < usedGroups.ids.length; g++){
         groupId = usedGroups.ids[g];
         group = usedGroups[groupId];
+        // copy props from old groups
+        for(let og = 0; og<oldFormData.descItemGroups.length; og++) {
+            let oldGroup = oldFormData.descItemGroups[og];
+            if(oldGroup.code===group.code) {
+                // find new group
+                group.hasFocus = oldGroup.hasFocus;
+
+                // copy hasFocus for type
+                for (let ot = 0; ot<oldGroup.descItemTypes.length; ot++) {
+                    let oldItemType = oldGroup.descItemTypes[ot];
+                    // try to find same type in new group
+                    for(let it=0; it<group.descItemTypes.length; it++) {
+                        let newItemType = group.descItemTypes[it];
+                        if(newItemType.id===oldItemType.id) {
+                            newItemType.hasFocus = oldItemType.hasFocus;
+                        }
+                    }
+                }
+                break;
+            }            
+        }
         descItemGroups.push(group);
     }
 
@@ -601,6 +691,9 @@ class FlatFormData{
         this.descItems = {ids:[]};
         this.specs = {ids:[]};
         this.refTables = refTables;
+        // pole zobrazenych, ale neulozenych prvku popisu
+        // slouzi pri update pro recyklaci zobrazenych poli
+        this.unusedVisibleItems = [];
     }
     /**
      * Loads form data
@@ -653,6 +746,8 @@ class FlatFormData{
         let items = this.descItems;
         let types = this.types;
 
+        let usedItems = {};
+
         for(let i = 0; i < newItems.ids.length; i++){
             let newItemId = newItems.ids[i];
             let item = items[newItemId];
@@ -660,6 +755,13 @@ class FlatFormData{
 
             if(!item){
                 items.ids.push(newItem.descItemObjectId);
+            } else {
+                usedItems[newItemId] = true;
+                // hodnota jiz existovala
+                // pokud ma ocekavanou hodnotu -> muzeme prevzit formkey
+                if(item.value===newItem.value) {
+                    newItem.formKey = item.formKey;
+                }
             }
             if(item.prevValue !== newItem.value){
                 newItem.value = item.value;
@@ -668,6 +770,14 @@ class FlatFormData{
             items[newItemId] = newItem;
         }
         this.descItems = items;
+
+        // ulozeni nepouzitych polozek
+        for(let i=0; i<items.ids.length; i++) {
+            let key = items.ids[i];
+            if(!usedItems[key]) {
+                this.unusedVisibleItems.push(items[key]);
+            }
+        }
     }
     /**
      * Deletes unused items (items that are empty, and not added by user).
@@ -718,6 +828,7 @@ class FlatFormData{
                 let nextEmptyItemId = nextEmptyItemIdBase + this._emptyItemCounter;
                 let forcedTypeSpecs = itemSpecsMap[typeId] && itemSpecsMap[typeId].specs;
 
+                let candidate = this._getUnusedItem(typeId);
                 //Add forced specifications
                 // Do not force enum values -> has to be entered manually by user
                 if (forcedTypeSpecs && refType.dataType.code!=="ENUM"){
@@ -739,9 +850,13 @@ class FlatFormData{
                 }
                 //Add forced itemTypes
                 else if(!typeItems){
-                    newItem = createDescItem(type, refType, false);
+                    if(candidate!==null) {
+                        newItem = { ...candidate };
+                    } else {
+                        newItem = createDescItem(type, refType, false);                        
+                        newItem.itemType = typeId;
+                    }
                     newItem.position = 1;
-                    newItem.itemType = typeId;
 
                     newItems[nextEmptyItemId] = newItem;
                     newItems.ids.push(nextEmptyItemId);
@@ -762,6 +877,24 @@ class FlatFormData{
 
         this.descItems = newItems;
     }
+
+    /**
+     * Vrati drive existujici zdrojovou polozku pro recyklaci
+     */
+    _getUnusedItem(typeId) {
+        // prohledani pole
+        for(let i=0; i<this.unusedVisibleItems.length; i++) {
+            let item = this.unusedVisibleItems[i];
+            if(item.itemType==typeId) {
+                // TODO: kontrola specifikaci, zatim se neprovadi
+                // mame kandidata -> nutno odstranit z kolekce, aby nebyl pouzit opakovane
+                this.unusedVisibleItems.splice(i, 1);
+                return item;
+            }
+        }
+        return null;
+    }
+
     /**
      * Returns specs from given array, that are not used in descItems
      *

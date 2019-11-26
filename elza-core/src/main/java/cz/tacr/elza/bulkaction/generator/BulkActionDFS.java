@@ -13,8 +13,8 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 
 /**
@@ -27,7 +27,7 @@ public abstract class BulkActionDFS extends BulkAction {
 	protected Result result;
 
     @Autowired
-    protected CachedNodeRepository cacheNodeRepository;
+    protected NodeCacheService nodeCacheService;
 
     @Autowired
     protected RuleService ruleService;
