@@ -20,7 +20,7 @@ import indexById from "../../shared/utils/indexById";
 import "./LecturingTop.less";
 import * as perms from "../../actions/user/Permission";
 
-const basicOptionMap = (i) => <option key={i.id} value={i.id}>{i.name}</option>;
+const basicOptionMap = (i) => <option key={i.id} value={i.id}>{i.name==""?i18n("issueList.missing.name"):i.name}</option>;
 
 /**
  * Horní část lektoringu, zajištující seznam protokolů, seznam připomínek a nastavení
