@@ -24,12 +24,13 @@ const DIRTY = "dirty"; // zneplatněná data
  */
 export const SUB_NODE_FORM_CMP = buildIgnoreMap(endWith(FORM_KEY), endWith(UID), 
                                         // jen zmena verze rodice bez dalsich zmen                                        
-                                        ".data.parent.version",
+                                        //".data.parent.version",
                                         // jen zmena ID - neni podstatna pro ui
-                                        "|id",
-                                        "|prevValue",
-                                        "|visited",
-                                        "|touched");
+                                        //"|id",
+                                        //"|prevValue",
+                                        //"|visited",
+                                        //"|touched"
+                                        );
 
 export const NODE_SUB_NODE_FORM_CMP = buildIgnoreMap(startWith(IS_FETCHING), startWith(DIRTY), endWith(FORM_KEY), endWith(UID));
 
