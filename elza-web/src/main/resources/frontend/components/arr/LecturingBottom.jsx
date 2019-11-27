@@ -108,18 +108,27 @@ class LecturingBottom extends React.Component {
     };
 
     render() {
-        const {issueStates, issueDetail, issueComments, userDetail} = this.props;
+        const {issueStates, issueDetail, issueComments, issueProtocols, userDetail} = this.props;
         const {id, data, fetched, isFetching} = issueDetail;
         const {text, comment, submitting} = this.state;
 
+        let issueProtocol = null;
+        let canWrite = false;
+        
+        if(fetched) {
+            issueProtocol = objectById(issueProtocols.rows, data.issueListId);
 
-        const canWrite = fetched && (
-            userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL) || (
-                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
-                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
-                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(data.issueListId) !== -1
-            )
-        );
+            canWrite = (
+                userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL) || (
+                    userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
+                    userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
+                    userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(data.issueListId) !== -1
+                    )
+                )&&
+                // jen do otevrenych protokolu lze pridavat
+                issueProtocol && issueProtocol.open;
+        }
+            
         const canUpdateIssue = canWrite && userDetail.id === data.userCreate.id && issueComments.fetched && issueComments.rows.length === 0;
 
         let state = null;

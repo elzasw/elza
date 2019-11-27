@@ -134,29 +134,34 @@ class LecturingTop extends React.Component {
         const activeIndex = issueId !== null ? indexById(issueList.rows, issueId) : null;
 
         const hasAdmin = userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL);
+        const issueProtocol = objectById(issueProtocols.rows, issueListId);
 
         const canWrite = !!issueListId && (
              hasAdmin || (
                 userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
                 userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
                 userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(issueListId) !== -1
-            )
-        );
+               ) 
+             )&&
+            // jen do otevrenych protokolu lze pridavat
+            issueProtocol && issueProtocol.open;
 
         const config = fund.activeVersion.config;
 
         return <div className="lecturing-top">
             <div className="actions-container">
                 <div className="actions">
-                    <DropdownButton disabled={!canWrite} bsStyle="default" id='dropdown-add-comment' noCaret title={<Icon glyph='fa-plus-circle' />}>
+                    {canWrite && <DropdownButton disabled={!canWrite} bsStyle="default" id='dropdown-add-comment' noCaret title={<Icon glyph='fa-plus-circle' />}>
                         <MenuItem eventKey="1" onClick={this.newArr}>{i18n("arr.issues.add.arr")}</MenuItem>
                         <MenuItem eventKey="2" disabled={!this.props.node || !this.props.node.selectedSubNodeId} onClick={this.newNode}>{i18n("arr.issues.add.node")}</MenuItem>
                     </DropdownButton>
+                    }
                     {hasAdmin && <Button bsStyle="action" className="pull-right" onClick={this.settings}><Icon glyph='fa-cogs' /></Button>}
                     <Button bsStyle="action" className="pull-right" disabled={!issueListId} onClick={this.download}><Icon glyph='fa-download' /></Button>
                 </div>
             </div>
-            <FormControl componentClass={"select"} name={"protocol"} onChange={({target: {value}}) => this.selectIssueList(value, fund.id)} value={issueListId}>
+            <FormControl componentClass={"select"} name={"protocol"} onChange={({target: {value}}) => this.selectIssueList(value, fund.id)} 
+                        value={issueListId}>
                 {issueProtocols.fetched && issueProtocols.count === 0 && <option value={null} />}
                 {issueProtocols.fetched && issueProtocols.rows.map(basicOptionMap)}
             </FormControl>
