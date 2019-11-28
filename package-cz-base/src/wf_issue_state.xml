@@ -8,11 +8,11 @@
     <issue-state code="RESOLVED">
         <name>Vypořádaná</name>
         <start-state>false</start-state>
-        <final-state>false</final-state>
+        <final-state>true</final-state>
     </issue-state>
     <issue-state code="REJECTED">
         <name>Odmítnutá</name>
         <start-state>false</start-state>
-        <final-state>false</final-state>
+        <final-state>true</final-state>
     </issue-state>
 </issue-states>
