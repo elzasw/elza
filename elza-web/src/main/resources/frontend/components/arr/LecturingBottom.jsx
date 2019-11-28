@@ -136,7 +136,7 @@ class LecturingBottom extends React.Component {
             state = objectById(issueStates.data, data.issueStateId);
         }
 
-        const textFieldDisabled = submitting || state && state.finalState;
+        const textFieldDisabled = submitting /*|| state && state.finalState*/;
 
         return <div className="lecturing-bottom">
             {!id && <div className="text-center">{i18n("arr.issues.choose")}</div>}
