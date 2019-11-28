@@ -555,7 +555,7 @@ public class IssueService {
         for (WfIssue issue : issues) {
             if (issue.getNode() != null) {
                 fundIds.add(issue.getIssueList().getFund().getFundId());
-                nodeIds.add(issue.getNode().getNodeId());
+                nodeIds.add(issue.getNodeId());
             }
         }
         if (nodeIds.isEmpty()) {

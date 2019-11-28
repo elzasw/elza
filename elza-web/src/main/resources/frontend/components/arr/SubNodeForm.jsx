@@ -529,7 +529,7 @@ class SubNodeForm extends AbstractReactComponent {
             settings.value = JSON.stringify(newData);
             settings = setSettings(userDetail.settings, settings.id, settings);
             //settings = setSettings(settings, centerSettings.id, centerSettings);
-            console.warn(1, settings);
+            //console.warn(1, settings);
             this.props.dispatch(userDetailsSaveSettings(settings));
         }
     }
@@ -646,7 +646,7 @@ class SubNodeForm extends AbstractReactComponent {
      * @param newDescItemIndex {Integer} nová pozice - nový index atributu
      */
     handleChangePosition(descItemGroupIndex, descItemTypeIndex, descItemIndex, newDescItemIndex) {
-        console.log(222222, descItemGroupIndex, descItemTypeIndex, descItemIndex, newDescItemIndex)
+        //console.log(222222, descItemGroupIndex, descItemTypeIndex, descItemIndex, newDescItemIndex)
         const valueLocation = {
             descItemGroupIndex,
             descItemTypeIndex,
@@ -858,7 +858,7 @@ class SubNodeForm extends AbstractReactComponent {
         const {unusedItemTypeIds} = this.state;
         const formData = subNodeForm.formData;
 
-        console.info("{SubNodeForm}");
+        //console.info("{SubNodeForm}");
 
         let unusedGeneratedItems;    // nepoužité vygenerované PP
         if (unusedItemTypeIds && unusedItemTypeIds.length > 0) {
