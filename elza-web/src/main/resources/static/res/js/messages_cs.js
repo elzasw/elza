@@ -420,6 +420,7 @@ var messages = {
     "arr.output.panel.template.noSettings": "Vybraná šablona nemá žádná nastavení",
     "arr.output.panel.files.notGenerated": "Výstup nebyl vygenerován",
 
+    "arr.issues.level.deleted": "Jednotka popisu vymazána",
     "arr.issues.settings.title": "Nastavení lektorování",
     "arr.issues.choose":"Vyberte připomínku",
     "arr.issues.state.change":"změnit stav...",

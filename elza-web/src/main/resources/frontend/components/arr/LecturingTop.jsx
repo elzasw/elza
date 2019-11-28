@@ -186,7 +186,7 @@ class LecturingTop extends React.Component {
                     activeIndex={activeIndex}
                     onChangeSelection={this.selectIssue}
                     items={issueList.rows}
-                    renderItemContent={({item: {description, issueStateId, issueTypeId, number, id, referenceMark}, active} : {item: IssueVO, active: boolean}) => {
+                    renderItemContent={({item: {description, issueStateId, issueTypeId, number, id, referenceMark, levelDeleted}, active} : {item: IssueVO, active: boolean}) => {
                         const state : IssueStateVO = objectById(issueStates.data, issueStateId);
                         const type = objectById(issueTypes.data, issueTypeId);
                         const style = {};
@@ -207,11 +207,13 @@ class LecturingTop extends React.Component {
                                 </div>
                                 <div className="reference-mark">
                                     {referenceMark && referenceMark.join(" ")}
+                                    {levelDeleted && i18n("arr.issues.level.deleted")}
                                 </div>
                             </div>
                             {canWrite && <div className="actions">
                                 <DropdownButton pullRight bsStyle="action" id='issue-type' noCaret title={<Icon glyph='fa-ellipsis-h' />}>
-                                    {issueTypes.data.map(i => <MenuItem key={'issue-type-' + i.id} disabled={i.id === issueTypeId} onClick={this.updateIssueType.bind(this, id, i.id)}>{i18n("arr.issues.type.change", i.name)}</MenuItem>)}
+                                    {issueTypes.data.map(i => <MenuItem key={'issue-type-' + i.id} disabled={i.id === issueTypeId} 
+                                                                        onClick={this.updateIssueType.bind(this, id, i.id)}>{i18n("arr.issues.type.change", i.name)}</MenuItem>)}
                                 </DropdownButton>
                             </div>}
                         </TooltipTrigger>
