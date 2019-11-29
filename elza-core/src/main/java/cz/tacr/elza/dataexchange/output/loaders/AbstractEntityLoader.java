@@ -72,6 +72,14 @@ public abstract class AbstractEntityLoader<RES> extends AbstractBatchLoader<Obje
         }
     }
 
+    /**
+     * Use entity as a result
+     * 
+     * Override this method if result is same as entity
+     * 
+     * @param entity
+     * @return
+     */
     @SuppressWarnings("unchecked")
     protected RES createResult(Object entity) {
         return (RES) entity;

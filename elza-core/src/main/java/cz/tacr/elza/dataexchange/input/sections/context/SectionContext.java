@@ -30,6 +30,11 @@ public class SectionContext {
 
     private final Map<String, StructObjContext> importIdStructObjCtxMap = new HashMap<>();
 
+    /**
+     * Map of imported files
+     */
+    private final Map<String, FileContext> importIdFileCtxMap = new HashMap<>();
+
     private final NodeStorageDispatcher nodeStorageDispatcher;
 
     private final StructObjStorageDispatcher structObjectStorageDispatcher;
@@ -176,5 +181,9 @@ public class SectionContext {
         nodeStorageDispatcher.addNode(nodeWrapper, depth);
         nodeStorageDispatcher.addLevel(levelWrapper, depth);
         return node;
+    }
+
+    public FileContext getFile(String fid) {
+        return importIdFileCtxMap.get(fid);
     }
 }

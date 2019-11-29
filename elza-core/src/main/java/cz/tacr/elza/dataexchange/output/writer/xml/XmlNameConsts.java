@@ -35,6 +35,16 @@ public class XmlNameConsts {
 
     public static final String STRUCT_TYPES = "sts";
 
+    public static final String FILES = "fs";
+
+    public static final String FILE = "f";
+
+    public static final String FILE_ID = "id";
+
+    public static final String FILE_NAME = "n";
+
+    public static final String FILE_BIN_DATA = "d";
+
     public static final String STRUCT_TYPE = "st";
 
     public static final String STRUCT_TYPE_CODE = "c";

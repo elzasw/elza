@@ -5,17 +5,17 @@
 			<xs:documentation>Root element for elza data exchange format</xs:documentation>
 		</xs:annotation>
 	</xs:element>
-	<xs:simpleType name="AccessPointNameType">
-		<xs:annotation>
-			<xs:documentation>Type of name</xs:documentation>
-		</xs:annotation>
-		<xs:restriction base="xs:string"/>
-	</xs:simpleType>
 	<xs:simpleType name="AccessPointType">
 		<xs:annotation>
 			<xs:documentation>Registry item type. Value have to be one of items stored in the table reg_registry_type.</xs:documentation>
 		</xs:annotation>
 		<xs:restriction base="xs:string"/>
+	</xs:simpleType>
+	<xs:simpleType name="BinData">
+		<xs:annotation>
+			<xs:documentation>Encoded binary data</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:base64Binary"/>
 	</xs:simpleType>
 	<xs:simpleType name="GenericString">
 		<xs:annotation>
@@ -26,6 +26,12 @@
 	<xs:simpleType name="Id">
 		<xs:annotation>
 			<xs:documentation>Id of the item. This id is valid and usable only in the context of given elza data exchange file</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string"/>
+	</xs:simpleType>
+	<xs:simpleType name="String250">
+		<xs:annotation>
+			<xs:documentation>String with max length 250 characters</xs:documentation>
 		</xs:annotation>
 		<xs:restriction base="xs:string"/>
 	</xs:simpleType>
@@ -185,6 +191,21 @@ Type: decimal</xs:documentation>
 		<xs:complexContent>
 			<xs:extension base="e:DescriptionItem">
 				<xs:sequence/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="DescriptionItemFileRef">
+		<xs:annotation>
+			<xs:documentation>Reference to the file</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="e:DescriptionItem">
+				<xs:sequence/>
+				<xs:attribute name="fid" use="optional" type="e:Id">
+					<xs:annotation>
+						<xs:documentation>Referenced file ID</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
@@ -358,6 +379,33 @@ Item ID</xs:documentation>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
+	<xs:complexType name="File">
+		<xs:annotation>
+			<xs:documentation>Single file.
+Each file has name and its content - binary data.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="d" type="e:BinData" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+		<xs:attribute name="id" use="optional" type="e:Id">
+			<xs:annotation>
+				<xs:documentation>ID of attachment</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="n" use="required" type="e:String250">
+			<xs:annotation>
+				<xs:documentation>Name of file</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="Files">
+		<xs:annotation>
+			<xs:documentation>Collection of files</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="f" type="e:File" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
 	<xs:complexType name="FundInfo">
 		<xs:annotation>
 			<xs:documentation>Basic fund information </xs:documentation>
@@ -451,6 +499,7 @@ Item ID</xs:documentation>
 						<xs:documentation>Access point entry reference</xs:documentation>
 					</xs:annotation>
 				</xs:element>
+				<xs:element name="df" type="e:DescriptionItemFileRef" minOccurs="1" maxOccurs="1"/>
 			</xs:choice>
 			<xs:element name="aprs" type="e:AccessPointRefs" minOccurs="0" maxOccurs="1">
 				<xs:annotation>
@@ -859,6 +908,7 @@ This is ID of the created party</xs:documentation>
 					<xs:documentation>Structured types used in a section</xs:documentation>
 				</xs:annotation>
 			</xs:element>
+			<xs:element name="fs" type="e:Files" minOccurs="0" maxOccurs="1"/>
 			<xs:element name="lvls" type="e:Levels" minOccurs="1" maxOccurs="1">
 				<xs:annotation>
 					<xs:documentation>Levels</xs:documentation>
@@ -913,6 +963,7 @@ This is ID of the created party</xs:documentation>
 						<xs:documentation>Access point entry reference</xs:documentation>
 					</xs:annotation>
 				</xs:element>
+				<xs:element name="df" type="e:DescriptionItemFileRef" minOccurs="1" maxOccurs="1"/>
 			</xs:choice>
 		</xs:sequence>
 		<xs:attribute name="id" use="required" type="e:Id">
