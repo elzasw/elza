@@ -22,6 +22,8 @@ public class DmsFileLoader
         DmsFile dmsFile = (DmsFile) entity;
 
         return new DmsFileInfoImpl(dmsFile.getFileId(), dmsFile.getName(),
+                dmsFile.getFileName(),
+                dmsFile.getMimeType(),
                 () -> DmsService.downloadFile(resourcePathResolver, dmsFile));
     }
 }

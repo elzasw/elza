@@ -387,9 +387,19 @@ Each file has name and its content - binary data.</xs:documentation>
 		<xs:sequence>
 			<xs:element name="d" type="e:BinData" minOccurs="1" maxOccurs="1"/>
 		</xs:sequence>
+		<xs:attribute name="fn" use="optional" type="e:String250">
+			<xs:annotation>
+				<xs:documentation>File name, original name of file</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
 		<xs:attribute name="id" use="optional" type="e:Id">
 			<xs:annotation>
 				<xs:documentation>ID of attachment</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="mt" use="optional" type="e:String250">
+			<xs:annotation>
+				<xs:documentation>mime-type</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 		<xs:attribute name="n" use="required" type="e:String250">

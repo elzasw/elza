@@ -43,6 +43,10 @@ public class XmlNameConsts {
 
     public static final String FILE_NAME = "n";
 
+    public static final String FILE_MIMETYPE = "mt";
+
+    public static final String FILE_FILENAME = "fn";
+
     public static final String FILE_BIN_DATA = "d";
 
     public static final String STRUCT_TYPE = "st";

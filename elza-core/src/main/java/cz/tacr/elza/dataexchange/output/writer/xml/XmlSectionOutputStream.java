@@ -119,6 +119,8 @@ class XmlSectionOutputStream implements SectionOutputStream {
                 sw.writeStartElement(XmlNameConsts.FILE);
                 sw.writeAttribute(XmlNameConsts.FILE_ID, fileInfo.getId().toString());
                 sw.writeAttribute(XmlNameConsts.FILE_NAME, fileInfo.getName());
+                sw.writeAttribute(XmlNameConsts.FILE_FILENAME, fileInfo.getFileName());
+                sw.writeAttribute(XmlNameConsts.FILE_MIMETYPE, fileInfo.getMimetype());
 
                 // write binary data
                 sw.writeStartElement(XmlNameConsts.FILE_BIN_DATA);
@@ -148,7 +150,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
     }
 
     private void writeBinaryFileData(XMLStreamWriter sw, InputStream is) throws IOException, XMLStreamException {
-        try (Base64InputStream encoder = new Base64InputStream(is, true)) {
+        try (Base64InputStream encoder = new Base64InputStream(is, true, Integer.MAX_VALUE, null)) {
             byte buff[] = new byte[65536];
             while (encoder.available() > 0) {
                 int numRead = encoder.read(buff);

@@ -16,4 +16,8 @@ public interface FileInfo {
 
     InputStream getInputStream();
 
+    String getFileName();
+
+    String getMimetype();
+
 }

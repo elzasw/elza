@@ -5,17 +5,13 @@ import javax.xml.stream.events.StartElement;
 
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.context.ImportPhase;
-import cz.tacr.elza.dataexchange.input.reader.XmlElementHandler;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionContext;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext;
 
-/**
- * When all structured objects are read this class will fire validation and
- * generation of values.
- */
-public class StructTypesHandler extends ContextAwareElementHandler implements XmlElementHandler {
+public class FilesHandler extends ContextAwareElementHandler
+{
 
-    protected StructTypesHandler(ImportContext context) {
+    public FilesHandler(ImportContext context) {
         super(context, ImportPhase.SECTIONS);
     }
 
@@ -25,11 +21,12 @@ public class StructTypesHandler extends ContextAwareElementHandler implements Xm
 
     @Override
     protected void handleEnd() {
-        // all structuredObjects are read
+        // all files are read
         // store them in DB
         SectionsContext ssCtx = context.getSections();
         SectionContext secCtx = ssCtx.getCurrentSection();
 
-        secCtx.structObjsFinished();
+        secCtx.filesFinished();
     }
+
 }
