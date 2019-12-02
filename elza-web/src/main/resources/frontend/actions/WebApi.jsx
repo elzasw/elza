@@ -268,7 +268,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/descItems/' + versionId + '/' + nodeId + '/' + nodeVersionId + '/delete', null, descItem);
     }
 
-    deleteOutputItem(versionId, outputVersion, descItem) {
+    deleteOutputItem(versionId, outputVersion, nodeVersionId, descItem) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputVersion + '/delete', null, descItem);
     }
 
