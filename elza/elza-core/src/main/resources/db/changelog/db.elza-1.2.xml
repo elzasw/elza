@@ -220,5 +220,80 @@
             <column name="delete_change_id" type="int"/>
         </createIndex>
     </changeSet>
+    <changeSet id="20191123100000" author="ppyta">
+        <!-- Odstraneni duplicitnich zaznamu -->
+        <sql>delete from arr_desc_item 
+             where item_id in (
+              select i.item_id from arr_item i
+              join arr_item i2 on i.delete_change_id = i2.delete_change_id and i.desc_item_object_id = i2.desc_item_object_id
+                           and i.item_id&lt;i2.item_id
+             )
+        </sql>
+        <sql>delete from arr_structured_item 
+             where item_id in (
+              select i.item_id from arr_item i
+              join arr_item i2 on i.delete_change_id = i2.delete_change_id and i.desc_item_object_id = i2.desc_item_object_id
+                           and i.item_id&lt;i2.item_id
+             )
+        </sql>
+        <sql>delete from arr_item 
+             where item_id in (
+              select i.item_id from arr_item i
+              join arr_item i2 on i.delete_change_id = i2.delete_change_id and i.desc_item_object_id = i2.desc_item_object_id
+                           and i.item_id&lt;i2.item_id
+             )
+        </sql>
+        <createIndex indexName="ap_description_ap_id_delchng_id_idx" tableName="ap_description" unique="true">
+            <column name="access_point_id" type="int"/>
+            <column name="delete_change_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="arr_item_dscitemobj_delchng_idx" tableName="arr_item" unique="true">
+            <column name="desc_item_object_id" type="int"/>
+            <column name="delete_change_id" type="int"/>
+        </createIndex>
+        <dropIndex tableName="arr_level" indexName="arr_level_node_delete_change_idx"/>
+        <createIndex tableName="arr_level" indexName="arr_level_node_delete_change_idx" unique="true">
+            <column name="node_id" type="int"/>
+            <column name="delete_change_id" type="int"/>            
+        </createIndex>
+    </changeSet>
+    <changeSet id="20191123100001" author="ppyta">
+        <!-- Odstraneni duplicitnich zaznamu -->
+        <sql>delete from arr_desc_item 
+             where item_id in (
+              select i.item_id from arr_item i
+              join arr_item i2 on i.create_change_id = i2.create_change_id and i.desc_item_object_id = i2.desc_item_object_id
+                           and i.item_id&lt;i2.item_id
+             )
+        </sql>
+        <sql>delete from arr_structured_item 
+             where item_id in (
+              select i.item_id from arr_item i
+              join arr_item i2 on i.create_change_id = i2.create_change_id and i.desc_item_object_id = i2.desc_item_object_id
+                           and i.item_id&lt;i2.item_id
+             )
+        </sql>
+        <sql>delete from arr_item 
+             where item_id in (
+              select i.item_id from arr_item i
+              join arr_item i2 on i.create_change_id = i2.create_change_id and i.desc_item_object_id = i2.desc_item_object_id
+                           and i.item_id&lt;i2.item_id
+             )
+        </sql>
+        <sql>delete from arr_level 
+             where level_id in (
+              select l.level_id from arr_level l
+              join arr_level l2 on l.create_change_id = l2.create_change_id and l.node_id = l2.node_id
+                           and l.level_id&lt;l2.level_id
+             )
+        </sql>
+        <!-- Vytvoreni constraintu pro createChange -->
+        <addUniqueConstraint columnNames="create_change_id, access_point_id" tableName="ap_description"
+           constraintName="ap_description_create_change_ap_unqct"/>
+        <addUniqueConstraint columnNames="create_change_id, desc_item_object_id" tableName="arr_item"
+           constraintName="arr_item_create_change_obj_unqct"/>
+        <addUniqueConstraint columnNames="create_change_id, node_id" tableName="arr_level"
+           constraintName="arr_level_create_change_node_unqct"/>
+    </changeSet>
 
 </databaseChangeLog>

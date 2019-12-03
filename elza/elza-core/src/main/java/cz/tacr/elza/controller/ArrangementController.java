@@ -980,9 +980,9 @@ public class ArrangementController {
     public OutputItemResult deleteOutputItem(@RequestBody final ArrItemVO outputItemVO,
                                              @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                              @PathVariable(value = "outputVersion") final Integer outputVersion) {
-        Assert.notNull(outputItemVO, "Výstup musí být vyplněn");
-        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
-        Assert.notNull(outputVersion, "Verze definice výstupu musí být vyplněna");
+        Validate.notNull(outputItemVO, "Výstup musí být vyplněn");
+        Validate.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+        Validate.notNull(outputVersion, "Verze definice výstupu musí být vyplněna");
 
         ArrOutputItem outputItemDeleted = outputService
                 .deleteOutputItem(outputItemVO.getDescItemObjectId(), outputVersion, fundVersionId);

@@ -5,6 +5,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.events.StartElement;
 
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
@@ -25,7 +26,7 @@ public abstract class JaxbElementHandler<T> extends ContextAwareElementHandler {
     }
 
     @Override
-    public final void handleStart(XMLEventReader eventReader) {
+    public final void handleStart(XMLEventReader eventReader, StartElement startElement) {
         JAXBElement<T> jaxbElement;
         try {
             jaxbElement = unmarshalElement(eventReader);

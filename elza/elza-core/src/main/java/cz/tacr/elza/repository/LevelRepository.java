@@ -74,4 +74,5 @@ public interface LevelRepository extends JpaRepository<ArrLevel, Integer>, Level
     @Modifying
     @Query("DELETE FROM arr_level l WHERE l.node IN (SELECT n FROM arr_node n WHERE n.fund = ?1)")
     void deleteByNodeFund(ArrFund fund);
+
 }

@@ -60,7 +60,10 @@ class SubNodeForm extends AbstractReactComponent {
     }
 
     state = {
-        unusedItemTypeIds: []
+        unusedItemTypeIds: [],
+        // Priznak pro podrobne logovani
+        // standardne false
+        detailLogging: false
     };
 
     static PropTypes = {
@@ -83,14 +86,38 @@ class SubNodeForm extends AbstractReactComponent {
         arrPerm: React.PropTypes.bool.isRequired,
     };
 
+    log(logMsg) {
+        if(this.state.detailLogging) {
+            console.log(logMsg);
+        }
+    }
+
     shouldComponentUpdate(nextProps, nextState) {
+        this.log("Called shouldComponentUpdate");
+
         if (this.state !== nextState) {
+            this.log(" - different state -> shouldUpdate");
             return true;
         } else {
-            return !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, SUB_NODE_FORM_CMP)
-                || !objectEqualsDiff(this.props.descItemCopyFromPrevEnabled, nextProps.descItemCopyFromPrevEnabled)
-                || !objectEqualsDiff(this.props.nodeSetting, nextProps.nodeSetting)
-                || !objectEqualsDiff(this.props.readMode, nextProps.readMode);
+            if(!objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, SUB_NODE_FORM_CMP, "", 
+                    false/*this.state.detailLogging*/)) {
+                this.log(" - different props (subNodeForm) -> shouldUpdate");
+                return true;
+            }
+            if(!objectEqualsDiff(this.props.descItemCopyFromPrevEnabled, nextProps.descItemCopyFromPrevEnabled)) {
+                this.log(" - different props (descItemCopyFromPrevEnabled) -> shouldUpdate");
+                return true;
+            }
+            if(!objectEqualsDiff(this.props.nodeSetting, nextProps.nodeSetting)) {
+                this.log(" - different props (nodeSetting) -> shouldUpdate");
+                return true;                
+            }
+            if(!objectEqualsDiff(this.props.readMode, nextProps.readMode)) {
+                this.log(" - different props (readMode) -> shouldUpdate");
+                return true;                
+            }
+            this.log(" - form up-to-date");
+            return false;
         }
     }
 
@@ -502,7 +529,7 @@ class SubNodeForm extends AbstractReactComponent {
             settings.value = JSON.stringify(newData);
             settings = setSettings(userDetail.settings, settings.id, settings);
             //settings = setSettings(settings, centerSettings.id, centerSettings);
-            console.warn(1, settings);
+            //console.warn(1, settings);
             this.props.dispatch(userDetailsSaveSettings(settings));
         }
     }
@@ -619,14 +646,15 @@ class SubNodeForm extends AbstractReactComponent {
      * @param newDescItemIndex {Integer} nová pozice - nový index atributu
      */
     handleChangePosition(descItemGroupIndex, descItemTypeIndex, descItemIndex, newDescItemIndex) {
-        console.log(222222, descItemGroupIndex, descItemTypeIndex, descItemIndex, newDescItemIndex)
+        //console.log(222222, descItemGroupIndex, descItemTypeIndex, descItemIndex, newDescItemIndex)
         const valueLocation = {
             descItemGroupIndex,
             descItemTypeIndex,
             descItemIndex
         };
 
-        this.props.dispatch(this.props.formActions.fundSubNodeFormValueChangePosition(this.props.versionId, this.props.routingKey, valueLocation, newDescItemIndex));
+        this.props.dispatch(this.props.formActions.fundSubNodeFormValueChangePosition(
+            this.props.versionId, this.props.routingKey, valueLocation, newDescItemIndex));
     }
 
     /**
@@ -831,7 +859,7 @@ class SubNodeForm extends AbstractReactComponent {
         const {unusedItemTypeIds} = this.state;
         const formData = subNodeForm.formData;
 
-        console.info("{SubNodeForm}");
+        //console.info("{SubNodeForm}");
 
         let unusedGeneratedItems;    // nepoužité vygenerované PP
         if (unusedItemTypeIds && unusedItemTypeIds.length > 0) {

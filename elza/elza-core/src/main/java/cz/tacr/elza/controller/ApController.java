@@ -106,7 +106,7 @@ import cz.tacr.elza.service.StructObjService;
 @RequestMapping(value = "/api/registry", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public class ApController {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ApController.class);
 
     @Autowired
     private ApAccessPointRepository accessPointRepository;
@@ -196,17 +196,35 @@ public class ApController {
             throw new SystemException("Nelze použít více kritérií zároveň (specifikace/typ a typ rejstříku).", BaseCode.SYSTEM_ERROR);
         }
 
+        StaticDataProvider sdp = staticDataService.getData();
+
         Set<Integer> apTypeIds = new HashSet<>();
         if (apTypeId != null) {
             apTypeIds.add(apTypeId);
-        } else {
-            if (itemSpecId != null) {
-                RulItemSpec spec = itemSpecRepository.getOneCheckExist(itemSpecId);
-                apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemSpec(spec));
+        } else if (itemSpecId != null) {
+            RulItemSpec spec = sdp.getItemSpecById(itemSpecId);
+            if (spec == null) {
+                throw new ObjectNotFoundException("Specification not found", ArrangementCode.ITEM_SPEC_NOT_FOUND)
+                        .setId(itemSpecId);
             }
-            if (itemTypeId != null) {
-                RulItemType type = itemTypeRepository.getOneCheckExist(itemTypeId);
-                apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemType(type));
+            apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemSpec(spec));
+            if (apTypeIds.size() == 0) {
+                logger.error("Specification has no associated classes, itemSpecId={}", itemSpecId);
+                throw new SystemException("Configuration error, specification without associated classes",
+                        BaseCode.SYSTEM_ERROR).set("itemSpecId", itemSpecId);
+            }
+        } else
+        if (itemTypeId != null) {
+            ItemType itemType = sdp.getItemTypeById(itemTypeId);
+            if (itemType == null) {
+                throw new ObjectNotFoundException("Item type not found", ArrangementCode.ITEM_TYPE_NOT_FOUND)
+                        .setId(itemTypeId);
+            }
+            apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemType(itemType.getEntity()));
+            if (apTypeIds.size() == 0) {
+                logger.error("Item type has no associated classes, itemTypeId={}", itemTypeId);
+                throw new SystemException("Configuration error, item type without associated classes",
+                        BaseCode.SYSTEM_ERROR).set("itemTypeId", itemTypeId);
             }
         }
 

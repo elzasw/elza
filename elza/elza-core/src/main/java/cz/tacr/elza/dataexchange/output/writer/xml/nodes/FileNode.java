@@ -14,8 +14,7 @@ import javax.xml.stream.events.XMLEvent;
 
 import org.apache.commons.lang3.Validate;
 
-import com.bea.xml.stream.XMLEventWriterBase;
-
+import cz.tacr.elza.common.xml.XMLEventWriterBase;
 import cz.tacr.elza.exception.SystemException;
 
 public class FileNode implements XmlNode {

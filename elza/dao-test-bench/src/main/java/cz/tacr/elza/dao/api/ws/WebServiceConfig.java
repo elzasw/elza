@@ -7,6 +7,8 @@ import org.apache.cxf.interceptor.LoggingInInterceptor;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.apache.cxf.transport.servlet.CXFServlet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +20,8 @@ import cz.tacr.elza.dao.DCStorageConfig;
 @Configuration
 @ImportResource({ "classpath:META-INF/cxf/cxf.xml" })
 public class WebServiceConfig {
+
+    static Logger log = LoggerFactory.getLogger(WebServiceConfig.class);
 
 	@Autowired
 	private DaoNotificationsImpl daoNotifications;
@@ -64,6 +68,9 @@ public class WebServiceConfig {
 	@Bean
 	public ServletRegistrationBean CXFServlet() {
 		String contextPath = "/" + storageConfig.getRepositoryIdentifier() + "/ws/*";
+
+        log.info("URL for WSDL services: " + contextPath);
+
 		ServletRegistrationBean servlet = new ServletRegistrationBean(new CXFServlet(), contextPath);
 		servlet.setLoadOnStartup(1);
 		return servlet;
