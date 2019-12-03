@@ -653,7 +653,8 @@ class SubNodeForm extends AbstractReactComponent {
             descItemIndex
         };
 
-        this.props.dispatch(this.props.formActions.fundSubNodeFormValueChangePosition(this.props.versionId, this.props.routingKey, valueLocation, newDescItemIndex));
+        this.props.dispatch(this.props.formActions.fundSubNodeFormValueChangePosition(
+            this.props.versionId, this.props.routingKey, valueLocation, newDescItemIndex));
     }
 
     /**
