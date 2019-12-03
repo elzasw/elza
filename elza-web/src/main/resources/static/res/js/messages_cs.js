@@ -428,6 +428,7 @@ var messages = {
     "arr.output.panel.template.noSettings": "Vybraná šablona nemá žádná nastavení",
     "arr.output.panel.files.notGenerated": "Výstup nebyl vygenerován",
 
+    "arr.issues.level.deleted": "Jednotka popisu vymazána",
     "arr.issues.settings.title": "Nastavení lektorování",
     "arr.issues.choose":"Vyberte připomínku",
     "arr.issues.state.change":"změnit stav...",
@@ -447,6 +448,7 @@ var messages = {
     "issueList.open.true":"Otevřený",
     "issueList.open.false":"Zavřený",
     "issueList.new.unnamed":"Nepojmenovaný",
+    "issueList.missing.name":"Bez jména",
 
     "arr.fund.search.result.count": "Počet nalezených výsledků: {0}",
     "arr.fund.search.noFulltext": "Pro zobrazení výsledků hledání v archivních souborech zadejte vyhledávací podmínku.",

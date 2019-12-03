@@ -60,13 +60,17 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 
 	static final String FETCH_NODES_WITH_DATA = "SELECT i FROM arr_desc_item i"
 	        + " LEFT JOIN FETCH i.data d"
-	        + " WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL";
-	/**
-	 * Read node and connected data
-	 *
-	 * @param nodeIds
-	 * @return
-	 */
+            + " WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL"
+            + " ORDER BY i.nodeId, i.itemTypeId, i.itemSpecId, i.position";
+	
+    /**
+     * Read node and connected data
+     * 
+     * Items are ordered by: node, itemType, itemSpec, position
+     *
+     * @param nodeIds
+     * @return
+     */
 	//@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data d WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL")
 	@Query(FETCH_NODES_WITH_DATA)
     List<ArrDescItem> findByNodeIdsAndDeleteChangeIsNull(Collection<Integer> nodeIds);

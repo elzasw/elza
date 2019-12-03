@@ -38,7 +38,12 @@ public enum EventType {
 
     FRAGMENT_UPDATE(EventId.class),
 
-    COPY_OLDER_SIBLING_ATTRIBUTE(EventIdInVersion.class),
+    /**
+     * Asi drive pouzivano pro notifikaci o zkopirovanem atributu
+     * 
+     * Nove staci notifikace o zmenenem uzlu
+     */
+    //COPY_OLDER_SIBLING_ATTRIBUTE(EventIdInVersion.class),
 
     NODES_CHANGE(EventIdsInVersion.class),
 

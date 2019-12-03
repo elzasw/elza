@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<!-- Created with Jaspersoft Studio version 6.10.0.final using JasperReports Library version 6.10.0-unknown  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="puvodce" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="70" bottomMargin="70" uuid="5e68af3a-e344-406e-924e-15876401d3ae">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="org.apache.commons.lang3.StringUtils"/>
@@ -38,6 +38,9 @@
 	</subDataset>
 	<parameter name="fund" class="cz.tacr.elza.print.Fund"/>
 	<parameter name="output" class="cz.tacr.elza.print.Output"/>
+	<parameter name="formatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()]]></defaultValueExpression>
+	</parameter>
 	<field name="partyObj" class="cz.tacr.elza.print.party.Party">
 		<fieldDescription><![CDATA[_THIS]]></fieldDescription>
 	</field>
@@ -360,7 +363,7 @@
 				<textElement textAlignment="Justified" markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{partyObj}.getCharacteristics()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{formatter}.format($F{partyObj}.getCharacteristics())]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="50" splitType="Prevent">
@@ -387,7 +390,7 @@
 				<textElement textAlignment="Justified" markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{partyObj}.getHistory()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{formatter}.format($F{partyObj}.getHistory())]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="50" splitType="Prevent">
@@ -412,7 +415,7 @@
 				<textElement textAlignment="Justified" markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{partyGroupObj}.getScope()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{formatter}.format($F{partyGroupObj}.getScope())]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="50" splitType="Prevent">
@@ -438,7 +441,7 @@
 				<textElement textAlignment="Justified" markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{partyGroupObj}.getFoundingNorm()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{formatter}.format($F{partyGroupObj}.getFoundingNorm())]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="50" splitType="Prevent">
@@ -463,7 +466,7 @@
 				<textElement textAlignment="Justified" markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{partyGroupObj}.getScopeNorm()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{formatter}.format($F{partyGroupObj}.getScopeNorm())]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="50" splitType="Prevent">
@@ -489,7 +492,7 @@
 				<textElement textAlignment="Justified" markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{partyGroupObj}.getOrganization()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{formatter}.format($F{partyGroupObj}.getOrganization())]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="50" splitType="Prevent">
@@ -513,7 +516,7 @@
 				<textElement textAlignment="Left" markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{partyObj}.getSourceInformation()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{formatter}.format($F{partyObj}.getSourceInformation())]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

@@ -179,7 +179,7 @@ public class UsrPermissionVO {
             entity.setIssueList(issueList.createEntity());
         }
         if (node != null) {
-            entity.setNode(node.createEntity());
+            entity.setNode(node.createEntity(entity.getFund()));
         }
         return entity;
     }

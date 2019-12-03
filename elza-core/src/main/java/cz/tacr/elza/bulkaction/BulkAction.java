@@ -29,6 +29,7 @@ import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.DescriptionItemService;
+import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
 
 
 /**
@@ -72,6 +73,13 @@ public abstract class BulkAction {
 	 * Stav hromadné akce
 	 */
 	protected ArrBulkActionRun bulkActionRun;
+
+    /**
+     * Optional context for changing multiple items at once
+     * 
+     * This can speed up processing of operation.
+     */
+    protected MultiplItemChangeContext multipleItemChangeContext = null;
 
 	/**
 	 * Změna
@@ -137,11 +145,26 @@ public abstract class BulkAction {
      * @return finální atribut
      */
     public ArrDescItem saveDescItem(final ArrDescItem descItem) {
-        if (descItem.getDescItemObjectId() == null) {
-            return descriptionItemService.createDescriptionItem(descItem, descItem.getNode(), version, getChange());
+        ArrDescItem result;
+        if (multipleItemChangeContext == null) {
+            if (descItem.getDescItemObjectId() == null) {
+                result = descriptionItemService.createDescriptionItem(descItem, descItem.getNode(), version,
+                                                                      getChange());
+            } else {
+                result = descriptionItemService.updateDescriptionItem(descItem, version, getChange());
+            }
         } else {
-            return descriptionItemService.updateDescriptionItem(descItem, version, getChange(), true);
+            if (descItem.getDescItemObjectId() == null) {
+                result = descriptionItemService.createDescriptionItemInBatch(descItem, descItem.getNode(), version,
+                                                                           getChange(), multipleItemChangeContext);
+            } else {
+                result = descriptionItemService.updateValueAsNewVersion(version, getChange(),
+                                                                        descItem,
+                                                                        multipleItemChangeContext);
+            }
+            multipleItemChangeContext.flushIfNeeded();
         }
+        return result;
     }
 
     /**

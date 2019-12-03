@@ -29,6 +29,8 @@ import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DescriptionItemServiceInternal;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.arrangement.BatchChangeContext;
+import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.eventnotification.EventFactory;
@@ -153,7 +155,11 @@ public class TestDataGenerator extends BulkAction {
 		return result;
 	}
 
-	private Collection<? extends ArrLevel> copyLevels(List<ArrLevel> childLevels, int startPos, ArrLevel parentLevel) {
+    private Collection<? extends ArrLevel> copyLevels(List<ArrLevel> childLevels, int startPos,
+                                                      ArrLevel parentLevel) {
+
+        MultiplItemChangeContext createChange = this.descriptionItemService.createChangeContext(version
+                .getFundVersionId());
 
 		List<ArrLevel> result = new LinkedList<>();
 
@@ -170,7 +176,7 @@ public class TestDataGenerator extends BulkAction {
 			result.add(newLevel);
 
 			// copy descr.items
-			this.copyDescrItems(srcLevel, newLevel);
+            this.copyDescrItems(srcLevel, newLevel, createChange);
 
 			// copy childLevels
 			List<ArrLevel> subLevels = this.getChildren(srcLevel);
@@ -180,20 +186,25 @@ public class TestDataGenerator extends BulkAction {
 			pos++;
 		}
 
+        createChange.flush();
+
 		return result;
 	}
 
 	/**
-	 * Copy all description items
-	 * @param srcLevel
-	 * @param trgLevel
-	 */
-	private void copyDescrItems(ArrLevel srcLevel, ArrLevel trgLevel) {
+     * Copy all description items
+     * 
+     * @param srcLevel
+     * @param trgLevel
+     * @param changeContext
+     */
+    private void copyDescrItems(ArrLevel srcLevel, ArrLevel trgLevel, BatchChangeContext changeContext) {
 		ArrNode node = srcLevel.getNode();
 		RestoredNode restoredNode = nodeCacheService.getNode(node.getNodeId());
 		List<ArrDescItem> sourceDescItems = restoredNode.getDescItems();
-		descriptionItemService.copyDescItemWithDataToNode(trgLevel.getNode(), sourceDescItems, this.getChange(),
-		        version);
+        descriptionItemService.copyDescItemWithDataToNode(trgLevel.getNode(),
+                                                          sourceDescItems, this.getChange(),
+                                                          version, changeContext);
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import java.util.Collections;
 
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.dataexchange.output.DEExportException;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
@@ -36,6 +37,8 @@ public class SectionsReader implements ExportReader {
 
     private final EntityManager em;
 
+    private final ResourcePathResolver resourcePathResolver;
+
     public SectionsReader(ExportContext context, ExportInitHelper initHelper) {
         this.context = context;
         this.levelRepository = initHelper.getLevelRepository();
@@ -43,6 +46,7 @@ public class SectionsReader implements ExportReader {
         this.fundVersionRepository = initHelper.getFundVersionRepository();
         this.userService = initHelper.getUserService();
         this.em = initHelper.getEm();
+        this.resourcePathResolver = initHelper.getResourcePathResolver();
     }
 
     /**
@@ -92,7 +96,9 @@ public class SectionsReader implements ExportReader {
                                     LevelInfoListener levelInfoListener,
                                     Collection<Integer> rootNodeIds) {
         ArrChange lockChange = fundVersion.getLockChange();
-        SectionContext sectionContext = new SectionContext(fundVersion, context, true, levelInfoListener, nodeCacheService, em);
+        SectionContext sectionContext = new SectionContext(fundVersion, context, true,
+                levelInfoListener, nodeCacheService, em,
+                this.resourcePathResolver);
         try {
             // read sections levels
             for (Integer rootNodeId : rootNodeIds) {
@@ -110,7 +116,9 @@ public class SectionsReader implements ExportReader {
 
     private void readSection(ArrFundVersion fundVersion, LevelInfoListener levelInfoListener, int rootNodeId) {
         ArrChange lockChange = fundVersion.getLockChange();
-        SectionContext sectionContext = new SectionContext(fundVersion, context, false, levelInfoListener, nodeCacheService, em);
+        SectionContext sectionContext = new SectionContext(fundVersion, context, false,
+                levelInfoListener, nodeCacheService, em,
+                this.resourcePathResolver);
         try {
             levelRepository.readLevelTree(rootNodeId, lockChange, false, (level, depth) -> sectionContext.addLevel(level));
 

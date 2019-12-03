@@ -40,7 +40,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
@@ -103,8 +102,10 @@ import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.arrangement.DeleteFundAction;
+import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
@@ -140,7 +141,7 @@ public class ArrangementService {
     @Autowired
     private ItemRepository itemRepository;
     @Autowired
-    private IEventNotificationService eventNotificationService;
+    private EventNotificationService eventNotificationService;
     @Autowired
     private DescriptionItemService descriptionItemService;
     @Autowired
@@ -745,26 +746,23 @@ public class ArrangementService {
         // Read source data
         List<ArrDescItem> siblingDescItems = descItemRepository.findOpenByNodeAndTypes(olderSibling.getNode(), typeSet);
 
+        MultiplItemChangeContext changeContext = descriptionItemService.createChangeContext(version.getFundVersionId());
+
         // Delete old values for these items
         // ? Can we use descriptionItemService.deleteDescriptionItemsByType
         List<ArrDescItem> nodeDescItems = descItemRepository.findOpenByNodeAndTypes(level.getNode(), typeSet);
-        List<ArrDescItem> deletedDescItems = null;
         if (CollectionUtils.isNotEmpty(nodeDescItems)) {
-            deletedDescItems = descriptionItemService.deleteDescriptionItems(nodeDescItems, level.getNode(), version,
-                                                                             change, false);
+            for (ArrDescItem descItem : nodeDescItems) {
+                descriptionItemService.deleteDescriptionItem(descItem, version,
+                                                             change, false, changeContext);
+            }
         }
 
         final List<ArrDescItem> newDescItems = descriptionItemService
-                    .copyDescItemWithDataToNode(level.getNode(), siblingDescItems, change, version);
+                .copyDescItemWithDataToNode(level.getNode(), siblingDescItems, change, version,
+                                            changeContext);
 
-        descItemRepository.flush();
-
-        eventNotificationService.publishEvent(EventFactory
-                .createIdInVersionEvent(EventType.COPY_OLDER_SIBLING_ATTRIBUTE, version, level.getNode().getNodeId()));
-
-        // revalidate node
-        ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(level.getNode().getNodeId()),
-        		NodeTypeOperation.SAVE_DESC_ITEM, newDescItems, null, deletedDescItems);
+        changeContext.flush();
 
         // Should it be taken from cache?
         return descItemRepository.findOpenByNodeAndTypes(level.getNode(), typeSet);

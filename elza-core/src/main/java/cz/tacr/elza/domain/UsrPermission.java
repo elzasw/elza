@@ -383,7 +383,15 @@ public class UsrPermission {
          * - může přiřazovat rejstřík, ale jen v rozsahu práv na rejstříky (scope rejstříků), když nebude mít ani čtení
          *   rejstříků, tak nemůže nic přiřadit, opačně buď může přiřadit, nebo i zakládat nový ....
          */
-        FUND_ARR(PermissionType.FUND),
+        FUND_ARR(PermissionType.FUND) {
+            @Override
+            public boolean isEqualOrHigher(Permission permission) {
+                if (permission == FUND_ARR || permission == FUND_ARR_NODE) {
+                    return true;
+                }
+                return false;
+            }
+        },
 
         /**
          * pořádání všech AS
@@ -392,7 +400,7 @@ public class UsrPermission {
         FUND_ARR_ALL {
             @Override
             public boolean isEqualOrHigher(Permission permission) {
-                if (permission == FUND_ARR_ALL || permission == FUND_ARR) {
+                if (permission == FUND_ARR_ALL || permission == FUND_ARR || permission == FUND_ARR_NODE) {
                     return true;
                 }
                 return false;

@@ -290,7 +290,16 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.5</version>
+            <!-- Verze se uvadi povinne z duvodu reseni konfliktu s jinymi komponentami,
+                 bez jejiho uvedeni se vytvari WAR bez CXF -->
+            <version>3.9</version>
+        </dependency>
+        <!-- Pridano kvuli tride com.sun.xml.txw2.output.IndentingXMLStreamWriter v exportu
+             Asi lepe zvazit jeji nahradu vlastni impl a odstraneni dependency -->
+        <dependency>
+	        <groupId>org.glassfish.jaxb</groupId>
+        	<artifactId>txw2</artifactId>
+        	<version>2.2.11</version>
         </dependency>
 
         <!-- SAML / Shibboleth -->

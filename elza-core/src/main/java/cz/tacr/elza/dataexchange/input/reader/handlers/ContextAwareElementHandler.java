@@ -1,6 +1,7 @@
 package cz.tacr.elza.dataexchange.input.reader.handlers;
 
 import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.events.StartElement;
 
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.context.ImportPhase;
@@ -24,9 +25,9 @@ public abstract class ContextAwareElementHandler implements XmlElementHandler {
     }
 
     @Override
-    public final void handleStartElement(XMLEventReader eventReader) {
+    public final void handleStartElement(XMLEventReader eventReader, StartElement startElement) {
         context.setCurrentPhase(phase);
-        handleStart(eventReader);
+        handleStart(eventReader, startElement);
     }
 
     @Override
@@ -35,7 +36,7 @@ public abstract class ContextAwareElementHandler implements XmlElementHandler {
         handleEnd();
     }
 
-    protected abstract void handleStart(XMLEventReader eventReader);
+    protected abstract void handleStart(XMLEventReader eventReader, StartElement startElement);
 
     protected abstract void handleEnd();
 }

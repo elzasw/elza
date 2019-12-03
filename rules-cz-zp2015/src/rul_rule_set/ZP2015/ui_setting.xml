@@ -180,6 +180,7 @@
         <ns5:issue-states>
             <ns5:issue-state code="RESOLVED" icon="fa-check"/>
             <ns5:issue-state code="REJECTED" icon="fa-times"/>
+            <ns5:issue-state code="INVALID" icon="fa-minus"/>
         </ns5:issue-states>
         <ns5:issue-types>
             <ns5:issue-type code="IMPORTANT" color="#CF2A28"/>

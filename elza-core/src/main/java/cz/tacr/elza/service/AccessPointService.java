@@ -800,7 +800,7 @@ public class AccessPointService {
                             .set("scopeId", replacementState.getScopeId());
                 }
             }
-            descriptionItemService.updateDescriptionItem(im, fundVersions.get(fundId), change, true);
+            descriptionItemService.updateDescriptionItem(im, fundVersions.get(fundId), change);
         });
     }
 
