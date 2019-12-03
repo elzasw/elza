@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<!-- Created with Jaspersoft Studio version 6.10.0.final using JasperReports Library version 6.10.0-unknown  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="intro" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="70" bottomMargin="70" uuid="7dadc22d-1241-4907-8921-52170562f815">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
@@ -13,6 +13,9 @@
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
 	.setItemSeparator(", ")
 	.addValue("ZP2015_ARRANGER")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="formatter" class="cz.tacr.elza.print.format.Formatter">
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()]]></defaultValueExpression>
 	</parameter>
 	<detail>
 		<band height="28">
@@ -48,7 +51,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_UNIT_HIST" )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_UNIT_HIST" ))]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="50">
@@ -62,7 +65,7 @@
 				<textElement markup="none">
 					<font isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_UNIT_SOURCE" )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_UNIT_SOURCE" ))]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="c2e7e153-3cba-4436-b2d1-0fa8f746129d">
@@ -107,7 +110,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_UNIT_ARR" )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_UNIT_ARR" ))]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="50">
@@ -122,7 +125,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_FUTURE_UNITS" )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_FUTURE_UNITS" ))]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="03fea67d-a548-455c-a0ae-643723c42df7">
@@ -147,7 +150,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_ARRANGE_RULES" )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_ARRANGE_RULES" ))]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Heading 3" positionType="Float" x="0" y="50" width="455" height="25" isRemoveLineWhenBlank="true" uuid="8019e65e-fd8f-4f7c-aeee-7396706b0d3f">
@@ -169,7 +172,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_UNIT_CURRENT_STATUS" )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_UNIT_CURRENT_STATUS" ))]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Heading 3" positionType="Float" x="0" y="100" width="455" height="25" isRemoveLineWhenBlank="true" uuid="4e1e9025-27e3-48b5-8597-e1c185bc6f6b">
@@ -192,7 +195,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_RELATED_UNITS" )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_RELATED_UNITS" ))]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="19dcc43d-795d-4615-ab33-5264d71fbd20">
@@ -238,7 +241,7 @@
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="95" splitType="Prevent">
@@ -276,7 +279,7 @@ StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" 
 				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" ))]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="24">

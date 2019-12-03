@@ -225,7 +225,7 @@
 			<dependency>
 				<groupId>net.sf.jasperreports</groupId>
 				<artifactId>jasperreports</artifactId>
-				<version>6.7.0</version>
+				<version>6.10.0</version>
 				<exclusions>
 					<exclusion>
 						<artifactId>lucene-core</artifactId>
