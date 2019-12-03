@@ -1,6 +1,8 @@
 package cz.tacr.elza.dataexchange.output.writer.xml;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
@@ -11,17 +13,21 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang.Validate;
 
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.dataexchange.output.items.APRefConvertor;
+import cz.tacr.elza.dataexchange.output.items.FileRefConvertor;
 import cz.tacr.elza.dataexchange.output.items.ItemConvertor;
 import cz.tacr.elza.dataexchange.output.items.ItemDataConvertorFactory;
 import cz.tacr.elza.dataexchange.output.items.PartyRefConvertor;
 import cz.tacr.elza.dataexchange.output.items.StructObjRefConvertor;
 import cz.tacr.elza.dataexchange.output.sections.SectionContext;
+import cz.tacr.elza.dataexchange.output.writer.FileInfo;
 import cz.tacr.elza.dataexchange.output.writer.LevelInfo;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.dataexchange.output.writer.StructObjectInfo;
@@ -29,6 +35,7 @@ import cz.tacr.elza.dataexchange.output.writer.xml.nodes.FileNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.InternalNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.JaxbNode;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataStructureRef;
@@ -40,6 +47,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.schema.v2.AccessPointRefs;
 import cz.tacr.elza.schema.v2.DescriptionItem;
 import cz.tacr.elza.schema.v2.DescriptionItemAPRef;
+import cz.tacr.elza.schema.v2.DescriptionItemFileRef;
 import cz.tacr.elza.schema.v2.DescriptionItemPartyRef;
 import cz.tacr.elza.schema.v2.DescriptionItemStructObjectRef;
 import cz.tacr.elza.schema.v2.FundInfo;
@@ -55,6 +63,8 @@ class XmlSectionOutputStream implements SectionOutputStream {
     private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(Level.class, StructuredObject.class);
 
     private final Map<Integer, XmlFragment> structTypeIdFragmentMap = new HashMap<>();
+
+    private final Map<Integer, XmlFragment> fileIdMap = new HashMap<>();
 
     private final InternalNode parentNode;
 
@@ -92,6 +102,62 @@ class XmlSectionOutputStream implements SectionOutputStream {
             writeLevel(level);
         } catch (Exception e) {
             throw new SystemException(e);
+        }
+    }
+
+    @Override
+    public void addFile(FileInfo fileInfo) {
+        Validate.isTrue(!processed);
+
+        XmlFragment frag = fileIdMap.get(fileInfo.getId());
+        if (frag == null) {
+            frag = new XmlFragment(tempDirectory);
+
+            try {
+                XMLStreamWriter sw = frag.openStreamWriter();
+                sw.writeStartDocument();
+                sw.writeStartElement(XmlNameConsts.FILE);
+                sw.writeAttribute(XmlNameConsts.FILE_ID, fileInfo.getId().toString());
+                sw.writeAttribute(XmlNameConsts.FILE_NAME, fileInfo.getName());
+                sw.writeAttribute(XmlNameConsts.FILE_FILENAME, fileInfo.getFileName());
+                sw.writeAttribute(XmlNameConsts.FILE_MIMETYPE, fileInfo.getMimetype());
+
+                // write binary data
+                sw.writeStartElement(XmlNameConsts.FILE_BIN_DATA);
+                try (InputStream is = fileInfo.getInputStream()) {
+                    writeBinaryFileData(sw, is);
+                }
+                sw.writeEndElement();
+
+                sw.writeEndElement();
+                //sw.writeEndDocument();
+            } catch (Exception e) {
+                try {
+                    frag.close();
+                } catch (Exception e2) {
+                }
+                throw new SystemException(e);
+            }
+
+            // close fragment
+            try {
+                frag.close();
+            } catch (Exception e) {
+                throw new SystemException(e);
+            }
+            fileIdMap.put(fileInfo.getId(), frag);
+        }
+    }
+
+    private void writeBinaryFileData(XMLStreamWriter sw, InputStream is) throws IOException, XMLStreamException {
+        try (Base64InputStream encoder = new Base64InputStream(is, true, Integer.MAX_VALUE, null)) {
+            byte buff[] = new byte[65536];
+            while (encoder.available() > 0) {
+                int numRead = encoder.read(buff);
+
+                String str = new String(buff, 0, numRead, Charset.forName("utf-8"));
+                sw.writeCharacters(str);
+            }
         }
     }
 
@@ -192,6 +258,17 @@ class XmlSectionOutputStream implements SectionOutputStream {
             });
             sectionNode.addNode(stsNode);
         }
+
+        // create xml node for files
+        if (!fileIdMap.isEmpty()) {
+            InternalNode filesNode = new InternalNode(XmlNameConsts.FILES);
+            fileIdMap.values().forEach(fileFrag -> {
+                FileNode fileNode = new FileNode(fileFrag.getPath());
+                filesNode.addNode(fileNode);
+            });
+            sectionNode.addNode(filesNode);
+        }
+
         // create xml node for levels
         if (levelsFragment.isExist()) {
             FileNode levelsNode = new FileNode(levelsFragment.getPath());
@@ -238,6 +315,11 @@ class XmlSectionOutputStream implements SectionOutputStream {
         marshaller.marshal(jaxbElement, streamWriter);
     }
 
+    /**
+     * Rozsireni standardnich convertoru o kontext exportu
+     * 
+     * Umoznuje prevadet slozitejsi typy
+     */
     private class ContextAwareItemDataConvertorFactory extends ItemDataConvertorFactory {
 
         @Override
@@ -264,6 +346,21 @@ class XmlSectionOutputStream implements SectionOutputStream {
                     if (item != null) {
                         ArrDataPartyRef partyRef = (ArrDataPartyRef) data;
                         sectionContext.getContext().addPartyId(partyRef.getPartyId());
+                    }
+                    return item;
+                }
+            };
+        }
+
+        @Override
+        public FileRefConvertor createFileRefConvertor() {
+            return new FileRefConvertor() {
+                @Override
+                public DescriptionItemFileRef convert(ArrData data, ObjectFactory objectFactory) {
+                    DescriptionItemFileRef item = super.convert(data, objectFactory);
+                    if (item != null) {
+                        ArrDataFileRef fileRef = (ArrDataFileRef) data;
+                        sectionContext.addDmsFile(fileRef.getFileId());
                     }
                     return item;
                 }

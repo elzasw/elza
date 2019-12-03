@@ -1,5 +1,10 @@
 package cz.tacr.elza.service;
 
+import static cz.tacr.elza.utils.CsvUtils.CSV_EXCEL_CHARSET;
+import static cz.tacr.elza.utils.CsvUtils.CSV_EXCEL_FORMAT;
+import static cz.tacr.elza.utils.CsvUtils.CVS_DATE_TIME_FORMATTER;
+import static org.apache.commons.io.IOUtils.LINE_SEPARATOR_WINDOWS;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -36,6 +41,7 @@ import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.WfComment;
 import cz.tacr.elza.domain.WfIssue;
@@ -53,10 +59,6 @@ import cz.tacr.elza.repository.WfIssueTypeRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-
-import static cz.tacr.elza.domain.UsrPermission.Permission;
-import static cz.tacr.elza.utils.CsvUtils.*;
-import static org.apache.commons.io.IOUtils.LINE_SEPARATOR_WINDOWS;
 
 @Service
 @Transactional(readOnly = true)
@@ -384,6 +386,9 @@ public class IssueService {
         Validate.notBlank(text, "Empty comment");
         Validate.notNull(user, "User is null");
 
+        WfIssueList issueList = issue.getIssueList();
+        Validate.isTrue(issueList.getOpen() != null && issueList.getOpen(), "Invalid issue list state - closed");
+
         WfComment comment = issueDataService.createComment(issue, nextState, text, user);
 
         if (nextState != null) {
@@ -415,6 +420,9 @@ public class IssueService {
 
         Validate.notNull(comment, "Comment is null");
         Validate.notBlank(text, "Empty comment");
+
+        WfIssueList issueList = comment.getIssue().getIssueList();
+        Validate.isTrue(issueList.getOpen() != null && issueList.getOpen(), "Invalid issue list state - closed");
 
         comment.setComment(text);
         if (nextState != null) {
@@ -547,7 +555,7 @@ public class IssueService {
         for (WfIssue issue : issues) {
             if (issue.getNode() != null) {
                 fundIds.add(issue.getIssueList().getFund().getFundId());
-                nodeIds.add(issue.getNode().getNodeId());
+                nodeIds.add(issue.getNodeId());
             }
         }
         if (nodeIds.isEmpty()) {

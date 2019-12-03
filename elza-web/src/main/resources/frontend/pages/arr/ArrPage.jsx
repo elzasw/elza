@@ -177,7 +177,7 @@ class ArrPage extends ArrParentPage {
             nextProps.dispatch(issuesActions.detail.fetchIfNeeded(nextProps.issueDetail.id))
         }
         if (!this.props.issueDetail.fetched && nextProps.issueDetail.fetched) {
-            if (nextProps.issueDetail.data.nodeId) {
+            if (nextProps.issueDetail.data.nodeId && !nextProps.issueDetail.data.levelDeleted) {
                 this.props.dispatch(fundSelectSubNodeByNodeId(activeFund.versionId, nextProps.issueDetail.data.nodeId, false, null, true));
             }
         }
