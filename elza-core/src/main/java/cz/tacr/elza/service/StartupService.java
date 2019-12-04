@@ -22,7 +22,6 @@ import cz.tacr.elza.domain.ApFulltextProviderImpl;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
@@ -67,8 +66,6 @@ public class StartupService implements SmartLifecycle {
 
     private final EntityManager em;
 
-    private final ApNameRepository apNameRepository;
-
     private final AccessPointService accessPointService;
 
     private final AccessPointGeneratorService accessPointGeneratorService;
@@ -89,7 +86,6 @@ public class StartupService implements SmartLifecycle {
                           final StaticDataService staticDataService,
                           final BulkActionConfigManager bulkActionConfigManager,
                           final EntityManager em,
-                          final ApNameRepository apNameRepository,
                           final AccessPointService accessPointService,
                           final AccessPointGeneratorService accessPointGeneratorService,
                           final NodeConformityErrorRepository nodeConformityErrorRepository,
@@ -106,7 +102,6 @@ public class StartupService implements SmartLifecycle {
         this.nodeCacheService = nodeCacheService;
         this.staticDataService = staticDataService;
         this.bulkActionConfigManager = bulkActionConfigManager;
-        this.apNameRepository = apNameRepository;
         this.em = em;
         this.accessPointService = accessPointService;
         this.accessPointGeneratorService = accessPointGeneratorService;
@@ -127,7 +122,7 @@ public class StartupService implements SmartLifecycle {
         long startTime = System.currentTimeMillis();
         logger.info("Elza startup service ...");
 
-        ApFulltextProviderImpl fulltextProvider = new ApFulltextProviderImpl(apNameRepository);
+        ApFulltextProviderImpl fulltextProvider = new ApFulltextProviderImpl(accessPointService);
         ArrDataRecordRef.setFulltextProvider(fulltextProvider);
         ArrDataPartyRef.setFulltextProvider(fulltextProvider);
         startInTransaction();
