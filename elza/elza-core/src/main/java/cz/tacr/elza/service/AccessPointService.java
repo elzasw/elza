@@ -1369,6 +1369,21 @@ public class AccessPointService {
         name.setDeleteChange(deleteChange);
         apNameRepository.save(name);
     }
+    
+    /**
+     * Vrati preferovane jmeno pristupoveho bodu
+     * @param accessPoint
+     * @return
+     */
+    public ApName getPreferredAccessPointName(final ApAccessPoint accessPoint) {
+    	ApName prefName = apNameRepository.findPreferredNameByAccessPoint(accessPoint);
+        if (prefName == null) {
+        	// ?? Asi by bylo vhodnejsi vyhodit vyjimku
+        	logger.error("AccessPoint without preferred name, apId={}", accessPoint.getAccessPointId());
+            return null;
+        }
+        return prefName;
+    }
 
     /**
      * Nastavení nepreferované jméno jako preferované přístupovému bodu.
