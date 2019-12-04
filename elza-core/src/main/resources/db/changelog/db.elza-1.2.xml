@@ -194,6 +194,22 @@
         </addColumn>
     </changeSet>
     
+    <changeSet id="20190503000090" author="ppyta">
+        <sql>delete from ap_description 
+             where description_id in (
+              select i.description_id from ap_description i
+              join ap_description i2 on i.delete_change_id = i2.delete_change_id and i.access_point_id = i2.access_point_id
+                           and i.description_id&lt;i2.description_id
+             )
+        </sql>
+        <sql>delete from ap_description 
+             where description_id in (
+              select i.description_id from ap_description i
+              join ap_description i2 on i.create_change_id = i2.create_change_id and i.access_point_id = i2.access_point_id
+                           and i.description_id&lt;i2.description_id
+             )
+        </sql>
+    </changeSet>
     <changeSet id="20190503100000" author="ppyta">
         <createIndex indexName="rul_item_aptype_item_type_idx" tableName="rul_item_aptype">
             <column name="item_type_id" type="int"/>
