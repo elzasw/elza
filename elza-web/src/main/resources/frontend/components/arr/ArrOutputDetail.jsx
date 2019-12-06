@@ -205,10 +205,12 @@ class ArrOutputDetail extends AbstractReactComponent {
             readMode={closed || readMode}
         />;
 
+        let readonly = closed || readMode || !this.isEditable();
+
         return <Shortcuts name='ArrOutputDetail' className={"arr-output-detail-container"} style={{height: "100%"}} handler={this.handleShortcuts}>
             <div className="output-definition-commons">
                 <OutputInlineForm
-                    disabled={closed || readMode || !this.isEditable()}
+                    disabled={readonly}
                     initData={fundOutputDetail}
                     onSave={this.handleSaveOutput}
                 />
@@ -222,13 +224,13 @@ class ArrOutputDetail extends AbstractReactComponent {
                     nodes={fundOutputDetail.nodes}
                     onDeleteNode={this.handleRemoveNode}
                     onAddNode={this.handleAddNodes}
-                    readOnly={closed || readMode || !this.isEditable()}
+                    readOnly={readonly}
                 />
             </div>
             <hr className="small"/>
             {this.renderOutputFiles()}
             <h4 className={"desc-items-title"}>{i18n("developer.title.descItems")}</h4>
-            <ToggleContent opened={false} withText>
+            <ToggleContent opened={!readonly} withText>
                 {form}
             </ToggleContent>
         </Shortcuts>;

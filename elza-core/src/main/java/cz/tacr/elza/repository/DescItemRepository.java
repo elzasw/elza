@@ -115,7 +115,10 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 	 *            možné typy atributu
 	 * @return seznam atributů daného typu
 	 */
-	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.node = ?1 AND i.deleteChange IS NULL AND i.itemType IN (?2)")
+    @Query("SELECT i FROM arr_desc_item i " +
+            "LEFT JOIN FETCH i.data " +
+            "WHERE i.node = ?1 AND i.deleteChange IS NULL AND i.itemType IN (?2) " +
+            "ORDER BY i.position")
     List<ArrDescItem> findOpenByNodeAndTypes(ArrNode node, Set<RulItemType> descItemTypes);
 
     /**
