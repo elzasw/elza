@@ -86,11 +86,13 @@ public class StorageOrderGeneratorAction extends Action {
             // try to add new value
             Integer lastUsedValue = lastOrderValues.get(structObjId);
             if (lastUsedValue == null) {
-                // storage without defined last value -> ignore
-                return;
+                // storage without defined last value -> set as 1
+                lastUsedValue = 1;
+            } else {
+                // increment counter
+                lastUsedValue++;
             }
-            // add new item
-            lastUsedValue++;
+            // add new item            
             addOrderWithValue(level, lastUsedValue);
             lastOrderValues.put(structObjId, lastUsedValue);
         }

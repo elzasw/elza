@@ -326,11 +326,22 @@ class ArrStructurePanel extends AbstractReactComponent {
         if (readMode) {
             menuParts.push(<div key="show" tabIndex={0} className="item" onKeyDown={e => this.handleKeyMenu(e, this.handleUpdate.bind(this, node))} onClick={this.handleUpdate.bind(this, node)}>{i18n("arr.structure.item.contextMenu.show")}</div>);
         } else {
-            if (node.assignable) {
+            let renderChangeToClosed = true;
+            let renderChangeToOpened = true;
+            if(node!==null) {
+              if (node.assignable) {
+                renderChangeToOpened = false;
+              } else {              
+                renderChangeToClosed = false;  
+              }
+            }
+            if(renderChangeToClosed) {
                 menuParts.push(<div key="changeToClosed" tabIndex={0} className="item" onKeyDown={e => this.handleKeyMenu(e, this.handleSetAssignable.bind(this, node, false))} onClick={this.handleSetAssignable.bind(this, node, false)}>{i18n("arr.structure.item.contextMenu.changeToClosed")}</div>);
-            } else {
+            }
+            if(renderChangeToOpened) {
                 menuParts.push(<div key="changeToOpen" tabIndex={0} className="item" onKeyDown={e => this.handleKeyMenu(e, this.handleSetAssignable.bind(this, node, true))} onClick={this.handleSetAssignable.bind(this, node, true)}>{i18n("arr.structure.item.contextMenu.changeToOpen")}</div>);
             }
+            
             menuParts.push(<div key="d1"  className="divider" />);
             menuParts.push(<div key="update" tabIndex={0} className="item" onKeyDown={e => this.handleKeyMenu(e, this.handleUpdate.bind(this, node))} onClick={this.handleUpdate.bind(this, node)}>{i18n("arr.structure.item.contextMenu.update")}</div>);
             menuParts.push(<div key="d2" className="divider" />);

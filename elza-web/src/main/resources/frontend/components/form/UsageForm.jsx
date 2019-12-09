@@ -249,8 +249,11 @@ class RegistryUsageForm extends React.Component {
                 const activeFund = this.getActiveIndex(arrRegion);
 
                 const nodeFromTree = activeFund.fundTree.nodes.find(n => n.id === node.propertyId);
-
-                let parentNode = getParentNode(nodeFromTree, activeFund.fundTree.nodes);
+                let parentNode = null;
+                if(nodeFromTree) {
+                    // dohledani rodice
+                    parentNode = getParentNode(nodeFromTree, activeFund.fundTree.nodes);
+                }                
 
                 if (parentNode === null) {
                     parentNode = createFundRoot(fund);

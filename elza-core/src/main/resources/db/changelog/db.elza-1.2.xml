@@ -210,6 +210,22 @@
              )
         </sql>
     </changeSet>
+    <changeSet id="20190503000091" author="ppyta">
+        <sql>delete from arr_level
+             where level_id in (
+              select i.level_id from arr_level i
+              join arr_level i2 on i.delete_change_id = i2.delete_change_id and i.node_id = i2.node_id
+                           and i.level_id&lt;i2.level_id
+             )
+        </sql>
+        <sql>delete from arr_level
+             where level_id in (
+              select i.level_id from arr_level i
+              join arr_level i2 on i.create_change_id = i2.create_change_id and i.node_id = i2.node_id
+                           and i.level_id&lt;i2.level_id
+             )
+        </sql>
+    </changeSet>
     <changeSet id="20190503100000" author="ppyta">
         <createIndex indexName="rul_item_aptype_item_type_idx" tableName="rul_item_aptype">
             <column name="item_type_id" type="int"/>
