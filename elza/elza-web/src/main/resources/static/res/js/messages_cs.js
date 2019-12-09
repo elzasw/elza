@@ -148,7 +148,7 @@ var messages = {
     "exception.out.CANNOT_CHANGE_STATE": "Nelze změnit stav",
     "exception.out.CANNOT_CLONE_DELETED": "Nelze klonovat smazaný výstup",
     "exception.out.LOCKED": "Výstup je již uzamčen",
-    "exception.out.NOT_PROCESS_IN_STATE": "Nelze provést v aktálním stavu",
+    "exception.out.NOT_PROCESS_IN_STATE": "Nelze provést v aktuálním stavu",
     "exception.out.OUTPUT_NOT_EXISTS": "Nebyl nalezen výstup s ID={id}",
     "exception.out.CANNOT_SWITCH_CALCULATING": "Nelze přepnout způsob vyplňování, protože neexistuje žádná hodnota generovaná funkcí",
     "exception.out.ITEM_TYPE_CALC": "Tento atribut je počítán automaticky a nemůže být ručně editován",
