@@ -9,26 +9,30 @@ import * as Utils from "../../Utils";
 import Resizer from "../resizer/Resizer";
 import DataGridRow from "./DataGridRow";
 import i18n from "../../i18n";
-const scrollIntoView = require('dom-scroll-into-view')
-import {propsEquals, getScrollbarWidth} from 'components/Utils.jsx'
+import {getScrollbarWidth, propsEquals} from 'components/Utils.jsx'
 import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './DataGridKeymap.jsx';
 
 import './DataGrid.less';
 
+const scrollIntoView = require('dom-scroll-into-view')
+
 const __emptyColWidth = 8000
 const __minColWidth = 16
 
 class DataGrid extends AbstractReactComponent {
-    static contextTypes = { shortcuts: PropTypes.object };
-    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
-    componentWillMount(){
-        Utils.addShortcutManager(this,defaultKeymap);
+    static contextTypes = {shortcuts: PropTypes.object};
+    static childContextTypes = {shortcuts: PropTypes.object.isRequired};
+
+    componentWillMount() {
+        Utils.addShortcutManager(this, defaultKeymap);
     }
+
     getChildContext() {
-        return { shortcuts: this.shortcutManager };
+        return {shortcuts: this.shortcutManager};
     }
+
     constructor(props) {
         super(props);
 
@@ -48,7 +52,7 @@ class DataGrid extends AbstractReactComponent {
 
         let state = this.getStateFromProps(props, {fixedLeft: 0}, {});
         state.columnSizeDragged = false;
-        state.selectedRowIndexes = {[state.focus.row]: true} ;  // označené řádky v aktuálním zobrazení - pouze klientské označení
+        state.selectedRowIndexes = {[state.focus.row]: true};  // označené řádky v aktuálním zobrazení - pouze klientské označení
 
         this.state = state
     }
@@ -98,10 +102,10 @@ class DataGrid extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         this.setState(this.getStateFromProps(nextProps, this.state, this.props),
-        () => {
-            this.ensureFocusVisible(this.state.focus);
-            this.computeColumnsWidth();
-        })
+            () => {
+                this.ensureFocusVisible(this.state.focus);
+                this.computeColumnsWidth();
+            })
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -302,14 +306,14 @@ class DataGrid extends AbstractReactComponent {
                 x2 = x3
             }
             newSelectedRowIndexes = {}
-            for (var a=x1; a<=x2; a++) {
+            for (var a = x1; a <= x2; a++) {
                 newSelectedRowIndexes[a] = true
             }
         } else {
             newSelectedRowIndexes = {[rowIndex]: true}
         }
 
-        this.setState({ focus: newFocus, selectedRowIndexes: newSelectedRowIndexes }, this.ensureFocusVisible(newFocus))
+        this.setState({focus: newFocus, selectedRowIndexes: newSelectedRowIndexes}, this.ensureFocusVisible(newFocus))
 
         const {onChangeFocus, onChangeRowIndexes} = this.props;
         onChangeFocus && onChangeFocus(newFocus.row, newFocus.col);
@@ -355,7 +359,7 @@ class DataGrid extends AbstractReactComponent {
     getExtColumnIndex(index) {
         const {cols} = this.state
         if (cols[0]._rowCheck) {
-            return index -1
+            return index - 1
         } else {
             return index
         }
@@ -441,6 +445,25 @@ class DataGrid extends AbstractReactComponent {
         }
     };
 
+    handleCheckboxAllChange = () => {
+        const {rows, onSelectedIdsChange} = this.props
+        const {selectedIds} = this.state
+
+        const allSelected = this.isAllSelected();
+        var newSelectedIds = []
+
+
+        if (!allSelected) {
+            rows.map((row, rowIndex) => {
+                let rowId = row.id;
+                newSelectedIds.push(rowId)
+            });
+        }
+
+        console.log(newSelectedIds)
+        onSelectedIdsChange(newSelectedIds)
+    };
+
     handleDelete(rowIndex, colIndex) {
         const {rows, onDelete} = this.props;
         const {cols} = this.state;
@@ -448,8 +471,8 @@ class DataGrid extends AbstractReactComponent {
     }
 
     renderHeaderCol(col, colIndex, colFocus) {
-        const {staticColumns} = this.props
-        const {colWidths, fixedLeft} = this.state
+        const {staticColumns, rows} = this.props
+        const {colWidths, fixedLeft, selectedIds} = this.state
 
         var content
 
@@ -457,7 +480,9 @@ class DataGrid extends AbstractReactComponent {
             let style = {};
             style.position = 'relative';
             style.left = fixedLeft;
-            content = <div key="content" style={style} className='cell-container'></div>
+            content = <div key="content" style={style} className='cell-container'>
+                <input type='checkbox' checked={this.isAllSelected()} onChange={this.handleCheckboxAllChange}/>
+            </div>
         } else {
             if (col.headerColRenderer) {
                 content = <div key="content" className='cell-container'>{col.headerColRenderer(col)}</div>
@@ -475,10 +500,10 @@ class DataGrid extends AbstractReactComponent {
 
         var resizer;
         if (!staticColumns && (typeof col.resizeable === 'undefined' || col.resizeable !== false)) {
-            resizer = <Resizer key="resizer" onMouseDown={this.handleResizerMouseDown.bind(this, colIndex)} />
+            resizer = <Resizer key="resizer" onMouseDown={this.handleResizerMouseDown.bind(this, colIndex)}/>
         }
 
-        var style = { width: colWidths[colIndex], maxWidth: colWidths[colIndex] };
+        var style = {width: colWidths[colIndex], maxWidth: colWidths[colIndex]};
 
         return (
             <th key={colIndex} ref={'col' + colIndex} className={colCls + colRowCheckCls} style={style}>
@@ -488,17 +513,25 @@ class DataGrid extends AbstractReactComponent {
         )
     }
 
+    isAllSelected() {
+        const {rows} = this.props
+        const {selectedIds} = this.state
+        return Object.keys(selectedIds).length === rows.length;
+    }
+
     ensureFocusVisible(focus) {
         // var cellNode = ReactDOM.findDOMNode(this.refs[focus.row + '-' + focus.col])
         const cellNode = this.getCellElement(focus.row, focus.col);
         if (cellNode !== null) {
             var bodyNode = ReactDOM.findDOMNode(this.refs.body)
-            scrollIntoView(cellNode, bodyNode, { onlyScrollIfNeeded: true })
+            scrollIntoView(cellNode, bodyNode, {onlyScrollIfNeeded: true})
         }
     }
-    handleFocus(e){
+
+    handleFocus(e) {
         this.props.onFocus && this.props.onFocus(e);
     }
+
     changeFocus = (newFocus) => {
         const {onChangeFocus, onChangeRowIndexes} = this.props;
 
@@ -512,24 +545,24 @@ class DataGrid extends AbstractReactComponent {
         onChangeRowIndexes && onChangeRowIndexes([newFocus.row]);
     }
     selectorMoveUp = () => {
-        this.selectorMoveRelative(0,-1);
+        this.selectorMoveRelative(0, -1);
     }
     selectorMoveDown = () => {
-        this.selectorMoveRelative(0,1);
+        this.selectorMoveRelative(0, 1);
     }
     selectorMoveLeft = () => {
-        this.selectorMoveRelative(-1,0);
+        this.selectorMoveRelative(-1, 0);
     }
     selectorMoveRight = () => {
-        this.selectorMoveRelative(1,0);
+        this.selectorMoveRelative(1, 0);
     }
-    selectorMoveRelative = (colStep,rowStep) => {
-        const {focus:{row,col}} = this.state;
+    selectorMoveRelative = (colStep, rowStep) => {
+        const {focus: {row, col}} = this.state;
         //console.log("old","r:",row,"c:",col,"colStep",colStep,"rowStep",rowStep,"new","r:",newFocus.row,"/",rows.length,"c:",newFocus.col,"/",cols.length,"rowInRange:",rowInRange,"colInRange:",colInRange);
-        var nextFocus = this.getRelativeSelectableItemIndex(row,col,rowStep,colStep);
+        var nextFocus = this.getRelativeSelectableItemIndex(row, col, rowStep, colStep);
         this.changeFocus(nextFocus);
     }
-    getRelativeSelectableItemIndex = (row, col, rowStep,colStep) => {
+    getRelativeSelectableItemIndex = (row, col, rowStep, colStep) => {
         const {canSelectItem, rows} = this.props;
         const {cols} = this.state;
 
@@ -537,23 +570,23 @@ class DataGrid extends AbstractReactComponent {
         var colIsDecrementing = colStep < 0;
         var rowLast = false;
 
-        if((row || row === 0) && (col || col === 0)){
+        if ((row || row === 0) && (col || col === 0)) {
             while (rowStep || colStep) {
-                var newFocus = {row:row+rowStep,col:col+colStep};
+                var newFocus = {row: row + rowStep, col: col + colStep};
                 var rowInRange = newFocus.row >= 0 && newFocus.row < rows.length;
                 var colInRange = newFocus.col >= 0 && newFocus.col < cols.length;
                 if (rowInRange && colInRange) {
                     return newFocus;
                 }
-                if(!rowLast && rowStep || !colStep){
+                if (!rowLast && rowStep || !colStep) {
                     rowIsDecrementing ? rowStep++ : rowStep--;
                     rowLast = true;
-                } else if(rowLast && colStep || !rowStep){
+                } else if (rowLast && colStep || !rowStep) {
                     colIsDecrementing ? colStep++ : colStep--;
                     rowLast = false;
                 }
             }
-            return {row:row,col:col};
+            return {row: row, col: col};
         } else {
             return 0;
         }
@@ -563,12 +596,12 @@ class DataGrid extends AbstractReactComponent {
         "MOVE_DOWN": this.selectorMoveDown,
         "MOVE_LEFT": this.selectorMoveLeft,
         "MOVE_RIGHT": this.selectorMoveRight,
-        "ITEM_EDIT": (e) => this.handleEdit(this.state.focus.row,this.state.focus.col),
-        "ITEM_DELETE": (e) => this.handleDelete(this.state.focus.row,this.state.focus.col),
+        "ITEM_EDIT": (e) => this.handleEdit(this.state.focus.row, this.state.focus.col),
+        "ITEM_DELETE": (e) => this.handleDelete(this.state.focus.row, this.state.focus.col),
         "ITEM_ROW_CHECK": (e) => this.handleCheckboxChange(this.props.rows[this.state.focus.row], this.state.focus.row)
     };
 
-    handleShortcuts = (action,e)=>{
+    handleShortcuts = (action, e) => {
         e.stopPropagation();
         e.preventDefault();
         this.actionMap[action](e);
@@ -593,16 +626,16 @@ class DataGrid extends AbstractReactComponent {
 
         var headerStyle;
         if (staticColumns) {
-            headerStyle = { };
+            headerStyle = {};
         } else {
-            headerStyle = { width: fullWidth + __emptyColWidth };
+            headerStyle = {width: fullWidth + __emptyColWidth};
         }
 
         var bodyStyle;
         if (staticColumns) {
-            bodyStyle = { };
+            bodyStyle = {};
         } else {
-            bodyStyle = { width: columnSizeDragged ? beforeDraggedFullWidth : fullWidth};
+            bodyStyle = {width: columnSizeDragged ? beforeDraggedFullWidth : fullWidth};
         }
 
         var tabIndexProp = {}
@@ -612,40 +645,40 @@ class DataGrid extends AbstractReactComponent {
 
         var ret = (
             <Shortcuts name="DataGrid" handler={this.handleShortcuts} contenteditable="true" className={cls}>
-                <div ref="dataGrid" className={cls} onFocus={(e)=>this.handleFocus(e)} tabIndex={0} onBlur={onBlur}>
+                <div ref="dataGrid" className={cls} onFocus={(e) => this.handleFocus(e)} tabIndex={0} onBlur={onBlur}>
                     <div ref='header' key="header" className='header-container'>
                         <table className="header-table" style={headerStyle}>
                             <thead>
-                                <tr>
-                                    {cols.map((col, colIndex) => this.renderHeaderCol(col, colIndex, focus.col === colIndex))}
-                                    {!staticColumns && <th key={-1} className='th-empty-scroll' />}
-                                    {staticColumns && <th key={-1}/>}
-                                </tr>
+                            <tr>
+                                {cols.map((col, colIndex) => this.renderHeaderCol(col, colIndex, focus.col === colIndex))}
+                                {!staticColumns && <th key={-1} className='th-empty-scroll'/>}
+                                {staticColumns && <th key={-1}/>}
+                            </tr>
                             </thead>
                         </table>
                     </div>
                     <div ref='body' key="body" className='body-container' onScroll={this.handleScroll}>
                         <table className="body-table" style={bodyStyle}>
                             <tbody>
-                                {rows.map((row, rowIndex) => <DataGridRow
-                                    ref={`row-${rowIndex}`}
-                                    key={`row-${rowIndex}`}
-                                    checked={selectedIds[row.id] === true}
-                                    rowIndex={rowIndex}
-                                    hasFocus={focus.row === rowIndex}
-                                    colFocus={focus.col}
-                                    cols={cols}
-                                    selected={selectedRowIndexes[rowIndex]}
-                                    row={row}
-                                    staticColumns={staticColumns}
-                                    startRowIndex={startRowIndex}
-                                    fixedLeft={fixedLeft}
-                                    colWidths={columnSizeDragged ? beforeDraggedColWidths : colWidths}
-                                    onCheckboxChange={this.handleCheckboxChange}
-                                    onCellClick={this.handleCellClick}
-                                    onEdit={this.handleEdit}
-                                    onContextMenu={this.handleContextMenu}
-                                />)}
+                            {rows.map((row, rowIndex) => <DataGridRow
+                                ref={`row-${rowIndex}`}
+                                key={`row-${rowIndex}`}
+                                checked={selectedIds[row.id] === true}
+                                rowIndex={rowIndex}
+                                hasFocus={focus.row === rowIndex}
+                                colFocus={focus.col}
+                                cols={cols}
+                                selected={selectedRowIndexes[rowIndex]}
+                                row={row}
+                                staticColumns={staticColumns}
+                                startRowIndex={startRowIndex}
+                                fixedLeft={fixedLeft}
+                                colWidths={columnSizeDragged ? beforeDraggedColWidths : colWidths}
+                                onCheckboxChange={this.handleCheckboxChange}
+                                onCellClick={this.handleCellClick}
+                                onEdit={this.handleEdit}
+                                onContextMenu={this.handleContextMenu}
+                            />)}
                             </tbody>
                         </table>
                         {morePages && rows.length > 0 && <div>
@@ -661,4 +694,4 @@ class DataGrid extends AbstractReactComponent {
 }
 
 
-export default connect(null, null, null, { withRef: true })(DataGrid);
+export default connect(null, null, null, {withRef: true})(DataGrid);
