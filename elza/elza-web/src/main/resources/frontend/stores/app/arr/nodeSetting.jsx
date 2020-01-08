@@ -1,6 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 
 import {indexById} from 'stores/app/utils.jsx'
+import {node} from "./node";
 
 const initialState = {
     nodes: []
@@ -71,6 +72,21 @@ export default function nodeSetting(state = initialState, action) {
                 };
             }
             return state;
+
+        case types.NODE_DESC_ITEM_TYPE_COPY_ALL:
+            var nodeIndex = indexById(state.nodes, action.nodeId);
+            if (nodeIndex !== null) {
+                return {
+                    ...state,
+                    nodes: [
+                        ...state.nodes.slice(0, nodeIndex),
+                        Object.assign({}, state.nodes[nodeIndex], {copyAll: !state.nodes[nodeIndex].copyAll}),
+                        ...state.nodes.slice(nodeIndex + 1)
+                    ]
+                };
+            }
+            return state;
+
 
         case types.NODE_DESC_ITEM_TYPE_COPY:
 

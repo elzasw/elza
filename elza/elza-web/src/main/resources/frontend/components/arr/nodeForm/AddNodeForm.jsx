@@ -8,7 +8,6 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {Button, Checkbox, Col, ControlLabel, Form, FormControl, FormGroup, Modal, Radio, Row} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';
-import {addNode} from 'actions/arr/node.jsx';
 import {AbstractReactComponent, Autocomplete, FormInput, HorizontalLoader, i18n} from 'components/shared';
 import {getOneSettings, isFundRootId} from 'components/arr/ArrUtils.jsx';
 import {getSetFromIdsList, indexById} from 'stores/app/utils.jsx';
@@ -200,13 +199,30 @@ class AddNodeForm extends AbstractReactComponent {
      */
     getDescItemTypeCopyIds = () => {
         const nodeSettings = this.props.nodeSettings;
+        const node = this.props.activeFund;
         const nodeId = this.props.parentNode.id;
 
         let itemsToCopy = null;
         if (nodeSettings != undefined) {
             const nodeIndex = indexById(nodeSettings.nodes, nodeId);
             if (nodeIndex != null) {
-                itemsToCopy = nodeSettings.nodes[nodeIndex].descItemTypeCopyIds;
+                let nodeSetting = nodeSettings.nodes[nodeIndex];
+                if (nodeSetting.copyAll) {
+                    // najít aktivní node
+                    let activeNode = this.props.activeFund.nodes.nodes[this.props.activeFund.nodes.activeIndex];
+
+                    // všechny ID descItemTypes z aktivního node
+                    itemsToCopy = [];
+                    for (let a = 0; a < activeNode.subNodeForm.formData.descItemGroups.length; a++) { // pro všecny DescItemGroups
+                        let descItemGroup = activeNode.subNodeForm.formData.descItemGroups[a];
+                        for (let i = 0; i < descItemGroup.descItemTypes.length; i++) { // pro všechny položky na formuláři
+                            let descItemType = descItemGroup.descItemTypes[i];
+                            itemsToCopy = [...itemsToCopy, descItemType.id];
+                        }
+                    }
+                } else {
+                    itemsToCopy = nodeSetting.descItemTypeCopyIds; // jen vyjmenované ID
+                }
             }
         }
         return itemsToCopy;
