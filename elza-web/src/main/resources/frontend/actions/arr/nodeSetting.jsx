@@ -9,6 +9,7 @@ export function isNodeSettingsAction(action) {
         case types.NODE_DESC_ITEM_TYPE_LOCK:
         case types.NODE_DESC_ITEM_TYPE_UNLOCK:
         case types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL:
+        case types.NODE_DESC_ITEM_TYPE_COPY_ALL:
         case types.NODE_DESC_ITEM_TYPE_COPY:
         case types.NODE_DESC_ITEM_TYPE_NOCOPY:
             return true
@@ -31,15 +32,14 @@ export function lockDescItemType(nodeId, descItemTypeId) {
 }
 
 /**
- * Odemčení atributu.
+ * kopírování všech položek atributu.
  * @param {int} nodeId id uzlu
  * @param {int} descItemTypeId id atributu
  */
-export function unlockDescItemType(nodeId, descItemTypeId) {
+export function toggleCopyAllDescItemType(nodeId, descItemTypeId) {
     return {
-        type: types.NODE_DESC_ITEM_TYPE_UNLOCK,
-        nodeId: nodeId,
-        descItemTypeId: descItemTypeId
+        type: types.NODE_DESC_ITEM_TYPE_COPY_ALL,
+        nodeId: nodeId
     }
 }
 

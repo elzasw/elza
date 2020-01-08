@@ -883,6 +883,7 @@ var messages = {
     "subNodeForm.section.jp" : "Záznam:",
     "subNodeForm.section.item" : "Prvek popisu",
     "subNodeForm.section.createTemplate" : "Vytvořit šablonu",
+    "subNodeForm.section.copyAll": "Nastavení opakovaného kopírování hodnot všech PP",
     "subNodeForm.section.useTemplate" : "Použít šablonu",
 
     "subNodeDao.title": "Digitální entity",
