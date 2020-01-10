@@ -160,7 +160,7 @@ public class DaoRequestsServiceImpl implements DaoRequestsService {
     private void finishDaoRequest(final ArrDaoRequest arrDaoRequest) {
         requestService.setRequestState(arrDaoRequest, arrDaoRequest.getState(), ArrRequest.State.PROCESSED);
 
-        List<ArrDao> daoByDaoRequest = daoRequestDaoRepository.findDaoByDaoRequestFetched(arrDaoRequest);
+        List<ArrDao> daoByDaoRequest = daoRequestDaoRepository.findDaoByDaoRequest(arrDaoRequest);
         if (daoByDaoRequest.size() == 1) {
             ArrDao arrDao = daoByDaoRequest.get(0);
             ArrDaoPackage daoPackage = arrDao.getDaoPackage();
