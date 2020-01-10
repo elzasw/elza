@@ -24,10 +24,6 @@ public interface DaoRequestDaoRepository extends ElzaJpaRepository<ArrDaoRequest
     @Query("SELECT dd.dao FROM arr_dao_request_dao dd WHERE dd.daoRequest = :daoRequest")
     List<ArrDao> findDaoByDaoRequest(@Param(value = "daoRequest") ArrDaoRequest arrDaoRequest);
 
-    @SuppressWarnings("SpringDataRepositoryMethodReturnTypeInspection")
-    @Query("SELECT dd.dao FROM arr_dao_request_dao dd JOIN FETCH dd.dao dao JOIN FETCH dao.daoPackage pck WHERE dd.daoRequest = :daoRequest")
-    List<ArrDao> findDaoByDaoRequestFetched(@Param(value = "daoRequest") ArrDaoRequest arrDaoRequest);
-
     @Query("SELECT count(dd) FROM arr_dao_request_dao dd WHERE dd.daoRequest = :daoRequest")
     int countByDaoRequest(@Param(value = "daoRequest") ArrDaoRequest arrDaoRequest);
 
