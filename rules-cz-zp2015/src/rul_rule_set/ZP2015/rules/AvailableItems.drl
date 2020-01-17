@@ -3975,6 +3975,21 @@ then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
+rule "Povinnost prvku pro jiné jednotlivosti v KAT"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_JIN") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
+    // Rodic je INV nebo KAT 
+    $level: Level( $items: descItems ) 
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
+    // nastaveni prvku  
+    $itemType: RulItemTypeExt( code in ("ZP2015_ENTITY_ROLE") )
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
+end
+
 rule "Povinné role entit pro jiné jednotlivosti v KAT"
 no-loop
 salience -100
