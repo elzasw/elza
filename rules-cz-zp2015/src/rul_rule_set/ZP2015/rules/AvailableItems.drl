@@ -2605,6 +2605,8 @@ then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
 
+// viz https://bugzilla.lightcomp.cz/show_bug.cgi?id=4683
+/*
 rule "Doporučené prvky pro fotograficky material v inv (složka)"
 no-loop
 salience -100
@@ -2624,7 +2626,7 @@ when $activeLevel: ActiveLevel( )
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
-
+*/
 
 rule "Povinnost prvku pro fotograficky material v inv"
 no-loop
@@ -2767,6 +2769,8 @@ then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
 
+// Odstraneno, viz https://bugzilla.lightcomp.cz/show_bug.cgi?id=4683
+/*
 rule "Doporučené prvky pro Kinematografické filmy v inv (složka)"
 no-loop
 salience -100
@@ -2788,6 +2792,7 @@ when $activeLevel: ActiveLevel( )
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
+*/
 
 rule "Povinnost prvku pro Kinematografické filmy v inv (jednotlivost nebo její část)"
 no-loop
