@@ -26,4 +26,10 @@ public class Result {
     public void setResults(final List<ActionResult> results) {
         this.results = results;
     }
+
+    public void addResults(ActionResult result) {
+        if (result != null) {
+            results.add(result);
+        }
+    }
 }

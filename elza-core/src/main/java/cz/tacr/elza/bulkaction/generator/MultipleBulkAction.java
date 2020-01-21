@@ -166,7 +166,7 @@ public class MultipleBulkAction extends BulkAction {
         // Collect results
         Result result = new Result();
         for (Action action : actions) {
-            result.getResults().add(action.getResult());
+            result.addResults(action.getResult());
         }
 
         bulkActionRun.setResult(result);
