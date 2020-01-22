@@ -1,6 +1,7 @@
 package cz.tacr.elza.drools.model;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -63,6 +64,10 @@ public class Level {
 
     public List<DescItem> getDescItems() {
         return descItems;
+    }
+
+    public List<DescItem> getOwnDescItems() {
+        return descItems.stream().filter(a -> !a.isInherited()).collect(Collectors.toList());
     }
 
     public void setDescItems(final List<DescItem> descItems) {
