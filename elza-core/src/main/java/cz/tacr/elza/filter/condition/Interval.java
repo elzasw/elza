@@ -1,6 +1,6 @@
 package cz.tacr.elza.filter.condition;
 
-import org.junit.Assert;
+import org.springframework.util.Assert;
 
 /**
  *
@@ -21,7 +21,7 @@ public class Interval<IV> {
      * @param to konec intervalu
      */
     public Interval(final IV from, final IV to) {
-        Assert.assertTrue(from != null ||to != null);
+        Assert.isTrue(from != null || to != null, "Interval cannot be null");
 
         this.from = from;
         this.to = to;
