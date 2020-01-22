@@ -14,7 +14,7 @@ import javax.xml.stream.events.XMLEvent;
 
 import org.apache.commons.lang3.Validate;
 
-import com.bea.xml.stream.XMLEventWriterBase;
+//import com.bea.xml.stream.XMLEventWriterBase;
 
 import cz.tacr.elza.exception.SystemException;
 
@@ -52,6 +52,8 @@ public class FileNode implements XmlNode {
             eventReader.nextEvent();
         }
 
+        //TODO Burianek vyresit bea??
+        /*
         XMLEventWriterBase eventWriter = new XMLEventWriterBase(streamWriter);
         // read until end document or EOF
         while (eventReader.hasNext()) {
@@ -61,6 +63,7 @@ public class FileNode implements XmlNode {
             }
             eventWriter.add(event);
         }
+        */
     }
 
     @Override
