@@ -293,7 +293,7 @@ class FundDataGrid extends AbstractReactComponent {
         const showBulkModifications = this.supportBulkModifications(col.refType, col.dataType)
 
         return (
-            <div className={cls} title={col.refType.name}>
+            <div className={cls} title={col.refType.description}>
                 <div className="title">{col.refType.shortcut}</div>
                 {showBulkModifications && !readMode &&
                 <Button onClick={this.handleBulkModifications.bind(this, col.refType, col.dataType)}
