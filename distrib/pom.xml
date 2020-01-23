@@ -5,7 +5,7 @@
     <parent>
         <artifactId>elza</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>1.2.6-SNAPSHOT</version>
+        <version>1.2.6</version>
     </parent>
 
     <artifactId>distrib</artifactId>
