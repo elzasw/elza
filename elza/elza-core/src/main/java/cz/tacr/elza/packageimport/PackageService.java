@@ -1112,6 +1112,7 @@ public class PackageService {
         item.setRulPackage(rulPackage);
         item.setCode(structureType.getCode());
         item.setName(structureType.getName());
+        item.setAnonymous(structureType.getAnonymous());
     }
 
     /**

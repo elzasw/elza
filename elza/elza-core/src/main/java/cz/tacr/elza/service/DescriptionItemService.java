@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -43,30 +44,6 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDate;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUnitid;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.factory.DescItemFactory;
@@ -161,6 +138,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
     @Autowired
     private IndexWorkProcessor indexWorkProcessor;
+
+    @Autowired
+    private StructObjService structObjService;
 
     private TransactionSynchronizationAdapter indexWorkNotify;
 
@@ -648,10 +628,28 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         ArrDescItem retDescItem = descItemRepository.save(descItem);
 
+        deleteAnonymousStructObject(retDescItem);
+
         // sockety
         publishChangeDescItem(version, retDescItem);
 
         return retDescItem;
+    }
+
+    /**
+     * Jedná-li se o odkaz na strukturovaný typ, který je zároveň anonymní, odstraní se i ten.
+     *
+     * @param retDescItem hodnota atributu
+     */
+    private void deleteAnonymousStructObject(final ArrDescItem retDescItem) {
+        ItemType itemType = staticDataService.getData().getItemTypeById(retDescItem.getItemTypeId());
+        RulStructuredType structuredType = itemType.getEntity().getStructuredType();
+        if (structuredType != null) {
+            if (structuredType.getAnonymous()) {
+                ArrDataStructureRef data = (ArrDataStructureRef) retDescItem.getData();
+                structObjService.deleteStructObj(data.getStructuredObject());
+            }
+        }
     }
 
     /**
