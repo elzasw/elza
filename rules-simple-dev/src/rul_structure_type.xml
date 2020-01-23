@@ -5,4 +5,7 @@
     <structure-type code="STAT_ZASTUPCE">
         <name>Statutární zástupce</name>
     </structure-type>
+    <structure-type code="SRD_ACCESS_RESTRICTION" anonymous="true">
+        <name>Omezení přístupnosti</name>y
+    </structure-type>
 </structure-types>

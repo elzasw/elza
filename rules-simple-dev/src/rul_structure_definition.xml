@@ -19,4 +19,12 @@
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>1</priority>
     </structure-definition>
+    <structure-definition structure-type="SRD_ACCESS_RESTRICTION" filename="AccessRestriction.drl">
+        <def-type>ATTRIBUTE_TYPES</def-type>
+        <priority>1</priority>
+    </structure-definition>
+    <structure-definition structure-type="SRD_ACCESS_RESTRICTION" filename="AccessRestriction.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>1</priority>
+    </structure-definition>
 </structure-definitions>

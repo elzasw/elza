@@ -37,6 +37,9 @@ public class RulStructuredType {
     @Column(length = StringLength.LENGTH_250, nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    private Boolean anonymous;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
@@ -63,6 +66,14 @@ public class RulStructuredType {
 
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public Boolean getAnonymous() {
+        return anonymous;
+    }
+
+    public void setAnonymous(final Boolean anonymous) {
+        this.anonymous = anonymous;
     }
 
     public RulPackage getRulPackage() {

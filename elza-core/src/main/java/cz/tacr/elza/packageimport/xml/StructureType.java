@@ -24,6 +24,9 @@ public class StructureType {
     @XmlAttribute(name = "validValueFromVersion", required = false)
     private String validValueFromVersion;
 
+    @XmlAttribute(name = "anonymous", required = false)
+    private Boolean anonymous = false;
+
     public String getCode() {
         return code;
     }
@@ -46,5 +49,13 @@ public class StructureType {
 
     public void setValidValueFromVersion(String validValueFromVersion) {
         this.validValueFromVersion = validValueFromVersion;
+    }
+
+    public Boolean getAnonymous() {
+        return anonymous;
+    }
+
+    public void setAnonymous(final Boolean anonymous) {
+        this.anonymous = anonymous;
     }
 }

@@ -240,7 +240,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
         const nodeSettingsIndex = indexById(nodeSettings.nodes, nodeId);
         const nodeSetting = nodeSettings.nodes[nodeSettingsIndex];
-        const isCopyAll = nodeSetting.copyAll;
+        const isCopyAll = nodeSetting && nodeSetting.copyAll;
 
         const haveProtocolPermissionToWrite =
             isProtocolLoaded && (
