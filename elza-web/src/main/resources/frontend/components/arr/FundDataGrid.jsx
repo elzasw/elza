@@ -128,20 +128,21 @@ class FundDataGrid extends AbstractReactComponent {
                 const ruleMap = getMapFromList(ruleSet.items);
                 const rule = ruleMap[fund.activeVersion.ruleSetId];
                 if (rule.gridViews) {
-                    const gwMap = {};   // mapa kódu item type na GridView
-                    rule.gridViews.forEach(gw => {
-                        gwMap[gw.code] = gw;
-                    });
-
+                    // mapa kodu prvku popisu
+                    const codeMap = {};
                     descItemTypes.items.forEach(item => {
-                        const gw = gwMap[item.code];
-                        if (gw) {
-                            if (gw.showDefault) {
-                                initData.visibleColumns.push(item.id);
-                            }
-                            if (gw.width) {
-                                initData.columnInfos[item.id] = {
-                                    width: gw.width
+                        codeMap[item.code]=item.id;
+                    });
+                    // nastaveni vychozich hodnot
+                    rule.gridViews.forEach(gw => {
+                        if (gw.showDefault) {
+                            const itemId = codeMap[gw.code];
+                            if(itemId!=null) {
+                                initData.visibleColumns.push(itemId);
+                                if (gw.width) {
+                                    initData.columnInfos[itemId] = {
+                                        width: gw.width
+                                    };
                                 }
                             }
                         }
