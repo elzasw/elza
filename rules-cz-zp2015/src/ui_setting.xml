@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <settings xmlns:ns2="fund-views" xmlns:ns3="type-groups" xmlns:ns4="allow-structure-types" 
-          xmlns:ns5="fund-issues" xmlns:ns6="grid-view">
+          xmlns:ns5="fund-issues" xmlns:ns6="grid-view" xmlns:ns7="structure-type-settings">
     <favorite-item-specs code="ZP2015_LANGUAGE">
         <!-- čeština -->
         <favorite-item>ZP2015_LANGUAGE_43</favorite-item>
@@ -52,5 +52,7 @@
             <width>100</width>
         </ns6:item-type>
     </grid-view>
-
+    <structure-type-settings code="STRUCT_TYPE_ZP2015_PACKET">
+      <ns7:property code="prefixSeparator"> </ns7:property>
+    </structure-type-settings>
 </settings>
