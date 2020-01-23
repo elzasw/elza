@@ -8,7 +8,7 @@
         <addColumn tableName="rul_structured_type">
             <column name="anonymous" type="boolean" />
         </addColumn>
-        <addNotNullConstraint tableName="rul_structured_type" columnName="anonymous" defaultNullValue="false" />
+        <addNotNullConstraint tableName="rul_structured_type" columnDataType="boolean" columnName="anonymous" defaultNullValue="false" />
     </changeSet>
 
 </databaseChangeLog>
