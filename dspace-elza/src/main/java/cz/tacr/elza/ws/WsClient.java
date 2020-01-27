@@ -171,7 +171,7 @@ public class WsClient {
         List<Bundle> bundles = item.getBundles(DaoImportService.CONTENT_BUNDLE);
 
         String fileParam = createFileParam(item);
-        dao.setLabel(fileParam);
+        dao.setLabel(item.getName());
         //"http://localhost:8080/xmlui/handle/123456789/8"
 
         try {
@@ -223,6 +223,8 @@ public class WsClient {
         file.setChecksum(bitstream.getChecksum());
         file.setIdentifier(fileParam + "/" + bitstream.getName());
         file.setSize(bitstream.getSizeBytes());
+        file.setDescription(bitstream.getDescription());
+        file.setFileName(bitstream.getName());
 
         BitstreamFormat format = null;
         try {
