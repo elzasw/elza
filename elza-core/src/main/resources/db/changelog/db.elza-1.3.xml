@@ -164,4 +164,11 @@
     <changeSet id="20190711200000" author="marek">
         <renameColumn tableName="ap_state" oldColumnName="type_id" newColumnName="ap_type_id" columnDataType="int"/>
     </changeSet>
+
+    <changeSet id="20200124120000" author="vanek">
+        <addColumn tableName="arr_dao_file">
+            <column name="description" type="nvarchar(2000)"/>
+            <column name="file_name" type="nvarchar(1000)"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>
