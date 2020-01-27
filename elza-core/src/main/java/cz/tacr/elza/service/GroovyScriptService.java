@@ -4,12 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.cache.RestoredNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.Validate;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -55,11 +54,15 @@ public class GroovyScriptService {
     // groovy script pro import z Interpi
     private final GroovyScriptFile interpiScriptFile;
 
+    private final NodeCacheService nodeCacheService;
+
     @Autowired
     public GroovyScriptService(ResourcePathResolver resourcePathResolver,
+                               NodeCacheService nodeCacheService,
                                @Value("classpath:/script/groovy/createRecord.groovy") Resource createRecordScriptSource,
                                @Value("classpath:/script/groovy/createDid.groovy") Resource createDidScriptSource,
                                @Value("classpath:/script/groovy/interpiImport.groovy") Resource interpiFile) {
+        this.nodeCacheService = nodeCacheService;
         try {
             Path groovyDir = resourcePathResolver.getGroovyDir(); // TODO: Move initialization to startup service
             Files.createDirectories(groovyDir);
@@ -101,9 +104,25 @@ public class GroovyScriptService {
      */
     public Did createDid(final ArrNode arrNode) {
         Map<String, Object> input = new HashMap<>();
+        RestoredNode cachedNode = nodeCacheService.getNode(arrNode.getNodeId());
+        input.put("CACHED_NODE", cachedNode);
         input.put("NODE", arrNode);
 
         return (Did) createDidScriptFile.evaluate(input);
+    }
+
+    public List<Did> createDids(final Collection<ArrNode> arrNodes) {
+        Map<String, Object> input = new HashMap<>();
+
+        Set<Integer> nodeIds = arrNodes.stream().map(ArrNode::getNodeId).collect(Collectors.toSet());
+        Map<Integer, RestoredNode> nodes = nodeCacheService.getNodes(nodeIds);
+        List<Did> result = new ArrayList<>();
+        for (RestoredNode value : nodes.values()) {
+            input.put("CACHED_NODE", value);
+            input.put("NODE", value.getNode());
+            result.add((Did) createDidScriptFile.evaluate(input));
+        }
+        return result;
     }
 
     public List<ExternalRecordVO> convertListToExternalRecordVO(final List<EntitaTyp> searchResults,

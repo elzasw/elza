@@ -389,7 +389,8 @@ public class DaoService {
      */
     public String getDaoFileUrl(final ArrDaoFile daoFile, final ArrDigitalRepository repository) {
         ElzaTools.UrlParams params = ElzaTools.createUrlParams()
-                .add("code", daoFile.getCode());
+                .add("code", daoFile.getCode())
+                .add("fileName", daoFile.getFileName());
         return ElzaTools.bindingUrlParams(repository.getViewFileUrl(), params);
     }
 
@@ -401,7 +402,8 @@ public class DaoService {
      */
     public String getDaoThumbnailUrl(final ArrDaoFile daoFile, final ArrDigitalRepository repository) {
         ElzaTools.UrlParams params = ElzaTools.createUrlParams()
-                .add("code", daoFile.getCode());
+                .add("code", daoFile.getCode())
+                .add("fileName", daoFile.getFileName());
         return ElzaTools.bindingUrlParams(repository.getViewThumbnailUrl(), params);
     }
 
