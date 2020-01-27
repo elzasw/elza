@@ -87,6 +87,12 @@ public class ArrDaoFile {
     @Column(nullable = false, length = StringLength.LENGTH_1000, unique = true)
     private String code;
 
+    @Column(length = StringLength.LENGTH_2000)
+    private String description;
+
+    @Column(length = StringLength.LENGTH_1000)
+    private String fileName;
+
     public Integer getDaoFileId() {
         return daoFileId;
     }
@@ -214,6 +220,22 @@ public class ArrDaoFile {
 
     public void setCode(final String code) {
         this.code = code;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 
     public enum ChecksumType {
