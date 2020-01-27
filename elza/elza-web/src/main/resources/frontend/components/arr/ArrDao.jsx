@@ -84,8 +84,8 @@ class ArrDao extends AbstractReactComponent {
                 </div>}
             </div>
             <div key="info" className="dao-info">
-                {this.renderLabel("arr.daos.title.code", dao.id)}
-                {this.renderLabel("arr.daos.title.description", dao.label, true)}
+                {this.renderLabel("arr.daos.title.id", dao.id)}
+                {this.renderLabel("arr.daos.title.code", dao.code, true)}
                 {this.renderLabel("arr.daos.title.file-count", dao.fileList.length)}
             </div>
         </div>
@@ -130,6 +130,7 @@ class ArrDao extends AbstractReactComponent {
                 {daoFile.imageWidth && daoFile.imageHeight && this.renderLabel("arr.daos.files.title.imageWidthHeight", daoFile.imageWidth + ' x ' + daoFile.imageHeight + ' px')}
                 {daoFile.sourceXDimesionValue && daoFile.sourceYDimesionValue &&
                     this.renderLabel("arr.daos.files.title.sourceXY", daoFile.sourceXDimesionValue + i18n(`arr.daos.files.title.unitOfMeasure.${daoFile.sourceXDimesionUnit}`) + ' x ' + daoFile.sourceYDimesionValue + i18n(`arr.daos.files.title.unitOfMeasure.${daoFile.sourceYDimesionUnit}`))}
+                {daoFile.description && this.renderLabel("arr.daos.files.title.description", daoFile.description)}
             </div>
         </div>
     };
