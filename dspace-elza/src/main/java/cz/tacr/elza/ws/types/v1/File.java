@@ -1,11 +1,15 @@
 
 package cz.tacr.elza.ws.types.v1;
 
-import javax.xml.bind.annotation.*;
+import java.math.BigInteger;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.math.BigInteger;
 
 
 /**
@@ -22,9 +26,11 @@ import java.math.BigInteger;
  *       &lt;sequence&gt;
  *       &lt;/sequence&gt;
  *       &lt;attGroup ref="{http://elza.tacr.cz/ws/types/v1}mixCore"/&gt;
- *       &lt;attGroup ref="{http://elza.tacr.cz/ws/types/v1}fileCore"/&gt;
  *       &lt;attGroup ref="{http://elza.tacr.cz/ws/types/v1}videoMD"/&gt;
+ *       &lt;attGroup ref="{http://elza.tacr.cz/ws/types/v1}fileCore"/&gt;
  *       &lt;attribute name="identifier" use="required" type="{http://elza.tacr.cz/ws/types/v1}identifier" /&gt;
+ *       &lt;attribute name="description" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="fileName" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
  *     &lt;/restriction&gt;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
@@ -39,6 +45,10 @@ public class File {
     @XmlAttribute(name = "identifier", required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     protected String identifier;
+    @XmlAttribute(name = "description")
+    protected String description;
+    @XmlAttribute(name = "fileName")
+    protected String fileName;
     @XmlAttribute(name = "imageHeight")
     @XmlSchemaType(name = "positiveInteger")
     protected BigInteger imageHeight;
@@ -53,6 +63,8 @@ public class File {
     protected UnitOfMeasure sourceYDimensionUnit;
     @XmlAttribute(name = "sourceYDimensionValue")
     protected Float sourceYDimensionValue;
+    @XmlAttribute(name = "duration")
+    protected String duration;
     @XmlAttribute(name = "checksum")
     protected String checksum;
     @XmlAttribute(name = "checksumType")
@@ -64,8 +76,6 @@ public class File {
     protected String mimetype;
     @XmlAttribute(name = "size")
     protected Long size;
-    @XmlAttribute(name = "duration")
-    protected String duration;
 
     /**
      * Gets the value of the identifier property.
@@ -89,6 +99,54 @@ public class File {
      */
     public void setIdentifier(String value) {
         this.identifier = value;
+    }
+
+    /**
+     * Gets the value of the description property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * Sets the value of the description property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setDescription(String value) {
+        this.description = value;
+    }
+
+    /**
+     * Gets the value of the fileName property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getFileName() {
+        return fileName;
+    }
+
+    /**
+     * Sets the value of the fileName property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setFileName(String value) {
+        this.fileName = value;
     }
 
     /**
@@ -236,6 +294,30 @@ public class File {
     }
 
     /**
+     * Gets the value of the duration property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getDuration() {
+        return duration;
+    }
+
+    /**
+     * Sets the value of the duration property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setDuration(String value) {
+        this.duration = value;
+    }
+
+    /**
      * Gets the value of the checksum property.
      * 
      * @return
@@ -353,30 +435,6 @@ public class File {
      */
     public void setSize(Long value) {
         this.size = value;
-    }
-
-    /**
-     * Gets the value of the duration property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getDuration() {
-        return duration;
-    }
-
-    /**
-     * Sets the value of the duration property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setDuration(String value) {
-        this.duration = value;
     }
 
 }
