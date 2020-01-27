@@ -75,7 +75,7 @@ class ArrDaoPackages extends AbstractReactComponent {
                     items={list.rows}
                     onFocus={this.handleSelect}
                     activeIndex={activeIndex}
-                    renderItemContent={(props) => <div className={classNames({active: props.active})}>{props.item.code}</div>}
+                    renderItemContent={(props) => <div className={classNames({active: props.active})}>{props.item.batchInfoLabel || ("[" + props.item.code + "]")}</div>}
                 />}
             </div>
         );
