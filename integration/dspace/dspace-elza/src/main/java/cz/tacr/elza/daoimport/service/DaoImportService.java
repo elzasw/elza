@@ -16,12 +16,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 import javax.xml.bind.JAXBContext;
@@ -46,6 +48,7 @@ import org.dspace.content.Collection;
 import org.dspace.content.Community;
 import org.dspace.content.DCDate;
 import org.dspace.content.Item;
+import org.dspace.content.MetadataField;
 import org.dspace.content.MetadataSchema;
 import org.dspace.content.WorkspaceItem;
 import org.dspace.content.factory.ContentServiceFactory;
@@ -55,7 +58,7 @@ import org.dspace.content.service.BundleService;
 import org.dspace.content.service.CollectionService;
 import org.dspace.content.service.CommunityService;
 import org.dspace.content.service.ItemService;
-import org.dspace.content.service.MetadataValueService;
+import org.dspace.content.service.MetadataFieldService;
 import org.dspace.content.service.WorkspaceItemService;
 import org.dspace.core.Context;
 import org.dspace.services.ConfigurationService;
@@ -69,6 +72,7 @@ import org.xml.sax.SAXException;
 
 import cz.tacr.elza.daoimport.DaoImportScheduler;
 import cz.tacr.elza.daoimport.parser.TechnicalMDParser;
+import cz.tacr.elza.daoimport.schema.dao.Attribute;
 import cz.tacr.elza.daoimport.schema.dao.Dao;
 import cz.tacr.elza.daoimport.schema.dao.Page;
 import cz.tacr.elza.daoimport.service.vo.DaoFile;
@@ -102,7 +106,7 @@ public class DaoImportService {
     private ConfigurationService configurationService = DSpaceServicesFactory.getInstance().getConfigurationService();
     private CommunityService communityService = ContentServiceFactory.getInstance().getCommunityService();
     private CollectionService collectionService = ContentServiceFactory.getInstance().getCollectionService();
-    private MetadataValueService metadataValueService = ContentServiceFactory.getInstance().getMetadataValueService();
+    private MetadataFieldService metadataFieldService = ContentServiceFactory.getInstance().getMetadataFieldService();
     private ItemService itemService = ContentServiceFactory.getInstance().getItemService();
     private BundleService bundleService = ContentServiceFactory.getInstance().getBundleService();
     private BitstreamService bitstreamService = ContentServiceFactory.getInstance().getBitstreamService();
@@ -165,7 +169,8 @@ public class DaoImportService {
         config.setConversionCommand(getConversionCommand());
         config.setMimeTypeAferConversion(getMimeTypeAferConversion());
         config.setFileExtensionAferConversion(getFileExtensionAferConversion());
-
+        config.setDaoNameExpression(getDaoNameExpression());
+                
         return config;
     }
 
@@ -212,6 +217,10 @@ public class DaoImportService {
     private String getFileExtensionAferConversion() {
         return StringUtils.trimToNull(configurationService.getProperty("elza.daoimport.convert.outputExtension"));
     }
+    
+    private String getDaoNameExpression() {
+        return StringUtils.trimToNull(configurationService.getProperty("elza.daoimport.dao.name"));
+    }
 
     public void importBatches(final List<ImportBatch> importBatches, final Context context) throws IOException {
         for (ImportBatch batch : importBatches) {
@@ -248,7 +257,7 @@ public class DaoImportService {
 
         for (ImportDao importDao : batch.getDaos()) {
             int sequence = 0;
-            Item item = createItem(importDao.getCollectionId(), importDao.getDaoId(), protocol, context);
+            Item item = createItem(importDao, protocol, context);
             Bundle origBundle = createBundle(CONTENT_BUNDLE, item,  protocol, context);
             Bundle metaBundle = createBundle(METADATA_BUNDLE, item,  protocol, context);
             Bundle thumbBundle = createBundle(THUMBNAIL_BUNDLE, item,  protocol, context);
@@ -335,11 +344,12 @@ public class DaoImportService {
         }
     }
 
-    private Item createItem(final UUID collectionId, final String daoId, final BufferedWriter protocol, final Context context) {
+    private Item createItem(final ImportDao importDao, final BufferedWriter protocol, final Context context) {
+        String daoName = importDao.getDaoName();
         try {
-            Collection collection = collectionService.find(context, collectionId);
+            Collection collection = collectionService.find(context, importDao.getCollectionId());
 
-            protocol.write("Vytváření Item " + daoId + " v kolekci " + collection.getName());
+            protocol.write("Vytváření Item " + daoName + " v kolekci " + collection.getName());
             protocol.newLine();
 
             WorkspaceItem workspaceItem = workspaceItemService.create(context, collection, false);
@@ -349,8 +359,9 @@ public class DaoImportService {
 
 
             Item item = workflowItem.getItem();
-            itemService.setMetadataSingleValue(context, item, MetadataSchema.DC_SCHEMA, "title", null, null, daoId);
-            itemService.setMetadataSingleValue(context, item, MetadataSchema.DC_SCHEMA, "description", null, null, daoId);
+
+            itemService.setMetadataSingleValue(context, item, MetadataSchema.DC_SCHEMA, "title", null, null, daoName);
+            itemService.setMetadataSingleValue(context, item, MetadataSchema.DC_SCHEMA, "description", null, null, importDao.getDaoId());
 
             DCDate dcDate = new DCDate(new Date());
             String date = dcDate.displayDate(false, true, Locale.getDefault());
@@ -359,11 +370,19 @@ public class DaoImportService {
             MetadataEnum metaData = MetadataEnum.ISELZA;
             itemService.addMetadata(context, item, metaData.getSchema(), metaData.getElement(), metaData.getQualifier(), null, "false");
 
+            Map<Integer, String> metadata = importDao.getMetadata();
+            if (metaData != null) {
+                for (Map.Entry<Integer, String> entry : metadata.entrySet()) {
+                    MetadataField metadataField = metadataFieldService.find(context, entry.getKey());
+                    itemService.clearMetadata(context, item, metadataField.getMetadataSchema().getName(), metadataField.getElement(), metadataField.getQualifier(), null);
+                    itemService.addMetadata(context, item, metadataField, null, entry.getValue());
+                }
+            }
+
             itemService.update(context, item);
-            // set metadata?
             return item;
         } catch (Exception e) {
-            throw new IllegalStateException("Chyba při vytváření Item " + daoId, e);
+            throw new IllegalStateException("Chyba při vytváření Item " + daoName, e);
         }
     }
 
@@ -475,29 +494,22 @@ public class DaoImportService {
             throw new IllegalStateException("Kolekce(archivní soubor) s názvem " + fundId + " neexistuje.");
         }
 
-        // kontrola na existenci dao/item
-//        metadataValueDAO.findMany()
-
-
         importDao.setCollectionId(collection.getID());
         importDao.setCommunityId(community.getID());
         importDao.setDaoId(daoId);
-
+        importDao.setDaoName(daoId);
 
         // zpracování souborů
-        try (DirectoryStream<Path> fileStream = Files.newDirectoryStream(daoDir)) {
-            Dao daoXmlSpecification = null;
-            Path daoXmlFile = Paths.get(daoDir.toAbsolutePath() + DAO_XML);
-            if(Files.exists(daoXmlFile)) {
-                protocol.write("Byl nalezen volitelný soubor dao.xml.");
-                try {
-                    JAXBContext jaxbContext = JAXBContext.newInstance(Dao.class);
-                    Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-                    daoXmlSpecification = (Dao) unmarshaller.unmarshal(daoXmlFile.toFile());
-                } catch (JAXBException e) {
-                    protocol.write("Nepodařilo se načíst data ze souboru dao.xml.");
-                }
+        // načtení dao.xml pokud existuje
+        Dao daoXml = readDaoXml(daoDir, protocol);
+        if (daoXml != null) {
+            Map<String, String> md = fillDaoAttributes(context, importDao, daoXml, protocol);
+            if (StringUtils.isNotBlank(config.getDaoNameExpression())) {
+                generateDaoName(md, config.getDaoNameExpression(), importDao, protocol);
             }
+        }
+
+        try (DirectoryStream<Path> fileStream = Files.newDirectoryStream(daoDir)) {
             for (Path contentFile : fileStream) {
                 if (Files.isRegularFile(contentFile)
                         && !(contentFile.getFileName().toString().endsWith(METADATA_EXTENSION)
@@ -543,7 +555,7 @@ public class DaoImportService {
                         daoFile.setTechMD(parseMetadata(metadataFile));
                         daoFile.setMetadataFile(Files.copy(metadataFile, destPath, StandardCopyOption.REPLACE_EXISTING));
                     } else {
-                        MetadataInfo metadataInfo = fillBasicdaoXmlSpecification(daoXmlSpecification, daoFile, contentFile.getFileName().getFileName().toString());
+                        MetadataInfo metadataInfo = fillBasicdaoXmlSpecification(daoXml, daoFile, contentFile.getFileName().getFileName().toString());
                         protocol.write("Generování metadat souboru " + contentFile.getFileName().toString());
                         protocol.newLine();
                         if (jhoveService.generateMetadata(contentFile, protocol, destPath, metadataInfo)) {
@@ -568,6 +580,67 @@ public class DaoImportService {
         }
 
         return importDao;
+    }
+
+    private void generateDaoName(Map<String, String> md, String daoNameExpression, ImportDao importDao, BufferedWriter protocol) {
+        String regex = "\\$\\{[\\w\\.]+\\}";      // příklad formátu výrazu: ${dc.title} - ${dc.creator}
+        Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(daoNameExpression);
+        String name = daoNameExpression;
+        while (matcher.find()) {
+            String exp = matcher.group();
+            String key = exp.substring(2, exp.length() - 1); // získání klíče do mapy metadat, ${dc.title} -> dc.title
+            String value = StringUtils.trimToEmpty(md.get(key));
+            name = name.replace(exp, value);
+        }
+        importDao.setDaoName(name);
+    }
+
+    private Map<String, String> fillDaoAttributes(Context context, ImportDao importDao, Dao daoXml, BufferedWriter protocol) throws IOException {
+        Map<String, String> mdForNameGeneration = new HashMap<>();
+        Map<Integer, String> mdForStore = new HashMap<>();
+        for (Attribute att : daoXml.getMeta().getAttr()) {
+            try {
+                MetadataField field = metadataFieldService.findByElement(context,
+                        att.getSchema(),
+                        att.getElement(),
+                        StringUtils.trimToNull(att.getQualifier()));
+                StringBuilder sb = new StringBuilder(att.getSchema())
+                        .append(".")
+                        .append(att.getElement());
+                if (StringUtils.trimToNull(att.getQualifier()) != null) {
+                    sb.append(".")
+                        .append(att.getQualifier());
+                }
+                String key = sb.toString();
+                if (field == null) {
+                    throw new IllegalStateException("Neexistuje typ metadat " + key);
+                }
+                mdForNameGeneration.put(key, att.getValue());
+                mdForStore.put(field.getID(), att.getValue());
+                protocol.write("Načtení atributu metadat " + key + "=" + att.getValue());
+            } catch (SQLException e) {
+                throw new IllegalStateException("Došlo k chybě při pokusu o načtení typu metadat DAO " + importDao.getDaoId());
+            }
+        }
+        importDao.setMetadata(mdForStore);
+        return mdForNameGeneration;
+    }
+
+    private Dao readDaoXml(Path daoDir, BufferedWriter protocol) throws IOException {
+        Dao daoXmlSpecification = null;
+        Path daoXmlFile = Paths.get(daoDir.toAbsolutePath().toString(), DAO_XML);
+        if (Files.exists(daoXmlFile)) {
+            protocol.write("Byl nalezen volitelný soubor dao.xml.");
+            try {
+                JAXBContext jaxbContext = JAXBContext.newInstance(Dao.class);
+                Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+                daoXmlSpecification = (Dao) unmarshaller.unmarshal(daoXmlFile.toFile());
+            } catch (JAXBException e) {
+                protocol.write("Nepodařilo se načíst data ze souboru dao.xml.");
+            }
+        }
+        return daoXmlSpecification;
     }
 
     private Path convertFile(Path file, ImportConfig config, Path generatedDir, BufferedWriter protocol) throws IOException {
