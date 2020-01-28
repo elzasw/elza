@@ -3,6 +3,7 @@ package cz.tacr.elza.destructransferrequest.service;
 import cz.tacr.elza.context.ContextUtils;
 import cz.tacr.elza.daoimport.DaoImportScheduler;
 import cz.tacr.elza.metadataconstants.MetadataEnum;
+import cz.tacr.elza.ws.WsClient;
 import cz.tacr.elza.ws.dao_service.v1.DaoNotifications;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
 import cz.tacr.elza.ws.types.v1.Did;
@@ -58,7 +59,6 @@ public class DaoNotificationsImpl implements DaoNotifications {
         log.info("Vyhledávám položku digitalizátu Uuid=" + uuId + ".");
         Item item = getItem(context, uuId);
         log.info("Aktualizuji metadata položky digitalizátu Uuid=" + uuId + ".");
-        //TODO:cacha doplnit po upřesnění vstupních dat
 
         MetadataEnum mt = MetadataEnum.ISELZA;
         log.info("Aktualizuji metadata element=" + mt.getElement() + " pro položku digitalizátu Uuid=" + uuId + " schema=" +
@@ -75,6 +75,7 @@ public class DaoNotificationsImpl implements DaoNotifications {
                 metadataList = itemService.getMetadata(item, mt.getSchema(), mt.getElement(), mt.getQualifier(), Item.ANY);
                 setMetadataValue(context, item, metadataList, did.getIdentifier(), mt);
             }
+            WsClient.updateItem(context, item, did);
         }
 
         try {

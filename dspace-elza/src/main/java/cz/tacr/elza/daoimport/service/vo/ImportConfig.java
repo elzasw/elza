@@ -13,6 +13,7 @@ public class ImportConfig {
     private String conversionCommand;
     private String mimeTypeAferConversion;
     private String fileExtensionAferConversion;
+    private String daoNameExpression;
 
     public String getMainDir() {
         return mainDir;
@@ -60,5 +61,13 @@ public class ImportConfig {
 
     public void setFileExtensionAferConversion(String fileExtensionAferConversion) {
         this.fileExtensionAferConversion = fileExtensionAferConversion;
+    }
+
+    public String getDaoNameExpression() {
+        return daoNameExpression;
+    }
+
+    public void setDaoNameExpression(String daoNameExpression) {
+        this.daoNameExpression = daoNameExpression;
     }
 }

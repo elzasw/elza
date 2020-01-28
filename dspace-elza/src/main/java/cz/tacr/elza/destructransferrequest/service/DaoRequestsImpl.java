@@ -1,18 +1,24 @@
 package cz.tacr.elza.destructransferrequest.service;
 
-import cz.tacr.elza.context.ContextUtils;
-import cz.tacr.elza.daoimport.DaoImportScheduler;
-import cz.tacr.elza.daoimport.service.DaoImportService;
-import cz.tacr.elza.destructransferrequest.DestructTransferRequest;
-import cz.tacr.elza.destructransferrequest.dao.DestructTransferRequestDAO;
-import cz.tacr.elza.metadataconstants.MetadataEnum;
-import cz.tacr.elza.ws.WsClient;
-import cz.tacr.elza.ws.dao_service.v1.DaoRequests;
-import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
-import cz.tacr.elza.ws.types.v1.*;
+import java.math.BigInteger;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import javax.ws.rs.ProcessingException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.dspace.content.*;
+import org.dspace.content.Bitstream;
+import org.dspace.content.Bundle;
+import org.dspace.content.Collection;
+import org.dspace.content.Community;
+import org.dspace.content.Item;
+import org.dspace.content.MetadataSchema;
+import org.dspace.content.MetadataValue;
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.BitstreamService;
 import org.dspace.content.service.CollectionService;
@@ -22,12 +28,30 @@ import org.dspace.core.Context;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.ProcessingException;
-import java.math.BigInteger;
-import java.sql.SQLException;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import cz.tacr.elza.context.ContextUtils;
+import cz.tacr.elza.daoimport.DaoImportScheduler;
+import cz.tacr.elza.daoimport.service.DaoImportService;
+import cz.tacr.elza.destructransferrequest.DestructTransferRequest;
+import cz.tacr.elza.destructransferrequest.dao.DestructTransferRequestDAO;
+import cz.tacr.elza.metadataconstants.MetadataEnum;
+import cz.tacr.elza.ws.WsClient;
+import cz.tacr.elza.ws.dao_service.v1.DaoRequests;
+import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
+import cz.tacr.elza.ws.types.v1.ChecksumType;
+import cz.tacr.elza.ws.types.v1.Dao;
+import cz.tacr.elza.ws.types.v1.DaoIdentifiers;
+import cz.tacr.elza.ws.types.v1.DaoSyncRequest;
+import cz.tacr.elza.ws.types.v1.DaosSyncRequest;
+import cz.tacr.elza.ws.types.v1.DaosSyncResponse;
+import cz.tacr.elza.ws.types.v1.Daoset;
+import cz.tacr.elza.ws.types.v1.DestructionRequest;
+import cz.tacr.elza.ws.types.v1.Did;
+import cz.tacr.elza.ws.types.v1.Dids;
+import cz.tacr.elza.ws.types.v1.File;
+import cz.tacr.elza.ws.types.v1.FileGroup;
+import cz.tacr.elza.ws.types.v1.NonexistingDaos;
+import cz.tacr.elza.ws.types.v1.TransferRequest;
+import cz.tacr.elza.ws.types.v1.UnitOfMeasure;
 
 /**
  * Implementace webových služeb pro komunikaci se systému Elza (server)
@@ -261,6 +285,14 @@ public class DaoRequestsImpl implements DaoRequests{
             return daosSyncResponse;
         }
 
+        Dids dids = daosSyncRequest.getDids();
+        Map<String, Did> didMap = new HashMap<>();
+        if (dids != null) {
+            for (Did did : dids.getDid()) {
+                didMap.put(did.getIdentifier(), did);
+            }
+        }
+
         Context context = new Context();
         try {
             context = ContextUtils.createContext();
@@ -280,14 +312,21 @@ public class DaoRequestsImpl implements DaoRequests{
             Item item = getItem(context, uuId);
             if (item != null) {
                 log.debug("Aktualizuji metadata položky digitalizátu Uuid=" + uuId + ".");
-                //TODO:cacha doplnit po upřesnění vstupních dat
+
+                String didId = daoSyncRequest.getDidId();
+                if (didId != null) {
+                    Did did = didMap.get(didId);
+                    if (did != null) {
+                        WsClient.updateItem(context, item, did);
+                    }
+                }
 
                 String fileParam = WsClient.createFileParam(item);
                 log.debug("Zapisuji technická metadata položky digitalizátu Uuid=" + uuId + ".");
                 List<Bundle> bundleList = item.getBundles();
                 for (Bundle bundle : bundleList) {
                     if (bundle.getName().contains(DaoImportService.CONTENT_BUNDLE)) {
-                        Dao dao = new Dao();
+                        Dao dao = WsClient.createDao(item, fileParam);
                         FileGroup fileGroup = new FileGroup();
                         List<File> fileList = fileGroup.getFile();
 
@@ -301,7 +340,6 @@ public class DaoRequestsImpl implements DaoRequests{
                                 throw new ProcessingException("Chyba při vytváření souboru z bitstreamu: " + e.getMessage());
                             }
                         }
-                        dao.setIdentifier(bundle.getID().toString());
                         dao.setFileGroup(fileGroup);
                         daoList.add(dao);
                     }
@@ -312,13 +350,18 @@ public class DaoRequestsImpl implements DaoRequests{
             }
         }
 
+        try {
+            context.commit();
+        } catch (SQLException e) {
+            throw new ProcessingException("Chyba při synchronizaci dao.", e);
+        }
+
         daosSyncResponse.setDaoset(daoset);
         daosSyncResponse.setNonexistingDaos(nonexistingDaos);
 
         log.info("Ukončena metoda DaosSyncResponse");
         return daosSyncResponse;
     }
-
 
     /**
      * Vyhledá položku digitalizátu
