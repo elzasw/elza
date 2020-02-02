@@ -10,6 +10,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import org.apache.commons.logging.Log;
@@ -43,6 +46,9 @@ public class DaoRequestsServiceImpl implements DaoRequestsService {
 
     private Log logger = LogFactory.getLog(this.getClass());
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Autowired
     private DaoRequestRepository daoRequestRepository;
 
@@ -67,6 +73,7 @@ public class DaoRequestsServiceImpl implements DaoRequestsService {
             final List<ArrDaoRequest> daoLinkRequestList = daoRequestRepository.findByCode(requestRevoked.getIdentifier());
             for (ArrDaoRequest arrDaoLinkRequest : daoLinkRequestList) {
                 requestService.setRequestState(arrDaoLinkRequest, arrDaoLinkRequest.getState(), ArrRequest.State.REJECTED);
+                entityManager.refresh(arrDaoLinkRequest);
                 arrDaoLinkRequest.setRejectReason(requestRevoked.getDescription());
                 daoRequestRepository.save(arrDaoLinkRequest);
             }
@@ -117,6 +124,7 @@ public class DaoRequestsServiceImpl implements DaoRequestsService {
             for (ArrDaoRequest arrDaoLinkRequest : daoLinkRequestList) {
                 if (arrDaoLinkRequest.getType().equals(ArrDaoRequest.Type.TRANSFER)) {
                     requestService.setRequestState(arrDaoLinkRequest, arrDaoLinkRequest.getState(), ArrRequest.State.REJECTED);
+                    entityManager.refresh(arrDaoLinkRequest);
                     arrDaoLinkRequest.setRejectReason(requestRevoked.getDescription());
                     daoRequestRepository.save(arrDaoLinkRequest);
                 } else {
