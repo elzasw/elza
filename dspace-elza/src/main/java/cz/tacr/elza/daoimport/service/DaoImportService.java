@@ -2,6 +2,7 @@ package cz.tacr.elza.daoimport.service;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,6 +33,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -632,10 +634,11 @@ public class DaoImportService {
         Path daoXmlFile = Paths.get(daoDir.toAbsolutePath().toString(), DAO_XML);
         if (Files.exists(daoXmlFile)) {
             protocol.write("Byl nalezen volitelný soubor dao.xml.");
-            try {
+            try (FileInputStream is = new FileInputStream(daoXmlFile.toFile())) {
                 JAXBContext jaxbContext = JAXBContext.newInstance(Dao.class);
                 Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-                daoXmlSpecification = (Dao) unmarshaller.unmarshal(daoXmlFile.toFile());
+                StreamSource source = new StreamSource(is);
+                daoXmlSpecification = unmarshaller.unmarshal(source, Dao.class).getValue();
             } catch (JAXBException e) {
                 protocol.write("Nepodařilo se načíst data ze souboru dao.xml.");
             }
