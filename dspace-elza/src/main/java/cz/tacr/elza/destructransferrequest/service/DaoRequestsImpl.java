@@ -321,19 +321,19 @@ public class DaoRequestsImpl implements DaoRequests{
                     }
                 }
 
-                String fileParam = WsClient.createFileParam(item);
+                String handle = item.getHandle();
                 log.debug("Zapisuji technická metadata položky digitalizátu Uuid=" + uuId + ".");
                 List<Bundle> bundleList = item.getBundles();
                 for (Bundle bundle : bundleList) {
                     if (bundle.getName().contains(DaoImportService.CONTENT_BUNDLE)) {
-                        Dao dao = WsClient.createDao(item, fileParam);
+                        Dao dao = WsClient.createDao(item);
                         FileGroup fileGroup = new FileGroup();
                         List<File> fileList = fileGroup.getFile();
 
                         List<Bitstream> bitstreamList = bundle.getBitstreams();
                         for (Bitstream bitstream : bitstreamList) {
                             try {
-                                File file = WsClient.createFile(fileParam, bitstream, context);
+                                File file = WsClient.createFile(handle, bitstream, context);
                                 fileList.add(file);
                             } catch (Exception e) {
                                 context.abort();

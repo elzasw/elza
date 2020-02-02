@@ -170,8 +170,7 @@ public class WsClient {
         Daoset daoset = new Daoset();
         daoPackage.setDaoset(daoset);
 
-        String fileParam = createFileParam(item);
-        Dao dao = createDao(item, fileParam);
+        Dao dao = createDao(item);
 
         FileGroup fileGroup = new FileGroup();
 
@@ -181,10 +180,11 @@ public class WsClient {
 
         try {
             context.turnOffAuthorisationSystem();
+            String handle = item.getHandle();
 
             for (Bundle bundle : bundles) {
                 for (Bitstream bitstream : bundle.getBitstreams()) {
-                    File file = createFile(fileParam, bitstream, context);
+                    File file = createFile(handle, bitstream, context);
                     fileGroup.getFile().add(file);
                 }
             }
@@ -212,22 +212,11 @@ public class WsClient {
         }
     }
 
-    public static Dao createDao(Item item, String fileParam) {
+    public static Dao createDao(Item item) {
         Dao dao = new Dao();
         dao.setIdentifier(item.getID().toString());
-        dao.setLabel(fileParam);
-//        dao.setLabel(item.getName());
+        dao.setLabel(item.getName());
         return dao;
-    }
-
-    public static String createFileParam(Item item) {
-        String uriMD = itemService.getMetadataFirstValue(item, MetadataSchema.DC_SCHEMA, "identifier", "uri", Item.ANY);
-        int index = uriMD.lastIndexOf("/handle/");
-        String fileParam = null;
-        if (index > 0) {
-            fileParam = uriMD.substring(index + 8);
-        }
-        return fileParam;
     }
 
     public static File createFile(String fileParam, Bitstream bitstream, Context context) {
