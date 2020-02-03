@@ -62,9 +62,10 @@ public class ProcessingRequestService {
         }
 
         DestructTransferRequest processingRequest = new DestructTransferRequest();
-        try {
-            log.debug("Odesílám informace o zpracování požadavků na skartaci/delimitaci do systému Elza.");
-            for (DestructTransferRequest destructRequest : destructTransferRequest) {
+
+        log.debug("Odesílám informace o zpracování požadavků na skartaci/delimitaci do systému Elza.");
+        for (DestructTransferRequest destructRequest : destructTransferRequest) {
+            try {
                 if (destructRequest.getStatus().equals(DestructTransferRequest.Status.PROCESSED)) {
                     log.debug("Odesílám informaci o úspěšném zpracování požadavku na skartaci/delimitaci položky identifier=" +
                             destructRequest.getIdentifier() + ".");
@@ -93,13 +94,13 @@ public class ProcessingRequestService {
 
                 log.info("Informace o zpracování požadavku na skartaci/delimitaci requestID=" + processingRequest.getRequestId() +
                         "byla úspěšně odeslána do systému Elza.");
+            } catch (Exception e) {
+                context.abort();
+                log.debug("Chyba při zpracovávání požadavku na skartaci/delimitaci requestID=" + processingRequest.getRequestId() + "ERROR: " +
+                        e.getMessage() + ".");
             }
-            context.commit();
-        } catch (Exception e) {
-            context.abort();
-            log.debug("Chyba při zpracovávání požadavku na skartaci/delimitaci requestID=" + processingRequest.getRequestId() + "ERROR: " +
-                    e.getMessage() + ".");
         }
+//        context.commit();
 
         log.debug("Ukončena metoda processingRequestNotification.");
 
