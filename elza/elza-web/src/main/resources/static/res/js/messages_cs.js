@@ -524,6 +524,8 @@ var messages = {
     "arr.fund.detail.ruleSet": "Pravidla tvorby",
     "arr.fund.action.delete": "Smazat AS",
     "arr.fund.action.delete.confirm": "Opravdu chcete vymazat celý AS {0}?",
+    "arr.fund.action.deletehistory": "Vymazání historie změn",
+    "arr.fund.action.deletehistory.confirm": "Opravdu chcete vymazat historii změn AS {0}?",
     "arr.fund.action.showInArr": "Zobrazit",
     "arr.fund.action.openInArr": "Otevřít",
     "arr.fund.extendedSearch": "Rozšířené hledání",

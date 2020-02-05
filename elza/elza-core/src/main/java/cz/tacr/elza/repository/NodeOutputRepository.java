@@ -1,15 +1,15 @@
 package cz.tacr.elza.repository;
 
-import java.util.List;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
-
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutput;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * Respozitory pro vazbu výstupu na podstromy archivního popisu.
@@ -34,4 +34,7 @@ public interface NodeOutputRepository extends JpaRepository<ArrNodeOutput, Integ
     List<ArrNodeOutput> findByOutputAndChange(ArrOutput output, ArrChange deleteChange);
 
     void deleteByOutputFund(ArrFund fund);
+
+    @Modifying
+    void deleteByNodeIdIn(List<Integer> nodeIds);
 }

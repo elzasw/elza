@@ -1,23 +1,14 @@
 package cz.tacr.elza.repository;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
+import cz.tacr.elza.domain.*;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -235,4 +226,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     @Modifying
     @Query("DELETE FROM arr_desc_item di WHERE di.node IN (SELECT n FROM arr_node n WHERE n.fund = ?1)")
     void deleteByNodeFund(ArrFund fund);
+
+    @Modifying
+    void deleteByNodeIdIn(List<Integer> nodeIds);
 }

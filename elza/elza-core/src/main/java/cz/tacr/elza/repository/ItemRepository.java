@@ -1,12 +1,11 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.RulItemType;
+import java.util.List;
 
 /**
  * Repository for ArrItem
@@ -27,4 +26,13 @@ public interface ItemRepository extends JpaRepository<ArrItem, Integer> {
 
     @Query("SELECT COUNT(i) FROM arr_item i JOIN i.itemType t WHERE i.itemType = ?1")
     long getCountByType(RulItemType itemType);
+
+    @Query("SELECT i FROM arr_item i "
+           + "inner join i.deleteChange c "
+           + "inner join c.primaryNode n "
+           + "inner join n.fund f "
+           + "where f = ?1")
+    List<ArrItem> findHistoricalByFund(ArrFund fund);
+
+    List<ArrItem> findByData(ArrData arrData);
 }

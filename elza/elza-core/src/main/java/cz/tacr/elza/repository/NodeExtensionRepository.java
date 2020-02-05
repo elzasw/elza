@@ -1,16 +1,15 @@
 package cz.tacr.elza.repository;
 
-import java.util.Collection;
-import java.util.List;
-
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeExtension;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeExtension;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -25,4 +24,6 @@ public interface NodeExtensionRepository extends JpaRepository<ArrNodeExtension,
     List<ArrNodeExtension> findByArrExtensionIdsAndNodeNotDeleted(@Param("ids") final Collection<Integer> ids, @Param("node") final ArrNode node);
 
     void deleteByNodeFund(ArrFund fund);
+
+    void deleteByNodeIdIn(List<Integer> nodeIds);
 }
