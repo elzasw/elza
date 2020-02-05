@@ -1,15 +1,14 @@
 package cz.tacr.elza.repository;
 
-import java.util.Collection;
-import java.util.List;
-
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -21,7 +20,6 @@ public interface FundVersionRepository extends ElzaJpaRepository<ArrFundVersion,
 
     @Query(value = "select v from arr_fund_version v join v.createChange ch join v.fund fa where fa.fundId = :fundId order by ch.changeDate desc")
     List<ArrFundVersion> findVersionsByFundIdOrderByCreateDateDesc(@Param(value = "fundId") Integer fundId);
-
 
     @Query(value = "select v from arr_fund_version v join v.fund fa where fa.fundId = :fundId and v.lockChange is null")
     ArrFundVersion findByFundIdAndLockChangeIsNull(@Param(value = "fundId") Integer fundId);
@@ -49,4 +47,8 @@ public interface FundVersionRepository extends ElzaJpaRepository<ArrFundVersion,
     @Modifying
     @Query("DELETE FROM arr_fund_version fv WHERE fv.fund = ?1")
     void deleteByFund(ArrFund fund);
+
+    @Modifying
+    @Query("DELETE FROM arr_fund_version fv WHERE fv.fund = ?1  and fv.rootNodeId is null")
+    void deleteByFundNotRootNode(ArrFund fund);
 }

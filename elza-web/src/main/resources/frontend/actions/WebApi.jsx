@@ -1250,6 +1250,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/deleteFund/' + fundId);
     }
 
+    deleteFundHistory(fundId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/deleteFundHistory/' + fundId);
+    }
+
     getOutputTypes(versionId) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/output/types/' + versionId);
     }

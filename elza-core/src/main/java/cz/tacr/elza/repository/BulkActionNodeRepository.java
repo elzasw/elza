@@ -1,15 +1,15 @@
 package cz.tacr.elza.repository;
 
-import java.util.List;
-
+import cz.tacr.elza.domain.ArrBulkActionNode;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrFund;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import cz.tacr.elza.domain.ArrBulkActionNode;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrFund;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Repository k {@link ArrBulkActionNode}
@@ -27,4 +27,6 @@ public interface BulkActionNodeRepository extends JpaRepository<ArrBulkActionNod
     void deleteByBulkAction(@Param(value = "bulkActionRun") final ArrBulkActionRun action);
 
     void deleteByNodeFund(ArrFund fund);
+
+    void deleteByNodeIdIn(Collection<Integer> nodeIds);
 }

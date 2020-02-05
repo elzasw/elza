@@ -31,4 +31,5 @@ public interface RequestQueueItemRepository extends ElzaJpaRepository<ArrRequest
     @Modifying
     @Query("DELETE FROM arr_request_queue_item i WHERE i.requestId IN (SELECT d.requestId FROM arr_request d WHERE d.fund = ?1)")
     void deleteByFund(ArrFund fund);
+
 }
