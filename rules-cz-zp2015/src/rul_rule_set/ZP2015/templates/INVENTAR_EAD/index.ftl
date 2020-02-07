@@ -1,29 +1,32 @@
 <#ftl output_format="XML"><ead:ead xmlns:ead="http://ead3.archivists.org/schema/">
 <ead:control>
-  <ead:recordid><#if output.internalCode?has_content>${output.internalCode}<#else>null</#if></ead:recordid>
+  <ead:recordid><#if output.internalCode?has_content>${output.internalCode}<#else>${output.name}</#if></ead:recordid>
   <!-- Archivní soubor, encodinganalog obsahuje identifikátor archivního souboru  -->
   <ead:filedesc encodinganalog="${output.fund.rootNode.getSingleItemValue("ZP2015_NAD")}">
     <ead:titlestmt>
      <!-- Povinný název archivního souboru -->
      <ead:titleproper>${output.fund.name}</ead:titleproper>
+     <!-- Název archivní pomůcky -->
+     <ead:subtitle>${output.name}</ead:subtitle>
     </ead:titlestmt>
   </ead:filedesc>
   <ead:maintenancestatus value="new" />
   <ead:publicationstatus value="inprocess" />
   <ead:maintenanceagency>
     <!-- Identifikátor z číselníku archivů -->
-    <ead:agencycode>${output.fund.institution.code}</ead:agencycode>
+    <ead:agencycode localtype="PEvA">${output.fund.institution.code}</ead:agencycode>
     <!-- Jméno archivu -->
     <ead:agencyname>${output.fund.institution.partyGroup.record.prefName.name}</ead:agencyname>
   </ead:maintenanceagency>
   <ead:maintenancehistory>
     <ead:maintenanceevent>
       <ead:eventtype value="created"></ead:eventtype>
-      <ead:eventdatetime></ead:eventdatetime>
+      <ead:eventdatetime standarddatetime="${output.changeDateTime}">${output.changeDateTime}</ead:eventdatetime>
       <!-- Typ vytvoření popisu machine|human -->
       <ead:agenttype value="machine"></ead:agenttype>
       <!-- Jméno agenta -->
       <ead:agent>ELZA</ead:agent>
+      <ead:eventdescription>Finding aid created.</ead:eventdescription>
     </ead:maintenanceevent>
   </ead:maintenancehistory>  
 </ead:control>
@@ -42,22 +45,22 @@
 <#macro writeParty party>
 <#switch party.partyType>
   <#case "PERSON">
-    <ead:persname id="p${party.partyId}">
+    <ead:persname identifier="${party.partyId?c}">
       <ead:part>${party.name.fullName}</ead:part>
     </ead:persname>
     <#break>
   <#case "DYNASTY">
-    <ead:famname id="p${party.partyId}">
+    <ead:famname identifier="${party.partyId?c}">
       <ead:part>${party.name.fullName}</ead:part>
     </ead:famname>
     <#break>
   <#case "GROUP_PARTY">
-    <ead:corpname id="p${party.partyId}">
+    <ead:corpname identifier="${party.partyId?c}">
       <ead:part>${party.name.fullName}</ead:part>
     </ead:corpname>
     <#break>
   <#case "EVENT">
-    <ead:name id="p${party.partyId}">
+    <ead:name identifier="${party.partyId?c}">
       <ead:part>${party.name.fullName}</ead:part>
     </ead:name>
     <#break>
@@ -74,6 +77,10 @@
 <#case "ZP2015_TITLE">
   <ead:abstract>${item.serializedValue}</ead:abstract>
   <#break>
+<#case "ZP2015_DATE_RANGE">
+  <!-- Časové rozmezí archivní pomůcky (uvádí se v tiráži) -->
+  <ead:unitdate unitdatetype="bulk">${item.serializedValue}</ead:unitdate>
+  <#break>
 <#case "ZP2015_UNIT_DATE">
   <#assign structDate=item.unitDate>
   <ead:unitdatestructured>
@@ -88,6 +95,9 @@
     <@writeParty item.party />
   </ead:origination>
   <#break>
+<#case "ZP2015_UNIT_CURRENT_STATUS">
+  <ead:physdesc>${item.serializedValue}</ead:physdesc>
+  <#break>
 </#switch>
 </#list>
 </ead:did>
@@ -96,20 +106,33 @@
 <#case "ZP2015_UNIT_HIST">
   <ead:custodhist><ead:p>${item.serializedValue}</ead:p></ead:custodhist>
   <#break>
+<#case "ZP2015_UNIT_ARR">
+  <ead:arrangement><ead:p>${item.serializedValue}</ead:p></ead:arrangement>
+  <#break>
+<#case "ZP2015_UNIT_CONTENT">
+  <ead:scopecontent><ead:p>${item.serializedValue}</ead:p></ead:scopecontent>
+  <#break>
+<#case "ZP2015_UNIT_SOURCE">
+  <ead:acqinfo><ead:p>${item.serializedValue}</ead:p></ead:acqinfo>
+  <#break>
+<#case "ZP2015_FUTURE_UNITS">
+  <ead:accruals><ead:p>${item.serializedValue}</ead:p></ead:accruals>
+  <#break>
 </#switch>
 </#list>
 </#macro>
 
-<#list output.createFlatNodeIterator() as node>
-<#if node.depth == 1>
-<ead:archdesc level="file">
-<@writeNode node />
-<ead:dsc>
-<#assign endtags=endtags+["</ead:dsc></ead:archdesc>"]>
-<#else>
+<#macro writeNodes nodes>
+<#list nodes as node>
   <@writeTags node.depth />
   <#-- Write level type -->
   <#switch node.getSingleItem("ZP2015_LEVEL_TYPE").specification.code>
+  <#case "ZP2015_LEVEL_ROOT">
+    <ead:c level="fonds">
+    <#break>
+  <#case "ZP2015_LEVEL_SECTION">
+    <ead:c level="subfonds">
+    <#break>
   <#case "ZP2015_LEVEL_SERIES">
     <ead:c level="series">
     <#break>
@@ -120,7 +143,7 @@
     <ead:c level="item">
     <#break>
   <#case "ZP2015_LEVEL_PART">
-    <ead:c>
+    <ead:c level="otherlevel" otherlevel="itempart">
     <#break>
   <#default>
   	<ead:c>
@@ -128,8 +151,16 @@
 <@writeNode node />
   <#-- ${node.depth} -->
   <#assign endtags=endtags+["</ead:c>"]>
-</#if>
 </#list>
 <#-- Write closing tags -->
 <@writeTags 1 />
+</#macro>
+
+<ead:archdesc level="otherlevel" otherlevel="findingaidroot">
+  <@writeNode output />
+  <ead:dsc>
+  <@writeNodes output.createFlatNodeIterator() /> 
+  </ead:dsc>
+</ead:archdesc>
+
 </ead:ead>
