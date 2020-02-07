@@ -16,6 +16,8 @@ import org.dspace.content.MetadataValue;
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.Context;
+import org.dspace.handle.factory.HandleServiceFactory;
+import org.dspace.handle.service.HandleService;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.ProcessingException;
@@ -37,6 +39,7 @@ import java.util.UUID;
 public class DaoNotificationsImpl implements DaoNotifications {
 
     private ItemService itemService = ContentServiceFactory.getInstance().getItemService();
+    private HandleService handleService = HandleServiceFactory.getInstance().getHandleService();
     private static Logger log = Logger.getLogger(DaoImportScheduler.class);
 
     @Override
@@ -51,17 +54,16 @@ public class DaoNotificationsImpl implements DaoNotifications {
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
         }
 
-        String daoIdentifier = onDaoLinked.getDaoIdentifier();
-        if (StringUtils.isEmpty(daoIdentifier )) {
-            throw new ProcessingException("Identifikátor digitalizátu nesmí být prázdný.");
+        String handle = onDaoLinked.getDaoIdentifier();
+        if (StringUtils.isEmpty(handle )) {
+            throw new ProcessingException("Handle digitalizátu nesmí být prázdný.");
         }
-        UUID uuId = UUID.fromString(daoIdentifier);
-        log.info("Vyhledávám položku digitalizátu Uuid=" + uuId + ".");
-        Item item = getItem(context, uuId);
-        log.info("Aktualizuji metadata položky digitalizátu Uuid=" + uuId + ".");
+        log.info("Vyhledávám položku digitalizátu s handle=" + handle + ".");
+        Item item = getItem(context, handle);
+        log.info("Aktualizuji metadata položky digitalizátu Uuid=" + handle + ".");
 
         MetadataEnum mt = MetadataEnum.ISELZA;
-        log.info("Aktualizuji metadata element=" + mt.getElement() + " pro položku digitalizátu Uuid=" + uuId + " schema=" +
+        log.info("Aktualizuji metadata element=" + mt.getElement() + " pro položku digitalizátu s handle=" + handle + " schema=" +
                 mt.getSchema() + ".");
         List<MetadataValue> metadataList = itemService.getMetadata(item, mt.getSchema(), mt.getElement(), mt.getQualifier(), Item.ANY);
         setMetadataValue(context, item, metadataList, Boolean.TRUE.toString(), mt);
@@ -70,7 +72,7 @@ public class DaoNotificationsImpl implements DaoNotifications {
         if (did != null) {
             if (StringUtils.isNotBlank(did.getIdentifier())) {
                 mt = MetadataEnum.ELZADIDID;
-                log.info("Aktualizuji metadata element=" + mt.getElement() + " pro položku digitalizátu Uuid=" + uuId + " schema=" +
+                log.info("Aktualizuji metadata element=" + mt.getElement() + " pro položku digitalizátu s handle=" + handle + " schema=" +
                         mt.getSchema() + ".");
                 metadataList = itemService.getMetadata(item, mt.getSchema(), mt.getElement(), mt.getQualifier(), Item.ANY);
                 setMetadataValue(context, item, metadataList, did.getIdentifier(), mt);
@@ -100,30 +102,22 @@ public class DaoNotificationsImpl implements DaoNotifications {
             throw new ProcessingException("Chyba při inicializaci contextu: " + e.getMessage());
         }
 
-        String daoIdentifier = onDaoUnlinked.getDaoIdentifier();
-        if (StringUtils.isEmpty(daoIdentifier )) {
-            throw new ProcessingException("Identifikátor digitalizátu nesmí být prázdný.");
+        String handle = onDaoUnlinked.getDaoIdentifier();
+        if (StringUtils.isEmpty(handle )) {
+            throw new ProcessingException("Handle digitalizátu nesmí být prázdný.");
         }
-        UUID uuId = UUID.fromString(daoIdentifier);
-        log.info("Vyhledávám položku digitalizátu Uuid=" + uuId + ".");
-        Item item = getItem(context, uuId);
+        log.info("Vyhledávám položku digitalizátu s handle=" + handle + ".");
+        Item item = getItem(context, handle);
         ItemService itemService = item.getItemService();
-        log.info("Odstraňuji metadata položky digitalizátu Uuid=" + uuId + ".");
+        log.info("Odstraňuji metadata položky digitalizátu s handle=" + handle + ".");
 
-        MetadataEnum mt = MetadataEnum.ELZADIDID;
-        log.info("Aktualizuji metadata element=" + mt.getElement() + " pro položku digitalizátu Uuid=" + uuId + " schema=" +
-                mt.getSchema() + ".");
         try {
+            MetadataEnum mt = MetadataEnum.ELZADIDID;
+            log.info("Aktualizuji metadata element=" + mt.getElement() + " pro položku digitalizátu s handle=" + handle + " schema=" +
+                    mt.getSchema() + ".");
             List<MetadataValue> metadataList = itemService.getMetadata(item, mt.getSchema(), mt.getElement(), mt.getQualifier(), Item.ANY);
             itemService.removeMetadataValues(context, item, metadataList);
             itemService.update(context, item);
-
-            mt = MetadataEnum.ISELZA;
-            log.info("Aktualizuji metadata element=" + mt.getElement() + " pro položku digitalizátu Uuid=" + uuId + " schema=" +
-                    mt.getSchema() + ".");
-            metadataList = itemService.getMetadata(item, mt.getSchema(), mt.getElement(), mt.getQualifier(), Item.ANY);
-            setMetadataValue(context, item, metadataList, Boolean.FALSE.toString(), mt);
-
 
             context.commit();
         } catch (Exception e) {
@@ -134,16 +128,16 @@ public class DaoNotificationsImpl implements DaoNotifications {
         log.info("Ukončena metoda onDaoUnlinked");
     }
 
-    private Item getItem(Context context, UUID uuId) {
-        Item item = null;
+    private Item getItem(Context context, String handle) {
+        Item item;
         try {
-            item = itemService.find(context, uuId);
+            item = (Item) handleService.resolveToObject(context, handle);
         } catch (Exception e) {
-            throw new ProcessingException("Chyba při vyhledání položky digitalizátu (" + uuId + "): " + e.getMessage());
+            throw new ProcessingException("Chyba při vyhledání položky digitalizátu (" + handle + "): " + e.getMessage());
         }
 
         if (item == null) {
-            throw new UnsupportedOperationException("Digitalizát s Uuid=" + uuId + " nebyl v tabulce Item nalezen.");
+            throw new UnsupportedOperationException("Digitalizát s handle=" + handle + " nebyl v nalezen.");
         }
         return item;
     }
