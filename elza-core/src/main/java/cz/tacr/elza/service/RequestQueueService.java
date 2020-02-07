@@ -532,6 +532,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
 
             String externalSystemCode = null;
 
+            ArrRequest.State newState = ArrRequest.State.SENT;
             if (ArrRequest.ClassType.DIGITIZATION == request.getDiscriminator()) {
                 ArrDigitizationRequest arrDigitizationRequest = (ArrDigitizationRequest) request;
                 DigitizationRequest digitizationRequest = deserializeData(queueItem.getData(), DigitizationRequest.class);
@@ -553,6 +554,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
                 }
             } else if (ArrRequest.ClassType.DAO_LINK == request.getDiscriminator()) {
                 ArrDaoLinkRequest arrDaoLinkRequest = (ArrDaoLinkRequest) request;
+                newState = ArrRequest.State.PROCESSED;
                 if (ArrDaoLinkRequest.Type.LINK == arrDaoLinkRequest.getType()) {
                     OnDaoLinked daoLinked = deserializeData(queueItem.getData(), OnDaoLinked.class);
                     wsClient.onDaoLinked(daoLinked, arrDaoLinkRequest.getDigitalRepository());
@@ -568,7 +570,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
 
             request.setExternalSystemCode(externalSystemCode);
 
-            requestService.setRequestState(request, ArrRequest.State.QUEUED, ArrRequest.State.SENT);
+            requestService.setRequestState(request, ArrRequest.State.QUEUED, newState);
             queueItem.setSend(true);
             queueItem.setData(null); // odstraněnní dat (kvůli zbytečnému plnění DB)
             queueItem.setError(null);
