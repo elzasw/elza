@@ -45,35 +45,33 @@ export function renderUserOrGroupLabel(item) {
     }
 }
 
-export class EntityItem extends React.PureComponent{
-    render(){
-        const {item, getName, highlighted, selected, ...otherProps} = this.props;
-        let cls = 'item';
-        if (highlighted) {
-            cls += ' focus'
-            console.log("highlighted");
-        }
-        if (selected) {
-            cls += ' active'
-            console.log("selected");
-        }
-
-        let name = "unknown";
-
-        if(getName){
-            name = getName(item);
-        } else if(item && item.name){
-            name = item.name;
-        }
-
-        return (
-            <div
-               {...otherProps}
-               className={cls}
-               >{name}</div>
-        )
+export const EntityItem = props => {
+    const {item, getName, highlighted, selected, ...otherProps} = props;
+    let cls = 'item';
+    if (highlighted) {
+        cls += ' focus'
+        console.log("highlighted");
     }
-}  
+    if (selected) {
+        cls += ' active'
+        console.log("selected");
+    }
+
+    let name = "unknown";
+
+    if(getName){
+        name = getName(item);
+    } else if(item && item.name){
+        name = item.name;
+    }
+
+    return (
+        <div
+           {...otherProps}
+           className={cls}
+           >{name}</div>
+    )
+};  
 
 export function renderUserItem(props) {
     return <EntityItem 

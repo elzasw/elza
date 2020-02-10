@@ -4,8 +4,6 @@ import StoreSuggestField from "../shared/field/StoreSuggestField";
 
 const apiCall = () => WebApi.getAllLanguages().then(rows => ({rows, count: rows.length}));
 
-export default class LanguageCodeField extends React.Component {
-    render() {
-        return <StoreSuggestField area={"shared.languageCode"} apiCall={apiCall} {...this.props} useIdAsValue={true} getItemId={item => item ? item.code : null} />
-    }
-}
+export default const LanguageCodeField = props => {
+    return <StoreSuggestField area={"shared.languageCode"} apiCall={apiCall} {...props} useIdAsValue={true} getItemId={item => item ? item.code : null} />;
+};
