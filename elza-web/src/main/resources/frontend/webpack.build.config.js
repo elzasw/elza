@@ -21,8 +21,8 @@ module.exports = {
     entry: {
         main: [
             'babel-polyfill',
-            './public_entry.jsx',
-            './index.jsx'
+            './src/public_entry.jsx',
+            './src/index.jsx'
         ]
     },
     output: {

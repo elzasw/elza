@@ -48,7 +48,7 @@ if (config.hot) {
 }
 
 const reactHotEntry = ['react-hot-loader/patch'];
-const appEntry = ['./index.jsx'];
+const appEntry = ['./src/index.jsx'];
 
 // Plugins
 const defaultPlugins = [
