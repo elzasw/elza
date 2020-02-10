@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
@@ -28,10 +29,10 @@ class OutputInlineForm extends AbstractReactComponent {
     }
 
     static PropTypes = {
-        create: React.PropTypes.bool,
-        initData: React.PropTypes.object,
-        onSave: React.PropTypes.func.isRequired,
-        templates: React.PropTypes.array.isRequired
+        create: PropTypes.bool,
+        initData: PropTypes.object,
+        onSave: PropTypes.func.isRequired,
+        templates: PropTypes.array.isRequired
     };
 
     state = {};

@@ -101,7 +101,7 @@ export default class Autocomplete extends AbstractReactComponent {
         allowFocusItem: PropTypes.func,   // vrací true, pokud se na řádek dá najet focusem, např. přes klávesnici
         getItemId: PropTypes.func,
         getItemName: PropTypes.func,
-        useIdAsValue: React.PropTypes.bool, // pokud je true, pracuje navenek komponenta tak, že jeko hodnotu nemá objekt, ale jeho id - stejně jako html select
+        useIdAsValue: PropTypes.bool, // pokud je true, pracuje navenek komponenta tak, že jeko hodnotu nemá objekt, ale jeho id - stejně jako html select
     };
 
     static defaultProps = {

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import {AbstractReactComponent, i18n, Icon} from 'components/shared';
 import {PARTY_TYPE_CODES, RELATION_CLASS_CODES} from '../../constants.tsx'
@@ -11,12 +12,12 @@ import './PartyListItem.less';
 class PartyListItem extends AbstractReactComponent {
 
     static PropTypes = {
-        onClick: React.PropTypes.func,
-        partyType: React.PropTypes.object.isRequired,
-        relationTypesForClass: React.PropTypes.object,
-        record: React.PropTypes.object.isRequired,
-        relations: React.PropTypes.array,
-        partyNames: React.PropTypes.array,
+        onClick: PropTypes.func,
+        partyType: PropTypes.object.isRequired,
+        relationTypesForClass: PropTypes.object,
+        record: PropTypes.object.isRequired,
+        relations: PropTypes.array,
+        partyNames: PropTypes.array,
     };
 
     static partyIconByPartyTypeCode = (code) => {

@@ -1,4 +1,6 @@
 /** Dialog zobrazení DAO k JP. */
+import PropTypes from 'prop-types';
+
 import React from "react";
 import {connect} from "react-redux";
 import {Icon, Loading, AbstractReactComponent, i18n, ArrDao} from 'components/shared';
@@ -23,10 +25,10 @@ class NodeDaosForm extends AbstractReactComponent {
     }
 
     static PropTypes = {
-        fund: React.PropTypes.object.isRequired,
-        nodeId: React.PropTypes.number.isRequired,
-        daoId: React.PropTypes.number,  // pokud má být vybrán konkrétní DAO na detail
-        readMode: React.PropTypes.bool.isRequired
+        fund: PropTypes.object.isRequired,
+        nodeId: PropTypes.number.isRequired,
+        daoId: PropTypes.number,  // pokud má být vybrán konkrétní DAO na detail
+        readMode: PropTypes.bool.isRequired
     }
 
     handleSelectDao = (dao, fileId) => {

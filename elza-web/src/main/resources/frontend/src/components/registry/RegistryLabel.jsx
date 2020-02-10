@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Icon, NoFocusButton, AbstractReactComponent, FormInput} from 'components/shared';
@@ -12,11 +13,11 @@ class RegistryLabel extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        disabled: React.PropTypes.bool.isRequired,
-        onEnter: React.PropTypes.func.isRequired,
-        onBlur: React.PropTypes.func.isRequired,
-        onDelete: React.PropTypes.func.isRequired,
-        value: React.PropTypes.string.isRequired
+        disabled: PropTypes.bool.isRequired,
+        onEnter: PropTypes.func.isRequired,
+        onBlur: PropTypes.func.isRequired,
+        onDelete: PropTypes.func.isRequired,
+        value: PropTypes.string.isRequired
     };
 
     componentWillReceiveProps(nextProps) {

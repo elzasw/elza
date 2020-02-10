@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from "react";
 import {WebApi} from "actions/index.jsx";
 import {AbstractReactComponent, Autocomplete} from 'components/shared';
@@ -11,13 +12,13 @@ const UserField = class UserField extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        value: React.PropTypes.object,
-        onChange: React.PropTypes.func.isRequired,
-        inline: React.PropTypes.bool,
-        touched: React.PropTypes.bool,
-        error: React.PropTypes.string,
-        tags: React.PropTypes.bool,
-        excludedGroupId: React.PropTypes.number,
+        value: PropTypes.object,
+        onChange: PropTypes.func.isRequired,
+        inline: PropTypes.bool,
+        touched: PropTypes.bool,
+        error: PropTypes.string,
+        tags: PropTypes.bool,
+        excludedGroupId: PropTypes.number,
     };
 
     constructor(props) {

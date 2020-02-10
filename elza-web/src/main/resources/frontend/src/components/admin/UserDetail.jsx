@@ -1,4 +1,6 @@
 // --
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import {connect} from 'react-redux'
 import {Icon, AbstractReactComponent, Tabs, NoFocusButton, AddRemoveList, i18n, StoreHorizontalLoader} from 'components/shared';
@@ -28,8 +30,8 @@ import DetailHeader from "../shared/detail/DetailHeader";
  */
 class UserDetail extends AbstractReactComponent {
     static PropTypes = {
-        userDetail: React.PropTypes.object.isRequired,
-        userCount: React.PropTypes.number.isRequired,
+        userDetail: PropTypes.object.isRequired,
+        userCount: PropTypes.number.isRequired,
     };
 
     static TAB_FUNDS = 0;

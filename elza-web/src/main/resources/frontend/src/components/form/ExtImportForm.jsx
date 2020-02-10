@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -183,10 +184,10 @@ class ExtImportForm extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        autocomplete: React.PropTypes.bool,
-        isParty: React.PropTypes.bool,
-        count: React.PropTypes.number,
-        versionId: React.PropTypes.number
+        autocomplete: PropTypes.bool,
+        isParty: PropTypes.bool,
+        count: PropTypes.number,
+        versionId: PropTypes.number
     };
 
     static defaultProps = {

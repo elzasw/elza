@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -15,7 +16,7 @@ require('./FundDetailExt.less');
 
 const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
     static PropTypes = {
-        fundDetail: React.PropTypes.object.isRequired,
+        fundDetail: PropTypes.object.isRequired,
     }
 
     constructor(props) {

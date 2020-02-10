@@ -44,16 +44,16 @@ class ArrOutputDetail extends AbstractReactComponent {
         return { shortcuts: this.shortcutManager };
     }
     static PropTypes = {
-        versionId: React.PropTypes.number.isRequired,
-        fund: React.PropTypes.object.isRequired,
-        calendarTypes: React.PropTypes.object.isRequired,
-        descItemTypes: React.PropTypes.object.isRequired,
-        templates: React.PropTypes.object.isRequired,
-        rulDataTypes: React.PropTypes.object.isRequired,
-        userDetail: React.PropTypes.object.isRequired,
-        closed: React.PropTypes.bool.isRequired,
-        readMode: React.PropTypes.bool.isRequired,
-        fundOutputDetail: React.PropTypes.object.isRequired,
+        versionId: PropTypes.number.isRequired,
+        fund: PropTypes.object.isRequired,
+        calendarTypes: PropTypes.object.isRequired,
+        descItemTypes: PropTypes.object.isRequired,
+        templates: PropTypes.object.isRequired,
+        rulDataTypes: PropTypes.object.isRequired,
+        userDetail: PropTypes.object.isRequired,
+        closed: PropTypes.bool.isRequired,
+        readMode: PropTypes.bool.isRequired,
+        fundOutputDetail: PropTypes.object.isRequired,
     };
 
     componentDidMount() {

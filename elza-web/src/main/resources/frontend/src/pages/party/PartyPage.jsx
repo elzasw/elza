@@ -46,9 +46,9 @@ class PartyPage extends AbstractReactComponent {
 
 
     static PropTypes = {
-        splitter: React.PropTypes.object.isRequired,
-        userDetail: React.PropTypes.object.isRequired,
-        refTables: React.PropTypes.object.isRequired
+        splitter: PropTypes.object.isRequired,
+        userDetail: PropTypes.object.isRequired,
+        refTables: PropTypes.object.isRequired
     };
 
     componentDidMount() {

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -14,9 +15,9 @@ import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 class DescItemFileRef extends AbstractReactComponent {
 
     static PropTypes = {
-        fundId: React.PropTypes.number.isRequired,
-        onFundFiles: React.PropTypes.func.isRequired,
-        onCreateFile:  React.PropTypes.func.isRequired,
+        fundId: PropTypes.number.isRequired,
+        onFundFiles: PropTypes.func.isRequired,
+        onCreateFile:  PropTypes.func.isRequired,
     };
 
     state = {

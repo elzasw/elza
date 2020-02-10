@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -13,16 +14,16 @@ import i18n from "../../i18n";
 class AddRemoveList extends AbstractReactComponent {
 
     static propTypes = {
-        items: React.PropTypes.array.isRequired,
-        label: React.PropTypes.string,  // pokud je uvedeno, zobrazí se jako nadpis celé sekce
-        addInLabel: React.PropTypes.bool,   // pokud je true, je akce přidání zobrazena u labelu - tedy nahoře
-        onAdd: React.PropTypes.func.isRequired,
-        onRemove: React.PropTypes.func.isRequired,
-        renderItem: React.PropTypes.func.isRequired,
-        addTitle: React.PropTypes.string,
-        addLabel: React.PropTypes.string,
-        removeTitle: React.PropTypes.string,
-        readOnly: React.PropTypes.bool.isRequired,
+        items: PropTypes.array.isRequired,
+        label: PropTypes.string,  // pokud je uvedeno, zobrazí se jako nadpis celé sekce
+        addInLabel: PropTypes.bool,   // pokud je true, je akce přidání zobrazena u labelu - tedy nahoře
+        onAdd: PropTypes.func.isRequired,
+        onRemove: PropTypes.func.isRequired,
+        renderItem: PropTypes.func.isRequired,
+        addTitle: PropTypes.string,
+        addLabel: PropTypes.string,
+        removeTitle: PropTypes.string,
+        readOnly: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {

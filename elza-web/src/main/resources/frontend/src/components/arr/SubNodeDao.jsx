@@ -1,5 +1,7 @@
 require('./SubNodeDao.less');
 
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import NodeDaosForm from "./NodeDaosForm";
 import {Icon, i18n, AbstractReactComponent, HorizontalLoader} from 'components/shared';
@@ -11,12 +13,12 @@ import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 
 class SubNodeDao extends AbstractReactComponent {
     static PropTypes = {
-        daos: React.PropTypes.object.isRequired,
-        versionId: React.PropTypes.number.isRequired,
-        nodeId: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string]),
-        selectedSubNodeId: React.PropTypes.number.isRequired,
-        routingKey: React.PropTypes.number.isRequired,
-        readMode: React.PropTypes.bool.isRequired
+        daos: PropTypes.object.isRequired,
+        versionId: PropTypes.number.isRequired,
+        nodeId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+        selectedSubNodeId: PropTypes.number.isRequired,
+        routingKey: PropTypes.number.isRequired,
+        readMode: PropTypes.bool.isRequired
     };
 
     renderDao = (dao, index) => {
@@ -93,7 +95,7 @@ class SubNodeDao extends AbstractReactComponent {
             {daos.isFetching ? <HorizontalLoader /> : this.renderForm() }
         </div>
     }
-};
+}
 
 function mapStateToProps(state) {
     const {arrRegion} = state;

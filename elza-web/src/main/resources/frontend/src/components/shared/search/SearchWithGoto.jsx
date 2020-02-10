@@ -1,6 +1,8 @@
 /**
  *  Komponenta hledání s možností "skákání" po výsledcích hledání. Je založená na komponentě Search s přidanými addons.
  */
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import ReactDOM from 'react-dom'
 
@@ -13,20 +15,20 @@ import i18n from "../../i18n";
 
 class SearchWithGoto extends AbstractReactComponent {
     static PropTypes = {
-        filterText: React.PropTypes.string,
-        itemsCount: React.PropTypes.number.isRequired,
-        allItemsCount: React.PropTypes.number,
-        textAreaInput: React.PropTypes.bool,
-        selIndex: React.PropTypes.number.isRequired,
-        showFilterResult: React.PropTypes.bool.isRequired,
-        onFulltextChange: React.PropTypes.func,
-        onFulltextSearch: React.PropTypes.func,
-        onFulltextNextItem: React.PropTypes.func,
-        onFulltextPrevItem: React.PropTypes.func,
-        type: React.PropTypes.string.isRequired,
-        extendedSearch: React.PropTypes.bool,
-        extendedReadOnly: React.PropTypes.bool,
-        onClickExtendedSearch: React.PropTypes.func,
+        filterText: PropTypes.string,
+        itemsCount: PropTypes.number.isRequired,
+        allItemsCount: PropTypes.number,
+        textAreaInput: PropTypes.bool,
+        selIndex: PropTypes.number.isRequired,
+        showFilterResult: PropTypes.bool.isRequired,
+        onFulltextChange: PropTypes.func,
+        onFulltextSearch: PropTypes.func,
+        onFulltextNextItem: PropTypes.func,
+        onFulltextPrevItem: PropTypes.func,
+        type: PropTypes.string.isRequired,
+        extendedSearch: PropTypes.bool,
+        extendedReadOnly: PropTypes.bool,
+        onClickExtendedSearch: PropTypes.func,
     };
 
     static defaultProps = {

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {
@@ -20,17 +21,17 @@ import DescItemFactory from "components/arr/nodeForm/DescItemFactory.jsx";
 class OutputSubNodeForm extends AbstractReactComponent {
 
     static PropTypes = {
-        versionId: React.PropTypes.number.isRequired,
-        fundId: React.PropTypes.number.isRequired,
-        selectedSubNodeId: React.PropTypes.number.isRequired,
-        rulDataTypes: React.PropTypes.object.isRequired,
-        calendarTypes: React.PropTypes.object.isRequired,
-        descItemTypes: React.PropTypes.object.isRequired,
-        structureTypes: React.PropTypes.object.isRequired,
-        subNodeForm: React.PropTypes.object.isRequired,
-        closed: React.PropTypes.bool.isRequired,
-        readMode: React.PropTypes.bool.isRequired,
-        focus: React.PropTypes.object.isRequired,
+        versionId: PropTypes.number.isRequired,
+        fundId: PropTypes.number.isRequired,
+        selectedSubNodeId: PropTypes.number.isRequired,
+        rulDataTypes: PropTypes.object.isRequired,
+        calendarTypes: PropTypes.object.isRequired,
+        descItemTypes: PropTypes.object.isRequired,
+        structureTypes: PropTypes.object.isRequired,
+        subNodeForm: PropTypes.object.isRequired,
+        closed: PropTypes.bool.isRequired,
+        readMode: PropTypes.bool.isRequired,
+        focus: PropTypes.object.isRequired,
     };
 
     initFocus = () => {

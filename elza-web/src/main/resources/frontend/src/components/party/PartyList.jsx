@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux'
 import {ListBox, AbstractReactComponent, SearchWithGoto, i18n, ArrPanel, StoreHorizontalLoader, Icon, FormInput} from 'components/shared';
@@ -21,7 +22,7 @@ import * as StateApproval from "../enum/StateApproval";
 class PartyList extends AbstractReactComponent {
 
     static PropTypes = {
-        maxSize: React.PropTypes.number
+        maxSize: PropTypes.number
     };
 
     static defaultProps = {

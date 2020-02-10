@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -28,7 +29,7 @@ class RegistrySelectPage extends SelectPage {
     };
 
     static PropTypes = {
-        hasParty: React.PropTypes.bool
+        hasParty: PropTypes.bool
     };
 
     static defaultProps = {

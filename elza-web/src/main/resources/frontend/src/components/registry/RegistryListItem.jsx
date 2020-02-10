@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import {AbstractReactComponent, i18n, Icon} from 'components/shared';
 import {PARTY_TYPE_CODES, RELATION_CLASS_CODES} from 'actions/party/party.jsx'
@@ -11,13 +12,13 @@ import './RegistryListItem.less';
 class RegistryListItem extends AbstractReactComponent {
 
     static PropTypes = {
-        onClick: React.PropTypes.func,
-        partyType: React.PropTypes.object.isRequired,
-        relationTypesForClass: React.PropTypes.object,
-        eidTypes: React.PropTypes.object.isRequired,
-        record: React.PropTypes.object.isRequired,
-        relations: React.PropTypes.array,
-        invalid: React.PropTypes.bool
+        onClick: PropTypes.func,
+        partyType: PropTypes.object.isRequired,
+        relationTypesForClass: PropTypes.object,
+        eidTypes: PropTypes.object.isRequired,
+        record: PropTypes.object.isRequired,
+        relations: PropTypes.array,
+        invalid: PropTypes.bool
     };
 
     getDisplayIds = () => {

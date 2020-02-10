@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
@@ -88,7 +89,7 @@ class PartyNameForm extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        partyType: React.PropTypes.object.isRequired,
+        partyType: PropTypes.object.isRequired,
     };
 
     state = {

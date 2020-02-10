@@ -1,9 +1,11 @@
+require('./FileListBox.less');
+
 /**
  *  Souborová ListBox komponenta
  *
  **/
 
-require('./FileListBox.less');
+import PropTypes from 'prop-types';
 
 import React from "react";
 import i18n from "../../i18n";
@@ -133,19 +135,19 @@ const FileListBox = class FileListBox extends AbstractReactComponent {
 };
 
 FileListBox.propsTypes = {
-    onDownload: React.PropTypes.func,
-    onReplace: React.PropTypes.func,
-    onEdit: React.PropTypes.func,
-    onInfo: React.PropTypes.func,
-    onDelete: React.PropTypes.func,
-    onDownloadPdf: React.PropTypes.func,
+    onDownload: PropTypes.func,
+    onReplace: PropTypes.func,
+    onEdit: PropTypes.func,
+    onInfo: PropTypes.func,
+    onDelete: PropTypes.func,
+    onDownloadPdf: PropTypes.func,
 
-    supportEdit: React.PropTypes.func,
-    supportDownloadPdf: React.PropTypes.func,
+    supportEdit: PropTypes.func,
+    supportDownloadPdf: PropTypes.func,
 
-    className:React.PropTypes.string,
-    items: React.PropTypes.array.isRequired,
-    renderItemContent: React.PropTypes.func,
+    className:PropTypes.string,
+    items: PropTypes.array.isRequired,
+    renderItemContent: PropTypes.func,
     searchable: function(props, propName, componentName) {
         if (props.searchable === true) {
             if (props.onSearch && !(typeof props.onSearch !== Function)) {
@@ -153,10 +155,10 @@ FileListBox.propsTypes = {
             }
         }
     },
-    onSearch: React.PropTypes.func,
-    onChange: React.PropTypes.func,
-    readMode: React.PropTypes.bool,
-    selectionType: React.PropTypes.string
+    onSearch: PropTypes.func,
+    onChange: PropTypes.func,
+    readMode: PropTypes.bool,
+    selectionType: PropTypes.string
 };
 
 FileListBox.defaultProps = {

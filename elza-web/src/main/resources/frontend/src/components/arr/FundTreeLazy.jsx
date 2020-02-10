@@ -42,27 +42,27 @@ class FundTreeLazy extends AbstractReactComponent {
     state = {};
 
     static PropTypes = {
-        expandedIds: React.PropTypes.object.isRequired,
-        cutLongLabels: React.PropTypes.bool.isRequired,
-        selectedId: React.PropTypes.number,
-        selectedIds: React.PropTypes.object,
-        filterText: React.PropTypes.string,
-        searchedIds: React.PropTypes.array,
-        filterCurrentIndex: React.PropTypes.number,
-        nodes: React.PropTypes.array.isRequired,
-        focusId: React.PropTypes.number,
-        rowHeight: React.PropTypes.number.isRequired,
-        isFetching: React.PropTypes.bool.isRequired,
-        fetched: React.PropTypes.bool.isRequired,
-        onNodeClick: React.PropTypes.func,
-        onNodeDoubleClick: React.PropTypes.func,
-        onOpenCloseNode: React.PropTypes.func,
-        onContextMenu: React.PropTypes.func,
-        actionAddons: React.PropTypes.object,
-        showSearch: React.PropTypes.bool,
-        showCountStats: React.PropTypes.bool,
-        showCollapseAll: React.PropTypes.bool,
-        onLinkClick: React.PropTypes.func
+        expandedIds: PropTypes.object.isRequired,
+        cutLongLabels: PropTypes.bool.isRequired,
+        selectedId: PropTypes.number,
+        selectedIds: PropTypes.object,
+        filterText: PropTypes.string,
+        searchedIds: PropTypes.array,
+        filterCurrentIndex: PropTypes.number,
+        nodes: PropTypes.array.isRequired,
+        focusId: PropTypes.number,
+        rowHeight: PropTypes.number.isRequired,
+        isFetching: PropTypes.bool.isRequired,
+        fetched: PropTypes.bool.isRequired,
+        onNodeClick: PropTypes.func,
+        onNodeDoubleClick: PropTypes.func,
+        onOpenCloseNode: PropTypes.func,
+        onContextMenu: PropTypes.func,
+        actionAddons: PropTypes.object,
+        showSearch: PropTypes.bool,
+        showCountStats: PropTypes.bool,
+        showCollapseAll: PropTypes.bool,
+        onLinkClick: PropTypes.func
     };
     selectorMoveUp = ()=>{
         const {nodes, selectedId, multipleSelection} = this.props;

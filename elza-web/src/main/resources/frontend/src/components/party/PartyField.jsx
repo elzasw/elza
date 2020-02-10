@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -32,16 +33,16 @@ class PartyField extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        detail: React.PropTypes.bool.isRequired,
-        footer: React.PropTypes.bool,
-        footerButtons: React.PropTypes.bool,
-        undefined: React.PropTypes.bool,
-        value: React.PropTypes.object,
-        onChange: React.PropTypes.func.isRequired,
-        onDetail: React.PropTypes.func,
-        onCreate: React.PropTypes.func.isRequired,
-        partyTypeId: React.PropTypes.number,
-        versionId: React.PropTypes.number
+        detail: PropTypes.bool.isRequired,
+        footer: PropTypes.bool,
+        footerButtons: PropTypes.bool,
+        undefined: PropTypes.bool,
+        value: PropTypes.object,
+        onChange: PropTypes.func.isRequired,
+        onDetail: PropTypes.func,
+        onCreate: PropTypes.func.isRequired,
+        partyTypeId: PropTypes.number,
+        versionId: PropTypes.number
     };
 
     state = {partyList: [], count: null, searchText: null};

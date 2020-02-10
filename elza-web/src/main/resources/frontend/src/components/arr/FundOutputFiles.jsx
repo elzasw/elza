@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, Icon, i18n, FileListBox, StoreHorizontalLoader} from 'components/shared';
@@ -15,9 +16,9 @@ import {downloadFile} from "../../actions/global/download";
 class FundOutputFiles extends AbstractReactComponent {
 
     static PropTypes = {
-        outputResultId: React.PropTypes.number.isRequired,
-        versionId: React.PropTypes.number.isRequired,
-        fundOutputFiles: React.PropTypes.object.isRequired
+        outputResultId: PropTypes.number.isRequired,
+        versionId: PropTypes.number.isRequired,
+        fundOutputFiles: PropTypes.object.isRequired
     };
 
     state = {

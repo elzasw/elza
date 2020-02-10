@@ -78,26 +78,26 @@ class DataGrid extends AbstractReactComponent {
 
      */
     static PropTypes = {
-        rows: React.PropTypes.array.isRequired,
-        cols: React.PropTypes.array.isRequired, // pole objektů definice sloupčeků, viz výše
-        allowRowCheck: React.PropTypes.bool.isRequired,
-        staticColumns: React.PropTypes.bool.isRequired,
-        disabled: React.PropTypes.bool,
-        focusRow: React.PropTypes.object,
-        focusCol: React.PropTypes.object,
-        selectedIds: React.PropTypes.array,
-        selectedRowIndexes: React.PropTypes.array,
-        onColumnResize: React.PropTypes.func,
-        onChangeFocus: React.PropTypes.func,
-        onChangeRowIndexes: React.PropTypes.func,
-        onSelectedIdsChange: React.PropTypes.func,
-        onContextMenu: React.PropTypes.func,
-        onEdit: React.PropTypes.func,
-        onDelete: React.PropTypes.func,
-        onFocus: React.PropTypes.func,
-        onBlur: React.PropTypes.func,
-        startRowIndex: React.PropTypes.number, // index prvního řádku
-        morePages: React.PropTypes.bool, // true pokud je více stránek
+        rows: PropTypes.array.isRequired,
+        cols: PropTypes.array.isRequired, // pole objektů definice sloupčeků, viz výše
+        allowRowCheck: PropTypes.bool.isRequired,
+        staticColumns: PropTypes.bool.isRequired,
+        disabled: PropTypes.bool,
+        focusRow: PropTypes.object,
+        focusCol: PropTypes.object,
+        selectedIds: PropTypes.array,
+        selectedRowIndexes: PropTypes.array,
+        onColumnResize: PropTypes.func,
+        onChangeFocus: PropTypes.func,
+        onChangeRowIndexes: PropTypes.func,
+        onSelectedIdsChange: PropTypes.func,
+        onContextMenu: PropTypes.func,
+        onEdit: PropTypes.func,
+        onDelete: PropTypes.func,
+        onFocus: PropTypes.func,
+        onBlur: PropTypes.func,
+        startRowIndex: PropTypes.number, // index prvního řádku
+        morePages: PropTypes.bool, // true pokud je více stránek
     };
 
     componentWillReceiveProps(nextProps) {

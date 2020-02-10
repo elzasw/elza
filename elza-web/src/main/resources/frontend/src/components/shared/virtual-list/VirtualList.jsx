@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from "react";
 import ReactDOM from "react-dom";
 import utils from "./utils";
@@ -7,16 +8,16 @@ const DEFAULT_ITEM_HEIGHT = 16;
 
 var VirtualList = React.createClass({
     propTypes: {
-        items: React.PropTypes.array,   // v případě, že máme položky na klientovi, je zde seznam všech položek
-        lazyItemsCount: React.PropTypes.number,  //  v případě, že máme položky jen na serveru, zde je počet položek
-        itemHeight: React.PropTypes.number,
-        scrollToIndex: React.PropTypes.oneOfType([ React.PropTypes.number, React.PropTypes.shape({ index: React.PropTypes.number }) ]), // pokud je změněn, provede se scroll na daný index - lépe použít objekt, protože při stejném indexu lze kvůli odscrolování změnit referenci na objekt
-        renderItem: React.PropTypes.func.isRequired,
-        onViewChange: React.PropTypes.func,
-        container: React.PropTypes.object.isRequired,
-        tagName: React.PropTypes.string.isRequired,
-        scrollDelay: React.PropTypes.number,
-        itemBuffer: React.PropTypes.number
+        items: PropTypes.array,   // v případě, že máme položky na klientovi, je zde seznam všech položek
+        lazyItemsCount: PropTypes.number,  //  v případě, že máme položky jen na serveru, zde je počet položek
+        itemHeight: PropTypes.number,
+        scrollToIndex: PropTypes.oneOfType([ PropTypes.number, PropTypes.shape({ index: PropTypes.number }) ]), // pokud je změněn, provede se scroll na daný index - lépe použít objekt, protože při stejném indexu lze kvůli odscrolování změnit referenci na objekt
+        renderItem: PropTypes.func.isRequired,
+        onViewChange: PropTypes.func,
+        container: PropTypes.object.isRequired,
+        tagName: PropTypes.string.isRequired,
+        scrollDelay: PropTypes.number,
+        itemBuffer: PropTypes.number
     },
     getDefaultProps: function() {
         return {

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom'
 import {connect} from 'react-redux'
@@ -17,8 +18,8 @@ import './Scope.less';
 class Scope extends AbstractReactComponent {
 
     static PropTypes = {
-        versionId: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.object]),
-        value: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string])
+        versionId: PropTypes.oneOfType([PropTypes.number, PropTypes.object]),
+        value: PropTypes.oneOfType([PropTypes.number, PropTypes.string])
     };
 
     static defaultProps = {

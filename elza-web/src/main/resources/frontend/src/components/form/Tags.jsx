@@ -1,8 +1,10 @@
+require("./Tags.less");
+
 /**
  * Komponenta zobrazující seznam vybraných položek např. pomocí tag input s možností jejich odebírání pomocí křížku.
  */
 
-require("./Tags.less")
+import PropTypes from 'prop-types';
 
 import React from 'react';
 import {Button} from 'react-bootstrap';
@@ -34,8 +36,8 @@ const Tags = class Tags extends AbstractReactComponent {
 }
 
 Tags.propTypes = {
-    items: React.PropTypes.array.isRequired,
-    renderItem: React.PropTypes.func,
+    items: PropTypes.array.isRequired,
+    renderItem: PropTypes.func,
 }
 Tags.defaultProps = {
     renderItem: (item) => {

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import * as React from 'react';
 import {connect} from 'react-redux';
 import {DropdownButton, MenuItem, Button, Row, Col, FormControl} from "react-bootstrap";
@@ -32,7 +33,7 @@ class LecturingTop extends React.Component {
     };
 
     static propTypes = {
-        fund: React.PropTypes.object.isRequired,
+        fund: PropTypes.object.isRequired,
     };
 
     componentDidMount() {

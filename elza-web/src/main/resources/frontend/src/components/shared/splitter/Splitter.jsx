@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -18,13 +19,13 @@ class Splitter extends AbstractReactComponent {
     };
 
     static propTypes = {
-        left: React.PropTypes.object,
-        leftSize: React.PropTypes.number,
-        center: React.PropTypes.object.isRequired,
-        right: React.PropTypes.object,
-        rightSize: React.PropTypes.number,
-        onDragFinished: React.PropTypes.func,
-        onChange: React.PropTypes.func,
+        left: PropTypes.object,
+        leftSize: PropTypes.number,
+        center: PropTypes.object.isRequired,
+        right: PropTypes.object,
+        rightSize: PropTypes.number,
+        onDragFinished: PropTypes.func,
+        onChange: PropTypes.func,
     };
 
     componentDidMount() {

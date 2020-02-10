@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from "react";
 import {connect} from "react-redux";
 import {FormInput, Icon, AbstractReactComponent, Search, i18n, StoreHorizontalLoader, ListBox} from 'components/shared';
@@ -14,9 +15,9 @@ import "./ArrDaoPackages.less"
 class ArrDaoPackages extends AbstractReactComponent {
 
     static PropTypes = {
-        fund: React.PropTypes.object.isRequired,
-        unassigned: React.PropTypes.bool.isRequired,
-        onSelect: React.PropTypes.func.isRequired,
+        fund: PropTypes.object.isRequired,
+        unassigned: PropTypes.bool.isRequired,
+        onSelect: PropTypes.func.isRequired,
     };
 
     componentDidMount() {

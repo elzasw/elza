@@ -30,7 +30,7 @@ class ArrStructurePanel extends AbstractReactComponent {
         id: PropTypes.number.isRequired,
         fundVersionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
-        maxSize: React.PropTypes.number
+        maxSize: PropTypes.number
     };
 
     static defaultProps = {

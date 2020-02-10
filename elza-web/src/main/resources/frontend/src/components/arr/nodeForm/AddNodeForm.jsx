@@ -4,6 +4,8 @@
  * @author Tomáš Pytelka
  * @since 26.8.2016
  */
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import {connect} from 'react-redux';
 import {Button, Checkbox, Col, ControlLabel, Form, FormControl, FormGroup, Modal, Radio, Row} from 'react-bootstrap';
@@ -22,18 +24,18 @@ const TEMPLATE_SCENARIOS = 'TEMPLATE_SCENARIOS';
 
 class AddNodeForm extends AbstractReactComponent {
     static PropTypes = {
-        node: React.PropTypes.object.isRequired, // node pro který se akce volá
-        parentNode: React.PropTypes.object.isRequired, // nadřený node pro vstupní node
-        initDirection: React.PropTypes.oneOf([
+        node: PropTypes.object.isRequired, // node pro který se akce volá
+        parentNode: PropTypes.object.isRequired, // nadřený node pro vstupní node
+        initDirection: PropTypes.oneOf([
             'BEFORE',
             'AFTER',
             'CHILD',
             'ATEND'
         ]),
-        nodeSettings: React.PropTypes.object.isRequired,
-        onSubmit: React.PropTypes.func.isRequired,
-        allowedDirections: React.PropTypes.arrayOf(
-            React.PropTypes.oneOf(['BEFORE', 'AFTER', 'CHILD', 'ATEND'])
+        nodeSettings: PropTypes.object.isRequired,
+        onSubmit: PropTypes.func.isRequired,
+        allowedDirections: PropTypes.arrayOf(
+            PropTypes.oneOf(['BEFORE', 'AFTER', 'CHILD', 'ATEND'])
         )
     };
 

@@ -1,8 +1,10 @@
+import './FundPage.less';
+
 /**
  * Stránka archivní soubory.
  */
 
-import './FundPage.less';
+import PropTypes from 'prop-types';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -33,7 +35,7 @@ import ListPager from "../../components/shared/listPager/ListPager";
 
 class FundPage extends AbstractReactComponent {
     static PropTypes = {
-        maxSize: React.PropTypes.number
+        maxSize: PropTypes.number
     };
 
     static defaultProps = {

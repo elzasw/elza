@@ -2,6 +2,8 @@
  * Formulář přidání výstupu.
  */
 
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
@@ -72,9 +74,9 @@ const RunActionForm = class RunActionForm extends AbstractReactComponent {
 };
 
 RunActionForm.propTypes = {
-    initData: React.PropTypes.object,
-    onSubmitForm: React.PropTypes.func.isRequired,
-    versionId: React.PropTypes.number.isRequired
+    initData: PropTypes.object,
+    onSubmitForm: PropTypes.func.isRequired,
+    versionId: PropTypes.number.isRequired
 };
 
 export default reduxForm({

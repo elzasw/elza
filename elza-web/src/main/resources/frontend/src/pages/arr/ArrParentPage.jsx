@@ -1,9 +1,11 @@
+import './ArrPage.less';
+import './ArrParentPage.less';
+
 /**
  * Stránka předku archivních pomůcek, např. pro pořádání, přesuny atp. Společným znakem je vybraný aktivní archivní soubor.
  */
 
-import './ArrPage.less';
-import './ArrParentPage.less';
+import PropTypes from 'prop-types';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -58,15 +60,15 @@ export default class ArrParentPage extends AbstractReactComponent {
 
 
     static propTypes = {
-        splitter: React.PropTypes.object.isRequired,
-        arrRegion: React.PropTypes.object.isRequired,
-        developer: React.PropTypes.object.isRequired,
-        rulDataTypes: React.PropTypes.object.isRequired,
-        calendarTypes: React.PropTypes.object.isRequired,
-        descItemTypes: React.PropTypes.object.isRequired,
-        focus: React.PropTypes.object.isRequired,
-        userDetail: React.PropTypes.object.isRequired,
-        ruleSet: React.PropTypes.object.isRequired,
+        splitter: PropTypes.object.isRequired,
+        arrRegion: PropTypes.object.isRequired,
+        developer: PropTypes.object.isRequired,
+        rulDataTypes: PropTypes.object.isRequired,
+        calendarTypes: PropTypes.object.isRequired,
+        descItemTypes: PropTypes.object.isRequired,
+        focus: PropTypes.object.isRequired,
+        userDetail: PropTypes.object.isRequired,
+        ruleSet: PropTypes.object.isRequired,
     };
 
     constructor(props, layoutClassName) {

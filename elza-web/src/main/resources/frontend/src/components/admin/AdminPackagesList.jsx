@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux'
 import {Table, Button, ButtonToolbar} from 'react-bootstrap';
@@ -14,8 +15,8 @@ import {downloadFile} from "../../actions/global/download";
  */
 class AdminPackagesList extends AbstractReactComponent {
     static PropTypes = {
-        getExportUrl: React.PropTypes.func.isRequired,
-        items: React.PropTypes.array.isRequired
+        getExportUrl: PropTypes.func.isRequired,
+        items: PropTypes.array.isRequired
     };
 
     componentDidMount() {
@@ -73,7 +74,7 @@ class AdminPackagesList extends AbstractReactComponent {
             </Table>
         );
     }
-};
+}
 
 
 

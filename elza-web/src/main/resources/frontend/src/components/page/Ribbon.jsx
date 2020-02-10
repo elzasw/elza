@@ -1,6 +1,8 @@
 /**
  * Ribbon aplikace - obsahuje základní globální akce v aplikaci.
  */
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -21,13 +23,13 @@ import PasswordForm from "../admin/PasswordForm";
 class Ribbon extends AbstractReactComponent {
 
     static PropTypes = {
-        subMenu: React.PropTypes.bool,
-        primarySection: React.PropTypes.object,
-        admin: React.PropTypes.bool,
-        arr: React.PropTypes.bool,
-        altSection: React.PropTypes.object,
-        itemSection: React.PropTypes.object,
-        fundId: React.PropTypes.number
+        subMenu: PropTypes.bool,
+        primarySection: PropTypes.object,
+        admin: PropTypes.bool,
+        arr: PropTypes.bool,
+        altSection: PropTypes.object,
+        itemSection: PropTypes.object,
+        fundId: PropTypes.number
     };
 
     static defaultProps = {

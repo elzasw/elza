@@ -1,5 +1,7 @@
 // require("./ScopeField.less")
 
+import PropTypes from 'prop-types';
+
 import React from "react";
 import {AbstractReactComponent, Autocomplete} from 'components/shared';
 import {connect} from "react-redux"
@@ -46,12 +48,12 @@ const ScopeField = class ScopeField extends AbstractReactComponent {
 }
 
 ScopeField.propTypes = {
-    value: React.PropTypes.object,
-    onChange: React.PropTypes.func.isRequired,
-    scopes: React.PropTypes.array.isRequired,
-    inline: React.PropTypes.bool,
-    touched: React.PropTypes.bool,
-    error: React.PropTypes.string,
+    value: PropTypes.object,
+    onChange: PropTypes.func.isRequired,
+    scopes: PropTypes.array.isRequired,
+    inline: PropTypes.bool,
+    touched: PropTypes.bool,
+    error: PropTypes.string,
 }
 
 function mapStateToProps(state) {

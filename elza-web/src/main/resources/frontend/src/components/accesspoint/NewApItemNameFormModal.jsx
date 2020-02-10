@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -19,9 +20,9 @@ import AddDescItemTypeForm from "../arr/nodeForm/AddDescItemTypeForm";
 class NewApItemNameFormModal extends AbstractReactComponent {
 
     static PropTypes = {
-        objectId: React.PropTypes.number.isRequired,
-        accessPointId: React.PropTypes.number.isRequired,
-        nameItemForm: React.PropTypes.object.isRequired,
+        objectId: PropTypes.number.isRequired,
+        accessPointId: PropTypes.number.isRequired,
+        nameItemForm: PropTypes.object.isRequired,
     };
 
     add = () => {

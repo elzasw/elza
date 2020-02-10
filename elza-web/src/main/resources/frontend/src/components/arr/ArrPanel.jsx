@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Icon, AbstractReactComponent, i18n} from 'components/shared';
@@ -8,8 +9,8 @@ import './ArrPanel.less';
 
 class ArrPanel extends AbstractReactComponent {
     static PropTypes = {
-        name: React.PropTypes.string.isRequired,
-        onReset: React.PropTypes.func.isRequired
+        name: PropTypes.string.isRequired,
+        onReset: PropTypes.func.isRequired
     };
 
     handleReset = () => {

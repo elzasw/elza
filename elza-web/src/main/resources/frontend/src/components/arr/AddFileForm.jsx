@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
@@ -26,8 +27,8 @@ class AddFileForm extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        initData: React.PropTypes.object,
-        onSubmitForm: React.PropTypes.func.isRequired
+        initData: PropTypes.object,
+        onSubmitForm: PropTypes.func.isRequired
     };
 
     state = {};

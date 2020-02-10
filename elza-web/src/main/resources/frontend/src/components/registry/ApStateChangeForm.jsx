@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, Autocomplete, i18n} from 'components/shared';
@@ -23,9 +24,9 @@ class ApStateChangeForm extends AbstractReactComponent {
     };
 
     static propTypes = {
-        accessPointId: React.PropTypes.number.isRequired,
-        partyTypeId: React.PropTypes.number,
-        hideType: React.PropTypes.bool,
+        accessPointId: PropTypes.number.isRequired,
+        partyTypeId: PropTypes.number,
+        hideType: PropTypes.bool,
     };
 
     static defultProps = {

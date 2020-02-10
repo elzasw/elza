@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import HorizontalPane from './HorizontalPane'
@@ -16,11 +17,11 @@ class HorizontalSplitter extends AbstractReactComponent {
     };
 
     static propTypes = {
-        top: React.PropTypes.node.isRequired,
-        bottom: React.PropTypes.node.isRequired,
-        bottomSize: React.PropTypes.number,
-        onDragFinished: React.PropTypes.func,
-        onChange: React.PropTypes.func,
+        top: PropTypes.node.isRequired,
+        bottom: PropTypes.node.isRequired,
+        bottomSize: PropTypes.number,
+        onDragFinished: PropTypes.func,
+        onChange: PropTypes.func,
     };
 
     componentDidMount() {

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import * as React from 'react';
 import {Button, Row, Col, Modal} from 'react-bootstrap';
 import {AbstractReactComponent, Icon} from 'components/shared';
@@ -20,7 +21,7 @@ class IssueLists extends AbstractReactComponent {
     state = {id: null, initialValues: undefined};
 
     static propTypes = {
-        fundId: React.PropTypes.number.isRequired
+        fundId: PropTypes.number.isRequired
     };
 
     componentDidMount() {

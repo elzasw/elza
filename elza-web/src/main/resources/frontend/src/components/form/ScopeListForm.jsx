@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import * as React from 'react';
 import {Button, Row, Col, Form} from 'react-bootstrap';
 import {AbstractReactComponent, Icon} from 'components/shared';
@@ -16,9 +17,9 @@ import * as scopeActions from "../../actions/scopes/scopes";
 class ScopeListForm extends AbstractReactComponent {
 
     static propTypes = {
-        onCreate: React.PropTypes.func.isRequired,
-        onSave: React.PropTypes.func.isRequired,
-        id: React.PropTypes.number,
+        onCreate: PropTypes.func.isRequired,
+        onSave: PropTypes.func.isRequired,
+        id: PropTypes.number,
     };
 
     static requireFields = (...names) => data =>

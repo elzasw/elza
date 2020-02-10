@@ -1,4 +1,6 @@
 // --
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import classNames from 'classnames';
 import i18n from "../../i18n";
@@ -10,10 +12,10 @@ import './HorizontalLoader.less';
 export default class HorizontalLoader extends React.Component {
 
     static propTypes = {
-        hover: React.PropTypes.bool, // pokud je true, jedná se o loader, který není jako standardní div, ale objeví se NAD ostatními elementami, např. pro využití v seznamech apod
-        text: React.PropTypes.string,
-        showText: React.PropTypes.bool,  // má se zobrazovat text
-        rerenderProgress: React.PropTypes.bool,  // poukd je true, tak se po každém přerenderování změní progress tak, že jde od začátku
+        hover: PropTypes.bool, // pokud je true, jedná se o loader, který není jako standardní div, ale objeví se NAD ostatními elementami, např. pro využití v seznamech apod
+        text: PropTypes.string,
+        showText: PropTypes.bool,  // má se zobrazovat text
+        rerenderProgress: PropTypes.bool,  // poukd je true, tak se po každém přerenderování změní progress tak, že jde od začátku
     };
 
     static defaultProps = {
@@ -60,4 +62,4 @@ export default class HorizontalLoader extends React.Component {
             </div>
         );
     }
-};
+}

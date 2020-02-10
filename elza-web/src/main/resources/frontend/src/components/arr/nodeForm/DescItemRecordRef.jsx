@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -39,10 +40,10 @@ class DescItemRecordRef extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        descItem: React.PropTypes.object.isRequired,
-        hasSpecification: React.PropTypes.bool,
-        itemName: React.PropTypes.string.isRequired,
-        specName: React.PropTypes.string
+        descItem: PropTypes.object.isRequired,
+        hasSpecification: PropTypes.bool,
+        itemName: PropTypes.string.isRequired,
+        specName: PropTypes.string
     };
 
     handleSelectModule = ({onSelect, filterText, value}) => {

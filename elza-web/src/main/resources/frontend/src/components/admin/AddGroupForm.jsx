@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, Icon, FormInput, Autocomplete, VersionValidationState} from 'components/shared';
@@ -27,7 +28,7 @@ class AddGroupForm extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        create: React.PropTypes.bool,
+        create: PropTypes.bool,
     };
     submitReduxForm = (values, dispatch) => submitForm(AddGroupForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
 

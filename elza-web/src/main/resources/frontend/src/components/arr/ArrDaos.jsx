@@ -1,7 +1,9 @@
+import './ArrDaos.less';
+
 /**
  * Seznam balíčků se zobrazením detailu po kliknutí na balíček.
  */
-import './ArrDaos.less';
+import PropTypes from 'prop-types';
 
 import React from "react";
 import {connect} from "react-redux";
@@ -22,14 +24,14 @@ class ArrDaos extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        type: React.PropTypes.oneOf(['PACKAGE', 'NODE', 'NODE_ASSIGN']).isRequired,
-        unassigned: React.PropTypes.bool,   // jen v případě packages
-        fund: React.PropTypes.object.isRequired,
-        selectedDaoId: React.PropTypes.object,
-        nodeId: React.PropTypes.number,
-        daoPackageId: React.PropTypes.number,
-        onSelect: React.PropTypes.func,
-        readMode: React.PropTypes.bool.isRequired
+        type: PropTypes.oneOf(['PACKAGE', 'NODE', 'NODE_ASSIGN']).isRequired,
+        unassigned: PropTypes.bool,   // jen v případě packages
+        fund: PropTypes.object.isRequired,
+        selectedDaoId: PropTypes.object,
+        nodeId: PropTypes.number,
+        daoPackageId: PropTypes.number,
+        onSelect: PropTypes.func,
+        readMode: PropTypes.bool.isRequired
     };
 
     static defaultProps = {

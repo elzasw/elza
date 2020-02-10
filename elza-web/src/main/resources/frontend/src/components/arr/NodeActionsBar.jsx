@@ -6,6 +6,8 @@
  * @since 31.8.2016
  */
 
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import {connect} from 'react-redux'
 import {WebApi} from 'actions/index.jsx';
@@ -149,17 +151,17 @@ class NodeActionsBar extends AbstractReactComponent {
             </div>
         );
         }
-};
+}
 
 NodeActionsBar.propTypes = {
-    simplified: React.PropTypes.bool.isRequired,
-    arrPerm: React.PropTypes.bool.isRequired,
-    node: React.PropTypes.any.isRequired,
-    versionId: React.PropTypes.any.isRequired,
-    userDetail: React.PropTypes.object.isRequired,
-    fundId: React.PropTypes.any.isRequired,
-    closed: React.PropTypes.any.isRequired,
-    selectedSubNodeIndex: React.PropTypes.number.isRequired,
-    onSwitchNode: React.PropTypes.func,
+    simplified: PropTypes.bool.isRequired,
+    arrPerm: PropTypes.bool.isRequired,
+    node: PropTypes.any.isRequired,
+    versionId: PropTypes.any.isRequired,
+    userDetail: PropTypes.object.isRequired,
+    fundId: PropTypes.any.isRequired,
+    closed: PropTypes.any.isRequired,
+    selectedSubNodeIndex: PropTypes.number.isRequired,
+    onSwitchNode: PropTypes.func,
 };
 export default connect()(NodeActionsBar);

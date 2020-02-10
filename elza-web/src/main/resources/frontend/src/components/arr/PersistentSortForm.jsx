@@ -2,6 +2,8 @@
  * Formulář nastavení funkce pro perzistentní řazení
  *
  */
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {Form, Checkbox} from 'react-bootstrap';
@@ -49,8 +51,8 @@ const allowedDatatypes = [
 class PersistentSortForm extends AbstractReactComponent {
 
     static PropTypes = {
-        versionId: React.PropTypes.number.isRequired,
-        node: React.PropTypes.object
+        versionId: PropTypes.number.isRequired,
+        node: PropTypes.object
     };
 
     componentDidMount = () => {

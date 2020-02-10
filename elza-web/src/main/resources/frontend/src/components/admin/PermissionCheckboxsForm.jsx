@@ -1,4 +1,6 @@
 // --
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import {Checkbox} from "react-bootstrap";
 import {AbstractReactComponent, Icon, i18n, fetching} from 'components/shared';
@@ -17,16 +19,16 @@ import {FUND_ARR_NODE} from "../../actions/user/Permission";
  */
 class PermissionCheckboxsForm extends AbstractReactComponent {
     static PropTypes = {
-        permCodes: React.PropTypes.array.isRequired,    // seznam kódů oprávnění
-        onChangePermission: React.PropTypes.func.isRequired,    // callback při změně
-        onAddNodePermission: React.PropTypes.func.isRequired,    // callback při přidání oprávnění na JP
-        onRemoveNodePermission: React.PropTypes.func.isRequired,    // callback při přidání oprávnění na JP
-        labelPrefix: React.PropTypes.string.isRequired,    // i18n prefix pro názvy položek
-        permission: React.PropTypes.object.isRequired,    // oprávnění, které se edituje
-        permissionAll: React.PropTypes.object,    // oprávnění pro all položky, pokud exisutje (a needituje se právě ono, tedy je naplněno pouze pokud permission !== permissionAll a vůbec permissionAll může existovat)
-        permissionAllTitle: React.PropTypes.string,    // odkaz do resource textů jak se jmenuje zdroj all persmission
-        groups: React.PropTypes.array,    // seznam přiřazených skupin
-        fundId: React.PropTypes.number,
+        permCodes: PropTypes.array.isRequired,    // seznam kódů oprávnění
+        onChangePermission: PropTypes.func.isRequired,    // callback při změně
+        onAddNodePermission: PropTypes.func.isRequired,    // callback při přidání oprávnění na JP
+        onRemoveNodePermission: PropTypes.func.isRequired,    // callback při přidání oprávnění na JP
+        labelPrefix: PropTypes.string.isRequired,    // i18n prefix pro názvy položek
+        permission: PropTypes.object.isRequired,    // oprávnění, které se edituje
+        permissionAll: PropTypes.object,    // oprávnění pro all položky, pokud exisutje (a needituje se právě ono, tedy je naplněno pouze pokud permission !== permissionAll a vůbec permissionAll může existovat)
+        permissionAllTitle: PropTypes.string,    // odkaz do resource textů jak se jmenuje zdroj all persmission
+        groups: PropTypes.array,    // seznam přiřazených skupin
+        fundId: PropTypes.number,
     };
 
 

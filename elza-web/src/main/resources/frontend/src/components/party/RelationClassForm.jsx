@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import {WebApi} from 'actions/index.jsx';
 import ReactDOM from 'react-dom';
@@ -21,9 +22,9 @@ const USE_UNITDATE_ENUM = { // TODO @compel move to party.jsx
 class RelationClassForm extends AbstractReactComponent {
 
     static PropTypes = {
-        relationTypes: React.PropTypes.array.isRequired,
-        apTypes: React.PropTypes.object.isRequired,
-        partyId: React.PropTypes.number
+        relationTypes: PropTypes.array.isRequired,
+        apTypes: PropTypes.object.isRequired,
+        partyId: PropTypes.number
     };
 
     static fields = [

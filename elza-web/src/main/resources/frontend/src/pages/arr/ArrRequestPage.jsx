@@ -2,6 +2,8 @@
  * Stránka požadavků na digitalizaci.
  */
 
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils.jsx'
@@ -80,10 +82,10 @@ class ArrRequestPage extends ArrParentPage {
     }
 
     static PropTypes = {
-        splitter: React.PropTypes.object.isRequired,
-        arrRegion: React.PropTypes.object.isRequired,
-        focus: React.PropTypes.object.isRequired,
-        userDetail: React.PropTypes.object.isRequired
+        splitter: PropTypes.object.isRequired,
+        arrRegion: PropTypes.object.isRequired,
+        focus: PropTypes.object.isRequired,
+        userDetail: PropTypes.object.isRequired
     };
 
     componentDidMount() {

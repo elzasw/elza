@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -19,12 +20,12 @@ class PartyDetailRelations extends AbstractReactComponent {
     state = {};
 
     static PropTypes = {
-        canEdit: React.PropTypes.bool.isRequired,
-        label: React.PropTypes.element.isRequired,
-        party: React.PropTypes.object.isRequired,
-        partyType: React.PropTypes.object.isRequired,
-        relationClassTypes: React.PropTypes.object.isRequired,
-        apTypesMap: React.PropTypes.object.isRequired,
+        canEdit: PropTypes.bool.isRequired,
+        label: PropTypes.element.isRequired,
+        party: PropTypes.object.isRequired,
+        partyType: PropTypes.object.isRequired,
+        relationClassTypes: PropTypes.object.isRequired,
+        apTypesMap: PropTypes.object.isRequired,
     };
 
     componentDidMount() {

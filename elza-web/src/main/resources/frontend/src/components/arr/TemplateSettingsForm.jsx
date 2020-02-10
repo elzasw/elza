@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { reduxForm } from 'redux-form';
@@ -13,9 +14,9 @@ const fields = ['evenPageOffsetX', 'evenPageOffsetY', 'oddPageOffsetX', 'oddPage
 
 class TemplateSettingsForm extends React.Component {
     static propTypes = {
-        engine: React.PropTypes.string.isRequired,
-        outputId: React.PropTypes.number.isRequired,
-        outputSettings: React.PropTypes.object
+        engine: PropTypes.string.isRequired,
+        outputId: PropTypes.number.isRequired,
+        outputSettings: PropTypes.object
     };
 
     handleSubmit = settings => {

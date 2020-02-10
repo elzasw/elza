@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import './ListPager.less';
 import { Icon } from 'components/shared';
@@ -7,11 +8,11 @@ import { Icon } from 'components/shared';
  */
 export default class ListPager extends React.Component {
     static PropTypes = {
-        from: React.PropTypes.number.required,
-        prev: React.PropTypes.func.required,
-        next: React.PropTypes.func.required,
-        maxSize: React.PropTypes.number.required,
-        totalCount: React.PropTypes.number.required
+        from: PropTypes.number.required,
+        prev: PropTypes.func.required,
+        next: PropTypes.func.required,
+        maxSize: PropTypes.number.required,
+        totalCount: PropTypes.number.required
     };
 
     static defaultProps = {

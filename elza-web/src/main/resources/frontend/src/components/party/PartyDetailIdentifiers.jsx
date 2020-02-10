@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -31,9 +32,9 @@ const isNotBlankObject = (obj) => {
 class PartyDetailIdentifiers extends AbstractReactComponent {
 
     static PropTypes = {
-        canEdit: React.PropTypes.bool.isRequired,
-        party: React.PropTypes.object.isRequired,
-        onPartyUpdate: React.PropTypes.func.isRequired,
+        canEdit: PropTypes.bool.isRequired,
+        party: PropTypes.object.isRequired,
+        onPartyUpdate: PropTypes.func.isRequired,
     };
 
     partyGroupIdentifierDelete = (id) => {

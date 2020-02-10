@@ -1,4 +1,6 @@
 // --
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import {Autocomplete, AbstractReactComponent, i18n, Icon, FormInput} from 'components/shared';
 import {Modal, Button} from 'react-bootstrap';
@@ -10,10 +12,10 @@ import Tags from "components/form/Tags.jsx"
  */
 const SelectItemsForm = class extends AbstractReactComponent {
     static PropTypes = {
-        renderItem: React.PropTypes.func.isRequired,    // render položky v tag input, přepis: (item, isHighlighted = false, isSelected = false) => {}
-        fieldComponent: React.PropTypes.func.isRequired,    // reference na komponentu fieldu pro input - dohledání položky, např. GroupField
-        fieldComponentProps: React.PropTypes.object,    // props pro fieldComponent
-        onSubmitForm: React.PropTypes.func.isRequired,    // callback se seznamem vybraných položek - pro přídání, předpis: (items : array) => {}
+        renderItem: PropTypes.func.isRequired,    // render položky v tag input, přepis: (item, isHighlighted = false, isSelected = false) => {}
+        fieldComponent: PropTypes.func.isRequired,    // reference na komponentu fieldu pro input - dohledání položky, např. GroupField
+        fieldComponentProps: PropTypes.object,    // props pro fieldComponent
+        onSubmitForm: PropTypes.func.isRequired,    // callback se seznamem vybraných položek - pro přídání, předpis: (items : array) => {}
     };
 
     constructor(props) {
