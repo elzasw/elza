@@ -6,6 +6,7 @@ import Loading from "../loading/Loading";
 
 const DEFAULT_ITEM_HEIGHT = 16;
 
+// TODO React 16 refactor createClass
 var VirtualList = React.createClass({
     propTypes: {
         items: PropTypes.array,   // v případě, že máme položky na klientovi, je zde seznam všech položek
