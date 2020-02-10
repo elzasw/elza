@@ -31,9 +31,9 @@ class SubNodeDao extends AbstractReactComponent {
         let daoResults = [];
 
         if (dao.url) {
-            daoResults.push(<div className="link"><a target="_blank" href={dao.url} >{dao.label}, {dao.code} - {dao.fileCount} {i18n(filesLabel)}</a></div>);
+            daoResults.push(<div className="link"><a target="_blank" href={dao.url} >{dao.label} - {dao.fileCount} {i18n(filesLabel)}</a></div>);
         } else {
-            daoResults.push(<div className="link">{dao.label}, {dao.code} - {dao.fileCount} {i18n(filesLabel)}</div>);
+            daoResults.push(<div className="link">{dao.label} - {dao.fileCount} {i18n(filesLabel)}</div>);
         }
 
         let actions = [];

@@ -33,6 +33,7 @@ import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrRequest;
+import cz.tacr.elza.domain.ArrRequestQueueItem;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
@@ -46,6 +47,7 @@ import cz.tacr.elza.repository.DaoLinkRequestRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DaoRequestDaoRepository;
+import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -98,6 +100,9 @@ public class DaoService {
 
     @Autowired
     private ArrangementCacheService arrangementCacheService;
+
+    @Autowired
+    private RequestQueueItemRepository requestQueueItemRepository;
 
     /**
      * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
@@ -314,6 +319,11 @@ public class DaoService {
             final List<ArrDaoLink> arrDaoLinkList = daoLinkRepository.findByDao(arrDao);
             nodeIds.addAll(arrDaoLinkList.stream().map(arrDaoLink -> arrDaoLink.getNodeId()).collect(toList()));
             daoLinkRepository.delete(arrDaoLinkList);
+            for (ArrDaoLink arrDaoLink : arrDaoLinkList) {
+                if (arrDaoLink.getDeleteChangeId() == null) {
+                    arrangementCacheService.deleteDaoLink(arrDaoLink.getNodeId(), arrDaoLink.getDaoLinkId());
+                }
+            }
 
             // smazat arr_dao_file
             final List<ArrDaoFile> daoFileList = daoFileRepository.findByDao(arrDao);
@@ -325,6 +335,10 @@ public class DaoService {
 
             // smazat arr_dao_link_request
             final List<ArrDaoLinkRequest> arrDaoLinkRequestList = daoLinkRequestRepository.findByDao(arrDao);
+            if (!arrDaoLinkRequestList.isEmpty()) {
+                List<ArrRequestQueueItem> queueItems = requestQueueItemRepository.findByRequest(arrDaoLinkRequestList);
+                requestQueueItemRepository.delete(queueItems);
+            }
             daoLinkRequestRepository.delete(arrDaoLinkRequestList);
 
             // smazat arr_dao_request_dao
@@ -333,7 +347,6 @@ public class DaoService {
 
             // smazat dao
             daoRepository.delete(arrDao);
-
         }
 
         // smazat package
@@ -389,7 +402,8 @@ public class DaoService {
      */
     public String getDaoFileUrl(final ArrDaoFile daoFile, final ArrDigitalRepository repository) {
         ElzaTools.UrlParams params = ElzaTools.createUrlParams()
-                .add("code", daoFile.getCode());
+                .add("code", daoFile.getCode())
+                .add("fileName", daoFile.getFileName());
         return ElzaTools.bindingUrlParams(repository.getViewFileUrl(), params);
     }
 
@@ -401,7 +415,8 @@ public class DaoService {
      */
     public String getDaoThumbnailUrl(final ArrDaoFile daoFile, final ArrDigitalRepository repository) {
         ElzaTools.UrlParams params = ElzaTools.createUrlParams()
-                .add("code", daoFile.getCode());
+                .add("code", daoFile.getCode())
+                .add("fileName", daoFile.getFileName());
         return ElzaTools.bindingUrlParams(repository.getViewThumbnailUrl(), params);
     }
 
