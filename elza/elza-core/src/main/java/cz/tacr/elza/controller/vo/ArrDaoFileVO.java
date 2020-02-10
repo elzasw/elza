@@ -31,6 +31,8 @@ public class ArrDaoFileVO {
     private String code;
     private String url;
     private String thumbnailUrl;
+    private String description;
+    private String fileName;
 
     public Integer getId() {
         return id;
@@ -158,5 +160,21 @@ public class ArrDaoFileVO {
 
     public void setThumbnailUrl(String thumbnailUrl) {
         this.thumbnailUrl = thumbnailUrl;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(final String description) {
+        this.description = description;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(final String fileName) {
+        this.fileName = fileName;
     }
 }

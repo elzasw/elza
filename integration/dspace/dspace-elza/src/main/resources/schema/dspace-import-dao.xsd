@@ -5,9 +5,14 @@
 			<xs:documentation>Root element for dao.xml</xs:documentation>
 		</xs:annotation>
 	</xs:element>
-	<xs:simpleType name="Attribute">
-		<xs:restriction base="xs:string"/>
-	</xs:simpleType>
+	<xs:complexType name="Attribute">
+		<xs:sequence>
+			<xs:element name="value" type="xs:string" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+		<xs:attribute name="schema" type="xs:string" use="required"/>
+	<xs:attribute name="element" type="xs:string" use="required"/>
+		<xs:attribute name="qualifier" type="xs:string" use="optional"/>
+	</xs:complexType>
 	<xs:simpleType name="Description">
 		<xs:annotation>
 			<xs:documentation>Item description</xs:documentation>

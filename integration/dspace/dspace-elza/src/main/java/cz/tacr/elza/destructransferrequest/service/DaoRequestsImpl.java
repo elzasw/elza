@@ -1,5 +1,33 @@
 package cz.tacr.elza.destructransferrequest.service;
 
+import java.math.BigInteger;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.ws.rs.ProcessingException;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.dspace.content.Bitstream;
+import org.dspace.content.Bundle;
+import org.dspace.content.Collection;
+import org.dspace.content.Community;
+import org.dspace.content.Item;
+import org.dspace.content.MetadataSchema;
+import org.dspace.content.MetadataValue;
+import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.service.CollectionService;
+import org.dspace.content.service.CommunityService;
+import org.dspace.content.service.ItemService;
+import org.dspace.core.Context;
+import org.dspace.handle.factory.HandleServiceFactory;
+import org.dspace.handle.service.HandleService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import cz.tacr.elza.context.ContextUtils;
 import cz.tacr.elza.daoimport.DaoImportScheduler;
 import cz.tacr.elza.daoimport.service.DaoImportService;
@@ -9,25 +37,21 @@ import cz.tacr.elza.metadataconstants.MetadataEnum;
 import cz.tacr.elza.ws.WsClient;
 import cz.tacr.elza.ws.dao_service.v1.DaoRequests;
 import cz.tacr.elza.ws.dao_service.v1.DaoServiceException;
-import cz.tacr.elza.ws.types.v1.*;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.dspace.content.*;
-import org.dspace.content.factory.ContentServiceFactory;
-import org.dspace.content.service.BitstreamService;
-import org.dspace.content.service.CollectionService;
-import org.dspace.content.service.CommunityService;
-import org.dspace.content.service.ItemService;
-import org.dspace.core.Context;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import javax.ws.rs.ProcessingException;
-import java.math.BigInteger;
-import java.sql.SQLException;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import cz.tacr.elza.ws.types.v1.ChecksumType;
+import cz.tacr.elza.ws.types.v1.Dao;
+import cz.tacr.elza.ws.types.v1.DaoIdentifiers;
+import cz.tacr.elza.ws.types.v1.DaoSyncRequest;
+import cz.tacr.elza.ws.types.v1.DaosSyncRequest;
+import cz.tacr.elza.ws.types.v1.DaosSyncResponse;
+import cz.tacr.elza.ws.types.v1.Daoset;
+import cz.tacr.elza.ws.types.v1.DestructionRequest;
+import cz.tacr.elza.ws.types.v1.Did;
+import cz.tacr.elza.ws.types.v1.Dids;
+import cz.tacr.elza.ws.types.v1.File;
+import cz.tacr.elza.ws.types.v1.FileGroup;
+import cz.tacr.elza.ws.types.v1.NonexistingDaos;
+import cz.tacr.elza.ws.types.v1.TransferRequest;
+import cz.tacr.elza.ws.types.v1.UnitOfMeasure;
 
 /**
  * Implementace webových služeb pro komunikaci se systému Elza (server)
@@ -44,7 +68,7 @@ public class DaoRequestsImpl implements DaoRequests{
     @Autowired
     private DestructTransferRequestDAO destructTransferRequestDAO;
 
-    private BitstreamService bitstreamService = ContentServiceFactory.getInstance().getBitstreamService();;
+    private HandleService handleService = HandleServiceFactory.getInstance().getHandleService();
     private ItemService itemService = ContentServiceFactory.getInstance().getItemService();
     private CommunityService communityService = ContentServiceFactory.getInstance().getCommunityService();
     private CollectionService collectionService = ContentServiceFactory.getInstance().getCollectionService();
@@ -59,7 +83,6 @@ public class DaoRequestsImpl implements DaoRequests{
     @Override
     public String postDestructionRequest(DestructionRequest destructionRequest) throws DaoServiceException {
         log.debug("Spuštěna metoda postDestructionRequest (skartace).");
-        String result = null;
         Context context = new Context();
         try {
             context = ContextUtils.createContext();
@@ -80,20 +103,16 @@ public class DaoRequestsImpl implements DaoRequests{
 
             // Zpracování skartace jednotlivých položek požadavku
             List<String> identifierList = daoIdentifiers.getIdentifier();
-            for (String identifier : identifierList) {
-                log.debug("Kontroluji digitalizát identifier=" + identifier + ".");
-                checkItemIdentifier(context, UUID.fromString(identifier));
+            for (String handle : identifierList) {
+                log.debug("Zpracovávám požadavek na skartaci položky s handle=" + handle + ".");
+                log.debug("Vyhledávám položku digitalizátu s handle=" + handle + ".");
+                Item item = getItem(context, handle);
 
-                log.debug("Zpracovávám požadavek na skartaci položky identifier=" + identifier + ".");
-                UUID uuId = UUID.fromString(identifier);
-                log.debug("Vyhledávám položku digitalizátu Uuid=" + uuId + ".");
-                Item item = getItem(context, uuId);
-
-                log.debug("Skartuji (ruším) metadata položky digitalizátu Uuid=" + uuId + ".");
+                log.debug("Skartuji (ruším) metadata položky digitalizátu s handle=" + handle + ".");
                 List<MetadataValue> metadataValueList = itemService.getMetadata(item, Item.ANY, Item.ANY, Item.ANY, Item.ANY);
                 itemService.removeMetadataValues(context, item, metadataValueList);
                 itemService.update(context, item);
-                log.debug("Skartuji (ruším) položku digitalizátu Uuid=" + uuId + ".");
+                log.debug("Skartuji (ruším) položku digitalizátu s handle=" + handle + ".");
                 itemService.delete(context, item);
             }
 
@@ -135,7 +154,6 @@ public class DaoRequestsImpl implements DaoRequests{
     public String postTransferRequest(TransferRequest transferRequest) throws DaoServiceException {
         log.debug("Spuštěna metoda postTransferRequest.");
 
-        String result = null;
         Context context = new Context();
         try {
             context = ContextUtils.createContext();
@@ -197,14 +215,10 @@ public class DaoRequestsImpl implements DaoRequests{
 
             // Zpracování delimitace jednotlivých položek požadavku
             List<String> identifierList = daoIdentifiers.getIdentifier();
-            for (String identifier : identifierList) {
-                log.debug("Kontroluji digitalizát identifier=" + identifier + ".");
-                checkItemIdentifier(context, UUID.fromString(identifier));
-
-                log.debug("Zpracovávám požadavek na delimitaci položky identifier=" + identifier + ".");
-                UUID uuId = UUID.fromString(identifier);
-                log.debug("Vyhledávám položku digitalizátu Uuid=" + uuId + ".");
-                Item item = getItem(context, uuId);
+            for (String handle : identifierList) {
+                log.debug("Zpracovávám požadavek na delimitaci položky s handle=" + handle + ".");
+                log.debug("Vyhledávám položku digitalizátu s handle=" + handle + ".");
+                Item item = getItem(context, handle);
 
                 Collection owningCollection = item.getOwningCollection();
                 log.debug("Přesouvám item " + item.getName() + " z kolekce " + owningCollection.getName()
@@ -213,7 +227,7 @@ public class DaoRequestsImpl implements DaoRequests{
 
                 final MetadataEnum mt = MetadataEnum.ISELZA;
                 log.debug("Aktualizuji hodnotu metadat pro element=" + mt.getElement() + " na FALSE.");
-                log.debug("Vyhledávám metadata pro položku digitalizátu Uuid=" + uuId + " schema=" + mt.getSchema() +
+                log.debug("Vyhledávám metadata pro položku digitalizátu s handle=" + handle + " schema=" + mt.getSchema() +
                         " element=" + mt.getElement() + ".");
                 List<MetadataValue> metadataList = itemService.getMetadata(item, mt.getSchema(), mt.getElement(), mt.getQualifier(), Item.ANY);
                 setMetadataValue(context, item, metadataList, Boolean.FALSE.toString(), mt);
@@ -261,6 +275,14 @@ public class DaoRequestsImpl implements DaoRequests{
             return daosSyncResponse;
         }
 
+        Dids dids = daosSyncRequest.getDids();
+        Map<String, Did> didMap = new HashMap<>();
+        if (dids != null) {
+            for (Did did : dids.getDid()) {
+                didMap.put(did.getIdentifier(), did);
+            }
+        }
+
         Context context = new Context();
         try {
             context = ContextUtils.createContext();
@@ -275,41 +297,52 @@ public class DaoRequestsImpl implements DaoRequests{
         NonexistingDaos nonexistingDaos = new NonexistingDaos();
         List<String> nonexistingDaoId = nonexistingDaos.getDaoId();
         for (DaoSyncRequest daoSyncRequest : daoSyncRequestList) {
-            UUID uuId = UUID.fromString(daoSyncRequest.getDaoId());
-            log.debug("Vyhledávám položku digitalizátu Uuid=" + uuId + ".");
-            Item item = getItem(context, uuId);
+            String handle = daoSyncRequest.getDaoId();
+            log.debug("Vyhledávám položku digitalizátu s handle=" + handle + ".");
+            Item item = getItem(context, handle);
             if (item != null) {
-                log.debug("Aktualizuji metadata položky digitalizátu Uuid=" + uuId + ".");
-                //TODO:cacha doplnit po upřesnění vstupních dat
+                log.debug("Aktualizuji metadata položky digitalizátu s handle=" + handle + ".");
 
-                String fileParam = WsClient.createFileParam(item);
-                log.debug("Zapisuji technická metadata položky digitalizátu Uuid=" + uuId + ".");
+                String didId = daoSyncRequest.getDidId();
+                if (didId != null) {
+                    Did did = didMap.get(didId);
+                    if (did != null) {
+                        WsClient.updateItem(context, item, did);
+                    }
+                }
+
+                log.debug("Zapisuji technická metadata položky digitalizátu s handle=" + handle + ".");
                 List<Bundle> bundleList = item.getBundles();
                 for (Bundle bundle : bundleList) {
                     if (bundle.getName().contains(DaoImportService.CONTENT_BUNDLE)) {
-                        Dao dao = new Dao();
+                        Dao dao = WsClient.createDao(item);
                         FileGroup fileGroup = new FileGroup();
                         List<File> fileList = fileGroup.getFile();
 
                         List<Bitstream> bitstreamList = bundle.getBitstreams();
                         for (Bitstream bitstream : bitstreamList) {
                             try {
-                                File file = WsClient.createFile(fileParam, bitstream, context);
+                                File file = WsClient.createFile(handle, bitstream, context);
                                 fileList.add(file);
                             } catch (Exception e) {
                                 context.abort();
                                 throw new ProcessingException("Chyba při vytváření souboru z bitstreamu: " + e.getMessage());
                             }
                         }
-                        dao.setIdentifier(bundle.getID().toString());
                         dao.setFileGroup(fileGroup);
                         daoList.add(dao);
                     }
                 }
             } else {
-                log.debug("Neexistující položka digitalizátu Uuid=" + uuId + ".");
+                log.debug("Neexistující položka digitalizátu s handle=" + handle + ".");
                 nonexistingDaoId.add(daoSyncRequest.getDaoId());
             }
+        }
+
+        try {
+            context.commit();
+        } catch (SQLException e) {
+            throw new ProcessingException("Chyba při synchronizaci dao.", e);
         }
 
         daosSyncResponse.setDaoset(daoset);
@@ -319,39 +352,24 @@ public class DaoRequestsImpl implements DaoRequests{
         return daosSyncResponse;
     }
 
-
-    /**
-     * Vyhledá položku digitalizátu
-     * @param context
-     * @param uuId
-     * @return
-     */
-    private Item getItem(Context context, UUID uuId) {
-        Item item = null;
-        try {
-            item = itemService.find(context, uuId);
-        } catch (Exception e) {
-            throw new ProcessingException("Chyba při vyhledání položky digitalizátu (" + uuId + "): " + e.getMessage());
-        }
-        return item;
-    }
-
     /**
      * Kontroluje existenci položky digitalizátu v systému
      * @param context
-     * @param uuId
+     * @param handle
      */
-    private void checkItemIdentifier(Context context, UUID uuId) {
-        Item item = null;
+    private Item getItem(Context context, String handle) {
+        Item item;
         try {
-            item = itemService.find(context, uuId);
+            item = (Item) handleService.resolveToObject(context, handle);
         } catch (Exception e) {
-            throw new ProcessingException("Chyba při vyhledání položky digitalizátu (" + uuId + "): " + e.getMessage());
+            throw new ProcessingException("Chyba při vyhledání položky digitalizátu (" + handle + "): " + e.getMessage());
         }
 
         if (item == null) {
-            throw new UnsupportedOperationException("Digitalizát s Uuid=" + uuId + " nebyl v tabulce Item nalezen.");
+            throw new UnsupportedOperationException("Digitalizát s handle=" + handle + " nebyl v tabulce Item nalezen.");
         }
+
+        return item;
     }
 
     /**

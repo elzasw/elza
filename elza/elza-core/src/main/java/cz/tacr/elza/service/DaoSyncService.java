@@ -13,6 +13,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,6 +116,9 @@ public class DaoSyncService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private GroovyScriptService groovyScriptService;
+
     // --- fields ---
 
     @Autowired
@@ -152,7 +156,10 @@ public class DaoSyncService {
                 List<ArrDao> daos = entry.getValue();
                 List<DaoSyncRequest> list = daos.stream().map(dao -> createDaoSyncRequest(node, dao)).collect(toList());
 
-                DaosSyncRequest daosSyncRequest = createDaosSyncRequest(fundVersion, list);
+                Dids dids = new Dids();
+                dids.getDid().add(groovyScriptService.createDid(node));
+
+                DaosSyncRequest daosSyncRequest = createDaosSyncRequest(fundVersion, list, dids);
                 DaosSyncResponse daosSyncResponse = wsClient.syncDaos(daosSyncRequest, digitalRepository);
 
                 processDaosSyncResponse(daosSyncResponse);
@@ -176,13 +183,19 @@ public class DaoSyncService {
                 .map(arrDaoLink -> createDaoSyncRequest(arrDaoLink.getNode(), arrDaoLink.getDao()))
                 .collect(toList());
 
-        return createDaosSyncRequest(fundVersion, list);
+        Dids dids = new Dids();
+        List<ArrNode> arrNodes = arrDaoLinks.stream().map(ArrDaoLink::getNode).collect(toList());
+        if (CollectionUtils.isNotEmpty(arrNodes)) {
+            dids.getDid().addAll(groovyScriptService.createDids(arrNodes));
+        }
+
+        return createDaosSyncRequest(fundVersion, list, dids);
     }
 
-    private DaosSyncRequest createDaosSyncRequest(ArrFundVersion fundVersion, List<DaoSyncRequest> list) {
+    private DaosSyncRequest createDaosSyncRequest(ArrFundVersion fundVersion, List<DaoSyncRequest> list, final Dids dids) {
 
         DaosSyncRequest request = new DaosSyncRequest();
-        request.setDids(new Dids());
+        request.setDids(dids);
         request.setFundIdentifier(fundVersion.getRootNode().getUuid());
         request.setUsername(getUsername());
 
@@ -421,6 +434,9 @@ public class DaoSyncService {
             arrDaoFile.setSourceYDimesionValue(file.getSourceYDimensionValue().doubleValue());
         }
         arrDaoFile.setDuration(file.getDuration());
+
+        arrDaoFile.setDescription(file.getDescription());
+        arrDaoFile.setFileName(file.getFileName());
     }
 
     private cz.tacr.elza.api.UnitOfMeasure getDimensionUnit(final UnitOfMeasure sourceDimensionUnit) {

@@ -75,6 +75,9 @@ Vyplnit parametry v **_elza.cfg_**
   - **_elza.daoimport.convert.command_** - Příklad: elza.daoimport.convert.command=“conv” {input} {output}
   - “conv” - nahradit příkazem s parametry na spuštění externí konverzní aplikace. Výběr a zprovoznění konverzní aplikace je na zákazníkovi. Lze použít například aplikaci ImageMagick.
   - v příkazu pro konverzi lze použít proměnné {input} a {output} za které DSpace dosadí název vstupního a výstupního souboru
+- Výraz pro vygenerování názvu DAO z metadat
+  - **_elza.daoimport.dao.name_** - Příklad: elza.daoimport.dao.name=${dc.title.alternative} - ${dc.creator}
+
 
 ## Spárování entit v aplikacích DSpace a ELZA 
 ### ELZA

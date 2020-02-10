@@ -1,6 +1,7 @@
 package cz.tacr.elza.ws;
 
 import java.math.BigInteger;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.feature.FastInfosetFeature;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
+import org.dspace.authorize.AuthorizeException;
 import org.dspace.content.Bitstream;
 import org.dspace.content.BitstreamFormat;
 import org.dspace.content.Bundle;
@@ -46,10 +48,15 @@ import cz.tacr.elza.ws.types.v1.Dao;
 import cz.tacr.elza.ws.types.v1.DaoBatchInfo;
 import cz.tacr.elza.ws.types.v1.DaoPackage;
 import cz.tacr.elza.ws.types.v1.Daoset;
+import cz.tacr.elza.ws.types.v1.Datesingle;
+import cz.tacr.elza.ws.types.v1.Did;
 import cz.tacr.elza.ws.types.v1.File;
 import cz.tacr.elza.ws.types.v1.FileGroup;
 import cz.tacr.elza.ws.types.v1.RequestRevoked;
 import cz.tacr.elza.ws.types.v1.UnitOfMeasure;
+import cz.tacr.elza.ws.types.v1.Unitdatestructured;
+import cz.tacr.elza.ws.types.v1.Unitid;
+import cz.tacr.elza.ws.types.v1.Unittitle;
 
 /**
  * Created by Marbes Consulting
@@ -155,31 +162,29 @@ public class WsClient {
         daoPackage.setFundIdentifier(fundId);
         daoPackage.setRepositoryIdentifier(configurationService.getProperty("elza.repositoryCode"));
 
-        String daoId = itemService.getMetadataFirstValue(item, MetadataSchema.DC_SCHEMA, "description", null, null);
         DaoBatchInfo daoBatchInfo = new DaoBatchInfo();
-        daoBatchInfo.setIdentifier(daoId);
-        daoBatchInfo.setLabel(daoId);
+        daoBatchInfo.setIdentifier(item.getName());
+        daoBatchInfo.setLabel(item.getName());
         daoPackage.setDaoBatchInfo(daoBatchInfo);
 
         Daoset daoset = new Daoset();
         daoPackage.setDaoset(daoset);
-        Dao dao = new Dao();
-        dao.setIdentifier(item.getID().toString());
+
+        Dao dao = createDao(item);
 
         FileGroup fileGroup = new FileGroup();
 
         List<Bundle> bundles = item.getBundles(DaoImportService.CONTENT_BUNDLE);
 
-        String fileParam = createFileParam(item);
-        dao.setLabel(fileParam);
         //"http://localhost:8080/xmlui/handle/123456789/8"
 
         try {
             context.turnOffAuthorisationSystem();
+            String handle = item.getHandle();
 
             for (Bundle bundle : bundles) {
                 for (Bitstream bitstream : bundle.getBitstreams()) {
-                    File file = createFile(fileParam, bitstream, context);
+                    File file = createFile(handle, bitstream, context);
                     fileGroup.getFile().add(file);
                 }
             }
@@ -207,14 +212,11 @@ public class WsClient {
         }
     }
 
-    public static String createFileParam(Item item) {
-        String uriMD = itemService.getMetadataFirstValue(item, MetadataSchema.DC_SCHEMA, "identifier", "uri", Item.ANY);
-        int index = uriMD.lastIndexOf("/handle/");
-        String fileParam = null;
-        if (index > 0) {
-            fileParam = uriMD.substring(index + 8);
-        }
-        return fileParam;
+    public static Dao createDao(Item item) {
+        Dao dao = new Dao();
+        dao.setIdentifier(item.getHandle());
+        dao.setLabel(item.getName());
+        return dao;
     }
 
     public static File createFile(String fileParam, Bitstream bitstream, Context context) {
@@ -223,6 +225,8 @@ public class WsClient {
         file.setChecksum(bitstream.getChecksum());
         file.setIdentifier(fileParam + "/" + bitstream.getName());
         file.setSize(bitstream.getSizeBytes());
+        file.setDescription(bitstream.getDescription());
+        file.setFileName(bitstream.getName());
 
         BitstreamFormat format = null;
         try {
@@ -349,5 +353,38 @@ public class WsClient {
                 return ChecksumType.SHA_512;
         }
         throw new ProcessingException("Pole ChecksumType " + checksumAlgorithm + " není podporováno.");
+    }
+
+    public static void updateItem(Context context, Item item, Did did) {
+        try {
+            Unitdatestructured unitdatestructured = did.getUnitdatestructured();
+            if (unitdatestructured != null) {
+                Datesingle datesingle = unitdatestructured.getDatesingle();
+                if (datesingle != null) {
+                    String date = datesingle.getLocaltype();
+                    itemService.setMetadataSingleValue(context, item, MetadataSchema.DC_SCHEMA, "date", "issued", null, date);
+                }
+            }
+
+            List<Unitid> unitidList = did.getUnitid();
+            if (unitidList != null) {
+                itemService.clearMetadata(context, item, MetadataSchema.DC_SCHEMA, "identifier", "govdoc", null);
+                for (Unitid unitid : unitidList) {
+                    itemService.addMetadata(context, item, MetadataSchema.DC_SCHEMA, "identifier", "govdoc", null, unitid.getLocaltype());
+                }
+            }
+
+            List<Unittitle> unittitleList = did.getUnittitle();
+            if (unittitleList != null) {
+                itemService.clearMetadata(context, item, MetadataSchema.DC_SCHEMA, "description", "abstract", null);
+                for (Unittitle unittitle : unittitleList) {
+                    itemService.addMetadata(context, item, MetadataSchema.DC_SCHEMA, "description", "abstract", null, unittitle.getLocaltype());
+                }
+            }
+
+            itemService.update(context, item);
+        } catch (SQLException | AuthorizeException e) {
+            throw new ProcessingException("Chyba při aktualizaci DAO/Item " + item.getID(), e);
+        }
     }
 }

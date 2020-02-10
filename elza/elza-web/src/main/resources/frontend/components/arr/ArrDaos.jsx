@@ -123,12 +123,13 @@ class ArrDaos extends AbstractReactComponent {
     };
 
     renderDao = (item) => {
-        const name = item.code + " (" + item.daoId + ")";
+        const name = item.label || (item.code + " (" + item.daoId + ")");
         return <div className="item-name" title={name}>{name}</div>
     };
 
     renderFile = (file) => {
-        return <div className="item-file" title={file.code}><Icon glyph='fa-file-o' /> {file.code}</div>;
+        const name = file.fileName || (file.code + " (" + file.id + ")");
+        return <div className="item-file" title={name}><Icon glyph='fa-file-o' /> {name}</div>;
     };
 
     render() {
