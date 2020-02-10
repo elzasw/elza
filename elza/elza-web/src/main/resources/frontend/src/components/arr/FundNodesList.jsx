@@ -2,6 +2,8 @@
  * Komponenta seznamu vybraných uzlů pro verzi archivního souboru.
  */
 
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import NodeLabel from "./NodeLabel";
 import {AbstractReactComponent, AddRemoveList, Icon, i18n} from 'components/shared';
@@ -11,10 +13,10 @@ import './FundNodesList.less';
 
 class FuncNodesList extends AbstractReactComponent {
     static PropTypes = {
-        nodes: React.PropTypes.array.isRequired,
-        onDeleteNode: React.PropTypes.func,
-        onAddNode: React.PropTypes.func,
-        readOnly: React.PropTypes.bool
+        nodes: PropTypes.array.isRequired,
+        onDeleteNode: PropTypes.func,
+        onAddNode: PropTypes.func,
+        readOnly: PropTypes.bool
     };
 
     handleDeleteItem = (node) => {

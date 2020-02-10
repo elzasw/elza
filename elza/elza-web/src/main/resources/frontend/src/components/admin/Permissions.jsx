@@ -2,6 +2,8 @@
  * Formulář inline editace oprávnění.
  */
 
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, AddRemoveList, i18n, FormInput} from 'components/shared';
@@ -179,12 +181,12 @@ const Permissions2 = class Permissions2 extends AbstractReactComponent {
     }
 
     static propTypes = {
-        area: React.PropTypes.string.isRequired,
-        scopesData: React.PropTypes.object.isRequired,
-        addTitle: React.PropTypes.string.isRequired,
-        removeTitle: React.PropTypes.string.isRequired,
-        initData: React.PropTypes.object,
-        onSave: React.PropTypes.func.isRequired,
+        area: PropTypes.string.isRequired,
+        scopesData: PropTypes.object.isRequired,
+        addTitle: PropTypes.string.isRequired,
+        removeTitle: PropTypes.string.isRequired,
+        initData: PropTypes.object,
+        onSave: PropTypes.func.isRequired,
     }
 };
 

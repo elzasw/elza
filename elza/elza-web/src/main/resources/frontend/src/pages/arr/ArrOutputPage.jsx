@@ -619,10 +619,10 @@ function mapStateToProps(state) {
 }
 
 ArrOutputPage.propTypes = {
-    splitter: React.PropTypes.object.isRequired,
-    arrRegion: React.PropTypes.object.isRequired,
-    focus: React.PropTypes.object.isRequired,
-    userDetail: React.PropTypes.object.isRequired
+    splitter: PropTypes.object.isRequired,
+    arrRegion: PropTypes.object.isRequired,
+    focus: PropTypes.object.isRequired,
+    userDetail: PropTypes.object.isRequired
 };
 
 export default connect(mapStateToProps)(ArrOutputPage);

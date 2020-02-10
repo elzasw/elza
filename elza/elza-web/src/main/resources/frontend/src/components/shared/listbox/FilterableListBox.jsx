@@ -1,9 +1,11 @@
+require ('./FilterableListBox.less');
+
 /**
  *  ListBox komponenta s možností filtrování, hledání a označování.
  *
  **/
 
-require ('./FilterableListBox.less')
+import PropTypes from 'prop-types';
 
 import React from "react";
 import Search from "../search/Search";
@@ -16,16 +18,16 @@ var __FilterableListBox_timer = null
 
 var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
     static PropTypes = {
-        supportInverseSelection: React.PropTypes.bool,
-        selectedIds: React.PropTypes.array.isRequired,
-        label:React.PropTypes.string,
-        className:React.PropTypes.string,
-        items: React.PropTypes.array.isRequired,
-        searchable: React.PropTypes.bool,
-        altSearch: React.PropTypes.object,
-        onSearch: React.PropTypes.func,
-        onChange: React.PropTypes.func,
-        selectionType: React.PropTypes.string
+        supportInverseSelection: PropTypes.bool,
+        selectedIds: PropTypes.array.isRequired,
+        label:PropTypes.string,
+        className:PropTypes.string,
+        items: PropTypes.array.isRequired,
+        searchable: PropTypes.bool,
+        altSearch: PropTypes.object,
+        onSearch: PropTypes.func,
+        onChange: PropTypes.func,
+        selectionType: PropTypes.string
     };
 
     constructor(props) {

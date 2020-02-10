@@ -19,12 +19,12 @@ class CollapsablePanel extends AbstractReactComponent {
         return { shortcuts: this.shortcutManager };
     }
     static PropTypes = {
-        isOpen: React.PropTypes.bool.isRequired,
-        pinned: React.PropTypes.bool.isRequired,
-        onSelect: React.PropTypes.func.isRequired,
-        onPin: React.PropTypes.func.isRequired,
-        eventKey: React.PropTypes.any,
-        header: React.PropTypes.element
+        isOpen: PropTypes.bool.isRequired,
+        pinned: PropTypes.bool.isRequired,
+        onSelect: PropTypes.func.isRequired,
+        onPin: PropTypes.func.isRequired,
+        eventKey: PropTypes.any,
+        header: PropTypes.element
     };
     panelToggle = (e)=>{
         const {onSelect, eventKey} = this.props;

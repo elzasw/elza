@@ -992,16 +992,16 @@ function mapStateToProps(state) {
 }
 
 NodePanel.propTypes = {
-    versionId: React.PropTypes.number.isRequired,
-    fund: React.PropTypes.object.isRequired,
-    node: React.PropTypes.object.isRequired,
-    calendarTypes: React.PropTypes.object.isRequired,
-    descItemTypes: React.PropTypes.object.isRequired,
-    rulDataTypes: React.PropTypes.object.isRequired,
-    fundId: React.PropTypes.number,
-    displayAccordion: React.PropTypes.bool.isRequired,
-    closed: React.PropTypes.bool.isRequired,
-    userDetail: React.PropTypes.object.isRequired
+    versionId: PropTypes.number.isRequired,
+    fund: PropTypes.object.isRequired,
+    node: PropTypes.object.isRequired,
+    calendarTypes: PropTypes.object.isRequired,
+    descItemTypes: PropTypes.object.isRequired,
+    rulDataTypes: PropTypes.object.isRequired,
+    fundId: PropTypes.number,
+    displayAccordion: PropTypes.bool.isRequired,
+    closed: PropTypes.bool.isRequired,
+    userDetail: PropTypes.object.isRequired
 };
 
 export default connect(mapStateToProps)(NodePanel);

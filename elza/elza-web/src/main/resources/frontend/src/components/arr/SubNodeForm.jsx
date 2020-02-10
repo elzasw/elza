@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Icon, i18n, AbstractReactComponent, NoFocusButton } from 'components/shared';
@@ -64,23 +65,23 @@ class SubNodeForm extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        versionId: React.PropTypes.number.isRequired,
-        fundId: React.PropTypes.number.isRequired,
-        routingKey: React.PropTypes.string,
-        nodeSetting: React.PropTypes.object,
-        rulDataTypes: React.PropTypes.object.isRequired,
-        calendarTypes: React.PropTypes.object.isRequired,
-        descItemTypes: React.PropTypes.object.isRequired,
-        structureTypes: React.PropTypes.object.isRequired,
-        subNodeForm: React.PropTypes.object.isRequired,
-        closed: React.PropTypes.bool.isRequired,
-        readMode: React.PropTypes.bool.isRequired,
-        conformityInfo: React.PropTypes.object.isRequired,
-        descItemCopyFromPrevEnabled: React.PropTypes.bool.isRequired,
-        focus: React.PropTypes.object,
-        formActions: React.PropTypes.object.isRequired,
-        showNodeAddons: React.PropTypes.bool.isRequired,
-        arrPerm: React.PropTypes.bool.isRequired,
+        versionId: PropTypes.number.isRequired,
+        fundId: PropTypes.number.isRequired,
+        routingKey: PropTypes.string,
+        nodeSetting: PropTypes.object,
+        rulDataTypes: PropTypes.object.isRequired,
+        calendarTypes: PropTypes.object.isRequired,
+        descItemTypes: PropTypes.object.isRequired,
+        structureTypes: PropTypes.object.isRequired,
+        subNodeForm: PropTypes.object.isRequired,
+        closed: PropTypes.bool.isRequired,
+        readMode: PropTypes.bool.isRequired,
+        conformityInfo: PropTypes.object.isRequired,
+        descItemCopyFromPrevEnabled: PropTypes.bool.isRequired,
+        focus: PropTypes.object,
+        formActions: PropTypes.object.isRequired,
+        showNodeAddons: PropTypes.bool.isRequired,
+        arrPerm: PropTypes.bool.isRequired,
     };
 
     shouldComponentUpdate(nextProps, nextState) {

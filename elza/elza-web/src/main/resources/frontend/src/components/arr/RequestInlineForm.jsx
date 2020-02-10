@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
@@ -23,9 +24,9 @@ class RequestInlineForm extends AbstractReactComponent {
     }
 
     static PropTypes = {
-        initData: React.PropTypes.object,
-        reqType: React.PropTypes.object.isRequired,
-        onSave: React.PropTypes.func.isRequired,
+        initData: PropTypes.object,
+        reqType: PropTypes.object.isRequired,
+        onSave: PropTypes.func.isRequired,
     };
 
     state = {};

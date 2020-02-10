@@ -2,13 +2,15 @@
  * Wrapper pro hodnoty prvků popisu se zobrazením tooltipu, pokud existuje.
  */
 
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import {TooltipTrigger, AbstractReactComponent, i18n} from 'components/shared';
 
 class ItemTooltipWrapper extends AbstractReactComponent {
 
     static PropTypes = {
-        tooltipTitle: React.PropTypes.string.isRequired,
+        tooltipTitle: PropTypes.string.isRequired,
     }
 
     render() {

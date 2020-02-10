@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import * as React from 'react';
 import {connect} from 'react-redux';
 import {DropdownButton, MenuItem, Button} from "react-bootstrap";
@@ -23,7 +24,7 @@ import * as perms from "../../actions/user/Permission";
 class LecturingBottom extends React.Component {
 
     static propTypes = {
-        fund: React.PropTypes.object.isRequired,
+        fund: PropTypes.object.isRequired,
     };
 
     state = {

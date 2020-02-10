@@ -4,6 +4,8 @@
  * Field který zaobaluje našeptávací field a reprezentuje jej jako tag field s možností vybrat více záznamů.
  */
 // ---
+import PropTypes from 'prop-types';
+
 import React from "react";
 import {WebApi} from "actions/index.jsx";
 import {AbstractReactComponent, Autocomplete, Utils} from 'components/shared';
@@ -22,8 +24,8 @@ class TagsField extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        itemIdName: React.PropTypes.func,    // název atributu s idčkem pro porovnání dvou položek, stdanrdně "id"
-        renderTagItem: React.PropTypes.func, // funkce pro renderování názvu položky v tag input, standardně se renderuje atribut name, předpis: x => x.name
+        itemIdName: PropTypes.func,    // název atributu s idčkem pro porovnání dvou položek, stdanrdně "id"
+        renderTagItem: PropTypes.func, // funkce pro renderování názvu položky v tag input, standardně se renderuje atribut name, předpis: x => x.name
     };
 
     constructor(props) {

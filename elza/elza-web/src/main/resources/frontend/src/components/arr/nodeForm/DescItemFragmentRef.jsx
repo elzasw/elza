@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -19,7 +20,7 @@ import("../../accesspoint/FragmentFormModal").then((a) => {
 class DescItemFragmentRef extends AbstractReactComponent {
 
     static PropTypes = {
-        fragmentType: React.PropTypes.object.isRequired
+        fragmentType: PropTypes.object.isRequired
     };
 
     focus = () => {

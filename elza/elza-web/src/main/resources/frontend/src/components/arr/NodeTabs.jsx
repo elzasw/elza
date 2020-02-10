@@ -1,8 +1,10 @@
+import './NodeTabs.less';
+
 /**
  * Komponenta záložek otevřených JP.
  */
 
-import './NodeTabs.less';
+import PropTypes from 'prop-types';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -119,17 +121,17 @@ return true
 }
 
 NodeTabs.propTypes = {
-    versionId: React.PropTypes.number.isRequired,
-    fund: React.PropTypes.object.isRequired,
-    nodes: React.PropTypes.array.isRequired,
-    activeIndex: React.PropTypes.number,
-    fundId: React.PropTypes.number,
-    rulDataTypes: React.PropTypes.object.isRequired,
-    calendarTypes: React.PropTypes.object.isRequired,
-    descItemTypes: React.PropTypes.object.isRequired,
-    showRegisterJp: React.PropTypes.bool.isRequired,
-    displayAccordion: React.PropTypes.bool.isRequired,
-    closed: React.PropTypes.bool.isRequired
+    versionId: PropTypes.number.isRequired,
+    fund: PropTypes.object.isRequired,
+    nodes: PropTypes.array.isRequired,
+    activeIndex: PropTypes.number,
+    fundId: PropTypes.number,
+    rulDataTypes: PropTypes.object.isRequired,
+    calendarTypes: PropTypes.object.isRequired,
+    descItemTypes: PropTypes.object.isRequired,
+    showRegisterJp: PropTypes.bool.isRequired,
+    displayAccordion: PropTypes.bool.isRequired,
+    closed: PropTypes.bool.isRequired
 }
 
 function mapStateToProps(state) {

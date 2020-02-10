@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux';
@@ -9,10 +10,10 @@ import './DatationField.less'
 
 class DatationField extends AbstractReactComponent {
     static PropTypes = {
-        label: React.PropTypes.string.isRequired,
-        labelTextual: React.PropTypes.string.isRequired,
-        labelNote: React.PropTypes.string.isRequired,
-        fields: React.PropTypes.object.isRequired
+        label: PropTypes.string.isRequired,
+        labelTextual: PropTypes.string.isRequired,
+        labelNote: PropTypes.string.isRequired,
+        fields: PropTypes.object.isRequired
     };
 
     state = {

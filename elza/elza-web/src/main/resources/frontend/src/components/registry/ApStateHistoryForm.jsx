@@ -1,6 +1,8 @@
 /**
  * Formulář zobrazení hostorie.
  */
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n} from 'components/shared';
@@ -15,7 +17,7 @@ require("./ApStateHistoryForm.less");
 class ApStateHistoryForm extends AbstractReactComponent {
 
     static propTypes = {
-        accessPointId: React.PropTypes.number.isRequired,
+        accessPointId: PropTypes.number.isRequired,
     };
 
     constructor(props) {

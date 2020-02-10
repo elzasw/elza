@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
@@ -24,7 +25,7 @@ class AddDescItemTypeForm extends AbstractReactComponent {
     };
 
     static propTypes = {
-        descItemTypes: React.PropTypes.array.isRequired,
+        descItemTypes: PropTypes.array.isRequired,
     };
 
     static ITEM_TYPE_POSSIBLE = 'POSSIBLE';

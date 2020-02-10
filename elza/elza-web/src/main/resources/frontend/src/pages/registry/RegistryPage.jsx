@@ -47,11 +47,11 @@ class RegistryPage extends AbstractReactComponent {
         return { shortcuts: this.shortcutManager };
     }
     static PropTypes = {
-        splitter: React.PropTypes.object.isRequired,
-        registryRegion: React.PropTypes.object.isRequired,
-        refTables: React.PropTypes.object.isRequired,
-        focus: React.PropTypes.object.isRequired,
-        userDetail: React.PropTypes.object.isRequired
+        splitter: PropTypes.object.isRequired,
+        registryRegion: PropTypes.object.isRequired,
+        refTables: PropTypes.object.isRequired,
+        focus: PropTypes.object.isRequired,
+        userDetail: PropTypes.object.isRequired
     };
 
     state = {items: []};

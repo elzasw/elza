@@ -1,4 +1,6 @@
 // @flow
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import {connect} from 'react-redux'
 import {storeFromArea} from "./../utils";
@@ -14,8 +16,8 @@ import Autocomplete from "../../components/shared/autocomplete/Autocomplete";
 class StoreSuggestField extends React.Component {
 
     static PropTypes = {
-        area: React.PropTypes.string.isRequired,
-        apiCall: React.PropTypes.func.isRequired
+        area: PropTypes.string.isRequired,
+        apiCall: PropTypes.func.isRequired
     };
 
     componentDidMount() {

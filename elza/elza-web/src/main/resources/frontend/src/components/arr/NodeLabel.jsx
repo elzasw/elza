@@ -1,6 +1,8 @@
 /**
  * Komponenta zobrazuje název node včetně ikonky a reference mark.
  */
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import {AbstractReactComponent, Icon, i18n} from 'components/shared';
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
@@ -12,9 +14,9 @@ const NODE_NAME_MAX_CHARS = 60
 
 class NodeLabel extends AbstractReactComponent {
     static PropTypes = {
-        node: React.PropTypes.object.isRequired,    // struktura tree node client
-        nameMaxChars: React.PropTypes.number,
-        inline: React.PropTypes.bool,
+        node: PropTypes.object.isRequired,    // struktura tree node client
+        nameMaxChars: PropTypes.number,
+        inline: PropTypes.bool,
     };
 
     static defaultProps = {

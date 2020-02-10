@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -26,14 +27,14 @@ let _ReplaceId = null;
 class FundFiles extends AbstractReactComponent {
 
     static PropTypes = {
-        fundId: React.PropTypes.number.isRequired,
-        versionId: React.PropTypes.number.isRequired,
-        files: React.PropTypes.array,
-        filterText: React.PropTypes.string.isRequired,
-        fetched: React.PropTypes.bool.isRequired,
-        fundFiles: React.PropTypes.object.isRequired,   // store fund files
-        dms: React.PropTypes.object.isRequired,
-        readMode: React.PropTypes.bool,
+        fundId: PropTypes.number.isRequired,
+        versionId: PropTypes.number.isRequired,
+        files: PropTypes.array,
+        filterText: PropTypes.string.isRequired,
+        fetched: PropTypes.bool.isRequired,
+        fundFiles: PropTypes.object.isRequired,   // store fund files
+        dms: PropTypes.object.isRequired,
+        readMode: PropTypes.bool,
     };
 
     state = {

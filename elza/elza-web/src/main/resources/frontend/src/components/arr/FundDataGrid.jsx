@@ -2,6 +2,8 @@
  * Hromadné úpravy AS, tabulkové zobrazení.
  */
 
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -69,16 +71,16 @@ import * as groups from "../../actions/refTables/groups"
 
 class FundDataGrid extends AbstractReactComponent {
     static PropTypes = {
-        fundId: React.PropTypes.number.isRequired,
-        versionId: React.PropTypes.number.isRequired,
-        fund: React.PropTypes.object.isRequired,
-        rulDataTypes: React.PropTypes.object.isRequired,
-        descItemTypes: React.PropTypes.object.isRequired,
-        calendarTypes: React.PropTypes.object.isRequired,
-        ruleSet: React.PropTypes.object.isRequired,
-        readMode: React.PropTypes.bool.isRequired,
-        closed: React.PropTypes.bool.isRequired,
-        fundDataGrid: React.PropTypes.object.isRequired,    // store
+        fundId: PropTypes.number.isRequired,
+        versionId: PropTypes.number.isRequired,
+        fund: PropTypes.object.isRequired,
+        rulDataTypes: PropTypes.object.isRequired,
+        descItemTypes: PropTypes.object.isRequired,
+        calendarTypes: PropTypes.object.isRequired,
+        ruleSet: PropTypes.object.isRequired,
+        readMode: PropTypes.bool.isRequired,
+        closed: PropTypes.bool.isRequired,
+        fundDataGrid: PropTypes.object.isRequired,    // store
     };
 
     constructor(props) {

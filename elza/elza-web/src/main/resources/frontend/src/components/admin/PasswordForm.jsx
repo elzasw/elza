@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, Icon, FormInput, Autocomplete, VersionValidationState} from 'components/shared';
@@ -38,7 +39,7 @@ class PasswordForm extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        admin: React.PropTypes.bool
+        admin: PropTypes.bool
     };
 
     state = {};

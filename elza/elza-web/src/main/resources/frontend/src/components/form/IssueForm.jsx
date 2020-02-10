@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import * as React from 'react';
 import {Button, Form, Modal} from 'react-bootstrap';
 import {AbstractReactComponent, Icon} from 'components/shared';
@@ -17,7 +18,7 @@ class IssueForm extends AbstractReactComponent {
     }
 
     static propTypes = {
-        update: React.PropTypes.bool,
+        update: PropTypes.bool,
     };
 
     static requireFields = (...names) => data =>

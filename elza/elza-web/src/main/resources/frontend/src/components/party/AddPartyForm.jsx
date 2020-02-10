@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
@@ -106,8 +107,8 @@ class AddPartyForm extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        versionId: React.PropTypes.number,
-        partyType: React.PropTypes.object.isRequired,
+        versionId: PropTypes.number,
+        partyType: PropTypes.object.isRequired,
     };
 
     static defaultProps = {

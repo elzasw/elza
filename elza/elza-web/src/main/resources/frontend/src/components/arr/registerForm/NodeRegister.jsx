@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -12,13 +13,13 @@ import RegistryField from "../../registry/RegistryField";
 class NodeRegister extends AbstractReactComponent {
 
     static PropTypes = {
-        onChange: React.PropTypes.func.isRequired,
-        onCreateRecord: React.PropTypes.func.isRequired,
-        onDetail: React.PropTypes.func.isRequired,
-        versionId: React.PropTypes.number,
-        item: React.PropTypes.object,
-        closed: React.PropTypes.bool,
-        value: React.PropTypes.number
+        onChange: PropTypes.func.isRequired,
+        onCreateRecord: PropTypes.func.isRequired,
+        onDetail: PropTypes.func.isRequired,
+        versionId: PropTypes.number,
+        item: PropTypes.object,
+        closed: PropTypes.bool,
+        value: PropTypes.number
     };
 
     render() {

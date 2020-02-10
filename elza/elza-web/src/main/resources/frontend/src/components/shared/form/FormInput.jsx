@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import {Radio, FormControl, FormGroup, ControlLabel, HelpBlock} from 'react-bootstrap'
 import AbstractReactComponent from "../../AbstractReactComponent";
@@ -9,12 +10,12 @@ class FormInput extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        label: React.PropTypes.oneOfType([React.PropTypes.string, React.PropTypes.object]),
-        error: React.PropTypes.string,
-        touched: React.PropTypes.bool.isRequired,
-        feedback: React.PropTypes.bool,
-        placeholder: React.PropTypes.bool,
-        staticInput: React.PropTypes.bool,  // má se renderovat jako FormControl.Static?
+        label: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+        error: PropTypes.string,
+        touched: PropTypes.bool.isRequired,
+        feedback: PropTypes.bool,
+        placeholder: PropTypes.bool,
+        staticInput: PropTypes.bool,  // má se renderovat jako FormControl.Static?
     };
 
     render() {

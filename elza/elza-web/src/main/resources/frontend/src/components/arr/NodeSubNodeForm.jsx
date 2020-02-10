@@ -1,9 +1,12 @@
+import { notEmpty, objectById } from "../../shared/utils";
+import * as factory from "../../shared/factory";
+
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
 
-import {notEmpty, objectById} from "../../shared/utils";
-import * as factory from "../../shared/factory";
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import SubNodeForm from "./SubNodeForm";
 import {AbstractReactComponent, i18n, Icon, NoFocusButton} from 'components/shared';
@@ -659,32 +662,32 @@ function mapStateToProps(state) {
 }
 
 NodeSubNodeForm.propTypes = {
-    versionId: React.PropTypes.number.isRequired,
-    fundId: React.PropTypes.number.isRequired,
-    parentNode: React.PropTypes.object.isRequired,
-    selectedSubNode: React.PropTypes.object.isRequired,
-    selectedSubNodeId: React.PropTypes.number.isRequired,
-    routingKey: React.PropTypes.string.isRequired,
-    nodeId: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string]),
-    nodeSettings: React.PropTypes.object.isRequired,
-    rulDataTypes: React.PropTypes.object.isRequired,
-    calendarTypes: React.PropTypes.object.isRequired,
-    descItemTypes: React.PropTypes.object.isRequired,
-    structureTypes: React.PropTypes.object.isRequired,
-    subNodeForm: React.PropTypes.object.isRequired,
-    closed: React.PropTypes.bool.isRequired,
-    conformityInfo: React.PropTypes.object.isRequired,
-    descItemCopyFromPrevEnabled: React.PropTypes.bool.isRequired,
-    focus: React.PropTypes.object.isRequired,
-    userDetail: React.PropTypes.object.isRequired,
-    onAddDescItemType: React.PropTypes.func.isRequired,
-    onVisiblePolicy: React.PropTypes.func.isRequired,
-    onDigitizationRequest: React.PropTypes.func.isRequired,
-    onDigitizationSync: React.PropTypes.func.isRequired,
-    singleDescItemTypeId: React.PropTypes.number,
-    singleDescItemTypeEdit: React.PropTypes.bool,
-    readMode: React.PropTypes.bool,
-    arrPerm: React.PropTypes.bool,
+    versionId: PropTypes.number.isRequired,
+    fundId: PropTypes.number.isRequired,
+    parentNode: PropTypes.object.isRequired,
+    selectedSubNode: PropTypes.object.isRequired,
+    selectedSubNodeId: PropTypes.number.isRequired,
+    routingKey: PropTypes.string.isRequired,
+    nodeId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    nodeSettings: PropTypes.object.isRequired,
+    rulDataTypes: PropTypes.object.isRequired,
+    calendarTypes: PropTypes.object.isRequired,
+    descItemTypes: PropTypes.object.isRequired,
+    structureTypes: PropTypes.object.isRequired,
+    subNodeForm: PropTypes.object.isRequired,
+    closed: PropTypes.bool.isRequired,
+    conformityInfo: PropTypes.object.isRequired,
+    descItemCopyFromPrevEnabled: PropTypes.bool.isRequired,
+    focus: PropTypes.object.isRequired,
+    userDetail: PropTypes.object.isRequired,
+    onAddDescItemType: PropTypes.func.isRequired,
+    onVisiblePolicy: PropTypes.func.isRequired,
+    onDigitizationRequest: PropTypes.func.isRequired,
+    onDigitizationSync: PropTypes.func.isRequired,
+    singleDescItemTypeId: PropTypes.number,
+    singleDescItemTypeEdit: PropTypes.bool,
+    readMode: PropTypes.bool,
+    arrPerm: PropTypes.bool,
 }
 
 export default connect(mapStateToProps, null, null, { withRef: true })(NodeSubNodeForm);

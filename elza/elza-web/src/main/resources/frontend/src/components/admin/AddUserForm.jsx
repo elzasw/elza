@@ -2,6 +2,8 @@
  * Formulář přidání nebo uzavření AS.
  */
 
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
@@ -17,8 +19,8 @@ class AddUserForm extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        onCreateParty: React.PropTypes.func,
-        create: React.PropTypes.bool
+        onCreateParty: PropTypes.func,
+        create: PropTypes.bool
     };
 
     constructor(props) {

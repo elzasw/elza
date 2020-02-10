@@ -2,6 +2,8 @@
  * Formulář Požadavku na digitaliyaci nebo skartaci/delimitaci.
  */
 
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
@@ -18,8 +20,8 @@ const ArrRequestForm = class extends AbstractReactComponent {
     }
 
     static PropTypes = {
-        fundVersionId: React.PropTypes.number.isRequired,
-        type: React.PropTypes.oneOf(["DAO", "DIGITIZATION"]),
+        fundVersionId: PropTypes.number.isRequired,
+        type: PropTypes.oneOf(["DAO", "DIGITIZATION"]),
     };
 
     static fields = [

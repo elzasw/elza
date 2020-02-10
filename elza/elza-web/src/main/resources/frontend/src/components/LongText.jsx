@@ -4,13 +4,15 @@
     hodnota 164.
     Komponenta využívat klíč 'global.action.show.more' z messages.
 */
+import PropTypes from 'prop-types';
+
 import * as React from 'react';
 import i18n from "./i18n";
 
 export default class LongText extends React.Component {
     static propTypes = {
         // Maximální počet znaků pro zobrazení, pokud bude mít text více, bude zkrácen. Implicitně 164.
-        max: React.PropTypes.number,
+        max: PropTypes.number,
     };
     state = { expanded: false };
 

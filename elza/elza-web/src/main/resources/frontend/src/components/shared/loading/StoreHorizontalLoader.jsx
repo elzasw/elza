@@ -1,4 +1,6 @@
 // --
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import classNames from 'classnames';
 import i18n from "../../i18n";
@@ -11,8 +13,8 @@ import HorizontalLoader from "./HorizontalLoader";
 export default class StoreHorizontalLoader extends React.Component {
 
     static propTypes = {
-        text: React.PropTypes.string,
-        store: React.PropTypes.object,  // store, ze kterého načítá isFetching a fetched
+        text: PropTypes.string,
+        store: PropTypes.object,  // store, ze kterého načítá isFetching a fetched
     };
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -41,4 +43,4 @@ export default class StoreHorizontalLoader extends React.Component {
             return <div></div>
         }
     }
-};
+}

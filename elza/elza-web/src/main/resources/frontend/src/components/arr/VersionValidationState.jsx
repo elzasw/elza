@@ -1,8 +1,10 @@
+require('./VersionValidationState.less');
+
 /**
  * Komponenta pro zobrazení stavu verze
  */
 
-require('./VersionValidationState.less');
+import PropTypes from 'prop-types';
 
 import React from 'react';
 import {AbstractReactComponent, i18n, Icon} from 'components/shared';
@@ -31,9 +33,9 @@ var VersionValidationState = class VersionValidationState extends AbstractReactC
 
 
 VersionValidationState.propTypes = {
-    count: React.PropTypes.number.isRequired,
-    errExist: React.PropTypes.bool.isRequired,
-    isFetching: React.PropTypes.bool.isRequired
+    count: PropTypes.number.isRequired,
+    errExist: PropTypes.bool.isRequired,
+    isFetching: PropTypes.bool.isRequired
 };
 
 export default VersionValidationState;

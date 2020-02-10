@@ -6,6 +6,8 @@
  * @since 31.8.2016
  */
 
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -76,8 +78,8 @@ const AddNodeCross = class AddNodeCross extends AbstractReactComponent {
 };
 
 AddNodeCross.propTypes = {
-    node: React.PropTypes.any.isRequired,
-    userDetail: React.PropTypes.object.isRequired,
-    selectedSubNodeIndex: React.PropTypes.number.isRequired
+    node: PropTypes.any.isRequired,
+    userDetail: PropTypes.object.isRequired,
+    selectedSubNodeIndex: PropTypes.number.isRequired
 };
 export default connect()(AddNodeCross);

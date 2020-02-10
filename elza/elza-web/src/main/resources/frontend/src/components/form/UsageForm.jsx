@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import { Button, Col, Form, Modal, Row } from 'react-bootstrap';
 import { WebApi } from '../../actions/WebApi';
@@ -32,7 +33,7 @@ import { FUND_TREE_AREA_MAIN } from '../../actions/constants/ActionTypes';
 
 class RegistryUsageForm extends React.Component {
     static propTypes = {
-        detail: React.PropTypes.object
+        detail: PropTypes.object
     };
 
     rootFundIdfOffset = 0.1;

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
@@ -45,11 +46,11 @@ class FundForm extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        approve: React.PropTypes.bool,
-        create: React.PropTypes.bool,
-        update: React.PropTypes.bool,
-        ruleSet: React.PropTypes.bool,
-        scopeList: React.PropTypes.array
+        approve: PropTypes.bool,
+        create: PropTypes.bool,
+        update: PropTypes.bool,
+        ruleSet: PropTypes.bool,
+        scopeList: PropTypes.array
     };
 
     state = {};

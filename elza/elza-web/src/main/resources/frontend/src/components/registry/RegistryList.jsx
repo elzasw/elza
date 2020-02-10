@@ -1,6 +1,8 @@
 /**
  * Komponenta list rejstříků
  */
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import {connect} from 'react-redux'
 import {ListBox, AbstractReactComponent, SearchWithGoto, Autocomplete, i18n, ArrPanel, StoreHorizontalLoader, Icon} from 'components/shared';
@@ -23,7 +25,7 @@ import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
 class RegistryList extends AbstractReactComponent {
 
     static PropTypes = {
-        maxSize: React.PropTypes.number
+        maxSize: PropTypes.number
     };
 
     static defaultProps = {

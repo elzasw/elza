@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, Icon, i18n, ListBox, StoreHorizontalLoader, HorizontalLoader, FormInput} from 'components/shared';
@@ -28,12 +29,12 @@ class FundOutputFunctions extends AbstractReactComponent {
     state = {};
 
     static PropTypes = {
-        actionConfig: React.PropTypes.array,
-        outputId: React.PropTypes.number.isRequired,
-        versionId: React.PropTypes.number.isRequired,
-        readMode: React.PropTypes.bool.isRequired,
-        outputState: React.PropTypes.string.isRequired,
-        fundOutputFunctions: React.PropTypes.object.isRequired,
+        actionConfig: PropTypes.array,
+        outputId: PropTypes.number.isRequired,
+        versionId: PropTypes.number.isRequired,
+        readMode: PropTypes.bool.isRequired,
+        outputState: PropTypes.string.isRequired,
+        fundOutputFunctions: PropTypes.object.isRequired,
     };
 
     componentDidMount() {

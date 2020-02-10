@@ -1,17 +1,18 @@
+var PropTypes = require('prop-types');
 var React = require('react');
 var utils = require('./utils');
 
 var AccordionComponent = React.createClass({
     propTypes: {
-        items: React.PropTypes.array.isRequired,
-        itemCloseHeight: React.PropTypes.number.isRequired,
-        itemOpenHeight: React.PropTypes.number.isRequired,
-        renderItem: React.PropTypes.func.isRequired,
-        container: React.PropTypes.object.isRequired,
-        tagName: React.PropTypes.string.isRequired,
-        scrollDelay: React.PropTypes.number,
-        itemBuffer: React.PropTypes.number,
-        selectedId: React.PropTypes.number
+        items: PropTypes.array.isRequired,
+        itemCloseHeight: PropTypes.number.isRequired,
+        itemOpenHeight: PropTypes.number.isRequired,
+        renderItem: PropTypes.func.isRequired,
+        container: PropTypes.object.isRequired,
+        tagName: PropTypes.string.isRequired,
+        scrollDelay: PropTypes.number,
+        itemBuffer: PropTypes.number,
+        selectedId: PropTypes.number
     },
     getDefaultProps: function() {
         return {

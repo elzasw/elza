@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -19,8 +20,8 @@ import AddDescItemTypeForm from "../arr/nodeForm/AddDescItemTypeForm";
 class FragmentFormModal extends AbstractReactComponent {
 
     static PropTypes = {
-        fragmentId: React.PropTypes.number.isRequired,
-        fragmentItemForm: React.PropTypes.object.isRequired,
+        fragmentId: PropTypes.number.isRequired,
+        fragmentItemForm: PropTypes.object.isRequired,
     };
 
     add = () => {

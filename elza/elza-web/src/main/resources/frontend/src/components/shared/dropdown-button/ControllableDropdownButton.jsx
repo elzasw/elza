@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {DropdownButton} from 'react-bootstrap';
@@ -13,10 +14,10 @@ class ControllableDropdownButton extends AbstractReactComponent {
     }
 
     static propsTypes = {
-        id: React.PropTypes.string.isRequired,
-        children: React.PropTypes.array.isRequired,
-        onToggle: React.PropTypes.func,
-        open: React.PropTypes.bool
+        id: PropTypes.string.isRequired,
+        children: PropTypes.array.isRequired,
+        onToggle: PropTypes.func,
+        open: PropTypes.bool
     };
 
     componentWillReceiveProps(nextProps) {

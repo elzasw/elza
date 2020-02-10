@@ -45,10 +45,10 @@ class ArrRequestDetail extends AbstractReactComponent {
         return { shortcuts: this.shortcutManager };
     }
     static PropTypes = {
-        versionId: React.PropTypes.number.isRequired,
-        fund: React.PropTypes.object.isRequired,
-        userDetail: React.PropTypes.object.isRequired,
-        ArrRequestDetail: React.PropTypes.object.isRequired,
+        versionId: PropTypes.number.isRequired,
+        fund: PropTypes.object.isRequired,
+        userDetail: PropTypes.object.isRequired,
+        ArrRequestDetail: PropTypes.object.isRequired,
     };
 
     componentDidMount() {

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
@@ -18,10 +19,10 @@ class AddOutputForm extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        create: React.PropTypes.bool,
-        initData: React.PropTypes.object,
-        onSubmitForm: React.PropTypes.func.isRequired,
-        templates: React.PropTypes.array.isRequired
+        create: PropTypes.bool,
+        initData: PropTypes.object,
+        onSubmitForm: PropTypes.func.isRequired,
+        templates: PropTypes.array.isRequired
     };
 
     /**

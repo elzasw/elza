@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -91,8 +92,8 @@ var FundDetail = class FundDetail extends AbstractReactComponent {
 };
 
 FundDetail.propTypes = {
-    fundDetail: React.PropTypes.object.isRequired,
-    fundCount: React.PropTypes.number.isRequired
+    fundDetail: PropTypes.object.isRequired,
+    fundCount: PropTypes.number.isRequired
 };
 
 function mapStateToProps(state) {

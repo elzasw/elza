@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -15,11 +16,11 @@ import UpdateApItemNameFormModal from "../accesspoint/UpdateApItemNameFormModal"
 class ApDetailNames extends AbstractReactComponent {
 
     static PropTypes = {
-        canEdit: React.PropTypes.bool.isRequired,
-        accessPoint: React.PropTypes.object.isRequired,
-        type: React.PropTypes.object.isRequired,
-        refreshParty: React.PropTypes.func.isRequired,
-        renderError: React.PropTypes.func.isRequired,
+        canEdit: PropTypes.bool.isRequired,
+        accessPoint: PropTypes.object.isRequired,
+        type: PropTypes.object.isRequired,
+        refreshParty: PropTypes.func.isRequired,
+        renderError: PropTypes.func.isRequired,
     };
 
     getName = (name) => {

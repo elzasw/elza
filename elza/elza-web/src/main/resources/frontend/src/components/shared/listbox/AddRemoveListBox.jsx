@@ -1,4 +1,6 @@
 // --
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import ListBox from "./ListBox";
 import AbstractReactComponent from "../../AbstractReactComponent";
@@ -13,14 +15,14 @@ import "./AddRemoveListBox.less";
 
 class AddRemoveListBox extends AbstractReactComponent {
     static propTypes = {
-        items: React.PropTypes.array.isRequired,
-        onAdd: React.PropTypes.func.isRequired,
-        onRemove: React.PropTypes.func.isRequired,
-        renderItemContent: React.PropTypes.func,
-        addTitle: React.PropTypes.string,
-        removeTitle: React.PropTypes.string,
-        readOnly: React.PropTypes.bool,
-        canDeleteItem: React.PropTypes.func,
+        items: PropTypes.array.isRequired,
+        onAdd: PropTypes.func.isRequired,
+        onRemove: PropTypes.func.isRequired,
+        renderItemContent: PropTypes.func,
+        addTitle: PropTypes.string,
+        removeTitle: PropTypes.string,
+        readOnly: PropTypes.bool,
+        canDeleteItem: PropTypes.func,
     };
 
     static defaultProps = {

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from "react";
 import {WebApi} from "actions/index.jsx";
 import {AbstractReactComponent, Autocomplete} from 'components/shared';
@@ -55,11 +56,11 @@ const GroupField = class GroupField extends AbstractReactComponent {
 }
 
 GroupField.propTypes = {
-    value: React.PropTypes.object,
-    onChange: React.PropTypes.func.isRequired,
-    inline: React.PropTypes.bool,
-    touched: React.PropTypes.bool,
-    error: React.PropTypes.string,
+    value: PropTypes.object,
+    onChange: PropTypes.func.isRequired,
+    inline: PropTypes.bool,
+    touched: PropTypes.bool,
+    error: PropTypes.string,
 }
 
 GroupField.defaultProps = {

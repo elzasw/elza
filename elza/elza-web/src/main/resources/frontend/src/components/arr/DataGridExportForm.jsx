@@ -2,6 +2,8 @@
  * Formulář nastavení funkce pro perzistentní řazení
  *
  */
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {Form} from 'react-bootstrap';
@@ -41,7 +43,7 @@ const EXPORT_TYPE = {
 class DataGridExportForm extends AbstractReactComponent {
 
     static PropTypes = {
-        versionId: React.PropTypes.number.isRequired,
+        versionId: PropTypes.number.isRequired,
     };
 
     render() {

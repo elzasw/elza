@@ -1,6 +1,8 @@
 /**
  * Obal pro PartyField
  */
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -25,10 +27,10 @@ import PartySelectPage from "../../../pages/select/PartySelectPage";
 class DescItemPartyRef extends AbstractReactComponent {
 
     static PropTypes = {
-        onChange: React.PropTypes.func.isRequired,
-        onCreateParty: React.PropTypes.func.isRequired,
-        onDetail: React.PropTypes.func.isRequired,
-        versionId: React.PropTypes.number
+        onChange: PropTypes.func.isRequired,
+        onCreateParty: PropTypes.func.isRequired,
+        onDetail: PropTypes.func.isRequired,
+        versionId: PropTypes.number
     };
 
     focus = () => {

@@ -1,4 +1,6 @@
 // --
+import PropTypes from 'prop-types';
+
 import React from 'react';
 import {connect} from 'react-redux'
 import {Icon, AbstractReactComponent, Tabs, i18n} from 'components/shared';
@@ -182,11 +184,11 @@ class GroupDetail extends AbstractReactComponent {
             </AdminRightsContainer>}
         </div>;
     }
-};
+}
 
 GroupDetail.propTypes = {
-    groupDetail: React.PropTypes.object.isRequired,
-    groupCount: React.PropTypes.number.isRequired
+    groupDetail: PropTypes.object.isRequired,
+    groupCount: PropTypes.number.isRequired
 };
 
 function mapStateToProps(state) {

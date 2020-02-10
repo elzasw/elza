@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {WebApi} from 'actions/index.jsx';
@@ -38,20 +39,20 @@ class RegistryField extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        detail: React.PropTypes.bool.isRequired,
-        footer: React.PropTypes.bool.isRequired,
-        footerButtons: React.PropTypes.bool,
-        value: React.PropTypes.object,
-        undefined: React.PropTypes.bool,
-        onChange: React.PropTypes.func.isRequired,
-        onDetail: React.PropTypes.func,
-        onCreate: React.PropTypes.func.isRequired,
-        registryParent: React.PropTypes.number,
-        apTypeId: React.PropTypes.number,
-        itemSpecId: React.PropTypes.number,
-        roleTypeId: React.PropTypes.number,
-        partyId: React.PropTypes.number,
-        versionId: React.PropTypes.number
+        detail: PropTypes.bool.isRequired,
+        footer: PropTypes.bool.isRequired,
+        footerButtons: PropTypes.bool,
+        value: PropTypes.object,
+        undefined: PropTypes.bool,
+        onChange: PropTypes.func.isRequired,
+        onDetail: PropTypes.func,
+        onCreate: PropTypes.func.isRequired,
+        registryParent: PropTypes.number,
+        apTypeId: PropTypes.number,
+        itemSpecId: PropTypes.number,
+        roleTypeId: PropTypes.number,
+        partyId: PropTypes.number,
+        versionId: PropTypes.number
     };
 
     state = {registryList: [], count: null, searchText: null};

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react'
 import {createElement} from "react";
 import {Alert} from 'react-bootstrap';
@@ -29,7 +30,7 @@ import i18n from "../../i18n";
 class Toastr extends AbstractReactComponent {
 
     static PropTypes = {
-        store: React.PropTypes.object.isRequired
+        store: PropTypes.object.isRequired
     };
 
     handleDismiss = (index) => {

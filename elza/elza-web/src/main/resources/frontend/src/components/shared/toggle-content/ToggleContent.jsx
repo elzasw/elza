@@ -14,6 +14,8 @@
  *
  */
 
+import PropTypes from 'prop-types';
+
 import React from 'react';
 
 import classNames from 'classnames'
@@ -36,7 +38,7 @@ class ToggleContent extends React.Component {
     }
 
     static childContextTypes = {
-        isParentOpened: React.PropTypes.bool
+        isParentOpened: PropTypes.bool
     };
 
     getChildContext() {

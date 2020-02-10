@@ -1,4 +1,6 @@
 // ---
+import PropTypes from 'prop-types';
+
 import React from "react";
 import {WebApi} from "actions/index.jsx";
 import {AbstractReactComponent, Autocomplete, Utils} from 'components/shared';
@@ -17,14 +19,14 @@ class UserAndGroupField extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        findUserApi: React.PropTypes.func,  // api meoda pro dohledání uživatele, standardně WebApi.findUser, předpis (fulltext, active, disabled, max = DEFAULT_LIST_SIZE, groupId = null)
-        findGroupApi: React.PropTypes.func,  // api meoda pro dohledání skupinz, standardně WebApi.findGroup, předpis: (fulltext, max = DEFAULT_LIST_SIZE)
-        value: React.PropTypes.object,
-        onChange: React.PropTypes.func.isRequired,
-        inline: React.PropTypes.bool,
-        touched: React.PropTypes.bool,
-        error: React.PropTypes.string,
-        tags: React.PropTypes.bool,
+        findUserApi: PropTypes.func,  // api meoda pro dohledání uživatele, standardně WebApi.findUser, předpis (fulltext, active, disabled, max = DEFAULT_LIST_SIZE, groupId = null)
+        findGroupApi: PropTypes.func,  // api meoda pro dohledání skupinz, standardně WebApi.findGroup, předpis: (fulltext, max = DEFAULT_LIST_SIZE)
+        value: PropTypes.object,
+        onChange: PropTypes.func.isRequired,
+        inline: PropTypes.bool,
+        touched: PropTypes.bool,
+        error: PropTypes.string,
+        tags: PropTypes.bool,
     };
 
     constructor(props) {

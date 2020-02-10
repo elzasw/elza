@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {Modal, Button, Checkbox, Form} from 'react-bootstrap';
@@ -33,9 +34,9 @@ class ImportForm extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        party: React.PropTypes.bool,
-        record: React.PropTypes.bool,
-        fund: React.PropTypes.bool
+        party: PropTypes.bool,
+        record: PropTypes.bool,
+        fund: PropTypes.bool
     };
 
     state = {

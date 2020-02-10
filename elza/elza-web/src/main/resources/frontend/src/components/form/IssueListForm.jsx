@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import * as React from 'react';
 import {Button, Row, Col, Form} from 'react-bootstrap';
 import {AbstractReactComponent, Icon} from 'components/shared';
@@ -12,10 +13,10 @@ import {WebApi} from "../../actions";
 class IssueListForm extends AbstractReactComponent {
 
     static propTypes = {
-        onCreate: React.PropTypes.func.isRequired,
-        onSave: React.PropTypes.func.isRequired,
-        id: React.PropTypes.number,
-        fundId: React.PropTypes.number.isRequired,
+        onCreate: PropTypes.func.isRequired,
+        onSave: PropTypes.func.isRequired,
+        id: PropTypes.number,
+        fundId: PropTypes.number.isRequired,
     };
 
     static requireFields = (...names) => data =>

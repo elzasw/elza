@@ -1,4 +1,5 @@
 import NodeLabel from "./NodeLabel";
+import PropTypes from 'prop-types';
 import React from "react";
 import {connect} from "react-redux";
 import {AbstractReactComponent, i18n, Icon, NoFocusButton} from 'components/shared';
@@ -19,11 +20,11 @@ class ArrDao extends AbstractReactComponent {
     }
 
     static PropTypes = {
-        dao: React.PropTypes.object.isRequired,
-        daoFile: React.PropTypes.object,
-        fund: React.PropTypes.object.isRequired,
-        onUnlink: React.PropTypes.func.isRequired,
-        readMode: React.PropTypes.bool.isRequired
+        dao: PropTypes.object.isRequired,
+        daoFile: PropTypes.object,
+        fund: PropTypes.object.isRequired,
+        onUnlink: PropTypes.func.isRequired,
+        readMode: PropTypes.bool.isRequired
     };
 
     componentDidMount() {

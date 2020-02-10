@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {TooltipTrigger, AbstractReactComponent, i18n, NoFocusButton, Icon, FormInput} from 'components/shared';
@@ -22,11 +23,11 @@ class DescItemCoordinates extends AbstractReactComponent {
     }
 
     static PropTypes = {
-        onChange: React.PropTypes.func.isRequired,
-        onDownload: React.PropTypes.func.isRequired,
-        onUpload: React.PropTypes.func,
-        descItem: React.PropTypes.object.isRequired,
-        repeatable: React.PropTypes.bool.isRequired
+        onChange: PropTypes.func.isRequired,
+        onDownload: PropTypes.func.isRequired,
+        onUpload: PropTypes.func,
+        descItem: PropTypes.object.isRequired,
+        repeatable: PropTypes.bool.isRequired
     };
 
     componentWillReceiveProps(nextProps) {

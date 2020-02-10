@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux'
 import {i18n, AbstractReactComponent} from 'components/shared';
@@ -28,10 +29,10 @@ import FundTreeLazy from "./FundTreeLazy";
 class FundNodesSelect extends AbstractReactComponent {
 
     static propTypes = {
-        multipleSelection: React.PropTypes.bool,
-        multipleSelectionOneLevel: React.PropTypes.bool,
-        selectedId: React.PropTypes.number, // pokud je předáno (není undefined) a jedná se o ne multiselect tree, bude daná položka zobrazena jako vybraná (v případě null se vše odznačí) - strom se nainicializuje s touto položkou
-        onChange: React.PropTypes.func, // funkce, která předává ([ids], [nodes])
+        multipleSelection: PropTypes.bool,
+        multipleSelectionOneLevel: PropTypes.bool,
+        selectedId: PropTypes.number, // pokud je předáno (není undefined) a jedná se o ne multiselect tree, bude daná položka zobrazena jako vybraná (v případě null se vše odznačí) - strom se nainicializuje s touto položkou
+        onChange: PropTypes.func, // funkce, která předává ([ids], [nodes])
     };
 
     static defaultProps = {

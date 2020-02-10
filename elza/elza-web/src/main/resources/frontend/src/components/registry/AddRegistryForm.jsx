@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
@@ -43,8 +44,8 @@ class AddRegistryForm extends AbstractReactComponent {
     };
 
     static PropTypes = {
-        versionId: React.PropTypes.number,
-        showSubmitTypes: React.PropTypes.bool.isRequired
+        versionId: PropTypes.number,
+        showSubmitTypes: PropTypes.bool.isRequired
     };
 
     static defaultProps = {
