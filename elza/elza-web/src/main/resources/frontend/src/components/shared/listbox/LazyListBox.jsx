@@ -20,7 +20,7 @@ import defaultKeymap from './LazyListBoxKeymap.jsx';
 const _LLB_FETCH_DELAY = 32
 const _LLB_FETCH_BOUNDARY = 200
 
-var LazyListBox = class LazyListBox extends AbstractReactComponent {
+class LazyListBox extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
     componentWillMount(){
@@ -60,6 +60,17 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
         this.setState({mainContainer: ReactDOM.findDOMNode(this.refs.mainContainer)});
         this.callFetch(0, 1, true)
     }
+
+    static defaultProps = {
+        renderItemContent: (item, isActive, index) => {
+            return (
+                <div>{item !== null ? (item.name) : ('i' + index)}</div>
+            )
+        },
+        itemHeight: 24,
+        separateFocus: true,
+        itemIdAttrName: "id",
+    };
 
     componentWillReceiveProps(nextProps) {
         var newState = {
@@ -485,15 +496,5 @@ var LazyListBox = class LazyListBox extends AbstractReactComponent {
     }
 }
 
-LazyListBox.defaultProps = {
-    renderItemContent: (item, isActive, index) => {
-        return (
-            <div>{item !== null ? (item.name) : ('i' + index)}</div>
-        )
-    },
-    itemHeight: 24,
-    separateFocus: true,
-    itemIdAttrName: "id",
-}
 
 export default LazyListBox
