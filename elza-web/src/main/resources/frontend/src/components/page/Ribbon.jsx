@@ -22,7 +22,7 @@ import PasswordForm from "../admin/PasswordForm";
 
 class Ribbon extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         subMenu: PropTypes.bool,
         primarySection: PropTypes.object,
         admin: PropTypes.bool,

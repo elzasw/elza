@@ -19,7 +19,7 @@ import AddDescItemTypeForm from "../arr/nodeForm/AddDescItemTypeForm";
  */
 class NewApItemNameFormModal extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         objectId: PropTypes.number.isRequired,
         accessPointId: PropTypes.number.isRequired,
         nameItemForm: PropTypes.object.isRequired,

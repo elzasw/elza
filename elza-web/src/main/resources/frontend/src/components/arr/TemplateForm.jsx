@@ -37,7 +37,7 @@ class TemplateForm extends AbstractReactComponent {
         return errors;
     };
 
-    static PropTypes = {
+    static propTypes = {
 
     };
 

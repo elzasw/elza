@@ -20,7 +20,7 @@ import DescItemFactory from "components/arr/nodeForm/DescItemFactory.jsx";
  */
 class OutputSubNodeForm extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         versionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
         selectedSubNodeId: PropTypes.number.isRequired,

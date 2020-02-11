@@ -3,7 +3,6 @@
  */
 
 import React from 'react';
-import {hot} from 'react-hot-loader'
 import { Provider } from 'react-redux'
 
 
@@ -11,10 +10,14 @@ import Layout from 'pages/Layout.jsx';
 import {Route} from "react-router";
 import {BrowserRouter} from "react-router-dom";
 
+const serverContextPath = window.serverContextPath;
+const __DEVTOOLS__ = window.__DEVTOOLS__;
+
 class Root extends React.Component {
 
     devTools() {
         const elements = [];
+        // eslint-disable-line
         if (typeof __DEVTOOLS__ !== 'undefined' && __DEVTOOLS__) {
             /*eslint-disable*/
             const DevTools = require('./DevTools').default;
@@ -39,5 +42,5 @@ class Root extends React.Component {
 
 
 
-export default hot(module)(Root)
+export default Root
 

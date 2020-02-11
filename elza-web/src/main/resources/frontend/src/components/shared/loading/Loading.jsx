@@ -5,7 +5,7 @@ import i18n from "../../i18n";
 
 const Loading = (
     {
-        value,
+        value = null,
     },
 ) => {
     return <div className="loading">{value ? value : i18n('global.data.loading')}</div>;

@@ -8,7 +8,7 @@ import {Button} from 'react-bootstrap';
 import './ArrPanel.less';
 
 class ArrPanel extends AbstractReactComponent {
-    static PropTypes = {
+    static propTypes = {
         name: PropTypes.string.isRequired,
         onReset: PropTypes.func.isRequired
     };

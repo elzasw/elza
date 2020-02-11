@@ -10,10 +10,3 @@ export const AREA = 'apExtSystemList';
 export function apExtSystemListFetchIfNeeded() {
     return SimpleListActions.fetchIfNeeded(AREA, true, () => WebApi.getApExternalSystems().then(json => ({rows: json, count: 0})));
 }
-
-/**
- * Invalidace seznamu osob
- */
-export function apExtSystemListInvalidate() {
-    return DetailActions.invalidate(AREA, null);
-}

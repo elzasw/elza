@@ -1,3 +1,9 @@
-export * as detail from './detail'
-export * as list from './list'
-export * as utils from './utils'
+import * as detail from './detail'
+import * as list from './list'
+import * as utils from './utils'
+
+export {
+    detail,
+    list,
+    utils
+}

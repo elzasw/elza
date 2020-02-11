@@ -1,7 +1,7 @@
 import './Resizer.less'
 import React from 'react';
 
-export default const Resizer = (
+const Resizer = (
     {
         horizontal,
         onMouseDown,
@@ -9,4 +9,6 @@ export default const Resizer = (
 ) => {
     return <span className={'Resizer ' + (horizontal ? "horizontal" : "vertical")} onMouseDown={onMouseDown} />;
 };
+
+export default Resizer;
 

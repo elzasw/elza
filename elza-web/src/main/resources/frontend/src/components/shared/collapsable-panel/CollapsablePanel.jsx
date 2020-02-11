@@ -18,7 +18,7 @@ class CollapsablePanel extends AbstractReactComponent {
     getChildContext() {
         return { shortcuts: this.shortcutManager };
     }
-    static PropTypes = {
+    static propTypes = {
         isOpen: PropTypes.bool.isRequired,
         pinned: PropTypes.bool.isRequired,
         onSelect: PropTypes.func.isRequired,

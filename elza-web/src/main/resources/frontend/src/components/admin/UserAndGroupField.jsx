@@ -18,7 +18,7 @@ class UserAndGroupField extends AbstractReactComponent {
         findGroupApi: WebApi.findGroup,
     };
 
-    static PropTypes = {
+    static propTypes = {
         findUserApi: PropTypes.func,  // api meoda pro dohledání uživatele, standardně WebApi.findUser, předpis (fulltext, active, disabled, max = DEFAULT_LIST_SIZE, groupId = null)
         findGroupApi: PropTypes.func,  // api meoda pro dohledání skupinz, standardně WebApi.findGroup, předpis: (fulltext, max = DEFAULT_LIST_SIZE)
         value: PropTypes.object,

@@ -19,6 +19,8 @@ import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {setInputFocus} from 'components/Utils.jsx'
 
+const $ = window.$;
+
 class FundDataGridCellForm extends AbstractReactComponent {
     constructor(props) {
         super(props);

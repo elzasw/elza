@@ -11,7 +11,7 @@ import './PartyListItem.less';
  */
 class PartyListItem extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         onClick: PropTypes.func,
         partyType: PropTypes.object.isRequired,
         relationTypesForClass: PropTypes.object,

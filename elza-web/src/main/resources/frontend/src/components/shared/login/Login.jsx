@@ -12,7 +12,7 @@ import FormInput from "../form/FormInput";
 import i18n from "../../i18n";
 import AbstractReactComponent from "../../AbstractReactComponent";
 
-const defaultEnabled = typeof defaultUserEnabled !== "undefined" && defaultUserEnabled;
+const defaultEnabled = typeof window.defaultUserEnabled !== "undefined" && window.defaultUserEnabled;
 
 const getDefaultLogin = () => {
     if (defaultEnabled){

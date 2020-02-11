@@ -66,7 +66,7 @@ class ArrFundPanel extends AbstractReactComponent {
         let comments = null;
         const activeVersion = fund.activeVersion;
         if (activeVersion.issues && activeVersion.issues.length > 0) {
-            const tooltip = <span>{activeVersion.issues.map((i: IssueVO) => <div key={i.id}>#{i.number} - {i.description}</div>)}</span>;
+            const tooltip = <span>{activeVersion.issues.map((i) => <div key={i.id}>#{i.number} - {i.description}</div>)}</span>;
             comments = <span className="comments">
                 <TooltipTrigger
                     content={tooltip}

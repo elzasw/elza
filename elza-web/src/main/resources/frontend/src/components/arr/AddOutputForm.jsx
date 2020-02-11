@@ -18,7 +18,7 @@ class AddOutputForm extends AbstractReactComponent {
         create: false
     };
 
-    static PropTypes = {
+    static propTypes = {
         create: PropTypes.bool,
         initData: PropTypes.object,
         onSubmitForm: PropTypes.func.isRequired,

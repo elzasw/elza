@@ -21,7 +21,7 @@ class ScopeLists extends AbstractReactComponent {
         this.fetchData(this.props);
     }
 
-    componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
+    componentWillReceiveProps(nextProps) {
         this.fetchData(nextProps);
     }
 

@@ -16,7 +16,7 @@ import * as perms from 'actions/user/Permission.jsx';
 import {AbstractReactComponent, i18n} from 'components/shared';
 import {getOneSettings, isFundRootId} from 'components/arr/ArrUtils.jsx';
 
-require ('./AddNodeCross.less');
+import './AddNodeCross.less';
 
 const AddNodeCross = class AddNodeCross extends AbstractReactComponent {
     constructor(props) {

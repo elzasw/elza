@@ -188,7 +188,11 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
 
         let ref, descItem;
         if (typeof item.descItemObjectId !== 'undefined' && item.descItemObjectId !== null) {   // konkrétní hodnota
-            descItem = descItemType.items[indexById(descItemType.items, item.descItemObjectId, 'descItemObjectId')];
+            const indexDesIt = indexById(descItemType.items, item.descItemObjectId, 'descItemObjectId');
+            if (indexDesIt === null) {
+                return;
+            }
+            descItem = descItemType.items[indexDesIt];
             ref = this.refs[refPrefix + descItem.formKey]
         } else if (typeof item.descItemIndex !== 'undefined' && item.descItemIndex !== null) {   // konkrétní index
             descItem = descItemType.items[item.descItemIndex];
@@ -228,6 +232,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         const {infoType, refType, readMode, strictMode} = this.props;
 
         return (
+            // @ts-ignore
             <DescItemTypeSpec
                 key={key}
                 ref={key}

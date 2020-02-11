@@ -13,7 +13,7 @@ require("./NodeLabel.less")
 const NODE_NAME_MAX_CHARS = 60
 
 class NodeLabel extends AbstractReactComponent {
-    static PropTypes = {
+    static propTypes = {
         node: PropTypes.object.isRequired,    // struktura tree node client
         nameMaxChars: PropTypes.number,
         inline: PropTypes.bool,

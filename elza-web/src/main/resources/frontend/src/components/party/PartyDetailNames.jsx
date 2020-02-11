@@ -13,7 +13,7 @@ import PartyNameForm from "./PartyNameForm";
 
 class PartyDetailNames extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         canEdit: PropTypes.bool.isRequired,
         party: PropTypes.object.isRequired,
         partyType: PropTypes.object.isRequired,
@@ -120,13 +120,13 @@ class PartyDetailNames extends AbstractReactComponent {
     };
 
     handleDelete = (id) => {
-        if (confirm(i18n('party.detail.name.delete'))) {
+        if (window.confirm(i18n('party.detail.name.delete'))) {
             this.partyNameDelete(id);
         }
     };
 
     handleSelectPreffered = (id) => {
-        if (confirm(i18n('party.detail.name.setPrefferedNameAlert'))) {
+        if (window.confirm(i18n('party.detail.name.setPrefferedNameAlert'))) {
             this.partyNameSetPreffered(id);
         }
     };

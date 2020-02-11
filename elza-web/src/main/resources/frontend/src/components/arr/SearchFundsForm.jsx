@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from "react-redux";
 import { Modal } from 'react-bootstrap';
-const classNames = require('classnames');
+import classNames from 'classnames';
 import { decorateFormField, submitForm } from 'components/form/FormUtils.jsx'
 import { createReferenceMark, getNodeIcon, getFundFromFundAndVersion } from 'components/arr/ArrUtils.jsx'
 import { AbstractReactComponent, FormInput, Icon, i18n } from 'components/shared';

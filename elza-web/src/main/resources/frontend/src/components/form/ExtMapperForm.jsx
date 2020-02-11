@@ -10,7 +10,7 @@ import * as perms from 'actions/user/Permission.jsx';
 import AbstractReactComponent from "../AbstractReactComponent";
 import i18n from "../i18n";
 
-require('./ExtMapperForm.less');
+import './ExtMapperForm.less';;
 
 const INTERPI_CLASS = {
     POCATEK_EXISTENCE: 'POCATEK_EXISTENCE',
@@ -99,7 +99,7 @@ class ExtMapperForm extends AbstractReactComponent {
                                     <td/>
                                     <td>
                                         <FormInput componentClass="select" disabled={!hasPermission} {...i.relationTypeId} onChange={(ev) => {
-                                            const save = confirm(i18n('extMapperForm.saveAsDefaultMapping'));
+                                            const save = window.confirm(i18n('extMapperForm.saveAsDefaultMapping'));
                                             i.save.onChange(save);
                                             i.relationTypeId.onChange(ev);
                                         }}>
@@ -116,7 +116,7 @@ class ExtMapperForm extends AbstractReactComponent {
                                     <td><Icon glyph="fa-arrow-right" /></td>
                                     <td>
                                         <FormInput componentClass="select" disabled={!hasPermission || !i.relationTypeId.value} {...e.relationRoleTypeId} onChange={(ev) => {
-                                            const save = confirm(i18n('extMapperForm.saveAsDefaultMapping'));
+                                            const save = window.confirm(i18n('extMapperForm.saveAsDefaultMapping'));
                                             e.save.onChange(save);
                                             e.relationRoleTypeId.onChange(ev);
                                         }} >

@@ -703,8 +703,8 @@ export default function subNodeForm(state = initialState, action = {}) {
             }
 
             return result;
-        case types.FUND_SUBNODE_UPDATE:
-            var {node, parent} = action.data;
+        case types.FUND_SUBNODE_UPDATE:{
+            const {node, parent} = action.data;
             let nodeId = (node && node.id) || (parent && parent.id);
 
             if (nodeId != state.nodeId){
@@ -712,7 +712,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 return state;
             }
 
-            var result = {
+            const result = {
                 ...state,
                 isFetching: false,
                 fetched: true,
@@ -725,7 +725,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             mergeAfterUpdate(result, action.data, action.refTables); // merges result with data from action
 
             return result;
-
+        }
         case types.CHANGE_FUND_RECORD:
             return {
                 ...state,
@@ -736,7 +736,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                         version: action.version
                     }
                 }
-            }
+            };
         default:
             return state
     }

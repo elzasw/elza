@@ -23,7 +23,7 @@ class ArrDaos extends AbstractReactComponent {
         leftSize: 240,
     };
 
-    static PropTypes = {
+    static propTypes = {
         type: PropTypes.oneOf(['PACKAGE', 'NODE', 'NODE_ASSIGN']).isRequired,
         unassigned: PropTypes.bool,   // jen v případě packages
         fund: PropTypes.object.isRequired,

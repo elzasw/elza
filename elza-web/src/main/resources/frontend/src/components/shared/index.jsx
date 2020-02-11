@@ -1,6 +1,16 @@
-export * as Utils from '../Utils'
+import * as Utils from '../Utils'
+import * as ExceptionUtils from 'components/ExceptionUtils.jsx';
+import * as Toastr from 'components/shared/toastr/index.jsx';
+import * as Tabs from 'components/shared/tabs/Tabs.jsx';
+
+export {
+    Utils,
+    ExceptionUtils,
+    Toastr,
+    Tabs
+}
 export {default as AbstractReactComponent} from 'components/AbstractReactComponent.jsx';
-export * as ExceptionUtils from 'components/ExceptionUtils.jsx';
+
 export {default as i18n} from 'components/i18n.jsx';
 export {default as LongText} from 'components/LongText.jsx';
 export {default as CheckListBox} from 'components/shared/listbox/CheckListBox.jsx';
@@ -10,13 +20,13 @@ export {default as LazyListBox} from 'components/shared/listbox/LazyListBox.jsx'
 export {default as FilterableListBox} from 'components/shared/listbox/FilterableListBox.jsx';
 export {default as FileListBox} from 'components/shared/listbox/FileListBox.jsx';
 export {default as NoFocusButton} from 'components/shared/button/NoFocusButton.jsx';
-export * as Toastr from 'components/shared/toastr/index.jsx';
+
 export {default as RibbonMenu} from 'components/shared/ribbon-menu/RibbonMenu.jsx';
 export {default as RibbonGroup} from 'components/shared/ribbon-menu/RibbonGroup.jsx';
 export {default as RibbonSplit} from 'components/shared/ribbon-menu/RibbonSplit.jsx';
 export {default as Icon} from 'components/shared/icon/Icon.jsx';
 export {default as ToggleContent} from 'components/shared/toggle-content/ToggleContent.jsx';
-export * as Tabs from 'components/shared/tabs/Tabs.jsx';
+
 export {default as Search} from 'components/shared/search/Search.jsx';
 export {default as SearchWithGoto} from 'components/shared/search/SearchWithGoto.jsx';
 export {default as Loading} from 'components/shared/loading/Loading.jsx';

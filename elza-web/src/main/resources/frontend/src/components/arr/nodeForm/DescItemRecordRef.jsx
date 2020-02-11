@@ -10,18 +10,18 @@ import DescItemLabel from './DescItemLabel.jsx'
 import './DescItemRecordRef.less'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {registryDetailFetchIfNeeded, registryListFilter, registryDetailClear, AREA_REGISTRY_LIST} from 'actions/registry/registry.jsx'
+import {partyDetailFetchIfNeeded, partyListFilter, partyDetailClear, AREA_PARTY_LIST} from 'actions/party/party.jsx'
+import classNames from 'classnames'
+import {storeFromArea, objectById} from 'shared/utils'
+import {MODAL_DIALOG_VARIANT} from '../../../constants.tsx'
+
 
 //import RegistrySelectPage from 'pages/select/RegistrySelectPage.jsx'
 let RegistrySelectPage;
 import('pages/select/RegistrySelectPage.jsx').then((a) => {
     RegistrySelectPage = a.default;
 });
-
-import {registryDetailFetchIfNeeded, registryListFilter, registryDetailClear, AREA_REGISTRY_LIST} from 'actions/registry/registry.jsx'
-import {partyDetailFetchIfNeeded, partyListFilter, partyDetailClear, AREA_PARTY_LIST} from 'actions/party/party.jsx'
-import classNames from 'classnames'
-import {storeFromArea, objectById} from 'shared/utils'
-import {MODAL_DIALOG_VARIANT} from '../../../constants.tsx'
 
 //import RegistryField from "../../registry/RegistryField";
 let RegistryField;
@@ -39,7 +39,7 @@ class DescItemRecordRef extends AbstractReactComponent {
         hasSpecification: false,
     };
 
-    static PropTypes = {
+    static propTypes = {
         descItem: PropTypes.object.isRequired,
         hasSpecification: PropTypes.bool,
         itemName: PropTypes.string.isRequired,

@@ -9,7 +9,7 @@ import {TooltipTrigger, AbstractReactComponent, i18n} from 'components/shared';
 
 class ItemTooltipWrapper extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         tooltipTitle: PropTypes.string.isRequired,
     }
 

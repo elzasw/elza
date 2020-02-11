@@ -19,7 +19,7 @@ import {ItemFactory} from "./ItemFactory";
  */
 class AccessPointForm extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         selectedSubNodeId: PropTypes.number.isRequired,
         rulDataTypes: PropTypes.object.isRequired,
         calendarTypes: PropTypes.object.isRequired,

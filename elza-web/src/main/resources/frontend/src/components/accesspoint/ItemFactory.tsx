@@ -21,7 +21,7 @@ import('../arr/nodeForm/DescItemPartyRef.jsx').then(x => ItemFactory.typeCompone
 import('../arr/nodeForm/DescItemStructureRef.jsx').then(x => ItemFactory.typeComponentMap[DataTypeCode.STRUCTURED] = x);
 
 export class ItemFactory implements ItemFactoryInterface {
-    static typeComponentMap = {
+    static typeComponentMap: any = {
         [DataTypeCode.PARTY_REF]: null,//DescItemPartyRef,
         [DataTypeCode.RECORD_REF]: DescItemRecordRef,
         [DataTypeCode.STRUCTURED]: null,//DescItemStructureRef,

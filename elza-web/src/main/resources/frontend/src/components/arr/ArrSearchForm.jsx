@@ -28,7 +28,7 @@ const CONTAINS = "CONTAINS";
  * Formulář zobrazení hostorie.
  */
 class ArrSearchForm extends AbstractReactComponent {
-    static PropTypes = {};
+    static propTypes = {};
 
 
     static validate(values, props) {

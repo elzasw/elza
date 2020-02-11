@@ -44,7 +44,7 @@ class IssueListForm extends AbstractReactComponent {
 
     static initialValues = {open: true, rdUsers: [], wrUsers: []};
 
-    componentDidUpdate(prevProps: Readonly<P>, prevState: Readonly<S>, prevContext: any): void {
+    componentDidUpdate(prevProps, prevState, prevContext) {
         if (prevProps.id && !this.props.id) {
             this.props.resetForm();
         } else if (this.props.fields
@@ -110,7 +110,7 @@ export default reduxForm({
     validate: IssueListForm.validate,
     asyncBlurFields: IssueListForm.fields,
     // Async validace zneužita k ukládání dat
-    asyncValidate: (values: FormData, dispatch: Dispatch<any>, props: {fundId: number, id: number, onCreate: Function, onSave: Function, values: Object}) : Promise<any> => {
+    asyncValidate: (values, dispatch, props) => {
         const errors = IssueListForm.validate(values, props);
         if (Object.keys(errors).length > 0) {
             return Promise.resolve(errors);

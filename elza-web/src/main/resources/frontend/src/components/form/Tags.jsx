@@ -1,4 +1,4 @@
-require("./Tags.less");
+import "./Tags.less";
 
 /**
  * Komponenta zobrazující seznam vybraných položek např. pomocí tag input s možností jejich odebírání pomocí křížku.

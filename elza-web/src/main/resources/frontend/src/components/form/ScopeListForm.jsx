@@ -49,11 +49,11 @@ class ScopeListForm extends AbstractReactComponent {
 
     state = {scopesList: []};
 
-    componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
+    componentWillReceiveProps(nextProps, nextContext) {
         this.fetchData(nextProps);
     }
 
-    componentDidUpdate(prevProps: Readonly<P>, prevState: Readonly<S>, prevContext: any): void {
+    componentDidUpdate(prevProps, prevState, prevContext) {
         if (prevProps.id && !this.props.id) {
             this.props.resetForm();
         } else if (this.props.fields
@@ -66,7 +66,7 @@ class ScopeListForm extends AbstractReactComponent {
         }
     }
 
-    componentDidMount(): void {
+    componentDidMount() {
         this.fetchData(this.props);
         // WebApi.getAllLanguages().then(json => {
         //     this.setState({
@@ -168,7 +168,7 @@ export default reduxForm({
     initialValues: ScopeListForm.initialValues,
     validate: ScopeListForm.validate,
     asyncBlurFields: ScopeListForm.fields,
-    asyncValidate: (values: FormData, dispatch: Dispatch<any>, props: {id: number, onCreate: Function, onSave: Function, values: Object}) : Promise<any> => {
+    asyncValidate: (values, dispatch, props) => {
         const errors = ScopeListForm.validate(values, props);
         if (Object.keys(errors).length > 0) {
             return Promise.resolve(errors);

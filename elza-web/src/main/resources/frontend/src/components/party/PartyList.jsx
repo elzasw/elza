@@ -21,7 +21,7 @@ import * as StateApproval from "../enum/StateApproval";
  */
 class PartyList extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         maxSize: PropTypes.number
     };
 

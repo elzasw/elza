@@ -19,7 +19,7 @@ import AddDescItemTypeForm from "../arr/nodeForm/AddDescItemTypeForm";
  */
 class FragmentFormModal extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         fragmentId: PropTypes.number.isRequired,
         fragmentItemForm: PropTypes.object.isRequired,
     };

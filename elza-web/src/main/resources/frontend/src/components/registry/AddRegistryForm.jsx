@@ -43,7 +43,7 @@ class AddRegistryForm extends AbstractReactComponent {
         return errors;
     };
 
-    static PropTypes = {
+    static propTypes = {
         versionId: PropTypes.number,
         showSubmitTypes: PropTypes.bool.isRequired
     };
@@ -79,7 +79,7 @@ class AddRegistryForm extends AbstractReactComponent {
             this.setState({disabled: false});
             if(registryTypeId && this.isValueUseable(registryRegionRecordTypes.item, registryTypeId)) {
                  // pokud o vybrání nějaké položky, která je uvedena v registryRegion.registryTypesId
-                const type = typeIdMap[json.typeId];
+                const type = typeIdMap[registryTypeId]; // TODO React 16 check
                 this.props.load({typeId: registryTypeId, structured: type && type.ruleSystemId != null});
             }
         }

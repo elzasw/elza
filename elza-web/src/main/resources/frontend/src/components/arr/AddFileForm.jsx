@@ -26,7 +26,7 @@ class AddFileForm extends AbstractReactComponent {
         return errors;
     };
 
-    static PropTypes = {
+    static propTypes = {
         initData: PropTypes.object,
         onSubmitForm: PropTypes.func.isRequired
     };

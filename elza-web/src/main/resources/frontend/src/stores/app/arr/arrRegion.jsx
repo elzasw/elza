@@ -352,8 +352,8 @@ export default function arrRegion(state = initialState, action) {
             return result;
         }
         case types.CHANGE_CONFORMITY_INFO:
-        case types.CHANGE_NODE_REQUESTS:
-            var index = indexById(state.funds, action.fundVersionId, "versionId");
+        case types.CHANGE_NODE_REQUESTS:{
+            const index = indexById(state.funds, action.fundVersionId, "versionId");
 
             // změna se ho netýká, vracím původní stav
             if (index == null) {
@@ -368,10 +368,10 @@ export default function arrRegion(state = initialState, action) {
                     ...state.funds.slice(index + 1)
                 ]
             }
-
-        case types.CHANGE_APPROVE_VERSION:
-            var funds = state.funds;
-            var update = false;
+        }
+        case types.CHANGE_APPROVE_VERSION:{
+            const funds = state.funds;
+            let update = false;
 
             funds.forEach(fund => {if (fund.versionId == action.versionId) {
                 if (fund.closed == false) {
@@ -385,7 +385,7 @@ export default function arrRegion(state = initialState, action) {
             }
 
             return state
-
+        }
         case types.VISIBLE_POLICY_REQUEST:
         case types.VISIBLE_POLICY_RECEIVE:
         case types.SET_VISIBLE_POLICY_REQUEST:
@@ -396,18 +396,18 @@ export default function arrRegion(state = initialState, action) {
             }
 
         case types.FUND_FUND_NODES_POLICY_RECEIVE:
-        case types.FUND_FUND_NODES_POLICY_REQUEST:
-            var index = indexById(state.funds, action.versionId, "versionId");
+        case types.FUND_FUND_NODES_POLICY_REQUEST:{
+            const index = indexById(state.funds, action.versionId, "versionId");
             return processFund(state, action, index);
-
-        case types.FUND_INVALID:
+        }
+        case types.FUND_INVALID: {
             let result = {...state};
             action.fundVersionIds.forEach(fundVersionId => {
-                var index = indexById(state.funds, fundVersionId, "versionId");
+                const index = indexById(state.funds, fundVersionId, "versionId");
                 result = processFund(result, action, index)
             });
             return consolidateState(state, result);
-
+        }
         default:
             return state
     }

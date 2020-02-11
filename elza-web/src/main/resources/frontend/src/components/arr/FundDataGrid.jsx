@@ -70,7 +70,7 @@ import Moment from 'moment';
 import * as groups from "../../actions/refTables/groups"
 
 class FundDataGrid extends AbstractReactComponent {
-    static PropTypes = {
+    static propTypes = {
         fundId: PropTypes.number.isRequired,
         versionId: PropTypes.number.isRequired,
         fund: PropTypes.object.isRequired,

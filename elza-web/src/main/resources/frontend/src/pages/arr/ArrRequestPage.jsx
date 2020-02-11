@@ -70,7 +70,7 @@ import {
 } from 'components/arr/ArrUtils.jsx';
 import ArrParentPage from "./ArrParentPage.jsx";
 
-const classNames = require('classnames');
+import classNames from 'classnames';
 import {Shortcuts} from 'react-shortcuts';
 
 import "./ArrRequestPage.less";
@@ -81,7 +81,7 @@ class ArrRequestPage extends ArrParentPage {
         super(props, "arr-request-page");
     }
 
-    static PropTypes = {
+    static propTypes = {
         splitter: PropTypes.object.isRequired,
         arrRegion: PropTypes.object.isRequired,
         focus: PropTypes.object.isRequired,

@@ -19,7 +19,7 @@ import("../../accesspoint/FragmentFormModal").then((a) => {
 
 class DescItemFragmentRef extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         fragmentType: PropTypes.object.isRequired
     };
 

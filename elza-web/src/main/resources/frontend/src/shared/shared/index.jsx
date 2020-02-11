@@ -1,3 +1,4 @@
-export * as SharedActions from './SharedActions';
-export SharedReducer from './SharedReducer';
-export AreaGroupReducer from './AreaGroupReducer';
+import * as SharedActions from './SharedActions';
+export {SharedActions};
+export {default as SharedReducer} from './SharedReducer';
+export {default as AreaGroupReducer} from './AreaGroupReducer';

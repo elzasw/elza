@@ -24,7 +24,7 @@ class NodeDaosForm extends AbstractReactComponent {
         }
     }
 
-    static PropTypes = {
+    static propTypes = {
         fund: PropTypes.object.isRequired,
         nodeId: PropTypes.number.isRequired,
         daoId: PropTypes.number,  // pokud má být vybrán konkrétní DAO na detail

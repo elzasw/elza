@@ -13,11 +13,11 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {dateTimeToLocalUTC, dateTimeToZonedUTC} from "components/Utils"
 import FundNodesSelectForm from "./FundNodesSelectForm";
 
-require("./ArrHistoryForm.less");
+import './ArrHistoryForm.less';
 
 class ArrHistoryForm extends AbstractReactComponent {
 
-    static PropTypes = {};
+    static propTypes = {};
 
     static defaultProps = {
         locked: false

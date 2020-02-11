@@ -2,8 +2,7 @@
  * Formulář editace hodnoty v tabulce pro desc item typu tabulka.
  */
 
-require ('./DescItemJsonTableCellForm.less')
-
+import './DescItemJsonTableCellForm.less'
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -13,6 +12,8 @@ import {validateInt, normalizeInt} from 'components/validate.jsx';
 import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './DescItemJsonTableCellFormKeymap.jsx';
+
+const $ = window.$;
 
 var DescItemJsonTableCellForm = class DescItemJsonTableCellForm extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };

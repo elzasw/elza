@@ -22,7 +22,7 @@ class DescItemCoordinates extends AbstractReactComponent {
         this.state = objectFromWKT(props.descItem.value);
     }
 
-    static PropTypes = {
+    static propTypes = {
         onChange: PropTypes.func.isRequired,
         onDownload: PropTypes.func.isRequired,
         onUpload: PropTypes.func,

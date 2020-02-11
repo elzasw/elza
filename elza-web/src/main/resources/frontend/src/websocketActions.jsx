@@ -64,6 +64,9 @@ import {fundNodeSubNodeFulltextSearch} from "./actions/arr/node";
 import {PERSISTENT_SORT_CODE, ZP2015_INTRO_VYPOCET_EJ} from "./constants.tsx";
 import * as issuesActions from "./actions/arr/issues";
 
+
+const serverContextPath = window.serverContextPath;
+
 const url = new URLParse(serverContextPath + '/stomp');
 
 const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
@@ -75,7 +78,7 @@ class websocket{
     constructor(url, eventMap) {
         this.nextReceiptId = 0;
         this.pendingRequests = {};
-        this.stompClient;
+        this.stompClient = null;
         this.url = url;
         this.eventMap = eventMap;
     }

@@ -18,7 +18,7 @@ class AddUserForm extends AbstractReactComponent {
         create: false
     };
 
-    static PropTypes = {
+    static propTypes = {
         onCreateParty: PropTypes.func,
         create: PropTypes.bool
     };

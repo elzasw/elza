@@ -19,7 +19,7 @@ const ArrRequestForm = class extends AbstractReactComponent {
         super(props);
     }
 
-    static PropTypes = {
+    static propTypes = {
         fundVersionId: PropTypes.number.isRequired,
         type: PropTypes.oneOf(["DAO", "DIGITIZATION"]),
     };

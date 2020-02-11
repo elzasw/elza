@@ -38,7 +38,7 @@ class PasswordForm extends AbstractReactComponent {
         return errors;
     };
 
-    static PropTypes = {
+    static propTypes = {
         admin: PropTypes.bool
     };
 

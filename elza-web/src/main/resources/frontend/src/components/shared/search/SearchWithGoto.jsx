@@ -14,7 +14,7 @@ import Icon from "../icon/Icon";
 import i18n from "../../i18n";
 
 class SearchWithGoto extends AbstractReactComponent {
-    static PropTypes = {
+    static propTypes = {
         filterText: PropTypes.string,
         itemsCount: PropTypes.number.isRequired,
         allItemsCount: PropTypes.number,

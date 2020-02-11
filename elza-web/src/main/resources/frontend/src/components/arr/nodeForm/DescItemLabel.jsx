@@ -1,12 +1,11 @@
-require ('./DescItemLabel.less')
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {AbstractReactComponent, Icon, i18n} from 'components/shared';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
 import {Button} from 'react-bootstrap';
-var classNames = require('classnames');
+import classNames from 'classnames';
+import './DescItemLabel.less';
 
 var DescItemLabel = class DescItemLabel extends AbstractReactComponent {
     constructor(props) {

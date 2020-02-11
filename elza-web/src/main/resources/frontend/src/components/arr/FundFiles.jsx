@@ -26,7 +26,7 @@ let _ReplaceId = null;
  */
 class FundFiles extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         fundId: PropTypes.number.isRequired,
         versionId: PropTypes.number.isRequired,
         files: PropTypes.array,

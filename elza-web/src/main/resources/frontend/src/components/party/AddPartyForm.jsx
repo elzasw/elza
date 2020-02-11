@@ -106,7 +106,7 @@ class AddPartyForm extends AbstractReactComponent {
 
     };
 
-    static PropTypes = {
+    static propTypes = {
         versionId: PropTypes.number,
         partyType: PropTypes.object.isRequired,
     };

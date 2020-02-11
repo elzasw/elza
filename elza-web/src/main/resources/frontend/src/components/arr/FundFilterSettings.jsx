@@ -4,7 +4,7 @@ import {decorateAutocompleteValue} from "./nodeForm/DescItemUtils";
  * Formulář nastavení filtru na sloupečku.
  */
 
-require('./FundFilterSettings.less')
+import './FundFilterSettings.less';
 
 import React from 'react';
 import {reduxForm} from 'redux-form';
@@ -205,7 +205,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             state.conditionValues = filter.condition
         }
 
-        // Určení typu uplatněného filtru - podmínka nebo hodnota        
+        // Určení typu uplatněného filtru - podmínka nebo hodnota
         // pokud je vybrana podminka, tak ma prednost
         state.valueAccodrionType = "VALUE";
         const condInfo = this.getConditionInfo();
@@ -216,7 +216,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             const valueHasValue = state.selectedValueItemsType === "selected" || (state.selectedValueItems && state.selectedValueItems.length > 0);
             if (conditionHasValue || !valueHasValue) {
                 state.valueAccodrionType = "CONDITION";
-            }            
+            }
         }
 
         this.state = state

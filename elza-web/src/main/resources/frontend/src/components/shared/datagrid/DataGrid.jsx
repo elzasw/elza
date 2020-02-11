@@ -16,7 +16,7 @@ import defaultKeymap from './DataGridKeymap.jsx';
 
 import './DataGrid.less';
 
-const scrollIntoView = require('dom-scroll-into-view')
+import scrollIntoView from 'dom-scroll-into-view';
 
 const __emptyColWidth = 8000
 const __minColWidth = 16
@@ -77,7 +77,7 @@ class DataGrid extends AbstractReactComponent {
      }
 
      */
-    static PropTypes = {
+    static propTypes = {
         rows: PropTypes.array.isRequired,
         cols: PropTypes.array.isRequired, // pole objektů definice sloupčeků, viz výše
         allowRowCheck: PropTypes.bool.isRequired,

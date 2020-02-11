@@ -716,7 +716,7 @@ return true
 
         return (
             <TooltipTrigger
-                    content={<span>{item.issues.map((i: IssueVO) => <div key={i.id}>#{i.number} - {i.description}</div>)}</span>}
+                    content={<span>{item.issues.map((i) => <div key={i.id}>#{i.number} - {i.description}</div>)}</span>}
                     holdOnHover
                     placement="auto"
                     className="issue"
@@ -827,8 +827,8 @@ return true
             <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={(action,e) => this.handleAccordionShortcuts(action,e)} tabIndex={0} global stopPropagation={false}>
                 <div  className='inner-wrapper' ref="innerAccordionWrapper">
                     <div className="menu-wrapper">
-                        <NodeActionsBar 
-                            simplified={!displayAccordion} 
+                        <NodeActionsBar
+                            simplified={!displayAccordion}
                             node={node}
                             selectedSubNodeIndex={focusItemIndex}
                             versionId={versionId}

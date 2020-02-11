@@ -1,11 +1,12 @@
 // Zde asi zůstane navždy require -> protože celá aplikace jde přes tento soubor ve kterém je AbstractReactComponent exportována
 // A jelikož require není striktní jako export tak dovolí cyklické volání...
+import * as FormUtils from 'components/form/FormUtils.jsx';;
 
 export {default as AbstractReactComponent} from './AbstractReactComponent';
 export {default as i18n} from './i18n';
 export {default as Icon} from './shared/icon/Icon';
 
-export * as FormUtils from 'components/form/FormUtils.jsx';
+export {FormUtils};
 export {default as ImportForm} from 'components/form/ImportForm.jsx';
 export {default as ExportForm} from 'components/form/ExportForm.jsx';
 export {default as ExtImportForm} from 'components/form/ExtImportForm.jsx';

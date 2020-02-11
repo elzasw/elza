@@ -15,7 +15,7 @@ import UpdateApItemNameFormModal from "../accesspoint/UpdateApItemNameFormModal"
 
 class ApDetailNames extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         canEdit: PropTypes.bool.isRequired,
         accessPoint: PropTypes.object.isRequired,
         type: PropTypes.object.isRequired,

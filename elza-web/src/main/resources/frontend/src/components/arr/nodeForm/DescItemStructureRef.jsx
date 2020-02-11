@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux';
 import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete} from 'components/shared';
 import {decorateAutocompleteValue} from './DescItemUtils.jsx';
-import {WebApi} from 'actions/WebApi.jsx';
+import {WebApi} from 'actions/WebApi';
 import {indexById} from 'stores/app/utils.jsx';
 import DescItemLabel from './DescItemLabel.jsx';
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
@@ -24,7 +24,7 @@ import {Button} from 'react-bootstrap';
 class DescItemStructureRef extends AbstractReactComponent {
     state = {data: [], active: false};
 
-    static PropTypes = {
+    static propTypes = {
         fundVersionId: PropTypes.number.isRequired,
         structureTypeCode: PropTypes.string.isRequired,
     };

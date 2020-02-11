@@ -9,7 +9,7 @@ import './AdminExtSystemListItem.less';
  */
 class AdminExtSystemListItem extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         onClick: PropTypes.func,
         record: PropTypes.object.isRequired,
     };

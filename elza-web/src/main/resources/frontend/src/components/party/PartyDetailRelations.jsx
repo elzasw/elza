@@ -14,7 +14,7 @@ import RelationForm from "./RelationForm";
 
 class PartyDetailRelations extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         canEdit: PropTypes.bool.isRequired,
         label: PropTypes.element.isRequired,
         party: PropTypes.object.isRequired,

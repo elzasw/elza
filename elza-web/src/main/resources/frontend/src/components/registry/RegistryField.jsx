@@ -38,7 +38,7 @@ class RegistryField extends AbstractReactComponent {
         versionId: null,
     };
 
-    static PropTypes = {
+    static propTypes = {
         detail: PropTypes.bool.isRequired,
         footer: PropTypes.bool.isRequired,
         footerButtons: PropTypes.bool,

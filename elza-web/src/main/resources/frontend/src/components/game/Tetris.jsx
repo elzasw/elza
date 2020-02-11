@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import lev from "./TetrisLevels";
-require("./Tetris.less");
+import './Tetris.less';
 
 const ww = 10;
 const hh = 20;

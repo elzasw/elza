@@ -60,6 +60,7 @@ export function fundSubNodeInfoFetchIfNeeded(versionId, nodeId, routingKey) {
  */
 export function fundSubNodeInfoFetch(versionId, nodeId, routingKey) {
     return (dispatch, getState) => {
+        const state = getState();
         const r = findByRoutingKeyInGlobalState(state, versionId, routingKey);
         let node;
         if (r != null) {

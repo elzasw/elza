@@ -1,0 +1,40 @@
+const {editWebpackPlugin} = require('@rescripts/utilities');
+const path = require('path');
+
+module.exports = {
+    'use-tslint-config': 'tslint.json',
+    'use-eslint-config': 'package',
+    webpack: (config) => {
+        config.resolve.modules.push(path.resolve(__dirname, 'src'))
+        config.module.rules[1].use[0].options.baseConfig = require('./package').eslintConfig;
+        //console.log(config.module.rules[2].oneOf[1]);
+        //return;
+        if (config.mode === 'production') {
+            config.optimization.runtimeChunk = false;
+            config.optimization.splitChunks = {
+                cacheGroups: {
+                    default: false
+                }
+            };
+            const toReplace = '[contenthash:8].';
+            const BLANK = '';
+            config.output.filename = config.output.filename.replace(toReplace, BLANK);
+            config.output.chunkFilename = config.output.filename.replace(toReplace, BLANK);
+
+            const edited = editWebpackPlugin(
+                p => {
+                    p.options.filename = p.options.filename.replace(toReplace, BLANK);
+                    p.options.chunkFilename = p.options.chunkFilename.replace(toReplace, BLANK);
+                    p.options.moduleFilename = ({ name }) => `static/css/${name}.css`;
+                    return p
+                },
+                'MiniCssExtractPlugin',
+                config,
+            );
+
+            return edited;
+        } else {
+            return config;
+        }
+    },
+}

@@ -46,7 +46,7 @@ class TreeList extends React.Component {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
 
-    static PropTypes = {
+    static propTypes = {
         items: PropTypes.object.isRequired,
         groups: PropTypes.object,
         renderItem: PropTypes.func,
@@ -387,13 +387,13 @@ class TreeList extends React.Component {
 
         if(node){
             if (node.children && node.children.length > 0) {
-                if (isExpanded) {  
+                if (isExpanded) {
                     // Move to child, if expanded
                     const nextNodeId = this.getRelativeSelectableItemId(highlightedItem.id, 1);
                     if (nextNodeId) {
                         this.highlightItem(nextNodeId);
                     }
-                } else {    
+                } else {
                     // Expand, if collapsed
                     this.toggleNode(highlightedItem.id, true);
                 }
@@ -410,7 +410,7 @@ class TreeList extends React.Component {
         const isExpanded = this.isExpanded(highlightedItem.id);
 
         if(node){
-            if (isExpanded) { 
+            if (isExpanded) {
                 // Collapse node, if expanded and has children
                 this.toggleNode(highlightedItem.id, false);
             } else {
@@ -428,7 +428,7 @@ class TreeList extends React.Component {
 
         if (id !== null) {
             return this.getNodeById(nodeId);
-        } 
+        }
 
         return null;
     }
@@ -458,7 +458,7 @@ class TreeList extends React.Component {
         const {loop} = this.props;
         const index = this.getRelativeSelectableItemId(highlightedItem.id, step, loop);
 
-        this.highlightItem(index); 
+        this.highlightItem(index);
     }
 
     selectItem = (item) => {

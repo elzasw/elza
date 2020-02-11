@@ -14,7 +14,7 @@ import {downloadFile} from "../../actions/global/download";
  * @since 22.12.2015
  */
 class AdminPackagesList extends AbstractReactComponent {
-    static PropTypes = {
+    static propTypes = {
         getExportUrl: PropTypes.func.isRequired,
         items: PropTypes.array.isRequired
     };

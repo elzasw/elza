@@ -3,15 +3,15 @@
  *
  **/
 
-require ('./LazyListBox.less');
+import './LazyListBox.less';
 
 import React from "react";
 import VirtualList from "../virtual-list/VirtualList";
 import AbstractReactComponent from "../../AbstractReactComponent";
 import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils.jsx'
-var classNames = require('classnames');
-const scrollIntoView = require('dom-scroll-into-view')
+import classNames from 'classnames';
+import scrollIntoView from 'dom-scroll-into-view';
 import {Shortcuts} from 'react-shortcuts';
 import * as Utils from "../../Utils";
 import {PropTypes} from 'prop-types';
