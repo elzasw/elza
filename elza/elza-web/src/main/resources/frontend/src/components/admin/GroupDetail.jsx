@@ -26,7 +26,7 @@ import AdvancedPermissionPanel from "./AdvancedPermissionPanel";
 import {WebApi} from "../../actions/WebApi";
 import DetailHeader from "../shared/detail/DetailHeader";
 
-require('./GroupDetail.less');
+import './GroupDetail.less';;
 
 class GroupDetail extends AbstractReactComponent {
     static TAB_FUNDS = 0;
@@ -46,11 +46,11 @@ class GroupDetail extends AbstractReactComponent {
         id: null,
         index: 0
     }
-    /* 
+    /*
      * Last selected fund item.
      */
     selectedFund = this.defaultSelectedItem;
-    /* 
+    /*
      * Last selected scope item.
      */
     selectedScope = this.defaultSelectedItem;

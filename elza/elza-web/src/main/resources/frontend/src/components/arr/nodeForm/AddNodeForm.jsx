@@ -23,7 +23,7 @@ import {nodeFormActions} from '../../../actions/arr/subNodeForm.jsx'
 const TEMPLATE_SCENARIOS = 'TEMPLATE_SCENARIOS';
 
 class AddNodeForm extends AbstractReactComponent {
-    static PropTypes = {
+    static propTypes = {
         node: PropTypes.object.isRequired, // node pro který se akce volá
         parentNode: PropTypes.object.isRequired, // nadřený node pro vstupní node
         initDirection: PropTypes.oneOf([

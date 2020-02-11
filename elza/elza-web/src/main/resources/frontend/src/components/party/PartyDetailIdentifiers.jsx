@@ -31,7 +31,7 @@ const isNotBlankObject = (obj) => {
  */
 class PartyDetailIdentifiers extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         canEdit: PropTypes.bool.isRequired,
         party: PropTypes.object.isRequired,
         onPartyUpdate: PropTypes.func.isRequired,

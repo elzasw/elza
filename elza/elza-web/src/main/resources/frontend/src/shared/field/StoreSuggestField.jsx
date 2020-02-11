@@ -15,7 +15,7 @@ import Autocomplete from "../../components/shared/autocomplete/Autocomplete";
  */
 class StoreSuggestField extends React.Component {
 
-    static PropTypes = {
+    static propTypes = {
         area: PropTypes.string.isRequired,
         apiCall: PropTypes.func.isRequired
     };

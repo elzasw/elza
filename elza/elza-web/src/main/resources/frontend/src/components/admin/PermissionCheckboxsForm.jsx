@@ -18,7 +18,7 @@ import {FUND_ARR_NODE} from "../../actions/user/Permission";
  * Panel spravující oprávnění typu checkbox.
  */
 class PermissionCheckboxsForm extends AbstractReactComponent {
-    static PropTypes = {
+    static propTypes = {
         permCodes: PropTypes.array.isRequired,    // seznam kódů oprávnění
         onChangePermission: PropTypes.func.isRequired,    // callback při změně
         onAddNodePermission: PropTypes.func.isRequired,    // callback při přidání oprávnění na JP

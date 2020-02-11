@@ -137,7 +137,7 @@ class Layout extends AbstractReactComponent {
 
 
         return <Shortcuts name='Main' handler={this.handleShortcuts} global stopPropagation={false} className="main-shortcuts">
-            <div className={versionNumber ? 'root-container with-version' : 'root-container'}>
+            <div className={window.versionNumber ? 'root-container with-version' : 'root-container'}>
                 <div onClick={() => { canStartGame && this.setState({showGame: true}) }} onMouseEnter={this.handleGameStartOver} onMouseLeave={this.handleGameStartLeave} className={"game-placeholder " + (canStartGame ? "canStart" : "")}>
                     &nbsp;
                 </div>
@@ -180,7 +180,7 @@ class Layout extends AbstractReactComponent {
                 <Login />
                 <AppRouter/>
             </div>
-            {typeof versionNumber != "undefined" && <div className="version-container">Verze sestavení aplikace: {versionNumber}</div>}
+            {typeof window.versionNumber != "undefined" && <div className="version-container">Verze sestavení aplikace: {window.versionNumber}</div>}
         </Shortcuts>
     }
 }

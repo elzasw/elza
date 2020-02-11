@@ -45,7 +45,7 @@ class FundForm extends AbstractReactComponent {
         return errors;
     };
 
-    static PropTypes = {
+    static propTypes = {
         approve: PropTypes.bool,
         create: PropTypes.bool,
         update: PropTypes.bool,

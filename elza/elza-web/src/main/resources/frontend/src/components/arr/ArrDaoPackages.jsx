@@ -14,7 +14,7 @@ import "./ArrDaoPackages.less"
 
 class ArrDaoPackages extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         fund: PropTypes.object.isRequired,
         unassigned: PropTypes.bool.isRequired,
         onSelect: PropTypes.func.isRequired,

@@ -1,4 +1,4 @@
-require('./VersionValidationState.less');
+import './VersionValidationState.less';;
 
 /**
  * Komponenta pro zobrazení stavu verze

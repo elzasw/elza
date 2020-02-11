@@ -1,4 +1,4 @@
-require('./SubNodeDao.less');
+import './SubNodeDao.less';
 
 import PropTypes from 'prop-types';
 
@@ -12,7 +12,7 @@ import {routerNavigate} from 'actions/router.jsx'
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 
 class SubNodeDao extends AbstractReactComponent {
-    static PropTypes = {
+    static propTypes = {
         daos: PropTypes.object.isRequired,
         versionId: PropTypes.number.isRequired,
         nodeId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),

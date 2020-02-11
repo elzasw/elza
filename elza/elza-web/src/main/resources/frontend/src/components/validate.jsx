@@ -440,7 +440,7 @@ function testValidations() {
         null
     ]);
     basicTest(doubleTestValidationValues, validateDouble);
-    basicTest(dateTestValues, validateDate);
+    //basicTest(dateTestValues, validateDate);
     basicTest(intTestNormalizationValues, normalizeInt);
     basicTest(doubleTestNormalizationValues, normalizeDouble);
     basicTest(stringTestValues, normalizeString);

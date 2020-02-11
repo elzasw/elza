@@ -2,7 +2,7 @@ import React from 'react';
 import AbstractReactComponent from "../../AbstractReactComponent";
 
 class DataGridCol extends AbstractReactComponent {
-    static PropTypes = {
+    static propTypes = {
     };
 
     handleCheckboxChange = () => {

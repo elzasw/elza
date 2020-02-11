@@ -27,12 +27,14 @@ class LecturingBottom extends React.Component {
         fund: PropTypes.object.isRequired,
     };
 
-    state = {
+    state: any = {
         text: "",
         comment: null,
         submitting: false,
         actualFundId: null
     };
+
+    props: any;
 
     componentDidMount() {
         const {issueDetail, fund} = this.props;
@@ -68,7 +70,7 @@ class LecturingBottom extends React.Component {
         WebApi.addIssueComment({issueId: id, comment: this.state.text, nextStateId}).then(this.afterSave)
     };
 
-    editComment = (comment: CommentVO) => {
+    editComment = (comment: any) => {
         this.setState({comment, text: comment.comment});
     };
 
@@ -123,12 +125,14 @@ class LecturingBottom extends React.Component {
         );
         const canUpdateIssue = canWrite && userDetail.id === data.userCreate.id && issueComments.fetched && issueComments.rows.length === 0;
 
-        let state = null;
+        let state: any = null;
         if (issueStates && issueStates.fetched && data) {
             state = objectById(issueStates.data, data.issueStateId);
         }
 
         const textFieldDisabled = submitting || state && state.finalState;
+
+        const CustomArea = TextareaAutosize as any;
 
         return <div className="lecturing-bottom">
             {!id && <div className="text-center">{i18n("arr.issues.choose")}</div>}
@@ -146,7 +150,7 @@ class LecturingBottom extends React.Component {
                             {data.userCreate.username} ({dateTimeToString(new Date(data.timeCreated))})
                         </div>
                     </div>
-                    {issueComments.rows.map((item: CommentVO, index, arr) => <div>
+                    {issueComments.rows.map((item: any, index, arr) => <div>
                         <div className={"comment" + (userDetail.id === item.user.id ? " text-muted" : "")}>
                             <div className="comment-text">{item.comment}</div>
                             <div className="text-right">
@@ -164,11 +168,11 @@ class LecturingBottom extends React.Component {
                 </div>
                 {canWrite && !comment && <div className="add-comment">
                     <div>
-                        <TextareaAutosize
+                        <CustomArea
                             className="form-control"
                             maxRows={3}
-                            rows={3}
-                            value={this.state.text} onChange={({target:{value}}) => this.setState({text:value})}
+                            //rows={3}
+                            value={this.state.text} onChange={({target:{value}}: any) => this.setState({text:value})}
                             disabled={textFieldDisabled}
                         />
                     </div>
@@ -185,11 +189,11 @@ class LecturingBottom extends React.Component {
                 </div>}
                 {canWrite && comment && <div className="edit-comment">
                     <div>
-                        <TextareaAutosize
+                        <CustomArea
                             className="form-control"
                             maxRows={12}
                             rows={3}
-                            value={text} onChange={({target:{value}}) => this.setState({text:value})}
+                            value={text} onChange={({target:{value}}: any) => this.setState({text:value})}
                             disabled={submitting}
                         />
                     </div>
@@ -203,7 +207,7 @@ class LecturingBottom extends React.Component {
     }
 }
 
-export default connect((state) => {
+export default connect((state: any) => {
     return {
         issueTypes: state.refTables.issueTypes,
         issueStates: state.refTables.issueStates,
@@ -212,4 +216,4 @@ export default connect((state) => {
         issueComments: storeFromArea(state, issuesActions.AREA_COMMENTS),
         userDetail: state.userDetail,
     }
-})(LecturingBottom);
+})(LecturingBottom as any);

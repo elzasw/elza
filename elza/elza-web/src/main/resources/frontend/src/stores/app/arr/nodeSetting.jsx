@@ -59,7 +59,7 @@ export default function nodeSetting(state = initialState, action) {
             }
             return state;
 
-        case types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL:
+        /*case types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL:
             var nodeIndex = indexById(state.nodes, action.nodeId);
             if (nodeIndex !== null) {
                 return {
@@ -72,7 +72,7 @@ export default function nodeSetting(state = initialState, action) {
                 };
             }
             return state;
-
+*/
         case types.NODE_DESC_ITEM_TYPE_COPY_ALL:
             var nodeIndex = indexById(state.nodes, action.nodeId);
             if (nodeIndex !== null) {

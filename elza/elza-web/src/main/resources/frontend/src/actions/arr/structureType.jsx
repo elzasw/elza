@@ -4,10 +4,11 @@
 
 
 import {DEFAULT_LIST_SIZE} from '../../constants.tsx'
-export const DEFAULT_STRUCTURE_TYPE_MAX_SIZE = DEFAULT_LIST_SIZE;
-
 import {SimpleListActions} from 'shared/list'
+
 import {WebApi} from "../../actions/WebApi";
+
+export const DEFAULT_STRUCTURE_TYPE_MAX_SIZE = DEFAULT_LIST_SIZE;
 
 export const AREA = 'arrStructure';
 

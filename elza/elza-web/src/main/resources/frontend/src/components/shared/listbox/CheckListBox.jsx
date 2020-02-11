@@ -5,10 +5,10 @@ import {Button, Checkbox} from 'react-bootstrap';
 import ReactDOM from 'react-dom';
 import {Shortcuts} from 'react-shortcuts';
 import * as Utils from "../../Utils";
-const scrollIntoView = require('dom-scroll-into-view');
+import scrollIntoView from 'dom-scroll-into-view';
 
 import defaultKeymap from './ListBoxKeymap.jsx'
-require ('./CheckListBox.less');
+import './CheckListBox.less';
 
 let _ListBox_placeholder = document.createElement("div");
 let _ListBox_placeholder_cls = "placeholder"
@@ -136,7 +136,7 @@ class ListBox extends AbstractReactComponent {
             this.setState({
                 checkedIndexes,
             }, () => this.props.onChangeSelection && this.props.onChangeSelection(Object.keys(checkedIndexes)));
-            
+
             if (operation && selectedIndexes.length > 0) {
                 const selectedItems = [];
                 for (let a=0; a<selectedIndexes.length; a++) {
@@ -186,7 +186,7 @@ class ListBox extends AbstractReactComponent {
     componentWillReceiveProps(nextProps) {
         const { multiselect, filter, items } = this.props;
 
-        if (multiselect !== nextProps.multiselect || filter !== nextProps.filter) { 
+        if (multiselect !== nextProps.multiselect || filter !== nextProps.filter) {
             this.handleClear();
         }
 
@@ -415,7 +415,7 @@ class ListBox extends AbstractReactComponent {
             isItemActive = activeIndexes[index];
         } else {
             const {activeIndex} = this.state;
-            isItemActive === activeIndex;
+            isItemActive = activeIndex;
         }
 
         if (isItemActive) { // je jedna z označených
@@ -432,10 +432,10 @@ class ListBox extends AbstractReactComponent {
         const {items} = this.props;
         let {checkedIndexes} = this.state;
         const checkedAll = checkedIndexes &&
-            Object.keys(checkedIndexes).length === items.length && 
+            Object.keys(checkedIndexes).length === items.length &&
             Object.keys(checkedIndexes).every((i) => checkedIndexes[i]);
 
-        checkedIndexes = {};  
+        checkedIndexes = {};
         items.map((item, index) => checkedIndexes[index] = true);
 
         this.setState({
@@ -461,8 +461,8 @@ class ListBox extends AbstractReactComponent {
              wrapperClass += " " + className
         }
         var rows = items.map((item, index) => {
-            const active = multiselect 
-                ? activeIndexes && (activeIndexes[index]) 
+            const active = multiselect
+                ? activeIndexes && (activeIndexes[index])
                 : (index === activeIndex);
             var draggableProps = {}
             if (this.props.sortable) {
@@ -482,7 +482,7 @@ class ListBox extends AbstractReactComponent {
                     onDoubleClick={this.handleDoubleClick}
                     {...draggableProps}
                 >
-                    {multiselect &&  
+                    {multiselect &&
                         <Checkbox
                             key="box"
                             className="listbox-item-checkbox"
@@ -503,7 +503,7 @@ class ListBox extends AbstractReactComponent {
                         {rows}
                     </div>
                 </Shortcuts>
-                {multiselect && 
+                {multiselect &&
                     <div className="listbox-selection">
                         <Button bsStyle="default" onClick={this.handleCheckAll}>
                             Vybrat vše

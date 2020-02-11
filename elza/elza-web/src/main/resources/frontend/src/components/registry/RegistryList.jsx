@@ -24,7 +24,7 @@ import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
 
 class RegistryList extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         maxSize: PropTypes.number
     };
 

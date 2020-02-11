@@ -9,7 +9,7 @@ export function resetLocalStorage() {
     if(typeof(Storage) !== "undefined") {
         _storeSaveEnabled = false
         localStorage.removeItem('ELZA-STORE-STATE');
-        location.reload();
+        window.location.reload();
     }
 }
 

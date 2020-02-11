@@ -1,9 +1,6 @@
 /**
  * Input prvek pro desc item - typ STRING.
  */
-
-require('./DescItemText.less')
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {AbstractReactComponent, i18n} from 'components/shared';
@@ -12,6 +9,7 @@ import {decorateValue, inputValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 import TextareaAutosize from 'react-autosize-textarea';
+import './DescItemText.less';
 
 class DescItemText extends AbstractReactComponent {
 

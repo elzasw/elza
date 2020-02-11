@@ -8,6 +8,7 @@ import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog
 import SelectItemsForm from "./SelectItemsForm";
 import UserAndGroupField from "./UserAndGroupField";
 import {renderGroupItem, renderUserItem, renderUserOrGroupItem} from "./adminRenderUtils";
+import FundsPermissionPanel from './FundsPermissionPanel'
 
 /**
  * Komponenta pro přiřazení spravovaných entit.

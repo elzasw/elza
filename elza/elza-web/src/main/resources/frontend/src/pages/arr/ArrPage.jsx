@@ -90,7 +90,7 @@ class ArrPage extends ArrParentPage {
     getChildContext() {
         return { shortcuts: this.shortcutManager };
     }
-    static PropTypes = {
+    static propTypes = {
         splitter: PropTypes.object.isRequired,
         arrRegion: PropTypes.object.isRequired,
         developer: PropTypes.object.isRequired,
@@ -508,7 +508,7 @@ class ArrPage extends ArrParentPage {
     handleIssuePrevious = () => {
         this.handleIssue(-1);
     };
-    
+
     handleIssueNext = () => {
         this.handleIssue(1);
     };

@@ -5,6 +5,9 @@ import {getScrollbarWidth} from "components/Utils.jsx";
 import classNames from "classnames";
 import './FloatingMenu.less';
 
+
+const $ = window.$;
+
 export default class FloatingMenu extends React.PureComponent {
     static propTypes = {
         target: PropTypes.object,

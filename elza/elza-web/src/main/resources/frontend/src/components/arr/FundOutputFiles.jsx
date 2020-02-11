@@ -15,7 +15,7 @@ import {downloadFile} from "../../actions/global/download";
  */
 class FundOutputFiles extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         outputResultId: PropTypes.number.isRequired,
         versionId: PropTypes.number.isRequired,
         fundOutputFiles: PropTypes.object.isRequired

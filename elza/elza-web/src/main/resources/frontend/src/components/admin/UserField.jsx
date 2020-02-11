@@ -11,7 +11,7 @@ const UserField = class UserField extends AbstractReactComponent {
         excludedGroupId: null
     };
 
-    static PropTypes = {
+    static propTypes = {
         value: PropTypes.object,
         onChange: PropTypes.func.isRequired,
         inline: PropTypes.bool,

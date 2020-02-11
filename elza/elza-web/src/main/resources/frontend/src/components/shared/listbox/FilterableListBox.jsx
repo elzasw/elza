@@ -1,4 +1,4 @@
-require ('./FilterableListBox.less');
+import './FilterableListBox.less';
 
 /**
  *  ListBox komponenta s možností filtrování, hledání a označování.
@@ -17,7 +17,7 @@ import {getSetFromIdsList} from "stores/app/utils.jsx";
 var __FilterableListBox_timer = null
 
 var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
-    static PropTypes = {
+    static propTypes = {
         supportInverseSelection: PropTypes.bool,
         selectedIds: PropTypes.array.isRequired,
         label:PropTypes.string,

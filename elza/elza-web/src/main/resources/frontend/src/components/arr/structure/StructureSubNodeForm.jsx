@@ -25,7 +25,7 @@ import objectById from "../../../shared/utils/objectById";
  */
 class StructureSubNodeForm extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         versionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
         selectedSubNodeId: PropTypes.number.isRequired,

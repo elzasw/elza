@@ -248,7 +248,7 @@ export function node(state = nodeInitialState, action) {
             }
             return consolidateState(state, result);
         case types.CHANGE_NODES:
-        case types.CHANGE_FUND_RECORD:
+        case types.CHANGE_FUND_RECORD:{
             let result = {
                 ...state,
                 subNodeForm: subNodeForm(state.subNodeForm, action),
@@ -272,7 +272,8 @@ export function node(state = nodeInitialState, action) {
             }
 
             return consolidateState(state, result);
-        case types.FUND_SUBNODE_UPDATE:
+        }
+        case types.FUND_SUBNODE_UPDATE:{
             console.log("UPDATE_CHILD",state,action);
             const data = action.data;
             const node = data.node;
@@ -282,7 +283,7 @@ export function node(state = nodeInitialState, action) {
             console.log("update index", index);
             let updatedNode = childNodes[index];
             // copy same values from source object
-            // not needed for WS update -> should be removed 
+            // not needed for WS update -> should be removed
             // (have to be tested first)
             for(let i in updatedNode){
                 if(typeof data[i] !== "undefined"){
@@ -293,7 +294,7 @@ export function node(state = nodeInitialState, action) {
                 updatedNode.accordionLeft = data.formTitle.titleLeft;
             if(updatedNode.accordionRight != data.formTitle.titleRight)
                 updatedNode.accordionRight = data.formTitle.titleRight;
-            //console.log("update node", updatedNode);            
+            //console.log("update node", updatedNode);
 
             var result = {
                 ...state,
@@ -303,13 +304,15 @@ export function node(state = nodeInitialState, action) {
                 subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
             }
             return consolidateState(state, result);
-        case types.FUND_FUND_CHANGE_READ_MODE:
+        }
+        case types.FUND_FUND_CHANGE_READ_MODE:{
             var result = {
                 ...state,
                 subNodeForm: subNodeForm(state.subNodeForm, action),
             }
             return consolidateState(state, result);
-        case types.FUND_FUND_SUBNODES_NEXT:
+        }
+        case types.FUND_FUND_SUBNODES_NEXT:{
             if ((state.viewStartIndex + state.pageSize/2) < state.nodeCount) {
                 return {
                     ...state,
@@ -318,7 +321,8 @@ export function node(state = nodeInitialState, action) {
             } else {
                 return state;
             }
-        case types.FUND_FUND_SUBNODES_PREV:
+        }
+        case types.FUND_FUND_SUBNODES_PREV:{
             if (state.viewStartIndex > 0) {
                 return {
                     ...state,
@@ -327,6 +331,7 @@ export function node(state = nodeInitialState, action) {
             } else {
                 return state;
             }
+        }
         case types.FUND_FUND_SUBNODES_NEXT_PAGE:
             if ((state.viewStartIndex + state.pageSize) < state.nodeCount) {
                 return {
@@ -350,7 +355,7 @@ export function node(state = nodeInitialState, action) {
                 ...state,
                 filterText: action.filterText
             }
-        case types.FUND_FUND_SUBNODES_FULLTEXT_RESULT:
+        case types.FUND_FUND_SUBNODES_FULLTEXT_RESULT:{
             if (state.filterText === '') {
                 var result = {
                     ...state,
@@ -382,6 +387,7 @@ export function node(state = nodeInitialState, action) {
             }
             result.viewStartIndex = getViewStartIndex(result, state.selectedSubNodeId);
             return result;
+        }
         case types.FUND_NODE_INFO_REQUEST:
             return {
                 ...state,

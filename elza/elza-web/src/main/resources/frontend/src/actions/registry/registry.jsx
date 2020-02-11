@@ -7,14 +7,15 @@ import {DetailActions} from 'shared/detail'
 import {storeFromArea, indexById} from 'shared/utils'
 
 import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from '../../constants.tsx'
-export const DEFAULT_REGISTRY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
-export const AREA_REGISTRY_LIST = "registryList";
+
 import * as types from 'actions/constants/ActionTypes.js';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {i18n} from 'components/shared';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess,addToastrDanger, addToastrWarning} from '../../components/shared/toastr/ToastrActions.jsx'
 
+export const DEFAULT_REGISTRY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
+export const AREA_REGISTRY_LIST = "registryList";
 
 let AddRegistryForm;
 import('../../components/registry/AddRegistryForm').then((a) => {

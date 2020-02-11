@@ -12,7 +12,7 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import './FundNodesList.less';
 
 class FuncNodesList extends AbstractReactComponent {
-    static PropTypes = {
+    static propTypes = {
         nodes: PropTypes.array.isRequired,
         onDeleteNode: PropTypes.func,
         onAddNode: PropTypes.func,

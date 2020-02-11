@@ -34,7 +34,7 @@ import IssueLists from "../../components/arr/IssueLists";
 import ListPager from "../../components/shared/listPager/ListPager";
 
 class FundPage extends AbstractReactComponent {
-    static PropTypes = {
+    static propTypes = {
         maxSize: PropTypes.number
     };
 

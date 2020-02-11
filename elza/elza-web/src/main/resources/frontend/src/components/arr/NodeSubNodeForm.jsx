@@ -43,7 +43,7 @@ import IssueForm from "../form/IssueForm";
 import {objectEqualsDiff} from 'components/Utils'
 import {NODE_SUB_NODE_FORM_CMP} from "../../stores/app/arr/subNodeForm";
 
-require('./NodeSubNodeForm.less');
+import './NodeSubNodeForm.less';
 
 class NodeSubNodeForm extends AbstractReactComponent {
     constructor(props) {
@@ -376,7 +376,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
     /**
      * Return new template
-     * 
+     *
      * If template is without values only enums are stored
      */
     createTemplate = (name, withValues) => {

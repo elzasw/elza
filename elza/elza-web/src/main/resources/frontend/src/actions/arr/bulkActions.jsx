@@ -32,7 +32,8 @@ export function bulkActionsLoadData(versionId, silent = false) {
                 }
             })
             .then(json => {
-                dispatch(bulkActionsDataReceived(versionId, { actions: json.actions, states: json.states }, mandatory));
+                // TODO mandatory missing
+                dispatch(bulkActionsDataReceived(versionId, { actions: json.actions, states: json.states }, false));
             });
     }
 }

@@ -11,8 +11,7 @@ import {dateToString, getScrollbarWidth, timeToString} from 'components/Utils.js
 import ListBox from "../shared/listbox/ListBox";
 import {WebApi} from "../../actions";
 import {HorizontalLoader} from "../shared";
-
-require("./ApStateHistoryForm.less");
+import "./ApStateHistoryForm.less";
 
 class ApStateHistoryForm extends AbstractReactComponent {
 
@@ -49,8 +48,8 @@ class ApStateHistoryForm extends AbstractReactComponent {
             <div className="row-container">
                 <div className="col col1">{dateToString(new Date(item.changeDate))}</div>
                 <div className="col col2">{timeToString(new Date(item.changeDate))}</div>
-                <div className="col col3" title={description}>{description}</div>
-                <div className="col col4" title={typeText}>{typeText}</div>
+                {item.description && <div className="col col3" title={item.description}>{item.description}</div>}
+                {item.typeText && <div className="col col4" title={item.typeText}>{item.typeText}</div>}
                 <div className="col col5">{item.username ? item.username : <i>System</i>}</div>
             </div>
         )

@@ -8,7 +8,7 @@ import {connect} from "react-redux";
 
 class FundField extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         value: PropTypes.object,
         onChange: PropTypes.func.isRequired,
         inline: PropTypes.bool,

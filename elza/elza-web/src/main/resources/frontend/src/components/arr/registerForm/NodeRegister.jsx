@@ -12,7 +12,7 @@ import RegistryField from "../../registry/RegistryField";
 
 class NodeRegister extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         onChange: PropTypes.func.isRequired,
         onCreateRecord: PropTypes.func.isRequired,
         onDetail: PropTypes.func.isRequired,

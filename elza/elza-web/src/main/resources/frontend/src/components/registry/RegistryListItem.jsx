@@ -11,7 +11,7 @@ import './RegistryListItem.less';
  */
 class RegistryListItem extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         onClick: PropTypes.func,
         partyType: PropTypes.object.isRequired,
         relationTypesForClass: PropTypes.object,

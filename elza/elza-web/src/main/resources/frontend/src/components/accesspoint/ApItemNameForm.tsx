@@ -51,7 +51,7 @@ interface ReactWrappedComponent<P> extends React.ReactElement<P> {
  */
 class ApItemNameForm extends React.Component<Props & DispatchProps, State> {
 
-    static PropTypes = {
+    static propTypes = {
         selectedSubNodeId: React.PropTypes.number.isRequired,
         parent: React.PropTypes.object.isRequired,
         rulDataTypes: React.PropTypes.object.isRequired,

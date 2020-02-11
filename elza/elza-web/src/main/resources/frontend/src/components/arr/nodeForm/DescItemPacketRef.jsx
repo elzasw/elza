@@ -1,4 +1,4 @@
-require('./DescItemPacketRef.less')
+import './DescItemPacketRef.less';
 
 import React from 'react';
 import ReactDOM from 'react-dom';

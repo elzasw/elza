@@ -7,7 +7,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-require('./AdminFulltextPage.less');
+import './AdminFulltextPage.less';;
 
 import {connect} from 'react-redux'
 import {Ribbon, AdminFulltextReindex} from 'components/index.jsx';

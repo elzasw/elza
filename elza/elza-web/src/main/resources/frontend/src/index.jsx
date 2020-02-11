@@ -3,16 +3,35 @@
  */
 // Import css Bootstrapu
 import './elza-styles.less';
-
 import React from 'react';
-
 import {Utils} from './components/shared';
 import {WebApi, WebApiCls} from './actions/index.jsx';
-
-
+import * as es6promise from 'es6-promise';
+import Moment from 'moment'
+import momentLocalizer from 'react-widgets-moment';
+import {store} from 'stores/index.jsx';
+import AjaxUtils from 'components/AjaxUtils.jsx';
+import EventEmitter from 'events';
 // Přidání custom style bsStyle action
 import {Button} from 'react-bootstrap';
 import {bootstrapUtils} from 'react-bootstrap/lib/utils';
+
+import SplitToggle from 'react-bootstrap/lib/SplitToggle';
+// Pokud dostane focus body, chceme jej změnit na implcitiní focus pro ribbon
+import {setFocus} from 'actions/global/focus.jsx';
+import {FOCUS_KEYS} from "./constants.tsx";
+
+import websocket from "./websocketActions.jsx";
+import {storeRestoreFromStorage} from 'actions/store/store.jsx';
+import {storeSave} from 'actions/store/storeEx.jsx';
+import {i18n, Exception} from "components/shared";
+
+import {addToastr} from "components/shared/toastr/ToastrActions.jsx"
+
+import ReactDOM from 'react-dom';
+import Root from './router';
+
+
 bootstrapUtils.addStyle(Button, 'action');
 
 // CustomEvent polyfill pro IE 9+
@@ -30,11 +49,10 @@ if ( typeof window.CustomEvent !== "function" ){
 
 // Globální init
 Utils.init();
-import * as es6promise from 'es6-promise';
+
 es6promise.polyfill();
 
 // Nastavení neomezeného počtu listenerů pro event emitter - v ELZA je emitter použit pro klávesové zkratky, kde je více listenerů
-import EventEmitter from 'events';
 EventEmitter.defaultMaxListeners = 0;
 
 function xx() {
@@ -67,23 +85,13 @@ if (!String.prototype.startsWith) {
 
 //setTimeout(fc, 1500)
 
-import Moment from 'moment'
-import momentLocalizer from 'react-widgets-moment';
-
 Moment.locale(window.navigator.language || 'cs-CZ');
 momentLocalizer();
 
 // Načtení dat z local storage = vrácení aplikace do předchozího stavu
-import {store} from 'stores/index.jsx';
-import AjaxUtils from 'components/AjaxUtils.jsx';
+
 AjaxUtils.setStore(store);
 // Web socket - až po initu store
-import websocket from "./websocketActions.jsx";
-import {storeRestoreFromStorage} from 'actions/store/store.jsx';
-import {storeSave} from 'actions/store/storeEx.jsx';
-import {i18n, Exception} from "components/shared";
-
-import {addToastr} from "components/shared/toastr/ToastrActions.jsx"
 store.dispatch(storeRestoreFromStorage());
 
 window.onerror = function(message, url, line, column, error) {
@@ -106,15 +114,12 @@ window.onerror = function(message, url, line, column, error) {
 };
 
 // Globální vypnutí focus na split buttony
-import SplitToggle from './node_modules/react-bootstrap/lib/SplitToggle';
+
 SplitToggle.defaultProps = {
     ...SplitToggle.defaultProps,
     tabIndex: -1
 };
 
-// Pokud dostane focus body, chceme jej změnit na implcitiní focus pro ribbon
-import {setFocus} from 'actions/global/focus.jsx';
-import {FOCUS_KEYS} from "./constants.tsx";
 {
     const testBodyfocus = () => {
         if (document.activeElement === document.body) { // focus je na body, nastavíme ho podle aktuálně přepnuté oblasti
@@ -142,7 +147,6 @@ function scheduleStoreSave() {
 scheduleStoreSave();
 
 // Aplikace
-import ReactDOM from 'react-dom'
 
 const render = Component => {
     const MOUNT_POINT = document.getElementById('content');
@@ -150,7 +154,5 @@ const render = Component => {
     ReactDOM.render(<Component store={store} />, MOUNT_POINT)
 };
 
-
-import Root from './router';
 
 render(Root);

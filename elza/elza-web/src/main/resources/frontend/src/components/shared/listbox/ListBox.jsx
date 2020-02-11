@@ -3,10 +3,10 @@ import AbstractReactComponent from "../../AbstractReactComponent";
 import * as Utils from "../../Utils";
 import ReactDOM from 'react-dom';
 import {Shortcuts} from 'react-shortcuts';
-const scrollIntoView = require('dom-scroll-into-view');
+import scrollIntoView from 'dom-scroll-into-view';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './ListBoxKeymap.jsx'
-require ('./ListBox.less');
+import './ListBox.less';
 
 let _ListBox_placeholder = document.createElement("div");
 let _ListBox_placeholder_cls = "placeholder"
@@ -392,7 +392,7 @@ class ListBox extends AbstractReactComponent {
             isItemActive = activeIndexes[index];
         } else {
             const {activeIndex} = this.state;
-            isItemActive === activeIndex;
+            isItemActive = activeIndex;
         }
 
         if (isItemActive) { // je jedna z označených

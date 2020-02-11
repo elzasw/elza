@@ -58,6 +58,7 @@ import TemplateSettingsForm from "../../components/arr/TemplateSettingsForm";
 import {FOCUS_KEYS} from "../../constants.tsx";
 import FundNodesSelectForm from "../../components/arr/FundNodesSelectForm";
 import {fundOutputAddNodes} from "../../actions/arr/fundOutput";
+import {versionValidate} from "../../actions/arr/versionValidation";
 
 let _selectedTab = 0
 

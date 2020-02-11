@@ -29,7 +29,7 @@ import './StructureSubNodeForm.less'
  */
 class UpdateMultipleSub extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         fundVersionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
         selectedSubNodeId: PropTypes.number.isRequired,

@@ -25,7 +25,7 @@ import {FOCUS_KEYS} from "../../constants.tsx";
 import {objectEqualsDiff} from "../Utils";
 import {SUB_NODE_FORM_CMP} from "../../stores/app/arr/subNodeForm";
 
-const classNames = require('classnames');
+import classNames from 'classnames';
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
@@ -64,7 +64,7 @@ class SubNodeForm extends AbstractReactComponent {
         unusedItemTypeIds: []
     };
 
-    static PropTypes = {
+    static propTypes = {
         versionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
         routingKey: PropTypes.string,

@@ -23,7 +23,7 @@ class TagsField extends AbstractReactComponent {
         renderTagItem: x => x.name,
     };
 
-    static PropTypes = {
+    static propTypes = {
         itemIdName: PropTypes.func,    // název atributu s idčkem pro porovnání dvou položek, stdanrdně "id"
         renderTagItem: PropTypes.func, // funkce pro renderování názvu položky v tag input, standardně se renderuje atribut name, předpis: x => x.name
     };

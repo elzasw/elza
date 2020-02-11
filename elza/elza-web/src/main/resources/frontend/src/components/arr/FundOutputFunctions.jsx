@@ -28,7 +28,7 @@ class FundOutputFunctions extends AbstractReactComponent {
 
     state = {};
 
-    static PropTypes = {
+    static propTypes = {
         actionConfig: PropTypes.array,
         outputId: PropTypes.number.isRequired,
         versionId: PropTypes.number.isRequired,

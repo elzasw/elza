@@ -1,5 +1,11 @@
 import AjaxUtils from "../components/AjaxUtils";
-import { DEFAULT_LIST_SIZE } from '../constants.tsx'
+import { DEFAULT_LIST_SIZE } from '../constants'
+
+// @ts-ignore
+const $ = window.$;
+// @ts-ignore
+const serverContextPath = window.serverContextPath;
+
 
 function getData(data, timeout = 1000) {
     return new Promise(function (resolve, reject) {
@@ -18,12 +24,14 @@ function getData(data, timeout = 1000) {
 function callWS(url, data, needResponse = true) {
     return new Promise((resolve, reject) => {
         if (needResponse) { // chceme skoro vždy
+            // @ts-ignore
             window.ws.send('/app' + url, JSON.stringify(data), (successResponse) => {
                 resolve(successResponse);
             }, (errorResponse) => { // příprava pro budoucí možnost odchytávání klientských výjimek - zavolá se error calbback
                 reject(errorResponse);
             });
         } else {
+            // @ts-ignore
             window.ws.send('/app' + url, JSON.stringify(data));
             resolve();
         }
@@ -106,7 +114,7 @@ export class WebApiCls {
      * @return seznam uzlu daneho AS serazeny podle relevance pri vyhledani
      */
     fundFulltextNodes(fundId) {
-        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + `/fundFulltext/${fundId}`, null, fundId);
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + `/fundFulltext/${fundId}`, { fundId });
     }
 
     getFundsByVersionIds(versionIds) {
@@ -242,7 +250,7 @@ export class WebApiCls {
     }
 
     updateDescItems(fundVersionId, nodeId, nodeVersionId, createDescItem = [], updateDescItem = [], deleteDescItem = []) {
-        const changeItems = [];
+        const changeItems: any[] = [];
 
         createDescItem.forEach(item => {
             changeItems.push({
@@ -561,10 +569,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + registryId + '/valid', null);
     }
 
-    deleteAccessPoint(accessPointId) {
-        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + accessPointId);
-    }
-
     getScopes(versionId = null) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/fundScopes', { versionId });
     }
@@ -655,24 +659,6 @@ export class WebApiCls {
     }
     // End registry
 
-    getNodeForm(nodeId, versionId) {
-        const node = findNodeById(_faRootNode, nodeId);
-        const parents = [];
-        const siblings = [...node.parent.children];
-        let n = node.parent;
-        while (n !== null) {
-            parents.push(n);
-            n = n.parent;
-        }
-
-        const data = {
-            parents: parents,
-            children: node.children,
-            siblings: siblings,
-        };
-        return getData(data, 1);
-    }
-
     getFundNodeForm(versionId, nodeId) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/nodes/' + nodeId + '/' + versionId + '/form');
     }
@@ -747,29 +733,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/templates', code ? { code } : null);
     }
 
-
-    getFundNodeForm1(versionId, nodeId) {
-        const node = findNodeById(_faRootNode, nodeId);
-        const data = {
-            node: node,
-            data: {
-                groups: [
-                    {
-                        name: 'group 1',
-                        attrDesc: [
-                            { id: 1, name: 'Ref. ozn.', multipleValue: false, code: 'STRING', values: [{ value: '' }], width: 1 },
-                            { id: 2, name: 'Obsah/regest', multipleValue: false, code: 'TEXT', values: [{ value: '' }], width: 4 },
-                            { id: 4, name: 'Typ archiválie', multipleValue: false, code: 'STRING', values: [{ value: '' }], width: 1 },
-                            { id: 3, name: 'Ukládací jednotka', multipleValue: false, code: 'STRING', values: [{ value: '' }], width: 1 },
-                            { id: 5, name: 'Datace', multipleValue: false, code: 'STRING', values: [{ value: '' }], width: 1 },
-                        ]
-                    },
-                ]
-            }
-        };
-        return getData(data, 1);
-    }
-
     getRequestsInQueue() {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/requests/queued');
     }
@@ -842,17 +805,13 @@ export class WebApiCls {
             versionId,
             nodeId,
             includeIds,
-            expandedIds: []
+            expandedIds: expandedIds ? Object.keys(expandedIds) : []
         };
-        for (let prop in expandedIds) { // Použít Object.keys()
-            if (expandedIds[prop]) {
-                data.expandedIds.push(prop);
-            }
-        }
+
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/fundTree', null, data);
     }
 
-    getNodeData(fundVersionId, nodeParam, resultParam = {}) {
+    getNodeData(fundVersionId, nodeParam, resultParam: any | object = {}) {
         const data = {
             fundVersionId: fundVersionId,
             nodeId: nodeParam.nodeId,
@@ -1475,7 +1434,7 @@ export class WebApiCls {
      *
      * @returns {Promise} list stavů připomínek
      */
-    findAllIssueStates(): IssueStateVO[] {
+    findAllIssueStates(): Promise<IssueStateVO[]> {
         return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/issue_states');
     }
 
@@ -1486,7 +1445,7 @@ export class WebApiCls {
      * @param open filter zda je issue list otevřen nebo zavřen
      * @returns {Promise} seznam protokolů
      */
-    findIssueListByFund(fundId: number, open: boolean = null) {
+    findIssueListByFund(fundId: number, open: boolean | null = null) {
         return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/funds/' + fundId + '/issue_lists', { open });
     }
 
@@ -1496,7 +1455,7 @@ export class WebApiCls {
      * @param issueListId identifikátor protokolu.
      * @returns {Promise} detail protokolu
      */
-    getIssueList(issueListId: number): IssueListVO {
+    getIssueList(issueListId: number): Promise<IssueListVO> {
         return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/issue_lists/' + issueListId);
     }
 
@@ -1508,7 +1467,7 @@ export class WebApiCls {
      * @param issueTypeId identifikátor druhu připomínky dle kterého filtrujeme
      * @returns {Promise} seznam připomínek
      */
-    findIssueByIssueList(issueListId: number, issueStateId: number = null, issueTypeId: number = null) {
+    findIssueByIssueList(issueListId: number, issueStateId: number | null = null, issueTypeId: number | null = null) {
         const requestParams = {
             issueStateId,
             issueTypeId
@@ -1521,7 +1480,7 @@ export class WebApiCls {
      *
      * @param data {IssueListVO} data pro založení protokolu
      */
-    addIssueList(data: IssueListVO): IssueListVO {
+    addIssueList(data: IssueListVO): Promise<IssueListVO> {
         return AjaxUtils.ajaxPost(WebApiCls.issueUrl + '/issue_lists', null, data)
     }
 
@@ -1531,7 +1490,7 @@ export class WebApiCls {
      * @param issueListId identifikátor protokolu.
      * @param data {IssueListVO} data pro uložení protokolu
      */
-    updateIssueList(issueListId: number, data: IssueListVO): IssueListVO {
+    updateIssueList(issueListId: number, data: IssueListVO): Promise<IssueListVO> {
         return AjaxUtils.ajaxPut(WebApiCls.issueUrl + '/issue_lists/' + issueListId, null, data)
     }
 
@@ -1605,7 +1564,7 @@ export class WebApiCls {
      * @param data komentář
      * @returns {Promise}
      */
-    addIssueComment(data: CommentVO) {
+    addIssueComment(data: Partial<CommentVO>) {
         return AjaxUtils.ajaxPost(WebApiCls.issueUrl + '/comments', null, data)
     }
 
@@ -1734,6 +1693,11 @@ export class UrlFactory {
  * that postpone requests, when user is not logged in (unauthorized)
  */
 export class WebApiOverride extends WebApiCls {
+
+    callbacks: any[];
+    origMethodNames: string[];
+
+
     constructor() {
         super();
         this.callbacks = [];

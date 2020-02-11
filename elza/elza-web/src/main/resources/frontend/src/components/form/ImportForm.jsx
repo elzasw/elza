@@ -23,7 +23,7 @@ class ImportForm extends AbstractReactComponent {
      */
     static validate = (values, props) => {
         const errors = {};
-        
+
         if (!values.recordScope || !values.recordScope.id) {
             errors.recordScope = i18n('global.validation.required');
         }
@@ -33,7 +33,7 @@ class ImportForm extends AbstractReactComponent {
         return errors;
     };
 
-    static PropTypes = {
+    static propTypes = {
         party: PropTypes.bool,
         record: PropTypes.bool,
         fund: PropTypes.bool
@@ -130,7 +130,7 @@ class ImportForm extends AbstractReactComponent {
                                         }
                                     </div>
                                 }
-                                
+
                                 <label>{i18n('import.file')}</label>
                                 <FormInput type="file" {...xmlFile} {...decorateFormField(xmlFile)} value={null}/>
                             </Modal.Body>

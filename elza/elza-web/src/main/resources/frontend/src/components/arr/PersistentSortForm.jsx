@@ -50,7 +50,7 @@ const allowedDatatypes = [
 
 class PersistentSortForm extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         versionId: PropTypes.number.isRequired,
         node: PropTypes.object
     };

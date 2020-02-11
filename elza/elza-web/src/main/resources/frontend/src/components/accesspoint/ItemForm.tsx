@@ -75,7 +75,7 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
         unusedItemTypeIds: []
     };
 
-    static PropTypes = {
+    static propTypes = {
         versionId: React.PropTypes.number.isRequired,
         fundId: React.PropTypes.number.isRequired,
         routingKey: React.PropTypes.string,
@@ -329,7 +329,7 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
 
         // Akce po vytvoření
         if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
-            this.props.dispatch(partyDetailFetchIfNeeded(data.id, null));
+            this.props.dispatch(partyDetailFetchIfNeeded(data.id));
             this.props.dispatch(routerNavigate('party'));
         } else {    // nastavení focus zpět na prvek
             const formData = subNodeForm.formData;
@@ -346,7 +346,7 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
      * @param partyId {number} identifikátor osoby
      */
     handleDetailParty(itemTypeIndex, itemIndex, partyId) {
-        this.props.dispatch(partyDetailFetchIfNeeded(partyId, null));
+        this.props.dispatch(partyDetailFetchIfNeeded(partyId));
         this.props.dispatch(routerNavigate('party'));
     }
 

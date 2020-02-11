@@ -7,12 +7,12 @@ import { Icon } from 'components/shared';
  * Komponenta k ovládání stránkování seznamu
  */
 export default class ListPager extends React.Component {
-    static PropTypes = {
-        from: PropTypes.number.required,
-        prev: PropTypes.func.required,
-        next: PropTypes.func.required,
-        maxSize: PropTypes.number.required,
-        totalCount: PropTypes.number.required
+    static propTypes = {
+        from: PropTypes.number.isRequired,
+        prev: PropTypes.func.isRequired,
+        next: PropTypes.func.isRequired,
+        maxSize: PropTypes.number.isRequired,
+        totalCount: PropTypes.number.isRequired
     };
 
     static defaultProps = {

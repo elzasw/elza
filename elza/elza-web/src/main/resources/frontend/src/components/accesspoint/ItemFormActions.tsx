@@ -541,11 +541,13 @@ export abstract class ItemFormActions {
             const fundIndex = indexById(state.arrRegion.funds, "versionId");
             if (fundIndex !== null) {
                 const getOutputId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
+
+                // @ts-ignore TODO React 16 check
                 WebApi.switchOutputCalculating(getOutputId, itemTypeId).then(() => {
                     dispatch({
                         type: types.ITEM_FORM_OUTPUT_CALC_SWITCH,
                         area: this.area,
-                                                valueLocation
+                        valueLocation
                     })
                 });
             }

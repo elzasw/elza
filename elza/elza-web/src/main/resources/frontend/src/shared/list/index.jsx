@@ -1,2 +1,3 @@
-export * as SimpleListActions from './simple/SimpleListActions.jsx';
-export SimpleListReducer from './simple/SimpleListReducer.jsx';
+import * as SimpleListActions from './simple/SimpleListActions.jsx';
+export {SimpleListActions};
+export {default as SimpleListReducer} from './simple/SimpleListReducer.jsx';

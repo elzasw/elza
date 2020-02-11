@@ -46,7 +46,7 @@ class RegistryPage extends AbstractReactComponent {
     getChildContext() {
         return { shortcuts: this.shortcutManager };
     }
-    static PropTypes = {
+    static propTypes = {
         splitter: PropTypes.object.isRequired,
         registryRegion: PropTypes.object.isRequired,
         refTables: PropTypes.object.isRequired,
@@ -138,7 +138,7 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleDeleteRegistry = () => {
-        if (confirm(i18n('registry.deleteRegistryQuestion'))) {
+        if (window.confirm(i18n('registry.deleteRegistryQuestion'))) {
             const {registryDetail:{data:{id}}} = this.props;
             this.props.dispatch(registryDelete(id));
         }

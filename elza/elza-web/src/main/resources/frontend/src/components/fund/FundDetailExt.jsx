@@ -12,10 +12,10 @@ import {routerNavigate} from 'actions/router.jsx'
 import {downloadFile} from "actions/global/download";
 import {UrlFactory} from 'actions/index.jsx';
 
-require('./FundDetailExt.less');
+import './FundDetailExt.less';;
 
 const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
-    static PropTypes = {
+    static propTypes = {
         fundDetail: PropTypes.object.isRequired,
     }
 

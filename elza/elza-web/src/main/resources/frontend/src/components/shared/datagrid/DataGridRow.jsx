@@ -5,7 +5,7 @@ import DataGridCol from "./DataGridCol";
 import classNames from 'classnames';
 
 class DataGridRow extends AbstractReactComponent {
-    static PropTypes = {
+    static propTypes = {
     };
 
     getCellElement = (colIndex) => {

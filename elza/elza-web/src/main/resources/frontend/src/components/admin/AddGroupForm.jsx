@@ -27,7 +27,7 @@ class AddGroupForm extends AbstractReactComponent {
         return errors;
     };
 
-    static PropTypes = {
+    static propTypes = {
         create: PropTypes.bool,
     };
     submitReduxForm = (values, dispatch) => submitForm(AddGroupForm.validate,values,this.props,this.props.onSubmitForm,dispatch);

@@ -43,7 +43,7 @@ class ArrOutputDetail extends AbstractReactComponent {
     getChildContext() {
         return { shortcuts: this.shortcutManager };
     }
-    static PropTypes = {
+    static propTypes = {
         versionId: PropTypes.number.isRequired,
         fund: PropTypes.object.isRequired,
         calendarTypes: PropTypes.object.isRequired,
@@ -118,28 +118,6 @@ class ArrOutputDetail extends AbstractReactComponent {
         if (confirm(i18n("arr.fund.nodes.deleteNode"))) {
             this.dispatch(fundOutputRemoveNodes(fund.versionId, fundOutputDetail.id, [node.id]))
         }
-    };
-
-    handleRenderNodeItem = (node) => {
-        const {readOnly} = this.props;
-
-        const refMark = <div className="reference-mark">{createReferenceMarkString(node)}</div>;
-
-        let name = node.name ? node.name : <i>{i18n('fundTree.node.name.undefined', node.id)}</i>;
-        if (name.length > NODE_NAME_MAX_CHARS) {
-            name = name.substring(0, NODE_NAME_MAX_CHARS - 3) + '...'
-        }
-        name = <div title={name} className="name">{name}</div>;
-
-        return <div className="item">
-            <div className="item-container">
-                {refMark}
-                {name}
-            </div>
-            <div className="actions-container">
-                {!readOnly && <Button onClick={this.handleDeleteItem.bind(this, node)}><Icon glyph="fa-trash"/></Button>}
-            </div>
-        </div>;
     };
 
     handleAddNodes = () => {

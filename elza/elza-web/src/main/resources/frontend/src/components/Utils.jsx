@@ -1,12 +1,9 @@
 
 import {normalizeDoubleWithDot, pad2} from 'components/validate.jsx'
 import {ShortcutManager} from 'react-shortcuts';
-
-/**
- * Utility metody.
- */
-
 import "./Utils.less";
+
+const $ = window.$;
 
 export function consolidateState(prevState, newState) {
     var equals = stateEquals(prevState, newState);
@@ -881,7 +878,7 @@ function checkValueDuplicity(object){
  * @param {object} defaultKeymap - výchozí keymapa
  * @param {object} overridingKeymap -
  */
-export function addShortcutManager(component,defaultKeymap,overridingKeymap) {
+export function addShortcutManager(component,defaultKeymap,overridingKeymap = null) {
     let shortcutManager;
     if(component.context && component.context.shortcuts && !overridingKeymap){
         let keymap = component.context.shortcuts._keymap;

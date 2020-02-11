@@ -28,7 +28,7 @@ class RegistrySelectPage extends SelectPage {
         openPage: 'registry'
     };
 
-    static PropTypes = {
+    static propTypes = {
         hasParty: PropTypes.bool
     };
 

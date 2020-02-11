@@ -26,7 +26,7 @@ import PartySelectPage from "../../../pages/select/PartySelectPage";
 
 class DescItemPartyRef extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         onChange: PropTypes.func.isRequired,
         onCreateParty: PropTypes.func.isRequired,
         onDetail: PropTypes.func.isRequired,

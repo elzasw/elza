@@ -9,7 +9,7 @@ import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import './DatationField.less'
 
 class DatationField extends AbstractReactComponent {
-    static PropTypes = {
+    static propTypes = {
         label: PropTypes.string.isRequired,
         labelTextual: PropTypes.string.isRequired,
         labelNote: PropTypes.string.isRequired,

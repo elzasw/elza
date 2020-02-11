@@ -32,7 +32,7 @@ class PartyField extends AbstractReactComponent {
         partyTypeId: null
     };
 
-    static PropTypes = {
+    static propTypes = {
         detail: PropTypes.bool.isRequired,
         footer: PropTypes.bool,
         footerButtons: PropTypes.bool,

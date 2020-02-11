@@ -11,7 +11,7 @@ import {decorateValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
-var classNames = require('classnames');
+import classNames from 'classnames';
 
 var DescItemDecimal = class DescItemDecimal extends AbstractReactComponent {
     constructor(props) {

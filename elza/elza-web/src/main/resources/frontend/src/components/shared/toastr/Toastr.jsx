@@ -29,7 +29,7 @@ import i18n from "../../i18n";
  **/
 class Toastr extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         store: PropTypes.object.isRequired
     };
 

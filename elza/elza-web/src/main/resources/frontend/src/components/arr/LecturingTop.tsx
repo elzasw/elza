@@ -28,7 +28,9 @@ const basicOptionMap = (i) => <option key={i.id} value={i.id}>{i.name}</option>;
  */
 class LecturingTop extends React.Component {
 
-    state = {
+    props: any;
+
+    state: any = {
         issueListId: null,
     };
 
@@ -149,7 +151,7 @@ class LecturingTop extends React.Component {
         return <div className="lecturing-top">
             <div className="actions-container">
                 <div className="actions">
-                    <DropdownButton disabled={!canWrite} bsStyle="default" id='dropdown-add-comment' noCaret title={<Icon glyph='fa-plus-circle' />}>
+                    <DropdownButton disabled={!canWrite} bsStyle="default" id='dropdown-add-comment' noCaret title={(<Icon glyph='fa-plus-circle' /> as any as string)}>
                         <MenuItem eventKey="1" onClick={this.newArr}>{i18n("arr.issues.add.arr")}</MenuItem>
                         <MenuItem eventKey="2" disabled={!this.props.node || !this.props.node.selectedSubNodeId} onClick={this.newNode}>{i18n("arr.issues.add.node")}</MenuItem>
                     </DropdownButton>
@@ -157,8 +159,8 @@ class LecturingTop extends React.Component {
                     <Button bsStyle="action" className="pull-right" disabled={!issueListId} onClick={this.download}><Icon glyph='fa-download' /></Button>
                 </div>
             </div>
-            <FormControl componentClass={"select"} name={"protocol"} onChange={({target: {value}}) => this.selectIssueList(value, fund.id)} value={issueListId}>
-                {issueProtocols.fetched && issueProtocols.count === 0 && <option value={null} />}
+            <FormControl componentClass={"select"} name={"protocol"} onChange={({target: {value}}: any) => this.selectIssueList(value, fund.id)} value={issueListId}>
+                {issueProtocols.fetched && issueProtocols.count === 0 && <option value={''} />}
                 {issueProtocols.fetched && issueProtocols.rows.map(basicOptionMap)}
             </FormControl>
             <Row>
@@ -218,7 +220,7 @@ class LecturingTop extends React.Component {
     }
 }
 
-export default connect((state) => {
+export default connect((state: any) => {
     return {
         issueTypes: state.refTables.issueTypes,
         issueStates: state.refTables.issueStates,

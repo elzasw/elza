@@ -21,7 +21,7 @@ const USE_UNITDATE_ENUM = { // TODO @compel move to party.jsx
 
 class RelationForm extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         relationType: PropTypes.object.isRequired,
         apTypesMap: PropTypes.object.isRequired,
         partyId: PropTypes.number

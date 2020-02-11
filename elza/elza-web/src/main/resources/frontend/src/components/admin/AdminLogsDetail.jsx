@@ -79,7 +79,7 @@ class AdminLogsDetail extends AbstractReactComponent {
             if (this.stop) {
                 this.refresh(true);
             }
-            this.scrollDown;
+            this.scrollDown(); // TODO React 16 check
         });
     };
 

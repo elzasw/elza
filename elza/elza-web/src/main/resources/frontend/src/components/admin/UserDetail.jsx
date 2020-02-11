@@ -29,7 +29,7 @@ import DetailHeader from "../shared/detail/DetailHeader";
  * Detail uživatele s nastavením oprávnění.
  */
 class UserDetail extends AbstractReactComponent {
-    static PropTypes = {
+    static propTypes = {
         userDetail: PropTypes.object.isRequired,
         userCount: PropTypes.number.isRequired,
     };
@@ -51,11 +51,11 @@ class UserDetail extends AbstractReactComponent {
         id: null,
         index: 0
     }
-    /* 
+    /*
      * Last selected fund item.
      */
     selectedFund = this.defaultSelectedItem;
-    /* 
+    /*
      * Last selected scope item.
      */
     selectedScope = this.defaultSelectedItem;

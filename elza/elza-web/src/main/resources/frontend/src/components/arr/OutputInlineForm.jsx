@@ -28,7 +28,7 @@ class OutputInlineForm extends AbstractReactComponent {
         return errors;
     }
 
-    static PropTypes = {
+    static propTypes = {
         create: PropTypes.bool,
         initData: PropTypes.object,
         onSave: PropTypes.func.isRequired,

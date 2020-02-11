@@ -68,10 +68,10 @@ export default function(key, ...params) {
     if (key) {
         if (key[0] == '^') {
             key = key.substring(1, key.length);
-            const text = messages[key];
+            const text = window.messages[key];
             return text != null ? String.format(text, ...params) : null;
         } else {
-            const text = messages[key];
+            const text = window.messages[key];
             return text != null ? String.format(text, ...params) : "[" + key + "]";
         }
     } else {

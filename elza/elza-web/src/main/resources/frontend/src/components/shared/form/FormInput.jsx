@@ -9,7 +9,7 @@ class FormInput extends AbstractReactComponent {
         feedback: false
     };
 
-    static PropTypes = {
+    static propTypes = {
         label: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
         error: PropTypes.string,
         touched: PropTypes.bool.isRequired,

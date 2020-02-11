@@ -1,4 +1,4 @@
-import {WebApi} from "actions/WebApi.jsx";
+import {WebApi} from "actions/WebApi";
 
 /**
  *  Trida pro zpracovani pozadavku na upravy v poradani
@@ -13,7 +13,7 @@ class NodeRequestController {
 
         if(!request){
             this.nodes[nodeId] = new NodeRequests();
-        } 
+        }
         this.nodes[nodeId].updateRequest(fundVersionId, nodeVersionId, nodeId, descItem, onSuccess, onError);
     }
     sendNextUpdate(nodeId, descItemObjectId){
@@ -40,7 +40,7 @@ class NodeRequests{
 
         if(!descItemRequest){
             this.descItems[descItemObjectId] = new DescItemUpdateRequest();
-        } 
+        }
         let requestData = {
             fundVersionId: fundVersionId,
             nodeVersionId: nodeVersionId,
@@ -54,9 +54,9 @@ class NodeRequests{
     }
     /**
      * Called when node change was received
-     * 
+     *
      * Function will check number of pending requests and decrement it.
-     * 
+     *
      * Return true if event is our own. Return false if event is not our
      * and should be processed
      */
@@ -125,9 +125,9 @@ function onUpdateResponse(request, response){
 
 /**
  * Check if update event should be skipped
- * 
+ *
  * This happen is we caused the update event
- * @param {*} entityIds 
+ * @param {*} entityIds
  */
 export function onReceivedNodeChange(entityIds){
     let node = nodeRequestController.nodes[entityIds[0]];

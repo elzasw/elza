@@ -13,12 +13,12 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {userPasswordChange} from 'actions/admin/user.jsx'
 
+import './SelectPage.less'
+
 const OPEN_PAGE = {
     PARTY: 'party',
     REGISTRY: 'registry',
 };
-
-import './SelectPage.less'
 
 /**
  * Stránka rejstříků.

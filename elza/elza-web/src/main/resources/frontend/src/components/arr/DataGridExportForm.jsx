@@ -42,7 +42,7 @@ const EXPORT_TYPE = {
 
 class DataGridExportForm extends AbstractReactComponent {
 
-    static PropTypes = {
+    static propTypes = {
         versionId: PropTypes.number.isRequired,
     };
 

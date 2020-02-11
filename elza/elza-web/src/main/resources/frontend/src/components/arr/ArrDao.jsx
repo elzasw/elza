@@ -9,9 +9,9 @@ import ArrRequestForm from "./ArrRequestForm";
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {WebApi} from 'actions/index.jsx';
 
-require ('./ArrDao.less');
+import './ArrDao.less';
 
-var classNames = require('classnames');
+import classNames from 'classnames';
 
 class ArrDao extends AbstractReactComponent {
 
@@ -19,7 +19,7 @@ class ArrDao extends AbstractReactComponent {
         super(props);
     }
 
-    static PropTypes = {
+    static propTypes = {
         dao: PropTypes.object.isRequired,
         daoFile: PropTypes.object,
         fund: PropTypes.object.isRequired,

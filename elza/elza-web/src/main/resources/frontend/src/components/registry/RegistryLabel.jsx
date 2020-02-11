@@ -12,7 +12,7 @@ class RegistryLabel extends AbstractReactComponent {
         value: this.props.value
     };
 
-    static PropTypes = {
+    static propTypes = {
         disabled: PropTypes.bool.isRequired,
         onEnter: PropTypes.func.isRequired,
         onBlur: PropTypes.func.isRequired,

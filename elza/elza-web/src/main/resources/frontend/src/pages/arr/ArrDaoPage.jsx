@@ -73,7 +73,7 @@ class ArrDaoPage extends ArrParentPage {
         selectedDaoRightFileId: null,  // vybrané dao v pravé části
     };
 
-    static PropTypes = {
+    static propTypes = {
         splitter: PropTypes.object.isRequired,
         arrRegion: PropTypes.object.isRequired,
         developer: PropTypes.object.isRequired,

@@ -1,4 +1,4 @@
-require('./FileListBox.less');
+import './FileListBox.less';
 
 /**
  *  Souborová ListBox komponenta

@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {VirtualList, NoFocusButton, AbstractReactComponent, i18n, HorizontalLoader, StoreHorizontalLoader, Icon, SearchWithGoto, Utils} from 'components/shared';
 import {Nav, Input, NavItem, Button, DropdownButton} from 'react-bootstrap';
-const classNames = require('classnames');
+import classNames from 'classnames';
 import {propsEquals} from 'components/Utils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {createReferenceMark, getNodeIcon, getNodePrevSibling, getNodeNextSibling, getNodeParent, getNodeFirstChild} from 'components/arr/ArrUtils.jsx'
@@ -41,7 +41,7 @@ class FundTreeLazy extends AbstractReactComponent {
 
     state = {};
 
-    static PropTypes = {
+    static propTypes = {
         expandedIds: PropTypes.object.isRequired,
         cutLongLabels: PropTypes.bool.isRequired,
         selectedId: PropTypes.number,
@@ -210,7 +210,7 @@ class FundTreeLazy extends AbstractReactComponent {
                 name = name.substring(0, TREE_NAME_MAX_CHARS - 3) + '...'
             }
         }
-        
+
         const iconProps = getNodeIcon(this.props.colorCoded, node.icon);
 
         return <div key={node.id} className={cls}>

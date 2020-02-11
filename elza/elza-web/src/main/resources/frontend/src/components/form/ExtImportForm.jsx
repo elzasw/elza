@@ -183,7 +183,7 @@ class ExtImportForm extends AbstractReactComponent {
         results: [],
     };
 
-    static PropTypes = {
+    static propTypes = {
         autocomplete: PropTypes.bool,
         isParty: PropTypes.bool,
         count: PropTypes.number,

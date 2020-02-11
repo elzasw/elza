@@ -11,7 +11,7 @@ import Tags from "components/form/Tags.jsx"
  * Formulář pro vybrání několika položek pomocí tag input.
  */
 const SelectItemsForm = class extends AbstractReactComponent {
-    static PropTypes = {
+    static propTypes = {
         renderItem: PropTypes.func.isRequired,    // render položky v tag input, přepis: (item, isHighlighted = false, isSelected = false) => {}
         fieldComponent: PropTypes.func.isRequired,    // reference na komponentu fieldu pro input - dohledání položky, např. GroupField
         fieldComponentProps: PropTypes.object,    // props pro fieldComponent
