@@ -1,5 +1,6 @@
 import AjaxUtils from "../components/AjaxUtils";
-import { DEFAULT_LIST_SIZE } from '../constants'
+import {DEFAULT_LIST_SIZE} from '../constants'
+import {CommentVO, IssueListVO, IssueStateVO, IssueVO} from "../types";
 
 // @ts-ignore
 const $ = window.$;
@@ -1589,56 +1590,6 @@ export class WebApiCls {
     nextIssueByFundVersion(fundVersionId: number, nodeId: number, direction: number) {
         return AjaxUtils.ajaxGet(WebApiCls.issueUrl + '/funds/' + fundVersionId + '/issues/nextNode', { nodeId, direction });
     }
-}
-
-declare class IssueListVO extends Object {
-    id: number;
-    fundId: number;
-    name: string;
-    open: boolean;
-    rdUsers: UsrUserVO[];
-    wrUsers: UsrUserVO[];
-}
-
-declare class IssueStateVO extends Object {
-    id: number;
-    code: string;
-    name: string;
-    startState: boolean;
-    finalState: boolean;
-}
-
-declare class IssueVO extends Object {
-    id: number;
-    issueListId: number;
-    nodeId: number;
-    number: number;
-    issueTypeId: number;
-    issueStateId: number;
-    description: string;
-    userCreate: UsrUserVO;
-    timeCreated: string;
-    referenceMark: string[];
-}
-
-declare class CommentVO extends Object {
-    id: number;
-    issueId: number;
-    comment: string;
-    user: UsrUserVO;
-    prevStateId: number;
-    nextStateId: number;
-    timeCreated: string;
-}
-
-declare class UsrUserVO extends Object {
-    username: string;
-    id: string;
-    active: boolean;
-    description: string;
-    party: Object;
-    permissions: Object[];
-    groups: Object[];
 }
 
 /**

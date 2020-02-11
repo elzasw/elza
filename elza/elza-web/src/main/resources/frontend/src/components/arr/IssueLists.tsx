@@ -16,6 +16,9 @@ import {WebApi} from "../../actions";
 import "./IssueLists.less";
 
 
+type Props = {
+
+}
 type P = {
     fundId: number;
     dispatch: (x: any) => void;
@@ -116,5 +119,5 @@ export default connect((state: any) => {
         issueList: storeFromArea(state, issuesActions.AREA_LIST),
         issueProtocols: storeFromArea(state, issuesActions.AREA_PROTOCOLS_CONFIG)
     }
-})(IssueLists as any);
+})(IssueLists as any) as any as React.SFC<{fundId: number}>;
 

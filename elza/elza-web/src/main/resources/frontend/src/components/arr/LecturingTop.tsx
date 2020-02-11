@@ -20,6 +20,8 @@ import indexById from "../../shared/utils/indexById";
 
 import "./LecturingTop.less";
 import * as perms from "../../actions/user/Permission";
+import {IssueStateVO, IssueVO} from "../../types";
+import {CSSProperties} from "react";
 
 const basicOptionMap = (i) => <option key={i.id} value={i.id}>{i.name}</option>;
 
@@ -165,13 +167,13 @@ class LecturingTop extends React.Component {
             </FormControl>
             <Row>
                 <Col xs={12} sm={6}>
-                    <FormControl componentClass={"select"} name={"state"} disabled={!issueListId} onChange={({target: {value}}) => this.filter({state:value})} value={issueList.filter.state}>
+                    <FormControl componentClass={"select"} name={"state"} disabled={!issueListId} onChange={({target: {value}}: any) => this.filter({state:value})} value={issueList.filter.state}>
                         <option value={""}>{i18n("global.all")}</option>
                         {issueStates.fetched && issueStates.data.map(basicOptionMap)}
                     </FormControl>
                 </Col>
                 <Col xs={12} sm={6}>
-                    <FormControl componentClass={"select"} name={"type"} disabled={!issueListId} onChange={({target: {value}}) => this.filter({type:value})} value={issueList.filter.type}>
+                    <FormControl componentClass={"select"} name={"type"} disabled={!issueListId} onChange={({target: {value}}: any) => this.filter({type:value})} value={issueList.filter.type}>
                         <option value={""}>{i18n("global.all")}</option>
                         {issueTypes.fetched && issueTypes.data.map(basicOptionMap)}
                     </FormControl>
@@ -187,7 +189,7 @@ class LecturingTop extends React.Component {
                     renderItemContent={({item: {description, issueStateId, issueTypeId, number, id, referenceMark}, active} : {item: IssueVO, active: boolean}) => {
                         const state : IssueStateVO = objectById(issueStates.data, issueStateId);
                         const type = objectById(issueTypes.data, issueTypeId);
-                        const style = {};
+                        const style: CSSProperties = {};
                         if (config.colors && config.colors[type.code]) {
                             style.background = config.colors[type.code];
                         }
@@ -198,7 +200,7 @@ class LecturingTop extends React.Component {
                         return <TooltipTrigger className={"flex item"  + (active ? " active" : "")} content={<span><div>#{number} ({state.name})</div><div>{description}</div></span>}>
                             <div className={"info"}>
                                 <div className="flex">
-                                    <span className="circle" style={!state.finalState ? style : null}>
+                                    <span className="circle" style={!state.finalState ? style : undefined}>
                                     {state.finalState && icon && <Icon glyph={icon}/>}
                                     </span>
                                     <span className={"description"}>#{number} - {description}</span>
@@ -208,7 +210,7 @@ class LecturingTop extends React.Component {
                                 </div>
                             </div>
                             {canWrite && <div className="actions">
-                                <DropdownButton pullRight bsStyle="action" id='issue-type' noCaret title={<Icon glyph='fa-ellipsis-h' />}>
+                                <DropdownButton pullRight bsStyle="action" id='issue-type' noCaret title={<Icon glyph='fa-ellipsis-h' /> as any as string}>
                                     {issueTypes.data.map(i => <MenuItem key={'issue-type-' + i.id} disabled={i.id === issueTypeId} onClick={this.updateIssueType.bind(this, id, i.id)}>{i18n("arr.issues.type.change", i.name)}</MenuItem>)}
                                 </DropdownButton>
                             </div>}
@@ -229,4 +231,4 @@ export default connect((state: any) => {
         issueDetail: storeFromArea(state, issuesActions.AREA_DETAIL),
         userDetail: state.userDetail,
     }
-})(LecturingTop);
+})(LecturingTop as any) as any as React.SFC<{fund: object}>;
