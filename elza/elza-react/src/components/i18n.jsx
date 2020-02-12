@@ -64,6 +64,11 @@ String.format = function(format) {
   }
 };
 
+
+if (!window.messages) {
+    window.messages = window.__DEV__ ? window.devMessages : {};
+}
+
 export default function(key, ...params) {
     if (key) {
         if (key[0] == '^') {

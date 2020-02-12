@@ -1,11 +1,26 @@
-const {editWebpackPlugin, getPaths, edit} = require('@rescripts/utilities');
+const {editWebpackPlugin, getPaths, edit, appendWebpackPlugin} = require('@rescripts/utilities');
 const path = require('path');
+const webpack = require('webpack');
+const CircularDependencyPlugin = require('circular-dependency-plugin');
+const fs = require('fs');
 
 module.exports = {
     'use-tslint-config': 'tslint.json',
     'use-eslint-config': 'package',
     webpack: (config) => {
-        config.resolve.modules.push(path.resolve(__dirname, 'src'))
+        let messagesRaw = fs.readFileSync('../elza-web/src/main/resources/static/res/js/messages_cs.js', {encoding: 'utf-8'});
+        eval(messagesRaw);
+        /*const inx = config.entry.findIndex(i => i.includes('src/index'));
+        config.entry.splice(inx, 0, require.resolve('jquery'));
+        //console.log(config.entry);
+        //process.exit(1);
+
+         */
+        config.resolve.modules.push(path.resolve(__dirname, 'src'));
+        config.resolve.alias = {
+            ...(config.resolve.alias || {}),
+            'stompjs': path.resolve(__dirname, "node_modules") + '/stompjs/lib/stomp.js',
+        };
         config.module.rules[1].use[0].options.baseConfig = require('./package').eslintConfig;
         //console.log(config.module.rules[2].oneOf[1]);
         //return;
@@ -52,9 +67,36 @@ module.exports = {
             },
             styleLoaders,
             config
-        )
+        );
 
-        if (config.mode === 'production') {
+        /*
+        config = appendWebpackPlugin(new webpack.ProvidePlugin({
+            $: "jquery",
+            jQuery: "jquery"
+        }), config);
+         */
+
+
+
+        const isProduction = config.mode === 'production';
+
+        config = appendWebpackPlugin(new webpack.DefinePlugin({
+            'window.devMessages': isProduction ? false : JSON.stringify(messages),
+            __DEVELOPMENT__: !isProduction,
+            __DEVTOOLS__: false,
+            __SHOW_DEVTOOLS__: false,
+            __DEV__: !isProduction,
+            'window.__DEV__': !isProduction
+        }), config);
+
+        if (isProduction) {
+            appendWebpackPlugin(new CircularDependencyPlugin({
+                // exclude detection of files based on a RegExp
+                exclude: /node_modules/,
+                // add errors to webpack instead of warnings
+                failOnError: true
+            }), config);
+
             config.optimization.runtimeChunk = false;
             config.optimization.splitChunks = {
                 cacheGroups: {

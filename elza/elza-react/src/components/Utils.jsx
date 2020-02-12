@@ -1,9 +1,7 @@
-
 import {normalizeDoubleWithDot, pad2} from 'components/validate.jsx'
 import {ShortcutManager} from 'react-shortcuts';
 import "./Utils.less";
-
-const $ = window.$;
+import $ from 'jquery';
 
 export function consolidateState(prevState, newState) {
     var equals = stateEquals(prevState, newState);
@@ -42,18 +40,18 @@ export function chooseInputEl(el1, el2) {
  * @return {bool} true, pokud se podařilo najít a nastavit focus
  */
 export function setInputFocus(el, selectContent = false) {
-    var elem = $('input:visible:enabled', el).get(0);
-    var select = $('select:visible:enabled', el).get(0);
+    let elem = $('input:visible:enabled', el).get(0);
+    const select = $('select:visible:enabled', el).get(0);
     elem = chooseInputEl(elem, select);
 
-    var textarea = $('textarea:visible:enabled', el).get(0);
+    const textarea = $('textarea:visible:enabled', el).get(0);
     elem = chooseInputEl(elem, textarea);
 
-    var button = $('button:visible:enabled', el).get(0);
+    const button = $('button:visible:enabled', el).get(0);
     elem = chooseInputEl(elem, button);
 
     // Vlastní prvky podle definovaného tab indexu
-    var custom = $('div,shortcut', el)
+    const custom = $('div,shortcut', el)
         .filter(function() {
             return $(this).attr("tabIndex") >= 0;
         })

@@ -16,7 +16,7 @@ import {addToastrDanger, addToastrWarning, addToastrInfo, addToastr} from 'compo
 import {createException} from 'components/ExceptionUtils.jsx';
 import i18n from "./i18n";
 
-const $ = window.$;
+import $ from 'jquery';
 const serverContextPath = window.serverContextPath;
 
 // Nastavení úrovně logování

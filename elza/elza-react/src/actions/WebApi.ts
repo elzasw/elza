@@ -3,7 +3,7 @@ import {DEFAULT_LIST_SIZE} from '../constants'
 import {CommentVO, IssueListVO, IssueStateVO, IssueVO} from "../types";
 
 // @ts-ignore
-const $ = window.$;
+import $ from 'jquery';
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
 

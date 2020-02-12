@@ -13,7 +13,7 @@ import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './DescItemJsonTableCellFormKeymap.jsx';
 
-const $ = window.$;
+import $ from 'jquery';
 
 var DescItemJsonTableCellForm = class DescItemJsonTableCellForm extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };

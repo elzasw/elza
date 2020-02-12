@@ -30,22 +30,23 @@ import globalFundTree from "./globalFundTree";
 import {isStructureNodeForm} from "../../../actions/arr/structureNodeForm";
  import fundTree from "./fundTree";
 
- const initialState = {
-    activeIndex: null,
-    nodeSettings: nodeSetting(undefined, {}),
-    extendedView: false,
-    showRegisterJp: false,
-    visiblePolicy: visiblePolicy(),
-    funds: [],
-    customFund: customFund(),
-    globalFundTree: globalFundTree(undefined, {}),
-    fundSearch: fundSearch(undefined, {})
-};
 
  const initialCustomFundState = {
      fundTreeNodes: fundTree(),
      versionId: null,
      fundId: null,
+ };
+
+ const initialState = {
+     activeIndex: null,
+     nodeSettings: nodeSetting(undefined, {}),
+     extendedView: false,
+     showRegisterJp: false,
+     visiblePolicy: visiblePolicy(),
+     funds: [],
+     customFund: customFund(),
+     globalFundTree: globalFundTree(undefined, {}),
+     fundSearch: fundSearch(undefined, {})
  };
 
  function customFund(state = initialCustomFundState, action = {}) {
