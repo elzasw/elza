@@ -191,7 +191,7 @@ public class ItemService {
 
         // extra check for data
         ArrData data = descItem.getData();
-        RulItemType rulItemType = descItem.getItemType();
+        RulItemType rulItemType = itemType.getEntity();
 
         // check if defined specification
         Integer itemSpecId = descItem.getItemSpecId();
@@ -210,19 +210,8 @@ public class ItemService {
             if (data != null && !descItem.isUndefined()) {
                 // check record_ref
                 if (itemType.getDataType().equals(DataType.RECORD_REF)) {
-
-                    ApAccessPoint apAccessPoint = ((ArrDataRecordRef) data).getRecord();
-                    ApState apState = stateRepository.findLastByAccessPoint(apAccessPoint);
-
-                    // TODO: refactor and use static data
-                    List<Integer> apTypeIds = itemAptypeRepository.findApTypeIdsByItemSpec(rulItemSpec);
-                    apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemType(rulItemType));
-                    Set<Integer> apTypeIdTree = registerTypeRepository.findSubtreeIds(apTypeIds);
-
-                    if (!apTypeIdTree.contains(apState.getApTypeId())) {
-                        throw new BusinessException("Hodnota neodpovídá typu rejstříku podle specifikace nebo typu",
-                                RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING);
-                    }
+                    ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
+                    checkRecordRef(recordRef, rulItemType, rulItemSpec);
                 }
             }
 
@@ -231,17 +220,32 @@ public class ItemService {
                 throw new BusinessException("Pro typ atributu nesmí být specifikace vyplněná",
                         ArrangementCode.ITEM_SPEC_FOUND).level(Level.WARNING);
             } else {
-                if (itemType.getDataType().equals(DataType.RECORD_REF)) {
-                    ApAccessPoint apAccessPoint = ((ArrDataRecordRef) data).getRecord();
-                    ApState apState = stateRepository.findLastByAccessPoint(apAccessPoint);
-                    List<Integer> apTypeIds = itemAptypeRepository.findApTypeIdsByItemType(rulItemType);
-                    Set<Integer> apTypeIdTree = registerTypeRepository.findSubtreeIds(apTypeIds);
-                    if (!apTypeIdTree.contains(apState.getApTypeId())) {
-                        throw new BusinessException("Hodnota neodpovídá typu rejstříku podle specifikace nebo typu",
-                                RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING);
+                if (data != null && !descItem.isUndefined()) {
+                    if (itemType.getDataType().equals(DataType.RECORD_REF)) {
+                        ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
+                        checkRecordRef(recordRef, rulItemType, null);
                     }
                 }
             }
+        }
+    }
+
+    private void checkRecordRef(ArrDataRecordRef dataRecordRef, RulItemType rulItemType, RulItemSpec rulItemSpec) {
+        ApAccessPoint apAccessPoint = dataRecordRef.getRecord();
+        ApState apState = stateRepository.findLastByAccessPoint(apAccessPoint);
+
+        // TODO: refactor and use static data
+        List<Integer> apTypeIds = null;
+        if (rulItemSpec != null) {
+            apTypeIds = itemAptypeRepository.findApTypeIdsByItemSpec(rulItemSpec);
+        } else {
+            apTypeIds = itemAptypeRepository.findApTypeIdsByItemType(rulItemType);
+        }
+        Set<Integer> apTypeIdTree = registerTypeRepository.findSubtreeIds(apTypeIds);
+
+        if (!apTypeIdTree.contains(apState.getApTypeId())) {
+            throw new BusinessException("Hodnota neodpovídá typu rejstříku podle specifikace nebo typu",
+                    RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING);
         }
     }
 

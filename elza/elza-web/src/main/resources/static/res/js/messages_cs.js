@@ -148,7 +148,7 @@ var messages = {
     "exception.out.CANNOT_CHANGE_STATE": "Nelze změnit stav",
     "exception.out.CANNOT_CLONE_DELETED": "Nelze klonovat smazaný výstup",
     "exception.out.LOCKED": "Výstup je již uzamčen",
-    "exception.out.NOT_PROCESS_IN_STATE": "Nelze provést v aktálním stavu",
+    "exception.out.NOT_PROCESS_IN_STATE": "Nelze provést v aktuálním stavu",
     "exception.out.OUTPUT_NOT_EXISTS": "Nebyl nalezen výstup s ID={id}",
     "exception.out.CANNOT_SWITCH_CALCULATING": "Nelze přepnout způsob vyplňování, protože neexistuje žádná hodnota generovaná funkcí",
     "exception.out.ITEM_TYPE_CALC": "Tento atribut je počítán automaticky a nemůže být ručně editován",
@@ -428,6 +428,7 @@ var messages = {
     "arr.output.panel.template.noSettings": "Vybraná šablona nemá žádná nastavení",
     "arr.output.panel.files.notGenerated": "Výstup nebyl vygenerován",
 
+    "arr.issues.level.deleted": "Jednotka popisu vymazána",
     "arr.issues.settings.title": "Nastavení lektorování",
     "arr.issues.choose":"Vyberte připomínku",
     "arr.issues.state.change":"změnit stav...",
@@ -447,6 +448,7 @@ var messages = {
     "issueList.open.true":"Otevřený",
     "issueList.open.false":"Zavřený",
     "issueList.new.unnamed":"Nepojmenovaný",
+    "issueList.missing.name":"Bez jména",
 
     "arr.fund.search.result.count": "Počet nalezených výsledků: {0}",
     "arr.fund.search.noFulltext": "Pro zobrazení výsledků hledání v archivních souborech zadejte vyhledávací podmínku.",
@@ -790,6 +792,9 @@ var messages = {
     "arr.history.action.deleteFrom.show": "Přejít",
     "arr.history.action.deleteChanges": "Odstranit změny",
     "arr.history.action.goToDate": "Zobrazit",
+
+    "arr.lecturing.states_all": "Stav",
+    "arr.lecturing.severity_all": "Závažnost",
 
     "dms.file.title.file.add": "Přidání přílohy ze souboru",
     "dms.file.title.editable.add": "Přidání přílohy jako text",

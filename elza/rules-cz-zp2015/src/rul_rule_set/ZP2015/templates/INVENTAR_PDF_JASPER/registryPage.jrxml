@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.4.3.final using JasperReports Library version 6.4.3  -->
+<!-- Created with Jaspersoft Studio version 6.10.0.final using JasperReports Library version 6.10.0-unknown  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="registryGeo" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="70" bottomMargin="70" uuid="3f43110c-223f-408d-9478-6c840e9ddba1">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
@@ -48,21 +48,41 @@
 		</band>
 	</pageHeader>
 	<detail>
-		<band height="18" splitType="Stretch">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+		<band height="17" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="Text" x="0" y="0" width="180" height="15" uuid="1b08e6b5-785e-4975-913f-17c7cf7238ac">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				<reportElement key="only_name" style="Text" positionType="Float" x="0" y="0" width="455" height="15" uuid="1b08e6b5-785e-4975-913f-17c7cf7238ac">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<printWhenExpression><![CDATA[($F{prefName}.getFullName().length()+$F{recordObj}.getSortedValuesOf("ZP2015_SERIAL_NUMBER", ", ").length())<70]]></printWhenExpression>
 				</reportElement>
-				<textElement>
+				<textElement textAlignment="Left">
+					<font pdfEncoding="Cp1250"/>
+					<paragraph>
+						<tabStop position="455" alignment="Right"/>
+					</paragraph>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{prefName}.getFullName()+"\t"+$F{recordObj}.getSortedValuesOf("ZP2015_SERIAL_NUMBER", ", ")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement key="only_name" style="Text" positionType="Float" x="0" y="0" width="455" height="8" uuid="e964e1a7-9bcb-4040-956e-6b21d72ced63">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<printWhenExpression><![CDATA[($F{prefName}.getFullName().length()+$F{recordObj}.getSortedValuesOf("ZP2015_SERIAL_NUMBER", ", ").length())>70]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{prefName}.getFullName()]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="Text" x="180" y="0" width="275" height="15" uuid="f594599e-8a70-4210-835c-1c8482543917">
-					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				<reportElement style="Text" positionType="Float" x="0" y="8" width="455" height="7" uuid="f594599e-8a70-4210-835c-1c8482543917">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<printWhenExpression><![CDATA[($F{prefName}.getFullName().length()+$F{recordObj}.getSortedValuesOf("ZP2015_SERIAL_NUMBER", ", ").length())>70]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

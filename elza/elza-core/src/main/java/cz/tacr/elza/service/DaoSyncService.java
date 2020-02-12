@@ -1,5 +1,11 @@
 package cz.tacr.elza.service;
 
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
+
 import java.util.List;
 import java.util.Map;
 
@@ -52,11 +58,10 @@ import cz.tacr.elza.ws.types.v1.Daoset;
 import cz.tacr.elza.ws.types.v1.Dids;
 import cz.tacr.elza.ws.types.v1.File;
 import cz.tacr.elza.ws.types.v1.FileGroup;
+import cz.tacr.elza.ws.types.v1.Foder;
+import cz.tacr.elza.ws.types.v1.FolderGroup;
 import cz.tacr.elza.ws.types.v1.NonexistingDaos;
-import cz.tacr.elza.ws.types.v1.RelatedFileGroup;
 import cz.tacr.elza.ws.types.v1.UnitOfMeasure;
-
-import static java.util.stream.Collectors.*;
 
 /**
  * Servisní metody pro synchronizaci digitizátů.
@@ -252,7 +257,10 @@ public class DaoSyncService {
 
             updateFiles(dao.getFileGroup());
 
-            updateRelatedFileGroup(dao.getRelatedFileGroup());
+            FolderGroup fg = dao.getFolderGroup();
+            if (fg != null) {
+                updateRelatedFileGroup(fg.getFoder());
+            }
         }
     }
 
@@ -280,7 +288,7 @@ public class DaoSyncService {
         }
     }
 
-    private void updateRelatedFileGroup(List<RelatedFileGroup> relatedFileGroupList) {
+    private void updateRelatedFileGroup(List<Foder> relatedFileGroupList) {
         if (relatedFileGroupList == null) {
             return;
         }
@@ -291,7 +299,7 @@ public class DaoSyncService {
         Map<String, ArrDaoFileGroup> groupCache = daoFileGroupRepository.findByCodes(relatedFileGroupList.stream().map(group -> group.getIdentifier()).collect(toList()))
                 .stream().collect(toMap(group -> group.getCode(), group -> group));
 
-        for (RelatedFileGroup relatedFileGroup : relatedFileGroupList) {
+        for (Foder relatedFileGroup : relatedFileGroupList) {
 
             updateFiles(relatedFileGroup.getFileGroup());
         }
@@ -361,7 +369,7 @@ public class DaoSyncService {
         return daoRepository.save(arrDao);
     }
 
-    public ArrDaoFileGroup createArrDaoFileGroup(ArrDao arrDao, RelatedFileGroup relatedFileGroup) {
+    public ArrDaoFileGroup createArrDaoFileGroup(ArrDao arrDao, Foder relatedFileGroup) {
         if (StringUtils.isBlank(relatedFileGroup.getIdentifier())) {
             throw new BusinessException("Nebylo vyplněno povinné pole identifikátoru", DigitizationCode.NOT_FILLED_EXTERNAL_IDENTIRIER)
                     .set("relatedFileGroup.identifier", relatedFileGroup.getIdentifier());

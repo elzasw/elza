@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.4.0.final using JasperReports Library version 6.4.1  -->
+<!-- Created with Jaspersoft Studio version 6.10.0.final using JasperReports Library version 6.10.0-unknown  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="titlePage" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="70" bottomMargin="70" uuid="dd0267be-517a-4d78-bc37-65bd954e2a10">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -17,98 +17,22 @@
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
+	<variable name="znackaFondu" class="java.lang.String">
+		<variableExpression><![CDATA[$P{fund}.getRootNode().getSingleItemValue("ZP2015_ZNACKA_FONDU")]]></variableExpression>
+	</variable>
 	<detail>
-		<band height="664">
+		<band height="634">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<property name="com.jaspersoft.studio.layout"/>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="450" width="455" height="14" isRemoveLineWhenBlank="true" uuid="e0778e82-e190-4d85-8ff8-3d44f5eaeea5">
+				<reportElement positionType="Float" x="0" y="330" width="455" height="300" isRemoveLineWhenBlank="true" uuid="e0778e82-e190-4d85-8ff8-3d44f5eaeea5">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
-				<textElement markup="html">
+				<textElement textAlignment="Left" verticalAlignment="Bottom" markup="html">
 					<font pdfEncoding="Cp1250"/>
+					<paragraph lineSpacing="Double" lineSpacingSize="2.0"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>Název archivní pomůcky:</b> "+$P{output}.getName()]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="510" width="455" height="14" isRemoveLineWhenBlank="true" uuid="af89dff7-c912-4296-ae4b-aba8f44b7ffc">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement markup="html">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["<b>Počet jednotek popisu, které lze na základě archivní pomůcky zpřístupnit:</b> "+$P{output}.getSingleItemValue( "ZP2015_UNIT_COUNT_SUM" )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="470" width="455" height="14" isRemoveLineWhenBlank="true" uuid="b2e51607-cb8e-43f8-b8be-0256985b8d02">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement markup="html">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["<b>Časové rozmezí archivní pomůcky:</b> "+$P{output}.getSingleItemValue( "ZP2015_DATE_RANGE" )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="530" width="455" height="14" isRemoveLineWhenBlank="true" uuid="3da0abad-e329-43eb-abdc-900edcd27057">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement markup="html">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["<b>Rozsah archivní pomůckou zpřístupněných archiválií:</b> "+$P{output}.getSingleItemValue( "ZP2015_UNITS_AMOUNT" )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="550" width="455" height="14" isRemoveLineWhenBlank="true" uuid="47fb2c4f-7acb-47ed-8459-90fa4ce2671c">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement markup="html">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["<b>Stav archivní pomůckou zpřístupněných archiválií ke dni:</b> "+$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_DATE" )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="570" width="455" height="14" isRemoveLineWhenBlank="true" uuid="7094a51d-0bec-4c09-b219-0bec92c83f59">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement markup="html">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["<b>Zpracovatel archivního souboru:</b> "+$P{output}.getSingleItemValue( "ZP2015_ARRANGER_TEXT" )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="590" width="455" height="14" isRemoveLineWhenBlank="true" uuid="c7827d78-5b32-4e7a-a4e8-b007fbf8314a">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement markup="html">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["<b>Archivní pomůcku sestavil:</b> "+$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_EDITOR" )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" evaluationTime="Master" pattern="">
-				<reportElement positionType="Float" x="0" y="610" width="455" height="14" isRemoveLineWhenBlank="true" uuid="22ee513b-31b2-4768-9704-069c8ba84c41">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement markup="html">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["<b>Počet stran archivní pomůcky:</b> "+$V{MASTER_TOTAL_PAGES}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="630" width="455" height="14" isRemoveLineWhenBlank="true" uuid="eac977f4-404c-4464-bf25-44e691b20263">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement markup="html">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["<b>Archivní pomůcku schválil:</b> "+$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_APPROVED_BY" )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="0" y="490" width="455" height="14" isRemoveLineWhenBlank="true" uuid="fe29dfcb-e997-4796-aaac-3b7686c771db">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement markup="html">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["<b>Počet evidenčních jednotek zpřístupněných archivní pomůckou:</b> "+$P{output}.getSingleItemValue( "ZP2015_UNIT_COUNT_TABLE" )]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>Název archivní pomůcky:</b> "+$P{output}.getName() + ($V{znackaFondu}.isEmpty()?"":"<br><b>Značka fondu:</b> "+$V{znackaFondu}) + "<br><b>Časové rozmezí archivní pomůcky:</b> "+$P{output}.getSingleItemValue( "ZP2015_DATE_RANGE" )+"<br><b>Počet evidenčních jednotek zpřístupněných archivní pomůckou:</b> "+$P{output}.getSingleItemValue( "ZP2015_UNIT_COUNT_TABLE" )+"<br><b>Počet jednotek popisu, které lze na základě archivní pomůcky zpřístupnit:</b> "+$P{output}.getSingleItemValue( "ZP2015_UNIT_COUNT_SUM" )+"<br><b>Rozsah archivní pomůckou zpřístupněných archiválií:</b> "+$P{output}.getSingleItemValue( "ZP2015_UNITS_AMOUNT" )+"<br><b>Stav archivní pomůckou zpřístupněných archiválií ke dni:</b> "+$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_DATE" )+"<br><b>Zpracovatel archivního souboru:</b> "+$P{output}.getSingleItemValue( "ZP2015_ARRANGER_TEXT" )+"<br><b>Archivní pomůcku sestavil:</b> "+$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_EDITOR" )+"<br><b>Počet stran archivní pomůcky:</b> "+$V{MASTER_TOTAL_PAGES}+"<br><b>Archivní pomůcku schválil:</b> "+$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_APPROVED_BY" )]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

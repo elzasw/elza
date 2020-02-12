@@ -13,4 +13,6 @@ import cz.tacr.elza.domain.ArrSobjVrequest;
 @Repository
 public interface SobjVrequestRepository extends JpaRepository<ArrSobjVrequest, Integer> {
 
+    int deleteByStructuredObjectFundId(Integer fundId);
+
 }

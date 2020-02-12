@@ -22,9 +22,9 @@ public class EventChangeDescItem extends EventVersion {
      */
     private Integer version;
 
-    public EventChangeDescItem(final EventType eventType, final Integer versionId, final Integer descItemObjectId,
+    public EventChangeDescItem(final Integer versionId, final Integer descItemObjectId,
                                final Integer nodeId, final Integer version) {
-        super(eventType, versionId);
+        super(EventType.DESC_ITEM_CHANGE, versionId);
         this.descItemObjectId = descItemObjectId;
         this.nodeId = nodeId;
         this.version = version;

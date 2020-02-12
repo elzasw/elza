@@ -62,8 +62,6 @@ public class DEExportService {
 
     private final StaticDataService staticDataService;
 
-    private final ResourcePathResolver resourcePathResolver;
-
     private final ScopeRepository scopeRepository;
 
     @Autowired
@@ -77,14 +75,14 @@ public class DEExportService {
             ResourcePathResolver resourcePathResolver,
             ScopeRepository scopeRepository) {
         this.initHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService, apRepository,
-                fundVersionRepository);
+                fundVersionRepository,
+                resourcePathResolver);
         this.staticDataService = staticDataService;
-        this.resourcePathResolver = resourcePathResolver;
         this.scopeRepository = scopeRepository;
     }
 
     public List<String> getTransformationNames() throws IOException {
-        Path transformDir = resourcePathResolver.getExportXmlTrasnformDir();
+        Path transformDir = initHelper.getResourcePathResolver().getExportXmlTrasnformDir();
         if (!Files.exists(transformDir)) {
             return Collections.emptyList();
         }

@@ -36,6 +36,14 @@ export default function app(state = initialState, action) {
         return processAreaStores(state, action);
     }
 
+    // Pri zmene uzivatele je nutne zapomenou vsechna 
+    // vyzadana data
+    if (action.type == types.LOGIN_SUCCESS) {
+        if (action.reset) {
+            return initialState;
+        }
+    }
+
     if (action.type == types.STORE_SAVE) {
         return {
             partyList: SimpleListReducer(state.partyList, action),
