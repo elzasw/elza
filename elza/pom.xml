@@ -43,6 +43,7 @@
     </properties>
 
     <modules>
+        <module>elza-react</module>
         <module>distrib</module>
         <module>elza-ws-api</module>
         <module>elza-core</module>
