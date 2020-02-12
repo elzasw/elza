@@ -18,8 +18,7 @@ import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {setInputFocus} from 'components/Utils.jsx'
-
-const $ = window.$;
+import $ from 'jquery';
 
 class FundDataGridCellForm extends AbstractReactComponent {
     constructor(props) {

@@ -6,7 +6,7 @@ import classNames from "classnames";
 import './FloatingMenu.less';
 
 
-const $ = window.$;
+import $ from 'jquery';
 
 export default class FloatingMenu extends React.PureComponent {
     static propTypes = {
