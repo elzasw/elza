@@ -1,0 +1,84 @@
+const {editWebpackPlugin, getPaths, edit} = require('@rescripts/utilities');
+const path = require('path');
+
+module.exports = {
+    'use-tslint-config': 'tslint.json',
+    'use-eslint-config': 'package',
+    webpack: (config) => {
+        config.resolve.modules.push(path.resolve(__dirname, 'src'))
+        config.module.rules[1].use[0].options.baseConfig = require('./package').eslintConfig;
+        //console.log(config.module.rules[2].oneOf[1]);
+        //return;
+
+        const styleLoaders = getPaths(
+            // Styleloaders are in config.module.rules inside an object only containing the "oneOf" prop
+            (inQuestion) => inQuestion && !!inQuestion.oneOf,
+            config
+        );
+        edit(
+            (section) => {
+                const loaders = section.oneOf;
+                // New style loaders should be added near the end of loaders, but before file-loader
+                const fileLoaderIndex = loaders.findIndex(section => section.loader && section.loader.includes('file-loader'));
+                const cssTest = (/\.css$/).toString();
+                const cssexcludeTest = (/\.module\.css$/).toString();
+                const cssIndex = loaders.findIndex(section => section.test&&section.exclude && section.test.toString() === cssTest && section.exclude.toString() === cssexcludeTest);
+                if (cssIndex === -1) {
+                    throw new Error("missing css loader");
+                }
+                const cssLoader = loaders[cssIndex];
+                const lessLoader = {
+                    ...cssLoader,
+                    test: /\.less$/,
+                    exclude: /\.module\.less$/,
+                    use: [
+                        ...cssLoader.use,
+                        {
+                            loader: 'less-loader',
+                            options: {
+                                // sourceMap: NODE_ENV === 'production' && GENERATE_SOURCEMAP !== 'false',
+                                javascriptEnabled: true,
+                                sourceMap: true,
+                                paths: [
+                                    path.resolve(__dirname, 'src')
+                                ]
+                            }
+                        }
+                    ],
+                    sideEffects: false
+                };
+                loaders.splice(fileLoaderIndex, 0, lessLoader);
+                return section
+            },
+            styleLoaders,
+            config
+        )
+
+        if (config.mode === 'production') {
+            config.optimization.runtimeChunk = false;
+            config.optimization.splitChunks = {
+                cacheGroups: {
+                    default: false
+                }
+            };
+            const toReplace = '[contenthash:8].';
+            const BLANK = '';
+            config.output.filename = config.output.filename.replace(toReplace, BLANK);
+            config.output.chunkFilename = config.output.filename.replace(toReplace, BLANK);
+
+            const edited = editWebpackPlugin(
+                p => {
+                    p.options.filename = p.options.filename.replace(toReplace, BLANK);
+                    p.options.chunkFilename = p.options.chunkFilename.replace(toReplace, BLANK);
+                    p.options.moduleFilename = ({ name }) => `static/css/${name}.css`;
+                    return p
+                },
+                'MiniCssExtractPlugin',
+                config,
+            );
+            return edited;
+        } else {
+            return config;
+        }
+    },
+}
