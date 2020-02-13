@@ -3,6 +3,8 @@
  */
 // Import css Bootstrapu
 import './elza-styles.less';
+import 'font-awesome/css/font-awesome.css';
+import './elza-iconset/ez-icons.css';
 import React from 'react';
 import {Utils} from './components/shared';
 import {WebApi, WebApiCls} from './actions/index.jsx';
