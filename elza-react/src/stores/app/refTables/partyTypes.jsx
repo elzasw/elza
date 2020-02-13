@@ -17,7 +17,7 @@ export default function partyTypes(state = initialState, action = {}) {
             }
         }
         case types.REF_PARTY_TYPES_RECEIVE:{
-            const relationType = [].concat.apply(...action.items.map(i => i.relationTypes));
+            const relationType = [...action.items.map(i => i.relationTypes)];
 
             return {
                 ...state,
@@ -27,8 +27,8 @@ export default function partyTypes(state = initialState, action = {}) {
                 items: action.items,
                 lastUpdated: action.receivedAt,
                 relationTypesForClass: {
-                    [RELATION_CLASS_CODES.BIRTH]: relationType.filter(i => i.relationClassType && i.relationClassType.code == RELATION_CLASS_CODES.BIRTH).map(i => i.id).filter((i, index, self) => index == self.indexOf(i)),
-                    [RELATION_CLASS_CODES.EXTINCTION]: relationType.filter(i => i.relationClassType && i.relationClassType.code == RELATION_CLASS_CODES.EXTINCTION).map(i => i.id).filter((i, index, self) => index == self.indexOf(i))
+                    [RELATION_CLASS_CODES.BIRTH]: relationType.filter(i => i && i.relationClassType && i.relationClassType.code === RELATION_CLASS_CODES.BIRTH).map(i => i.id).filter((i, index, self) => index === self.indexOf(i)),
+                    [RELATION_CLASS_CODES.EXTINCTION]: relationType.filter(i => i && i.relationClassType && i.relationClassType.code === RELATION_CLASS_CODES.EXTINCTION).map(i => i.id).filter((i, index, self) => index === self.indexOf(i))
                 },
             }
         }
