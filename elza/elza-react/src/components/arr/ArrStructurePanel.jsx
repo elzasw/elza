@@ -195,7 +195,7 @@ class ArrStructurePanel extends AbstractReactComponent {
 
         if (from >= DEFAULT_STRUCTURE_TYPE_MAX_SIZE) {
             from = from - DEFAULT_STRUCTURE_TYPE_MAX_SIZE;
-            this.dispatch(structureTypeFilter({...filter, from}));
+            this.props.dispatch(structureTypeFilter({...filter, from}));
         }
     };
 
@@ -205,7 +205,7 @@ class ArrStructurePanel extends AbstractReactComponent {
 
         if (from < count - DEFAULT_STRUCTURE_TYPE_MAX_SIZE) {
             from = from + DEFAULT_STRUCTURE_TYPE_MAX_SIZE;
-            this.dispatch(structureTypeFilter({...filter, from}));
+            this.props.dispatch(structureTypeFilter({...filter, from}));
         }
     };
 

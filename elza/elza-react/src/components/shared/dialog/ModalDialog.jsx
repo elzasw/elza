@@ -23,7 +23,7 @@ class ModalDialog extends AbstractReactComponent {
     handleClose = (closeType) => {
         // console.log("_closeType", closeType);
         const {items} = this.props;
-        this.dispatch(modalDialogHide());
+        this.props.dispatch(modalDialogHide());
 
         items.length > 0 && items[items.length - 1].onClose && items[items.length - 1].onClose(closeType)
     };

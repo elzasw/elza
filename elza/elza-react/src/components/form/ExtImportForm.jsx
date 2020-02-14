@@ -221,14 +221,14 @@ class ExtImportForm extends AbstractReactComponent {
             const promise = update ? WebApi.importRecordUpdate(recordId, data) : WebApi.importRecord(data);
 
             promise.then(e => {
-                this.dispatch(modalDialogHide());
+                this.props.dispatch(modalDialogHide());
                 let msg;
                 if (isParty) {
                     msg = update ? "extImport.done.party.messageUpdate" : "extImport.done.party.messageImport";
                 } else {
                     msg = update ? "extImport.done.record.messageUpdate" : "extImport.done.record.messageImport";
                 }
-                this.dispatch(addToastrSuccess(i18n("extImport.done.title"), i18n(msg)));
+                this.props.dispatch(addToastrSuccess(i18n("extImport.done.title"), i18n(msg)));
                 this.props.onSubmitForm && this.props.onSubmitForm(e);
             });
 
@@ -238,8 +238,8 @@ class ExtImportForm extends AbstractReactComponent {
         if (importVO.originator) {
             return WebApi.findInterpiRecordRelations(importVO.interpiRecordId, relationsVO).then(mapping => {
                 if (mapping != null && mapping.mappings != null && mapping.mappings.length > 0) {
-                    this.dispatch(modalDialogHide());
-                    this.dispatch(modalDialogShow(this, i18n('extMapperForm.title'), <ExtMapperForm
+                    this.props.dispatch(modalDialogHide());
+                    this.props.dispatch(modalDialogShow(this, i18n('extMapperForm.title'), <ExtMapperForm
                         initialValues={mapping}
                         record={mapping.externalRecord}
                         isUpdate={update}
@@ -278,13 +278,13 @@ class ExtImportForm extends AbstractReactComponent {
     showDetail = (detailId) => {
         const {isParty} = this.props;
         if (isParty) {
-            this.dispatch(partyDetailFetchIfNeeded(detailId));
-            this.dispatch(modalDialogHide());
-            this.dispatch(routerNavigate('party'));
+            this.props.dispatch(partyDetailFetchIfNeeded(detailId));
+            this.props.dispatch(modalDialogHide());
+            this.props.dispatch(routerNavigate('party'));
         } else {
-            this.dispatch(registryDetailFetchIfNeeded(detailId));
-            this.dispatch(modalDialogHide());
-            this.dispatch(routerNavigate('registry'));
+            this.props.dispatch(registryDetailFetchIfNeeded(detailId));
+            this.props.dispatch(modalDialogHide());
+            this.props.dispatch(routerNavigate('registry'));
         }
     };
 

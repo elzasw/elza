@@ -56,7 +56,7 @@ class SubNodeDao extends AbstractReactComponent {
     handleShowDetailAll = () => {
         const {fund, versionId, selectedSubNodeId, readMode} = this.props;
 
-        this.dispatch(
+        this.props.dispatch(
             modalDialogShow(
                 this,
                 i18n('subNodeDao.dao.title.node'),
@@ -72,7 +72,7 @@ class SubNodeDao extends AbstractReactComponent {
     handleShowDetailOne = (dao) => {
         const {fund, selectedSubNodeId, readMode} = this.props;
 
-        this.dispatch(
+        this.props.dispatch(
             modalDialogShow(
                 this,
                 i18n('subNodeDao.dao.title.node'),

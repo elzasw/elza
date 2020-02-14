@@ -88,14 +88,14 @@ const rootReducer = combineReducers({
         editRegistryForm: editRegistryForm,
         searchForm,
         addUserForm,
-    }).normalize({
+    })/*.normalize({
         templateSettingsForm: {
             'evenPageOffsetX': normalizeInt,
             'evenPageOffsetY': normalizeInt,
             'oddPageOffsetX': normalizeInt,
             'oddPageOffsetY': normalizeInt,
         }
-    })
+    })*/
 });
 
 export default rootReducer

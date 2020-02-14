@@ -109,24 +109,24 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
     componentDidMount() {
         super.componentDidMount();
-        this.dispatch(templatesFetchIfNeeded());
+        this.props.dispatch(templatesFetchIfNeeded());
 
         const fund = this.getActiveFund(this.props);
         if (fund) {
-            this.dispatch(fundOutputFetchIfNeeded(fund.versionId));
-            this.dispatch(outputTypesFetchIfNeeded());
+            this.props.dispatch(fundOutputFetchIfNeeded(fund.versionId));
+            this.props.dispatch(outputTypesFetchIfNeeded());
         }
         this.trySetFocus(this.props)
     }
 
     componentWillReceiveProps(nextProps) {
         super.componentWillReceiveProps(nextProps);
-        this.dispatch(templatesFetchIfNeeded());
+        this.props.dispatch(templatesFetchIfNeeded());
 
         const fund = this.getActiveFund(nextProps);
         if (fund) {
-            this.dispatch(fundOutputFetchIfNeeded(fund.versionId));
-            this.dispatch(outputTypesFetchIfNeeded());
+            this.props.dispatch(fundOutputFetchIfNeeded(fund.versionId));
+            this.props.dispatch(outputTypesFetchIfNeeded());
         }
         this.trySetFocus(nextProps)
     }
@@ -145,7 +145,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     }
 
     requestValidationData(isDirty, isFetching, versionId) {
-        isDirty && !isFetching && this.dispatch(versionValidate(versionId, false))
+        isDirty && !isFetching && this.props.dispatch(versionValidate(versionId, false))
     }
 
     handleShortcuts(action,e) {
@@ -187,7 +187,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             <AddOutputForm
                 create
                 onSubmitForm={(data) => {
-                    return this.dispatch(fundOutputCreate(fund.versionId, data))
+                    return this.props.dispatch(fundOutputCreate(fund.versionId, data))
                         .then((output) => {
                             return output
                         })}}
@@ -201,18 +201,18 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
 
-        this.dispatch(fundActionFormChange(fund.versionId, {nodes: fundOutputDetail.nodes}));
-        this.dispatch(fundActionFormShow(fund.versionId));
-        this.dispatch(routerNavigate('/arr/actions'));
+        this.props.dispatch(fundActionFormChange(fund.versionId, {nodes: fundOutputDetail.nodes}));
+        this.props.dispatch(fundActionFormShow(fund.versionId));
+        this.props.dispatch(routerNavigate('/arr/actions'));
     }
 
     handleOtherActionDialog() {
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
 
-        this.dispatch(modalDialogShow(this, i18n('arr.output.title.add'),
+        this.props.dispatch(modalDialogShow(this, i18n('arr.output.title.add'),
             <RunActionForm versionId={fund.versionId} onSubmitForm={(data) => {
-                return this.dispatch(fundOutputActionRun(fund.versionId, data.code));
+                return this.props.dispatch(fundOutputActionRun(fund.versionId, data.code));
             }}/>));
     }
 
@@ -253,13 +253,13 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         // descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
 
         var submit = (data) => {
-            this.dispatch(modalDialogHide());
-            this.dispatch(outputFormActions.fundSubNodeFormDescItemTypeAdd(fund.versionId, null, data.descItemTypeId.id));
+            this.props.dispatch(modalDialogHide());
+            this.props.dispatch(outputFormActions.fundSubNodeFormDescItemTypeAdd(fund.versionId, null, data.descItemTypeId.id));
         };
 
         // Modální dialog
         var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>;
-        this.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
+        this.props.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
     }
 
     /**
@@ -386,7 +386,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail
         if (confirm(i18n('arr.output.usageEnd.confirm'))) {
-            this.dispatch(fundOutputUsageEnd(fund.versionId, fundOutputDetail.id))
+            this.props.dispatch(fundOutputUsageEnd(fund.versionId, fundOutputDetail.id))
         }
     }
 
@@ -394,7 +394,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail
         if (confirm(i18n('arr.output.delete.confirm'))) {
-            this.dispatch(fundOutputDelete(fund.versionId, fundOutputDetail.id))
+            this.props.dispatch(fundOutputDelete(fund.versionId, fundOutputDetail.id))
         }
     }
 
@@ -418,7 +418,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
     handleSelect(item) {
         const fund = this.getActiveFund(this.props);
-        this.dispatch(fundOutputSelectOutput(fund.versionId, item.id))
+        this.props.dispatch(fundOutputSelectOutput(fund.versionId, item.id))
     }
 
     renderRightPanel(readMode, closed) {
@@ -575,31 +575,31 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     }
 
     handleGenerateOutput(outputId) {
-        this.dispatch(fundOutputGenerate(outputId));
+        this.props.dispatch(fundOutputGenerate(outputId));
     }
 
     handleRevertToOpen() {
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
         //if (confirm(i18n('arr.output.revert.confirm'))) {
-            this.dispatch(fundOutputRevert(fund.versionId, fundOutputDetail.id));
+            this.props.dispatch(fundOutputRevert(fund.versionId, fundOutputDetail.id));
         //}
     }
 
     handleClone() {
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
-        this.dispatch(fundOutputClone(fund.versionId, fundOutputDetail.id));
+        this.props.dispatch(fundOutputClone(fund.versionId, fundOutputDetail.id));
     }
 
     handleOutputStateSearch(e) {
         const fund = this.getActiveFund(this.props);
-        this.dispatch(fundOutputFilterByState(fund.versionId, e.target.value));
+        this.props.dispatch(fundOutputFilterByState(fund.versionId, e.target.value));
     }
 
     handleFunctionsStateSearch(e) {
         const fund = this.getActiveFund(this.props);
-        this.dispatch(fundOutputFilterByState(fund.versionId, e.target.value));
+        this.props.dispatch(fundOutputFilterByState(fund.versionId, e.target.value));
     }
 };
 

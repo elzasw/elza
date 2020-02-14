@@ -39,18 +39,18 @@ class OutputInlineForm extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         const {fields: {outputTypeId}, outputTypes} = nextProps;
-        this.dispatch(outputTypesFetchIfNeeded());
+        this.props.dispatch(outputTypesFetchIfNeeded());
         if (outputTypeId.value) {
             const index = indexById(outputTypes, outputTypeId.value);
             if (index !== null) {
-                this.dispatch(templatesFetchIfNeeded(outputTypes[index].code));
+                this.props.dispatch(templatesFetchIfNeeded(outputTypes[index].code));
             }
         }
     }
 
     componentDidMount() {
-        this.dispatch(outputTypesFetchIfNeeded());
-        this.dispatch(templatesFetchIfNeeded());
+        this.props.dispatch(outputTypesFetchIfNeeded());
+        this.props.dispatch(templatesFetchIfNeeded());
         this.props.initForm(this.props.onSave)
     }
 

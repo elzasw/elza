@@ -31,7 +31,7 @@ class AdminFundPage extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(fundsFetchIfNeeded());
+        this.props.dispatch(fundsFetchIfNeeded());
         if (nextProps.funds.rows !== this.props.funds.rows) {
             this.setState({fundRows: this.getFundRows(nextProps)});
         }
@@ -52,19 +52,19 @@ class AdminFundPage extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        this.dispatch(fundsFetchIfNeeded());
+        this.props.dispatch(fundsFetchIfNeeded());
     }
 
     handleSelect = (item) => {
-        this.dispatch(selectFund(item.id));
+        this.props.dispatch(selectFund(item.id));
     };
 
     handleSearch = (filterText) => {
-        this.dispatch(fundsFilter(filterText));
+        this.props.dispatch(fundsFilter(filterText));
     };
 
     handleSearchClear = () => {
-        this.dispatch(fundsFilter(""));
+        this.props.dispatch(fundsFilter(""));
     };
 
     buildRibbon() {

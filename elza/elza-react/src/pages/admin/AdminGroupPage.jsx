@@ -35,25 +35,25 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(groupsFetchIfNeeded())
-        this.dispatch(groupsGroupDetailFetchIfNeeded())
+        this.props.dispatch(groupsFetchIfNeeded())
+        this.props.dispatch(groupsGroupDetailFetchIfNeeded())
     }
 
     componentDidMount() {
-        this.dispatch(groupsFetchIfNeeded())
-        this.dispatch(groupsGroupDetailFetchIfNeeded())
+        this.props.dispatch(groupsFetchIfNeeded())
+        this.props.dispatch(groupsGroupDetailFetchIfNeeded())
     }
 
     handleSelect(item) {
-        this.dispatch(groupsSelectGroup(item.id))
+        this.props.dispatch(groupsSelectGroup(item.id))
     }
 
     handleSearch(filterText) {
-        this.dispatch(groupsSearch(filterText))
+        this.props.dispatch(groupsSearch(filterText))
     }
 
     handleSearchClear() {
-        this.dispatch(groupsSearch(''))
+        this.props.dispatch(groupsSearch(''))
     }
 
     buildRibbon() {
@@ -90,27 +90,27 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
 
     handleDeleteGroup() {
         const {group:{groupDetail:{id}}} = this.props;
-        this.dispatch(groupDelete(id)).then(response => {
-            this.dispatch(addToastrSuccess(i18n('admin.group.delete.success')));
+        this.props.dispatch(groupDelete(id)).then(response => {
+            this.props.dispatch(addToastrSuccess(i18n('admin.group.delete.success')));
         });
     }
 
     handleCreateGroupForm() {
-        this.dispatch(modalDialogShow(this, i18n('admin.group.add.title'), <AddGroupForm create onSubmitForm={this.handleCreateGroup}/>))
+        this.props.dispatch(modalDialogShow(this, i18n('admin.group.add.title'), <AddGroupForm create onSubmitForm={this.handleCreateGroup}/>))
     }
 
     handleEditGroupForm() {
         const {group} = this.props;
-        this.dispatch(modalDialogShow(this, i18n('admin.group.edit.title'), <AddGroupForm initData={group.groupDetail} onSubmitForm={this.handleUpdateGroup} />))
+        this.props.dispatch(modalDialogShow(this, i18n('admin.group.edit.title'), <AddGroupForm initData={group.groupDetail} onSubmitForm={this.handleUpdateGroup} />))
     }
 
     handleCreateGroup(data) {
-        return this.dispatch(groupCreate(data.name, data.code, data.description));
+        return this.props.dispatch(groupCreate(data.name, data.code, data.description));
     }
 
     handleUpdateGroup(data) {
         const {group:{groupDetail:{id}}} = this.props;
-        return this.dispatch(groupUpdate(id, data.name, data.description));
+        return this.props.dispatch(groupUpdate(id, data.name, data.description));
     }
 
     render() {

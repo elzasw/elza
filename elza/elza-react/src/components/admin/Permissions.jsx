@@ -80,7 +80,7 @@ const Permissions2 = class Permissions2 extends AbstractReactComponent {
     getScopes(scopesData) {
         var versionId = -1;
         if(!scopesData.scopes){
-            this.dispatch(requestScopesIfNeeded(versionId));
+            this.props.dispatch(requestScopesIfNeeded(versionId));
         }
         const scopeIndex = indexById(scopesData.scopes, versionId, 'versionId');
         let scopes;

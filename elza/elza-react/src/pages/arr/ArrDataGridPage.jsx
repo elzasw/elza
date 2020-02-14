@@ -58,12 +58,12 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
     }
 
     componentDidMount() {
-        this.dispatch(refRuleSetFetchIfNeeded());
+        this.props.dispatch(refRuleSetFetchIfNeeded());
         super.componentDidMount();
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(refRuleSetFetchIfNeeded());
+        this.props.dispatch(refRuleSetFetchIfNeeded());
         super.componentWillReceiveProps(nextProps);
     }
 
@@ -102,7 +102,7 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
 
     handleDataGridExport(versionId) {
         const fund = this.getActiveFund(this.props);
-        this.dispatch(modalDialogShow(this, i18n("dataGrid.export.title"), <DataGridExportDialog versionId={versionId} fundDataGrid={fund.fundDataGrid} />));
+        this.props.dispatch(modalDialogShow(this, i18n("dataGrid.export.title"), <DataGridExportDialog versionId={versionId} fundDataGrid={fund.fundDataGrid} />));
     }
 
     hasPageShowRights(userDetail, activeFund) {

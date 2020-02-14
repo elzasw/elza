@@ -32,7 +32,7 @@ class AdminExtSystemList extends AbstractReactComponent {
     }
 
     fetchIfNeeded = (props = this.props) => {
-        this.dispatch(extSystemListFetchIfNeeded());
+        this.props.dispatch(extSystemListFetchIfNeeded());
     };
 
     trySetFocus = (props = this.props) => {
@@ -56,7 +56,7 @@ class AdminExtSystemList extends AbstractReactComponent {
     };
 
     handleItemDetail = (item, e) => {
-        this.dispatch(extSystemDetailFetchIfNeeded(item.id));
+        this.props.dispatch(extSystemDetailFetchIfNeeded(item.id));
     };
 
     renderListItem = (props) => {

@@ -107,10 +107,10 @@ class PartyNameForm extends AbstractReactComponent {
 
     dataRefresh = (props = this.props) => {
         const {refTables:{partyNameFormTypes, calendarTypes}, partyTypeId} = props;
-        this.dispatch(refPartyNameFormTypesFetchIfNeeded());// nacteni seznamů typů forem jmen (uřední, ...)
-        this.dispatch(refPartyTypesFetchIfNeeded());        // načtení seznamu typů jmen
-        this.dispatch(getRegistryRecordTypesIfNeeded(partyTypeId));
-        this.dispatch(calendarTypesFetchIfNeeded());
+        this.props.dispatch(refPartyNameFormTypesFetchIfNeeded());// nacteni seznamů typů forem jmen (uřední, ...)
+        this.props.dispatch(refPartyTypesFetchIfNeeded());        // načtení seznamu typů jmen
+        this.props.dispatch(getRegistryRecordTypesIfNeeded(partyTypeId));
+        this.props.dispatch(calendarTypesFetchIfNeeded());
 
 
         partyNameFormTypes.fetched &&

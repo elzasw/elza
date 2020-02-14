@@ -106,7 +106,7 @@ class FundTreeCopy extends AbstractReactComponent {
   }
 
   requestFundTreeData(versionId, expandedIds) {
-    this.dispatch(
+    this.props.dispatch(
       fundTreeFetchIfNeeded(types.FUND_TREE_AREA_COPY, versionId, expandedIds)
     );
   }
@@ -118,7 +118,7 @@ class FundTreeCopy extends AbstractReactComponent {
      */
   handleNodeClick(node, ensureItemVisible, e) {
     e.shiftKey && this.unFocus();
-    this.dispatch(
+    this.props.dispatch(
       fundTreeSelectNode(
         types.FUND_TREE_AREA_COPY,
         this.props.versionId,
@@ -143,7 +143,7 @@ class FundTreeCopy extends AbstractReactComponent {
      * Zabalení stromu
      */
   handleCollapse() {
-    this.dispatch(
+    this.props.dispatch(
       fundTreeCollapse(
         types.FUND_TREE_AREA_COPY,
         this.props.versionId,
@@ -153,7 +153,7 @@ class FundTreeCopy extends AbstractReactComponent {
   }
 
   handleFulltextChange(value) {
-    this.dispatch(
+    this.props.dispatch(
       fundTreeFulltextChange(
         types.FUND_TREE_AREA_COPY,
         this.props.versionId,
@@ -165,7 +165,7 @@ class FundTreeCopy extends AbstractReactComponent {
   handleFulltextSearch() {
     const { searchFormData } = this.props;
 
-      this.dispatch(
+      this.props.dispatch(
       fundTreeFulltextSearch(
         types.FUND_TREE_AREA_COPY,
         this.props.versionId,
@@ -178,13 +178,13 @@ class FundTreeCopy extends AbstractReactComponent {
   }
 
   handleFulltextPrevItem() {
-    this.dispatch(
+    this.props.dispatch(
       fundTreeFulltextPrevItem(types.FUND_TREE_AREA_COPY, this.props.versionId)
     );
   }
 
   handleFulltextNextItem() {
-    this.dispatch(
+    this.props.dispatch(
       fundTreeFulltextNextItem(types.FUND_TREE_AREA_COPY, this.props.versionId)
     );
   }
@@ -200,8 +200,8 @@ class FundTreeCopy extends AbstractReactComponent {
         cutLongLabels={cutLongLabels}
         onOpenCloseNode={(node, expand) => {
           expand
-            ? this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_COPY, node))
-            : this.dispatch(
+            ? this.props.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_COPY, node))
+            : this.props.dispatch(
                 fundTreeNodeCollapse(
                   types.FUND_TREE_AREA_COPY,
                   this.props.versionId,

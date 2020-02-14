@@ -20,20 +20,20 @@ class AdminPackagesList extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        this.dispatch(getPackagesFetchIfNeeded());
+        this.props.dispatch(getPackagesFetchIfNeeded());
     }
 
     handleDeletePackage(code) {
-        this.dispatch(deletePackage(code));
+        this.props.dispatch(deletePackage(code));
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(getPackagesFetchIfNeeded());
+        this.props.dispatch(getPackagesFetchIfNeeded());
     }
 
     handleDownload = (code) => {
         const {getExportUrl} = this.props;
-        this.dispatch(downloadFile(getExportUrl(code)));
+        this.props.dispatch(downloadFile(getExportUrl(code)));
     };
 
     render() {

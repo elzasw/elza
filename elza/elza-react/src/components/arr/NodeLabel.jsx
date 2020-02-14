@@ -7,7 +7,7 @@ import React from 'react';
 import {AbstractReactComponent, Icon, i18n} from 'components/shared';
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
 
-require("./NodeLabel.scss")
+import './NodeLabel.scss';
 
 // Na kolik znaků se má název položky oříznout
 const NODE_NAME_MAX_CHARS = 60

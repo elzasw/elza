@@ -109,9 +109,9 @@ class NodePanel extends AbstractReactComponent {
             } else if (index > max) {
                 index = max;
             } else if (index < pageMin) {
-                this.dispatch(fundSubNodesPrev(versionId, node.id, node.routingKey))
+                this.props.dispatch(fundSubNodesPrev(versionId, node.id, node.routingKey))
             } else if (index > pageMax) {
-                this.dispatch(fundSubNodesNext(versionId, node.id, node.routingKey))
+                this.props.dispatch(fundSubNodesNext(versionId, node.id, node.routingKey))
             }
 
             this.setState({focusItemIndex: index}, () => {this.ensureItemVisibleNoForm(index)})
@@ -247,22 +247,22 @@ class NodePanel extends AbstractReactComponent {
                 break
             case 'addNodeAfter':
                 if (!readMode) {
-                    this.dispatch(addNodeFormArr('AFTER', node, focusItemIndex, versionId));
+                    this.props.dispatch(addNodeFormArr('AFTER', node, focusItemIndex, versionId));
                 }
                 break
             case 'addNodeBefore':
                 if (!readMode) {
-                    this.dispatch(addNodeFormArr('BEFORE', node, focusItemIndex, versionId));
+                    this.props.dispatch(addNodeFormArr('BEFORE', node, focusItemIndex, versionId));
                 }
                 break
             case 'addNodeChild':
                 if (!readMode) {
-                    this.dispatch(addNodeFormArr('CHILD', node, focusItemIndex, versionId));
+                    this.props.dispatch(addNodeFormArr('CHILD', node, focusItemIndex, versionId));
                 }
                 break
             case 'addNodeEnd':
                 if (!readMode) {
-                    this.dispatch(addNodeFormArr('ATEND', node, focusItemIndex, versionId));
+                    this.props.dispatch(addNodeFormArr('ATEND', node, focusItemIndex, versionId));
                 }
                 break
         }
@@ -280,24 +280,24 @@ class NodePanel extends AbstractReactComponent {
             case 'prevItem':
                 if (index > 0) {
                     this.handleOpenItem(node.childNodes[index - 1])
-                    this.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'accordion'))
+                    this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'accordion'))
                 }
                 break
             case 'nextItem':
                 if (index + 1 < node.childNodes.length) {
                     this.handleOpenItem(node.childNodes[index + 1])
-                    this.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'accordion'))
+                    this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'accordion'))
                 }
                 break
             case 'toggleItem':
                 if (node.selectedSubNodeId === null) {
                     const {focusItemIndex} = this.state
                     this.handleOpenItem(node.childNodes[focusItemIndex])
-                    this.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'accordion'))
+                    this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'accordion'))
                 } else {
                     const {focusItemIndex} = this.state
                     this.handleCloseItem(node.childNodes[focusItemIndex])
-                    this.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'accordion'))
+                    this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'accordion'))
                 }
                 break
             case "ACCORDION_MOVE_UP":
@@ -327,11 +327,11 @@ class NodePanel extends AbstractReactComponent {
             onSubmitForm={(send, data) => {
                 WebApi.arrDigitizationRequestAddNodes(versionId, data.requestId, send, data.description, [nodeId], parseInt(data.digitizationFrontdesk))
                     .then(() => {
-                        this.dispatch(modalDialogHide());
+                        this.props.dispatch(modalDialogHide());
                     });
             }}
         />;
-        this.dispatch(modalDialogShow(this, i18n('arr.request.digitizationRequest.form.title'), form));
+        this.props.dispatch(modalDialogShow(this, i18n('arr.request.digitizationRequest.form.title'), form));
     }
 
     /**
@@ -360,7 +360,7 @@ class NodePanel extends AbstractReactComponent {
         const form = <NodeSettingsForm nodeId={node.selectedSubNodeId} fundVersionId={versionId} onSubmit={this.handleSetVisiblePolicy}
                                        onSubmitSuccess={() => this.props.dispatch(modalDialogHide())}
         />;
-        this.dispatch(modalDialogShow(this, i18n('visiblePolicy.form.title'), form));
+        this.props.dispatch(modalDialogShow(this, i18n('visiblePolicy.form.title'), form));
     }
 
     handleSetVisiblePolicy(data) {
@@ -416,12 +416,12 @@ class NodePanel extends AbstractReactComponent {
         // descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
 
         var submit = (data) => {
-            return this.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, routingKey, data.descItemTypeId.id));
+            return this.props.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, routingKey, data.descItemTypeId.id));
         };
 
         // Modální dialog
         const form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>;
-        this.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
+        this.props.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
     }
 
     ensureItemVisible() {
@@ -461,15 +461,15 @@ return true
      */
     requestData(versionId, node, settings) {
         if (node.selectedSubNodeId != null) {
-            this.dispatch(descItemTypesFetchIfNeeded());
-            this.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, node.routingKey, node.dirty, settings.showChildren, settings.showParents));
-            this.dispatch(refRulDataTypesFetchIfNeeded());
+            this.props.dispatch(descItemTypesFetchIfNeeded());
+            this.props.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, node.routingKey, node.dirty, settings.showChildren, settings.showParents));
+            this.props.dispatch(refRulDataTypesFetchIfNeeded());
 
-            this.dispatch(fundSubNodeDaosFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
+            this.props.dispatch(fundSubNodeDaosFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
 
         }
-        this.dispatch(visiblePolicyTypesFetchIfNeeded());
-        this.dispatch(calendarTypesFetchIfNeeded());
+        this.props.dispatch(visiblePolicyTypesFetchIfNeeded());
+        this.props.dispatch(calendarTypesFetchIfNeeded());
     }
 
     /**
@@ -485,7 +485,7 @@ return true
             subNodeParentNode = createFundRoot(this.props.fund);
         }
 
-        this.dispatch(fundSelectSubNode(this.props.versionId, subNodeId, subNodeParentNode, false, null, true));
+        this.props.dispatch(fundSelectSubNode(this.props.versionId, subNodeId, subNodeParentNode, false, null, true));
     }
 
     /**
@@ -495,7 +495,7 @@ return true
     handleChildNodeClick(node) {
         var subNodeId = node.id;
         var subNodeParentNode = this.getSiblingNodes()[indexById(this.getSiblingNodes(), this.props.node.selectedSubNodeId)];
-        this.dispatch(fundSelectSubNode(this.props.versionId, subNodeId, subNodeParentNode, false, null, true));
+        this.props.dispatch(fundSelectSubNode(this.props.versionId, subNodeId, subNodeParentNode, false, null, true));
     }
 
     /**
@@ -614,7 +614,7 @@ return true
      * @param item {Object} na který node v Accordion se kliklo
      */
     handleCloseItem(item) {
-        this.dispatch(fundSelectSubNode(this.props.versionId, null, this.props.node, false, null, false));
+        this.props.dispatch(fundSelectSubNode(this.props.versionId, null, this.props.node, false, null, false));
     }
 
     /**
@@ -623,7 +623,7 @@ return true
      */
     handleOpenItem(item) {
         var subNodeId = item.id;
-        this.dispatch(fundSelectSubNode(this.props.versionId, subNodeId, this.props.node, false, null, true));
+        this.props.dispatch(fundSelectSubNode(this.props.versionId, subNodeId, this.props.node, false, null, true));
     }
 
     /**
@@ -748,7 +748,7 @@ return true
         } else{
             if (node.viewStartIndex > 0 && displayAccordion) {
                 rows.push(
-                    <Button key="prev" onClick={()=>this.dispatch(fundSubNodesPrev(versionId, node.id, node.routingKey))}>
+                    <Button key="prev" onClick={()=>this.props.dispatch(fundSubNodesPrev(versionId, node.id, node.routingKey))}>
                         <Icon glyph="fa-chevron-left" />{i18n('arr.fund.prev')}
                     </Button>
                 )
@@ -819,7 +819,7 @@ return true
 
             if (node.nodeCount > node.pageSize && node.viewStartIndex + node.pageSize/2 < node.nodeCount && node.nodeCount - node.viewStartIndex > node.pageSize && displayAccordion) {
                 rows.push(
-                    <Button key="next" onClick={()=>this.dispatch(fundSubNodesNext(versionId, node.id, node.routingKey))}><Icon glyph="fa-chevron-right" />{i18n('arr.fund.next')}</Button>
+                    <Button key="next" onClick={()=>this.props.dispatch(fundSubNodesNext(versionId, node.id, node.routingKey))}><Icon glyph="fa-chevron-right" />{i18n('arr.fund.next')}</Button>
                 )
             }
         }

@@ -10,7 +10,7 @@ class Exception extends AbstractReactComponent {
 
 
     openDetail = () => {
-        this.dispatch(modalDialogShow(this, this.props.title, <ExceptionDetail data={this.props.data} />, "dialog-lg top max-height"));
+        this.props.dispatch(modalDialogShow(this, this.props.title, <ExceptionDetail data={this.props.data} />, "dialog-lg top max-height"));
     };
 
     renderDetail = () => {

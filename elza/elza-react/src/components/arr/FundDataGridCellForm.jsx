@@ -127,10 +127,10 @@ class FundDataGridCellForm extends AbstractReactComponent {
 
         let result = false;
 
-        this.dispatch(descItemTypesFetchIfNeeded());
-        this.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, routingKey));
-        this.dispatch(refRulDataTypesFetchIfNeeded());
-        this.dispatch(calendarTypesFetchIfNeeded());
+        this.props.dispatch(descItemTypesFetchIfNeeded());
+        this.props.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, routingKey));
+        this.props.dispatch(refRulDataTypesFetchIfNeeded());
+        this.props.dispatch(calendarTypesFetchIfNeeded());
 
         // Pokud se jedná o editaci jedné položky, musíme zajistit, že tato položka tam je - alespoň prázdná
         if (validFundDataGrid.subNodeForm.fetched) {
@@ -138,7 +138,7 @@ class FundDataGridCellForm extends AbstractReactComponent {
             const formData = subNodeForm.formData
 
             if (!this.containsDescItem(formData, validFundDataGrid.descItemTypeId)) {
-                this.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, routingKey, validFundDataGrid.descItemTypeId));
+                this.props.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, routingKey, validFundDataGrid.descItemTypeId));
             } else {
                 // Máme data a jsou v pořádku
                 this.setState({dataLoaded: true})

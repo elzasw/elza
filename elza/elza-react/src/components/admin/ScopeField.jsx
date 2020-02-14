@@ -58,4 +58,4 @@ function mapStateToProps(state) {
     return {
     }
 }
-export default connect(mapStateToProps, null, null, { withRef: true })(ScopeField);
+export default connect(mapStateToProps)(ScopeField);

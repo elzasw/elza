@@ -111,17 +111,17 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
 
     handleMoveUnder() {
         var info = this.getMoveInfo();
-        this.dispatch(moveNodes("UNDER",info.versionId,info.nodes,info.nodesParent,info.dest,info.destParent));
+        this.props.dispatch(moveNodes("UNDER",info.versionId,info.nodes,info.nodesParent,info.dest,info.destParent));
     }
 
     handleMoveAfter() {
         var info = this.getMoveInfo();
-        this.dispatch(moveNodes("AFTER",info.versionId,info.nodes,info.nodesParent,info.dest,info.destParent));
+        this.props.dispatch(moveNodes("AFTER",info.versionId,info.nodes,info.nodesParent,info.dest,info.destParent));
     }
 
     handleMoveBefore() {
         var info = this.getMoveInfo();
-        this.dispatch(moveNodes("BEFORE",info.versionId,info.nodes,info.nodesParent,info.dest,info.destParent));
+        this.props.dispatch(moveNodes("BEFORE",info.versionId,info.nodes,info.nodesParent,info.dest,info.destParent));
     }
 
     checkMoveUnder() {

@@ -14,7 +14,7 @@ import {routerNavigate} from 'actions/router.jsx'
 
 import './FundDetail.scss';
 
-var FundDetail = class FundDetail extends AbstractReactComponent {
+class FundDetail extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -22,8 +22,8 @@ var FundDetail = class FundDetail extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.dispatch(refInstitutionsFetchIfNeeded());
-        this.dispatch(refRuleSetFetchIfNeeded());
+        this.props.dispatch(refInstitutionsFetchIfNeeded());
+        this.props.dispatch(refRuleSetFetchIfNeeded());
     }
 
     componentWillReceiveProps(nextProps) {
@@ -31,12 +31,12 @@ var FundDetail = class FundDetail extends AbstractReactComponent {
 
     handleShowInArr(version) {
         // Přepnutí na stránku pořádání
-        this.dispatch(routerNavigate('/arr'))
+        this.props.dispatch(routerNavigate('/arr'))
 
         // Otevření archivního souboru
         const fund = this.props.fundDetail
         var fundObj = getFundFromFundAndVersion(fund, version);
-        this.dispatch(selectFundTab(fundObj));
+        this.props.dispatch(selectFundTab(fundObj));
     }
 
 

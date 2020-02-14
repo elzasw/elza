@@ -48,11 +48,11 @@ class PartyField extends AbstractReactComponent {
     state = {partyList: [], count: null, searchText: null};
 
     componentDidMount() {
-        this.dispatch(refPartyTypesFetchIfNeeded());
+        this.props.dispatch(refPartyTypesFetchIfNeeded());
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(refPartyTypesFetchIfNeeded());
+        this.props.dispatch(refPartyTypesFetchIfNeeded());
     }
 
     focus = () => {
@@ -133,7 +133,7 @@ class PartyField extends AbstractReactComponent {
     handleImport = () => {
         const {versionId} = this.props;
         this.refs.autocomplete.closeMenu();
-        this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true} versionId={versionId === null ? -1 : versionId}/>, "dialog-lg"));
+        this.props.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true} versionId={versionId === null ? -1 : versionId}/>, "dialog-lg"));
     };
 
     handleDetail = (id) => {
@@ -154,8 +154,8 @@ class PartyField extends AbstractReactComponent {
         } else if (onDetail) {
             onDetail(id);
         } else {
-            this.dispatch(partyDetailFetchIfNeeded(id));
-            this.dispatch(routerNavigate('party'));
+            this.props.dispatch(partyDetailFetchIfNeeded(id));
+            this.props.dispatch(routerNavigate('party'));
         }
     };
 
@@ -187,7 +187,7 @@ class PartyField extends AbstractReactComponent {
         }
 
         return <Autocomplete
-            ref='autocomplete'
+            //ref='autocomplete' TODO React 16 REF
             customFilter
             className="autocomplete-party"
             footer={footerRender}
@@ -205,4 +205,4 @@ class PartyField extends AbstractReactComponent {
     }
 }
 
-export default connect(({refTables, userDetail}) => ({refTables, userDetail}), null, null, { withRef: true })(PartyField);
+export default connect(({refTables, userDetail}) => ({refTables, userDetail}))(PartyField);

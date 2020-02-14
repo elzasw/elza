@@ -23,11 +23,11 @@ class AdminRequestsQueuePage extends AbstractReactComponent {
 
 
     componentDidMount() {
-        this.dispatch(arrRequestActions.fetchInQueueListIfNeeded());
+        this.props.dispatch(arrRequestActions.fetchInQueueListIfNeeded());
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(arrRequestActions.fetchInQueueListIfNeeded());
+        this.props.dispatch(arrRequestActions.fetchInQueueListIfNeeded());
     }
 
     handleDelete = (item) => {

@@ -43,23 +43,23 @@ class FundTreeDaos extends AbstractReactComponent {
     }
 
     requestFundTreeData(versionId, expandedIds) {
-        this.dispatch(fundTreeFetchIfNeeded(this.props.area, versionId, expandedIds));
+        this.props.dispatch(fundTreeFetchIfNeeded(this.props.area, versionId, expandedIds));
     }
 
     handleFulltextChange(value) {
-        this.dispatch(fundTreeFulltextChange(this.props.area, this.props.versionId, value));
+        this.props.dispatch(fundTreeFulltextChange(this.props.area, this.props.versionId, value));
     }
 
     handleFulltextSearch() {
-        this.dispatch(fundTreeFulltextSearch(this.props.area, this.props.versionId));
+        this.props.dispatch(fundTreeFulltextSearch(this.props.area, this.props.versionId));
     }
 
     handleFulltextPrevItem() {
-        this.dispatch(fundTreeFulltextPrevItem(this.props.area, this.props.versionId));
+        this.props.dispatch(fundTreeFulltextPrevItem(this.props.area, this.props.versionId));
     }
 
     handleFulltextNextItem() {
-        this.dispatch(fundTreeFulltextNextItem(this.props.area, this.props.versionId));
+        this.props.dispatch(fundTreeFulltextNextItem(this.props.area, this.props.versionId));
     }
 
     /**
@@ -76,8 +76,8 @@ class FundTreeDaos extends AbstractReactComponent {
             </ul>
         )
 
-        this.dispatch(fundTreeFocusNode(this.props.area, this.props.versionId, node));
-        this.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
+        this.props.dispatch(fundTreeFocusNode(this.props.area, this.props.versionId, node));
+        this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
     }
 
     /**
@@ -86,14 +86,14 @@ class FundTreeDaos extends AbstractReactComponent {
      * @param e {Object} event
      */
     handleNodeClick(node, ensureItemVisible, e) {
-        this.dispatch(fundTreeSelectNode(this.props.area, this.props.versionId, node.id, false, false, null, ensureItemVisible));
+        this.props.dispatch(fundTreeSelectNode(this.props.area, this.props.versionId, node.id, false, false, null, ensureItemVisible));
     }
 
     /**
      * Zabalení stromu
      */
     handleCollapse() {
-        this.dispatch(fundTreeCollapse(this.props.area, this.props.versionId, this.props.fund))
+        this.props.dispatch(fundTreeCollapse(this.props.area, this.props.versionId, this.props.fund))
     }
 
     render() {
@@ -103,7 +103,7 @@ class FundTreeDaos extends AbstractReactComponent {
             <FundTreeLazy
                 {...this.props}
                 cutLongLabels={true}
-                onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(this.props.area, node)) : this.dispatch(fundTreeNodeCollapse(this.props.area, this.props.versionId, node))}}
+                onOpenCloseNode={(node, expand) => {expand ? this.props.dispatch(fundTreeNodeExpand(this.props.area, node)) : this.props.dispatch(fundTreeNodeCollapse(this.props.area, this.props.versionId, node))}}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
                 onCollapse={this.handleCollapse}

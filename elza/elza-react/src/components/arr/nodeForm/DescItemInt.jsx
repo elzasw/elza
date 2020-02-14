@@ -70,4 +70,4 @@ class DescItemInt extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, {withRef: true})(DescItemInt);
+export default DescItemInt;

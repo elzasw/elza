@@ -22,11 +22,11 @@ const INTERPI_CLASS = {
 
 class ExtMapperForm extends AbstractReactComponent {
     componentDidMount() {
-        this.dispatch(refPartyTypesFetchIfNeeded());
+        this.props.dispatch(refPartyTypesFetchIfNeeded());
     }
 
     componentWillReceiveProps() {
-        this.dispatch(refPartyTypesFetchIfNeeded());
+        this.props.dispatch(refPartyTypesFetchIfNeeded());
     }
 
     static validate = (data) => {

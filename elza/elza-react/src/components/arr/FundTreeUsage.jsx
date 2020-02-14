@@ -102,7 +102,7 @@ class FundTreeUsage extends AbstractReactComponent {
      * Zabalení stromu
      */
     handleCollapse() {
-        this.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_USAGE, this.props.versionId, this.props.fund));
+        this.props.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_USAGE, this.props.versionId, this.props.fund));
     }
 
     render() {

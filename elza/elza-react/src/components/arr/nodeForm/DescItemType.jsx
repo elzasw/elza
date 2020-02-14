@@ -1138,4 +1138,4 @@ DescItemType.propTypes = {
     descItemFactory: PropTypes.func.isRequired
 };
 
-export default connect(mapStateToProps, null, null, {withRef: true})(DescItemType);
+export default connect(mapStateToProps)(DescItemType);

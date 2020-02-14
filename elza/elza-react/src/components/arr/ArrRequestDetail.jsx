@@ -53,9 +53,9 @@ class ArrRequestDetail extends AbstractReactComponent {
 
     componentDidMount() {
         const {versionId, requestDetail} = this.props;
-        this.dispatch(refExternalSystemsFetchIfNeeded());
+        this.props.dispatch(refExternalSystemsFetchIfNeeded());
 
-        requestDetail.id !== null && this.dispatch(arrRequestActions.fetchDetailIfNeeded(versionId, requestDetail.id));
+        requestDetail.id !== null && this.props.dispatch(arrRequestActions.fetchDetailIfNeeded(versionId, requestDetail.id));
 
         this.trySetFocus(this.props)
     }
@@ -63,7 +63,7 @@ class ArrRequestDetail extends AbstractReactComponent {
     componentWillReceiveProps(nextProps) {
         const {versionId, requestDetail} = nextProps;
 
-        requestDetail.id !== null && this.dispatch(arrRequestActions.fetchDetailIfNeeded(versionId, requestDetail.id));
+        requestDetail.id !== null && this.props.dispatch(arrRequestActions.fetchDetailIfNeeded(versionId, requestDetail.id));
 
         this.trySetFocus(nextProps)
     }
@@ -87,15 +87,15 @@ class ArrRequestDetail extends AbstractReactComponent {
 
     handleSaveRequest = (data) => {
         const {versionId, requestDetail} = this.props;
-        this.dispatch(arrRequestActions.requestEdit(versionId, requestDetail.id, data));
+        this.props.dispatch(arrRequestActions.requestEdit(versionId, requestDetail.id, data));
     };
 
     handleAddNodes = () => {
         const {versionId, requestDetail} = this.props;
-        this.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
+        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
             <FundNodesSelectForm
                 onSubmitForm={(ids, nodes) => {
-                    this.dispatch(arrRequestActions.addNodes(versionId, requestDetail, ids, requestDetail.data.digitizationFrontdeskId))
+                    this.props.dispatch(arrRequestActions.addNodes(versionId, requestDetail, ids, requestDetail.data.digitizationFrontdeskId))
                 }}
             />))
     };
@@ -104,7 +104,7 @@ class ArrRequestDetail extends AbstractReactComponent {
         const {versionId, requestDetail} = this.props;
 
         if (confirm(i18n("arr.fund.nodes.deleteNode"))) {
-            this.dispatch(arrRequestActions.removeNode(versionId, requestDetail, node.id))
+            this.props.dispatch(arrRequestActions.removeNode(versionId, requestDetail, node.id))
         }
     };
 

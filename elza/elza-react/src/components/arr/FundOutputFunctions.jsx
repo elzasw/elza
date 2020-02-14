@@ -39,19 +39,19 @@ class FundOutputFunctions extends AbstractReactComponent {
 
     componentDidMount() {
         const {versionId, outputId} = this.props;
-        this.dispatch(fetchFundOutputFunctionsIfNeeded(versionId, outputId));
-        this.dispatch(fundActionFetchConfigIfNeeded(versionId));
+        this.props.dispatch(fetchFundOutputFunctionsIfNeeded(versionId, outputId));
+        this.props.dispatch(fundActionFetchConfigIfNeeded(versionId));
     }
 
     componentWillReceiveProps(nextProps) {
         const {versionId, outputId} = this.props;
-        this.dispatch(fetchFundOutputFunctionsIfNeeded(versionId, outputId));
-        this.dispatch(fundActionFetchConfigIfNeeded(versionId));
+        this.props.dispatch(fetchFundOutputFunctionsIfNeeded(versionId, outputId));
+        this.props.dispatch(fundActionFetchConfigIfNeeded(versionId));
     }
 
     handleStateSearch = (state) => {
         const {versionId} = this.props;
-        this.dispatch(fundOutputFunctionsFilterByState(versionId, state));
+        this.props.dispatch(fundOutputFunctionsFilterByState(versionId, state));
     };
 
     getConfigByCode = (code) => {
@@ -65,11 +65,11 @@ class FundOutputFunctions extends AbstractReactComponent {
 
     handleActionRun = (code) => {
         const {versionId} = this.props;
-        this.dispatch(fundOutputActionRun(versionId, code));
+        this.props.dispatch(fundOutputActionRun(versionId, code));
     };
 
     handleActionInterrupt = (id) => {
-        this.dispatch(fundOutputActionInterrupt(id));
+        this.props.dispatch(fundOutputActionInterrupt(id));
     };
 
     focus = () => {
@@ -172,4 +172,4 @@ function mapStateToProps(state) {
 }
 
 
-export default connect(mapStateToProps, null, null, { withRef: true })(FundOutputFunctions);
+export default connect(mapStateToProps)(FundOutputFunctions);

@@ -2,10 +2,9 @@ import PropTypes from 'prop-types';
 import React from "react";
 import {WebApi} from "actions/index.jsx";
 import {AbstractReactComponent, Autocomplete} from 'components/shared';
-import {connect} from "react-redux"
 import {renderUserItem} from "./adminRenderUtils.jsx"
 
-const UserField = class UserField extends AbstractReactComponent {
+class UserField extends AbstractReactComponent {
     static defaultProps = {
         tags: false,
         excludedGroupId: null
@@ -69,4 +68,4 @@ const UserField = class UserField extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, { withRef: true })(UserField);
+export default UserField;

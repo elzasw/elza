@@ -35,21 +35,21 @@ class FundOutputFiles extends AbstractReactComponent {
 
     fetchIfNeeded = (props = this.props) => {
         const {versionId, outputResultId} = props;
-        this.dispatch(fetchFundOutputFilesIfNeeded(versionId, outputResultId));
+        this.props.dispatch(fetchFundOutputFilesIfNeeded(versionId, outputResultId));
     };
 
     handleTextSearch = (text) => {
         const {versionId} = this.props;
-        this.dispatch(fundOutputFilesFilterByText(versionId, text));
+        this.props.dispatch(fundOutputFilesFilterByText(versionId, text));
     };
 
     handleDownload = (id) => {
-        this.dispatch(downloadFile(UrlFactory.downloadDmsFile(id)));
+        this.props.dispatch(downloadFile(UrlFactory.downloadDmsFile(id)));
     };
 
     handleDownloadAll = () => {
         const {versionId, outputResultId} = this.props;
-        this.dispatch(downloadFile(UrlFactory.downloadOutputResult(outputResultId)));
+        this.props.dispatch(downloadFile(UrlFactory.downloadOutputResult(outputResultId)));
     };
 
     focus = () => {
@@ -82,4 +82,4 @@ class FundOutputFiles extends AbstractReactComponent {
 }
 
 
-export default connect(null, null, null, {withRef: true})(FundOutputFiles);
+export default connect()(FundOutputFiles);

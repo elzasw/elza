@@ -138,7 +138,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.dispatch(descItemTypesFetchIfNeeded());
+        this.props.dispatch(descItemTypesFetchIfNeeded());
     }
 
     supportFindAndReplace = () => {

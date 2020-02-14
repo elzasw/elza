@@ -15,7 +15,7 @@ import defaultKeymap from './DescItemJsonTableCellFormKeymap.jsx';
 
 import $ from 'jquery';
 
-var DescItemJsonTableCellForm = class DescItemJsonTableCellForm extends AbstractReactComponent {
+class DescItemJsonTableCellForm extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
     componentWillMount(){

@@ -24,7 +24,7 @@ class PartyDetailRelations extends AbstractReactComponent {
 
     addIdentifier = (relation) => {
         const {relationType, party} = this.props;
-        return this.dispatch(relationCreate({
+        return this.props.dispatch(relationCreate({
             ...relation,
             relationTypeId: relationType.id,
             partyId: party.id,
@@ -35,7 +35,7 @@ class PartyDetailRelations extends AbstractReactComponent {
 
     update = (origRelation, newRelation) => {
         const {relationType, party} = this.props;
-        return this.dispatch(relationUpdate({
+        return this.props.dispatch(relationUpdate({
             ...origRelation,
             ...newRelation,
             relationTypeId: relationType.id,
@@ -48,17 +48,17 @@ class PartyDetailRelations extends AbstractReactComponent {
 
     handleRelationAdd = () => {
         const {label, party, relationType, apTypesMap} = this.props;
-        this.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} apTypesMap={apTypesMap} relationType={relationType} onSubmitForm={this.addIdentifier} />, "dialog-lg"));
+        this.props.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} apTypesMap={apTypesMap} relationType={relationType} onSubmitForm={this.addIdentifier} />, "dialog-lg"));
     };
 
     handleRelationUpdate = (relation) => {
         const {label, party, relationType, apTypesMap} = this.props;
-        this.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} apTypesMap={apTypesMap} relationType={relationType} initialValues={relation} onSubmitForm={this.update.bind(this, relation)} />, "dialog-lg"));
+        this.props.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} apTypesMap={apTypesMap} relationType={relationType} initialValues={relation} onSubmitForm={this.update.bind(this, relation)} />, "dialog-lg"));
     };
 
     handleRelationDelete = (id) => {
         if (confirm(i18n("party.relation.delete.confirm"))) {
-            this.dispatch(relationDelete(id));
+            this.props.dispatch(relationDelete(id));
         }
     };
 

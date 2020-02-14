@@ -25,14 +25,14 @@ class EditRegistryForm extends AbstractReactComponent {
     state = {};
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(getRegistryRecordTypesIfNeeded());
+        this.props.dispatch(getRegistryRecordTypesIfNeeded());
     }
 
     componentDidMount() {
         if (this.props.initData) {
             this.props.load(this.props.initData);
         }
-        this.dispatch(getRegistryRecordTypesIfNeeded());
+        this.props.dispatch(getRegistryRecordTypesIfNeeded());
     }
 
     submitReduxForm = (values, dispatch) => submitForm(EditRegistryForm.validate,values,this.props,this.props.onSubmitForm,dispatch);

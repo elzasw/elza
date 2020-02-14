@@ -74,13 +74,13 @@ class HomePage extends AbstractReactComponent {
         if(!userDetail.hasOne(perms.ADMIN, perms.FUND_ADMIN)){
             initData.fundAdmins = [{id:"default", user:userDetail}];
         }
-        this.dispatch(modalDialogShow(
+        this.props.dispatch(modalDialogShow(
             this,
             i18n('arr.fund.title.add'),
             <FundForm
                 create
                 initData={initData}
-                onSubmitForm={(data) => {return this.dispatch(createFund(data))}}
+                onSubmitForm={(data) => {return this.props.dispatch(createFund(data))}}
             />
         ));
     };
@@ -134,7 +134,7 @@ class HomePage extends AbstractReactComponent {
             descComp = <small>&nbsp;</small>
         }
 
-        return <Button className='history-list-item history-button' onClick={() => this.dispatch(storeLoadData(type, data))} key={"button-" + keyIndex}>
+        return <Button className='history-list-item history-button' onClick={() => this.props.dispatch(storeLoadData(type, data))} key={"button-" + keyIndex}>
             <Icon glyph={glyph}/>
             <div className='history-name'>{name}</div>
             {false && descComp}

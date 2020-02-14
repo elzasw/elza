@@ -19,7 +19,7 @@ import {indexById} from '../../stores/app/utils'
 import classNames from 'classnames';
 import {Shortcuts} from 'react-shortcuts';
 import DescItemTypeSpec from "./ItemTypeSpec.jsx";
-import {PropTypes} from 'prop-types';
+import * as PropTypes from 'prop-types';
 import defaultKeymap from '../arr/nodeForm/DescItemTypeKeymap.jsx';
 import '../arr/nodeForm/AbstractDescItem.scss';
 import {
@@ -956,4 +956,4 @@ function mapStateToProps(state, ownProps: Props) {
     }
 }
 
-export default connect(mapStateToProps, null, null, {withRef: true})(ItemTypeClass as any);
+export default connect(mapStateToProps)(ItemTypeClass as any);

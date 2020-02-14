@@ -32,11 +32,11 @@ const RunActionForm = class RunActionForm extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(fundActionFetchConfigIfNeeded(nextProps.versionId));
+        this.props.dispatch(fundActionFetchConfigIfNeeded(nextProps.versionId));
     }
 
     componentDidMount() {
-        this.dispatch(fundActionFetchConfigIfNeeded(this.props.versionId));
+        this.props.dispatch(fundActionFetchConfigIfNeeded(this.props.versionId));
     }
     submitOptions = {
         closeOnSubmit:true

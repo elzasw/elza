@@ -30,13 +30,13 @@ class VisiblePolicyForm extends AbstractReactComponent {
 
     loadVisiblePolicy = () => {
         const {nodeId, fundVersionId} = this.props;
-        this.dispatch(visiblePolicyFetchIfNeeded(nodeId, fundVersionId));
+        this.props.dispatch(visiblePolicyFetchIfNeeded(nodeId, fundVersionId));
     };
 
     handleResetVisiblePolicy = () => {
         if(confirm(i18n('visiblePolicy.action.reset.confirm'))) {
             this.props.onSubmitForm({records: []});
-            this.dispatch(modalDialogHide());
+            this.props.dispatch(modalDialogHide());
         }
     };
 

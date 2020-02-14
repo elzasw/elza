@@ -1,17 +1,10 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {AbstractReactComponent, Icon, i18n} from 'components/shared';
 import {connect} from 'react-redux'
-import {decorateValue} from './DescItemUtils.jsx'
-import {Button} from 'react-bootstrap';
 import classNames from 'classnames';
 import './DescItemLabel.scss';
 
-var DescItemLabel = class DescItemLabel extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-    }
-
+class DescItemLabel extends AbstractReactComponent {
     render() {
         const {value, onClick, cal, notIdentified} = this.props;
 
@@ -44,4 +37,4 @@ var DescItemLabel = class DescItemLabel extends AbstractReactComponent {
 
 
 
-export default connect(null, null, null, { withRef: true })(DescItemLabel);
+export default DescItemLabel;

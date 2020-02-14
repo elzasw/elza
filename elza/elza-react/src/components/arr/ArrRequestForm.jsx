@@ -47,13 +47,13 @@ const ArrRequestForm = class extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        this.dispatch(refExternalSystemsFetchIfNeeded());
+        this.props.dispatch(refExternalSystemsFetchIfNeeded());
         this.fetchDigitizationRequestList({}, this.props);
         this.trySelectRequest(this.props);
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(refExternalSystemsFetchIfNeeded());
+        this.props.dispatch(refExternalSystemsFetchIfNeeded());
         this.fetchDigitizationRequestList(this.props, nextProps);
     }
 

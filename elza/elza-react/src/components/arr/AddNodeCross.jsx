@@ -29,7 +29,7 @@ const AddNodeCross = class AddNodeCross extends AbstractReactComponent {
      */
     handleAddNode(direction) {
         const {node, selectedSubNodeIndex, versionId} = this.props;
-        this.dispatch(addNodeFormArr(direction, node, selectedSubNodeIndex, versionId));
+        this.props.dispatch(addNodeFormArr(direction, node, selectedSubNodeIndex, versionId));
     }
 
     renderCross() {

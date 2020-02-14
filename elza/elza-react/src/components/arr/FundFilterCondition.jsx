@@ -11,7 +11,7 @@ import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
 import {Modal, Button} from 'react-bootstrap';
 import {indexById, getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
 
-var FundFilterCondition = class FundFilterCondition extends AbstractReactComponent {
+class FundFilterCondition extends AbstractReactComponent {
     constructor(props) {
         super(props);
 

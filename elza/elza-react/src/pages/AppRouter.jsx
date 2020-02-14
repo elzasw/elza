@@ -52,10 +52,10 @@ class AppRouter extends AbstractReactComponent {
                     navigateToBack = "/";
                 }
                 this.props.history.push(navigateToBack);
-                this.dispatch(routerNavigateFinish());
+                this.props.dispatch(routerNavigateFinish());
             } else {
                 this.props.history.push(navigateTo);
-                this.dispatch(routerNavigateFinish());
+                this.props.dispatch(routerNavigateFinish());
             }
         }
     };

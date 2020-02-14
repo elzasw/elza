@@ -5,7 +5,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {AbstractReactComponent, i18n} from 'components/shared';
-import {connect} from 'react-redux'
 import {normalizeDouble} from 'components/validate.jsx'
 import {decorateValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
@@ -13,7 +12,7 @@ import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
 import classNames from 'classnames';
 
-var DescItemDecimal = class DescItemDecimal extends AbstractReactComponent {
+class DescItemDecimal extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -97,4 +96,4 @@ var DescItemDecimal = class DescItemDecimal extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, { withRef: true })(DescItemDecimal);
+export default DescItemDecimal;

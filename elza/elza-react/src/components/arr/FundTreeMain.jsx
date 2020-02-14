@@ -74,7 +74,7 @@ return true
     }
 
     requestFundTreeData(versionId, expandedIds) {
-        this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_MAIN, versionId, expandedIds));
+        this.props.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_MAIN, versionId, expandedIds));
     }
 
     /**
@@ -95,8 +95,8 @@ return true
             </ul>
         )
 
-        this.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_MAIN, this.props.versionId, node));
-        this.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
+        this.props.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_MAIN, this.props.versionId, node));
+        this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
     }
 
     /**
@@ -104,21 +104,21 @@ return true
      * @param node {Object} uzel
      */
     handleSelectInNewTab(node) {
-        this.dispatch(contextMenuHide());
+        this.props.dispatch(contextMenuHide());
 
         this.callFundSelectSubNode(node, true, false);
     }
 
     handleOpenPersistentSortDialog = (node) => {
         const {fund} = this.props;
-        this.dispatch(contextMenuHide());
+        this.props.dispatch(contextMenuHide());
 
         this.props.dispatch(modalDialogShow(this, i18n("arr.functions.persistentSort"), <PersistentSortDialog versionId={fund.versionId} node={node}/>));
     };
 
     computeAndVizualizeEJ = (node) => {
         const {fund} = this.props;
-        this.dispatch(contextMenuHide());
+        this.props.dispatch(contextMenuHide());
 
         WebApi.queueBulkActionWithIds(fund.versionId, "ZP2015_INTRO_VYPOCET_EJ", [node.id]);
     };
@@ -133,7 +133,7 @@ return true
         if (parentNode == null) {   // root
             parentNode = createFundRoot(this.props.fund);
         }
-        this.dispatch(fundSelectSubNode(this.props.versionId, node.id, parentNode, openNewTab, null, ensureItemVisible));
+        this.props.dispatch(fundSelectSubNode(this.props.versionId, node.id, parentNode, openNewTab, null, ensureItemVisible));
     }
 
     /**
@@ -147,32 +147,32 @@ return true
     }
 
     handleFulltextChange(value) {
-        this.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, this.props.versionId, value));
+        this.props.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, this.props.versionId, value));
     }
 
     handleFulltextSearch() {
         const {fund} = this.props;
-        this.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_MAIN, this.props.versionId, null, fund.fundTree.searchFormData ? fund.fundTree.searchFormData : {type: "FORM"}));
+        this.props.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_MAIN, this.props.versionId, null, fund.fundTree.searchFormData ? fund.fundTree.searchFormData : {type: "FORM"}));
     }
 
     handleFulltextPrevItem() {
-        this.dispatch(fundTreeFulltextPrevItem(types.FUND_TREE_AREA_MAIN, this.props.versionId));
+        this.props.dispatch(fundTreeFulltextPrevItem(types.FUND_TREE_AREA_MAIN, this.props.versionId));
     }
 
     handleFulltextNextItem() {
-        this.dispatch(fundTreeFulltextNextItem(types.FUND_TREE_AREA_MAIN, this.props.versionId));
+        this.props.dispatch(fundTreeFulltextNextItem(types.FUND_TREE_AREA_MAIN, this.props.versionId));
     }
 
     /**
      * Zabalení stromu
      */
     handleCollapse() {
-        this.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_MAIN, this.props.versionId, this.props.fund))
+        this.props.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_MAIN, this.props.versionId, this.props.fund))
     }
 
     handleExtendedSearch = () => {
         const {fund} = this.props;
-        this.dispatch(modalDialogShow(this, i18n('search.extended.title'),
+        this.props.dispatch(modalDialogShow(this, i18n('search.extended.title'),
             <ArrSearchForm
                 onSubmitForm={this.handleExtendedSearchData}
                 initialValues={fund.fundTree.searchFormData ? fund.fundTree.searchFormData : {type: "FORM"}}
@@ -208,17 +208,17 @@ return true
             }
 
             case "TEXT": {
-                this.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, this.props.versionId, result.text));
+                this.props.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, this.props.versionId, result.text));
                 break;
             }
         }
 
-        return this.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_MAIN, versionId, params, result, true));
+        return this.props.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_MAIN, versionId, params, result, true));
     };
 
     render() {
         const {actionAddons, className, fund, cutLongLabels} = this.props;
-        const searchText = typeof fund.fundTree.searchText !== 'undefined' 
+        const searchText = typeof fund.fundTree.searchText !== 'undefined'
             ? fund.fundTree.searchText
             : fund.fundTree.filterText;
 
@@ -229,7 +229,7 @@ return true
                 actionAddons={actionAddons}
                 {...this.props}
                 cutLongLabels={cutLongLabels}
-                onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MAIN, node)) : this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MAIN, this.props.versionId, node))}}
+                onOpenCloseNode={(node, expand) => {expand ? this.props.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MAIN, node)) : this.props.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MAIN, this.props.versionId, node))}}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
                 onFulltextChange={this.handleFulltextChange}

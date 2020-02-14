@@ -58,12 +58,12 @@ class DatationField extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        this.dispatch(calendarTypesFetchIfNeeded());
+        this.props.dispatch(calendarTypesFetchIfNeeded());
         this.loadCalendarsAndPokeData();
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(calendarTypesFetchIfNeeded());
+        this.props.dispatch(calendarTypesFetchIfNeeded());
         this.loadCalendarsAndPokeData(nextProps);
     }
 

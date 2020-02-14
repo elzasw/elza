@@ -60,19 +60,19 @@ class Ribbon extends AbstractReactComponent {
     };
 
     handleBack = () => {
-        this.dispatch(routerNavigate("/~arr"));
+        this.props.dispatch(routerNavigate("/~arr"));
     };
 
     handleLogout = () => {
-        this.dispatch(logout());
+        this.props.dispatch(logout());
     };
 
     handlePasswordChangeForm = () => {
-        this.dispatch(modalDialogShow(this, i18n('admin.user.passwordChange.title'), <PasswordForm onSubmitForm={this.handlePasswordChange} />))
+        this.props.dispatch(modalDialogShow(this, i18n('admin.user.passwordChange.title'), <PasswordForm onSubmitForm={this.handlePasswordChange} />))
     };
 
     handlePasswordChange = (data) => {
-        return this.dispatch(userPasswordChange(data.oldPassword, data.password));
+        return this.props.dispatch(userPasswordChange(data.oldPassword, data.password));
     };
 
     render() {

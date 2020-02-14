@@ -41,15 +41,15 @@ class RegistryList extends AbstractReactComponent {
         this.fetchIfNeeded(nextProps);
         this.trySetFocus(nextProps);
         if (nextProps.maxSize !== this.props.maxSize) {
-            this.dispatch(registryListInvalidate());
+            this.props.dispatch(registryListInvalidate());
         }
     }
 
     fetchIfNeeded = (props = this.props) => {
         const {maxSize} = props;
-        this.dispatch(refRecordTypesFetchIfNeeded());
-        this.dispatch(registryListFetchIfNeeded(0, maxSize));
-        this.dispatch(requestScopesIfNeeded());
+        this.props.dispatch(refRecordTypesFetchIfNeeded());
+        this.props.dispatch(registryListFetchIfNeeded(0, maxSize));
+        this.props.dispatch(requestScopesIfNeeded());
     };
 
     trySetFocus = (props = this.props) => {
@@ -74,15 +74,15 @@ class RegistryList extends AbstractReactComponent {
 
     handleFilterType = (e) => {
         const val = e.target.value;
-        this.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, type: val == -1 ? null : val}));
+        this.props.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, type: val == -1 ? null : val}));
     };
 
     handleFilterText = (filterText) => {
-        this.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, text: filterText && filterText.length === 0 ? null : filterText}));
+        this.props.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, text: filterText && filterText.length === 0 ? null : filterText}));
     };
 
     handleFilterRegistryType = (item) => {
-        this.dispatch(registryListFilter({
+        this.props.dispatch(registryListFilter({
             ...this.props.registryList.filter,
             from: 0,
             itemSpecId:null,
@@ -102,7 +102,7 @@ class RegistryList extends AbstractReactComponent {
         let from = this.props.registryList.filter.from;
         if (this.props.registryList.filter.from >= DEFAULT_REGISTRY_LIST_MAX_SIZE) {
             from = this.props.registryList.filter.from - DEFAULT_REGISTRY_LIST_MAX_SIZE;
-            this.dispatch(registryListFilter({...this.props.registryList.filter, from}));
+            this.props.dispatch(registryListFilter({...this.props.registryList.filter, from}));
         }
     };
 
@@ -110,7 +110,7 @@ class RegistryList extends AbstractReactComponent {
         let from = this.props.registryList.filter.from;
         if (this.props.registryList.filter.from < this.props.registryList.count - DEFAULT_REGISTRY_LIST_MAX_SIZE) {
             from = this.props.registryList.filter.from + DEFAULT_REGISTRY_LIST_MAX_SIZE;
-            this.dispatch(registryListFilter({...this.props.registryList.filter, from}));
+            this.props.dispatch(registryListFilter({...this.props.registryList.filter, from}));
         }
     };
 
@@ -119,15 +119,15 @@ class RegistryList extends AbstractReactComponent {
     }
 
     handleFilterTextClear = () => {
-        this.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, text: null}));
+        this.props.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, text: null}));
     };
 
     handleRegistryDetail = (item) => {
-        this.dispatch(registryDetailFetchIfNeeded(item.id));
+        this.props.dispatch(registryDetailFetchIfNeeded(item.id));
     };
 
     handleRegistryNavigation = (recordIdForOpen) => {
-        this.dispatch(registrySetFolder(recordIdForOpen));
+        this.props.dispatch(registrySetFolder(recordIdForOpen));
     };
 
     handleRegistryTypesSelectNavigation = (id) => {

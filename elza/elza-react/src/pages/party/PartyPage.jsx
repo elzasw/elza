@@ -52,14 +52,14 @@ class PartyPage extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
+        this.props.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
         if (this.props.userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
             this.props.dispatch(apExtSystemListFetchIfNeeded());
         }
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
+        this.props.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
         if (nextProps.userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
             this.props.dispatch(apExtSystemListFetchIfNeeded());
         }
@@ -89,8 +89,8 @@ class PartyPage extends AbstractReactComponent {
      * Uložení nové osoby
      */
     addParty = (data) => {
-        this.dispatch(partyDetailFetchIfNeeded(data.id));
-        this.dispatch(partyListInvalidate());
+        this.props.dispatch(partyDetailFetchIfNeeded(data.id));
+        this.props.dispatch(partyListInvalidate());
     };
 
     /**
@@ -100,18 +100,18 @@ class PartyPage extends AbstractReactComponent {
      * @param partyTypeId - identifikátor typu osoby (osoba, rod, korporace, ..)
      */
     handleAddParty = (partyTypeId) => {
-        this.dispatch(partyAdd(partyTypeId, -1, this.addParty, false));
+        this.props.dispatch(partyAdd(partyTypeId, -1, this.addParty, false));
     };
 
 
     handleImport = () => {
-        this.dispatch(modalDialogShow(this, i18n('import.title.party'), <ImportForm party/>));
+        this.props.dispatch(modalDialogShow(this, i18n('import.title.party'), <ImportForm party/>));
     };
 
     handleExtImport = () => {
-        this.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true} onSubmitForm={(data) => {
-            this.dispatch(partyDetailFetchIfNeeded(data.partyId));
-            this.dispatch(partyListInvalidate());
+        this.props.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true} onSubmitForm={(data) => {
+            this.props.dispatch(partyDetailFetchIfNeeded(data.partyId));
+            this.props.dispatch(partyListInvalidate());
         }} />, "dialog-lg"));
     };
 
@@ -149,12 +149,12 @@ class PartyPage extends AbstractReactComponent {
      * Kliknutí na tlačítko pro smazání osoby
      */
     handleDeleteParty = () => {
-        confirm(i18n('party.delete.confirm')) && this.dispatch(partyDelete(this.props.partyDetail.data.id));
+        confirm(i18n('party.delete.confirm')) && this.props.dispatch(partyDelete(this.props.partyDetail.data.id));
     };
 
     /* MCV-45365
     handleSetValidParty = () => {
-        confirm(i18n('party.setValid.confirm')) && this.dispatch(setValidParty(this.props.partyDetail.data.id));
+        confirm(i18n('party.setValid.confirm')) && this.props.dispatch(setValidParty(this.props.partyDetail.data.id));
     };
     */
 
