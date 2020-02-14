@@ -77,8 +77,6 @@
     "flow-bin": "^0.118.0",
     "font-awesome": "4.7.0",
     "http-proxy-middleware": "^0.20.0",
-    "less": "^3.11.1",
-    "less-loader": "^5.0.0",
     "prettier": "^1.19.1",
     "react-docgen-typescript-loader": "^3.2.0",
     "react-scripts": "3.3.1",

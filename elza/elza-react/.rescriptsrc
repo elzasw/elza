@@ -30,44 +30,6 @@ module.exports = {
             (inQuestion) => inQuestion && !!inQuestion.oneOf,
             config
         );
-        edit(
-            (section) => {
-                const loaders = section.oneOf;
-                // New style loaders should be added near the end of loaders, but before file-loader
-                const fileLoaderIndex = loaders.findIndex(section => section.loader && section.loader.includes('file-loader'));
-                const cssTest = (/\.css$/).toString();
-                const cssexcludeTest = (/\.module\.css$/).toString();
-                const cssIndex = loaders.findIndex(section => section.test&&section.exclude && section.test.toString() === cssTest && section.exclude.toString() === cssexcludeTest);
-                if (cssIndex === -1) {
-                    throw new Error("missing css loader");
-                }
-                const cssLoader = loaders[cssIndex];
-                const lessLoader = {
-                    ...cssLoader,
-                    test: /\.less$/,
-                    exclude: /\.module\.less$/,
-                    use: [
-                        ...cssLoader.use,
-                        {
-                            loader: 'less-loader',
-                            options: {
-                                // sourceMap: NODE_ENV === 'production' && GENERATE_SOURCEMAP !== 'false',
-                                javascriptEnabled: true,
-                                sourceMap: true,
-                                paths: [
-                                    path.resolve(__dirname, 'src')
-                                ]
-                            }
-                        }
-                    ],
-                    sideEffects: false
-                };
-                loaders.splice(fileLoaderIndex, 0, lessLoader);
-                return section
-            },
-            styleLoaders,
-            config
-        );
 
         /*
         config = appendWebpackPlugin(new webpack.ProvidePlugin({
