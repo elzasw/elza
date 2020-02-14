@@ -121,7 +121,7 @@ const Permissions2 = class Permissions2 extends AbstractReactComponent {
         const permInfo = perms.all[item.permission.value];
         const permInput = (
             <FormInput
-                componentClass="select"
+                as="select"
                 {...item.permission}
                 onChange={this.handlePermissionChange.bind(this, item)}
                 inline

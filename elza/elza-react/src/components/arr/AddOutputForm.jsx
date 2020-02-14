@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
-import {Modal, Button, Checkbox, Form} from 'react-bootstrap';
+import {Modal, Button, FormCheck, Form} from 'react-bootstrap';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx'
 import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
@@ -77,18 +77,18 @@ class AddOutputForm extends AbstractReactComponent {
                     <Modal.Body>
                         <FormInput type="text" label={i18n('arr.output.name')} {...name} {...decorateFormField(name)} />
                         <FormInput type="text" label={i18n('arr.output.internalCode')} {...internalCode} {...decorateFormField(internalCode)} />
-                        {create && <FormInput componentClass="select" label={i18n('arr.output.outputType')} {...outputTypeId} {...decorateFormField(outputTypeId)}>
+                        {create && <FormInput as="select" label={i18n('arr.output.outputType')} {...outputTypeId} {...decorateFormField(outputTypeId)}>
                             <option key='-outputTypeId'/>
                             {outputTypes.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
                         </FormInput>}
-                        <FormInput componentClass="select" label={i18n('arr.output.template')} {...templateId} disabled={!outputTypeId.value || !templates}>
+                        <FormInput as="select" label={i18n('arr.output.template')} {...templateId} disabled={!outputTypeId.value || !templates}>
                             <option key='-templateId'/>
                             {templates && templates.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
                         </FormInput>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit">{create ? i18n('global.action.create') : i18n('global.action.update')}</Button>
-                        <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                        <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                     </Modal.Footer>
                 </Form>
             </div>

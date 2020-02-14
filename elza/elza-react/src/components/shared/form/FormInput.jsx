@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {Radio, FormControl, FormGroup, ControlLabel, HelpBlock} from 'react-bootstrap'
+import {FormControl, FormGroup, FormLabel, Form, FormCheck} from 'react-bootstrap';
 import AbstractReactComponent from "../../AbstractReactComponent";
 
 class FormInput extends AbstractReactComponent {
@@ -30,30 +30,29 @@ class FormInput extends AbstractReactComponent {
         switch (type) {
             case "static":
                 return <FormGroup validationState={hasError ? 'error' : null}>
-                    {label && <ControlLabel>{label}</ControlLabel>}
+                    {label && <FormLabel>{label}</FormLabel>}
                     <FormControl.Static
                         ref='input'
                         value={value}
                         {...otherProps}
                         {...inlineProps}
                     >{children}</FormControl.Static>
-                    {!inline && hasError && <HelpBlock>{error}</HelpBlock>}
+                    {!inline && hasError && <Form.Control.Feedback>{error}</Form.Control.Feedback>}
                 </FormGroup>;
             case "radio":
                 return <div>
-                    <Radio
+                    <FormCheck
+                        type="radio"
                         ref='input'
+                        label={label}
                         value={value}
                         {...otherProps}
-                        {...inlineProps}
-                    >
-                        {label}
-                    </Radio>
-                    {!inline && hasError && <HelpBlock>{error}</HelpBlock>}
+                        {...inlineProps} />
+                    {!inline && hasError && <Form.Control.Feedback>{error}</Form.Control.Feedback>}
                 </div>;
             default:
                 return <FormGroup validationState={hasError ? 'error' : null}>
-                    {label && <ControlLabel>{label}</ControlLabel>}
+                    {label && <FormLabel>{label}</FormLabel>}
                     <FormControl
                         ref='input'
                         value={value}
@@ -62,7 +61,7 @@ class FormInput extends AbstractReactComponent {
                         {...otherProps}
                         {...inlineProps}
                     />
-                    {!inline && hasError && <HelpBlock>{error}</HelpBlock>}
+                    {!inline && hasError && <Form.Control.Feedback>{error}</Form.Control.Feedback>}
                 </FormGroup>
         }
     }

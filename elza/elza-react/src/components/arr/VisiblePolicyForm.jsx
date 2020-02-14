@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n} from 'components/shared';
-import {Modal, Button, Checkbox, Form} from 'react-bootstrap';
+import {Modal, Button, FormCheck, Form} from 'react-bootstrap';
 import {indexById, objectById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import {visiblePolicyFetchIfNeeded} from 'actions/arr/visiblePolicy.jsx'
@@ -72,14 +72,14 @@ class VisiblePolicyForm extends AbstractReactComponent {
                     <Modal.Body>
                         {records.map((val, index) =>
                             <div key={index}>
-                                <Checkbox {...val.checked} value={true}>{visiblePolicyTypeItems[val.id.initialValue].name}</Checkbox>
+                                <FormCheck {...val.checked} value={true}>{visiblePolicyTypeItems[val.id.initialValue].name}</FormCheck>
                             </div>
                         )}
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit">{i18n('visiblePolicy.action.save')}</Button>
                         <Button onClick={this.handleResetVisiblePolicy}>{i18n('visiblePolicy.action.reset')}</Button>
-                        <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                        <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                     </Modal.Footer>
                 </Form>
             </div>

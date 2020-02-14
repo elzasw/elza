@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import {Input, HelpBlock} from 'react-bootstrap';
+import {Input, Form} from 'react-bootstrap';
 import AbstractReactComponent from "components/AbstractReactComponent";
 import * as Utils from "components/Utils";
 import Icon from "components/shared/icon/Icon";
@@ -652,7 +652,7 @@ export default class Autocomplete extends AbstractReactComponent {
                     <span className={'glyphicon form-control-feedback glyphicon-' + bootInfo.feedbackIcon}></span>}
                     {this.props.help && <span className='help-block'>{this.props.help}</span>}
                 </div>
-                 {!inline && hasError && <HelpBlock>{error}</HelpBlock>}
+                 {!inline && hasError && <Form.Control.Feedback>{error}</Form.Control.Feedback>}
             </Shortcuts>
         );
     }

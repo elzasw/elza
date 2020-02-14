@@ -61,7 +61,7 @@ class Scope extends AbstractReactComponent {
             data = scopes[index].scopes;
         }
 
-        return <FormInput componentClass='select' options={data} {...other}>
+        return <FormInput as='select' options={data} {...other}>
             <option key="null" />
             {data.map(i => <option value={i.id} key={i.id}>{i.name}</option>)}
         </FormInput>

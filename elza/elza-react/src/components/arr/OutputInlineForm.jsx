@@ -83,7 +83,7 @@ class OutputInlineForm extends AbstractReactComponent {
                            disabled={disabled} {...internalCode} {...decorateFormField(internalCode, true)} />
                 <div className="row-layout">
                     <FormInput type="text" label={i18n('arr.output.outputType')} disabled value={outputType}/>
-                    <FormInput componentClass="select" label={i18n('arr.output.template')}
+                    <FormInput as="select" label={i18n('arr.output.template')}
                                disabled={disabled || !outputTypeId.value || !templates} {...templateId} {...decorateFormField(templateId, true)} >
                         <option key='-templateId'/>
                         {templates && templates.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}

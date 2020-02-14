@@ -48,7 +48,7 @@ class ConfirmForm extends AbstractReactComponent {
                     {content}
                     <Modal.Footer>
                         <Button disabled={submitting} type="submit">{submitTitle ? submitTitle : i18n('global.action.store')}</Button>
-                        <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                        <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                     </Modal.Footer>
                 </div>
             </Form>

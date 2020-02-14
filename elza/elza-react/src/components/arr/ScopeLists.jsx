@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Button, Row, Col, Modal, ControlLabel} from 'react-bootstrap';
+import {Button, Row, Col, Modal, FormLabel} from 'react-bootstrap';
 import {AbstractReactComponent, Icon} from 'components/shared';
 import {connect} from "react-redux";
 import storeFromArea from "../../shared/utils/storeFromArea";
@@ -59,7 +59,7 @@ class ScopeLists extends AbstractReactComponent {
     };
 
     renderScope = (value) => {
-        return <div>{value.item.name} <Button bsStyle="action" bsSize="xs" className="pull-right" onClick={this.delete.bind(this, value.item)}><Icon glyph="fa-trash" /></Button></div>;
+        return <div>{value.item.name} <Button variant="action" bsSize="xs" className="pull-right" onClick={this.delete.bind(this, value.item)}><Icon glyph="fa-trash" /></Button></div>;
     };
 
     render() {
@@ -80,8 +80,8 @@ class ScopeLists extends AbstractReactComponent {
                     <Row className="flex">
                         <Col xs={6} sm={3} className="flex flex-column">
                             <div className="flex" style={{"alignItems": "baseline"}}>
-                                <ControlLabel>{i18n('accesspoint.scope.list')}</ControlLabel>
-                                <Button bsStyle={"action"} onClick={this.create}>
+                                <FormLabel>{i18n('accesspoint.scope.list')}</FormLabel>
+                                <Button variant={"action"} onClick={this.create}>
                                     <Icon glyph="fa-plus" />
                                 </Button>
                             </div>
@@ -94,7 +94,7 @@ class ScopeLists extends AbstractReactComponent {
                     </Row>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.close')}</Button>
+                    <Button variant="link" onClick={onClose}>{i18n('global.action.close')}</Button>
                 </Modal.Footer>
             </div>
         )

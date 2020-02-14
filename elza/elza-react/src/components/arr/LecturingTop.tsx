@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import * as React from 'react';
 import {connect} from 'react-redux';
-import {DropdownButton, MenuItem, Button, Row, Col, FormControl} from "react-bootstrap";
+import {DropdownButton, Dropdown, Button, Row, Col, FormControl} from "react-bootstrap";
 import TooltipTrigger from "../shared/tooltip/TooltipTrigger";
 import Icon from "../shared/icon/Icon";
 import i18n from "../i18n";
@@ -153,27 +153,27 @@ class LecturingTop extends React.Component {
         return <div className="lecturing-top">
             <div className="actions-container">
                 <div className="actions">
-                    <DropdownButton disabled={!canWrite} bsStyle="default" id='dropdown-add-comment' noCaret title={(<Icon glyph='fa-plus-circle' /> as any as string)}>
-                        <MenuItem eventKey="1" onClick={this.newArr}>{i18n("arr.issues.add.arr")}</MenuItem>
-                        <MenuItem eventKey="2" disabled={!this.props.node || !this.props.node.selectedSubNodeId} onClick={this.newNode}>{i18n("arr.issues.add.node")}</MenuItem>
+                    <DropdownButton disabled={!canWrite} variant="default" id='dropdown-add-comment' noCaret title={(<Icon glyph='fa-plus-circle' /> as any as string)}>
+                        <Dropdown.Item eventKey="1" onClick={this.newArr}>{i18n("arr.issues.add.arr")}</Dropdown.Item>
+                        <Dropdown.Item eventKey="2" disabled={!this.props.node || !this.props.node.selectedSubNodeId} onClick={this.newNode}>{i18n("arr.issues.add.node")}</Dropdown.Item>
                     </DropdownButton>
-                    {hasAdmin && <Button bsStyle="action" className="pull-right" onClick={this.settings}><Icon glyph='fa-cogs' /></Button>}
-                    <Button bsStyle="action" className="pull-right" disabled={!issueListId} onClick={this.download}><Icon glyph='fa-download' /></Button>
+                    {hasAdmin && <Button variant={"action" as any} className="pull-right" onClick={this.settings}><Icon glyph='fa-cogs' /></Button>}
+                    <Button variant={"action" as any} className="pull-right" disabled={!issueListId} onClick={this.download}><Icon glyph='fa-download' /></Button>
                 </div>
             </div>
-            <FormControl componentClass={"select"} name={"protocol"} onChange={({target: {value}}: any) => this.selectIssueList(value, fund.id)} value={issueListId}>
+            <FormControl as={"select"} name={"protocol"} onChange={({target: {value}}: any) => this.selectIssueList(value, fund.id)} value={issueListId}>
                 {issueProtocols.fetched && issueProtocols.count === 0 && <option value={''} />}
                 {issueProtocols.fetched && issueProtocols.rows.map(basicOptionMap)}
             </FormControl>
             <Row>
                 <Col xs={12} sm={6}>
-                    <FormControl componentClass={"select"} name={"state"} disabled={!issueListId} onChange={({target: {value}}: any) => this.filter({state:value})} value={issueList.filter.state}>
+                    <FormControl as={"select"} name={"state"} disabled={!issueListId} onChange={({target: {value}}: any) => this.filter({state:value})} value={issueList.filter.state}>
                         <option value={""}>{i18n("global.all")}</option>
                         {issueStates.fetched && issueStates.data.map(basicOptionMap)}
                     </FormControl>
                 </Col>
                 <Col xs={12} sm={6}>
-                    <FormControl componentClass={"select"} name={"type"} disabled={!issueListId} onChange={({target: {value}}: any) => this.filter({type:value})} value={issueList.filter.type}>
+                    <FormControl as={"select"} name={"type"} disabled={!issueListId} onChange={({target: {value}}: any) => this.filter({type:value})} value={issueList.filter.type}>
                         <option value={""}>{i18n("global.all")}</option>
                         {issueTypes.fetched && issueTypes.data.map(basicOptionMap)}
                     </FormControl>
@@ -210,8 +210,8 @@ class LecturingTop extends React.Component {
                                 </div>
                             </div>
                             {canWrite && <div className="actions">
-                                <DropdownButton pullRight bsStyle="action" id='issue-type' noCaret title={<Icon glyph='fa-ellipsis-h' /> as any as string}>
-                                    {issueTypes.data.map(i => <MenuItem key={'issue-type-' + i.id} disabled={i.id === issueTypeId} onClick={this.updateIssueType.bind(this, id, i.id)}>{i18n("arr.issues.type.change", i.name)}</MenuItem>)}
+                                <DropdownButton pullRight variant={"action" as any} id='issue-type' noCaret title={<Icon glyph='fa-ellipsis-h' /> as any as string}>
+                                    {issueTypes.data.map(i => <Dropdown.Item key={'issue-type-' + i.id} disabled={i.id === issueTypeId} onClick={this.updateIssueType.bind(this, id, i.id)}>{i18n("arr.issues.type.change", i.name)}</Dropdown.Item>)}
                                 </DropdownButton>
                             </div>}
                         </TooltipTrigger>

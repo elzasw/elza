@@ -62,15 +62,15 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
         const itemActions = [];
 
         altActions.push(
-            <Button key="add-group" onClick={this.handleCreateGroupForm}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.admin.group.add')}</span></div></Button>
+            <Button variant={"default"} key="add-group" onClick={this.handleCreateGroupForm}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.admin.group.add')}</span></div></Button>
         );
 
         if (groupDetail.id !== null) {
             itemActions.push(
-                <Button key="delete-group" onClick={this.handleDeleteGroup}><Icon glyph="fa-trash" /><div><span className="btnText">{i18n('ribbon.action.admin.group.delete')}</span></div></Button>
+                <Button variant={"default"} key="delete-group" onClick={this.handleDeleteGroup}><Icon glyph="fa-trash" /><div><span className="btnText">{i18n('ribbon.action.admin.group.delete')}</span></div></Button>
             );
             itemActions.push(
-                <Button key="edit-group" onClick={this.handleEditGroupForm}><Icon glyph="fa-edit" /><div><span className="btnText">{i18n('ribbon.action.admin.group.edit')}</span></div></Button>
+                <Button variant={"default"} key="edit-group" onClick={this.handleEditGroupForm}><Icon glyph="fa-edit" /><div><span className="btnText">{i18n('ribbon.action.admin.group.edit')}</span></div></Button>
             );
         }
 

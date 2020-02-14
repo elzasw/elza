@@ -370,12 +370,12 @@ class PartyDetail extends AbstractReactComponent {
                             const key = UI_PARTY_GROUP_TYPE.CONCLUSION;
                             return <div key={index}>
                                 <CollapsablePanel tabIndex={0} isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
-                                    <FormInput componentClass="textarea" {...sourceInformation} label={i18n("party.detail.sources")} />
-                                    <label className="group-label">{i18n("party.detail.creators")}{canEdit && <Button bsStyle="action" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></Button>}</label>
+                                    <FormInput as="textarea" {...sourceInformation} label={i18n("party.detail.sources")} />
+                                    <label className="group-label">{i18n("party.detail.creators")}{canEdit && <Button variant="action" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></Button>}</label>
                                     {creators.map((creator, index) => <div key={index + "-" + creator.id} className="value-group">
                                         <div className='desc-item-value desc-item-value-parts'>
                                             <PartyField onCreate={this.handleAddParty.bind(this, creator)} {...creator} />
-                                            {canEdit && <Button bsStyle="action" onClick={() => {
+                                            {canEdit && <Button variant="action" onClick={() => {
                                                 if (confirm(i18n('party.detail.creator.delete'))) {
                                                     creators.removeField(index)
                                                 }
@@ -421,7 +421,7 @@ class PartyDetail extends AbstractReactComponent {
                                                     element = <FormInput {...inputProps} type="text" disabled={!canEdit} />
                                                 } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXTAREA) {
                                                     const {initialValue, autofill, onUpdate, valid, invalid, dirty, pristine, active, visited, autofilled, ...textAreaProps} = inputProps;
-                                                    element = <FormInput {...textAreaProps} componentClass="textarea" disabled={!canEdit} />
+                                                    element = <FormInput {...textAreaProps} as="textarea" disabled={!canEdit} />
                                                 } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.RELATION) {
                                                     const type = objectById(partyType.relationTypes, item.definition, 'code');
                                                     if (type) {

@@ -7,7 +7,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Tabs} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes.js';
-import {MenuItem} from 'react-bootstrap';
+import {Dropdown} from 'react-bootstrap';
 import {fundTreeFulltextChange, fundTreeFulltextSearch, fundTreeSelectNode, fundTreeFocusNode, fundTreeFetchIfNeeded, fundTreeNodeExpand, fundTreeFulltextNextItem, fundTreeFulltextPrevItem, fundTreeNodeCollapse, fundTreeCollapse} from 'actions/arr/fundTree.jsx'
 import {fundSelectSubNode} from 'actions/arr/node.jsx';
 import {createFundRoot, getParentNode} from './../arr/ArrUtils.jsx'
@@ -87,8 +87,8 @@ return true
 
         var menu = (
             <ul className="dropdown-menu">
-                <MenuItem onClick={this.handleSelectInNewTab.bind(this, node)}>{i18n('fundTree.action.openInNewTab')}</MenuItem>
-                <MenuItem onClick={this.handleSelectInTab.bind(this, node)}>{i18n('fundTree.action.open')}</MenuItem>
+                <Dropdown.Item onClick={this.handleSelectInNewTab.bind(this, node)}>{i18n('fundTree.action.openInNewTab')}</Dropdown.Item>
+                <Dropdown.Item onClick={this.handleSelectInTab.bind(this, node)}>{i18n('fundTree.action.open')}</Dropdown.Item>
             </ul>
         )
 

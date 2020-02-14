@@ -28,7 +28,7 @@ import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import RequestInlineForm from "./RequestInlineForm";
 import {DIGITIZATION, DAO, DAO_LINK, getRequestType} from './ArrUtils.jsx'
 import {refExternalSystemsFetchIfNeeded} from 'actions/refTables/externalSystems';
-import {ControlLabel} from 'react-bootstrap'
+import {FormLabel} from 'react-bootstrap'
 import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './ArrRequestDetailKeymap.jsx';
@@ -254,7 +254,7 @@ class ArrRequestDetail extends AbstractReactComponent {
                         {this.renderDaoLinkNode(req)}
                     </div>}
                     {req.state === "REJECTED" && req.rejectReason && <div>
-                        <ControlLabel>{i18n("arr.request.title.rejectReason")}</ControlLabel> {req.rejectReason}
+                        <FormLabel>{i18n("arr.request.title.rejectReason")}</FormLabel> {req.rejectReason}
                     </div>}
                 </div>
             )

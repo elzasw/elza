@@ -162,14 +162,14 @@ const ArrRequestForm = class extends AbstractReactComponent {
 
         const form = (
             <div>
-                {showDaoTypeSelect && <FormInput label={i18n("arr.request.title.daoRequest.type")} componentClass="select" {...daoType} onChange={this.handleDaoTypeChange}>
+                {showDaoTypeSelect && <FormInput label={i18n("arr.request.title.daoRequest.type")} as="select" {...daoType} onChange={this.handleDaoTypeChange}>
                     <option key={-1} value=""></option>
                     <option key={"DESTRUCTION"} value="DESTRUCTION">{i18n('arr.request.title.type.dao.DESTRUCTION')}</option>
                     <option key={"TRANSFER"} value="TRANSFER">{i18n('arr.request.title.type.dao.TRANSFER')}</option>
                 </FormInput>}
                 {showRequestFields && <FormInput
                     label={i18n("arr.request.title.digitizationRequest")}
-                    componentClass="select"
+                    as="select"
                     {...requestId}
                     onChange={this.handleRequestChange}
                     disabled={!requestFetched}
@@ -181,14 +181,14 @@ const ArrRequestForm = class extends AbstractReactComponent {
                 </FormInput>}
                 {showDigitizationFrontdeskSelect && <FormInput
                     label={i18n("arr.request.title.daoRequest.digitizationFrontdesk")}
-                    componentClass="select" {...digitizationFrontdesk}
+                    as="select" {...digitizationFrontdesk}
                     onChange={this.handleDigitizationFrontdeskChange}
                     disabled={!requestFetched}
                 >
                     <option key={-1} value=""></option>
                     {digitizationFrontdesks.map(digFrontdesk => <option value={digFrontdesk.id} key={digFrontdesk.id}>{digFrontdesk.name}</option>)}
                 </FormInput>}
-                {showRequestFields && <FormInput label={i18n("arr.request.title.description")} componentClass="textarea" {...description} disabled={!requestFetched} />}
+                {showRequestFields && <FormInput label={i18n("arr.request.title.description")} as="textarea" {...description} disabled={!requestFetched} />}
             </div>
         );
 
@@ -200,7 +200,7 @@ const ArrRequestForm = class extends AbstractReactComponent {
                 <Modal.Footer>
                     <Button type="submit" onClick={handleSubmit(onSubmitForm.bind(this, false))}>{i18n('global.action.store')}</Button>
                     <Button type="submit" onClick={handleSubmit(onSubmitForm.bind(this, true))}>{i18n('arr.request.action.storeAndSend')}</Button>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.close')}</Button>
+                    <Button variant="link" onClick={onClose}>{i18n('global.action.close')}</Button>
                 </Modal.Footer>
             </Form>
         )

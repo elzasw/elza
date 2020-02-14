@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, Icon, i18n, FileListBox, StoreHorizontalLoader, FormInput} from 'components/shared';
 import AddFileForm from './AddFileForm'
-import {Button, DropdownButton, MenuItem} from 'react-bootstrap'
+import {Button, DropdownButton, Dropdown} from 'react-bootstrap'
 import {fetchFundFilesIfNeeded, fundFilesFilterByText, fundFilesCreate, fundFilesEditEditable, fundFilesDelete, fundFilesReplace, fundFilesUpdate} from 'actions/arr/fundFiles.jsx'
 import {modalDialogShow,modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {UrlFactory} from 'actions/index.jsx';
@@ -150,11 +150,11 @@ class FundFiles extends AbstractReactComponent {
 
             {!readMode && fundFiles.fetched && <div className="actions-container">
                 <div className="actions">
-                    <DropdownButton bsStyle="default" id='dropdown-add-file' noCaret title={<Icon glyph='fa-plus-circle' />}>
-                        <MenuItem onClick={this.handleCreateFromFile}>
+                    <DropdownButton variant="default" id='dropdown-add-file' noCaret title={<Icon glyph='fa-plus-circle' />}>
+                        <Dropdown.Item onClick={this.handleCreateFromFile}>
                             {i18n("arr.fund.files.action.add.fromFile")}
-                        </MenuItem>
-                        <MenuItem disabled={!this.hasMimeTypes()} onClick={this.handleCreateEditable}>
+                        </Dropdown.Item>
+                        <Dropdown.Item disabled={!this.hasMimeTypes()} onClick={this.handleCreateEditable}>
                             {!this.hasMimeTypes() ?
                              <TooltipTrigger
                                  key="info"
@@ -167,7 +167,7 @@ class FundFiles extends AbstractReactComponent {
                              </TooltipTrigger> :
                              i18n("arr.fund.files.action.add.editable")
                             }
-                        </MenuItem>
+                        </Dropdown.Item>
                     </DropdownButton>
                 </div>
             </div>}

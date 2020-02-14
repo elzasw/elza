@@ -191,7 +191,7 @@ class ArrOutputDetail extends AbstractReactComponent {
                     onSave={this.handleSaveOutput}
                 />
                 {fundOutputDetail.error && <div>
-                    <FormInput componentClass="textarea" value={fundOutputDetail.error} disabled label={i18n('arr.output.title.error')}/>
+                    <FormInput as="textarea" value={fundOutputDetail.error} disabled label={i18n('arr.output.title.error')}/>
                 </div>}
             </div>
             <div>

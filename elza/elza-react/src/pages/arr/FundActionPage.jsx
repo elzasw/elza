@@ -386,7 +386,7 @@ class FundActionPage extends ArrParentPage {
                 {config.fetched && <div>
                     <h2>{i18n('arr.fundAction.form.newAction')}</h2>
                     <div>
-                        <FormInput componentClass="select"
+                        <FormInput as="select"
                                    label={i18n('arr.fundAction.form.type')}
                                    key='code-action'
                                    ref='code-action'

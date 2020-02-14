@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {FormInput, Icon, HorizontalLoader} from 'components/shared'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
-import {Modal, Form, Table, Checkbox, FormControl, Button} from 'react-bootstrap'
+import {Modal, Form, Table, FormCheck, FormControl, Button} from 'react-bootstrap'
 import objectById from '../../shared/utils/objectById'
 import * as perms from 'actions/user/Permission.jsx';
 import AbstractReactComponent from "../AbstractReactComponent";
@@ -73,7 +73,7 @@ class ExtMapperForm extends AbstractReactComponent {
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button bsStyle="link" type="button" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button variant="link" type="button" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
         }
@@ -93,12 +93,12 @@ class ExtMapperForm extends AbstractReactComponent {
                                     <th colSpan={5}>{i18n('extMapperForm.import')}</th>
                                 </tr>
                                 <tr className="import-relation">
-                                    <td><Checkbox {...i.importRelation}/></td>
+                                    <td><FormCheck {...i.importRelation}/></td>
                                     <td>{i.interpiRelationType.value}</td>
                                     <td><Icon glyph="fa-arrow-right" /></td>
                                     <td/>
                                     <td>
-                                        <FormInput componentClass="select" disabled={!hasPermission} {...i.relationTypeId} onChange={(ev) => {
+                                        <FormInput as="select" disabled={!hasPermission} {...i.relationTypeId} onChange={(ev) => {
                                             const save = window.confirm(i18n('extMapperForm.saveAsDefaultMapping'));
                                             i.save.onChange(save);
                                             i.relationTypeId.onChange(ev);
@@ -110,12 +110,12 @@ class ExtMapperForm extends AbstractReactComponent {
                                 </tr>
 
                                 {i.entities && i.entities.map(e => <tr className="import-relation">
-                                    <td><Checkbox {...e.importEntity}/></td>
+                                    <td><FormCheck {...e.importEntity}/></td>
                                     <td>{e.interpiEntityName.value}</td>
                                     <td>{e.interpiRoleType.value}</td>
                                     <td><Icon glyph="fa-arrow-right" /></td>
                                     <td>
-                                        <FormInput componentClass="select" disabled={!hasPermission || !i.relationTypeId.value} {...e.relationRoleTypeId} onChange={(ev) => {
+                                        <FormInput as="select" disabled={!hasPermission || !i.relationTypeId.value} {...e.relationRoleTypeId} onChange={(ev) => {
                                             const save = window.confirm(i18n('extMapperForm.saveAsDefaultMapping'));
                                             e.save.onChange(save);
                                             e.relationRoleTypeId.onChange(ev);
@@ -131,12 +131,12 @@ class ExtMapperForm extends AbstractReactComponent {
                 </div>
                 <div>
                     <label>{i18n('extMapperForm.recordExtSystemDescription')}</label>
-                    <FormControl componentClass="textarea" rows="10" value={record ? record.detail : ''} style={{height: '272px'}} />
+                    <FormControl as="textarea" rows="10" value={record ? record.detail : ''} style={{height: '272px'}} />
                 </div>
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit" disabled={submitting}>{isUpdate ? i18n('extMapperForm.update') : i18n('extMapperForm.import')}</Button>
-                <Button bsStyle="link" type="button" onClick={onClose} disabled={submitting}>{i18n('global.action.cancel')}</Button>
+                <Button variant="link" type="button" onClick={onClose} disabled={submitting}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>
     }

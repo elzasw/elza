@@ -2,7 +2,7 @@ import React from 'react';
 import {reduxForm} from 'redux-form';
 import {connect} from 'react-redux';
 import {AbstractReactComponent, i18n, Icon} from 'components/shared';
-import {Button, Form, Modal, Panel, PanelGroup} from 'react-bootstrap';
+import {Button, Form, Modal, Card, Accordion} from 'react-bootstrap';
 import {indexById, objectById} from 'stores/app/utils.jsx'
 import {Shortcuts} from 'react-shortcuts';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
@@ -102,11 +102,11 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
                 <Modal.Body className="template-items">
                     {templates.map((val, index) => {
                         const header = <div onClick={(e) => {if (edit[index]) {e.preventDefault(); e.stopPropagation();}}} className="pull-left template-name">{edit[index] ? <FormInput type="text" label={false} {...val.name}  {...decorateFormField(val.name)} /> : val.name.value}</div>;
-                        return <PanelGroup activeKey={open[index]} onClick={() => {
+                        return <Accordion activeKey={open[index]} onClick={() => {
                             open[index] = !open[index];
                             this.setState({open});
                         }} accordion>
-                            <Panel eventKey={true}
+                            <Card eventKey={true}
                                    header={<div className="clearfix">
                                        {header}
                                        <div className="pull-right">
@@ -130,8 +130,8 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
                                 <div onClick={(e) => {e.preventDefault(); e.stopPropagation();}}>
                                      {this.renderItems(val.formData.initialValue)}
                                 </div>
-                            </Panel>
-                        </PanelGroup>
+                            </Card>
+                        </Accordion>
 
                     })}
                     {templates.length === 0 && <div>
@@ -140,7 +140,7 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit">{i18n('visiblePolicy.action.save')}</Button>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </Form>
     }

@@ -120,7 +120,7 @@ class Search extends React.Component {
                 <div className='search-input'>
                     {textAreaInput ? <FormInput
                         disabled={disabled}
-                        componentClass='textarea'
+                        as='textarea'
                         tabIndex={tabIndex}
                         value={this.state.filterText}
                         ref="input"

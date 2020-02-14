@@ -23,7 +23,7 @@ $finding-tree-toggle-font-size: 11px;
         //overflow-x:auto;
     }
     .app-content {
-        height: calc("100% - "$header-height);
+        height: calc(100% - #{$header-height});
         //background: $body-bg;
         //overflow: auto;
         //flex:1;
@@ -44,13 +44,13 @@ $finding-tree-toggle-font-size: 11px;
             }
         }
         .app-content {
-            height: calc("100% - "$header-minimized-height);
+            height: calc(100% - #{$header-minimized-height});
         }
     }
 
     &.app-exists-status {
         .app-content {
-            height: calc("100% - "$header-height - $header-status-height);
+            height: calc(100% - #{$header-height} - #{$header-status-height});
         }
     }
 
@@ -62,7 +62,7 @@ $finding-tree-toggle-font-size: 11px;
             }
         }
         .app-content {
-            height: calc("100% - "$header-minimized-height - $header-status-height);
+            height: calc(100% - #{$header-minimized-height} - #{$header-status-height});
         }
     }
 

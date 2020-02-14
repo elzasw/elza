@@ -176,7 +176,7 @@ export const Tabs = class Tabs extends React.Component {
             activeKey = typeof this.props.activeItem.key !== 'undefined' ? this.props.activeItem.key : this.props.activeItem.id;
         }
         return (
-                <Nav className="tabs-tabs-container" ref="tabs"  bsStyle="tabs" onSelect={this.handleTabSelect} activeKey={activeKey}>
+                <Nav className="tabs-tabs-container" ref="tabs"  variant="tabs" onSelect={this.handleTabSelect} activeKey={activeKey}>
                     {tabs}
                 </Nav>
         )

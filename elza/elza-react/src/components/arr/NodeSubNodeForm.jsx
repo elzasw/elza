@@ -31,7 +31,7 @@ import {WebApi} from 'actions/index.jsx';
 import {getMapFromList, indexById} from 'stores/app/utils.jsx'
 import {fundSelectSubNode} from 'actions/arr/node.jsx';
 import {addToastr, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
-import {DropdownButton, MenuItem} from 'react-bootstrap';
+import {DropdownButton, Dropdown} from 'react-bootstrap';
 import TemplateForm, {EXISTS_TEMPLATE, NEW_TEMPLATE} from "./TemplateForm";
 import TemplateUseForm from "./TemplateUseForm";
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
@@ -296,9 +296,9 @@ class NodeSubNodeForm extends AbstractReactComponent {
                         </NoFocusButton>
                     </div>}
                     <div className='section'>
-                        <DropdownButton bsStyle="default" title={<Icon glyph="fa-ellipsis-h" />} noCaret id="arr-structure-panel-add">
-                            <MenuItem eventKey="1" onClick={this.handleCreateTemplate}>{i18n("subNodeForm.section.createTemplate")}</MenuItem>
-                            <MenuItem eventKey="2" onClick={this.handleUseTemplate}>{i18n("subNodeForm.section.useTemplate")}</MenuItem>
+                        <DropdownButton variant="default" title={<Icon glyph="fa-ellipsis-h" />} noCaret id="arr-structure-panel-add">
+                            <Dropdown.Item eventKey="1" onClick={this.handleCreateTemplate}>{i18n("subNodeForm.section.createTemplate")}</Dropdown.Item>
+                            <Dropdown.Item eventKey="2" onClick={this.handleUseTemplate}>{i18n("subNodeForm.section.useTemplate")}</Dropdown.Item>
                         </DropdownButton>
                     </div>
                 </div>

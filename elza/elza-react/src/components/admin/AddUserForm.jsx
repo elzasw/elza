@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
-import {Button, Checkbox, Col, Form, Modal, Row} from 'react-bootstrap';
+import {Button, FormCheck, Col, Form, Modal, Row} from 'react-bootstrap';
 import {submitForm} from 'components/form/FormUtils.jsx'
 import PartyField from "../party/PartyField";
 import './AddUserForm.scss';
@@ -115,7 +115,7 @@ class AddUserForm extends AbstractReactComponent {
                     <Row className="type-row-group">
                         <Col xs={12}><span className="type">Způsob přihlášení</span></Col>
                     </Row>
-                    <Checkbox disabled={submitting} label={i18n('admin.user.add.password.checkbox')} type="checkbox" {...passwordCheckbox}>{i18n('admin.user.add.password.checkbox')}</Checkbox>
+                    <FormCheck disabled={submitting} label={i18n('admin.user.add.password.checkbox')} type="checkbox" {...passwordCheckbox}>{i18n('admin.user.add.password.checkbox')}</FormCheck>
                     {passwordCheckbox.value && (create || setPassword) && <Row className="type-row">
                         <Col xs={6}><FormInput disabled={submitting} label={i18n(create ? 'admin.user.password' : 'admin.user.newPassword' )} autoComplete="off" type="password" {...password} /></Col>
                         <Col xs={6}><FormInput disabled={submitting} label={i18n('admin.user.passwordAgain')} autoComplete="off" type="password" {...passwordAgain} /></Col>
@@ -124,7 +124,7 @@ class AddUserForm extends AbstractReactComponent {
                         <Col xs={6} className="message">{i18n('admin.user.add.password.message')}</Col>
                         <Col xs={6}><Button disabled={submitting} onClick={() => this.setState({setPassword: true})}>{i18n('global.action.change')}</Button></Col>
                     </Row>}
-                    <Checkbox disabled={submitting} label={i18n('admin.user.add.shibboleth.checkbox')} type="checkbox" {...shibbolethCheckbox}>{i18n('admin.user.add.shibboleth.checkbox')}</Checkbox>
+                    <FormCheck disabled={submitting} label={i18n('admin.user.add.shibboleth.checkbox')} type="checkbox" {...shibbolethCheckbox}>{i18n('admin.user.add.shibboleth.checkbox')}</FormCheck>
                     {shibbolethCheckbox.value && (create || setShibboleth) && <Row className="type-row">
                         <Col xs={12}><FormInput disabled={submitting} label={i18n('admin.user.add.shibboleth')} autoComplete="off" type="text" {...shibboleth} /></Col>
                     </Row>}
@@ -135,7 +135,7 @@ class AddUserForm extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" disabled={submitting}>{i18n(create ? 'global.action.create' : 'global.action.update')}</Button>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
         </Form>
     }

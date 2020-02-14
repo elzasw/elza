@@ -93,8 +93,8 @@ class NewApItemNameFormModal extends AbstractReactComponent {
                     <ApItemNameForm parent={{id:objectId, accessPointId}} />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button bsStyle="link" onClick={this.onStore}>{i18n('global.action.store')}</Button>
-                    <Button bsStyle="link" onClick={this.onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button variant="link" onClick={this.onStore}>{i18n('global.action.store')}</Button>
+                    <Button variant="link" onClick={this.onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
         )

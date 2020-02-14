@@ -8,7 +8,7 @@ import PartyList from '../../components/party/PartyList'
 import PartyDetail from '../../components/party/PartyDetail'
 import ImportForm from '../../components/form/ImportForm'
 import ExtImportForm from '../../components/form/ExtImportForm'
-import {MenuItem, Button} from 'react-bootstrap';
+import {Dropdown, Button} from 'react-bootstrap';
 import {AppStore} from 'stores/index.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
@@ -180,7 +180,7 @@ class PartyPage extends AbstractReactComponent {
                    <Icon glyph='fa-plus-circle' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
                     {
                         partyTypes.items.map(
-                            type => <MenuItem key={type.id} eventKey={type.id} onClick={this.handleAddParty.bind(this, type.id)}>{type.name}</MenuItem>
+                            type => <Dropdown.Item key={type.id} eventKey={type.id} onClick={this.handleAddParty.bind(this, type.id)}>{type.name}</Dropdown.Item>
                             )
                     }
                 </ControllableDropdownButton>

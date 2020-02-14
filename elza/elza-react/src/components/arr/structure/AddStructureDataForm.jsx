@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, Form, Modal, Checkbox} from "react-bootstrap";
+import {Button, Form, Modal, FormCheck} from "react-bootstrap";
 import {i18n, AbstractReactComponent, FormInput} from "components/shared";
 import {connect} from "react-redux";
 import {reduxForm} from "redux-form";
@@ -40,7 +40,7 @@ class AddStructureDataForm extends AbstractReactComponent {
             const checked = index !== -1;
 
 
-            return <Checkbox key="increment" checked={checked} onChange={() => {
+            return <FormCheck key="increment" checked={checked} onChange={() => {
                 if (checked) {
                     incrementedTypeIds.onChange([
                         ...incrementedTypeIds.value.slice(0, index),
@@ -55,7 +55,7 @@ class AddStructureDataForm extends AbstractReactComponent {
 
             }}>
                 {i18n('arr.structure.modal.increment')}
-            </Checkbox>;
+            </FormCheck>;
         }
         return null;
     };
@@ -78,7 +78,7 @@ class AddStructureDataForm extends AbstractReactComponent {
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit" disabled={submitting}>{i18n('global.action.add')}</Button>
-                <Button bsStyle="link" disabled={submitting} onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                <Button variant="link" disabled={submitting} onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>
     }
@@ -94,8 +94,8 @@ export default reduxForm({
         'incrementedTypeIds'
     ],
     initialValues: {
-        count: "", 
-        incrementedTypeIds: []},    
+        count: "",
+        incrementedTypeIds: []},
     validate: (values, props) => {
         const errors = {};
         if (props.multiple) {

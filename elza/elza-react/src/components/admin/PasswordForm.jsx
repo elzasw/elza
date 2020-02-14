@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, Icon, FormInput, Autocomplete, VersionValidationState} from 'components/shared';
-import {Modal, Button, FormControl, FormGroup, ControlLabel, HelpBlock, Form} from 'react-bootstrap';
+import {Modal, Button, FormControl, FormGroup, FormLabel, Form} from 'react-bootstrap';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
 import {submitForm} from 'components/form/FormUtils.jsx'
@@ -57,7 +57,7 @@ class PasswordForm extends AbstractReactComponent {
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit" disabled={submitting}>{i18n('global.action.update')}</Button>
-                <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>
     }

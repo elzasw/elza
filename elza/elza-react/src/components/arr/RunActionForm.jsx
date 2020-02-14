@@ -51,7 +51,7 @@ const RunActionForm = class RunActionForm extends AbstractReactComponent {
             <div className="run-action-form-container">
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
-                        <FormInput componentClass="select"
+                        <FormInput as="select"
                                 label={i18n('arr.fundAction.form.type')}
                                 key='code-action'
                                 ref='code-action'
@@ -65,7 +65,7 @@ const RunActionForm = class RunActionForm extends AbstractReactComponent {
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit" disabled={submitting}>{i18n('global.action.run')}</Button>
-                        <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                        <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                     </Modal.Footer>
                 </Form>
             </div>

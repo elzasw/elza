@@ -77,21 +77,21 @@ class AdminExtSystemPage extends AbstractReactComponent {
         const itemActions = [];
 
         altActions.push(
-            <Button key="add-ext-system" onClick={this.handleAddExtSystem} title={i18n('ribbon.action.admin.extSystem.add.title')}>
+            <Button key="add-ext-system" onClick={this.handleAddExtSystem} title={i18n('ribbon.action.admin.extSystem.add.title')} variant={"default"}>
                 <Icon glyph="fa-download"/>
                 <div><span className="btnText">{i18n('ribbon.action.admin.extSystem.add')}</span></div>
             </Button>
         );
         if (id && fetched) {
             itemActions.push(
-                <Button key="edit-ext-system" onClick={this.handleEditExtSystem} title={i18n('ribbon.action.admin.extSystem.edit.title')}>
+                <Button key="edit-ext-system" onClick={this.handleEditExtSystem} title={i18n('ribbon.action.admin.extSystem.edit.title')} variant={"default"}>
                     <Icon glyph="fa-download"/>
                     <div><span className="btnText">{i18n('ribbon.action.admin.extSystem.edit')}</span></div>
                 </Button>
             );
 
             itemActions.push(
-                <Button key="delete-ext-system" onClick={this.handleDeleteExtSystem} title={i18n('ribbon.action.admin.extSystem.delete.title')}>
+                <Button key="delete-ext-system" onClick={this.handleDeleteExtSystem} title={i18n('ribbon.action.admin.extSystem.delete.title')} variant={"default"}>
                     <Icon glyph="fa-minus-circle"/>
                     <div><span className="btnText">{i18n('ribbon.action.admin.extSystem.delete')}</span></div>
                 </Button>

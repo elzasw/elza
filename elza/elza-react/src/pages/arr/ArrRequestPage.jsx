@@ -34,7 +34,7 @@ import {
     StoreHorizontalLoader,
     Utils
 } from 'components/shared';
-import {Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
+import {Button, DropdownButton, Dropdown, Collapse} from 'react-bootstrap';
 import PageLayout from "../shared/layout/PageLayout";
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
@@ -260,7 +260,7 @@ class ArrRequestPage extends ArrParentPage {
         return (
             <div className="fund-request-list-container">
                 <div className="filter">
-                    <FormInput componentClass="select" className="type" onChange={this.handleFilterType} value={requestList.filter.type}>
+                    <FormInput as="select" className="type" onChange={this.handleFilterType} value={requestList.filter.type}>
                         <option value={""}>{i18n('global.all')}</option>
                         <option value="DIGITIZATION" key="DIGITIZATION">{i18n("arr.request.title.type." + DIGITIZATION)}</option>
                         <option value="DESTRUCTION" key="DESTRUCTION">{i18n("arr.request.title.type.dao.DESTRUCTION")}</option>

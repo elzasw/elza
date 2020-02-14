@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {reduxForm} from 'redux-form'
-import {Form, Button, FormControl, Table, Modal, OverlayTrigger, Tooltip, Checkbox} from 'react-bootstrap'
+import {Form, Button, FormControl, Table, Modal, OverlayTrigger, Tooltip, FormCheck} from 'react-bootstrap'
 import {submitForm} from 'components/form/FormUtils.jsx'
 import {WebApi} from 'actions'
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx'
@@ -109,13 +109,13 @@ class ExtSystemForm extends AbstractReactComponent {
 
         return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body>
-                <FormInput componentClass="select" label={i18n('admin.extSystem.class')} {...classJ} disabled={id.value}>
+                <FormInput as="select" label={i18n('admin.extSystem.class')} {...classJ} disabled={id.value}>
                     <option key={null}/>
                     {Object.values(EXT_SYSTEM_CLASS).map((i, index) => <option key={index}
                                                                                value={i}>{EXT_SYSTEM_CLASS_LABEL[i]}</option>)}
                 </FormInput>
                 {classJ.value == EXT_SYSTEM_CLASS.ApExternalSystem && <div>
-                    <FormInput componentClass="select" label={i18n('admin.extSystem.type')} {...type} disabled={id.value}>
+                    <FormInput as="select" label={i18n('admin.extSystem.type')} {...type} disabled={id.value}>
                         <option key={null}/>
                         <option value={AP_EXT_SYSTEM_TYPE.INTERPI}>{i18n('admin.extSystem.interpi')}</option>
                     </FormInput>
@@ -124,7 +124,7 @@ class ExtSystemForm extends AbstractReactComponent {
                     <FormInput type="text" label={i18n('admin.extSystem.viewDaoUrl')} {...viewDaoUrl} />
                     <FormInput type="text" label={i18n('admin.extSystem.viewFileUrl')} {...viewFileUrl} />
                     <FormInput type="text" label={i18n('admin.extSystem.viewThumbnailUrl')} {...viewThumbnailUrl} />
-                    <FormInput componentClass="select" label={i18n('admin.extSystem.sendNotification')} {...sendNotification} >
+                    <FormInput as="select" label={i18n('admin.extSystem.sendNotification')} {...sendNotification} >
                         <option key={null} />
                         <option key="true" value={true}>{i18n('admin.extSystem.sendNotification.true')}</option>
                         <option key="false" value={false}>{i18n('admin.extSystem.sendNotification.false')}</option>
@@ -141,7 +141,7 @@ class ExtSystemForm extends AbstractReactComponent {
 
             </Modal.Body>
             <Modal.Footer>
-                <Button type="submit" bsStyle="default" disabled={submitting}>{isUpdate ? i18n('admin.extSystem.submit.edit') : i18n('admin.extSystem.submit.add')}</Button>
+                <Button type="submit" variant="default" disabled={submitting}>{isUpdate ? i18n('admin.extSystem.submit.edit') : i18n('admin.extSystem.submit.add')}</Button>
             </Modal.Footer>
         </Form>
     }

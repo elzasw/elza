@@ -4,7 +4,7 @@ import {WebApi} from 'actions/index.jsx';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, Autocomplete, i18n, Icon, FormInput} from 'components/shared';
-import {Modal, Button, Form, Radio, FormGroup, HelpBlock} from 'react-bootstrap'
+import {Modal, Button, Form, FormCheck, FormGroup} from 'react-bootstrap'
 import {indexById} from 'stores/app/utils.jsx'
 import {submitForm} from 'components/form/FormUtils.jsx'
 import {objectById} from 'stores/app/utils.jsx'
@@ -103,14 +103,14 @@ class RelationClassForm extends AbstractReactComponent {
                 <div className="flex">
                     <div className="flex-2 col">
                         <FormGroup validationState={relationTypeId.touched && relationTypeId.invalid ? 'error' : null}>
-                            <div className="relation-class-select">{relationTypes.map(i => <Radio inline checked {...relationTypeId} value={i.id} onBlur={()=>{/* musí být kvůli chybné implementaci v REDUX */}}>{i.name}</Radio>)}</div>
-                            {relationTypeId.touched && relationTypeId.invalid && <HelpBlock>{relationTypeId.error}</HelpBlock>}
+                            <div className="relation-class-select">{relationTypes.map(i => <FormCheck type={'radio'} inline checked {...relationTypeId} value={i.id} onBlur={()=>{/* musí být kvůli chybné implementaci v REDUX */}} label={i.name} />)}</div>
+                            {relationTypeId.touched && relationTypeId.invalid && <Form.Control.Feedback>{relationTypeId.error}</Form.Control.Feedback>}
                         </FormGroup>
                         {relationType && <div className="relation-entities">
-                            <label className="type">{i18n('party.relation.entityInRelation')}</label><Button bsStyle="action" onClick={() => relationEntities.addField({record:null, roleType: {id: null}})}><Icon glyph="fa-plus" /></Button>
+                            <label className="type">{i18n('party.relation.entityInRelation')}</label><Button variant="action" onClick={() => relationEntities.addField({record:null, roleType: {id: null}})}><Icon glyph="fa-plus" /></Button>
                             {relationEntities.map((i,index) => <div className="relation-row" key={index}>
                                 <div className="type">
-                                    <FormInput componentClass="select" {...i.roleType.id}>
+                                    <FormInput as="select" {...i.roleType.id}>
                                         <option key={0}/>
                                         {roleTypesList && roleTypesList.filter(t => t.id == i.roleType.id.value || t.repeatable || usedRoles.indexOf(t.id) === -1).map(v => {
                                             let disabled = false;
@@ -128,7 +128,7 @@ class RelationClassForm extends AbstractReactComponent {
                                 <div className="record">
                                     <RegistryField disabled={!i.roleType.id.value} partyId={partyId} {...i.record} roleTypeId={i.roleType.id.value} footer={true} footerButtons={false} />
                                 </div>
-                                <Button bsStyle="action" onClick={() => relationEntities.removeField(index)}><Icon glyph="fa-times" /></Button>
+                                <Button variant="action" onClick={() => relationEntities.removeField(index)}><Icon glyph="fa-times" /></Button>
                             </div>)}
                         </div>}
                     </div>
@@ -144,14 +144,14 @@ class RelationClassForm extends AbstractReactComponent {
                         </div>}
                     </div>}
                     <div className="flex-1 col">
-                        <FormInput componentClass="textarea" label={i18n('party.relation.note')} {...note} />
-                        <FormInput componentClass="textarea" label={i18n('party.relation.sources')} {...source} />
+                        <FormInput as="textarea" label={i18n('party.relation.note')} {...note} />
+                        <FormInput as="textarea" label={i18n('party.relation.sources')} {...source} />
                     </div>
                 </div>
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit" disabled={submitting}>{i18n('global.action.store')}</Button>
-                <Button bsStyle="link" onClick={onClose} disabled={submitting}>{i18n('global.action.cancel')}</Button>
+                <Button variant="link" onClick={onClose} disabled={submitting}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>;
     }

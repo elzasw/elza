@@ -3,9 +3,9 @@ import ReactDOM from 'react-dom';
 import {
     Modal,
     Button,
-    Radio,
+    FormCheck,
     FormGroup,
-    ControlLabel,
+    FormLabel,
     Form,
     Col,
     Row,
@@ -49,52 +49,53 @@ class CopyConflictForm extends AbstractReactComponent {
             <Form>
                 <Modal.Body>
                     {scopeError &&
-                    <ControlLabel>
+                    <FormLabel>
                         {i18n('arr.fund.addNode.conflict.scopes', scopeErrors && scopeErrors.join(", "))}
-                    </ControlLabel>}
+                    </FormLabel>}
                     {scopeError && <br />}
                     {fileConflict &&
-                    <ControlLabel>
+                    <FormLabel>
                         {i18n('arr.fund.addNode.conflict.files')} <Icon style={{cursor: 'pointer'}} title={fileConflicts && fileConflicts.join(", ")} glyph="fa-info-circle" />
-                    </ControlLabel>}
+                    </FormLabel>}
                     {fileConflict && <FormGroup>
-                        <Radio
+                        <FormCheck
+                            type={'radio'}
                             disabled={submitting}
                             name="selectResolveTypeFile"
                             checked={this.state.filesConflictResolve === 'USE_TARGET'}
                             onChange={e => {
                                 this.setState({filesConflictResolve: 'USE_TARGET'});
                             }}
-                        >
-                            {i18n('arr.fund.addNode.conflict.useTarget')}
-                        </Radio>
-                        <Radio
+                            label={i18n('arr.fund.addNode.conflict.useTarget')}
+                        />
+                        <FormCheck
+                            type={'radio'}
                             disabled={submitting}
                             name="selectResolveTypeFile"
                             checked={this.state.filesConflictResolve === 'COPY_AND_RENAME'}
                             onChange={e => {
                                 this.setState({filesConflictResolve: 'COPY_AND_RENAME'});
                             }}
-                        >
-                            {i18n('arr.fund.addNode.conflict.rename')}
-                        </Radio>
+                            label={i18n('arr.fund.addNode.conflict.rename')}
+                        />
                     </FormGroup>}
                     {packetConflict &&
-                    <ControlLabel>
+                    <FormLabel>
                         {i18n('arr.fund.addNode.conflict.structure')} <Icon style={{cursor: 'pointer'}} title={packetConflicts && packetConflicts.join(", ")} glyph="fa-info-circle" />
-                    </ControlLabel>}
+                    </FormLabel>}
                     {packetConflict && <FormGroup>
-                        <Radio
+                        <FormCheck
+                            type={'radio'}
                             disabled={submitting}
                             name="selectResolveTypePacket"
                             checked={this.state.structuresConflictResolve === 'USE_TARGET'}
                             onChange={e => {
                                 this.setState({structuresConflictResolve: 'USE_TARGET'});
                             }}
-                        >
-                            {i18n('arr.fund.addNode.conflict.useTarget')}
-                        </Radio>
-                        <Radio
+                            label={i18n('arr.fund.addNode.conflict.useTarget')}
+                        />
+                        <FormCheck
+                            type={'radio'}
                             disabled={submitting}
                             name="selectResolveTypePacket"
                             checked={
@@ -103,9 +104,8 @@ class CopyConflictForm extends AbstractReactComponent {
                             onChange={e => {
                                 this.setState({structuresConflictResolve: 'COPY_AND_RENAME'});
                             }}
-                        >
-                            {i18n('arr.fund.addNode.conflict.rename')}
-                        </Radio>
+                            label={i18n('arr.fund.addNode.conflict.rename')}
+                        />
                     </FormGroup>}
                 </Modal.Body>
                 <Modal.Footer>
@@ -113,7 +113,7 @@ class CopyConflictForm extends AbstractReactComponent {
                     <Button disabled={submitting} type="submit" onClick={this.handleFormSubmit}>
                         {i18n('global.action.store')}
                     </Button>}
-                    <Button disabled={submitting} bsStyle="link" onClick={onClose}>
+                    <Button disabled={submitting} variant="link" onClick={onClose}>
                         {i18n('global.action.cancel')}
                     </Button>
                 </Modal.Footer>

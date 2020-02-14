@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom';
 import {WebApi} from 'actions/index.jsx';
 import {TooltipTrigger, Icon, i18n, AbstractReactComponent, Autocomplete} from 'components/shared';
 import {connect} from 'react-redux'
-import {MenuItem, DropdownButton, Button} from 'react-bootstrap';
+import {Dropdown, DropdownButton, Button} from 'react-bootstrap';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {partyDetailFetchIfNeeded, partyAdd, RELATION_CLASS_CODES, partyListFilter} from 'actions/party/party.jsx'
@@ -117,7 +117,7 @@ class PartyField extends AbstractReactComponent {
         return hasCount || buttons ? <div>
             {buttons && <div className="create-party">
                 <DropdownButton noCaret title={<div><Icon glyph='fa-download' /><span className="create-party-label">{i18n('party.addParty')}</span></div>} id="party-field" >
-                    {refTables.partyTypes.items.map(type => <MenuItem key={'party' + type.id} onClick={() => this.handleCreateParty(type.id)} eventKey={type.id}>{type.name}</MenuItem>)}
+                    {refTables.partyTypes.items.map(type => <Dropdown.Item key={'party' + type.id} onClick={() => this.handleCreateParty(type.id)} eventKey={type.id}>{type.name}</Dropdown.Item>)}
                 </DropdownButton>
                 <Button onClick={this.handleImport} type="button"><Icon glyph='fa-plus' /> {i18n("ribbon.action.party.importExt")}</Button>
             </div>}

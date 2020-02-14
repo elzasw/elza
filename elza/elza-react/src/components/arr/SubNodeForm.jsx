@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import {Icon, i18n, AbstractReactComponent, NoFocusButton } from 'components/shared';
 import AddFileForm from './AddFileForm';
 import {connect} from 'react-redux'
-import {Panel, Accordion} from 'react-bootstrap'
+import {Card, Accordion} from 'react-bootstrap'
 import {indexById} from 'stores/app/utils.jsx'
 import DescItemType from './nodeForm/DescItemType.jsx'
 import {partyDetailFetchIfNeeded, partyAdd} from 'actions/party/party.jsx'
@@ -837,7 +837,10 @@ class SubNodeForm extends AbstractReactComponent {
         let unusedGeneratedItems;    // nepoužité vygenerované PP
         if (unusedItemTypeIds && unusedItemTypeIds.length > 0) {
             unusedGeneratedItems = <Accordion>
-                <Panel header={i18n("arr.output.title.unusedGeneratedItems", unusedItemTypeIds.length)} eventKey="1">
+                <Card eventKey="1">
+                    <Card.Header>i18n("arr.output.title.unusedGeneratedItems", unusedItemTypeIds.length)</Card.Header>
+                    <Accordion.Collapse eventKey={"1"}>
+                    <Card.Body>
                     {unusedItemTypeIds.map((itemTypeId, index) => {
                         const refType = subNodeForm.refTypesMap[itemTypeId];
                         if (!readMode && !closed) {
@@ -846,7 +849,9 @@ class SubNodeForm extends AbstractReactComponent {
                             return <span className="space" key={itemTypeId}>{refType.name} </span>
                         }
                     })}
-                </Panel>
+                    </Card.Body>
+                    </Accordion.Collapse>
+                </Card>
             </Accordion>
         }
 

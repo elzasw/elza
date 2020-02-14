@@ -34,14 +34,14 @@ class IssueForm extends AbstractReactComponent {
         return (
             <Form onSubmit={handleSubmit}>
                 <Modal.Body>
-                    <FormInput componentClass="select" label={i18n('issue.type')} {...issueTypeId}>
+                    <FormInput as="select" label={i18n('issue.type')} {...issueTypeId}>
                         {issueTypes.fetched && issueTypes.data.map(basicOptionMap)}
                     </FormInput>
-                    <FormInput componentClass="textarea" label={i18n('issue.text')} {...description}/>
+                    <FormInput as="textarea" label={i18n('issue.text')} {...description}/>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit">{i18n(update ? 'global.action.update' : 'global.action.add')}</Button>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </Form>
         )

@@ -84,7 +84,7 @@ class UpdateApItemNameFormModal extends AbstractReactComponent {
                     <ApItemNameForm parent={{id:objectId, accessPointId}} />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button bsStyle="link" onClick={this.onClose}>{i18n('global.action.close')}</Button>
+                    <Button variant="link" onClick={this.onClose}>{i18n('global.action.close')}</Button>
                 </Modal.Footer>
             </div>
         )

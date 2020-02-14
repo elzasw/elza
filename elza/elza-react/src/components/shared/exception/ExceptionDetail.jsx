@@ -13,23 +13,23 @@ class ExceptionDetail extends AbstractReactComponent {
                 <Modal.Body>
                     <FormInput type="text" label={i18n('global.exception.detail.code')} readOnly value={data.code} />
                     {data.message && <FormInput label={i18n('global.exception.detail.message')}
-                                                componentClass="textarea"
+                                                as="textarea"
                                                 style={{height: '5em'}}
                                                 readOnly
                                                 value={data.message}/>}
                     {data.stackTrace && <FormInput label={i18n("global.exception.detail.stack")}
-                                                   componentClass="textarea"
+                                                   as="textarea"
                                                    style={{height: '25em'}}
                                                    readOnly
                                                    value={data.stackTrace}/>}
                     {data.properties && <FormInput label={i18n("global.exception.detail.properties")}
-                                                   componentClass="textarea"
+                                                   as="textarea"
                                                    style={{height: '10em'}}
                                                    readOnly
                                                    value={JSON.stringify(data.properties, null, '  ')}/>}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button bsStyle="link" onClick={this.props.onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button variant="link" onClick={this.props.onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
         )

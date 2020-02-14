@@ -56,7 +56,7 @@ class NodeDaosForm extends AbstractReactComponent {
                         />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button bsStyle="link" onClick={() => {
+                    <Button variant="link" onClick={() => {
                         this.props.dispatch(modalDialogHide())
                     }}>{i18n('global.action.close')}</Button>
                 </Modal.Footer>

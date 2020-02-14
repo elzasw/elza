@@ -20,7 +20,7 @@ html, body {
     flex: 1;
 }
 .root-container.with-version{
-    height: calc("100% - "$version-height);
+    height: calc(100% - #{$version-height});
 }
 .version-container{
     height:$version-height;

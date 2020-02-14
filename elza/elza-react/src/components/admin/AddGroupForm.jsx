@@ -39,11 +39,11 @@ class AddGroupForm extends AbstractReactComponent {
             <Modal.Body>
                 <FormInput label={i18n('admin.group.title.name')} type="text" {...name} />
                 <FormInput label={i18n('admin.group.title.code')} type="text" {...code} disabled={!create} />
-                <FormInput componentClass="textarea" label={i18n('admin.group.title.description')} {...description} />
+                <FormInput as="textarea" label={i18n('admin.group.title.description')} {...description} />
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit" disabled={submitting}>{i18n(create ? 'global.action.create' : 'global.action.update')}</Button>
-                <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>
     }

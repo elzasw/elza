@@ -3,7 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {Autocomplete, AbstractReactComponent, i18n, Icon, FormInput, HorizontalLoader} from 'components/shared';
-import {Modal, Button, HelpBlock, FormGroup, Form, Row, Col} from 'react-bootstrap';
+import {Modal, Button, Form, FormGroup, Row, Col} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
@@ -323,9 +323,9 @@ class AddPartyForm extends AbstractReactComponent {
                             </Col>}
 
                             <Col xs={12}>
-                                <label>{i18n('party.name.complements')}</label> <Button bsStyle="action" onClick={() => {partyNameComplements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
+                                <label>{i18n('party.name.complements')}</label> <Button variant="action" onClick={() => {partyNameComplements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
                                 {partyNameComplements.map((complement, index) => <div className="complement" key={'complement' + index}>
-                                    <FormInput componentClass="select" {...complement.complementTypeId}>
+                                    <FormInput as="select" {...complement.complementTypeId}>
                                         <option key='0'/>
                                         {complementsList}
                                     </FormInput>
@@ -334,7 +334,7 @@ class AddPartyForm extends AbstractReactComponent {
                                 </div>)}
                             </Col>
                             <Col xs={12}>
-                                <FormInput componentClass="select" label={i18n('party.name.nameFormType')} {...nameFormType.id}>
+                                <FormInput as="select" label={i18n('party.name.nameFormType')} {...nameFormType.id}>
                                     <option key="null" />
                                     {partyNameFormTypes.items.map((i) => <option value={i.id} key={i.id}>{i.name}</option>)}
                                 </FormInput>
@@ -346,7 +346,7 @@ class AddPartyForm extends AbstractReactComponent {
             <Modal.Footer>
                 {showSubmitTypes && <Button type="submit" onClick={()=>{this.submitType = 'storeAndViewDetail'}} disabled={submitting}>{i18n('global.action.storeAndViewDetail')}</Button>}
                 <Button type="submit" disabled={submitting}>{i18n('global.action.store')}</Button>
-                <Button bsStyle="link" onClick={this.handleClose} disabled={submitting}>{i18n('global.action.cancel')}</Button>
+                <Button variant="link" onClick={this.handleClose} disabled={submitting}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>;
     }

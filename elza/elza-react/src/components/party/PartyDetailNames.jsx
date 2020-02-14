@@ -137,19 +137,19 @@ class PartyDetailNames extends AbstractReactComponent {
         return <div className="party-detail-names">
             <div >
                 <label className="group-label">{i18n("party.detail.formNames")}</label>
-                {canEdit && <Button bsStyle="action" onClick={this.handlePartyNameAdd}><Icon glyph="fa-plus" /></Button>}
+                {canEdit && <Button variant="action" onClick={this.handlePartyNameAdd}><Icon glyph="fa-plus" /></Button>}
             </div>
             <div className="name-group">
                 {party.partyNames.map((partyName, index) =>
                     <div key={partyName.id} className={partyName.prefferedName ? "preffered value-group" : "value-group"}>
                         <div className="value">{this.getPartyName(partyName, partyType)}</div>
                         <div className="actions">
-                            {canEdit && <Button  bsStyle="action" onClick={() => this.handlePartyNameUpdate(partyName)}><Icon glyph="fa-pencil" /></Button>}
+                            {canEdit && <Button  variant="action" onClick={() => this.handlePartyNameUpdate(partyName)}><Icon glyph="fa-pencil" /></Button>}
                             {canEdit
                             && !partyName.prefferedName
                             && <span>
-                                <Button className="delete" bsStyle="action" onClick={() => this.handleDelete(partyName.id)}><Icon glyph="fa-trash" /></Button>
-                                <Button bsStyle="action" onClick={() => this.handleSelectPreffered(partyName.id)}><Icon glyph="fa-star" /></Button>
+                                <Button className="delete" variant="action" onClick={() => this.handleDelete(partyName.id)}><Icon glyph="fa-trash" /></Button>
+                                <Button variant="action" onClick={() => this.handleSelectPreffered(partyName.id)}><Icon glyph="fa-star" /></Button>
                             </span>}
                         </div>
                     </div>)}

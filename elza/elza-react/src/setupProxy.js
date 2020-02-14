@@ -11,4 +11,22 @@ module.exports = function(app) {
             changeOrigin: true
         })
     );
+    app.use(
+        '/login',
+        proxy({
+            target: 'http://localhost:8080',
+            target: 'http://elza-depend.e1.marbes.cz',
+            ws: true,
+            changeOrigin: true
+        })
+    );
+    app.use(
+        '/stomp',
+        proxy({
+            target: 'http://localhost:8080',
+            target: 'http://elza-depend.e1.marbes.cz',
+            ws: true,
+            changeOrigin: true
+        })
+    );
 };

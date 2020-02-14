@@ -59,9 +59,9 @@ class DescItemFragmentRef extends AbstractReactComponent {
     render() {
         const {descItem, locked, readMode, cal, typePrefix, ...otherProps} = this.props;
         return <div className='desc-item-value desc-item-value-parts'>
-            {!locked && !readMode && descItem.value == null && <Button bsStyle="action" block ref="button" onClick={this.handleFragmentCreate}><Icon glyph="fa-plus-circle"/></Button>}
+            {!locked && !readMode && descItem.value == null && <Button variant="action" block ref="button" onClick={this.handleFragmentCreate}><Icon glyph="fa-plus-circle"/></Button>}
             {descItem.value !== null && <span>{descItem.fragment && descItem.fragment.value}</span>}
-            {!locked && !readMode && descItem.fragment && <Button bsStyle="action" ref="button" onClick={this.handleFragmentEdit}><Icon glyph="fa-pencil"/></Button>}
+            {!locked && !readMode && descItem.fragment && <Button variant="action" ref="button" onClick={this.handleFragmentEdit}><Icon glyph="fa-pencil"/></Button>}
         </div>
     }
 }

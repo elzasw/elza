@@ -347,7 +347,7 @@ export function fundOutputStateChangeToastr(versionId, entityId, state) {
                 return;
             }
 
-            const showBtn = <Button bsStyle="link" onClick={() => {
+            const showBtn = <Button variant="link" onClick={() => {
                 dispatch(routerNavigate('/arr/output'));
                 dispatch(fundOutputSelectOutput(versionId, entityId))
             }}>{i18n('change.arr.output.clickToShow')}</Button>;

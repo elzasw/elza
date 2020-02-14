@@ -3,7 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {Autocomplete, AbstractReactComponent, i18n, Icon, FormInput} from 'components/shared';
-import {Modal, Button, Form, ControlLabel, FormGroup} from 'react-bootstrap';
+import {Modal, Button, Form, FormLabel, FormGroup} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import './AddDescItemTypeForm.scss';
@@ -68,7 +68,7 @@ class AddDescItemTypeForm extends AbstractReactComponent {
                     <div>
                         {possibleItemTypes.map((node, index) => {
                             return <FormGroup key={index}>
-                                <ControlLabel>{node.name}</ControlLabel>
+                                <FormLabel>{node.name}</FormLabel>
                                 <div>
                                     {node.children.map(item => {
                                         return <a className="add-link btn btn-link" key={item.id} onClick={() => {
@@ -97,7 +97,7 @@ class AddDescItemTypeForm extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" disabled={submitting}>{i18n('global.action.add')}</Button>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </Form>
     }

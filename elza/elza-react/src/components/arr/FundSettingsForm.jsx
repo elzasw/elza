@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n} from 'components/shared';
-import {Modal, Button, Checkbox, Form, ControlLabel, FormControl} from 'react-bootstrap';
+import {Modal, Button, FormCheck, Form, FormLabel, FormControl} from 'react-bootstrap';
 import {indexById, objectById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import {visiblePolicyFetchIfNeeded} from 'actions/arr/visiblePolicy.jsx'
@@ -35,7 +35,7 @@ class FundSettingsForm extends AbstractReactComponent {
                             <h4>{i18n('arr.fund.settings.panel.center.title')}</h4>
                             {panels.map((val, index) =>
                                 <div key={index}>
-                                    <Checkbox {...val.checked} value={true}>{val.name.initialValue}</Checkbox>
+                                    <FormCheck {...val.checked} value={true}>{val.name.initialValue}</FormCheck>
                                 </div>
                             )}
                         </div>
@@ -43,14 +43,14 @@ class FundSettingsForm extends AbstractReactComponent {
                             <h4>{i18n('arr.fund.settings.panel.right.title')}</h4>
                             {tabs.map((val, index) =>
                                 <div key={index}>
-                                    <Checkbox {...val.checked} value={true}>{val.name.initialValue}</Checkbox>
+                                    <FormCheck {...val.checked} value={true}>{val.name.initialValue}</FormCheck>
                                 </div>
                             )}
                         </div>
                         <div className="rules">
                             <h4>{i18n('arr.fund.settings.rules')}</h4>
-                            <ControlLabel>{i18n('arr.fund.settings.rules.strictMode')}</ControlLabel>
-                            <FormControl {...strictMode.value} componentClass="select" placeholder="select">
+                            <FormLabel>{i18n('arr.fund.settings.rules.strictMode')}</FormLabel>
+                            <FormControl {...strictMode.value} as="select" placeholder="select">
                                 <option value="">{i18n('arr.fund.settings.rules.strictMode.default')}</option>
                                 <option value="true">{i18n('arr.fund.settings.rules.strictMode.true')}</option>
                                 <option value="false">{i18n('arr.fund.settings.rules.strictMode.false')}</option>
@@ -60,7 +60,7 @@ class FundSettingsForm extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit">{i18n('visiblePolicy.action.save')}</Button>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </Form>
     }

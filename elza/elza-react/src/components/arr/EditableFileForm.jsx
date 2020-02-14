@@ -59,16 +59,16 @@ class EditableFileForm extends AbstractReactComponent {
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
                         <FormInput type="text" label={i18n('dms.file.name')} {...name} {...decorateFormField(name)} />
-                        <FormInput label={i18n('dms.file.mimeType')} componentClass="select" {...mimeType} {...decorateFormField(mimeType)}>
+                        <FormInput label={i18n('dms.file.mimeType')} as="select" {...mimeType} {...decorateFormField(mimeType)}>
                             <option value={""}></option>
                             {dms.fetched && dms.rows.map(x => <option value={x}>{x}</option>)}
                         </FormInput>
                         <FormInput type="text" label={i18n('dms.file.fileName')} {...fileName} {...decorateFormField(fileName)} />
-                        <FormInput componentClass="textarea" label={i18n('dms.file.content')} {...content} {...decorateFormField(content)} />
+                        <FormInput as="textarea" label={i18n('dms.file.content')} {...content} {...decorateFormField(content)} />
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit">{i18n(create ? 'global.action.add' : 'global.action.update')}</Button>
-                        <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                        <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                     </Modal.Footer>
                 </Form>
             </div>

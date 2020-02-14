@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {Modal, Button, Checkbox, Form} from 'react-bootstrap';
+import {Modal, Button, FormCheck, Form} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx';
 import {decorateFormField} from 'components/form/FormUtils.jsx';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
@@ -99,7 +99,7 @@ class ImportForm extends AbstractReactComponent {
                             <Modal.Body>
                                 {
                                     <div>
-                                        <FormInput componentClass="select" label={i18n('import.transformationName')} {...transformationName}>
+                                        <FormInput as="select" label={i18n('import.transformationName')} {...transformationName}>
                                             <option key='blankName'/>
                                             {this.state.transformationNames.map((i, index)=> {
                                                 return <option key={index+'name'} value={i}>{i}</option>
@@ -136,7 +136,7 @@ class ImportForm extends AbstractReactComponent {
                             </Modal.Body>
                             <Modal.Footer>
                                 <Button type="submit" onClick={handleSubmit(this.save)}>{i18n('global.action.import')}</Button>
-                                <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                                <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                             </Modal.Footer>
                         </Form>
                     </div>

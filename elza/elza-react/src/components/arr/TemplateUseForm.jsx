@@ -1,7 +1,7 @@
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
-import {Button, Checkbox, Form, Modal} from 'react-bootstrap';
+import {Button, FormCheck, Form, Modal} from 'react-bootstrap';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 
 
@@ -44,21 +44,21 @@ class TemplateUseForm extends AbstractReactComponent {
             <div className="todo">
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
-                        <FormInput disabled={submitting} componentClass="select" label={i18n('arr.fund.useTemplate.name')} {...name} {...decorateFormField(name)} >
+                        <FormInput disabled={submitting} as="select" label={i18n('arr.fund.useTemplate.name')} {...name} {...decorateFormField(name)} >
                             <option value={""} key="no-select">{i18n('global.action.select')}</option>
                             {templates.map(template => <option value={template} key={template}>{template}</option>)}
                         </FormInput>
-                        <Checkbox
+                        <FormCheck
                             disabled={submitting}
                             {...replaceValues}
                             inline
                         >
                             {i18n('arr.fund.useTemplate.replaceValues')}
-                        </Checkbox>
+                        </FormCheck>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit">{i18n('global.action.use')}</Button>
-                        <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                        <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                     </Modal.Footer>
                 </Form>
             </div>
