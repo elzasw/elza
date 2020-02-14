@@ -1,266 +1,343 @@
 import PropTypes from 'prop-types';
-import React from "react";
-import ReactDOM from "react-dom";
-import utils from "./utils";
-import Loading from "../loading/Loading";
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
+import utils from './utils';
+import Loading from '../loading/Loading';
+import {FunctionComponent} from 'react';
+import {ComponentClass} from 'react';
 
 const DEFAULT_ITEM_HEIGHT = 16;
 
-// TODO React 16 refactor createClass
-var VirtualList = React.createClass({
-    propTypes: {
-        items: PropTypes.array,   // v případě, že máme položky na klientovi, je zde seznam všech položek
-        lazyItemsCount: PropTypes.number,  //  v případě, že máme položky jen na serveru, zde je počet položek
+interface IndexInterface {
+    index: number;
+}
+
+type Props = {
+    /** v případě, že máme položky na klientovi, je zde seznam všech položek */
+    items?: any[];
+    /** v případě, že máme položky jen na serveru, zde je počet položek */
+    lazyItemsCount?: number;
+    itemHeight?: number;
+    /** pokud je změněn, provede se scroll na daný index - lépe použít objekt, protože při stejném indexu lze kvůli odscrolování změnit referenci na objekt */
+    scrollToIndex: number | IndexInterface;
+    renderItem: () => React.ReactNode;
+    onViewChange?: (firstIndex: number, lastIndex: number) => void;
+    container: any;
+    tagName: FunctionComponent<any> | ComponentClass<any> | string;
+    scrollDelay?: number;
+    itemBuffer?: number;
+    scrollTopPadding: number;
+    fetching: boolean;
+};
+
+type State = {
+    items?: any[];
+    bufferStart?: number;
+    height?: number;
+    itemHeight?: number;
+    isMounted: boolean;
+    prevFirstItemIndex?: number;
+};
+
+class VirtualList extends React.Component<Props, State> {
+    private onScrollDebounced: Function;
+    private container: Element;
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            ...this.getVirtualState(this.props, false, {prevFirstItemIndex: -1, isMounted: false}),
+            isMounted: false,
+            itemHeight: this.props.itemHeight || DEFAULT_ITEM_HEIGHT,
+        };
+    }
+
+    static propTypes = {
+        items: PropTypes.array,
+        lazyItemsCount: PropTypes.number,
         itemHeight: PropTypes.number,
-        scrollToIndex: PropTypes.oneOfType([ PropTypes.number, PropTypes.shape({ index: PropTypes.number }) ]), // pokud je změněn, provede se scroll na daný index - lépe použít objekt, protože při stejném indexu lze kvůli odscrolování změnit referenci na objekt
+        scrollToIndex: PropTypes.oneOfType([PropTypes.number, PropTypes.shape({index: PropTypes.number})]),
         renderItem: PropTypes.func.isRequired,
         onViewChange: PropTypes.func,
         container: PropTypes.object.isRequired,
         tagName: PropTypes.string.isRequired,
         scrollDelay: PropTypes.number,
-        itemBuffer: PropTypes.number
-    },
-    getDefaultProps: function() {
-        return {
-            container: typeof window !== 'undefined' ? window : undefined,
-            tagName: 'div',
-            scrollDelay: 0,
-            itemBuffer: 0,
-            scrollTopPadding: 0,
+        itemBuffer: PropTypes.number,
+        scrollTopPadding: PropTypes.number,
+    };
+
+    static defaultProps = {
+        container: typeof window !== 'undefined' ? window : undefined,
+        tagName: 'div',
+        scrollDelay: 0,
+        itemBuffer: 0,
+        scrollTopPadding: 0,
+        fetching: false,
+    };
+
+    static getItems = function(viewTop, viewHeight, listTop, itemHeight, itemCount, itemBuffer) {
+        if (itemCount === 0 || itemHeight === 0) {
+            return {
+                itemsInView: 0,
+            };
+        }
+
+        const listHeight = itemHeight * itemCount;
+
+        const listBox = {
+            top: listTop,
+            height: listHeight,
+            bottom: listTop + listHeight,
         };
-    },
-    getVirtualState: function(props, isMounted, currState) {    // currState - aktuální stav komponenty
+
+        const bufferHeight = itemBuffer * itemHeight;
+        viewTop -= bufferHeight;
+        viewHeight += bufferHeight * 2;
+
+        const viewBox = {
+            top: viewTop,
+            bottom: viewTop + viewHeight,
+        };
+
+        // list is below viewport
+        if (viewBox.bottom < listBox.top) {
+            return {
+                //firstItemIndex: 0,
+                itemsInView: 0,
+                //lastItemIndex: 0
+            };
+        }
+
+        // list is above viewport
+        if (viewBox.top > listBox.bottom) {
+            return {
+                firstItemIndex: 0,
+                itemsInView: 0,
+                lastItemIndex: 0,
+            };
+        }
+
+        const listViewBox = VirtualList.getBox(viewBox, listBox);
+
+        const firstItemIndex = Math.max(0, Math.floor(listViewBox.top / itemHeight));
+        const lastItemIndex = Math.ceil(listViewBox.bottom / itemHeight) - 1;
+
+        const itemsInView = lastItemIndex - firstItemIndex + 1;
+
+        const result = {
+            firstItemIndex: firstItemIndex,
+            lastItemIndex: lastItemIndex,
+            itemsInView: itemsInView,
+        };
+
+        return result;
+    };
+
+    static getBox = function(view, list) {
+        list.height = list.height || list.bottom - list.top;
+
+        return {
+            top: Math.max(0, Math.min(view.top - list.top)),
+            bottom: Math.max(0, Math.min(list.height, view.bottom - list.top)),
+        };
+    };
+
+    getVirtualState = (props: Props, isMounted: boolean, currState: State): State => {
         // default values
-        var state = {
+        const state: State = {
+            ...currState,
             items: [],
             bufferStart: 0,
             height: 0,
         };
 
-        const lazyItems = props.items ? false : true
-        const itemsCount = lazyItems ? props.lazyItemsCount : props.items.length
-        let itemHeight = currState.itemHeight;
+        const lazyItems = !props.items;
+        const itemsCount = lazyItems ? props.lazyItemsCount! : props.items!.length;
+        let itemHeight = currState.itemHeight || -1;
+
         // early return if nothing to render
-        if (typeof props.container === 'undefined' || itemsCount === 0 || itemHeight <= 0 || !isMounted) return state;
+        if (typeof props.container === 'undefined' || itemsCount === 0 || itemHeight <= 0 || !isMounted) {
+            return state;
+        }
 
         state.height = itemsCount * itemHeight;
 
-        var container = props.container;
+        const container = props.container;
 
-        var viewHeight = typeof container.innerHeight !== 'undefined' ? container.innerHeight : container.clientHeight;
+        const viewHeight =
+            typeof container.innerHeight !== 'undefined' ? container.innerHeight : container.clientHeight;
 
         // Při změně položek ve virtuallistu je problém, že se nepřekreslí, pokud si virtual list "myslí", že je oblast pro kreslení velká, začne vše fungovat
         // console.log(container)   // doresime pozdeji
         // viewHeight = 100000;
 
         // no space to render
-        if (viewHeight <= 0) return state;
+        if (viewHeight <= 0) {
+            return state;
+        }
 
         //var list = this.getDOMNode();
-        var list = ReactDOM.findDOMNode(this)
+        const list = ReactDOM.findDOMNode(this);
 
-        var offsetTop = utils.topDifference(list, container);
+        const offsetTop = utils.topDifference(list, container);
 
-        var viewTop = typeof container.scrollY !== 'undefined' ? container.scrollY : container.scrollTop;
+        const viewTop = typeof container.scrollY !== 'undefined' ? container.scrollY : container.scrollTop;
 
-        var renderStats = VirtualList.getItems(viewTop, viewHeight, offsetTop, itemHeight, itemsCount, props.itemBuffer);
+        const renderStats = VirtualList.getItems(
+            viewTop,
+            viewHeight,
+            offsetTop,
+            itemHeight,
+            itemsCount,
+            props.itemBuffer,
+        );
 
         // no items to render
-        if (renderStats.itemsInView.length === 0) return state;
+        if (renderStats.itemsInView === 0) {
+            return state;
+        }
 
+        // TODO @stanekpa tahle část vlastně nějak nemohla dávat smysl. Možná že už čekáme že tam budou data.
         if (lazyItems) {
-            state.items = []
-            for (var a=renderStats.firstItemIndex; a < renderStats.lastItemIndex + 1 ; a++) {
-                state.items.push(a)
+            state.items = [];
+            const firstIndex = renderStats.firstItemIndex!;
+            const lastIndex = renderStats.lastItemIndex!;
+            for (let a = firstIndex; a < lastIndex + 1; a++) {
+                state.items.push(a);
             }
         } else {
-            state.items = props.items.slice(renderStats.firstItemIndex, renderStats.lastItemIndex + 1);
+            state.items = props.items!.slice(renderStats.firstItemIndex, renderStats.lastItemIndex! + 1);
         }
-        state.bufferStart = renderStats.firstItemIndex * itemHeight;
+        state.bufferStart = renderStats.firstItemIndex! * itemHeight;
 
-        state.prevFirstItemIndex = renderStats.firstItemIndex
+        state.prevFirstItemIndex = renderStats.firstItemIndex;
 
         if (renderStats.firstItemIndex !== currState.prevFirstItemIndex) {
-            const {onViewChange} = this.props
-            onViewChange && onViewChange(renderStats.firstItemIndex, renderStats.lastItemIndex)
+            const {onViewChange} = this.props;
+            onViewChange && onViewChange(renderStats.firstItemIndex!, renderStats.lastItemIndex!);
         }
 
         return state;
-    },
-    getInitialState: function() {
-        return {
-            ...this.getVirtualState(this.props, false, {prevFirstItemIndex: -1}),
-            isMounted: false,
-            itemHeight: this.props.itemHeight || DEFAULT_ITEM_HEIGHT
+    };
+
+    componentWillReceiveProps(nextProps) {
+        const state = this.getVirtualState(nextProps, this.state.isMounted, this.state);
+        let itemHeight = this.state.itemHeight!;
+        if (this.onScrollDebounced) {
+            this.props.container.removeEventListener('scroll', this.onScrollDebounced);
         }
-    },
-    shouldComponentUpdate: function(nextProps, nextState) {
-        return true;
-    },
-    componentWillReceiveProps: function(nextProps) {
-        var state = this.getVirtualState(nextProps, this.state.isMounted, this.state);
-        let itemHeight = this.state.itemHeight;
-        this.props.container.removeEventListener('scroll', this.onScrollDebounced);
 
         this.onScrollDebounced = utils.debounce(this.onScroll, nextProps.scrollDelay, false);
 
         nextProps.container.addEventListener('scroll', this.onScrollDebounced);
 
         if (typeof nextProps.scrollToIndex !== 'undefined' && this.props.scrollToIndex !== nextProps.scrollToIndex) {
-            var scrollTopPadding = this.props.scrollTopPadding || 0
-
-            const scrollToIndexNum = typeof nextProps.scrollToIndex === "number" ? nextProps.scrollToIndex : (nextProps.scrollToIndex !== null ? nextProps.scrollToIndex.index : null);
+            const scrollToIndexNum =
+                typeof nextProps.scrollToIndex === 'number'
+                    ? nextProps.scrollToIndex
+                    : nextProps.scrollToIndex !== null
+                    ? nextProps.scrollToIndex.index
+                    : null;
 
             if (scrollToIndexNum !== null) {
                 this.setState(state, () => {
-                    var box = this.container;
-                    var itemTop = scrollToIndexNum * itemHeight + this.props.scrollTopPadding
-
-                    var from = this.state.bufferStart + this.props.scrollTopPadding
-                    var to = from + box.parentNode.clientHeight - 2*this.props.scrollTopPadding
+                    const box = this.container;
+                    const itemTop = scrollToIndexNum * itemHeight + this.props.scrollTopPadding;
+                    const from = this.state.bufferStart! + this.props.scrollTopPadding;
+                    const boxParent = box.parentNode! as Element;
+                    const to = from + boxParent.clientHeight - 2 * this.props.scrollTopPadding;
 
                     //console.log('itemTop', itemTop, 'from', from, 'to', to, 'itemHeight', this.props.itemHeight)
                     if (itemTop <= from) {
                         if (itemTop - itemHeight < this.props.scrollTopPadding) {
-                            box.parentNode.scrollTop = 0
+                            boxParent.scrollTop = 0;
                         } else {
-                            box.parentNode.scrollTop = itemTop - itemHeight  // chceme alespon o jednu vice, aby nebyla vybrana moc nahore
+                            boxParent.scrollTop = itemTop - itemHeight; // chceme alespon o jednu vice, aby nebyla vybrana moc nahore
                         }
                     } else if (itemTop + itemHeight > to) {
                         // box.parentNode.scrollTop = itemTop + this.props.itemHeight  // chceme alespon o jednu vice, aby nebyla vybrana moc dole
-                        box.parentNode.scrollTop = itemTop - itemHeight
+                        boxParent.scrollTop = itemTop - itemHeight;
                     }
                 });
             }
         } else {
             this.setState(state);
         }
-    },
-    componentDidUpdate: function(prevProps) {
-        if(!this.props.itemHeight){
+    }
+
+    componentDidUpdate(prevProps) {
+        if (!this.props.itemHeight) {
             this.updateItemHeightIfChanged();
         }
-    },
-    updateItemHeightIfChanged: function() {
+    }
+
+    updateItemHeightIfChanged = () => {
         let itemNode = this.container && this.container.children[0];
-        if(itemNode){
+        if (itemNode) {
             let itemHeight = this.getItemHeight(itemNode);
-            if(itemHeight !== this.state.itemHeight){
+            if (itemHeight !== this.state.itemHeight) {
                 let state = {
                     ...this.state,
                     itemHeight: itemHeight,
-                    itemsRendered: true
+                    itemsRendered: true,
                 };
                 let virtState = this.getVirtualState(this.props, this.state.isMounted, state);
                 state = {
                     ...state,
-                    ...virtState
+                    ...virtState,
                 };
                 this.setState(state);
             }
         }
-    },
-    componentWillMount: function() {
+    };
+    componentWillMount() {
         this.onScrollDebounced = utils.debounce(this.onScroll, this.props.scrollDelay, false);
-    },
-    componentDidMount: function() {
+    }
+    componentDidMount() {
         var state = this.getVirtualState(this.props, true, this.state);
         this.setState({
             ...state,
-            isMounted: true
-        })
+            isMounted: true,
+        });
 
         this.props.container.addEventListener('scroll', this.onScrollDebounced);
-    },
-    getItemHeight: function(element) {
+    }
+    getItemHeight = element => {
         return this.props.itemHeight || element.clientHeight;
-    },
-    componentWillUnmount: function() {
+    };
+    componentWillUnmount() {
         this.props.container.removeEventListener('scroll', this.onScrollDebounced);
-    },
-    onScroll: function() {
+    }
+    onScroll = () => {
         var state = this.getVirtualState(this.props, this.state.isMounted, this.state);
 
         this.setState(state);
-    },
+    };
     // in case you need to get the currently visible items
-    visibleItems: function() {
+    visibleItems = () => {
         return this.state.items;
-    },
-    render: function() {
+    };
+    render() {
+        const {tagName, fetching} = this.props;
+        const Tag = tagName;
         let content;
-        if (this.props.fetching && this.props.fetching === true) {
+        if (fetching || !this.state.items) {
             content = <Loading />;
         } else {
             content = this.state.items.map(this.props.renderItem);
         }
         return (
-            <this.props.tagName className="virtual-list" ref={(container)=>{this.container = container;}} style={{boxSizing: 'border-box', height: this.state.height, paddingTop: this.state.bufferStart}} >
+            <Tag
+                className="virtual-list"
+                ref={container => {
+                    this.container = container;
+                }}
+                style={{boxSizing: 'border-box', height: this.state.height, paddingTop: this.state.bufferStart}}
+            >
                 {content}
-            </this.props.tagName>
+            </Tag>
         );
     }
-});
-
-VirtualList.getBox = function(view, list) {
-    list.height = list.height || list.bottom - list.top;
-
-    return {
-        top: Math.max(0, Math.min(view.top - list.top)),
-        bottom: Math.max(0, Math.min(list.height, view.bottom - list.top))
-    };
-};
-
-VirtualList.getItems = function(viewTop, viewHeight, listTop, itemHeight, itemCount, itemBuffer) {
-    if (itemCount === 0 || itemHeight === 0) return {
-        itemsInView: 0
-    };
-
-    var listHeight = itemHeight * itemCount;
-
-    var listBox = {
-        top: listTop,
-        height: listHeight,
-        bottom: listTop + listHeight
-    };
-
-    var bufferHeight = itemBuffer * itemHeight;
-    viewTop -= bufferHeight;
-    viewHeight += bufferHeight * 2;
-
-    var viewBox = {
-        top: viewTop,
-        bottom: viewTop + viewHeight
-    };
-
-    // list is below viewport
-    if (viewBox.bottom < listBox.top) return {
-        //firstItemIndex: 0,
-        itemsInView: 0,
-        //lastItemIndex: 0
-    };
-
-    // list is above viewport
-    if (viewBox.top > listBox.bottom) return {
-        firstItemIndex: 0,
-        itemsInView: 0,
-        lastItemIndex: 0
-    };
-
-    var listViewBox = VirtualList.getBox(viewBox, listBox);
-
-    var firstItemIndex = Math.max(0,  Math.floor(listViewBox.top / itemHeight));
-    var lastItemIndex = Math.ceil(listViewBox.bottom / itemHeight) - 1;
-
-    var itemsInView = lastItemIndex - firstItemIndex + 1;
-
-    var result = {
-        firstItemIndex: firstItemIndex,
-        lastItemIndex: lastItemIndex,
-        itemsInView: itemsInView,
-    };
-
-    return result;
-};
+}
 
 export default VirtualList;
