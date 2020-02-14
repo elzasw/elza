@@ -42,7 +42,7 @@ class ArrHistoryForm extends AbstractReactComponent {
     componentDidMount() {
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
     }
 
     renderItemContent = (item) => {

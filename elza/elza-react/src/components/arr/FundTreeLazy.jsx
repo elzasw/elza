@@ -32,7 +32,7 @@ class FundTreeLazy extends AbstractReactComponent {
         onLinkClick:null
     };
 
-    componentWillMount(){
+    UNSAFE_componentWillMount(){
         Utils.addShortcutManager(this,defaultKeymap);
     }
     getChildContext() {

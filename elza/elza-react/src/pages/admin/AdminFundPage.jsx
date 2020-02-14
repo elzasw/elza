@@ -30,7 +30,7 @@ class AdminFundPage extends AbstractReactComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(fundsFetchIfNeeded());
         if (nextProps.funds.rows !== this.props.funds.rows) {
             this.setState({fundRows: this.getFundRows(nextProps)});

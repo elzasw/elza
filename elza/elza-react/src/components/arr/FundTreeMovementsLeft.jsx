@@ -26,7 +26,7 @@ class FundTreeMovementsLeft extends AbstractReactComponent {
         this.requestFundTreeData(versionId, expandedIds);
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const {versionId, expandedIds} = nextProps;
         this.requestFundTreeData(versionId, expandedIds);
     }

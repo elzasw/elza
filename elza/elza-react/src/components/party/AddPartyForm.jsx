@@ -120,7 +120,7 @@ class AddPartyForm extends AbstractReactComponent {
         initialized: false,
     };
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.dataRefresh(nextProps);
     }
 

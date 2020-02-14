@@ -101,7 +101,7 @@ class ExtImportSearch extends AbstractReactComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(apExtSystemListFetchIfNeeded());
         if (this.props.extSystems === null && nextProps.extSystems !== null && nextProps.extSystems.length === 1) {
             this.props.fields.systemId.onChange(nextProps.extSystems[0].id);
@@ -257,7 +257,7 @@ class ExtImportForm extends AbstractReactComponent {
         }
     };
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (this.props.fields.interpiRecordId.value !== nextProps.fields.interpiRecordId.value && nextProps.fields.interpiRecordId.value) {
             const {results} = this.state;
             const record = objectById(results, nextProps.fields.interpiRecordId.value, 'recordId');

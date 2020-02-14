@@ -27,7 +27,7 @@ class AdminPackagesList extends AbstractReactComponent {
         this.props.dispatch(deletePackage(code));
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(getPackagesFetchIfNeeded());
     }
 

@@ -16,7 +16,7 @@ class ItemTypeSpec extends AbstractReactComponent {
         this.state = this.getStateFromProps(props);
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         // Při změně hodnoty inicializujeme filtr položek na aktuálne vybranou položku
         if (this.props.descItem.specId !== nextProps.specId) {  // při externí změně aktualizujeme seznam položek
             this.setState(this.getStateFromProps(nextProps));

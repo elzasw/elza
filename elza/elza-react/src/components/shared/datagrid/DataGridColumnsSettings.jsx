@@ -40,7 +40,7 @@ class DataGridColumnsSettings extends AbstractReactComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
     }
 
     handleChangeOrder(from, to) {

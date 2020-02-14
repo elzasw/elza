@@ -72,7 +72,7 @@ const FIELDS_BY_PARTY_TYPE_CODE = {
 class PartyDetail extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
-    componentWillMount(){
+    UNSAFE_componentWillMount(){
         Utils.addShortcutManager(this,defaultKeymap);
     }
     getChildContext() {
@@ -136,7 +136,7 @@ class PartyDetail extends AbstractReactComponent {
         this.props.initForm(this.handlePartyUpdate);
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.fetchIfNeeded(nextProps);
         this.trySetFocus(nextProps);
         this.updateStateFromProps(nextProps);

@@ -26,7 +26,7 @@ class AdminExtSystemList extends AbstractReactComponent {
         this.trySetFocus()
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.fetchIfNeeded(nextProps);
         this.trySetFocus(nextProps);
     }

@@ -62,9 +62,9 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
         super.componentDidMount();
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(refRuleSetFetchIfNeeded());
-        super.componentWillReceiveProps(nextProps);
+        super.UNSAFE_componentWillReceiveProps(nextProps);
     }
 
     /**

@@ -35,7 +35,7 @@ class AppRouter extends AbstractReactComponent {
         localRouterHistory.push(pathname);
     };
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.changeRouteIfNeeded(nextProps.routerStore);
     }
 

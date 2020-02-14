@@ -68,7 +68,7 @@ class ApItemNameForm extends React.Component<Props & DispatchProps, State> {
     componentDidMount() {
         this.props.dispatch(apNameFormActions.fundSubNodeFormFetchIfNeeded(this.props.parent))
     }
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         nextProps.dispatch(apNameFormActions.fundSubNodeFormFetchIfNeeded(this.props.parent))
     }
 

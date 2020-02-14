@@ -40,7 +40,7 @@ class IssueLists extends AbstractReactComponent {
         this.props.dispatch(issuesActions.protocolsConfig.fetchIfNeeded(this.props.fundId, true));
     }
 
-    componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
+    UNSAFE_componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
         nextProps.dispatch(issuesActions.protocolsConfig.fetchIfNeeded(this.props.fundId));
     }
 

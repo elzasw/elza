@@ -43,7 +43,7 @@ class FundOutputFunctions extends AbstractReactComponent {
         this.props.dispatch(fundActionFetchConfigIfNeeded(versionId));
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const {versionId, outputId} = this.props;
         this.props.dispatch(fetchFundOutputFunctionsIfNeeded(versionId, outputId));
         this.props.dispatch(fundActionFetchConfigIfNeeded(versionId));

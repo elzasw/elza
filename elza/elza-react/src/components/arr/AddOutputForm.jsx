@@ -41,7 +41,7 @@ class AddOutputForm extends AbstractReactComponent {
         return errors;
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(outputTypesFetchIfNeeded());
         if (nextProps.fields.outputTypeId.value) {
             const index = indexById(nextProps.outputTypes, nextProps.fields.outputTypeId.value);

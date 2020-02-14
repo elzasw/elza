@@ -379,7 +379,7 @@ class AddNodeForm extends AbstractReactComponent {
         this.fetchScopeList();
     }
 
-    componentWillReceiveProps(nextProps){
+    UNSAFE_componentWillReceiveProps(nextProps){
         const errors = this.validate(nextProps, this.state);
         if(errors.length === 0){
             this.setState({ valid: true });

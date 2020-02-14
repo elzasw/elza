@@ -37,7 +37,7 @@ class OutputInlineForm extends AbstractReactComponent {
 
     state = {};
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const {fields: {outputTypeId}, outputTypes} = nextProps;
         this.props.dispatch(outputTypesFetchIfNeeded());
         if (outputTypeId.value) {

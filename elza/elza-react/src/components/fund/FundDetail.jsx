@@ -26,7 +26,7 @@ class FundDetail extends AbstractReactComponent {
         this.props.dispatch(refRuleSetFetchIfNeeded());
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
     }
 
     handleShowInArr(version) {

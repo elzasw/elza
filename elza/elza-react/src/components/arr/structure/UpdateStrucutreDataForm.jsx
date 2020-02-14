@@ -18,12 +18,12 @@ class UpdateStructureDataForm extends AbstractReactComponent {
         descItemFactory: PropTypes.object.isRequired
     };
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         const {fundVersionId, id} = this.props;
         this.props.dispatch(structureNodeFormFetchIfNeeded(fundVersionId, id));
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const {fundVersionId, id} = nextProps;
         this.props.dispatch(structureNodeFormFetchIfNeeded(fundVersionId, id));
     }

@@ -39,7 +39,7 @@ class Scope extends AbstractReactComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(requestScopesIfNeeded(nextProps.versionId));
 
         const {store: {scopes}, versionId} = nextProps;

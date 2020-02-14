@@ -31,7 +31,7 @@ const RunActionForm = class RunActionForm extends AbstractReactComponent {
         this.state = {};
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(fundActionFetchConfigIfNeeded(nextProps.versionId));
     }
 

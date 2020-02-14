@@ -40,7 +40,7 @@ import {WebApi} from "../../actions";
 class RegistryPage extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
-    componentWillMount(){
+    UNSAFE_componentWillMount(){
         Utils.addShortcutManager(this,defaultKeymap);
     }
     getChildContext() {
@@ -60,7 +60,7 @@ class RegistryPage extends AbstractReactComponent {
         this.initData();
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.initData(nextProps);
     }
 

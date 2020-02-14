@@ -34,7 +34,7 @@ class PartyList extends AbstractReactComponent {
         this.trySetFocus()
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.fetchIfNeeded(nextProps);
         this.trySetFocus(nextProps);
         if (nextProps.maxSize !== this.props.maxSize) {

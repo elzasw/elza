@@ -34,7 +34,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
         );
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(groupsFetchIfNeeded())
         this.props.dispatch(groupsGroupDetailFetchIfNeeded())
     }

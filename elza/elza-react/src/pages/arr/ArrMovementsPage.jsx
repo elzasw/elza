@@ -81,8 +81,8 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
         super.componentDidMount();
     }
 
-    componentWillReceiveProps(nextProps) {
-        super.componentWillReceiveProps(nextProps);
+    UNSAFE_componentWillReceiveProps(nextProps) {
+        super.UNSAFE_componentWillReceiveProps(nextProps);
     }
 
     getDestNode() {

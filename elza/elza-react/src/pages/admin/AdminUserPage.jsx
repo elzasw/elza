@@ -56,7 +56,7 @@ class AdminUserPage extends AbstractReactComponent{
         );
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(requestScopesIfNeeded());
         this.props.dispatch(usersFetchIfNeeded())
     }

@@ -222,7 +222,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         this.state = state
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
     }
 
     componentDidMount() {

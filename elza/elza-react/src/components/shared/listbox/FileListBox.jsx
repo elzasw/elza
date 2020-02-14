@@ -34,7 +34,7 @@ const FileListBox = class FileListBox extends AbstractReactComponent {
         };
     }
 
-    componentWillReceiveProps(nextProps) {}
+    UNSAFE_componentWillReceiveProps(nextProps) {}
 
     renderItemContent(props) {
         const {item} = props;

@@ -26,7 +26,7 @@ import PageLayout from "../shared/layout/PageLayout";
 
 class AdminPage extends AbstractReactComponent {
 
-    componentWillReceiveProps = (nextProps) => {
+    UNSAFE_componentWillReceiveProps = (nextProps) => {
         this.fetchData(nextProps);
     };
 

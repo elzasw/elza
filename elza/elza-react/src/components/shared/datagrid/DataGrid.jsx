@@ -25,7 +25,7 @@ class DataGrid extends AbstractReactComponent {
     static contextTypes = {shortcuts: PropTypes.object};
     static childContextTypes = {shortcuts: PropTypes.object.isRequired};
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         Utils.addShortcutManager(this, defaultKeymap);
     }
 
@@ -100,7 +100,7 @@ class DataGrid extends AbstractReactComponent {
         morePages: PropTypes.bool, // true pokud je více stránek
     };
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.setState(this.getStateFromProps(nextProps, this.state, this.props),
             () => {
                 this.ensureFocusVisible(this.state.focus);

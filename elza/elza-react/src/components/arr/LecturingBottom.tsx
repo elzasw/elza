@@ -50,7 +50,7 @@ class LecturingBottom extends React.Component {
         }
     }
 
-    componentWillReceiveProps(nextProps, nextContext) {
+    UNSAFE_componentWillReceiveProps(nextProps, nextContext) {
         const {issueDetail, fund} = nextProps;
 
         if (issueDetail && issueDetail.id) {

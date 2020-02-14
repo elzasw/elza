@@ -51,7 +51,7 @@ class PartyField extends AbstractReactComponent {
         this.props.dispatch(refPartyTypesFetchIfNeeded());
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(refPartyTypesFetchIfNeeded());
     }
 

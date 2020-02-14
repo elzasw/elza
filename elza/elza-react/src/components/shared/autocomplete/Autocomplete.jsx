@@ -150,7 +150,7 @@ export default class Autocomplete extends AbstractReactComponent {
     }
 
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const newState = this.getStateFromProps(this.props, nextProps, this.state);
         this.setState(newState);
     }
@@ -274,7 +274,7 @@ export default class Autocomplete extends AbstractReactComponent {
         return result;
     }
 
-    componentWillMount = () => {
+    UNSAFE_componentWillMount = () => {
         Utils.addShortcutManager(this,defaultKeymap);
     }
 

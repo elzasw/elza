@@ -41,7 +41,7 @@ class EditableFileForm extends AbstractReactComponent {
 
     state = {};
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
     }
 
     componentDidMount() {

@@ -31,7 +31,7 @@ class ArrDao extends AbstractReactComponent {
 
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
 
     }
 

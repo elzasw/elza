@@ -106,7 +106,7 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
         // });
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.trySetFocus(nextProps);
 
         const prevSubNodeForm = this.props.subNodeForm;

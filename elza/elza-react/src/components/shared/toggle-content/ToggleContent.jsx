@@ -45,7 +45,7 @@ class ToggleContent extends React.Component {
         return { isParentOpened: this.state.opened };
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (this.props.opened !== nextProps.opened) {
             this.setState({opened: nextProps.opened});
         }

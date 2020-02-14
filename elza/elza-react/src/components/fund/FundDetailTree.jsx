@@ -36,7 +36,7 @@ class FundDetailTree extends AbstractReactComponent {
         this.trySetFocus(this.props)
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const {versionId, expandedIds} = nextProps;
         this.requestFundTreeData(versionId, expandedIds);
         this.trySetFocus(nextProps)

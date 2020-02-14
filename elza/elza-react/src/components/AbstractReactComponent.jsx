@@ -7,7 +7,7 @@ import {propsEquals} from './Utils.jsx'
  */
 class AbstractReactComponent extends React.Component {
 
-    componentWillUpdate() {
+    UNSAFE_componentWillUpdate() {
     //console.log(this);
     }
 

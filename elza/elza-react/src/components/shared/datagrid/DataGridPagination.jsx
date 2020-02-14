@@ -28,7 +28,7 @@ function getCurrPageDesc(pageIndex, pagesCount) {
 class DataGridPagination extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
-    componentWillMount(){
+    UNSAFE_componentWillMount(){
         Utils.addShortcutManager(this,defaultKeymap);
     }
     getChildContext() {
@@ -45,7 +45,7 @@ class DataGridPagination extends AbstractReactComponent {
         this.state = this.getStateFromProps(props, false)
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.setState(this.getStateFromProps(nextProps, this.state.focused))
     }
 

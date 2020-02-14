@@ -31,7 +31,7 @@ class DescItemPacketRef extends AbstractReactComponent {
         this.state = {packets: [], active: false};
     }
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         const {packetTypes} = this.props;
         this.pf = new PacketFormatter(packetTypes);
     }

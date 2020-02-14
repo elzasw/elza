@@ -26,7 +26,7 @@ const SelectItemsForm = class extends AbstractReactComponent {
         };
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
     }
 
     handleRemoveItem = (item, itemIndex) => {

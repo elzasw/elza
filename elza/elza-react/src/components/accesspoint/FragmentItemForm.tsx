@@ -65,7 +65,7 @@ class FragmentItemForm extends React.Component<Props & DispatchProps, State> {
     componentDidMount() {
         this.props.dispatch(fragmentItemFormActions.fundSubNodeFormFetchIfNeeded(this.props.parent, true))
     }
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         nextProps.dispatch(fragmentItemFormActions.fundSubNodeFormFetchIfNeeded(this.props.parent))
     }
 

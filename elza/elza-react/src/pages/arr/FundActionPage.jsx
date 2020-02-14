@@ -56,7 +56,7 @@ class FundActionPage extends ArrParentPage {
     getChildContext() {
         return { shortcuts: this.shortcutManager };
     }
-    componentWillMount(){
+    UNSAFE_componentWillMount(){
         let newKeymap = Utils.mergeKeymaps(ArrParentPage.defaultKeymap,defaultKeymap);
         Utils.addShortcutManager(this,newKeymap);
     }
@@ -90,7 +90,7 @@ class FundActionPage extends ArrParentPage {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(descItemTypesFetchIfNeeded());
 
         const fund = this.getActiveFund(nextProps);

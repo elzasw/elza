@@ -46,7 +46,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
         this.refs.subNodeForm.getWrappedInstance().initFocus();
     };
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         const {fundVersionId, id} = this.props;
         this.props.dispatch(structureNodeFormSelectId(fundVersionId, id));
         this.props.dispatch(structureNodeFormFetchIfNeeded(fundVersionId, id));
@@ -57,7 +57,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
         this.props.dispatch(structureFormActions.fundSubNodeFormFetchIfNeeded(fundVersionId, null));
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const {fundVersionId, id} = nextProps;
         this.props.dispatch(structureNodeFormFetchIfNeeded(fundVersionId, id));
     }

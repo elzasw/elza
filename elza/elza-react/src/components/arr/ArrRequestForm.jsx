@@ -52,7 +52,7 @@ const ArrRequestForm = class extends AbstractReactComponent {
         this.trySelectRequest(this.props);
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(refExternalSystemsFetchIfNeeded());
         this.fetchDigitizationRequestList(this.props, nextProps);
     }

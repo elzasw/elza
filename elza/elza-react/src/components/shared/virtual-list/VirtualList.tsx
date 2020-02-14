@@ -220,7 +220,7 @@ class VirtualList extends React.Component<Props, State> {
         return state;
     };
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const state = this.getVirtualState(nextProps, this.state.isMounted, this.state);
         let itemHeight = this.state.itemHeight!;
         if (this.onScrollDebounced) {
@@ -290,7 +290,7 @@ class VirtualList extends React.Component<Props, State> {
             }
         }
     };
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         this.onScrollDebounced = utils.debounce(this.onScroll, this.props.scrollDelay, false);
     }
     componentDidMount() {

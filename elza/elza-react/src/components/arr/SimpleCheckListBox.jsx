@@ -17,7 +17,7 @@ class SimpleCheckListBox extends AbstractReactComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const props = this.props;
         const {specSearchText} = this.state;
         if (props.items !== nextProps.items) {

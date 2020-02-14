@@ -37,7 +37,7 @@ import {partyDetailInvalidate} from "../../actions/party/party";
 class PartyPage extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
-    componentWillMount(){
+    UNSAFE_componentWillMount(){
         Utils.addShortcutManager(this,defaultKeymap);
     }
     getChildContext() {
@@ -58,7 +58,7 @@ class PartyPage extends AbstractReactComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
         if (nextProps.userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
             this.props.dispatch(apExtSystemListFetchIfNeeded());

@@ -40,7 +40,7 @@ class HorizontalSplitter extends AbstractReactComponent {
         }
     };
 
-    componentWillReceiveProps({size}) {
+    UNSAFE_componentWillReceiveProps({size}) {
         if (size) {
             this.setState({size}, this.updateChildPanes)
         }

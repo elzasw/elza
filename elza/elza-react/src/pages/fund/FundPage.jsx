@@ -64,7 +64,7 @@ class FundPage extends AbstractReactComponent {
         this.buildRibbon = this.buildRibbon.bind(this);
     }
 
-    componentWillReceiveProps() {
+    UNSAFE_componentWillReceiveProps() {
         this.props.dispatch(fundsFetchIfNeeded());
         this.props.dispatch(fundsFundDetailFetchIfNeeded());
     }

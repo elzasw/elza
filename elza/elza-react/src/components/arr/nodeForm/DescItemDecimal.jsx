@@ -21,13 +21,13 @@ class DescItemDecimal extends AbstractReactComponent {
         this.state = {value: this.convertToClient(props.descItem.value)}
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.setState({value: this.convertToClient(nextProps.descItem.value)})
     }
 
     convertToClient(value) {
         if (typeof value !== 'undefined' && value !== '' && value !== null) {
-            return ('' + value).replace(/(\.)/, ',')
+            return ('' + value).replace(/(\.)/, ',');
         } else {
             return ''
         }
@@ -35,7 +35,7 @@ class DescItemDecimal extends AbstractReactComponent {
 
     convertFromClient(value) {
         if (typeof value !== 'undefined' && value !== '' && value !== null) {
-            return value.replace(/(,)/, '.')
+            return value.replace(/(,)/, '.');
         } else {
             return ''
         }

@@ -117,7 +117,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
     over: any;
     private nodePlacement: string;
 
-    componentWillMount(){
+    UNSAFE_componentWillMount(){
         Utils.addShortcutManager(this,defaultKeymap);
     }
     getChildContext() {
@@ -133,7 +133,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
 
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.setState({
             descItemType: {...nextProps.descItemType}
         });

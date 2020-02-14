@@ -40,7 +40,7 @@ class SearchWithGoto extends AbstractReactComponent {
         showFilterResult: typeof this.props.showFilterResult !== 'undefined' ? this.props.showFilterResult : false,
     };
 
-    componentWillReceiveProps(nextProps){
+    UNSAFE_componentWillReceiveProps(nextProps){
         var filterText = this.state.filterText;
         if (nextProps.filterText !== 'undefined' && nextProps.filterText !== this.props.filterText) {
             filterText = nextProps.filterText
