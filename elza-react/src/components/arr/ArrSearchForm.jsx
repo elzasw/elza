@@ -58,11 +58,11 @@ class ArrSearchForm extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.dispatch(calendarTypesFetchIfNeeded());
+        this.props.dispatch(calendarTypesFetchIfNeeded());
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(calendarTypesFetchIfNeeded());
+        this.props.dispatch(calendarTypesFetchIfNeeded());
     }
 
     renderFormItem = (condition, index) => {

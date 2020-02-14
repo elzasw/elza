@@ -414,7 +414,7 @@ class ArrPage extends ArrParentPage {
         return this.props.dispatch(userDetailsSaveSettings(settings)).then((response)=>{
             // invalidates node info after the settings have been saved,
             // to load new node info data (mainly for reloading node parents).
-            this.dispatch(fundNodeInfoInvalidate(fundVersionId, node.id, node.routingKey));
+            this.props.dispatch(fundNodeInfoInvalidate(fundVersionId, node.id, node.routingKey));
         });
     }
 

@@ -95,7 +95,7 @@ export default connect((state, props) => {
         initialValues: transformedInitialValues,
         enableReinitialize: true
     }
-}, null, null, {withRef: true})(formComponent)
+})(formComponent)
 
 const validate = (values) => {
     const errors = {};

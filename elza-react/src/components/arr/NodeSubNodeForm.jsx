@@ -91,14 +91,14 @@ class NodeSubNodeForm extends AbstractReactComponent {
      * Odebrání všech zámků pro všechny atributy
      */
     handleDescItemTypeUnlockAll() {
-        this.dispatch(unlockAllDescItemType(this.props.nodeId));
+        this.props.dispatch(unlockAllDescItemType(this.props.nodeId));
     }
 
     /**
      * Odebrání všech zámků pro všechny atributy
      */
     handleCopyAll() {
-        this.dispatch(toggleCopyAllDescItemType(this.props.nodeId));
+        this.props.dispatch(toggleCopyAllDescItemType(this.props.nodeId));
     }
 
     /**
@@ -108,9 +108,9 @@ class NodeSubNodeForm extends AbstractReactComponent {
      */
     handleDescItemTypeCopy(descItemTypeId, copy) {
         if (copy) {
-            this.dispatch(copyDescItemType(this.props.nodeId, descItemTypeId));
+            this.props.dispatch(copyDescItemType(this.props.nodeId, descItemTypeId));
         } else {
-            this.dispatch(nocopyDescItemType(this.props.nodeId, descItemTypeId));
+            this.props.dispatch(nocopyDescItemType(this.props.nodeId, descItemTypeId));
         }
     }
 
@@ -121,9 +121,9 @@ class NodeSubNodeForm extends AbstractReactComponent {
      */
     handleDescItemTypeLock(descItemTypeId, locked) {
         if (locked) {
-            this.dispatch(lockDescItemType(this.props.nodeId, descItemTypeId));
+            this.props.dispatch(lockDescItemType(this.props.nodeId, descItemTypeId));
         } else {
-            this.dispatch(unlockDescItemType(this.props.nodeId, descItemTypeId));
+            this.props.dispatch(unlockDescItemType(this.props.nodeId, descItemTypeId));
         }
     }
 
@@ -135,12 +135,12 @@ class NodeSubNodeForm extends AbstractReactComponent {
         const node = nodes.nodes[nodes.activeIndex];
         const nodeObj = getMapFromList(node.childNodes)[node.selectedSubNodeId];
         const form = <ArrHistoryForm versionId={versionId} node={nodeObj} onDeleteChanges={this.handleDeleteChanges} />
-        this.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, "dialog-lg"));
+        this.props.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, "dialog-lg"));
     }
 
     handleDeleteChanges = (nodeId, fromChangeId, toChangeId) => {
         WebApi.revertChanges(this.props.versionId, nodeId, fromChangeId, toChangeId).then(() => {
-            this.dispatch(modalDialogHide());
+            this.props.dispatch(modalDialogHide());
         });
     }
     /**
@@ -170,7 +170,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                     // create virtual parent for fund root node
                     newParent = createFundRoot(this.props.fund);
                 }
-                this.dispatch(fundSelectSubNode(versionId, newNodeId, newParent));
+                this.props.dispatch(fundSelectSubNode(versionId, newNodeId, newParent));
                 callback(true);
             };
             // if parent doesn't exist, get parents from server
@@ -187,7 +187,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
         } else { //Bude vybrána předcházející JP
             newNodeId = outdatedParent.childNodes[prevIndex - 1].id;
         }
-        this.dispatch(fundSelectSubNode(versionId, newNodeId, outdatedParent));
+        this.props.dispatch(fundSelectSubNode(versionId, newNodeId, outdatedParent));
             callback(false);
     }
     }
@@ -199,16 +199,16 @@ class NodeSubNodeForm extends AbstractReactComponent {
      */
     afterDeleteCallback = (versionId, prevNode, parentNode) => {
         this.selectSubnodeAfterDelete(versionId, prevNode, (selectedParent) => {
-            this.dispatch(addToastrSuccess(i18n('arr.fund.deleteNode.deleted')));
+            this.props.dispatch(addToastrSuccess(i18n('arr.fund.deleteNode.deleted')));
             if(selectedParent){
-                this.dispatch(addToastr(i18n('arr.fund.deleteNode.noSibling'), null,"info","lg",5000));
+                this.props.dispatch(addToastr(i18n('arr.fund.deleteNode.noSibling'), null,"info","lg",5000));
             }
         });
 
     }
     handleDeleteNode() {
         if (window.confirm(i18n('arr.fund.deleteNode.confirm'))) {
-            this.dispatch(deleteNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId, this.afterDeleteCallback));
+            this.props.dispatch(deleteNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId, this.afterDeleteCallback));
         }
     }
 
@@ -225,7 +225,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
             descItemGroupIndex,
             descItemTypeIndex,
         }
-        this.dispatch(nodeFormActions.fundSubNodeFormValuesCopyFromPrev(this.props.versionId, this.props.selectedSubNode.id, this.props.selectedSubNode.version, descItemTypeId, routingKey, valueLocation));
+        this.props.dispatch(nodeFormActions.fundSubNodeFormValuesCopyFromPrev(this.props.versionId, this.props.selectedSubNode.id, this.props.selectedSubNode.version, descItemTypeId, routingKey, valueLocation));
     }
 
     /**
@@ -353,7 +353,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                     fundTemplates.value = JSON.stringify(value);
                     settings = setSettings(settings, fundTemplates.id, fundTemplates);
                     this.props.dispatch(userDetailsSaveSettings(settings));
-                    return this.dispatch(modalDialogHide());
+                    return this.props.dispatch(modalDialogHide());
                 }
                 case EXISTS_TEMPLATE: {
                     const value = JSON.parse(fundTemplates.value);
@@ -368,7 +368,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                         this.props.dispatch(userDetailsSaveSettings(settings));
                     }
 
-                    return this.dispatch(modalDialogHide());
+                    return this.props.dispatch(modalDialogHide());
                 }
             }
         }} />));
@@ -465,12 +465,12 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
                 if (createItems.length > 0 || updateItems.length > 0 || deleteItems.length > 0) {
                     return WebApi.updateDescItems(fund.versionId, selectedSubNode.id, selectedSubNode.version, createItems, updateItems, deleteItems).then(() => {
-                        this.dispatch(nodeFormActions.fundSubNodeFormTemplateUse(fund.versionId, routingKey, template, data.replaceValues, true));
-                        return this.dispatch(modalDialogHide());
+                        this.props.dispatch(nodeFormActions.fundSubNodeFormTemplateUse(fund.versionId, routingKey, template, data.replaceValues, true));
+                        return this.props.dispatch(modalDialogHide());
                     });
                 } else {
-                    this.dispatch(nodeFormActions.fundSubNodeFormTemplateUse(fund.versionId, routingKey, template, data.replaceValues, false));
-                    return this.dispatch(modalDialogHide());
+                    this.props.dispatch(nodeFormActions.fundSubNodeFormTemplateUse(fund.versionId, routingKey, template, data.replaceValues, false));
+                    return this.props.dispatch(modalDialogHide());
                 }
             }
         }} />));
@@ -690,4 +690,4 @@ NodeSubNodeForm.propTypes = {
     arrPerm: PropTypes.bool,
 }
 
-export default connect(mapStateToProps, null, null, { withRef: true })(NodeSubNodeForm);
+export default connect(mapStateToProps)(NodeSubNodeForm);

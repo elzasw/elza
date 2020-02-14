@@ -40,15 +40,15 @@ class DescItemPartyRef extends AbstractReactComponent {
 
     handleSelectModule = ({onSelect, filterText, value}) => {
         const {partyList:{filter},  fundName, nodeName, itemName, specName, hasSpecification} = this.props;
-        this.dispatch(partyListFilter({...filter, text:filterText}));
-        this.dispatch(partyDetailFetchIfNeeded(value ? value.id : null));
-        this.dispatch(modalDialogShow(this, null, <PartySelectPage
+        this.props.dispatch(partyListFilter({...filter, text:filterText}));
+        this.props.dispatch(partyDetailFetchIfNeeded(value ? value.id : null));
+        this.props.dispatch(modalDialogShow(this, null, <PartySelectPage
             titles={[fundName, nodeName, itemName + (hasSpecification ? ': ' + specName : '')]}
             onSelect={(data) => {
                 onSelect(data);
-                this.dispatch(partyListFilter({text:null, type:null, itemSpecId: null}));
-                this.dispatch(partyDetailClear());
-                this.dispatch(modalDialogHide());
+                this.props.dispatch(partyListFilter({text:null, type:null, itemSpecId: null}));
+                this.props.dispatch(partyDetailClear());
+                this.props.dispatch(modalDialogHide());
             }}
         />, classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER)));
     };
@@ -102,4 +102,4 @@ export default connect((state, props) => {
         fundName,
         nodeName
     }
-}, null, null, { withRef: true })(DescItemPartyRef);
+})(DescItemPartyRef);

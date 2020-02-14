@@ -12,7 +12,7 @@ import DescItemLabel from './DescItemLabel.jsx'
 import PacketFormatter from 'components/arr/packets/PacketFormatter.jsx';
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
-var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
+class DescItemPacketRef extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -195,4 +195,4 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, { withRef: true })(DescItemPacketRef);
+export default DescItemPacketRef;

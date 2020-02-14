@@ -694,4 +694,4 @@ class DataGrid extends AbstractReactComponent {
 }
 
 
-export default connect(null, null, null, {withRef: true})(DataGrid);
+export default DataGrid;

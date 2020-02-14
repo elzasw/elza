@@ -41,7 +41,7 @@ class NodeActionsBar extends AbstractReactComponent {
 
         const index = form.position - 1;
 
-        this.dispatch(fundSelectSubNode(versionId, null, node, false, null, false, index));
+        this.props.dispatch(fundSelectSubNode(versionId, null, node, false, null, false, index));
     }
 
     /**
@@ -55,7 +55,7 @@ class NodeActionsBar extends AbstractReactComponent {
             if (node.nodeCount) {
                 count = node.nodeCount;
             }
-            this.dispatch(modalDialogShow(this, i18n('arr.fund.subNodes.findPosition'),
+            this.props.dispatch(modalDialogShow(this, i18n('arr.fund.subNodes.findPosition'),
                     <GoToPositionForm onSubmitForm={this.handleFindPositionSubmit} maxPosition={count} />
                 )
             )
@@ -84,12 +84,12 @@ class NodeActionsBar extends AbstractReactComponent {
 
         const onNextAction = (e) => {
             if (simplified) onSwitchNode('nextItem', e);
-            else this.dispatch(fundSubNodesNextPage(versionId, node.id, node.routingKey));
+            else this.props.dispatch(fundSubNodesNextPage(versionId, node.id, node.routingKey));
         }
 
         const onPrevAction = (e) => {
         if (simplified) onSwitchNode('prevItem', e);
-        else this.dispatch(fundSubNodesPrevPage(versionId, node.id, node.routingKey));
+        else this.props.dispatch(fundSubNodesPrevPage(versionId, node.id, node.routingKey));
         }
 
         return(
@@ -105,8 +105,8 @@ class NodeActionsBar extends AbstractReactComponent {
                                 className='search-input'
                                 placeholder={i18n('search.input.filter')}
                                 value={node.filterText}
-                                onClear={() => {this.dispatch(fundNodeSubNodeFulltextSearch(''))}}
-                                onSearch={(value) => {this.dispatch(fundNodeSubNodeFulltextSearch(value))}}
+                                onClear={() => {this.props.dispatch(fundNodeSubNodeFulltextSearch(''))}}
+                                onSearch={(value) => {this.props.dispatch(fundNodeSubNodeFulltextSearch(value))}}
                                 filter
                             />
                             }

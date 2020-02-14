@@ -39,8 +39,8 @@ class AdminExtSystemPage extends AbstractReactComponent {
      */
 
     handleAddExtSystem = () => {
-        this.dispatch(modalDialogShow(this, i18n('admin.extSystem.add.title'), <ExtSystemForm onSubmitForm={(data) => {
-            return this.dispatch(extSystemCreate(data));
+        this.props.dispatch(modalDialogShow(this, i18n('admin.extSystem.add.title'), <ExtSystemForm onSubmitForm={(data) => {
+            return this.props.dispatch(extSystemCreate(data));
         }} />));
     };
 
@@ -51,8 +51,8 @@ class AdminExtSystemPage extends AbstractReactComponent {
      */
     handleEditExtSystem = () => {
         const {data} = this.props.extSystemDetail;
-        this.dispatch(modalDialogShow(this, i18n('admin.extSystem.edit.title'), <ExtSystemForm initialValues={data} onSubmitForm={(data) => {
-            return this.dispatch(extSystemUpdate(data));
+        this.props.dispatch(modalDialogShow(this, i18n('admin.extSystem.edit.title'), <ExtSystemForm initialValues={data} onSubmitForm={(data) => {
+            return this.props.dispatch(extSystemUpdate(data));
         }} />));
     };
 
@@ -62,7 +62,7 @@ class AdminExtSystemPage extends AbstractReactComponent {
      * Kliknutí na tlačítko pro smazání systému
      */
     handleDeleteExtSystem = () => {
-        confirm(i18n('admin.extSystem.delete.confirm')) && this.dispatch(extSystemDelete(this.props.extSystemDetail.data.id));
+        confirm(i18n('admin.extSystem.delete.confirm')) && this.props.dispatch(extSystemDelete(this.props.extSystemDetail.data.id));
     };
 
     /**

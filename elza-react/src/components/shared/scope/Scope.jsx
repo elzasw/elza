@@ -28,7 +28,7 @@ class Scope extends AbstractReactComponent {
 
     componentDidMount() {
         const {store: {scopes}, versionId} = this.props;
-        this.dispatch(requestScopesIfNeeded(versionId));
+        this.props.dispatch(requestScopesIfNeeded(versionId));
 
         const index = indexById(scopes, versionId, 'versionId');
         if (index !== null) {
@@ -40,7 +40,7 @@ class Scope extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(requestScopesIfNeeded(nextProps.versionId));
+        this.props.dispatch(requestScopesIfNeeded(nextProps.versionId));
 
         const {store: {scopes}, versionId} = nextProps;
         const index = indexById(scopes, versionId, 'versionId');

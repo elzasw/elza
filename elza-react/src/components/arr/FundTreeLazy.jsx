@@ -287,4 +287,4 @@ class FundTreeLazy extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, { withRef: true })(FundTreeLazy);
+export default FundTreeLazy;

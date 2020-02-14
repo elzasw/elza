@@ -303,7 +303,7 @@ class AddNodeForm extends AbstractReactComponent {
                                 submitData.createItems = createItems;
                             }
                         }
-                        this.dispatch(nodeFormActions.fundSubNodeFormTemplateUseOnly(activeFund.versionId, template));
+                        this.props.dispatch(nodeFormActions.fundSubNodeFormTemplateUseOnly(activeFund.versionId, template));
                     }
                 }
             }
@@ -775,7 +775,7 @@ class AddNodeForm extends AbstractReactComponent {
                     ref="fundField"
                     value={value}
                     onChange={item => {
-                        this.dispatch({
+                        this.props.dispatch({
                             type: 'SELECT_FUND_GLOBAL',
                             area: 'FUND_TREE_AREA_COPY',
                             fund: item,

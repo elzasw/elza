@@ -38,12 +38,12 @@ class PartyList extends AbstractReactComponent {
         this.fetchIfNeeded(nextProps);
         this.trySetFocus(nextProps);
         if (nextProps.maxSize !== this.props.maxSize) {
-            this.dispatch(partyListInvalidate());
+            this.props.dispatch(partyListInvalidate());
         }
     }
 
     fetchIfNeeded = () => {
-        this.dispatch(partyListFetchIfNeeded(null));
+        this.props.dispatch(partyListFetchIfNeeded(null));
         this.props.dispatch(requestScopesIfNeeded());
 
     };
@@ -70,19 +70,19 @@ class PartyList extends AbstractReactComponent {
 
     handleFilterType = (e) => {
         const val = e.target.value;
-        this.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, type: val == -1 ? null : val}));
+        this.props.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, type: val == -1 ? null : val}));
     };
 
     handleFilterText = (filterText) => {
-        this.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, text: !filterText || filterText.length === 0 ? null : filterText}));
+        this.props.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, text: !filterText || filterText.length === 0 ? null : filterText}));
     };
 
     handleFilterTextClear = () => {
-        this.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, text: null}));
+        this.props.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, text: null}));
     };
 
     handlePartyDetail = (item) => {
-        this.dispatch(partyDetailFetchIfNeeded(item.id));
+        this.props.dispatch(partyDetailFetchIfNeeded(item.id));
     };
 
     handleFilterPartyScope = (item) => {
@@ -97,7 +97,7 @@ class PartyList extends AbstractReactComponent {
         let from = this.props.partyList.filter.from;
         if (this.props.partyList.filter.from >= DEFAULT_PARTY_LIST_MAX_SIZE) {
             from = this.props.partyList.filter.from - DEFAULT_PARTY_LIST_MAX_SIZE;
-            this.dispatch(partyListFilter({...this.props.partyList.filter, from}));
+            this.props.dispatch(partyListFilter({...this.props.partyList.filter, from}));
         }
     };
 
@@ -105,7 +105,7 @@ class PartyList extends AbstractReactComponent {
        let from = this.props.partyList.filter.from;
        if (this.props.partyList.filter.from < this.props.partyList.count - DEFAULT_PARTY_LIST_MAX_SIZE) {
            from = this.props.partyList.filter.from + DEFAULT_PARTY_LIST_MAX_SIZE;
-           this.dispatch(partyListFilter({...this.props.partyList.filter, from}));
+           this.props.dispatch(partyListFilter({...this.props.partyList.filter, from}));
        }
     };
 

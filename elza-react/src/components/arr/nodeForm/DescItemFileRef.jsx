@@ -97,4 +97,4 @@ class DescItemFileRef extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, { withRef: true })(DescItemFileRef);
+export default DescItemFileRef;

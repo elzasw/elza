@@ -33,16 +33,16 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
 
     handleShowInArr(version) {
         // Přepnutí na stránku pořádání
-        this.dispatch(routerNavigate('/arr'))
+        this.props.dispatch(routerNavigate('/arr'))
 
         // Otevření archivního souboru
         const fund = this.props.fundDetail
         const fundObj = getFundFromFundAndVersion(fund, version);
-        this.dispatch(selectFundTab(fundObj));
+        this.props.dispatch(selectFundTab(fundObj));
     }
 
     handleDownload = (id) => {
-        this.dispatch(downloadFile(UrlFactory.downloadOutputResult(id)));
+        this.props.dispatch(downloadFile(UrlFactory.downloadOutputResult(id)));
     };
 
     render() {

@@ -66,4 +66,4 @@ class DescItemFragmentRef extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, { withRef: true })(DescItemFragmentRef);
+export default connect()(DescItemFragmentRef);

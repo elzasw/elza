@@ -12,7 +12,7 @@ import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
 
 import {importPackage} from 'actions/admin/packages.jsx';
 
-var AdminPackagesUpload = class AdminPackagesUpload extends AbstractReactComponent {
+class AdminPackagesUpload extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -28,7 +28,7 @@ var AdminPackagesUpload = class AdminPackagesUpload extends AbstractReactCompone
         var file = this.refs.file;
         var data = new FormData();
         data.append("file", ReactDOM.findDOMNode(file.refs.input).files[0]);
-        this.dispatch(importPackage(data));
+        this.props.dispatch(importPackage(data));
     }
 
     handleChangeFile() {

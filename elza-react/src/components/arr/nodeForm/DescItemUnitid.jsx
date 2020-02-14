@@ -13,7 +13,7 @@ import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
 const DescItemString_MAX_LENGTH = 250;
 
-var DescItemUnitid = class DescItemUnitid extends AbstractReactComponent {
+class DescItemUnitid extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -64,4 +64,4 @@ var DescItemUnitid = class DescItemUnitid extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, { withRef: true })(DescItemUnitid);
+export default DescItemUnitid;

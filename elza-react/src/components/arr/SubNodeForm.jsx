@@ -609,7 +609,7 @@ class SubNodeForm extends AbstractReactComponent {
         this.props.dispatch(this.props.formActions.fundSubNodeFormValueChange(this.props.versionId, this.props.routingKey, valueLocation, value, false));
         // Updates the error value in descItem.
         // Only when error exists
-        error && this.dispatch(this.props.formActions._fundSubNodeFormValueValidateResult(this.props.versionId, this.props.routingKey, valueLocation, error));
+        error && this.props.dispatch(this.props.formActions._fundSubNodeFormValueValidateResult(this.props.versionId, this.props.routingKey, valueLocation, error));
     }
 
     /**
@@ -663,12 +663,12 @@ class SubNodeForm extends AbstractReactComponent {
     handleCoordinatesDownload(objectId) {
         const {versionId} = this.props;
 
-        this.dispatch(downloadFile(UrlFactory.exportArrCoordinate(objectId, versionId)));
+        this.props.dispatch(downloadFile(UrlFactory.exportArrCoordinate(objectId, versionId)));
     }
 
     handleJsonTableDownload(objectId) {
         const {versionId, typePrefix} = this.props;
-        this.dispatch(downloadFile(UrlFactory.exportItemCsvExport(objectId, versionId, typePrefix)));
+        this.props.dispatch(downloadFile(UrlFactory.exportItemCsvExport(objectId, versionId, typePrefix)));
     }
 
     /**
@@ -876,4 +876,4 @@ export default connect((state) => {
         userDetail,
         arrRegion
     }
-}, null, null, { withRef: true })(SubNodeForm);
+})(SubNodeForm);

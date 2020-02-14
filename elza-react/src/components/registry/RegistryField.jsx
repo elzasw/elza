@@ -58,7 +58,7 @@ class RegistryField extends AbstractReactComponent {
     state = {registryList: [], count: null, searchText: null};
 
     componentDidMount() {
-        this.dispatch(refRecordTypesFetchIfNeeded());
+        this.props.dispatch(refRecordTypesFetchIfNeeded());
     }
 
     focus = () => {
@@ -233,4 +233,4 @@ export default connect(
             userDetail,
             eidTypes: eidTypes.data
         }
-    }, null, null, { withRef: true })(RegistryField);
+    })(RegistryField);

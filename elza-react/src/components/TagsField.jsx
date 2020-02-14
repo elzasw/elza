@@ -102,4 +102,4 @@ class TagsField extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, { withRef: true })(TagsField);
+export default TagsField;

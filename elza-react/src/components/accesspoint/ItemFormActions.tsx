@@ -17,7 +17,7 @@ type ThunkResult<R> = ThunkAction<R, {
         rulDataTypes: {},
         descItemTypes: {},
     }
-}, AnyAction>;
+}, AnyAction, any>;
 
 
 

@@ -10,20 +10,20 @@ import {Button} from 'react-bootstrap';
 import {AbstractReactComponent, i18n} from 'components/shared';
 import {getIndexStateFetchIfNeeded, reindex} from 'actions/admin/fulltext.jsx';
 
-var AdminFulltextReindex = class AdminFulltextReindex extends AbstractReactComponent {
+class AdminFulltextReindex extends AbstractReactComponent {
     constructor(props) {
         super(props);
     }
 
     componentWillReceiveProps(nextProps) {
         if (!nextProps.fetched) {
-            this.dispatch(getIndexStateFetchIfNeeded());
+            this.props.dispatch(getIndexStateFetchIfNeeded());
         }
     }
 
     componentDidMount() {
         if (!this.props.fetched) {
-            this.dispatch(getIndexStateFetchIfNeeded());
+            this.props.dispatch(getIndexStateFetchIfNeeded());
         }
     }
 
@@ -40,7 +40,7 @@ var AdminFulltextReindex = class AdminFulltextReindex extends AbstractReactCompo
     }
 
     startReindexing() {
-        this.dispatch(reindex());
+        this.props.dispatch(reindex());
     }
 
     render() {

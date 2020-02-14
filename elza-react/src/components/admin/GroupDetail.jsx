@@ -64,7 +64,7 @@ class GroupDetail extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.dispatch(groupsGroupDetailFetchIfNeeded());
+        this.props.dispatch(groupsGroupDetailFetchIfNeeded());
     }
 
     componentWillReceiveProps(nextProps) {
@@ -77,20 +77,20 @@ class GroupDetail extends AbstractReactComponent {
             this.selectedScope = this.defaultSelectedItem;
         }
 
-        this.dispatch(groupsGroupDetailFetchIfNeeded());
+        this.props.dispatch(groupsGroupDetailFetchIfNeeded());
     }
 
     handleRemoveUser = (user, index) => {
         const {groupDetail} = this.props;
-        this.dispatch(leaveUser(groupDetail.id, user.id));
+        this.props.dispatch(leaveUser(groupDetail.id, user.id));
     };
 
     handleAddUsers = () => {
         const {groupDetail} = this.props;
-        this.dispatch(modalDialogShow(this, i18n('admin.group.user.add.title'),
+        this.props.dispatch(modalDialogShow(this, i18n('admin.group.user.add.title'),
             <SelectItemsForm
                 onSubmitForm={(users) => {
-                    this.dispatch(joinUsers(groupDetail.id, getIdsList(users)));
+                    this.props.dispatch(joinUsers(groupDetail.id, getIdsList(users)));
                 }}
                 fieldComponent={UserField}
                 fieldComponentProps={{excludedGroupId: groupDetail.id}}

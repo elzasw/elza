@@ -23,8 +23,8 @@ class ArrFundPanel extends AbstractReactComponent {
         let item = getOneSettings(settings, 'FUND_READ_MODE', 'FUND', fund.id);
         item.value = readMode;
         settings = setSettings(settings, item.id, item);
-        this.dispatch(fundChangeReadMode(fund.versionId, readMode));
-        this.dispatch(userDetailsSaveSettings(settings));
+        this.props.dispatch(fundChangeReadMode(fund.versionId, readMode));
+        this.props.dispatch(userDetailsSaveSettings(settings));
     };
 
     render() {

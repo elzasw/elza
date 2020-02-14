@@ -34,7 +34,7 @@ class Toastr extends AbstractReactComponent {
     };
 
     handleDismiss = (index) => {
-        this.dispatch(removeToastr(index));
+        this.props.dispatch(removeToastr(index));
     };
 
     static getIconStyle(style) {

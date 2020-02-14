@@ -22,7 +22,7 @@ class ContextMenu extends AbstractReactComponent {
     }
 
     hideMenu = () => {
-        this.dispatch(contextMenuHide());
+        this.props.dispatch(contextMenuHide());
     };
 
     handleClick = (e) => {

@@ -93,4 +93,4 @@ class UserAndGroupField extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, { withRef: true })(UserAndGroupField);
+export default UserAndGroupField;

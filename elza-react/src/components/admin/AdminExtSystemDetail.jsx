@@ -53,7 +53,7 @@ class AdminExtSystemDetail extends AbstractReactComponent {
     fetchIfNeeded = (props = this.props) => {
         const {extSystemDetail: {id}} = props;
         if (id) {
-            this.dispatch(extSystemDetailFetchIfNeeded(id));
+            this.props.dispatch(extSystemDetailFetchIfNeeded(id));
         }
     };
 

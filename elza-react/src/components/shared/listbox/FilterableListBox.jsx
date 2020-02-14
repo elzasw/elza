@@ -16,7 +16,7 @@ import {Checkbox, Button} from "react-bootstrap";
 import {getSetFromIdsList} from "stores/app/utils.jsx";
 var __FilterableListBox_timer = null
 
-var FilterableListBox = class FilterableListBox extends AbstractReactComponent {
+class FilterableListBox extends AbstractReactComponent {
     static propTypes = {
         supportInverseSelection: PropTypes.bool,
         selectedIds: PropTypes.array.isRequired,

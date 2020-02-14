@@ -84,9 +84,9 @@ class FundActionPage extends ArrParentPage {
 
         const fund = this.getActiveFund(this.props);
         if (fund) {
-            this.dispatch(fundActionFetchListIfNeeded(fund.versionId));
-            this.dispatch(fundActionFetchConfigIfNeeded(fund.versionId));
-            this.dispatch(fundActionFetchDetailIfNeeded(fund.versionId));
+            this.props.dispatch(fundActionFetchListIfNeeded(fund.versionId));
+            this.props.dispatch(fundActionFetchConfigIfNeeded(fund.versionId));
+            this.props.dispatch(fundActionFetchDetailIfNeeded(fund.versionId));
         }
     }
 
@@ -95,9 +95,9 @@ class FundActionPage extends ArrParentPage {
 
         const fund = this.getActiveFund(nextProps);
         if(fund) {
-            this.dispatch(fundActionFetchListIfNeeded(fund.versionId));
-            this.dispatch(fundActionFetchConfigIfNeeded(fund.versionId));
-            this.dispatch(fundActionFetchDetailIfNeeded(fund.versionId));
+            this.props.dispatch(fundActionFetchListIfNeeded(fund.versionId));
+            this.props.dispatch(fundActionFetchConfigIfNeeded(fund.versionId));
+            this.props.dispatch(fundActionFetchDetailIfNeeded(fund.versionId));
         }
     }
 
@@ -119,17 +119,17 @@ class FundActionPage extends ArrParentPage {
     handleRibbonFormClear() {
         const fund = this.getActiveFund(this.props);
         const {versionId} = fund;
-        this.dispatch(fundActionFormReset(versionId));
+        this.props.dispatch(fundActionFormReset(versionId));
     } // Form reset
 
     handleRibbonCopyAction() {
         const fund = this.getActiveFund(this.props);
         const {fundAction: {detail: {data}}, versionId} = fund;
-        this.dispatch(fundActionFormChange(versionId, {
+        this.props.dispatch(fundActionFormChange(versionId, {
             nodes: data.nodes,
             code: data.code
         }));
-        this.dispatch(fundActionFormShow(versionId));
+        this.props.dispatch(fundActionFormShow(versionId));
     }
 
     handleRibbonCreateAction() {
@@ -141,37 +141,37 @@ class FundActionPage extends ArrParentPage {
                 //zavolá metodu FundActionPage#submitPersistentSortForm
                 this.refs.persistentSortForm.getWrappedInstance().submit();
             } else {
-                this.dispatch(fundActionFormSubmit(versionId, form.code))
+                this.props.dispatch(fundActionFormSubmit(versionId, form.code))
             }
         }
     }
 
     submitPersistentSortForm = (versionId, values) => {
-        return this.dispatch(fundActionFormSubmit(versionId, PERSISTENT_SORT_CODE, values))
+        return this.props.dispatch(fundActionFormSubmit(versionId, PERSISTENT_SORT_CODE, values))
     };
 
     handleRibbonInterruptAction() {
         const fund = this.getActiveFund(this.props);
         const {fundAction: {detail: {currentDataKey}}} = fund;
-        this.dispatch(funcActionActionInterrupt(currentDataKey));
+        this.props.dispatch(funcActionActionInterrupt(currentDataKey));
     }
 
     handleRibbonNewAction() {
         const fund = this.getActiveFund(this.props);
         const {versionId} = fund;
-        this.dispatch(fundActionFormShow(versionId))
+        this.props.dispatch(fundActionFormShow(versionId))
     }
 
     handleListBoxActionSelect(item) {
         const fund = this.getActiveFund(this.props);
         const {versionId} = fund;
-        this.dispatch(fundActionActionSelect(versionId, item.id))
+        this.props.dispatch(fundActionActionSelect(versionId, item.id))
     }
 
     handleFormNodesAdd() {
         const fund = this.getActiveFund(this.props);
         const {versionId} = fund;
-        this.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
+        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
             <FundNodesSelectForm
                 onSubmitForm={(nodeIds, nodes) => {
                     const fund = this.getActiveFund(this.props);
@@ -182,8 +182,8 @@ class FundActionPage extends ArrParentPage {
                     nodes.map(item => {
                         indexById(newNodes, item.id) === null && newNodes.push(item);
                     });
-                    this.dispatch(fundActionFormChange(versionId, {nodes: newNodes}));
-                    this.dispatch(modalDialogHide());
+                    this.props.dispatch(fundActionFormChange(versionId, {nodes: newNodes}));
+                    this.props.dispatch(modalDialogHide());
                 }}
             />
         ))
@@ -194,7 +194,7 @@ class FundActionPage extends ArrParentPage {
         const {fundAction:{form}, versionId} = fund;
         const index = indexById(form.nodes, item.id);
         if (index !== null) {
-            this.dispatch(fundActionFormChange(versionId, {
+            this.props.dispatch(fundActionFormChange(versionId, {
                 nodes: [
                     ...form.nodes.slice(0, index),
                     ...form.nodes.slice(index + 1)
@@ -392,7 +392,7 @@ class FundActionPage extends ArrParentPage {
                                    ref='code-action'
                                    className='form-control'
                                    value={form.code}
-                                   onChange={(e) => {this.dispatch(fundActionFormChange(versionId, {code: e.target.value}))}}
+                                   onChange={(e) => {this.props.dispatch(fundActionFormChange(versionId, {code: e.target.value}))}}
                         >
                             <option key="novalue" />
                             {config.data.map((item) => (<option key={item.code} value={item.code}>{item.name}</option>))}

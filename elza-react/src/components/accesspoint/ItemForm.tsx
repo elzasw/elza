@@ -466,7 +466,7 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
 
         return <ItemType key={itemType.id}
              typePrefix={typePrefix}
-            ref={'descItemType' + itemType.id}
+            //ref={'descItemType' + itemType.id} TODO React 16 REF
             descItemType={itemType}
             refType={refType}
             infoType={infoType}
@@ -535,7 +535,8 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
         if (unusedItemTypeIds && unusedItemTypeIds.length > 0) {
             // Accordion as React.Component;
             unusedGeneratedItems = <Accordion>
-                <Panel header={i18n("arr.output.title.unusedGeneratedItems", unusedItemTypeIds.length)} eventKey="1">
+                <Panel eventKey="1">
+                    <Panel.Heading>{i18n("arr.output.title.unusedGeneratedItems", unusedItemTypeIds.length)}</Panel.Heading>
                     {unusedItemTypeIds.map((itemTypeId, index) => {
                         const refType = subNodeForm!!.refTypesMap!![itemTypeId];
                         if (!readMode && !closed) {
@@ -581,5 +582,5 @@ export const ItemForm = connect((state: {userDetail, arrRegion}, props: Props) =
         userDetail,
         arrRegion
     }
-}, null, null, { withRef: true })(ItemFormClass as any);
+})(ItemFormClass as any);
 

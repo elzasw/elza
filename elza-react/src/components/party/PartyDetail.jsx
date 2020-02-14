@@ -186,13 +186,13 @@ class PartyDetail extends AbstractReactComponent {
     fetchIfNeeded = (props = this.props) => {
         return new Promise((resolve, reject) => {
             const {partyDetail: {id}} = props;
-            this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
-            this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
-            this.dispatch(refRecordTypesFetchIfNeeded());
-            this.dispatch(requestScopesIfNeeded());
+            this.props.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
+            this.props.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
+            this.props.dispatch(refRecordTypesFetchIfNeeded());
+            this.props.dispatch(requestScopesIfNeeded());
 
             if (id) {
-                resolve(this.dispatch(partyDetailFetchIfNeeded(id)));
+                resolve(this.props.dispatch(partyDetailFetchIfNeeded(id)));
         } else {
             return Promise.resolve(null);
             }
@@ -242,12 +242,12 @@ class PartyDetail extends AbstractReactComponent {
         };
         let newSettings = this.props.userDetail.settings ? [...this.props.userDetail.settings] : [];
         newSettings = setSettings(newSettings, newVisibilitySettings.id, newVisibilitySettings);
-        this.dispatch(userDetailsSaveSettings(newSettings, false))
+        this.props.dispatch(userDetailsSaveSettings(newSettings, false))
     };
 
 
     handlePartyUpdate = (party) => {
-        return this.dispatch(partyUpdate({
+        return this.props.dispatch(partyUpdate({
             ...this.props.partyDetail.data,
             ...party
         }));
@@ -258,7 +258,7 @@ class PartyDetail extends AbstractReactComponent {
     };
 
     handleAddParty = (field, partyTypeId) => {
-        this.dispatch(partyAdd(partyTypeId, -1, this.partyAdded.bind(this, field), false));
+        this.props.dispatch(partyAdd(partyTypeId, -1, this.partyAdded.bind(this, field), false));
     };
 
     apTypesToMap = (apTypes, map, parent) => {

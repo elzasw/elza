@@ -68,4 +68,4 @@ class DescItemText extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, {withRef: true})(DescItemText);
+export default DescItemText;

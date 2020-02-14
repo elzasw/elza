@@ -56,8 +56,8 @@ class FundForm extends AbstractReactComponent {
     state = {};
 
     componentDidMount() {
-        this.dispatch(refRuleSetFetchIfNeeded());
-        this.dispatch(refInstitutionsFetchIfNeeded());
+        this.props.dispatch(refRuleSetFetchIfNeeded());
+        this.props.dispatch(refInstitutionsFetchIfNeeded());
         if (this.props.initData) {
             this.props.load(this.props.initData);
         }

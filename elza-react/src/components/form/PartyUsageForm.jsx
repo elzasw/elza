@@ -49,4 +49,4 @@ class PartyUsageForm extends React.Component {
     }
 }
 
-export default connect(null)(PartyUsageForm);
+export default connect()(PartyUsageForm);

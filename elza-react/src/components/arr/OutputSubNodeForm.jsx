@@ -90,4 +90,4 @@ function mapStateToProps(state) {
     }
 }
 
-export default connect(mapStateToProps, null, null, { withRef: true })(OutputSubNodeForm);
+export default connect(mapStateToProps)(OutputSubNodeForm);

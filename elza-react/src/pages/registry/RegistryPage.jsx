@@ -129,7 +129,7 @@ class RegistryPage extends AbstractReactComponent {
     handleAddRegistry = () => {
         const {registryList: {filter:{versionId}, parents}} = this.props;
 
-        this.dispatch(registryAdd(versionId === null ? -1 : versionId, this.handleCallAddRegistry, false));
+        this.props.dispatch(registryAdd(versionId === null ? -1 : versionId, this.handleCallAddRegistry, false));
     };
 
     handleCallAddRegistry = (data) => {

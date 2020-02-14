@@ -49,4 +49,4 @@ class RegistryUsageForm extends React.Component {
     }
 }
 
-export default connect(null)(RegistryUsageForm);
+export default connect()(RegistryUsageForm);

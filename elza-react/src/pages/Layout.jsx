@@ -74,23 +74,23 @@ class Layout extends AbstractReactComponent {
         console.log("#handleShortcuts", '[' + action + ']', this);
         switch (action) {
             case 'home':
-                this.dispatch(routerNavigate('/'));
-                this.dispatch(setFocus(FOCUS_KEYS.HOME, 1, 'list'));
+                this.props.dispatch(routerNavigate('/'));
+                this.props.dispatch(setFocus(FOCUS_KEYS.HOME, 1, 'list'));
                 break;
             case 'arr':
-                this.dispatch(routerNavigate('/arr'));
-                this.dispatch(setFocus(FOCUS_KEYS.ARR, 1, 'tree'));
+                this.props.dispatch(routerNavigate('/arr'));
+                this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 1, 'tree'));
                 break;
             case 'party':
-                this.dispatch(routerNavigate('/party'));
-                this.dispatch(setFocus(FOCUS_KEYS.PARTY, 1, 'tree'));
+                this.props.dispatch(routerNavigate('/party'));
+                this.props.dispatch(setFocus(FOCUS_KEYS.PARTY, 1, 'tree'));
                 break;
             case 'registry':
-                this.dispatch(routerNavigate('/registry'));
-                this.dispatch(setFocus(FOCUS_KEYS.REGISTRY, 1, 'list'));
+                this.props.dispatch(routerNavigate('/registry'));
+                this.props.dispatch(setFocus(FOCUS_KEYS.REGISTRY, 1, 'list'));
                 break;
             case 'admin':
-                this.dispatch(routerNavigate('/admin'));
+                this.props.dispatch(routerNavigate('/admin'));
                 break;
         }
     };
@@ -115,14 +115,14 @@ class Layout extends AbstractReactComponent {
 
     //kvůli circular dependency
     handleRegistryShowUsage = (data) => {
-        this.dispatch(
+        this.props.dispatch(
             modalDialogShow(this, i18n('registry.registryUsage'), <RegistryUsageForm detail={data}/>)
         );
     };
 
     //kvůli circular dependency
     handlePartyShowUsage = (data) => {
-        this.dispatch(
+        this.props.dispatch(
             modalDialogShow(this, i18n('party.usage.button'), <PartyUsageForm detail={data}/>)
         );
     };

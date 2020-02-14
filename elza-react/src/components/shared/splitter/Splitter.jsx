@@ -180,5 +180,5 @@ class Splitter extends AbstractReactComponent {
 }
 
 
-export default connect(null, null, null, {withRef: true})(Splitter);
+export default Splitter;
 

@@ -64,4 +64,4 @@ const DescItemString = class DescItemString extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, {withRef: true})(DescItemString);
+export default DescItemString;

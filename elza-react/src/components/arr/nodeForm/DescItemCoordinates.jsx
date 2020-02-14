@@ -98,5 +98,5 @@ class DescItemCoordinates extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, {withRef: true})(DescItemCoordinates);
+export default DescItemCoordinates;
 

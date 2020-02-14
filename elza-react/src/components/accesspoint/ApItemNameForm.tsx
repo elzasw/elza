@@ -82,7 +82,7 @@ class ApItemNameForm extends React.Component<Props & DispatchProps, State> {
         return (
             <div className="output-item-form-container">
                 {formStore.fetched && <ItemForm
-                    ref="subNodeForm"
+                    //ref="subNodeForm" TODO React 16 REF
                     typePrefix="ap-name"
                     rulDataTypes={rulDataTypes}
                     calendarTypes={calendarTypes}
@@ -114,4 +114,4 @@ function mapStateToProps(state, props: Props) {
     }
 }
 
-export default connect(mapStateToProps, null, null, { withRef: true })(ApItemNameForm as any);
+export default connect(mapStateToProps)(ApItemNameForm as any);

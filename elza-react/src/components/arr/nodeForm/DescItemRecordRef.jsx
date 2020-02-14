@@ -51,15 +51,15 @@ class DescItemRecordRef extends AbstractReactComponent {
         const oldFilter = {...registryList.filter};
         const open = (hasParty = false) => {
             if (hasParty) {
-                this.dispatch(partyListFilter({
+                this.props.dispatch(partyListFilter({
                     ...partyList.filter,
                     text: filterText,
                     itemSpecId: hasSpecification ? descItem.descItemSpecId : null
                 }));
-                this.dispatch(partyDetailClear());
+                this.props.dispatch(partyDetailClear());
             }
             console.warn(this.props.itemTypeId)
-            this.dispatch(registryListFilter({
+            this.props.dispatch(registryListFilter({
                 ...registryList.filter,
                 registryTypeId: null,
                 itemTypeId: this.props.itemTypeId,
@@ -67,24 +67,24 @@ class DescItemRecordRef extends AbstractReactComponent {
                 itemSpecId: hasSpecification ? descItem.descItemSpecId : null
             }));
 
-            this.dispatch(registryDetailFetchIfNeeded(value ? value.id : null));
-            this.dispatch(modalDialogShow(this, null, <RegistrySelectPage
+            this.props.dispatch(registryDetailFetchIfNeeded(value ? value.id : null));
+            this.props.dispatch(modalDialogShow(this, null, <RegistrySelectPage
                 titles={[fundName, nodeName, itemName + (hasSpecification ? ': ' + specName : '')]}
                 hasParty={hasParty} onSelect={(data) => {
                     onSelect(data);
                     if (hasParty) {
-                        this.dispatch(partyListFilter({
+                        this.props.dispatch(partyListFilter({
                             text:null,
                             type:null,
                             itemSpecId: null
                         }));
-                        this.dispatch(partyDetailClear());
+                        this.props.dispatch(partyDetailClear());
                     }
-                    this.dispatch(registryListFilter({...oldFilter}));
-                    this.dispatch(registryDetailClear());
+                    this.props.dispatch(registryListFilter({...oldFilter}));
+                    this.props.dispatch(registryDetailClear());
                 }}/>,
                 classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER),
-                ()=>{this.dispatch(registryListFilter({...oldFilter}))}));
+                ()=>{this.props.dispatch(registryListFilter({...oldFilter}))}));
         };
 
         if (hasSpecification) {
@@ -152,4 +152,4 @@ export default connect((state, props) => {
         fundName,
         nodeName
     }
-}, null, null, { withRef: true })(DescItemRecordRef);
+})(DescItemRecordRef);

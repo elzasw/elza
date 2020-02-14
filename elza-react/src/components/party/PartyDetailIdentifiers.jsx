@@ -84,12 +84,12 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
     };
 
     handlePartyGroupIdentifierAdd = () => {
-        this.dispatch(modalDialogShow(this, i18n('party.detail.identifier.new') , <PartyIdentifierForm onSubmitForm={this.addIdentifier} />, MODAL_DIALOG_VARIANT.LARGE));
+        this.props.dispatch(modalDialogShow(this, i18n('party.detail.identifier.new') , <PartyIdentifierForm onSubmitForm={this.addIdentifier} />, MODAL_DIALOG_VARIANT.LARGE));
     };
 
 
     handlePartyGroupIdentifierUpdate = (partyGroupIdentifier) => {
-        this.dispatch(modalDialogShow(this, i18n('party.detail.identifier.update'), <PartyIdentifierForm initialValues={partyGroupIdentifier} onSubmitForm={this.update.bind(this, partyGroupIdentifier)} />, MODAL_DIALOG_VARIANT.LARGE));
+        this.props.dispatch(modalDialogShow(this, i18n('party.detail.identifier.update'), <PartyIdentifierForm initialValues={partyGroupIdentifier} onSubmitForm={this.update.bind(this, partyGroupIdentifier)} />, MODAL_DIALOG_VARIANT.LARGE));
     };
 
 

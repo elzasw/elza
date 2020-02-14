@@ -42,17 +42,17 @@ class AddOutputForm extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(outputTypesFetchIfNeeded());
+        this.props.dispatch(outputTypesFetchIfNeeded());
         if (nextProps.fields.outputTypeId.value) {
             const index = indexById(nextProps.outputTypes, nextProps.fields.outputTypeId.value);
             if (index !== null) {
-                this.dispatch(templatesFetchIfNeeded(nextProps.outputTypes[index].code))
+                this.props.dispatch(templatesFetchIfNeeded(nextProps.outputTypes[index].code))
             }
         }
     }
 
     componentDidMount() {
-        this.dispatch(outputTypesFetchIfNeeded());
+        this.props.dispatch(outputTypesFetchIfNeeded());
     }
 
     submitReduxForm = (values, dispatch) => submitForm(AddOutputForm.validate,values,this.props,this.props.onSubmitForm,dispatch);

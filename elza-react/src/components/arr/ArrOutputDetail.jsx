@@ -58,8 +58,8 @@ class ArrOutputDetail extends AbstractReactComponent {
 
     componentDidMount() {
         const {versionId, fundOutputDetail} = this.props;
-        fundOutputDetail.id !== null && this.dispatch(fundOutputDetailFetchIfNeeded(versionId, fundOutputDetail.id));
-        this.dispatch(outputTypesFetchIfNeeded());
+        fundOutputDetail.id !== null && this.props.dispatch(fundOutputDetailFetchIfNeeded(versionId, fundOutputDetail.id));
+        this.props.dispatch(outputTypesFetchIfNeeded());
 
         this.requestData(this.props.versionId, this.props.fundOutputDetail);
 
@@ -68,8 +68,8 @@ class ArrOutputDetail extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         const {versionId, fundOutputDetail} = nextProps;
-        fundOutputDetail.id !== null && this.dispatch(fundOutputDetailFetchIfNeeded(versionId, fundOutputDetail.id));
-        this.dispatch(outputTypesFetchIfNeeded());
+        fundOutputDetail.id !== null && this.props.dispatch(fundOutputDetailFetchIfNeeded(versionId, fundOutputDetail.id));
+        this.props.dispatch(outputTypesFetchIfNeeded());
 
         this.requestData(nextProps.versionId, nextProps.fundOutputDetail);
 
@@ -82,12 +82,12 @@ class ArrOutputDetail extends AbstractReactComponent {
      * @param fundOutputDetail {Object} store
      */
     requestData(versionId, fundOutputDetail) {
-        this.dispatch(descItemTypesFetchIfNeeded());
+        this.props.dispatch(descItemTypesFetchIfNeeded());
         if (fundOutputDetail.fetched && !fundOutputDetail.isFetching) {
-            this.dispatch(outputFormActions.fundSubNodeFormFetchIfNeeded(versionId, null));
+            this.props.dispatch(outputFormActions.fundSubNodeFormFetchIfNeeded(versionId, null));
         }
-        this.dispatch(refRulDataTypesFetchIfNeeded());
-        this.dispatch(calendarTypesFetchIfNeeded());
+        this.props.dispatch(refRulDataTypesFetchIfNeeded());
+        this.props.dispatch(calendarTypesFetchIfNeeded());
     }
 
     trySetFocus = (props) => {
@@ -109,24 +109,24 @@ class ArrOutputDetail extends AbstractReactComponent {
 
     handleSaveOutput = (data) => {
         const {fund, fundOutputDetail} = this.props;
-        this.dispatch(fundOutputEdit(fund.versionId, fundOutputDetail.id, data));
+        this.props.dispatch(fundOutputEdit(fund.versionId, fundOutputDetail.id, data));
     };
 
     handleRemoveNode = (node) => {
         const {fund, fundOutputDetail} = this.props;
 
         if (confirm(i18n("arr.fund.nodes.deleteNode"))) {
-            this.dispatch(fundOutputRemoveNodes(fund.versionId, fundOutputDetail.id, [node.id]))
+            this.props.dispatch(fundOutputRemoveNodes(fund.versionId, fundOutputDetail.id, [node.id]))
         }
     };
 
     handleAddNodes = () => {
         const {fund, fundOutputDetail} = this.props;
 
-        this.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
+        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
             <FundNodesSelectForm
                 onSubmitForm={(ids, nodes) => {
-                    this.dispatch(fundOutputAddNodes(fund.versionId, fundOutputDetail.id, ids))
+                    this.props.dispatch(fundOutputAddNodes(fund.versionId, fundOutputDetail.id, ids))
                 }}
             />))
     };

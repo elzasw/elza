@@ -70,4 +70,4 @@ function mapStateToProps(state) {
     return {
     }
 }
-export default connect(mapStateToProps, null, null, { withRef: true })(GroupField);
+export default connect(mapStateToProps)(GroupField);

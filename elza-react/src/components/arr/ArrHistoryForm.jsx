@@ -181,7 +181,7 @@ class ArrHistoryForm extends AbstractReactComponent {
     }
 
     handleChooseNode = () => {
-        this.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
+        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
             <FundNodesSelectForm
                 multipleSelection={false}
                 onSubmitForm={(id, node) => {
@@ -192,7 +192,7 @@ class ArrHistoryForm extends AbstractReactComponent {
                         changeId: null,
                         activeIndex: null,
                     }, this.refreshRows);
-                    this.dispatch(modalDialogHide());
+                    this.props.dispatch(modalDialogHide());
                 }}
             />))
     }

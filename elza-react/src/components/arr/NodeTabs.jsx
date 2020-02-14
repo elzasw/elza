@@ -27,12 +27,12 @@ class NodeTabs extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.dispatch(nodesFetchIfNeeded(this.props.versionId));
+        this.props.dispatch(nodesFetchIfNeeded(this.props.versionId));
         this.trySetFocus(this.props)
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(nodesFetchIfNeeded(nextProps.versionId));
+        this.props.dispatch(nodesFetchIfNeeded(nextProps.versionId));
         this.trySetFocus(nextProps)
     }
 
@@ -62,9 +62,9 @@ return true
     handleTabSelect(item) {
         const {versionId} = this.props
 
-        this.dispatch(fundSelectNodeTab(versionId, item.id, item.key, item.index))
-        // this.dispatch(fundSelectNodeTab(item.index))
-        this.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'tabs'))
+        this.props.dispatch(fundSelectNodeTab(versionId, item.id, item.key, item.index))
+        // this.props.dispatch(fundSelectNodeTab(item.index))
+        this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'tabs'))
     }
 
     render() {
@@ -96,7 +96,7 @@ return true
                         closable
                         items={tabs} activeItem={activeTab}
                         onSelect={this.handleTabSelect}
-                        onClose={item=>this.dispatch(fundCloseNodeTab(versionId, item.id, item.key, item.index))}
+                        onClose={item=>this.props.dispatch(fundCloseNodeTab(versionId, item.id, item.key, item.index))}
                     />
                 }
                 <Tabs.Content>

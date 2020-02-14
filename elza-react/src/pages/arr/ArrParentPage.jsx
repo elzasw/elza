@@ -115,9 +115,9 @@ export default class ArrParentPage extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.dispatch(descItemTypesFetchIfNeeded());
-        this.dispatch(calendarTypesFetchIfNeeded());
-        this.dispatch(fundsFetchIfNeeded());
+        this.props.dispatch(descItemTypesFetchIfNeeded());
+        this.props.dispatch(calendarTypesFetchIfNeeded());
+        this.props.dispatch(fundsFetchIfNeeded());
         var activeFund = this.getActiveFund(this.props);
         if (activeFund !== null) {
             this.requestFundTreeData(activeFund);
@@ -126,9 +126,9 @@ export default class ArrParentPage extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(descItemTypesFetchIfNeeded());
-        this.dispatch(calendarTypesFetchIfNeeded());
-        this.dispatch(fundsFetchIfNeeded());
+        this.props.dispatch(descItemTypesFetchIfNeeded());
+        this.props.dispatch(calendarTypesFetchIfNeeded());
+        this.props.dispatch(fundsFetchIfNeeded());
         var activeFund = this.getActiveFund(nextProps);
         if (activeFund !== null) {
             this.requestFundTreeData(activeFund);
@@ -137,7 +137,7 @@ export default class ArrParentPage extends AbstractReactComponent {
     }
 
     requestFundTreeData(activeFund) {
-        this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_MAIN, activeFund.versionId, activeFund.fundTree.expandedIds));
+        this.props.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_MAIN, activeFund.versionId, activeFund.fundTree.expandedIds));
     }
 
     toggleReadMode() {
@@ -147,8 +147,8 @@ export default class ArrParentPage extends AbstractReactComponent {
         var item = {...getOneSettings(settings, 'FUND_READ_MODE', 'FUND', activeFund.id)};
         item.value = item.value === null || item.value === "true" ? false : true;
         settings = setSettings(settings, item.id, item);
-        this.dispatch(fundChangeReadMode(activeFund.versionId, item.value));
-        this.dispatch(userDetailsSaveSettings(settings));
+        this.props.dispatch(fundChangeReadMode(activeFund.versionId, item.value));
+        this.props.dispatch(userDetailsSaveSettings(settings));
     }
     getActiveFund(props) {
         const arrRegion = props.arrRegion;

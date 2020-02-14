@@ -51,12 +51,12 @@ class AdminPage extends AbstractReactComponent {
     };
 
     startReindexing = () => {
-        this.dispatch(reindex());
+        this.props.dispatch(reindex());
     };
 
 
     handleDeveloperMode = () => {
-        this.dispatch(developerSet(!this.props.developer.enabled));
+        this.props.dispatch(developerSet(!this.props.developer.enabled));
     };
 
     handleResetLocalStorage = () => {
@@ -68,7 +68,7 @@ class AdminPage extends AbstractReactComponent {
     handleResetServerCache = () => {
         if (confirm(i18n('global.title.processAction'))) {
             WebApi.resetServerCache().then(() => {
-                this.dispatch(addToastrSuccess(i18n('admin.resetServerCache.success')));
+                this.props.dispatch(addToastrSuccess(i18n('admin.resetServerCache.success')));
             });
         }
     };

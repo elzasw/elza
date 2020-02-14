@@ -7,20 +7,6 @@ import {propsEquals} from './Utils.jsx'
  */
 class AbstractReactComponent extends React.Component {
 
-    /**
-     * Nepoužívat -> používat this.props.dispatch
-     * @deprecated
-     */
-    dispatch;
-
-    constructor(props) {
-        super(props);
-
-        if (props && props.dispatch) {
-            this.dispatch = props.dispatch;
-        }
-    }
-
     componentWillUpdate() {
     //console.log(this);
     }

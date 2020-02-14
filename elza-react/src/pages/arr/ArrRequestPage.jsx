@@ -93,7 +93,7 @@ class ArrRequestPage extends ArrParentPage {
 
         const fund = this.getActiveFund(this.props);
         if (fund) {
-            this.dispatch(arrRequestActions.fetchListIfNeeded(fund.versionId));
+            this.props.dispatch(arrRequestActions.fetchListIfNeeded(fund.versionId));
         }
 
         this.trySetFocus(this.props)
@@ -104,7 +104,7 @@ class ArrRequestPage extends ArrParentPage {
 
         const fund = this.getActiveFund(nextProps);
         if (fund) {
-            this.dispatch(arrRequestActions.fetchListIfNeeded(fund.versionId));
+            this.props.dispatch(arrRequestActions.fetchListIfNeeded(fund.versionId));
         }
 
         this.trySetFocus(nextProps)
@@ -130,10 +130,10 @@ class ArrRequestPage extends ArrParentPage {
                 this.handleAddOutput();
                 break;
             case 'area1':
-                this.dispatch(setFocus(FOCUS_KEYS.FUND_REQUEST, 1));
+                this.props.dispatch(setFocus(FOCUS_KEYS.FUND_REQUEST, 1));
                 break;
             case 'area2':
-                this.dispatch(setFocus(FOCUS_KEYS.FUND_REQUEST, 2));
+                this.props.dispatch(setFocus(FOCUS_KEYS.FUND_REQUEST, 2));
                 break;
             default:
                 super.handleShortcuts(action);
@@ -188,18 +188,18 @@ class ArrRequestPage extends ArrParentPage {
 
     handleSelect = (item) => {
         const fund = this.getActiveFund(this.props);
-        this.dispatch(arrRequestActions.selectDetail(fund.versionId, item.id));
+        this.props.dispatch(arrRequestActions.selectDetail(fund.versionId, item.id));
     };
 
     handleSend = (id) => {
         const fund = this.getActiveFund(this.props);
-        this.dispatch(arrRequestActions.sendRequest(fund.versionId, id));
+        this.props.dispatch(arrRequestActions.sendRequest(fund.versionId, id));
     };
 
     handleDelete = (id) => {
         const fund = this.getActiveFund(this.props);
         if (confirm(i18n("ribbon.action.arr.fund.request.delete.confirm"))) {
-            this.dispatch(arrRequestActions.deleteRequest(fund.versionId, id));
+            this.props.dispatch(arrRequestActions.deleteRequest(fund.versionId, id));
         }
     };
 
@@ -229,7 +229,7 @@ class ArrRequestPage extends ArrParentPage {
             type: val
         }
 
-        this.dispatch(arrRequestActions.filterList(fund.versionId, newFilter));
+        this.props.dispatch(arrRequestActions.filterList(fund.versionId, newFilter));
     };
 
     handleFilterText = (filterText) => {
@@ -241,7 +241,7 @@ class ArrRequestPage extends ArrParentPage {
             description: filterText
         };
 
-        this.dispatch(arrRequestActions.filterList(fund.versionId, newFilter));
+        this.props.dispatch(arrRequestActions.filterList(fund.versionId, newFilter));
     };
 
     handleFilterTextClear = () => {

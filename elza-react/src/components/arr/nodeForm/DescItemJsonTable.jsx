@@ -12,10 +12,9 @@ import DescItemJsonTableCellForm from './DescItemJsonTableCellForm.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
+import './DescItemJsonTable.scss'
 
-require ("./DescItemJsonTable.scss")
-
-var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
+class DescItemJsonTable extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -125,7 +124,7 @@ var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
 
         const value = row.values[col.colDef.code]
         this.blurEnabled = false;
-        this.dispatch(modalDialogShow(this, null,
+        this.props.dispatch(modalDialogShow(this, null,
             <DescItemJsonTableCellForm
                 position={{x: cellRect.left, y: cellRect.top}}
                 value={value}
@@ -235,4 +234,4 @@ var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, { withRef: true })(DescItemJsonTable);
+export default connect()(DescItemJsonTable);

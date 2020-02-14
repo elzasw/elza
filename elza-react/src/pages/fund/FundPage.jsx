@@ -65,12 +65,12 @@ class FundPage extends AbstractReactComponent {
     }
 
     componentWillReceiveProps() {
-        this.dispatch(fundsFetchIfNeeded());
-        this.dispatch(fundsFundDetailFetchIfNeeded());
+        this.props.dispatch(fundsFetchIfNeeded());
+        this.props.dispatch(fundsFundDetailFetchIfNeeded());
     }
 
     componentDidMount() {
-        this.dispatch(fundsFetchIfNeeded());
+        this.props.dispatch(fundsFetchIfNeeded());
     }
 
     handleAddFund() {
@@ -79,16 +79,16 @@ class FundPage extends AbstractReactComponent {
         if (!userDetail.hasOne(perms.ADMIN, perms.FUND_ADMIN)) {
             initData.fundAdmins = [{ id: "default", user: userDetail }];
         }
-        this.dispatch(modalDialogShow(this, i18n('arr.fund.title.add'),
+        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.title.add'),
             <FundForm
                 create
                 initData={initData}
-                onSubmitForm={(data) => { return this.dispatch(createFund(data)) }}
+                onSubmitForm={(data) => { return this.props.dispatch(createFund(data)) }}
             />));
     }
 
     handleImport() {
-        this.dispatch(
+        this.props.dispatch(
             modalDialogShow(this,
                 i18n('import.title.fund'),
                 <ImportForm fund={true} />
@@ -98,11 +98,11 @@ class FundPage extends AbstractReactComponent {
 
     handleExportDialog() {
         const { fundRegion: { fundDetail } } = this.props;
-        this.dispatch(
+        this.props.dispatch(
             modalDialogShow(this,
                 i18n('export.title.fund'),
                 <ExportForm fund={true} onSubmitForm={data => {
-                    return this.dispatch(exportFund(fundDetail.versionId, data.transformationName));
+                    return this.props.dispatch(exportFund(fundDetail.versionId, data.transformationName));
                 }} />
             )
         );
@@ -117,7 +117,7 @@ class FundPage extends AbstractReactComponent {
         const data = {
             dateRange: fundDetail.activeVersion.dateRange,
         }
-        this.dispatch(
+        this.props.dispatch(
             modalDialogShow(
                 this,
                 i18n('arr.fund.title.approve'),
@@ -125,7 +125,7 @@ class FundPage extends AbstractReactComponent {
                     approve
                     initData={data}
                     onSubmitForm={data => {
-                        return this.dispatch(approveFund(fundDetail.versionId, data.dateRange));
+                        return this.props.dispatch(approveFund(fundDetail.versionId, data.dateRange));
                     }} />
             )
         );
@@ -141,7 +141,7 @@ class FundPage extends AbstractReactComponent {
         const initData = {
             ruleSetId: fundDetail.activeVersion.ruleSetId
         };
-        this.dispatch(modalDialogShow(this, i18n('arr.fund.title.ruleSet'),
+        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.title.ruleSet'),
             <FundForm ruleSet initData={initData}
                 onSubmitForm={(data) => this.handleCallEditFundVersion({
                     ...data,
@@ -185,8 +185,8 @@ class FundPage extends AbstractReactComponent {
         const fundDetail = fundRegion.fundDetail
 
         data.id = fundDetail.id;
-        this.dispatch(scopesDirty(fundDetail.versionId));
-        return this.dispatch(updateFund(data));
+        this.props.dispatch(scopesDirty(fundDetail.versionId));
+        return this.props.dispatch(updateFund(data));
     }
 
     /**
@@ -286,7 +286,7 @@ class FundPage extends AbstractReactComponent {
         const fundDetail = fundRegion.fundDetail
 
         if (confirm(i18n('arr.fund.action.delete.confirm', fundDetail.name))) {
-            this.dispatch(deleteFund(fundDetail.id))
+            this.props.dispatch(deleteFund(fundDetail.id))
         }
     }
 
@@ -295,7 +295,7 @@ class FundPage extends AbstractReactComponent {
         const fundDetail = fundRegion.fundDetail
 
         if (confirm(i18n('arr.fund.action.deletehistory.confirm', fundDetail.name))) {
-            this.dispatch(deleteFundHistory(fundDetail.id))
+            this.props.dispatch(deleteFundHistory(fundDetail.id))
         }
     }
 
@@ -308,12 +308,12 @@ class FundPage extends AbstractReactComponent {
 
     handleShowInArr(item) {
         // Přepnutí na stránku pořádání
-        this.dispatch(routerNavigate('/arr'))
+        this.props.dispatch(routerNavigate('/arr'))
 
         // Otevření archivního souboru
         var fundObj = getFundFromFundAndVersion(item, item.versions[0]);
-        this.dispatch(globalFundTreeInvalidate());
-        this.dispatch(selectFundTab(fundObj));
+        this.props.dispatch(globalFundTreeInvalidate());
+        this.props.dispatch(selectFundTab(fundObj));
     }
 
     renderListItem(props) {
@@ -333,15 +333,15 @@ class FundPage extends AbstractReactComponent {
     }
 
     handleSelect(item) {
-        this.dispatch(fundsSelectFund(item.id))
+        this.props.dispatch(fundsSelectFund(item.id))
     }
 
     handleSearch(filterText) {
-        this.dispatch(fundsSearch(filterText))
+        this.props.dispatch(fundsSearch(filterText))
     }
 
     handleSearchClear() {
-        this.dispatch(fundsSearch(''))
+        this.props.dispatch(fundsSearch(''))
     }
 
     handleFilterPrev = () => {
@@ -350,7 +350,7 @@ class FundPage extends AbstractReactComponent {
 
         if (from >= DEFAULT_FUND_LIST_MAX_SIZE) {
             from = from - DEFAULT_FUND_LIST_MAX_SIZE;
-            this.dispatch(fundsFilter({ ...filter, from }));
+            this.props.dispatch(fundsFilter({ ...filter, from }));
         }
     };
 
@@ -360,7 +360,7 @@ class FundPage extends AbstractReactComponent {
 
         if (from < fundsCount - DEFAULT_FUND_LIST_MAX_SIZE) {
             from = from + DEFAULT_FUND_LIST_MAX_SIZE;
-            this.dispatch(fundsFilter({ ...filter, from }));
+            this.props.dispatch(fundsFilter({ ...filter, from }));
         }
     };
 

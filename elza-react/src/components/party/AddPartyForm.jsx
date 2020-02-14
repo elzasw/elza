@@ -170,10 +170,10 @@ class AddPartyForm extends AbstractReactComponent {
 
     dataRefresh = (props = this.props) => {
         const {recordTypes, refTables:{partyNameFormTypes, scopesData:{scopes}, calendarTypes}, partyType} = props;
-        this.dispatch(calendarTypesFetchIfNeeded());        // seznam typů kalendářů (gregoriánský, juliánský, ...)
-        this.dispatch(refPartyNameFormTypesFetchIfNeeded());// nacteni seznamů typů forem jmen (uřední, ...)
-        this.dispatch(getRegistryRecordTypesIfNeeded(partyType.id));
-        this.dispatch(requestScopesIfNeeded(null));
+        this.props.dispatch(calendarTypesFetchIfNeeded());        // seznam typů kalendářů (gregoriánský, juliánský, ...)
+        this.props.dispatch(refPartyNameFormTypesFetchIfNeeded());// nacteni seznamů typů forem jmen (uřední, ...)
+        this.props.dispatch(getRegistryRecordTypesIfNeeded(partyType.id));
+        this.props.dispatch(requestScopesIfNeeded(null));
 
         const scope = scopes.filter(i => i.versionId === null);
 
@@ -225,7 +225,7 @@ class AddPartyForm extends AbstractReactComponent {
      * Zavření dialogového okénka formuláře
      */
     handleClose = () => {
-        this.dispatch(modalDialogHide());
+        this.props.dispatch(modalDialogHide());
     };
 
     submitType = 'store';

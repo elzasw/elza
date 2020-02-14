@@ -57,7 +57,7 @@ class FundFiles extends AbstractReactComponent {
 
     handleTextSearch = (text) => {
         const {versionId} = this.props;
-        this.dispatch(fundFilesFilterByText(versionId, text));
+        this.props.dispatch(fundFilesFilterByText(versionId, text));
     };
 
     handleEdit = (id) => {
@@ -71,43 +71,43 @@ class FundFiles extends AbstractReactComponent {
     handleDownloadByMimeType = (id, outputMimeType) => {
         const {fundId} = this.props;
         // window.open(`/api/dms/fund/${fundId}/${id}/generated?mimeType=${outputMimeType}`);
-        this.dispatch(downloadFile(UrlFactory.downloadGeneratedDmsFile(id, fundId, outputMimeType)));
+        this.props.dispatch(downloadFile(UrlFactory.downloadGeneratedDmsFile(id, fundId, outputMimeType)));
     };
 
     handleDelete = (id) => {
         const {fundId, versionId} = this.props;
-        this.dispatch(fundFilesDelete(versionId, fundId, id));
+        this.props.dispatch(fundFilesDelete(versionId, fundId, id));
     };
 
     handleCreateFromFile = () => {
-        this.dispatch(modalDialogShow(this, i18n('dms.file.title.file.add'), <AddFileForm onSubmitForm={this.handleCreateFromFileSubmit} />));
+        this.props.dispatch(modalDialogShow(this, i18n('dms.file.title.file.add'), <AddFileForm onSubmitForm={this.handleCreateFromFileSubmit} />));
     };
 
     handleCreateEditable = () => {
         if(this.hasMimeTypes()){
-            this.dispatch(modalDialogShow(this, i18n('dms.file.title.editable.add'), <EditableFileForm create onSubmitForm={this.handleCreateEditableSubmit} />));
+            this.props.dispatch(modalDialogShow(this, i18n('dms.file.title.editable.add'), <EditableFileForm create onSubmitForm={this.handleCreateEditableSubmit} />));
         }
     };
 
     handleCreateFromFileSubmit = (data) => {
         const {fundId} = this.props;
-        return this.dispatch(fundFilesCreate(fundId, data));
+        return this.props.dispatch(fundFilesCreate(fundId, data));
     };
 
     handleCreateEditableSubmit = (data) => {
         const {fundId} = this.props;
-        return this.dispatch(fundFilesCreate(fundId, data));
+        return this.props.dispatch(fundFilesCreate(fundId, data));
     };
 
     handleEditEditableSubmit = (id, data) => {
         const {fundId} = this.props;
-        return this.dispatch(fundFilesUpdate(fundId, id, data, () => {
-            this.dispatch(modalDialogHide());
+        return this.props.dispatch(fundFilesUpdate(fundId, id, data, () => {
+            this.props.dispatch(modalDialogHide());
         }));
     };
 
     handleDownload = (id) => {
-        this.dispatch(downloadFile(UrlFactory.downloadDmsFile(id)));
+        this.props.dispatch(downloadFile(UrlFactory.downloadDmsFile(id)));
     };
 
     handleReplace = (id) => {
@@ -123,7 +123,7 @@ class FundFiles extends AbstractReactComponent {
         }
         const file = fileList[0];
 
-        this.dispatch(fundFilesReplace(_ReplaceId, file));
+        this.props.dispatch(fundFilesReplace(_ReplaceId, file));
         e.target.value = null;
         _ReplaceId = null;
     };
@@ -198,4 +198,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps, null, null, { withRef: true })(FundFiles);
+export default connect(mapStateToProps)(FundFiles);

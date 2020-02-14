@@ -46,7 +46,7 @@ class ImportForm extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        this.dispatch(refRuleSetFetchIfNeeded());
+        this.props.dispatch(refRuleSetFetchIfNeeded());
         WebApi.getAllScopes().then(json => {
             this.setState({
                 defaultScopes: json
@@ -85,7 +85,7 @@ class ImportForm extends AbstractReactComponent {
             }
         }
         const messageType = this.props.fund ? 'Fund' : this.props.record ? 'Record' : 'Party';
-        this.dispatch(importForm(formData, messageType));
+        this.props.dispatch(importForm(formData, messageType));
     };
 
     render() {

@@ -63,4 +63,4 @@ const DescItemDate = class DescItemDate extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, {withRef: true})(DescItemDate);
+export default DescItemDate;

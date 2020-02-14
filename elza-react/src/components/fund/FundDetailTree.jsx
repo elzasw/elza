@@ -73,7 +73,7 @@ return true
     }
 
     requestFundTreeData(versionId, expandedIds) {
-        this.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, versionId, expandedIds));
+        this.props.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, versionId, expandedIds));
     }
 
     /**
@@ -92,8 +92,8 @@ return true
             </ul>
         )
 
-        this.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, node));
-        this.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
+        this.props.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, node));
+        this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
     }
 
     /**
@@ -101,7 +101,7 @@ return true
      * @param node {Object} uzel
      */
     handleSelectInNewTab(node) {
-        this.dispatch(contextMenuHide());
+        this.props.dispatch(contextMenuHide());
 
         this.callFundSelectSubNode(node, true);
     }
@@ -111,7 +111,7 @@ return true
      * @param node {Object} uzel
      */
     handleSelectInTab(node) {
-        this.dispatch(contextMenuHide());
+        this.props.dispatch(contextMenuHide());
 
         this.callFundSelectSubNode(node, false);
     }
@@ -123,19 +123,19 @@ return true
      */
     callFundSelectSubNode(node, openNewTab) {
         // Přepnutí na stránku pořádání
-        this.dispatch(routerNavigate('/arr'))
+        this.props.dispatch(routerNavigate('/arr'))
 
         // Otevření archivního souboru
         const {fund} = this.props
         var fundObj = getFundFromFundAndVersion(fund, fund.versions[0]);
-        this.dispatch(selectFundTab(fundObj));
+        this.props.dispatch(selectFundTab(fundObj));
 
         // Vybrání položky - jako formulář
         var parentNode = getParentNode(node, this.props.nodes);
         if (parentNode == null) {   // root
             parentNode = createFundRoot(this.props.fund);
         }
-        this.dispatch(fundSelectSubNode(this.props.versionId, node.id, parentNode, openNewTab, null, false));
+        this.props.dispatch(fundSelectSubNode(this.props.versionId, node.id, parentNode, openNewTab, null, false));
     }
 
     /**
@@ -144,7 +144,7 @@ return true
      * @param e
      */
     handleNodeClick(node, ensureItemVisible, e) {
-        this.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, node.id, false, false, null))
+        this.props.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, node.id, false, false, null))
     }
 
     /**
@@ -157,26 +157,26 @@ return true
     }
 
     handleFulltextChange(value) {
-        this.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, value));
+        this.props.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, value));
     }
 
     handleFulltextSearch() {
-        this.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId));
+        this.props.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId));
     }
 
     handleFulltextPrevItem() {
-        this.dispatch(fundTreeFulltextPrevItem(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId));
+        this.props.dispatch(fundTreeFulltextPrevItem(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId));
     }
 
     handleFulltextNextItem() {
-        this.dispatch(fundTreeFulltextNextItem(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId));
+        this.props.dispatch(fundTreeFulltextNextItem(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId));
     }
 
     /**
      * Zabalení stromu
      */
     handleCollapse() {
-        this.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, this.props.fund))
+        this.props.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, this.props.fund))
     }
 
     render() {
@@ -188,7 +188,7 @@ return true
                 {...this.props}
                 className={this.props.className}
                 cutLongLabels={cutLongLabels}
-                onOpenCloseNode={(node, expand) => {expand ? this.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, node)) : this.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, node))}}
+                onOpenCloseNode={(node, expand) => {expand ? this.props.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, node)) : this.props.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, node))}}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
                 onNodeDoubleClick={this.handleNodeDoubleClick}
