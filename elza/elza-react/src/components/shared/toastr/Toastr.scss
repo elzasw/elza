@@ -1,4 +1,5 @@
-@import "bootstrap/less/mixins/vendor-prefixes.scss";
+@import "../../../variables";
+@import "~bootstrap/scss/mixins/box-shadow";
 
 .toastrAlertBox {
     position: absolute;

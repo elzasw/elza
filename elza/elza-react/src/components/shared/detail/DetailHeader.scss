@@ -68,16 +68,16 @@ $inactive-fg: $default-fg;
             background-color: $active-bg;
         }
         &.dh-color-info {
-            color: $state-info-text;
-            background-color: $state-info-bg;
+            color: theme-color("info");
+            //background-color: $state-info-bg;
         }
         &.dh-color-warning {
             color: $inactive-fg;
             background-color: $inactive-bg;
         }
         &.dh-color-danger {
-            color: $state-danger-text;
-            background-color: $state-danger-bg;
+            color: theme-color("danger");
+            //background-color: $state-danger-bg;
         }
     }
 }

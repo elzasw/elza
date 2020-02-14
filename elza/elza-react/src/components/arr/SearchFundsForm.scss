@@ -38,7 +38,9 @@ $rowHeight: 24px;
                 font-size: 16px;
             }
 
-            @include referenceMark;
+            .referenceMark {
+                @extend .referenceMark;
+            };
 
             .item {
                 display: flex;

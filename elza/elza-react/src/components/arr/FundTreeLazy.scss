@@ -39,7 +39,9 @@ $TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
             display: block;
         }
 
-        @include referenceMark;
+        .referenceMark {
+            @extend .referenceMark;
+        };
 
         .exp-col {
             flex-grow: 1;
