@@ -20,7 +20,7 @@
       }
     }
   }
-  @media screen and (min-width: $screen-md-min) {
+  @media screen and (min-width: map_get($grid-breakpoints, 'md')) {
     .flex {
       margin-left: -15px;
       margin-right: -15px;

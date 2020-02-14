@@ -1,5 +1,5 @@
 @import "../../variables.scss";
-@import "/elements-grid.scss";
+@import "../../elements-grid.scss";
 
 $valueActionWidth: 22px;
 $descItemDraggerSize: 6px;
@@ -48,7 +48,7 @@ $descItemDraggerSize: 6px;
             }
 
             .desc-item-types {
-                &:extend(.elements-container all);
+                @extend .elements-container;
 
                 .desc-item-type {
                     background: $node-form-item-type-bg;
@@ -124,7 +124,9 @@ $descItemDraggerSize: 6px;
                         }
                         .actions {
                             flex-shrink: 0;
-                            @include node-form-standard-actions;
+                            .node-form-standard-actions {
+                                @extend .node-form-standard-actions;
+                            }
 
                             .btn {
                                 visibility: hidden;
@@ -227,7 +229,10 @@ $descItemDraggerSize: 6px;
                                 }
                             }
                             .desc-item-action-container {
-                                @include node-form-standard-actions;
+                                .node-form-standard-actions {
+                                    @extend .node-form-standard-actions;
+                                }
+
                                 flex-shrink: 0;
 
                                 .btn {
@@ -275,7 +280,9 @@ $descItemDraggerSize: 6px;
                         }
                     }
                     .desc-item-type-actions {
-                        @include node-form-standard-actions;
+                        .node-form-standard-actions {
+                            @extend .node-form-standard-actions;
+                        }
                     }
                 }
             }

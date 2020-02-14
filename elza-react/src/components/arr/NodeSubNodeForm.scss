@@ -48,7 +48,9 @@
                     margin-right: 8px;
                 }
 
-                @include node-form-standard-actions;
+                .node-form-standard-actions {
+                    @extend .node-form-standard-actions;
+                }
                 .btn {
                     &.dropdown-toggle {
                         padding: 0 3px 0 3px;

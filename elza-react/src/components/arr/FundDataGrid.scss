@@ -50,7 +50,9 @@
             }
         }
         .grid-container {
-            @include referenceMark;
+            .referenceMark {
+                @extend .referenceMark;
+            }
 
             .filtered {
                 background: $button-bg-hover;

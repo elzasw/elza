@@ -332,7 +332,9 @@
                         margin-right: 8px;
                     }
 
-                    @include form-standard-actions;
+                    .form-standard-actions {
+                        @extend .form-standard-actions;
+                    };
                     .btn {
                         &.dropdown-toggle {
                             padding: 0 3px 0 3px;

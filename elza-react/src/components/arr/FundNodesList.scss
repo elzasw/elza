@@ -35,7 +35,9 @@
         flex-direction: row;
         //padding: 0 5px;
 
-        @include node-register-form-standard-actions;
+        .node-register-form-standard-actions {
+            @extend .node-register-form-standard-actions;
+        };
 
         .actions-container {
             flex-shrink: 0;
