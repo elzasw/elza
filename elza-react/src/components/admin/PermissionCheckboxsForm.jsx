@@ -2,7 +2,7 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import {Checkbox} from "react-bootstrap";
+import {FormCheck} from "react-bootstrap";
 import {AbstractReactComponent, Icon, i18n, fetching} from 'components/shared';
 import getMapFromList from "../../shared/utils/getMapFromList";
 import "./PermissionCheckboxsForm.scss";
@@ -148,7 +148,7 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
 
                 return <div className="item-row">
                     {infoIcon}
-                    <Checkbox inline checked={checked} onChange={e => onChangePermission(e, permCode)}>{i18n(`${labelPrefix}${permCode}`)}</Checkbox>
+                    <FormCheck inline checked={checked} onChange={e => onChangePermission(e, permCode)}>{i18n(`${labelPrefix}${permCode}`)}</FormCheck>
                 </div>
             })}
             </div>

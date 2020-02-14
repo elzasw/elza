@@ -49,7 +49,7 @@ class ExportForm extends AbstractReactComponent {
 
         return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body>
-                {isFetching ? <HorizontalLoader /> : <FormInput componentClass="select"
+                {isFetching ? <HorizontalLoader /> : <FormInput as="select"
                            label={i18n('export.transformationName')}
                             {...transformationName}
                             {...decorateFormField(transformationName)}
@@ -63,7 +63,7 @@ class ExportForm extends AbstractReactComponent {
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit">{i18n('global.action.export')}</Button>
-                <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>
     }

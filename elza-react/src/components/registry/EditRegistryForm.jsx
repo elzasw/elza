@@ -62,7 +62,7 @@ class EditRegistryForm extends AbstractReactComponent {
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit" disabled={submitting}>{i18n('global.action.store')}</Button>
-                <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>
     }

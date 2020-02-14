@@ -2,7 +2,7 @@ import React from 'react';
 import {AbstractReactComponent, i18n, Icon, Loading, CheckListBox, FormInput, TooltipTrigger} from 'components/shared';
 import FloatingMenu from "components/shared/floating-menu/FloatingMenu.jsx";
 import {objectById} from "shared/utils";
-import {Button, DropdownButton, FormControl, MenuItem} from 'react-bootstrap';
+import {Button, DropdownButton, FormControl, Dropdown} from 'react-bootstrap';
 import {connect} from 'react-redux';
 import {WebApi} from "../../actions/WebApi";
 import {
@@ -412,7 +412,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                         <Icon glyph="fa-exclamation-triangle" />
                     </TooltipTrigger>
                 }
-                <Button className="btn--context-menu" bsStyle="default" onClick={this.openContextMenu.bind(this, item)}>
+                <Button className="btn--context-menu" variant="default" onClick={this.openContextMenu.bind(this, item)}>
                     <Icon glyph="fa-ellipsis-v" />
                 </Button>
             </div>
@@ -435,25 +435,25 @@ class ArrStructurePanel extends AbstractReactComponent {
 
         return <div className={"arr-structure-panel"}>
             {!readMode && <div className="actions">
-                <DropdownButton bsStyle="default" title={<Icon glyph="fa-plus-circle" />} noCaret id="arr-structure-panel-add">
-                    <MenuItem eventKey="1" onClick={this.handleCreate}>{i18n("arr.structure.addOne")}</MenuItem>
-                    <MenuItem eventKey="2" onClick={this.handleCreateMulti}>{i18n("arr.structure.addMany")}</MenuItem>
+                <DropdownButton variant="default" title={<Icon glyph="fa-plus-circle" />} noCaret id="arr-structure-panel-add">
+                    <Dropdown.Item eventKey="1" onClick={this.handleCreate}>{i18n("arr.structure.addOne")}</Dropdown.Item>
+                    <Dropdown.Item eventKey="2" onClick={this.handleCreateMulti}>{i18n("arr.structure.addMany")}</Dropdown.Item>
                 </DropdownButton>
-                <Button  className="btn--multiselect" bsStyle="default" onClick={this.handleMultiselect}>
+                <Button  className="btn--multiselect" variant="default" onClick={this.handleMultiselect}>
                     <Icon glyph={multiselect ? "fa-check-square" : "fa-check-square-o"} />
                 </Button>
                 {multiselect &&
-                    <Button bsStyle="default" onClick={(e) => this.openContextMenu(null, e)} disabled={!checkedIndexes || checkedIndexes.length < 1 || rows.length < 1 }>
+                    <Button variant="default" onClick={(e) => this.openContextMenu(null, e)} disabled={!checkedIndexes || checkedIndexes.length < 1 || rows.length < 1 }>
                         <Icon glyph="fa-bars" />
                     </Button>
                 }
-                <Button bsStyle="default" onClick={this.handleExtensionsSettings} className={"pull-right"}>
+                <Button variant="default" onClick={this.handleExtensionsSettings} className={"pull-right"}>
                     <Icon glyph="fa-cogs" />
                 </Button>
             </div>}
             <div className="filter flex">
                 <div>
-                    <FormControl componentClass={"select"} name={"assignable"} onChange={({target: {value}}) => this.filter({assignable:value})} value={filter.assignable}>
+                    <FormControl as={"select"} name={"assignable"} onChange={({target: {value}}) => this.filter({assignable:value})} value={filter.assignable}>
                         <option value={""}>{i18n("arr.structure.filter.assignable.all")}</option>
                         <option value={true}>{i18n("arr.structure.filter.assignable.true")}</option>
                         <option value={false}>{i18n("arr.structure.filter.assignable.false")}</option>

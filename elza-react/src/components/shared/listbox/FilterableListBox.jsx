@@ -12,7 +12,7 @@ import Search from "../search/Search";
 import ListBox from "./ListBox";
 import i18n from "../../i18n";
 import AbstractReactComponent from "../../AbstractReactComponent";
-import {Checkbox, Button} from "react-bootstrap";
+import {FormCheck, Button} from "react-bootstrap";
 import {getSetFromIdsList} from "stores/app/utils.jsx";
 var __FilterableListBox_timer = null
 
@@ -177,7 +177,7 @@ class FilterableListBox extends AbstractReactComponent {
 
         return (
             <div className='checkbox-item'>
-                <Checkbox tabIndex={-1} checked={checked} onMouseDown={onCheckItem} ></Checkbox>
+                <FormCheck tabIndex={-1} checked={checked} onMouseDown={onCheckItem} ></FormCheck>
                 {item.name}
             </div>
         )
@@ -237,9 +237,9 @@ class FilterableListBox extends AbstractReactComponent {
                         {altSearch}
                     </div>}
                     <div className='actions-container'>
-                        <Button bsStyle="link" onClick={this.handleSelectAll}>{i18n('global.title.selectAll')}</Button>
+                        <Button variant="link" onClick={this.handleSelectAll}>{i18n('global.title.selectAll')}</Button>
                         /
-                        <Button bsStyle="link" onClick={this.handleUnselectAll}>{i18n('global.title.unselectAll')}</Button>
+                        <Button variant="link" onClick={this.handleUnselectAll}>{i18n('global.title.unselectAll')}</Button>
                     </div>
                 </div>
                 <div className='list-container'>

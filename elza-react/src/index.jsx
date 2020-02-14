@@ -14,11 +14,10 @@ import momentLocalizer from 'react-widgets-moment';
 import {store} from 'stores/index.jsx';
 import AjaxUtils from 'components/AjaxUtils.jsx';
 import EventEmitter from 'events';
-// Přidání custom style bsStyle action
-import {Button} from 'react-bootstrap';
-import {bootstrapUtils} from 'react-bootstrap/lib/utils';
+// Přidání custom style variant action
+//import {Button,} from 'react-bootstrap';
+//import {bootstrapUtils} from 'react-bootstrap';
 
-import SplitToggle from 'react-bootstrap/lib/SplitToggle';
 // Pokud dostane focus body, chceme jej změnit na implcitiní focus pro ribbon
 import {setFocus} from 'actions/global/focus.jsx';
 import {FOCUS_KEYS} from "./constants.tsx";
@@ -34,7 +33,7 @@ import ReactDOM from 'react-dom';
 import Root from './router';
 
 
-bootstrapUtils.addStyle(Button, 'action');
+//bootstrapUtils.addStyle(Button, 'action');
 
 // CustomEvent polyfill pro IE 9+
 if ( typeof window.CustomEvent !== "function" ){
@@ -116,12 +115,12 @@ window.onerror = function(message, url, line, column, error) {
 };
 
 // Globální vypnutí focus na split buttony
-
+/*
 SplitToggle.defaultProps = {
     ...SplitToggle.defaultProps,
     tabIndex: -1
 };
-
+*/
 {
     const testBodyfocus = () => {
         if (document.activeElement === document.body) { // focus je na body, nastavíme ho podle aktuálně přepnuté oblasti

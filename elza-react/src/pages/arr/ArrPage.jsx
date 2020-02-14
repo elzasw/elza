@@ -35,7 +35,7 @@ import {
     Ribbon,
     VisiblePolicyForm
 } from 'components/index.jsx';
-import {Button, DropdownButton, MenuItem} from 'react-bootstrap';
+import {Button, DropdownButton, Dropdown} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {fundsFetchIfNeeded, showRegisterJp} from 'actions/arr/fund.jsx'
@@ -544,13 +544,13 @@ class ArrPage extends ArrParentPage {
             const activeFund = arrRegion.funds[indexFund];
 
             altActions.push(
-                <Button key="fund-settings" onClick={this.handleChangeFundSettings.bind(this)}>
+                <Button key="fund-settings" onClick={this.handleChangeFundSettings.bind(this)} variant={"default"}>
                     <Icon glyph="fa-wrench"/>
                     <span className="btnText">{i18n('ribbon.action.arr.fund.settings.ui')}</span>
                 </Button>);
 
             altActions.push(
-                <Button key="fund-templates" onClick={this.handleChangeFundTemplateSettings}>
+                <Button key="fund-templates" onClick={this.handleChangeFundTemplateSettings} variant={"default"}>
                     <Icon glyph="fa-wrench"/>
                     <span className="btnText">{i18n('ribbon.action.arr.fund.settings.template')}</span>
                 </Button>);
@@ -558,7 +558,7 @@ class ArrPage extends ArrParentPage {
             // Zobrazení historie změn
             if (userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId: activeFund.id}, perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})) {
                 altActions.push(
-                    <Button onClick={() => this.handleShowFundHistory(activeFund.versionId, readMode)} key="show-fund-history">
+                    <Button onClick={() => this.handleShowFundHistory(activeFund.versionId, readMode)} key="show-fund-history" variant={"default"}>
                         <Icon glyph="fa-clock-o"/>
                         <div>
                             <span className="btnText">{i18n('ribbon.action.showFundHistory')}</span>
@@ -569,7 +569,7 @@ class ArrPage extends ArrParentPage {
 
             if (userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId: activeFund.id}, perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})) {
                 altActions.push(
-                    <Button onClick={() => this.handleShowSyncDaosByFund(activeFund.versionId)} key="show-sync-daos-by-fund">
+                    <Button onClick={() => this.handleShowSyncDaosByFund(activeFund.versionId)} key="show-sync-daos-by-fund" variant={"default"}>
                         <Icon glyph="fa-camera"/>
                         <div>
                             <span className="btnText">{i18n('ribbon.action.syncDaosByFund')}</span>
@@ -586,18 +586,18 @@ class ArrPage extends ArrParentPage {
                 if (activeNode.selectedSubNodeId !== null) {
                     subNodeId = activeNode.selectedSubNodeId;
                     itemActions.push(
-                        <Button key="next-error" onClick={this.handleErrorPrevious.bind(this, activeFund.versionId, activeNode.selectedSubNodeId)}>
+                        <Button key="next-error" onClick={this.handleErrorPrevious.bind(this, activeFund.versionId, activeNode.selectedSubNodeId)} variant={"default"}>
                             <Icon glyph="fa-arrow-left"/>
                             <span className="btnText">{i18n('ribbon.action.arr.validation.error.previous')}</span>
                         </Button>,
-                        <Button key="previous-error" onClick={this.handleErrorNext.bind(this, activeFund.versionId, activeNode.selectedSubNodeId)}>
+                        <Button key="previous-error" onClick={this.handleErrorNext.bind(this, activeFund.versionId, activeNode.selectedSubNodeId)} variant={"default"}>
                             <Icon glyph="fa-arrow-right"/>
                             <span className="btnText">{i18n('ribbon.action.arr.validation.error.next')}</span>
                         </Button>
                     );
                     if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: activeFund.id})) {
                         itemActions.push(
-                            <Button disabled={readMode} key="prepareFundAction" onClick={this.handleOpenFundActionForm.bind(this, activeFund.versionId, activeInfo.activeSubNode)}>
+                            <Button disabled={readMode} key="prepareFundAction" onClick={this.handleOpenFundActionForm.bind(this, activeFund.versionId, activeInfo.activeSubNode)} variant={"default"}>
                                 <Icon glyph="fa-calculator"/>
                                 <span className="btnText">{i18n('ribbon.action.arr.fund.newFundAction')}</span>
                             </Button>
@@ -641,12 +641,12 @@ class ArrPage extends ArrParentPage {
             }
 
             itemActions.push(
-                <DropdownButton bsStyle="default" disabled={!haveProtocolPermissionToWrite} title={<span>
+                <DropdownButton variant="default" disabled={!haveProtocolPermissionToWrite} title={<span>
                 <Icon glyph="fa-commenting"/>
                 <span className="btnText">{i18n('ribbon.action.arr.issue.add')}</span>
             </span>} key="add-issue" id="add-issue">
-                    <MenuItem eventKey="1" onClick={this.createIssueFund}>{i18n("arr.issues.add.arr")}</MenuItem>
-                    <MenuItem eventKey="2" disabled={subNodeId === null} onClick={subNodeId !== null ? this.createIssueNode : null}>{i18n("arr.issues.add.node")}</MenuItem>
+                    <Dropdown.Item eventKey="1" onClick={this.createIssueFund}>{i18n("arr.issues.add.arr")}</Dropdown.Item>
+                    <Dropdown.Item eventKey="2" disabled={subNodeId === null} onClick={subNodeId !== null ? this.createIssueNode : null}>{i18n("arr.issues.add.node")}</Dropdown.Item>
                 </DropdownButton>
             );
 

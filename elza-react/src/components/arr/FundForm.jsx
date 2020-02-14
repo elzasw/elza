@@ -122,7 +122,7 @@ class FundForm extends AbstractReactComponent {
                 <FormInput type="text" label={i18n('arr.fund.internalCode')} {...internalCode} {...decorateFormField(internalCode)} />}
 
                 {(create || update) &&
-                <FormInput componentClass="select" label={i18n('arr.fund.institution')} {...institutionId} {...decorateFormField(institutionId)}>
+                <FormInput as="select" label={i18n('arr.fund.institution')} {...institutionId} {...decorateFormField(institutionId)}>
                     <option key='-institutionId'/>
                     {institutions.map(i=> {
                         return <option value={i.id}>{i.name}</option>
@@ -130,7 +130,7 @@ class FundForm extends AbstractReactComponent {
                 </FormInput>}
 
                 {(create || ruleSet) &&
-                <FormInput componentClass="select" label={i18n('arr.fund.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
+                <FormInput as="select" label={i18n('arr.fund.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
                     <option key='-ruleSetId'/>
                     {ruleSets.map(i=> {
                         return <option value={i.id}>{i.name}</option>
@@ -138,7 +138,7 @@ class FundForm extends AbstractReactComponent {
                 </FormInput>}
 
                 {approve &&
-                <FormInput componentClass="textarea" label={i18n('arr.fund.dateRange')} {...dateRange} {...decorateFormField(dateRange)} />}
+                <FormInput as="textarea" label={i18n('arr.fund.dateRange')} {...dateRange} {...decorateFormField(dateRange)} />}
 
                 {update && <Autocomplete
                     tags
@@ -171,7 +171,7 @@ class FundForm extends AbstractReactComponent {
                 </div>}
 
                 {create && <FormInput
-                    componentClass={TagsField}
+                    as={TagsField}
                     label={i18n('arr.fund.fundAdmins')}
                     {...fundAdmins}
                     {...decorateFormField(fundAdmins)}
@@ -187,7 +187,7 @@ class FundForm extends AbstractReactComponent {
                 {create && <Button type="submit"  disabled={submitting}>{i18n('global.action.create')}</Button>}
                 {approve && approveButton}
                 {(update || ruleSet) && <Button type="submit" disabled={submitting}>{i18n('global.action.update')}</Button>}
-                <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>
     }

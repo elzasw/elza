@@ -103,7 +103,7 @@ class ScopeListForm extends AbstractReactComponent {
     };
 
     renderConnectedScope = (target) => ({item, index}) => {
-        return <div>{item.name.value} <Button bsStyle="action" bsSize="xs" className="pull-right" onClick={this.disconnectScope.bind(this, target, index)}><Icon glyph="fa-trash" /></Button></div>
+        return <div>{item.name.value} <Button variant="action" bsSize="xs" className="pull-right" onClick={this.disconnectScope.bind(this, target, index)}><Icon glyph="fa-trash" /></Button></div>
     };
 
     handleFieldChange = (e) => {
@@ -145,7 +145,7 @@ class ScopeListForm extends AbstractReactComponent {
                     <FormInput type="text" {...code} {...customProps} label={i18n("accesspoint.scope.code")} onChange={this.handleFieldChange} />
                 </Col>
                 <Col xs={6}>
-                    <FormInput componentClass="select" {...language} {...customProps} label={i18n("accesspoint.scope.language")} onChange={this.handleFieldChange} >
+                    <FormInput as="select" {...language} {...customProps} label={i18n("accesspoint.scope.language")} onChange={this.handleFieldChange} >
                         <option key={0} value={null} />
                         {languagesOptions}
                     </FormInput>

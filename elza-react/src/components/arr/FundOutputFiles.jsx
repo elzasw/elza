@@ -62,7 +62,7 @@ class FundOutputFiles extends AbstractReactComponent {
         return <div className='fund-files fund-output-files'>
             <div className={"fund-files-header"}>
                 <h4 className={"fund-files-title"}>{i18n("arr.output.title.complete")}</h4>
-                <Button bsStyle="action" className={"fund-files-download-all"} onClick={this.handleDownloadAll}>
+                <Button variant="action" className={"fund-files-download-all"} onClick={this.handleDownloadAll}>
                     <Icon className={"fund-files-download-icon"} title={i18n("global.action.download")} glyph='fa-download'/>
                     {i18n('global.action.downloadAll')}
                 </Button>

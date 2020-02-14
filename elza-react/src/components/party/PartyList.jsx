@@ -187,7 +187,7 @@ class PartyList extends AbstractReactComponent {
                     onChange={this.handleFilterPartyState}
                     value={partyList.filter.state}
                 />
-                <FormInput componentClass="select" className="type" onChange={this.handleFilterType} value={partyList.filter.type} disabled={!partyTypesFetched}>
+                <FormInput as="select" className="type" onChange={this.handleFilterType} value={partyList.filter.type} disabled={!partyTypesFetched}>
                     <option value={-1}>{i18n('global.all')}</option>
                     {partyTypes && partyTypes.map(type => <option value={type.id} key={type.id}>{type.name}</option>)}
                 </FormInput>

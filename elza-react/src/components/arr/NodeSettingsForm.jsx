@@ -2,12 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n} from 'components/shared';
-import {Modal, Button, Checkbox, Form} from 'react-bootstrap';
+import {Modal, Button, FormCheck, Form} from 'react-bootstrap';
 import {indexById, objectById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import {visiblePolicyFetchIfNeeded} from 'actions/arr/visiblePolicy.jsx'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {Row, Col, Nav, NavItem, Radio} from 'react-bootstrap'
+import {Row, Col, Nav, NavItem} from 'react-bootstrap'
 import {FormInput, Loading} from "../shared/index";
 import getMapFromList from "../../shared/utils/getMapFromList";
 
@@ -85,7 +85,7 @@ class NodeSettingsForm extends AbstractReactComponent {
                 <Modal.Body>
                     <Row>
                         <Col sm={3} className="menu">
-                            <Nav bsStyle="pills" stacked activeKey={activeView} onSelect={this.changeView}>
+                            <Nav variant="pills" stacked activeKey={activeView} onSelect={this.changeView}>
                                 <NavItem eventKey={VIEW_KEYS.RULES}>{i18n('visiblePolicy.rules')}</NavItem>
                                 <NavItem eventKey={VIEW_KEYS.EXTENSIONS}>{i18n('visiblePolicy.extensions')}</NavItem>
                             </Nav>
@@ -100,7 +100,7 @@ class NodeSettingsForm extends AbstractReactComponent {
                                             {records.map((val, index) => {
                                                 const {checked, name, onFocus, onChange, onBlur} = val.checked;
                                                 const wantedProps = {checked, name, onFocus, onChange, onBlur};
-                                                return <Checkbox {...wantedProps} disabled={rules.value !== "NODE"} key={index} value={true}>{visiblePolicyTypeItems[val.id.initialValue].name}</Checkbox>
+                                                return <FormCheck {...wantedProps} disabled={rules.value !== "NODE"} key={index} value={true}>{visiblePolicyTypeItems[val.id.initialValue].name}</FormCheck>
                                             })}
                                         </div>
                                     </div>
@@ -124,9 +124,9 @@ class NodeSettingsForm extends AbstractReactComponent {
                                             {nodeExtensions && nodeExtensions.length > 0 ? nodeExtensions.map((val, index) => {
                                                 const {checked, name, onFocus, onChange, onBlur} = val.checked;
                                                 const wantedProps = {checked, name, onFocus, onChange, onBlur};
-                                                return <Checkbox {...wantedProps} key={index} value={true}>
+                                                return <FormCheck {...wantedProps} key={index} value={true}>
                                                     {availableExtensionsMap[val.id.initialValue] ? availableExtensionsMap[val.id.initialValue].name : objectById(visiblePolicy.otherData.nodeExtensions, val.id.initialValue).name}
-                                                </Checkbox>
+                                                </FormCheck>
                                             }) : "Nejsou dostupná žádná rozšíření"}
                                         </div>
                                     </div>
@@ -137,7 +137,7 @@ class NodeSettingsForm extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" disabled={submitting}>{i18n('visiblePolicy.action.save')}</Button>
-                    <Button bsStyle="link" disabled={submitting} onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button variant="link" disabled={submitting} onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </Form>
         )

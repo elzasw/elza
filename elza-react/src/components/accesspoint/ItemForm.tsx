@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import {Icon, i18n, AbstractReactComponent, NoFocusButton } from '../../components/shared';
 import {connect} from 'react-redux'
-import {Panel, Accordion} from 'react-bootstrap'
+import {Card, Accordion} from 'react-bootstrap'
 import {indexById} from '../../stores/app/utils'
 import {partyDetailFetchIfNeeded, partyAdd} from '../../actions/party/party'
 // import {registryDetailFetchIfNeeded, registryAdd} from '../../actions/registry/registry'
@@ -535,17 +535,22 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
         if (unusedItemTypeIds && unusedItemTypeIds.length > 0) {
             // Accordion as React.Component;
             unusedGeneratedItems = <Accordion>
-                <Panel eventKey="1">
-                    <Panel.Heading>{i18n("arr.output.title.unusedGeneratedItems", unusedItemTypeIds.length)}</Panel.Heading>
-                    {unusedItemTypeIds.map((itemTypeId, index) => {
-                        const refType = subNodeForm!!.refTypesMap!![itemTypeId];
-                        if (!readMode && !closed) {
-                            return <a className="add-link btn btn-link" key={itemTypeId} onClick={() => this.handleAddUnusedItem(itemTypeId, index)}><Icon glyph="fa-plus" /> {refType.name}</a>
-                        } else {
-                            return <span className="space" key={itemTypeId}>{refType.name} </span>
-                        }
-                    })}
-                </Panel>
+
+                <Card>
+                    <Card.Header>{i18n("arr.output.title.unusedGeneratedItems", unusedItemTypeIds.length)}</Card.Header>
+                    <Accordion.Collapse eventKey="1">
+                        <Card.Body>
+                            {unusedItemTypeIds.map((itemTypeId, index) => {
+                                const refType = subNodeForm!!.refTypesMap!![itemTypeId];
+                                if (!readMode && !closed) {
+                                    return <a className="add-link btn btn-link" key={itemTypeId} onClick={() => this.handleAddUnusedItem(itemTypeId, index)}><Icon glyph="fa-plus" /> {refType.name}</a>
+                                } else {
+                                    return <span className="space" key={itemTypeId}>{refType.name} </span>
+                                }
+                            })}
+                        </Card.Body>
+                    </Accordion.Collapse>
+                </Card>
             </Accordion>
         }
 

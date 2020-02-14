@@ -46,7 +46,7 @@ class ControllableDropdownButton extends AbstractReactComponent {
         if (typeof child.ref !== 'undefined' && child.ref !== null) {
             ref = child.ref
         } else {
-            ref = 'firstMenuItem'
+            ref = 'firstDropdown.Item'
         }
         const el = ReactDOM.findDOMNode(this.refs[ref]);
         el.children[0].focus()
@@ -55,7 +55,7 @@ class ControllableDropdownButton extends AbstractReactComponent {
     handleToggle = (isOpen) => {
         this.setState({
             open: isOpen
-        }, ()=>{isOpen && this.focusFirstMenuItem()});
+        }, ()=>{isOpen && this.focusFirstDropdown.Item()});
         this.props.onToggle && this.props.onToggle(isOpen)
     };
 
@@ -72,7 +72,7 @@ class ControllableDropdownButton extends AbstractReactComponent {
                 if (typeof child.ref !== 'undefined' && child.ref !== null) {
                     opts.ref = child.ref
                 } else {
-                    opts.ref = 'firstMenuItem'
+                    opts.ref = 'firstDropdown.Item'
                 }
             }
             return React.cloneElement(child, opts);

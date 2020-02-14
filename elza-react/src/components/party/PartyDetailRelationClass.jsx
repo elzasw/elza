@@ -104,7 +104,7 @@ class PartyDetailRelations extends AbstractReactComponent {
         if (relationClassType.repeatability == RELATION_CLASS_TYPE_REPEATABILITY.MULTIPLE ||
             (relationClassType.repeatability == RELATION_CLASS_TYPE_REPEATABILITY.UNIQUE &&
                 (!relations || relations.length < 1))) {
-            addButton = <Button bsStyle="action" onClick={this.handleRelationAdd}><Icon glyph="fa-plus" /></Button>;
+            addButton = <Button variant="action" onClick={this.handleRelationAdd}><Icon glyph="fa-plus" /></Button>;
         }
 
         const relationsArray = relations ? relations : [];
@@ -147,8 +147,8 @@ class PartyDetailRelations extends AbstractReactComponent {
                         {relation.note && <div className="note">{relation.note}</div>}
                     </div>
                     <div className="actions">
-                        <Button bsStyle="action" onClick={() => this.handleRelationUpdate(relation)}><Icon glyph="fa-pencil" /></Button>
-                        <Button className="delete" bsStyle="action" onClick={() => this.handleRelationDelete(relation.id)}><Icon glyph="fa-trash" /></Button>
+                        <Button variant="action" onClick={() => this.handleRelationUpdate(relation)}><Icon glyph="fa-pencil" /></Button>
+                        <Button className="delete" variant="action" onClick={() => this.handleRelationDelete(relation.id)}><Icon glyph="fa-trash" /></Button>
                     </div>
                 </div>)}
             </div>)

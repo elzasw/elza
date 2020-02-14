@@ -96,7 +96,7 @@ class ApDetailNames extends AbstractReactComponent {
         return <div className="accesspoint-detail-names">
             <div>
                 <label className="group-label">{i18n("accesspoint.detail.formNames")}</label>
-                {canEdit && <Button bsStyle="action" onClick={this.handleNameAdd}><Icon glyph="fa-plus" /></Button>}
+                {canEdit && <Button variant="action" onClick={this.handleNameAdd}><Icon glyph="fa-plus" /></Button>}
             </div>
             <div className="name-group">
                 {accessPoint.names.map((name, index) =>
@@ -104,10 +104,10 @@ class ApDetailNames extends AbstractReactComponent {
                         <div className="value">{this.getName(name)}</div>
                         <div className="actions">
                             {renderError(name)}
-                            {canEdit && <Button bsStyle="action" onClick={() => this.handleNameUpdate(name)}><Icon glyph="fa-pencil" /></Button>}
+                            {canEdit && <Button variant="action" onClick={() => this.handleNameUpdate(name)}><Icon glyph="fa-pencil" /></Button>}
                             {canEdit && !name.preferredName && <span>
-                                <Button className="delete" bsStyle="action" onClick={() => this.handleDelete(name.objectId)}><Icon glyph="fa-trash" /></Button>
-                                <Button bsStyle="action" onClick={() => this.handleSelectPreferred(name.objectId)}><Icon glyph="fa-star" /></Button>
+                                <Button className="delete" variant="action" onClick={() => this.handleDelete(name.objectId)}><Icon glyph="fa-trash" /></Button>
+                                <Button variant="action" onClick={() => this.handleSelectPreferred(name.objectId)}><Icon glyph="fa-star" /></Button>
                             </span>}
                         </div>
                     </div>)}

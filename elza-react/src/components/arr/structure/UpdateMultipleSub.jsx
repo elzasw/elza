@@ -8,7 +8,7 @@ import {
     Loading
 } from 'components/shared'
 import {reduxForm} from 'redux-form'
-import {Checkbox, Form, Modal, Button} from 'react-bootstrap'
+import {FormCheck, Form, Modal, Button} from 'react-bootstrap'
 import '../NodeSubNodeForm.scss';
 import SubNodeForm from "../SubNodeForm";
 import {structureFormActions} from "../../../actions/arr/subNodeForm";
@@ -180,7 +180,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
             const checked = index !== -1;
 
 
-            parts.push(<Checkbox key="increment" checked={checked} onChange={() => {
+            parts.push(<FormCheck key="increment" checked={checked} onChange={() => {
                 if (checked) {
                     autoincrementItemTypeIds.onChange([
                         ...autoincrementItemTypeIds.value.slice(0, index),
@@ -195,7 +195,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
 
             }}>
                 {i18n('arr.structure.modal.increment')}
-            </Checkbox>)
+            </FormCheck>)
         }
 
         return parts;
@@ -473,7 +473,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" disabled={submitting}>{i18n('global.action.update')}</Button>
-                    <Button bsStyle="link" disabled={submitting} onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button variant="link" disabled={submitting} onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </Form>
         )

@@ -67,11 +67,11 @@ class Toastr extends AbstractReactComponent {
 
             return <Alert
                 key={'toast-' + index}
-                bsStyle={t.style}
+                variant={t.style}
                 bsSize={t.size ? t.size : "lg"}
                 className={t.visible && "fade"}
                 closeLabel={i18n('global.action.close')}
-                onDismiss={() => (this.handleDismiss(index))}
+                onClose={() => (this.handleDismiss(index))}
             >
                 <div className="icon-container">{Toastr.getIconStyle(t.style)}</div>
                 <div className="content">

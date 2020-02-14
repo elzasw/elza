@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {Form, Checkbox} from 'react-bootstrap';
+import {Form, FormCheck} from 'react-bootstrap';
 import {decorateFormField} from 'components/form/FormUtils.jsx';
 import AbstractReactComponent from "../AbstractReactComponent";
 import FormInput from "../shared/form/FormInput";
@@ -122,11 +122,11 @@ class PersistentSortForm extends AbstractReactComponent {
                        inline
             />
 
-            <Checkbox type="checkbox"
+            <FormCheck type="checkbox"
                       name="sortChildren"
                       {...sortChildren}
                       value={sortChildren.checked}
-            >{i18n("arr.functions.persistentSort.sortChildren")}</Checkbox>
+            >{i18n("arr.functions.persistentSort.sortChildren")}</FormCheck>
 
         </Form>
     }

@@ -89,11 +89,11 @@ class DatationField extends AbstractReactComponent {
         return <div className="datation-field">
             <div className="header">
                 <label>{label}</label>
-                <Button bsStyle="action" className={allowedText ? '' : 'disabledColor'} onClick={() => this.setState({allowedText: !allowedText})}><Icon glyph="fa-font" /></Button>
-                <Button bsStyle="action" className={allowedNote ? '' : 'disabledColor'} onClick={() => this.setState({allowedNote: !allowedNote})}><Icon glyph="fa-sticky-note-o" /></Button>
+                <Button variant="action" className={allowedText ? '' : 'disabledColor'} onClick={() => this.setState({allowedText: !allowedText})}><Icon glyph="fa-font" /></Button>
+                <Button variant="action" className={allowedNote ? '' : 'disabledColor'} onClick={() => this.setState({allowedNote: !allowedNote})}><Icon glyph="fa-sticky-note-o" /></Button>
             </div>
             <div className="datation">
-                <FormInput componentClass="select" {...fields.calendarTypeId}>
+                <FormInput as="select" {...fields.calendarTypeId}>
                     {calendars}
                 </FormInput>
                 <TooltipTrigger
@@ -105,7 +105,7 @@ class DatationField extends AbstractReactComponent {
                 </TooltipTrigger>
             </div>
             {allowedText && <FormInput type="text" {...fields.textDate} label={labelTextual} />}
-            {allowedNote && <FormInput componentClass="textarea" {...fields.note} label={labelNote} />}
+            {allowedNote && <FormInput as="textarea" {...fields.note} label={labelNote} />}
         </div>
     }
 }

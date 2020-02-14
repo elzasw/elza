@@ -24,7 +24,7 @@ class PersistentSortDialog extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" onClick={this.handleSubmit}>{i18n('global.action.run')}</Button>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
         )

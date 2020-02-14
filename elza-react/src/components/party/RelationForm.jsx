@@ -95,10 +95,10 @@ class RelationForm extends AbstractReactComponent {
                     <div className="flex-2 col">
                         <div className="block entity relations">
                             <div className="relation-entities">
-                                <label className="type">{i18n('party.relation.entityInRelation')}</label><Button bsStyle="action" onClick={() => relationEntities.addField({record:null, roleType: {id: null}})}><Icon glyph="fa-plus" /></Button>
+                                <label className="type">{i18n('party.relation.entityInRelation')}</label><Button variant="action" onClick={() => relationEntities.addField({record:null, roleType: {id: null}})}><Icon glyph="fa-plus" /></Button>
                                 {relationEntities.map((i,index) => <div className="relation-row" key={index}>
                                     <div className="type">
-                                        <FormInput componentClass="select" {...i.roleType.id}>
+                                        <FormInput as="select" {...i.roleType.id}>
                                             <option key={0} />
                                             {roleTypesList && roleTypesList.filter(t => t.id == i.roleType.id.value || t.repeatable || usedRoles.indexOf(t.id) === -1).map(v => {
                                                 let disabled = false;
@@ -115,7 +115,7 @@ class RelationForm extends AbstractReactComponent {
                                     <div className="record">
                                         <RegistryField disabled={!i.roleType.id.value} partyId={partyId} {...i.record} roleTypeId={i.roleType.id.value} footer={true} footerButtons={false} />
                                     </div>
-                                    <Button bsStyle="action" onClick={() => relationEntities.removeField(index)}><Icon glyph="fa-times" /></Button>
+                                    <Button variant="action" onClick={() => relationEntities.removeField(index)}><Icon glyph="fa-times" /></Button>
                                  </div>)}
                             </div>
                         </div>
@@ -132,14 +132,14 @@ class RelationForm extends AbstractReactComponent {
                         </div>}
                     </div>}
                     <div className="flex-1 footer col">
-                        <FormInput componentClass="textarea" label={i18n('party.relation.note')} {...note} />
-                        <FormInput componentClass="textarea" label={i18n('party.relation.sources')} {...source} />
+                        <FormInput as="textarea" label={i18n('party.relation.note')} {...note} />
+                        <FormInput as="textarea" label={i18n('party.relation.sources')} {...source} />
                     </div>
                 </div>
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit"  disabled={submitting}>{i18n('global.action.store')}</Button>
-                <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>;
     }

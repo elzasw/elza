@@ -3,18 +3,18 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
-import {FormControl, Modal, Button, Input, Radio, ControlLabel, Form, FormGroup} from 'react-bootstrap';
+import {Modal, Button, FormCheck, FormLabel, Form, FormGroup} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
 import {getSpecsIds} from 'components/arr/ArrUtils.jsx';
-import  './FundBulkModificationsForm.scss';
-import SimpleCheckListBox from "./SimpleCheckListBox";
-import {validateInt} from "../validate";
-import DescItemUnitdate from "./nodeForm/DescItemUnitdate";
-import DescItemRecordRef from "./nodeForm/DescItemRecordRef";
+import './FundBulkModificationsForm.scss';
+import SimpleCheckListBox from './SimpleCheckListBox';
+import {validateInt} from '../validate';
+import DescItemUnitdate from './nodeForm/DescItemUnitdate';
+import DescItemRecordRef from './nodeForm/DescItemRecordRef';
 import DatationField from './../party/DatationField';
-import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx'
+import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx';
 import {getMapFromList} from './../../stores/app/utils.jsx';
 
 const getDefaultOperationType = props => {
@@ -31,10 +31,10 @@ const getDefaultOperationType = props => {
             break;
         default:
             result = 'delete';
-            break
+            break;
     }
 
-    return result
+    return result;
 };
 
 const getDefaultItemsArea = props => {
@@ -44,9 +44,9 @@ const getDefaultItemsArea = props => {
     const showSelected = checkedItemsCount > 0 && checkedItemsCount < allItemsCount;
 
     if (showSelected) {
-        return 'selected'
+        return 'selected';
     } else {
-        return 'page'
+        return 'page';
     }
 };
 
@@ -54,7 +54,6 @@ const getDefaultItemsArea = props => {
  * Formulář hledání a nahrazení.
  */
 class FundBulkModificationsForm extends AbstractReactComponent {
-
     /**
      * Validace formuláře.
      */
@@ -67,7 +66,13 @@ class FundBulkModificationsForm extends AbstractReactComponent {
         }
 
         if (props.refType.useSpecification) {
-            const refType = {...props.refType, descItemSpecs: [{id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')}, ...props.refType.descItemSpecs]};
+            const refType = {
+                ...props.refType,
+                descItemSpecs: [
+                    {id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')},
+                    ...props.refType.descItemSpecs,
+                ],
+            };
             const specsIds = getSpecsIds(refType, values.specs.type, values.specs.ids);
             if (specsIds.length === 0 && values.specs.ids.indexOf(FILTER_NULL_VALUE) === -1) {
                 errors.specs = i18n('global.validation.required');
@@ -106,7 +111,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                         break;
                     }
                     case 'RECORD_REF': {
-                        console.log(222222222, values)
+                        console.log(222222222, values);
                     }
                 }
 
@@ -134,8 +139,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
         super(props);
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-    }
+    UNSAFE_componentWillReceiveProps(nextProps) {}
 
     componentDidMount() {
         this.props.dispatch(descItemTypesFetchIfNeeded());
@@ -155,10 +159,10 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                 break;
             default:
                 result = false;
-                break
+                break;
         }
 
-        return result
+        return result;
     };
 
     supportReplace = () => {
@@ -179,10 +183,10 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                 break;
             default:
                 result = false;
-                break
+                break;
         }
 
-        return result
+        return result;
     };
 
     supportSetSpecification = () => {
@@ -190,7 +194,8 @@ class FundBulkModificationsForm extends AbstractReactComponent {
         return refType.useSpecification;
     };
 
-    submitReduxForm = (values, dispatch) => submitForm(FundBulkModificationsForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+    submitReduxForm = (values, dispatch) =>
+        submitForm(FundBulkModificationsForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     /**
      * Vrací true v případě, že atribut tvoří hodnotu pouze specifikací - enum.
@@ -201,8 +206,16 @@ class FundBulkModificationsForm extends AbstractReactComponent {
     };
 
     render() {
-        const {allItemsCount, checkedItemsCount, refType, fields: {findText, replaceText, itemsArea, operationType,
-            specs, replaceSpec}, handleSubmit, onClose, dataType, calendarTypes} = this.props;
+        const {
+            allItemsCount,
+            checkedItemsCount,
+            refType,
+            fields: {findText, replaceText, itemsArea, operationType, specs, replaceSpec},
+            handleSubmit,
+            onClose,
+            dataType,
+            calendarTypes,
+        } = this.props;
         const uncheckedItemsCount = allItemsCount - checkedItemsCount;
 
         let operationInputs = [];
@@ -212,31 +225,65 @@ class FundBulkModificationsForm extends AbstractReactComponent {
             case 'setSpecification':
                 submitButtonTitle = 'arr.fund.bulkModifications.action.setSpecification';
                 operationInputs.push(
-                    <FormInput componentClass='select'
-                               label={i18n(this.isEnumType() ? 'arr.fund.bulkModifications.replace.replaceEnum' : 'arr.fund.bulkModifications.replace.replaceSpec')}
-                               {...replaceSpec} {...decorateFormField(replaceSpec)}>
+                    <FormInput
+                        as="select"
+                        label={i18n(
+                            this.isEnumType()
+                                ? 'arr.fund.bulkModifications.replace.replaceEnum'
+                                : 'arr.fund.bulkModifications.replace.replaceSpec',
+                        )}
+                        {...replaceSpec}
+                        {...decorateFormField(replaceSpec)}
+                    >
                         <option />
                         {refType.descItemSpecs.map(i => (
-                            <option key={i.id} value={i.id}>{i.name}</option>
+                            <option key={i.id} value={i.id}>
+                                {i.name}
+                            </option>
                         ))}
-                    </FormInput>
+                    </FormInput>,
                 );
                 break;
             case 'findAndReplace':
                 submitButtonTitle = 'arr.fund.bulkModifications.action.findAndReplace';
-                operationInputs.push(<FormInput type="text" label={i18n('arr.fund.bulkModifications.findAndRFeplace.findText')} {...findText} {...decorateFormField(findText)} />);
-                operationInputs.push(<FormInput type="text" label={i18n('arr.fund.bulkModifications.findAndRFeplace.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />);
+                operationInputs.push(
+                    <FormInput
+                        type="text"
+                        label={i18n('arr.fund.bulkModifications.findAndRFeplace.findText')}
+                        {...findText}
+                        {...decorateFormField(findText)}
+                    />,
+                );
+                operationInputs.push(
+                    <FormInput
+                        type="text"
+                        label={i18n('arr.fund.bulkModifications.findAndRFeplace.replaceText')}
+                        {...replaceText}
+                        {...decorateFormField(replaceText)}
+                    />,
+                );
                 break;
             case 'replace':
                 submitButtonTitle = 'arr.fund.bulkModifications.action.replace';
                 if (refType.useSpecification) {
                     operationInputs.push(
-                        <FormInput componentClass='select' label={i18n(this.isEnumType() ? 'arr.fund.bulkModifications.replace.replaceEnum' : 'arr.fund.bulkModifications.replace.replaceSpec')} {...replaceSpec} {...decorateFormField(replaceSpec)}>
+                        <FormInput
+                            as="select"
+                            label={i18n(
+                                this.isEnumType()
+                                    ? 'arr.fund.bulkModifications.replace.replaceEnum'
+                                    : 'arr.fund.bulkModifications.replace.replaceSpec',
+                            )}
+                            {...replaceSpec}
+                            {...decorateFormField(replaceSpec)}
+                        >
                             <option />
                             {refType.descItemSpecs.map(i => (
-                                <option key={i.id} value={i.id}>{i.name}</option>
+                                <option key={i.id} value={i.id}>
+                                    {i.name}
+                                </option>
                             ))}
-                        </FormInput>
+                        </FormInput>,
                     );
                 }
 
@@ -247,126 +294,220 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                     readMode: false,
                     cal: false,
                     readOnly: false,
-                    onChange: (data) => {
+                    onChange: data => {
                         replaceText.onChange({value: data});
                     },
-                    onBlur: (e) => {
+                    onBlur: e => {
                         // záměrně ignorujeme
-                    }
+                    },
                 };
 
                 switch (dataType.code) {
-                    case 'UNITDATE': {
-                        let data = {
-                            ...descItemProps,
-                            descItem: {
-                                error: {
-                                    calendarType: replaceText.error ? replaceText.error : null,
-                                    value: replaceText.error ? replaceText.error : null
+                    case 'UNITDATE':
+                        {
+                            let data = {
+                                ...descItemProps,
+                                descItem: {
+                                    error: {
+                                        calendarType: replaceText.error ? replaceText.error : null,
+                                        value: replaceText.error ? replaceText.error : null,
+                                    },
+                                    value: replaceText.value.value,
+                                    calendarTypeId: replaceText.value.calendarTypeId,
                                 },
-                                value: replaceText.value.value,
-                                calendarTypeId: replaceText.value.calendarTypeId
-                            },
-                        };
-                        operationInputs.push(<FormInput componentClass={DescItemUnitdate} label={i18n('arr.fund.bulkModifications.replace.replaceText')} calendarTypes={calendarTypes} {...replaceText} {...data} />);
-                    }
-                        break;
-                    case "RECORD_REF": {
-                        let specName = null;
-                        if (replaceSpec.value) {
-                            const map = getMapFromList(refType.descItemSpecs);
-                            specName = map[replaceSpec.value].name;
+                            };
+                            operationInputs.push(
+                                <FormInput
+                                    as={DescItemUnitdate}
+                                    label={i18n('arr.fund.bulkModifications.replace.replaceText')}
+                                    calendarTypes={calendarTypes}
+                                    {...replaceText}
+                                    {...data}
+                                />,
+                            );
                         }
+                        break;
+                    case 'RECORD_REF':
+                        {
+                            let specName = null;
+                            if (replaceSpec.value) {
+                                const map = getMapFromList(refType.descItemSpecs);
+                                specName = map[replaceSpec.value].name;
+                            }
 
-                        let data = {
-                            ...descItemProps,
-                            itemTypeId: refType.id,
-                            itemName: refType.shortcut,
-                            specName: specName,
-                            descItem: {
-                                error: {
-                                    value: replaceText.error ? replaceText.error : null,
+                            let data = {
+                                ...descItemProps,
+                                itemTypeId: refType.id,
+                                itemName: refType.shortcut,
+                                specName: specName,
+                                descItem: {
+                                    error: {
+                                        value: replaceText.error ? replaceText.error : null,
+                                    },
+                                    record: replaceText.value,
+                                    descItemSpecId: replaceSpec.value,
                                 },
-                                record: replaceText.value,
-                                descItemSpecId: replaceSpec.value,
-                            },
-                        };
-                        operationInputs.push(<FormInput componentClass={DescItemRecordRef} label={i18n('arr.fund.bulkModifications.replace.replaceText')} {...replaceText} {...data} />);
-                    }
+                            };
+                            operationInputs.push(
+                                <FormInput
+                                    as={DescItemRecordRef}
+                                    label={i18n('arr.fund.bulkModifications.replace.replaceText')}
+                                    {...replaceText}
+                                    {...data}
+                                />,
+                            );
+                        }
                         break;
                     default:
-                        operationInputs.push(<FormInput type="text" label={i18n('arr.fund.bulkModifications.replace.replaceText')} {...replaceText} {...decorateFormField(replaceText)} />);
+                        operationInputs.push(
+                            <FormInput
+                                type="text"
+                                label={i18n('arr.fund.bulkModifications.replace.replaceText')}
+                                {...replaceText}
+                                {...decorateFormField(replaceText)}
+                            />,
+                        );
                 }
 
                 break;
             case 'delete':
                 submitButtonTitle = 'arr.fund.bulkModifications.action.delete';
-                break
+                break;
         }
 
-        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
-            <Modal.Body className='fund-bulk-modifications-container'>
-                <FormInput type="static" label={i18n('arr.fund.bulkModifications.descItemType')} wrapperClassName='form-items-group'>
-                    {refType.shortcut}
-                </FormInput>
+        return (
+            <Form onSubmit={handleSubmit(this.submitReduxForm)}>
+                <Modal.Body className="fund-bulk-modifications-container">
+                    <FormInput
+                        type="static"
+                        label={i18n('arr.fund.bulkModifications.descItemType')}
+                        wrapperClassName="form-items-group"
+                    >
+                        {refType.shortcut}
+                    </FormInput>
 
-                {refType.useSpecification && <FormGroup>
-                    <ControlLabel>{i18n(this.isEnumType() ? 'arr.fund.bulkModifications.values' : 'arr.fund.bulkModifications.specs')}</ControlLabel>
-                    <SimpleCheckListBox
-                        ref='specsListBox'
-                        items={[{id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')}, ...refType.descItemSpecs]}
-                        {...specs}
-                    />
-                </FormGroup>}
+                    {refType.useSpecification && (
+                        <FormGroup>
+                            <FormLabel>
+                                {i18n(
+                                    this.isEnumType()
+                                        ? 'arr.fund.bulkModifications.values'
+                                        : 'arr.fund.bulkModifications.specs',
+                                )}
+                            </FormLabel>
+                            <SimpleCheckListBox
+                                ref="specsListBox"
+                                items={[
+                                    {id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')},
+                                    ...refType.descItemSpecs,
+                                ]}
+                                {...specs}
+                            />
+                        </FormGroup>
+                    )}
 
-                <FormGroup>
-                    <ControlLabel>{i18n('arr.fund.bulkModifications.itemsArea')}</ControlLabel>
-                    <Radio
-                        {...itemsArea} value='page' checked={itemsArea.value === 'page'}
-                    >{i18n('arr.fund.bulkModifications.itemsArea.page', allItemsCount)}</Radio>
-                    {checkedItemsCount > 0 && checkedItemsCount < allItemsCount && <Radio {...itemsArea} value='selected' checked={itemsArea.value === 'selected'}>{i18n('arr.fund.bulkModifications.itemsArea.selected', checkedItemsCount)}</Radio>}
-                    {uncheckedItemsCount > 0 && checkedItemsCount > 0 && <Radio {...itemsArea} value='unselected' checked={itemsArea.value === 'unselected'}>{i18n('arr.fund.bulkModifications.itemsArea.unselected', uncheckedItemsCount)}</Radio>}
-                    <Radio
-                        {...itemsArea} value='all' checked={itemsArea.value === 'all'}
-                    >{i18n('arr.fund.bulkModifications.itemsArea.all')}</Radio>
-                </FormGroup>
-                <FormInput componentClass='select' label={i18n('arr.fund.bulkModifications.operationType')} {...operationType} {...decorateFormField(operationType)}>
-                    {this.supportFindAndReplace() && <option key='findAndReplace' value='findAndReplace'>{i18n('arr.fund.bulkModifications.operationType.findAndReplace')}</option>}
-                    {this.supportReplace() && <option key='replace' value='replace'>{i18n('arr.fund.bulkModifications.operationType.replace')}</option>}
-                    {this.supportSetSpecification() && <option key='setSpecification' value='setSpecification'>{i18n(this.isEnumType() ? 'arr.fund.bulkModifications.operationType.setEnum' : 'arr.fund.bulkModifications.operationType.setSpecification')}</option>}
-                    <option key='delete' value='delete'>{i18n('arr.fund.bulkModifications.operationType.delete')}</option>
-                </FormInput>
-                {operationInputs}
-            </Modal.Body>
-            <Modal.Footer>
-                <Button type="submit">{i18n(submitButtonTitle)}</Button>
-                <Button bsStyle="link" onClick={onClose}>{i18n('global.action.close')}</Button>
-            </Modal.Footer>
-        </Form>
+                    <FormGroup>
+                        <FormLabel>{i18n('arr.fund.bulkModifications.itemsArea')}</FormLabel>
+                        <FormCheck
+                            {...itemsArea}
+                            type={'radio'}
+                            value="page"
+                            checked={itemsArea.value === 'page'}
+                            label={i18n('arr.fund.bulkModifications.itemsArea.page', allItemsCount)}
+                        />{' '}
+                        {checkedItemsCount > 0 && checkedItemsCount < allItemsCount && (
+                            <FormCheck
+                                {...itemsArea}
+                                type={'radio'}
+                                value="selected"
+                                checked={itemsArea.value === 'selected'}
+                                label={i18n('arr.fund.bulkModifications.itemsArea.selected', checkedItemsCount)}
+                            />
+                        )}
+                        {uncheckedItemsCount > 0 && checkedItemsCount > 0 && (
+                            <FormCheck
+                                {...itemsArea}
+                                type={'radio'}
+                                value="unselected"
+                                checked={itemsArea.value === 'unselected'}
+                                label={i18n('arr.fund.bulkModifications.itemsArea.unselected', uncheckedItemsCount)}
+                            />
+                        )}
+                        <FormCheck
+                            {...itemsArea}
+                            type={'radio'}
+                            value="all"
+                            checked={itemsArea.value === 'all'}
+                            label={i18n('arr.fund.bulkModifications.itemsArea.all')}
+                        />{' '}
+                    </FormGroup>
+                    <FormInput
+                        as="select"
+                        label={i18n('arr.fund.bulkModifications.operationType')}
+                        {...operationType}
+                        {...decorateFormField(operationType)}
+                    >
+                        {this.supportFindAndReplace() && (
+                            <option key="findAndReplace" value="findAndReplace">
+                                {i18n('arr.fund.bulkModifications.operationType.findAndReplace')}
+                            </option>
+                        )}
+                        {this.supportReplace() && (
+                            <option key="replace" value="replace">
+                                {i18n('arr.fund.bulkModifications.operationType.replace')}
+                            </option>
+                        )}
+                        {this.supportSetSpecification() && (
+                            <option key="setSpecification" value="setSpecification">
+                                {i18n(
+                                    this.isEnumType()
+                                        ? 'arr.fund.bulkModifications.operationType.setEnum'
+                                        : 'arr.fund.bulkModifications.operationType.setSpecification',
+                                )}
+                            </option>
+                        )}
+                        <option key="delete" value="delete">
+                            {i18n('arr.fund.bulkModifications.operationType.delete')}
+                        </option>
+                    </FormInput>
+                    {operationInputs}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button type="submit">{i18n(submitButtonTitle)}</Button>
+                    <Button variant="link" onClick={onClose}>
+                        {i18n('global.action.close')}
+                    </Button>
+                </Modal.Footer>
+            </Form>
+        );
     }
 }
 
-export default reduxForm({
-    form: 'fundBulkModificationsForm',
-    fields: ['findText', 'replaceText', 'itemsArea', 'operationType', 'specs', 'replaceSpec'],
-}, (state, props) => {
-
+export default reduxForm(
+    {
+        form: 'fundBulkModificationsForm',
+        fields: ['findText', 'replaceText', 'itemsArea', 'operationType', 'specs', 'replaceSpec'],
+    },
+    (state, props) => {
         let val = '';
 
         if (props.dataType.code === 'UNITDATE') {
             val = {
                 value: '',
-                calendarTypeId: 1
-            }
+                calendarTypeId: 1,
+            };
         }
 
         return {
-            initialValues: {findText: '', replaceText: val, itemsArea: getDefaultItemsArea(props), operationType: getDefaultOperationType(props), specs: {type: 'unselected'}},
-            descItemTypes: state.refTables.descItemTypes
-        }
+            initialValues: {
+                findText: '',
+                replaceText: val,
+                itemsArea: getDefaultItemsArea(props),
+                operationType: getDefaultOperationType(props),
+                specs: {type: 'unselected'},
+            },
+            descItemTypes: state.refTables.descItemTypes,
+        };
     },
-{}
-)(FundBulkModificationsForm)
-
-
-
+    {},
+)(FundBulkModificationsForm);

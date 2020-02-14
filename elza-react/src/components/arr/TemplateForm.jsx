@@ -1,7 +1,7 @@
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
-import {Button, Checkbox, Col, Form, Modal, Radio, Row} from 'react-bootstrap';
+import {Button, FormCheck, Col, Form, Modal, Row} from 'react-bootstrap';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 
 
@@ -58,28 +58,28 @@ class TemplateForm extends AbstractReactComponent {
                     <Modal.Body>
                         <Row>
                             <Col xs={2}>
-                                <Radio disabled={submitting} {...type} inline value={NEW_TEMPLATE} checked={type.value === NEW_TEMPLATE}>{i18n('arr.fund.addTemplate.new')}</Radio>
+                                <FormCheck type={"radio"} disabled={submitting} {...type} inline value={NEW_TEMPLATE} checked={type.value === NEW_TEMPLATE} label={i18n('arr.fund.addTemplate.new')} />
                             </Col>
                             <Col md={3}>
-                                <Radio disabled={submitting} {...type} inline value={EXISTS_TEMPLATE} checked={type.value === EXISTS_TEMPLATE}>{i18n('arr.fund.addTemplate.exists')}</Radio>
+                                <FormCheck type={"radio"} disabled={submitting} {...type} inline value={EXISTS_TEMPLATE} checked={type.value === EXISTS_TEMPLATE} label={i18n('arr.fund.addTemplate.exists')} />
                             </Col>
                         </Row>
                         {type.value === NEW_TEMPLATE && <FormInput disabled={submitting} type="text" label={i18n('arr.fund.addTemplate.name')} {...name} {...decorateFormField(name)} />}
-                        {type.value === EXISTS_TEMPLATE && <FormInput disabled={submitting} componentClass="select" label={i18n('arr.fund.addTemplate.name')} {...name} {...decorateFormField(name)} >
+                        {type.value === EXISTS_TEMPLATE && <FormInput disabled={submitting} as="select" label={i18n('arr.fund.addTemplate.name')} {...name} {...decorateFormField(name)} >
                             <option value={""} key="no-select">{i18n('global.action.select')}</option>
                             {templates.map(template => <option value={template} key={template}>{template}</option>)}
                         </FormInput>}
-                        <Checkbox
+                        <FormCheck
                             disabled={submitting}
                             {...withValues}
                             inline
                         >
                             {i18n('arr.fund.addTemplate.withValues')}
-                        </Checkbox>
+                        </FormCheck>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit">{i18n('global.action.add')}</Button>
-                        <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                        <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                     </Modal.Footer>
                 </Form>
             </div>

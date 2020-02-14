@@ -6,7 +6,7 @@ import React from "react";
 import {connect} from "react-redux";
 import {AbstractReactComponent, i18n, Tabs} from 'components/shared';
 import * as types from "actions/constants/ActionTypes.js";
-import {MenuItem} from "react-bootstrap";
+import {Dropdown} from "react-bootstrap";
 import {selectFundTab, closeFundTab} from "actions/arr/fund.jsx";
 import {
     fundTreeFulltextChange,

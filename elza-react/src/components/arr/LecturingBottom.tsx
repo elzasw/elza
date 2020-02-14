@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import * as React from 'react';
 import {connect} from 'react-redux';
-import {DropdownButton, MenuItem, Button} from "react-bootstrap";
+import {DropdownButton, Dropdown, Button} from "react-bootstrap";
 import Icon from "../shared/icon/Icon";
 import * as issuesActions from '../../actions/arr/issues'
 import storeFromArea from "../../shared/utils/storeFromArea";
@@ -143,7 +143,7 @@ class LecturingBottom extends React.Component {
                         <div className="comment-text">{data.description}</div>
                         <div className="text-right">
                             {canUpdateIssue && <div className="pull-left">
-                                <Button bsStyle="action" onClick={this.editIssue}>
+                                <Button variant={"action" as any} onClick={this.editIssue}>
                                     <Icon glyph="fa-pencil" />
                                 </Button>
                             </div>}
@@ -155,7 +155,7 @@ class LecturingBottom extends React.Component {
                             <div className="comment-text">{item.comment}</div>
                             <div className="text-right">
                                 {canWrite && userDetail.id === item.user.id && arr.length === index+1 && <div className="pull-left">
-                                    <Button bsStyle="action" onClick={this.editComment.bind(this, item)}>
+                                    <Button variant={"action" as any} onClick={this.editComment.bind(this, item)}>
                                         <Icon glyph="fa-pencil" />
                                     </Button>
                                 </div>}
@@ -177,12 +177,12 @@ class LecturingBottom extends React.Component {
                         />
                     </div>
                     <div className="text-right">
-                        <DropdownButton dropup pullRight noCaret title={i18n("arr.issues.state.change")} bsStyle="action" id="comment-state" disabled={!this.state.text || textFieldDisabled}>
-                            {issueStates.data.filter(i => i.id !== data.issueStateId).map(i => <MenuItem key={i.id} onClick={this.addComment.bind(this,i.id)}>
+                        <DropdownButton dropup pullRight noCaret title={i18n("arr.issues.state.change")} variant={"action" as any} id="comment-state" disabled={!this.state.text || textFieldDisabled}>
+                            {issueStates.data.filter(i => i.id !== data.issueStateId).map(i => <Dropdown.Item key={i.id} onClick={this.addComment.bind(this,i.id)}>
                                 {i.name}
-                            </MenuItem>)}
+                            </Dropdown.Item>)}
                         </DropdownButton>
-                        <Button bsStyle="action" disabled={!this.state.text || textFieldDisabled} onClick={this.addComment.bind(this,null)}>
+                        <Button variant={"action" as any} disabled={!this.state.text || textFieldDisabled} onClick={this.addComment.bind(this,null)}>
                             <Icon glyph="fa-arrow-circle-up"/>
                         </Button>
                     </div>
@@ -198,8 +198,8 @@ class LecturingBottom extends React.Component {
                         />
                     </div>
                     <div className="text-right">
-                        <Button bsStyle="action" disabled={submitting} onClick={this.reset}>{i18n("global.action.cancel")}</Button>
-                        <Button bsStyle="action" disabled={!this.state.text || submitting} onClick={this.updateComment}><Icon glyph="fa-arrow-circle-up"/></Button>
+                        <Button variant={"action" as any} disabled={submitting} onClick={this.reset}>{i18n("global.action.cancel")}</Button>
+                        <Button variant={"action" as any} disabled={!this.state.text || submitting} onClick={this.updateComment}><Icon glyph="fa-arrow-circle-up"/></Button>
                     </div>
                 </div>}
             </div>}

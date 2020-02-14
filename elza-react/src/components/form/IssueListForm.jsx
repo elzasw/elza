@@ -70,7 +70,7 @@ class IssueListForm extends AbstractReactComponent {
     };
 
     renderUser = (target) => ({item, index}) => {
-        return <div>{item.username.value} <Button bsStyle="action" bsSize="xs" className="pull-right" onClick={this.deleteUser.bind(this, target, index)}><Icon glyph="fa-trash" /></Button></div>
+        return <div>{item.username.value} <Button variant="action" bsSize="xs" className="pull-right" onClick={this.deleteUser.bind(this, target, index)}><Icon glyph="fa-trash" /></Button></div>
     };
 
     render() {
@@ -82,7 +82,7 @@ class IssueListForm extends AbstractReactComponent {
 
         return <Form onSubmit={null}>
             <FormInput type="text" {...name} {...customProps} label={i18n("issueList.name")} />
-            <FormInput componentClass="select" {...open} {...customProps} label={i18n("issueList.open")}>
+            <FormInput as="select" {...open} {...customProps} label={i18n("issueList.open")}>
                 <option value={true}>{i18n("issueList.open.true")}</option>
                 <option value={false}>{i18n("issueList.open.false")}</option>
             </FormInput>

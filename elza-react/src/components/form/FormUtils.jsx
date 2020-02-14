@@ -14,7 +14,7 @@ import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 export function decorateFormField(field, inline = false) {
     if (field.touched && field.error) {
         const result = {
-            bsStyle: 'error',
+            variant: 'error',
             hasFeedback: true,
         }
 
@@ -178,9 +178,9 @@ export function getBootstrapInputComponentInfo(props) {
     if (props.hasFeedback) {
         cls += ' has-feedback';
     }
-    if (props.bsStyle) {
-        cls += ' has-' + props.bsStyle;
-        switch (props.bsStyle) {
+    if (props.variant) {
+        cls += ' has-' + props.variant;
+        switch (props.variant) {
             case 'success':
                 feedbackIcon = 'ok'
                 break;

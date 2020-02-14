@@ -98,7 +98,7 @@ class ApStateHistoryForm extends AbstractReactComponent {
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.close')}</Button>
+                    <Button variant="link" onClick={onClose}>{i18n('global.action.close')}</Button>
                 </Modal.Footer>
             </div>
         )

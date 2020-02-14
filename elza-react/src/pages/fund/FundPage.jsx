@@ -13,7 +13,7 @@ import { Link, IndexLink } from 'react-router';
 import { Icon, i18n } from 'components/index.jsx';
 import { Splitter, Autocomplete, ListBox, RibbonGroup, ToggleContent, AbstractReactComponent, SearchWithGoto, Utils } from 'components/shared';
 import { NodeTabs, FundForm, FundDetail, Ribbon, FindindAidFileTree, ImportForm, ExportForm, FundDetailExt } from 'components'
-import { ButtonGroup, Button, Panel } from 'react-bootstrap';
+import { ButtonGroup, Button } from 'react-bootstrap';
 import PageLayout from "../shared/layout/PageLayout";
 import { modalDialogShow, modalDialogHide } from 'actions/global/modalDialog.jsx'
 import { createFund } from 'actions/arr/fund.jsx'
@@ -322,7 +322,7 @@ class FundPage extends AbstractReactComponent {
             [
                 <div className='item-row'>
                     <div className='name'>{item.name}</div>
-                    <div className='btn btn-action' onClick={this.handleShowInArr.bind(this, item)} bsStyle='link'><Icon glyph="fa-folder-open" /></div>
+                    <div className='btn btn-action' onClick={this.handleShowInArr.bind(this, item)} variant='link'><Icon glyph="fa-folder-open" /></div>
                 </div>,
                 <div className='item-row desc'>
                     <div>{item.internalCode}</div>

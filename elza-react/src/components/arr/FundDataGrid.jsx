@@ -23,7 +23,7 @@ import FundBulkModificationsForm from './FundBulkModificationsForm';
 import FundFilterSettings from './FundFilterSettings';
 import FundDataGridCellForm from './FundDataGridCellForm';
 import ArrSearchForm from './ArrSearchForm';
-import {Button, MenuItem} from 'react-bootstrap';
+import {Button, Dropdown} from 'react-bootstrap';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {
     fundDataGridSetColumnsSettings,
@@ -595,14 +595,14 @@ class FundDataGrid extends AbstractReactComponent {
 
         var menu = (
             <ul className="dropdown-menu">
-                <MenuItem
-                    onClick={this.handleSelectInNewTab.bind(this, row)}>{i18n('arr.fund.bulkModifications.action.openInNewTab')}</MenuItem>
-                <MenuItem
-                    onClick={this.handleSelectInTab.bind(this, row)}>{i18n('arr.fund.bulkModifications.action.open')}</MenuItem>
-                <MenuItem onClick={() => {
+                <Dropdown.Item
+                    onClick={this.handleSelectInNewTab.bind(this, row)}>{i18n('arr.fund.bulkModifications.action.openInNewTab')}</Dropdown.Item>
+                <Dropdown.Item
+                    onClick={this.handleSelectInTab.bind(this, row)}>{i18n('arr.fund.bulkModifications.action.open')}</Dropdown.Item>
+                <Dropdown.Item onClick={() => {
                     this.props.dispatch(contextMenuHide());
                     this.handleEdit(row, rowIndex, col, colIndex)
-                }}>{i18n('global.action.update')}</MenuItem>
+                }}>{i18n('global.action.update')}</Dropdown.Item>
             </ul>
         );
 

@@ -73,15 +73,15 @@ class PartyIdentifierForm extends AbstractReactComponent {
                     <div className="flex-1 col">
                         <Row>
                             <Col xs={12}>
-                                <FormInput componentClass="textarea" label={i18n('party.identifier.note')} {...note} />
+                                <FormInput as="textarea" label={i18n('party.identifier.note')} {...note} />
                             </Col>
                         </Row>
                     </div>
                 </div>
             </Modal.Body>
             <Modal.Footer>
-                <Button bsStyle="default" type="submit">{i18n('global.action.store')}</Button>
-                <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                <Button variant="default" type="submit">{i18n('global.action.store')}</Button>
+                <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>
     }

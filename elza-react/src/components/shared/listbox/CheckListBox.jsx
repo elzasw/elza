@@ -1,7 +1,7 @@
 import React from 'react';
 import {PropTypes} from 'prop-types';
 import AbstractReactComponent from "../../AbstractReactComponent";
-import {Button, Checkbox} from 'react-bootstrap';
+import {Button, FormCheck} from 'react-bootstrap';
 import ReactDOM from 'react-dom';
 import {Shortcuts} from 'react-shortcuts';
 import * as Utils from "../../Utils";
@@ -483,7 +483,7 @@ class ListBox extends AbstractReactComponent {
                     {...draggableProps}
                 >
                     {multiselect &&
-                        <Checkbox
+                        <FormCheck
                             key="box"
                             className="listbox-item-checkbox"
                             inline
@@ -505,7 +505,7 @@ class ListBox extends AbstractReactComponent {
                 </Shortcuts>
                 {multiselect &&
                     <div className="listbox-selection">
-                        <Button bsStyle="default" onClick={this.handleCheckAll}>
+                        <Button variant="default" onClick={this.handleCheckAll}>
                             Vybrat vše
                         </Button>
                         <div className="listbox-selection-count">

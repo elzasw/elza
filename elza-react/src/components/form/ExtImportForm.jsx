@@ -3,7 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {reduxForm} from 'redux-form'
-import {Form, Button, FormControl, Table, Modal, OverlayTrigger, Tooltip, Checkbox, ControlLabel} from 'react-bootstrap'
+import {Form, Button, FormControl, Table, Modal, OverlayTrigger, Tooltip, FormCheck, FormLabel} from 'react-bootstrap'
 import {FormInput, Icon, HorizontalLoader} from 'components/shared';
 import objectById from '../../shared/utils/objectById'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
@@ -112,14 +112,14 @@ class ExtImportSearch extends AbstractReactComponent {
         const {value, attType} = fields;
         return <div className="flex" style={{marginBottom: '10px'}} key={index}>
             <div className="flex-1">
-                <FormInput componentClass="select" {...attType} >
+                <FormInput as="select" {...attType} >
                     {ATTRIBUTE_TYPES.map((i,x) => <option key={x} value={i.val}>{i.name}</option>)}
                 </FormInput>
             </div>
             <div className="flex-1">
                 <FormInput type="text" {...value}/>
             </div>
-            <Button bsStyle="action" onClick={()=>self.removeField(index)}><Icon glyph="fa-times"/></Button>
+            <Button variant="action" onClick={()=>self.removeField(index)}><Icon glyph="fa-times"/></Button>
         </div>
     };
 
@@ -141,27 +141,27 @@ class ExtImportSearch extends AbstractReactComponent {
 
         return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             {error && <p className="text-danger">{error}</p>}
-            <FormInput componentClass="select" label={i18n('extImport.source')} {...systemId}>
+            <FormInput as="select" label={i18n('extImport.source')} {...systemId}>
                 {extSystems.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
             </FormInput>
             {system != null && system && <div>
                 {system.type === AP_EXT_SYSTEM_TYPE.INTERPI ? <div>
                     <label>Hledané parametry</label>
                         {conditions.length > 0 && <div className="flex">
-                            <ControlLabel className="flex-1">
+                            <FormLabel className="flex-1">
                                 {i18n('extImport.attType')}
-                            </ControlLabel>
-                            <ControlLabel className="flex-1">
+                            </FormLabel>
+                            <FormLabel className="flex-1">
                                 {i18n('extImport.value')}
-                            </ControlLabel>
+                            </FormLabel>
                         </div>}
                     {conditions.map(this.renderParam)}
-                    <Button bsStyle="action" onClick={() => conditions.addField({condition: CONDITION_TYPE.AND, value:null, attType: null})}>
+                    <Button variant="action" onClick={() => conditions.addField({condition: CONDITION_TYPE.AND, value:null, attType: null})}>
                         <Icon glyph="fa-plus" /></Button>
                 </div> : <div>{i18n('extImport.notImplemented', system.name)}</div>}
             </div>}
             <div className="text-right">
-                <Button bsStyle="default" type="submit" disabled={submitting}>{i18n('extImport.search')}</Button>
+                <Button variant="default" type="submit" disabled={submitting}>{i18n('extImport.search')}</Button>
             </div>
         </Form>
     }
@@ -360,7 +360,7 @@ class ExtImportForm extends AbstractReactComponent {
                                 <div className="flex-1">
                                     <label>{i18n('extImport.resultDetail')}</label>
                                     <div>
-                                        <FormControl componentClass="textarea" rows="10" value={record ? record.detail : ''} style={{height: '272px'}} />
+                                        <FormControl as="textarea" rows="10" value={record ? record.detail : ''} style={{height: '272px'}} />
                                     </div>
                                 </div>
                             </div>
@@ -369,9 +369,9 @@ class ExtImportForm extends AbstractReactComponent {
                                     <Scope label={i18n('extImport.scopeId')} {...scopeId} versionId={versionId} />
                                 </div>
                                 {isParty && <div>
-                                    <Checkbox {...originator}>
+                                    <FormCheck {...originator}>
                                         {i18n('extImport.originator')}
-                                    </Checkbox>
+                                    </FormCheck>
                                 </div>}
                             </div>
                         </div>}
@@ -383,7 +383,7 @@ class ExtImportForm extends AbstractReactComponent {
                     </span> : <span>
                         <Button type="submit" disabled={disabledSubmit}>{i18n('global.action.import')}</Button>
                     </span>}
-                        <Button bsStyle="link" type="button" onClick={onClose} disabled={submitting}>{i18n('global.action.cancel')}</Button>
+                        <Button variant="link" type="button" onClick={onClose} disabled={submitting}>{i18n('global.action.cancel')}</Button>
                     </Modal.Footer>}
                 </Form>
             </Modal.Body>

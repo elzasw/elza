@@ -81,24 +81,24 @@ class AdminPage extends AbstractReactComponent {
         if (userDetail.hasOne(perms.FUND_ARR_ALL, perms.FUND_ARR, perms.FUND_RD_ALL, perms.FUND_RD)) {
             altActions.push(
                 <Button active={this.props.developer.enabled} key="developerMode"
-                        onClick={this.handleDeveloperMode}><Icon glyph="fa-cogs"/>
+                        onClick={this.handleDeveloperMode} variant={"default"}><Icon glyph="fa-cogs"/>
                     <div><span className="btnText">{i18n('ribbon.action.admin.developer')}</span></div>
                 </Button>
             )
         }
 
         altActions.push(
-            <Button key="reindex" onClick={this.startReindexing} disabled={indexing} title={i18n('ribbon.action.admin.reindex.title')}><Icon glyph="fa-search"/>
+            <Button key="reindex" onClick={this.startReindexing} disabled={indexing} title={i18n('ribbon.action.admin.reindex.title')} variant={"default"}><Icon glyph="fa-search"/>
                 <div><span className="btnText">{indexing ? i18n("admin.fulltext.message.reindexing") : i18n('ribbon.action.admin.reindex')}</span></div>
             </Button>
         );
         altActions.push(
-            <Button key="resetLocalStorage" onClick={this.handleResetLocalStorage} title={i18n('ribbon.action.admin.resetLocalStorage.title')}><Icon glyph="fa-times"/>
+            <Button key="resetLocalStorage" onClick={this.handleResetLocalStorage} title={i18n('ribbon.action.admin.resetLocalStorage.title')} variant={"default"}><Icon glyph="fa-times"/>
                 <div><span className="btnText">{i18n('ribbon.action.admin.resetLocalStorage')}</span></div>
             </Button>
         );
         altActions.push(
-            <Button key="resetServerCache" onClick={this.handleResetServerCache} title={i18n('ribbon.action.admin.resetServerCache.title')}><Icon glyph="fa-times"/>
+            <Button key="resetServerCache" onClick={this.handleResetServerCache} title={i18n('ribbon.action.admin.resetServerCache.title')} variant={"default"}><Icon glyph="fa-times"/>
                 <div><span className="btnText">{i18n('ribbon.action.admin.resetServerCache')}</span></div>
             </Button>
         );

@@ -80,8 +80,8 @@ class ArrDao extends AbstractReactComponent {
                     <NoFocusButton onClick={() => this.copyToClipboard(dao.url)}><Icon glyph="fa-paste"/>{i18n('arr.daos.title.action.copy')}</NoFocusButton>
                 </div>}
                 {!readMode && <div key="right" className="right">
-                    <Button bsStyle="action" disabled={!dao.daoLink} onClick={this.handleUnlink}><Icon glyph='fa-unlink'/></Button>
-                    <Button bsStyle="action" onClick={this.handleTrash} disabled={dao.existInArrDaoRequest}><Icon glyph='fa-trash'/></Button>
+                    <Button variant="action" disabled={!dao.daoLink} onClick={this.handleUnlink}><Icon glyph='fa-unlink'/></Button>
+                    <Button variant="action" onClick={this.handleTrash} disabled={dao.existInArrDaoRequest}><Icon glyph='fa-trash'/></Button>
                 </div>}
             </div>
             <div key="info" className="dao-info">

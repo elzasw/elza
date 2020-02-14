@@ -77,7 +77,7 @@ const SelectItemsForm = class extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={() => {onSubmitForm(items)}}>{i18n('global.action.add')}</Button>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
         )

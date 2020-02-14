@@ -68,7 +68,7 @@ class DescItemCoordinates extends AbstractReactComponent {
         return (
             <div className="desc-item-value-coordinates">
                 <div className='desc-item-value'  key='cords'>
-                    <Button bsStyle="default" disabled>{wktType(type)}</Button>
+                    <Button variant="default" disabled>{wktType(type)}</Button>
                     {
                         type == "POINT" ?
                             <ItemTooltipWrapper tooltipTitle="dataType.coordinates.format">

@@ -231,7 +231,7 @@ class AddRegistryForm extends AbstractReactComponent {
                         {!isStructured && <FormInput type="text" label={i18n('registry.name')} {...name} {...decorateFormField(name)}/>}
                         {!isStructured && <FormInput type="text" label={i18n('accesspoint.complement')} {...complement} {...decorateFormField(complement)}/>}
                         <LanguageCodeField label={i18n('accesspoint.languageCode')} {...languageCode} {...decorateFormField(languageCode)} />
-                        {!isStructured && <FormInput componentClass="textarea" label={i18n('accesspoint.description')} {...description} {...decorateFormField(description)} />}
+                        {!isStructured && <FormInput as="textarea" label={i18n('accesspoint.description')} {...description} {...decorateFormField(description)} />}
                     </Modal.Body>}
                     {this.state.step === 2 && <Modal.Body>
                         <NoFocusButton onClick={this.add}><Icon glyph="fa-plus-circle"/>{i18n('subNodeForm.section.item')}</NoFocusButton>
@@ -241,8 +241,8 @@ class AddRegistryForm extends AbstractReactComponent {
                         {(!structured.value || this.state.step === 2) && this.props.showSubmitTypes && <Button onClick={handleSubmit(okAndDetailSubmitForm)} disabled={submitting}>{i18n('global.action.storeAndViewDetail')}</Button>}
                         {(!structured.value || this.state.step === 2) && <Button type="submit" onClick={handleSubmit(okSubmitForm)} disabled={submitting}>{i18n('global.action.store')}</Button>}
                         {structured.value && this.state.step === 1 && <Button type="button" onClick={this.nextStep} disabled={this.state.working}>{i18n('global.action.next')}</Button>}
-                        {this.state.step === 2 && <Button bsStyle="link" onClick={this.onBack}>{i18n('global.action.back')}</Button>}
-                        <Button bsStyle="link" onClick={this.onClose}>{i18n('global.action.cancel')}</Button>
+                        {this.state.step === 2 && <Button variant="link" onClick={this.onBack}>{i18n('global.action.back')}</Button>}
+                        <Button variant="link" onClick={this.onClose}>{i18n('global.action.cancel')}</Button>
                     </Modal.Footer>
                 </Form>
             </div>

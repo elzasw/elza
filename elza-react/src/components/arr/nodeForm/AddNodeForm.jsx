@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 import {connect} from 'react-redux';
-import {Button, Checkbox, Col, ControlLabel, Form, FormControl, FormGroup, Modal, Radio, Row} from 'react-bootstrap';
+import {Button, FormCheck, Col, FormLabel, Form, FormControl, FormGroup, Modal, Row} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';
 import {AbstractReactComponent, Autocomplete, FormInput, HorizontalLoader, i18n} from 'components/shared';
 import {getOneSettings, isFundRootId} from 'components/arr/ArrUtils.jsx';
@@ -453,38 +453,37 @@ class AddNodeForm extends AbstractReactComponent {
                     <FormGroup>
                         <Row>
                             <Col xs={2}>
-                                <Radio
+                                <FormCheck
                                     inline
+                                    type={'radio'}
                                     name="selectType"
                                     checked={this.state.selectedType === 'NEW'}
                                     onChange={this.changeNodeSource("NEW")}
-                                >
-                                    {i18n('arr.fund.addNode.type.new')}
-                                </Radio>
+                                    label={i18n('arr.fund.addNode.type.new')}
+                                />
                             </Col>
                             <Col xs={3}>
-                                <Radio
+                                <FormCheck
                                     inline
+                                    type={'radio'}
                                     name="selectType"
                                     checked={this.state.selectedType === 'EXISTING'}
                                     onChange={this.changeNodeSource("EXISTING")}
-                                >
-                                    {i18n('arr.fund.addNode.type.existing')}
-                                </Radio>
+                                    label={i18n('arr.fund.addNode.type.existing')}
+                                />
                             </Col>
                         </Row>
                         <Row>
                             <Col xs={12}>
                                 <FormInput
                                     ref="selsel"
-                                    componentClass="select"
+                                    as="select"
                                     disabled={loading || submitting}
                                     label={i18n('arr.fund.addNode.direction')}
                                     defaultValue={initDirection}
                                     onChange={this.handleDirectionChange}
-                                >
-                                    {options}
-                                </FormInput>
+                                    label={options}
+                                />
                             </Col>
                         </Row>
                     </FormGroup>
@@ -496,8 +495,9 @@ class AddNodeForm extends AbstractReactComponent {
                     <Row>
                         <Col xs={4}>
                             {this.state.selectedType === 'EXISTING' &&
-                                <Checkbox
+                                <FormCheck
                                     disabled={submitting}
+                                    type={'checkbox'}
                                     inline
                                     checked={this.state.ignoreRootNodes}
                                     onChange={() => {
@@ -509,7 +509,7 @@ class AddNodeForm extends AbstractReactComponent {
                                     }}
                                 >
                                     {i18n('arr.fund.addNode.ignoreRootNodes')}
-                                </Checkbox>}
+                                </FormCheck>}
                         </Col>
                         <Col xs={4} xsOffset={4}>
                             <Button
@@ -521,7 +521,7 @@ class AddNodeForm extends AbstractReactComponent {
                             </Button>
                             <Button
                                 disabled={submitting}
-                                bsStyle="link"
+                                variant="link"
                                 onClick={onClose}
                             >
                                 {i18n('global.action.cancel')}
@@ -545,7 +545,8 @@ class AddNodeForm extends AbstractReactComponent {
             if (scenarios) {
                 for (i; i < scenarios.length; i++) {
                     scnRadios.push(
-                        <Radio
+                        <FormCheck
+                            type={'radio'}
                             key={'scns-' + i}
                             defaultChecked={i === 0}
                             autoFocus={i === 0}
@@ -553,9 +554,9 @@ class AddNodeForm extends AbstractReactComponent {
                             onChange={this.handleScenarioChange}
                             value={scenarios[i].name}
                             checked={selectedScenario === scenarios[i].name}
+                            label={scenarios[i].name}
                         >
-                            {scenarios[i].name}
-                        </Radio>
+                        </FormCheck>
                     );
                 }
             }
@@ -587,7 +588,8 @@ class AddNodeForm extends AbstractReactComponent {
 
             if (!strictMode || i === 0) {
                 scnRadios.push(
-                    <Radio
+                    <FormCheck
+                        type={'radio'}
                         key={'scns-' + i}
                         defaultChecked={i === 0}
                         autoFocus={i === 0}
@@ -595,15 +597,15 @@ class AddNodeForm extends AbstractReactComponent {
                         onChange={this.handleScenarioChange}
                         value={''}
                         checked={selectedScenario === ''}
-                    >
-                        {i18n('subNodeForm.add.noScenario')}
-                    </Radio>
+                        label={i18n('subNodeForm.add.noScenario')}
+                    />
                 );
                 i++;
             }
 
             scnRadios.push(
-                <Radio
+                <FormCheck
+                    type={'radio'}
                     key={'tmpl'}
                     defaultChecked={i === 0}
                     autoFocus={i === 0}
@@ -611,9 +613,8 @@ class AddNodeForm extends AbstractReactComponent {
                     onChange={this.handleScenarioChange}
                     value={TEMPLATE_SCENARIOS}
                     checked={selectedScenario === TEMPLATE_SCENARIOS}
-                >
-                    {i18n('subNodeForm.add.fromTemplate')}
-                </Radio>
+                    label={i18n('subNodeForm.add.fromTemplate')}
+                />
             );
 
         } else {
@@ -635,9 +636,9 @@ class AddNodeForm extends AbstractReactComponent {
         return (
             <div>
                 <FormGroup>
-                    <ControlLabel>
+                    <FormLabel>
                         {i18n('arr.fund.addNode.scenario')}
-                    </ControlLabel>
+                    </FormLabel>
                     {loading
                         ? <HorizontalLoader />
                         : <div>
@@ -648,7 +649,7 @@ class AddNodeForm extends AbstractReactComponent {
                                 <FormInput
                                     ref="select"
                                     key={"tmpl-select"}
-                                    componentClass="select"
+                                    as="select"
                                     name={"template"}
                                     disabled={loading || submitting}
                                     label={""}
@@ -673,7 +674,7 @@ class AddNodeForm extends AbstractReactComponent {
                     <Col xs={6}>
                         <Row>
                             <Col xs={5}>
-                                <Radio
+                                <FormCheck
                                     disabled={submitting}
                                     inline
                                     name="selectSource"
@@ -681,14 +682,13 @@ class AddNodeForm extends AbstractReactComponent {
                                         this.state.selectedSourceAS === 'FILE'
                                     }
                                     onChange={this.changeNodeSource("EXISTING", "FILE")}
-                                >
-                                    {i18n(
+                                    label={i18n(
                                         'arr.fund.addNode.type.existing.file'
                                     )}
-                                </Radio>
+                                />
                             </Col>
                             <Col xs={7}>
-                                <Radio
+                                <FormCheck
                                     disabled={submitting}
                                     inline
                                     name="selectSource"
@@ -696,11 +696,10 @@ class AddNodeForm extends AbstractReactComponent {
                                         this.state.selectedSourceAS === 'OTHER'
                                     }
                                     onChange={this.changeNodeSource("EXISTING", "OTHER")}
-                                >
-                                    {i18n(
+                                    label={i18n(
                                         'arr.fund.addNode.type.existing.other'
                                     )}
-                                </Radio>
+                                />
                             </Col>
                         </Row>
                     </Col>
@@ -767,9 +766,9 @@ class AddNodeForm extends AbstractReactComponent {
 
         return [
             <FormGroup>
-                <ControlLabel>
+                <FormLabel>
                     {i18n('arr.fund.addNode.type.existing.archiveFile')}
-                </ControlLabel>
+                </FormLabel>
                 <FundField
                     excludedId={versionId}
                     ref="fundField"
@@ -789,9 +788,9 @@ class AddNodeForm extends AbstractReactComponent {
             </FormGroup>,
             <div>
                 {fund &&
-                    <ControlLabel>
+                    <FormLabel>
                         {i18n('arr.history.title.nodeChanges')}
-                    </ControlLabel>}
+                    </FormLabel>}
                 {fund &&
                     <FundTreeCopy
                         disabled={submitting}

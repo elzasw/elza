@@ -89,13 +89,13 @@ class IssueLists extends AbstractReactComponent {
                 <ModalBody>
                     <Row className="flex">
                         <Col xs={6} sm={3} className="flex flex-column">
-                            <FormInput componentClass="select" name="state" onChange={this.filter}>
+                            <FormInput as="select" name="state" onChange={this.filter}>
                                 <option value={'true'}>{i18n("issueList.open.true")}</option>
                                 <option value={'false'}>{i18n("issueList.open.false")}</option>
                             </FormInput>
                             <ListBox className="flex-1" items={issueProtocols.rows} activeIndex={activeIndex} onChangeSelection={this.select} />
                             <div>
-                                <Button bsStyle={"action"} onClick={this.create}>
+                                <Button variant={"action" as any} onClick={this.create}>
                                     <Icon glyph="fa-plus" />
                                 </Button>
                             </div>
@@ -106,7 +106,7 @@ class IssueLists extends AbstractReactComponent {
                     </Row>
                 </ModalBody>
                 <ModalFooter>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.close')}</Button>
+                    <Button variant="link" onClick={onClose}>{i18n('global.action.close')}</Button>
                 </ModalFooter>
             </div>
         )

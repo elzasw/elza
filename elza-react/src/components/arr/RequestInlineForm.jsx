@@ -40,7 +40,7 @@ class RequestInlineForm extends AbstractReactComponent {
 
         return <div className="edit-request-form-container">
             <form>
-                <FormInput componentClass="textarea" label={i18n('arr.request.title.description')}
+                <FormInput as="textarea" label={i18n('arr.request.title.description')}
                            disabled={disabled} {...description} {...decorateFormField(description, true)} />
             </form>
         </div>;

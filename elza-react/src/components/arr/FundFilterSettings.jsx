@@ -10,7 +10,7 @@ import React from 'react';
 import {reduxForm} from 'redux-form';
 import {FilterableListBox, AbstractReactComponent, HorizontalLoader, i18n, FormInput} from 'components/shared';
 import DescItemCoordinates from './nodeForm/DescItemCoordinates.jsx'
-import {Modal, Button, Accordion, Panel} from 'react-bootstrap';
+import {Modal, Button, Accordion, Card} from 'react-bootstrap';
 import {WebApi} from 'actions/index.jsx';
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
 import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx'
@@ -39,7 +39,7 @@ const renderTextFields = (fields) => {
         var decorate
         if (field.error) {
             decorate = {
-                bsStyle: 'error',
+                variant: 'error',
                 hasFeedback: true,
                 help: field.error
             }
@@ -60,7 +60,7 @@ const renderDateFields = (fields) => {
         let decorate;
         if (field.error) {
             decorate = {
-                bsStyle: 'error',
+                variant: 'error',
                 hasFeedback: true,
                 help: field.error
             }
@@ -124,7 +124,7 @@ const renderCoordinatesFields = (fields) => {
             )
             vals.push(
                 <div key={1} className='value-container'>
-                    <FormInput componentClass="select" defaultValue={10000} value={fields[1].value}
+                    <FormInput as="select" defaultValue={10000} value={fields[1].value}
                                onChange={(e) => fields[1].onChange(e.target.value)}>
                         {[100, 500, 1000, 10000, 20000, 50000, 100000].map(l => {
                             return <option key={l}
@@ -145,7 +145,7 @@ const renderUnitdateFields = (calendarTypes, fields) => {
             var vals = []
             vals.push(
                 <div key={0} className='value-container'>
-                    <FormInput componentClass="select"
+                    <FormInput as="select"
                                value={typeof fields[0].value !== 'undefined' ? fields[0].value : 1}
                                onChange={(e) => {
                                    fields[0].onChange(e.target.value);
@@ -746,12 +746,26 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         let accordion;
         if (conditionContent && valueContent) {
             accordion = <Accordion className="accordion-simple bordered" activeKey={valueAccodrionType} onSelect={type => { this.setState({valueAccodrionType: type}) }}>
-                <Panel className={valueAccodrionType === "CONDITION" ? "open" : ""} header={<h4>{i18n('arr.fund.filterSettings.filterByCondition.title')}</h4>} eventKey="CONDITION">
+                <Card className={valueAccodrionType === "CONDITION" ? "open" : ""}>
+                    <Card.Header>
+                        <h4>{i18n('arr.fund.filterSettings.filterByCondition.title')}</h4>
+                    </Card.Header>
+                    <Accordion.Collapse eventKey="CONDITION">
+                    <Card.Body>
                     {conditionContent}
-                </Panel>
-                <Panel className={valueAccodrionType === "VALUE" ? "open" : ""} header={<h4>{i18n('arr.fund.filterSettings.filterByValue.title')}</h4>} eventKey="VALUE">
+                    </Card.Body>
+                    </Accordion.Collapse>
+                </Card>
+                <Card className={valueAccodrionType === "VALUE" ? "open" : ""} >
+                    <Card.Header>
+                        <h4>{i18n('arr.fund.filterSettings.filterByValue.title')}</h4>
+                    </Card.Header>
+                    <Accordion.Collapse eventKey="VALUE">
+                    <Card.Body>
                     {valueContent}
-                </Panel>
+                    </Card.Body>
+                    </Accordion.Collapse>
+                </Card>
             </Accordion>;
         } else {
             accordion = <div>
@@ -776,7 +790,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                 </Modal.Body>
                 <Modal.Footer>
                     {okButtons}
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
         )

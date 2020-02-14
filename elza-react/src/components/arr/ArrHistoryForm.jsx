@@ -317,7 +317,7 @@ class ArrHistoryForm extends AbstractReactComponent {
                 <Modal.Footer>
                     {selectedIndex !== null ? i18n("arr.history.title.changesForDelete", selectedIndex + 1) + " " : ""}
                     {!locked && <Button disabled={selectedItem === null || (showHistoryForNode && !node)} type="submit" onClick={this.handleDeleteChanges}>{i18n('arr.history.action.deleteChanges')}</Button>}
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
         )

@@ -77,14 +77,14 @@ class ArrSearchForm extends AbstractReactComponent {
             case TYPE_UNITDATE: {
                 return <div className="unitdate">
                     <div className="field">
-                        <FormInput componentClass="select" {...condition.condition}>
+                        <FormInput as="select" {...condition.condition}>
                             <option value={GE} key={GE}>{i18n('search.extended.form.unitdate.type.ge')}</option>
                             <option value={LE} key={LE}>{i18n('search.extended.form.unitdate.type.le')}</option>
                             <option value={CONTAINS} key={CONTAINS}>{i18n('search.extended.form.unitdate.type.contains')}</option>
                         </FormInput>
                     </div>
                     <div className="field">
-                        <FormInput componentClass="select" {...condition.calendarTypeId}>
+                        <FormInput as="select" {...condition.calendarTypeId}>
                             {calendarTypes && calendarTypes.fetched && calendarTypes.items.map((calendar, index) => {
                                 return <option value={calendar.id} key={calendar.id}>{i18n('search.extended.form.unitdate.calendar.' + calendar.code)}</option>
                             })}
@@ -118,13 +118,13 @@ class ArrSearchForm extends AbstractReactComponent {
             <div className="items">
                 {condition.map((conditionRow, index, self) => <div className="condition" key={'condition' + index}>
                     {this.renderFormItem(conditionRow, index)}
-                    <Button className="delete" bsStyle="action" onClick={()=>self.removeField(index)}><Icon glyph="fa-times"/></Button>
+                    <Button className="delete" variant="action" onClick={()=>self.removeField(index)}><Icon glyph="fa-times"/></Button>
                 </div>)}
             </div>
         </div>;
 
         const textForm = <div>
-            <FormInput componentClass="textarea" label={i18n('search.extended.input.text')} {...text} />
+            <FormInput as="textarea" label={i18n('search.extended.input.text')} {...text} />
         </div>;
 
         return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
@@ -142,7 +142,7 @@ class ArrSearchForm extends AbstractReactComponent {
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit" disabled={submitting}>{i18n('search.extended.search')}</Button>
-                <Button bsStyle="link" onClick={onClose} disabled={submitting}>{i18n('global.action.cancel')}</Button>
+                <Button variant="link" onClick={onClose} disabled={submitting}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form>;
     }

@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Button, Panel} from 'react-bootstrap'
+import {Button} from 'react-bootstrap'
 import {Icon, AbstractReactComponent, i18n, FundDetailTree} from 'components/shared';
 import {indexById} from 'stores/app/utils.jsx'
 import {dateToString} from 'components/Utils.jsx'
@@ -59,7 +59,7 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
                         <div className="output-label">{arrOutput.name}</div>
                         <Button
                             onClick={()=>{this.handleDownload(arrOutput.outputResultId);}}
-                            bsStyle="link"
+                            variant="link"
                         >
                             {i18n('global.action.download')}
                         </Button>
@@ -78,7 +78,7 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
                                 <div className="version-label">{i18n('arr.fund.outputDefinition.version', dateToString(new Date(output.deleteDate)))}</div>
                                 <Button
                                     onClick={()=>{this.handleDownload(output.outputResultId);}}
-                                    bsStyle="link"
+                                    variant="link"
                                 >
                                     {i18n('global.action.download')}
                                 </Button>
@@ -106,14 +106,14 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
                             return (
                                 <div className='fund-version' key={'fund-version-' +  index}>
                                     <div className="version-label">{i18n('arr.fund.version', dateToString(new Date(ver.lockDate)))}</div>
-                                    <Button onClick={this.handleShowInArr.bind(this, ver)} bsStyle='link'>{i18n('arr.fund.action.showInArr')}</Button>
+                                    <Button onClick={this.handleShowInArr.bind(this, ver)} variant='link'>{i18n('arr.fund.action.showInArr')}</Button>
                                 </div>
                             )
                         } else {
                             return (
                                 <div className='fund-version' key={'fund-version-' +  index}>
                                     <div className="version-label">{i18n('arr.fund.currentVersion')}</div>
-                                    <Button onClick={this.handleShowInArr.bind(this, ver)} bsStyle='link'>{i18n('arr.fund.action.openInArr')}</Button>
+                                    <Button onClick={this.handleShowInArr.bind(this, ver)} variant='link'>{i18n('arr.fund.action.openInArr')}</Button>
                                 </div>
                             )
                         }

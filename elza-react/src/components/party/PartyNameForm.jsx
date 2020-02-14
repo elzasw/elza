@@ -202,9 +202,9 @@ class PartyNameForm extends AbstractReactComponent {
                             </Col>}
 
                             <Col xs={12}>
-                                <label>{i18n('party.name.complements')}</label> <Button bsStyle="action" onClick={() => {partyNameComplements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
+                                <label>{i18n('party.name.complements')}</label> <Button variant="action" onClick={() => {partyNameComplements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
                                 {partyNameComplements.map((complement, index) => <div className="complement" key={'complement' + index}>
-                                    <FormInput componentClass="select" {...complement.complementTypeId}>
+                                    <FormInput as="select" {...complement.complementTypeId}>
                                         <option key='0'/>
                                         {complementsList}
                                     </FormInput>
@@ -213,7 +213,7 @@ class PartyNameForm extends AbstractReactComponent {
                                 </div>)}
                             </Col>
                             <Col xs={12}>
-                                <FormInput componentClass="select" label={i18n('party.name.nameFormType')} {...nameFormType.id}>
+                                <FormInput as="select" label={i18n('party.name.nameFormType')} {...nameFormType.id}>
                                     <option key="null" />
                                     {partyNameFormTypes.items.map((i) => <option value={i.id} key={i.id}>{i.name}</option>)}
                                 </FormInput>
@@ -237,7 +237,7 @@ class PartyNameForm extends AbstractReactComponent {
                     <div className="flex-1 col">
                         <Row>
                             <Col xs={12}>
-                                <FormInput componentClass="textarea" label={i18n('party.name.note')} {...note} />
+                                <FormInput as="textarea" label={i18n('party.name.note')} {...note} />
                             </Col>
                         </Row>
                     </div>
@@ -245,7 +245,7 @@ class PartyNameForm extends AbstractReactComponent {
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit" disabled={submitting}>{i18n('global.action.store')}</Button>
-                <Button bsStyle="link" onClick={onClose} disabled={submitting}>{i18n('global.action.cancel')}</Button>
+                <Button variant="link" onClick={onClose} disabled={submitting}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
         </Form> : <HorizontalLoader />;
     }
