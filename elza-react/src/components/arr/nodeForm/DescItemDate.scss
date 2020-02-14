@@ -1,31 +1,31 @@
-//@import '~react-widgets/lib/less/react-widgets.less';
+//@import '~react-widgets/lib/less/react-widgets.scss';
 
-@import "react-widgets/lib/less/variables.less";
+@import "react-widgets/lib/less/variables.scss";
 
-@import "react-widgets/lib/less/mixins.less";
-@import "react-widgets/lib/less/normalize.less";
-@import "react-widgets/lib/less/icons.less";
+@import "react-widgets/lib/less/mixins.scss";
+@import "react-widgets/lib/less/normalize.scss";
+@import "react-widgets/lib/less/icons.scss";
 
-@import "react-widgets/lib/less/button.less";
-@import "react-widgets/lib/less/widget.less";
-//@import "react-widgets/lib/less/list.less";
-//@import "react-widgets/lib/less/dropdown-list.less";
-//@import "react-widgets/lib/less/number-picker.less";
-@import "react-widgets/lib/less/calendar.less";
-//@import "react-widgets/lib/less/select-list.less";
-//@import "react-widgets/lib/less/multiselect.less";
-//@import "react-widgets/lib/less/autocomplete.less";
+@import "react-widgets/lib/less/button.scss";
+@import "react-widgets/lib/less/widget.scss";
+//@import "react-widgets/lib/less/list.scss";
+//@import "react-widgets/lib/less/dropdown-list.scss";
+//@import "react-widgets/lib/less/number-picker.scss";
+@import "react-widgets/lib/less/calendar.scss";
+//@import "react-widgets/lib/less/select-list.scss";
+//@import "react-widgets/lib/less/multiselect.scss";
+//@import "react-widgets/lib/less/autocomplete.scss";
 
-@import "react-widgets/lib/less/popup.less";
-@import "react-widgets/lib/less/state.less";
+@import "react-widgets/lib/less/popup.scss";
+@import "react-widgets/lib/less/state.scss";
 
 
-//@font-size: 16px;
-//@input-height: 20px; // at 16px, this an even 40px
+//$font-size: 16px;
+//$input-height: 20px; // at 16px, this an even 40px
 
-@border-radius: unset;
-@input-height: 22px;
-@input-padding-horizontal: 5px;
+$border-radius: unset;
+$input-height: 22px;
+$input-padding-horizontal: 5px;
 
 .desc-item-value-container {
     .rw-btn-select {

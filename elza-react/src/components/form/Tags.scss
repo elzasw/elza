@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 .selected-data-container {
     padding-top: 10px;
@@ -7,7 +7,7 @@
     .selected-data {
         display: block;
         padding: 0 5px;
-        border: 1px solid @dragger-border;
+        border: 1px solid $dragger-border;
         margin: 0 5px 5px 0;
         line-height: 2em;
         height: 2em;

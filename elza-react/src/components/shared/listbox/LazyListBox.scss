@@ -1,7 +1,7 @@
-@import "/variables.less";
+@import "../../../variables.scss";
 
 // Toto nutné upravit i v props komponenty!
-@lazy-listbox-height: 24px;
+$lazy-listbox-height: 24px;
 .lazy-listbox-wrapper{
   border: 1px solid #DDDDDD;
   display:block;
@@ -15,20 +15,20 @@
     border:none;
 
     .listbox-item {
-      height: @lazy-listbox-height;
+      height: $lazy-listbox-height;
       cursor: pointer;
       &:hover {
-        background: @tree-node-label-active-bg
+        background: $tree-node-label-active-bg
       }
       &.active {
-        background: @tree-node-active-bg;
+        background: $tree-node-active-bg;
         &:hover {
-          background: @tree-node-active-hover-bg;
+          background: $tree-node-active-hover-bg;
         }
       }
       &.focus {
-        //outline: 1px solid @tree-node-active-bg;
-        background: @tree-node-label-active-bg;
+        //outline: 1px solid $tree-node-active-bg;
+        background: $tree-node-label-active-bg;
       }
     }
   }

@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 .node-label {
     width: 100%;
@@ -28,7 +28,7 @@
 
         .reference-mark {
             //height: 1em;
-            color: @tree-node-reference-mark;
+            color: $tree-node-reference-mark;
             font-size: 0.7em;
             //line-height: 2.8em;
             //padding: 0 3px;

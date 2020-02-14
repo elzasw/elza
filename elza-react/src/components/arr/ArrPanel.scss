@@ -1,9 +1,9 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 .arr-panel {
     padding: 2px 5px;
-    background: @fa-file-tree-bg-list;
-    border: 1px solid @fa-file-tree-border;
+    background: $fa-file-tree-bg-list;
+    border: 1px solid $fa-file-tree-border;
 
     .title {
 

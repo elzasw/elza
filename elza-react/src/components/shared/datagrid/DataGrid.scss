@@ -1,13 +1,13 @@
-@import "/variables.less";
+@import "../../../variables.scss";
 
-@emptyColWidth: 8000px;
-@noselected-background: #FFFFFF;
-@focus-background: #f9f9f9;
-@selected-index-background: #f0f0f0;
-@selected-background: #EAECF5;
-@selected-both-background: #DEE2F5;
-@header-background: #ececec;
-@header-height: 24px;
+$emptyColWidth: 8000px;
+$noselected-background: #FFFFFF;
+$focus-background: #f9f9f9;
+$selected-index-background: #f0f0f0;
+$selected-background: #EAECF5;
+$selected-both-background: #DEE2F5;
+$header-background: #ececec;
+$header-height: 24px;
 
 .datagrid-container {
     border: 1px solid #DDDDDD;
@@ -18,8 +18,8 @@
     .header-container {
         flex-shrink: 0;
         overflow: hidden;
-        //height: @header-height;
-        background: @header-background;
+        //height: $header-height;
+        background: $header-background;
         border-bottom: 1px solid #DDDDDD;
         padding-left: 1px;
 
@@ -35,19 +35,19 @@
 
                 &.header-fixed {
                     .cell-container {
-                        background: @header-background;
+                        background: $header-background;
                         box-shadow: -1px 0 0 #DDDDDD inset;
                     }
                 }
 
                 &.th-empty-scroll {
-                    width: @emptyColWidth;
+                    width: $emptyColWidth;
                 }
 
                 .cell-container {
                     overflow: hidden;
                     width: 100%;
-                    height: @header-height;
+                    height: $header-height;
                     float: left;
 
                     .value {
@@ -60,7 +60,7 @@
 
                         .title {
                             flex-grow: 1;
-                            line-height: @header-height;
+                            line-height: $header-height;
                             overflow: hidden;
                             text-overflow: ellipsis;
                         }
@@ -71,7 +71,7 @@
                             flex-shrink: 0;
                             height: 100%;
                             &:hover {
-                                background: @button-bg-hover;
+                                background: $button-bg-hover;
                             }
                         }
                     }
@@ -79,7 +79,7 @@
 
                 .Resizer {
                     float: right;
-                    height: @header-height;
+                    height: $header-height;
                 }
             }
         }
@@ -105,29 +105,29 @@
 
             tr {
                 &.selected {
-                    background: @selected-background;
+                    background: $selected-background;
 
                     td.col-fixed {
                         .cell-container {
-                            background: @selected-background;
+                            background: $selected-background;
                         }
                     }
                 }
                 &.selected-index {
-                    background: @selected-index-background;
+                    background: $selected-index-background;
 
                     td.col-fixed {
                         .cell-container {
-                            background: @selected-index-background;
+                            background: $selected-index-background;
                         }
                     }
                 }
                 &.selected.selected-index {
-                    background: @selected-both-background;
+                    background: $selected-both-background;
 
                     td.col-fixed {
                         .cell-container {
-                            background: @selected-both-background;
+                            background: $selected-both-background;
                         }
                     }
                 }
@@ -138,7 +138,7 @@
 
                     &.col-fixed {
                         .cell-container {
-                            background: @noselected-background;
+                            background: $noselected-background;
                             display: flex;
                             align-items: center;
                         }

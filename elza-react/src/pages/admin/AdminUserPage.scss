@@ -1,18 +1,18 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 .admin-user-page {
     .user-list-container {
         padding: 5px;
-        background: @fa-file-tree-bg;
-        border: 1px solid @fa-file-tree-border;
+        background: $fa-file-tree-bg;
+        border: 1px solid $fa-file-tree-border;
         border-top: none;
         height: 100%;
         display: flex;
         flex-direction: column;
 
         .user-listbox {
-            background: @fa-file-tree-bg-list;
-            border: 1px solid @fa-file-tree-border;
+            background: $fa-file-tree-bg-list;
+            border: 1px solid $fa-file-tree-border;
             flex-grow: 1;
             margin: 0;
             overflow: hidden;

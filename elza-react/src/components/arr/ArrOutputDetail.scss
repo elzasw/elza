@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 .arr-output-detail-container {
     height: 100%;
@@ -7,8 +7,8 @@
 
     .fund-nodes-container {
         padding: 5px;
-        background: @fa-file-tree-bg;
-        border: 1px solid @fa-file-tree-border;
+        background: $fa-file-tree-bg;
+        border: 1px solid $fa-file-tree-border;
         border-top: none;
         display: flex;
         flex-direction: column;

@@ -1,14 +1,14 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
-@header-height: 64px;
-@header-minimized-height: 12px;
-@action-hover-bg: #ccc;
-@item-focus-bg: #eee;
+$header-height: 64px;
+$header-minimized-height: 12px;
+$action-hover-bg: #ccc;
+$item-focus-bg: #eee;
 
 .arr-output-page {
 
     .functions-list-container {
-        background: @fa-file-tree-bg;
+        background: $fa-file-tree-bg;
         flex-grow: 1;
         margin: 0;
         overflow: hidden;
@@ -19,8 +19,8 @@
         flex-direction: column;
 
         .functions-listbox {
-            background: @fa-file-tree-bg-list;
-            border: 1px solid @fa-file-tree-border;
+            background: $fa-file-tree-bg-list;
+            border: 1px solid $fa-file-tree-border;
             flex-grow: 1;
             margin: 0;
             overflow: hidden;
@@ -34,10 +34,10 @@
                     background-color: transparent;
                 }
                 &.active {
-                    background-color: @item-focus-bg;
+                    background-color: $item-focus-bg;
 
                     &:hover {
-                        background-color: @item-focus-bg;
+                        background-color: $item-focus-bg;
                     }
                 }
                 .item {
@@ -82,7 +82,7 @@
                             cursor: pointer;
 
                             &:hover {
-                                background-color: @action-hover-bg;
+                                background-color: $action-hover-bg;
                             }
                         }
                     }

@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "./variables.scss";
 
 .form-control {
     height: 1.8em;
@@ -37,27 +37,27 @@
   border: 0;
 }
 
-.box-shadow(@shadow) {
-  -webkit-box-shadow: @shadow; // iOS <4.3 & Android <4.1
-          box-shadow: @shadow;
+@mixin box-shadow($shadow) {
+  -webkit-box-shadow: $shadow; // iOS <4.3 & Android <4.1
+          box-shadow: $shadow;
 }
-@focus-border-color: #66afe9;
+$focus-border-color: #66afe9;
 .form-control:focus {
-    @focus-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 6px lighten(@focus-border-color, 10%);
-    .box-shadow(@focus-shadow);
+    $focus-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 6px lighten($focus-border-color, 10%);
+    @include box-shadow($focus-shadow);
 }
 *:focus, *:active:focus, *.active:focus {
-    border-color: darken(@focus-border-color, 10%) !important;
-    outline: 0px solid darken(@focus-border-color, 10%) !important;
+    border-color: darken($focus-border-color, 10%) !important;
+    outline: 0px solid darken($focus-border-color, 10%) !important;
     outline-offset: -1px;
-    @focus-shadow: inset 0 0px 1px rgba(0,0,0,.075), 0 0 6px lighten(@focus-border-color, 10%);
-    .box-shadow(@focus-shadow);
+    $focus-shadow: inset 0 0px 1px rgba(0,0,0,.075), 0 0 6px lighten($focus-border-color, 10%);
+    @include box-shadow($focus-shadow);
 }
 .btn:focus, .btn:active:focus, .btn.active:focus, .btn-default:focus, .btn-default:active:focus, .btn-default.active:focus {
     outline: -1px solid !important;
-    outline-color: darken(@focus-border-color, 10%) !important;
-    @focus-shadow: inset 0 0px 1px rgba(0,0,0,.075), 0 0 6px lighten(@focus-border-color, 10%);
-    .box-shadow(@focus-shadow);
+    outline-color: darken($focus-border-color, 10%) !important;
+    $focus-shadow: inset 0 0px 1px rgba(0,0,0,.075), 0 0 6px lighten($focus-border-color, 10%);
+    @include box-shadow($focus-shadow);
 }
 
 .form-group .glyphicon {

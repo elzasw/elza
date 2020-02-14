@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../../variables.scss";
 
 .search-container {
     display: block;
@@ -23,7 +23,7 @@
             height: 21px;
             width: 21px;
             &:hover{
-                background: @node-form-actions-hover;
+                background: $node-form-actions-hover;
             }
         }
     }
@@ -46,7 +46,7 @@
             right: 0;
             top: 0;
             &:hover{
-                background: @node-form-actions-hover;
+                background: $node-form-actions-hover;
             }
         }
     }

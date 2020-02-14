@@ -1,7 +1,7 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
-@header-height: 64px;
-@header-minimized-height: 12px;
+$header-height: 64px;
+$header-minimized-height: 12px;
 
 // fa file toggle
 .fa-page.app-container {
@@ -43,7 +43,7 @@
 
         .fund-noselect {
             text-align: center;
-            font-size: @font-size-base;
+            font-size: $font-size-base;
             padding: 10px;
         }
 
@@ -121,7 +121,7 @@
 .fa-page.app-container {
     &.noRibbon {
         .fa-file-toggle-container {
-            top: @header-minimized-height;
+            top: $header-minimized-height;
         }
     }
 
@@ -131,7 +131,7 @@
 
     .fund-tree-container {
         padding: 5px 4px;
-        background: @tabs-tab-active-bg;
+        background: $tabs-tab-active-bg;
     }
 
     .node-tabs-container {

@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../../variables.scss";
 
 .desc-item-value-container {
     &.dtJSON_TABLE {
@@ -32,13 +32,13 @@
             margin-right: 8px;
             vertical-align: top;
             .icon  {
-                color: @node-form-actions-color;
+                color: $node-form-actions-color;
                 height: 1.35em;
                 line-height: 1.35em;
                 width: 1.35em;
             }
             &:hover {
-                background-color: @node-form-actions-hover;
+                background-color: $node-form-actions-hover;
             }
         }
     }

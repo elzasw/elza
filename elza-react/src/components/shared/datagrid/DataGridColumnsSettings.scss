@@ -1,4 +1,4 @@
-@listbox-height: 300px;
+$listbox-height: 300px;
 
 .datagrid-columns-settings-container {
     .panels-container {
@@ -9,7 +9,7 @@
             flex-grow: 1;
             width: 50%;
             .listbox-wrapper{
-                height: @listbox-height;
+                height: $listbox-height;
 
                 .listbox-item {
                     padding: 0 5px;
@@ -18,7 +18,7 @@
         }
         .center {
             width: 40px;
-            height: @listbox-height;
+            height: $listbox-height;
             display: table;
 
             .action-buttons {

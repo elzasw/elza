@@ -1,12 +1,12 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 
-@registry-panel-actions-height: 26px;
+$registry-panel-actions-height: 26px;
 
 .registry-list {
     padding: 5px;
-    background: @fa-file-tree-bg;
-    border: 1px solid @fa-file-tree-border;
+    background: $fa-file-tree-bg;
+    border: 1px solid $fa-file-tree-border;
     border-top: none;
     height: 100%;
     display: flex;
@@ -17,8 +17,8 @@
     }
 
     .record-parent-info {
-        border: 1px solid @fa-file-tree-border;
-        background-color: @tree-node-label-active-bg;
+        border: 1px solid $fa-file-tree-border;
+        background-color: $tree-node-label-active-bg;
         border-bottom: none;
         padding: 2px 5px;
 
@@ -33,7 +33,7 @@
                 margin-right: -3px;
             }
             .back:hover {
-                background-color: @node-form-actions-hover;
+                background-color: $node-form-actions-hover;
 
             }
             .title {
@@ -47,7 +47,7 @@
 
         .record-selected-breadcrumbs {
             font-size: 0.8em;
-            color: @color-link;
+            color: $color-link;
         }
     }
 
@@ -126,11 +126,11 @@
     div.desc-item-type-label {
         .actions {
             background: #F5F5F5;
-            height: @registry-panel-actions-height;
+            height: $registry-panel-actions-height;
             display: inline-block;
             .btn {
                 background: transparent;
-                height: @registry-panel-actions-height;
+                height: $registry-panel-actions-height;
                 font-size: 12px;
                 border: none;
                 margin: 1px;

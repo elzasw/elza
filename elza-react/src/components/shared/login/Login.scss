@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../../variables.scss";
 
 .login {
 
@@ -12,7 +12,7 @@
 
     .error {
         color: #a94442;
-        font-size: @font-size-base * 1.2;
+        font-size: $font-size-base * 1.2;
         font-weight: bold;
     }
 

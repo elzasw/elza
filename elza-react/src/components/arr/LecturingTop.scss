@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 .node-form-standard-actions {
     & > .dropdown > .btn {
@@ -14,7 +14,7 @@
         font-size: 1.3em;
 
         &:hover {
-            background-color: @node-form-actions-hover;
+            background-color: $node-form-actions-hover;
         }
 
         .icon {
@@ -43,7 +43,7 @@
             white-space: nowrap;
             width: 100%;
 
-            .node-form-standard-actions;
+            @include node-form-standard-actions;
         }
     }
 

@@ -1,9 +1,9 @@
-@import "/variables.less";
-@import "./ReferenceMark.less";
+@import "../../variables.scss";
+@import "./ReferenceMark.scss";
 
-@rowHeight: 16px;
+$rowHeight: 16px;
 
-@TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
+$TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
 
 .fa-tree-lazy-main-container {
     height: 100%;
@@ -21,11 +21,11 @@
     .fa-tree-lazy-container {
         flex-grow:1;
         height: 100%;
-        //height: calc(~"100% - 49px");
+        //height: calc("100% - 49px");
         overflow: auto;
         background: white;
         position: relative;
-        margin-top: @TREE_TOP_PADDING;
+        margin-top: $TREE_TOP_PADDING;
         width: 100%;
         padding-top: 5px;
         border-top:none;
@@ -39,7 +39,7 @@
             display: block;
         }
 
-        .referenceMark;
+        @include referenceMark;
 
         .exp-col {
             flex-grow: 1;
@@ -83,12 +83,12 @@
 
         .node {
             display: flex;
-            height: @rowHeight;
+            height: $rowHeight;
             white-space: nowrap;
             font-size: 0.9em;
             width: 100%;
             &:hover {
-                background: @tree-node-label-active-bg;
+                background: $tree-node-label-active-bg;
                 cursor: pointer;
             }
         }
@@ -109,21 +109,21 @@
         }
 
         .active {
-            background: @tree-node-active-bg;
+            background: $tree-node-active-bg;
             &:hover {
-                background: @tree-node-active-hover-bg;
+                background: $tree-node-active-hover-bg;
             }
             .node-label {
-                background: @tree-node-active-bg;
+                background: $tree-node-active-bg;
                 &:hover {
-                    background: @tree-node-active-hover-bg;
+                    background: $tree-node-active-hover-bg;
                 }
             }
         }
 
         .focus {
             .node-label {
-                /*outline: 1px solid @tree-node-focus-border;*/
+                /*outline: 1px solid $tree-node-focus-border;*/
             }
         }
 
@@ -139,7 +139,7 @@
         //        }
         //    }
         //    &:hover{
-        //        background: @node-form-actions-hover;
+        //        background: $node-form-actions-hover;
         //    }
         //}
     }
@@ -157,7 +157,7 @@
                 padding: 0 5px 0 0;
             }
             &:hover{
-                background: @node-form-actions-hover;
+                background: $node-form-actions-hover;
             }
         }
         .extended-view-toggle {

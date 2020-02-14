@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 .dao-container {
     height: 100%;
@@ -14,7 +14,7 @@
     }
 
     .btn:hover {
-        background-color: @node-form-actions-hover;
+        background-color: $node-form-actions-hover;
     }
 
     .lbl {
@@ -71,7 +71,7 @@
         }
 
         .dao-actions {
-            background: @node-form-actions-bg;
+            background: $node-form-actions-bg;
             white-space: nowrap;
             display: flex;
             height: 1.8em;

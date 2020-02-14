@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 .node-dao-dialog {
     .daos-container {
@@ -7,8 +7,8 @@
 }
 
 .node-dao {
-    border-top: 1px solid @node-form-group-active-border;
-    background-color: @node-form-dao;
+    border-top: 1px solid $node-form-group-active-border;
+    background-color: $node-form-dao;
 
     .node-dao-title {
         padding-left: 5px;
@@ -24,7 +24,7 @@
             flex-shrink: 0;
             height: 100%;
             &:hover {
-                background: @button-bg-hover;
+                background: $button-bg-hover;
             }
         }
     }

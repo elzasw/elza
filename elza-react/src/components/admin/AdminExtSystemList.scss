@@ -1,10 +1,10 @@
 
-@import "/variables.less";
+@import "../../variables.scss";
 
 .ext-system-list {
     padding: 5px;
-    background: @fa-file-tree-bg;
-    border: 1px solid @fa-file-tree-border;
+    background: $fa-file-tree-bg;
+    border: 1px solid $fa-file-tree-border;
     border-top: none;
     height: 100%;
     display: flex;

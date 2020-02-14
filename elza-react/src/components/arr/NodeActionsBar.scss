@@ -1,15 +1,15 @@
 /**
  * Styly pro NodeActionsBar
  *
- * @author Jakub Randák
- * @since 31.8.2016
+ * $author Jakub Randák
+ * $since 31.8.2016
  */
 
-@import "/variables.less";
+@import "../../variables.scss";
 
 .node-actions-bar {
     width: 100%;
-    background: @node-panel-actions-bg;
+    background: $node-panel-actions-bg;
     position: relative;
 
     .actions {
@@ -43,13 +43,13 @@
                     margin-left: -8px;
                 }
                 .icon {
-                    color: @node-form-actions-color;
+                    color: $node-form-actions-color;
                     height: 1.35em;
                     line-height: 1.35em;
                     width: 1.35em;
                 }
                 &:hover {
-                    background-color: @node-form-actions-hover;
+                    background-color: $node-form-actions-hover;
                 }
             }
             .search-input {

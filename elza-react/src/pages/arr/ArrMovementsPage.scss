@@ -1,5 +1,5 @@
-@import "/variables.less";
-@movementButtonSize: 8em;
+@import "../../variables.scss";
+$movementButtonSize: 8em;
 
 .movements-content-container {
     height: 100%;
@@ -15,7 +15,7 @@
         align-items: center;
         justify-content: center;
         background-color: fadeout(white,20%);
-        color: @homepage-empty-list-msg-col;
+        color: $homepage-empty-list-msg-col;
         position:absolute;
         width: 100%;
         height: 100%;
@@ -60,13 +60,13 @@
             flex-shrink: 1;
             flex-grow: 1;
             .icon{
-            color:@homepage-button-bg;
+            color:$homepage-button-bg;
         }
         }
         .btn {
             display:flex;
-            width: @movementButtonSize;
-            height: @movementButtonSize;
+            width: $movementButtonSize;
+            height: $movementButtonSize;
             display: block;
             margin: 0 auto;
             position: relative;
@@ -77,10 +77,10 @@
             white-space: pre-wrap;
             line-height: 1.2em;
             border:none;
-            background-color: @homepage-button-bg;
+            background-color: $homepage-button-bg;
 
             &:hover{
-                background-color: @homepage-button-bg-hover;
+                background-color: $homepage-button-bg-hover;
             }
             .icon{
                 font-size: 2.5em;

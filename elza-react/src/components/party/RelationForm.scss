@@ -1,5 +1,5 @@
-@import 'variables.less';
-@import "bootstrap/less/mixins/buttons.less";
+@import 'variables.scss';
+@import "bootstrap/less/mixins/buttons.scss";
 
 .dialog-3-col {
     padding:0;
@@ -31,11 +31,11 @@
     .datation-group {
       background: #eeeeee;
       .btn-action {
-        .button-variant(#000, #eeeeee, transparent);
+        @include button-variant(#000, #eeeeee, transparent);
       }
     }
   }
-  @media screen and (min-width: @screen-md-min) {
+  @media screen and (min-width: $screen-md-min) {
     .flex {
       align-items: stretch;
       display: flex;

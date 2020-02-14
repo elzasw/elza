@@ -1,4 +1,4 @@
-@import "bootstrap/less/mixins/vendor-prefixes.less";
+@import "bootstrap/less/mixins/vendor-prefixes.scss";
 
 .toastrAlertBox {
     position: absolute;
@@ -8,10 +8,10 @@
     min-width: 320px;
     max-width: 640px;
     z-index: 2001;
-    @padding: 8px;
+    $padding: 8px;
     .alert {
-        .box-shadow(0 3px 6px rgba(0,0,0,.175));
-        padding: @padding @padding @padding (32px + @padding);
+        @include box-shadow(0 3px 6px rgba(0,0,0,.175));
+        padding: $padding $padding $padding (32px + $padding);
         //min-height: 64px;
 
         opacity: 0;

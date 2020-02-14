@@ -1,19 +1,19 @@
-@import "/variables.less";
-@levelIndent : 25px;
-@maxLevel: 30;
+@import "../../../variables.scss";
+$levelIndent : 25px;
+$maxLevel: 30;
 
 
 .dropDownTree .dropdown-menu{
     overflow-y: scroll;
     max-height:200px;
 
-    .mixin-loop (@i) when (@i > 0) {
-      .depth@{i} a{
-        padding-left: (@i*@levelIndent);
+    @mixin mixin-loop($i) when ($i > 0) {
+      .depth#{$i} a{
+        padding-left: ($i*$levelIndent);
       }
-      .mixin-loop(@i - 1);
+      @include mixin-loop($i - 1);
     }
-    .mixin-loop(@maxLevel);
+    @include mixin-loop($maxLevel);
 
     button{
         padding:0px;

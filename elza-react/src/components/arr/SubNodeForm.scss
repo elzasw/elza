@@ -1,8 +1,8 @@
-@import "/variables.less";
-@import "/elements-grid.less";
+@import "../../variables.scss";
+@import "/elements-grid.scss";
 
-@valueActionWidth: 22px;
-@descItemDraggerSize: 6px;
+$valueActionWidth: 22px;
+$descItemDraggerSize: 6px;
 
 .node-form-standard-actions {
     .btn {
@@ -13,7 +13,7 @@
         height: 2em;
         font-size: 0.9em;
         .icon  {
-            color: @node-form-actions-color;
+            color: $node-form-actions-color;
             height: 1.35em;
             line-height: 1.35em;
             width: 1.35em;
@@ -21,14 +21,14 @@
         }
     }
     .btn:hover {
-        background-color: @node-form-actions-hover;
+        background-color: $node-form-actions-hover;
     }
 }
 
 .node-form {
     //overflow-x: hidden;
     font-weight: normal;
-    background: @node-form-bg;
+    background: $node-form-bg;
 
     .active {
         font-weight: normal;
@@ -40,22 +40,22 @@
 
     .desc-item-groups {
         .desc-item-group {
-            background: @node-form-group-bg;
-            border: 1px solid @node-form-group-border;
+            background: $node-form-group-bg;
+            border: 1px solid $node-form-group-border;
             &.active {
-                background: @node-form-group-active-bg;
-                border: 1px solid @node-form-group-active-border;
+                background: $node-form-group-active-bg;
+                border: 1px solid $node-form-group-active-border;
             }
 
             .desc-item-types {
                 &:extend(.elements-container all);
 
                 .desc-item-type {
-                    background: @node-form-item-type-bg;
+                    background: $node-form-item-type-bg;
                     padding: 5px 5px 7px 5px;
 
                     &.active {
-                        background: @node-form-item-type-active-bg;
+                        background: $node-form-item-type-active-bg;
                         .desc-item-type-label {
                             .actions{
                                 .btn {
@@ -76,15 +76,15 @@
 
                     // Dragger
                     .dragger {
-                        width: @descItemDraggerSize;
+                        width: $descItemDraggerSize;
                         flex-shrink: 0;
                         height: 1.8em;
-                        background-color: @dragger-bg;
+                        background-color: $dragger-bg;
                         padding-top: 2px;
                         position: relative;
                         cursor: pointer;
                         &:hover {
-                            background-color: @dragger-bg-hover;
+                            background-color: $dragger-bg-hover;
                             .icon {
                                 display: block;
                             }
@@ -124,7 +124,7 @@
                         }
                         .actions {
                             flex-shrink: 0;
-                            .node-form-standard-actions;
+                            @include node-form-standard-actions;
 
                             .btn {
                                 visibility: hidden;
@@ -144,12 +144,12 @@
                                     }
                                 }
                                 .identified, .unlocked, .nocopy {
-                                    color: @node-form-actions-active-color;
+                                    color: $node-form-actions-active-color;
                                 }
 
                                 .notIdentified, .locked, .copy {
-                                    color: @node-form-actions-color;
-                                    background-color:@node-form-actions-hover;
+                                    color: $node-form-actions-color;
+                                    background-color:$node-form-actions-hover;
                                 }
                                 .locked {
                                     visibility: visible;
@@ -206,19 +206,19 @@
                                 .desc-item-spec {
                                     width: 100%;
                                     &.error {
-                                        background: @node-form-value-error-bg;
+                                        background: $node-form-value-error-bg;
                                     }
                                 }
                                 .desc-item-value {
                                     width: 100%;
                                     .error {
                                         &input, input, &textarea, textarea, &select, select {
-                                            background: @node-form-value-error-bg;
+                                            background: $node-form-value-error-bg;
                                         }
                                     }
                                     input, textarea, select {
                                         &.error {
-                                            background: @node-form-value-error-bg;
+                                            background: $node-form-value-error-bg;
                                         }
                                     }
                                     .desc-item-value-actions {
@@ -227,7 +227,7 @@
                                 }
                             }
                             .desc-item-action-container {
-                                .node-form-standard-actions;
+                                @include node-form-standard-actions;
                                 flex-shrink: 0;
 
                                 .btn {
@@ -244,17 +244,17 @@
                                     &.disabled{
                                         opacity:1;
                                         .icon{
-                                            //color: lighten(@node-form-actions-color, 80%);
+                                            //color: lighten($node-form-actions-color, 80%);
                                             opacity: 0.3;
                                         }
                                     }
                                     &:hover {
-                                        background-color: @node-form-actions-hover;
-                                        border-color: @node-form-actions-hover;
+                                        background-color: $node-form-actions-hover;
+                                        border-color: $node-form-actions-hover;
                                     }
 
                                     .icon  {
-                                        color: @node-form-actions-color;
+                                        color: $node-form-actions-color;
                                         height: auto;
                                         line-height: auto;
                                         width: auto;
@@ -262,11 +262,11 @@
                                     }
                                 }
                                 .identified {
-                                    color: @node-form-actions-active-color;
+                                    color: $node-form-actions-active-color;
                                 }
                                 .notIdentified {
-                                    color: @node-form-actions-color;
-                                    background-color:@node-form-actions-hover;
+                                    color: $node-form-actions-color;
+                                    background-color:$node-form-actions-hover;
                                 }
                                 .notIdentified {
                                     visibility: visible;
@@ -275,7 +275,7 @@
                         }
                     }
                     .desc-item-type-actions {
-                        .node-form-standard-actions;
+                        @include node-form-standard-actions;
                     }
                 }
             }

@@ -1,10 +1,10 @@
-@import "/variables.less";
-@default-bg: #333;
-@default-fg: white;
-@active-bg: #86bb65;
-@active-fg: @default-fg;
-@inactive-bg: #bbb;
-@inactive-fg: @default-fg;
+@import "../../../variables.scss";
+$default-bg: #333;
+$default-fg: white;
+$active-bg: #86bb65;
+$active-fg: $default-fg;
+$inactive-bg: #bbb;
+$inactive-fg: $default-fg;
 
 .detail-header-container {
     display: flex;
@@ -54,8 +54,8 @@
         width: 100%;
         padding:5px;
         padding-left: 10px;
-        background-color: @default-bg;
-        color: @default-fg;
+        background-color: $default-bg;
+        color: $default-fg;
         line-height: 1.5em;
         text-transform: uppercase;
 
@@ -64,20 +64,20 @@
             padding-right: 10px;
         }
         &.dh-color-success {
-            color: @active-fg;
-            background-color: @active-bg;
+            color: $active-fg;
+            background-color: $active-bg;
         }
         &.dh-color-info {
-            color: @state-info-text;
-            background-color: @state-info-bg;
+            color: $state-info-text;
+            background-color: $state-info-bg;
         }
         &.dh-color-warning {
-            color: @inactive-fg;
-            background-color: @inactive-bg;
+            color: $inactive-fg;
+            background-color: $inactive-bg;
         }
         &.dh-color-danger {
-            color: @state-danger-text;
-            background-color: @state-danger-bg;
+            color: $state-danger-text;
+            background-color: $state-danger-bg;
         }
     }
 }
