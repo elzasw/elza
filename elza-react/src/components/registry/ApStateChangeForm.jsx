@@ -42,7 +42,7 @@ class ApStateChangeForm extends AbstractReactComponent {
         });
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(getRegistryRecordTypesIfNeeded(nextProps.partyTypeId));
     }
 

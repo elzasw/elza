@@ -43,7 +43,7 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
         this.fetch(this.props);
     }
 
-    componentWillReceiveProps(nextProps, nextState) {
+    UNSAFE_componentWillReceiveProps(nextProps, nextState) {
         if (nextProps.fundId !== this.props.fundId || nextProps.permission !== this.props.permission) {
             this.fetch(nextProps);
         }

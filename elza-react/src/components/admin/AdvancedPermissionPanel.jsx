@@ -59,7 +59,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (this.props.entityPermissions.isFetching && !nextProps.entityPermissions.isFetching) {
             const permission = {
                 id: AdvancedPermissionPanel.ALL_ID

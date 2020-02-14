@@ -53,7 +53,7 @@ class StructureSubNodeForm extends AbstractReactComponent {
         this.props.dispatch(structureFormActions.fundSubNodeFormFetchIfNeeded(versionId, null, true));
     }
 
-    componentWillReceiveProps() {
+    UNSAFE_componentWillReceiveProps() {
         const {versionId} = this.props;
         this.props.dispatch(structureFormActions.fundSubNodeFormFetchIfNeeded(versionId, null));
     }

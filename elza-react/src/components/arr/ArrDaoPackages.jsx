@@ -24,7 +24,7 @@ class ArrDaoPackages extends AbstractReactComponent {
         this.fetchIfNeeded(this.props);
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.fetchIfNeeded(nextProps);
     }
 

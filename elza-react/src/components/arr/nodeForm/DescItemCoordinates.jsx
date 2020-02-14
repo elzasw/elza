@@ -30,7 +30,7 @@ class DescItemCoordinates extends AbstractReactComponent {
         repeatable: PropTypes.bool.isRequired
     };
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.setState(objectFromWKT(nextProps.descItem.value));
     }
 

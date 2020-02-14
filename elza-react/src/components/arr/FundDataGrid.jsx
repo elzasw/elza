@@ -154,7 +154,7 @@ class FundDataGrid extends AbstractReactComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.fetchData(nextProps)
 
         var colState = this.getColsStateFromProps(nextProps, this.props)

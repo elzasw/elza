@@ -28,7 +28,7 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
     componentDidMount() {
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
     }
 
     handleShowInArr(version) {

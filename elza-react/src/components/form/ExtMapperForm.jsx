@@ -25,7 +25,7 @@ class ExtMapperForm extends AbstractReactComponent {
         this.props.dispatch(refPartyTypesFetchIfNeeded());
     }
 
-    componentWillReceiveProps() {
+    UNSAFE_componentWillReceiveProps() {
         this.props.dispatch(refPartyTypesFetchIfNeeded());
     }
 

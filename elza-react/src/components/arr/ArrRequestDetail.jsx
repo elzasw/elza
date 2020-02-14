@@ -38,7 +38,7 @@ import defaultKeymap from './ArrRequestDetailKeymap.jsx';
 class ArrRequestDetail extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
-    componentWillMount(){
+    UNSAFE_componentWillMount(){
         Utils.addShortcutManager(this,defaultKeymap);
     }
     getChildContext() {
@@ -60,7 +60,7 @@ class ArrRequestDetail extends AbstractReactComponent {
         this.trySetFocus(this.props)
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const {versionId, requestDetail} = nextProps;
 
         requestDetail.id !== null && this.props.dispatch(arrRequestActions.fetchDetailIfNeeded(versionId, requestDetail.id));

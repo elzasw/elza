@@ -58,7 +58,7 @@ class ArrStructurePanel extends AbstractReactComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.fetchIfNeeded(nextProps);
     }
 

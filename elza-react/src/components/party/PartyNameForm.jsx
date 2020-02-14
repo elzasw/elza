@@ -101,7 +101,7 @@ class PartyNameForm extends AbstractReactComponent {
         this.dataRefresh();
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.dataRefresh(nextProps);
     }
 

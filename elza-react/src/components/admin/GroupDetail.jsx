@@ -67,7 +67,7 @@ class GroupDetail extends AbstractReactComponent {
         this.props.dispatch(groupsGroupDetailFetchIfNeeded());
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const groupId = this.props.groupDetail.id;
         const nextGroupId = nextProps.groupDetail.id;
 

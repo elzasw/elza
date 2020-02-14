@@ -60,7 +60,7 @@ class AddRegistryForm extends AbstractReactComponent {
         working: false
     };
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(getRegistryRecordTypesIfNeeded());
         this.prepareState(nextProps);
     }

@@ -124,14 +124,14 @@ class ArrPage extends ArrParentPage {
         super.componentDidMount();
         this.trySetFocus(this.props);
     }
-    componentWillMount(){
+    UNSAFE_componentWillMount(){
         this.registerTabs(this.props);
         let newKeymap = Utils.mergeKeymaps(ArrParentPage.defaultKeymap,defaultKeymap);
         Utils.addShortcutManager(this,newKeymap);
     }
 
-    componentWillReceiveProps(nextProps) {
-        super.componentWillReceiveProps(nextProps);
+    UNSAFE_componentWillReceiveProps(nextProps) {
+        super.UNSAFE_componentWillReceiveProps(nextProps);
         const {selectedTabKey} = this.props;
         const activeFund = this.getActiveFund(nextProps);
         if (activeFund !== null) {

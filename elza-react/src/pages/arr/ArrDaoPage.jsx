@@ -88,7 +88,7 @@ class ArrDaoPage extends ArrParentPage {
     componentDidMount() {
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
     }
 
     getDestNode() {

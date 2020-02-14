@@ -37,7 +37,7 @@ class FundGroupsPanel extends AbstractReactComponent {
         this.props.dispatch(adminPermissions.fetchGroupsByFund(fundId));
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         let newState = {};
         let permissions = [...this.state.permissions];
         let propsSelectedPermissionChanged = false;

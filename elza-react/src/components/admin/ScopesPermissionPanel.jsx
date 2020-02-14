@@ -81,7 +81,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         let newState = {};
         let permissions = [...this.state.permissions];
 

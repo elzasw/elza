@@ -25,7 +25,7 @@ class NodePage extends AbstractReactComponent {
         }
     }
 
-    componentWillReceiveProps(props) {
+    UNSAFE_componentWillReceiveProps(props) {
 
     }
 

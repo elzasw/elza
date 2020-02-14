@@ -77,7 +77,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     getChildContext() {
         return { shortcuts: this.shortcutManager };
     }
-    componentWillMount(){
+    UNSAFE_componentWillMount(){
         let newKeymap = Utils.mergeKeymaps(ArrParentPage.defaultKeymap,defaultKeymap);
         Utils.addShortcutManager(this,newKeymap);
     }
@@ -119,8 +119,8 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         this.trySetFocus(this.props)
     }
 
-    componentWillReceiveProps(nextProps) {
-        super.componentWillReceiveProps(nextProps);
+    UNSAFE_componentWillReceiveProps(nextProps) {
+        super.UNSAFE_componentWillReceiveProps(nextProps);
         this.props.dispatch(templatesFetchIfNeeded());
 
         const fund = this.getActiveFund(nextProps);

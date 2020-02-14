@@ -20,7 +20,7 @@ class ControllableDropdownButton extends AbstractReactComponent {
         open: PropTypes.bool
     };
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.setState({
             open: this.getOpenValue(nextProps, this.state)
         })

@@ -21,7 +21,7 @@ class ScopeLists extends AbstractReactComponent {
         this.fetchData(this.props);
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.fetchData(nextProps);
     }
 

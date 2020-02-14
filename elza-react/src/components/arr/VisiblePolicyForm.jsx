@@ -24,7 +24,7 @@ class VisiblePolicyForm extends AbstractReactComponent {
         this.loadVisiblePolicy();
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.loadVisiblePolicy();
     }
 

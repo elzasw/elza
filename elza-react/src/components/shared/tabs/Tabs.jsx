@@ -26,7 +26,7 @@ import i18n from "../../i18n";
 export const Container = class TabsContainer extends React.Component {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
-    componentWillMount(){
+    UNSAFE_componentWillMount(){
         Utils.addShortcutManager(this,defaultKeymap);
     }
     getChildContext() {

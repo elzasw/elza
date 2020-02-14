@@ -41,7 +41,7 @@ class TemplateForm extends AbstractReactComponent {
 
     };
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
     }
 
     componentDidMount() {

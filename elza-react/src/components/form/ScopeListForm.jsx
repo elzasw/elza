@@ -49,7 +49,7 @@ class ScopeListForm extends AbstractReactComponent {
 
     state = {scopesList: []};
 
-    componentWillReceiveProps(nextProps, nextContext) {
+    UNSAFE_componentWillReceiveProps(nextProps, nextContext) {
         this.fetchData(nextProps);
     }
 

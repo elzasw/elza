@@ -51,7 +51,7 @@ class TooltipTrigger extends AbstractReactComponent {
         };
     };
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
     }
 
     componentWillUnmount() {

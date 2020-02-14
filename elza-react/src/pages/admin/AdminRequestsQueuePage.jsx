@@ -26,7 +26,7 @@ class AdminRequestsQueuePage extends AbstractReactComponent {
         this.props.dispatch(arrRequestActions.fetchInQueueListIfNeeded());
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(arrRequestActions.fetchInQueueListIfNeeded());
     }
 

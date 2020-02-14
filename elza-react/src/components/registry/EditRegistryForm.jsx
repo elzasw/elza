@@ -24,7 +24,7 @@ class EditRegistryForm extends AbstractReactComponent {
 
     state = {};
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(getRegistryRecordTypesIfNeeded());
     }
 

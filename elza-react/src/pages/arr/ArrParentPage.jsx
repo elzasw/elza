@@ -125,7 +125,7 @@ export default class ArrParentPage extends AbstractReactComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(descItemTypesFetchIfNeeded());
         this.props.dispatch(calendarTypesFetchIfNeeded());
         this.props.dispatch(fundsFetchIfNeeded());

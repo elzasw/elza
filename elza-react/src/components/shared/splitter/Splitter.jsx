@@ -50,7 +50,7 @@ class Splitter extends AbstractReactComponent {
         }
     };
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (nextProps.leftSize || nextProps.rightSize) {
             this.setState({
                 leftSize: nextProps.leftSize || this.state.leftSize,

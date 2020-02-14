@@ -31,7 +31,7 @@ class NodeTabs extends AbstractReactComponent {
         this.trySetFocus(this.props)
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(nodesFetchIfNeeded(nextProps.versionId));
         this.trySetFocus(nextProps)
     }

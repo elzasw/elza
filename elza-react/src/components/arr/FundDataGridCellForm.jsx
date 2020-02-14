@@ -32,7 +32,7 @@ class FundDataGridCellForm extends AbstractReactComponent {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const {dataLoaded} = this.state;
         const newFundDataGrid = this.getFundDataGrid(nextProps)
 

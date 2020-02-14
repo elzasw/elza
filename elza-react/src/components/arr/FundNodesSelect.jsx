@@ -56,7 +56,7 @@ class FundNodesSelect extends AbstractReactComponent {
         this.handleChange(versionId, fundTreeNodes.expandedIds, multipleSelection, onChange);
     }
 
-    componentWillReceiveProps(nextProps){
+    UNSAFE_componentWillReceiveProps(nextProps){
         const {fund:{fundTreeNodes, versionId}, multipleSelection, onChange} = nextProps;
 
         const selectionChanged = this.checkSelectionChanged(this.props.fund.fundTreeNodes, fundTreeNodes, multipleSelection);

@@ -56,7 +56,7 @@ class FilterableListBox extends AbstractReactComponent {
         this.state = state
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (typeof nextProps.selectedIds !== 'undefined') {
             let nextSelectedIds
             if (typeof nextProps.selectedIds !== 'undefined') {

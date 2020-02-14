@@ -37,7 +37,7 @@ const OutputState = {
 class ArrOutputDetail extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
-    componentWillMount(){
+    UNSAFE_componentWillMount(){
         addShortcutManager(this,defaultKeymap);
     }
     getChildContext() {
@@ -66,7 +66,7 @@ class ArrOutputDetail extends AbstractReactComponent {
         this.trySetFocus(this.props)
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const {versionId, fundOutputDetail} = nextProps;
         fundOutputDetail.id !== null && this.props.dispatch(fundOutputDetailFetchIfNeeded(versionId, fundOutputDetail.id));
         this.props.dispatch(outputTypesFetchIfNeeded());

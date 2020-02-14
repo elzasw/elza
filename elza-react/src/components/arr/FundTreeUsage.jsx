@@ -40,7 +40,7 @@ class FundTreeUsage extends AbstractReactComponent {
         this.trySetFocus(this.props);
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.trySetFocus(nextProps);
     }
 

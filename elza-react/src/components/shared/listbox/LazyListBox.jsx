@@ -23,7 +23,7 @@ const _LLB_FETCH_BOUNDARY = 200
 class LazyListBox extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
-    componentWillMount(){
+    UNSAFE_componentWillMount(){
         Utils.addShortcutManager(this,defaultKeymap);
     }
     getChildContext() {
@@ -72,7 +72,7 @@ class LazyListBox extends AbstractReactComponent {
         itemIdAttrName: "id",
     };
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         var newState = {
             activeIndex: this.getActiveIndexForUse(nextProps, this.state),
             selectedIndex: this.getSelectedIndexForUse(nextProps, this.state),

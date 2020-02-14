@@ -26,7 +26,7 @@ class ConfirmForm extends AbstractReactComponent {
     componentDidMount() {
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
     }
 
     render() {

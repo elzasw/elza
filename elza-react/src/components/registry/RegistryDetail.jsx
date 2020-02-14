@@ -54,7 +54,7 @@ class RegistryDetail extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         Utils.addShortcutManager(this,defaultKeymap);
     }
 
@@ -71,7 +71,7 @@ class RegistryDetail extends AbstractReactComponent {
         this.fetchIfNeeded();
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.fetchIfNeeded(nextProps);
         this.trySetFocus(nextProps);
         const {registryDetail:{id, fetched, data}} = nextProps;

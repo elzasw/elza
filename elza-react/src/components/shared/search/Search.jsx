@@ -33,7 +33,7 @@ class Search extends React.Component {
             filterText: this.props.filterText || this.props.value,                          // hledaný text
         }
     }
-    componentWillReceiveProps(nextProps){
+    UNSAFE_componentWillReceiveProps(nextProps){
         if (this.props.filterText !== nextProps.filterText || this.props.value !== nextProps.value) {
             this.setState({                                                  // inicializace stavu komponenty
                 filterText: nextProps.filterText || nextProps.value || '',                          // hledaný text

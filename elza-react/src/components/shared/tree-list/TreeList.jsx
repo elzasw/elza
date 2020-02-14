@@ -213,7 +213,7 @@ class TreeList extends React.Component {
         });
     }
 
-    componentWillReceiveProps(nextProps){
+    UNSAFE_componentWillReceiveProps(nextProps){
         this.checkIfTree(nextProps.items);
         this.setState({
             items: nextProps.items,
@@ -249,7 +249,7 @@ class TreeList extends React.Component {
         this.setState({expandedIds: newExpandedIds});
     }
 
-    componentWillMount(){
+    UNSAFE_componentWillMount(){
         const {includeId, items} = this.props;
         this.checkIfTree(items);
 

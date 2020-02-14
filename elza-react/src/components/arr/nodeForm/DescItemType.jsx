@@ -45,7 +45,7 @@ class DescItemType extends AbstractReactComponent {
         onCreatePacket: ()=>{}
     };
 
-    componentWillMount(){
+    UNSAFE_componentWillMount(){
         Utils.addShortcutManager(this,defaultKeymap);
     }
     getChildContext() {
@@ -90,7 +90,7 @@ class DescItemType extends AbstractReactComponent {
         );
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.setState({
             descItemType: {...nextProps.descItemType}
         });

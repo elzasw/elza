@@ -21,12 +21,12 @@ class AddStructureDataForm extends AbstractReactComponent {
         multiple: false,
     };
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         const {fundVersionId, structureData} = this.props;
         this.props.dispatch(structureNodeFormSelectId(fundVersionId, structureData.id));
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const {fundVersionId, structureData: {id}} = nextProps;
         if (id !== this.props.structureData.id) {
             this.props.dispatch(structureNodeFormSelectId(fundVersionId, id));

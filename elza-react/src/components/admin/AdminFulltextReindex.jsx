@@ -15,7 +15,7 @@ class AdminFulltextReindex extends AbstractReactComponent {
         super(props);
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (!nextProps.fetched) {
             this.props.dispatch(getIndexStateFetchIfNeeded());
         }

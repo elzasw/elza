@@ -134,7 +134,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
         super(props);
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
     }
 
     componentDidMount() {

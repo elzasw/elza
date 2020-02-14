@@ -67,7 +67,7 @@ const Permissions2 = class Permissions2 extends AbstractReactComponent {
         this.props.initForm(this.props.onSave);
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.setState({
             scopes: this.getScopes(nextProps.scopesData)
         });

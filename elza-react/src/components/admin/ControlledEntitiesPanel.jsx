@@ -23,7 +23,7 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
         };
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (this.props.permissions !== nextProps.permissions) {
             this.setState({
                 permissions: this.buildPermissions(nextProps.permissions)

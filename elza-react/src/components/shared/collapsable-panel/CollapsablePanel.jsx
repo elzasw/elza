@@ -12,7 +12,7 @@ import defaultKeymap from './CollapsablePanelKeymap.jsx';
 class CollapsablePanel extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
-    componentWillMount(){
+    UNSAFE_componentWillMount(){
         Utils.addShortcutManager(this,defaultKeymap);
     }
     getChildContext() {

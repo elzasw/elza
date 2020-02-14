@@ -72,7 +72,7 @@ class UserDetail extends AbstractReactComponent {
         this.props.dispatch(usersUserDetailFetchIfNeeded());
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const userId = this.props.userDetail.id;
         const nextUserId = nextProps.userDetail.id;
 

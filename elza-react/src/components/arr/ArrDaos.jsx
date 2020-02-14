@@ -42,7 +42,7 @@ class ArrDaos extends AbstractReactComponent {
         this.handleFetch({}, this.props);
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.handleFetch(this.props, nextProps);
     }
 

@@ -42,7 +42,7 @@ class Ribbon extends AbstractReactComponent {
         this.trySetFocus()
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.trySetFocus(nextProps)
     }
 

@@ -57,7 +57,7 @@ const PARENT_CHILD_MAX_LENGTH = 250
 class NodePanel extends AbstractReactComponent {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
-    componentWillMount(){
+    UNSAFE_componentWillMount(){
         Utils.addShortcutManager(this,defaultKeymap);
     }
     getChildContext() {
@@ -136,7 +136,7 @@ class NodePanel extends AbstractReactComponent {
         this.trySetFocus(this.props);
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const settings = this.getSettingsFromProps(nextProps);
         this.requestData(nextProps.versionId, nextProps.node, settings);
 

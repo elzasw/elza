@@ -61,7 +61,7 @@ class ArrSearchForm extends AbstractReactComponent {
         this.props.dispatch(calendarTypesFetchIfNeeded());
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(calendarTypesFetchIfNeeded());
     }
 

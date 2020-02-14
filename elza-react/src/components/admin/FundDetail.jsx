@@ -50,7 +50,7 @@ class FundDetail extends AbstractReactComponent {
         this.fetchData(this.props);
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const fundId = this.props.fund.id;
         const nextFundId = nextProps.fund.id;
 

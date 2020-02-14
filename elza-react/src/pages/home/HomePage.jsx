@@ -27,7 +27,7 @@ import SearchFundsForm from "../../components/arr/SearchFundsForm";
  */
 class HomePage extends AbstractReactComponent {
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.trySetFocus(nextProps)
     }
 

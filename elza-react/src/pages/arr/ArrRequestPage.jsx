@@ -99,8 +99,8 @@ class ArrRequestPage extends ArrParentPage {
         this.trySetFocus(this.props)
     }
 
-    componentWillReceiveProps(nextProps) {
-        super.componentWillReceiveProps(nextProps);
+    UNSAFE_componentWillReceiveProps(nextProps) {
+        super.UNSAFE_componentWillReceiveProps(nextProps);
 
         const fund = this.getActiveFund(nextProps);
         if (fund) {

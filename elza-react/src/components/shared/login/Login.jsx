@@ -36,7 +36,7 @@ class Login extends AbstractReactComponent {
         sso: []
     };
 
-    componentWillMount(){
+    UNSAFE_componentWillMount(){
         this.props.dispatch(checkUserLogged());
         this.fetch();
     }

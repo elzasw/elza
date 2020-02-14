@@ -46,7 +46,7 @@ class AdminExtSystemDetail extends AbstractReactComponent {
         this.fetchIfNeeded();
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.fetchIfNeeded(nextProps);
     }
 

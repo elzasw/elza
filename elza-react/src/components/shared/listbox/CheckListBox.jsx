@@ -29,7 +29,7 @@ class ListBox extends AbstractReactComponent {
 
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
-    componentWillMount(){
+    UNSAFE_componentWillMount(){
         Utils.addShortcutManager(this,defaultKeymap);
     }
     getChildContext() {
@@ -183,7 +183,7 @@ class ListBox extends AbstractReactComponent {
         e.preventDefault();
         this.actionMap[action](e);
     }
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         const { multiselect, filter, items } = this.props;
 
         if (multiselect !== nextProps.multiselect || filter !== nextProps.filter) {

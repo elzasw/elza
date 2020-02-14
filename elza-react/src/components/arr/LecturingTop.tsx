@@ -54,7 +54,7 @@ class LecturingTop extends React.Component {
         }
     }
 
-    componentWillReceiveProps(nextProps, nextContext) {
+    UNSAFE_componentWillReceiveProps(nextProps, nextContext) {
         const {issueListId} = this.state;
         nextProps.dispatch(issueTypesActions.fetchIfNeeded());
         nextProps.dispatch(issueStatesActions.fetchIfNeeded());

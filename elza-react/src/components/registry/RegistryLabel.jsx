@@ -20,7 +20,7 @@ class RegistryLabel extends AbstractReactComponent {
         value: PropTypes.string.isRequired
     };
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.setState({
             value: nextProps.value
         })

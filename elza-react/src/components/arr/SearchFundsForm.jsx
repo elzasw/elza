@@ -33,7 +33,7 @@ const FUND_NAME_MAX_CHARS = 60
 class SearchFundsForm extends AbstractReactComponent {
     static propTypes = {};
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(fundSearchActions.fundSearchFetchIfNeeded());
     }
 
