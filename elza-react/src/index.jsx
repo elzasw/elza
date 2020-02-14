@@ -2,7 +2,7 @@
  * Vstupní soubor pro UI - inicializace a zobrazení VIEW.
  */
 // Import css Bootstrapu
-import './elza-styles.less';
+import './elza-styles.scss';
 import 'font-awesome/css/font-awesome.css';
 import './elza-iconset/ez-icons.css';
 import React from 'react';

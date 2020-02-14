@@ -10,7 +10,7 @@ import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './DataGridPaginationKeymap.jsx';
 
-import './DataGridPagination.less';
+import './DataGridPagination.scss';
 import i18n from "../../i18n";
 
 export function getPagesCount(itemsCount, pageSize) {

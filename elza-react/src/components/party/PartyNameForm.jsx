@@ -16,7 +16,7 @@ import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 import {PARTY_TYPE_CODES, RELATION_CLASS_CODES} from '../../constants.tsx'
 
 
-import './RelationForm.less'
+import './RelationForm.scss'
 
 const stringNormalize = val => val && val.trim().length > 0 ? val.trim() : null;
 

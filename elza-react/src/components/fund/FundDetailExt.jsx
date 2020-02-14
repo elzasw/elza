@@ -12,7 +12,7 @@ import {routerNavigate} from 'actions/router.jsx'
 import {downloadFile} from "actions/global/download";
 import {UrlFactory} from 'actions/index.jsx';
 
-import './FundDetailExt.less';;
+import './FundDetailExt.scss';;
 
 const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
     static propTypes = {

@@ -7,7 +7,7 @@ import {
     NoFocusButton
 } from '../../components/shared'
 import {connect} from 'react-redux'
-import '../arr/NodeSubNodeForm.less';
+import '../arr/NodeSubNodeForm.scss';
 import { ItemForm } from "./ItemForm";
 import {apNameFormActions} from "./ApNameFormActions";
 import {ItemFactory} from "./ItemFactory";

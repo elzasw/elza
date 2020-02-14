@@ -10,7 +10,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 
-import './RelationForm.less'
+import './RelationForm.scss'
 import DatationField from "./DatationField";
 
 class PartyIdentifierForm extends AbstractReactComponent {

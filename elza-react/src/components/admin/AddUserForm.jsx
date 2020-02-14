@@ -10,7 +10,7 @@ import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
 import {Button, Checkbox, Col, Form, Modal, Row} from 'react-bootstrap';
 import {submitForm} from 'components/form/FormUtils.jsx'
 import PartyField from "../party/PartyField";
-import './AddUserForm.less';
+import './AddUserForm.scss';
 
 class AddUserForm extends AbstractReactComponent {
 

@@ -7,7 +7,7 @@ import {partyListFetchIfNeeded, partyListFilter, partyListInvalidate, partyDetai
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {WebApi} from 'actions/index.jsx';
 
-import './PartyList.less';
+import './PartyList.scss';
 import PartyListItem from "./PartyListItem";
 import Autocomplete from "../shared/autocomplete/Autocomplete";
 import ListPager from "../shared/listPager/ListPager";

@@ -9,7 +9,7 @@ import {Button, OverlayTrigger, Tooltip} from 'react-bootstrap';
 import DescItemLabel from './DescItemLabel.jsx'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
-import './DescItemCoordinates.less';
+import './DescItemCoordinates.scss';
 
 /**
  * Input prvek pro desc item - typ STRING.

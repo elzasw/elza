@@ -34,7 +34,7 @@ import {routerNavigate} from 'actions/router.jsx'
 import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './RegistryDetailKeymap.jsx';
-import './RegistryDetail.less';
+import './RegistryDetail.scss';
 import EditRegistryForm from "./EditRegistryForm";
 import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
 import {FOCUS_KEYS, ApState} from "../../constants.tsx";

@@ -40,7 +40,7 @@ import {
     NodePage,
 } from 'pages'
 
-import './Layout.less';
+import './Layout.scss';
 import {modalDialogShow} from "../actions/global/modalDialog";
 import i18n from "../components/i18n";
 import RegistryUsageForm from "../components/form/RegistryUsageForm";

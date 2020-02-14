@@ -36,7 +36,7 @@ import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
 import {PARTY_TYPE_CODES} from '../../constants.tsx'
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './PartyDetailKeymap.jsx';
-import './PartyDetail.less';
+import './PartyDetail.scss';
 import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
 import {addToastrWarning} from "../shared/toastr/ToastrActions";
 import * as StateApproval from "../enum/StateApproval";

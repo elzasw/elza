@@ -1,4 +1,4 @@
-import './FileListBox.less';
+import './FileListBox.scss';
 
 /**
  *  Souborová ListBox komponenta

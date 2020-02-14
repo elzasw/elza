@@ -1,6 +1,6 @@
 // ---
 import React from 'react';
-import "./AdminRightsContainer.less";
+import "./AdminRightsContainer.scss";
 import AbstractReactComponent from "../AbstractReactComponent";
 
 /**

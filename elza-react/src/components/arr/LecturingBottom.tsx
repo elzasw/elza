@@ -11,7 +11,7 @@ import Loading from "../shared/loading/Loading";
 import {dateTimeToString} from "../Utils";
 import TextareaAutosize from 'react-autosize-textarea';
 
-import "./LecturingBottom.less"
+import "./LecturingBottom.scss"
 import i18n from "../i18n";
 import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
 import IssueForm from "../form/IssueForm";

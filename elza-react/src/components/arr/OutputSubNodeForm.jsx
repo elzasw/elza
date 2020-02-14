@@ -10,7 +10,7 @@ import {
 import {connect} from 'react-redux'
 import {outputFormActions} from '../../actions/arr/subNodeForm';
 
-import './NodeSubNodeForm.less';
+import './NodeSubNodeForm.scss';
 import SubNodeForm from "./SubNodeForm";
 import objectById from "../../shared/utils/objectById";
 import DescItemFactory from "components/arr/nodeForm/DescItemFactory.jsx";

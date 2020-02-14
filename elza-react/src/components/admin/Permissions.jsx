@@ -16,7 +16,7 @@ import ScopeField from './ScopeField.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
 
-import './Permissions.less';;
+import './Permissions.scss';;
 
 /**
  * Validace formuláře.

@@ -5,7 +5,7 @@ import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap'
 import {indexById} from 'stores/app/utils.jsx'
 
-import './AddRemoveList.less';
+import './AddRemoveList.scss';
 import AbstractReactComponent from "../../AbstractReactComponent";
 import NoFocusButton from "../button/NoFocusButton";
 import Icon from "../icon/Icon";

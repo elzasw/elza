@@ -1,6 +1,6 @@
 import React from 'react';
 
-import './Loading.less';
+import './Loading.scss';
 import i18n from "../../i18n";
 
 const Loading = (

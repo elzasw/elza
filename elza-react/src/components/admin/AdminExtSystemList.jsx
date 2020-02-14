@@ -11,7 +11,7 @@ import {WebApi} from 'actions/index.jsx';
 import {storeFromArea} from 'shared/utils'
 
 
-import './AdminExtSystemList.less';
+import './AdminExtSystemList.scss';
 import AdminExtSystemListItem from "./AdminExtSystemListItem";
 import {FOCUS_KEYS} from "../../constants.tsx";
 

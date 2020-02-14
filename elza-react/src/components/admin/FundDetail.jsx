@@ -11,7 +11,7 @@ import FundUsersPanel from "./FundUsersPanel";
 import FundGroupsPanel from "./FundGroupsPanel";
 import FundsPermissionPanel from "./FundsPermissionPanel";
 import DetailHeader from "../shared/detail/DetailHeader";
-import "./FundDetail.less"
+import "./FundDetail.scss"
 
 class FundDetail extends AbstractReactComponent {
     static TAB_USERS = 0;
@@ -29,11 +29,11 @@ class FundDetail extends AbstractReactComponent {
         id: null,
         index: 0
     }
-    /* 
+    /*
      * Last selected fund item.
      */
     selectedUser = this.defaultSelectedItem;
-    /* 
+    /*
      * Last selected scope item.
      */
     selectedGroup = this.defaultSelectedItem;
@@ -85,13 +85,13 @@ class FundDetail extends AbstractReactComponent {
 
         switch (selectedTabItem.id) {
             case FundDetail.TAB_USERS:
-                return <FundUsersPanel 
+                return <FundUsersPanel
                     fundId={fund.id}
                     onSelectItem={(item, index) => {this.selectedUser = {index, id: item.id}}}
                     selectedPermission={this.selectedUser}
                 />
             case FundDetail.TAB_GROUPS:
-                return <FundGroupsPanel 
+                return <FundGroupsPanel
                     fundId={fund.id}
                     onSelectItem={(item, index) => {this.selectedGroup = {index, id: item.id}}}
                     selectedPermission={this.selectedGroup}

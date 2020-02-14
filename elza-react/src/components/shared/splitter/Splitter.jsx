@@ -5,7 +5,7 @@ import {connect} from 'react-redux'
 import Pane from './Pane'
 import AbstractReactComponent from "../../AbstractReactComponent";
 import Resizer from "../resizer/Resizer";
-import './Splitter.less'
+import './Splitter.scss'
 
 class Splitter extends AbstractReactComponent {
 

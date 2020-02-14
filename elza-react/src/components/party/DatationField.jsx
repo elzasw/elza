@@ -6,7 +6,7 @@ import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {TooltipTrigger, AbstractReactComponent, Icon, FormInput, i18n} from 'components/shared';
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 
-import './DatationField.less'
+import './DatationField.scss'
 
 class DatationField extends AbstractReactComponent {
     static propTypes = {

@@ -6,7 +6,7 @@ import {Ribbon, AdminPackagesList, AdminPackagesUpload, i18n, Icon, RibbonGroup}
 import {UrlFactory} from 'actions/index.jsx';
 import {Button} from 'react-bootstrap'
 
-import './AdminPackagesPage.less';
+import './AdminPackagesPage.scss';
 import PageLayout from "../shared/layout/PageLayout";
 
 /**

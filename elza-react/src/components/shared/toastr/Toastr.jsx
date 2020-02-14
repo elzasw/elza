@@ -5,7 +5,7 @@ import {Alert} from 'react-bootstrap';
 import {connect} from 'react-redux'
 import {addToastr, removeToastr} from './ToastrActions.jsx'
 
-import './Toastr.less';
+import './Toastr.scss';
 import AbstractReactComponent from "../../AbstractReactComponent";
 import Icon from "../icon/Icon";
 import i18n from "../../i18n";

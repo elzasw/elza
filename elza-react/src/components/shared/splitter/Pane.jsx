@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './Splitter.less'
+import './Splitter.scss'
 import AbstractReactComponent from "../../AbstractReactComponent";
 
 /**

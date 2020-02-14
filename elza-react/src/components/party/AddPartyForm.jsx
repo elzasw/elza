@@ -17,7 +17,7 @@ import {PARTY_TYPE_CODES} from '../../constants.tsx'
 
 import DatationField from './DatationField';
 
-import './RelationForm.less'
+import './RelationForm.scss'
 import Scope from "../shared/scope/Scope";
 
 /**

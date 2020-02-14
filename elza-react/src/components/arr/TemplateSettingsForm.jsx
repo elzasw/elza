@@ -8,7 +8,7 @@ import FormInput from '../shared/form/FormInput';
 import { WebApi } from '../../actions/WebApi';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 
-import './TemplateSettingsForm.less';
+import './TemplateSettingsForm.scss';
 
 const fields = ['evenPageOffsetX', 'evenPageOffsetY', 'oddPageOffsetX', 'oddPageOffsetY'];
 

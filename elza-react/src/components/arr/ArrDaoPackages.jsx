@@ -10,7 +10,7 @@ import {setSettings, getOneSettings} from "components/arr/ArrUtils.jsx";
 import {humanFileSize} from "components/Utils.jsx";
 import * as daoActions from 'actions/arr/daoActions.jsx';
 import classNames from 'classnames';
-import "./ArrDaoPackages.less"
+import "./ArrDaoPackages.scss"
 
 class ArrDaoPackages extends AbstractReactComponent {
 

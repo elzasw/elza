@@ -2,7 +2,7 @@
  * Formulář editace PP - jako buňky v tabulce hromadných úprav - FundDataGrid.
  */
 
-import './FundDataGridCellForm.less'
+import './FundDataGridCellForm.scss'
 
 import React from 'react';
 import ReactDOM from 'react-dom';

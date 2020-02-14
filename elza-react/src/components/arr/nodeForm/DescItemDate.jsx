@@ -10,7 +10,7 @@ import {decorateAutocompleteValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
-import './DescItemDate.less';
+import './DescItemDate.scss';
 
 import Moment from 'moment';
 import DateTimePicker from 'react-widgets/lib/DateTimePicker';

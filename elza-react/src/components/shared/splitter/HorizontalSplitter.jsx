@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import HorizontalPane from './HorizontalPane'
 import AbstractReactComponent from "../../AbstractReactComponent";
 import Resizer from "../resizer/Resizer";
-import './HorizontalSplitter.less'
+import './HorizontalSplitter.scss'
 
 class HorizontalSplitter extends AbstractReactComponent {
 

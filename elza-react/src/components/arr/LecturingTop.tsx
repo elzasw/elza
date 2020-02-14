@@ -18,7 +18,7 @@ import IssueForm from "../form/IssueForm";
 import objectById from "../../shared/utils/objectById";
 import indexById from "../../shared/utils/indexById";
 
-import "./LecturingTop.less";
+import "./LecturingTop.scss";
 import * as perms from "../../actions/user/Permission";
 import {IssueStateVO, IssueVO} from "../../types";
 import {CSSProperties} from "react";

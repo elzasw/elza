@@ -8,7 +8,7 @@ import * as Utils from "../../Utils";
 import scrollIntoView from 'dom-scroll-into-view';
 
 import defaultKeymap from './ListBoxKeymap.jsx'
-import './CheckListBox.less';
+import './CheckListBox.scss';
 
 let _ListBox_placeholder = document.createElement("div");
 let _ListBox_placeholder_cls = "placeholder"

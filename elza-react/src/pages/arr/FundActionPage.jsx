@@ -2,7 +2,7 @@
  * Stránka archivních pomůcek.
  */
 
-import './FundActionPage.less';
+import './FundActionPage.scss';
 
 import ArrParentPage from "./ArrParentPage.jsx";
 

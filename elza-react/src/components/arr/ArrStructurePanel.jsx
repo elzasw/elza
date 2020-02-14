@@ -11,7 +11,7 @@ import {
     DEFAULT_STRUCTURE_TYPE_MAX_SIZE
 } from "../../actions/arr/structureType";
 import storeFromArea from "../../shared/utils/storeFromArea";
-import './ArrStructurePanel.less'
+import './ArrStructurePanel.scss'
 import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
 import AddStructureDataForm from "./structure/AddStructureDataForm";
 import UpdateStructureDataForm from "./structure/UpdateStrucutreDataForm";
@@ -461,7 +461,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                 </div>
                 <FormInput className="text-filter" name={"text"} type="text" onChange={({target: {value}}) => this.filter({text:value})} value={filter.text} placeholder={i18n("arr.structure.filter.text.placholder")}/>
             </div>
-            {rows && rows.length > 0 
+            {rows && rows.length > 0
                 ? <CheckListBox
                     ref={(ref)=>{this.list = ref;}}
                     tabindex={0}
@@ -477,7 +477,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                 : <div key="no-result" className="list listbox-wrapper no-result text-center">{i18n('search.action.noResult')}</div>
             }
             {contextMenu.isOpen && this.renderContextMenu()}
-            {count > maxSize && 
+            {count > maxSize &&
                 <ListPager
                     key="pager"
                     prev={this.handleFilterPrev}

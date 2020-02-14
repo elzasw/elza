@@ -1,4 +1,4 @@
-import './NodeTabs.less';
+import './NodeTabs.scss';
 
 /**
  * Komponenta záložek otevřených JP.
@@ -100,8 +100,8 @@ return true
                     />
                 }
                 <Tabs.Content>
-                    {activeNode && 
-                        <NodePanel 
+                    {activeNode &&
+                        <NodePanel
                             versionId={versionId}
                             fund={fund}
                             closed={closed}

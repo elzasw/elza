@@ -4,7 +4,7 @@ import {AbstractReactComponent, i18n, Icon} from 'components/shared';
 import {PARTY_TYPE_CODES, RELATION_CLASS_CODES} from 'actions/party/party.jsx'
 import classNames from 'classnames';
 
-import './RegistryListItem.less';
+import './RegistryListItem.scss';
 
 /**
  * Komponenta item listu osob

@@ -5,7 +5,7 @@
 import React from 'react';
 
 
-import './RibbonMenu.less';
+import './RibbonMenu.scss';
 
 const RibbonSplit = props => {
     return (

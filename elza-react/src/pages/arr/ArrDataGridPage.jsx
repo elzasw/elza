@@ -1,5 +1,5 @@
-import './ArrPage.less';
-import './ArrDataGridPage.less';
+import './ArrPage.scss';
+import './ArrDataGridPage.scss';
 
 /**
  * Stránka archivních pomůcek.

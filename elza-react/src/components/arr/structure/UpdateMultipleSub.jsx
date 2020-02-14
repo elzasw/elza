@@ -9,7 +9,7 @@ import {
 } from 'components/shared'
 import {reduxForm} from 'redux-form'
 import {Checkbox, Form, Modal, Button} from 'react-bootstrap'
-import '../NodeSubNodeForm.less';
+import '../NodeSubNodeForm.scss';
 import SubNodeForm from "../SubNodeForm";
 import {structureFormActions} from "../../../actions/arr/subNodeForm";
 import PropTypes from 'prop-types';
@@ -21,7 +21,7 @@ import {structureNodeFormFetchIfNeeded, structureNodeFormSelectId} from "../../.
 import DescItemType from "../nodeForm/DescItemType";
 import classNames from 'classnames';
 
-import './StructureSubNodeForm.less'
+import './StructureSubNodeForm.scss'
 
 
 /**

@@ -9,7 +9,7 @@ import AbstractReactComponent from "../../AbstractReactComponent";
 import LazyListBox from "./LazyListBox";
 import scrollIntoView from 'dom-scroll-into-view';
 
-import './ListBox2.less';
+import './ListBox2.scss';
 
 class ListBox2 extends AbstractReactComponent {
 

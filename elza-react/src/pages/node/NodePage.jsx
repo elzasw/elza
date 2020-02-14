@@ -14,7 +14,7 @@ import {WebApi} from "../../actions";
 import {routerNavigate} from "../../actions/router";
 import {fundSelectSubNode} from "../../actions/arr/node";
 import Loading from "../../components/shared/loading/Loading";
-import './NodePage.less';
+import './NodePage.scss';
 
 class NodePage extends AbstractReactComponent {
 

@@ -61,7 +61,7 @@ import {
 import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 import {COL_DEFAULT_WIDTH, COL_REFERENCE_MARK} from "./FundDataGridConst";
-import './FundDataGrid.less'
+import './FundDataGrid.scss'
 import {getPagesCount} from "../shared/datagrid/DataGridPagination";
 import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx'
 import {toDuration} from "../validate";

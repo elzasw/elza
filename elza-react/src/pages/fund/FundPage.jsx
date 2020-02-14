@@ -1,4 +1,4 @@
-import './FundPage.less';
+import './FundPage.scss';
 
 /**
  * Stránka archivní soubory.

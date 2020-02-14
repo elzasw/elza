@@ -13,7 +13,7 @@ import Loading from "../shared/loading/Loading";
 import IssueListForm from "../form/IssueListForm";
 import {WebApi} from "../../actions";
 
-import "./IssueLists.less";
+import "./IssueLists.scss";
 
 
 type Props = {

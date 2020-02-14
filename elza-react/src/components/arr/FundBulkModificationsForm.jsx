@@ -8,7 +8,7 @@ import {indexById} from 'stores/app/utils.jsx';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
 import {getSpecsIds} from 'components/arr/ArrUtils.jsx';
-import  './FundBulkModificationsForm.less';
+import  './FundBulkModificationsForm.scss';
 import SimpleCheckListBox from "./SimpleCheckListBox";
 import {validateInt} from "../validate";
 import DescItemUnitdate from "./nodeForm/DescItemUnitdate";

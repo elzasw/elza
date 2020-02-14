@@ -7,7 +7,7 @@ import classNames from 'classnames';
 import {propsEquals} from 'components/Utils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {createReferenceMark, getNodeIcon, getNodePrevSibling, getNodeNextSibling, getNodeParent, getNodeFirstChild} from 'components/arr/ArrUtils.jsx'
-import './FundTreeLazy.less';
+import './FundTreeLazy.scss';
 import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './FundTreeLazyKeymap.jsx';

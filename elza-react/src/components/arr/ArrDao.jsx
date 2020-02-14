@@ -9,7 +9,7 @@ import ArrRequestForm from "./ArrRequestForm";
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {WebApi} from 'actions/index.jsx';
 
-import './ArrDao.less';
+import './ArrDao.scss';
 
 import classNames from 'classnames';
 

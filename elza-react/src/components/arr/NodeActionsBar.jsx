@@ -23,7 +23,7 @@ import AddNodeCross from './AddNodeCross'
 import GoToPositionForm from './GoToPositionForm'
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
 
-import './NodeActionsBar.less';
+import './NodeActionsBar.scss';
 
 class NodeActionsBar extends AbstractReactComponent {
     constructor(props) {

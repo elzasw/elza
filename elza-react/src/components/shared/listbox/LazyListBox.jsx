@@ -3,7 +3,7 @@
  *
  **/
 
-import './LazyListBox.less';
+import './LazyListBox.scss';
 
 import React from "react";
 import VirtualList from "../virtual-list/VirtualList";

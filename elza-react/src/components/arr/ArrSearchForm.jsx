@@ -12,7 +12,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {dateTimeToLocalUTC} from "components/Utils"
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
 
-import "./ArrSearchForm.less";
+import "./ArrSearchForm.scss";
 
 const TYPE_TEXT = "TEXT";
 const TYPE_UNITDATE = "UNITDATE";

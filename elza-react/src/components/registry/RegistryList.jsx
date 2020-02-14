@@ -15,7 +15,7 @@ import {getTreeItemById} from "./../../components/registry/registryUtils";
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions.jsx'
 import * as StateApproval from './../../components/enum/StateApproval';
 
-import './RegistryList.less';
+import './RegistryList.scss';
 import RegistryListItem from "./RegistryListItem";
 import ListPager from "../shared/listPager/ListPager";
 import * as perms from "../../actions/user/Permission";

@@ -23,7 +23,7 @@ import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
 import {storeFromArea} from 'shared/utils'
 
-import './AdminExtSystemDetail.less';
+import './AdminExtSystemDetail.scss';
 
 const EXT_SYSTEM_CLASS = {
     ApExternalSystem: ".ApExternalSystemVO",

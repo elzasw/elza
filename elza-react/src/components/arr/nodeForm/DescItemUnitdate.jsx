@@ -8,7 +8,7 @@ import DescItemLabel from './DescItemLabel.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
-import './DescItemUnitdate.less'
+import './DescItemUnitdate.scss'
 
 /**
  * Input prvek pro desc item - typ UNITDATE.

@@ -6,8 +6,8 @@ import {Button} from 'react-bootstrap'
 import {fetchFundOutputFilesIfNeeded, fundOutputFilesFilterByText} from 'actions/arr/fundOutputFiles.jsx'
 import {UrlFactory} from 'actions/index.jsx';
 
-import './FundFiles.less';
-import './FundOutputFiles.less';
+import './FundFiles.scss';
+import './FundOutputFiles.scss';
 import {downloadFile} from "../../actions/global/download";
 
 /**

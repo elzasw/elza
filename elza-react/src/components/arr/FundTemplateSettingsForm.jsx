@@ -8,11 +8,11 @@ import {Shortcuts} from 'react-shortcuts';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 import {visiblePolicyFetchIfNeeded} from 'actions/arr/visiblePolicy.jsx'
 
-import './FundSettingsForm.less';
+import './FundSettingsForm.scss';
 import NoFocusButton from "../shared/button/NoFocusButton";
 import FormInput from "../shared/form/FormInput";
 
-import './FundTemplateSettingsForm.less';
+import './FundTemplateSettingsForm.scss';
 
 class FundTemplateSettingsForm extends AbstractReactComponent {
 

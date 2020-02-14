@@ -9,7 +9,7 @@ import {Modal, Button, Form} from 'react-bootstrap'
 import {indexById} from 'stores/app/utils.jsx'
 import {submitForm} from 'components/form/FormUtils.jsx'
 
-import './RelationForm.less'
+import './RelationForm.scss'
 import RegistryField from "../registry/RegistryField";
 import DatationField from "./DatationField";
 

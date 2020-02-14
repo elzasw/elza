@@ -7,7 +7,7 @@ import {Icon, i18n, AbstractReactComponent} from 'components/shared';
 import {connect} from 'react-redux'
 import {decorateAutocompleteValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
-import './DescItemRecordRef.less'
+import './DescItemRecordRef.scss'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {registryDetailFetchIfNeeded, registryListFilter, registryDetailClear, AREA_REGISTRY_LIST} from 'actions/registry/registry.jsx'

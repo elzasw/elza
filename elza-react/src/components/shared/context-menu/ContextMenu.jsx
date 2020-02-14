@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {contextMenuHide} from 'actions/global/contextMenu.jsx'
 import AbstractReactComponent from "../../AbstractReactComponent";
-import './ContextMenu.less'
+import './ContextMenu.scss'
 
 class ContextMenu extends AbstractReactComponent {
 

@@ -47,7 +47,7 @@ import * as perms from 'actions/user/Permission.jsx';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './NodePanelKeymap.jsx'
 
-import './NodePanel.less';
+import './NodePanel.scss';
 import NodeSettingsForm from "./NodeSettingsForm";
 import {FOCUS_KEYS} from "../../constants.tsx";
 import ConfirmForm from "../shared/form/ConfirmForm";

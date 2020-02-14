@@ -5,7 +5,7 @@ import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils.jsx'
 import {Button} from 'react-bootstrap';
 import classNames from 'classnames';
-import './DescItemLabel.less';
+import './DescItemLabel.scss';
 
 var DescItemLabel = class DescItemLabel extends AbstractReactComponent {
     constructor(props) {

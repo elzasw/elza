@@ -8,7 +8,7 @@ import {indexById} from 'stores/app/utils.jsx';
 import DescItemLabel from './DescItemLabel.jsx';
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 import PropTypes from 'prop-types';
-import './DescItemStructureRef.less';
+import './DescItemStructureRef.scss';
 import classNames from 'classnames';
 import {modalDialogHide, modalDialogShow} from "actions/global/modalDialog";
 import AddStructureDataForm from "components/arr/structure/AddStructureDataForm";

@@ -8,7 +8,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom'
 
-import './Search.less';
+import './Search.scss';
 import FormInput from "../form/FormInput";
 import NoFocusButton from "../button/NoFocusButton";
 import Icon from "../icon/Icon";

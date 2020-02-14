@@ -1,5 +1,5 @@
-import './ArrPage.less';
-import './ArrParentPage.less';
+import './ArrPage.scss';
+import './ArrParentPage.scss';
 
 /**
  * Stránka předku archivních pomůcek, např. pro pořádání, přesuny atp. Společným znakem je vybraný aktivní archivní soubor.

@@ -16,7 +16,7 @@ import {debounce} from 'shared/utils'
 
 import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from '../../constants.tsx'
 
-import './RegistryField.less'
+import './RegistryField.scss'
 import RegistryListItem from "./RegistryListItem";
 import ExtImportForm from "../form/ExtImportForm";
 import {refRecordTypesFetchIfNeeded} from "../../actions/refTables/recordTypes";

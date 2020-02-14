@@ -9,7 +9,7 @@ import {isNotBlankObject} from 'components/Utils.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {relationCreate, relationUpdate, relationDelete, RELATION_CLASS_TYPE_REPEATABILITY, USE_UNITDATE_ENUM, RELATION_CLASS_CODES, normalizeDatation} from 'actions/party/party.jsx'
 
-import './PartyDetailRelations.less'
+import './PartyDetailRelations.scss'
 import RelationForm from "./RelationForm";
 
 class PartyDetailRelations extends AbstractReactComponent {

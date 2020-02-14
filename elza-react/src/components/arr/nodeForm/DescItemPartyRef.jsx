@@ -20,7 +20,7 @@ import classNames from 'classnames'
 import {MODAL_DIALOG_VARIANT} from '../../../constants.tsx'
 
 
-import './DescItemPartyRef.less'
+import './DescItemPartyRef.scss'
 import PartyField from "../../party/PartyField";
 import PartySelectPage from "../../../pages/select/PartySelectPage";
 

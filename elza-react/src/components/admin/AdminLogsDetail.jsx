@@ -19,7 +19,7 @@ import {getMapFromList} from 'stores/app/utils.jsx'
 import {storeFromArea} from 'shared/utils'
 import {WebApi} from 'actions/index.jsx';
 
-import './AdminLogsDetail.less';
+import './AdminLogsDetail.scss';
 import {Col, Row} from "react-bootstrap";
 
 

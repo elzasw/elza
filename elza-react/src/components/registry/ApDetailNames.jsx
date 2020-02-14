@@ -9,7 +9,7 @@ import {indexById, objectById} from 'stores/app/utils.jsx'
 import {normalizeNameObject} from 'actions/party/party.jsx'
 import ApNameForm from './ApNameForm.jsx'
 import {WebApi as WebApi} from "../../actions/WebApi";
-import './ApDetailNames.less'
+import './ApDetailNames.scss'
 import NewApItemNameFormModal from "../accesspoint/NewApItemNameFormModal";
 import UpdateApItemNameFormModal from "../accesspoint/UpdateApItemNameFormModal";
 

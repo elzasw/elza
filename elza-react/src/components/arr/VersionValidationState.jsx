@@ -1,4 +1,4 @@
-import './VersionValidationState.less';;
+import './VersionValidationState.scss';;
 
 /**
  * Komponenta pro zobrazení stavu verze

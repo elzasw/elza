@@ -43,7 +43,7 @@ import IssueForm from "../form/IssueForm";
 import {objectEqualsDiff} from 'components/Utils'
 import {NODE_SUB_NODE_FORM_CMP} from "../../stores/app/arr/subNodeForm";
 
-import './NodeSubNodeForm.less';
+import './NodeSubNodeForm.scss';
 
 class NodeSubNodeForm extends AbstractReactComponent {
     constructor(props) {

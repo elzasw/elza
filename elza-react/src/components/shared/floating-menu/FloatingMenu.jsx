@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import {getScrollbarWidth} from "components/Utils.jsx";
 import classNames from "classnames";
-import './FloatingMenu.less';
+import './FloatingMenu.scss';
 
 
 import $ from 'jquery';

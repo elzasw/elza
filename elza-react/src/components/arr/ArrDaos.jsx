@@ -1,4 +1,4 @@
-import './ArrDaos.less';
+import './ArrDaos.scss';
 
 /**
  * Seznam balíčků se zobrazením detailu po kliknutí na balíček.

@@ -22,7 +22,7 @@ import {Shortcuts} from 'react-shortcuts';
 import DescItemTypeSpec from "./DescItemTypeSpec";
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './DescItemTypeKeymap.jsx';
-import './AbstractDescItem.less';
+import './AbstractDescItem.scss';
 import {validate, convertValue} from "stores/app/arr/subNodeForm.jsx";
 import {valuesEquals} from 'components/Utils.jsx';
 import {WebApi} from 'actions/index.jsx';

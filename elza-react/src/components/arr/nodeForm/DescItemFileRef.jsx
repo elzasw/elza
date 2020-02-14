@@ -9,7 +9,7 @@ import {decorateAutocompleteValue} from './DescItemUtils.jsx'
 import {Button} from 'react-bootstrap';
 import DescItemLabel from './DescItemLabel.jsx'
 
-import './DescItemFileRef.less'
+import './DescItemFileRef.scss'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
 class DescItemFileRef extends AbstractReactComponent {

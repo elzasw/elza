@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {AbstractReactComponent, i18n, Icon} from 'components/shared';
 import classNames from 'classnames'
-import './AdminExtSystemListItem.less';
+import './AdminExtSystemListItem.scss';
 
 /**
  * Komponenta item externího systému

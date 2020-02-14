@@ -6,7 +6,7 @@ import {fetchFundOutputFunctionsIfNeeded, fundOutputFunctionsFilterByState, fund
 import {fundActionFetchConfigIfNeeded} from 'actions/arr/fundAction.jsx'
 import {indexById} from 'stores/app/utils.jsx'
 import {dateTimeToString} from 'components/Utils.jsx';
-import './FundOutputFunctions.less'
+import './FundOutputFunctions.scss'
 import {actionStateTranslation} from "../../actions/arr/fundAction";
 
 const ACTION_RUNNING_STATE = ['RUNNING', 'WAITING', 'PLANNED'];

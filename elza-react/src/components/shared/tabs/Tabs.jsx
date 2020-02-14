@@ -13,7 +13,7 @@ import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './TabsKeymap.jsx';
 
-import './Tabs.less';
+import './Tabs.scss';
 import Icon from "../icon/Icon";
 import NoFocusButton from "../button/NoFocusButton";
 import i18n from "../../i18n";

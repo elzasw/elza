@@ -15,7 +15,7 @@ import {routerNavigate} from 'actions/router.jsx'
 import {joinGroups, leaveGroup, usersUserDetailFetchIfNeeded} from 'actions/admin/user.jsx'
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import {renderGroupItem} from "components/admin/adminRenderUtils.jsx"
-import './UserDetail.less';
+import './UserDetail.scss';
 import FundsPermissionPanel from "./FundsPermissionPanel";
 import ScopesPermissionPanel from "./ScopesPermissionPanel";
 import AdvancedPermissionPanel from "./AdvancedPermissionPanel";

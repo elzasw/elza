@@ -13,7 +13,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
-require ("./DescItemJsonTable.less")
+require ("./DescItemJsonTable.scss")
 
 var DescItemJsonTable = class DescItemJsonTable extends AbstractReactComponent {
     constructor(props) {

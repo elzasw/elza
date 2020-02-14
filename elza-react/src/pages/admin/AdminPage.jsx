@@ -19,7 +19,7 @@ import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {getIndexStateFetchIfNeeded, reindex} from 'actions/admin/fulltext.jsx';
 
 
-import './AdminPage.less';
+import './AdminPage.scss';
 import AbstractReactComponent from "../../components/AbstractReactComponent";
 import Ribbon from "../../components/page/Ribbon";
 import PageLayout from "../shared/layout/PageLayout";

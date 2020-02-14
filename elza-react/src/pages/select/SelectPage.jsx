@@ -13,7 +13,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
 import {userPasswordChange} from 'actions/admin/user.jsx'
 
-import './SelectPage.less'
+import './SelectPage.scss'
 
 const OPEN_PAGE = {
     PARTY: 'party',

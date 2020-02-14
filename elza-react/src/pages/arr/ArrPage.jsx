@@ -4,7 +4,7 @@
 
 import {setVisiblePolicyReceive} from "../../actions/arr/visiblePolicy";
 
-import './ArrPage.less';
+import './ArrPage.scss';
 
 import React from 'react';
 import ReactDOM from 'react-dom';

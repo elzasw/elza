@@ -7,7 +7,7 @@ import {Button, Form, Modal} from 'react-bootstrap';
 import {reduxForm} from "redux-form";
 import HorizontalLoader from "../loading/HorizontalLoader";
 
-import './ConfirmForm.less';
+import './ConfirmForm.scss';
 
 class ConfirmForm extends AbstractReactComponent {
 

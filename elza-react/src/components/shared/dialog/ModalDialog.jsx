@@ -7,7 +7,7 @@ import {connect} from 'react-redux'
 import {modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {propsEquals} from 'components/Utils.jsx'
 
-import './ModalDialog.less'
+import './ModalDialog.scss'
 import AbstractReactComponent from "../../AbstractReactComponent";
 import ModalDialogWrapper from "./ModalDialogWrapper";
 

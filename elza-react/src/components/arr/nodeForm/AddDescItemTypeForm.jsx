@@ -6,7 +6,7 @@ import {Autocomplete, AbstractReactComponent, i18n, Icon, FormInput} from 'compo
 import {Modal, Button, Form, ControlLabel, FormGroup} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
-import './AddDescItemTypeForm.less';
+import './AddDescItemTypeForm.scss';
 
 /**
  * Formulář přidání nové desc item type.
