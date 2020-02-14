@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../../variables.scss";
 
 .list-add-remove-container {
     .top-label {
@@ -22,13 +22,13 @@
         margin: 0;
         vertical-align: top;
         .icon  {
-            color: @node-form-actions-color;
+            color: $node-form-actions-color;
             height: 1.35em;
             line-height: 1.35em;
             width: 1.35em;
         }
         &:hover {
-            background-color: @node-form-actions-hover;
+            background-color: $node-form-actions-hover;
         }
     }
 
@@ -44,7 +44,7 @@
             padding: 0 4px;
 
             &:hover {
-                background: @tree-node-label-active-bg
+                background: $tree-node-label-active-bg
             }
 
             .item {

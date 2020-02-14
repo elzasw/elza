@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 .node-form-standard-actions {
     .btn {
@@ -9,7 +9,7 @@
         height: 2em;
         font-size: 0.9em;
         .icon  {
-            color: @node-form-actions-color;
+            color: $node-form-actions-color;
             height: 1.35em;
             line-height: 1.35em;
             width: 1.35em;
@@ -17,14 +17,14 @@
         }
     }
     .btn:hover {
-        background-color: @node-form-actions-hover;
+        background-color: $node-form-actions-hover;
     }
 }
 
 .node-item-form-container {
     .node-form-actions-container {
         width: 100%;
-        background: @node-form-actions-bg;
+        background: $node-form-actions-bg;
         height: 1.8em;
         position: relative;
 
@@ -38,7 +38,7 @@
                 }
 
                 display:inline-block;
-                border-right: 1px @node-form-actions-hover solid;
+                border-right: 1px $node-form-actions-hover solid;
 
                 &:last-of-type {
                     border-right: none;
@@ -48,7 +48,7 @@
                     margin-right: 8px;
                 }
 
-                .node-form-standard-actions;
+                @include node-form-standard-actions;
                 .btn {
                     &.dropdown-toggle {
                         padding: 0 3px 0 3px;

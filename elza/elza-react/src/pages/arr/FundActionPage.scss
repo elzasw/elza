@@ -1,28 +1,28 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
-@header-height: 64px;
-@header-minimized-height: 12px;
+$header-height: 64px;
+$header-minimized-height: 12px;
 
 .arr-actions-page {
 
     .fund-noselect {
         text-align: center;
-        font-size: @font-size-base;
+        font-size: $font-size-base;
         padding: 10px;
     }
 
     .actions-list-container {
         padding: 5px;
 
-        background: @fa-file-tree-bg;
+        background: $fa-file-tree-bg;
         border-top: none;
         height: 100%;
         display: flex;
         flex-direction: column;
 
         .actions-listbox {
-            background: @fa-file-tree-bg-list;
-            border: 1px solid @fa-file-tree-border;
+            background: $fa-file-tree-bg-list;
+            border: 1px solid $fa-file-tree-border;
             flex-grow: 1;
             margin: 0;
             overflow: hidden;

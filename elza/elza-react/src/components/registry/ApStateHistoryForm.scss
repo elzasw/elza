@@ -1,5 +1,5 @@
-@arr-history-line-height: 24px; // definuje se i v JS!!!!!
-@import "/variables.less";
+$arr-history-line-height: 24px; // definuje se i v JS!!!!!
+@import "../../variables.scss";
 
 .ap-state-history-form-container {
 
@@ -11,7 +11,7 @@
         }
 
         .listbox-item {
-            height: @arr-history-line-height;
+            height: $arr-history-line-height;
         }
 
         .col {
@@ -19,7 +19,7 @@
             white-space: nowrap;
             text-overflow: ellipsis;
 
-            line-height: @arr-history-line-height;
+            line-height: $arr-history-line-height;
 
             &.col1 {
                 width: 120px;
@@ -46,7 +46,7 @@
         }
 
         .row-container {
-            height: @arr-history-line-height;
+            height: $arr-history-line-height;
             display: flex;
         }
 

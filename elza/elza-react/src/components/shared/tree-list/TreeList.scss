@@ -1,5 +1,5 @@
-@autocomplete-tree-depth: 14px;
-@party-item-padding: 5px;
+$autocomplete-tree-depth: 14px;
+$party-item-padding: 5px;
 
 .tree-list{
     height: 100%;
@@ -32,7 +32,7 @@
             display: inline-block;
             .depth-item {
                 display: inline-block;
-                width: @autocomplete-tree-depth;
+                width: $autocomplete-tree-depth;
             }
         }
         .item-text {

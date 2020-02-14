@@ -1,10 +1,10 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
-@parts-margin: 4px;
-@node-panel-actions-height: 26px;
-@node-panel-parents-height: 15%;
-@node-panel-content-height: 70%;
-@node-panel-children-height: 15%;
+$parts-margin: 4px;
+$node-panel-actions-height: 26px;
+$node-panel-parents-height: 15%;
+$node-panel-content-height: 70%;
+$node-panel-children-height: 15%;
 
 .node-panel-container {
     display: flex;
@@ -14,7 +14,7 @@
     width: 100%;
 
     .reference-mark {
-        color: @tree-node-reference-mark;
+        color: $tree-node-reference-mark;
         font-size: 0.7em;
         margin:0;
         padding:0 5px;
@@ -32,11 +32,11 @@
 
 
         .content {
-            margin-bottom: @parts-margin;
-            margin-top: @parts-margin;
-            height: @node-panel-content-height;
+            margin-bottom: $parts-margin;
+            margin-top: $parts-margin;
+            height: $node-panel-content-height;
             flex-grow: 1;
-            border: 1px solid @node-panel-border;
+            border: 1px solid $node-panel-border;
 
             .inner-wrapper {
                 height: 100%;
@@ -59,7 +59,7 @@
                         &.focused {
                             .accordion-header-container {
                                 .accordion-header {
-                                    background: @accordion-header-bg-opened;
+                                    background: $accordion-header-bg-opened;
                                 }
                             }
                         }
@@ -86,7 +86,7 @@
                         .accordion-header {
                             font-weight: bold;
                             margin-bottom: 0;
-                            background: @accordion-header-bg-opened;
+                            background: $accordion-header-bg-opened;
                         }
                     }
                 }
@@ -94,7 +94,7 @@
                     display: table;
                     width: 100%;
                     table-layout:fixed;
-                    border-bottom: 1px solid @accordion-header-border;
+                    border-bottom: 1px solid $accordion-header-border;
 
                     .accordion-header {
                         display: table-row;
@@ -102,7 +102,7 @@
                         height: 32px;
                         padding: 4px;
                         cursor: pointer;
-                        background: @accordion-header-bg;
+                        background: $accordion-header-bg;
 
                         .accordion-header-left {
                             display: table-cell;
@@ -117,7 +117,7 @@
                         .accordion-header-right {
                             display: table-cell;
                             padding: 5px;
-                            width: calc(~"40% - 20px");
+                            width: calc("40% - 20px");
                             overflow: hidden;
                             text-overflow: ellipsis;
                             white-space: nowrap;
@@ -138,17 +138,17 @@
                 }
 
                 .accordion-body {
-                    border: solid @accordion-header-border;
+                    border: solid $accordion-header-border;
                     border-width: 0 0 1px 0;
                 }
             }
 
         }
         .children, .parents {
-            height: @node-panel-children-height;
+            height: $node-panel-children-height;
             overflow-y: auto;
-            border: 1px solid @node-panel-children-border;
-            background: @node-panel-children-bg;
+            border: 1px solid $node-panel-children-border;
+            background: $node-panel-children-bg;
         }
     }
 }

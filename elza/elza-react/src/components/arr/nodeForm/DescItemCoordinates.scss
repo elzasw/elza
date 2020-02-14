@@ -1,4 +1,4 @@
-@import "../SubNodeForm.less";
+@import "../SubNodeForm.scss";
 
 .desc-item-value-coordinates {
   width:100%;
@@ -22,6 +22,6 @@
   }
 
   .desc-item-coordinates-action {
-    .node-form-standard-actions;
+    @include node-form-standard-actions;
   }
 }

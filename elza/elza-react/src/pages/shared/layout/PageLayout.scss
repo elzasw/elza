@@ -1,13 +1,13 @@
-@import "/variables.less";
+@import "../../../variables.scss";
 
-@header-height: 5em;
-@header-minimized-height: 12px;
-@header-status-height: 34px;
-@ribbon-show-hide-toggle-font-size: 11px;
-@finding-tree-minimized-width: 32px;
-@finding-tree-toggle-width: 12px;
-@finding-tree-toggle-height: 120px;
-@finding-tree-toggle-font-size: 11px;
+$header-height: 5em;
+$header-minimized-height: 12px;
+$header-status-height: 34px;
+$ribbon-show-hide-toggle-font-size: 11px;
+$finding-tree-minimized-width: 32px;
+$finding-tree-toggle-width: 12px;
+$finding-tree-toggle-height: 120px;
+$finding-tree-toggle-font-size: 11px;
 
 // Main layout
 .app-container {
@@ -18,13 +18,13 @@
     overflow: hidden;
 
     .app-header {
-        height: @header-height;
-        border-bottom: 1px solid @app-header-border;
+        height: $header-height;
+        border-bottom: 1px solid $app-header-border;
         //overflow-x:auto;
     }
     .app-content {
-        height: calc(~"100% - "@header-height);
-        //background: @body-bg;
+        height: calc("100% - "$header-height);
+        //background: $body-bg;
         //overflow: auto;
         //flex:1;
         //overflow:hidden;
@@ -36,7 +36,7 @@
 
     &.noRibbon {
         .app-header {
-            height: @header-minimized-height;
+            height: $header-minimized-height;
             border-bottom: none;
             background-color: #222;
             .ribbon-toggle-container {
@@ -44,25 +44,25 @@
             }
         }
         .app-content {
-            height: calc(~"100% - "@header-minimized-height);
+            height: calc("100% - "$header-minimized-height);
         }
     }
 
     &.app-exists-status {
         .app-content {
-            height: calc(~"100% - "@header-height - @header-status-height);
+            height: calc("100% - "$header-height - $header-status-height);
         }
     }
 
     &.noRibbon.app-exists-status {
         .app-header {
-            height: @header-minimized-height;
+            height: $header-minimized-height;
             .ribbon-toggle-container {
                 border-bottom: none;
             }
         }
         .app-content {
-            height: calc(~"100% - "@header-minimized-height - @header-status-height);
+            height: calc("100% - "$header-minimized-height - $header-status-height);
         }
     }
 
@@ -71,7 +71,7 @@
         .ribbon-toggle-container {
             position: relative;
             height: 100%;
-            //border-bottom: 1px solid @app-header-border;
+            //border-bottom: 1px solid $app-header-border;
             .toggle.btn {
                 height: 10px;
                 line-height: 10px;
@@ -86,7 +86,7 @@
                 .icon {
                     padding: 0;
                     margin: 0;
-                    font-size: @ribbon-show-hide-toggle-font-size;
+                    font-size: $ribbon-show-hide-toggle-font-size;
                 }
             }
             &.closed {
@@ -101,43 +101,43 @@
 
 // Splitter
 .app-container {
-    @split-left-width: 15em;
-    @split-left-min-width: 5em;
-    @split-right-width: 10em;
-    @split-right-min-width: 5em;
-    @split-center-min-width: 20em;
-    @split-divider-width: 5px;
+    $split-left-width: 15em;
+    $split-left-min-width: 5em;
+    $split-right-width: 10em;
+    $split-right-min-width: 5em;
+    $split-center-min-width: 20em;
+    $split-divider-width: 5px;
     .app-content {
         .split-pane-divider {
-            background: @split-pane-divider-bg;
+            background: $split-pane-divider-bg;
         }
 
         #left-component {
             padding: 4px;
-            width: @split-left-width;
-            min-width: @split-left-min-width;
+            width: $split-left-width;
+            min-width: $split-left-min-width;
         }
         #my-divider {
-            left: @split-left-width; /* Same as left component width */
-            width: @split-divider-width;
+            left: $split-left-width; /* Same as left component width */
+            width: $split-divider-width;
         }
         #right-component-container {
-            left: @split-left-width;  /* Same as left component width */
-            margin-left: @split-divider-width;  /* Same as divider width */
+            left: $split-left-width;  /* Same as left component width */
+            margin-left: $split-divider-width;  /* Same as divider width */
 
             #inner-left-component {
                 padding: 4px;
-                min-width: @split-center-min-width;
-                right: @split-right-width;
-                margin-right: @split-divider-width;
+                min-width: $split-center-min-width;
+                right: $split-right-width;
+                margin-right: $split-divider-width;
             }
             #inner-my-divider {
-                right: @split-right-width;
-                width: @split-divider-width;
+                right: $split-right-width;
+                width: $split-divider-width;
             }
             #inner-right-component {
-                width: @split-right-width;
-                min-width: @split-right-min-width;
+                width: $split-right-width;
+                min-width: $split-right-min-width;
             }
         }
     }

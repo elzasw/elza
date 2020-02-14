@@ -1,7 +1,7 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 .daos-container {
-    border: 1px solid @fa-file-tree-border;
+    border: 1px solid $fa-file-tree-border;
     height: 100%;
     width: 100%;
 
@@ -17,8 +17,8 @@
             flex-grow: 0;
             flex-shrink: 0;
             padding: 5px;
-            background-color: @tree-node-active-bg;
-            font-size: @font-size-base * 1.1;
+            background-color: $tree-node-active-bg;
+            font-size: $font-size-base * 1.1;
         }
 
         .daos-list-items {
@@ -27,7 +27,7 @@
 
             .tree-list {
                 flex-grow: 1;
-                background-color: @node-form-dao;
+                background-color: $node-form-dao;
                 border: 1px solid #DDDDDD;
                 .item {
                     .item-text {

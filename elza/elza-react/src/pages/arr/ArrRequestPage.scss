@@ -1,8 +1,8 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 .fund-request-list-container {
     padding: 5px 4px 5px 4px;
-    background: @fa-file-tree-bg;
+    background: $fa-file-tree-bg;
     border-top: none;
     height: 100%;
     display: flex;
@@ -15,8 +15,8 @@
     }
 
     .fund-request-listbox {
-        background: @fa-file-tree-bg-list;
-        border: 1px solid @fa-file-tree-border;
+        background: $fa-file-tree-bg-list;
+        border: 1px solid $fa-file-tree-border;
         flex-grow: 1;
         overflow: hidden;
         overflow-y: auto;

@@ -1,13 +1,13 @@
 // Bootstrap
-@import "bootstrap/less/bootstrap.less";
+@import "~bootstrap/scss/bootstrap.scss";
 
 .btn-action {
-  .button-variant(#000, #fff, #fff);
+  @include button-variant(#000, #fff, #fff);
 }
 
 // ELZA upraveni stylu
-@import "./variables.less";
-@import "./commons.less";
-@import "./tables.less";
-@import "./elements-grid.less";
-@import "./accordion.less";
+@import "./variables.scss";
+@import "./commons.scss";
+@import "./tables.scss";
+@import "./elements-grid.scss";
+@import "./accordion.scss";

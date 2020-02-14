@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 
 .fund-detail-ext-container {
@@ -10,8 +10,8 @@
     .outputs-container {
         padding: 8px;
         margin: 6px;
-        border: 1px solid @tabs-tab-content-border;
-        background: @tabs-tab-active-bg;
+        border: 1px solid $tabs-tab-content-border;
+        background: $tabs-tab-active-bg;
 
         h1 {
             margin: 4px 0 8px 0;

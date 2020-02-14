@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../variables.scss";
 /**
  * Styly pro editaci rejstrikoveho hesla
 */
@@ -93,7 +93,7 @@
             margin: 0 10px;
         }
         .hierarchy-level {
-			
+
 			&.main{
 				color:white;
 			}
@@ -294,7 +294,7 @@
                 height: 2em;
                 font-size: 0.9em;
                 .icon  {
-                    color: @node-form-actions-color;
+                    color: $node-form-actions-color;
                     height: 1.35em;
                     line-height: 1.35em;
                     width: 1.35em;
@@ -302,13 +302,13 @@
                 }
             }
             .btn:hover {
-                background-color: @node-form-actions-hover;
+                background-color: $node-form-actions-hover;
             }
         }
 
         .form-actions-container {
             width: 100%;
-            background: @node-form-actions-bg;
+            background: $node-form-actions-bg;
             height: 1.8em;
             position: relative;
 
@@ -322,7 +322,7 @@
                     }
 
                     display:inline-block;
-                    border-right: 1px @node-form-actions-hover solid;
+                    border-right: 1px $node-form-actions-hover solid;
 
                     &:last-of-type {
                         border-right: none;
@@ -332,7 +332,7 @@
                         margin-right: 8px;
                     }
 
-                    .form-standard-actions;
+                    @include form-standard-actions;
                     .btn {
                         &.dropdown-toggle {
                             padding: 0 3px 0 3px;

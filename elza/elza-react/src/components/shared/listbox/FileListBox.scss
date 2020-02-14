@@ -1,13 +1,13 @@
-@import "/variables.less";
+@import "../../../variables.scss";
 
-@registry-panel-actions-height: 26px;
-@item-focus-bg: #eee;
-@action-hover-bg: #ccc;
+$registry-panel-actions-height: 26px;
+$item-focus-bg: #eee;
+$action-hover-bg: #ccc;
 
 .file-listbox-container {
     //padding: 5px;
-    background: @fa-file-tree-bg;
-    //border: 1px solid @fa-file-tree-border;
+    background: $fa-file-tree-bg;
+    //border: 1px solid $fa-file-tree-border;
     //border-top: none;
     height: 100%;
     display: flex;
@@ -18,21 +18,21 @@
         overflow: hidden;
         overflow-y: auto;
         height: 100%;
-        background: @fa-file-tree-bg-list;
+        background: $fa-file-tree-bg-list;
         display: flex;
         flex-direction: column;
 
         //border: 1px solid transparent;
-        
+
         .listbox-item{
             &:hover {
                 background-color: transparent;
             }
             &.active {
-                background-color: @item-focus-bg;
+                background-color: $item-focus-bg;
 
                 &:hover {
-                    background-color: @item-focus-bg;
+                    background-color: $item-focus-bg;
                 }
             }
 
@@ -59,7 +59,7 @@
 
                     .path {
                         font-size: 0.8em;
-                        color: @color-link;
+                        color: $color-link;
                         overflow: hidden;
                         text-overflow: ellipsis;
                         white-space: nowrap;
@@ -74,7 +74,7 @@
                         cursor: pointer;
 
                         &:hover {
-                            background-color: @action-hover-bg;
+                            background-color: $action-hover-bg;
                         }
                     }
                 }

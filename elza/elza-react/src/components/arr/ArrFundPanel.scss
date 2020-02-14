@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 .arr-fund-panel {
     display: flex;
@@ -10,7 +10,7 @@
     font-weight: bold;
     background-color: #EA9999;
     padding: 4px 4px 4px 10px;
-    border-bottom: 1px solid @fa-file-tree-border;
+    border-bottom: 1px solid $fa-file-tree-border;
 
     &.read-mode {
         background-color: #B6D7A8;

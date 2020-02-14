@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 .arr-structure-panel {
     display: flex;
@@ -19,7 +19,7 @@
             font-size: 1.3em;
 
             &:hover {
-                background-color: @node-form-actions-hover;
+                background-color: $node-form-actions-hover;
             }
 
             &--multiselect {
@@ -80,11 +80,11 @@
                 padding: 2px 5px;
                 display: flex;
                 align-items: center;
-    
+
                 .structure-name {
                     display: flex;
                     flex-grow: 1;
-                    
+
                     &-complement {
                         margin-left: 5px;
                         color: #aaa;

@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 .lecturing-bottom {
     height: 100%;
@@ -14,17 +14,17 @@
         .comments {
             flex: 1;
             overflow-y: auto;
-            border-top: @node-panel-border 1px solid;
-            border-bottom: @node-panel-border 1px solid;
+            border-top: $node-panel-border 1px solid;
+            border-bottom: $node-panel-border 1px solid;
 
             > .comment {
 
             }
             .comment {
-                background: @node-panel-parents-bg;
-                border-bottom: @node-panel-border 1px solid;
-                border-left: @node-panel-border 1px solid;
-                border-right: @node-panel-border 1px solid;
+                background: $node-panel-parents-bg;
+                border-bottom: $node-panel-border 1px solid;
+                border-left: $node-panel-border 1px solid;
+                border-right: $node-panel-border 1px solid;
                 padding: 2px 5px;
                 .comment-text {
                     white-space: pre;

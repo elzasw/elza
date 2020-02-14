@@ -1,5 +1,5 @@
-@import "/variables.less";
-@import "./ReferenceMark.less";
+@import "../../variables.scss";
+@import "./ReferenceMark.scss";
 
 .fund-datagrid-container-wrap {
     .fund-datagrid-container {
@@ -13,7 +13,7 @@
                     background: transparent;
                     margin-left: 5px;
                     &:hover {
-                        background-color: @button-bg-hover;
+                        background-color: $button-bg-hover;
                     }
                     .icon {
                         height: 1.35em;
@@ -50,10 +50,10 @@
             }
         }
         .grid-container {
-            .referenceMark;
+            @include referenceMark;
 
             .filtered {
-                background: @button-bg-hover;
+                background: $button-bg-hover;
             }
 
             .cell-value-wrapper {

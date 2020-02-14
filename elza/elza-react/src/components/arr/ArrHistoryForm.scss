@@ -1,5 +1,5 @@
-@arr-history-line-height: 24px; // definuje se i v JS!!!!!
-@import "/variables.less";
+$arr-history-line-height: 24px; // definuje se i v JS!!!!!
+@import "../../variables.scss";
 
 .arr-history-form-container {
     .modal-body {
@@ -71,7 +71,7 @@
         }
 
         .listbox-item {
-            height: @arr-history-line-height;
+            height: $arr-history-line-height;
         }
 
         .col {
@@ -102,7 +102,7 @@
         }
         .data-container {
             .row-container {
-                height: @arr-history-line-height;
+                height: $arr-history-line-height;
                 display: flex;
                 color: darkgray;
                 &.canRevert {
@@ -122,10 +122,10 @@
             .focus {
                 .row-container {
                     &.delete {
-                        background: @tree-node-active-bg;
+                        background: $tree-node-active-bg;
                     }
                 }
-                background: @tree-node-active-bg;
+                background: $tree-node-active-bg;
             }
         }
     }

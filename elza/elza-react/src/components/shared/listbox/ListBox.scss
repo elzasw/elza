@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../../variables.scss";
 .listbox-wrapper {
     border: 1px solid #DDDDDD;
     background-color: white;
@@ -43,12 +43,12 @@
                 }
             }
             &:hover {
-                background: @tree-node-label-active-bg
+                background: $tree-node-label-active-bg
             }
             &.active {
-                background: @tree-node-active-bg;
+                background: $tree-node-active-bg;
                 &:hover {
-                    background: @tree-node-active-hover-bg;
+                    background: $tree-node-active-hover-bg;
                 }
             }
         }

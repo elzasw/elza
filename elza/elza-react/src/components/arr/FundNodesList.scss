@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 // TODO [stanekpa] nahradit vsechny stejne stylovani jednim stylem, ktery bude uveden ve variables
 .node-register-form-standard-actions {
@@ -10,7 +10,7 @@
         height: 2em;
         font-size: 0.9em;
         .icon  {
-            color: @node-form-actions-color;
+            color: $node-form-actions-color;
             height: 1.35em;
             line-height: 1.35em;
             width: 1.35em;
@@ -18,13 +18,13 @@
         }
     }
     .btn:hover {
-        background-color: @node-form-actions-hover;
+        background-color: $node-form-actions-hover;
     }
 }
 
 .fund-nodes-list-container.list-add-remove-container {
-    background: @fa-file-tree-bg-list;
-    //border: 1px solid @fa-file-tree-border;
+    background: $fa-file-tree-bg-list;
+    //border: 1px solid $fa-file-tree-border;
     flex-grow: 1;
     margin: 0;
     overflow: hidden;
@@ -35,7 +35,7 @@
         flex-direction: row;
         //padding: 0 5px;
 
-        .node-register-form-standard-actions;
+        @include node-register-form-standard-actions;
 
         .actions-container {
             flex-shrink: 0;

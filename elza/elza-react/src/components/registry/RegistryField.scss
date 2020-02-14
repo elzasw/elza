@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 
 .autocomplete-record {
@@ -23,8 +23,8 @@
         }
     }
 
-    @record-item-padding: 5px;
-    @max-width-container: 600px;
+    $record-item-padding: 5px;
+    $max-width-container: 600px;
     .autocomplete-menu-container .autocomplete-menu-wrapper .autocomplete-menu .item {
         display:block;
         &.active {

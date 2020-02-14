@@ -1,8 +1,8 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 .autocomplete-party {
 
-    @party-item-padding: 5px;
+    $party-item-padding: 5px;
 
     .autocomplete-menu-footer {
 

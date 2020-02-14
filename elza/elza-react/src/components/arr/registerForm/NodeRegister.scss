@@ -1,9 +1,9 @@
-@import "/variables.less";
+@import "../../../variables.scss";
 
 .link-value {
 
-    @link-value: 5px;
-    @max-width-container: 600px;
+    $link-value: 5px;
+    $max-width-container: 600px;
 
     .item {
         &.active {
@@ -14,22 +14,22 @@
         }
 
         .name {
-            padding: @link-value;
+            padding: $link-value;
             display: table-cell;
         }
 
         .type {
-            padding: @link-value;
+            padding: $link-value;
             display: table-cell;;
         }
 
         .interval {
-            padding: @link-value;
+            padding: $link-value;
             display: table-cell;
         }
 
         .characteristics {
-            padding: @link-value;
+            padding: $link-value;
             max-width: 300px;
             text-overflow: ellipsis;
             display: table-cell;

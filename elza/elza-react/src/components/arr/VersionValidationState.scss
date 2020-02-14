@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 .version-state {
     margin: 5px 0;
@@ -7,9 +7,9 @@
         padding-right: 5px;
     }
     .err {
-        color: @color-warn;
+        color: $color-warn;
     }
     .success {
-        color: @color-success;
+        color: $color-success;
     }
 }

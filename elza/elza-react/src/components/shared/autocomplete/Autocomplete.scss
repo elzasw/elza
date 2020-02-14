@@ -1,6 +1,6 @@
-@import "/variables.less";
-@import "commons.less";
-//@import "bootstrap/less/mixins/ .less";
+@import "../../../variables.scss";
+@import "commons.scss";
+//@import "bootstrap/less/mixins/ .scss";
 
 .autocomplete-control-container {
     width: 100%;
@@ -40,7 +40,7 @@
                 background-color: transparent;
 
                 &:hover{
-                    background-color:@node-form-actions-hover;
+                    background-color:$node-form-actions-hover;
                 }
 
                 &.disabled {
@@ -53,10 +53,10 @@
             }
         }
         &.active {
-            @color-rgba: rgba(red(@input-border-focus), green(@input-border-focus), blue(@input-border-focus), .6);
-            border-color: @input-border-focus;
+            $color-rgba: rgba(red($input-border-focus), green($input-border-focus), blue($input-border-focus), .6);
+            border-color: $input-border-focus;
             outline: 0;
-            .box-shadow(~"inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px @{color-rgba}");
+            .box-shadow("inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px #{$color-rgba}");
         }
     }
     .floating-menu {
@@ -67,15 +67,15 @@
         flex-direction: column;
 
         &.active {
-            @color-rgba: rgba(red(@input-border-focus), green(@input-border-focus), blue(@input-border-focus), .6);
-            border-color: @input-border-focus;
+            $color-rgba: rgba(red($input-border-focus), green($input-border-focus), blue($input-border-focus), .6);
+            border-color: $input-border-focus;
             outline: 0;
-            //.box-shadow(~"inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px @{color-rgba}");
+            //.box-shadow("inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px #{$color-rgba}");
         }
     }
     .autocomplete-menu-footer {
         height: 32px;
-        background-color: @node-form-actions-bg;
+        background-color: $node-form-actions-bg;
         flex-grow: 0;
         flex-shrink: 0;
     }

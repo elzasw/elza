@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "./variables.scss";
 
 .elements-container {
   display: flex;
@@ -9,12 +9,12 @@
     width: 100%;
   }
 
-  .el-loop (10);
+  @include el-loop (10);
 
-  .el-loop (@n, @i:1) when (@i <= @n) {
-    .el-@{i} {
-      width: (@node-form-item-type-element-width * @i);
+  @mixin el-loop($n, $i:1) when ($i <= $n) {
+    .el-#{$i} {
+      width: ($node-form-item-type-element-width * $i);
     }
-    .el-loop(@n, (@i + 1));
+    @include el-loop($n, ($i + 1));
   }
 }

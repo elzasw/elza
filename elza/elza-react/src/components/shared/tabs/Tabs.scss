@@ -1,6 +1,6 @@
-@import "/variables.less";
+@import "../../../variables.scss";
 
-@tabs-height: 28px;
+$tabs-height: 28px;
 
 .tabs-container {
     height: 100%;
@@ -9,12 +9,12 @@
     display: block;
 
     .nav-tabs {
-        border-bottom-color: @tabs-tab-content-border;
+        border-bottom-color: $tabs-tab-content-border;
     }
 
     .tabs-tabs-container {
         display: flex;
-        height: @tabs-height;
+        height: $tabs-height;
         padding-right: 23px;
         li{
             overflow:hidden;
@@ -59,23 +59,23 @@
                 }
             }
             &.active a, &.active a:hover {
-                background: @tabs-tab-active-bg;
+                background: $tabs-tab-active-bg;
             }
             a:hover {
-                background: @tabs-tab-active-bg;
+                background: $tabs-tab-active-bg;
             }
             &.active a:focus {
-                background: @tabs-tab-active-bg;
+                background: $tabs-tab-active-bg;
             }
         }
     }
     .tab-content {
-        height: calc(~"100% - "@tabs-height);
+        height: calc("100% - "$tabs-height);
         padding: 5px;
         clear:both;
         //overflow:hidden;
-        border: 1px solid @tabs-tab-content-border;
+        border: 1px solid $tabs-tab-content-border;
         border-top: 0;
-        background: @tabs-tab-content-bg;
+        background: $tabs-tab-content-bg;
     }
 }

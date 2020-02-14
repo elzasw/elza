@@ -1,4 +1,4 @@
-@import "/variables.less";
+@import "../../variables.scss";
 
 .history-list-container {
     padding: 10px;
@@ -25,7 +25,7 @@
                 justify-content: center;
                 margin: 0.1em 0.2em;
                 padding: 15px;
-                background-color: @homepage-button-bg;
+                background-color: $homepage-button-bg;
                 border: none;
                 overflow:hidden;
                 vertical-align:middle;
@@ -45,15 +45,15 @@
             }
             .history-button {
                 &:hover{
-                    background-color: @homepage-button-bg-hover;
+                    background-color: $homepage-button-bg-hover;
                 }
             }
             .no-history{
                 width:auto;
                 padding: 20px 50px;
                 width: 39.8em;
-                background-color: @homepage-static-bg;
-                color:@homepage-empty-list-msg-col;
+                background-color: $homepage-static-bg;
+                color:$homepage-empty-list-msg-col;
             }
             .link{
                 width:8em;

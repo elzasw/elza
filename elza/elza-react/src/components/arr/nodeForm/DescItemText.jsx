@@ -9,7 +9,7 @@ import {decorateValue, inputValue} from './DescItemUtils.jsx'
 import DescItemLabel from './DescItemLabel.jsx'
 import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 import TextareaAutosize from 'react-autosize-textarea';
-import './DescItemText.less';
+import './DescItemText.scss';
 
 class DescItemText extends AbstractReactComponent {
 

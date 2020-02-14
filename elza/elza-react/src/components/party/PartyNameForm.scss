@@ -1,5 +1,5 @@
-@import 'variables.less';
-@import "bootstrap/less/mixins/buttons.less";
+@import 'variables.scss';
+@import "bootstrap/less/mixins/buttons.scss";
 
 
 .party-name-form {
@@ -16,11 +16,11 @@
       margin: 15px -15px;
       padding: 15px 15px;
       .btn-action {
-        .button-variant(#000, #b9b9b9, transparent);
+        @include button-variant(#000, #b9b9b9, transparent);
       }
     }
   }
-  @media screen and (min-width: @screen-md-min) {
+  @media screen and (min-width: $screen-md-min) {
     .flex {
       margin-left: -15px;
       margin-right: -15px;

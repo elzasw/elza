@@ -1,7 +1,7 @@
-@import "/variables.less";
-@import "./ReferenceMark.less";
+@import "../../variables.scss";
+@import "./ReferenceMark.scss";
 
-@rowHeight: 24px;
+$rowHeight: 24px;
 
 .fund-search {
     min-height: 300px;
@@ -38,13 +38,13 @@
                 font-size: 16px;
             }
 
-            .referenceMark;
+            @include referenceMark;
 
             .item {
                 display: flex;
                 align-items: center;
                 width: 100%;
-                height: @rowHeight;
+                height: $rowHeight;
                 margin: 5px 0;
                 white-space: nowrap;
                 font-size: 0.9em;
@@ -79,7 +79,7 @@
                 .node {
                     display: table-row;
                     &:hover {
-                        background: @tree-node-label-active-bg;
+                        background: $tree-node-label-active-bg;
                     }
                     .levels {
                         vertical-align: middle;

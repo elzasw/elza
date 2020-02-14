@@ -1,8 +1,8 @@
-@import "/variables.less";
+@import "../../../variables.scss";
 
 .autocomplete-desc-item-type {
 
-    @item-padding: 5px;
+    $item-padding: 5px;
 
     .autocomplete-menu-container {
         width: 568px;
@@ -16,7 +16,7 @@
     }
 
     .item {
-        padding: @item-padding;
+        padding: $item-padding;
         &.type-impossible {
             /* Added in AddDescItemTypeForm.jsx:40 */
             background-color: #eee;
