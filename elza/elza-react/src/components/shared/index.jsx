@@ -32,7 +32,7 @@ export {default as SearchWithGoto} from 'components/shared/search/SearchWithGoto
 export {default as Loading} from 'components/shared/loading/Loading.jsx';
 export {default as HorizontalLoader} from 'components/shared/loading/HorizontalLoader.jsx';
 export {default as StoreHorizontalLoader} from 'components/shared/loading/StoreHorizontalLoader.jsx';
-export {default as VirtualList} from 'components/shared/virtual-list/VirtualList.jsx';
+export {default as VirtualList} from 'components/shared/virtual-list/VirtualList';
 export {default as AddRemoveList} from 'components/shared/list/AddRemoveList.jsx';
 // export {default as Accordion} from 'components/shared/accordion/Accordion.jsx'; -- Nepoužívaná komponenta
 export {default as ContextMenu} from 'components/shared/context-menu/ContextMenu.jsx';
