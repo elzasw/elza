@@ -42,32 +42,74 @@
 <#--<postwritetags ${levelindex}, endtags=<#list endtags as t>${t}, </#list>> -->
 </#macro>
 
-<#macro writeParty party>
+<#macro writeParty party localtype="ORIGINATOR">
+  <#if localtype!="ORIGINATOR">
+  <ead:origination localtype="${localtype}">
+  <#else>
+  <ead:origination>
+  </#if>
 <#switch party.partyType>
   <#case "PERSON">
-    <ead:persname identifier="${party.partyId?c}">
-      <ead:part>${party.name.fullName}</ead:part>
-    </ead:persname>
+    <#local tagname="persname">
     <#break>
   <#case "DYNASTY">
-    <ead:famname identifier="${party.partyId?c}">
-      <ead:part>${party.name.fullName}</ead:part>
-    </ead:famname>
+    <#local tagname="famname">
     <#break>
   <#case "GROUP_PARTY">
-    <ead:corpname identifier="${party.partyId?c}">
-      <ead:part>${party.name.fullName}</ead:part>
-    </ead:corpname>
+    <#local tagname="corpname">
     <#break>
   <#case "EVENT">
-    <ead:name identifier="${party.partyId?c}">
-      <ead:part>${party.name.fullName}</ead:part>
-    </ead:name>
+    <#local tagname="name">
     <#break>
 </#switch>
+    <ead:${tagname} identifier="${party.partyId?c}">
+      <ead:part>${party.name.fullName}</ead:part>
+    </ead:${tagname}>
+  </ead:origination>
+</#macro>
+
+<#macro writeEvidJednotky item>
+  <!-- Evidencni jednotky -->
+  <#list item.table.rows as row>
+    <ead:physdescstructured physdescstructuredtype="materialtype">
+      <ead:quantity>${row.values["COUNT"]}</ead:quantity>
+      <ead:unittype>${row.values["NAME"]}</ead:unittype>
+    </ead:physdescstructured>
+  </#list>
+</#macro>
+
+<#macro writeUklJednotka item>
+  <!-- Ukladaci jednotka -->
+  <ead:container>${item.serializedValue}</ead:container>
+</#macro>
+
+<#macro writeLanguages items>
+  <!-- Jazyky JP -->
+  <ead:langmaterial>
+  <#list items as langItem>
+    <#if langItem.type.code=="ZP2015_LANGUAGE">
+      <ead:language langcode="${langItem.specification.code}">${langItem.specification.name}</ead:language>
+    </#if>
+  </#list>
+  </ead:langmaterial>
+</#macro>
+
+<#macro writeRelations items>
+  <!-- Role entit -->
+  <ead:relations>
+  <#list items as item>
+    <#if item.type.code=="ZP2015_ENTITY_ROLE">
+      <ead:relation relationtype="resourcerelation" encodinganalog="${item.record.id?c}" linkrole="${item.specification.code}">
+        <ead:relationentry>${item.record.prefName.fullName}</ead:relationentry>
+      </ead:relation>
+    </#if>
+  </#list>
+  </ead:relations>
 </#macro>
 
 <#macro writeNode node>
+<#local languagesProcessed=0>
+<#local relationsProcessed=0>
 <ead:did>
 <#list node.items as item>
 <#switch item.type.code>
@@ -75,7 +117,7 @@
   <ead:unitid localtype="ReferencniOznaceni">${item.serializedValue}</ead:unitid>
   <#break>
 <#case "ZP2015_TITLE">
-  <ead:abstract>${item.serializedValue}</ead:abstract>
+  <ead:unittitle>${item.serializedValue}</ead:unittitle>
   <#break>
 <#case "ZP2015_DATE_RANGE">
   <!-- Časové rozmezí archivní pomůcky (uvádí se v tiráži) -->
@@ -91,12 +133,28 @@
   </ead:unitdatestructured>
   <#break>
 <#case "ZP2015_ORIGINATOR">
-  <ead:origination>
-    <@writeParty item.party />
-  </ead:origination>
+  <@writeParty item.party />
+  <#break>
+<#case "ZP2015_ENTITY_ROLE">
+  <#if relationsProcessed==0>
+    <@writeRelations node.items />
+    <#local relationsProcessed=1>
+  </#if>
   <#break>
 <#case "ZP2015_UNIT_CURRENT_STATUS">
   <ead:physdesc>${item.serializedValue}</ead:physdesc>
+  <#break>
+<#case "ZP2015_LANGUAGE">
+  <#if languagesProcessed==0>
+    <@writeLanguages node.items />
+    <#local languagesProcessed=1>
+  </#if>
+  <#break>
+<#case "ZP2015_UNIT_COUNT_TABLE">
+  <@writeEvidJednotky item />
+  <#break>
+<#case "ZP2015_STORAGE_ID">
+  <@writeUklJednotka item />
   <#break>
 </#switch>
 </#list>
