@@ -7,7 +7,7 @@ import {addShortcutManager} from "components/Utils";
 import defaultKeymap from './TreeListKeymap.jsx';
 import scrollIntoView from 'dom-scroll-into-view';
 import getItemName from "components/shared/utils/getItemName.jsx";
-import './TreeList.less';
+import './TreeList.scss';
 
 // node state codes
 const nodeStates = {

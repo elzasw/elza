@@ -23,7 +23,7 @@ import { selectFundTab } from 'actions/arr/fund.jsx'
 import { fundTreeFetch, fundTreeFulltextChange, fundTreeFulltextResult, fundTreeSelectNode } from 'actions/arr/fundTree.jsx';
 import { fundSelectSubNode } from 'actions/arr/node.jsx'
 
-import './SearchFundsForm.less';
+import './SearchFundsForm.scss';
 
 const FUND_NAME_MAX_CHARS = 60
 

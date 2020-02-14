@@ -10,7 +10,7 @@ import * as perms from 'actions/user/Permission.jsx';
 import AbstractReactComponent from "../AbstractReactComponent";
 import i18n from "../i18n";
 
-import './ExtMapperForm.less';;
+import './ExtMapperForm.scss';;
 
 const INTERPI_CLASS = {
     POCATEK_EXISTENCE: 'POCATEK_EXISTENCE',

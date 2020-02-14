@@ -8,7 +8,7 @@ import {i18n, AbstractReactComponent, Icon} from 'components/shared'
 import {indexById, objectById} from 'stores/app/utils.jsx'
 import {normalizeNameObject} from 'actions/party/party.jsx'
 
-import './PartyDetailNames.less'
+import './PartyDetailNames.scss'
 import PartyNameForm from "./PartyNameForm";
 
 class PartyDetailNames extends AbstractReactComponent {

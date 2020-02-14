@@ -9,7 +9,7 @@ import {fetchFundFilesIfNeeded, fundFilesFilterByText, fundFilesCreate, fundFile
 import {modalDialogShow,modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {UrlFactory} from 'actions/index.jsx';
 
-import './FundFiles.less'
+import './FundFiles.scss'
 import {downloadFile} from "../../actions/global/download";
 import EditableFileForm from "./EditableFileForm";
 import {WebApi} from "../../actions/WebApi";

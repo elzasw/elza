@@ -9,7 +9,7 @@ import NodeLabel from "./NodeLabel";
 import {AbstractReactComponent, AddRemoveList, Icon, i18n} from 'components/shared';
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 
-import './FundNodesList.less';
+import './FundNodesList.scss';
 
 class FuncNodesList extends AbstractReactComponent {
     static propTypes = {

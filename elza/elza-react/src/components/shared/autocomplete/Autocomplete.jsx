@@ -6,7 +6,7 @@ import AbstractReactComponent from "components/AbstractReactComponent";
 import * as Utils from "components/Utils";
 import Icon from "components/shared/icon/Icon";
 import {getBootstrapInputComponentInfo} from 'components/form/FormUtils.jsx';
-import './Autocomplete.less';
+import './Autocomplete.scss';
 import {propsEquals} from 'components/Utils.jsx';
 import {Shortcuts} from 'react-shortcuts';
 import defaultKeymap from './AutocompleteKeymap.jsx';

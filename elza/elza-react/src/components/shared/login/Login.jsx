@@ -6,7 +6,7 @@ import {decorateFormField} from 'components/form/FormUtils.jsx'
 import {login, checkUserLogged} from 'actions/global/login.jsx';
 import {WebApi} from 'actions/index.jsx';
 
-import './Login.less';
+import './Login.scss';
 import ModalDialogWrapper from "../dialog/ModalDialogWrapper";
 import FormInput from "../form/FormInput";
 import i18n from "../../i18n";

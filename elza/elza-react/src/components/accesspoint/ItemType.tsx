@@ -21,7 +21,7 @@ import {Shortcuts} from 'react-shortcuts';
 import DescItemTypeSpec from "./ItemTypeSpec.jsx";
 import {PropTypes} from 'prop-types';
 import defaultKeymap from '../arr/nodeForm/DescItemTypeKeymap.jsx';
-import '../arr/nodeForm/AbstractDescItem.less';
+import '../arr/nodeForm/AbstractDescItem.scss';
 import {
     validate,
     convertValue,

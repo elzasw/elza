@@ -7,7 +7,7 @@ import AbstractReactComponent from "../../AbstractReactComponent";
 import NoFocusButton from "../button/NoFocusButton";
 import i18n from "../../i18n";
 import Icon from "../icon/Icon";
-import "./AddRemoveListBox.less";
+import "./AddRemoveListBox.scss";
 
 /**
  * Listbox s možností přidávat a odebírat položky.
@@ -65,7 +65,7 @@ class AddRemoveListBox extends AbstractReactComponent {
 
     renderItem = (props, onCheckItem) => {
         const {readOnly, canDeleteItem, renderItemContent, addTitle, removeTitle, onRemove, onAdd} = this.props;
-        const {item, index} = props; 
+        const {item, index} = props;
 
         if (item._addItem) {
             return <div className="arlb-plus-item">

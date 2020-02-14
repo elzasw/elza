@@ -14,7 +14,7 @@ import FundField from "./FundField";
 import {renderFundItem, renderGroupItem} from "./adminRenderUtils";
 import getMapFromList from "../../shared/utils/getMapFromList";
 import AddRemoveListBox from "../shared/listbox/AddRemoveListBox";
-import "./PermissionsPanel.less";
+import "./PermissionsPanel.scss";
 
 /**
  * Panel spravující oprávnění na archivní soubory.
@@ -168,7 +168,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
         }
 
         this.sortPermissions(permissions);
-        
+
         // Creates new selected id from props. Uses state, if the selected permission in props didn't change.
         let newSelectedId = nextProps.selectedPermission.index >= 0 ? nextProps.selectedPermission.id : this.state.selectedPermission.id;
         let newSelectedIndex = this.getIndexById(newSelectedId, permissions);
@@ -395,7 +395,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
                             id: newSelectedId,
                             index: newIndex
                         }
-                    } 
+                    }
 
                     this.setState({
                         permissions: newPermissions,

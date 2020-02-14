@@ -2,7 +2,7 @@ import React from 'react';
 import {Autocomplete, i18n, AbstractReactComponent} from '../../components/shared';
 import classNames from 'classnames';
 
-import "../arr/nodeForm/DescItemTypeSpec.less";
+import "../arr/nodeForm/DescItemTypeSpec.scss";
 
 /**
  * Komponenta pro zobrazení specifikace pro daný atribut.

@@ -1,5 +1,5 @@
-import './ArrPage.less';
-import './ArrMovementsPage.less';
+import './ArrPage.scss';
+import './ArrMovementsPage.scss';
 
 /**
  * Stránka archivních pomůcek.

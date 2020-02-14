@@ -13,7 +13,7 @@ import {WebApi} from 'actions/index.jsx';
 import {AbstractReactComponent, Autocomplete, FormInput, HorizontalLoader, i18n} from 'components/shared';
 import {getOneSettings, isFundRootId} from 'components/arr/ArrUtils.jsx';
 import {getSetFromIdsList, indexById} from 'stores/app/utils.jsx';
-import './AddNodeForm.less';
+import './AddNodeForm.scss';
 
 import FundTreeCopy from '../FundTreeCopy';
 import FundField from '../../admin/FundField';

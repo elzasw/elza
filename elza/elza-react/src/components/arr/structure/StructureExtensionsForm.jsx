@@ -4,7 +4,7 @@ import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n} from 'components/shared';
 import {Modal, Button, Checkbox, Form} from 'react-bootstrap';
 
-import './StructureExtensionsForm.less'
+import './StructureExtensionsForm.scss'
 
 class StructureExtensionsForm extends AbstractReactComponent {
 

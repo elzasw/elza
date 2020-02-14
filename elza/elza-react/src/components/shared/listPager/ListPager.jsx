@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import './ListPager.less';
+import './ListPager.scss';
 import { Icon } from 'components/shared';
 
 /**

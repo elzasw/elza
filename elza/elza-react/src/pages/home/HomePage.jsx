@@ -18,7 +18,7 @@ import PageLayout from "../shared/layout/PageLayout";
 // Testování
 // import AutocompleteTest from "./test/AutocompleteTest";
 
-import './HomePage.less'
+import './HomePage.scss'
 import {FOCUS_KEYS} from "../../constants.tsx";
 import SearchFundsForm from "../../components/arr/SearchFundsForm";
 

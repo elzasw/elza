@@ -7,7 +7,7 @@ import {Icon, i18n, AbstractReactComponent} from 'components/shared';
 import {decorateAutocompleteValue} from './../nodeForm/DescItemUtils.jsx'
 import {objectById} from 'stores/app/utils.jsx'
 
-import './NodeRegister.less';
+import './NodeRegister.scss';
 import RegistryField from "../../registry/RegistryField";
 
 class NodeRegister extends AbstractReactComponent {

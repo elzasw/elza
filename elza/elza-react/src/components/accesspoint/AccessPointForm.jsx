@@ -9,7 +9,7 @@ import {
 } from 'components/shared'
 import {connect} from 'react-redux'
 
-import '../arr/NodeSubNodeForm.less';
+import '../arr/NodeSubNodeForm.scss';
 import { ItemForm } from "./ItemForm";
 import {accessPointFormActions} from "./AccessPointFormActions";
 import {ItemFactory} from "./ItemFactory";

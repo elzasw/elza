@@ -3,7 +3,7 @@
  */
 
 import classNames from "classnames";
-import './ArrOutputPage.less';
+import './ArrOutputPage.scss';
 
 import React from 'react';
 import ReactDOM from 'react-dom';

@@ -8,7 +8,7 @@ import {i18n, AbstractReactComponent, Icon} from 'components/shared'
 import {indexById} from 'stores/app/utils.jsx'
 import {MODAL_DIALOG_VARIANT} from '../../constants.tsx'
 
-import './PartyDetailIdentifiers.less'
+import './PartyDetailIdentifiers.scss'
 import PartyIdentifierForm from "./PartyIdentifierForm";
 
 const removeUndefined = (obj) => {

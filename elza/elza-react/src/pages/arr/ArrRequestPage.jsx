@@ -73,7 +73,7 @@ import ArrParentPage from "./ArrParentPage.jsx";
 import classNames from 'classnames';
 import {Shortcuts} from 'react-shortcuts';
 
-import "./ArrRequestPage.less";
+import "./ArrRequestPage.scss";
 import {FOCUS_KEYS} from "../../constants.tsx";
 
 class ArrRequestPage extends ArrParentPage {

@@ -16,7 +16,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {debounce} from 'shared/utils'
 import classNames from 'classnames';
 
-import './PartyField.less'
+import './PartyField.scss'
 import PartyListItem from "./PartyListItem";
 import ExtImportForm from "../form/ExtImportForm";
 

@@ -11,7 +11,7 @@ import {Button} from 'react-bootstrap'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import ExtSystemForm from 'components/admin/ExtSystemForm.jsx';
 import {storeFromArea} from 'shared/utils'
-import './AdminExtSystemPage.less';
+import './AdminExtSystemPage.scss';
 import AbstractReactComponent from "../../components/AbstractReactComponent";
 
 import {PropTypes} from 'prop-types';

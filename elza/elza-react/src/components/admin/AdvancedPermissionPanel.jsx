@@ -10,7 +10,7 @@ import {WebApi} from "../../actions/WebApi";
 import PermissionCheckboxsForm from "./PermissionCheckboxsForm";
 import AdminRightsContainer from "./AdminRightsContainer";
 import ControlledEntitiesPanel from "./ControlledEntitiesPanel";
-import "./PermissionsPanel.less";
+import "./PermissionsPanel.scss";
 
 /**
  * Panel spravující pokročilá oprávnění.

@@ -3,7 +3,7 @@ import {Autocomplete, Icon, i18n, AbstractReactComponent} from 'components/share
 import {getSetFromIdsList} from "stores/app/utils.jsx";
 import classNames from 'classnames';
 
-import "./DescItemTypeSpec.less";
+import "./DescItemTypeSpec.scss";
 
 /**
  * Komponenta pro zobrazení specifikace pro daný atribut.

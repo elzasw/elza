@@ -5,7 +5,7 @@ import { WebApi } from '../../actions/WebApi';
 import { connect } from 'react-redux';
 import { usageFundTreeReceive } from '../../actions/arr/globalFundTree';
 import FundTreeUsage from '../arr/FundTreeUsage';
-import './UsageForm.less';
+import './UsageForm.scss';
 import RegistryField from '../registry/RegistryField';
 import * as types from 'actions/constants/ActionTypes.js';
 import ToggleContent from '../shared/toggle-content/ToggleContent';

@@ -6,7 +6,7 @@ import ReactDOM from 'react-dom';
 import {Modal, Button} from 'react-bootstrap';
 import {getMapFromList} from 'stores/app/utils.jsx'
 
-import './DataGridColumnsSettings.less'
+import './DataGridColumnsSettings.scss'
 import AbstractReactComponent from "../../AbstractReactComponent";
 import ListBox from "../listbox/ListBox";
 import i18n from "../../i18n";

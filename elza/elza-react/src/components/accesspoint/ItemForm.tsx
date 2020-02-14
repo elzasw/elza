@@ -16,7 +16,7 @@ import {fundFilesCreate} from '../../actions/arr/fundFiles'
 import {setSettings, getOneSettings} from '../arr/ArrUtils';
 import {userDetailsSaveSettings} from '../../actions/user/userDetail'
 import {WebApi} from '../../actions/index.jsx';
-import '../arr/SubNodeForm.less'
+import '../arr/SubNodeForm.scss'
 import {downloadFile} from "../../actions/global/download";
 import {FOCUS_KEYS} from "../../constants";
 import {IItemFormState} from "../../stores/app/accesspoint/itemForm";

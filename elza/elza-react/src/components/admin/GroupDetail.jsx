@@ -26,7 +26,7 @@ import AdvancedPermissionPanel from "./AdvancedPermissionPanel";
 import {WebApi} from "../../actions/WebApi";
 import DetailHeader from "../shared/detail/DetailHeader";
 
-import './GroupDetail.less';;
+import './GroupDetail.scss';;
 
 class GroupDetail extends AbstractReactComponent {
     static TAB_FUNDS = 0;

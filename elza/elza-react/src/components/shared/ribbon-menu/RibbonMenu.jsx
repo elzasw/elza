@@ -2,7 +2,7 @@ import React from 'react';
 
 import {ButtonToolbar} from 'react-bootstrap';
 
-import './RibbonMenu.less';
+import './RibbonMenu.scss';
 
 const RibbonMenu = (
     {
@@ -11,7 +11,7 @@ const RibbonMenu = (
 ) => {
     return (
         <ButtonToolbar className="ribbon-menu">
-                {children}            
+                {children}
         </ButtonToolbar>
     );
 };

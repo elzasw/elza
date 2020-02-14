@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom'
 
-import './SearchWithGoto.less';
+import './SearchWithGoto.scss';
 import AbstractReactComponent from "../../AbstractReactComponent";
 import NoFocusButton from "../button/NoFocusButton";
 import Search from "./Search";

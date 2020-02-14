@@ -1,4 +1,4 @@
-import './SubNodeDao.less';
+import './SubNodeDao.scss';
 
 import PropTypes from 'prop-types';
 

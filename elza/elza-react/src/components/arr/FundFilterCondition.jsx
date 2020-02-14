@@ -2,7 +2,7 @@
  * Nastavení podmínky na filtr - filtrování pol podmíky.
  */
 
-import './FundFilterSettings.less';
+import './FundFilterSettings.scss';
 
 import React from 'react';
 import ReactDOM from 'react-dom';

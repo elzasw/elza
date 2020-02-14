@@ -19,7 +19,7 @@ import {fundFilesCreate} from 'actions/arr/fundFiles.jsx'
 import {setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
 import {WebApi} from 'actions/index.jsx';
-import './SubNodeForm.less'
+import './SubNodeForm.scss'
 import {downloadFile} from "../../actions/global/download";
 import {FOCUS_KEYS} from "../../constants.tsx";
 import {objectEqualsDiff} from "../Utils";

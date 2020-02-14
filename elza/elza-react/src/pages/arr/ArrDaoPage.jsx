@@ -1,5 +1,5 @@
-import './ArrPage.less';
-import './ArrDaoPage.less';
+import './ArrPage.scss';
+import './ArrDaoPage.scss';
 
 /**
  * Stránka archivních pomůcek.

@@ -12,7 +12,7 @@ import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {routerNavigate} from 'actions/router.jsx'
 
-import './FundDetail.less';
+import './FundDetail.scss';
 
 var FundDetail = class FundDetail extends AbstractReactComponent {
     constructor(props) {

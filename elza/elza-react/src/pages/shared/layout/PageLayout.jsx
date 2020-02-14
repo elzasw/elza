@@ -6,7 +6,7 @@ import classNames from 'classnames';
 import {Splitter, ToggleContent} from 'components/shared';
 import {splitterResize} from 'actions/global/splitter.jsx';
 
-import './PageLayout.less';
+import './PageLayout.scss';
 
 /**
  * Standardní layout stránky, který ribbon, obsahuje levý panel, prostřední panel a pravý panel, které jsou odděleny splitterem.

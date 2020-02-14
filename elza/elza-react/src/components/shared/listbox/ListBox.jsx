@@ -6,7 +6,7 @@ import {Shortcuts} from 'react-shortcuts';
 import scrollIntoView from 'dom-scroll-into-view';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './ListBoxKeymap.jsx'
-import './ListBox.less';
+import './ListBox.scss';
 
 let _ListBox_placeholder = document.createElement("div");
 let _ListBox_placeholder_cls = "placeholder"

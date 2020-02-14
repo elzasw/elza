@@ -2,7 +2,7 @@
  * Formulář editace hodnoty v tabulce pro desc item typu tabulka.
  */
 
-import './DescItemJsonTableCellForm.less'
+import './DescItemJsonTableCellForm.scss'
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'

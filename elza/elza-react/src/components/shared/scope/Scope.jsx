@@ -7,7 +7,7 @@ import {indexById} from 'stores/app/utils.jsx';
 import AbstractReactComponent from "../../AbstractReactComponent";
 import FormInput from "../form/FormInput";
 
-import './Scope.less';
+import './Scope.scss';
 
 /**
  *  Komponenta pro scope

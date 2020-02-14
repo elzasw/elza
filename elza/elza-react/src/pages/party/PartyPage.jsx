@@ -18,7 +18,7 @@ import {Shortcuts} from 'react-shortcuts';
 import {setFocus} from 'actions/global/focus.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import defaultKeymap from './PartyPageKeymap.jsx';
-import './PartyPage.less';
+import './PartyPage.scss';
 import {apExtSystemListFetchIfNeeded} from 'actions/registry/apExtSystemList';
 import PageLayout from "../shared/layout/PageLayout";
 import {PropTypes} from 'prop-types';

@@ -5,7 +5,7 @@ import {Icon, AbstractReactComponent, i18n} from 'components/shared';
 import {indexById} from 'stores/app/utils.jsx'
 import {Button} from 'react-bootstrap';
 
-import './ArrPanel.less';
+import './ArrPanel.scss';
 
 class ArrPanel extends AbstractReactComponent {
     static propTypes = {

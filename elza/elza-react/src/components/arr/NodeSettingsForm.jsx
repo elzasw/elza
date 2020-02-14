@@ -11,7 +11,7 @@ import {Row, Col, Nav, NavItem, Radio} from 'react-bootstrap'
 import {FormInput, Loading} from "../shared/index";
 import getMapFromList from "../../shared/utils/getMapFromList";
 
-import './NodeSettingsForm.less'
+import './NodeSettingsForm.scss'
 
 const VIEW_KEYS = {
   RULES: "RULES",

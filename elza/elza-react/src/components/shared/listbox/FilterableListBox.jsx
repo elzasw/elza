@@ -1,4 +1,4 @@
-import './FilterableListBox.less';
+import './FilterableListBox.scss';
 
 /**
  *  ListBox komponenta s možností filtrování, hledání a označování.

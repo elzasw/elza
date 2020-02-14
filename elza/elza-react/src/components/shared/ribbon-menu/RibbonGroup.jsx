@@ -5,7 +5,7 @@
 import React from 'react';
 
 
-import './RibbonMenu.less';
+import './RibbonMenu.scss';
 
 /**
  * Komponenta pro skupinu tlačítek v ribbonu.

@@ -22,7 +22,7 @@ import {setFocus} from '../../actions/global/focus.jsx'
 import * as perms from '../../actions/user/Permission.jsx';
 import {apExtSystemListFetchIfNeeded} from '../../actions/registry/apExtSystemList';
 import {PropTypes} from 'prop-types';
-import './RegistryPage.less';
+import './RegistryPage.scss';
 import PageLayout from "../shared/layout/PageLayout";
 import defaultKeymap from './RegistryPageKeymap.jsx';
 import {FOCUS_KEYS} from "../../constants.tsx";

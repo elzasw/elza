@@ -14,7 +14,7 @@ import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './DataGridKeymap.jsx';
 
-import './DataGrid.less';
+import './DataGrid.scss';
 
 import scrollIntoView from 'dom-scroll-into-view';
 

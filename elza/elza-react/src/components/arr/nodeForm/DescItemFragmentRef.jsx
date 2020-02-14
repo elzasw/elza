@@ -6,7 +6,7 @@ import {connect} from 'react-redux'
 
 import {Icon, i18n, AbstractReactComponent, Autocomplete} from 'components/shared';
 
-import './DescItemFileRef.less'
+import './DescItemFileRef.scss'
 import {modalDialogShow} from "../../../actions/global/modalDialog";
 import {WebApi} from "../../../actions/WebApi";
 import {AccessPointFormActions} from "../../accesspoint/AccessPointFormActions";

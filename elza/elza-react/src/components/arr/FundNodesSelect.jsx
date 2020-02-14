@@ -19,7 +19,7 @@ import {
     fundTreeConfigure,
 } from 'actions/arr/fundTree.jsx'
 import {getMapFromList} from 'stores/app/utils.jsx'
-import './FundNodesSelect.less';
+import './FundNodesSelect.scss';
 import FundTreeLazy from "./FundTreeLazy";
 
 /**

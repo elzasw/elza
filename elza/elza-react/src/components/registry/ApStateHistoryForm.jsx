@@ -11,7 +11,7 @@ import {dateToString, getScrollbarWidth, timeToString} from 'components/Utils.js
 import ListBox from "../shared/listbox/ListBox";
 import {WebApi} from "../../actions";
 import {HorizontalLoader} from "../shared";
-import "./ApStateHistoryForm.less";
+import "./ApStateHistoryForm.scss";
 
 class ApStateHistoryForm extends AbstractReactComponent {
 

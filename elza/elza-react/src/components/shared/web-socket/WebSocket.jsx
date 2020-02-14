@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
 
-import './WebSocket.less';
+import './WebSocket.scss';
 import AbstractReactComponent from "../../AbstractReactComponent";
 import i18n from "../../i18n";
 

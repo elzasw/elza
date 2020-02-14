@@ -11,7 +11,7 @@ import Loading from "../shared/loading/Loading";
 import {WebApi} from "../../actions";
 import ScopeListForm from "../form/ScopeListForm";
 
-import "./ScopeLists.less";
+import "./ScopeLists.scss";
 
 class ScopeLists extends AbstractReactComponent {
 

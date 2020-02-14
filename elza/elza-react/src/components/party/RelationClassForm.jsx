@@ -9,7 +9,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {submitForm} from 'components/form/FormUtils.jsx'
 import {objectById} from 'stores/app/utils.jsx'
 
-import './RelationForm.less'
+import './RelationForm.scss'
 import DatationField from "./DatationField";
 import RegistryField from "../registry/RegistryField";
 

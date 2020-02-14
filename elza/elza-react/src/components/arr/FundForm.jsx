@@ -8,7 +8,7 @@ import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
 import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
 
-import './FundForm.less';
+import './FundForm.scss';
 import UserAndGroupField from "../admin/UserAndGroupField";
 import {WebApi} from "../../actions/WebApi";
 import {renderUserOrGroupItem, renderUserOrGroupLabel} from "../admin/adminRenderUtils";

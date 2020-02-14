@@ -4,7 +4,7 @@ import {decorateAutocompleteValue} from "./nodeForm/DescItemUtils";
  * Formulář nastavení filtru na sloupečku.
  */
 
-import './FundFilterSettings.less';
+import './FundFilterSettings.scss';
 
 import React from 'react';
 import {reduxForm} from 'redux-form';

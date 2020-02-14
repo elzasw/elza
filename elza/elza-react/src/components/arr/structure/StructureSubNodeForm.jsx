@@ -9,7 +9,7 @@ import {
 } from 'components/shared'
 import {connect} from 'react-redux'
 
-import '../NodeSubNodeForm.less';
+import '../NodeSubNodeForm.scss';
 import SubNodeForm from "../SubNodeForm";
 import {structureFormActions} from "../../../actions/arr/subNodeForm";
 import PropTypes from 'prop-types';
@@ -17,7 +17,7 @@ import {getDescItemsAddTree, getOneSettings} from "../ArrUtils";
 import AddDescItemTypeForm from "../nodeForm/AddDescItemTypeForm";
 import {modalDialogShow} from "../../../actions/global/modalDialog";
 
-import './StructureSubNodeForm.less'
+import './StructureSubNodeForm.scss'
 import objectById from "../../../shared/utils/objectById";
 
 /**

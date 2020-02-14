@@ -1,7 +1,7 @@
 /**
  * Stránka pro správu uživatelů.
  */
-import './AdminFundPage.less';
+import './AdminFundPage.scss';
 
 import React from 'react';
 import {connect} from 'react-redux'

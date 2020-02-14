@@ -5,7 +5,7 @@ import React from 'react';
 import {Checkbox} from "react-bootstrap";
 import {AbstractReactComponent, Icon, i18n, fetching} from 'components/shared';
 import getMapFromList from "../../shared/utils/getMapFromList";
-import "./PermissionCheckboxsForm.less";
+import "./PermissionCheckboxsForm.scss";
 import TooltipTrigger from "../shared/tooltip/TooltipTrigger";
 import {modalDialogShow} from '../../actions/global/modalDialog.jsx'
 import FundNodesList from "../arr/FundNodesList";

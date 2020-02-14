@@ -13,7 +13,7 @@ import {fundOutputRemoveNodes, fundOutputAddNodes } from 'actions/arr/fundOutput
 import {modalDialogShow} from 'actions/global/modalDialog.jsx'
 import OutputInlineForm from 'components/arr/OutputInlineForm.jsx'
 import {PropTypes} from 'prop-types';
-import './ArrOutputDetail.less';
+import './ArrOutputDetail.scss';
 import {Shortcuts} from 'react-shortcuts';
 import OutputSubNodeForm from "./OutputSubNodeForm";
 import FundNodesList from "./FundNodesList";
