@@ -65,6 +65,7 @@ public class ItemGeneratorAction extends Action {
         
         private ItemType trgSOPrefixType;
         private ItemType prefixValueSource;
+        private Map<String, String> prefixValueMapping;
         private ItemType trgSOValueType;
         private ItemType countSource;
         private ItemType trgSOStartValueType;
@@ -136,6 +137,7 @@ public class ItemGeneratorAction extends Action {
             if(prefixValueSource==null) {
                 throw new SystemException("Incorrect prefix configuration for structured type", BulkActionCode.INCORRECT_CONFIG);
             }
+            prefixValueMapping = prefixConfig.getValueSpecMapping();
             
             // main part
             StructuredObjectItemConfig mainValueConfig = soc.getMainValue();
@@ -171,7 +173,12 @@ public class ItemGeneratorAction extends Action {
                 // 
                 Integer specId = prefixItem.getItemSpecId();
                 RulItemSpec spec = staticDataService.getData().getItemSpecById(specId);
-                prefix = spec.getShortcut();
+                // check if we have mapping
+                if (prefixValueMapping != null) {
+                    prefix = prefixValueMapping.get(spec.getCode());
+                } else {
+                    prefix = spec.getShortcut();
+                }
 
             }
             // read count
