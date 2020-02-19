@@ -147,7 +147,6 @@ public class MultipleBulkAction extends BulkAction {
 
             LevelWithItems levelWithItems = entry.getValue();
 
-			//apply(node, levelWithItems.descItems, TypeLevel.PARENT, levelWithItems.getParent());
 			apply(levelWithItems, TypeLevel.PARENT);
         }
 
@@ -233,7 +232,6 @@ public class MultipleBulkAction extends BulkAction {
      * @param typeLevel             typ uzlu
      * @param parentNodeDescItems   data předků
      */
-    //private void apply(final ArrNode node, final List<ArrDescItem> items, final TypeLevel typeLevel, final LevelWithItems parentLevelWithItems) {
     private void apply(LevelWithItems level, TypeLevel typeLevel) {
 		try {
 			for (Action action : actions) {
