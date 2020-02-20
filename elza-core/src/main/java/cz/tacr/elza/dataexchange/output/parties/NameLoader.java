@@ -9,7 +9,7 @@ import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.domain.ParPartyName;
 
-public class NameLoader extends AbstractEntityLoader<ParPartyName> {
+public class NameLoader extends AbstractEntityLoader<ParPartyName, ParPartyName> {
 
     private final NameComplementLoader complementLoader;
 

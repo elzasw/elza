@@ -1,5 +1,6 @@
 package cz.tacr.elza.print;
 
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -173,6 +174,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private StructuredItemRepository structItemRepos;
 
+    private OffsetDateTime changeDateTime;
+
     public OutputModel(final StaticDataService staticDataService,
                        final ElzaLocale elzaLocale,
                        final FundTreeProvider fundTreeProvider,
@@ -224,6 +227,11 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     @Override
     public String getTypeCode() {
         return typeCode;
+    }
+
+    @Override
+    public OffsetDateTime getChangeDateTime() {
+        return changeDateTime;
     }
 
     @Override
@@ -419,6 +427,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.internalCode = output.getInternalCode();
         this.typeCode = outputType.getCode();
         this.type = outputType.getName();
+        this.changeDateTime = params.getChange().getChangeDate();
 
         // init node id tree
         NodeId rootNodeId = createNodeIdTree(params.getOutputNodeIds(), params.getFundVersionId());

@@ -8,7 +8,7 @@ import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.service.DmsService;
 
 public class DmsFileLoader
-        extends AbstractEntityLoader<DmsFileInfoImpl> {
+        extends AbstractEntityLoader<DmsFileInfoImpl, DmsFile> {
 
     final private ResourcePathResolver resourcePathResolver;
 

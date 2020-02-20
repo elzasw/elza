@@ -14,7 +14,7 @@ import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.service.UserService;
 
-public class ApInfoLoader extends AbstractEntityLoader<ApInfoImpl> {
+public class ApInfoLoader extends AbstractEntityLoader<ApInfoImpl, ApAccessPoint> {
 
     private final Set<Integer> checkedScopeIds = new HashSet<>();
 

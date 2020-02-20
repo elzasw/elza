@@ -18,7 +18,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
 
-public class PartyInfoLoader extends AbstractEntityLoader<PartyInfoImpl> {
+public class PartyInfoLoader extends AbstractEntityLoader<PartyInfoImpl, ParParty> {
 
     private final UnitdateLoader unitdateLoader;
 
@@ -51,7 +51,7 @@ public class PartyInfoLoader extends AbstractEntityLoader<PartyInfoImpl> {
     }
 
     @Override
-    protected void buildExtendedQuery(Root<?> baseEntity, CriteriaBuilder cb) {
+    protected void buildExtendedQuery(Root<? extends ParParty> baseEntity, CriteriaBuilder cb) {
         baseEntity.fetch(ParParty.FIELD_RECORD);
     }
 

@@ -233,6 +233,10 @@ public class UnitCounter {
 
                     // mark as counted
                     unitCountAction.addCountedObject(packetId);
+                    // only first mapping is used and then return
+                    // if there are multiple structObjItems matching
+                    // given itemType only first one is counted
+                    return;
                 }
             }
         }
