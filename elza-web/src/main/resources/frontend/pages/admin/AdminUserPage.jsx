@@ -116,7 +116,7 @@ class AdminUserPage extends AbstractReactComponent{
             const initData = {
                 username: data.username,
                 passwordCheckbox: authTypes.indexOf('PASSWORD') >= 0,
-                shibbolethCheckbox: authTypes.indexOf('SHIBBOLETH') >= 0
+                shibbolethCheckbox: authTypes.indexOf('SAML2') >= 0
             };
             this.props.dispatch(modalDialogShow(this, i18n('admin.user.update.title'), <AddUserForm initialValues={initData} onSubmitForm={this.handleUpdateUser} />))
         }
