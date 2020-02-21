@@ -91,7 +91,7 @@ class AddUserForm extends AbstractReactComponent {
         }
 
         if (shibbolethCheckbox) {
-            newData.valuesMap['SHIBBOLETH'] = shibboleth && shibboleth.length > 0 ? shibboleth : null;
+            newData.valuesMap['SAML2'] = shibboleth && shibboleth.length > 0 ? shibboleth : null;
         }
 
         return this.props.onSubmitForm(newData);
