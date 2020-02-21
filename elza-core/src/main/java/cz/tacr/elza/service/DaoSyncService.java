@@ -436,7 +436,7 @@ public class DaoSyncService {
         arrDaoFile.setDuration(file.getDuration());
 
         arrDaoFile.setDescription(file.getDescription());
-        arrDaoFile.setFileName(file.getFileName());
+        arrDaoFile.setFileName(file.getName());
     }
 
     private cz.tacr.elza.api.UnitOfMeasure getDimensionUnit(final UnitOfMeasure sourceDimensionUnit) {

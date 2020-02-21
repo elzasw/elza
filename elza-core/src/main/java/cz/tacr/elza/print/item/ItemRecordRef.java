@@ -23,4 +23,8 @@ public class ItemRecordRef extends AbstractItem {
     protected Record getValue() {
         return record;
     }
+
+    public Record getRecord() {
+        return record;
+    }
 }

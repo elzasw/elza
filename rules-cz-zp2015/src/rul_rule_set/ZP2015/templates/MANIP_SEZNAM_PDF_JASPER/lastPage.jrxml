@@ -24,7 +24,7 @@
 		<band height="634">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<property name="com.jaspersoft.studio.layout"/>
-			<textField isStretchWithOverflow="true">
+			<textField isStretchWithOverflow="true" evaluationTime="Master">
 				<reportElement positionType="Float" x="0" y="330" width="455" height="300" isRemoveLineWhenBlank="true" uuid="e0778e82-e190-4d85-8ff8-3d44f5eaeea5">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
