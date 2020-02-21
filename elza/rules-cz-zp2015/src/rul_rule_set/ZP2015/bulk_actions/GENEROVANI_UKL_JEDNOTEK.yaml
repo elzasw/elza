@@ -33,6 +33,46 @@ actions:
           prefix:
             itemType: ZP2015_PACKET_PREFIX
             valueFrom: ZP2015_UNIT_TYPE
+            valueSpecMapping:
+               ZP2015_UNIT_TYPE_LIO: lio
+               ZP2015_UNIT_TYPE_LIP: lip
+               ZP2015_UNIT_TYPE_UKN: ukn
+               ZP2015_UNIT_TYPE_RKP: rkp 
+               ZP2015_UNIT_TYPE_HDB: rkp
+               ZP2015_UNIT_TYPE_PPR: ppr
+               ZP2015_UNIT_TYPE_IND: ind
+               ZP2015_UNIT_TYP_ELE: ele
+               ZP2015_UNIT_TYPE_REP: rep
+               ZP2015_UNIT_TYPE_KTT: ktt
+               ZP2015_UNIT_TYPE_PEC: pec
+               ZP2015_UNIT_TYPE_RAZ: raz
+               ZP2015_UNIT_TYPE_OTD: otd
+               ZP2015_UNIT_TYPE_OTC: otd
+               ZP2015_UNIT_TYPE_MAP: map
+               ZP2015_UNIT_TYPE_ATL: atl
+               ZP2015_UNIT_TYPE_TVY: tvy
+               ZP2015_UNIT_TYPE_GLI: gli
+               ZP2015_UNIT_TYPE_KRE: kre
+               ZP2015_UNIT_TYPE_FSN: fsn
+               ZP2015_UNIT_TYPE_FSD: fsd
+               ZP2015_UNIT_TYPE_LFI: lfi
+               ZP2015_UNIT_TYPE_SFI: sfi
+               ZP2015_UNIT_TYPE_KIN: kin
+               ZP2015_UNIT_TYPE_MF: mf
+               ZP2015_UNIT_TYPE_MFS: mfs
+               ZP2015_UNIT_TYPE_FAL: fal
+               ZP2015_UNIT_TYPE_DFO: dfo
+               ZP2015_UNIT_TYPE_KZA: kza
+               ZP2015_UNIT_TYPE_ZZA: zza
+               ZP2015_UNIT_TYPE_TIO: tio
+               ZP2015_UNIT_TYPE_TIP: tip
+               ZP2015_UNIT_TYPE_POH: poh
+               ZP2015_UNIT_TYPE_PKT: pkt
+               ZP2015_UNIT_TYPE_CPA: cpa
+               ZP2015_UNIT_TYPE_STO: sto
+               ZP2015_UNIT_TYPE_PNP: pnp
+               ZP2015_UNIT_TYPE_PFP: pfp
+               ZP2015_UNIT_TYPE_JIN: jin            
           mainValue:
             itemType: ZP2015_PACKET_NUMBER
             # Volitelný prvek popisu s počtem, výchozí je jedna
