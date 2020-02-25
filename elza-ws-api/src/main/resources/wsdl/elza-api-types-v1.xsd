@@ -352,7 +352,6 @@ Source: EAD3</xs:documentation>
 		</xs:attribute>
 		<xs:attributeGroup ref="eat:mixCore"/>
 		<xs:attributeGroup ref="eat:videoMD"/>
-        <xs:attribute name="description" type="xs:string"/>
         <xs:attribute name="fileName" type="xs:string"/>
 	</xs:complexType>
 	<xs:complexType name="fileGroup">
