@@ -128,12 +128,16 @@ public interface LevelRepositoryCustom {
     long readLevelTree(Integer nodeId, ArrChange change, boolean excludeRoot, TreeLevelConsumer treeLevelConsumer);
 
     /**
-     * Provede načtení všech uzlů ve stromu dané verze.
+     * Provede načtení všech uzlů ve stromu/podstromu dané verze.
      *
-     * @param version verze stromu
+     * @param change
+     *            Poslední změna ve stromu, pokud je null tak načte poslední
+     *            verziversion verze stromu
+     * @param rootNodeId
+     *            ID kořene stromu, který bude načten
      * @return seznam všech uzlů ve stromu
      */
-    List<LevelInfo> readTree(ArrFundVersion version);
+    List<LevelInfo> readTree(final ArrChange change, final Integer rootNodeId);
 
     public interface TreeLevelConsumer {
 

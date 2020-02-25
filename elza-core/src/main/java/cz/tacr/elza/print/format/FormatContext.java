@@ -286,6 +286,9 @@ public class FormatContext {
                 pendingSeparator = null;
             }
             
+            // replace unexpected characters
+            result = result.replace('\t', ' ');
+
             // append result
             resultBuffer.append(result);
         }

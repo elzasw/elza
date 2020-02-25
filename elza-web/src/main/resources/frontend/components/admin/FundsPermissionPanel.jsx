@@ -463,7 +463,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
 
     render() {
         const {selectedPermission, permissions} = this.state;
-        const {fundId, entityPermissions, onSelectItem, groupId} = this.props;
+        const {fundId, entityPermissions, onSelectItem, userId, groupId} = this.props;
 
         if (!entityPermissions.fetched) {
             return <HorizontalLoader/>
@@ -479,6 +479,12 @@ class FundsPermissionPanel extends AbstractReactComponent {
             }
         }
         let permissionAll = permissions[this.getIndexById(FundsPermissionPanel.ALL_ID, permissions)];
+
+        // pokud editujeme uzivatele, tak jsou k dipozici jeho skupiny
+        let groups = null;
+        if(userId) {
+            groups = entityPermissions.data.groups;
+        }
 
         let left;
         if (!fundId) {
@@ -501,7 +507,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
                 onRemoveNodePermission={this.removeNodePermission}
                 labelPrefix="admin.perms.tabs.funds.perm."
                 permission={permission}
-                groups={entityPermissions.data.groups}
+                groups={groups}
                 permissionAll={permission.id !== FundsPermissionPanel.ALL_ID ? permissionAll : null}
                 permissionAllTitle="admin.perms.tabs.funds.items.fundAll"
                 fundId={selectedPermission.id === FundsPermissionPanel.ALL_ID ? null : selectedPermission.id}

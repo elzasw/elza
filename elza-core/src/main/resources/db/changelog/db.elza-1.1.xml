@@ -189,4 +189,10 @@
             <column name="item_spec_id" type="int"/>
         </createIndex>
     </changeSet>
+
+    <!-- Zneplatneni cache z duvodu nalezeni neplatnych zaznamu (bug 5237) -->
+    <changeSet id="20190330081303" author="ppyt">
+        <delete tableName="arr_cached_node" />
+    </changeSet>
+
 </databaseChangeLog>

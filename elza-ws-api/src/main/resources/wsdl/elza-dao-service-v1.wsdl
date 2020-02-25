@@ -31,18 +31,19 @@
 	<wsdl:message name="TransferRequestResponse">
 		<wsdl:part name="requestId" type="eat:requestId"/>
 	</wsdl:message>
-	<wsdl:message name="EmptyResponse">
+	<wsdl:message name="OnDaoLinkedResponse">
 		<wsdl:documentation>Empty response for request-response calls</wsdl:documentation>
 	</wsdl:message>
+	<wsdl:message name="OnDaoUnlinkedResponse"/>
 	<wsdl:portType name="DaoNotifications">
 		<wsdl:operation name="OnDaoLinked">
 			<wsdl:input name="onDaoLinked" message="tns:OnDaoLinked"/>
-			<wsdl:output name="emptyResponse" message="tns:EmptyResponse"/>
+			<wsdl:output name="onDaoLinkedResponse" message="tns:OnDaoLinkedResponse"/>
 			<wsdl:fault name="daoServiceException" message="tns:DaoServiceException"/>
 		</wsdl:operation>
 		<wsdl:operation name="OnDaoUnlinked">
 			<wsdl:input name="onDaoUnlinked" message="tns:OnDaoUnlinked"/>
-			<wsdl:output name="emptyResponse" message="tns:EmptyResponse"/>
+			<wsdl:output name="onDaoUnlinkedResponse" message="tns:OnDaoUnlinkedResponse"/>
 			<wsdl:fault name="daoServiceException" message="tns:DaoServiceException"/>
 		</wsdl:operation>
 	</wsdl:portType>
@@ -109,7 +110,7 @@
 			<wsdl:input name="onDaoLinked">
 				<soap:body use="literal"/>
 			</wsdl:input>
-			<wsdl:output name="emptyResponse">
+			<wsdl:output name="onDaoLinkedResponse">
 				<soap:body use="literal"/>
 			</wsdl:output>
 			<wsdl:fault name="daoServiceException">
@@ -121,7 +122,7 @@
 			<wsdl:input name="onDaoUnlinked">
 				<soap:body use="literal"/>
 			</wsdl:input>
-			<wsdl:output name="emptyResponse">
+			<wsdl:output name="onDaoUnlinkedResponse">
 				<soap:body use="literal"/>
 			</wsdl:output>
 			<wsdl:fault name="daoServiceException">

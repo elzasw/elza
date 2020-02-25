@@ -20,7 +20,7 @@ import indexById from "../../shared/utils/indexById";
 import "./LecturingTop.less";
 import * as perms from "../../actions/user/Permission";
 
-const basicOptionMap = (i) => <option key={i.id} value={i.id}>{i.name}</option>;
+const basicOptionMap = (i) => <option key={i.id} value={i.id}>{i.name==""?i18n("issueList.missing.name"):i.name}</option>;
 
 /**
  * Horní část lektoringu, zajištující seznam protokolů, seznam připomínek a nastavení
@@ -134,42 +134,47 @@ class LecturingTop extends React.Component {
         const activeIndex = issueId !== null ? indexById(issueList.rows, issueId) : null;
 
         const hasAdmin = userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL);
+        const issueProtocol = objectById(issueProtocols.rows, issueListId);
 
         const canWrite = !!issueListId && (
              hasAdmin || (
                 userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
                 userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
                 userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(issueListId) !== -1
-            )
-        );
+               ) 
+             )&&
+            // jen do otevrenych protokolu lze pridavat
+            issueProtocol && issueProtocol.open;
 
         const config = fund.activeVersion.config;
 
         return <div className="lecturing-top">
             <div className="actions-container">
                 <div className="actions">
-                    <DropdownButton disabled={!canWrite} bsStyle="default" id='dropdown-add-comment' noCaret title={<Icon glyph='fa-plus-circle' />}>
+                    {canWrite && <DropdownButton disabled={!canWrite} bsStyle="default" id='dropdown-add-comment' noCaret title={<Icon glyph='fa-plus-circle' />}>
                         <MenuItem eventKey="1" onClick={this.newArr}>{i18n("arr.issues.add.arr")}</MenuItem>
                         <MenuItem eventKey="2" disabled={!this.props.node || !this.props.node.selectedSubNodeId} onClick={this.newNode}>{i18n("arr.issues.add.node")}</MenuItem>
                     </DropdownButton>
+                    }
                     {hasAdmin && <Button bsStyle="action" className="pull-right" onClick={this.settings}><Icon glyph='fa-cogs' /></Button>}
                     <Button bsStyle="action" className="pull-right" disabled={!issueListId} onClick={this.download}><Icon glyph='fa-download' /></Button>
                 </div>
             </div>
-            <FormControl componentClass={"select"} name={"protocol"} onChange={({target: {value}}) => this.selectIssueList(value, fund.id)} value={issueListId}>
+            <FormControl componentClass={"select"} name={"protocol"} onChange={({target: {value}}) => this.selectIssueList(value, fund.id)} 
+                        value={issueListId}>
                 {issueProtocols.fetched && issueProtocols.count === 0 && <option value={null} />}
                 {issueProtocols.fetched && issueProtocols.rows.map(basicOptionMap)}
             </FormControl>
             <Row>
                 <Col xs={12} sm={6}>
                     <FormControl componentClass={"select"} name={"state"} disabled={!issueListId} onChange={({target: {value}}) => this.filter({state:value})} value={issueList.filter.state}>
-                        <option value={""}>{i18n("global.all")}</option>
+                        <option value={""}>{i18n("arr.lecturing.states_all")}</option>
                         {issueStates.fetched && issueStates.data.map(basicOptionMap)}
                     </FormControl>
                 </Col>
                 <Col xs={12} sm={6}>
                     <FormControl componentClass={"select"} name={"type"} disabled={!issueListId} onChange={({target: {value}}) => this.filter({type:value})} value={issueList.filter.type}>
-                        <option value={""}>{i18n("global.all")}</option>
+                        <option value={""}>{i18n("arr.lecturing.severity_all")}</option>
                         {issueTypes.fetched && issueTypes.data.map(basicOptionMap)}
                     </FormControl>
                 </Col>
@@ -181,7 +186,7 @@ class LecturingTop extends React.Component {
                     activeIndex={activeIndex}
                     onChangeSelection={this.selectIssue}
                     items={issueList.rows}
-                    renderItemContent={({item: {description, issueStateId, issueTypeId, number, id, referenceMark}, active} : {item: IssueVO, active: boolean}) => {
+                    renderItemContent={({item: {description, issueStateId, issueTypeId, number, id, referenceMark, levelDeleted}, active} : {item: IssueVO, active: boolean}) => {
                         const state : IssueStateVO = objectById(issueStates.data, issueStateId);
                         const type = objectById(issueTypes.data, issueTypeId);
                         const style = {};
@@ -202,11 +207,13 @@ class LecturingTop extends React.Component {
                                 </div>
                                 <div className="reference-mark">
                                     {referenceMark && referenceMark.join(" ")}
+                                    {levelDeleted && i18n("arr.issues.level.deleted")}
                                 </div>
                             </div>
                             {canWrite && <div className="actions">
                                 <DropdownButton pullRight bsStyle="action" id='issue-type' noCaret title={<Icon glyph='fa-ellipsis-h' />}>
-                                    {issueTypes.data.map(i => <MenuItem key={'issue-type-' + i.id} disabled={i.id === issueTypeId} onClick={this.updateIssueType.bind(this, id, i.id)}>{i18n("arr.issues.type.change", i.name)}</MenuItem>)}
+                                    {issueTypes.data.map(i => <MenuItem key={'issue-type-' + i.id} disabled={i.id === issueTypeId} 
+                                                                        onClick={this.updateIssueType.bind(this, id, i.id)}>{i18n("arr.issues.type.change", i.name)}</MenuItem>)}
                                 </DropdownButton>
                             </div>}
                         </TooltipTrigger>

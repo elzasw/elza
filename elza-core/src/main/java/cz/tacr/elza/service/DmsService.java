@@ -4,12 +4,14 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -17,6 +19,7 @@ import javax.transaction.Transactional;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -91,8 +94,8 @@ public class DmsService {
      * @throws IOException
      */
     public void createFile(final DmsFile dmsFile, final InputStream fileStream) throws IOException {
-        Assert.notNull(dmsFile, "Soubor musí být vyplněn");
-        Assert.notNull(fileStream, "Stream souboru musí být vyplněn");
+        Validate.notNull(dmsFile, "Soubor musí být vyplněn");
+        Validate.notNull(fileStream, "Stream souboru musí být vyplněn");
 
         fileRepository.save(dmsFile);
 
@@ -107,9 +110,36 @@ public class DmsService {
     }
 
     /**
+     * Uloží DMS soubor se streamem a publishne event
+     *
+     * @param dmsFile
+     *            DO
+     * @param fileStream
+     *            stream pro uložení souboru, po použití jej uzavře
+     * @throws IOException
+     */
+    public void createFile(final DmsFile dmsFile, final Consumer<OutputStream> dataProvider) throws IOException {
+        Validate.notNull(dmsFile, "Soubor musí být vyplněn");
+        Validate.notNull(dataProvider, "DataProvider souboru musí být vyplněn");
+
+        fileRepository.save(dmsFile);
+
+        File outputFile = getFilePath(dmsFile).toFile();
+        if (outputFile.exists()) {
+            throw new SystemException("Nelze soubor již existuje: " + outputFile.getPath(),
+                    ArrangementCode.ALREADY_CREATED);
+        }
+        saveFile(dmsFile, dataProvider, outputFile);
+
+        fileRepository.save(dmsFile);
+        publishFileChange(dmsFile);
+    }
+
+    /**
      * Publish eventu
      *
-     * @param dmsFile dms sobor
+     * @param dmsFile
+     *            dms sobor
      */
     private void publishFileChange(final DmsFile dmsFile) {
         Integer notifyId;
@@ -180,25 +210,39 @@ public class DmsService {
     /**
      * Vrátí stream pro stažení souboru
      *
-     * @param dmsFile dms Soubor ke stažení
+     * @param resourcePathResolver
+     *            Resource resolver
+     * @param dmsFile
+     *            dms Soubor ke stažení
      * @return stream
      */
-    public InputStream downloadFile(final DmsFile dmsFile) {
-        Assert.notNull(dmsFile, "Soubor musí být vyplněn");
+    static public InputStream downloadFile(final ResourcePathResolver resourcePathResolver, final DmsFile dmsFile) {
+        Validate.notNull(dmsFile, "Soubor musí být vyplněn");
 
-        File outputFile = getFilePath(dmsFile).toFile();
-        if (!outputFile.exists()) {
-            throw new SystemException("Požadovaný soubor neexistuje");
-        }
-        if (!outputFile.isFile()) {
-            throw new SystemException("Požadovaný soubor není souborem ale složkou");
+        Path dmsFilePath = resourcePathResolver.getDmsDir().resolve(dmsFile.getFileId().toString());
+        //File outputFile = 
+        if (!Files.exists(dmsFilePath)) {
+            throw new SystemException("Požadovaný soubor neexistuje")
+                    .set("fileId", dmsFile.getFileId().toString())
+                    .set("filePath", dmsFilePath.toString());
         }
 
         try {
-            return new BufferedInputStream(new FileInputStream(outputFile));
-        } catch (FileNotFoundException e) {
-            throw new SystemException("Požadovaný soubor nebyl nalezen");
+            return new BufferedInputStream(Files.newInputStream(dmsFilePath));
+        } catch (IOException e) {
+            throw new SystemException("Požadovaný soubor nebyl nalezen", e);
         }
+    }
+
+    /**
+     * Vrátí stream pro stažení souboru
+     *
+     * @param dmsFile
+     *            dms Soubor ke stažení
+     * @return stream
+     */
+    public InputStream downloadFile(final DmsFile dmsFile) {
+        return downloadFile(this.resourcePathResolver, dmsFile);
     }
 
     /**
@@ -264,18 +308,41 @@ public class DmsService {
      */
     private void saveFile(final DmsFile dmsFile, final InputStream fileStream, final File outputFile) throws IOException {
 
+        saveFile(dmsFile, (outputStream) -> {
+            try {
+                IOUtils.copy(fileStream, outputStream);
+            } catch (IOException e) {
+                throw new SystemException("Failed to copy to the output", e);
+            } finally {
+                IOUtils.closeQuietly(fileStream);
+            }
+        }, outputFile);
+    }
+
+    /**
+     * Uložení do souboru
+     *
+     * @param dmsFile
+     *            DO
+     * @param dataProvider
+     *            Funkce, ktera provede ulozeni do vysledneho streamu
+     * @param outputFile
+     *            místo k uložení souboru
+     * @throws IOException
+     */
+    private void saveFile(final DmsFile dmsFile, final Consumer<OutputStream> dataProvider, final File outputFile)
+            throws IOException {
+
         FileUtils.touch(outputFile);
 
         try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile, false))) {
-            IOUtils.copy(fileStream, outputStream);
+            dataProvider.accept(outputStream);
         } catch (IOException e) {
             if (outputFile.exists()) {
                 FileUtils.forceDelete(outputFile);
             }
             throw e;
         }
-
-        IOUtils.closeQuietly(fileStream);
 
         dmsFile.setFileSize((int) outputFile.length());
 

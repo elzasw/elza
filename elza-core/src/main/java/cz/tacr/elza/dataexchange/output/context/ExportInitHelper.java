@@ -2,6 +2,7 @@ package cz.tacr.elza.dataexchange.output.context;
 
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
@@ -22,18 +23,22 @@ public class ExportInitHelper {
 
     private final FundVersionRepository fundVersionRepository;
 
-    public ExportInitHelper(EntityManager em,
-            UserService userService,
-            LevelRepository levelRepository,
-            NodeCacheService nodeCacheService,
-            ApAccessPointRepository apRepository,
-            FundVersionRepository fundVersionRepository) {
+    private final ResourcePathResolver resourcePathResolver;
+
+    public ExportInitHelper(final EntityManager em,
+                            final UserService userService,
+                            final LevelRepository levelRepository,
+                            final NodeCacheService nodeCacheService,
+                            final ApAccessPointRepository apRepository,
+                            final FundVersionRepository fundVersionRepository,
+                            final ResourcePathResolver resourcePathResolver) {
         this.em = em;
         this.userService = userService;
         this.levelRepository = levelRepository;
         this.nodeCacheService = nodeCacheService;
         this.apRepository = apRepository;
         this.fundVersionRepository = fundVersionRepository;
+        this.resourcePathResolver = resourcePathResolver;
     }
 
     public EntityManager getEm() {
@@ -58,5 +63,9 @@ public class ExportInitHelper {
 
     public FundVersionRepository getFundVersionRepository() {
         return fundVersionRepository;
+    }
+
+    public ResourcePathResolver getResourcePathResolver() {
+        return resourcePathResolver;
     }
 }

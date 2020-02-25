@@ -1,5 +1,5 @@
 <structure-types>
-    <structure-type code="ZP2015_PACKET" validValueFromVersion="135" >
+    <structure-type code="ZP2015_PACKET" validValueFromVersion="145" >
         <name>Uložení</name>
     </structure-type>
 </structure-types>

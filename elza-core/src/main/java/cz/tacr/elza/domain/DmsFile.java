@@ -27,6 +27,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class DmsFile {
 
+    public final static String FIELD_FILE_ID = "fileId";
+
     public static final String FIELD_NAME = "name";
 
     public static final String FIELD_FILE_NAME = "fileName";

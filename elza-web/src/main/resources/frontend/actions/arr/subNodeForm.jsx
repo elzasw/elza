@@ -506,9 +506,11 @@ export class ItemFormActions {
                     index,
                 });
 
+                const parentVersionId = subNodeForm.data.parent.version;
+                const parentId = subNodeForm.data.parent.id;
                 const descItem = {...loc.descItem, position: index + 1};
 
-                this._callUpdateDescItem(dispatch, sunNodeForm, versionId, subNodeForm.data.parent.version, descItem)
+                this._callUpdateDescItem(dispatch, subNodeForm, versionId, parentVersionId, parentId, descItem)
                     .then(json => {
                         const newValueLocation = {...valueLocation, descItemIndex: index};
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, newValueLocation, json, 'UPDATE'));

@@ -43,5 +43,5 @@ public interface LockedValueRepository extends JpaRepository<ArrLockedValue, Int
                                                  @Param("unitId") String value);
 
     @Modifying
-    void deleteByFund(ArrFund fund);
+    int deleteByFund(ArrFund fund);
 }

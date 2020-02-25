@@ -1,6 +1,6 @@
 <ap-types>
     <ap-type code="PARTY_GROUP">
-        <name>Korporace</name>
+        <name>korporace</name>
         <hierarchical>false</hierarchical>
         <read-only>true</read-only>
     </ap-type>
@@ -64,7 +64,7 @@
         <read-only>false</read-only>
     </ap-type>
     <ap-type code="PERSON">
-        <name>Osoba, bytost, zvíře</name>
+        <name>osoba / bytost</name>
         <hierarchical>false</hierarchical>
         <read-only>true</read-only>
     </ap-type>
@@ -104,7 +104,7 @@
         <read-only>false</read-only>
     </ap-type>
     <ap-type code="GEO">
-        <name>Geografický objekt</name>
+        <name>geografický objekt</name>
         <hierarchical>false</hierarchical>
         <read-only>true</read-only>
     </ap-type>
@@ -149,7 +149,7 @@
         <read-only>false</read-only>
     </ap-type>
     <ap-type code="EVENT">
-        <name>Událost</name>
+        <name>událost</name>
         <hierarchical>false</hierarchical>
         <read-only>true</read-only>
     </ap-type>
@@ -173,7 +173,7 @@
         <read-only>false</read-only>
     </ap-type>
     <ap-type code="ARTWORK">
-        <name>Dílo, výtvor</name>
+        <name>dílo, výtvor</name>
         <hierarchical>false</hierarchical>
         <read-only>true</read-only>
     </ap-type>
@@ -218,9 +218,14 @@
         <read-only>false</read-only>
     </ap-type>
     <ap-type code="TERM">
-        <name>Pojem</name>
+        <name>obecný pojem</name>
         <hierarchical>false</hierarchical>
         <read-only>true</read-only>
+    </ap-type>
+    <ap-type code="TERM_ABSTRACT" parent-ap-type="TERM">
+        <name>abstraktní entity</name>
+        <hierarchical>false</hierarchical>
+        <read-only>false</read-only>
     </ap-type>
     <ap-type code="TERM_GENERAL" parent-ap-type="TERM">
         <name>nepojmenované objekty a jejich fyzické části</name>
@@ -248,12 +253,7 @@
         <read-only>false</read-only>
     </ap-type>
     <ap-type code="TERM_NOMENC" parent-ap-type="TERM">
-        <name>systematická nomenklatura</name>
-        <hierarchical>false</hierarchical>
-        <read-only>false</read-only>
-    </ap-type>
-    <ap-type code="TERM_ABSTRACT" parent-ap-type="TERM">
-        <name>abstraktní entity</name>
+        <name>binominální nomenklatura</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>

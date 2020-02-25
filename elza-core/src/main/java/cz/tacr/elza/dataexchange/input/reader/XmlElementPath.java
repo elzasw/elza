@@ -49,6 +49,20 @@ public class XmlElementPath {
      */
     public void leaveElement(QName qName) {
         String name = qName.getLocalPart();
+        // check that we are inside correct element
+        int startPos = sb.length() - name.length() - 1;
+        // check separator
+        if (sb.charAt(startPos) != '/') {
+            throw new IllegalStateException("Incorrect path, value: " + sb.toString() + ", expected element: " + name);
+        }
+        for (int i = 0; i < name.length(); i++) {
+            if (sb.charAt(startPos + 1 + i) != name.charAt(i)) {
+                throw new IllegalStateException("Incorrect path, value: " + sb.toString() + ", expected element: "
+                        + name);
+            }
+        }
+
+        // path match -> can be shorten
         sb.setLength(sb.length() - name.length() - 1);
         path = null;
     }

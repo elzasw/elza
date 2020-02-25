@@ -1122,7 +1122,7 @@ public class PartyService {
                                 .set("scopeId", replacementState.getScopeId());
                     }
                 }
-                descriptionItemService.updateDescriptionItem(im, fundVersions.get(i.getFundId()), change, true);
+                descriptionItemService.updateDescriptionItem(im, fundVersions.get(i.getFundId()), change);
             });
         }
 

@@ -130,6 +130,35 @@ export function stateEquals(x, y) {
     return true;
 }
 
+export function stateEqualsRecursive(x, y) {
+    for ( var p in x ) {
+      if ( ! x.hasOwnProperty( p ) ) continue;
+        // other properties were tested using x.constructor === y.constructor
+  
+      if ( ! y.hasOwnProperty( p ) ) {
+          return false;
+      }
+  
+      // if they have the same strict value or identity then they are equal
+      if ( x[ p ] === y[ p ] ) {
+          continue;
+      }
+  
+      // Numbers, Strings, Functions, Booleans must be strictly equal
+      let typeOfX = typeof( x[ p ] );
+      if (  typeOfX!== "object") {
+          return false;
+      }
+      
+      if (  typeOfX=== "object") {
+          if(!stateEqualsRecursive(x[p],y[p])) {
+              return false;
+          }
+      }
+    }
+      return true;
+  }
+
 export function objectEquals( x, y ) {
   if ( x === y ) return true;
     // if both x and y are null or undefined and exactly the same

@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 import org.apache.commons.lang3.Validate;
@@ -87,7 +88,9 @@ public class XmlElementReader {
 		XmlElementPath path = eventReader.getPath();
 		// create new path for next element
 		XmlElementPath nextPath = path.copy();
-		nextPath.enterElement(peekEvent.asStartElement().getName());
+
+        StartElement startElement = peekEvent.asStartElement();
+        nextPath.enterElement(startElement.getName());
 
 		// try to get handler
 		XmlElementHandler handler = elementHandlerMap.get(nextPath.toString());
@@ -96,7 +99,7 @@ public class XmlElementReader {
 			// activate and process
 			eventReader.activateElementHandler(handler, nextPath);
 			try {
-				handler.handleStartElement(eventReader);
+                handler.handleStartElement(eventReader, startElement);
 			} catch (Throwable t) {
 				int lineNumber = peekEvent.getLocation().getLineNumber();
 				throw new DEImportException("Reading of XML element failed, path:" + path + ", line:" + lineNumber, t);

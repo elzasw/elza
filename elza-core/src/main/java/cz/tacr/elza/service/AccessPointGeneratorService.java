@@ -197,9 +197,9 @@ public class AccessPointGeneratorService {
     public void processAsyncGenerate(final Integer accessPointId, final Integer changeId) {
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
         ApState apState = accessPointService.getState(accessPoint);
-        ApChange apChange = changeId != null
-                ? apChangeRepository.findOne(changeId)
-                : apDataService.createChange(ApChange.Type.AP_REVALIDATE);
+        ApChange apChange = /*changeId != null
+                            ? apChangeRepository.findOne(changeId)
+                            :*/ apDataService.createChange(ApChange.Type.AP_REVALIDATE);
         logger.info("Asynchronní zpracování AP={} ApChache={}", accessPointId, apChange.getChangeId());
         generateAndSetResult(apState, apChange);
         logger.info("Asynchronní zpracování AP={} ApChache={} - END - State={}", accessPointId, apChange.getChangeId(), accessPoint.getState());
