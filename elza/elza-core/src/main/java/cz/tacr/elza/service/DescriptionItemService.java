@@ -669,8 +669,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         changeContext.addRemovedItem(descItem);
 
-        arrangementCacheService.deleteDescItem(descItem.getNodeId(),
-                                               descItem.getDescItemObjectId(), changeContext);
         return retDescItem;
     }
 
