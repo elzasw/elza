@@ -19,16 +19,6 @@
         <filter-class>org.dspace.utils.servlet.DSpaceWebappServletFilter</filter-class>
     </filter>
 
-    <filter>
-        <filter-name>DaoRedirectFilter</filter-name>
-        <filter-class>cz.tacr.elza.filter.DaoRedirectFilter</filter-class>
-    </filter>
-
-    <filter-mapping>
-        <filter-name>DaoRedirectFilter</filter-name>
-        <url-pattern>/dao/*</url-pattern>
-    </filter-mapping>
-
     <filter-mapping>
         <filter-name>dspace.request</filter-name>
         <url-pattern>/*</url-pattern>

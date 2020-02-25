@@ -1,6 +1,7 @@
-Struktura souborů a vzorová konfigurace serveru
------------------------------------------------
-storage_file_structure.md
+Volání příkazů serveru - vzor
+-----------------------------
+Odeslání připraveného balíčku ze serveru do Elzy:
+curl -v -X POST http://localhost:8085/repo/request/digi/1544537470675/confirm/package01 -o log.html
 
 Nastavení v Elza - vzorové nastavení odpovídající vzorovému nastavení dao testovacímu serveru
 ---------------------------------------------------------------------------------------------
@@ -29,10 +30,18 @@ Kód ELZA: uloziste-local
 Nastavení pro dao
 -----------------
 
-1) adresa na externí systém:
-	formát:		YAML, Map<String,String>
+Struktura souborů a vzorová konfigurace serveru
+-----------------------------------------------
+storage_file_structure.md
+
+1) externí systém (adresa, uživatel, heslo):
+	formát:		YAML, Map<String,Object>
 	umístění:	${basePath}/${repositoryIdentifier}/external-systems-config.yaml
-	pozn.:		jeden záznam vyjadřuje "systemIdentifier: http://domain/services/"
+	pozn.:		jeden záznam vyjadřuje
+       systemIdentifier: 
+         address: http://domain/services/
+         user: xx
+         password: pass
 
 2) konfigurace package:
 	formát:		YAML, cz.tacr.elza.dao.bo.resource.DaoPackageConfig

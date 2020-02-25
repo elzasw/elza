@@ -45,6 +45,12 @@ public class WfIssueVO {
     private String[] referenceMark;
 
     /**
+     * Příznak, zda byla odkazovaná úroveň vymazána/zneplatněna
+     */
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    private Boolean levelDeleted = false;
+
+    /**
      * Indentifikátor druhu připomínky - při zakládání povinné
      */
     @NotNull
@@ -115,6 +121,14 @@ public class WfIssueVO {
 
     public Integer getIssueTypeId() {
         return issueTypeId;
+    }
+
+    public Boolean getLevelDeleted() {
+        return levelDeleted;
+    }
+
+    public void setLevelDeleted(Boolean levelDeleted) {
+        this.levelDeleted = levelDeleted;
     }
 
     public void setIssueTypeId(Integer issueTypeId) {

@@ -59,6 +59,15 @@ class IssueLists extends AbstractReactComponent {
         this.setState({id: null, initialValues: IssueListForm.initialValues});
     };
 
+    renderListItem = (props) => {
+        const {item} = props;
+        let name = item.name;
+        if(name===null || name==="") {
+            name = i18n("issueList.missing.name");
+        }
+        return (<div>{name}</div>)
+    };
+
     render() {
         const {onClose, issueProtocols, fundId} = this.props;
         const {id, initialValues} = this.state;
@@ -73,7 +82,10 @@ class IssueLists extends AbstractReactComponent {
                                 <option value={true}>{i18n("issueList.open.true")}</option>
                                 <option value={false}>{i18n("issueList.open.false")}</option>
                             </FormInput>
-                            <ListBox className="flex-1" items={issueProtocols.rows} activeIndex={activeIndex} onChangeSelection={this.select} />
+                            <ListBox className="flex-1" 
+                                      items={issueProtocols.rows} activeIndex={activeIndex} onChangeSelection={this.select} 
+                                      renderItemContent={this.renderListItem}
+                                      />
                             <div>
                                 <Button bsStyle={"action"} onClick={this.create}>
                                     <Icon glyph="fa-plus" />
@@ -81,7 +93,8 @@ class IssueLists extends AbstractReactComponent {
                             </div>
                         </Col>
                         <Col xs={6} sm={9}>
-                            {isLoading ? <Loading/> : <IssueListForm id={id} fundId={fundId} onCreate={this.onCreate} onSave={this.onSave} initialValues={initialValues} />}
+                            {isLoading ? <Loading/> : <IssueListForm id={id} fundId={fundId} 
+                                                                   onCreate={this.onCreate} onSave={this.onSave} initialValues={initialValues} />}
                         </Col>
                     </Row>
                 </Modal.Body>

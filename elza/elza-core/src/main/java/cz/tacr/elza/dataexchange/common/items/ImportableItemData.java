@@ -14,7 +14,7 @@ public class ImportableItemData {
     }
 
     public ImportableItemData(ArrData data) {
-        this(data, data.getFulltextValue());
+        this(data, data != null ? data.getFulltextValue() : null);
     }
 
     public ArrData getData() {

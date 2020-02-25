@@ -1,6 +1,7 @@
 package cz.tacr.elza.dataexchange.input.reader.handlers;
 
 import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.events.StartElement;
 
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.context.ImportPhase;
@@ -19,7 +20,7 @@ public class StructTypesHandler extends ContextAwareElementHandler implements Xm
     }
 
     @Override
-    protected void handleStart(XMLEventReader eventReader) {
+    protected void handleStart(XMLEventReader eventReader, StartElement startElement) {
     }
 
     @Override

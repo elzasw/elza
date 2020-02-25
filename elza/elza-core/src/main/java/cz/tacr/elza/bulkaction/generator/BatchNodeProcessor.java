@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import cz.tacr.elza.bulkaction.generator.multiple.Action;
+import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 
@@ -22,22 +22,24 @@ public class BatchNodeProcessor {
 	/**
 	 * List for pending requests
 	 */
-	final List<ArrLevel> requests;
+    final List<TreeNode> requests;
+
+    final private Map<Integer, TreeNode> treeNodeMap;
 
 	public BatchNodeProcessor(MultipleBulkAction bulkAction,
 			int batchChildNodeSize, List<Action> actions, LevelWithItems parentLevelWithItems,
-			NodeCacheService nodeCacheService) {
+                              NodeCacheService nodeCacheService, Map<Integer, TreeNode> treeNodeMap) {
 		this.bulkAction = bulkAction;
 		this.batchChildNodeSize = batchChildNodeSize;
 		this.actions = actions;
 		this.parentLevelWithItems = parentLevelWithItems;
 		this.nodeCacheService = nodeCacheService;
-		
+        this.treeNodeMap = treeNodeMap;
 		requests = new ArrayList<>(batchChildNodeSize); 
 	}
 
-	public void addItem(ArrLevel childLevel) {
-		requests.add(childLevel);
+    public void addItem(TreeNode childNode) {
+        requests.add(childNode);
 		if(requests.size()>=batchChildNodeSize) {
 			processAll();
 		}
@@ -54,20 +56,20 @@ public class BatchNodeProcessor {
 		
 		// prepare nodeIds for cache request
 		List<Integer> nodeIds = new ArrayList<>(requests.size());
-		for(ArrLevel l: requests) {
-			nodeIds.add(l.getNodeId());
+        for (TreeNode n : requests) {
+            nodeIds.add(n.getId());
 		}
 		// fetch nodes
 		Map<Integer, RestoredNode> nodes = nodeCacheService.getNodes(nodeIds);
 		
 		// process nodes
-		for(ArrLevel l: requests) {
-			RestoredNode restoredNode = nodes.get(l.getNodeId());
+        for (TreeNode n : requests) {
+            RestoredNode restoredNode = nodes.get(n.getId());
 			List<ArrDescItem> items = restoredNode.getDescItems();
 			
-			LevelWithItems childLevelWithItems = new LevelWithItems(l, parentLevelWithItems, items);
+            LevelWithItems childLevelWithItems = new LevelWithItems(n, parentLevelWithItems, items);
 			
-			bulkAction.generate(childLevelWithItems);
+            bulkAction.generate(childLevelWithItems, treeNodeMap);
 		}
 		
 		// clear queue

@@ -39,7 +39,9 @@ var VirtualList = React.createClass({
         const itemsCount = lazyItems ? props.lazyItemsCount : props.items.length
         let itemHeight = currState.itemHeight;
         // early return if nothing to render
-        if (typeof props.container === 'undefined' || itemsCount === 0 || itemHeight <= 0 || !isMounted) return state;
+        if (typeof props.container === 'undefined' || itemsCount === 0 || itemHeight <= 0 || !isMounted) {
+            return state;
+        }
 
         state.height = itemsCount * itemHeight;
 
@@ -193,7 +195,9 @@ var VirtualList = React.createClass({
             content = this.state.items.map(this.props.renderItem);
         }
         return (
-            <this.props.tagName className="virtual-list" ref={(container)=>{this.container = container;}} style={{boxSizing: 'border-box', height: this.state.height, paddingTop: this.state.bufferStart}} >
+            <this.props.tagName className="virtual-list" 
+                                ref={(container)=>{this.container = container;}} 
+                                style={{boxSizing: 'border-box', height: this.state.height, paddingTop: this.state.bufferStart}} >
                 {content}
             </this.props.tagName>
         );

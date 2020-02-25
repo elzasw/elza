@@ -58,6 +58,7 @@ import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -446,27 +447,30 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         Assert.notNull(version, "Verze AS musí být vyplněna");
 
         Integer rootId = version.getRootNode().getNodeId();
+        ArrChange change = version.getLockChange();
+
+        //všechny uzly stromu        
+        return createTreeNodeMap(change, rootId);
+    }
+
+    public Map<Integer, TreeNode> createTreeNodeMap(ArrChange change, Integer rootNodeId) {
 
         //kořen
-        LevelRepositoryCustom.LevelInfo rootInfo = new LevelRepositoryCustom.LevelInfo(rootId, 0, null);
+        LevelRepositoryCustom.LevelInfo rootInfo = new LevelRepositoryCustom.LevelInfo(rootNodeId, 0, null);
 
-        //všechny uzly stromu
-        List<LevelRepositoryCustom.LevelInfo> levelInfos = levelRepository.readTree(version);
-
-
-        //výsledná mapa
-        Map<Integer, TreeNode> allMap = new HashMap<>();
+        List<LevelRepositoryCustom.LevelInfo> levelInfos = levelRepository.readTree(change, rootNodeId);
 
 
         //mapa všech základních dat uzlů
         Map<Integer, LevelRepositoryCustom.LevelInfo> levelInfoMap = ElzaTools
                 .createEntityMap(levelInfos, (i) -> i.getNodeId());
-        levelInfoMap.put(rootId, rootInfo);
+        levelInfoMap.put(rootNodeId, rootInfo);
 
+        //výsledná mapa
+        Map<Integer, TreeNode> allMap = new HashMap<>();
         for (LevelRepositoryCustom.LevelInfo levelInfo : levelInfoMap.values()) {
             createTreeNodeMap(levelInfo, levelInfoMap, allMap);
         }
-
 
         //seřazení dětí všech uzlů podle pozice
         Comparator<TreeNode> comparator = (o1, o2) -> o1.getPosition().compareTo(o2.getPosition());
@@ -474,9 +478,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
             treeNode.getChilds().sort(comparator);
         }
 
-        initReferenceMarksAndDepth(allMap.get(rootId));
-
-
+        initReferenceMarksAndDepth(allMap.get(rootNodeId));
         return allMap;
     }
 

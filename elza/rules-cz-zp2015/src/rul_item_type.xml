@@ -337,6 +337,12 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
+        <item-aptypes>
+            <item-aptype register-type="ARTWORK_ARTWORK"/>
+            <item-aptype register-type="ARTWORK_CHARTER"/>
+            <item-aptype register-type="ARTWORK_AWARD"/>
+            <item-aptype register-type="ARTWORK_CONSTR"/>
+        </item-aptypes>        
     </item-type>
     <item-type code="ZP2015_STORAGE_COND" data-type="TEXT">
         <name>Způsob a forma dochování</name>
@@ -567,9 +573,9 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_RELEASE_DATE_PLACE" data-type="STRING">
-        <name>Datum a místo vydání</name>
-        <shortcut>Datum a místo vydání</shortcut>
-        <description>Datum a místo vydání uvedené na titulní straně archivní pomůcky</description>
+        <name>Místo a datum vydání</name>
+        <shortcut>Místo a datum vydání</shortcut>
+        <description>Místo a datum vydání uvedené na titulní straně archivní pomůcky</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>

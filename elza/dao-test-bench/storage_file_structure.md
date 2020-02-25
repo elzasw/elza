@@ -17,7 +17,10 @@ Vzorová konfigurace serveru
 Uveden je vždy název souboru, včetně cesty a jeho vzorový obsah.
 
 ./storage/repo/external-systems-config.yaml
-digilinka-local: http://localhost:8080/services/
+digilinka-local:
+  address: http://localhost:8080/services/
+  user: uzivatel_z_elzy
+  password: heslo_uzivatele_z_elzy
 
 ./storage/repo/digi-requests/1544537470675.xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
