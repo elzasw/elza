@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh "cd elza && $MAVEN_HOME/bin/mvn -Prelease,skiptest clean install"
+                sh "cd elza && $MAVEN_HOME/bin/mvn -U -Prelease,skiptest clean install"
             }
         }
         stage('Test') {
