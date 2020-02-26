@@ -466,6 +466,10 @@ public class ItemTypeUpdater {
                 .getLocale());
         mfp.appendFormat(locFormatter4);
 
+        // z důvodu kompatibility v JAVA 11+, kde je již formát českého datumu opraven (v Locale)
+        DateTimeFormatter locFormatter5 = DateTimeFormatter.ofPattern("d.M.yyyy");
+        mfp.appendFormat(locFormatter5);
+
         // Invalidate node cache by item type
         numDroppedCachedNode += cachedNodeRepository.deleteByItemType(dbItemType);
 
