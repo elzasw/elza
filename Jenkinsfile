@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh "cd elza && mvn -Prelease clean install"
+                sh "cd elza && mvn -U -Prelease clean install"
             }
         }
         stage('Test') {
