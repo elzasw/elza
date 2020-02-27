@@ -102,7 +102,6 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.PackageCode;
-import cz.tacr.elza.interpi.service.InterpiService;
 import cz.tacr.elza.packageimport.RuleUpdateContext.RuleState;
 import cz.tacr.elza.packageimport.xml.APTypeXml;
 import cz.tacr.elza.packageimport.xml.APTypes;
@@ -447,15 +446,12 @@ public class PackageService {
 
     @Autowired
     private SettingsRepository settingsRepository;
-    
+
     @Autowired
     private SettingsService settingsService;
 
     @Autowired
     private CacheService cacheService;
-
-    @Autowired
-    private InterpiService interpiService;
 
     @Autowired
     private StaticDataService staticDataService;
@@ -1220,7 +1216,7 @@ public class PackageService {
             Integer entityId = null;
             if (uiSett.getEntityType() == EntityType.RULE) {
                 Validate.notNull(ruleSet, "Ruleset is null for settings: %1$s",sett);
-                
+
                 entityId = ruleSet.getRuleSetId();
             } else if (uiSett.getEntityType() == EntityType.ITEM_TYPE) {
                 SettingFavoriteItemSpecs specs = (SettingFavoriteItemSpecs) sett;
@@ -1234,7 +1230,7 @@ public class PackageService {
 
                 entityId = itemType.getItemTypeId();
             }
-            
+
             uiSett.setEntityId(entityId);
 
             result.add(uiSett);
@@ -1356,7 +1352,7 @@ public class PackageService {
         relationTypeRoleTypeRepository.delete(parRelationTypeRoleTypesDelete);
 
         if (!parRelationTypeRoleTypesNew.isEmpty() || !parRelationTypeRoleTypesDelete.isEmpty()) {
-            interpiService.deleteInvalidMappings();
+
         }
     }
 
@@ -2990,12 +2986,12 @@ public class PackageService {
             addObjectToZipFile(extensionRules, zos, ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + EXTENSION_RULE_XML);
         }
     }
-    
+
     static class UISettingsExport {
     	final List<UISettings> settings = new ArrayList<>();
-    	
+
     	final Integer rulesetId;
-    	
+
     	public UISettingsExport(final Integer rulesetId)
     	{
     		this.rulesetId = rulesetId;
@@ -3003,7 +2999,7 @@ public class PackageService {
 
 		public void add(UISettings uiSetts) {
 			this.settings.add(uiSetts);
-			
+
 		}
 
 		public List<UISettings> getSettings() {
@@ -3021,26 +3017,26 @@ public class PackageService {
      *
      * @param rulPackage balíček
      * @param zos        stream zip souboru
-     * @throws IOException 
+     * @throws IOException
      */
     private void exportSettings(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
         List<UISettings> uiSettingsCol = settingsRepository.findByRulPackage(rulPackage);
         if (uiSettingsCol.size() == 0) {
             return;
         }
-        
+
         HashMap<Integer, UISettingsExport> settingMap = new HashMap<>();
         // prepare export settings per ruleset
-        for(UISettings uiSettings: uiSettingsCol) 
+        for(UISettings uiSettings: uiSettingsCol)
         {
         	Integer rulesetId = null;
         	if(uiSettings.getEntityType()==EntityType.RULE) {
         		rulesetId = uiSettings.getEntityId();
         	}
         	UISettingsExport expSettings = settingMap.computeIfAbsent(rulesetId, c -> new UISettingsExport(c));
-        	expSettings.add(uiSettings);        	
+        	expSettings.add(uiSettings);
         }
-        
+
         // run export
         for(UISettingsExport c: settingMap.values())
         {
@@ -3048,27 +3044,27 @@ public class PackageService {
         }
     }
 
-    private void exportSettingsForRuleset(UISettingsExport uiSettingsForRuleset, 
-    									 final ZipOutputStream zos) throws IOException 
+    private void exportSettingsForRuleset(UISettingsExport uiSettingsForRuleset,
+    									 final ZipOutputStream zos) throws IOException
     {
     	StaticDataProvider sdp = this.staticDataService.getData();
     	RulRuleSet ruleSet = null;
     	if(uiSettingsForRuleset.getRuleSetId()!=null) {
     		ruleSet = sdp.getRuleSetById(uiSettingsForRuleset.getRuleSetId());
     	}
-    	
+
     	String fileName = ruleSet == null ? SETTING_XML : ZIP_DIR_RULE_SET + "/" + ruleSet.getCode() + "/" + SETTING_XML;
-    	
+
     	Settings settings = new Settings();
     	List<Setting> settingsList = new ArrayList<>();
     	settings.setSettings(settingsList);
-    	
+
     	uiSettingsForRuleset.getSettings().forEach(uiSettings -> {
     		// export single settings
     		Setting setting = settingsService.convertSetting(uiSettings);
     		settingsList.add(setting);
     	});
-    	
+
     	addObjectToZipFile(settings, zos, fileName);
 	}
 

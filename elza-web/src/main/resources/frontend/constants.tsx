@@ -1,6 +1,6 @@
 export const DEFAULT_LIST_SIZE = 200;
 export enum AP_EXT_SYSTEM_TYPE {
-    INTERPI = 'INTERPI'
+  DEFAULT//TODO gotzy: bylo INTERPI = 'INTERPI', nahradit novým typem
 }
 
 

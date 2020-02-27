@@ -62,7 +62,7 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     private Integer partyId;
 
     /**
-     * Externí identifikátory rejstříkového hesla, například interpi.
+     * Externí identifikátory rejstříkového hesla.
      */
     private Collection<ApExternalIdVO> externalIds;
 

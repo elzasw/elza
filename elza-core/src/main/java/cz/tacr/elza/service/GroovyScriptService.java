@@ -1,14 +1,17 @@
 package cz.tacr.elza.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.stream.Collectors;
-
+import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
+import cz.tacr.elza.service.party.ApConvResult;
+import cz.tacr.elza.ws.types.v1.Did;
+import groovy.lang.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.Validate;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -19,23 +22,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
-import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.interpi.service.InterpiFactory;
-import cz.tacr.elza.interpi.service.vo.ExternalRecordVO;
-import cz.tacr.elza.interpi.ws.wo.EntitaTyp;
-import cz.tacr.elza.service.party.ApConvResult;
-import cz.tacr.elza.ws.types.v1.Did;
-import groovy.lang.Binding;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyCodeSource;
-import groovy.lang.GroovyShell;
-import groovy.lang.Script;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Servisní třída pro vykonávání groovy scriptů.
@@ -51,17 +43,13 @@ public class GroovyScriptService {
     // groovy script pro vytvoření DID
     private final GroovyScriptFile createDidScriptFile;
 
-    // groovy script pro import z Interpi
-    private final GroovyScriptFile interpiScriptFile;
-
     private final NodeCacheService nodeCacheService;
 
     @Autowired
     public GroovyScriptService(ResourcePathResolver resourcePathResolver,
                                NodeCacheService nodeCacheService,
                                @Value("classpath:/script/groovy/createRecord.groovy") Resource createRecordScriptSource,
-                               @Value("classpath:/script/groovy/createDid.groovy") Resource createDidScriptSource,
-                               @Value("classpath:/script/groovy/interpiImport.groovy") Resource interpiFile) {
+                               @Value("classpath:/script/groovy/createDid.groovy") Resource createDidScriptSource) {
         this.nodeCacheService = nodeCacheService;
         try {
             Path groovyDir = resourcePathResolver.getGroovyDir(); // TODO: Move initialization to startup service
@@ -69,7 +57,6 @@ public class GroovyScriptService {
 
             this.createRecordScriptFile = GroovyScriptFile.create(createRecordScriptSource, groovyDir);
             this.createDidScriptFile = GroovyScriptFile.create(createDidScriptSource, groovyDir);
-            this.interpiScriptFile = GroovyScriptFile.create(interpiFile, groovyDir);
         } catch (Throwable t) {
             throw new SystemException("Failed to initialize groovy scripts", t);
         }
@@ -123,29 +110,6 @@ public class GroovyScriptService {
             result.add((Did) createDidScriptFile.evaluate(input));
         }
         return result;
-    }
-
-    public List<ExternalRecordVO> convertListToExternalRecordVO(final List<EntitaTyp> searchResults,
-                                                                final boolean generateVariantNames,
-                                                                final InterpiFactory interpiFactory) {
-
-        List<ExternalRecordVO> resultList = new ArrayList<>(searchResults.size());
-        for (EntitaTyp et : searchResults) {
-            ExternalRecordVO result = convertToExternalRecordVO(et, generateVariantNames, interpiFactory);
-            resultList.add(result);
-        }
-        return resultList;
-    }
-
-    public ExternalRecordVO convertToExternalRecordVO(final EntitaTyp entity,
-                                                      final boolean generateVariantNames,
-                                                      final InterpiFactory interpiFactory) {
-        Map<String, Object> input = new HashMap<>();
-        input.put("ENTITY", entity);
-        input.put("FACTORY", interpiFactory);
-        input.put("GENERATE_VARIANT_NAMES", generateVariantNames);
-
-        return (ExternalRecordVO) interpiScriptFile.evaluate(input);
     }
 
     public static class GroovyScriptFile {
