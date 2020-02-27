@@ -8,5 +8,5 @@ package cz.tacr.elza.api;
  */
 public enum ApExternalSystemType {
 
-    INTERPI;
+    INTERPI,DEFAULT //TODO gotzy : DEFAULT je placeholder k INTERPI - to nemazat, když je v DB sys_external_system uložený INTERPI(viz. setType(ApExternalSystem type) entity ApExternalSystem
 }

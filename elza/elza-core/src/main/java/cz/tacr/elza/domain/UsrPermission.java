@@ -613,11 +613,6 @@ public class UsrPermission {
         },
 
         /**
-         * Ukládání mapování typů vztahů a entit mezi INTERPI a ELZA.
-         */
-        INTERPI_MAPPING_WR,
-
-        /**
          * Spravovaná entita - uživatel.
          */
         USER_CONTROL_ENTITITY(PermissionType.USER),

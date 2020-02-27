@@ -83,6 +83,7 @@ public class IndexWorkProcessor implements Runnable {
 
         this.enabled = true;
 
+
         this.manager = new Thread(this, "IndexWorkProcessor");
         this.manager.start();
     }

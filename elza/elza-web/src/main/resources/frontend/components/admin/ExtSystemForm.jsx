@@ -116,8 +116,7 @@ class ExtSystemForm extends AbstractReactComponent {
                 </FormInput>
                 {classJ.value == EXT_SYSTEM_CLASS.ApExternalSystem && <div>
                     <FormInput componentClass="select" label={i18n('admin.extSystem.type')} {...type} disabled={id.value}>
-                        <option key={null}/>
-                        <option value={AP_EXT_SYSTEM_TYPE.INTERPI}>{i18n('admin.extSystem.interpi')}</option>
+
                     </FormInput>
                 </div>}
                 {classJ.value == EXT_SYSTEM_CLASS.ArrDigitalRepository && <div>

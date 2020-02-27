@@ -1350,22 +1350,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/eidTypes');
     }
 
-    findInterpiRecords(criteria) {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/interpi', null, criteria);
-    }
-
-    importRecord(importVO) {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/interpi/import/', null, importVO);
-    }
-
-    importRecordUpdate(recordId, importVO) {
-        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/interpi/import/' + recordId, null, importVO);
-    }
-
-    findInterpiRecordRelations(recordId, relationsVO) {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/interpi/' + recordId + '/relations/', null, relationsVO);
-    }
-
     getAllExtSystem() {
         return AjaxUtils.ajaxGet(WebApiCls.adminUrl + '/externalSystems', null)
     }

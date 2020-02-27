@@ -744,76 +744,6 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /registry/interpi:
-    post:
-      summary: Search record in external system
-      parameters:
-        - name: interpiSearchVO
-          in: body
-          description: search criteria for external system
-          required: true
-          schema:
-            $ref: '#/definitions/InterpiSearchVO'
-      tags:
-        - Registry
-      responses:
-        200:
-          description: Found records
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/ExternalRecordVO'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  /registry/interpi/import:
-    post:
-      summary: Import record from external system
-      parameters:
-        - name: recordImportVO
-          in: body
-          description: import configuration
-          required: true
-          schema:
-            $ref: '#/definitions/RecordImportVO'
-      tags:
-        - Registry
-      responses:
-        200:
-          description: Imported record
-          schema:
-            $ref: '#/definitions/ApRecordVO'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-  /registry/interpi/{interpiRecordId}/relations:
-    post:
-      summary: Find interpi relation mapping for interpi record
-      parameters:
-        - name: interpiRecordId
-          in: path
-          description: interpi record id
-          required: true
-          type: integer
-        - name: relationSearchVO
-          in: body
-          description: search criteria for external system
-          required: true
-          schema:
-            $ref: '#/definitions/RelationSearchVO'
-      tags:
-        - Registry
-      responses:
-        200:
-          description: Found records
-          schema:
-            $ref: '#/definitions/InterpiMappingVO'
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
 definitions:
   ParInstitutionVO:
     type: object
@@ -867,17 +797,7 @@ definitions:
     type: object
   ApRegisterTypeVO:
     type: object
-  InterpiSearchVO:
-    type: object
-  ExternalRecordVO:
-    type: object
-  RelationSearchVO:
-    type: object
-  InterpiMappingVO:
-    type: object
   ApScopeVO:
-    type: object
-  RecordImportVO:
     type: object
   ApExternalSystemVO:
     type: object

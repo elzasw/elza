@@ -49,7 +49,9 @@ public enum DatabaseType {
     /**
      * Initialized during application startup.
      *
-     * @see StartupService#start()
+     * @see StartupService#
+     *
+     * start()
      */
     public static void init(EntityManager entityManager) {
         Session session = entityManager.unwrap(Session.class);

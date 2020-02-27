@@ -30,7 +30,6 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
         perms.FUND_ISSUE_ADMIN_ALL,
         perms.FUND_CREATE,
         perms.USR_PERM,
-        perms.INTERPI_MAPPING_WR,
     ];
 
     static ALL_ID = "ALL_ID";
@@ -69,7 +68,6 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
                 switch (p.permission) {
                     case perms.ADMIN:
                     case perms.USR_PERM:
-                    case perms.INTERPI_MAPPING_WR:
                     case perms.FUND_ADMIN:
                     case perms.FUND_CREATE:
                     case perms.FUND_ISSUE_ADMIN_ALL:
