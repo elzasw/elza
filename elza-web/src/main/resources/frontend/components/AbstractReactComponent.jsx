@@ -5,7 +5,7 @@ import {propsEquals} from './Utils.jsx'
  * Abstraktní předek pro všechny komponenty.
  *
  */
-class AbstractReactComponent extends React.Component {
+class AbstractReactComponent<P, S> extends React.Component<P, S> {
 
     /**
      * Nepoužívat -> používat this.props.dispatch

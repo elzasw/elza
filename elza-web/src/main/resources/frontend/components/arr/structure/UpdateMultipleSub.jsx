@@ -48,7 +48,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
 
     componentWillMount() {
         const {fundVersionId, id} = this.props;
-        this.props.dispatch(structureNodeFormSelectId(fundVersionId, id));
+        this.props.dispatch(structureNodeFormSelectId(id));
         this.props.dispatch(structureNodeFormFetchIfNeeded(fundVersionId, id));
     }
 
@@ -480,15 +480,15 @@ class UpdateMultipleSub extends AbstractReactComponent {
     }
 }
 
-function mapStateToProps(state) {
-    const {arrRegion, focus, refTables, userDetail} = state;
+function mapStateToProps(state, props) {
+    const {arrRegion, focus, refTables, userDetail,structures} = state;
     let fund = null;
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];
     }
 
     return {
-        subNodeForm: fund ? fund.structureNodeForm.subNodeForm : null,
+        subNodeForm: structures.stores.hasOwnProperty(props.selectedSubNodeId) ? structures.stores[props.selectedSubNodeId].subNodeForm : null,
         userDetail,
         fund,
         focus,
