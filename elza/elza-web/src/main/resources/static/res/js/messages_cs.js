@@ -889,6 +889,10 @@ var messages = {
     "subNodeForm.descItem.jsonTable.action.download": "Stáhnout data",
     "subNodeForm.descItem.jsonTable.action.upload": "Nahrát data",
 
+
+    "subNodeForm.descItem.link.uri": "URI",
+    "subNodeForm.descItem.link.description": "Popisek",
+
     "subNodeForm.section.jp" : "Záznam:",
     "subNodeForm.section.item" : "Prvek popisu",
     "subNodeForm.section.createTemplate" : "Vytvořit šablonu",

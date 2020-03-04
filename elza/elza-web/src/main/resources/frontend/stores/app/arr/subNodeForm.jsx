@@ -22,8 +22,8 @@ const DIRTY = "dirty"; // zneplatněná data
  * Pouziva se pro porovnani pri shouldComponentUpdate
  * Umoznuje ignorovat nepodstatne zmeny
  */
-export const SUB_NODE_FORM_CMP = buildIgnoreMap(endWith(FORM_KEY), endWith(UID), 
-                                        // jen zmena verze rodice bez dalsich zmen                                        
+export const SUB_NODE_FORM_CMP = buildIgnoreMap(endWith(FORM_KEY), endWith(UID),
+                                        // jen zmena verze rodice bez dalsich zmen
                                         //".data.parent.version",
                                         // jen zmena ID - neni podstatna pro ui
                                         //"|id",
@@ -84,6 +84,11 @@ export function validate(descItem, refType, valueServerError) {
 
     // Hodnota
     switch (refType.dataType.code) {
+        case 'URI_REF':
+            if (!descItem.value) {
+                error.value = i18n('subNodeForm.validate.value.notEmpty');
+            }
+            break;
         case 'PARTY_REF':
         case 'RECORD_REF':
             if (!descItem.value || typeof descItem.value !== 'number') {
@@ -166,6 +171,13 @@ export function validate(descItem, refType, valueServerError) {
 export function convertValue(value, descItem, type) {
     //  Data type to value conversion functions map
     const dataTypeMap = {
+        URI_REF: (value, descItem) => {
+            return {
+                touched: descItem.value !== value.value || descItem.description !== value.description,
+                value: value.value,
+                description: value.description
+            }
+        },
         PARTY_REF: (value)=>{
             return {
                 value: value.id,
@@ -479,6 +491,9 @@ export default function subNodeForm(state = initialState, action = {}) {
                     if (action.descItemResult.item && action.descItemResult.item.calendarTypeId) {
                         loc.descItem.prevCalendarTypeId = action.descItemResult.item.calendarTypeId;
                     }
+                    if (action.descItemResult.item && action.descItemResult.item.description) {
+                        loc.descItem.prevDescription = action.descItemResult.item.description;
+                    }
                     loc.descItem.touched = false;
                     break;
                 case 'CREATE':
@@ -493,6 +508,9 @@ export default function subNodeForm(state = initialState, action = {}) {
                     }
                     if (action.descItemResult.item.calendarTypeId) {
                         loc.descItem.prevCalendarTypeId = action.descItemResult.item.calendarTypeId;
+                    }
+                    if (action.descItemResult.item.description) {
+                        loc.descItem.prevDescription = action.descItemResult.item.description;
                     }
                     loc.descItem.touched = false;
                     // Aktualizace position - pokud by create byl na první hodnotě a za ní již nějaké uživatel uložil, musí se vše aktualizovat

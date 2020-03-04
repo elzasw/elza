@@ -37,6 +37,7 @@ export class ItemFactory implements ItemFactoryInterface {
         [DataTypeCode.COORDINATES]: DescItemCoordinates,
         [DataTypeCode.DATE]: DescItemDate,
         [DataTypeCode.APFRAG_REF]: ItemFragmentRef,
+        [DataTypeCode.URI_REF]: ItemFragmentRef,
     };
 
     static createItem(type: DataTypeCode, props) {
