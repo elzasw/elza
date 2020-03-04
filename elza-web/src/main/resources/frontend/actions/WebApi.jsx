@@ -113,6 +113,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/getVersions', null, { ids: versionIds });
     }
 
+    getNode(fundVersionId, nodeId) {
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/nodeInfo/' + fundVersionId + '/' + nodeId);
+    }
+
     getNodes(versionId, nodeIds) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/nodes', null, { versionId: versionId, ids: nodeIds });
     }

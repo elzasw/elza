@@ -28,20 +28,10 @@ import { Button } from "react-bootstrap";
 import StructureSubNodeForm from "../structure/StructureSubNodeForm";
 import Loading from "../../shared/loading/Loading";
 import {structureNodeFormFetchIfNeeded, structureNodeFormSelectId} from "../../../actions/arr/structureNodeForm";
+import type {IDescItemBaseProps} from "./DescItemTypes";
 
 
-export type ComponentProps = {
-    hasSpecification: boolean,
-    descItem: IDescItemStructure,
-    locked: boolean,
-    readMode: boolean,
-    cal: number,
-    typePrefix: string,
-    readOnly: boolean,
-    versionId: number,
-    fundId: number,
-    repeatable: boolean,
-    singleDescItemTypeEdit: boolean,
+export type ComponentProps = IDescItemBaseProps & {
     structureTypeCode: string,
     structureTypeName: string,
     anonymous: boolean,
@@ -53,39 +43,6 @@ export type ConnectedProps = {
 }
 
 export type Props = ComponentProps & ConnectedProps & DispatchProp;
-
-export type ArrStructureObjectState = "TEMP" | "OK" | "ERROR";
-
-export type IDescItemStructure = IDescItem & {
-    structureData: {
-        id: number,
-        value: string,
-        complement: string,
-        state: ArrStructureObjectState,
-        assignable: boolean,
-        errorDescription: string,
-        typeCode: string
-    }
-};
-
-export type IDescItem = {
-    "@class": string,
-    prevValue: null,
-    hasFocus: boolean,
-    touched: boolean,
-    visited: boolean,
-    saving: boolean,
-    value: null,
-    error: IError,
-    addedByUser: boolean,
-    formKey: string,
-    position: number,
-    undefined: boolean
-};
-export type IError = {
-    value: string,
-    hasError: boolean
-};
 
 type ComponentState = {
     data: any[],
