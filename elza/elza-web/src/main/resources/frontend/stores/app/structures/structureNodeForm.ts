@@ -66,6 +66,7 @@ export default function structureNodeForm(state: State = initialState, action: S
                 fetched: false,
                 currentDataKey: action.id
             };
+        case types.STRUCTURE_NODE_FORM_SET_DATA:
         case types.STRUCTURE_NODE_FORM_RECEIVE:
             return {
                 ...state,

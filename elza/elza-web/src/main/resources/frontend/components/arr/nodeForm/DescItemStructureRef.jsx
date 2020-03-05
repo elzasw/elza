@@ -27,7 +27,11 @@ import {
 import { Button } from "react-bootstrap";
 import StructureSubNodeForm from "../structure/StructureSubNodeForm";
 import Loading from "../../shared/loading/Loading";
-import {structureNodeFormFetchIfNeeded, structureNodeFormSelectId} from "../../../actions/arr/structureNodeForm";
+import {
+    structureNodeFormFetchIfNeeded,
+    structureNodeFormSelectId,
+    structureNodeFormSetData,
+} from '../../../actions/arr/structureNodeForm';
 import type {IDescItemBaseProps} from "./DescItemTypes";
 
 
@@ -35,11 +39,13 @@ export type ComponentProps = IDescItemBaseProps & {
     structureTypeCode: string,
     structureTypeName: string,
     anonymous: boolean,
-    descItemFactory: Function
+    descItemFactory: Function,
+    structureId: number
 };
 
 export type ConnectedProps = {
-    structureNodeForm: any;
+    structureNodeForm: any,
+    changeStrucutreId: (id: number) => void,
 }
 
 export type Props = ComponentProps & ConnectedProps & DispatchProp;
@@ -49,12 +55,9 @@ type ComponentState = {
     active: boolean
 };
 
-class DescItemStructureRef extends AbstractReactComponent<
-    Props,
-    ComponentState
-    > {
+class DescItemStructureRef extends AbstractReactComponent<Props, ComponentState> {
     static propTypes = {
-        fundVersionId: PropTypes.number.isRequired,
+        versionId: PropTypes.number.isRequired,
         structureTypeCode: PropTypes.string.isRequired,
         anonymous: PropTypes.bool
     };
@@ -95,18 +98,59 @@ class DescItemStructureRef extends AbstractReactComponent<
                     structureTypeCode,
                     this.findValue()
                 ).then(structureData => {
+                    props.changeStrucutreId(structureData.id);
                     props.dispatch(structureNodeFormSelectId(structureData.id));
-                    props.onChange(structureData);
-                    props.onBlur();
                 });
             }
         }
     }
 
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.descItem.value && nextProps.anonymous && nextProps.structureNodeForm) {
-            nextProps.dispatch(structureNodeFormFetchIfNeeded(nextProps.versionId, nextProps.descItem.value));
+    componentWillReceiveProps(nextProps: Props, nextContext) {
+        if ((nextProps.descItem.value || nextProps.structureId) && nextProps.anonymous && nextProps.structureNodeForm) {
+            const {versionId, structureNodeForm: {id, state, subNodeForm}} = nextProps;
+            if (state === 'TEMP' &&
+                subNodeForm.formData
+                && subNodeForm.formData.descItemGroups
+                && subNodeForm.formData.descItemGroups
+                    .filter(i =>
+                        i.descItemTypes && i.descItemTypes
+                            .filter(n =>
+                                n.descItems && n.descItems
+                                    .filter(q => q.id).length > 0
+                            ).length > 0
+                    ).length > 0
+            ) {
+                nextProps.dispatch(structureNodeFormSetData(id, {state: 'TEMP->OK'}));
+                WebApi.confirmStructureData(versionId, id).then((data) => {
+                    nextProps.onChange(data);
+                    nextProps.onBlur();
+                    nextProps.dispatch(structureNodeFormSetData(id, data));
+                })
+            }
+
+            nextProps.dispatch(structureNodeFormFetchIfNeeded(nextProps.versionId, nextProps.structureId));
+        }
+    }
+
+    componentWillUnmount(): void {
+        const {anonymous, versionId, structureNodeForm: {id, state, subNodeForm}} = this.props;
+        if (anonymous &&
+            state === 'TEMP' &&
+            subNodeForm.formData
+            && subNodeForm.formData.descItemGroups
+            && subNodeForm.formData.descItemGroups
+                .filter(i =>
+                    i.descItemTypes && i.descItemTypes
+                        .filter(n =>
+                            n.descItems && n.descItems
+                                .filter(q => q.id).length === 0
+                        ).length === 0
+                ).length === 0
+        ) {
+            WebApi.deleteStructureData(versionId, id);
+        } else {
+            //this.props.onChange
         }
     }
 
@@ -304,10 +348,10 @@ class DescItemStructureRef extends AbstractReactComponent<
     }
 }
 
-export default connect(
+const ConnectComponent = connect(
     (state, props: ComponentProps) => {
         const { structures } = state;
-        const key = props.descItem.value;
+        const key = props.structureId;
 
         return {
             structureNodeForm: key && structures.stores.hasOwnProperty(key) ? structures.stores[key] : null
@@ -317,3 +361,28 @@ export default connect(
     null,
     { withRef: true }
 )(DescItemStructureRef);
+
+class ParentKeyHolder extends React.Component {
+    state = {
+        key: null
+    };
+
+    focus = () => {
+        this.refs.component.wrappedInstance.focus();
+    };
+
+    blur = () => {
+        this.refs.component.wrappedInstance.blur();
+    };
+
+    render() {
+        return <ConnectComponent
+            ref={"component"}
+            {...this.props}
+            structureId={this.props.descItem && this.props.descItem.value ? this.props.descItem.value : this.state.key}
+            changeStrucutreId={(key) => this.setState({key})}
+        />
+    }
+}
+
+export default connect(null, null, null, { withRef: true })(ParentKeyHolder);

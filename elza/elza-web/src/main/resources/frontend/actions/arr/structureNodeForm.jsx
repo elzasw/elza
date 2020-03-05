@@ -8,6 +8,7 @@ export function isStructureNodeForm(action) {
         case types.CHANGE_STRUCTURE:
         case types.STRUCTURE_NODE_FORM_REQUEST:
         case types.STRUCTURE_NODE_FORM_RECEIVE:
+        case types.STRUCTURE_NODE_FORM_SET_DATA:
         case types.STRUCTURE_NODE_FORM_SELECT_ID:
             return true;
         default:
@@ -31,6 +32,13 @@ function structureNodeFormRequest(id) {
 function structureNodeFormReceive(id, data) {
     return {
         type: types.STRUCTURE_NODE_FORM_RECEIVE,
+        id,
+        data
+    }
+}
+export function structureNodeFormSetData(id, data) {
+    return {
+        type: types.STRUCTURE_NODE_FORM_SET_DATA,
         id,
         data
     }
