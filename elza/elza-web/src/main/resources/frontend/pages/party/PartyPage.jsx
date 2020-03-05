@@ -28,6 +28,7 @@ import ApStateHistoryForm from "../../components/registry/ApStateHistoryForm";
 import ApStateChangeForm from "../../components/registry/ApStateChangeForm";
 import {WebApi} from "../../actions";
 import {partyDetailInvalidate} from "../../actions/party/party";
+import * as StateApproval from "../../components/enum/StateApproval";
 
 /**
  * PARTY PAGE
@@ -123,14 +124,18 @@ class PartyPage extends AbstractReactComponent {
     };
 
     handleChangeApState = () => {
-        const {partyDetail:{data:{accessPoint: {id, typeId, scopeId}, partyType}}} = this.props;
+        const {partyDetail:{data:{accessPoint: {id, typeId, scopeId, stateApproval}, partyType}}} = this.props;
         const form = <ApStateChangeForm initialValues={{
             typeId: typeId,
             scopeId: scopeId,
+            state: {
+                id: stateApproval,
+                name: StateApproval.getCaption(stateApproval),
+            },
         }} partyTypeId={partyType.id} onSubmit={(data) => {
             const finalData = {
                 comment: data.comment,
-                state: data.state,
+                state: data.state.id,
                 typeId: data.typeId,
                 scopeId: data.scopeId !== "" ? parseInt(data.scopeId) : null,
             };

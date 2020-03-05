@@ -32,6 +32,8 @@ import ApStateHistoryForm from "../../components/registry/ApStateHistoryForm";
 import ApStateChangeForm from "../../components/registry/ApStateChangeForm";
 import {registryDetailInvalidate} from "../../actions/registry/registry";
 import {WebApi} from "../../actions";
+import * as StateApproval from "../../components/enum/StateApproval";
+import * as scopeDataActions from "../../actions/refTables/scopesData";
 
 /**
  * Stránka rejstříků.
@@ -172,7 +174,9 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleScopeManagement = () => {
-        this.props.dispatch(modalDialogShow(this, i18n("accesspoint.scope.management.title"), <ScopeLists />));
+        this.props.dispatch(modalDialogShow(this, i18n("accesspoint.scope.management.title"), <ScopeLists />, '', () => {
+            this.props.dispatch(scopeDataActions.scopesDirty(-1));
+        }));
     };
 
     handleShowApHistory = () => {
@@ -182,14 +186,18 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleChangeApState = () => {
-        const {registryDetail:{data:{id, partyId, typeId, scopeId}}} = this.props;
+        const {registryDetail:{data:{id, partyId, typeId, scopeId, stateApproval}}} = this.props;
         const form = <ApStateChangeForm initialValues={{
             typeId: partyId === null ? typeId : null,
             scopeId: scopeId,
+            state: {
+                id: stateApproval,
+                name: StateApproval.getCaption(stateApproval),
+            },
         }} hideType={partyId !== null} onSubmit={(data) => {
             const finalData = {
                 comment: data.comment,
-                state: data.state,
+                state: data.state.id,
                 typeId: data.typeId,
                 scopeId: data.scopeId !== "" ? parseInt(data.scopeId) : null,
             };
@@ -209,7 +217,7 @@ class RegistryPage extends AbstractReactComponent {
 
         const altActions = [...parts.altActions];
 
-        if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
+        if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
             altActions.push(
                 <Button key='addRegistry' onClick={this.handleAddRegistry}>
                     <Icon glyph="fa-plus-circle"/>
@@ -290,13 +298,14 @@ class RegistryPage extends AbstractReactComponent {
                 </Button>
             );
 
-            // TODO: oprávnění
-            itemActions.push(
-                <Button key='change-state' onClick={this.handleChangeApState}>
-                    <Icon glyph="fa-pencil"/>
-                    <div><span className="btnText">{i18n('ap.changeState')}</span></div>
-                </Button>
-            );
+            if (userDetail.hasOne(perms.FUND_ADMIN, perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
+                itemActions.push(
+                    <Button key='change-state' onClick={this.handleChangeApState}>
+                        <Icon glyph="fa-pencil"/>
+                        <div><span className="btnText">{i18n('ap.changeState')}</span></div>
+                    </Button>
+                );
+            }
         }
 
 
