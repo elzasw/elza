@@ -134,7 +134,7 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
             "left join arr_item pref_i on pref_i.item_id = pref_si.item_id and pref_i.delete_change_id is null and pref_i.item_type_id = :prefixItemTypeId "
             +
             "left join arr_data_string pref_ds on pref_ds.data_id  = pref_i.data_id " +
-            "where so.fund_id = :fundId "
+            "where so.fund_id = :fundId and so.delete_change_id is null "
             +
             "group by pref_ds.value")
     List<MaximalItemValues> countMaximalItemValues(@Param("fundId") Integer fundId,

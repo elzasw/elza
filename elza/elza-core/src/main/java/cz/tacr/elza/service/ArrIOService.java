@@ -1,5 +1,8 @@
 package cz.tacr.elza.service;
 
+import static cz.tacr.elza.utils.CsvUtils.CSV_EXCEL_ENCODING;
+import static cz.tacr.elza.utils.CsvUtils.CSV_EXCEL_FORMAT;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -74,9 +77,6 @@ import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
-
-import static cz.tacr.elza.utils.CsvUtils.CSV_EXCEL_ENCODING;
-import static cz.tacr.elza.utils.CsvUtils.CSV_EXCEL_FORMAT;
 
 /**
  * Serviska pro import/export dat pro ArrItem.
@@ -524,7 +524,7 @@ public class ArrIOService {
         columNames.add("Číslo JP");
         for (RulItemType rulItemType : orderedItemTypeMap.values()) {
             if (rulItemType != null) {
-                columNames.add(rulItemType.getName());
+                columNames.add(rulItemType.getShortcut());
             }
         }
 

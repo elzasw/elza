@@ -44,7 +44,7 @@ public class SAMLUserDetailsServiceImpl implements SAMLUserDetailsService {
 			throws UsernameNotFoundException {
 		String userID = credential.getNameID().getValue();
 
-		List<UsrAuthentication> authentications = userService.findAuthentication(userID, UsrAuthentication.AuthType.SHIBBOLETH);
+		List<UsrAuthentication> authentications = userService.findAuthentication(userID, UsrAuthentication.AuthType.SAML2);
 
 		if (authentications.size() == 1) {
 			UsrAuthentication authentication = authentications.get(0);

@@ -17,7 +17,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
 
-public class PartyInfoLoader extends AbstractEntityLoader<PartyInfo> {
+public class PartyInfoLoader extends AbstractEntityLoader<PartyInfo, ParParty> {
 
     private final ApStateLoader apStateLoader;
 
@@ -31,7 +31,8 @@ public class PartyInfoLoader extends AbstractEntityLoader<PartyInfo> {
 
     private final StaticDataProvider staticData;
 
-    private PartyInfoLoader(String subEntityQueryIdPath, EntityManager em, int batchSize, StaticDataProvider staticData) {
+    private PartyInfoLoader(String subEntityQueryIdPath, EntityManager em, int batchSize,
+            StaticDataProvider staticData) {
         super(ParParty.class, subEntityQueryIdPath, em, batchSize);
         this.apStateLoader = new ApStateLoader(em, batchSize);
         this.unitdateLoader = new UnitdateLoader(em, batchSize);
@@ -53,16 +54,18 @@ public class PartyInfoLoader extends AbstractEntityLoader<PartyInfo> {
     }
 
     @Override
-    protected void buildExtendedQuery(Root<?> baseEntity, CriteriaBuilder cb) {
+    protected void buildExtendedQuery(Root<? extends ParParty> baseEntity, CriteriaBuilder cb) {
         baseEntity.fetch(ParParty.FIELD_RECORD);
     }
 
     @Override
     protected PartyInfo createResult(Object entity) {
         ParParty party = (ParParty) entity;
+        PartyInfo partyInfo = new PartyInfo(party);
+
         ApAccessPoint ap = party.getAccessPoint();
         Validate.isTrue(HibernateUtils.isInitialized(ap));
-        PartyInfo partyInfo = new PartyInfo(party);
+
         return partyInfo;
     }
 

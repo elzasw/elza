@@ -1,5 +1,6 @@
 package cz.tacr.elza.print;
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -22,6 +23,13 @@ public interface Output {
     String getType();
 
     String getTypeCode();
+
+    /**
+     * Return date/time of the corresponding change
+     * 
+     * @return datetime
+     */
+    OffsetDateTime getChangeDateTime();
 
     /**
      * Getter položky items
