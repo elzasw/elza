@@ -109,7 +109,7 @@
 	</xs:simpleType>
 	<xs:simpleType name="Localtype">
 		<xs:annotation>
-			<xs:documentation>This optional attribute provides a means to narrow the semantics of an element, or provide semantics for elements that are primarily structural or semantically weak. The value of localtype may be from a local or generally used external vocabulary. While the value of localtype may be any string, to facilitate exchange of data, it is recommended that the value be either the URI or the preferred label for a term defined in a formal vocabulary (e.g., SKOS), which is identified by an absolute URI, and is resolvable to a web resource that describes the semantic scope and use of the value. Local conventions or controlled vocabularies used in localtype may be declared in &lt;localtypedeclaration&gt; within &lt;control&gt;. 
+			<xs:documentation>This optional attribute provides a means to narrow the semantics of an element, or provide semantics for elements that are primarily structural or semantically weak. The value of localtype may be from a local or generally used external vocabulary. While the value of localtype may be any string, to facilitate exchange of data, it is recommended that the value be either the URI or the preferred label for a term defined in a formal vocabulary (e.g., SKOS), which is identified by an absolute URI, and is resolvable to a web resource that describes the semantic scope and use of the value. Local conventions or controlled vocabularies used in localtype may be declared in &lt;localtypedeclaration&gt; within &lt;control&gt;.
 
 Source: EAD3</xs:documentation>
 		</xs:annotation>
@@ -214,7 +214,7 @@ Source: EAD3</xs:documentation>
 	</xs:complexType>
 	<xs:complexType name="Dao">
 		<xs:annotation>
-			<xs:documentation>Child element of &lt;did&gt; used for linking to born digital records or a digital representation of the materials being described. 
+			<xs:documentation>Child element of &lt;did&gt; used for linking to born digital records or a digital representation of the materials being described.
 
 Digital archival object might contain link to several files in repository. Digital representations may include graphic images, audio or video clips, images of text pages, and electronic transcriptions of text.
 
@@ -388,7 +388,7 @@ At a minimum, destruction may be no more complicated than placing materials in t
 	</xs:complexType>
 	<xs:complexType name="Did">
 		<xs:annotation>
-			<xs:documentation>Descriptive Identification, a wrapper element that encloses information essential for identifying the material being described. 
+			<xs:documentation>Descriptive Identification, a wrapper element that encloses information essential for identifying the material being described.
 Source: EAD3</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
@@ -462,6 +462,7 @@ Source: EAD3</xs:documentation>
 		</xs:attribute>
 		<xs:attributeGroup ref="eat:MixCoreGroup"/>
 		<xs:attributeGroup ref="eat:VideoMDGroup"/>
+		<xs:attribute name="fileName" type="xs:string"/>
 	</xs:complexType>
 	<xs:complexType name="FileGroup">
 		<xs:annotation>

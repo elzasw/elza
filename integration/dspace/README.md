@@ -84,7 +84,7 @@ Vyplnit parametry v **_elza.cfg_**
 - Vytvoření externího systému
 - V ELZA se nastavuje v Administrace -> Externí systémy -> Přidat systém
   - položka **_Třída_** - vybrat hodnotu **_Uložiště digitalizátů_** 
-  - položka **_DaoURL_** - zadat hodnotu **_http(s)://server:port/xmlui/handle/{label}_**
+  - položka **_DaoURL_** - zadat hodnotu **_http(s)://server:port/xmlui/handle/{code}_**
   - položka **_FileURL_** - zadat hodnotu **_http(s)://server:port/xmlui/handle/{code}_**
   - položka **_ThumbnailURL_** - zadat hodnotu **_http(s)://server:port/xmlui/handle/{code}_**
   - položka **_Zasílání upozornění_** - vybrat hodnotu **_Ano_**
