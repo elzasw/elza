@@ -199,7 +199,7 @@ public class DaoSyncService {
         request.setFundIdentifier(fundVersion.getRootNode().getUuid());
         request.setUsername(getUsername());
 
-        request.getDaoSyncRequest().addAll(list);
+        request.getDaoSyncRequests().addAll(list);
 
         return request;
     }
@@ -217,8 +217,8 @@ public class DaoSyncService {
      * @param daosSyncResponse response z WS {@code syncDaos}
      */
     public void processDaosSyncResponse(DaosSyncResponse daosSyncResponse) {
-        deleteDaos(daosSyncResponse.getNonexistingDaos());
-        updateDaos(daosSyncResponse.getDaoset());
+        deleteDaos(daosSyncResponse.getNonExistDaos());
+        updateDaos(daosSyncResponse.getDaos());
     }
 
     private void deleteDaos(NonexistingDaos nonexistingDaos) {
@@ -436,7 +436,7 @@ public class DaoSyncService {
         arrDaoFile.setDuration(file.getDuration());
 
         arrDaoFile.setDescription(file.getDescription());
-        arrDaoFile.setFileName(file.getFileName());
+        arrDaoFile.setFileName(file.getName());
     }
 
     private cz.tacr.elza.api.UnitOfMeasure getDimensionUnit(final UnitOfMeasure sourceDimensionUnit) {

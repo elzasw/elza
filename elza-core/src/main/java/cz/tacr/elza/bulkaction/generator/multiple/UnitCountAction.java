@@ -256,7 +256,12 @@ public class UnitCountAction extends Action {
     }
 
     public void addCountedObject(Integer packetId) {
-        Validate.isTrue(!countedObjects.contains(packetId));
+        if (countedObjects.contains(packetId)) {
+
+            throw new BusinessException("Packet was already added", BaseCode.INVALID_STATE)
+                    .set("packetId", packetId)
+                    .set("countedObjects", countedObjects.size());
+        }
         countedObjects.add(packetId);
     }
 }

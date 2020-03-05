@@ -8,7 +8,8 @@ import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.domain.ParPartyGroupIdentifier;
 
-public class PartyGroupIndentifierLoader extends AbstractEntityLoader<ParPartyGroupIdentifier> {
+public class PartyGroupIndentifierLoader extends
+        AbstractEntityLoader<ParPartyGroupIdentifier, ParPartyGroupIdentifier> {
 
     private final UnitdateLoader unitdateLoader;
 

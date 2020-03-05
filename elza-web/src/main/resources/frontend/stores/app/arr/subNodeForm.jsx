@@ -12,6 +12,7 @@ import {
 import {validateCoordinatePoint, validateDouble, validateInt, validateDuration} from 'components/validate.jsx'
 import {DisplayType} from "../../../constants.tsx";
 import {valuesEquals, buildIgnoreMap, endWith, startWith, objectEqualsDiff} from "../../../components/Utils";
+import {cloneDeep} from 'lodash-es'
 
 const FORM_KEY = "formKey"; // klíč verze formuláře
 const UID = "_uid"; // virtuální identifikátor hodnoty atributu (jedná se buď o objectId a nebo virtuální klíč v případě, že ještě hodnota atributu nebyla uložena na serveru)
@@ -474,7 +475,8 @@ export default function subNodeForm(state = initialState, action = {}) {
             if (state.data.parent.id !== node.id) {
                 return state;
             }
-            const newState = {...state};
+            const newState = cloneDeep(state);
+            loc = getLoc(newState, action.valueLocation);
             newState.data.parent = node;
 
             switch (action.operationType) {
@@ -521,8 +523,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                     break;
             }
 
-            newState.formData = {...state.formData};
-            return {...state};
+            return newState;
 
         case types.FUND_SUB_NODE_FORM_TEMPLATE_USE: {
             const groups = action.groups;
