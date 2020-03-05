@@ -10,6 +10,7 @@ import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.*;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUriRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -818,7 +819,6 @@ public class ArrangementController {
         Assert.notNull(descItemTypeId, "Nebyl vyplněn identifikátor typu atributu");
         Assert.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
         Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
-
         ArrDescItem descItem = factoryDO.createDescItem(descItemVO, descItemTypeId);
 
         ArrDescItem descItemCreated = descriptionItemService.createDescriptionItem(descItem, nodeId, nodeVersion,
@@ -1094,6 +1094,13 @@ public class ArrangementController {
             throw new ObjectNotFoundException("AS s ID=" + fundId + " nebyl nalezen", ArrangementCode.FUND_NOT_FOUND).set("id", fundId);
         }
         return factoryVo.createFundVO(fund, true, userService.getLoggedUserDetail());
+    }
+
+    @RequestMapping(value = "/nodeInfo/{fundVersionId}/{nodeId}", method = RequestMethod.GET)
+    @Transactional
+    public ArrNodeExtendVO getNode(@PathVariable(value = "fundVersionId") final Integer fundVersionId, @PathVariable("nodeId") final Integer nodeId) {
+        ArrNodeExtendVO node = levelTreeCacheService.getSimpleNode(fundVersionId, nodeId);
+        return node;
     }
 
     /**
@@ -1511,7 +1518,6 @@ public class ArrangementController {
 		        .getDescriptionItemTypesForNewLevel(nodeVo.getId(), param.getDirection(),
                         param.getVersionId()), withGroups, ruleCode, fundId);
     }
-
 
     /**
      * Načte seznam uzlů podle jejich id.
