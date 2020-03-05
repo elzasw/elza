@@ -92,12 +92,6 @@ class ApStateChangeForm extends AbstractReactComponent {
                             label={i18n('ap.state.title.state')}
                             items={this.getStateWithAll()}
                             {...state}
-                            onChange={item => {
-                                state.onChange(item ? item.id : null);
-                            }}
-                            onBlur={item => {
-                                state.onBlur(item ? item.id : null);
-                            }}
                         />
                         <FormInput disabled={submitting} type="text" label={i18n('ap.state.title.comment')} {...comment} {...decorateFormField(comment)}/>
                     </Modal.Body>
