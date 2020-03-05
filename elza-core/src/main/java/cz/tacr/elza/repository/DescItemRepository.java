@@ -53,10 +53,10 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 	        + " LEFT JOIN FETCH i.data d"
             + " WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL"
             + " ORDER BY i.nodeId, i.itemTypeId, i.itemSpecId, i.position";
-	
+
     /**
      * Read node and connected data
-     * 
+     *
      * Items are ordered by: node, itemType, itemSpec, position
      *
      * @param nodeIds
@@ -236,4 +236,8 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 
     @Modifying
     void deleteByNodeIdIn(List<Integer> nodeIds);
+
+    @Query("SELECT i FROM arr_desc_item i JOIN FETCH i.data JOIN ArrDataUriRef d on i.data = d WHERE d.arrNode = :node AND i.deleteChange IS NULL")
+    List<ArrDescItem> findByUriDataNode(@Param("node") final ArrNode node);
+
 }

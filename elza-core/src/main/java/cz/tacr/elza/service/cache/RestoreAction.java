@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -15,24 +16,6 @@ import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoLink;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataFileRef;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeExtension;
-import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RulArrangementExtension;
-import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -52,7 +35,7 @@ public class RestoreAction {
     final private PartyRepository partyRepository;
 
     /*final private PartyNameComplementRepository partyNameComplementRepository;
-    
+
     final private PartyNameRepository partyNameRepository;*/
 
     final private ApAccessPointRepository accessPointRepository;
@@ -60,6 +43,8 @@ public class RestoreAction {
     final private FundFileRepository fundFileRepository;
 
     final private DaoRepository daoRepository;
+
+    final private DataUriRefRepository dataUriRefRepository;
 
     final private NodeRepository nodeRepository;
 
@@ -74,7 +59,8 @@ public class RestoreAction {
                          final ApAccessPointRepository accessPointRepository,
                          final FundFileRepository fundFileRepository,
                          final DaoRepository daoRepository,
-                         final NodeRepository nodeRepository) {
+                         final NodeRepository nodeRepository,
+                         final DataUriRefRepository dataUriRefRepository) {
         this.sdp = sdp;
         this.em = em;
         this.structureDataRepository = structureDataRepository;
@@ -85,6 +71,7 @@ public class RestoreAction {
         this.fundFileRepository = fundFileRepository;
         this.daoRepository = daoRepository;
         this.nodeRepository = nodeRepository;
+        this.dataUriRefRepository = dataUriRefRepository;
     }
 
     public void restore(Collection<RestoredNode> cachedNodes) {
@@ -97,12 +84,11 @@ public class RestoreAction {
         prepareAPRefs();
         prepareFileRefs();
         preapareDaoLinks();
-
     }
 
     /**
      * Load description item type from rule system provider
-     * 
+     *
      * @param descItem
      */
     private void restoreDescItem(ArrDescItem descItem) {
@@ -201,7 +187,6 @@ public class RestoreAction {
             for (ArrDescItem descItem : restoredNode.getDescItems()) {
                 // set node
                 descItem.setNode(node);
-
                 // set dataType, itemType, itemSpec
                 restoreDescItem(descItem);
 
@@ -281,7 +266,7 @@ public class RestoreAction {
         daoLink.setCreateChange(createChange, daoLink.getCreateChangeId());
 
         Validate.notNull(daoLink.getDaoId());
-        
+
         if (restoreDaoLinks == null) {
             restoreDaoLinks = new HashMap<>();
         }
@@ -361,11 +346,11 @@ public class RestoreAction {
         /*
         Map<Integer, List<ParPartyName>> partyNamesMap = partyNames.stream().collect(Collectors.groupingBy(s -> s
                 .getParty().getPartyId()));
-        
+
         for (ParParty party : partiesMapFound.values()) {
             CollectionUtils.addIgnoreNull(preferredNameIds, party.getPreferredNameId());
         }
-        
+
         iterator = new ObjectListIterator<>(preferredNameIds);
         Map<Integer, List<ParPartyNameComplement>> preferredNameIdComplementsMap = new HashMap<>();
         while (iterator.hasNext()) {
@@ -379,7 +364,7 @@ public class RestoreAction {
                 return new ArrayList<>(set);
             }));
         }
-        
+
         for (ParParty party : partiesMapFound.values()) {
             if (party.getPreferredNameId() != null) {
                 List<ParPartyNameComplement> partyNameComplements = preferredNameIdComplementsMap.get(party
@@ -443,7 +428,7 @@ public class RestoreAction {
     /**
      * Vyplnění návazných entity {@link ArrDao}.
      *
-     * 
+     *
      */
     private void preapareDaoLinks() {
         if (restoreDaoLinks == null) {
@@ -469,5 +454,4 @@ public class RestoreAction {
         Validate.isTrue(restoreDaoLinks.isEmpty());
         restoreDaoLinks = null;
     }
-
 }

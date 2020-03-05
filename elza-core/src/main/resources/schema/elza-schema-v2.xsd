@@ -278,6 +278,21 @@ Item ID</xs:documentation>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
+    <xs:complexType name="DescriptionItemUriRef">
+        <xs:annotation>
+            <xs:documentation>Uri ref link- value</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="e:DescriptionItem">
+                <xs:sequence/>
+                <xs:attribute name="value" use="required" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>ref URI link</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
 	<xs:complexType name="DescriptionItemUndefined">
 		<xs:annotation>
 			<xs:documentation>Value is undefined</xs:documentation>
@@ -495,6 +510,11 @@ Each file has name and its content - binary data.</xs:documentation>
 						<xs:documentation>Party reference</xs:documentation>
 					</xs:annotation>
 				</xs:element>
+                <xs:element name="dn" type="e:DescriptionItemUriRef" minOccurs="1" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Uri ref link</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
 				<xs:element name="dt" type="e:DescriptionItemUnitDate" minOccurs="1" maxOccurs="1">
 					<xs:annotation>
 						<xs:documentation>Description item date</xs:documentation>
@@ -959,6 +979,11 @@ This is ID of the created party</xs:documentation>
 						<xs:documentation>Party reference</xs:documentation>
 					</xs:annotation>
 				</xs:element>
+                <xs:element name="dn" type="e:DescriptionItemUriRef" minOccurs="1" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Uri ref link</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
 				<xs:element name="dt" type="e:DescriptionItemUnitDate" minOccurs="1" maxOccurs="1">
 					<xs:annotation>
 						<xs:documentation>Description item date</xs:documentation>
@@ -1020,7 +1045,7 @@ Allows to represent single time point and also interval</xs:documentation>
 		<xs:sequence/>
 		<xs:attribute name="ct" use="optional" type="xs:string">
 			<xs:annotation>
-				<xs:documentation>Calendar type. If calendar type is not present then Gregorian calendar is used. Typical values are: 
+				<xs:documentation>Calendar type. If calendar type is not present then Gregorian calendar is used. Typical values are:
 G - Gregorian calendar
 J - Julian calendar</xs:documentation>
 			</xs:annotation>

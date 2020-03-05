@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -622,7 +623,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     /**
      * Smaže hodnotu atributu.
      *
-     * 
+     *
      * @param descItem
      *            hodnota atributu
      * @param version
@@ -1168,16 +1169,18 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @return
      */
 	private ArrDescItem updateItemValueAsNewVersion(final ArrFundVersion version, final ArrChange change,
-	        final ArrDescItem descItemDB, RulItemSpec itemSpec,
+	        /*final*/ ArrDescItem descItemDB, RulItemSpec itemSpec,
                                                     ArrData srcData,
                                                     BatchChangeContext batchChangeContext) {
 
 		ArrData dataNew = descItemFactory.saveData(descItemDB.getItemType(), srcData);
 
 		// create new item based on source
+        descItemDB = HibernateUtils.unproxy(descItemDB);
 		ArrDescItem descItemNew = new ArrDescItem(descItemDB);
 		descItemNew.setItemId(null);
 		descItemNew.setCreateChange(change);
+		descItemNew.setItemType(descItemDB.getItemType());
 
 		// mark current item as deleted and save
 		descItemDB.setDeleteChange(change);
@@ -1194,6 +1197,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         itemService.checkValidTypeAndSpec(sdp, result);
 
         // update value in node cache
+
         arrangementCacheService.changeDescItem(result.getNodeId(), result, false,
                                                batchChangeContext);
 
@@ -1235,7 +1239,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     }
 
     /**
-     * 
+     *
      * @param nodeIds
      * @param descItemTypes
      * @param changeId
@@ -1331,6 +1335,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 return ArrDataDecimal.class;
             case "STRUCTURED":
                 return ArrDataStructureRef.class;
+            case "URI_REF":
+                return ArrDataUriRef.class;
             case "ENUM":
                 return ArrDataNull.class;
             default:
