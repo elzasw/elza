@@ -523,9 +523,9 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_UNIT_COUNT_ITEM" data-type="INT">
-        <name>Vypočtené EJ</name>
+        <name>Vypočtené evidenční jednotky</name>
         <shortcut>Vypočtené EJ</shortcut>
-        <description>Počet EJ</description>
+        <description>Vypočtené evidenční jednotky funkcí</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>

@@ -64,10 +64,10 @@ public interface OutputItemRepository extends JpaRepository<ArrOutputItem, Integ
     // @Modifying
     // void deleteByOutput(ArrOutput output);
 
-    @Query("SELECT i FROM arr_output_item i LEFT JOIN FETCH i.data WHERE i.output = :output AND i.deleteChange IS NULL")
+    @Query("SELECT i FROM arr_output_item i LEFT JOIN FETCH i.data WHERE i.output = :output AND i.deleteChange IS NULL ORDER BY i.position")
     List<ArrOutputItem> findByOutputAndDeleteChangeIsNull(@Param("output") ArrOutput output);
 
-    @Query("SELECT i FROM arr_output_item i LEFT JOIN FETCH i.data WHERE i.output = :output AND i.createChange < :change AND (i.deleteChange > :change OR i.deleteChange IS NULL)")
+    @Query("SELECT i FROM arr_output_item i LEFT JOIN FETCH i.data WHERE i.output = :output AND i.createChange < :change AND (i.deleteChange > :change OR i.deleteChange IS NULL) ORDER BY i.position")
     List<ArrOutputItem> findByOutputAndChange(@Param("output") ArrOutput output,
                                               @Param("change") ArrChange change);
 

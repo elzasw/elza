@@ -10,7 +10,7 @@ import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.domain.ArrStructuredObject;
 
-public class StructObjectInfoLoader extends AbstractEntityLoader<StructObjectInfoImpl> {
+public class StructObjectInfoLoader extends AbstractEntityLoader<StructObjectInfoImpl, ArrStructuredObject> {
 
     private final StructItemLoader structItemLoader;
 

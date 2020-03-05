@@ -27,15 +27,15 @@ import cz.tacr.elza.common.db.HibernateUtils;
 /**
  * Abstract implementation for entity batch loader.
  */
-public abstract class AbstractEntityLoader<RES> extends AbstractBatchLoader<Object, RES> {
+public abstract class AbstractEntityLoader<RES, ENT> extends AbstractBatchLoader<Object, RES> {
 
-    private final Class<?> entityClass;
+    private final Class<? extends ENT> entityClass;
 
     private final String entityIdPath;
 
     private final EntityManager em;
 
-    protected AbstractEntityLoader(Class<?> entityClass,
+    protected AbstractEntityLoader(Class<? extends ENT> entityClass,
             String entityIdPath,
             EntityManager em,
             int batchSize) {
@@ -88,14 +88,14 @@ public abstract class AbstractEntityLoader<RES> extends AbstractBatchLoader<Obje
     /**
      * Sets additional fetches to root entity. Default implementation is empty.
      */
-    protected void buildExtendedQuery(Root<?> root, CriteriaBuilder cb) {
+    protected void buildExtendedQuery(Root<? extends ENT> root, CriteriaBuilder cb) {
     }
 
     /**
      * Creates query condition which is used as conjunction with id search. Default
      * implementation returns null.
      */
-    protected Predicate createQueryCondition(Path<?> root, CriteriaBuilder cb) {
+    protected Predicate createQueryCondition(Path<? extends ENT> root, CriteriaBuilder cb) {
         return null;
     }
 
@@ -128,7 +128,7 @@ public abstract class AbstractEntityLoader<RES> extends AbstractBatchLoader<Obje
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Tuple> cq = cb.createTupleQuery();
 
-        Root<?> root = cq.from(entityClass);
+        Root<? extends ENT> root = cq.from(entityClass);
         buildExtendedQuery(root, cb);
 
         // prepare where
@@ -140,7 +140,7 @@ public abstract class AbstractEntityLoader<RES> extends AbstractBatchLoader<Obje
             cond = jpaPath.in(entityIds);
         }
         cq.where(cond);
-        List<Order> order = createQueryOrderBy(cb);
+        List<Order> order = createQueryOrderBy(root, cb);
         if (order != null) {
             cq.orderBy(order);
         }
@@ -150,7 +150,7 @@ public abstract class AbstractEntityLoader<RES> extends AbstractBatchLoader<Obje
         return cq;
     }
 
-    private List<Order> createQueryOrderBy(CriteriaBuilder cb) {
+    protected List<Order> createQueryOrderBy(Root<? extends ENT> root, CriteriaBuilder cb) {
         return null;
     }
 
