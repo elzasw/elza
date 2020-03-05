@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
@@ -449,7 +450,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         Integer rootId = version.getRootNode().getNodeId();
         ArrChange change = version.getLockChange();
 
-        //všechny uzly stromu        
+        //všechny uzly stromu
         return createTreeNodeMap(change, rootId);
     }
 
@@ -1429,6 +1430,37 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     }
 
     /**
+     * Získání informací o JP ve verzi.
+     *
+     * <ul>Vyplněné položky:
+     *  <li> název
+     *  <li> ikona
+     *  <li> accordion
+     *
+     * @param nodeId      identifkátor požadované JP
+     * @param fundVersionId id verze AS
+     * @return nalezená JP
+     */
+    public ArrNodeExtendVO getSimpleNode(final Integer fundVersionId, final Integer nodeId) {
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        Map<Integer, TreeNode> treeMap = getVersionTreeCache(fundVersion);
+        TreeNode treeNode = treeMap.get(nodeId);
+        Validate.notNull(treeNode, "Neplatný identifikátor JP: " + nodeId);
+        NodeParam param = NodeParam.create()
+                .name()
+                .icon()
+                .accordion();
+
+        LinkedHashMap<Integer, TreeNode> nodesMap = new LinkedHashMap<>();
+        nodesMap.put(nodeId, treeNode);
+        Node tempResult = getNodes(nodesMap, treeNode.getParent(), param, fundVersion).get(nodeId);
+        ArrNodeExtendVO result = new ArrNodeExtendVO(tempResult.getId(),tempResult.getName(),tempResult.getUuid(), fundVersion.getFund().getName());
+        return result;
+    }
+
+
+
+    /**
      * Parametry vyplnění pro požadované JP.
      */
     public static class NodeParam {
@@ -1523,6 +1555,11 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         private String name;
 
         /**
+         * UUID
+         */
+        private String uuid;
+
+        /**
          * Popisek v akordeonu - levá strana.
          */
         private String accordionLeft;
@@ -1562,9 +1599,10 @@ public class LevelTreeCacheService implements NodePermissionChecker {
          */
         private List<ArrDigitizationRequestVO> digitizationRequests;
 
-        public Node(final Integer id, final Integer version) {
+        public Node(final Integer id, final Integer version, final String uuid) {
             this.id = id;
             this.version = version;
+            this.uuid = uuid;
         }
 
         public Integer getId() {
@@ -1578,6 +1616,8 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         public String getName() {
             return name;
         }
+
+        public String getUuid() { return uuid; }
 
         public String getAccordionLeft() {
             return accordionLeft;
@@ -1670,7 +1710,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSetId(), fundVersion.getFund().getFundId());
         // read LevelTypeId
         Integer levelTypeId = viewTitles.getLevelTypeId();
-        
+
         Map<Integer, TitleItemsByType> nodeValueMap = createValuesMap(treeNodeMap, fundVersion, subtreeRoot);
 
         String[] rootReferenceMark = new String[0];
@@ -1703,7 +1743,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         for (TreeNode treeNode : treeNodeMap.values()) {
             Integer id = treeNode.getId();
 
-            Node node = new Node(id, arrNodeMap.get(id).getVersion());
+            Node node = new Node(id, arrNodeMap.get(id).getVersion(), arrNodeMap.get(id).getUuid());
             node.setHasChildren(!treeNode.getChilds().isEmpty());
             node.setDepth(treeNode.getDepth());
 

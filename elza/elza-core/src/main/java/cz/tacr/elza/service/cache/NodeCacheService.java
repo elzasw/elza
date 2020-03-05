@@ -18,6 +18,7 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.castor.core.util.Assert;
 import org.hibernate.ScrollableResults;
@@ -47,15 +48,6 @@ import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.CachedNodeRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
-import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FundFileRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.StructuredObjectRepository;
 
 /**
  * Service for caching node related entities.
@@ -96,7 +88,7 @@ public class NodeCacheService {
     /*
     @Autowired
     private PartyNameComplementRepository partyNameComplementRepository;
-    
+
     @Autowired
     private PartyNameRepository partyNameRepository;*/
 
@@ -121,6 +113,9 @@ public class NodeCacheService {
     @Autowired
 	private StaticDataService staticDataService;
 
+    @Autowired
+    private DataUriRefRepository dataUriRefRepository;
+
     public NodeCacheService() {
         mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
@@ -134,7 +129,7 @@ public class NodeCacheService {
 
     /**
      * Synchronizace záznamů v databázi.
-     * 
+     *
      * Synchronní metoda volaná z transakce.
      */
     @Transactional(TxType.MANDATORY)
@@ -476,7 +471,8 @@ public class NodeCacheService {
                 accessPointRepository,
                 fundFileRepository,
                 daoRepository,
-                nodeRepository);
+                nodeRepository,
+                dataUriRefRepository);
         ra.restore(cachedNodes);
     }
 

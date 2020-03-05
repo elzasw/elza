@@ -36,6 +36,7 @@ import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDataText;
@@ -303,6 +304,18 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get("value");
+                }
+            };
+        } else if(dataClassType.equals(ArrDataUriRef.class)) {
+            return new AbstractDescItemDataTypeHelper() {
+                @Override
+                protected void init() {
+                    targetJoin = dataRoot;
+                }
+
+                @Override
+                public Path<String> getValueStringSelection(CriteriaBuilder criteriaBuilder) {
+                    return targetJoin.get("link");
                 }
             };
         } else if (dataClassType.equals(ArrDataUnitid.class)) {
