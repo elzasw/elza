@@ -14,14 +14,6 @@ const initialState: State = {
         [-1]: structureNodeForm(),
     }
 };
-const xx = (action) => {
-    switch (action.type) {
-        case types.STRUCTURE_NODE_FORM_REQUEST:
-        case types.STRUCTURE_NODE_FORM_RECEIVE:
-            return true;
-    }
-    return false;
-}
 
 export default function sturctures(state = initialState, action: StructureNodeFormAction) {
     if (structureFormActions.isSubNodeFormAction(action) || structureFormActions.isSubNodeFormCacheAction(action)) {
@@ -52,6 +44,7 @@ export default function sturctures(state = initialState, action: StructureNodeFo
                     }
                 };
             }
+        case types.STRUCTURE_NODE_FORM_SET_DATA:
         case types.STRUCTURE_NODE_FORM_REQUEST:
         case types.STRUCTURE_NODE_FORM_RECEIVE: {
             if (action.id && state.stores.hasOwnProperty(action.id)) {

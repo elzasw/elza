@@ -97,7 +97,7 @@ public class DaoPackageBo {
 		for (DaoBo dao : getAllDao()) {
 			daoSet.getDao().add(dao.export());
 		}
-		daoPackage.setDaoset(daoSet);
+        daoPackage.setDaos(daoSet);
 		return daoPackage;
 	}
 

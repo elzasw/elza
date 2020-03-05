@@ -3,13 +3,13 @@
 	<wsdl:import namespace="http://elza.tacr.cz/ws/types/v1" location="elza-api-types-v1.xsd"/>
 	<wsdl:types/>
 	<wsdl:message name="DigitizationRequestResponse">
-		<wsdl:part name="requestId" type="eat:requestId"/>
-	</wsdl:message>
-	<wsdl:message name="DigitizationRequest">
-		<wsdl:part name="digitizationRequest" type="eat:digitizationRequest"/>
+		<wsdl:part name="requestId" element="eat:digitizationRequestId"/>
 	</wsdl:message>
 	<wsdl:message name="DigitizationServiceException">
-		<wsdl:part name="errorDescription" type="eat:errorDescription"/>
+		<wsdl:part name="errorDescription" element="eat:errorMessage"/>
+	</wsdl:message>
+	<wsdl:message name="DigitizationRequest">
+		<wsdl:part name="digitizationRequest" element="eat:digitizationRequest"/>
 	</wsdl:message>
 	<wsdl:portType name="DigitizationFrontdesk">
 		<wsdl:operation name="PostRequest">
@@ -26,7 +26,7 @@
 	<wsdl:binding name="DigitizationFrontdesk" type="tns:DigitizationFrontdesk">
 		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 		<wsdl:operation name="PostRequest">
-			<soap:operation soapAction="PostRequest" style="document"/>
+			<soap:operation soapAction="http://tacr.elza.cz/ws/digitization/postRequest" style="document"/>
 			<wsdl:input name="digitizationRequest">
 				<soap:body use="literal"/>
 			</wsdl:input>

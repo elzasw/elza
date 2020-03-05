@@ -1189,7 +1189,7 @@ var messages = {
 
     "admin.user.add.title": "Vytvoření uživatele",
     "admin.user.update.title": "Upravení uživatele",
-    "admin.user.add.shibboleth.checkbox" : "Shibboleth",
+    "admin.user.add.shibboleth.checkbox" : "SAML2",
     "admin.user.add.password.checkbox" : "Jméno a heslo",
     "admin.user.add.shibboleth" : "Ověřovací token",
     "admin.user.add.password.message" : "Heslo je nastaveno.",
