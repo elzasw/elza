@@ -2,6 +2,7 @@ package cz.tacr.elza.web;
 
 import java.util.Locale;
 
+import javax.servlet.Filter;
 import javax.servlet.MultipartConfigElement;
 
 import org.h2.server.web.WebServlet;
@@ -20,6 +21,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.web.filter.ForwardedHeaderFilter;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.LocaleResolver;
@@ -94,5 +96,18 @@ public class ElzaWebApp {
         factory.setMaxFileSize("25MB");
         factory.setMaxRequestSize("100MB");
         return factory.createMultipartConfig();
+    }
+
+    /**
+     * Allow to accept forwarded headers (X-Forwarded-Prefix, X-Forwarded-Host,...)
+     * 
+     * This option should be used when Elza is running behind gateway
+     * 
+     * @return Filter pro forwarding
+     */
+    @Bean
+    @ConditionalOnProperty(prefix = "elza.security", name = "acceptForwardedHeaders", havingValue = "true")
+    public Filter forwardedHeaderFilter() {
+        return new ForwardedHeaderFilter();
     }
 }
