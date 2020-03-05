@@ -5,6 +5,7 @@ import com.google.common.collect.Iterables;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionService;
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
@@ -66,7 +67,7 @@ import java.util.stream.Collectors;
 
 /**
  * Main arrangement service.
- *
+ * <p>
  * This service can be used by controller. All operations are checking
  * permissions.
  */
@@ -74,7 +75,7 @@ import java.util.stream.Collectors;
 @Configuration
 public class ArrangementService {
 
-	private static final AtomicInteger LAST_DESC_ITEM_OBJECT_ID = new AtomicInteger(-1);
+    private static final AtomicInteger LAST_DESC_ITEM_OBJECT_ID = new AtomicInteger(-1);
 
     @Autowired
     private FundRegisterScopeRepository faRegisterRepository;
@@ -120,8 +121,8 @@ public class ArrangementService {
     @Autowired
     private AccessPointService accessPointService;
 
-	@Autowired
-	DescriptionItemServiceInternal arrangementInternal;
+    @Autowired
+    DescriptionItemServiceInternal arrangementInternal;
     @Autowired
     private PolicyService policyService;
 
@@ -131,11 +132,14 @@ public class ArrangementService {
     @Autowired
     private ArrangementCacheService arrangementCacheService;
 
-	@Autowired
-	private NodeCacheService nodeCacheService;
+    @Autowired
+    private NodeCacheService nodeCacheService;
 
     @Autowired
     private ScopeRepository scopeRepository;
+
+    @Autowired
+    private DataUriRefRepository dataUriRefRepository;
 
     @Autowired
     private EntityManager em;
@@ -277,8 +281,8 @@ public class ArrangementService {
                                final Collection<ApScope> newApScopes) {
         Assert.notNull(fund, "AS musí být vyplněn");
 
-		Map<Integer, ArrFundRegisterScope> dbIdentifiersMap = ElzaTools
-				.createEntityMap(faRegisterRepository.findByFund(fund), i -> i.getScope().getScopeId());
+        Map<Integer, ArrFundRegisterScope> dbIdentifiersMap = ElzaTools
+                .createEntityMap(faRegisterRepository.findByFund(fund), i -> i.getScope().getScopeId());
         Set<ArrFundRegisterScope> removeScopes = new HashSet<>(dbIdentifiersMap.values());
 
         for (ApScope newScope : newApScopes) {
@@ -352,22 +356,22 @@ public class ArrangementService {
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE})
     public ArrFund createFund(final String name,
-				              final String internalCode,
-				              final ParInstitution institution) {
-		ArrFund fund = new ArrFund();
-		fund.setCreateDate(LocalDateTime.now());
-		fund.setName(name);
-		fund.setInternalCode(internalCode);
-		fund.setInstitution(institution);
-		return fundRepository.save(fund);
+                              final String internalCode,
+                              final ParInstitution institution) {
+        ArrFund fund = new ArrFund();
+        fund.setCreateDate(LocalDateTime.now());
+        fund.setName(name);
+        fund.setInternalCode(internalCode);
+        fund.setInstitution(institution);
+        return fundRepository.save(fund);
     }
 
-    @AuthMethod(permission = { UsrPermission.Permission.FUND_VER_WR, UsrPermission.Permission.FUND_ADMIN })
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_VER_WR, UsrPermission.Permission.FUND_ADMIN})
     public ArrFundVersion createVersion(final ArrChange createChange,
-                                         @AuthParam(type = Type.FUND) final ArrFund fund,
-                                         final RulRuleSet ruleSet,
-                                         final ArrNode rootNode,
-                                         final String dateRange) {
+                                        @AuthParam(type = Type.FUND) final ArrFund fund,
+                                        final RulRuleSet ruleSet,
+                                        final ArrNode rootNode,
+                                        final String dateRange) {
         ArrFundVersion version = new ArrFundVersion();
         version.setCreateChange(createChange);
         version.setFund(fund);
@@ -378,8 +382,8 @@ public class ArrangementService {
     }
 
     private ArrLevel createRootLevel(final ArrChange createChange,
-                                 final String uuid,
-                                 final ArrFund fund) {
+                                     final String uuid,
+                                     final ArrFund fund) {
         ArrLevel level = new ArrLevel();
         level.setPosition(1);
         level.setCreateChange(createChange);
@@ -432,7 +436,7 @@ public class ArrangementService {
         node.setUuid(generateUuid());
         node.setFund(fund);
         nodeRepository.save(node);
-		nodeCacheService.createEmptyNode(node);
+        nodeCacheService.createEmptyNode(node);
         return node;
     }
 
@@ -456,7 +460,7 @@ public class ArrangementService {
         node.setUuid(uuid);
         node.setFund(fund);
         nodeRepository.save(node);
-		nodeCacheService.createEmptyNode(node);
+        nodeCacheService.createEmptyNode(node);
         return node;
     }
 
@@ -474,7 +478,7 @@ public class ArrangementService {
         change.setChangeDate(OffsetDateTime.now());
 
         if (userDetail != null && userDetail.getId() != null) {
-			UsrUser user = em.getReference(UsrUser.class, userDetail.getId());
+            UsrUser user = em.getReference(UsrUser.class, userDetail.getId());
             change.setUser(user);
         }
 
@@ -648,9 +652,27 @@ public class ArrangementService {
         }
 
         for (ArrDescItem descItem : descItemRepository.findByNodeAndDeleteChangeIsNull(level.getNode())) {
-			descItem.setDeleteChange(deleteChange);
-			descItemRepository.save(descItem);
+            descItem.setDeleteChange(deleteChange);
+            descItemRepository.save(descItem);
         }
+
+        ArrNode node = level.getNode();
+        ArrFund fund = level.getNode().getFund();
+        ArrFundVersion fundVersion = getOpenVersionByFundId(fund.getFundId());
+
+        List<ArrDescItem> arrDescItemList = descItemRepository.findByUriDataNode(node);
+        arrDescItemList = arrDescItemList.stream().map(i -> {
+            em.detach(i);
+            return (ArrDescItem) HibernateUtils.unproxy(i);
+        }).collect(Collectors.toList());
+
+        for (ArrDescItem arrDescItem : arrDescItemList) {
+            ArrDataUriRef arrDataUriRef = new ArrDataUriRef((ArrDataUriRef) arrDescItem.getData());
+            arrDataUriRef.setDataId(null);
+            arrDataUriRef.setArrNode(null);
+            arrDescItem.setData(arrDataUriRef);
+        }
+        descriptionItemService.updateDescriptionItems(arrDescItemList, fundVersion, deleteChange);
 
         return deleteLevelInner(level, deleteChange);
     }
@@ -677,12 +699,12 @@ public class ArrangementService {
      * @return Identifikátor objektu
      */
     public Integer getNextDescItemObjectId() {
-    	return LAST_DESC_ITEM_OBJECT_ID.updateAndGet(id -> {
-    		if (id < 0) {
-    			id = itemRepository.findMaxItemObjectId();
-    		}
-    		return id + 1;
-    	});
+        return LAST_DESC_ITEM_OBJECT_ID.updateAndGet(id -> {
+            if (id < 0) {
+                id = itemRepository.findMaxItemObjectId();
+            }
+            return id + 1;
+        });
     }
 
     /**
@@ -709,7 +731,7 @@ public class ArrangementService {
 
         ArrLevel olderSibling = levelRepository.findOlderSibling(level, version.getLockChange());
         if (olderSibling == null) {
-        	throw new BusinessException("Node does not have older sibling, levelId="+level.getLevelId(), BaseCode.INVALID_STATE);
+            throw new BusinessException("Node does not have older sibling, levelId=" + level.getLevelId(), BaseCode.INVALID_STATE);
         }
 
         // Read source data
@@ -723,13 +745,13 @@ public class ArrangementService {
         if (CollectionUtils.isNotEmpty(nodeDescItems)) {
             for (ArrDescItem descItem : nodeDescItems) {
                 descriptionItemService.deleteDescriptionItem(descItem, version,
-                                                             change, false, changeContext);
+                        change, false, changeContext);
             }
         }
 
         final List<ArrDescItem> newDescItems = descriptionItemService
                 .copyDescItemWithDataToNode(level.getNode(), siblingDescItems, change, version,
-                                            changeContext);
+                        changeContext);
 
         changeContext.flush();
 
@@ -847,7 +869,7 @@ public class ArrangementService {
      * @param version     verze AP
      * @param nodeId      id uzlu pod kterým se má hledat, může být null
      * @param searchValue lucene dotaz (např: +specification:*čís* -fulltextValue:ddd)
-     * @param depth hloubka v jaké se hledá pod předaným nodeId
+     * @param depth       hloubka v jaké se hledá pod předaným nodeId
      * @return seznam id uzlů které vyhovují parametrům
      * @throws InvalidQueryException neplatný lucene dotaz
      */
@@ -878,15 +900,14 @@ public class ArrangementService {
     /**
      * Vyhledání id nodů podle parametrů.
      *
-     * @param version     verze AP
-     * @param nodeId      id uzlu pod kterým se má hledat, může být null
+     * @param version      verze AP
+     * @param nodeId       id uzlu pod kterým se má hledat, může být null
      * @param searchParams parametry pro rozšířené vyhledávání
-     * @param depth       hloubka v jaké se hledá pod předaným nodeId
-     *
+     * @param depth        hloubka v jaké se hledá pod předaným nodeId
      * @return množina id uzlů které vyhovují parametrům
      */
     public Set<Integer> findNodeIdsBySearchParams(final ArrFundVersion version, final Integer nodeId,
-            final List<SearchParam> searchParams, final Depth depth) {
+                                                  final List<SearchParam> searchParams, final Depth depth) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(depth, "Musí být vyplněno");
         Assert.notEmpty(searchParams, "Musí existovat vyhledávající parametr");

@@ -49,6 +49,8 @@ export interface ApItemVO<V> {
     prevDescItemSpecId?: number;
     calendarTypeId?: number;
     prevCalendarTypeId?: number;
+    prevDescription?: string;
+    description?: string;
     validateTimer?: any;
     touched?: any;
     visited?: any;
@@ -227,6 +229,11 @@ export function validate(item: ApItemVO<any>, refType: RefType, valueServerError
                 error.value = i18n('subNodeForm.validate.value.notEmpty');
             }
             break;
+        case DataTypeCode.URI_REF:
+            if (!item.value || typeof item.value !== 'number') {
+                error.value = i18n('subNodeForm.validate.value.notEmpty');
+            }
+            break;
         case DataTypeCode.STRUCTURED:
             if (!item.value || typeof item.value !== 'number') {
                 error.value = i18n('subNodeForm.validate.value.notEmpty');
@@ -303,6 +310,13 @@ export function validate(item: ApItemVO<any>, refType: RefType, valueServerError
 export function convertValue(value, descItem, type) {
     //  Data type to value conversion functions map
     const dataTypeMap = {
+        URI_REF: (value) => {
+            return {
+                touched: descItem.value !== value.value || descItem.description !== value.description,
+                value: value.value,
+                description: value.description
+            }
+        },
         PARTY_REF: (value)=>{
             return {
                 value: value.id,
@@ -619,6 +633,7 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                                         //record: action.descItemResult.item.record,
                                         //prevDescItemSpecId: loc.itemType.useSpecification ? action.descItemResult.item.descItemSpecId : undefined,
                                         prevCalendarTypeId: action.descItemResult.item.calendarTypeId || undefined,
+                                        prevDescription: action.descItemResult.item.description || undefined,
                                         saving: false,
                                         touched: false
                                     },

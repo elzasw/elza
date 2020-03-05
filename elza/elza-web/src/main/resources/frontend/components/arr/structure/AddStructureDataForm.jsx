@@ -4,8 +4,9 @@ import {i18n, AbstractReactComponent, FormInput} from "components/shared";
 import {connect} from "react-redux";
 import {reduxForm} from "redux-form";
 import StructureSubNodeForm from "./StructureSubNodeForm";
-import {structureNodeFormSelectId} from "../../../actions/arr/structureNodeForm";
+import {structureNodeFormSelectId, structureNodeFormFetchIfNeeded} from "../../../actions/arr/structureNodeForm";
 import PropTypes from 'prop-types';
+import objectById from "../../../shared/utils/objectById";
 
 class AddStructureDataForm extends AbstractReactComponent {
 
@@ -22,15 +23,17 @@ class AddStructureDataForm extends AbstractReactComponent {
     };
 
     componentWillMount() {
-        const {fundVersionId, structureData} = this.props;
-        this.props.dispatch(structureNodeFormSelectId(fundVersionId, structureData.id));
+        const {structureData, fundVersionId} = this.props;
+        this.props.dispatch(structureNodeFormSelectId(structureData.id));
+        this.props.dispatch(structureNodeFormFetchIfNeeded(fundVersionId, structureData.id));
     }
 
     componentWillReceiveProps(nextProps) {
-        const {fundVersionId, structureData: {id}} = nextProps;
+        const {structureData: {id}, fundVersionId} = nextProps;
         if (id !== this.props.structureData.id) {
-            this.props.dispatch(structureNodeFormSelectId(fundVersionId, id));
+            this.props.dispatch(structureNodeFormSelectId(id));
         }
+        this.props.dispatch(structureNodeFormFetchIfNeeded(fundVersionId, id));
     }
 
     customRender = (code, infoType) => {
@@ -44,7 +47,7 @@ class AddStructureDataForm extends AbstractReactComponent {
                 if (checked) {
                     incrementedTypeIds.onChange([
                         ...incrementedTypeIds.value.slice(0, index),
-                        ...incrementedTypeIds.value.slice(index+1),
+                        ...incrementedTypeIds.value.slice(index + 1),
                     ]);
                 } else {
                     incrementedTypeIds.onChange([
@@ -61,20 +64,23 @@ class AddStructureDataForm extends AbstractReactComponent {
     };
 
     render() {
-        const {fields: {count, incrementedTypeIds}, error, handleSubmit, onClose, submitting, structureData, fundVersionId, fundId, multiple} = this.props;
+        const {fields: {count, incrementedTypeIds}, error, handleSubmit, onClose, submitting, structureData, fundVersionId, fundId, multiple, storeStructure} = this.props;
 
         return <Form onSubmit={handleSubmit}>
             <Modal.Body>
                 {error && <p>{error}</p>}
-                <StructureSubNodeForm versionId={fundVersionId}
-                                      fundId={fundId}
-                                      selectedSubNodeId={structureData.id}
-                                      customActions={multiple && this.customRender} // pokud form je mnohonásobný renderujeme doplňkově inkrementaci
-                                      // Pyta: Jak toto funguje, neni to tu nadbytecne?
-                                      x={incrementedTypeIds} // Zdůvodu renderování formu aby při změně nastal render
-                                      descItemFactory={this.props.descItemFactory}
-                />
-            {multiple && <FormInput name="count" min="2" type="number" label={i18n("arr.structure.modal.addMultiple.count")} {...count} />}
+                {storeStructure && storeStructure.fetched && <StructureSubNodeForm
+                    id={structureData.id}
+                    versionId={fundVersionId}
+                    fundId={fundId}
+                    selectedSubNodeId={structureData.id}
+                    customActions={multiple && this.customRender} // pokud form je mnohonásobný renderujeme doplňkově inkrementaci
+                    // Pyta: Jak toto funguje, neni to tu nadbytecne?
+                    x={incrementedTypeIds} // Zdůvodu renderování formu aby při změně nastal render
+                    descItemFactory={this.props.descItemFactory}
+                />}
+                {multiple && <FormInput name="count" min="2" type="number"
+                                        label={i18n("arr.structure.modal.addMultiple.count")} {...count} />}
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit" disabled={submitting}>{i18n('global.action.add')}</Button>
@@ -84,8 +90,7 @@ class AddStructureDataForm extends AbstractReactComponent {
     }
 }
 
-
-export default reduxForm({
+const form = reduxForm({
     form: 'AddStructureData',
     fields: [
         // count of created items
@@ -94,8 +99,9 @@ export default reduxForm({
         'incrementedTypeIds'
     ],
     initialValues: {
-        count: "", 
-        incrementedTypeIds: []},    
+        count: "",
+        incrementedTypeIds: []
+    },
     validate: (values, props) => {
         const errors = {};
         if (props.multiple) {
@@ -109,3 +115,12 @@ export default reduxForm({
         return errors;
     }
 })(AddStructureDataForm);
+
+
+export default connect((state, props) => {
+    const {structures} = state;
+
+    return {
+        storeStructure: props.structureData && structures.stores.hasOwnProperty(props.structureData.id) ? structures.stores[props.structureData.id] : null,
+    }
+})(form);

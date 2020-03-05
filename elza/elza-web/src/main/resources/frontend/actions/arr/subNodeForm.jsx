@@ -257,7 +257,7 @@ export class ItemFormActions {
      * @param {Function} dispatch odkaz na funkci dispatch
      * @param {Function} getState odkaz na funkci pro načtení store
      * @param {int} versionId verze AS
-     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, 
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE,
      *                         ve které je formulář
      * @param {Object} valueLocation konkrétní umístění hodnoty
      */
@@ -602,6 +602,10 @@ export class ItemFormActions {
                     needUpdate = true;
                 }
                 if (!valuesEquals(descItem.calendarTypeId, descItem.prevCalendarTypeId)) {
+                    needUpdate = true;
+                }
+                // Nelze použít valuesEquals (prázdný string není !== undefined)
+                if (descItem.description !== descItem.prevDescription) {
                     needUpdate = true;
                 }
 
@@ -1108,7 +1112,7 @@ class NodeFormActions extends ItemFormActions {
         // Umělé navýšení verze o 1 - aby mohla pozitivně projít případná další update operace
         console.log("Before update, parentVersionId: ",parentVersionId);
         dispatch(increaseNodeVersion(versionId, parentId, parentVersionId));
-        
+
         console.log("update desc Item");
         return new Promise((resolve, reject) => {
             NodeRequestController.updateRequest(versionId, parentVersionId, parentId, descItem, (json) => {resolve(json)})
@@ -1265,9 +1269,9 @@ class StructureFormActions extends ItemFormActions {
 
     // @Override
     _getItemFormStore(state, versionId, routingKey) {
-        const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
-        if (fundIndex !== null) {
-            return state.arrRegion.funds[fundIndex].structureNodeForm.subNodeForm
+        const subStore = state.structures.stores[routingKey];
+        if (!!subStore) {
+            return subStore.subNodeForm;
         } else {
             return null
         }
@@ -1275,10 +1279,9 @@ class StructureFormActions extends ItemFormActions {
 
     // @Override
     _getParentObjStore(state, versionId, routingKey) {
-        const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
-        if (fundIndex !== null) {
-            const fund = state.arrRegion.funds[fundIndex];
-            return fund.structureNodeForm;
+        const subStore = state.structures.stores[routingKey];
+        if (!!subStore) {
+            return subStore;
         } else {
             return null;
         }

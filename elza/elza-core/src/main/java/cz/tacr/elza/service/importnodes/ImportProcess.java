@@ -14,6 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.castor.core.util.Assert;
@@ -34,6 +35,7 @@ import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -56,17 +58,6 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FundFileRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.StructuredItemRepository;
-import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.FundLevelService;
@@ -81,7 +72,6 @@ import cz.tacr.elza.service.importnodes.vo.DeepCallback;
 import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
 import cz.tacr.elza.service.importnodes.vo.Node;
-import cz.tacr.elza.service.importnodes.vo.NodeRegister;
 import cz.tacr.elza.service.importnodes.vo.descitems.Item;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemCoordinates;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemDecimal;
@@ -97,6 +87,7 @@ import cz.tacr.elza.service.importnodes.vo.descitems.ItemStructureRef;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemText;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitdate;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitid;
+import cz.tacr.elza.service.importnodes.vo.descitems.ItemUriRef;
 
 /**
  * Obsluha importního procesu zdroje do AS.
@@ -159,6 +150,9 @@ public class ImportProcess {
 
     @Autowired
     private PartyRepository partyRepository;
+
+    @Autowired
+    private NodeRepository nodeRepository;
 
     @Autowired
     private IEventNotificationService eventNotificationService;
@@ -400,7 +394,7 @@ public class ImportProcess {
                     .findOne(((ItemStructureRef) item).getStructureDataId());
             ArrStructuredObject structureDataNew = structureDataMapper.get(structureData.getStructuredObjectId());
 
-            // mapping should exists -> if mapping not found then whole item should not be imported? 
+            // mapping should exists -> if mapping not found then whole item should not be imported?
             Validate.notNull(structureDataNew);
 
             ((ArrDataStructureRef) data).setStructuredObject(structureDataNew);
@@ -410,6 +404,12 @@ public class ImportProcess {
         } else if (item instanceof ItemRecordRef) {
             data = new ArrDataRecordRef();
             ((ArrDataRecordRef) data).setRecord(apAccessPointRepository.getOne(((ItemRecordRef) item).getRecordId()));
+        } else if (item instanceof  ItemUriRef) {
+            data = new ArrDataUriRef();
+            ((ArrDataUriRef) data).setSchema(((ItemUriRef) item).getSchema());
+            ((ArrDataUriRef) data).setValue(((ItemUriRef) item).getValue());
+            ((ArrDataUriRef) data).setDescription(((ItemUriRef) item).getDescription());
+            ((ArrDataUriRef) data).setArrNode(nodeRepository.getOne(((ItemUriRef) item).getNodeId()));
         } else {
             data = null;
         }
@@ -544,7 +544,7 @@ public class ImportProcess {
             switch (params.getStructuredConflictResolve()) {
             /*
                This option is not anymore supported, structured object can be only copied
-            case USE_TARGET:            	
+            case USE_TARGET:
                 structuredObject = fundPacketsMapName.get(srcPacketKey);
                 if (structuredObject == null) {
                     throw new IllegalStateException("Not implemented");
