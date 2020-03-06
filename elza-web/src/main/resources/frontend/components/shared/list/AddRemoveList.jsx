@@ -54,7 +54,7 @@ class AddRemoveList extends AbstractReactComponent {
         });
 
         let addAction;
-        if (!readOnly) {
+        if (!readOnly && onAdd) {
             addAction = <div className="actions-container">
                 <NoFocusButton onClick={onAdd} title={i18n(addTitle)}>
                     <Icon glyph="fa-plus"/> {addLabel && i18n(addLabel)}
