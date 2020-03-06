@@ -398,6 +398,8 @@ var messages = {
     "arr.output.title.revert": "Vráceno do přípravy",
     "arr.output.title.clone": "Kopie vytvořena",
     "arr.output.title.error": "Chyba",
+    "arr.output.title.scopes": "Omezení na oblasti přístupových bodů",
+    "arr.output.title.anonymizedAp": "Anonymizované AP",
     "arr.output.name": "Název výstupu",
     "arr.output.internalCode": "Interní kód výstupu",
     "arr.output.outputType": "Typ výstup",
