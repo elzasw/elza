@@ -35,9 +35,10 @@ class RegistryField extends AbstractReactComponent {
         roleTypeId: null,
         partyId: null,
         versionId: null,
+        useIdAsValue: false
     };
 
-    static PropTypes = {
+    static propTypes = {
         detail: React.PropTypes.bool.isRequired,
         footer: React.PropTypes.bool.isRequired,
         footerButtons: React.PropTypes.bool,
@@ -51,7 +52,8 @@ class RegistryField extends AbstractReactComponent {
         itemSpecId: React.PropTypes.number,
         roleTypeId: React.PropTypes.number,
         partyId: React.PropTypes.number,
-        versionId: React.PropTypes.number
+        versionId: React.PropTypes.number,
+        useIdAsValue: React.PropTypes.bool,
     };
 
     state = {registryList: [], count: null, searchText: null};
@@ -172,6 +174,9 @@ class RegistryField extends AbstractReactComponent {
 
 
     normalizeValue = (obj) => {
+        if (this.props.useIdAsValue) {
+            return obj;
+        }
         // změna typu aby se objekt dal použít jako návazný
         const newobj = {
             ...obj,

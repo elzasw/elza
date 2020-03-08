@@ -6,13 +6,14 @@ import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx'
 import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
 import {initForm} from "actions/form/inlineForm.jsx"
 import {indexById} from 'stores/app/utils.jsx'
+import RegistryField from "../registry/RegistryField";
 
 /**
  * Formulář inline editace výstupu.
  */
 class OutputInlineForm extends AbstractReactComponent {
 
-    static fields = ['name', 'outputTypeId', 'internalCode', 'templateId'];
+    static fields = ['name', 'outputTypeId', 'internalCode', 'templateId', 'anonymizedApId'];
 
     /**
      * Validace formuláře.
@@ -54,7 +55,7 @@ class OutputInlineForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {name, internalCode, templateId, outputTypeId}, disabled, outputTypes, allTemplates} = this.props;
+        const {fields: {name, internalCode, templateId, outputTypeId, anonymizedApId}, disabled, outputTypes, allTemplates} = this.props;
 
         let outputType = false;
         if (outputTypes) {
@@ -80,6 +81,10 @@ class OutputInlineForm extends AbstractReactComponent {
                            disabled={disabled} {...name} {...decorateFormField(name, true)} />
                 <FormInput type="text" label={i18n('arr.output.internalCode')}
                            disabled={disabled} {...internalCode} {...decorateFormField(internalCode, true)} />
+                <div>
+                    <label className="control-label">{i18n("arr.output.title.anonymizedAp")}</label>
+                    <RegistryField {...anonymizedApId} useIdAsValue={true} disabled={disabled} />
+                </div>
                 <div className="row-layout">
                     <FormInput type="text" label={i18n('arr.output.outputType')} disabled value={outputType}/>
                     <FormInput componentClass="select" label={i18n('arr.output.template')}
