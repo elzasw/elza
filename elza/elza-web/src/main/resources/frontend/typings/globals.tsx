@@ -5,3 +5,11 @@ export type ThunkAction<R, S, E> = (dispatch: Dispatch<S>, getState: () => S, ex
 export interface Dispatch<S> {
     <R, E>(asyncAction: ThunkAction<R, S, E> | AnyAction | void): R;
 }
+
+
+export interface AppFetchingStore {
+    id?: number,
+    fetched: boolean,
+    fetching: boolean,
+    currentDataKey: any,
+}
