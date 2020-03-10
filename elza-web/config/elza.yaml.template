@@ -4,6 +4,8 @@ elza:
       user: app
       pass: app
   security:
+#    sso-header:
+#      user-header: X-SSO-User
       #allowDefaultUser:false
   #workingDir: C:/Elza/work
 
