@@ -2,11 +2,13 @@ const proxy = require('http-proxy-middleware');
 
 
 
+const HOST = process.env.ENDPOINT || 'http://localhost:8080';
+
 module.exports = function(app) {
     app.use(
         '/api',
         proxy({
-            target: 'http://localhost:8080',
+            target: HOST,
             ws: true,
             changeOrigin: true
         })
@@ -14,19 +16,18 @@ module.exports = function(app) {
     app.use(
         '/login',
         proxy({
-            target: 'http://localhost:8080',
-            target: 'http://elza-depend.e1.marbes.cz',
+            target: HOST,
             ws: true,
             changeOrigin: true
         })
     );
     app.use(
-        '/stomp',
+        '^/stomp',
         proxy({
-            target: 'http://localhost:8080',
-            target: 'http://elza-depend.e1.marbes.cz',
+            target: HOST,
             ws: true,
-            changeOrigin: true
+            changeOrigin: true,
+            proxy: true,
         })
     );
 };

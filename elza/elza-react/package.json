@@ -109,6 +109,5 @@
       "@typescript-eslint/no-unused-vars": "off",
       "no-restricted-globals": "off"
     }
-  },
-  "proxy": "http://localhost:8080"
+  }
 }
