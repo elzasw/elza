@@ -1,24 +1,23 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import ReactDOM from 'react-dom';
 
 import {WebApi} from 'actions/index.jsx';
-import {TooltipTrigger, Icon, i18n, AbstractReactComponent, Autocomplete} from 'components/shared';
-import {connect} from 'react-redux'
-import {Dropdown, DropdownButton, Button} from 'react-bootstrap';
-import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
+import {AbstractReactComponent, Autocomplete, i18n, Icon, TooltipTrigger} from 'components/shared';
+import {connect} from 'react-redux';
+import {Dropdown, DropdownButton} from 'react-bootstrap';
+import {Button} from '../ui';
+import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx';
 import * as perms from 'actions/user/Permission.jsx';
-import {partyDetailFetchIfNeeded, partyAdd, RELATION_CLASS_CODES, partyListFilter} from 'actions/party/party.jsx'
-import {routerNavigate} from 'actions/router.jsx'
-import {indexById} from 'stores/app/utils.jsx'
-import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from '../../constants.tsx'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {debounce} from 'shared/utils'
+import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx';
+import {routerNavigate} from 'actions/router.jsx';
+import {DEFAULT_LIST_SIZE} from '../../constants.tsx';
+import {modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {debounce} from 'shared/utils';
 import classNames from 'classnames';
 
-import './PartyField.scss'
-import PartyListItem from "./PartyListItem";
-import ExtImportForm from "../form/ExtImportForm";
+import './PartyField.scss';
+import PartyListItem from './PartyListItem';
+import ExtImportForm from '../form/ExtImportForm';
 
 const AUTOCOMPLETE_PARTY_LIST_SIZE = DEFAULT_LIST_SIZE;
 
@@ -29,7 +28,7 @@ class PartyField extends AbstractReactComponent {
         footer: true,
         undefined: false,
         footerButtons: true,
-        partyTypeId: null
+        partyTypeId: null,
     };
 
     static propTypes = {
@@ -42,7 +41,7 @@ class PartyField extends AbstractReactComponent {
         onDetail: PropTypes.func,
         onCreate: PropTypes.func.isRequired,
         partyTypeId: PropTypes.number,
-        versionId: PropTypes.number
+        versionId: PropTypes.number,
     };
 
     state = {partyList: [], count: null, searchText: null};
@@ -56,18 +55,18 @@ class PartyField extends AbstractReactComponent {
     }
 
     focus = () => {
-        this.refs.autocomplete.focus()
+        this.refs.autocomplete.focus();
     };
 
     handleSearchChange = debounce((text) => {
-        text = text == "" ? null : text;
+        text = text == '' ? null : text;
         this.setState({searchText: text});
         WebApi.findParty(text, this.props.versionId, this.props.partyTypeId, null, 0, AUTOCOMPLETE_PARTY_LIST_SIZE).then(json => {
             this.setState({
                 partyList: json.rows,
-                count: json.count
-            })
-        })
+                count: json.count,
+            });
+        });
     });
 
     handleCreateParty = (partyTypeId) => {
@@ -76,7 +75,7 @@ class PartyField extends AbstractReactComponent {
     };
 
     renderParty = (props) => {
-        const {refTables:{partyTypes:{relationTypesForClass}}} = this.props;
+        const {refTables: {partyTypes: {relationTypesForClass}}} = this.props;
         const {item, highlighted, selected, ...otherProps} = props;
 
         return <TooltipTrigger
@@ -91,19 +90,18 @@ class PartyField extends AbstractReactComponent {
                 className={classNames('item', {focus: highlighted, active: selected})}
                 relationTypesForClass={relationTypesForClass}
             />
-        </TooltipTrigger>
+        </TooltipTrigger>;
     };
-
 
 
     handleChange = (e) => {
         this.setState({searchText: null});
-        this.props.onChange(e)
+        this.props.onChange(e);
     };
 
     handleBlur = (e) => {
         this.setState({searchText: null});
-        this.props.onBlur(e)
+        this.props.onBlur(e);
     };
 
     renderFooter = () => {
@@ -116,10 +114,14 @@ class PartyField extends AbstractReactComponent {
 
         return hasCount || buttons ? <div>
             {buttons && <div className="create-party">
-                <DropdownButton noCaret title={<div><Icon glyph='fa-download' /><span className="create-party-label">{i18n('party.addParty')}</span></div>} id="party-field" >
-                    {refTables.partyTypes.items.map(type => <Dropdown.Item key={'party' + type.id} onClick={() => this.handleCreateParty(type.id)} eventKey={type.id}>{type.name}</Dropdown.Item>)}
+                <DropdownButton noCaret title={<div><Icon glyph='fa-download'/><span
+                    className="create-party-label">{i18n('party.addParty')}</span></div>} id="party-field">
+                    {refTables.partyTypes.items.map(type => <Dropdown.Item key={'party' + type.id}
+                                                                           onClick={() => this.handleCreateParty(type.id)}
+                                                                           eventKey={type.id}>{type.name}</Dropdown.Item>)}
                 </DropdownButton>
-                <Button onClick={this.handleImport} type="button"><Icon glyph='fa-plus' /> {i18n("ribbon.action.party.importExt")}</Button>
+                <Button onClick={this.handleImport} type="button"><Icon
+                    glyph='fa-plus'/> {i18n('ribbon.action.party.importExt')}</Button>
             </div>}
             {count > AUTOCOMPLETE_PARTY_LIST_SIZE && <div className="items-count">
                 {i18n('partyField.visibleCount', this.state.partyList.length, this.state.count)}
@@ -133,7 +135,8 @@ class PartyField extends AbstractReactComponent {
     handleImport = () => {
         const {versionId} = this.props;
         this.refs.autocomplete.closeMenu();
-        this.props.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true} versionId={versionId === null ? -1 : versionId}/>, "dialog-lg"));
+        this.props.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true}
+                                                                                          versionId={versionId === null ? -1 : versionId}/>, 'dialog-lg'));
     };
 
     handleDetail = (id) => {
@@ -149,8 +152,8 @@ class PartyField extends AbstractReactComponent {
                     this.handleBlur(data);
                 },
                 filterText: searchText,
-                value
-            })
+                value,
+            });
         } else if (onDetail) {
             onDetail(id);
         } else {
@@ -176,7 +179,7 @@ class PartyField extends AbstractReactComponent {
                     className={'btn btn-default detail'}
                 >
                     <Icon glyph={'fa-user'}/>
-                </div>
+                </div>,
             );
             // }
         }
@@ -201,7 +204,7 @@ class PartyField extends AbstractReactComponent {
             onBlur={this.handleBlur}
             value={value}
             {...otherProps}
-        />
+        />;
     }
 }
 

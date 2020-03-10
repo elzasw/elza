@@ -1,26 +1,23 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import {connect} from 'react-redux'
-import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
-import {Icon, i18n} from 'components/index.jsx';
-import {TooltipTrigger, Splitter, Autocomplete, RibbonGroup, ToggleContent, AbstractReactComponent, Utils} from 'components/shared';
-import {FundForm, Ribbon, FindindAidFileTree, PartyListItem} from 'components/index.jsx';
-import {NodeTabs} from 'components/index.jsx';
-import {Button} from 'react-bootstrap';
-import {modalDialogShow} from 'actions/global/modalDialog.jsx'
-import {createFund} from 'actions/arr/fund.jsx'
-import {storeLoadData, storeLoad} from 'actions/store/store.jsx'
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
+import {connect} from 'react-redux';
+import {LinkContainer} from 'react-router-bootstrap';
+import {FundForm, i18n, Icon, PartyListItem, Ribbon} from 'components/index.jsx';
+import {AbstractReactComponent, RibbonGroup, Utils} from 'components/shared';
+import {Button} from '../../components/ui';
+import {modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {createFund} from 'actions/arr/fund.jsx';
+import {storeLoadData} from 'actions/store/store.jsx';
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
 import * as perms from 'actions/user/Permission.jsx';
-import PageLayout from "../shared/layout/PageLayout";
+import PageLayout from '../shared/layout/PageLayout';
+import './HomePage.scss';
+import {FOCUS_KEYS} from '../../constants.tsx';
+import SearchFundsForm from '../../components/arr/SearchFundsForm';
 
 // Testování
 // import AutocompleteTest from "./test/AutocompleteTest";
-
-import './HomePage.scss'
-import {FOCUS_KEYS} from "../../constants.tsx";
-import SearchFundsForm from "../../components/arr/SearchFundsForm";
 
 /**
  * Home stránka
@@ -28,11 +25,11 @@ import SearchFundsForm from "../../components/arr/SearchFundsForm";
 class HomePage extends AbstractReactComponent {
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        this.trySetFocus(nextProps)
+        this.trySetFocus(nextProps);
     }
 
     componentDidMount() {
-        this.trySetFocus(this.props)
+        this.trySetFocus(this.props);
     }
 
     trySetFocus = (props) => {
@@ -44,15 +41,15 @@ class HomePage extends AbstractReactComponent {
                     this.setState({}, () => {
                         const listEl = ReactDOM.findDOMNode(this.refs.list);
                         Utils.setInputFocus(listEl, false);
-                        focusWasSet()
-                    })
+                        focusWasSet();
+                    });
                 }
             } else if (isFocusFor(focus, FOCUS_KEYS.HOME, 1) || isFocusFor(focus, FOCUS_KEYS.HOME, 1, 'list')) {
                 this.setState({}, () => {
                     const listEl = ReactDOM.findDOMNode(this.refs.list);
                     Utils.setInputFocus(listEl, false);
-                    focusWasSet()
-                })
+                    focusWasSet();
+                });
             }
         }
     };
@@ -64,15 +61,15 @@ class HomePage extends AbstractReactComponent {
         this.props.dispatch(modalDialogShow(
             this,
             i18n('arr.fund.title.search'),
-            <SearchFundsForm />
+            <SearchFundsForm/>,
         ));
     };
 
     handleAddFund = () => {
         const {userDetail} = this.props;
         let initData = {};
-        if(!userDetail.hasOne(perms.ADMIN, perms.FUND_ADMIN)){
-            initData.fundAdmins = [{id:"default", user:userDetail}];
+        if (!userDetail.hasOne(perms.ADMIN, perms.FUND_ADMIN)) {
+            initData.fundAdmins = [{id: 'default', user: userDetail}];
         }
         this.props.dispatch(modalDialogShow(
             this,
@@ -80,8 +77,10 @@ class HomePage extends AbstractReactComponent {
             <FundForm
                 create
                 initData={initData}
-                onSubmitForm={(data) => {return this.props.dispatch(createFund(data))}}
-            />
+                onSubmitForm={(data) => {
+                    return this.props.dispatch(createFund(data));
+                }}
+            />,
         ));
     };
 
@@ -90,22 +89,26 @@ class HomePage extends AbstractReactComponent {
         const altActions = [];
         if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_CREATE)) {
             altActions.push(
-                <Button key="add-fa" onClick={this.handleAddFund}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span></div></Button>
+                <Button key="add-fa" onClick={this.handleAddFund}><Icon glyph="fa-plus-circle"/>
+                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span></div>
+                </Button>,
             );
         }
 
         altActions.push(
-            <Button key="search-fa" onClick={this.handleFundsSearchForm}><Icon glyph="fa-search" /><div><span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span></div></Button>
+            <Button key="search-fa" onClick={this.handleFundsSearchForm}><Icon glyph="fa-search"/>
+                <div><span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span></div>
+            </Button>,
         );
 
         let altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup className="small" key="ribbon-group-home">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup className="small" key="ribbon-group-home">{altActions}</RibbonGroup>;
         }
 
         return (
             <Ribbon ref='ribbon' home altSection={altSection} {...this.props} />
-        )
+        );
     };
 
     renderHistoryItem = (name, desc, type, data, keyIndex) => {
@@ -129,12 +132,13 @@ class HomePage extends AbstractReactComponent {
 
         let descComp;
         if (hasDesc) {
-            descComp = <small>{desc}</small>
+            descComp = <small>{desc}</small>;
         } else {
-            descComp = <small>&nbsp;</small>
+            descComp = <small>&nbsp;</small>;
         }
 
-        return <Button className='history-list-item history-button' onClick={() => this.props.dispatch(storeLoadData(type, data))} key={"button-" + keyIndex}>
+        return <Button className='history-list-item history-button'
+                       onClick={() => this.props.dispatch(storeLoadData(type, data))} key={'button-' + keyIndex}>
             <Icon glyph={glyph}/>
             <div className='history-name'>{name}</div>
             {false && descComp}
@@ -148,7 +152,7 @@ class HomePage extends AbstractReactComponent {
             } else {
                 return d;
             }
-        })
+        });
     };
 
     getFundDesc = (fund) => {
@@ -162,20 +166,20 @@ class HomePage extends AbstractReactComponent {
             if (x.data) {
                 const name = x.data.name;
                 const desc = x.data.partyType.name;
-                return this.renderHistoryItem(name, desc, 'PARTY_REGION', {partyDetail:x}, index)
+                return this.renderHistoryItem(name, desc, 'PARTY_REGION', {partyDetail: x}, index);
             }
         });
         const registryItems = stateRegion.registryRegionFront.map((x, index) => {
             if (x.data) {
                 const name = x.data.record;
                 const desc = x.data.characteristics;
-                return this.renderHistoryItem(name, desc, 'REGISTRY_REGION', x, index)
+                return this.renderHistoryItem(name, desc, 'REGISTRY_REGION', x, index);
             }
         });
         const arrItems = stateRegion.arrRegionFront.map((x, index) => {
             const name = x.name + (x.lockDate ? ' ' + Utils.dateToString(new Date(x.lockDate)) : '');
             const desc = this.getFundDesc(x);
-            return this.renderHistoryItem(name, desc, 'ARR_REGION_FUND', x, index)
+            return this.renderHistoryItem(name, desc, 'ARR_REGION_FUND', x, index);
         });
 
         if (arrItems.length === 0) {
@@ -188,9 +192,9 @@ class HomePage extends AbstractReactComponent {
             partyItems.push(this.renderMessage(i18n('home.recent.party.emptyList.title'), i18n('home.recent.party.emptyList.message')));
         }
 
-        arrItems.push(this.renderLink("/fund", i18n('home.recent.fund.goTo')));
-        partyItems.push(this.renderLink("/party", i18n('home.recent.party.goTo')));
-        registryItems.push(this.renderLink("/registry", i18n('home.recent.registry.goTo')));
+        arrItems.push(this.renderLink('/fund', i18n('home.recent.fund.goTo')));
+        partyItems.push(this.renderLink('/party', i18n('home.recent.party.goTo')));
+        registryItems.push(this.renderLink('/registry', i18n('home.recent.registry.goTo')));
 
         return <div ref='list' className='history-list-container'>
             <div className="button-container">
@@ -201,7 +205,7 @@ class HomePage extends AbstractReactComponent {
                 <h4>{i18n('home.recent.registry.title')}</h4>
                 <div className="section">{registryItems}</div>
             </div>
-        </div>
+        </div>;
     };
 
     /**
@@ -215,7 +219,8 @@ class HomePage extends AbstractReactComponent {
     /**
      * Vykreslení odkazu do příslušných modulů
      */
-    renderLink = (to, text, glyph = "fa-arrow-right") => <LinkContainer key={to} to={to} className='history-list-item history-button link'>
+    renderLink = (to, text, glyph = 'fa-arrow-right') => <LinkContainer key={to} to={to}
+                                                                        className='history-list-item history-button link'>
         <Button>
             <Icon glyph={glyph}/>
             <div className='history-name'>{text}</div>
@@ -250,7 +255,7 @@ function mapStateToProps(state) {
         stateRegion,
         focus,
         userDetail,
-    }
+    };
 }
 
 export default connect(mapStateToProps)(HomePage);

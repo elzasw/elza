@@ -7,9 +7,8 @@ import 'font-awesome/css/font-awesome.css';
 import './elza-iconset/ez-icons.css';
 import React from 'react';
 import {Utils} from './components/shared';
-import {WebApi, WebApiCls} from './actions/index.jsx';
 import * as es6promise from 'es6-promise';
-import Moment from 'moment'
+import Moment from 'moment';
 import momentLocalizer from 'react-widgets-moment';
 import {store} from 'stores/index.jsx';
 import AjaxUtils from 'components/AjaxUtils.jsx';
@@ -20,14 +19,14 @@ import EventEmitter from 'events';
 
 // Pokud dostane focus body, chceme jej změnit na implcitiní focus pro ribbon
 import {setFocus} from 'actions/global/focus.jsx';
-import {FOCUS_KEYS} from "./constants.tsx";
+import {FOCUS_KEYS} from './constants.tsx';
 
-import websocket from "./websocketActions.jsx";
+import websocket from './websocketActions.jsx';
 import {storeRestoreFromStorage} from 'actions/store/store.jsx';
 import {storeSave} from 'actions/store/storeEx.jsx';
-import {i18n, Exception} from "components/shared";
+import {i18n, Exception} from 'components/shared';
 
-import {addToastr} from "components/shared/toastr/ToastrActions.jsx"
+import {addToastr} from 'components/shared/toastr/ToastrActions.jsx';
 
 import ReactDOM from 'react-dom';
 import Root from './router';
@@ -36,11 +35,11 @@ import Root from './router';
 //bootstrapUtils.addStyle(Button, 'action');
 
 // CustomEvent polyfill pro IE 9+
-if ( typeof window.CustomEvent !== "function" ){
-    function CustomEvent ( event, params ) {
-        params = params || { bubbles: false, cancelable: false, detail: undefined };
-        var evt = document.createEvent( 'CustomEvent' );
-        evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
+if (typeof window.CustomEvent !== 'function') {
+    function CustomEvent(event, params) {
+        params = params || {bubbles: false, cancelable: false, detail: undefined};
+        var evt = document.createEvent('CustomEvent');
+        evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
         return evt;
     }
 
@@ -57,21 +56,23 @@ es6promise.polyfill();
 EventEmitter.defaultMaxListeners = 0;
 
 function xx() {
-    setTimeout(fc, 1000)
+    setTimeout(fc, 1000);
 }
+
 function fc() {
-    console.log(document.activeElement)
-    xx()
+    console.log(document.activeElement);
+    xx();
 }
+
 /** IE FIxy **/
 const IE = Utils.detectIE();
 if (IE !== false) {
     (function() {
-        const html = document.getElementsByTagName("html")[0];
+        const html = document.getElementsByTagName('html')[0];
         if (IE < 12) {
-            html.className = html.className + " ie ie"+ IE;
+            html.className = html.className + ' ie ie' + IE;
         } else {
-            html.className = html.className + " ieEdge";
+            html.className = html.className + ' ieEdge';
         }
     })();
 }
@@ -79,7 +80,7 @@ if (IE !== false) {
  IE Doesn't have a .startsWith either?
  */
 if (!String.prototype.startsWith) {
-    String.prototype.startsWith = function (str){
+    String.prototype.startsWith = function(str) {
         return this.lastIndexOf(str, 0) === 0;
     };
 }
@@ -99,19 +100,21 @@ window.onerror = function(message, url, line, column, error) {
     let stackTrace = error;
     try {
         if (stackTrace.stack) {
-            stackTrace = stackTrace.stack
+            stackTrace = stackTrace.stack;
         }
-    } catch (e) {}
+    } catch (e) {
+    }
 
-    store.dispatch(addToastr(i18n('exception.client'), [<Exception key="exception-key-onerror" title={i18n('exception.client')} data={{
+    store.dispatch(addToastr(i18n('exception.client'), [<Exception key="exception-key-onerror"
+                                                                   title={i18n('exception.client')} data={{
         message,
         stackTrace: stackTrace,
         properties: {
             url,
             line,
-            column
-        }
-    }} />], "danger", "lg", null))
+            column,
+        },
+    }}/>], 'danger', 'lg', null));
 };
 
 // Globální vypnutí focus na split buttony
@@ -127,7 +130,7 @@ SplitToggle.defaultProps = {
             store.dispatch(setFocus(FOCUS_KEYS.NONE, 1));
         }
 
-        setTimeout(testBodyfocus, 150)
+        setTimeout(testBodyfocus, 150);
     };
     //testBodyfocus()
 }
@@ -143,8 +146,9 @@ function scheduleStoreSave() {
     setTimeout(() => {
         store.dispatch(storeSave());
         scheduleStoreSave();
-    }, 10000)
+    }, 10000);
 }
+
 scheduleStoreSave();
 
 // Aplikace
@@ -152,7 +156,7 @@ scheduleStoreSave();
 const render = Component => {
     const MOUNT_POINT = document.getElementById('content');
 
-    ReactDOM.render(<Component store={store} />, MOUNT_POINT)
+    ReactDOM.render(<Component store={store}/>, MOUNT_POINT);
 };
 
 

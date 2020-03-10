@@ -6,20 +6,18 @@
 // ---
 import PropTypes from 'prop-types';
 
-import React from "react";
-import {WebApi} from "actions/index.jsx";
-import {AbstractReactComponent, Autocomplete, Utils} from 'components/shared';
-import {connect} from "react-redux"
-import getMapFromList from "../shared/utils/getMapFromList";
-import Icon from "./shared/icon/Icon";
-import {Button} from "react-bootstrap";
+import React from 'react';
+import {AbstractReactComponent} from 'components/shared';
+import getMapFromList from '../shared/utils/getMapFromList';
+import Icon from './shared/icon/Icon';
+import {Button} from './ui';
 
 /**
  * Field pro vybrání skupiny nebo uživatele.
  */
 class TagsField extends AbstractReactComponent {
     static defaultProps = {
-        itemIdName: "id",
+        itemIdName: 'id',
         renderTagItem: x => x.name,
     };
 
@@ -46,8 +44,8 @@ class TagsField extends AbstractReactComponent {
             if (!itemsMap[value[itemIdName]]) {
                 onChange([
                     ...useValue,
-                    value
-                ])
+                    value,
+                ]);
             }
         }
     };
@@ -64,7 +62,7 @@ class TagsField extends AbstractReactComponent {
 
             const newValue = [
                 ...useValue.slice(0, index),
-                ...useValue.slice(index + 1)
+                ...useValue.slice(index + 1),
             ];
             onChange(newValue);
         }
@@ -80,7 +78,7 @@ class TagsField extends AbstractReactComponent {
             ...fieldComponentProps,
             ...{onFocus, onUpdate, onDragStart},
             onChange: this.handleChange,
-            onBlur: this.handleBlur
+            onBlur: this.handleBlur,
         });
 
         const fieldValue = this.getFieldValue();
@@ -91,14 +89,16 @@ class TagsField extends AbstractReactComponent {
                 <div className="selected-data-container">
                     {fieldValue.map((item, index) => {
                         return <div className="selected-data" key={index}>
-                            <span>{renderTagItem(item)}</span><Button onClick={() => {this.handleRemove(index)}}>
+                            <span>{renderTagItem(item)}</span><Button onClick={() => {
+                            this.handleRemove(index);
+                        }}>
                             <Icon glyph="fa-times"/>
                         </Button>
-                        </div>
+                        </div>;
                     })}
                 </div>
             </div>
-        )
+        );
     }
 }
 

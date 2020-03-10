@@ -1,18 +1,16 @@
 import './ArrFundPanel.scss';
 
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
-import {Icon, AbstractReactComponent, i18n} from 'components/shared';
-import {indexById} from 'stores/app/utils.jsx'
-import {Button} from 'react-bootstrap';
-import {dateToString} from 'components/Utils.jsx'
-import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
-import {fundChangeReadMode} from 'actions/arr/fund.jsx'
-import {setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
+import {connect} from 'react-redux';
+import {AbstractReactComponent, i18n, Icon} from 'components/shared';
+import {Button} from '../ui';
+import {dateToString} from 'components/Utils.jsx';
+import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx';
+import {fundChangeReadMode} from 'actions/arr/fund.jsx';
+import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 import classNames from 'classnames';
-import TooltipTrigger from "../shared/tooltip/TooltipTrigger";
+import TooltipTrigger from '../shared/tooltip/TooltipTrigger';
 
 class ArrFundPanel extends AbstractReactComponent {
 
@@ -47,12 +45,14 @@ class ArrFundPanel extends AbstractReactComponent {
 
         if (fund.lockDate || (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) && !arrPerm)) {
             readMode = true;
-            action = <div className="action"><span>{i18n('arr.fund.panel.readOnly')}</span></div>
+            action = <div className="action"><span>{i18n('arr.fund.panel.readOnly')}</span></div>;
         } else {
             if (readMode) {
-                action = <div className="action"><Button onClick={this.setReadMode.bind(this, false)}>{i18n('arr.fund.panel.allowEdit')}</Button></div>
+                action = <div className="action"><Button
+                    onClick={this.setReadMode.bind(this, false)}>{i18n('arr.fund.panel.allowEdit')}</Button></div>;
             } else {
-                action = <div className="action"><Button onClick={this.setReadMode.bind(this, true)}>{i18n('arr.fund.panel.forbidEdit')}</Button></div>
+                action = <div className="action"><Button
+                    onClick={this.setReadMode.bind(this, true)}>{i18n('arr.fund.panel.forbidEdit')}</Button></div>;
             }
         }
 
@@ -60,13 +60,15 @@ class ArrFundPanel extends AbstractReactComponent {
             cls.push('read-mode');
         }
 
-        const name = <span className="name">{fund.name}</span>
-        const version = fund.lockDate != null ? <span className="lock"><span className="lockTitle">{i18n('arr.fund.panel.lockTitle')}</span>{dateToString(new Date(fund.lockDate))}</span> : null
+        const name = <span className="name">{fund.name}</span>;
+        const version = fund.lockDate != null ? <span className="lock"><span
+            className="lockTitle">{i18n('arr.fund.panel.lockTitle')}</span>{dateToString(new Date(fund.lockDate))}</span> : null;
 
         let comments = null;
         const activeVersion = fund.activeVersion;
         if (activeVersion.issues && activeVersion.issues.length > 0) {
-            const tooltip = <span>{activeVersion.issues.map((i) => <div key={i.id}>#{i.number} - {i.description}</div>)}</span>;
+            const tooltip = <span>{activeVersion.issues.map((i) => <div
+                key={i.id}>#{i.number} - {i.description}</div>)}</span>;
             comments = <span className="comments">
                 <TooltipTrigger
                     content={tooltip}
@@ -78,13 +80,13 @@ class ArrFundPanel extends AbstractReactComponent {
                 >
                     <Icon glyph="fa-commenting"/>
                 </TooltipTrigger>
-            </span>
+            </span>;
         }
 
         return (
-                <div key='arr-fund-panel' className={classNames(cls)}>
-                    {name}{version}{comments}{action}
-                </div>
+            <div key='arr-fund-panel' className={classNames(cls)}>
+                {name}{version}{comments}{action}
+            </div>
         );
     }
 }
@@ -98,7 +100,7 @@ function mapStateToProps(state) {
     return {
         fund,
         userDetail,
-    }
+    };
 }
 
 export default connect(mapStateToProps)(ArrFundPanel);

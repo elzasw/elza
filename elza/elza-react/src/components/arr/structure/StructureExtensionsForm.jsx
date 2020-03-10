@@ -1,10 +1,10 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n} from 'components/shared';
-import {Modal, Button, FormCheck, Form} from 'react-bootstrap';
+import {Form, FormCheck, Modal} from 'react-bootstrap';
+import {Button} from '../../ui';
 
-import './StructureExtensionsForm.scss'
+import './StructureExtensionsForm.scss';
 
 class StructureExtensionsForm extends AbstractReactComponent {
 
@@ -22,21 +22,22 @@ class StructureExtensionsForm extends AbstractReactComponent {
                                 const wantedProps = {checked, name, onFocus, onChange, onBlur};
                                 return <FormCheck {...wantedProps} key={index} value={true}>
                                     {val.name.initialValue}
-                                </FormCheck>
+                                </FormCheck>;
                             }) : i18n('arr.structure.modal.settings.noResults')}
                         </div>
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" disabled={submitting}>{i18n('global.action.update')}</Button>
-                    <Button variant="link" disabled={submitting} onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button variant="link" disabled={submitting}
+                            onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </Form>
-        )
+        );
     }
 }
 
 export default reduxForm({
     form: 'structureExtensions',
-    fields: ['extensions[].code', 'extensions[].name', 'extensions[].active']
+    fields: ['extensions[].code', 'extensions[].name', 'extensions[].active'],
 })(StructureExtensionsForm);

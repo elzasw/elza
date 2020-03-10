@@ -8,7 +8,8 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, ModalDialog, Icon, AbstractReactComponent, i18n} from 'components/shared';
-import {Button, Dropdown} from 'react-bootstrap';
+import {Dropdown} from 'react-bootstrap';
+import {Button} from '../ui';
 import {AppStore} from 'stores/index.jsx'
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
 import {logout} from 'actions/global/login.jsx';

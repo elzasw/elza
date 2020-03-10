@@ -1,6 +1,7 @@
 import React from 'react';
-import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
-import {Modal, Button} from 'react-bootstrap';
+import {AbstractReactComponent, i18n} from 'components/shared';
+import {Modal} from 'react-bootstrap';
+import {Button} from '../ui';
 import DataGridExportForm from './DataGridExportForm';
 
 /**
@@ -19,7 +20,7 @@ class DataGridExportDialog extends AbstractReactComponent {
         return (
             <div>
                 <Modal.Body>
-                    <span><label>{i18n("dataGrid.export.title")}</label></span>
+                    <span><label>{i18n('dataGrid.export.title')}</label></span>
                     <DataGridExportForm versionId={versionId} fundDataGrid={fundDataGrid} ref="form"/>
                 </Modal.Body>
                 <Modal.Footer>
@@ -27,7 +28,7 @@ class DataGridExportDialog extends AbstractReactComponent {
                     <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
-        )
+        );
     }
 }
 

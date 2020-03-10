@@ -1,27 +1,19 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {
-    Icon,
-    i18n,
-    AbstractReactComponent,
-    NoFocusButton,
-    Loading
-} from 'components/shared'
-import {reduxForm} from 'redux-form'
-import {FormCheck, Form, Modal, Button} from 'react-bootstrap'
+import {AbstractReactComponent, i18n, Icon, Loading, NoFocusButton} from 'components/shared';
+import {reduxForm} from 'redux-form';
+import {Form, FormCheck, Modal} from 'react-bootstrap';
+import {Button} from '../../ui';
 import '../NodeSubNodeForm.scss';
-import SubNodeForm from "../SubNodeForm";
-import {structureFormActions} from "../../../actions/arr/subNodeForm";
+import {structureFormActions} from '../../../actions/arr/subNodeForm';
 import PropTypes from 'prop-types';
-import {getDescItemsAddTree, getOneSettings} from "../ArrUtils";
-import AddDescItemTypeForm from "../nodeForm/AddDescItemTypeForm";
-import {modalDialogShow} from "../../../actions/global/modalDialog";
-import subNodeForm from "../../../stores/app/arr/subNodeForm";
-import {structureNodeFormFetchIfNeeded, structureNodeFormSelectId} from "../../../actions/arr/structureNodeForm";
-import DescItemType from "../nodeForm/DescItemType";
+import {getDescItemsAddTree, getOneSettings} from '../ArrUtils';
+import AddDescItemTypeForm from '../nodeForm/AddDescItemTypeForm';
+import {modalDialogShow} from '../../../actions/global/modalDialog';
+import {structureNodeFormFetchIfNeeded, structureNodeFormSelectId} from '../../../actions/arr/structureNodeForm';
+import DescItemType from '../nodeForm/DescItemType';
 import classNames from 'classnames';
 
-import './StructureSubNodeForm.scss'
+import './StructureSubNodeForm.scss';
 
 
 /**
@@ -39,7 +31,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
         descItemTypes: PropTypes.object,
         subNodeForm: PropTypes.object,
         focus: PropTypes.object,
-        descItemFactory: PropTypes.object.isRequired
+        descItemFactory: PropTypes.object.isRequired,
     };
 
     initFocus = () => {
@@ -77,7 +69,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
             <AddDescItemTypeForm
                 descItemTypes={descItemTypes}
                 onSubmitForm={(data) => this.props.dispatch(structureFormActions.fundSubNodeFormDescItemTypeAdd(fundVersionId, null, data.descItemTypeId.id))}
-            />
+            />,
         ));
     };
 
@@ -88,14 +80,14 @@ class UpdateMultipleSub extends AbstractReactComponent {
             autoincrementItemTypeIds.onChange([
                 ...autoincrementItemTypeIds.value.slice(0, incrementIndex),
                 ...autoincrementItemTypeIds.value.slice(incrementIndex + 1),
-            ])
+            ]);
         }
         const deleteIndex = deleteItemTypeIds.value.indexOf(id);
         if (deleteIndex !== -1) {
             deleteItemTypeIds.onChange([
                 ...deleteItemTypeIds.value.slice(0, deleteIndex),
                 ...deleteItemTypeIds.value.slice(deleteIndex + 1),
-            ])
+            ]);
         }
 
         if (items.value.hasOwnProperty(id)) {
@@ -111,8 +103,8 @@ class UpdateMultipleSub extends AbstractReactComponent {
         if (!items.value.hasOwnProperty(id)) {
             items.onChange({
                 ...items.value,
-                [id]: descItems.map(i => ({...i, id: undefined}))
-            })
+                [id]: descItems.map(i => ({...i, id: undefined})),
+            });
         }
 
     };
@@ -142,8 +134,8 @@ class UpdateMultipleSub extends AbstractReactComponent {
 
             deleteItemTypeIds.onChange([
                 ...deleteItemTypeIds.value,
-                id
-            ])
+                id,
+            ]);
         }
     };
 
@@ -152,7 +144,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
         const parts = [];
 
 
-        let glyph = "fa-lock";
+        let glyph = 'fa-lock';
         let clickFunction = this.handleModify.bind(this, infoType.id, descItems);
 
 
@@ -162,16 +154,17 @@ class UpdateMultipleSub extends AbstractReactComponent {
             isInDeleted ||
             items.value.hasOwnProperty(infoType.id)
         ) {
-            glyph = "fa-unlock";
+            glyph = 'fa-unlock';
             clickFunction = this.handleNotModify.bind(this, infoType.id);
         }
 
-        parts.push(<NoFocusButton className={"lock"} key="lock" onClick={clickFunction}>
+        parts.push(<NoFocusButton className={'lock'} key="lock" onClick={clickFunction}>
             <Icon glyph={glyph}/>
         </NoFocusButton>);
 
-        parts.push(<NoFocusButton className={"delete"} key="delete" active={isInDeleted} onClick={this.handleDeleteToggle.bind(this, infoType.id)}>
-            <Icon glyph={"fa-trash"}/>
+        parts.push(<NoFocusButton className={'delete'} key="delete" active={isInDeleted}
+                                  onClick={this.handleDeleteToggle.bind(this, infoType.id)}>
+            <Icon glyph={'fa-trash'}/>
         </NoFocusButton>);
 
 
@@ -184,18 +177,18 @@ class UpdateMultipleSub extends AbstractReactComponent {
                 if (checked) {
                     autoincrementItemTypeIds.onChange([
                         ...autoincrementItemTypeIds.value.slice(0, index),
-                        ...autoincrementItemTypeIds.value.slice(index+1),
+                        ...autoincrementItemTypeIds.value.slice(index + 1),
                     ]);
                 } else {
                     autoincrementItemTypeIds.onChange([
                         ...autoincrementItemTypeIds.value,
-                        infoType.id
+                        infoType.id,
                     ]);
                 }
 
             }}>
                 {i18n('arr.structure.modal.increment')}
-            </FormCheck>)
+            </FormCheck>);
         }
 
         return parts;
@@ -203,7 +196,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
 
     getStrictMode = () => {
         const {fund, userDetail} = this.props;
-        let {activeVersion:{strictMode}} = fund;
+        let {activeVersion: {strictMode}} = fund;
 
         const userStrictMode = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fund.id);
         if (userStrictMode && userStrictMode.value !== null) {
@@ -233,9 +226,9 @@ class UpdateMultipleSub extends AbstractReactComponent {
                 [id]: [
                     ...items.value[id].slice(0, index),
                     {...items.value[id][index], value},
-                    ...items.value[id].slice(index+1),
-                ]
-            })
+                    ...items.value[id].slice(index + 1),
+                ],
+            });
         }
     };
 
@@ -247,9 +240,9 @@ class UpdateMultipleSub extends AbstractReactComponent {
                 [id]: [
                     ...items.value[id].slice(0, index),
                     {...items.value[id][index], descItemSpecId},
-                    ...items.value[id].slice(index+1),
-                ]
-            })
+                    ...items.value[id].slice(index + 1),
+                ],
+            });
         }
     };
 
@@ -278,7 +271,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
         const {fields: {items}} = this.props;
         if (items.value.hasOwnProperty(id)) {
 
-            const lastAdded = items.value[id][items.value[id].length-1];
+            const lastAdded = items.value[id][items.value[id].length - 1];
 
             items.onChange({
                 ...items.value,
@@ -287,11 +280,11 @@ class UpdateMultipleSub extends AbstractReactComponent {
                     {
                         ...lastAdded,
                         descItemObjectId: null,
-                        formKey: 'fk_' + parseInt(lastAdded.formKey.split("_")[1]) + 1,
-                        value: ""
+                        formKey: 'fk_' + parseInt(lastAdded.formKey.split('_')[1]) + 1,
+                        value: '',
                     },
-                ]
-            })
+                ],
+            });
         }
     };
 
@@ -302,14 +295,14 @@ class UpdateMultipleSub extends AbstractReactComponent {
                 ...items.value,
                 [id]: [
                     ...items.value[id].slice(0, index),
-                    ...items.value[id].slice(index+1)
-                ]
-            })
+                    ...items.value[id].slice(index + 1),
+                ],
+            });
         }
     };
 
     renderDescItemType = (descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting) => {
-        const {fields:{items, deleteItemTypeIds}} = this.props;
+        const {fields: {items, deleteItemTypeIds}} = this.props;
         const {fundId, subNodeForm, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, calendarTypes, closed, showNodeAddons, fundVersionId, typePrefix, descItemFactory} = this.props;
 
         const refType = subNodeForm.refTypesMap[descItemType.id];
@@ -340,59 +333,59 @@ class UpdateMultipleSub extends AbstractReactComponent {
                         [-1]: {
                             id: -1,
                             rep: 1,
-                            type: "POSSIBLE",
-                            name: value
-                        }
-                    }
+                            type: 'POSSIBLE',
+                            name: value,
+                        },
+                    },
                 };
 
                 hackedDescItems.push({
                     ...descItems[0],
                     value,
-                    descItemSpecId: -1
+                    descItemSpecId: -1,
                 });
             } else {
                 hackedDescItems.push({
                     ...descItems[0],
-                    value
-                })
+                    value,
+                });
             }
         }
 
         const hackedDescItemType = {
             ...allowedProps,
-            descItems: hackedDescItems
+            descItems: hackedDescItems,
         };
 
 
         return <DescItemType key={descItemType.id}
-            typePrefix={typePrefix}
-            ref={'descItemType' + descItemType.id}
-            descItemType={hackedDescItemType}
-            singleDescItemTypeEdit={singleDescItemTypeEdit}
-            refType={refType}
-            infoType={overrideInfo || infoType}
-            rulDataType={rulDataType}
-            calendarTypes={calendarTypes}
-            onDescItemAdd={this.handleOnDescItemAdd.bind(this, infoType.id)}
-            onDescItemRemove={this.handleOnDescItemDelete.bind(this, infoType.id)}
-            onChange={itemModified ? this.handleChange.bind(this, infoType.id) : this.handleBlank}
-            onChangeSpec={this.handleChangeSpec.bind(this, infoType.id)}
-            onBlur={this.handleBlank}
-            onFocus={this.handleBlank}
-            showNodeAddons={showNodeAddons}
-            locked={!itemModified}
-            closed={closed}
-            conformityInfo={{missings: [], errors: []}}
-            descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
-            versionId={fundVersionId}
-            fundId={fundId}
-            draggable={false}
-            readMode={false}
-            strictMode={strictMode}
-            customActions={this.customInRender(descItems, rulDataType.code, infoType)}
-            hideDelete={true}
-            descItemFactory={descItemFactory}
+                             typePrefix={typePrefix}
+                             ref={'descItemType' + descItemType.id}
+                             descItemType={hackedDescItemType}
+                             singleDescItemTypeEdit={singleDescItemTypeEdit}
+                             refType={refType}
+                             infoType={overrideInfo || infoType}
+                             rulDataType={rulDataType}
+                             calendarTypes={calendarTypes}
+                             onDescItemAdd={this.handleOnDescItemAdd.bind(this, infoType.id)}
+                             onDescItemRemove={this.handleOnDescItemDelete.bind(this, infoType.id)}
+                             onChange={itemModified ? this.handleChange.bind(this, infoType.id) : this.handleBlank}
+                             onChangeSpec={this.handleChangeSpec.bind(this, infoType.id)}
+                             onBlur={this.handleBlank}
+                             onFocus={this.handleBlank}
+                             showNodeAddons={showNodeAddons}
+                             locked={!itemModified}
+                             closed={closed}
+                             conformityInfo={{missings: [], errors: []}}
+                             descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
+                             versionId={fundVersionId}
+                             fundId={fundId}
+                             draggable={false}
+                             readMode={false}
+                             strictMode={strictMode}
+                             customActions={this.customInRender(descItems, rulDataType.code, infoType)}
+                             hideDelete={true}
+                             descItemFactory={descItemFactory}
             // onChangePosition={this.handleChangePosition.bind(this, infoType.id)}
             // onBlur={this.handleBlur.bind(this, descItemGroupIndex, descItemTypeIndex)}
             // onFocus={this.handleFocus.bind(this, descItemGroupIndex, descItemTypeIndex)}
@@ -401,7 +394,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
             // onDescItemTypeLock={this.handleDescItemTypeLock.bind(this, descItemType.id)}
             // onDescItemTypeCopy={this.handleDescItemTypeCopy.bind(this, descItemType.id)}
             // onDescItemTypeCopyFromPrev={this.handleDescItemTypeCopyFromPrev.bind(this, descItemGroupIndex, descItemTypeIndex, descItemType.id)}
-        />
+        />;
     };
 
 
@@ -419,12 +412,12 @@ class UpdateMultipleSub extends AbstractReactComponent {
         descItemGroup.descItemTypes.forEach((descItemType, descItemTypeIndex) => {
             if (!singleDescItemTypeEdit || (singleDescItemTypeEdit && singleDescItemTypeId == descItemType.id)) {
                 const i = this.renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting);
-                descItemTypes.push(i)
+                descItemTypes.push(i);
             }
         });
         const cls = classNames({
             'desc-item-group': true,
-            active: descItemGroup.hasFocus
+            active: descItemGroup.hasFocus,
         });
 
         if (singleDescItemTypeEdit && descItemTypes.length === 0) {
@@ -437,14 +430,14 @@ class UpdateMultipleSub extends AbstractReactComponent {
                     {descItemTypes}
                 </div>
             </div>
-        )
+        );
     };
 
     render() {
-        const {versionId, focus, fundId, rulDataTypes, calendarTypes, descItemTypes, handleSubmit, submitting, fields: {items}, onClose, subNodeForm, subNodeForm:{formData}, nodeSetting} = this.props;
+        const {versionId, focus, fundId, rulDataTypes, calendarTypes, descItemTypes, handleSubmit, submitting, fields: {items}, onClose, subNodeForm, subNodeForm: {formData}, nodeSetting} = this.props;
 
         if (!subNodeForm || !subNodeForm.fetched) {
-            return <Loading />
+            return <Loading/>;
         }
 
 
@@ -452,7 +445,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
         formData.descItemGroups.forEach((group, groupIndex) => {
             const i = this.renderDescItemGroup(group, groupIndex, nodeSetting);
             if (i !== null) {
-                descItemGroups.push(i)
+                descItemGroups.push(i);
             }
         });
 
@@ -462,7 +455,9 @@ class UpdateMultipleSub extends AbstractReactComponent {
                 <Modal.Body>
                     <div className="structure-item-form-container">
                         {items.length}
-                        {this.descItemTypeItems().length > 0 && <NoFocusButton onClick={this.handleAddDescItemType}><Icon glyph="fa-plus-circle"/>{i18n('subNodeForm.section.item')}</NoFocusButton>}
+                        {this.descItemTypeItems().length > 0 &&
+                        <NoFocusButton onClick={this.handleAddDescItemType}><Icon
+                            glyph="fa-plus-circle"/>{i18n('subNodeForm.section.item')}</NoFocusButton>}
                         <div className='node-form'>
                             {/*unusedGeneratedItems*/}
                             <div ref='nodeForm' className='desc-item-groups'>
@@ -473,10 +468,11 @@ class UpdateMultipleSub extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" disabled={submitting}>{i18n('global.action.update')}</Button>
-                    <Button variant="link" disabled={submitting} onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button variant="link" disabled={submitting}
+                            onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </Form>
-        )
+        );
     }
 }
 
@@ -495,7 +491,7 @@ function mapStateToProps(state) {
         rulDataTypes: refTables.rulDataTypes,
         calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,
-    }
+    };
 }
 
 export default reduxForm({
@@ -506,5 +502,5 @@ export default reduxForm({
         items: {},
         structureDataIds: [],
     },
-    fields: ['structureDataIds', 'autoincrementItemTypeIds', 'deleteItemTypeIds', 'items']
+    fields: ['structureDataIds', 'autoincrementItemTypeIds', 'deleteItemTypeIds', 'items'],
 }, mapStateToProps)(UpdateMultipleSub);

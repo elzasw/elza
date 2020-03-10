@@ -1,17 +1,14 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
-import {Autocomplete, AbstractReactComponent, i18n, Icon, FormInput, NoFocusButton} from 'components/shared';
-import {Modal, Button, Form} from 'react-bootstrap';
-import {indexById} from 'stores/app/utils.jsx'
-import {decorateFormField, submitReduxFormWithProp} from 'components/form/FormUtils.jsx'
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTypes.jsx'
+import {connect} from 'react-redux';
+import {AbstractReactComponent, i18n, Icon, NoFocusButton} from 'components/shared';
+import {Modal} from 'react-bootstrap';
+import {Button} from '../ui';
 import {WebApi} from 'actions/index.jsx';
-import ApItemNameForm from "../accesspoint/ApItemNameForm";
-import {accessPointFormActions} from "../accesspoint/AccessPointFormActions";
-import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
-import AddDescItemTypeForm from "../arr/nodeForm/AddDescItemTypeForm";
+import ApItemNameForm from '../accesspoint/ApItemNameForm';
+import {accessPointFormActions} from '../accesspoint/AccessPointFormActions';
+import {modalDialogShow} from '../../actions/global/modalDialog';
+import AddDescItemTypeForm from '../arr/nodeForm/AddDescItemTypeForm';
 
 /**
  * Formulář přidání nového rejstříkového hesla
@@ -53,10 +50,10 @@ class NewApItemNameFormModal extends AbstractReactComponent {
         const descItemTypes = [
             {
                 groupItem: true,
-                id: "DEFAULT",
-                name: i18n("subNodeForm.descItemGroup.default"),
-                children: itemTypes
-            }
+                id: 'DEFAULT',
+                name: i18n('subNodeForm.descItemGroup.default'),
+                children: itemTypes,
+            },
         ];
 
         const submit = (data) => {
@@ -65,7 +62,8 @@ class NewApItemNameFormModal extends AbstractReactComponent {
         };
 
         // Modální dialog
-        this.props.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>));
+        this.props.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), <AddDescItemTypeForm
+            descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>));
     };
 
     onStore = () => {
@@ -89,20 +87,21 @@ class NewApItemNameFormModal extends AbstractReactComponent {
         return (
             <div>
                 <Modal.Body>
-                    <NoFocusButton onClick={this.add}><Icon glyph="fa-plus-circle"/>{i18n('subNodeForm.section.item')}</NoFocusButton>
-                    <ApItemNameForm parent={{id:objectId, accessPointId}} />
+                    <NoFocusButton onClick={this.add}><Icon glyph="fa-plus-circle"/>{i18n('subNodeForm.section.item')}
+                    </NoFocusButton>
+                    <ApItemNameForm parent={{id: objectId, accessPointId}}/>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="link" onClick={this.onStore}>{i18n('global.action.store')}</Button>
                     <Button variant="link" onClick={this.onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
-        )
+        );
     }
 }
 
 export default connect((state) => {
     return {
-        nameItemForm: state.ap.nameItemForm
-    }
-})(NewApItemNameFormModal)
+        nameItemForm: state.ap.nameItemForm,
+    };
+})(NewApItemNameFormModal);

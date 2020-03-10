@@ -1,9 +1,11 @@
+$border-radius: 0;
+$font-size-base: .75rem;
+
 @import "~bootstrap/scss/functions.scss";
 @import "~bootstrap/scss/variables.scss";
 
 //Global
-$font-size-base: 12px;
-$input-height-base: 25px;
+$input-height-base: 1.55rem;
 $border-radius-base: 0;
 $border-radius-large: 0;
 $border-radius-small: 0;
@@ -12,8 +14,9 @@ $color-link: #23527c;
 $color-warn: #D90606;
 $color-success: #29b70c;
 $focus-border-color: #66afe9;
+$defaultBtnColor: #333333;
 
-    // App header
+// App header
 $app-header-border: #DDDDDD;
 
 // Splitter
@@ -49,9 +52,9 @@ $node-form-group-active-bg: #f9f9f9;
 $node-form-group-active-border: #ececec;
 $node-form-item-type-bg: transparent;
 $node-form-item-type-active-bg: #f0f0f0;
-$node-form-item-type-element-width:225px;
-$node-form-registry:#f8f8f8;
-$node-form-dao:white;
+$node-form-item-type-element-width: 225px;
+$node-form-registry: #f8f8f8;
+$node-form-dao: white;
 
 // Tabs
 $tabs-tab-active-bg: #f8f8f8;
@@ -93,7 +96,7 @@ $dragger-border: #adadad;
 $button-bg-hover: #C0C0C0;
 
 // HomePage
-$homepage-static-bg:#f8f8f8;
-$homepage-button-bg:#EEEEEE;
-$homepage-button-bg-hover:#C0C0C0;
-$homepage-empty-list-msg-col:#aaa;
+$homepage-static-bg: #f8f8f8;
+$homepage-button-bg: #EEEEEE;
+$homepage-button-bg-hover: #C0C0C0;
+$homepage-empty-list-msg-col: #aaa;

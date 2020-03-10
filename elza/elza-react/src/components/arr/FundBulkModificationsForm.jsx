@@ -1,10 +1,9 @@
 //
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
-import {Modal, Button, FormCheck, FormLabel, Form, FormGroup} from 'react-bootstrap';
-import {indexById} from 'stores/app/utils.jsx';
+import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import {Form, FormCheck, FormGroup, FormLabel, Modal} from 'react-bootstrap';
+import {Button} from '../ui';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
 import {getSpecsIds} from 'components/arr/ArrUtils.jsx';
@@ -139,7 +138,8 @@ class FundBulkModificationsForm extends AbstractReactComponent {
         super(props);
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {}
+    UNSAFE_componentWillReceiveProps(nextProps) {
+    }
 
     componentDidMount() {
         this.props.dispatch(descItemTypesFetchIfNeeded());
@@ -207,15 +207,15 @@ class FundBulkModificationsForm extends AbstractReactComponent {
 
     render() {
         const {
-            allItemsCount,
-            checkedItemsCount,
-            refType,
-            fields: {findText, replaceText, itemsArea, operationType, specs, replaceSpec},
-            handleSubmit,
-            onClose,
-            dataType,
-            calendarTypes,
-        } = this.props;
+                  allItemsCount,
+                  checkedItemsCount,
+                  refType,
+                  fields: {findText, replaceText, itemsArea, operationType, specs, replaceSpec},
+                  handleSubmit,
+                  onClose,
+                  dataType,
+                  calendarTypes,
+              } = this.props;
         const uncheckedItemsCount = allItemsCount - checkedItemsCount;
 
         let operationInputs = [];
@@ -235,7 +235,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                         {...replaceSpec}
                         {...decorateFormField(replaceSpec)}
                     >
-                        <option />
+                        <option/>
                         {refType.descItemSpecs.map(i => (
                             <option key={i.id} value={i.id}>
                                 {i.name}
@@ -277,7 +277,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                             {...replaceSpec}
                             {...decorateFormField(replaceSpec)}
                         >
-                            <option />
+                            <option/>
                             {refType.descItemSpecs.map(i => (
                                 <option key={i.id} value={i.id}>
                                     {i.name}
@@ -303,60 +303,58 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                 };
 
                 switch (dataType.code) {
-                    case 'UNITDATE':
-                        {
-                            let data = {
-                                ...descItemProps,
-                                descItem: {
-                                    error: {
-                                        calendarType: replaceText.error ? replaceText.error : null,
-                                        value: replaceText.error ? replaceText.error : null,
-                                    },
-                                    value: replaceText.value.value,
-                                    calendarTypeId: replaceText.value.calendarTypeId,
+                    case 'UNITDATE': {
+                        let data = {
+                            ...descItemProps,
+                            descItem: {
+                                error: {
+                                    calendarType: replaceText.error ? replaceText.error : null,
+                                    value: replaceText.error ? replaceText.error : null,
                                 },
-                            };
-                            operationInputs.push(
-                                <FormInput
-                                    as={DescItemUnitdate}
-                                    label={i18n('arr.fund.bulkModifications.replace.replaceText')}
-                                    calendarTypes={calendarTypes}
-                                    {...replaceText}
-                                    {...data}
-                                />,
-                            );
-                        }
+                                value: replaceText.value.value,
+                                calendarTypeId: replaceText.value.calendarTypeId,
+                            },
+                        };
+                        operationInputs.push(
+                            <FormInput
+                                as={DescItemUnitdate}
+                                label={i18n('arr.fund.bulkModifications.replace.replaceText')}
+                                calendarTypes={calendarTypes}
+                                {...replaceText}
+                                {...data}
+                            />,
+                        );
+                    }
                         break;
-                    case 'RECORD_REF':
-                        {
-                            let specName = null;
-                            if (replaceSpec.value) {
-                                const map = getMapFromList(refType.descItemSpecs);
-                                specName = map[replaceSpec.value].name;
-                            }
-
-                            let data = {
-                                ...descItemProps,
-                                itemTypeId: refType.id,
-                                itemName: refType.shortcut,
-                                specName: specName,
-                                descItem: {
-                                    error: {
-                                        value: replaceText.error ? replaceText.error : null,
-                                    },
-                                    record: replaceText.value,
-                                    descItemSpecId: replaceSpec.value,
-                                },
-                            };
-                            operationInputs.push(
-                                <FormInput
-                                    as={DescItemRecordRef}
-                                    label={i18n('arr.fund.bulkModifications.replace.replaceText')}
-                                    {...replaceText}
-                                    {...data}
-                                />,
-                            );
+                    case 'RECORD_REF': {
+                        let specName = null;
+                        if (replaceSpec.value) {
+                            const map = getMapFromList(refType.descItemSpecs);
+                            specName = map[replaceSpec.value].name;
                         }
+
+                        let data = {
+                            ...descItemProps,
+                            itemTypeId: refType.id,
+                            itemName: refType.shortcut,
+                            specName: specName,
+                            descItem: {
+                                error: {
+                                    value: replaceText.error ? replaceText.error : null,
+                                },
+                                record: replaceText.value,
+                                descItemSpecId: replaceSpec.value,
+                            },
+                        };
+                        operationInputs.push(
+                            <FormInput
+                                as={DescItemRecordRef}
+                                label={i18n('arr.fund.bulkModifications.replace.replaceText')}
+                                {...replaceText}
+                                {...data}
+                            />,
+                        );
+                    }
                         break;
                     default:
                         operationInputs.push(

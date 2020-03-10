@@ -3,15 +3,15 @@
  * <ImportForm fund onSubmit={this.handleCallImportRegistry} />
  */
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {Modal, Button, Form} from 'react-bootstrap';
+import {Form, Modal} from 'react-bootstrap';
+import {Button} from '../ui';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
 import {WebApi} from 'actions/index.jsx';
-import AbstractReactComponent from "../AbstractReactComponent";
-import HorizontalLoader from "../shared/loading/HorizontalLoader";
-import FormInput from "../shared/form/FormInput";
-import i18n from "../i18n";
+import AbstractReactComponent from '../AbstractReactComponent';
+import HorizontalLoader from '../shared/loading/HorizontalLoader';
+import FormInput from '../shared/form/FormInput';
+import i18n from '../i18n';
 
 class ExportForm extends AbstractReactComponent {
 
@@ -21,27 +21,27 @@ class ExportForm extends AbstractReactComponent {
         defaultScopes: [],
         transformationNames: [],
         iExportFormsFetching: true,
-        isFetching: true
+        isFetching: true,
     };
 
     componentDidMount() {
         WebApi.getExportTransformations().then(json => {
             this.setState({
                 transformationNames: json,
-                isFetching: false
+                isFetching: false,
             });
         });
     }
 
 
-    validate = (values,props) => {
-        const errors = {}
+    validate = (values, props) => {
+        const errors = {};
         return errors;
     };
 
-    submitOptions = {finishOnSubmit:true}
+    submitOptions = {finishOnSubmit: true};
 
-    submitReduxForm = (values, dispatch) => submitForm(this.validate,values,this.props,this.props.onSubmitForm,dispatch,this.submitOptions);
+    submitReduxForm = (values, dispatch) => submitForm(this.validate, values, this.props, this.props.onSubmitForm, dispatch, this.submitOptions);
 
     render() {
         const {fields: {transformationName}, onClose, handleSubmit} = this.props;
@@ -49,27 +49,27 @@ class ExportForm extends AbstractReactComponent {
 
         return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body>
-                {isFetching ? <HorizontalLoader /> : <FormInput as="select"
-                           label={i18n('export.transformationName')}
-                            {...transformationName}
-                            {...decorateFormField(transformationName)}
-                    >
-                        <option key='blankName'/>
-                        {this.state.transformationNames.map((i, index)=> {
-                            return <option key={index+'name'} value={i}>{i}</option>
-                        })}
-                    </FormInput>
+                {isFetching ? <HorizontalLoader/> : <FormInput as="select"
+                                                               label={i18n('export.transformationName')}
+                                                               {...transformationName}
+                                                               {...decorateFormField(transformationName)}
+                >
+                    <option key='blankName'/>
+                    {this.state.transformationNames.map((i, index) => {
+                        return <option key={index + 'name'} value={i}>{i}</option>;
+                    })}
+                </FormInput>
                 }
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit">{i18n('global.action.export')}</Button>
                 <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
-        </Form>
+        </Form>;
     }
 }
 
 export default reduxForm({
     form: 'exportForm',
-    fields: ['transformationName']
+    fields: ['transformationName'],
 })(ExportForm);

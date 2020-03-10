@@ -1,22 +1,19 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, Scope, Icon, FormInput, HorizontalLoader} from 'components/shared';
-import DatationField from './DatationField'
-import {Modal, Button, Row, Col, Form} from 'react-bootstrap';
-import {indexById} from 'stores/app/utils.jsx'
-import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes.jsx'
-import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTypes.jsx'
-import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
-import {submitForm} from 'components/form/FormUtils.jsx'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {PARTY_TYPE_CODES, RELATION_CLASS_CODES} from '../../constants.tsx'
+import {AbstractReactComponent, FormInput, HorizontalLoader, i18n, Icon} from 'components/shared';
+import DatationField from './DatationField';
+import {Col, Form, Modal, Row} from 'react-bootstrap';
+import {Button} from '../ui';
+import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes.jsx';
+import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx';
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTypes.jsx';
+import {submitForm} from 'components/form/FormUtils.jsx';
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
+import {PARTY_TYPE_CODES} from '../../constants.tsx';
 
 
-import './RelationForm.scss'
+import './RelationForm.scss';
 
 const stringNormalize = val => val && val.trim().length > 0 ? val.trim() : null;
 
@@ -47,9 +44,9 @@ class PartyNameForm extends AbstractReactComponent {
     static requireFields = (...names) => data =>
         names.reduce((errors, name) => {
             if (!data[name]) {
-                errors[name] = i18n('global.validation.required')
+                errors[name] = i18n('global.validation.required');
             }
-            return errors
+            return errors;
         }, {});
 
     /**
@@ -58,10 +55,10 @@ class PartyNameForm extends AbstractReactComponent {
      * Kontrola vyplnění formuláře identifikátoru
      * @return object errors - seznam chyb
      */
-    static validate = function (values) {
+    static validate = function(values) {
         let errors = {
             ...PartyNameForm.requireFields('mainPart')(values),
-            ...PartyNameForm.validateInline(values)
+            ...PartyNameForm.validateInline(values),
         };
         errors.partyNameComplements = values.partyNameComplements.map(PartyNameForm.requireFields('complementTypeId', 'complement'));
         if (errors.partyNameComplements.filter(i => Object.keys(i).length !== 0).length === 0) {
@@ -72,7 +69,6 @@ class PartyNameForm extends AbstractReactComponent {
     };
 
 
-
     static validateInline = (values) => {
         const errors = {};
 
@@ -80,10 +76,10 @@ class PartyNameForm extends AbstractReactComponent {
         errors.validTo = DatationField.reduxValidate(values.validTo);
 
         if (!errors.validFrom) {
-            delete errors.validFrom
+            delete errors.validFrom;
         }
         if (!errors.validTo) {
-            delete errors.validTo
+            delete errors.validTo;
         }
         return errors;
     };
@@ -106,7 +102,7 @@ class PartyNameForm extends AbstractReactComponent {
     }
 
     dataRefresh = (props = this.props) => {
-        const {refTables:{partyNameFormTypes, calendarTypes}, partyTypeId} = props;
+        const {refTables: {partyNameFormTypes, calendarTypes}, partyTypeId} = props;
         this.props.dispatch(refPartyNameFormTypesFetchIfNeeded());// nacteni seznamů typů forem jmen (uřední, ...)
         this.props.dispatch(refPartyTypesFetchIfNeeded());        // načtení seznamu typů jmen
         this.props.dispatch(getRegistryRecordTypesIfNeeded(partyTypeId));
@@ -119,19 +115,21 @@ class PartyNameForm extends AbstractReactComponent {
         !calendarTypes.isFetching &&
         this.loadData(props);
     };
+
     /**
      * Funkce vracející výchozí inicializační objekt
      * @param {object} props
      * @return {object}
      */
-    getDefaultInitObject(props){
+    getDefaultInitObject(props) {
         const {refTables: {calendarTypes}} = props;
         let firstCalId = calendarTypes.items[0].id;
         return {
-            validFrom: {calendarTypeId:firstCalId},
-            validTo: {calendarTypeId:firstCalId}
-        }
+            validFrom: {calendarTypeId: firstCalId},
+            validTo: {calendarTypeId: firstCalId},
+        };
     }
+
     /**
      * Funkce načítající výchozí hodnoty formuláře
      * @param {object} props
@@ -141,8 +139,8 @@ class PartyNameForm extends AbstractReactComponent {
         if (!this.state.initialized) {
             this.setState({initialized: true, complementsTypes: partyType.complementTypes}, () => {
                 let defaultInitData = {...this.getDefaultInitObject(props)};
-                for(let f in defaultInitData){
-                    if(!initData[f]){    // Přepsání prázdných položek výchozí hodnotou
+                for (let f in defaultInitData) {
+                    if (!initData[f]) {    // Přepsání prázdných položek výchozí hodnotou
                         initData[f] = defaultInitData[f];
                     }
                 }
@@ -151,33 +149,34 @@ class PartyNameForm extends AbstractReactComponent {
         }
     }
 
-    submitReduxForm = (values, dispatch) => submitForm(PartyNameForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+    submitReduxForm = (values, dispatch) => submitForm(PartyNameForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
         const {complementsTypes} = this.state;
 
         const {
-            fields: {
-                partyNameComplements,
-                nameFormType,
-                degreeBefore,
-                degreeAfter,
-                mainPart,
-                otherPart,
-                note,
-                validFrom,
-                validTo
-            },
-            refTables:{partyNameFormTypes},
-            handleSubmit,
-            submitting,
-            partyType,
-            onClose
-        } = this.props;
+                  fields: {
+                      partyNameComplements,
+                      nameFormType,
+                      degreeBefore,
+                      degreeAfter,
+                      mainPart,
+                      otherPart,
+                      note,
+                      validFrom,
+                      validTo,
+                  },
+                  refTables: {partyNameFormTypes},
+                  handleSubmit,
+                  submitting,
+                  partyType,
+                  onClose,
+              } = this.props;
 
         const {initialized} = this.state;
 
-        const complementsList = complementsTypes && complementsTypes.map(i => <option value={i.complementTypeId} key={'index' + i.complementTypeId}>{i.name}</option>);
+        const complementsList = complementsTypes && complementsTypes.map(i => <option value={i.complementTypeId}
+                                                                                      key={'index' + i.complementTypeId}>{i.name}</option>);
 
         return initialized ? <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body className="dialog-3-col party-name-form">
@@ -193,29 +192,42 @@ class PartyNameForm extends AbstractReactComponent {
                             {partyType.code == PARTY_TYPE_CODES.PERSON && <Col xs={12}>
                                 <Row>
                                     <Col xs={12} md={6}>
-                                        <FormInput type="text" label={i18n('party.name.degreeBefore')} {...degreeBefore} />
+                                        <FormInput type="text"
+                                                   label={i18n('party.name.degreeBefore')} {...degreeBefore} />
                                     </Col>
                                     <Col xs={12} md={6}>
-                                        <FormInput type="text" label={i18n('party.name.degreeAfter')} {...degreeAfter} />
+                                        <FormInput type="text"
+                                                   label={i18n('party.name.degreeAfter')} {...degreeAfter} />
                                     </Col>
                                 </Row>
                             </Col>}
 
                             <Col xs={12}>
-                                <label>{i18n('party.name.complements')}</label> <Button variant="action" onClick={() => {partyNameComplements.addField({complementTypeId:null, complement: null})}}><Icon glyph="fa-plus"/></Button>
-                                {partyNameComplements.map((complement, index) => <div className="complement" key={'complement' + index}>
+                                <label>{i18n('party.name.complements')}</label> <Button variant="action"
+                                                                                        onClick={() => {
+                                                                                            partyNameComplements.addField({
+                                                                                                complementTypeId: null,
+                                                                                                complement: null,
+                                                                                            });
+                                                                                        }}><Icon
+                                glyph="fa-plus"/></Button>
+                                {partyNameComplements.map((complement, index) => <div className="complement"
+                                                                                      key={'complement' + index}>
                                     <FormInput as="select" {...complement.complementTypeId}>
                                         <option key='0'/>
                                         {complementsList}
                                     </FormInput>
                                     <FormInput type="text" {...complement.complement}/>
-                                    <Button className="btn-icon" onClick={() => {partyNameComplements.removeField(index)}}><Icon glyph="fa-times"/></Button>
+                                    <Button className="btn-icon" onClick={() => {
+                                        partyNameComplements.removeField(index);
+                                    }}><Icon glyph="fa-times"/></Button>
                                 </div>)}
                             </Col>
                             <Col xs={12}>
                                 <FormInput as="select" label={i18n('party.name.nameFormType')} {...nameFormType.id}>
-                                    <option key="null" />
-                                    {partyNameFormTypes.items.map((i) => <option value={i.id} key={i.id}>{i.name}</option>)}
+                                    <option key="null"/>
+                                    {partyNameFormTypes.items.map((i) => <option value={i.id}
+                                                                                 key={i.id}>{i.name}</option>)}
                                 </FormInput>
                             </Col>
                         </Row>
@@ -225,10 +237,14 @@ class PartyNameForm extends AbstractReactComponent {
                             <Col xs={12}>
                                 <Row>
                                     <Col xs={6} md={12}>
-                                        <DatationField fields={validFrom} label={i18n('party.name.validFrom')} labelTextual={i18n('party.name.validFrom.textDate')} labelNote={i18n('party.name.validFrom.note')} />
+                                        <DatationField fields={validFrom} label={i18n('party.name.validFrom')}
+                                                       labelTextual={i18n('party.name.validFrom.textDate')}
+                                                       labelNote={i18n('party.name.validFrom.note')}/>
                                     </Col>
                                     <Col xs={6} md={12}>
-                                        <DatationField fields={validTo} label={i18n('party.name.validTo')} labelTextual={i18n('party.name.validTo.textDate')} labelNote={i18n('party.name.validTo.note')} />
+                                        <DatationField fields={validTo} label={i18n('party.name.validTo')}
+                                                       labelTextual={i18n('party.name.validTo.textDate')}
+                                                       labelNote={i18n('party.name.validTo.note')}/>
                                     </Col>
                                 </Row>
                             </Col>
@@ -247,17 +263,17 @@ class PartyNameForm extends AbstractReactComponent {
                 <Button type="submit" disabled={submitting}>{i18n('global.action.store')}</Button>
                 <Button variant="link" onClick={onClose} disabled={submitting}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
-        </Form> : <HorizontalLoader />;
+        </Form> : <HorizontalLoader/>;
     }
 }
 
 export default reduxForm({
         form: 'partyNameForm',
         fields: PartyNameForm.fields,
-        validate: PartyNameForm.validateInline
+        validate: PartyNameForm.validateInline,
     }, state => ({
         initialValues: state.form.partyNameForm.initialValues,
         refTables: state.refTables,
     }),
-    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'partyNameForm', data}),}
+    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'partyNameForm', data})},
 )(PartyNameForm);

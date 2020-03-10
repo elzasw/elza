@@ -1,25 +1,23 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {WebApi} from 'actions/index.jsx';
-import {Icon, i18n, TooltipTrigger, AbstractReactComponent, Autocomplete} from 'components/shared';
-import {registryListFilter} from 'actions/registry/registry.jsx'
+import {AbstractReactComponent, Autocomplete, i18n, Icon, TooltipTrigger} from 'components/shared';
+import {registryDetailFetchIfNeeded} from 'actions/registry/registry.jsx';
 
-import {Button} from 'react-bootstrap'
-import {connect} from 'react-redux'
+import {Button} from '../ui';
+import {connect} from 'react-redux';
 import * as perms from 'actions/user/Permission.jsx';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {registryDetailFetchIfNeeded} from 'actions/registry/registry.jsx'
+import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import classNames from 'classnames';
-import {routerNavigate} from 'actions/router.jsx'
-import {debounce} from 'shared/utils'
+import {routerNavigate} from 'actions/router.jsx';
+import {debounce} from 'shared/utils';
 
-import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from '../../constants.tsx'
+import {DEFAULT_LIST_SIZE} from '../../constants.tsx';
 
-import './RegistryField.scss'
-import RegistryListItem from "./RegistryListItem";
-import ExtImportForm from "../form/ExtImportForm";
-import {refRecordTypesFetchIfNeeded} from "../../actions/refTables/recordTypes";
+import './RegistryField.scss';
+import RegistryListItem from './RegistryListItem';
+import ExtImportForm from '../form/ExtImportForm';
+import {refRecordTypesFetchIfNeeded} from '../../actions/refTables/recordTypes';
 
 const AUTOCOMPLETE_REGISTRY_LIST_SIZE = DEFAULT_LIST_SIZE;
 
@@ -52,7 +50,7 @@ class RegistryField extends AbstractReactComponent {
         itemSpecId: PropTypes.number,
         roleTypeId: PropTypes.number,
         partyId: PropTypes.number,
-        versionId: PropTypes.number
+        versionId: PropTypes.number,
     };
 
     state = {registryList: [], count: null, searchText: null};
@@ -62,11 +60,11 @@ class RegistryField extends AbstractReactComponent {
     }
 
     focus = () => {
-        this.refs.autocomplete.focus()
+        this.refs.autocomplete.focus();
     };
 
     handleSearchChange = debounce((text) => {
-        text = text == "" ? null : text;
+        text = text == '' ? null : text;
         this.setState({searchText: text});
         const {roleTypeId, partyId, registryParent, apTypeId, versionId, itemSpecId, itemTypeId} = this.props;
         let promise = null;
@@ -78,9 +76,9 @@ class RegistryField extends AbstractReactComponent {
         promise.then(json => {
             this.setState({
                 registryList: json.rows,
-                count: json.count
-            })
-        })
+                count: json.count,
+            });
+        });
     }, 500);
 
     handleDetail = (id) => {
@@ -96,8 +94,8 @@ class RegistryField extends AbstractReactComponent {
                     this.handleBlur(data);
                 },
                 filterText: searchText,
-                value
-            })
+                value,
+            });
         } else if (onDetail) {
             onDetail(id);
         } else {
@@ -110,7 +108,8 @@ class RegistryField extends AbstractReactComponent {
     handleImport = () => {
         const {versionId} = this.props;
         this.refs.autocomplete.closeMenu();
-        this.props.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={false} versionId={versionId}/>, "dialog-lg"));
+        this.props.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={false}
+                                                                                          versionId={versionId}/>, 'dialog-lg'));
     };
 
     handleCreateRecord = () => {
@@ -139,8 +138,10 @@ class RegistryField extends AbstractReactComponent {
 
         return hasCount || buttons ? <div>
             {buttons && <div className="create-record">
-                <Button onClick={this.handleCreateRecord} type="button"><Icon glyph='fa-plus'/>{i18n('registry.addNewRegistry')}</Button>
-                <Button onClick={this.handleImport} type="button"><Icon glyph='fa-plus' /> {i18n("ribbon.action.registry.importExt")}</Button>
+                <Button onClick={this.handleCreateRecord} type="button"><Icon
+                    glyph='fa-plus'/>{i18n('registry.addNewRegistry')}</Button>
+                <Button onClick={this.handleImport} type="button"><Icon
+                    glyph='fa-plus'/> {i18n('ribbon.action.registry.importExt')}</Button>
             </div>}
             {count > AUTOCOMPLETE_REGISTRY_LIST_SIZE && <div className="items-count">
                 {i18n('registryField.visibleCount', registryList.length, count)}
@@ -196,8 +197,8 @@ class RegistryField extends AbstractReactComponent {
                     onClick={this.handleDetail.bind(this, value ? value.id : null)}
                     className='btn btn-default detail'
                 >
-                    <Icon glyph='fa-th-list' />
-                </div>
+                    <Icon glyph='fa-th-list'/>
+                </div>,
             );
         }
 
@@ -210,7 +211,7 @@ class RegistryField extends AbstractReactComponent {
             {...otherProps}
             ref='autocomplete'
             customFilter
-            className={classNames("autocomplete-record", className)}
+            className={classNames('autocomplete-record', className)}
             footer={footerRender}
             items={this.state.registryList}
             getItemId={(item) => item ? item.id : null}
@@ -231,6 +232,6 @@ export default connect(
         return {
             apTypeIdMap: recordTypes.typeIdMap,
             userDetail,
-            eidTypes: eidTypes.data
-        }
+            eidTypes: eidTypes.data,
+        };
     })(RegistryField);

@@ -6,11 +6,11 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
-import {Modal, Button, Form} from 'react-bootstrap';
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
-import {fundActionFetchConfigIfNeeded} from 'actions/arr/fundAction.jsx'
-import {addToastrInfo,addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
+import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import {Form, Modal} from 'react-bootstrap';
+import {Button} from '../ui';
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
+import {fundActionFetchConfigIfNeeded} from 'actions/arr/fundAction.jsx';
 
 /**
  * Validace formuláře.
@@ -38,11 +38,12 @@ const RunActionForm = class RunActionForm extends AbstractReactComponent {
     componentDidMount() {
         this.props.dispatch(fundActionFetchConfigIfNeeded(this.props.versionId));
     }
-    submitOptions = {
-        closeOnSubmit:true
-    }
 
-    submitReduxForm = (values, dispatch) => submitForm(validate,values,this.props,this.props.onSubmitForm,dispatch,this.submitOptions);
+    submitOptions = {
+        closeOnSubmit: true,
+    };
+
+    submitReduxForm = (values, dispatch) => submitForm(validate, values, this.props, this.props.onSubmitForm, dispatch, this.submitOptions);
 
 
     render() {
@@ -52,15 +53,16 @@ const RunActionForm = class RunActionForm extends AbstractReactComponent {
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
                         <FormInput as="select"
-                                label={i18n('arr.fundAction.form.type')}
-                                key='code-action'
-                                ref='code-action'
-                                className='form-control'
-                                {...code}
-                                {...decorateFormField(code)}
+                                   label={i18n('arr.fundAction.form.type')}
+                                   key='code-action'
+                                   ref='code-action'
+                                   className='form-control'
+                                   {...code}
+                                   {...decorateFormField(code)}
                         >
                             <option key="novalue" value={null}/>
-                            {actionConfig.map((item) => (<option key={item.code} value={item.code}>{item.name}</option>))}
+                            {actionConfig.map((item) => (
+                                <option key={item.code} value={item.code}>{item.name}</option>))}
                         </FormInput>
                     </Modal.Body>
                     <Modal.Footer>
@@ -69,20 +71,20 @@ const RunActionForm = class RunActionForm extends AbstractReactComponent {
                     </Modal.Footer>
                 </Form>
             </div>
-        )
+        );
     }
 };
 
 RunActionForm.propTypes = {
     initData: PropTypes.object,
     onSubmitForm: PropTypes.func.isRequired,
-    versionId: PropTypes.number.isRequired
+    versionId: PropTypes.number.isRequired,
 };
 
 export default reduxForm({
         form: 'RunActionForm',
         fields: ['code'],
-    },(state, props) => {
+    }, (state, props) => {
         const {arrRegion: {funds, activeIndex}} = state;
 
         let actionConfig = null;
@@ -93,8 +95,8 @@ export default reduxForm({
             }
         }
         return {
-            actionConfig
-        }
+            actionConfig,
+        };
     },
-    {}
+    {},
 )(RunActionForm);

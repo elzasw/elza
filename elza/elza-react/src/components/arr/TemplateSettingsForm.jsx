@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import ReactDOM from 'react-dom';
-import { reduxForm } from 'redux-form';
-import { i18n } from 'components/shared';
-import { Button, Form } from 'react-bootstrap';
+import {reduxForm} from 'redux-form';
+import {i18n} from 'components/shared';
+import {Form} from 'react-bootstrap';
+import {Button} from '../ui';
 import FormInput from '../shared/form/FormInput';
-import { WebApi } from '../../actions/WebApi';
+import {WebApi} from '../../actions/WebApi';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 
 import './TemplateSettingsForm.scss';
@@ -16,36 +16,40 @@ class TemplateSettingsForm extends React.Component {
     static propTypes = {
         engine: PropTypes.string.isRequired,
         outputId: PropTypes.number.isRequired,
-        outputSettings: PropTypes.object
+        outputSettings: PropTypes.object,
     };
 
     handleSubmit = settings => {
-        const { outputId } = this.props;
-        return WebApi.updateOutputSettings(outputId, settings).then(()=>{
-            this.props.dispatch(addToastrSuccess(i18n("arr.output.template.settings.success")));
+        const {outputId} = this.props;
+        return WebApi.updateOutputSettings(outputId, settings).then(() => {
+            this.props.dispatch(addToastrSuccess(i18n('arr.output.template.settings.success')));
         });
     };
 
     render() {
         const {
-            handleSubmit,
-            submitting,
-            fields: { evenPageOffsetX, evenPageOffsetY, oddPageOffsetX, oddPageOffsetY },
-            engine,
-            readMode
-        } = this.props;
+                  handleSubmit,
+                  submitting,
+                  fields: {evenPageOffsetX, evenPageOffsetY, oddPageOffsetX, oddPageOffsetY},
+                  engine,
+                  readMode,
+              } = this.props;
 
         const commonProps = {
-            disabled: readMode || submitting
+            disabled: readMode || submitting,
         };
 
         if (engine && engine === 'JASPER') {
             return (
                 <Form onSubmit={handleSubmit(this.handleSubmit)}>
-                    <FormInput  {...evenPageOffsetX} {...commonProps} label={i18n('arr.output.template.oddPageOffsetX')} />
-                    <FormInput  {...evenPageOffsetY} {...commonProps} label={i18n('arr.output.template.oddPageOffsetY')} />
-                    <FormInput  {...oddPageOffsetX}  {...commonProps} label={i18n('arr.output.template.evenPageOffsetX')} />
-                    <FormInput  {...oddPageOffsetY}  {...commonProps} label={i18n('arr.output.template.evenPageOffsetY')} />
+                    <FormInput  {...evenPageOffsetX} {...commonProps}
+                                label={i18n('arr.output.template.oddPageOffsetX')}/>
+                    <FormInput  {...evenPageOffsetY} {...commonProps}
+                                label={i18n('arr.output.template.oddPageOffsetY')}/>
+                    <FormInput  {...oddPageOffsetX} {...commonProps}
+                                label={i18n('arr.output.template.evenPageOffsetX')}/>
+                    <FormInput  {...oddPageOffsetY} {...commonProps}
+                                label={i18n('arr.output.template.evenPageOffsetY')}/>
                     {!readMode && <Button className="output-settings-submit" disabled={submitting} type="submit">
                         {i18n('arr.output.template.set')}
                     </Button>}
@@ -64,12 +68,12 @@ class TemplateSettingsForm extends React.Component {
 export default reduxForm(
     {
         form: 'templateSettingsForm',
-        fields
+        fields,
     },
-    (state, { outputSettings }) => {
+    (state, {outputSettings}) => {
         return {
-            initialValues: outputSettings
+            initialValues: outputSettings,
 
         };
-    }
+    },
 )(TemplateSettingsForm);

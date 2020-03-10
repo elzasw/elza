@@ -1,26 +1,25 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {connect} from 'react-redux';
-import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
-import {TooltipTrigger, AbstractReactComponent, Icon, FormInput, i18n} from 'components/shared';
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
+import {Button} from '../ui';
+import {AbstractReactComponent, FormInput, i18n, Icon, TooltipTrigger} from 'components/shared';
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
 
-import './DatationField.scss'
+import './DatationField.scss';
 
 class DatationField extends AbstractReactComponent {
     static propTypes = {
         label: PropTypes.string.isRequired,
         labelTextual: PropTypes.string.isRequired,
         labelNote: PropTypes.string.isRequired,
-        fields: PropTypes.object.isRequired
+        fields: PropTypes.object.isRequired,
     };
 
     state = {
-        allowedText: this.props.fields.textDate && this.props.fields.textDate.value != null && this.props.fields.textDate.value != "",
-        allowedNote: this.props.fields.textDate && this.props.fields.note.value != null && this.props.fields.note.value != "",
+        allowedText: this.props.fields.textDate && this.props.fields.textDate.value != null && this.props.fields.textDate.value != '',
+        allowedNote: this.props.fields.textDate && this.props.fields.note.value != null && this.props.fields.note.value != '',
         initialized: false,
-        calendars: []
+        calendars: [],
     };
 
     static validate = (value) => {
@@ -32,7 +31,8 @@ class DatationField extends AbstractReactComponent {
     static reduxValidate = (val) => {
         let errors = null;
         if (val && val.value) {
-            let datation, err;
+            let datation,
+                err;
             try {
                 datation = DatationField.validate(val.value);
             } catch (e) {
@@ -40,7 +40,7 @@ class DatationField extends AbstractReactComponent {
             }
             if (!datation) {
                 errors = {
-                    value: err && err.message ? err.message : ' '
+                    value: err && err.message ? err.message : ' ',
                 };
             }
 
@@ -49,7 +49,7 @@ class DatationField extends AbstractReactComponent {
                     errors.calendarTypeId = i18n('global.validation.required');
                 } else {
                     errors = {
-                        calendarTypeId: i18n('global.validation.required')
+                        calendarTypeId: i18n('global.validation.required'),
                     };
                 }
             }
@@ -69,13 +69,14 @@ class DatationField extends AbstractReactComponent {
 
     loadCalendarsAndPokeData = (props = this.props) => {
         if (props.calendarTypes && props.calendarTypes.fetched && !this.state.initialized && props.calendarTypes.items) {
-            if (props.fields.calendarTypeId.value == null || props.fields.calendarTypeId.value === "") {
+            if (props.fields.calendarTypeId.value == null || props.fields.calendarTypeId.value === '') {
                 props.fields.calendarTypeId.onChange(props.calendarTypes.items[0].id);
             }
             this.setState({
                 initialized: true,
-                calendars: props.calendarTypes.items.map(i => <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>)
-            })
+                calendars: props.calendarTypes.items.map(i => <option value={i.id}
+                                                                      key={i.id}>{i.name.charAt(0)}</option>),
+            });
         }
     };
 
@@ -83,14 +84,17 @@ class DatationField extends AbstractReactComponent {
         const {label, labelTextual, labelNote, fields} = this.props;
         const {allowedText, allowedNote, calendars, initialized} = this.state;
 
-        const tooltipText = i18n("^dataType.unitdate.format");
+        const tooltipText = i18n('^dataType.unitdate.format');
         const tooltip = tooltipText ? <div dangerouslySetInnerHTML={{__html: tooltipText}}></div> : null;
 
         return <div className="datation-field">
             <div className="header">
                 <label>{label}</label>
-                <Button variant="action" className={allowedText ? '' : 'disabledColor'} onClick={() => this.setState({allowedText: !allowedText})}><Icon glyph="fa-font" /></Button>
-                <Button variant="action" className={allowedNote ? '' : 'disabledColor'} onClick={() => this.setState({allowedNote: !allowedNote})}><Icon glyph="fa-sticky-note-o" /></Button>
+                <Button variant="action" className={allowedText ? '' : 'disabledColor'}
+                        onClick={() => this.setState({allowedText: !allowedText})}><Icon glyph="fa-font"/></Button>
+                <Button variant="action" className={allowedNote ? '' : 'disabledColor'}
+                        onClick={() => this.setState({allowedNote: !allowedNote})}><Icon
+                    glyph="fa-sticky-note-o"/></Button>
             </div>
             <div className="datation">
                 <FormInput as="select" {...fields.calendarTypeId}>
@@ -104,9 +108,9 @@ class DatationField extends AbstractReactComponent {
                     <FormInput type="text" {...fields.value} />
                 </TooltipTrigger>
             </div>
-            {allowedText && <FormInput type="text" {...fields.textDate} label={labelTextual} />}
-            {allowedNote && <FormInput as="textarea" {...fields.note} label={labelNote} />}
-        </div>
+            {allowedText && <FormInput type="text" {...fields.textDate} label={labelTextual}/>}
+            {allowedNote && <FormInput as="textarea" {...fields.note} label={labelNote}/>}
+        </div>;
     }
 }
 
@@ -114,6 +118,7 @@ class DatationField extends AbstractReactComponent {
 class Exception {
     message = null;
     hasUserMessage = false;
+
     constructor(string, hasUserMessage = false) {
         this.message = string;
         this.hasUserMessage = hasUserMessage;
@@ -133,11 +138,11 @@ class DT {
 
     static FORMATS = {
         _DT: '_DT', // CLASS format - input is this class
-        DATE: "d.M.u",
-        DATE_TIME: "d.M.u H:mm:ss",
-        DATE_TIME2: "d.M.u H:mm",
-        YEAR_MONTH: "M.u",
-        YEAR: "u"
+        DATE: 'd.M.u',
+        DATE_TIME: 'd.M.u H:mm:ss',
+        DATE_TIME2: 'd.M.u H:mm',
+        YEAR_MONTH: 'M.u',
+        YEAR: 'u',
     };
 
     jsDate;
@@ -160,7 +165,9 @@ class DT {
             case DT.FORMATS.YEAR_MONTH: {
                 const hasMonth = format == DT.FORMATS.YEAR_MONTH;
 
-                let data, month, year;
+                let data,
+                    month,
+                    year;
                 if (hasMonth) {
                     data = input.split('.');
                     if (data.length != 2) {
@@ -183,7 +190,7 @@ class DT {
                 let sMonth = make2Digit(makeString(month));
                 let sYear = make4Digit(makeString(year));
 
-                if(isNaN(Date.parse(sYear + '-' + sMonth + '-01T00:00:00Z'))) {
+                if (isNaN(Date.parse(sYear + '-' + sMonth + '-01T00:00:00Z'))) {
                     throw new Exception('Invalid input.');
                 }
 
@@ -195,7 +202,9 @@ class DT {
             case DT.FORMATS.DATE_TIME2: {
                 const hasSeconds = format == DT.FORMATS.DATE_TIME;
                 const hasTime = hasSeconds || format == DT.FORMATS.DATE_TIME2;
-                let data, date, time;
+                let data,
+                    date,
+                    time;
                 if (hasTime) {
                     data = input.split(' ');
                     if (data.length != 2) {
@@ -222,7 +231,9 @@ class DT {
                 }
                 validationArray.push(year, month, day);
 
-                let hours, minutes, secs;
+                let hours,
+                    minutes,
+                    secs;
                 if (hasTime) {
                     hours = parseInt(time[0]);
                     minutes = parseInt(time[1]);
@@ -231,7 +242,7 @@ class DT {
                     if (isNaN(hours) || isNaN(minutes) || isNaN(secs) || hours > 23 || hours < 0 || minutes > 59 || minutes < 0 || secs > 59 || secs < 0) {
                         throw new Exception('Invalid input.');
                     }
-                    validationArray.push(hours, minutes, secs)
+                    validationArray.push(hours, minutes, secs);
                 } else {
                     hours = 0;
                     minutes = 0;
@@ -248,30 +259,30 @@ class DT {
                 dateString = sYear + '-' + sMonth + '-' + sDay + 'T' + sHours + ':' + sMinutes + ':' + sSecs;
                 break;
             }
-            default:{
+            default: {
                 throw new Exception(i18n('global.validation.datation.invalidFormat', format), true);
             }
         }
-        if(isNaN(Date.parse(dateString))) {
+        if (isNaN(Date.parse(dateString))) {
             throw new Exception('Invalid input.');
         }
         this.jsDate = new Date(dateString);
         DT.validateDate(this.jsDate, validationArray);
     }
 
-    static getDateArray = (i) => [i.getFullYear(), i.getMonth()+1, i.getDate(), i.getHours(), i.getMinutes(), i.getSeconds(), i.getMilliseconds()];
+    static getDateArray = (i) => [i.getFullYear(), i.getMonth() + 1, i.getDate(), i.getHours(), i.getMinutes(), i.getSeconds(), i.getMilliseconds()];
 
     static validateDate = (date, arr) => {
         const dateArr = DT.getDateArray(date);
         const assertTrue = (arg) => {
             if (!arg) {
-                throw new Exception('Invalid input.')
+                throw new Exception('Invalid input.');
             }
         };
 
         let index = 0;
         for (let a of arr) {
-            assertTrue(a === dateArr[index++])
+            assertTrue(a === dateArr[index++]);
         }
     };
 
@@ -286,11 +297,11 @@ class DT {
             case DT.FORMATS.YEAR_MONTH:
                 return this.getMonth() + '.' + this.getYear();
             case DT.FORMATS.DATE:
-                return this.getDay()  + '.' + this.getMonth() + '.' + this.getYear();
+                return this.getDay() + '.' + this.getMonth() + '.' + this.getYear();
             case DT.FORMATS.DATE_TIME2:
-                return this.getDay()  + '.' + this.getMonth() + '.' + this.getYear() + ' ' + this.getHours() + ':' + this.getMinutes();
+                return this.getDay() + '.' + this.getMonth() + '.' + this.getYear() + ' ' + this.getHours() + ':' + this.getMinutes();
             case DT.FORMATS.DATE_TIME:
-                return this.getDay()  + '.' + this.getMonth() + '.' + this.getYear() + ' ' + this.getHours() + ':' + this.getMinutes() + ':' + this.getSeconds();
+                return this.getDay() + '.' + this.getMonth() + '.' + this.getYear() + ' ' + this.getHours() + ':' + this.getMinutes() + ':' + this.getSeconds();
         }
     };
 
@@ -319,7 +330,7 @@ class DT {
     setMinutes = (i) => this.jsDate.setMinutes(i);
     setHours = (i) => this.jsDate.setHours(i);
     setDay = (i) => this.jsDate.setDate(i);
-    setMonth = (i) => this.jsDate.setMonth(i-1);
+    setMonth = (i) => this.jsDate.setMonth(i - 1);
     setYear = (i) => this.jsDate.setFullYear(i);
 
     getMilliseconds = () => this.jsDate.getMilliseconds();
@@ -327,14 +338,14 @@ class DT {
     getMinutes = () => this.jsDate.getMinutes();
     getHours = () => this.jsDate.getHours();
     getDay = () => this.jsDate.getDate();
-    getMonth = () => this.jsDate.getMonth()+1;
+    getMonth = () => this.jsDate.getMonth() + 1;
     getYear = () => this.jsDate.getFullYear();
 
     toISO8601 = () => this.jsDate.toISOString().substr(0, 19);
 
     setDateArray = (arr) => {
         if (!arr || !arr.length || arr.length < 1) {
-            throw new Exception("Invalid array input.")
+            throw new Exception('Invalid array input.');
         }
         this.jsDate = new Date(...arr);
         this.setYear(arr[0]);
@@ -342,7 +353,7 @@ class DT {
             this.setMonth(arr[1]);
         }
         DT.validateDate(this.jsDate, arr);
-    }
+    };
 }
 
 class UnitDate {
@@ -356,7 +367,7 @@ class UnitDate {
 
     formatAppend = (format) => {
         if (this.format == null) {
-            this.format = "";
+            this.format = '';
         }
         this.format += format;
     };
@@ -367,47 +378,47 @@ class UnitDateConvertor {
     /**
      * Výraz pro detekci stolení
      */
-    static EXP_CENTURY = "^(\\d+)((st)|(\\.[ ]?st\\.))$";
+    static EXP_CENTURY = '^(\\d+)((st)|(\\.[ ]?st\\.))$';
 
     /**
      * Zkratka století
      */
-    static CENTURY = "C";
+    static CENTURY = 'C';
 
     /**
      * Výraz pro rok
      */
-    static EXP_YEAR = "^(\\d+)$";
+    static EXP_YEAR = '^(\\d+)$';
 
     /**
      * Zkratka roku
      */
-    static YEAR = "Y";
+    static YEAR = 'Y';
 
     /**
      * Zkratka datumu
      */
-    static DATE = "D";
+    static DATE = 'D';
 
     /**
      * Zkratka datumu s časem
      */
-    static DATE_TIME = "DT";
+    static DATE_TIME = 'DT';
 
     /**
      * Zkratka roku s měsícem
      */
-    static YEAR_MONTH = "YM";
+    static YEAR_MONTH = 'YM';
 
     /**
      * Oddělovač pro interval
      */
-    static DEFAULT_INTERVAL_DELIMITER = "-";
+    static DEFAULT_INTERVAL_DELIMITER = '-';
 
     /**
      * Oddělovač pro interval, který vyjadřuje odhad
      */
-    static ESTIMATE_INTERVAL_DELIMITER = "/";
+    static ESTIMATE_INTERVAL_DELIMITER = '/';
 
     static convertToUnitDate = (input) => {
 
@@ -473,7 +484,7 @@ class UnitDateConvertor {
      * @return {string} normalizovaný text
      */
     static normalizeInput(input) {
-        return input.replace("(", "[").replace(")", "]").trim();
+        return input.replace('(', '[').replace(')', ']').trim();
     }
 
     static makeString(object) {
@@ -516,7 +527,7 @@ class UnitDateConvertor {
         let ret;
 
         if (data.length != 2) {
-            throw new Exception("Neplatný interval: " + format);
+            throw new Exception('Neplatný interval: ' + format);
         }
 
         const bothEstimate = unitdate.valueFromEstimate && unitdate.valueToEstimate;
@@ -544,11 +555,11 @@ class UnitDateConvertor {
     static addEstimate(format, unitdate, first, allow) {
         if (first) {
             if (unitdate.valueFromEstimate && allow) {
-                format = "[" + format + "]";
+                format = '[' + format + ']';
             }
         } else {
             if (unitdate.valueToEstimate && allow) {
-                format = "[" + format + "]";
+                format = '[' + format + ']';
             }
         }
         return format;
@@ -565,7 +576,7 @@ class UnitDateConvertor {
      */
     static convertToken(format, unitdate, first, allow) {
 
-        if (format === "") {
+        if (format === '') {
             return format;
         }
 
@@ -589,7 +600,7 @@ class UnitDateConvertor {
                 ret = UnitDateConvertor.convertDateTime(format, unitdate, first);
                 break;
             default:
-                throw new Exception("Neexistující formát: " + format);
+                throw new Exception('Neexistující formát: ' + format);
         }
 
         if (canAddEstimate) {
@@ -611,12 +622,12 @@ class UnitDateConvertor {
         if (first) {
             if (unitdate.valueFrom != null) {
                 const date = DT.parse(unitdate.valueFrom);
-                return format.replace(UnitDateConvertor.DATE_TIME, "" + date.format(DT.FORMATS.DATE_TIME));
+                return format.replace(UnitDateConvertor.DATE_TIME, '' + date.format(DT.FORMATS.DATE_TIME));
             }
         } else {
             if (unitdate.valueTo != null) {
                 const date = DT.parse(unitdate.valueTo);
-                return format.replace(UnitDateConvertor.DATE_TIME, "" + date.format(DT.FORMATS.DATE_TIME));
+                return format.replace(UnitDateConvertor.DATE_TIME, '' + date.format(DT.FORMATS.DATE_TIME));
             }
         }
         return format;
@@ -634,12 +645,12 @@ class UnitDateConvertor {
         if (first) {
             if (unitdate.valueFrom != null) {
                 const date = DT.parse(unitdate.valueFrom);
-                return format.replace(UnitDateConvertor.DATE, "" + date.format(DT.FORMATS.DATE));
+                return format.replace(UnitDateConvertor.DATE, '' + date.format(DT.FORMATS.DATE));
             }
         } else {
             if (unitdate.valueTo != null) {
                 const date = DT.parse(unitdate.valueTo);
-                return format.replace(UnitDateConvertor.DATE, "" + date.format(DT.FORMATS.DATE));
+                return format.replace(UnitDateConvertor.DATE, '' + date.format(DT.FORMATS.DATE));
             }
         }
         return format;
@@ -657,12 +668,12 @@ class UnitDateConvertor {
         if (first) {
             if (unitdate.valueFrom != null) {
                 const date = DT.parse(unitdate.valueFrom);
-                return format.replace(UnitDateConvertor.YEAR_MONTH, "" + date.format(DT.FORMATS.YEAR_MONTH));
+                return format.replace(UnitDateConvertor.YEAR_MONTH, '' + date.format(DT.FORMATS.YEAR_MONTH));
             }
         } else {
             if (unitdate.valueTo != null) {
                 const date = DT.parse(unitdate.valueTo);
-                return format.replace(UnitDateConvertor.YEAR_MONTH, "" + date.format(DT.FORMATS.YEAR_MONTH));
+                return format.replace(UnitDateConvertor.YEAR_MONTH, '' + date.format(DT.FORMATS.YEAR_MONTH));
             }
         }
         return format;
@@ -680,12 +691,12 @@ class UnitDateConvertor {
         if (first) {
             if (unitdate.valueFrom != null) {
                 const date = DT.parse(unitdate.valueFrom);
-                return format.replace(UnitDateConvertor.YEAR, "" + date.getYear());
+                return format.replace(UnitDateConvertor.YEAR, '' + date.getYear());
             }
         } else {
             if (unitdate.valueTo != null) {
                 const date = DT.parse(unitdate.valueTo);
-                return format.replace(UnitDateConvertor.YEAR, "" + date.getYear());
+                return format.replace(UnitDateConvertor.YEAR, '' + date.getYear());
             }
         }
         return format;
@@ -703,12 +714,12 @@ class UnitDateConvertor {
         if (first) {
             if (unitdate.valueFrom != null) {
                 const date = DT.parse(unitdate.valueFrom);
-                return format.replace(UnitDateConvertor.CENTURY, (date.getYear() / 100 + 1) + ". st.");
+                return format.replace(UnitDateConvertor.CENTURY, (date.getYear() / 100 + 1) + '. st.');
             }
         } else {
             if (unitdate.valueTo != null) {
                 const date = DT.parse(unitdate.valueTo);
-                return format.replace(UnitDateConvertor.CENTURY, (date.getYear() / 100) + ". st.");
+                return format.replace(UnitDateConvertor.CENTURY, (date.getYear() / 100) + '. st.');
             }
         }
         return format;
@@ -733,7 +744,7 @@ class UnitDateConvertor {
 
 
         if (data.length != 2) {
-            throw new Exception("Neplatný interval: " + input);
+            throw new Exception('Neplatný interval: ' + input);
         }
 
         const estimateBoth = input.indexOf(UnitDateConvertor.ESTIMATE_INTERVAL_DELIMITER) !== -1;
@@ -758,7 +769,7 @@ class UnitDateConvertor {
      */
     static parseToken(tokenString, unitdate) {
         if (UnitDateConvertor.isEmptyString(tokenString)) {
-            throw new Exception("Nemůže existovat prázdný interval");
+            throw new Exception('Nemůže existovat prázdný interval');
         }
 
         let token = null;
@@ -977,5 +988,5 @@ class Token {
 // console.log('1', new DT('27.2.2015', DT.FORMATS.DATE))
 
 export default connect(state => ({
-    calendarTypes: state.refTables.calendarTypes
-}))(DatationField)
+    calendarTypes: state.refTables.calendarTypes,
+}))(DatationField);

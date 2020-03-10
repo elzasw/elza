@@ -1,21 +1,22 @@
 import PropTypes from 'prop-types';
 import * as React from 'react';
-import {connect} from 'react-redux';
-import {DropdownButton, Dropdown, Button} from "react-bootstrap";
-import Icon from "../shared/icon/Icon";
-import * as issuesActions from '../../actions/arr/issues'
-import storeFromArea from "../../shared/utils/storeFromArea";
-import {WebApi} from "../../actions/WebApi";
-import objectById from "../../shared/utils/objectById";
-import Loading from "../shared/loading/Loading";
-import {dateTimeToString} from "../Utils";
 import TextareaAutosize from 'react-autosize-textarea';
+import {Dropdown, DropdownButton} from 'react-bootstrap';
+import {connect} from 'react-redux';
+import * as issuesActions from '../../actions/arr/issues';
+import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
+import * as perms from '../../actions/user/Permission';
+import {WebApi} from '../../actions/WebApi';
+import {Button} from '../../components/ui';
+import objectById from '../../shared/utils/objectById';
+import storeFromArea from '../../shared/utils/storeFromArea';
+import IssueForm from '../form/IssueForm';
+import i18n from '../i18n';
+import Icon from '../shared/icon/Icon';
+import Loading from '../shared/loading/Loading';
+import {dateTimeToString} from '../Utils';
 
-import "./LecturingBottom.scss"
-import i18n from "../i18n";
-import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
-import IssueForm from "../form/IssueForm";
-import * as perms from "../../actions/user/Permission";
+import './LecturingBottom.scss';
 
 
 /**
@@ -28,10 +29,10 @@ class LecturingBottom extends React.Component {
     };
 
     state: any = {
-        text: "",
+        text: '',
         comment: null,
         submitting: false,
-        actualFundId: null
+        actualFundId: null,
     };
 
     props: any;
@@ -65,9 +66,9 @@ class LecturingBottom extends React.Component {
     }
 
     addComment = (nextStateId) => {
-        const {issueDetail:{id}} = this.props;
+        const {issueDetail: {id}} = this.props;
         this.setState({submitting: true});
-        WebApi.addIssueComment({issueId: id, comment: this.state.text, nextStateId}).then(this.afterSave)
+        WebApi.addIssueComment({issueId: id, comment: this.state.text, nextStateId}).then(this.afterSave);
     };
 
     editComment = (comment: any) => {
@@ -75,7 +76,7 @@ class LecturingBottom extends React.Component {
     };
 
     reset = () => {
-        this.setState({text: "", submitting: false, comment: null});
+        this.setState({text: '', submitting: false, comment: null});
     };
 
     afterSave = (stateChanged = false) => {
@@ -95,19 +96,22 @@ class LecturingBottom extends React.Component {
 
     editIssue = () => {
         const {dispatch, issueDetail} = this.props;
-        dispatch(modalDialogShow(this, i18n("arr.issues.update.title"), <IssueForm update initialValues={issueDetail.data} onSubmit={this.updateIssue} onSubmitSuccess={() => {
-            dispatch(issuesActions.list.invalidate(issueDetail.issueListId));
-            dispatch(issuesActions.detail.invalidate(issueDetail.id));
-            dispatch(modalDialogHide());
-        }} />));
+        dispatch(modalDialogShow(this, i18n('arr.issues.update.title'), <IssueForm update
+                                                                                   initialValues={issueDetail.data}
+                                                                                   onSubmit={this.updateIssue}
+                                                                                   onSubmitSuccess={() => {
+                                                                                       dispatch(issuesActions.list.invalidate(issueDetail.issueListId));
+                                                                                       dispatch(issuesActions.detail.invalidate(issueDetail.id));
+                                                                                       dispatch(modalDialogHide());
+                                                                                   }}/>));
     };
 
     updateIssue = (data) => {
         const {issueDetail} = this.props;
         return WebApi.updateIssue(issueDetail.data.id, {
             ...issueDetail.data,
-            ...data
-        })
+            ...data,
+        });
     };
 
     render() {
@@ -135,7 +139,7 @@ class LecturingBottom extends React.Component {
         const CustomArea = TextareaAutosize as any;
 
         return <div className="lecturing-bottom">
-            {!id && <div className="text-center">{i18n("arr.issues.choose")}</div>}
+            {!id && <div className="text-center">{i18n('arr.issues.choose')}</div>}
             {isFetching && <Loading/>}
             {fetched && <div className="lecturing-bottom-container">
                 <div className="comments">
@@ -143,28 +147,32 @@ class LecturingBottom extends React.Component {
                         <div className="comment-text">{data.description}</div>
                         <div className="text-right">
                             {canUpdateIssue && <div className="pull-left">
-                                <Button variant={"action" as any} onClick={this.editIssue}>
-                                    <Icon glyph="fa-pencil" />
+                                <Button variant={'action' as any} onClick={this.editIssue}>
+                                    <Icon glyph="fa-pencil"/>
                                 </Button>
                             </div>}
                             {data.userCreate.username} ({dateTimeToString(new Date(data.timeCreated))})
                         </div>
                     </div>
                     {issueComments.rows.map((item: any, index, arr) => <div>
-                        <div className={"comment" + (userDetail.id === item.user.id ? " text-muted" : "")}>
+                        <div className={'comment' + (userDetail.id === item.user.id ? ' text-muted' : '')}>
                             <div className="comment-text">{item.comment}</div>
                             <div className="text-right">
-                                {canWrite && userDetail.id === item.user.id && arr.length === index+1 && <div className="pull-left">
-                                    <Button variant={"action" as any} onClick={this.editComment.bind(this, item)}>
-                                        <Icon glyph="fa-pencil" />
+                                {canWrite && userDetail.id === item.user.id && arr.length === index + 1 &&
+                                <div className="pull-left">
+                                    <Button variant={'action' as any} onClick={this.editComment.bind(this, item)}>
+                                        <Icon glyph="fa-pencil"/>
                                     </Button>
                                 </div>}
                                 {item.user.username} ({dateTimeToString(new Date(item.timeCreated))})
                             </div>
                         </div>
-                        {(item.nextStateId !== item.prevStateId || arr.length === index+1) && <div className="state-change"><Icon glyph="fa-angle-double-right"/> {objectById(issueStates.data, item.nextStateId).name}</div>}
+                        {(item.nextStateId !== item.prevStateId || arr.length === index + 1) &&
+                        <div className="state-change"><Icon
+                            glyph="fa-angle-double-right"/> {objectById(issueStates.data, item.nextStateId).name}</div>}
                     </div>)}
-                    {!issueComments.rows.length && <div className="state-change"><Icon glyph="fa-angle-double-right"/> {state && state.name}</div>}
+                    {!issueComments.rows.length &&
+                    <div className="state-change"><Icon glyph="fa-angle-double-right"/> {state && state.name}</div>}
                 </div>
                 {canWrite && !comment && <div className="add-comment">
                     <div>
@@ -172,17 +180,21 @@ class LecturingBottom extends React.Component {
                             className="form-control"
                             maxRows={3}
                             //rows={3}
-                            value={this.state.text} onChange={({target:{value}}: any) => this.setState({text:value})}
+                            value={this.state.text} onChange={({target: {value}}: any) => this.setState({text: value})}
                             disabled={textFieldDisabled}
                         />
                     </div>
                     <div className="text-right">
-                        <DropdownButton dropup pullRight noCaret title={i18n("arr.issues.state.change")} variant={"action" as any} id="comment-state" disabled={!this.state.text || textFieldDisabled}>
-                            {issueStates.data.filter(i => i.id !== data.issueStateId).map(i => <Dropdown.Item key={i.id} onClick={this.addComment.bind(this,i.id)}>
+                        <DropdownButton dropup pullRight noCaret title={i18n('arr.issues.state.change')}
+                                        variant={'action' as any} id="comment-state"
+                                        disabled={!this.state.text || textFieldDisabled}>
+                            {issueStates.data.filter(i => i.id !== data.issueStateId).map(i => <Dropdown.Item key={i.id}
+                                                                                                              onClick={this.addComment.bind(this, i.id)}>
                                 {i.name}
                             </Dropdown.Item>)}
                         </DropdownButton>
-                        <Button variant={"action" as any} disabled={!this.state.text || textFieldDisabled} onClick={this.addComment.bind(this,null)}>
+                        <Button variant={'action' as any} disabled={!this.state.text || textFieldDisabled}
+                                onClick={this.addComment.bind(this, null)}>
                             <Icon glyph="fa-arrow-circle-up"/>
                         </Button>
                     </div>
@@ -193,17 +205,19 @@ class LecturingBottom extends React.Component {
                             className="form-control"
                             maxRows={12}
                             rows={3}
-                            value={text} onChange={({target:{value}}: any) => this.setState({text:value})}
+                            value={text} onChange={({target: {value}}: any) => this.setState({text: value})}
                             disabled={submitting}
                         />
                     </div>
                     <div className="text-right">
-                        <Button variant={"action" as any} disabled={submitting} onClick={this.reset}>{i18n("global.action.cancel")}</Button>
-                        <Button variant={"action" as any} disabled={!this.state.text || submitting} onClick={this.updateComment}><Icon glyph="fa-arrow-circle-up"/></Button>
+                        <Button variant={'action' as any} disabled={submitting}
+                                onClick={this.reset}>{i18n('global.action.cancel')}</Button>
+                        <Button variant={'action' as any} disabled={!this.state.text || submitting}
+                                onClick={this.updateComment}><Icon glyph="fa-arrow-circle-up"/></Button>
                     </div>
                 </div>}
             </div>}
-        </div>
+        </div>;
     }
 }
 
@@ -215,5 +229,5 @@ export default connect((state: any) => {
         issueDetail: storeFromArea(state, issuesActions.AREA_DETAIL),
         issueComments: storeFromArea(state, issuesActions.AREA_COMMENTS),
         userDetail: state.userDetail,
-    }
+    };
 })(LecturingBottom as any);

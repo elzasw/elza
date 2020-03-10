@@ -1,12 +1,13 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
-import {Modal, Button, Form} from 'react-bootstrap';
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
+import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import {Form, Modal} from 'react-bootstrap';
+import {Button} from '../ui';
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
 import {connect} from 'react-redux';
-import * as dms from "../../actions/global/dms";
-import storeFromArea from "../../shared/utils/storeFromArea";
+import * as dms from '../../actions/global/dms';
+import storeFromArea from '../../shared/utils/storeFromArea';
 
 /**
  * Formulář editace souboru s editovatelným typem.
@@ -36,7 +37,7 @@ class EditableFileForm extends AbstractReactComponent {
 
     static propTypes = {
         initData: PropTypes.object,
-        onSubmitForm: PropTypes.func.isRequired
+        onSubmitForm: PropTypes.func.isRequired,
     };
 
     state = {};
@@ -49,7 +50,7 @@ class EditableFileForm extends AbstractReactComponent {
         this.props.dispatch(dms.mimeTypesFetchIfNeeded());
     }
 
-    submitReduxForm = (values, dispatch) => submitForm(EditableFileForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+    submitReduxForm = (values, dispatch) => submitForm(EditableFileForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
         const {fields: {name, content, fileName, mimeType}, handleSubmit, onClose, dms, create} = this.props;
@@ -59,12 +60,15 @@ class EditableFileForm extends AbstractReactComponent {
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
                         <FormInput type="text" label={i18n('dms.file.name')} {...name} {...decorateFormField(name)} />
-                        <FormInput label={i18n('dms.file.mimeType')} as="select" {...mimeType} {...decorateFormField(mimeType)}>
-                            <option value={""}></option>
+                        <FormInput label={i18n('dms.file.mimeType')}
+                                   as="select" {...mimeType} {...decorateFormField(mimeType)}>
+                            <option value={''}></option>
                             {dms.fetched && dms.rows.map(x => <option value={x}>{x}</option>)}
                         </FormInput>
-                        <FormInput type="text" label={i18n('dms.file.fileName')} {...fileName} {...decorateFormField(fileName)} />
-                        <FormInput as="textarea" label={i18n('dms.file.content')} {...content} {...decorateFormField(content)} />
+                        <FormInput type="text"
+                                   label={i18n('dms.file.fileName')} {...fileName} {...decorateFormField(fileName)} />
+                        <FormInput as="textarea"
+                                   label={i18n('dms.file.content')} {...content} {...decorateFormField(content)} />
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit">{i18n(create ? 'global.action.add' : 'global.action.update')}</Button>
@@ -72,23 +76,23 @@ class EditableFileForm extends AbstractReactComponent {
                     </Modal.Footer>
                 </Form>
             </div>
-        )
+        );
     }
 }
 
 EditableFileForm.defaultProps = {
-    initData: {}
+    initData: {},
 };
 
 const editableFileReduxForm = reduxForm(
     {form: 'addFileForm', fields: ['name', 'content', 'fileName', 'mimeType']},
     null,
-    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addFileForm', data})}
+    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addFileForm', data})},
 )(EditableFileForm);
 
 function mapStateToProps(state) {
     return {
-        dms: storeFromArea(state, dms.MIME_TYPES_AREA)
+        dms: storeFromArea(state, dms.MIME_TYPES_AREA),
     };
 }
 

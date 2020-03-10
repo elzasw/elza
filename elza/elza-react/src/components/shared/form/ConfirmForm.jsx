@@ -3,20 +3,19 @@
  */
 import React from 'react';
 import {AbstractReactComponent, i18n} from 'components/shared';
-import {Button, Form, Modal} from 'react-bootstrap';
-import {reduxForm} from "redux-form";
-import HorizontalLoader from "../loading/HorizontalLoader";
+import {Form, Modal} from 'react-bootstrap';
+import {Button} from '../../ui';
+import {reduxForm} from 'redux-form';
+import HorizontalLoader from '../loading/HorizontalLoader';
 
 import './ConfirmForm.scss';
 
 class ConfirmForm extends AbstractReactComponent {
 
-    static propTypes = {
-
-    };
+    static propTypes = {};
 
     static defaultProps = {
-        locked: false
+        locked: false,
     };
 
     constructor(props) {
@@ -35,11 +34,11 @@ class ConfirmForm extends AbstractReactComponent {
         let content;
 
         if (submitting) {
-            content = <HorizontalLoader text={submittingMessage} />;
+            content = <HorizontalLoader text={submittingMessage}/>;
         } else {
             content = <Modal.Body className="message">
                 {confirmMessage}
-            </Modal.Body>
+            </Modal.Body>;
         }
 
         return (
@@ -47,16 +46,17 @@ class ConfirmForm extends AbstractReactComponent {
                 <div className="confirm-form-container">
                     {content}
                     <Modal.Footer>
-                        <Button disabled={submitting} type="submit">{submitTitle ? submitTitle : i18n('global.action.store')}</Button>
+                        <Button disabled={submitting}
+                                type="submit">{submitTitle ? submitTitle : i18n('global.action.store')}</Button>
                         <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                     </Modal.Footer>
                 </div>
             </Form>
-        )
+        );
     }
 }
 
 export default reduxForm({
     form: 'confirmForm',
-    fields: []
+    fields: [],
 })(ConfirmForm);

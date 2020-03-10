@@ -1,30 +1,24 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 
-import {reduxForm} from 'redux-form'
-import {Form, Button, FormControl, Table, Modal, OverlayTrigger, Tooltip, FormCheck} from 'react-bootstrap'
-import {submitForm} from 'components/form/FormUtils.jsx'
-import {WebApi} from 'actions'
-import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx'
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
-import {extSystemDetailFetchIfNeeded} from 'actions/admin/extSystem.jsx'
-import {routerNavigate} from 'actions/router.jsx'
-import {extSystemListFetchIfNeeded} from 'actions/admin/extSystem.jsx';
+import {reduxForm} from 'redux-form';
+import {Form, Modal} from 'react-bootstrap';
+import {Button} from '../ui';
+import {submitForm} from 'components/form/FormUtils.jsx';
 import {AP_EXT_SYSTEM_TYPE} from '../../constants.tsx';
-import i18n from "../i18n";
-import AbstractReactComponent from "../AbstractReactComponent";
-import {FormInput} from "../shared/index";
+import i18n from '../i18n';
+import AbstractReactComponent from '../AbstractReactComponent';
+import {FormInput} from '../shared/index';
 
 const EXT_SYSTEM_CLASS = {
-    ApExternalSystem: ".ApExternalSystemVO",
-    ArrDigitalRepository: ".ArrDigitalRepositoryVO",
-    ArrDigitizationFrontdesk: ".ArrDigitizationFrontdeskVO"
+    ApExternalSystem: '.ApExternalSystemVO',
+    ArrDigitalRepository: '.ArrDigitalRepositoryVO',
+    ArrDigitizationFrontdesk: '.ArrDigitizationFrontdeskVO',
 };
 
 const EXT_SYSTEM_CLASS_LABEL = {
-    [EXT_SYSTEM_CLASS.ApExternalSystem]: i18n("admin.extSystem.class.ApExternalSystemVO"),
-    [EXT_SYSTEM_CLASS.ArrDigitalRepository]: i18n("admin.extSystem.class.ArrDigitalRepositoryVO"),
-    [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: i18n("admin.extSystem.class.ArrDigitizationFrontdeskVO"),
+    [EXT_SYSTEM_CLASS.ApExternalSystem]: i18n('admin.extSystem.class.ApExternalSystemVO'),
+    [EXT_SYSTEM_CLASS.ArrDigitalRepository]: i18n('admin.extSystem.class.ArrDigitalRepositoryVO'),
+    [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: i18n('admin.extSystem.class.ArrDigitizationFrontdeskVO'),
 };
 
 const FIELDS = {
@@ -36,7 +30,7 @@ const FIELDS = {
         'url',
         'username',
         'password',
-        'elzaCode'
+        'elzaCode',
     ],
     [EXT_SYSTEM_CLASS.ApExternalSystem]: [
         'type',
@@ -45,10 +39,9 @@ const FIELDS = {
         'viewDaoUrl',
         'viewFileUrl',
         'viewThumbnailUrl',
-        'sendNotification'
+        'sendNotification',
     ],
-    [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [
-    ]
+    [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
 };
 
 const REQUIRED_FIELDS = {
@@ -58,13 +51,12 @@ const REQUIRED_FIELDS = {
         'name',
     ],
     [EXT_SYSTEM_CLASS.ApExternalSystem]: [
-        'type'
+        'type',
     ],
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: [
-        'sendNotification'
+        'sendNotification',
     ],
-    [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [
-    ]
+    [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
 };
 
 class ExtSystemForm extends AbstractReactComponent {
@@ -73,34 +65,34 @@ class ExtSystemForm extends AbstractReactComponent {
         ...FIELDS.abstractExtSystem,
         ...FIELDS[EXT_SYSTEM_CLASS.ApExternalSystem],
         ...FIELDS[EXT_SYSTEM_CLASS.ArrDigitalRepository],
-        ...FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]
+        ...FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk],
     ];
 
     static requireFields = (...names) => data =>
         names.reduce((errors, name) => {
             if (!data[name]) {
-                errors[name] = i18n('global.validation.required')
+                errors[name] = i18n('global.validation.required');
             }
-            return errors
+            return errors;
         }, {});
 
 
     static validate = (values, props) => {
-        const classJ = values["@class"];
+        const classJ = values['@class'];
 
         let requiredFields = [...REQUIRED_FIELDS.abstractExtSystem];
 
-        if(classJ == EXT_SYSTEM_CLASS.ApExternalSystem) {
-            requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ApExternalSystem])
-        }else if(classJ == EXT_SYSTEM_CLASS.ArrDigitalRepository) {
-            requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitalRepository])
-        }else if(classJ == EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk) {
-            requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk])
+        if (classJ == EXT_SYSTEM_CLASS.ApExternalSystem) {
+            requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ApExternalSystem]);
+        } else if (classJ == EXT_SYSTEM_CLASS.ArrDigitalRepository) {
+            requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitalRepository]);
+        } else if (classJ == EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk) {
+            requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]);
         }
         return ExtSystemForm.requireFields(...requiredFields)(values);
     };
 
-    submitReduxForm = (values, dispatch) => submitForm(ExtSystemForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+    submitReduxForm = (values, dispatch) => submitForm(ExtSystemForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
         const {fields: {id, type, viewDaoUrl, viewFileUrl, viewThumbnailUrl, sendNotification, code, name, url, username, password, elzaCode}, handleSubmit, submitting} = this.props;
@@ -125,7 +117,7 @@ class ExtSystemForm extends AbstractReactComponent {
                     <FormInput type="text" label={i18n('admin.extSystem.viewFileUrl')} {...viewFileUrl} />
                     <FormInput type="text" label={i18n('admin.extSystem.viewThumbnailUrl')} {...viewThumbnailUrl} />
                     <FormInput as="select" label={i18n('admin.extSystem.sendNotification')} {...sendNotification} >
-                        <option key={null} />
+                        <option key={null}/>
                         <option key="true" value={true}>{i18n('admin.extSystem.sendNotification.true')}</option>
                         <option key="false" value={false}>{i18n('admin.extSystem.sendNotification.false')}</option>
                     </FormInput>
@@ -141,13 +133,14 @@ class ExtSystemForm extends AbstractReactComponent {
 
             </Modal.Body>
             <Modal.Footer>
-                <Button type="submit" variant="default" disabled={submitting}>{isUpdate ? i18n('admin.extSystem.submit.edit') : i18n('admin.extSystem.submit.add')}</Button>
+                <Button type="submit" variant="default"
+                        disabled={submitting}>{isUpdate ? i18n('admin.extSystem.submit.edit') : i18n('admin.extSystem.submit.add')}</Button>
             </Modal.Footer>
-        </Form>
+        </Form>;
     }
 }
 
 export default reduxForm({
     fields: ExtSystemForm.fields,
-    form: 'extSystemForm'
+    form: 'extSystemForm',
 })(ExtSystemForm);

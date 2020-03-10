@@ -1,14 +1,13 @@
 import PropTypes from 'prop-types';
 import * as React from 'react';
-import {Button, Form, Modal} from 'react-bootstrap';
-import {AbstractReactComponent, Icon} from 'components/shared';
-import {reduxForm} from "redux-form";
-import storeFromArea from "../../shared/utils/storeFromArea";
-import * as issuesActions from "../../actions/arr/issues";
-import HorizontalLoader from "../shared/loading/HorizontalLoader";
-import FormInput from "../shared/form/FormInput";
-import i18n from "../i18n";
-import * as issueTypesActions from "../../actions/refTables/issueTypes";
+import {Form, Modal} from 'react-bootstrap';
+import {Button} from '../ui';
+import {AbstractReactComponent} from 'components/shared';
+import {reduxForm} from 'redux-form';
+import FormInput from '../shared/form/FormInput';
+import i18n from '../i18n';
+import * as issueTypesActions from '../../actions/refTables/issueTypes';
+
 const basicOptionMap = (i) => <option key={i.id} value={i.id}>{i.name}</option>;
 
 class IssueForm extends AbstractReactComponent {
@@ -24,9 +23,9 @@ class IssueForm extends AbstractReactComponent {
     static requireFields = (...names) => data =>
         names.reduce((errors, name) => {
             if (!data[name]) {
-                errors[name] = i18n('global.validation.required')
+                errors[name] = i18n('global.validation.required');
             }
-            return errors
+            return errors;
         }, {});
 
     render() {
@@ -44,23 +43,23 @@ class IssueForm extends AbstractReactComponent {
                     <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </Form>
-        )
+        );
     }
 }
 
 export default reduxForm({
     fields: [
         'issueTypeId',
-        'description'
+        'description',
     ],
     validate: (values, props) => {
-        return IssueForm.requireFields("issueTypeId", "description")(values)
+        return IssueForm.requireFields('issueTypeId', 'description')(values);
     },
-    form: "issueForm"
+    form: 'issueForm',
 }, (state) => {
     return {
         issueTypes: state.refTables.issueTypes,
-    }
+    };
 })(IssueForm);
 
 

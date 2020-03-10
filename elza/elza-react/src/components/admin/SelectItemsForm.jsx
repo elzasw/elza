@@ -2,10 +2,11 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import {Autocomplete, AbstractReactComponent, i18n, Icon, FormInput} from 'components/shared';
-import {Modal, Button} from 'react-bootstrap';
-import {indexById} from 'stores/app/utils.jsx'
-import Tags from "components/form/Tags.jsx"
+import {AbstractReactComponent, i18n} from 'components/shared';
+import {Modal} from 'react-bootstrap';
+import {Button} from '../ui';
+import {indexById} from 'stores/app/utils.jsx';
+import Tags from 'components/form/Tags.jsx';
 
 /**
  * Formulář pro vybrání několika položek pomocí tag input.
@@ -37,14 +38,14 @@ const SelectItemsForm = class extends AbstractReactComponent {
             this.setState({
                 items: [
                     ...items.slice(0, index),
-                    ...items.slice(index + 1)
-                ]
+                    ...items.slice(index + 1),
+                ],
             });
         }
     };
 
     handleChange = (item) => {
-        console.log("select items form",item);
+        console.log('select items form', item);
         if (item) {
             const {items} = this.state;
 
@@ -64,7 +65,7 @@ const SelectItemsForm = class extends AbstractReactComponent {
         const itemField = React.createElement(fieldComponent, {
             tags: true,
             ...fieldComponentProps,
-            onChange: this.handleChange
+            onChange: this.handleChange,
         });
 
         return (
@@ -72,15 +73,17 @@ const SelectItemsForm = class extends AbstractReactComponent {
                 <Modal.Body>
                     <div>
                         {itemField}
-                        <Tags items={items} renderItem={renderItem} onRemove={this.handleRemoveItem} />
+                        <Tags items={items} renderItem={renderItem} onRemove={this.handleRemoveItem}/>
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={() => {onSubmitForm(items)}}>{i18n('global.action.add')}</Button>
+                    <Button onClick={() => {
+                        onSubmitForm(items);
+                    }}>{i18n('global.action.add')}</Button>
                     <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
-        )
+        );
     }
 };
 

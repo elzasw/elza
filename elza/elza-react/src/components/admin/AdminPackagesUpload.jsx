@@ -6,9 +6,9 @@
  */
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
-import {Button} from 'react-bootstrap';
-import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
+import {connect} from 'react-redux';
+import {Button} from '../ui';
+import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
 
 import {importPackage} from 'actions/admin/packages.jsx';
 
@@ -17,7 +17,7 @@ class AdminPackagesUpload extends AbstractReactComponent {
         super(props);
 
         this.state = {
-            disabled: true
+            disabled: true,
         };
 
         this.handleUpload = this.handleUpload.bind(this);
@@ -27,7 +27,7 @@ class AdminPackagesUpload extends AbstractReactComponent {
     handleUpload() {
         var file = this.refs.file;
         var data = new FormData();
-        data.append("file", ReactDOM.findDOMNode(file.refs.input).files[0]);
+        data.append('file', ReactDOM.findDOMNode(file.refs.input).files[0]);
         this.props.dispatch(importPackage(data));
     }
 
@@ -39,10 +39,11 @@ class AdminPackagesUpload extends AbstractReactComponent {
     render() {
 
         return (
-                <div>
-                    <FormInput onChange={this.handleChangeFile} ref="file" name="file" type="file" />
-                    <Button disabled={this.state.disabled} onClick={this.handleUpload}>{i18n('admin.packages.action.import')}</Button>
-                </div>
+            <div>
+                <FormInput onChange={this.handleChangeFile} ref="file" name="file" type="file"/>
+                <Button disabled={this.state.disabled}
+                        onClick={this.handleUpload}>{i18n('admin.packages.action.import')}</Button>
+            </div>
         );
     }
 }

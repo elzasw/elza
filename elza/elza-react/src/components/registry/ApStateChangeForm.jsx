@@ -2,14 +2,15 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, Autocomplete, i18n} from 'components/shared';
-import {Button, Form, Modal} from 'react-bootstrap';
-import {indexById} from 'stores/app/utils.jsx'
-import {decorateFormField} from 'components/form/FormUtils.jsx'
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTypes.jsx'
-import {getTreeItemById} from "./registryUtils";
-import Scope from "../shared/scope/Scope";
-import * as StateApproval from "../enum/StateApproval";
-import FormInput from "../shared/form/FormInput";
+import {Form, Modal} from 'react-bootstrap';
+import {Button} from '../ui';
+import {indexById} from 'stores/app/utils.jsx';
+import {decorateFormField} from 'components/form/FormUtils.jsx';
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTypes.jsx';
+import {getTreeItemById} from './registryUtils';
+import Scope from '../shared/scope/Scope';
+import * as StateApproval from '../enum/StateApproval';
+import FormInput from '../shared/form/FormInput';
 
 class ApStateChangeForm extends AbstractReactComponent {
 
@@ -37,8 +38,8 @@ class ApStateChangeForm extends AbstractReactComponent {
         return StateApproval.values.map(item => {
             return {
                 id: item,
-                name: StateApproval.getCaption(item)
-            }
+                name: StateApproval.getCaption(item),
+            };
         });
     }
 
@@ -64,13 +65,15 @@ class ApStateChangeForm extends AbstractReactComponent {
             }
         }
 
-        const value = getTreeItemById(typeId ? typeId.value : "", items);
+        const value = getTreeItemById(typeId ? typeId.value : '', items);
 
         return (
             <div key={this.props.key}>
                 <Form onSubmit={handleSubmit}>
                     <Modal.Body>
-                        <Scope disabled={submitting} versionId={versionId} label={i18n('ap.state.title.scope')} {...scopeId} value={scopeIdValue} {...decorateFormField(scopeId)}/>
+                        <Scope disabled={submitting} versionId={versionId}
+                               label={i18n('ap.state.title.scope')} {...scopeId}
+                               value={scopeIdValue} {...decorateFormField(scopeId)}/>
                         {!hideType && <Autocomplete
                             label={i18n('ap.state.title.type')}
                             items={items}
@@ -87,7 +90,7 @@ class ApStateChangeForm extends AbstractReactComponent {
                             }}
                             value={value}
                             disabled={submitting}
-                            />}
+                        />}
                         <Autocomplete
                             disabled={submitting}
                             label={i18n('ap.state.title.state')}
@@ -100,7 +103,8 @@ class ApStateChangeForm extends AbstractReactComponent {
                                 state.onBlur(item ? item.id : null);
                             }}
                         />
-                        <FormInput disabled={submitting} type="text" label={i18n('ap.state.title.comment')} {...comment} {...decorateFormField(comment)}/>
+                        <FormInput disabled={submitting} type="text"
+                                   label={i18n('ap.state.title.comment')} {...comment} {...decorateFormField(comment)}/>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit" disabled={submitting}>{i18n('global.action.store')}</Button>
@@ -108,14 +112,15 @@ class ApStateChangeForm extends AbstractReactComponent {
                     </Modal.Footer>
                 </Form>
             </div>
-        )
+        );
     }
 }
+
 export default reduxForm({
     form: 'apStateChangeForm',
     fields: ['comment', 'typeId', 'scopeId', 'state'],
-    validate: ApStateChangeForm.validate
-},state => ({
+    validate: ApStateChangeForm.validate,
+}, state => ({
     refTables: state.refTables,
-    registryRegionRecordTypes: state.registryRegionRecordTypes
+    registryRegionRecordTypes: state.registryRegionRecordTypes,
 }))(ApStateChangeForm);

@@ -1,17 +1,15 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {WebApi} from 'actions/index.jsx';
-import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, Autocomplete, i18n, Icon, FormInput} from 'components/shared';
-import {Modal, Button, Form, FormCheck, FormGroup} from 'react-bootstrap'
-import {indexById} from 'stores/app/utils.jsx'
-import {submitForm} from 'components/form/FormUtils.jsx'
-import {objectById} from 'stores/app/utils.jsx'
+import {AbstractReactComponent, FormInput, i18n, Icon} from 'components/shared';
+import {Form, FormCheck, FormGroup, Modal} from 'react-bootstrap';
+import {Button} from '../ui';
+import {objectById} from 'stores/app/utils.jsx';
+import {submitForm} from 'components/form/FormUtils.jsx';
 
-import './RelationForm.scss'
-import DatationField from "./DatationField";
-import RegistryField from "../registry/RegistryField";
+import './RelationForm.scss';
+import DatationField from './DatationField';
+import RegistryField from '../registry/RegistryField';
 
 const USE_UNITDATE_ENUM = { // TODO @compel move to party.jsx
     NONE: 'NONE',
@@ -24,7 +22,7 @@ class RelationClassForm extends AbstractReactComponent {
     static propTypes = {
         relationTypes: PropTypes.array.isRequired,
         apTypes: PropTypes.object.isRequired,
-        partyId: PropTypes.number
+        partyId: PropTypes.number,
     };
 
     static fields = [
@@ -49,15 +47,15 @@ class RelationClassForm extends AbstractReactComponent {
             errors.relationTypeId = i18n('global.validation.required');
         }
 
-        for (let i=0; i<values.relationEntities.length; i++) {
+        for (let i = 0; i < values.relationEntities.length; i++) {
             if (!values.relationEntities[i].record) {
-                errors['relationEntities['+i+'].record'] = i18n('party.relation.errors.undefinedRecord');
+                errors['relationEntities[' + i + '].record'] = i18n('party.relation.errors.undefinedRecord');
             }
         }
 
-        for (let i=0; i<values.relationEntities.length; i++) {
+        for (let i = 0; i < values.relationEntities.length; i++) {
             if (!values.relationEntities[i].roleType.id) {
-                errors['relationEntities['+i+'].roleType.id'] = i18n('party.relation.errors.undefinedRoleType');
+                errors['relationEntities[' + i + '].roleType.id'] = i18n('party.relation.errors.undefinedRoleType');
             }
         }
 
@@ -73,21 +71,21 @@ class RelationClassForm extends AbstractReactComponent {
         errors.to = DatationField.reduxValidate(values.to);
 
         if (!errors.from) {
-            delete errors.from
+            delete errors.from;
         }
         if (!errors.to) {
-            delete errors.to
+            delete errors.to;
         }
 
         if (values.note && values.note.length > 1000) {
-            errors.note = i18n('party.relation.errors.invalidNoteLength', 1000)
+            errors.note = i18n('party.relation.errors.invalidNoteLength', 1000);
         }
 
         return errors;
 
     };
 
-    submitReduxForm = (values, dispatch) => submitForm(RelationClassForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+    submitReduxForm = (values, dispatch) => submitForm(RelationClassForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
         const {relationTypes, onClose, handleSubmit, fields: {from, to, relationEntities, note, source, relationTypeId}, partyId, submitting, apTypesMap} = this.props;
@@ -103,12 +101,22 @@ class RelationClassForm extends AbstractReactComponent {
                 <div className="flex">
                     <div className="flex-2 col">
                         <FormGroup validationState={relationTypeId.touched && relationTypeId.invalid ? 'error' : null}>
-                            <div className="relation-class-select">{relationTypes.map(i => <FormCheck type={'radio'} inline checked {...relationTypeId} value={i.id} onBlur={()=>{/* musí být kvůli chybné implementaci v REDUX */}} label={i.name} />)}</div>
-                            {relationTypeId.touched && relationTypeId.invalid && <Form.Control.Feedback>{relationTypeId.error}</Form.Control.Feedback>}
+                            <div className="relation-class-select">{relationTypes.map(i => <FormCheck type={'radio'}
+                                                                                                      inline
+                                                                                                      checked {...relationTypeId}
+                                                                                                      value={i.id}
+                                                                                                      onBlur={() => {/* musí být kvůli chybné implementaci v REDUX */
+                                                                                                      }}
+                                                                                                      label={i.name}/>)}</div>
+                            {relationTypeId.touched && relationTypeId.invalid &&
+                            <Form.Control.Feedback>{relationTypeId.error}</Form.Control.Feedback>}
                         </FormGroup>
                         {relationType && <div className="relation-entities">
-                            <label className="type">{i18n('party.relation.entityInRelation')}</label><Button variant="action" onClick={() => relationEntities.addField({record:null, roleType: {id: null}})}><Icon glyph="fa-plus" /></Button>
-                            {relationEntities.map((i,index) => <div className="relation-row" key={index}>
+                            <label className="type">{i18n('party.relation.entityInRelation')}</label><Button
+                            variant="action"
+                            onClick={() => relationEntities.addField({record: null, roleType: {id: null}})}><Icon
+                            glyph="fa-plus"/></Button>
+                            {relationEntities.map((i, index) => <div className="relation-row" key={index}>
                                 <div className="type">
                                     <FormInput as="select" {...i.roleType.id}>
                                         <option key={0}/>
@@ -122,25 +130,37 @@ class RelationClassForm extends AbstractReactComponent {
                                                 }
                                             }
 
-                                            return <option disabled={(disabled) ? "disabled" : ""} value={v.id} key={v.id}>{v.name}</option>})}
+                                            return <option disabled={(disabled) ? 'disabled' : ''} value={v.id}
+                                                           key={v.id}>{v.name}</option>;
+                                        })}
                                     </FormInput>
                                 </div>
                                 <div className="record">
-                                    <RegistryField disabled={!i.roleType.id.value} partyId={partyId} {...i.record} roleTypeId={i.roleType.id.value} footer={true} footerButtons={false} />
+                                    <RegistryField disabled={!i.roleType.id.value} partyId={partyId} {...i.record}
+                                                   roleTypeId={i.roleType.id.value} footer={true}
+                                                   footerButtons={false}/>
                                 </div>
-                                <Button variant="action" onClick={() => relationEntities.removeField(index)}><Icon glyph="fa-times" /></Button>
+                                <Button variant="action" onClick={() => relationEntities.removeField(index)}><Icon
+                                    glyph="fa-times"/></Button>
                             </div>)}
                         </div>}
                     </div>
-                    {relationType && relationType.useUnitdate !== USE_UNITDATE_ENUM.NONE && <div className="datation-group flex-1 col">
+                    {relationType && relationType.useUnitdate !== USE_UNITDATE_ENUM.NONE &&
+                    <div className="datation-group flex-1 col">
                         {(relationType.useUnitdate == USE_UNITDATE_ENUM.ONE) && <div>
-                            <DatationField fields={from} label={i18n('party.relation.date')} labelTextual={i18n('party.relation.date.textDate')} labelNote={i18n('party.relation.date.note')} />
+                            <DatationField fields={from} label={i18n('party.relation.date')}
+                                           labelTextual={i18n('party.relation.date.textDate')}
+                                           labelNote={i18n('party.relation.date.note')}/>
                         </div>}
                         {(relationType.useUnitdate === USE_UNITDATE_ENUM.INTERVAL) && <div>
-                            <DatationField fields={from} label={i18n('party.relation.from')} labelTextual={i18n('party.relation.from.textDate')} labelNote={i18n('party.relation.from.note')} />
+                            <DatationField fields={from} label={i18n('party.relation.from')}
+                                           labelTextual={i18n('party.relation.from.textDate')}
+                                           labelNote={i18n('party.relation.from.note')}/>
                         </div>}
                         {relationType.useUnitdate === USE_UNITDATE_ENUM.INTERVAL && <div>
-                            <DatationField fields={to} label={i18n('party.relation.to')} labelTextual={i18n('party.relation.to.textDate')} labelNote={i18n('party.relation.to.note')} />
+                            <DatationField fields={to} label={i18n('party.relation.to')}
+                                           labelTextual={i18n('party.relation.to.textDate')}
+                                           labelNote={i18n('party.relation.to.note')}/>
                         </div>}
                     </div>}
                     <div className="flex-1 col">
@@ -160,5 +180,5 @@ class RelationClassForm extends AbstractReactComponent {
 export default reduxForm({
     form: 'relationClassForm',
     fields: RelationClassForm.fields,
-    validate: RelationClassForm.validateInline
-})(RelationClassForm)
+    validate: RelationClassForm.validateInline,
+})(RelationClassForm);

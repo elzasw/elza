@@ -1,65 +1,32 @@
 import './ArrPage.scss';
 import './ArrDaoPage.scss';
+import PropTypes from 'prop-types';
+
+import React from 'react';
+import {indexById} from 'stores/app/utils.jsx';
+import {connect} from 'react-redux';
+
+import ArrDaoPackages from '../../components/arr/ArrDaoPackages';
+import Ribbon from '../../components/page/Ribbon';
+import FundTreeDaos from '../../components/arr/FundTreeDaos';
+import ArrDaos from '../../components/arr/ArrDaos';
+
+import {i18n, Icon, RibbonGroup, Tabs} from 'components/shared';
+import * as types from 'actions/constants/ActionTypes.js';
+import {createFundRoot, getParentNode} from 'components/arr/ArrUtils.jsx';
+import {addNodeForm} from 'actions/arr/addNodeForm.jsx';
+import ArrParentPage from './ArrParentPage.jsx';
+import {fundTreeSelectNode} from 'actions/arr/fundTree.jsx';
+import {Button} from '../../components/ui';
+import {WebApi} from 'actions/index.jsx';
 
 /**
  * Stránka archivních pomůcek.
  */
 
-import PropTypes from 'prop-types';
-
-import React from 'react';
-import ReactDOM from 'react-dom';
-import {indexById} from 'stores/app/utils.jsx'
-import {connect} from 'react-redux'
-import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
-import {Link, IndexLink} from 'react-router';
-
-import ArrDaoPackages from '../../components/arr/ArrDaoPackages'
-import Ribbon from '../../components/page/Ribbon'
-import FundTreeDaos from '../../components/arr/FundTreeDaos'
-import ArrDaos from '../../components/arr/ArrDaos'
-
-import {
-    i18n,
-    Tabs, Icon, Search,
-    RibbonGroup,
-    AbstractReactComponent,
-    ListBox2,
-    LazyListBox,
-    Loading,
-    Utils
-} from 'components/shared';
-import * as types from 'actions/constants/ActionTypes.js';
-import {createFundRoot, getParentNode} from 'components/arr/ArrUtils.jsx'
-import {moveNodesUnder, moveNodesBefore, moveNodesAfter} from 'actions/arr/nodes.jsx'
-import {addNodeForm} from "actions/arr/addNodeForm.jsx"
-import ArrParentPage from "./ArrParentPage.jsx";
-import {fundTreeSelectNode} from 'actions/arr/fundTree.jsx'
-import {ButtonGroup, Button, DropdownButton, Dropdown, Collapse} from 'react-bootstrap';
-import PageLayout from "../shared/layout/PageLayout";
-import {WebApi} from 'actions/index.jsx';
-import {modalDialogShow} from 'actions/global/modalDialog.jsx'
-import {showRegisterJp, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
-import {versionValidate, versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation.jsx'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {developerNodeScenariosRequest} from 'actions/global/developer.jsx'
-import {isFundRootId, getSettings, setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
-import {setFocus} from 'actions/global/focus.jsx'
-import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
-import {fundNodesPolicyFetchIfNeeded} from 'actions/arr/fundNodesPolicy.jsx'
-import {fundActionFormChange, fundActionFormShow} from 'actions/arr/fundAction.jsx'
-import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
-import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
-import {routerNavigate} from 'actions/router.jsx'
-import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
-import {Shortcuts} from 'react-shortcuts';
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import * as perms from 'actions/user/Permission.jsx';
-import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
-
 class ArrDaoPage extends ArrParentPage {
     constructor(props) {
-        super(props, "dao-page");
+        super(props, 'dao-page');
 
     }
 
@@ -97,7 +64,7 @@ class ArrDaoPage extends ArrParentPage {
     }
 
     handleShortcuts(action) {
-        console.log("#handleShortcuts ArrDaoPage", '[' + action + ']', this);
+        console.log('#handleShortcuts ArrDaoPage', '[' + action + ']', this);
         super.handleShortcuts(action);
     }
 
@@ -113,7 +80,7 @@ class ArrDaoPage extends ArrParentPage {
 
         const afterCreateCallback = (versionId, node, parentNode) => {
             // Připojení - link
-            WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, node.id).then(()=>{
+            WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, node.id).then(() => {
                 this.setState({selectedDaoLeft: null});
             });
 
@@ -122,21 +89,21 @@ class ArrDaoPage extends ArrParentPage {
         };
 
         this.props.dispatch(addNodeForm(
-            "CHILD",
+            'CHILD',
             node,
             parentNode,
             fund.versionId,
             afterCreateCallback,
-            ["CHILD"]
+            ['CHILD'],
         ));
-        console.log("handleCreateUnder");
+        console.log('handleCreateUnder');
     };
 
     handleLink = () => {
         const fund = this.getActiveFund(this.props);
         const {selectedDaoLeft} = this.state;
 
-        WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, fund.fundTreeDaosRight.selectedId).then(()=>{
+        WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, fund.fundTreeDaosRight.selectedId).then(() => {
             this.setState({selectedDaoLeft: null});
         });
     };
@@ -161,17 +128,18 @@ class ArrDaoPage extends ArrParentPage {
 
         let altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>;
         }
 
         let itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>
+            itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>;
         }
 
         return (
-            <Ribbon arr subMenu fundId={activeFund ? activeFund.id : null} altSection={altSection} itemSection={itemSection}/>
-        )
+            <Ribbon arr subMenu fundId={activeFund ? activeFund.id : null} altSection={altSection}
+                    itemSection={itemSection}/>
+        );
     };
 
     hasPageShowRights = (userDetail, activeFund) => {
@@ -192,7 +160,7 @@ class ArrDaoPage extends ArrParentPage {
         const {selectedIndex} = this.state;
         const fund = this.getActiveFund(this.props);
 
-        return <div className="packages-container" key={"daoPackages-" + unassigned}>
+        return <div className="packages-container" key={'daoPackages-' + unassigned}>
             <ArrDaoPackages
                 activeIndex={selectedIndex}
                 unassigned={unassigned}
@@ -206,9 +174,11 @@ class ArrDaoPage extends ArrParentPage {
                 selectedDaoId={this.state.selectedDaoLeft ? this.state.selectedDaoLeft.id : null}
                 selectedDaoFileId={this.state.selectedDaoLeftFileId ? this.state.selectedDaoLeftFileId : null}
                 daoPackageId={selectedPackage ? selectedPackage.id : null}
-                onSelect={(item, daoFileId) => { this.setState({selectedDaoLeft: item, selectedDaoLeftFileId: daoFileId}) }}
+                onSelect={(item, daoFileId) => {
+                    this.setState({selectedDaoLeft: item, selectedDaoLeftFileId: daoFileId});
+                }}
             />}
-        </div>
+        </div>;
     };
 
     renderUnassignedPackages = (readMode) => {
@@ -241,9 +211,11 @@ class ArrDaoPage extends ArrParentPage {
                 fund={fund}
                 readMode={readMode}
                 nodeId={fund.fundTreeDaosLeft.selectedId ? fund.fundTreeDaosLeft.selectedId : null}
-                onSelect={(item, daoFileId) => { this.setState({selectedDaoLeft: item, selectedDaoLeftFileId: daoFileId}) }}
+                onSelect={(item, daoFileId) => {
+                    this.setState({selectedDaoLeft: item, selectedDaoLeftFileId: daoFileId});
+                }}
             />}
-        </div>
+        </div>;
     };
 
     renderCenterPanel = (readMode, closed) => {
@@ -264,13 +236,13 @@ class ArrDaoPage extends ArrParentPage {
         tabs.push({
             id: 1,
             key: 1,
-            title: 'Balíčky'
+            title: 'Balíčky',
         });
 
         tabs.push({
             id: 2,
             key: 2,
-            title: 'Archivní strom'
+            title: 'Archivní strom',
         });
 
         let content;
@@ -297,17 +269,21 @@ class ArrDaoPage extends ArrParentPage {
             <div className="daos-content-container">
                 <div key={1} className='left-container'>
                     <Tabs.Container ref='tabs' className='daos-tabs-container'>
-                        <Tabs.Tabs items={tabs} activeItem={{id: selectedTab}} onSelect={this.handleTabSelect} />
+                        <Tabs.Tabs items={tabs} activeItem={{id: selectedTab}} onSelect={this.handleTabSelect}/>
                         <Tabs.Content>
                             {content}
                         </Tabs.Content>
                     </Tabs.Container>
                 </div>
                 <div key={2} className='actions-container'>
-                    <Button onClick={this.handleLink} disabled={!canLink}><Icon glyph="fa-thumb-tack"/><div>{i18n('arr.daos.link')}</div></Button>
-                    <Button onClick={this.handleCreateUnderAndLink} disabled={!canLink}><Icon glyph="ez-move-under"/><div>{i18n('arr.daos.createUnderAndLink')}</div></Button>
+                    <Button onClick={this.handleLink} disabled={!canLink}><Icon glyph="fa-thumb-tack"/>
+                        <div>{i18n('arr.daos.link')}</div>
+                    </Button>
+                    <Button onClick={this.handleCreateUnderAndLink} disabled={!canLink}><Icon glyph="ez-move-under"/>
+                        <div>{i18n('arr.daos.createUnderAndLink')}</div>
+                    </Button>
                 </div>
-                <div key={3} className={"right-container"}>
+                <div key={3} className={'right-container'}>
                     <div className="tree-right-container">
                         <FundTreeDaos
                             fund={fund}
@@ -322,18 +298,20 @@ class ArrDaoPage extends ArrParentPage {
                             selectedDaoId={this.state.selectedDaoRight ? this.state.selectedDaoRight.id : null}
                             selectedDaoFileId={this.state.selectedDaoRightFileId ? this.state.selectedDaoRightFileId : null}
                             readMode={readMode}
-                            onSelect={(item, daoFileId) => { this.setState({selectedDaoRight: item, selectedDaoRightFileId: daoFileId}) }}
+                            onSelect={(item, daoFileId) => {
+                                this.setState({selectedDaoRight: item, selectedDaoRightFileId: daoFileId});
+                            }}
                             nodeId={fund.fundTreeDaosRight.selectedId ? fund.fundTreeDaosRight.selectedId : null}
                         />}
                     </div>
                 </div>
             </div>
-        )
+        );
     };
 }
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, refTables, form, focus, developer, userDetail, tab} = state
+    const {splitter, arrRegion, refTables, form, focus, developer, userDetail, tab} = state;
     return {
         splitter,
         arrRegion,
@@ -345,7 +323,7 @@ function mapStateToProps(state) {
         descItemTypes: refTables.descItemTypes,
         ruleSet: refTables.ruleSet,
         tab,
-    }
+    };
 }
 
 export default connect(mapStateToProps)(ArrDaoPage);

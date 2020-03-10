@@ -1,16 +1,13 @@
 import './DescItemPacketRef.scss';
 
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete} from 'components/shared';
-import {connect} from 'react-redux'
-import {decorateValue, decorateAutocompleteValue} from './DescItemUtils.jsx'
+import {AbstractReactComponent, Autocomplete, i18n, Icon} from 'components/shared';
+import {decorateAutocompleteValue} from './DescItemUtils.jsx';
 import {WebApi} from 'actions/index.jsx';
-import {indexById} from 'stores/app/utils.jsx';
-import {Button} from 'react-bootstrap';
-import DescItemLabel from './DescItemLabel.jsx'
+import {Button} from '../../ui';
+import DescItemLabel from './DescItemLabel.jsx';
 import PacketFormatter from 'components/arr/packets/PacketFormatter.jsx';
-import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
+import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 
 class DescItemPacketRef extends AbstractReactComponent {
     constructor(props) {
@@ -35,23 +32,25 @@ class DescItemPacketRef extends AbstractReactComponent {
         const {packetTypes} = this.props;
         this.pf = new PacketFormatter(packetTypes);
     }
-    handleFocus(){
-        this.setState({active:true});
+
+    handleFocus() {
+        this.setState({active: true});
         this.props.onFocus && this.props.onFocus();
     }
-    handleBlur(){
-        this.setState({active:false});
+
+    handleBlur() {
+        this.setState({active: false});
         this.props.onBlur && this.props.onBlur();
     }
 
     handleSearchChange(text) {
         const {fundId} = this.props;
         WebApi.getPackets(fundId, text, 1000)
-            .then(json => {
-                this.setState({
-                    packets: json
-                })
-            })
+              .then(json => {
+                  this.setState({
+                      packets: json,
+                  });
+              });
     }
 
     focus() {
@@ -63,7 +62,7 @@ class DescItemPacketRef extends AbstractReactComponent {
         const {descItem} = this.props;
         let name = this.formatPacketName(item);
 
-        if(descItem.undefined){
+        if (descItem.undefined) {
             name = i18n('subNodeForm.descItemType.notIdentified');
         }
         var cls = 'item';
@@ -72,30 +71,30 @@ class DescItemPacketRef extends AbstractReactComponent {
             cls += ' focus';
         }
         if (selected) {
-            cls += ' active'
+            cls += ' active';
         }
 
-                // {false && this.packetName(item)}
+        // {false && this.packetName(item)}
         return (
             <div {...otherProps} className={cls}>
                 {name}
             </div>
-        )
+        );
     }
+
     /**
      * Vrácení názvu obalu
      * Pokud má komponenta focus tak se v názvu nezobrazí typ obalu.
      * Pokud
      */
-    getPacketName(packet){
+    getPacketName(packet) {
         var name;
-        if(this.state.active && packet)
-        {
+        if (this.state.active && packet) {
             name = packet.storageNumber;
-        } else if(!this.state.active && packet) {
+        } else if (!this.state.active && packet) {
             name = this.formatPacketName(packet);
         } else {
-            name = "";
+            name = '';
         }
         return name;
     }
@@ -113,6 +112,7 @@ class DescItemPacketRef extends AbstractReactComponent {
         }
         return null;
     }
+
     /**
      * Vrací název obalu formátovaný PacketFormatterem
      */
@@ -125,7 +125,7 @@ class DescItemPacketRef extends AbstractReactComponent {
             this.refs.focusEl.closeMenu();
             this.props.onFundPackets();
         } else {
-            console.warn("undefined onFundPackets");
+            console.warn('undefined onFundPackets');
         }
     }
 
@@ -134,7 +134,7 @@ class DescItemPacketRef extends AbstractReactComponent {
             this.refs.focusEl.closeMenu();
             this.props.onCreatePacket();
         } else {
-            console.warn("undefined onCreatePacket");
+            console.warn('undefined onCreatePacket');
         }
     }
 
@@ -142,20 +142,22 @@ class DescItemPacketRef extends AbstractReactComponent {
         const {refTables} = this.props;
         return (
             <div className="create-packet">
-                <Button onClick={this.handleCreatePacket}><Icon glyph='fa-plus'/>{i18n('arr.fund.packets.action.add.single')}</Button>
+                <Button onClick={this.handleCreatePacket}><Icon
+                    glyph='fa-plus'/>{i18n('arr.fund.packets.action.add.single')}</Button>
                 <Button onClick={this.handleFundPackets}>{i18n('arr.panel.title.packets')}</Button>
             </div>
-        )
+        );
     }
 
     render() {
         const {descItem, onChange, onBlur, locked, packetTypes, packets, singleDescItemTypeEdit, readMode, cal} = this.props;
         let packet = descItem.packet ? descItem.packet : null;
         if (readMode || descItem.undefined) {
-            let calValue = cal && packet == null ? i18n("subNodeForm.descItemType.calculable") : "";
+            let calValue = cal && packet == null ? i18n('subNodeForm.descItemType.calculable') : '';
             return (
-                <DescItemLabel value={packet ? this.pf.format(packet) : calValue} cal={cal} notIdentified={descItem.undefined} />
-            )
+                <DescItemLabel value={packet ? this.pf.format(packet) : calValue} cal={cal}
+                               notIdentified={descItem.undefined}/>
+            );
         }
 
         const footer = this.renderFooter();
@@ -163,18 +165,19 @@ class DescItemPacketRef extends AbstractReactComponent {
         return (
             <div className='desc-item-value desc-item-value-parts'>
                 {/**<select
-                        {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
-                        ref='focusEl'
-                        value={descItem.value}
-                        disabled={locked}
-                        onChange={(e) => this.props.onChange(e.target.value)} >
-                    <option key="novalue" />
-                    {packets.map(packet => (
+                 {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
+                 ref='focusEl'
+                 value={descItem.value}
+                 disabled={locked}
+                 onChange={(e) => this.props.onChange(e.target.value)} >
+                 <option key="novalue" />
+                 {packets.map(packet => (
                             <option key={packet.id} value={packet.id}>{this.formatPacketName(packet)}</option>
                     ))}
-                </select>*/}
+                 </select>*/}
 
-                <ItemTooltipWrapper tooltipTitle="dataType.packetRef.format" {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked || descItem.undefined, ['autocomplete-packet'])}>
+                <ItemTooltipWrapper
+                    tooltipTitle="dataType.packetRef.format" {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked || descItem.undefined, ['autocomplete-packet'])}>
                     <Autocomplete
                         ref='focusEl'
                         customFilter
@@ -191,7 +194,7 @@ class DescItemPacketRef extends AbstractReactComponent {
                     />
                 </ItemTooltipWrapper>
             </div>
-        )
+        );
     }
 }
 

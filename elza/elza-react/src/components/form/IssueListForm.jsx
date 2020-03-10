@@ -1,14 +1,14 @@
 import PropTypes from 'prop-types';
 import * as React from 'react';
-import {Button, Row, Col, Form} from 'react-bootstrap';
+import {Col, Form, Row} from 'react-bootstrap';
+import {Button} from '../ui';
 import {AbstractReactComponent, Icon} from 'components/shared';
-import UserField from "../admin/UserField";
-import FormInput from "../shared/form/FormInput";
-import i18n from "../i18n";
-import ListBox from "../shared/listbox/ListBox";
+import UserField from '../admin/UserField';
+import FormInput from '../shared/form/FormInput';
+import i18n from '../i18n';
+import ListBox from '../shared/listbox/ListBox';
 import {reduxForm} from 'redux-form';
-import {Dispatch} from "../../typings/globals";
-import {WebApi} from "../../actions";
+import {WebApi} from '../../actions';
 
 class IssueListForm extends AbstractReactComponent {
 
@@ -22,24 +22,24 @@ class IssueListForm extends AbstractReactComponent {
     static requireFields = (...names) => data =>
         names.reduce((errors, name) => {
             if (data[name] == null) {
-                errors[name] = i18n('global.validation.required')
+                errors[name] = i18n('global.validation.required');
             }
-            return errors
+            return errors;
         }, {});
 
     static validate = (values, props) => {
-        return IssueListForm.requireFields("name", "open")(values);
+        return IssueListForm.requireFields('name', 'open')(values);
     };
 
     static fields = [
-        "name",
-        "open",
-        "rdUsers[].id",
-        "rdUsers[].username",
-        "rdUsers[].description",
-        "wrUsers[].id",
-        "wrUsers[].username",
-        "wrUsers[].description"
+        'name',
+        'open',
+        'rdUsers[].id',
+        'rdUsers[].username',
+        'rdUsers[].description',
+        'wrUsers[].id',
+        'wrUsers[].username',
+        'wrUsers[].description',
     ];
 
     static initialValues = {open: true, rdUsers: [], wrUsers: []};
@@ -53,8 +53,8 @@ class IssueListForm extends AbstractReactComponent {
             && prevProps.id
             && prevProps.id === this.props.id
             && this.props.fields.rdUsers.length !== prevProps.fields.rdUsers.length ||
-                this.props.fields.wrUsers.length !== prevProps.fields.wrUsers.length) {
-                this.props.asyncValidate()
+            this.props.fields.wrUsers.length !== prevProps.fields.wrUsers.length) {
+            this.props.asyncValidate();
         }
     }
 
@@ -66,45 +66,47 @@ class IssueListForm extends AbstractReactComponent {
     };
 
     deleteUser = (target, index, e) => {
-        target.removeField(index)
+        target.removeField(index);
     };
 
     renderUser = (target) => ({item, index}) => {
-        return <div>{item.username.value} <Button variant="action" bsSize="xs" className="pull-right" onClick={this.deleteUser.bind(this, target, index)}><Icon glyph="fa-trash" /></Button></div>
+        return <div>{item.username.value} <Button variant="action" bsSize="xs" className="pull-right"
+                                                  onClick={this.deleteUser.bind(this, target, index)}><Icon
+            glyph="fa-trash"/></Button></div>;
     };
 
     render() {
         const {fields: {name, open, rdUsers, wrUsers}, id} = this.props;
 
         const customProps = {
-            disabled: id == null
+            disabled: id == null,
         };
 
         return <Form onSubmit={null}>
-            <FormInput type="text" {...name} {...customProps} label={i18n("issueList.name")} />
-            <FormInput as="select" {...open} {...customProps} label={i18n("issueList.open")}>
-                <option value={true}>{i18n("issueList.open.true")}</option>
-                <option value={false}>{i18n("issueList.open.false")}</option>
+            <FormInput type="text" {...name} {...customProps} label={i18n('issueList.name')}/>
+            <FormInput as="select" {...open} {...customProps} label={i18n('issueList.open')}>
+                <option value={true}>{i18n('issueList.open.true')}</option>
+                <option value={false}>{i18n('issueList.open.false')}</option>
             </FormInput>
-            <label>{i18n("arr.issuesList.form.permission")}</label>
+            <label>{i18n('arr.issuesList.form.permission')}</label>
             <Row>
                 <Col xs={6}>
-                    <label>{i18n("arr.issuesList.form.permission.read")}</label>
-                    <UserField onChange={this.addUser(rdUsers)} {...customProps} value={null} />
+                    <label>{i18n('arr.issuesList.form.permission.read')}</label>
+                    <UserField onChange={this.addUser(rdUsers)} {...customProps} value={null}/>
                     <ListBox items={rdUsers} renderItemContent={this.renderUser(rdUsers)}/>
                 </Col>
                 <Col xs={6}>
-                    <label>{i18n("arr.issuesList.form.permission.write")}</label>
-                    <UserField onChange={this.addUser(wrUsers)} {...customProps} value={null} />
+                    <label>{i18n('arr.issuesList.form.permission.write')}</label>
+                    <UserField onChange={this.addUser(wrUsers)} {...customProps} value={null}/>
                     <ListBox items={wrUsers} renderItemContent={this.renderUser(wrUsers)}/>
                 </Col>
             </Row>
-        </Form>
+        </Form>;
     }
 }
 
 export default reduxForm({
-    form: "issueList",
+    form: 'issueList',
     fields: IssueListForm.fields,
     initialValues: IssueListForm.initialValues,
     validate: IssueListForm.validate,
@@ -119,14 +121,14 @@ export default reduxForm({
         if (id) {
             return WebApi.updateIssueList(id, {...values, fundId: props.fundId, id}).then((data) => {
                 props.onSave(data);
-                return {} // No errors saved correctly
-            })
+                return {}; // No errors saved correctly
+            });
         } else {
             return WebApi.addIssueList({...values, fundId: props.fundId}).then((data) => {
                 props.onCreate(data);
-                return {} // No errors saved correctly
+                return {}; // No errors saved correctly
             });
         }
 
-    }
+    },
 })(IssueListForm);

@@ -4,14 +4,10 @@ import {ButtonToolbar} from 'react-bootstrap';
 
 import './RibbonMenu.scss';
 
-const RibbonMenu = (
-    {
-        children,
-    },
-) => {
+const RibbonMenu = ({children}) => {
     return (
         <ButtonToolbar className="ribbon-menu">
-                {children}
+            {children}
         </ButtonToolbar>
     );
 };

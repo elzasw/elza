@@ -1,10 +1,11 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import {Button, Modal} from "react-bootstrap";
-import {i18n, AbstractReactComponent} from "components";
-import StructureSubNodeForm from "./StructureSubNodeForm";
-import {structureNodeFormFetchIfNeeded} from "../../../actions/arr/structureNodeForm";
-import Loading from "../../shared/loading/Loading";
+import {Modal} from 'react-bootstrap';
+import {Button} from '../../ui';
+import {AbstractReactComponent, i18n} from 'components';
+import StructureSubNodeForm from './StructureSubNodeForm';
+import {structureNodeFormFetchIfNeeded} from '../../../actions/arr/structureNodeForm';
+import Loading from '../../shared/loading/Loading';
 import PropTypes from 'prop-types';
 
 class UpdateStructureDataForm extends AbstractReactComponent {
@@ -15,7 +16,7 @@ class UpdateStructureDataForm extends AbstractReactComponent {
         fundId: PropTypes.number.isRequired,
         id: PropTypes.number.isRequired,
         readMode: PropTypes.bool.isRequired,
-        descItemFactory: PropTypes.object.isRequired
+        descItemFactory: PropTypes.object.isRequired,
     };
 
     UNSAFE_componentWillMount() {
@@ -33,21 +34,21 @@ class UpdateStructureDataForm extends AbstractReactComponent {
 
         return <div>
             <Modal.Body>
-            {structureNodeForm.fetched ?
-                <StructureSubNodeForm
-                    versionId={fundVersionId}
-                    readMode={readMode}
-                    fundId={fundId}
-                    selectedSubNodeId={structureNodeForm.id}
-                    descItemFactory={descItemFactory}
-                />:
-                <Loading />
-            }
+                {structureNodeForm.fetched ?
+                    <StructureSubNodeForm
+                        versionId={fundVersionId}
+                        readMode={readMode}
+                        fundId={fundId}
+                        selectedSubNodeId={structureNodeForm.id}
+                        descItemFactory={descItemFactory}
+                    /> :
+                    <Loading/>
+                }
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="link" onClick={onClose}>{i18n('global.action.close')}</Button>
             </Modal.Footer>
-        </div>
+        </div>;
     }
 }
 
@@ -58,6 +59,6 @@ export default connect((state, props) => {
         fund = arrRegion.funds[arrRegion.activeIndex];
     }
     return {
-        structureNodeForm: fund ? fund.structureNodeForm : null
-    }
+        structureNodeForm: fund ? fund.structureNodeForm : null,
+    };
 })(UpdateStructureDataForm);

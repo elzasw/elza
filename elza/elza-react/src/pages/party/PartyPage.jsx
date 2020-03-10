@@ -1,33 +1,30 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
-import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
-import {ControllableDropdownButton, Icon, AbstractReactComponent, RibbonGroup, i18n, Utils} from 'components/shared';
-import Ribbon from '../../components/page/Ribbon'
-import PartyList from '../../components/party/PartyList'
-import PartyDetail from '../../components/party/PartyDetail'
-import ImportForm from '../../components/form/ImportForm'
-import ExtImportForm from '../../components/form/ExtImportForm'
-import {Dropdown, Button} from 'react-bootstrap';
-import {AppStore} from 'stores/index.jsx'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {partyDetailFetchIfNeeded, partyListInvalidate, PARTY_LIST_MAX_SIZE, partyAdd, partyCreate, insertRelation, partyDelete} from 'actions/party/party.jsx'
+import {connect} from 'react-redux';
+import {AbstractReactComponent, ControllableDropdownButton, i18n, Icon, RibbonGroup, Utils} from 'components/shared';
+import Ribbon from '../../components/page/Ribbon';
+import PartyList from '../../components/party/PartyList';
+import PartyDetail from '../../components/party/PartyDetail';
+import ImportForm from '../../components/form/ImportForm';
+import ExtImportForm from '../../components/form/ExtImportForm';
+import {Dropdown} from 'react-bootstrap';
+import {Button} from '../../components/ui';
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx';
+import {partyAdd, partyDelete, partyDetailFetchIfNeeded, partyListInvalidate} from 'actions/party/party.jsx';
 import {Shortcuts} from 'react-shortcuts';
-import {setFocus} from 'actions/global/focus.jsx'
+import {setFocus} from 'actions/global/focus.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 import defaultKeymap from './PartyPageKeymap.jsx';
 import './PartyPage.scss';
 import {apExtSystemListFetchIfNeeded} from 'actions/registry/apExtSystemList';
-import PageLayout from "../shared/layout/PageLayout";
+import PageLayout from '../shared/layout/PageLayout';
 import {PropTypes} from 'prop-types';
-import {FOCUS_KEYS} from "../../constants.tsx";
-import ScopeLists from "../../components/arr/ScopeLists";
-import ApStateHistoryForm from "../../components/registry/ApStateHistoryForm";
-import ApStateChangeForm from "../../components/registry/ApStateChangeForm";
-import {WebApi} from "../../actions";
-import {partyDetailInvalidate} from "../../actions/party/party";
+import {FOCUS_KEYS} from '../../constants.tsx';
+import ScopeLists from '../../components/arr/ScopeLists';
+import ApStateHistoryForm from '../../components/registry/ApStateHistoryForm';
+import ApStateChangeForm from '../../components/registry/ApStateChangeForm';
+import {WebApi} from '../../actions';
+import {partyDetailInvalidate} from '../../actions/party/party';
 
 /**
  * PARTY PAGE
@@ -35,20 +32,22 @@ import {partyDetailInvalidate} from "../../actions/party/party";
  * Stránka osob
  */
 class PartyPage extends AbstractReactComponent {
-    static contextTypes = { shortcuts: PropTypes.object };
-    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
-    UNSAFE_componentWillMount(){
-        Utils.addShortcutManager(this,defaultKeymap);
+    static contextTypes = {shortcuts: PropTypes.object};
+    static childContextTypes = {shortcuts: PropTypes.object.isRequired};
+
+    UNSAFE_componentWillMount() {
+        Utils.addShortcutManager(this, defaultKeymap);
     }
+
     getChildContext() {
-        return { shortcuts: this.shortcutManager };
+        return {shortcuts: this.shortcutManager};
     }
 
 
     static propTypes = {
         splitter: PropTypes.object.isRequired,
         userDetail: PropTypes.object.isRequired,
-        refTables: PropTypes.object.isRequired
+        refTables: PropTypes.object.isRequired,
     };
 
     componentDidMount() {
@@ -66,7 +65,7 @@ class PartyPage extends AbstractReactComponent {
     }
 
     handleShortcuts = (action) => {
-        console.log("#handleShortcuts", '[' + action + ']', this);
+        console.log('#handleShortcuts', '[' + action + ']', this);
         switch (action) {
             case 'addParty':
                 this.refs.addParty.setOpen(true);
@@ -109,21 +108,22 @@ class PartyPage extends AbstractReactComponent {
     };
 
     handleExtImport = () => {
-        this.props.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true} onSubmitForm={(data) => {
-            this.props.dispatch(partyDetailFetchIfNeeded(data.partyId));
-            this.props.dispatch(partyListInvalidate());
-        }} />, "dialog-lg"));
+        this.props.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true}
+                                                                                          onSubmitForm={(data) => {
+                                                                                              this.props.dispatch(partyDetailFetchIfNeeded(data.partyId));
+                                                                                              this.props.dispatch(partyListInvalidate());
+                                                                                          }}/>, 'dialog-lg'));
     };
 
 
     handleShowApHistory = () => {
-        const {partyDetail:{data:{accessPoint: {id}}}} = this.props;
-        const form = <ApStateHistoryForm accessPointId={id} />;
-        this.props.dispatch(modalDialogShow(this, i18n('ap.history.title'), form, "dialog-lg"));
+        const {partyDetail: {data: {accessPoint: {id}}}} = this.props;
+        const form = <ApStateHistoryForm accessPointId={id}/>;
+        this.props.dispatch(modalDialogShow(this, i18n('ap.history.title'), form, 'dialog-lg'));
     };
 
     handleChangeApState = () => {
-        const {partyDetail:{data:{accessPoint: {id, typeId, scopeId}, partyType}}} = this.props;
+        const {partyDetail: {data: {accessPoint: {id, typeId, scopeId}, partyType}}} = this.props;
         const form = <ApStateChangeForm initialValues={{
             typeId: typeId,
             scopeId: scopeId,
@@ -132,14 +132,14 @@ class PartyPage extends AbstractReactComponent {
                 comment: data.comment,
                 state: data.state,
                 typeId: data.typeId,
-                scopeId: data.scopeId !== "" ? parseInt(data.scopeId) : null,
+                scopeId: data.scopeId !== '' ? parseInt(data.scopeId) : null,
             };
             return WebApi.changeState(id, finalData);
         }} onSubmitSuccess={() => {
             this.props.dispatch(modalDialogHide());
             this.props.dispatch(partyDetailInvalidate());
             this.props.dispatch(partyListInvalidate());
-        }} accessPointId={id} />;
+        }} accessPointId={id}/>;
         this.props.dispatch(modalDialogShow(this, i18n('ap.state.change'), form));
     };
 
@@ -159,7 +159,7 @@ class PartyPage extends AbstractReactComponent {
     */
 
     handleScopeManagement = () => {
-        this.props.dispatch(modalDialogShow(this, i18n("accesspoint.scope.management.title"), <ScopeLists />));
+        this.props.dispatch(modalDialogShow(this, i18n('accesspoint.scope.management.title'), <ScopeLists/>));
     };
 
     /**
@@ -176,22 +176,25 @@ class PartyPage extends AbstractReactComponent {
         const altActions = [...parts.altActions];
         if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
             altActions.push(
-                <ControllableDropdownButton key='add-party' ref='addParty' id='add-party' title={<span className="dropContent">
-                   <Icon glyph='fa-plus-circle' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
+                <ControllableDropdownButton key='add-party' ref='addParty' id='add-party'
+                                            title={<span className="dropContent">
+                   <Icon glyph='fa-plus-circle'/><div><span
+                                                className="btnText">{i18n('party.addParty')}</span></div></span>}>
                     {
                         partyTypes.items.map(
-                            type => <Dropdown.Item key={type.id} eventKey={type.id} onClick={this.handleAddParty.bind(this, type.id)}>{type.name}</Dropdown.Item>
-                            )
+                            type => <Dropdown.Item key={type.id} eventKey={type.id}
+                                                   onClick={this.handleAddParty.bind(this, type.id)}>{type.name}</Dropdown.Item>,
+                        )
                     }
-                </ControllableDropdownButton>
+                </ControllableDropdownButton>,
             );
             altActions.push(<Button key='import-party' onClick={this.handleImport}>
-                <Icon glyph='fa-download fa-fw' />
+                <Icon glyph='fa-download fa-fw'/>
                 <div><span className="btnText">{i18n('ribbon.action.party.import')}</span></div>
             </Button>);
             if (extSystems && extSystems.length > 0) {
                 altActions.push(<Button key='import-ext-party' onClick={this.handleExtImport}>
-                    <Icon glyph='fa-download fa-fw' />
+                    <Icon glyph='fa-download fa-fw'/>
                     <div><span className="btnText">{i18n('ribbon.action.party.importExt')}</span></div>
                 </Button>);
             }
@@ -201,41 +204,45 @@ class PartyPage extends AbstractReactComponent {
                 <Button key='scopeManagement' onClick={this.handleScopeManagement}>
                     <Icon glyph='fa-wrench'/>
                     <div><span className="btnText">{i18n('ribbon.action.registry.scope.manage')}</span></div>
-                </Button>
+                </Button>,
             );
         }
 
         const itemActions = [...parts.itemActions];
         if (isSelected && partyDetail.fetched && !partyDetail.isFetching) {
-            if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {type: perms.AP_SCOPE_WR, scopeId: partyDetail.data.accessPoint.scopeId})) {
+            if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
+                type: perms.AP_SCOPE_WR,
+                scopeId: partyDetail.data.accessPoint.scopeId,
+            })) {
                 itemActions.push(
-                    <Button disabled={ partyDetail.data.accessPoint.invalid } key='delete-party' onClick={this.handleDeleteParty}><Icon glyph="fa-trash"/>
+                    <Button disabled={partyDetail.data.accessPoint.invalid} key='delete-party'
+                            onClick={this.handleDeleteParty}><Icon glyph="fa-trash"/>
                         <div><span className="btnText">{i18n('party.delete.button')}</span></div>
-                    </Button>
+                    </Button>,
                 );
 
                 this.props.onShowUsage && partyDetail && itemActions.push(
                     <Button key='partyShow' onClick={() => this.props.onShowUsage(partyDetail)}>
                         <Icon glyph="fa-search"/>
-                        <div><span className="btnText">{i18n("party.usage.button")}</span></div>
-                    </Button>
+                        <div><span className="btnText">{i18n('party.usage.button')}</span></div>
+                    </Button>,
                 );
 
-               /* MCV-45365
-                partyDetail && itemActions.push(
-                    <Button disabled={ !partyDetail.data.accessPoint.invalid} key='partySetValid' onClick={ this.handleSetValidParty }>
-                        <Icon glyph="fa-check"/>
-                        <div><span className="btnText">{i18n("party.setValid.button")}</span></div>
-                    </Button>
-                );
-                */
+                /* MCV-45365
+                 partyDetail && itemActions.push(
+                     <Button disabled={ !partyDetail.data.accessPoint.invalid} key='partySetValid' onClick={ this.handleSetValidParty }>
+                         <Icon glyph="fa-check"/>
+                         <div><span className="btnText">{i18n("party.setValid.button")}</span></div>
+                     </Button>
+                 );
+                 */
             }
 
             itemActions.push(
                 <Button key='show-state-history' onClick={this.handleShowApHistory}>
                     <Icon glyph="fa-clock-o"/>
                     <div><span className="btnText">{i18n('ap.stateHistory')}</span></div>
-                </Button>
+                </Button>,
             );
 
             // TODO: oprávnění
@@ -243,20 +250,20 @@ class PartyPage extends AbstractReactComponent {
                 <Button key='change-state' onClick={this.handleChangeApState}>
                     <Icon glyph="fa-pencil"/>
                     <div><span className="btnText">{i18n('ap.changeState')}</span></div>
-                </Button>
+                </Button>,
             );
         }
 
         let altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key='alt-actions' className="small">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup key='alt-actions' className="small">{altActions}</RibbonGroup>;
         }
         let itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key='item-actions' className="small">{itemActions}</RibbonGroup>
+            itemSection = <RibbonGroup key='item-actions' className="small">{itemActions}</RibbonGroup>;
         }
 
-        return <Ribbon primarySection={parts.primarySection} altSection={altSection} itemSection={itemSection} />;
+        return <Ribbon primarySection={parts.primarySection} altSection={altSection} itemSection={itemSection}/>;
     };
 
     /**
@@ -267,11 +274,12 @@ class PartyPage extends AbstractReactComponent {
     render() {
         const {splitter, status} = this.props;
 
-        const leftPanel = <PartyList />;
+        const leftPanel = <PartyList/>;
 
-        const centerPanel = <PartyDetail />;
+        const centerPanel = <PartyDetail/>;
 
-        return <Shortcuts name='Party' handler={this.handleShortcuts} global className="main-shortcuts2" alwaysFireHandler stopPropagation={false}>
+        return <Shortcuts name='Party' handler={this.handleShortcuts} global className="main-shortcuts2"
+                          alwaysFireHandler stopPropagation={false}>
             <PageLayout
                 splitter={splitter}
                 className='party-page'
@@ -286,7 +294,7 @@ class PartyPage extends AbstractReactComponent {
 
 
 function mapStateToProps(state) {
-    const {app:{partyList, partyDetail, apExtSystemList}, splitter, refTables, userDetail, focus} = state;
+    const {app: {partyList, partyDetail, apExtSystemList}, splitter, refTables, userDetail, focus} = state;
 
     return {
         extSystems: apExtSystemList.fetched ? apExtSystemList.rows : null,
@@ -295,8 +303,8 @@ function mapStateToProps(state) {
         splitter,
         refTables,
         userDetail,
-        focus
-    }
+        focus,
+    };
 }
 
 export default connect(mapStateToProps)(PartyPage);

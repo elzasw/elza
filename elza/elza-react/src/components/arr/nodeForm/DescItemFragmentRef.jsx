@@ -1,16 +1,15 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import ReactDOM from 'react-dom';
 
-import {connect} from 'react-redux'
+import {connect} from 'react-redux';
 
-import {Icon, i18n, AbstractReactComponent, Autocomplete} from 'components/shared';
+import {AbstractReactComponent, i18n, Icon} from 'components/shared';
 
-import './DescItemFileRef.scss'
-import {modalDialogShow} from "../../../actions/global/modalDialog";
-import {WebApi} from "../../../actions/WebApi";
-import {AccessPointFormActions} from "../../accesspoint/AccessPointFormActions";
-import {Button} from "react-bootstrap";
+import './DescItemFileRef.scss';
+import {modalDialogShow} from '../../../actions/global/modalDialog';
+import {WebApi} from '../../../actions/WebApi';
+import {AccessPointFormActions} from '../../accesspoint/AccessPointFormActions';
+import {Button} from '../../ui';
 
 let FragmentFormModal;
 import("../../accesspoint/FragmentFormModal").then((a) => {

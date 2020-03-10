@@ -2,46 +2,46 @@ import * as types from 'actions/constants/ActionTypes.js';
 
 import React from 'react';
 import {i18n} from 'components/shared';
-import {Button} from 'react-bootstrap';
-import {addToastrSuccess, addToastrInfo, addToastrDanger} from 'components/shared/toastr/ToastrActions.jsx'
-import {fundOutputSelectOutput} from 'actions/arr/fundOutput.jsx'
-import {routerNavigate} from 'actions/router.jsx'
-import {indexById} from 'stores/app/utils.jsx'
-import {partyListInvalidate, partyDetailClear, partyDetailInvalidate} from 'actions/party/party.jsx'
+import {Button} from '../../components/ui';
+import {addToastrDanger, addToastrInfo, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
+import {fundOutputSelectOutput} from 'actions/arr/fundOutput.jsx';
+import {routerNavigate} from 'actions/router.jsx';
+import {indexById} from 'stores/app/utils.jsx';
+import {partyDetailClear, partyDetailInvalidate, partyListInvalidate} from 'actions/party/party.jsx';
 import {
-    extSystemListInvalidate,
-    extSystemDetailClear,
-    extSystemDetailInvalidate,
-    extSystemDetailFetchIfNeeded,
+    AREA_EXT_SYSTEM_DETAIL,
     AREA_EXT_SYSTEM_LIST,
-    AREA_EXT_SYSTEM_DETAIL
-} from 'actions/admin/extSystem.jsx'
+    extSystemDetailClear,
+    extSystemDetailFetchIfNeeded,
+    extSystemDetailInvalidate,
+    extSystemListInvalidate,
+} from 'actions/admin/extSystem.jsx';
 import {
-    preparedListInvalidate,
     detailInvalidate,
+    detailUnselect,
     listInvalidate,
+    preparedListInvalidate,
     queueListInvalidate,
-    detailUnselect
-} from 'actions/arr/arrRequestActions.jsx'
-import {storeFromArea} from 'shared/utils'
+} from 'actions/arr/arrRequestActions.jsx';
+import {storeFromArea} from 'shared/utils';
 import {
-    AREA_REGISTRY_LIST,
     AREA_REGISTRY_DETAIL,
+    AREA_REGISTRY_LIST,
     registryDetailInvalidate,
-    registryListInvalidate
-} from 'actions/registry/registry.jsx'
-import {refExternalSystemListInvalidate} from 'actions/refTables/externalSystems'
-import {structureTypeInvalidate} from "../arr/structureType";
-import {AccessPointFormActions, accessPointFormActions} from "../../components/accesspoint/AccessPointFormActions";
-import {ApNameFormActions} from "../../components/accesspoint/ApNameFormActions";
-import {FragmentItemFormActions} from "../../components/accesspoint/FragmentItemFormActions";
+    registryListInvalidate,
+} from 'actions/registry/registry.jsx';
+import {refExternalSystemListInvalidate} from 'actions/refTables/externalSystems';
+import {structureTypeInvalidate} from '../arr/structureType';
+import {AccessPointFormActions} from '../../components/accesspoint/AccessPointFormActions';
+import {ApNameFormActions} from '../../components/accesspoint/ApNameFormActions';
+import {FragmentItemFormActions} from '../../components/accesspoint/FragmentItemFormActions';
 
 export function isFundChangeAction(action) {
     switch (action.type) {
         case types.CHANGE_VISIBLE_POLICY:
-            return true
+            return true;
         default:
-            return false
+            return false;
     }
 }
 
@@ -49,8 +49,8 @@ export function changeConformityInfo(fundVersionId, nodeIds) {
     return {
         type: types.CHANGE_CONFORMITY_INFO,
         fundVersionId: fundVersionId,
-        nodeIds: nodeIds
-    }
+        nodeIds: nodeIds,
+    };
 }
 
 /**
@@ -62,46 +62,46 @@ export function changeNodeRequests(fundVersionId, nodeIds) {
     return {
         type: types.CHANGE_NODE_REQUESTS,
         fundVersionId: fundVersionId,
-        nodeIds: nodeIds
-    }
+        nodeIds: nodeIds,
+    };
 }
 
 export function changeIndexingFinished() {
 
-    addToastrSuccess(i18n("admin.fulltext.message.success"));
+    addToastrSuccess(i18n('admin.fulltext.message.success'));
 
     return {
-        type: types.CHANGE_INDEXING_FINISHED
-    }
+        type: types.CHANGE_INDEXING_FINISHED,
+    };
 }
 
 export function changePackage() {
 
     return {
-        type: types.CHANGE_PACKAGE
-    }
+        type: types.CHANGE_PACKAGE,
+    };
 }
 
 export function changeInstitution() {
 
     return {
-        type: types.CHANGE_INSTITUTION
-    }
+        type: types.CHANGE_INSTITUTION,
+    };
 }
 
 export function changePackets(fundId) {
 
     return {
         type: types.CHANGE_PACKETS,
-        fundId: fundId
-    }
+        fundId: fundId,
+    };
 }
 
 export function changeFiles(fundId, name) {
     return {
         type: types.CHANGE_FILES,
-        fundId: fundId
-    }
+        fundId: fundId,
+    };
 }
 
 export function changeNodes(versionId, nodeIds) {
@@ -109,16 +109,16 @@ export function changeNodes(versionId, nodeIds) {
     return {
         type: types.CHANGE_NODES,
         versionId,
-        nodeIds
-    }
+        nodeIds,
+    };
 }
 
 export function changeOutputs(versionId, getOutputIds) {
     return {
         type: types.CHANGE_OUTPUTS,
         versionId,
-        getOutputIds
-    }
+        getOutputIds,
+    };
 }
 
 export function changeDeleteLevel(versionId, nodeId, parentNodeId) {
@@ -127,8 +127,8 @@ export function changeDeleteLevel(versionId, nodeId, parentNodeId) {
         type: types.CHANGE_DELETE_LEVEL,
         versionId,
         nodeId,
-        parentNodeId
-    }
+        parentNodeId,
+    };
 }
 
 export function changeAddLevel(versionId, nodeId, parentNodeId) {
@@ -137,28 +137,28 @@ export function changeAddLevel(versionId, nodeId, parentNodeId) {
         type: types.CHANGE_ADD_LEVEL,
         versionId,
         nodeId,
-        parentNodeId
-    }
+        parentNodeId,
+    };
 }
 
 export function changeFundAction(versionId, id) {
     return {
         type: types.CHANGE_FUND_ACTION,
         versionId,
-        id
-    }
+        id,
+    };
 }
 
 export function changeParty(partyId) {
     return (dispatch, getState) => {
-        const {app:{partyList, partyDetail}} = getState();
+        const {app: {partyList, partyDetail}} = getState();
         if (partyList.filteredRows && indexById(partyList.filteredRows, partyId) !== null) {
-            dispatch(partyListInvalidate())
+            dispatch(partyListInvalidate());
         }
         if (partyDetail.id === partyId) {
-            dispatch(partyDetailInvalidate())
+            dispatch(partyDetailInvalidate());
         }
-    }
+    };
 }
 
 export function changePartyCreate(partyIds) {
@@ -166,22 +166,23 @@ export function changePartyCreate(partyIds) {
         dispatch(partyListInvalidate());
         dispatch({
             type: types.PARTY_CREATED,
-            partyIds: partyIds
-        })
+            partyIds: partyIds,
+        });
     };
 }
 
 export function changePartyDelete(partyId) {
     return (dispatch, getState) => {
-        const {app:{partyList, partyDetail}} = getState();
+        const {app: {partyList, partyDetail}} = getState();
         if (partyList.filteredRows && indexById(partyList.filteredRows, partyId) !== null) {
-            dispatch(partyListInvalidate())
+            dispatch(partyListInvalidate());
         }
         if (partyDetail.id === partyId) {
-            dispatch(partyDetailClear())
+            dispatch(partyDetailClear());
         }
-    }
+    };
 }
+
 /**
  * Externí systémy CREATE
  *
@@ -193,7 +194,7 @@ export function createExtSystem(extSystemId) {
         dispatch(extSystemListInvalidate());
         dispatch(extSystemDetailFetchIfNeeded(extSystemId));
         dispatch(refExternalSystemListInvalidate());
-    }
+    };
 }
 
 /**
@@ -212,11 +213,12 @@ export function updateExtSystem(extSystemId) {
         }
 
         if (list.rows && indexById(list.rows, extSystemId) !== null) {
-            dispatch(extSystemListInvalidate())
+            dispatch(extSystemListInvalidate());
         }
         dispatch(refExternalSystemListInvalidate());
     };
 }
+
 /**
  * Externí systémy DELETE
  *
@@ -243,16 +245,16 @@ export function changeApproveVersion(fundId, versionId) {
     return {
         type: types.CHANGE_APPROVE_VERSION,
         versionId,
-        fundId
-    }
+        fundId,
+    };
 }
 
 export function changeMoveLevel(versionId) {
 
     return {
         type: types.CHANGE_MOVE_LEVEL,
-        versionId
-    }
+        versionId,
+    };
 }
 
 export function changeRegistry(changedIds) {
@@ -266,20 +268,21 @@ export function changeRegistry(changedIds) {
         if (list.data && list.data.filter((n) => changedIds.indexOf(n) !== -1).length > 0) {
             dispatch(registryListInvalidate());
         }
-    }
+    };
 }
 
 export function changeFund(fundId) {
     return {
         type: types.CHANGE_FUND,
-        fundId
-    }
+        fundId,
+    };
 }
+
 export function deleteFund(fundId) {
     return {
         type: types.DELETE_FUND,
-        fundId
-    }
+        fundId,
+    };
 }
 
 export function fundOutputChanges(versionId, outputIds) {
@@ -287,15 +290,15 @@ export function fundOutputChanges(versionId, outputIds) {
         type: types.OUTPUT_CHANGES,
         versionId,
         outputIds,
-    }
+    };
 }
 
 export function fundInvalidChanges(fundIds, fundVersionIds) {
     return {
         type: types.FUND_INVALID,
         fundIds,
-        fundVersionIds
-    }
+        fundVersionIds,
+    };
 }
 
 export function fundOutputChangesDetail(versionId, outputIds) {
@@ -303,7 +306,7 @@ export function fundOutputChangesDetail(versionId, outputIds) {
         type: types.OUTPUT_CHANGES_DETAIL,
         versionId,
         outputIds,
-    }
+    };
 }
 
 export function changeFundRecord(versionId, nodeId, version) {
@@ -311,8 +314,8 @@ export function changeFundRecord(versionId, nodeId, version) {
         type: types.CHANGE_FUND_RECORD,
         versionId,
         nodeId,
-        version
-    }
+        version,
+    };
 }
 
 export function changeVisiblePolicy(versionId, nodeId, invalidateNodes) {
@@ -325,8 +328,8 @@ export function changeVisiblePolicy(versionId, nodeId, invalidateNodes) {
         versionId,
         nodeId,
         nodeIdsMap,
-        invalidateNodes
-    }
+        invalidateNodes,
+    };
 }
 
 export function fundOutputStateChange(versionId, outputId, state) {
@@ -334,8 +337,8 @@ export function fundOutputStateChange(versionId, outputId, state) {
         type: types.OUTPUT_STATE_CHANGE,
         versionId,
         outputId,
-        state
-    }
+        state,
+    };
 }
 
 export function fundOutputStateChangeToastr(versionId, entityId, state) {
@@ -349,7 +352,7 @@ export function fundOutputStateChangeToastr(versionId, entityId, state) {
 
             const showBtn = <Button variant="link" onClick={() => {
                 dispatch(routerNavigate('/arr/output'));
-                dispatch(fundOutputSelectOutput(versionId, entityId))
+                dispatch(fundOutputSelectOutput(versionId, entityId));
             }}>{i18n('change.arr.output.clickToShow')}</Button>;
 
             switch (state) {
@@ -365,29 +368,29 @@ export function fundOutputStateChangeToastr(versionId, entityId, state) {
                     return;
             }
         }
-    }
+    };
 }
 
 
 export function userChange(userIds) {
     return {
         type: types.CHANGE_USER,
-        userIds
-    }
+        userIds,
+    };
 }
 
 export function groupChange(ids) {
     return {
         type: types.CHANGE_GROUP,
-        ids
-    }
+        ids,
+    };
 }
 
 export function groupDelete(id) {
     return {
         type: types.GROUP_DELETE,
-        id
-    }
+        id,
+    };
 }
 
 export function createRequest(value) {
@@ -395,7 +398,7 @@ export function createRequest(value) {
         value.nodeIds && dispatch(changeNodes(value.versionId, value.nodeIds));
         dispatch(preparedListInvalidate(value.versionId));
         dispatch(listInvalidate(value.versionId));
-    }
+    };
 }
 
 export function changeRequest(value) {
@@ -404,7 +407,7 @@ export function changeRequest(value) {
         dispatch(preparedListInvalidate(value.versionId));
         dispatch(listInvalidate(value.versionId));
         dispatch(detailInvalidate(value.versionId, value.entityId));
-    }
+    };
 }
 
 export function deleteRequest(value) {
@@ -413,7 +416,7 @@ export function deleteRequest(value) {
         dispatch(preparedListInvalidate(value.versionId));
         dispatch(listInvalidate(value.versionId));
         dispatch(detailUnselect(value.versionId, value.entityId));
-    }
+    };
 }
 
 export function createRequestItemQueue(value) {
@@ -421,7 +424,7 @@ export function createRequestItemQueue(value) {
         dispatch(listInvalidate(value.versionId));
         dispatch(detailInvalidate(value.versionId, value.requestId));
         dispatch(queueListInvalidate());
-    }
+    };
 }
 
 export function changeRequestItemQueue(value) {
@@ -429,19 +432,19 @@ export function changeRequestItemQueue(value) {
         dispatch(listInvalidate(value.versionId));
         dispatch(queueListInvalidate());
         dispatch(detailInvalidate(value.versionId, value.requestId));
-    }
+    };
 }
 
 export function nodesDelete(fundVersionId, nodeIds) {
     return {
         type: types.NODES_DELETE,
         versionId: fundVersionId,
-        nodeIds: nodeIds
-    }
+        nodeIds: nodeIds,
+    };
 }
 
 export function structureChange(data) {
-    return (dispatch,getState) => {
+    return (dispatch, getState) => {
         const store = getState();
         const list = storeFromArea(store, 'arrStructure');
         if (list && list.parent && list.parent.fundVersionId) {
@@ -453,12 +456,12 @@ export function structureChange(data) {
                         type: types.CHANGE_STRUCTURE,
                         fundId: data.fundId,
                         versionId: fund.versionId,
-                        structureIds: data.updateIds
-                    })
+                        structureIds: data.updateIds,
+                    });
                 }
             }
         }
-    }
+    };
 }
 
 export function changeAccessPoint(ids) {
@@ -467,21 +470,21 @@ export function changeAccessPoint(ids) {
         const parentAp = store.ap.form.parent;
         if (parentAp && ids.indexOf(parentAp.id) !== -1) {
             dispatch({
-                type: "CHANGE_ACCESS_POINT",
+                type: 'CHANGE_ACCESS_POINT',
                 id: parentAp.id,
-                area: AccessPointFormActions.AREA
-            })
+                area: AccessPointFormActions.AREA,
+            });
         }
 
         const parentName = store.ap.nameItemForm.parent;
         if (parentName && ids.indexOf(parentName.accessPointId) !== -1) {
             dispatch({
-                type: "CHANGE_ACCESS_POINT",
+                type: 'CHANGE_ACCESS_POINT',
                 id: parentName.id,
-                area: ApNameFormActions.AREA
-            })
+                area: ApNameFormActions.AREA,
+            });
         }
-    }
+    };
 
 }
 
@@ -491,11 +494,11 @@ export function changeFragment(ids) {
         const parentFragment = store.ap.fragmentItemForm.parent;
         if (parentFragment && ids.indexOf(parentFragment.id) !== -1) {
             dispatch({
-                type: "CHANGE_ACCESS_POINT",
+                type: 'CHANGE_ACCESS_POINT',
                 id: parentFragment.id,
-                area: FragmentItemFormActions.AREA
-            })
+                area: FragmentItemFormActions.AREA,
+            });
         }
-    }
+    };
 
 }

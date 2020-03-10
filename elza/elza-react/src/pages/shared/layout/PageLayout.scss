@@ -11,8 +11,9 @@ $finding-tree-toggle-font-size: 11px;
 
 // Main layout
 .app-container {
-    height:100%;
-    flex:1;
+    font-size: inherit;
+    height: 100%;
+    flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -22,6 +23,7 @@ $finding-tree-toggle-font-size: 11px;
         border-bottom: 1px solid $app-header-border;
         //overflow-x:auto;
     }
+
     .app-content {
         height: calc(100% - #{$header-height});
         //background: $body-bg;
@@ -39,10 +41,12 @@ $finding-tree-toggle-font-size: 11px;
             height: $header-minimized-height;
             border-bottom: none;
             background-color: #222;
+
             .ribbon-toggle-container {
                 border-bottom: none;
             }
         }
+
         .app-content {
             height: calc(100% - #{$header-minimized-height});
         }
@@ -57,10 +61,12 @@ $finding-tree-toggle-font-size: 11px;
     &.noRibbon.app-exists-status {
         .app-header {
             height: $header-minimized-height;
+
             .ribbon-toggle-container {
                 border-bottom: none;
             }
         }
+
         .app-content {
             height: calc(100% - #{$header-minimized-height} - #{$header-status-height});
         }
@@ -77,22 +83,24 @@ $finding-tree-toggle-font-size: 11px;
                 line-height: 10px;
                 //padding: 1px 2px 1px 2px;
                 margin: 0;
-                position:absolute;
+                position: absolute;
                 border-radius: 0;
                 border: none;
                 background: transparent;
-                bottom:2px;
-                right:0;
+                bottom: 2px;
+                right: 0;
+
                 .icon {
                     padding: 0;
                     margin: 0;
                     font-size: $ribbon-show-hide-toggle-font-size;
                 }
             }
+
             &.closed {
                 .toggle.btn {
-                    top:0;
-                    color:white;
+                    top: 0;
+                    color: white;
                 }
             }
         }
@@ -107,6 +115,7 @@ $finding-tree-toggle-font-size: 11px;
     $split-right-min-width: 5em;
     $split-center-min-width: 20em;
     $split-divider-width: 5px;
+
     .app-content {
         .split-pane-divider {
             background: $split-pane-divider-bg;
@@ -117,13 +126,15 @@ $finding-tree-toggle-font-size: 11px;
             width: $split-left-width;
             min-width: $split-left-min-width;
         }
+
         #my-divider {
             left: $split-left-width; /* Same as left component width */
             width: $split-divider-width;
         }
+
         #right-component-container {
-            left: $split-left-width;  /* Same as left component width */
-            margin-left: $split-divider-width;  /* Same as divider width */
+            left: $split-left-width; /* Same as left component width */
+            margin-left: $split-divider-width; /* Same as divider width */
 
             #inner-left-component {
                 padding: 4px;
@@ -131,10 +142,12 @@ $finding-tree-toggle-font-size: 11px;
                 right: $split-right-width;
                 margin-right: $split-divider-width;
             }
+
             #inner-my-divider {
                 right: $split-right-width;
                 width: $split-divider-width;
             }
+
             #inner-right-component {
                 width: $split-right-width;
                 min-width: $split-right-min-width;
