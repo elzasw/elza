@@ -1,9 +1,9 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
-import {Modal, Button, Form} from 'react-bootstrap';
-import {decorateFormField} from 'components/form/FormUtils.jsx'
+import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import {Form, Modal} from 'react-bootstrap';
+import {Button} from '../ui';
+import {decorateFormField} from 'components/form/FormUtils.jsx';
 
 class ApChangeDescriptionForm extends AbstractReactComponent {
     render() {
@@ -22,13 +22,13 @@ class ApChangeDescriptionForm extends AbstractReactComponent {
                 <Button type="submit" disabled={submitting}>{i18n('global.action.store')}</Button>
                 <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
-        </Form>
+        </Form>;
     }
 }
 
 export default reduxForm({
     form: 'apChangeDescriptionForm',
-    fields: ['description']
+    fields: ['description'],
 })(ApChangeDescriptionForm);
 
 

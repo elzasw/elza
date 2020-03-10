@@ -1,8 +1,9 @@
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
-import {Button, FormCheck, Form, Modal} from 'react-bootstrap';
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
+import {Form, FormCheck, Modal} from 'react-bootstrap';
+import {Button} from '../ui';
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
 
 
 export const NEW_TEMPLATE = 'new';
@@ -25,9 +26,7 @@ class TemplateUseForm extends AbstractReactComponent {
         return errors;
     };
 
-    static propTypes = {
-
-    };
+    static propTypes = {};
 
     UNSAFE_componentWillReceiveProps(nextProps) {
     }
@@ -36,7 +35,7 @@ class TemplateUseForm extends AbstractReactComponent {
 
     }
 
-    submitReduxForm = (values, dispatch) => submitForm(TemplateUseForm.validate, values, this.props,this.props.onSubmitForm, dispatch);
+    submitReduxForm = (values, dispatch) => submitForm(TemplateUseForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
         const {fields: {name, replaceValues}, handleSubmit, onClose, submitting, templates} = this.props;
@@ -44,8 +43,9 @@ class TemplateUseForm extends AbstractReactComponent {
             <div className="todo">
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
-                        <FormInput disabled={submitting} as="select" label={i18n('arr.fund.useTemplate.name')} {...name} {...decorateFormField(name)} >
-                            <option value={""} key="no-select">{i18n('global.action.select')}</option>
+                        <FormInput disabled={submitting} as="select"
+                                   label={i18n('arr.fund.useTemplate.name')} {...name} {...decorateFormField(name)} >
+                            <option value={''} key="no-select">{i18n('global.action.select')}</option>
                             {templates.map(template => <option value={template} key={template}>{template}</option>)}
                         </FormInput>
                         <FormCheck
@@ -62,16 +62,16 @@ class TemplateUseForm extends AbstractReactComponent {
                     </Modal.Footer>
                 </Form>
             </div>
-        )
+        );
     }
 }
 
 TemplateUseForm.defaultProps = {
-    templates: []
+    templates: [],
 };
 
 export default reduxForm(
     {form: 'templateUseForm', fields: ['name', 'replaceValues']},
     null,
-    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'templateUseForm', data})}
+    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'templateUseForm', data})},
 )(TemplateUseForm);

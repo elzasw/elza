@@ -1,10 +1,10 @@
 import React from 'react';
-import {Button, Form, Modal, FormCheck} from "react-bootstrap";
-import {i18n, AbstractReactComponent, FormInput} from "components/shared";
-import {connect} from "react-redux";
-import {reduxForm} from "redux-form";
-import StructureSubNodeForm from "./StructureSubNodeForm";
-import {structureNodeFormSelectId} from "../../../actions/arr/structureNodeForm";
+import {Form, FormCheck, Modal} from 'react-bootstrap';
+import {Button} from '../../ui';
+import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import {reduxForm} from 'redux-form';
+import StructureSubNodeForm from './StructureSubNodeForm';
+import {structureNodeFormSelectId} from '../../../actions/arr/structureNodeForm';
 import PropTypes from 'prop-types';
 
 class AddStructureDataForm extends AbstractReactComponent {
@@ -14,7 +14,7 @@ class AddStructureDataForm extends AbstractReactComponent {
         fundVersionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
         structureData: PropTypes.object.isRequired,
-        descItemFactory: PropTypes.object.isRequired
+        descItemFactory: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
@@ -44,12 +44,12 @@ class AddStructureDataForm extends AbstractReactComponent {
                 if (checked) {
                     incrementedTypeIds.onChange([
                         ...incrementedTypeIds.value.slice(0, index),
-                        ...incrementedTypeIds.value.slice(index+1),
+                        ...incrementedTypeIds.value.slice(index + 1),
                     ]);
                 } else {
                     incrementedTypeIds.onChange([
                         ...incrementedTypeIds.value,
-                        infoType.id
+                        infoType.id,
                     ]);
                 }
 
@@ -70,17 +70,18 @@ class AddStructureDataForm extends AbstractReactComponent {
                                       fundId={fundId}
                                       selectedSubNodeId={structureData.id}
                                       customActions={multiple && this.customRender} // pokud form je mnohonásobný renderujeme doplňkově inkrementaci
-                                      // Pyta: Jak toto funguje, neni to tu nadbytecne?
+                    // Pyta: Jak toto funguje, neni to tu nadbytecne?
                                       x={incrementedTypeIds} // Zdůvodu renderování formu aby při změně nastal render
                                       descItemFactory={this.props.descItemFactory}
                 />
-            {multiple && <FormInput name="count" min="2" type="number" label={i18n("arr.structure.modal.addMultiple.count")} {...count} />}
+                {multiple && <FormInput name="count" min="2" type="number"
+                                        label={i18n('arr.structure.modal.addMultiple.count')} {...count} />}
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit" disabled={submitting}>{i18n('global.action.add')}</Button>
                 <Button variant="link" disabled={submitting} onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
-        </Form>
+        </Form>;
     }
 }
 
@@ -91,21 +92,22 @@ export default reduxForm({
         // count of created items
         'count',
         //  IDs of item types which will be inceremented
-        'incrementedTypeIds'
+        'incrementedTypeIds',
     ],
     initialValues: {
-        count: "",
-        incrementedTypeIds: []},
+        count: '',
+        incrementedTypeIds: [],
+    },
     validate: (values, props) => {
         const errors = {};
         if (props.multiple) {
             if (!values.count || values.count < 2) {
-                errors.count = i18n("arr.structure.modal.addMultiple.error.count.tooSmall");
+                errors.count = i18n('arr.structure.modal.addMultiple.error.count.tooSmall');
             }
             if (!values.incrementedTypeIds || values.incrementedTypeIds.length < 1) {
-                errors._error = i18n("arr.structure.modal.addMultiple.error.itemTypeIds.required");
+                errors._error = i18n('arr.structure.modal.addMultiple.error.itemTypeIds.required');
             }
         }
         return errors;
-    }
+    },
 })(AddStructureDataForm);

@@ -1,9 +1,10 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
-import {Modal, Button, Form} from 'react-bootstrap';
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
+import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import {Form, Modal} from 'react-bootstrap';
+import {Button} from '../ui';
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
 
 
 /**
@@ -28,7 +29,7 @@ class AddFileForm extends AbstractReactComponent {
 
     static propTypes = {
         initData: PropTypes.object,
-        onSubmitForm: PropTypes.func.isRequired
+        onSubmitForm: PropTypes.func.isRequired,
     };
 
     state = {};
@@ -40,7 +41,7 @@ class AddFileForm extends AbstractReactComponent {
         this.props.load(this.props.initData);
     }
 
-    submitReduxForm = (values, dispatch) => submitForm(AddFileForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+    submitReduxForm = (values, dispatch) => submitForm(AddFileForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
         const {fields: {name, file}, handleSubmit, onClose} = this.props;
@@ -58,16 +59,16 @@ class AddFileForm extends AbstractReactComponent {
                     </Modal.Footer>
                 </Form>
             </div>
-        )
+        );
     }
 }
 
 AddFileForm.defaultProps = {
-    initData: {}
+    initData: {},
 };
 
 export default reduxForm(
     {form: 'addFileForm', fields: ['name', 'file']},
     null,
-    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addFileForm', data})}
+    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addFileForm', data})},
 )(AddFileForm);

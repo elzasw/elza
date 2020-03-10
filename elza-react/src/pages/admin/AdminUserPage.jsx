@@ -2,9 +2,10 @@
 import './AdminUserPage.scss';
 
 import React from 'react';
-import {connect} from 'react-redux'
-import PageLayout from "../shared/layout/PageLayout";
-import {Button, FormControl} from 'react-bootstrap';
+import {connect} from 'react-redux';
+import PageLayout from '../shared/layout/PageLayout';
+import {FormControl} from 'react-bootstrap';
+import {Button} from '../../components/ui';
 import {
     AbstractReactComponent,
     i18n,
@@ -12,7 +13,7 @@ import {
     ListBox,
     RibbonGroup,
     Search,
-    StoreHorizontalLoader
+    StoreHorizontalLoader,
 } from 'components/shared';
 import {AddUserForm, Ribbon, UserDetail} from 'components/index.jsx';
 import {
@@ -22,19 +23,19 @@ import {
     usersFetchIfNeeded,
     usersSearch,
     usersSelectUser,
-    userUpdate
-} from 'actions/admin/user.jsx'
-import {indexById} from 'stores/app/utils.jsx'
-import {modalDialogShow} from 'actions/global/modalDialog.jsx'
+    userUpdate,
+} from 'actions/admin/user.jsx';
+import {indexById} from 'stores/app/utils.jsx';
+import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
 import {renderUserItem} from 'components/admin/adminRenderUtils.jsx';
-import {partyAdd} from 'actions/party/party.jsx'
-import PasswordForm from "../../components/admin/PasswordForm";
+import {partyAdd} from 'actions/party/party.jsx';
+import PasswordForm from '../../components/admin/PasswordForm';
 
 /**
  * Stránka pro správu uživatelů.
  */
-class AdminUserPage extends AbstractReactComponent{
+class AdminUserPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -58,26 +59,26 @@ class AdminUserPage extends AbstractReactComponent{
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(requestScopesIfNeeded());
-        this.props.dispatch(usersFetchIfNeeded())
+        this.props.dispatch(usersFetchIfNeeded());
     }
 
     componentDidMount() {
         this.props.dispatch(requestScopesIfNeeded());
-        this.props.dispatch(usersFetchIfNeeded())
+        this.props.dispatch(usersFetchIfNeeded());
     }
 
     handleSelect(item) {
-        this.props.dispatch(usersSelectUser(item.id))
+        this.props.dispatch(usersSelectUser(item.id));
     }
 
     handleSearch(filterText) {
         const {user} = this.props;
-        this.props.dispatch(usersSearch(filterText, user.filterState))
+        this.props.dispatch(usersSearch(filterText, user.filterState));
     }
 
     handleSearchClear() {
         const {user} = this.props;
-        this.props.dispatch(usersSearch('', user.filterState))
+        this.props.dispatch(usersSearch('', user.filterState));
     }
 
     handlePartyAdd(partyTypeId, callback) {
@@ -85,7 +86,9 @@ class AdminUserPage extends AbstractReactComponent{
     };
 
     handleCreateUserForm() {
-        this.props.dispatch(modalDialogShow(this, i18n('admin.user.add.title'), <AddUserForm create onSubmitForm={this.handleCreateUser} onCreateParty={this.handlePartyAdd} />))
+        this.props.dispatch(modalDialogShow(this, i18n('admin.user.add.title'), <AddUserForm create
+                                                                                             onSubmitForm={this.handleCreateUser}
+                                                                                             onCreateParty={this.handlePartyAdd}/>));
     }
 
     handleCreateUser(data) {
@@ -93,7 +96,8 @@ class AdminUserPage extends AbstractReactComponent{
     }
 
     handleChangeUserPasswordForm() {
-        this.props.dispatch(modalDialogShow(this, i18n('admin.user.passwordChange.title'), <PasswordForm admin={true} onSubmitForm={this.handleChangeUserPassword} />))
+        this.props.dispatch(modalDialogShow(this, i18n('admin.user.passwordChange.title'), <PasswordForm admin={true}
+                                                                                                         onSubmitForm={this.handleChangeUserPassword}/>));
     }
 
     handleChangeUserPassword(data) {
@@ -116,14 +120,15 @@ class AdminUserPage extends AbstractReactComponent{
             const initData = {
                 username: data.username,
                 passwordCheckbox: authTypes.indexOf('PASSWORD') >= 0,
-                shibbolethCheckbox: authTypes.indexOf('SHIBBOLETH') >= 0
+                shibbolethCheckbox: authTypes.indexOf('SHIBBOLETH') >= 0,
             };
-            this.props.dispatch(modalDialogShow(this, i18n('admin.user.update.title'), <AddUserForm initialValues={initData} onSubmitForm={this.handleUpdateUser} />))
+            this.props.dispatch(modalDialogShow(this, i18n('admin.user.update.title'), <AddUserForm
+                initialValues={initData} onSubmitForm={this.handleUpdateUser}/>));
         }
     }
 
     handleChangeUserActive() {
-        if(confirm(i18n('admin.user.changeActive.confirm'))) {
+        if (confirm(i18n('admin.user.changeActive.confirm'))) {
             const {user} = this.props;
             this.props.dispatch(adminUserChangeActive(user.userDetail.id, !user.userDetail.active));
         }
@@ -135,50 +140,62 @@ class AdminUserPage extends AbstractReactComponent{
         const altActions = [];
         const itemActions = [];
         altActions.push(
-            <Button key="add-user" onClick={this.handleCreateUserForm}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.admin.user.add')}</span></div></Button>
+            <Button key="add-user" onClick={this.handleCreateUserForm}><Icon glyph="fa-plus-circle"/>
+                <div><span className="btnText">{i18n('ribbon.action.admin.user.add')}</span></div>
+            </Button>,
         );
 
         const userDetail = user.userDetail;
 
         if (userDetail.id != null) {
             itemActions.push(
-                <Button key="change-active-user" onClick={this.handleChangeUserActive}><Icon glyph={user.userDetail.active ? 'fa-ban' : 'fa-check'} /><div><span className="btnText">{user.userDetail.active ? i18n('ribbon.action.admin.user.deactivate') : i18n('ribbon.action.admin.user.activate')}</span></div></Button>
+                <Button key="change-active-user" onClick={this.handleChangeUserActive}><Icon
+                    glyph={user.userDetail.active ? 'fa-ban' : 'fa-check'}/>
+                    <div><span
+                        className="btnText">{user.userDetail.active ? i18n('ribbon.action.admin.user.deactivate') : i18n('ribbon.action.admin.user.activate')}</span>
+                    </div>
+                </Button>,
             );
             const userData = user.users[indexById(user.users, userDetail.id)];
             if (userData && userData.authTypes.indexOf('PASSWORD') >= 0) {
                 itemActions.push(
-                    <Button key="password-change-user" onClick={this.handleChangeUserPasswordForm}><Icon glyph='fa-key' /><div><span className="btnText">{i18n('ribbon.action.admin.user.passwordChange')}</span></div></Button>
+                    <Button key="password-change-user" onClick={this.handleChangeUserPasswordForm}><Icon
+                        glyph='fa-key'/>
+                        <div><span className="btnText">{i18n('ribbon.action.admin.user.passwordChange')}</span></div>
+                    </Button>,
                 );
             }
             itemActions.push(
-                <Button key="username-change-user" onClick={this.handleChangeUsernameForm}><Icon glyph='fa-edit' /><div><span className="btnText">{i18n('ribbon.action.admin.user.edit')}</span></div></Button>
-            )
+                <Button key="username-change-user" onClick={this.handleChangeUsernameForm}><Icon glyph='fa-edit'/>
+                    <div><span className="btnText">{i18n('ribbon.action.admin.user.edit')}</span></div>
+                </Button>,
+            );
         }
 
         let altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key='alt-actions' className="small">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup key='alt-actions' className="small">{altActions}</RibbonGroup>;
         }
         let itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key='item-actions' className="small">{itemActions}</RibbonGroup>
+            itemSection = <RibbonGroup key='item-actions' className="small">{itemActions}</RibbonGroup>;
         }
 
         return (
-            <Ribbon admin {...this.props}  altSection={altSection} itemSection={itemSection} />
-        )
+            <Ribbon admin {...this.props} altSection={altSection} itemSection={itemSection}/>
+        );
     }
 
     handleFilterStateChange(e) {
         const {user} = this.props;
-        this.props.dispatch(usersSearch(user.filterText, {type: e.target.value}))
+        this.props.dispatch(usersSearch(user.filterText, {type: e.target.value}));
     }
 
     render() {
         const {splitter, user} = this.props;
         let activeIndex;
         if (user.userDetail.id !== null) {
-            activeIndex = indexById(user.users, user.userDetail.id)
+            activeIndex = indexById(user.users, user.userDetail.id);
         }
 
         const leftPanel = (
@@ -190,8 +207,8 @@ class AdminUserPage extends AbstractReactComponent{
                     value={user.filterText}
                 />
                 <FormControl as="select" value={user.filterState.type} onChange={this.handleFilterStateChange}>
-                    <option value="all">{i18n("admin.user.filter.all")}</option>
-                    <option value="onlyActive">{i18n("admin.user.filter.onlyActive")}</option>
+                    <option value="all">{i18n('admin.user.filter.all')}</option>
+                    <option value="onlyActive">{i18n('admin.user.filter.onlyActive')}</option>
                 </FormControl>
                 <StoreHorizontalLoader store={user}/>
                 {user.fetched && <ListBox
@@ -213,7 +230,7 @@ class AdminUserPage extends AbstractReactComponent{
                     userDetail={user.userDetail}
                     userCount={user.users.length}
                 />
-            )
+            );
         }
 
         return (
@@ -224,7 +241,7 @@ class AdminUserPage extends AbstractReactComponent{
                 leftPanel={leftPanel}
                 centerPanel={centerPanel}
             />
-        )
+        );
     }
 }
 
@@ -236,8 +253,8 @@ function mapStateToProps(state) {
 
     return {
         splitter,
-        user: adminRegion.user
-    }
+        user: adminRegion.user,
+    };
 }
 
 export default connect(mapStateToProps)(AdminUserPage);

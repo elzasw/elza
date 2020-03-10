@@ -2,65 +2,56 @@
  * Stránka výstupů.
  */
 
-import classNames from "classnames";
+import classNames from 'classnames';
 import './ArrOutputPage.scss';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {indexById} from 'stores/app/utils.jsx'
-import {connect} from 'react-redux'
-import {Link, IndexLink} from 'react-router';
+import {indexById} from 'stores/app/utils.jsx';
+import {connect} from 'react-redux';
 import {
-    Ribbon,
-    ArrOutputDetail,
     AddOutputForm,
-    FundOutputFunctions,
-    RunActionForm,
+    ArrOutputDetail,
     FormInput,
+    FundOutputFunctions,
+    Ribbon,
+    RunActionForm,
 } from '../../components/index.jsx';
+import {i18n, Icon, ListBox, RibbonGroup, StoreHorizontalLoader, Tabs, Utils} from 'components/shared';
+import {Button} from '../../components/ui';
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus.jsx';
 import {
-    ListBox,
-    RibbonGroup,
-    StoreHorizontalLoader,
-    Icon,
-    i18n,
-    Tabs,
-    Utils
-} from 'components/shared';
-import {Button} from 'react-bootstrap';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import {
-    fundOutputFetchIfNeeded,
-    fundOutputSelectOutput,
+    fundOutputClone,
     fundOutputCreate,
-    fundOutputUsageEnd,
     fundOutputDelete,
+    fundOutputFetchIfNeeded,
+    fundOutputFilterByState,
     fundOutputGenerate,
     fundOutputRevert,
-    fundOutputClone,
-    fundOutputFilterByState
-} from '../../actions/arr/fundOutput.jsx'
-import {fundOutputActionRun} from 'actions/arr/fundOutputFunctions.jsx'
+    fundOutputSelectOutput,
+    fundOutputUsageEnd,
+} from '../../actions/arr/fundOutput.jsx';
+import {fundOutputActionRun} from 'actions/arr/fundOutputFunctions.jsx';
 import * as perms from 'actions/user/Permission.jsx';
-import {fundActionFormShow, fundActionFormChange} from 'actions/arr/fundAction.jsx'
-import {routerNavigate} from 'actions/router.jsx'
-import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
-import AddDescItemTypeForm from 'components/arr/nodeForm/AddDescItemTypeForm.jsx'
-import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
-import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
+import {fundActionFormChange, fundActionFormShow} from 'actions/arr/fundAction.jsx';
+import {routerNavigate} from 'actions/router.jsx';
+import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx';
+import AddDescItemTypeForm from 'components/arr/nodeForm/AddDescItemTypeForm.jsx';
+import {outputFormActions} from 'actions/arr/subNodeForm.jsx';
+import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx';
 import {getDescItemsAddTree, getOneSettings} from 'components/arr/ArrUtils.jsx';
-import ArrParentPage from "./ArrParentPage.jsx";
+import ArrParentPage from './ArrParentPage.jsx';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './ArrOutputPageKeymap.jsx';
 
-import TemplateSettingsForm from "../../components/arr/TemplateSettingsForm";
-import {FOCUS_KEYS} from "../../constants.tsx";
-import FundNodesSelectForm from "../../components/arr/FundNodesSelectForm";
-import {fundOutputAddNodes} from "../../actions/arr/fundOutput";
-import {versionValidate} from "../../actions/arr/versionValidation";
+import TemplateSettingsForm from '../../components/arr/TemplateSettingsForm';
+import {FOCUS_KEYS} from '../../constants.tsx';
+import FundNodesSelectForm from '../../components/arr/FundNodesSelectForm';
+import {fundOutputAddNodes} from '../../actions/arr/fundOutput';
+import {versionValidate} from '../../actions/arr/versionValidation';
 
-let _selectedTab = 0
+let _selectedTab = 0;
 
 const OutputState = {
     OPEN: 'OPEN',
@@ -68,21 +59,24 @@ const OutputState = {
     GENERATING: 'GENERATING',
     FINISHED: 'FINISHED',
     OUTDATED: 'OUTDATED',
-    ERROR: 'ERROR' /// Pomocný stav websocketu
+    ERROR: 'ERROR', /// Pomocný stav websocketu
 };
 
 const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
-    static contextTypes = { shortcuts: PropTypes.object };
-    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    static contextTypes = {shortcuts: PropTypes.object};
+    static childContextTypes = {shortcuts: PropTypes.object.isRequired};
+
     getChildContext() {
-        return { shortcuts: this.shortcutManager };
+        return {shortcuts: this.shortcutManager};
     }
-    UNSAFE_componentWillMount(){
-        let newKeymap = Utils.mergeKeymaps(ArrParentPage.defaultKeymap,defaultKeymap);
-        Utils.addShortcutManager(this,newKeymap);
+
+    UNSAFE_componentWillMount() {
+        let newKeymap = Utils.mergeKeymaps(ArrParentPage.defaultKeymap, defaultKeymap);
+        Utils.addShortcutManager(this, newKeymap);
     }
+
     constructor(props) {
-        super(props, "arr-output-page");
+        super(props, 'arr-output-page');
 
         this.bindMethods(
             'renderListItem',
@@ -103,7 +97,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             'handleRevertToOpen',
             'handleClone',
             'handleOutputStateSearch',
-            'isEditable'
+            'isEditable',
         );
     }
 
@@ -116,7 +110,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             this.props.dispatch(fundOutputFetchIfNeeded(fund.versionId));
             this.props.dispatch(outputTypesFetchIfNeeded());
         }
-        this.trySetFocus(this.props)
+        this.trySetFocus(this.props);
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -128,28 +122,28 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             this.props.dispatch(fundOutputFetchIfNeeded(fund.versionId));
             this.props.dispatch(outputTypesFetchIfNeeded());
         }
-        this.trySetFocus(nextProps)
+        this.trySetFocus(nextProps);
     }
 
     trySetFocus(props) {
-        var {focus} = props
+        var {focus} = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, FOCUS_KEYS.FUND_OUTPUT, 1)) {
                 this.refs.fundOutputList && this.setState({}, () => {
-                    ReactDOM.findDOMNode(this.refs.fundOutputList).focus()
-                })
-                focusWasSet()
+                    ReactDOM.findDOMNode(this.refs.fundOutputList).focus();
+                });
+                focusWasSet();
             }
         }
     }
 
     requestValidationData(isDirty, isFetching, versionId) {
-        isDirty && !isFetching && this.props.dispatch(versionValidate(versionId, false))
+        isDirty && !isFetching && this.props.dispatch(versionValidate(versionId, false));
     }
 
-    handleShortcuts(action,e) {
-        console.log("#handleShortcuts ArrOutputPage", '[' + action + ']', this);
+    handleShortcuts(action, e) {
+        console.log('#handleShortcuts ArrOutputPage', '[' + action + ']', this);
         e.preventDefault();
         switch (action) {
             case 'newOutput':
@@ -165,7 +159,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                 this.props.dispatch(setFocus(FOCUS_KEYS.FUND_OUTPUT, 3));
                 break;
             default:
-                super.handleShortcuts(action,e);
+                super.handleShortcuts(action, e);
         }
     }
 
@@ -175,9 +169,9 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         this.props.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
             <FundNodesSelectForm
                 onSubmitForm={(ids, nodes) => {
-                    this.props.dispatch(fundOutputAddNodes(fund.versionId, fundOutputDetail.id, ids))
+                    this.props.dispatch(fundOutputAddNodes(fund.versionId, fundOutputDetail.id, ids));
                 }}
-            />))
+            />));
     };
 
     handleAddOutput() {
@@ -188,9 +182,10 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                 create
                 onSubmitForm={(data) => {
                     return this.props.dispatch(fundOutputCreate(fund.versionId, data))
-                        .then((output) => {
-                            return output
-                        })}}
+                               .then((output) => {
+                                   return output;
+                               });
+                }}
                 onSubmitSuccess={(data) => {
                     this.handleAddNodes(data);
                 }}
@@ -280,21 +275,24 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
             const hasPersmission = userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_OUTPUT_WR_ALL, {
                 type: perms.FUND_OUTPUT_WR,
-                fundId: fund.id
+                fundId: fund.id,
             });
 
             if (hasPersmission && !readMode && !closed) {
                 altActions.push(
                     <Button key="add-output" onClick={this.handleAddOutput}><Icon glyph="fa-plus-circle"/>
                         <div><span className="btnText">{i18n('ribbon.action.arr.output.add')}</span></div>
-                    </Button>
-                )
+                    </Button>,
+                );
                 if (isDetailIdNotNull && !closed) {
                     altActions.push(
-                        <Button key="generate-output" onClick={() => {this.handleGenerateOutput(outputDetail.id)}} disabled={!isDetailLoaded || !this.isOutputGeneratingAllowed(outputDetail)}><Icon glyph="fa-youtube-play" />
+                        <Button key="generate-output" onClick={() => {
+                            this.handleGenerateOutput(outputDetail.id);
+                        }} disabled={!isDetailLoaded || !this.isOutputGeneratingAllowed(outputDetail)}><Icon
+                            glyph="fa-youtube-play"/>
                             <div><span className="btnText">{i18n('ribbon.action.arr.output.generate')}</span></div>
-                        </Button>
-                    )
+                        </Button>,
+                    );
                 }
             }
 
@@ -304,8 +302,10 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                 if (hasPersmission) {
                     if (runnable) {
                         itemActions.push(
-                            <Button key="add-item" onClick={this.handleAddDescItemType}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.output.item.add')}</span></div></Button>
-                        )
+                            <Button key="add-item" onClick={this.handleAddDescItemType}><Icon glyph="fa-plus-circle"/>
+                                <div><span className="btnText">{i18n('ribbon.action.arr.output.item.add')}</span></div>
+                            </Button>,
+                        );
                         /**
                          *  Skrytí tlačítka - pravděpodobně nebudeme verzovat
                          */
@@ -319,23 +319,26 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                     }
 
                     itemActions.push(
-                        <Button key="fund-output-delete" onClick={this.handleDelete} disabled={!isDetailLoaded}><Icon glyph="fa-trash"/>
+                        <Button key="fund-output-delete" onClick={this.handleDelete} disabled={!isDetailLoaded}><Icon
+                            glyph="fa-trash"/>
                             <div><span className="btnText">{i18n('ribbon.action.arr.output.delete')}</span></div>
-                        </Button>
+                        </Button>,
                     );
 
                     if (outputDetail.generatedDate && (outputDetail.state === OutputState.FINISHED || outputDetail.state === OutputState.OUTDATED)) {
                         itemActions.push(
-                            <Button key="fund-output-revert" onClick={this.handleRevertToOpen} disabled={!isDetailLoaded}><Icon glyph="fa-undo"/>
+                            <Button key="fund-output-revert" onClick={this.handleRevertToOpen}
+                                    disabled={!isDetailLoaded}><Icon glyph="fa-undo"/>
                                 <div><span className="btnText">{i18n('ribbon.action.arr.output.revert')}</span></div>
-                            </Button>
+                            </Button>,
                         );
                     }
                     itemActions.push(
-                        <Button key="fund-output-clone" onClick={this.handleClone} disabled={!isDetailLoaded}><Icon glyph="fa-clone"/>
+                        <Button key="fund-output-clone" onClick={this.handleClone} disabled={!isDetailLoaded}><Icon
+                            glyph="fa-clone"/>
                             <div><span className="btnText">{i18n('ribbon.action.arr.output.clone')}</span></div>
-                        </Button>
-                    )
+                        </Button>,
+                    );
                 }
 
                 if (runnable && outputDetail.nodes.length > 0) {
@@ -345,15 +348,15 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                                 glyph="fa-cog"/>
                                 <div><span className="btnText">{i18n('ribbon.action.arr.output.otherAction')}</span>
                                 </div>
-                            </Button>
+                            </Button>,
                         );
                         itemActions.push(
                             <Button key="fund-output-bulk-actions" onClick={this.handleBulkActions}><Icon
                                 glyph="fa-cog"/>
                                 <div><span className="btnText">{i18n('ribbon.action.arr.output.bulkActions')}</span>
                                 </div>
-                            </Button>
-                        )
+                            </Button>,
+                        );
                     }
                 }
             }
@@ -361,17 +364,17 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
         var altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>;
         }
 
         var itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>
+            itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>;
         }
 
         return (
             <Ribbon arr subMenu fundId={fund ? fund.id : null} altSection={altSection} itemSection={itemSection}/>
-        )
+        );
     }
 
     isOutputGeneratingAllowed(output) {
@@ -379,22 +382,22 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             output.outputResultId == null &&
             output.state === OutputState.OPEN &&
             output.templateId != null &&
-            output.nodes.length > 0
+            output.nodes.length > 0;
     }
 
     handleUsageEnd() {
         const fund = this.getActiveFund(this.props);
-        const fundOutputDetail = fund.fundOutput.fundOutputDetail
+        const fundOutputDetail = fund.fundOutput.fundOutputDetail;
         if (confirm(i18n('arr.output.usageEnd.confirm'))) {
-            this.props.dispatch(fundOutputUsageEnd(fund.versionId, fundOutputDetail.id))
+            this.props.dispatch(fundOutputUsageEnd(fund.versionId, fundOutputDetail.id));
         }
     }
 
     handleDelete() {
         const fund = this.getActiveFund(this.props);
-        const fundOutputDetail = fund.fundOutput.fundOutputDetail
+        const fundOutputDetail = fund.fundOutput.fundOutputDetail;
         if (confirm(i18n('arr.output.delete.confirm'))) {
-            this.props.dispatch(fundOutputDelete(fund.versionId, fundOutputDetail.id))
+            this.props.dispatch(fundOutputDelete(fund.versionId, fundOutputDetail.id));
         }
     }
 
@@ -405,20 +408,22 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         const typeIndex = indexById(outputTypes, item.outputTypeId);
 
         return (
-            <div className={classNames("item")}>
+            <div className={classNames('item')}>
                 <div className='name'>{item.name}</div>
-                <div className='type'>{i18n('arr.output.list.type', typeIndex !== null ? outputTypes[typeIndex].name : "")}</div>
-                <div className='state'>{i18n('arr.output.list.state.label')} {i18n('arr.output.list.state.' + item.state.toLowerCase())} {
+                <div
+                    className='type'>{i18n('arr.output.list.type', typeIndex !== null ? outputTypes[typeIndex].name : '')}</div>
+                <div
+                    className='state'>{i18n('arr.output.list.state.label')} {i18n('arr.output.list.state.' + item.state.toLowerCase())} {
                     item.generatedDate && <span>({Utils.dateToString(new Date(item.generatedDate))})</span>
                 }</div>
                 {item.deleteDate ? <div>{Utils.dateTimeToString(new Date(item.deleteDate))}</div> : <div>&nbsp;</div>}
             </div>
-        )
+        );
     }
 
     handleSelect(item) {
         const fund = this.getActiveFund(this.props);
-        this.props.dispatch(fundOutputSelectOutput(fund.versionId, item.id))
+        this.props.dispatch(fundOutputSelectOutput(fund.versionId, item.id));
     }
 
     renderRightPanel(readMode, closed) {
@@ -432,8 +437,8 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
         // Záložky a obsah aktuálně vybrané založky
         const items = [];
-        let tabContent
-        let tabIndex = 0
+        let tabContent;
+        let tabIndex = 0;
 
         items.push({id: tabIndex, title: i18n('arr.output.panel.title.function')});
         if (_selectedTab === tabIndex) tabContent = this.renderFunctionsPanel(readMode);
@@ -460,11 +465,11 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                     </Tabs.Content>
                 </Tabs.Container>
             </div>
-        )
+        );
     }
 
     isEditable(item) {
-        return !item.lockDate && item.state === OutputState.OPEN
+        return !item.lockDate && item.state === OutputState.OPEN;
     }
 
     renderLeftPanel(readMode, closed) {
@@ -473,7 +478,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
         let activeIndex = null;
         if (fundOutput.fundOutputDetail.id !== null) {
-            activeIndex = indexById(fundOutput.outputs, fundOutput.id)
+            activeIndex = indexById(fundOutput.outputs, fundOutput.id);
         }
 
         const filterStates = [];
@@ -481,7 +486,8 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             if (item === OutputState.ERROR) {
                 continue;
             }
-            filterStates.push(<option value={item} key={"state" + item}>{i18n('arr.output.list.state.' + item.toLocaleLowerCase())}</option>)
+            filterStates.push(<option value={item}
+                                      key={'state' + item}>{i18n('arr.output.list.state.' + item.toLocaleLowerCase())}</option>);
         }
 
         return (
@@ -490,7 +496,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                     <option value={-1} key="no-filter">{i18n('arr.output.list.state.all')}</option>
                     {filterStates}
                 </FormInput>
-                <StoreHorizontalLoader store={fundOutput} />
+                <StoreHorizontalLoader store={fundOutput}/>
                 {fundOutput.fetched && <ListBox
                     className='fund-output-listbox'
                     ref='fundOutputList'
@@ -501,7 +507,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                     onSelect={this.handleSelect}
                 />}
             </div>
-        )
+        );
     }
 
     renderCenterPanel(readMode, closed) {
@@ -525,7 +531,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                 readMode={readMode}
                 closed={closed}
             />
-        )
+        );
     }
 
     hasPageShowRights(userDetail, activeFund) {
@@ -536,8 +542,8 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
         const activeFund = this.getActiveFund(this.props);
         const {userDetail} = this.props;
-        if(!userDetail.hasFundActionPage(activeFund.id)){          //Pokud uživatel nemá oprávnění spouštět funkce
-           return <span>{i18n("arr.output.functions.noPermissions")}</span>
+        if (!userDetail.hasFundActionPage(activeFund.id)) {          //Pokud uživatel nemá oprávnění spouštět funkce
+            return <span>{i18n('arr.output.functions.noPermissions')}</span>;
         }
 
         const {fundOutput} = activeFund;
@@ -548,7 +554,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             outputId={fundOutput.fundOutputDetail.id}
             outputState={fundOutput.fundOutputDetail.state}
             fundOutputFunctions={fundOutput.fundOutputFunctions}
-        />
+        />;
     }
 
     renderTemplatesPanel(readMode) {
@@ -566,7 +572,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             outputId={outputId}
             engine={template.engine}
             outputSettings={outputSettings}
-        />
+        />;
     }
 
     handleTabSelect(item) {
@@ -582,7 +588,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
         //if (confirm(i18n('arr.output.revert.confirm'))) {
-            this.props.dispatch(fundOutputRevert(fund.versionId, fundOutputDetail.id));
+        this.props.dispatch(fundOutputRevert(fund.versionId, fundOutputDetail.id));
         //}
     }
 
@@ -616,14 +622,14 @@ function mapStateToProps(state) {
         ruleSet: refTables.ruleSet,
         templates: refTables.templates,
         outputTypes: refTables.outputTypes.items,
-    }
+    };
 }
 
 ArrOutputPage.propTypes = {
     splitter: PropTypes.object.isRequired,
     arrRegion: PropTypes.object.isRequired,
     focus: PropTypes.object.isRequired,
-    userDetail: PropTypes.object.isRequired
+    userDetail: PropTypes.object.isRequired,
 };
 
 export default connect(mapStateToProps)(ArrOutputPage);

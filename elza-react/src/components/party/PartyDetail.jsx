@@ -1,6 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {reduxForm} from 'redux-form'
+import {reduxForm} from 'redux-form';
 import PartyListItem from './PartyListItem';
 import PartyDetailIdentifiers from './PartyDetailIdentifiers';
 import PartyDetailNames from './PartyDetailNames';
@@ -9,59 +8,55 @@ import PartyDetailRelationClass from './PartyDetailRelationClass';
 import PartyField from './PartyField';
 import {
     AbstractReactComponent,
-    Search,
-    i18n,
+    CollapsablePanel,
     FormInput,
+    i18n,
     Icon,
     StoreHorizontalLoader,
-    CollapsablePanel
+    Utils,
 } from 'components/shared';
-import {Form, Button} from 'react-bootstrap';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
-import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {partyUpdate} from 'actions/party/party.jsx'
-import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
-import {partyAdd, findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
-import {Utils} from 'components/shared';
-import {objectById, indexById} from 'stores/app/utils.jsx';
-import {setInputFocus, dateTimeToString} from 'components/Utils.jsx'
+import {Form} from 'react-bootstrap';
+import {Button} from '../ui';
+import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx';
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
+import {partyAdd, partyDetailFetchIfNeeded, partyUpdate} from 'actions/party/party.jsx';
+import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx';
+import {getMapFromList, objectById} from 'stores/app/utils.jsx';
 import {Shortcuts} from 'react-shortcuts';
-import {setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx'
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
+import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
 import * as perms from 'actions/user/Permission.jsx';
-import {initForm} from "actions/form/inlineForm.jsx"
-import {getMapFromList} from 'stores/app/utils.jsx'
-import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx'
-import {PARTY_TYPE_CODES} from '../../constants.tsx'
+import {initForm} from 'actions/form/inlineForm.jsx';
+import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx';
+import {PARTY_TYPE_CODES} from '../../constants.tsx';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './PartyDetailKeymap.jsx';
 import './PartyDetail.scss';
-import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
-import {addToastrWarning} from "../shared/toastr/ToastrActions";
-import * as StateApproval from "../enum/StateApproval";
+import {requestScopesIfNeeded} from '../../actions/refTables/scopesData';
+import {addToastrWarning} from '../shared/toastr/ToastrActions';
+import * as StateApproval from '../enum/StateApproval';
 
 
-const SETTINGS_PARTY_PIN = "PARTY_PIN";
+const SETTINGS_PARTY_PIN = 'PARTY_PIN';
 
 const UI_PARTY_GROUP_TYPE = {
     GENERAL: 'GENERAL',
     CONCLUSION: 'CONCLUSION',
-    IDENT: 'IDENT'
+    IDENT: 'IDENT',
 };
 
 const UI_PARTY_GROUP_DEFINITION_TYPE = {
     TEXT: 'TEXT',
     TEXTAREA: 'TEXTAREA',
     RELATION: 'RELATION',
-    RELATION_CLASS: 'RELATION-CLASS'
+    RELATION_CLASS: 'RELATION-CLASS',
 };
 
 const PARTY_GENERAL_FIELDS = ['history', 'sourceInformation', 'characteristics'];
 const FIELDS_BY_PARTY_TYPE_CODE = {
-    [PARTY_TYPE_CODES.PERSON]: [...PARTY_GENERAL_FIELDS, ],
+    [PARTY_TYPE_CODES.PERSON]: [...PARTY_GENERAL_FIELDS],
     [PARTY_TYPE_CODES.GROUP_PARTY]: [...PARTY_GENERAL_FIELDS, 'scope', 'foundingNorm', 'scopeNorm', 'organization'],
-    [PARTY_TYPE_CODES.EVENT]: [...PARTY_GENERAL_FIELDS, ],
+    [PARTY_TYPE_CODES.EVENT]: [...PARTY_GENERAL_FIELDS],
     [PARTY_TYPE_CODES.DYNASTY]: [...PARTY_GENERAL_FIELDS, 'genealogy'],
 };
 
@@ -70,19 +65,21 @@ const FIELDS_BY_PARTY_TYPE_CODE = {
  * Komponenta detailu osoby
  */
 class PartyDetail extends AbstractReactComponent {
-    static contextTypes = { shortcuts: PropTypes.object };
-    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
-    UNSAFE_componentWillMount(){
-        Utils.addShortcutManager(this,defaultKeymap);
+    static contextTypes = {shortcuts: PropTypes.object};
+    static childContextTypes = {shortcuts: PropTypes.object.isRequired};
+
+    UNSAFE_componentWillMount() {
+        Utils.addShortcutManager(this, defaultKeymap);
     }
+
     getChildContext() {
-        return { shortcuts: this.shortcutManager };
+        return {shortcuts: this.shortcutManager};
     }
 
     state = {
         activeIndexes: {},
         visibilitySettings: {},
-        visibilitySettingsValue: {}
+        visibilitySettingsValue: {},
     };
 
     static fields = [
@@ -95,15 +92,15 @@ class PartyDetail extends AbstractReactComponent {
         'foundingNorm',
         'scopeNorm',
         'organization',
-        'creators[]'
+        'creators[]',
     ];
 
     static requireFields = (...names) => data =>
         names.reduce((errors, name) => {
             if (!data[name]) {
-                errors[name] = i18n('global.validation.required')
+                errors[name] = i18n('global.validation.required');
             }
-            return errors
+            return errors;
         }, {});
 
     static validate = (values) => {
@@ -112,8 +109,8 @@ class PartyDetail extends AbstractReactComponent {
         const errors = PartyDetail.requireFields(...required)(values);
         errors.creators = [];
 
-        values.creators.forEach((i,index) => {
-            if (!(i && i !== "" && typeof i == "object")) {
+        values.creators.forEach((i, index) => {
+            if (!(i && i !== '' && typeof i == 'object')) {
                 errors.creators[index] = i18n('global.validation.required');
             }
         });
@@ -128,7 +125,7 @@ class PartyDetail extends AbstractReactComponent {
         this.trySetFocus();
         this.fetchIfNeeded().then(data => {
             if (data && data.accessPoint && data.accessPoint.invalid) {
-                this.props.dispatch(addToastrWarning(i18n("party.invalid.warning")));
+                this.props.dispatch(addToastrWarning(i18n('party.invalid.warning')));
             }
         });
 
@@ -151,7 +148,9 @@ class PartyDetail extends AbstractReactComponent {
             tmpActiveIndexes = {};
         }
 
-        let activeIndexes = tmpActiveIndexes, visibilitySettingsValue = {}, mergeIndex = {};
+        let activeIndexes = tmpActiveIndexes,
+            visibilitySettingsValue = {},
+            mergeIndex = {};
 
         if (props.userDetail && props.userDetail.settings) {
             const {settings} = props.userDetail;
@@ -168,19 +167,19 @@ class PartyDetail extends AbstractReactComponent {
                             delete visibilitySettingsValue[key];
                         }
                     }
-                } catch(e) {
+                } catch (e) {
                     visibilitySettingsValue = {};
                 }
                 activeIndexes = {
                     ...activeIndexes,
                     ...visibilitySettingsValue,
-                    ...mergeIndex
+                    ...mergeIndex,
                 };
             } else {
-                console.warn("No settings for visibility - fallback to default - closed");
+                console.warn('No settings for visibility - fallback to default - closed');
             }
         }
-        this.setState({activeIndexes, visibilitySettingsValue})
+        this.setState({activeIndexes, visibilitySettingsValue});
     }
 
     fetchIfNeeded = (props = this.props) => {
@@ -193,8 +192,8 @@ class PartyDetail extends AbstractReactComponent {
 
             if (id) {
                 resolve(this.props.dispatch(partyDetailFetchIfNeeded(id)));
-        } else {
-            return Promise.resolve(null);
+            } else {
+                return Promise.resolve(null);
             }
         });
     };
@@ -207,20 +206,25 @@ class PartyDetail extends AbstractReactComponent {
                 this.setState({}, () => {
                     this.refs.partyDetail.focus();
                     //setInputFocus(this.refs.partyDetail);
-                    focusWasSet()
-                })
+                    focusWasSet();
+                });
             }
         }
     };
 
-    handleShortcuts = (action)  => {
+    handleShortcuts = (action) => {
         // Not defined shortcuts
     };
 
     handleToggleActive = (identificator) => {
-        this.setState({activeIndexes:{...this.state.activeIndexes, [identificator]: !this.state.activeIndexes[identificator]}});
+        this.setState({
+            activeIndexes: {
+                ...this.state.activeIndexes,
+                [identificator]: !this.state.activeIndexes[identificator],
+            },
+        });
         if (this.state.visibilitySettingsValue[identificator]) {
-            this.handlePinToggle(identificator)
+            this.handlePinToggle(identificator);
         }
     };
 
@@ -237,19 +241,19 @@ class PartyDetail extends AbstractReactComponent {
             ...oldSettings,
             value: JSON.stringify({
                 ...value,
-                [identificator]: !value[identificator]
-            })
+                [identificator]: !value[identificator],
+            }),
         };
         let newSettings = this.props.userDetail.settings ? [...this.props.userDetail.settings] : [];
         newSettings = setSettings(newSettings, newVisibilitySettings.id, newVisibilitySettings);
-        this.props.dispatch(userDetailsSaveSettings(newSettings, false))
+        this.props.dispatch(userDetailsSaveSettings(newSettings, false));
     };
 
 
     handlePartyUpdate = (party) => {
         return this.props.dispatch(partyUpdate({
             ...this.props.partyDetail.data,
-            ...party
+            ...party,
         }));
     };
 
@@ -274,16 +278,16 @@ class PartyDetail extends AbstractReactComponent {
     };
 
     getPartyId = (data) => {
-        if(data.accessPoint.externalId) {
-            if(data.accessPoint.externalSystem && data.accessPoint.externalSystem.name){
+        if (data.accessPoint.externalId) {
+            if (data.accessPoint.externalSystem && data.accessPoint.externalSystem.name) {
                 return data.accessPoint.externalSystem.name + ':' + data.accessPoint.externalId;
             } else {
                 return 'UNKNOWN:' + data.accessPoint.externalId;
             }
-        } else  {
+        } else {
             return data.id;
         }
-    }
+    };
 
     getScopeLabel = (scopeId, scopes) => {
         return scopeId && scopes[0].scopes.find(scope => (scope.id === scopeId)).name.toUpperCase();
@@ -299,7 +303,7 @@ class PartyDetail extends AbstractReactComponent {
             return <div className="unselected-msg">
                 <div className="title">{i18n('party.noSelection.title')}</div>
                 <div className="msg-text">{i18n('party.noSelection.message')}</div>
-            </div>
+            </div>;
         }
 
         let content;
@@ -307,7 +311,10 @@ class PartyDetail extends AbstractReactComponent {
             var type = partyDetail.data.partyType.code;
             var icon = PartyListItem.partyIconByPartyTypeCode(type);
 
-            let canEdit = userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {type: perms.AP_SCOPE_WR, scopeId: party.accessPoint.scopeId});
+            let canEdit = userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
+                type: perms.AP_SCOPE_WR,
+                scopeId: party.accessPoint.scopeId,
+            });
 
             if (partyDetail.data.accessPoint.invalid) {
                 canEdit = false;
@@ -317,13 +324,13 @@ class PartyDetail extends AbstractReactComponent {
 
             let parts = partyType && partyType.partyGroups ? partyType.partyGroups : [];
 
-            let relationClassTypes = partyType && partyType.relationTypes ? getMapFromList(partyType.relationTypes.map(i => i.relationClassType), "code") : [];
+            let relationClassTypes = partyType && partyType.relationTypes ? getMapFromList(partyType.relationTypes.map(i => i.relationClassType), 'code') : [];
 
-            const events = {onPin:this.handlePinToggle, onSelect: this.handleToggleActive};
+            const events = {onPin: this.handlePinToggle, onSelect: this.handleToggleActive};
 
-            let headerCls = "party-header";
+            let headerCls = 'party-header';
             if (partyDetail.data.accessPoint.invalid) {
-                headerCls += " invalid";
+                headerCls += ' invalid';
             }
 
             content = <div tabIndex={0} ref='partyDetail' className="party-detail">
@@ -334,7 +341,8 @@ class PartyDetail extends AbstractReactComponent {
                     <div className="header-content">
                         <div>
                             <div>
-                                <div className="title">{party.name}  {partyDetail.data.accessPoint.invalid && "(Neplatné)"}</div>
+                                <div
+                                    className="title">{party.name} {partyDetail.data.accessPoint.invalid && '(Neplatné)'}</div>
                             </div>
                         </div>
                         <div>
@@ -348,8 +356,10 @@ class PartyDetail extends AbstractReactComponent {
                 </div>
                 <div className="party-type">
                     {party.partyType.description}
-                    <div className="right-part" title={party.accessPoint.comment ? party.accessPoint.comment : i18n('ap.state.title.noComment')}>
-                        <span className="state-approval-label">{StateApproval.getCaption(party.accessPoint.stateApproval)}</span>
+                    <div className="right-part"
+                         title={party.accessPoint.comment ? party.accessPoint.comment : i18n('ap.state.title.noComment')}>
+                        <span
+                            className="state-approval-label">{StateApproval.getCaption(party.accessPoint.stateApproval)}</span>
                         {party.accessPoint.scopeId && <span className="scope-label">
                             {this.getScopeLabel(partyDetail.data.accessPoint.scopeId, scopes)}
                         </span>}
@@ -361,25 +371,37 @@ class PartyDetail extends AbstractReactComponent {
                         if (TYPE == UI_PARTY_GROUP_TYPE.IDENT) {
                             const key = UI_PARTY_GROUP_TYPE.IDENT;
                             return <div key={index}>
-                                <CollapsablePanel tabIndex={0} isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
-                                    <PartyDetailNames party={party} partyType={partyType} onPartyUpdate={this.handlePartyUpdate} canEdit={canEdit} />
-                                    {party.partyType.code == PARTY_TYPE_CODES.GROUP_PARTY && <PartyDetailIdentifiers party={party} onPartyUpdate={this.handlePartyUpdate} canEdit={canEdit} />}
+                                <CollapsablePanel tabIndex={0} isOpen={activeIndexes && activeIndexes[key] === true}
+                                                  pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true}
+                                                  header={i.name} eventKey={key} {...events}>
+                                    <PartyDetailNames party={party} partyType={partyType}
+                                                      onPartyUpdate={this.handlePartyUpdate} canEdit={canEdit}/>
+                                    {party.partyType.code == PARTY_TYPE_CODES.GROUP_PARTY &&
+                                    <PartyDetailIdentifiers party={party} onPartyUpdate={this.handlePartyUpdate}
+                                                            canEdit={canEdit}/>}
                                 </CollapsablePanel>
                             </div>;
                         } else if (TYPE == UI_PARTY_GROUP_TYPE.CONCLUSION) {
                             const key = UI_PARTY_GROUP_TYPE.CONCLUSION;
                             return <div key={index}>
-                                <CollapsablePanel tabIndex={0} isOpen={activeIndexes && activeIndexes[key] === true} pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name} eventKey={key} {...events}>
-                                    <FormInput as="textarea" {...sourceInformation} label={i18n("party.detail.sources")} />
-                                    <label className="group-label">{i18n("party.detail.creators")}{canEdit && <Button variant="action" onClick={() => creators.addField({})}><Icon glyph="fa-plus" /></Button>}</label>
-                                    {creators.map((creator, index) => <div key={index + "-" + creator.id} className="value-group">
+                                <CollapsablePanel tabIndex={0} isOpen={activeIndexes && activeIndexes[key] === true}
+                                                  pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true}
+                                                  header={i.name} eventKey={key} {...events}>
+                                    <FormInput as="textarea" {...sourceInformation}
+                                               label={i18n('party.detail.sources')}/>
+                                    <label className="group-label">{i18n('party.detail.creators')}{canEdit &&
+                                    <Button variant="action" onClick={() => creators.addField({})}><Icon
+                                        glyph="fa-plus"/></Button>}</label>
+                                    {creators.map((creator, index) => <div key={index + '-' + creator.id}
+                                                                           className="value-group">
                                         <div className='desc-item-value desc-item-value-parts'>
-                                            <PartyField onCreate={this.handleAddParty.bind(this, creator)} {...creator} />
+                                            <PartyField
+                                                onCreate={this.handleAddParty.bind(this, creator)} {...creator} />
                                             {canEdit && <Button variant="action" onClick={() => {
                                                 if (confirm(i18n('party.detail.creator.delete'))) {
-                                                    creators.removeField(index)
+                                                    creators.removeField(index);
                                                 }
-                                            }}><Icon glyph="fa-trash" /></Button>}
+                                            }}><Icon glyph="fa-trash"/></Button>}
                                         </div>
                                     </div>)}
                                 </CollapsablePanel>
@@ -393,7 +415,7 @@ class PartyDetail extends AbstractReactComponent {
                                     contentDefinition = JSON.parse(i.contentDefinition);
                                 } catch (e) {
                                     console.error(e);
-                                    contentDefinition = null
+                                    contentDefinition = null;
                                 }
                                 if (contentDefinition) {
                                     for (let key in contentDefinition) {
@@ -402,7 +424,7 @@ class PartyDetail extends AbstractReactComponent {
                                             const inputProps = {
                                                 ...fields[item.definition],
                                                 label: item.name,
-                                                title: item.desc
+                                                title: item.desc,
                                             };
 
                                             const DEFINITION_TYPE = item.type.toUpperCase();
@@ -418,55 +440,68 @@ class PartyDetail extends AbstractReactComponent {
                                                 this.apTypesToMap(recordTypes.items, apTypesMap, []);
 
                                                 if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXT) {
-                                                    element = <FormInput {...inputProps} type="text" disabled={!canEdit} />
+                                                    element =
+                                                        <FormInput {...inputProps} type="text" disabled={!canEdit}/>;
                                                 } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXTAREA) {
                                                     const {initialValue, autofill, onUpdate, valid, invalid, dirty, pristine, active, visited, autofilled, ...textAreaProps} = inputProps;
-                                                    element = <FormInput {...textAreaProps} as="textarea" disabled={!canEdit} />
+                                                    element = <FormInput {...textAreaProps} as="textarea"
+                                                                         disabled={!canEdit}/>;
                                                 } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.RELATION) {
                                                     const type = objectById(partyType.relationTypes, item.definition, 'code');
                                                     if (type) {
-                                                        element = <PartyDetailRelations party={party} relationType={type} apTypesMap={apTypesMap} label={item.name} canEdit={canEdit} />
+                                                        element =
+                                                            <PartyDetailRelations party={party} relationType={type}
+                                                                                  apTypesMap={apTypesMap}
+                                                                                  label={item.name} canEdit={canEdit}/>;
                                                     } else {
-                                                        element = i18n('party.detail.ui.unknownRelation')
+                                                        element = i18n('party.detail.ui.unknownRelation');
                                                     }
                                                 } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.RELATION_CLASS) {
                                                     if (relationClassTypes[item.definition]) {
-                                                        element = <PartyDetailRelationClass party={party} partyType={partyType} apTypesMap={apTypesMap} relationClassType={relationClassTypes[item.definition]} label={item.name} canEdit={canEdit} />
+                                                        element = <PartyDetailRelationClass party={party}
+                                                                                            partyType={partyType}
+                                                                                            apTypesMap={apTypesMap}
+                                                                                            relationClassType={relationClassTypes[item.definition]}
+                                                                                            label={item.name}
+                                                                                            canEdit={canEdit}/>;
                                                     } else {
-                                                        element = i18n('party.detail.ui.unknownRelation')
+                                                        element = i18n('party.detail.ui.unknownRelation');
                                                     }
                                                 }
 
-                                                items.push(<div key={key} className={"el-" + (item.width ? item.width : 0)}>
+                                                items.push(<div key={key}
+                                                                className={'el-' + (item.width ? item.width : 0)}>
                                                     {element}
                                                 </div>);
                                             }
                                         }
                                     }
                                 } else {
-                                    items.push(<span>{i18n('party.detail.ui.definitionError')}</span>)
+                                    items.push(<span>{i18n('party.detail.ui.definitionError')}</span>);
                                 }
                             }
 
                             const key = i.code;
 
-                            return <CollapsablePanel tabIndex={0} key={key} isOpen={activeIndexes && activeIndexes[key] === true}
-                                                     pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true} header={i.name}
+                            return <CollapsablePanel tabIndex={0} key={key}
+                                                     isOpen={activeIndexes && activeIndexes[key] === true}
+                                                     pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true}
+                                                     header={i.name}
                                                      eventKey={key} {...events}>
                                 <div className="elements-container">
                                     {items}
                                 </div>
-                            </CollapsablePanel>
+                            </CollapsablePanel>;
                         } else {
-                            return <span>{i18n('party.detail.ui.unknownType', i.type)}</span>
+                            return <span>{i18n('party.detail.ui.unknownType', i.type)}</span>;
                         }
                     })}
                 </Form>
-            </div>
+            </div>;
         }
 
         return <Shortcuts name='PartyDetail' handler={this.handleShortcuts} className="party-detail-wrapper">
-            <StoreHorizontalLoader store={partyDetail} />
+            <StoreHorizontalLoader store={partyDetail}/>
             {content}
         </Shortcuts>;
     }
@@ -475,8 +510,8 @@ class PartyDetail extends AbstractReactComponent {
 export default reduxForm({
         form: 'partyDetail',
         fields: PartyDetail.fields,
-        validate: PartyDetail.validate
-    },(state) => {
+        validate: PartyDetail.validate,
+    }, (state) => {
         const {app: {partyDetail}, userDetail, refTables: {partyTypes, recordTypes}, focus, refTables} = state;
         return {
             partyDetail,
@@ -485,8 +520,8 @@ export default reduxForm({
             recordTypes,
             _focus: focus,
             initialValues: partyDetail.fetched ? partyDetail.data : {},
-            scopes: refTables.scopesData.scopes
-        }
+            scopes: refTables.scopesData.scopes,
+        };
     },
-    {initForm: (onSave) => (initForm('partyDetail', PartyDetail.validate, onSave))}
+    {initForm: (onSave) => (initForm('partyDetail', PartyDetail.validate, onSave))},
 )(PartyDetail);

@@ -2,75 +2,72 @@
  * Formulář editace PP - jako buňky v tabulce hromadných úprav - FundDataGrid.
  */
 
-import './FundDataGridCellForm.scss'
+import './FundDataGridCellForm.scss';
 
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
-import * as types from 'actions/constants/ActionTypes.js';
-import {reduxForm} from 'redux-form';
+import {connect} from 'react-redux';
 import {AbstractReactComponent, i18n} from 'components/shared';
-import NodeSubNodeForm from './NodeSubNodeForm'
-import {Modal, Button, Input} from 'react-bootstrap';
-import {indexById} from 'stores/app/utils.jsx'
-import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
-import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
-import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {setInputFocus} from 'components/Utils.jsx'
+import NodeSubNodeForm from './NodeSubNodeForm';
+import {Modal} from 'react-bootstrap';
+import {Button} from '../ui';
+import {indexById} from 'stores/app/utils.jsx';
+import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
+import {nodeFormActions} from 'actions/arr/subNodeForm.jsx';
+import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx';
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
 import $ from 'jquery';
 
 class FundDataGridCellForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('getFundDataGrid')
+        this.bindMethods('getFundDataGrid');
 
         this.state = {
             fundDataGrid: this.getFundDataGrid(props),
             dataLoaded: false,  // data dialogu jsou načtena a můžeme dialog správně napozicovat
-        }
+        };
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         const {dataLoaded} = this.state;
-        const newFundDataGrid = this.getFundDataGrid(nextProps)
+        const newFundDataGrid = this.getFundDataGrid(nextProps);
 
-        const hasData = this.requestData(nextProps.versionId, newFundDataGrid)
+        const hasData = this.requestData(nextProps.versionId, newFundDataGrid);
 
         if (hasData && dataLoaded !== hasData) {   // data byla načtená a předtím ještě ne, napozivujeme jednou dialog
             this.setState({}, this.handlePosition);
         }
 
-        const loadingChanged = this.isLoading(this.props, this.state.fundDataGrid) !== this.isLoading(nextProps, newFundDataGrid)
+        const loadingChanged = this.isLoading(this.props, this.state.fundDataGrid) !== this.isLoading(nextProps, newFundDataGrid);
 
         this.setState({
-            fundDataGrid: newFundDataGrid
+            fundDataGrid: newFundDataGrid,
         }, () => {
             if (loadingChanged) {
-                this.refs.subNodeForm.getWrappedInstance().initFocus()
+                this.refs.subNodeForm.getWrappedInstance().initFocus();
             }
-        })
+        });
     }
 
     containsDescItem(formData, descItemTypeId) {
-        for (var g=0; g<formData.descItemGroups.length; g++) {
-            const group = formData.descItemGroups[g]
-            for (var i=0; i<group.descItemTypes.length; i++) {
-                const descItemType = group.descItemTypes[i]
+        for (var g = 0; g < formData.descItemGroups.length; g++) {
+            const group = formData.descItemGroups[g];
+            for (var i = 0; i < group.descItemTypes.length; i++) {
+                const descItemType = group.descItemTypes[i];
                 if (descItemType.id === descItemTypeId) {
-                    return true
+                    return true;
                 }
             }
         }
-        return false
+        return false;
     }
 
     /**
      * Napoyicuje dialog na sprvávnou pozici tak, aby se vešel na obrazovku
      */
     handlePosition = () => {
-        const {position} = this.props
+        const {position} = this.props;
 
         if (position) {
             const dialog = $('.fund-data-grid-cell-edit .modal-dialog');
@@ -102,10 +99,10 @@ class FundDataGridCellForm extends AbstractReactComponent {
                 left: x + 'px',
                 width: dialogSize.w,
                 height: dialogSize.h,
-                visibility: "visible"
-            })
+                visibility: 'visible',
+            });
         }
-    }
+    };
 
     componentDidMount() {
         const {dataLoaded} = this.state;
@@ -123,7 +120,7 @@ class FundDataGridCellForm extends AbstractReactComponent {
      * @return ture, pokud již má data
      */
     requestData(versionId, validFundDataGrid) {
-        const routingKey = 'DATA_GRID'
+        const routingKey = 'DATA_GRID';
 
         let result = false;
 
@@ -134,14 +131,14 @@ class FundDataGridCellForm extends AbstractReactComponent {
 
         // Pokud se jedná o editaci jedné položky, musíme zajistit, že tato položka tam je - alespoň prázdná
         if (validFundDataGrid.subNodeForm.fetched) {
-            const subNodeForm = validFundDataGrid.subNodeForm
-            const formData = subNodeForm.formData
+            const subNodeForm = validFundDataGrid.subNodeForm;
+            const formData = subNodeForm.formData;
 
             if (!this.containsDescItem(formData, validFundDataGrid.descItemTypeId)) {
                 this.props.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, routingKey, validFundDataGrid.descItemTypeId));
             } else {
                 // Máme data a jsou v pořádku
-                this.setState({dataLoaded: true})
+                this.setState({dataLoaded: true});
                 result = true;
             }
         }
@@ -150,10 +147,10 @@ class FundDataGridCellForm extends AbstractReactComponent {
     }
 
     getFundDataGrid(props) {
-        const {versionId, funds} = props
-        const activeFund = funds[indexById(funds, versionId, "versionId")];
-        const fundDataGrid = activeFund.fundDataGrid
-        return fundDataGrid
+        const {versionId, funds} = props;
+        const activeFund = funds[indexById(funds, versionId, 'versionId')];
+        const fundDataGrid = activeFund.fundDataGrid;
+        return fundDataGrid;
     }
 
     isLoading(props, fundDataGrid) {
@@ -161,24 +158,24 @@ class FundDataGridCellForm extends AbstractReactComponent {
         const {rulDataTypes, calendarTypes, descItemTypes} = refTables;
 
         if (fundDataGrid.subNodeForm.fetched && calendarTypes.fetched && descItemTypes.fetched) {
-            return false
+            return false;
         } else {
-            return true
+            return true;
         }
     }
 
     render() {
-        const {fundDataGrid} = this.state
-        const {versionId, fundId, closed, className, style, refTables, onClose} = this.props
-        const {rulDataTypes, calendarTypes, descItemTypes} = refTables
+        const {fundDataGrid} = this.state;
+        const {versionId, fundId, closed, className, style, refTables, onClose} = this.props;
+        const {rulDataTypes, calendarTypes, descItemTypes} = refTables;
 
-        var form
+        var form;
         if (!this.isLoading(this.props, fundDataGrid)) {
 
             const conformityInfo = {
                 errors: {},
-                missings: {}
-            }
+                missings: {},
+            };
 
             form = (
                 <NodeSubNodeForm
@@ -196,14 +193,16 @@ class FundDataGridCellForm extends AbstractReactComponent {
                     descItemTypes={descItemTypes}
                     conformityInfo={conformityInfo}
                     parentNode={{}}
-                    onVisiblePolicy={()=>{}}
+                    onVisiblePolicy={() => {
+                    }}
                     fundId={fundId}
                     selectedSubNode={fundDataGrid.subNodeForm.data.parent}
                     descItemCopyFromPrevEnabled={false}
                     closed={closed}
-                    onAddDescItemType={()=>{}}
+                    onAddDescItemType={() => {
+                    }}
                 />
-            )
+            );
         }
 
         return (
@@ -215,16 +214,16 @@ class FundDataGridCellForm extends AbstractReactComponent {
                     <Button variant="link" onClick={onClose}>{i18n('global.action.close')}</Button>
                 </Modal.Footer>
             </div>
-        )
+        );
     }
 }
 
 function mapStateToProps(state) {
-    const {arrRegion, refTables} = state
+    const {arrRegion, refTables} = state;
     return {
         funds: arrRegion.funds,
         refTables,
-    }
+    };
 }
 
-export default connect(mapStateToProps)(FundDataGridCellForm)
+export default connect(mapStateToProps)(FundDataGridCellForm);

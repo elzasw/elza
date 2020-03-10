@@ -1,15 +1,14 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
-import {FormControl, Button} from 'react-bootstrap'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
-import {i18n, AbstractReactComponent, Icon} from 'components/shared'
-import {indexById, objectById} from 'stores/app/utils.jsx'
-import {normalizeNameObject} from 'actions/party/party.jsx'
+import {connect} from 'react-redux';
+import {Button} from '../ui';
+import {modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {AbstractReactComponent, i18n, Icon} from 'components/shared';
+import {indexById, objectById} from 'stores/app/utils.jsx';
+import {normalizeNameObject} from 'actions/party/party.jsx';
 
-import './PartyDetailNames.scss'
-import PartyNameForm from "./PartyNameForm";
+import './PartyDetailNames.scss';
+import PartyNameForm from './PartyNameForm';
 
 class PartyDetailNames extends AbstractReactComponent {
 
@@ -22,7 +21,7 @@ class PartyDetailNames extends AbstractReactComponent {
 
     getPartyName = (partyName, partyType) => {
         const nameBuilder = [];
-        const nameHelper = (namePart,nameBuilder) => {
+        const nameHelper = (namePart, nameBuilder) => {
             if (namePart) {
                 nameBuilder.push(namePart);
             }
@@ -31,15 +30,17 @@ class PartyDetailNames extends AbstractReactComponent {
         nameHelper(partyName.degreeBefore, nameBuilder);
         nameHelper(partyName.otherPart, nameBuilder);
         nameHelper(partyName.mainPart, nameBuilder);
-        let roman = null, geoAddon = null, addon = null;
+        let roman = null,
+            geoAddon = null,
+            addon = null;
         partyName.partyNameComplements.forEach((e) => {
             const type = objectById(partyType.complementTypes, e.complementTypeId);
             if (type) {
-                if (type.code == "2") {
+                if (type.code == '2') {
                     addon = e.complement;
-                } else if (type.code == "3") {
+                } else if (type.code == '3') {
                     roman = e.complement;
-                } else if (type.code == "4") {
+                } else if (type.code == '4') {
                     geoAddon = e.complement;
                 }
             }
@@ -61,8 +62,8 @@ class PartyDetailNames extends AbstractReactComponent {
             ...this.props.party,
             partyNames: [
                 ...partyNames,
-                data
-            ]
+                data,
+            ],
         };
         return this.props.onPartyUpdate(party);
     };
@@ -74,8 +75,8 @@ class PartyDetailNames extends AbstractReactComponent {
             ...this.props.party,
             partyNames: [
                 ...partyNames.slice(0, index),
-                ...partyNames.slice(index+1)
-            ]
+                ...partyNames.slice(index + 1),
+            ],
         };
         this.props.onPartyUpdate(party);
     };
@@ -85,15 +86,15 @@ class PartyDetailNames extends AbstractReactComponent {
         const index = indexById(partyNames, originalName.id);
         newName = normalizeNameObject({
             ...originalName,
-            ...newName
+            ...newName,
         });
         const party = {
             ...this.props.party,
             partyNames: [
                 ...partyNames.slice(0, index),
                 newName,
-                ...partyNames.slice(index+1)
-            ]
+                ...partyNames.slice(index + 1),
+            ],
         };
         return this.props.onPartyUpdate(party);
     };
@@ -103,20 +104,23 @@ class PartyDetailNames extends AbstractReactComponent {
             ...this.props.party,
             partyNames: this.props.party.partyNames.map(name => ({
                 ...name,
-                prefferedName: name.id == id
-            }))
+                prefferedName: name.id == id,
+            })),
         };
         this.props.onPartyUpdate(party);
     };
 
     handlePartyNameAdd = () => {
         const {partyType} = this.props;
-        this.props.dispatch(modalDialogShow(this, i18n('party.detail.name.new'), <PartyNameForm partyType={partyType} onSubmitForm={this.partyNameAdd} />, "dialog-lg"));
+        this.props.dispatch(modalDialogShow(this, i18n('party.detail.name.new'), <PartyNameForm partyType={partyType}
+                                                                                                onSubmitForm={this.partyNameAdd}/>, 'dialog-lg'));
     };
 
     handlePartyNameUpdate = (partyName) => {
         const {partyType} = this.props;
-        this.props.dispatch(modalDialogShow(this, i18n('party.detail.name.update'), <PartyNameForm partyType={partyType} initData={partyName} onSubmitForm={this.partyNameUpdate.bind(this, partyName)} />, "dialog-lg"));
+        this.props.dispatch(modalDialogShow(this, i18n('party.detail.name.update'), <PartyNameForm partyType={partyType}
+                                                                                                   initData={partyName}
+                                                                                                   onSubmitForm={this.partyNameUpdate.bind(this, partyName)}/>, 'dialog-lg'));
     };
 
     handleDelete = (id) => {
@@ -135,26 +139,32 @@ class PartyDetailNames extends AbstractReactComponent {
         const {party, partyType, canEdit} = this.props;
 
         return <div className="party-detail-names">
-            <div >
-                <label className="group-label">{i18n("party.detail.formNames")}</label>
-                {canEdit && <Button variant="action" onClick={this.handlePartyNameAdd}><Icon glyph="fa-plus" /></Button>}
+            <div>
+                <label className="group-label">{i18n('party.detail.formNames')}</label>
+                {canEdit && <Button variant="action" onClick={this.handlePartyNameAdd}><Icon glyph="fa-plus"/></Button>}
             </div>
             <div className="name-group">
                 {party.partyNames.map((partyName, index) =>
-                    <div key={partyName.id} className={partyName.prefferedName ? "preffered value-group" : "value-group"}>
+                    <div key={partyName.id}
+                         className={partyName.prefferedName ? 'preffered value-group' : 'value-group'}>
                         <div className="value">{this.getPartyName(partyName, partyType)}</div>
                         <div className="actions">
-                            {canEdit && <Button  variant="action" onClick={() => this.handlePartyNameUpdate(partyName)}><Icon glyph="fa-pencil" /></Button>}
+                            {canEdit &&
+                            <Button variant="action" onClick={() => this.handlePartyNameUpdate(partyName)}><Icon
+                                glyph="fa-pencil"/></Button>}
                             {canEdit
                             && !partyName.prefferedName
                             && <span>
-                                <Button className="delete" variant="action" onClick={() => this.handleDelete(partyName.id)}><Icon glyph="fa-trash" /></Button>
-                                <Button variant="action" onClick={() => this.handleSelectPreffered(partyName.id)}><Icon glyph="fa-star" /></Button>
+                                <Button className="delete" variant="action"
+                                        onClick={() => this.handleDelete(partyName.id)}><Icon
+                                    glyph="fa-trash"/></Button>
+                                <Button variant="action" onClick={() => this.handleSelectPreffered(partyName.id)}><Icon
+                                    glyph="fa-star"/></Button>
                             </span>}
                         </div>
                     </div>)}
             </div>
-        </div>
+        </div>;
     }
 }
 

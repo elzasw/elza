@@ -1,17 +1,17 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {Modal, Button, FormCheck, Form} from 'react-bootstrap';
-import {indexById} from 'stores/app/utils.jsx';
+import {Form, Modal} from 'react-bootstrap';
+import {Button} from '../ui';
 import {decorateFormField} from 'components/form/FormUtils.jsx';
-import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
+import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx';
 import {WebApi} from 'actions/index.jsx';
 import {importForm} from 'actions/global/global.jsx';
-import AbstractReactComponent from "../AbstractReactComponent";
-import FormInput from "../shared/form/FormInput";
-import Autocomplete from "../shared/autocomplete/Autocomplete";
-import i18n from "../i18n";
-import Icon from "../shared/icon/Icon";
+import AbstractReactComponent from '../AbstractReactComponent';
+import FormInput from '../shared/form/FormInput';
+import Autocomplete from '../shared/autocomplete/Autocomplete';
+import i18n from '../i18n';
+import Icon from '../shared/icon/Icon';
 
 /**
  * Formulář importu rejstříkových hesel
@@ -36,25 +36,25 @@ class ImportForm extends AbstractReactComponent {
     static propTypes = {
         party: PropTypes.bool,
         record: PropTypes.bool,
-        fund: PropTypes.bool
+        fund: PropTypes.bool,
     };
 
     state = {
         defaultScopes: [],
         transformationNames: [],
-        isRunning: false
+        isRunning: false,
     };
 
     componentDidMount() {
         this.props.dispatch(refRuleSetFetchIfNeeded());
         WebApi.getAllScopes().then(json => {
             this.setState({
-                defaultScopes: json
+                defaultScopes: json,
             });
         });
         WebApi.getTransformations().then(json => {
             this.setState({
-                transformationNames: json
+                transformationNames: json,
             });
         });
     }
@@ -99,10 +99,11 @@ class ImportForm extends AbstractReactComponent {
                             <Modal.Body>
                                 {
                                     <div>
-                                        <FormInput as="select" label={i18n('import.transformationName')} {...transformationName}>
+                                        <FormInput as="select"
+                                                   label={i18n('import.transformationName')} {...transformationName}>
                                             <option key='blankName'/>
-                                            {this.state.transformationNames.map((i, index)=> {
-                                                return <option key={index+'name'} value={i}>{i}</option>
+                                            {this.state.transformationNames.map((i, index) => {
+                                                return <option key={index + 'name'} value={i}>{i}</option>;
                                             })}
                                         </FormInput>
                                         <Autocomplete
@@ -135,7 +136,8 @@ class ImportForm extends AbstractReactComponent {
                                 <FormInput type="file" {...xmlFile} {...decorateFormField(xmlFile)} value={null}/>
                             </Modal.Body>
                             <Modal.Footer>
-                                <Button type="submit" onClick={handleSubmit(this.save)}>{i18n('global.action.import')}</Button>
+                                <Button type="submit"
+                                        onClick={handleSubmit(this.save)}>{i18n('global.action.import')}</Button>
                                 <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                             </Modal.Footer>
                         </Form>
@@ -147,15 +149,15 @@ class ImportForm extends AbstractReactComponent {
                     </Modal.Body>
                 </div>}
             </div>
-        )
+        );
     }
 }
 
 export default reduxForm({
     form: 'importForm',
     fields: ['ruleSetId', 'transformationName', 'recordScope', 'stopOnError', 'xmlFile'],
-    validate: ImportForm.validate
+    validate: ImportForm.validate,
 }, state => ({
     defaultScopes: state.defaultScopes,
-    refTables: state.refTables
+    refTables: state.refTables,
 }))(ImportForm);

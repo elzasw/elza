@@ -1,28 +1,27 @@
 import PropTypes from 'prop-types';
 import * as React from 'react';
-import {Button, Row, Col, Modal} from 'react-bootstrap';
+import {Col, Modal, Row} from 'react-bootstrap';
+import {connect} from 'react-redux';
+import {WebApi} from '../../actions';
+import * as issuesActions from '../../actions/arr/issues';
 import {AbstractReactComponent, Icon} from '../../components/shared';
-import {connect} from "react-redux";
-import storeFromArea from "../../shared/utils/storeFromArea";
-import * as issuesActions from "../../actions/arr/issues";
-import FormInput from "../shared/form/FormInput";
-import i18n from "../i18n";
-import ListBox from "../shared/listbox/ListBox";
-import indexById from "../../shared/utils/indexById";
-import Loading from "../shared/loading/Loading";
-import IssueListForm from "../form/IssueListForm";
-import {WebApi} from "../../actions";
+import {Button} from '../../components/ui';
+import indexById from '../../shared/utils/indexById';
+import storeFromArea from '../../shared/utils/storeFromArea';
+import IssueListForm from '../form/IssueListForm';
+import i18n from '../i18n';
+import FormInput from '../shared/form/FormInput';
+import ListBox from '../shared/listbox/ListBox';
+import Loading from '../shared/loading/Loading';
 
-import "./IssueLists.scss";
+import './IssueLists.scss';
 
 
-type Props = {
-
-}
+type Props = {}
 type P = {
     fundId: number;
-    dispatch: (x: any) => void;
-    onClose: () => void;
+    dispatch: (x: any) => void;
+    onClose: () => void;
     issueProtocols: any;
 };
 
@@ -33,7 +32,7 @@ class IssueLists extends AbstractReactComponent {
     props: P;
 
     static propTypes = {
-        fundId: PropTypes.number.isRequired
+        fundId: PropTypes.number.isRequired,
     };
 
     componentDidMount() {
@@ -54,19 +53,23 @@ class IssueLists extends AbstractReactComponent {
     };
 
     create = () => {
-        WebApi.addIssueList({...IssueListForm.initialValues, name: i18n("issueList.new.unnamed"), fundId: this.props.fundId}).then(this.onCreate);
+        WebApi.addIssueList({
+            ...IssueListForm.initialValues,
+            name: i18n('issueList.new.unnamed'),
+            fundId: this.props.fundId,
+        }).then(this.onCreate);
     };
 
     onCreate = data => {
         this.props.dispatch(issuesActions.protocolsConfig.fetchIfNeeded(this.props.fundId, true));
         // @ts-ignore
-        this.setState({id:data.id, initialValues: data});
+        this.setState({id: data.id, initialValues: data});
     };
 
     onSave = data => {
         this.props.dispatch(issuesActions.protocolsConfig.invalidate(this.props.fundId));
         // @ts-ignore
-        this.setState({id:data.id, initialValues: data});
+        this.setState({id: data.id, initialValues: data});
     };
 
     filter = ({target: {value}}) => {
@@ -85,23 +88,26 @@ class IssueLists extends AbstractReactComponent {
         const ModalFooter = Modal.Footer as any;
 
         return (
-            <div className={"issue-list"}>
+            <div className={'issue-list'}>
                 <ModalBody>
                     <Row className="flex">
                         <Col xs={6} sm={3} className="flex flex-column">
                             <FormInput as="select" name="state" onChange={this.filter}>
-                                <option value={'true'}>{i18n("issueList.open.true")}</option>
-                                <option value={'false'}>{i18n("issueList.open.false")}</option>
+                                <option value={'true'}>{i18n('issueList.open.true')}</option>
+                                <option value={'false'}>{i18n('issueList.open.false')}</option>
                             </FormInput>
-                            <ListBox className="flex-1" items={issueProtocols.rows} activeIndex={activeIndex} onChangeSelection={this.select} />
+                            <ListBox className="flex-1" items={issueProtocols.rows} activeIndex={activeIndex}
+                                     onChangeSelection={this.select}/>
                             <div>
-                                <Button variant={"action" as any} onClick={this.create}>
-                                    <Icon glyph="fa-plus" />
+                                <Button variant={'action' as any} onClick={this.create}>
+                                    <Icon glyph="fa-plus"/>
                                 </Button>
                             </div>
                         </Col>
                         <Col xs={6} sm={9}>
-                            {isLoading ? <Loading/> : <IssueListForm id={id} fundId={fundId} onCreate={this.onCreate} onSave={this.onSave} initialValues={initialValues} />}
+                            {isLoading ? <Loading/> :
+                                <IssueListForm id={id} fundId={fundId} onCreate={this.onCreate} onSave={this.onSave}
+                                               initialValues={initialValues}/>}
                         </Col>
                     </Row>
                 </ModalBody>
@@ -109,7 +115,7 @@ class IssueLists extends AbstractReactComponent {
                     <Button variant="link" onClick={onClose}>{i18n('global.action.close')}</Button>
                 </ModalFooter>
             </div>
-        )
+        );
     }
 }
 
@@ -117,7 +123,7 @@ export default connect((state: any) => {
     return {
         issueTypes: state.refTables.issueTypes,
         issueList: storeFromArea(state, issuesActions.AREA_LIST),
-        issueProtocols: storeFromArea(state, issuesActions.AREA_PROTOCOLS_CONFIG)
-    }
+        issueProtocols: storeFromArea(state, issuesActions.AREA_PROTOCOLS_CONFIG),
+    };
 })(IssueLists as any) as any as React.SFC<{fundId: number}>;
 

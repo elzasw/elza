@@ -6,86 +6,31 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {indexById} from 'stores/app/utils.jsx'
-import {connect} from 'react-redux'
-import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
-import {Link, IndexLink} from 'react-router';
-import {
-    FundNodesSelectForm,
-    Ribbon,
-    FundNodesList,
-    ArrRequestDetail,
-    ArrOutputDetail,
-    AddOutputForm,
-    FundOutputFunctions,
-    RunActionForm,
-    ArrFundPanel
-} from 'components/index.jsx';
-import {
-    ListBox,
-    FormInput,
-    Loading,
-    RibbonGroup,
-    Icon,
-    i18n,
-    AbstractReactComponent,
-    Tabs,
-    SearchWithGoto,
-    StoreHorizontalLoader,
-    Utils
-} from 'components/shared';
-import {Button, DropdownButton, Dropdown, Collapse} from 'react-bootstrap';
-import PageLayout from "../shared/layout/PageLayout";
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import {
-    fundOutputFetchIfNeeded,
-    fundOutputRemoveNodes,
-    fundOutputSelectOutput,
-    fundOutputCreate,
-    fundOutputUsageEnd,
-    fundOutputDelete,
-    fundOutputAddNodes,
-    fundOutputGenerate,
-    fundOutputRevert,
-    fundOutputClone,
-    fundOutputFilterByState
-} from 'actions/arr/fundOutput.jsx'
-import {fundOutputActionRun} from 'actions/arr/fundOutputFunctions.jsx'
-import * as perms from 'actions/user/Permission.jsx';
+import {indexById} from 'stores/app/utils.jsx';
+import {connect} from 'react-redux';
+import {ArrRequestDetail, Ribbon} from 'components/index.jsx';
+import {FormInput, i18n, Icon, ListBox, RibbonGroup, SearchWithGoto, StoreHorizontalLoader} from 'components/shared';
+import {Button} from '../../components/ui';
+import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus.jsx';
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
-import {fundActionFormShow, fundActionFormChange} from 'actions/arr/fundAction.jsx'
-import {routerNavigate} from 'actions/router.jsx'
-import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
-import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
-import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
-import {
-    DIGITIZATION,
-    DAO,
-    DAO_LINK,
-    createDigitizationName,
-    getOneSettings
-} from 'components/arr/ArrUtils.jsx';
-import ArrParentPage from "./ArrParentPage.jsx";
+import {createDigitizationName, DIGITIZATION} from 'components/arr/ArrUtils.jsx';
+import ArrParentPage from './ArrParentPage.jsx';
 
 import classNames from 'classnames';
-import {Shortcuts} from 'react-shortcuts';
 
-import "./ArrRequestPage.scss";
-import {FOCUS_KEYS} from "../../constants.tsx";
+import './ArrRequestPage.scss';
+import {FOCUS_KEYS} from '../../constants.tsx';
 
 class ArrRequestPage extends ArrParentPage {
     constructor(props) {
-        super(props, "arr-request-page");
+        super(props, 'arr-request-page');
     }
 
     static propTypes = {
         splitter: PropTypes.object.isRequired,
         arrRegion: PropTypes.object.isRequired,
         focus: PropTypes.object.isRequired,
-        userDetail: PropTypes.object.isRequired
+        userDetail: PropTypes.object.isRequired,
     };
 
     componentDidMount() {
@@ -96,7 +41,7 @@ class ArrRequestPage extends ArrParentPage {
             this.props.dispatch(arrRequestActions.fetchListIfNeeded(fund.versionId));
         }
 
-        this.trySetFocus(this.props)
+        this.trySetFocus(this.props);
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -107,24 +52,24 @@ class ArrRequestPage extends ArrParentPage {
             this.props.dispatch(arrRequestActions.fetchListIfNeeded(fund.versionId));
         }
 
-        this.trySetFocus(nextProps)
+        this.trySetFocus(nextProps);
     }
 
     trySetFocus(props) {
-        var {focus} = props
+        var {focus} = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, FOCUS_KEYS.FUND_REQUEST, 1)) {
                 this.refs.fundOutputList && this.setState({}, () => {
-                    ReactDOM.findDOMNode(this.refs.fundOutputList).focus()
-                })
-                focusWasSet()
+                    ReactDOM.findDOMNode(this.refs.fundOutputList).focus();
+                });
+                focusWasSet();
             }
         }
     }
 
-    handleShortcuts(action,e) {
-        console.log("#handleShortcuts ArrRequestPage", '[' + action + ']', this);
+    handleShortcuts(action, e) {
+        console.log('#handleShortcuts ArrRequestPage', '[' + action + ']', this);
         switch (action) {
             case 'newOutput':
                 this.handleAddOutput();
@@ -158,14 +103,19 @@ class ArrRequestPage extends ArrParentPage {
             if (!readMode && !closed) {
                 if (detailSelected && !closed) {
                     itemActions.push(
-                        <Button key="send" onClick={() => {this.handleSend(requestDetail.id)}} disabled={!detailLoaded || requestDetail.data.state != "OPEN"}><Icon glyph="fa-youtube-play" />
+                        <Button key="send" onClick={() => {
+                            this.handleSend(requestDetail.id);
+                        }} disabled={!detailLoaded || requestDetail.data.state != 'OPEN'}><Icon
+                            glyph="fa-youtube-play"/>
                             <div><span className="btnText">{i18n('ribbon.action.arr.fund.request.send')}</span></div>
-                        </Button>
+                        </Button>,
                     );
                     itemActions.push(
-                        <Button key="delete" onClick={() => {this.handleDelete(requestDetail.id)}} disabled={!detailLoaded || requestDetail.data.state != "OPEN"}><Icon glyph="fa-trash" />
+                        <Button key="delete" onClick={() => {
+                            this.handleDelete(requestDetail.id);
+                        }} disabled={!detailLoaded || requestDetail.data.state != 'OPEN'}><Icon glyph="fa-trash"/>
                             <div><span className="btnText">{i18n('ribbon.action.arr.fund.request.delete')}</span></div>
-                        </Button>
+                        </Button>,
                     );
                 }
             }
@@ -173,17 +123,17 @@ class ArrRequestPage extends ArrParentPage {
 
         var altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>;
         }
 
         var itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>
+            itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>;
         }
 
         return (
             <Ribbon arr subMenu fundId={fund ? fund.id : null} altSection={altSection} itemSection={itemSection}/>
-        )
+        );
     }
 
     handleSelect = (item) => {
@@ -198,7 +148,7 @@ class ArrRequestPage extends ArrParentPage {
 
     handleDelete = (id) => {
         const fund = this.getActiveFund(this.props);
-        if (confirm(i18n("ribbon.action.arr.fund.request.delete.confirm"))) {
+        if (confirm(i18n('ribbon.action.arr.fund.request.delete.confirm'))) {
             this.props.dispatch(arrRequestActions.deleteRequest(fund.versionId, id));
         }
     };
@@ -208,15 +158,15 @@ class ArrRequestPage extends ArrParentPage {
         const {userDetail} = this.props;
         const fund = this.getActiveFund(this.props);
 
-        var cls = {
-        }
+        var cls = {};
 
         return (
             <div className={classNames(cls)}>
                 <div className='name'>{createDigitizationName(item, userDetail)}</div>
-                <div className='state'>{i18n("arr.request.title.state")}: {i18n("arr.request.title.state." + item.state)}</div>
+                <div
+                    className='state'>{i18n('arr.request.title.state')}: {i18n('arr.request.title.state.' + item.state)}</div>
             </div>
-        )
+        );
     };
 
     handleFilterType = (e) => {
@@ -226,8 +176,8 @@ class ArrRequestPage extends ArrParentPage {
         const val = e.target.value;
         const newFilter = {
             ...filter,
-            type: val
-        }
+            type: val,
+        };
 
         this.props.dispatch(arrRequestActions.filterList(fund.versionId, newFilter));
     };
@@ -238,7 +188,7 @@ class ArrRequestPage extends ArrParentPage {
 
         const newFilter = {
             ...filter,
-            description: filterText
+            description: filterText,
         };
 
         this.props.dispatch(arrRequestActions.filterList(fund.versionId, newFilter));
@@ -254,17 +204,20 @@ class ArrRequestPage extends ArrParentPage {
 
         let activeIndex = null;
         if (requestDetail.id !== null) {
-            activeIndex = indexById(requestList.rows, requestDetail.id)
+            activeIndex = indexById(requestList.rows, requestDetail.id);
         }
 
         return (
             <div className="fund-request-list-container">
                 <div className="filter">
-                    <FormInput as="select" className="type" onChange={this.handleFilterType} value={requestList.filter.type}>
-                        <option value={""}>{i18n('global.all')}</option>
-                        <option value="DIGITIZATION" key="DIGITIZATION">{i18n("arr.request.title.type." + DIGITIZATION)}</option>
-                        <option value="DESTRUCTION" key="DESTRUCTION">{i18n("arr.request.title.type.dao.DESTRUCTION")}</option>
-                        <option value="TRANSFER" key="TRANSFER">{i18n("arr.request.title.type.dao.TRANSFER")}</option>
+                    <FormInput as="select" className="type" onChange={this.handleFilterType}
+                               value={requestList.filter.type}>
+                        <option value={''}>{i18n('global.all')}</option>
+                        <option value="DIGITIZATION"
+                                key="DIGITIZATION">{i18n('arr.request.title.type.' + DIGITIZATION)}</option>
+                        <option value="DESTRUCTION"
+                                key="DESTRUCTION">{i18n('arr.request.title.type.dao.DESTRUCTION')}</option>
+                        <option value="TRANSFER" key="TRANSFER">{i18n('arr.request.title.type.dao.TRANSFER')}</option>
                         {/*<option value="DAO_LINK" key="DAO_LINK">{i18n("arr.request.title.type." + DAO_LINK)}</option>*/}
                     </FormInput>
                     <SearchWithGoto
@@ -278,7 +231,7 @@ class ArrRequestPage extends ArrParentPage {
                         allItemsCount={requestList.count}
                     />
                 </div>
-                <StoreHorizontalLoader store={requestList} />
+                <StoreHorizontalLoader store={requestList}/>
                 {requestList.fetched && <ListBox
                     className='fund-request-listbox'
                     ref='fundDigitizationRequestList'
@@ -289,7 +242,7 @@ class ArrRequestPage extends ArrParentPage {
                     onSelect={this.handleSelect}
                 />}
             </div>
-        )
+        );
     }
 
     renderCenterPanel(readMode, closed) {
@@ -302,7 +255,7 @@ class ArrRequestPage extends ArrParentPage {
                 fund={fund}
                 requestDetail={requestDetail}
             />
-        )
+        );
     }
 
     hasPageShowRights(userDetail, activeFund) {
@@ -311,7 +264,7 @@ class ArrRequestPage extends ArrParentPage {
 }
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, refTables, focus, userDetail} = state
+    const {splitter, arrRegion, refTables, focus, userDetail} = state;
     return {
         splitter,
         arrRegion,
@@ -323,7 +276,7 @@ function mapStateToProps(state) {
         ruleSet: refTables.ruleSet,
         templates: refTables.templates,
         outputTypes: refTables.outputTypes.items,
-    }
+    };
 }
 
 export default connect(mapStateToProps)(ArrRequestPage);

@@ -1,29 +1,28 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
-import {Modal, Button, Form, Row, Col} from 'react-bootstrap';
-import {decorateFormField} from 'components/form/FormUtils.jsx'
-import {login, checkUserLogged} from 'actions/global/login.jsx';
+import {connect} from 'react-redux';
+import {Form, Modal} from 'react-bootstrap';
+import {Button} from '../../ui';
+import {checkUserLogged, login} from 'actions/global/login.jsx';
 import {WebApi} from 'actions/index.jsx';
 
 import './Login.scss';
-import ModalDialogWrapper from "../dialog/ModalDialogWrapper";
-import FormInput from "../form/FormInput";
-import i18n from "../../i18n";
-import AbstractReactComponent from "../../AbstractReactComponent";
+import ModalDialogWrapper from '../dialog/ModalDialogWrapper';
+import FormInput from '../form/FormInput';
+import i18n from '../../i18n';
+import AbstractReactComponent from '../../AbstractReactComponent';
 
-const defaultEnabled = typeof window.defaultUserEnabled !== "undefined" && window.defaultUserEnabled;
+const defaultEnabled = typeof window.defaultUserEnabled !== 'undefined' && window.defaultUserEnabled;
 
 const getDefaultLogin = () => {
-    if (defaultEnabled){
+    if (defaultEnabled) {
         return {
-            username: "admin",
-            password: "admin"
+            username: 'admin',
+            password: 'admin',
         };
     } else {
         return {
-            username: "",
-            password: ""
+            username: '',
+            password: '',
         };
     }
 };
@@ -33,10 +32,10 @@ class Login extends AbstractReactComponent {
     defaultState = {
         ...getDefaultLogin(),
         error: null,
-        sso: []
+        sso: [],
     };
 
-    UNSAFE_componentWillMount(){
+    UNSAFE_componentWillMount() {
         this.props.dispatch(checkUserLogged());
         this.fetch();
     }
@@ -48,7 +47,7 @@ class Login extends AbstractReactComponent {
     };
 
     state = {
-        ...this.defaultState
+        ...this.defaultState,
     };
 
     handleChange = (field, event) => {
@@ -89,16 +88,25 @@ class Login extends AbstractReactComponent {
                     <Modal.Body>
                         {defaultEnabled && <div className="error">{i18n('login.defaultUserEnabled')}</div>}
                         {error && <div className="error">{error}</div>}
-                        <FormInput type="text" value={username} onChange={this.handleChange.bind(this, 'username')} label={i18n('login.field.username')} />
-                        <FormInput type="password" value={password} onChange={this.handleChange.bind(this, 'password')} label={i18n('login.field.password')} />
+                        <FormInput type="text" value={username} onChange={this.handleChange.bind(this, 'username')}
+                                   label={i18n('login.field.username')}/>
+                        <FormInput type="password" value={password} onChange={this.handleChange.bind(this, 'password')}
+                                   label={i18n('login.field.password')}/>
                         <div className="submit-button">
-                            <Button type="submit" onClick={this.handleLogin} disabled={submitting}>{i18n('login.action.login')}</Button>
+                            <Button
+                                type="submit"
+                                variant="outline-secondary"
+                                onClick={this.handleLogin}
+                                disabled={submitting}
+                            >
+                                {i18n('login.action.login')}
+                            </Button>
                         </div>
                     </Modal.Body>
                     {sso && sso.length > 0 && <Modal.Footer>
                         <div className="or-message">{i18n('login.or-message')}</div>
                         <div>{sso.map(((l, i) => {
-                            return <a key={i} href={l.url} className="btn btn-default" role="button">{l.name}</a>
+                            return <a key={i} href={l.url} className="btn btn-default" role="button">{l.name}</a>;
                         }))}</div>
                     </Modal.Footer>}
                 </Form>
@@ -110,5 +118,5 @@ class Login extends AbstractReactComponent {
 export default connect((state) => {
         const {userDetail, login} = state;
         return {userDetail, login};
-    }
+    },
 )(Login);

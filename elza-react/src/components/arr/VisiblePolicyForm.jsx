@@ -1,12 +1,11 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n} from 'components/shared';
-import {Modal, Button, FormCheck, Form} from 'react-bootstrap';
-import {indexById, objectById} from 'stores/app/utils.jsx'
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
-import {visiblePolicyFetchIfNeeded} from 'actions/arr/visiblePolicy.jsx'
-import {modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {Form, FormCheck, Modal} from 'react-bootstrap';
+import {Button} from '../ui';
+import {submitForm} from 'components/form/FormUtils.jsx';
+import {visiblePolicyFetchIfNeeded} from 'actions/arr/visiblePolicy.jsx';
+import {modalDialogHide} from 'actions/global/modalDialog.jsx';
 
 /**
  * Validace formuláře.
@@ -34,13 +33,13 @@ class VisiblePolicyForm extends AbstractReactComponent {
     };
 
     handleResetVisiblePolicy = () => {
-        if(confirm(i18n('visiblePolicy.action.reset.confirm'))) {
+        if (confirm(i18n('visiblePolicy.action.reset.confirm'))) {
             this.props.onSubmitForm({records: []});
             this.props.dispatch(modalDialogHide());
         }
     };
 
-    submitReduxForm = (values, dispatch) => submitForm(validate,values,this.props,this.props.onSubmitForm,dispatch);
+    submitReduxForm = (values, dispatch) => submitForm(validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
         const {fields: {records}, handleSubmit, onClose, nodeId, fundVersionId, visiblePolicy, visiblePolicyTypes, arrRegion} = this.props;
@@ -58,7 +57,7 @@ class VisiblePolicyForm extends AbstractReactComponent {
             let activeVersion = activeFund.activeVersion;
             visiblePolicyTypeItems = {};
 
-            for(let id in visiblePolicyTypes.items) {
+            for (let id in visiblePolicyTypes.items) {
                 let item = visiblePolicyTypes.items[id];
                 if (activeVersion.ruleSetId === item.ruleSetId) {
                     visiblePolicyTypeItems[id] = item;
@@ -72,8 +71,9 @@ class VisiblePolicyForm extends AbstractReactComponent {
                     <Modal.Body>
                         {records.map((val, index) =>
                             <div key={index}>
-                                <FormCheck {...val.checked} value={true}>{visiblePolicyTypeItems[val.id.initialValue].name}</FormCheck>
-                            </div>
+                                <FormCheck {...val.checked}
+                                           value={true}>{visiblePolicyTypeItems[val.id.initialValue].name}</FormCheck>
+                            </div>,
                         )}
                     </Modal.Body>
                     <Modal.Footer>
@@ -83,16 +83,16 @@ class VisiblePolicyForm extends AbstractReactComponent {
                     </Modal.Footer>
                 </Form>
             </div>
-        )
+        );
     }
 }
 
 export default reduxForm({
     form: 'visiblePolicyForm',
-    fields: ['records[].id', 'records[].checked']
+    fields: ['records[].id', 'records[].checked'],
 }, state => ({
     initialValues: {records: state.arrRegion.visiblePolicy.data},
     visiblePolicy: state.arrRegion.visiblePolicy,
     visiblePolicyTypes: state.refTables.visiblePolicyTypes,
-    arrRegion: state.arrRegion
-}))(VisiblePolicyForm)
+    arrRegion: state.arrRegion,
+}))(VisiblePolicyForm);

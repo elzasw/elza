@@ -1,18 +1,19 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {connect} from 'react-redux'
+import {connect} from 'react-redux';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, Icon, Autocomplete, VersionValidationState, FormInput} from 'components/shared';
-import {Modal, Button, Form} from 'react-bootstrap';
-import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
-import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
+import {AbstractReactComponent, Autocomplete, FormInput, i18n, Icon} from 'components/shared';
+import {Form, Modal} from 'react-bootstrap';
+import {Button} from '../ui';
+import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx';
+import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx';
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
 
 import './FundForm.scss';
-import UserAndGroupField from "../admin/UserAndGroupField";
-import {WebApi} from "../../actions/WebApi";
-import {renderUserOrGroupItem, renderUserOrGroupLabel} from "../admin/adminRenderUtils";
-import TagsField from "../TagsField";
+import UserAndGroupField from '../admin/UserAndGroupField';
+import {WebApi} from '../../actions/WebApi';
+import {renderUserOrGroupLabel} from '../admin/adminRenderUtils';
+import TagsField from '../TagsField';
 
 /**
  * Formulář přidání nebo uzavření AS.
@@ -50,7 +51,7 @@ class FundForm extends AbstractReactComponent {
         create: PropTypes.bool,
         update: PropTypes.bool,
         ruleSet: PropTypes.bool,
-        scopeList: PropTypes.array
+        scopeList: PropTypes.array,
     };
 
     state = {};
@@ -97,16 +98,19 @@ class FundForm extends AbstractReactComponent {
         }
         return null;
     }
-    submitReduxForm = (values, dispatch) => submitForm(FundForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+
+    submitReduxForm = (values, dispatch) => submitForm(FundForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
         const {error, userDetail, fields: {fundAdmins, name, ruleSetId, apScopes: apScopes, institutionId, internalCode, dateRange}, handleSubmit, onClose, create, update, approve, ruleSet, refTables, submitting} = this.props;
         let approveButton;
         if (approve) {
             if (this.isBulkActionRunning()) {
-                approveButton = <span className="text-danger">{i18n('arr.fund.approveVersion.runningBulkAction')}</span>;
+                approveButton =
+                    <span className="text-danger">{i18n('arr.fund.approveVersion.runningBulkAction')}</span>;
             } else {
-                approveButton = <Button type="submit" disabled={submitting}>{i18n('arr.fund.approveVersion.approve')}</Button>
+                approveButton =
+                    <Button type="submit" disabled={submitting}>{i18n('arr.fund.approveVersion.approve')}</Button>;
             }
         }
         const ruleSets = refTables.ruleSet.items;
@@ -119,26 +123,30 @@ class FundForm extends AbstractReactComponent {
                 <FormInput type="text" label={i18n('arr.fund.name')} {...name} {...decorateFormField(name)} />}
 
                 {(create || update) &&
-                <FormInput type="text" label={i18n('arr.fund.internalCode')} {...internalCode} {...decorateFormField(internalCode)} />}
+                <FormInput type="text"
+                           label={i18n('arr.fund.internalCode')} {...internalCode} {...decorateFormField(internalCode)} />}
 
                 {(create || update) &&
-                <FormInput as="select" label={i18n('arr.fund.institution')} {...institutionId} {...decorateFormField(institutionId)}>
+                <FormInput as="select"
+                           label={i18n('arr.fund.institution')} {...institutionId} {...decorateFormField(institutionId)}>
                     <option key='-institutionId'/>
-                    {institutions.map(i=> {
-                        return <option value={i.id}>{i.name}</option>
+                    {institutions.map(i => {
+                        return <option value={i.id}>{i.name}</option>;
                     })}
                 </FormInput>}
 
                 {(create || ruleSet) &&
-                <FormInput as="select" label={i18n('arr.fund.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
+                <FormInput as="select"
+                           label={i18n('arr.fund.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
                     <option key='-ruleSetId'/>
-                    {ruleSets.map(i=> {
-                        return <option value={i.id}>{i.name}</option>
+                    {ruleSets.map(i => {
+                        return <option value={i.id}>{i.name}</option>;
                     })}
                 </FormInput>}
 
                 {approve &&
-                <FormInput as="textarea" label={i18n('arr.fund.dateRange')} {...dateRange} {...decorateFormField(dateRange)} />}
+                <FormInput as="textarea"
+                           label={i18n('arr.fund.dateRange')} {...dateRange} {...decorateFormField(dateRange)} />}
 
                 {update && <Autocomplete
                     tags
@@ -164,7 +172,9 @@ class FundForm extends AbstractReactComponent {
                 {update && <div className="selected-data-container">
                     {apScopes.map((scope, scopeIndex) => (
                         <div className="selected-data" key={scopeIndex}>
-                            <span>{scope.name.value}</span><Button onClick={() => {apScopes.removeField(scopeIndex)}}>
+                            <span>{scope.name.value}</span><Button onClick={() => {
+                            apScopes.removeField(scopeIndex);
+                        }}>
                             <Icon glyph="fa-times"/>
                         </Button>
                         </div>))}
@@ -179,17 +189,18 @@ class FundForm extends AbstractReactComponent {
                     fieldComponent={UserAndGroupField}
                     fieldComponentProps={{
                         findUserApi: WebApi.findUserWithFundCreate,
-                        findGroupApi: WebApi.findGroupWithFundCreate
+                        findGroupApi: WebApi.findGroupWithFundCreate,
                     }}
                 />}
             </Modal.Body>
             <Modal.Footer>
-                {create && <Button type="submit"  disabled={submitting}>{i18n('global.action.create')}</Button>}
+                {create && <Button type="submit" disabled={submitting}>{i18n('global.action.create')}</Button>}
                 {approve && approveButton}
-                {(update || ruleSet) && <Button type="submit" disabled={submitting}>{i18n('global.action.update')}</Button>}
+                {(update || ruleSet) &&
+                <Button type="submit" disabled={submitting}>{i18n('global.action.update')}</Button>}
                 <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
-        </Form>
+        </Form>;
     }
 }
 
@@ -197,19 +208,19 @@ function mapStateToProps(state) {
     const {userDetail} = state;
     return {
         userDetail,
-    }
+    };
 }
 
 export default connect(mapStateToProps)(reduxForm({
         form: 'fundForm',
-        fields: ['name', 'ruleSetId', 'institutionId', 'internalCode', 'dateRange', 'apScopes[].id', 'apScopes[].name', "fundAdmins"]
+        fields: ['name', 'ruleSetId', 'institutionId', 'internalCode', 'dateRange', 'apScopes[].id', 'apScopes[].name', 'fundAdmins'],
     }, state => ({
         initialValues: state.form.fundForm.initialValues,
         refTables: state.refTables,
         bulkActions: state.arrRegion.activeIndex !== null ? state.arrRegion.funds[state.arrRegion.activeIndex].bulkActions : undefined,
         versionValidation: state.arrRegion.activeIndex !== null ? state.arrRegion.funds[state.arrRegion.activeIndex].versionValidation : undefined,
     }),
-    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'fundForm', data})}
+    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'fundForm', data})},
 )(FundForm));
 
 

@@ -1,11 +1,12 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {connect} from 'react-redux'
-import {Table, Button, ButtonToolbar} from 'react-bootstrap';
+import {connect} from 'react-redux';
+import {ButtonToolbar, Table} from 'react-bootstrap';
+import {Button} from '../ui';
 import {AbstractReactComponent, i18n} from 'components/shared';
 
-import {getPackagesFetchIfNeeded, deletePackage} from 'actions/admin/packages.jsx';
-import {downloadFile} from "../../actions/global/download";
+import {deletePackage, getPackagesFetchIfNeeded} from 'actions/admin/packages.jsx';
+import {downloadFile} from '../../actions/global/download';
 
 /**
  * Komponenta pro zobrazení naimportovaných balíčků.
@@ -16,7 +17,7 @@ import {downloadFile} from "../../actions/global/download";
 class AdminPackagesList extends AbstractReactComponent {
     static propTypes = {
         getExportUrl: PropTypes.func.isRequired,
-        items: PropTypes.array.isRequired
+        items: PropTypes.array.isRequired,
     };
 
     componentDidMount() {
@@ -61,12 +62,17 @@ class AdminPackagesList extends AbstractReactComponent {
                     <td>{item.name}</td>
                     <td>{item.version}</td>
                     <td>{item.description}</td>
-                    <td>{item.dependencies && item.dependencies.map(((dependency, index) => <span title={mapItems[dependency.code].name} key={index}>{dependency.code} ({dependency.version}/{mapItems[dependency.code].version})<br /></span>))}</td>
-                    <td>{item.dependenciesBy && item.dependenciesBy.map(((dependency, index) => <span title={mapItems[dependency.code].name} key={index}>{dependency.code}<br /></span>))}</td>
+                    <td>{item.dependencies && item.dependencies.map(((dependency, index) => <span
+                        title={mapItems[dependency.code].name}
+                        key={index}>{dependency.code} ({dependency.version}/{mapItems[dependency.code].version})<br/></span>))}</td>
+                    <td>{item.dependenciesBy && item.dependenciesBy.map(((dependency, index) => <span
+                        title={mapItems[dependency.code].name} key={index}>{dependency.code}<br/></span>))}</td>
                     <td>
                         <ButtonToolbar>
-                            <Button onClick={() => this.handleDownload(item.code)} bsSize="xsmall">{i18n("global.action.download")}</Button>
-                            <Button onClick={this.handleDeletePackage.bind(this, item.code)} bsSize="xsmall">{i18n("global.action.delete")}</Button>
+                            <Button onClick={() => this.handleDownload(item.code)}
+                                    bsSize="xsmall">{i18n('global.action.download')}</Button>
+                            <Button onClick={this.handleDeletePackage.bind(this, item.code)}
+                                    bsSize="xsmall">{i18n('global.action.delete')}</Button>
                         </ButtonToolbar>
                     </td>
                 </tr>)}
@@ -75,7 +81,6 @@ class AdminPackagesList extends AbstractReactComponent {
         );
     }
 }
-
 
 
 export default connect()(AdminPackagesList);

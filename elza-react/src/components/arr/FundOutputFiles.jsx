@@ -1,14 +1,14 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {connect} from 'react-redux'
-import {AbstractReactComponent, Icon, i18n, FileListBox, StoreHorizontalLoader} from 'components/shared';
-import {Button} from 'react-bootstrap'
-import {fetchFundOutputFilesIfNeeded, fundOutputFilesFilterByText} from 'actions/arr/fundOutputFiles.jsx'
+import {connect} from 'react-redux';
+import {AbstractReactComponent, FileListBox, i18n, Icon, StoreHorizontalLoader} from 'components/shared';
+import {Button} from '../ui';
+import {fetchFundOutputFilesIfNeeded, fundOutputFilesFilterByText} from 'actions/arr/fundOutputFiles.jsx';
 import {UrlFactory} from 'actions/index.jsx';
 
 import './FundFiles.scss';
 import './FundOutputFiles.scss';
-import {downloadFile} from "../../actions/global/download";
+import {downloadFile} from '../../actions/global/download';
 
 /**
  * Správa souborů.
@@ -18,11 +18,11 @@ class FundOutputFiles extends AbstractReactComponent {
     static propTypes = {
         outputResultId: PropTypes.number.isRequired,
         versionId: PropTypes.number.isRequired,
-        fundOutputFiles: PropTypes.object.isRequired
+        fundOutputFiles: PropTypes.object.isRequired,
     };
 
     state = {
-        selectedId: 0
+        selectedId: 0,
     };
 
     componentDidMount() {
@@ -53,17 +53,18 @@ class FundOutputFiles extends AbstractReactComponent {
     };
 
     focus = () => {
-        this.refs.listBox.focus()
+        this.refs.listBox.focus();
     };
 
     render() {
         const {fundOutputFiles} = this.props;
 
         return <div className='fund-files fund-output-files'>
-            <div className={"fund-files-header"}>
-                <h4 className={"fund-files-title"}>{i18n("arr.output.title.complete")}</h4>
-                <Button variant="action" className={"fund-files-download-all"} onClick={this.handleDownloadAll}>
-                    <Icon className={"fund-files-download-icon"} title={i18n("global.action.download")} glyph='fa-download'/>
+            <div className={'fund-files-header'}>
+                <h4 className={'fund-files-title'}>{i18n('arr.output.title.complete')}</h4>
+                <Button variant="action" className={'fund-files-download-all'} onClick={this.handleDownloadAll}>
+                    <Icon className={'fund-files-download-icon'} title={i18n('global.action.download')}
+                          glyph='fa-download'/>
                     {i18n('global.action.downloadAll')}
                 </Button>
             </div>
@@ -77,7 +78,7 @@ class FundOutputFiles extends AbstractReactComponent {
                 onSearch={this.handleTextSearch}
                 onDownload={this.handleDownload}
             />}
-        </div>
+        </div>;
     }
 }
 

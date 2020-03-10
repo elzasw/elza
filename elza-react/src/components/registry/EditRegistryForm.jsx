@@ -1,11 +1,11 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, Autocomplete, FormInput} from 'components/shared';
-import {Modal, Button, Form} from 'react-bootstrap';
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTypes.jsx'
-import {getTreeItemById} from "./registryUtils";
+import {AbstractReactComponent, Autocomplete, i18n} from 'components/shared';
+import {Form, Modal} from 'react-bootstrap';
+import {Button} from '../ui';
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTypes.jsx';
+import {getTreeItemById} from './registryUtils';
 
 /**
  * Formulář editace rejstříkového hesla
@@ -35,20 +35,20 @@ class EditRegistryForm extends AbstractReactComponent {
         this.props.dispatch(getRegistryRecordTypesIfNeeded());
     }
 
-    submitReduxForm = (values, dispatch) => submitForm(EditRegistryForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+    submitReduxForm = (values, dispatch) => submitForm(EditRegistryForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
         const {fields: {typeId}, handleSubmit, onClose, registryRegionRecordTypes, submitting} = this.props;
 
         const items = registryRegionRecordTypes.item != null ? registryRegionRecordTypes.item : [];
 
-        const value = getTreeItemById(typeId ? typeId.value : "", items);
+        const value = getTreeItemById(typeId ? typeId.value : '', items);
 
         return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body>
                 <Autocomplete
                     label={i18n('registry.update.type')}
-                    items = {items}
+                    items={items}
                     tree
                     alwaysExpanded
                     allowSelectItem={(item) => item.addRecord}
@@ -64,19 +64,19 @@ class EditRegistryForm extends AbstractReactComponent {
                 <Button type="submit" disabled={submitting}>{i18n('global.action.store')}</Button>
                 <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
-        </Form>
+        </Form>;
     }
 }
 
 export default reduxForm({
         form: 'editRegistryForm',
-        fields: ['typeId']
-    },state => ({
+        fields: ['typeId'],
+    }, state => ({
         initialValues: state.form.editRegistryForm.initialValues,
         refTables: state.refTables,
-        registryRegionRecordTypes: state.registryRegionRecordTypes
+        registryRegionRecordTypes: state.registryRegionRecordTypes,
     }),
-    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'editRegistryForm', data})}
+    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'editRegistryForm', data})},
 )(EditRegistryForm);
 
 

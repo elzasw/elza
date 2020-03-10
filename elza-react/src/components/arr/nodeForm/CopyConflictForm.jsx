@@ -1,32 +1,14 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {
-    Modal,
-    Button,
-    FormCheck,
-    FormGroup,
-    FormLabel,
-    Form,
-    Col,
-    Row,
-    Grid,
-    FormControl
-} from 'react-bootstrap';
+import {Button} from '../../ui';
+import {Form, FormCheck, FormGroup, FormLabel, Modal} from 'react-bootstrap';
 
-import {
-    AbstractReactComponent,
-    i18n,
-    FormInput,
-    Loading,
-    Autocomplete,
-    Icon
-} from 'components/shared';
+import {AbstractReactComponent, i18n, Icon} from 'components/shared';
 
 class CopyConflictForm extends AbstractReactComponent {
     state = {
         filesConflictResolve: 'USE_TARGET',
         structuresConflictResolve: 'USE_TARGET',
-        submitting: false
+        submitting: false,
     };
     handleFormSubmit = e => {
         e.preventDefault();
@@ -34,28 +16,32 @@ class CopyConflictForm extends AbstractReactComponent {
         this.props.onSubmit(
             this.state.filesConflictResolve,
             this.state.structuresConflictResolve,
-            ()=>{
+            () => {
                 this.setState({submitting: false});
-            }
+            },
         );
     };
 
     render() {
-        const {onClose, packetConflict, fileConflict, scopeError, scopeErrors,
-            fileConflicts, packetConflicts} = this.props;
-        const { submitting } = this.state;
+        const {
+                  onClose, packetConflict, fileConflict, scopeError, scopeErrors,
+                  fileConflicts, packetConflicts,
+              } = this.props;
+        const {submitting} = this.state;
 
         return (
             <Form>
                 <Modal.Body>
                     {scopeError &&
                     <FormLabel>
-                        {i18n('arr.fund.addNode.conflict.scopes', scopeErrors && scopeErrors.join(", "))}
+                        {i18n('arr.fund.addNode.conflict.scopes', scopeErrors && scopeErrors.join(', '))}
                     </FormLabel>}
-                    {scopeError && <br />}
+                    {scopeError && <br/>}
                     {fileConflict &&
                     <FormLabel>
-                        {i18n('arr.fund.addNode.conflict.files')} <Icon style={{cursor: 'pointer'}} title={fileConflicts && fileConflicts.join(", ")} glyph="fa-info-circle" />
+                        {i18n('arr.fund.addNode.conflict.files')} <Icon style={{cursor: 'pointer'}}
+                                                                        title={fileConflicts && fileConflicts.join(', ')}
+                                                                        glyph="fa-info-circle"/>
                     </FormLabel>}
                     {fileConflict && <FormGroup>
                         <FormCheck
@@ -81,7 +67,9 @@ class CopyConflictForm extends AbstractReactComponent {
                     </FormGroup>}
                     {packetConflict &&
                     <FormLabel>
-                        {i18n('arr.fund.addNode.conflict.structure')} <Icon style={{cursor: 'pointer'}} title={packetConflicts && packetConflicts.join(", ")} glyph="fa-info-circle" />
+                        {i18n('arr.fund.addNode.conflict.structure')} <Icon style={{cursor: 'pointer'}}
+                                                                            title={packetConflicts && packetConflicts.join(', ')}
+                                                                            glyph="fa-info-circle"/>
                     </FormLabel>}
                     {packetConflict && <FormGroup>
                         <FormCheck
@@ -121,4 +109,5 @@ class CopyConflictForm extends AbstractReactComponent {
         );
     }
 }
+
 export default CopyConflictForm;

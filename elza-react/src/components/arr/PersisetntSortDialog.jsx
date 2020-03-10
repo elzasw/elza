@@ -1,6 +1,7 @@
 import React from 'react';
-import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
-import {Modal, Button, Form} from 'react-bootstrap';
+import {AbstractReactComponent, i18n} from 'components/shared';
+import {Modal} from 'react-bootstrap';
+import {Button} from '../ui';
 import PersistentSortForm from './PersistentSortForm';
 
 /**
@@ -19,7 +20,7 @@ class PersistentSortDialog extends AbstractReactComponent {
         return (
             <div>
                 <Modal.Body>
-                    <span><label>{i18n("arr.history.title.nodeChanges") + ":"} &nbsp;</label>{node.name}</span>
+                    <span><label>{i18n('arr.history.title.nodeChanges') + ':'} &nbsp;</label>{node.name}</span>
                     <PersistentSortForm versionId={versionId} node={node} ref="form"/>
                 </Modal.Body>
                 <Modal.Footer>
@@ -27,7 +28,7 @@ class PersistentSortDialog extends AbstractReactComponent {
                     <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
-        )
+        );
     }
 }
 

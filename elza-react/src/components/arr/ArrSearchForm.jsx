@@ -1,28 +1,23 @@
 import React from 'react';
-import {connect} from 'react-redux'
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, FormInput, Icon} from 'components/shared';
-import DatationField from '../party/DatationField'
-import {Modal, Button, FormGroup, Form, Row, Col} from 'react-bootstrap';
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
-import {LazyListBox} from 'components/shared';
-import {WebApi} from 'actions/index.jsx';
-import {getScrollbarWidth, timeToString, dateToString} from 'components/Utils.jsx'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {dateTimeToLocalUTC} from "components/Utils"
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
+import {AbstractReactComponent, FormInput, i18n, Icon} from 'components/shared';
+import DatationField from '../party/DatationField';
+import {Col, Form, Modal, Row} from 'react-bootstrap';
+import {Button} from '../ui';
+import {submitForm} from 'components/form/FormUtils.jsx';
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
 
-import "./ArrSearchForm.scss";
+import './ArrSearchForm.scss';
 
-const TYPE_TEXT = "TEXT";
-const TYPE_UNITDATE = "UNITDATE";
+const TYPE_TEXT = 'TEXT';
+const TYPE_UNITDATE = 'UNITDATE';
 
-const FORM_TEXT = "TEXT";
-const FORM_FORM = "FORM";
+const FORM_TEXT = 'TEXT';
+const FORM_FORM = 'FORM';
 
-const GE = "GE";
-const LE = "LE";
-const CONTAINS = "CONTAINS";
+const GE = 'GE';
+const LE = 'LE';
+const CONTAINS = 'CONTAINS';
 
 /**
  * Formulář zobrazení hostorie.
@@ -80,13 +75,15 @@ class ArrSearchForm extends AbstractReactComponent {
                         <FormInput as="select" {...condition.condition}>
                             <option value={GE} key={GE}>{i18n('search.extended.form.unitdate.type.ge')}</option>
                             <option value={LE} key={LE}>{i18n('search.extended.form.unitdate.type.le')}</option>
-                            <option value={CONTAINS} key={CONTAINS}>{i18n('search.extended.form.unitdate.type.contains')}</option>
+                            <option value={CONTAINS}
+                                    key={CONTAINS}>{i18n('search.extended.form.unitdate.type.contains')}</option>
                         </FormInput>
                     </div>
                     <div className="field">
                         <FormInput as="select" {...condition.calendarTypeId}>
                             {calendarTypes && calendarTypes.fetched && calendarTypes.items.map((calendar, index) => {
-                                return <option value={calendar.id} key={calendar.id}>{i18n('search.extended.form.unitdate.calendar.' + calendar.code)}</option>
+                                return <option value={calendar.id}
+                                               key={calendar.id}>{i18n('search.extended.form.unitdate.calendar.' + calendar.code)}</option>;
                             })}
                         </FormInput>
                     </div>
@@ -98,27 +95,31 @@ class ArrSearchForm extends AbstractReactComponent {
         }
     };
 
-    submitReduxForm = (values, dispatch) => submitForm(ArrSearchForm.validate,values,this.props,this.props.onSubmitForm,dispatch);
+    submitReduxForm = (values, dispatch) => submitForm(ArrSearchForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
 
         const {
-            fields: {
-                type,
-                text,
-                condition
-            },
-            handleSubmit, submitting, onClose,
-        } = this.props;
+                  fields: {
+                      type,
+                      text,
+                      condition,
+                  },
+                  handleSubmit, submitting, onClose,
+              } = this.props;
 
         const formForm = <div className="arr-search-form-container">
-            <Button className="action-button" onClick={() => condition.addField({type: TYPE_TEXT})}><Icon glyph="fa-plus" /> {i18n('search.extended.form.text')}</Button>
-            <Button className="action-button" onClick={() => condition.addField({type: TYPE_UNITDATE, calendarTypeId: 1, condition: GE})}><Icon glyph="fa-plus" /> {i18n('search.extended.form.unitdate')}</Button>
+            <Button className="action-button" onClick={() => condition.addField({type: TYPE_TEXT})}><Icon
+                glyph="fa-plus"/> {i18n('search.extended.form.text')}</Button>
+            <Button className="action-button"
+                    onClick={() => condition.addField({type: TYPE_UNITDATE, calendarTypeId: 1, condition: GE})}><Icon
+                glyph="fa-plus"/> {i18n('search.extended.form.unitdate')}</Button>
 
             <div className="items">
                 {condition.map((conditionRow, index, self) => <div className="condition" key={'condition' + index}>
                     {this.renderFormItem(conditionRow, index)}
-                    <Button className="delete" variant="action" onClick={()=>self.removeField(index)}><Icon glyph="fa-times"/></Button>
+                    <Button className="delete" variant="action" onClick={() => self.removeField(index)}><Icon
+                        glyph="fa-times"/></Button>
                 </div>)}
             </div>
         </div>;
@@ -131,10 +132,14 @@ class ArrSearchForm extends AbstractReactComponent {
             <Modal.Body>
                 <Row>
                     <Col xs={4}>
-                        <FormInput type="radio" label={i18n('search.extended.type.form')} {...type} value={FORM_FORM} checked={type.value === FORM_FORM} onBlur={()=>{}} />
-                        </Col>
+                        <FormInput type="radio" label={i18n('search.extended.type.form')} {...type} value={FORM_FORM}
+                                   checked={type.value === FORM_FORM} onBlur={() => {
+                        }}/>
+                    </Col>
                     <Col xs={4}>
-                        <FormInput type="radio" label={i18n('search.extended.type.text')} {...type} value={FORM_TEXT} checked={type.value === FORM_TEXT} onBlur={()=>{}} />
+                        <FormInput type="radio" label={i18n('search.extended.type.text')} {...type} value={FORM_TEXT}
+                                   checked={type.value === FORM_TEXT} onBlur={() => {
+                        }}/>
                     </Col>
                 </Row>
                 {type.value === FORM_FORM && formForm}

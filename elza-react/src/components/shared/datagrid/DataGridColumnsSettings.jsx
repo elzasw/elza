@@ -2,34 +2,34 @@
  * Komponenta výběru sloupců pro grid - s možností změny jejich pořadí.
  */
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {Modal, Button} from 'react-bootstrap';
-import {getMapFromList} from 'stores/app/utils.jsx'
+import {Modal} from 'react-bootstrap';
+import {Button} from '../../ui';
+import {getMapFromList} from 'stores/app/utils.jsx';
 
-import './DataGridColumnsSettings.scss'
-import AbstractReactComponent from "../../AbstractReactComponent";
-import ListBox from "../listbox/ListBox";
-import i18n from "../../i18n";
+import './DataGridColumnsSettings.scss';
+import AbstractReactComponent from '../../AbstractReactComponent';
+import ListBox from '../listbox/ListBox';
+import i18n from '../../i18n';
 
 class DataGridColumnsSettings extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleChangeOrder', 'handleAddVisible', 'handleRemoveVisible', 'handleChangeSelection')
+        this.bindMethods('handleChangeOrder', 'handleAddVisible', 'handleRemoveVisible', 'handleChangeSelection');
 
-        var colsMap = getMapFromList(props.columns)
-        const visible = []
-        const available = []
+        var colsMap = getMapFromList(props.columns);
+        const visible = [];
+        const available = [];
         props.columns.forEach(col => {
             if (props.visibleColumns[col.id]) {
-                visible.push(col)
+                visible.push(col);
             } else {
-                available.push(col)
+                available.push(col);
             }
-        })
+        });
 
         // Seřazení dostupných sloupečků podle abecedy
-        available.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
+        available.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
 
         this.state = {
             columns: props.columns,
@@ -37,65 +37,65 @@ class DataGridColumnsSettings extends AbstractReactComponent {
             rightSelected: [],
             visible: visible,
             available: available,
-        }
+        };
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
     }
 
     handleChangeOrder(from, to) {
-        var visible = [...this.state.visible]
+        var visible = [...this.state.visible];
         visible.splice(to, 0, visible.splice(from, 1)[0]);
-        const index = this.state.rightSelected.indexOf(""+from);
+        const index = this.state.rightSelected.indexOf('' + from);
         const result = {visible};
         if (index > -1) {
             result.rightSelected = [...this.state.rightSelected];
-            result.rightSelected.splice(index, 1, ""+to);
+            result.rightSelected.splice(index, 1, '' + to);
         }
         this.setState(result);
     }
 
     handleAddVisible() {
-        var {available, visible} = this.state
-        const {leftSelected} = this.state
+        var {available, visible} = this.state;
+        const {leftSelected} = this.state;
 
-        var selectedMap = {}
+        var selectedMap = {};
         leftSelected.forEach(index => {
-            selectedMap[index] = true
-        })
+            selectedMap[index] = true;
+        });
 
-        var newAvailable = []
-        var newVisible = [...visible]
+        var newAvailable = [];
+        var newVisible = [...visible];
 
         available.forEach((item, index) => {
             if (selectedMap[index]) {
-                newVisible.push(item)
+                newVisible.push(item);
             } else {
-                newAvailable.push(item)
+                newAvailable.push(item);
             }
-        })
+        });
 
         const newRightSelected = [];
         const originalLength = visible.length;
         for (let newLength = newVisible.length; newLength > originalLength; newLength--) {
-            newRightSelected.push(newLength-1);
+            newRightSelected.push(newLength - 1);
         }
 
         this.setState({
             available: newAvailable,
             visible: newVisible,
             leftSelected: [],
-            rightSelected: newRightSelected
-        })
+            rightSelected: newRightSelected,
+        });
     }
 
     handleRemoveVisible() {
-        const {rightSelected, available, visible} = this.state
+        const {rightSelected, available, visible} = this.state;
         const {columns} = this.props;
 
-        const selectedMap = {}
+        const selectedMap = {};
         rightSelected.forEach(index => {
-            selectedMap[index] = true
+            selectedMap[index] = true;
         });
 
         const rightSelectedIds = [];
@@ -107,19 +107,19 @@ class DataGridColumnsSettings extends AbstractReactComponent {
 
 
         // Upravení seznamu visible
-        const newVisible = []
+        const newVisible = [];
         visible.forEach((item, index) => {
             if (!selectedMap[index]) {
-                newVisible.push(item)
+                newVisible.push(item);
             }
         });
 
         // Získání nového seznamu available
-        const visibleMap = getMapFromList(newVisible)
-        const newAvailable = []
+        const visibleMap = getMapFromList(newVisible);
+        const newAvailable = [];
         columns.forEach(col => {
             if (!visibleMap[col.id]) {
-                newAvailable.push(col)
+                newAvailable.push(col);
             }
         });
         // Seřazení dostupných sloupečků podle abecedy
@@ -140,15 +140,15 @@ class DataGridColumnsSettings extends AbstractReactComponent {
             available: newAvailable,
             visible: newVisible,
             rightSelected: [],
-            leftSelected: newLeftSelected
-        })
+            leftSelected: newLeftSelected,
+        });
     }
 
     handleChangeSelection(type, sel) {
         if (type === 'left') {
-            this.setState({leftSelected: sel})
+            this.setState({leftSelected: sel});
         } else if (type === 'right') {
-            this.setState({rightSelected: sel})
+            this.setState({rightSelected: sel});
         }
     }
 
@@ -157,14 +157,14 @@ class DataGridColumnsSettings extends AbstractReactComponent {
     }
 
     render() {
-        const {onSubmitForm, onClose} = this.props
-        const {available, visible, leftSelected, rightSelected} = this.state
+        const {onSubmitForm, onClose} = this.props;
+        const {available, visible, leftSelected, rightSelected} = this.state;
 
-        const cls = this.props.className ? 'datagrid-columns-settings-container ' + this.props.className : 'datagrid-columns-settings-container'
+        const cls = this.props.className ? 'datagrid-columns-settings-container ' + this.props.className : 'datagrid-columns-settings-container';
         return (
             <div>
                 <Modal.Body>
-                    <div className={cls} >
+                    <div className={cls}>
                         <div className='panels-container'>
                             <div className='left'>
                                 <h4>{i18n('arr.fund.columnSettings.available')}</h4>
@@ -204,7 +204,7 @@ class DataGridColumnsSettings extends AbstractReactComponent {
                     <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
-        )
+        );
     }
 }
 

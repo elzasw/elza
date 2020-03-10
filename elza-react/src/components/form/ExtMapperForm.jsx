@@ -1,16 +1,16 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 
 import {reduxForm} from 'redux-form';
-import {FormInput, Icon, HorizontalLoader} from 'components/shared'
-import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
-import {Modal, Form, Table, FormCheck, FormControl, Button} from 'react-bootstrap'
-import objectById from '../../shared/utils/objectById'
+import {FormInput, HorizontalLoader, Icon} from 'components/shared';
+import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx';
+import {Form, FormCheck, FormControl, Modal, Table} from 'react-bootstrap';
+import {Button} from '../ui';
+import objectById from '../../shared/utils/objectById';
 import * as perms from 'actions/user/Permission.jsx';
-import AbstractReactComponent from "../AbstractReactComponent";
-import i18n from "../i18n";
+import AbstractReactComponent from '../AbstractReactComponent';
+import i18n from '../i18n';
 
-import './ExtMapperForm.scss';;
+import './ExtMapperForm.scss';
 
 const INTERPI_CLASS = {
     POCATEK_EXISTENCE: 'POCATEK_EXISTENCE',
@@ -60,7 +60,7 @@ class ExtMapperForm extends AbstractReactComponent {
         const {handleSubmit, submitting, onClose, fields: {mappings, partyTypeId}, partyTypes, record, userDetail, isUpdate} = this.props;
 
         if (partyTypes === false) {
-            return <HorizontalLoader />;
+            return <HorizontalLoader/>;
         }
         const hasPermission = userDetail.hasOne(perms.INTERPI_MAPPING_WR);
 
@@ -75,7 +75,7 @@ class ExtMapperForm extends AbstractReactComponent {
                 <Modal.Footer>
                     <Button variant="link" type="button" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
-            </div>
+            </div>;
         }
 
         const partyType = objectById(partyTypes, partyTypeId.value);
@@ -83,62 +83,69 @@ class ExtMapperForm extends AbstractReactComponent {
         return <Form name="extMapperForm" onSubmit={handleSubmit}>
             <Modal.Body>
                 <label>{i18n('extMapperForm.relationMapping')}</label>
-                <div style={{border: "1px solid #ddd", maxHeight: '500px', overflowY:'auto'}}>
+                <div style={{border: '1px solid #ddd', maxHeight: '500px', overflowY: 'auto'}}>
                     <Table>
                         {mappings.map(i => {
                             const relationType = i.relationTypeId.value ? objectById(partyType.relationTypes, i.relationTypeId.value) : null;
                             const relationRoleTypes = relationType && relationType.relationRoleTypes ? relationType.relationRoleTypes : [];
                             return <tbody>
-                                <tr>
-                                    <th colSpan={5}>{i18n('extMapperForm.import')}</th>
-                                </tr>
-                                <tr className="import-relation">
-                                    <td><FormCheck {...i.importRelation}/></td>
-                                    <td>{i.interpiRelationType.value}</td>
-                                    <td><Icon glyph="fa-arrow-right" /></td>
-                                    <td/>
-                                    <td>
-                                        <FormInput as="select" disabled={!hasPermission} {...i.relationTypeId} onChange={(ev) => {
-                                            const save = window.confirm(i18n('extMapperForm.saveAsDefaultMapping'));
-                                            i.save.onChange(save);
-                                            i.relationTypeId.onChange(ev);
-                                        }}>
-                                            <option key="null"/>
-                                            {partyType.relationTypes.map(r => <option value={r.id} key={r.id}>{r.name}</option>)}
-                                        </FormInput>
-                                    </td>
-                                </tr>
+                            <tr>
+                                <th colSpan={5}>{i18n('extMapperForm.import')}</th>
+                            </tr>
+                            <tr className="import-relation">
+                                <td><FormCheck {...i.importRelation}/></td>
+                                <td>{i.interpiRelationType.value}</td>
+                                <td><Icon glyph="fa-arrow-right"/></td>
+                                <td/>
+                                <td>
+                                    <FormInput as="select" disabled={!hasPermission} {...i.relationTypeId}
+                                               onChange={(ev) => {
+                                                   const save = window.confirm(i18n('extMapperForm.saveAsDefaultMapping'));
+                                                   i.save.onChange(save);
+                                                   i.relationTypeId.onChange(ev);
+                                               }}>
+                                        <option key="null"/>
+                                        {partyType.relationTypes.map(r => <option value={r.id}
+                                                                                  key={r.id}>{r.name}</option>)}
+                                    </FormInput>
+                                </td>
+                            </tr>
 
-                                {i.entities && i.entities.map(e => <tr className="import-relation">
-                                    <td><FormCheck {...e.importEntity}/></td>
-                                    <td>{e.interpiEntityName.value}</td>
-                                    <td>{e.interpiRoleType.value}</td>
-                                    <td><Icon glyph="fa-arrow-right" /></td>
-                                    <td>
-                                        <FormInput as="select" disabled={!hasPermission || !i.relationTypeId.value} {...e.relationRoleTypeId} onChange={(ev) => {
-                                            const save = window.confirm(i18n('extMapperForm.saveAsDefaultMapping'));
-                                            e.save.onChange(save);
-                                            e.relationRoleTypeId.onChange(ev);
-                                        }} >
-                                            <option key="null"/>
-                                            {i.relationTypeId.value && relationRoleTypes.map(r => <option value={r.id} key={r.id}>{r.name}</option>)}
-                                        </FormInput>
-                                    </td>
-                                </tr>)}
-                            </tbody>
+                            {i.entities && i.entities.map(e => <tr className="import-relation">
+                                <td><FormCheck {...e.importEntity}/></td>
+                                <td>{e.interpiEntityName.value}</td>
+                                <td>{e.interpiRoleType.value}</td>
+                                <td><Icon glyph="fa-arrow-right"/></td>
+                                <td>
+                                    <FormInput as="select"
+                                               disabled={!hasPermission || !i.relationTypeId.value} {...e.relationRoleTypeId}
+                                               onChange={(ev) => {
+                                                   const save = window.confirm(i18n('extMapperForm.saveAsDefaultMapping'));
+                                                   e.save.onChange(save);
+                                                   e.relationRoleTypeId.onChange(ev);
+                                               }}>
+                                        <option key="null"/>
+                                        {i.relationTypeId.value && relationRoleTypes.map(r => <option value={r.id}
+                                                                                                      key={r.id}>{r.name}</option>)}
+                                    </FormInput>
+                                </td>
+                            </tr>)}
+                            </tbody>;
                         })}
                     </Table>
                 </div>
                 <div>
                     <label>{i18n('extMapperForm.recordExtSystemDescription')}</label>
-                    <FormControl as="textarea" rows="10" value={record ? record.detail : ''} style={{height: '272px'}} />
+                    <FormControl as="textarea" rows="10" value={record ? record.detail : ''} style={{height: '272px'}}/>
                 </div>
             </Modal.Body>
             <Modal.Footer>
-                <Button type="submit" disabled={submitting}>{isUpdate ? i18n('extMapperForm.update') : i18n('extMapperForm.import')}</Button>
-                <Button variant="link" type="button" onClick={onClose} disabled={submitting}>{i18n('global.action.cancel')}</Button>
+                <Button type="submit"
+                        disabled={submitting}>{isUpdate ? i18n('extMapperForm.update') : i18n('extMapperForm.import')}</Button>
+                <Button variant="link" type="button" onClick={onClose}
+                        disabled={submitting}>{i18n('global.action.cancel')}</Button>
             </Modal.Footer>
-        </Form>
+        </Form>;
     }
 }
 
@@ -162,8 +169,8 @@ export default reduxForm({
         'mappings[].entities[].save',
     ],
     form: 'extMapperForm',
-    validate: ExtMapperForm.validate
+    validate: ExtMapperForm.validate,
 }, (state) => ({
     partyTypes: state.refTables.partyTypes.fetched ? state.refTables.partyTypes.items : false,
-    userDetail: state.userDetail
+    userDetail: state.userDetail,
 }))(ExtMapperForm);

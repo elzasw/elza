@@ -1,9 +1,9 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
-import {Modal, Button, Form} from 'react-bootstrap';
+import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import {Form, Modal} from 'react-bootstrap';
+import {Button} from '../ui';
 import {reduxForm} from 'redux-form';
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx'
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
 
 const validate = (values, props) => {
     const errors = {};
@@ -22,14 +22,14 @@ const validate = (values, props) => {
     }
 
     return errors;
-}
+};
 
 class GoToPositionForm extends AbstractReactComponent {
-    state = {}
+    state = {};
 
-    submitOptions = {finishOnSubmit:true}
+    submitOptions = {finishOnSubmit: true};
 
-    submitReduxForm = (values, dispatch) => submitForm(validate,values,this.props,this.props.onSubmitForm,dispatch,this.submitOptions);
+    submitReduxForm = (values, dispatch) => submitForm(validate, values, this.props, this.props.onSubmitForm, dispatch, this.submitOptions);
 
     render() {
         const {fields: {position}, handleSubmit, onClose, maxPosition} = this.props;
@@ -38,7 +38,8 @@ class GoToPositionForm extends AbstractReactComponent {
             <div>
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
-                        <FormInput type="text" label={i18n('arr.fund.subNodes.findPositionNumber', maxPosition)} {...position} {...decorateFormField(position)} />
+                        <FormInput type="text"
+                                   label={i18n('arr.fund.subNodes.findPositionNumber', maxPosition)} {...position} {...decorateFormField(position)} />
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit">{i18n('global.action.store')}</Button>
@@ -46,12 +47,12 @@ class GoToPositionForm extends AbstractReactComponent {
                     </Modal.Footer>
                 </Form>
             </div>
-        )
+        );
     }
 }
 
 export default reduxForm({
     form: 'goToPosition',
-    fields: ['position']
+    fields: ['position'],
 })(GoToPositionForm);
 

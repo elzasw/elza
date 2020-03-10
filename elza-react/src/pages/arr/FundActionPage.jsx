@@ -4,66 +4,51 @@
 
 import './FundActionPage.scss';
 
-import ArrParentPage from "./ArrParentPage.jsx";
+import ArrParentPage from './ArrParentPage.jsx';
 
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {indexById} from 'stores/app/utils.jsx'
-import {connect} from 'react-redux'
+import {indexById} from 'stores/app/utils.jsx';
+import {connect} from 'react-redux';
+import {FormInput, FundNodesList, FundNodesSelectForm, Ribbon} from 'components/index.jsx';
+import {i18n, Icon, ListBox, RibbonGroup, StoreHorizontalLoader, Utils} from 'components/shared';
+import {Button} from '../../components/ui';
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {
-    Ribbon,
-    FundNodesSelectForm,
-    FundNodesList,
-    FormInput,
-    ArrFundPanel
-} from 'components/index.jsx';
-import {
-    StoreHorizontalLoader,
-    Icon,
-    i18n,
-    AbstractReactComponent,
-    ListBox,
-    RibbonGroup,
-    Utils
-} from 'components/shared';
-import {Button} from 'react-bootstrap';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
-import {
+    funcActionActionInterrupt,
+    fundActionActionSelect,
+    fundActionFetchConfigIfNeeded,
     fundActionFetchDetailIfNeeded,
     fundActionFetchListIfNeeded,
-    fundActionFetchConfigIfNeeded,
     fundActionFormChange,
+    fundActionFormReset,
     fundActionFormShow,
     fundActionFormSubmit,
-    fundActionActionSelect,
-    funcActionActionInterrupt,
-    fundActionFormReset
 } from 'actions/arr/fundAction.jsx';
 import * as perms from 'actions/user/Permission.jsx';
-import {getOneSettings} from 'components/arr/ArrUtils.jsx';
-import {canSetFocus, setFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import {ActionState} from '../../constants.tsx'
-import {actionStateTranslation, fundActionActionReceive} from "../../actions/arr/fundAction";
+import {ActionState, PERSISTENT_SORT_CODE} from '../../constants.tsx';
+import {actionStateTranslation} from '../../actions/arr/fundAction';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './FundActionPageKeymap.jsx';
-import PersistentSortForm from "../../components/arr/PersistentSortForm";
-import {PERSISTENT_SORT_CODE} from "../../constants.tsx";
-import {descItemTypesFetchIfNeeded} from "../../actions/refTables/descItemTypes";
+import PersistentSortForm from '../../components/arr/PersistentSortForm';
+import {descItemTypesFetchIfNeeded} from '../../actions/refTables/descItemTypes';
 
 class FundActionPage extends ArrParentPage {
-    static contextTypes = { shortcuts: PropTypes.object };
-    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    static contextTypes = {shortcuts: PropTypes.object};
+    static childContextTypes = {shortcuts: PropTypes.object.isRequired};
+
     getChildContext() {
-        return { shortcuts: this.shortcutManager };
+        return {shortcuts: this.shortcutManager};
     }
-    UNSAFE_componentWillMount(){
-        let newKeymap = Utils.mergeKeymaps(ArrParentPage.defaultKeymap,defaultKeymap);
-        Utils.addShortcutManager(this,newKeymap);
+
+    UNSAFE_componentWillMount() {
+        let newKeymap = Utils.mergeKeymaps(ArrParentPage.defaultKeymap, defaultKeymap);
+        Utils.addShortcutManager(this, newKeymap);
     }
+
     static propTypes = {};
 
     constructor(props) {
-        super(props, "arr-actions-page");
+        super(props, 'arr-actions-page');
 
         this.bindMethods(
             'handleListBoxActionSelect',
@@ -73,7 +58,7 @@ class FundActionPage extends ArrParentPage {
             'handleRibbonCopyAction',
             'handleRibbonInterruptAction',
             'handleFormNodesAdd',
-            'handleFormNodeDelete'
+            'handleFormNodeDelete',
         );
 
         this.state = {};
@@ -94,21 +79,21 @@ class FundActionPage extends ArrParentPage {
         this.props.dispatch(descItemTypesFetchIfNeeded());
 
         const fund = this.getActiveFund(nextProps);
-        if(fund) {
+        if (fund) {
             this.props.dispatch(fundActionFetchListIfNeeded(fund.versionId));
             this.props.dispatch(fundActionFetchConfigIfNeeded(fund.versionId));
             this.props.dispatch(fundActionFetchDetailIfNeeded(fund.versionId));
         }
     }
 
-    handleShortcuts(action,e) {
-        console.log("#handleShortcuts FundActionPage", '[' + action + ']', this);
+    handleShortcuts(action, e) {
+        console.log('#handleShortcuts FundActionPage', '[' + action + ']', this);
         switch (action) {
             case 'newAction':
                 this.handleRibbonNewAction();
                 break;
             default:
-                super.handleShortcuts(action,e);
+                super.handleShortcuts(action, e);
         }
     }
 
@@ -127,7 +112,7 @@ class FundActionPage extends ArrParentPage {
         const {fundAction: {detail: {data}}, versionId} = fund;
         this.props.dispatch(fundActionFormChange(versionId, {
             nodes: data.nodes,
-            code: data.code
+            code: data.code,
         }));
         this.props.dispatch(fundActionFormShow(versionId));
     }
@@ -141,13 +126,13 @@ class FundActionPage extends ArrParentPage {
                 //zavolá metodu FundActionPage#submitPersistentSortForm
                 this.refs.persistentSortForm.getWrappedInstance().submit();
             } else {
-                this.props.dispatch(fundActionFormSubmit(versionId, form.code))
+                this.props.dispatch(fundActionFormSubmit(versionId, form.code));
             }
         }
     }
 
     submitPersistentSortForm = (versionId, values) => {
-        return this.props.dispatch(fundActionFormSubmit(versionId, PERSISTENT_SORT_CODE, values))
+        return this.props.dispatch(fundActionFormSubmit(versionId, PERSISTENT_SORT_CODE, values));
     };
 
     handleRibbonInterruptAction() {
@@ -159,13 +144,13 @@ class FundActionPage extends ArrParentPage {
     handleRibbonNewAction() {
         const fund = this.getActiveFund(this.props);
         const {versionId} = fund;
-        this.props.dispatch(fundActionFormShow(versionId))
+        this.props.dispatch(fundActionFormShow(versionId));
     }
 
     handleListBoxActionSelect(item) {
         const fund = this.getActiveFund(this.props);
         const {versionId} = fund;
-        this.props.dispatch(fundActionActionSelect(versionId, item.id))
+        this.props.dispatch(fundActionActionSelect(versionId, item.id));
     }
 
     handleFormNodesAdd() {
@@ -175,9 +160,9 @@ class FundActionPage extends ArrParentPage {
             <FundNodesSelectForm
                 onSubmitForm={(nodeIds, nodes) => {
                     const fund = this.getActiveFund(this.props);
-                    const {fundAction:{form}} = fund;
+                    const {fundAction: {form}} = fund;
                     const newNodes = [
-                        ...form.nodes
+                        ...form.nodes,
                     ];
                     nodes.map(item => {
                         indexById(newNodes, item.id) === null && newNodes.push(item);
@@ -185,21 +170,21 @@ class FundActionPage extends ArrParentPage {
                     this.props.dispatch(fundActionFormChange(versionId, {nodes: newNodes}));
                     this.props.dispatch(modalDialogHide());
                 }}
-            />
-        ))
+            />,
+        ));
     }
 
     handleFormNodeDelete(item) {
         const fund = this.getActiveFund(this.props);
-        const {fundAction:{form}, versionId} = fund;
+        const {fundAction: {form}, versionId} = fund;
         const index = indexById(form.nodes, item.id);
         if (index !== null) {
             this.props.dispatch(fundActionFormChange(versionId, {
                 nodes: [
                     ...form.nodes.slice(0, index),
-                    ...form.nodes.slice(index + 1)
-                ]
-            }))
+                    ...form.nodes.slice(index + 1),
+                ],
+            }));
         }
     }
 
@@ -209,7 +194,7 @@ class FundActionPage extends ArrParentPage {
      */
     buildRibbon(readMode, closed) {
         const fund = this.getActiveFund(this.props);
-        const {userDetail} = this.props
+        const {userDetail} = this.props;
 
         var detail = false;
         var isFormVisible = false;
@@ -220,12 +205,12 @@ class FundActionPage extends ArrParentPage {
 
         var altActions = [];
         if (fund) {
-            if (!isFormVisible  && !readMode && !closed) {
+            if (!isFormVisible && !readMode && !closed) {
                 if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: fund.id})) {
                     altActions.push(
                         <Button key="new-action" onClick={this.handleRibbonNewAction}><Icon glyph="fa-plus-circle"/>
                             <div><span className="btnText">{i18n('ribbon.action.fundAction.action.new')}</span></div>
-                        </Button>
+                        </Button>,
                     );
                 }
             }
@@ -241,34 +226,36 @@ class FundActionPage extends ArrParentPage {
                         </Button>,
                         <Button key="clear-action" onClick={this.handleRibbonFormClear}><Icon glyph="fa-trash"/>
                             <div><span className="btnText">{i18n('ribbon.action.fundAction.form.clear')}</span></div>
-                        </Button>
+                        </Button>,
                     );
                 } else if (detail.fetched && !detail.isFetching && detail.data && detail.currentDataKey === detail.data.id) {
                     const {data} = detail;
                     itemActions.push(
                         <Button key="copy-action" onClick={this.handleRibbonCopyAction}><Icon glyph="fa-refresh"/>
                             <div><span className="btnText">{i18n('ribbon.action.fundAction.action.copy')}</span></div>
-                        </Button>
+                        </Button>,
                     );
                     switch (data.state) {
                         case ActionState.PLANNED:
-                        case ActionState.RUNNING:
-                        {
+                        case ActionState.RUNNING: {
                             itemActions.push(
-                                <Button key="stop-action" onClick={this.handleRibbonInterruptAction}><Icon glyph="fa-sync"/>
+                                <Button key="stop-action" onClick={this.handleRibbonInterruptAction}><Icon
+                                    glyph="fa-sync"/>
                                     <div><span
-                                        className="btnText">{i18n('ribbon.action.fundAction.action.interrupt')}</span></div>
-                                </Button>
+                                        className="btnText">{i18n('ribbon.action.fundAction.action.interrupt')}</span>
+                                    </div>
+                                </Button>,
                             );
                             break;
                         }
-                        case ActionState.WAITING:
-                        {
+                        case ActionState.WAITING: {
                             itemActions.push(
-                                <Button key="-action" onClick={this.handleRibbonInterruptAction}><Icon glyph="fa-times"/>
-                                    <div><span className="btnText">{i18n('ribbon.action.fundAction.action.cancel')}</span>
+                                <Button key="-action" onClick={this.handleRibbonInterruptAction}><Icon
+                                    glyph="fa-times"/>
+                                    <div><span
+                                        className="btnText">{i18n('ribbon.action.fundAction.action.cancel')}</span>
                                     </div>
-                                </Button>
+                                </Button>,
                             );
                             break;
                         }
@@ -282,17 +269,17 @@ class FundActionPage extends ArrParentPage {
 
         var altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>;
         }
 
         var itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>
+            itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>;
         }
 
         return (
             <Ribbon arr subMenu fundId={fund.id} altSection={altSection} itemSection={itemSection}/>
-        )
+        );
     }
 
     getConfigByCode(code) {
@@ -344,7 +331,7 @@ class FundActionPage extends ArrParentPage {
                 </div>
 
             </div>
-        )
+        );
     }
 
     renderLeftPanel(readMode, closed) {
@@ -377,7 +364,7 @@ class FundActionPage extends ArrParentPage {
                     description = <div>
                         <div>Popis</div>
                         <div>{text}</div>
-                    </div>
+                    </div>;
                 }
             }
 
@@ -392,37 +379,42 @@ class FundActionPage extends ArrParentPage {
                                    ref='code-action'
                                    className='form-control'
                                    value={form.code}
-                                   onChange={(e) => {this.props.dispatch(fundActionFormChange(versionId, {code: e.target.value}))}}
+                                   onChange={(e) => {
+                                       this.props.dispatch(fundActionFormChange(versionId, {code: e.target.value}));
+                                   }}
                         >
-                            <option key="novalue" />
-                            {config.data.map((item) => (<option key={item.code} value={item.code}>{item.name}</option>))}
+                            <option key="novalue"/>
+                            {config.data.map((item) => (
+                                <option key={item.code} value={item.code}>{item.name}</option>))}
                         </FormInput>
                     </div>
                     {description}
-                    <h2>{i18n("arr.fundAction.title.nodes")}</h2>
+                    <h2>{i18n('arr.fundAction.title.nodes')}</h2>
                     <FundNodesList
                         nodes={form.nodes}
                         onAddNode={this.handleFormNodesAdd}
                         onDeleteNode={this.handleFormNodeDelete}
                     />
                     {form.code === PERSISTENT_SORT_CODE && [
-                    <h2>{i18n("arr.functions.configuration")}</h2>,
-                    <PersistentSortForm
-                        initialValues={detail.data && detail.data.config && JSON.parse(detail.data.config)}
-                        onSubmit={this.submitPersistentSortForm}
-                        ref={"persistentSortForm"}
-                        versionId={versionId}
-                    />]}
+                        <h2>{i18n('arr.functions.configuration')}</h2>,
+                        <PersistentSortForm
+                            initialValues={detail.data && detail.data.config && JSON.parse(detail.data.config)}
+                            onSubmit={this.submitPersistentSortForm}
+                            ref={'persistentSortForm'}
+                            versionId={versionId}
+                        />]}
                 </div>}
-            </div>
+            </div>;
         }
 
         if (detail) {
             if (!detail.isFetching && !detail.fetched) {    // pokud načítá ale nemá načteno
                 return <div className='center-container'>
                     <div className="unselected-msg">
-                        <div className="title">{fundActionCount > 0 ? i18n('arr.fundAction.noSelection.title') : i18n('arr.fundAction.emptyList.title')}</div>
-                        <div className="msg-text">{fundActionCount > 0 ? i18n('arr.fundAction.noSelection.message') : i18n('arr.fundAction.emptyList.message')}</div>
+                        <div
+                            className="title">{fundActionCount > 0 ? i18n('arr.fundAction.noSelection.title') : i18n('arr.fundAction.emptyList.title')}</div>
+                        <div
+                            className="msg-text">{fundActionCount > 0 ? i18n('arr.fundAction.noSelection.message') : i18n('arr.fundAction.emptyList.message')}</div>
                     </div>
                 </div>;
             }
@@ -444,7 +436,7 @@ class FundActionPage extends ArrParentPage {
             }
 
             return <div className='center-container'>
-                <StoreHorizontalLoader store={detail} />
+                <StoreHorizontalLoader store={detail}/>
 
                 {detail.fetched && <div className='detail'>
                     <div>
@@ -462,7 +454,7 @@ class FundActionPage extends ArrParentPage {
                         readOnly={true}
                     />
                 </div>}
-            </div>
+            </div>;
         }
     }
 };
@@ -473,7 +465,7 @@ function mapStateToProps(state) {
         arrRegion,
         splitter,
         userDetail,
-    }
+    };
 }
 
 export default connect(mapStateToProps)(FundActionPage);
