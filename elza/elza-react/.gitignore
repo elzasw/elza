@@ -1,5 +1,4 @@
 .dev
 .happypack
-package-lock.json
 yarn.lock
 react-app-env.d.ts
