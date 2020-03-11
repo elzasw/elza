@@ -1,10 +1,10 @@
 /**
  * Utility pro pořádání.
  */
-import { getSetFromIdsList, indexById } from 'stores/app/utils.jsx';
+import {getSetFromIdsList, indexById} from 'stores/app/utils.jsx';
 import React from 'react';
-import { dateTimeToString } from 'components/Utils.jsx';
-import { i18n } from 'components/shared';
+import {dateTimeToString} from 'components/Utils.jsx';
+import {i18n} from 'components/shared';
 
 /**
  * Načtení stromového uspořádání - kořenové jsou item group a pod nimi item types. Do stromu se vkládají jen položky, které ještě nejsou použivté v descItemGroups.

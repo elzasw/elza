@@ -1,24 +1,17 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {
-    Icon,
-    i18n,
-    AbstractReactComponent,
-    NoFocusButton,
-    Loading
-} from 'components/shared'
-import {connect} from 'react-redux'
+import {AbstractReactComponent, i18n, Icon, Loading, NoFocusButton} from 'components/shared';
+import {connect} from 'react-redux';
 
 import '../NodeSubNodeForm.scss';
-import SubNodeForm from "../SubNodeForm";
-import {structureFormActions} from "../../../actions/arr/subNodeForm";
+import SubNodeForm from '../SubNodeForm';
+import {structureFormActions} from '../../../actions/arr/subNodeForm';
 import PropTypes from 'prop-types';
-import {getDescItemsAddTree, getOneSettings} from "../ArrUtils";
-import AddDescItemTypeForm from "../nodeForm/AddDescItemTypeForm";
-import {modalDialogShow} from "../../../actions/global/modalDialog";
+import {getDescItemsAddTree, getOneSettings} from '../ArrUtils';
+import AddDescItemTypeForm from '../nodeForm/AddDescItemTypeForm';
+import {modalDialogShow} from '../../../actions/global/modalDialog';
 
-import './StructureSubNodeForm.scss'
-import objectById from "../../../shared/utils/objectById";
+import './StructureSubNodeForm.scss';
+import objectById from '../../../shared/utils/objectById';
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.

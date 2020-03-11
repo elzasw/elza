@@ -1,11 +1,6 @@
-import {IItemFormState} from "../../stores/app/accesspoint/itemForm";
-import {valuesEquals} from '../Utils';
-import {i18n} from '../shared';
-import {ItemFormActions} from "./ItemFormActions";
-import {WebApi} from '../../actions/index.jsx';
-import * as types from '../../actions/constants/ActionTypes.js';
-import {storeFromArea} from '../../shared/utils'
-
+import { WebApi } from '../../actions/index.jsx';
+import { storeFromArea } from '../../shared/utils';
+import { ItemFormActions } from './ItemFormActions';
 
 interface BaseAction {
     area: string;

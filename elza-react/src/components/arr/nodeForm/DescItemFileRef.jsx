@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { WebApi } from 'actions/index.jsx';
-import { AbstractReactComponent, Autocomplete, i18n, Icon } from 'components/shared';
-import { decorateAutocompleteValue } from './DescItemUtils.jsx';
-import { Button } from '../../ui';
+import {WebApi} from 'actions/index.jsx';
+import {AbstractReactComponent, Autocomplete, i18n, Icon} from 'components/shared';
+import {decorateAutocompleteValue} from './DescItemUtils.jsx';
+import {Button} from '../../ui';
 import DescItemLabel from './DescItemLabel.jsx';
 
 import './DescItemFileRef.scss';

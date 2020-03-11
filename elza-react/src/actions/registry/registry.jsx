@@ -1,18 +1,15 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 
 import {WebApi} from 'actions/index.jsx';
-import {SimpleListActions} from 'shared/list'
-import {DetailActions} from 'shared/detail'
-import {storeFromArea, indexById} from 'shared/utils'
+import {SimpleListActions} from 'shared/list';
+import {DetailActions} from 'shared/detail';
+import {indexById, storeFromArea} from 'shared/utils';
 
-import {DEFAULT_LIST_SIZE, MODAL_DIALOG_VARIANT} from '../../constants.tsx'
-
-import * as types from 'actions/constants/ActionTypes.js';
+import {DEFAULT_LIST_SIZE} from '../../constants.tsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {i18n} from 'components/shared';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {addToastrSuccess,addToastrDanger, addToastrWarning} from '../../components/shared/toastr/ToastrActions.jsx'
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {addToastrWarning} from '../../components/shared/toastr/ToastrActions.jsx';
 
 export const DEFAULT_REGISTRY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
 export const AREA_REGISTRY_LIST = "registryList";

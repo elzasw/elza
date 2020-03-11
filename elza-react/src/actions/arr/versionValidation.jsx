@@ -1,9 +1,9 @@
 import {WebApi} from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 import {barrier} from 'components/Utils.jsx';
-import {fundSelectSubNode} from 'actions/arr/node.jsx'
+import {fundSelectSubNode} from 'actions/arr/node.jsx';
 import {i18n} from 'components/shared';
-import {addToastrInfo} from 'components/shared/toastr/ToastrActions.jsx'
+import {addToastrInfo} from 'components/shared/toastr/ToastrActions.jsx';
 
 export function isVersionValidation(action) {
     switch (action.type) {

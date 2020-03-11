@@ -1,4 +1,4 @@
-import {INIT_REDUCER} from './SharedActions'
+import {INIT_REDUCER} from './SharedActions';
 
 /**
  * Společný store pro různá data, např. pro globální čísleníky pro fieldy atp. Převážně využíván např. fieldy z shared (jako StatField atp.).

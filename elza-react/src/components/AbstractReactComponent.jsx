@@ -1,5 +1,5 @@
 import React from 'react';
-import {propsEquals} from './Utils.jsx'
+import {propsEquals} from './Utils.jsx';
 
 /**
  * Abstraktní předek pro všechny komponenty.

@@ -1,7 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import groupDetail from './groupDetail.jsx'
-import {isGroupDetailAction} from 'actions/admin/group.jsx'
-import {isPermissionAction} from 'actions/admin/permission.jsx'
+import groupDetail from './groupDetail.jsx';
+import {isGroupDetailAction} from 'actions/admin/group.jsx';
+import {isPermissionAction} from 'actions/admin/permission.jsx';
 
 const initialState = {
     fetched: false,

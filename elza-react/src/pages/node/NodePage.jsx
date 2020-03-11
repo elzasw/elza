@@ -3,17 +3,17 @@
  */
 
 import React from 'react';
-import {connect} from 'react-redux'
+import {connect} from 'react-redux';
 import {AbstractReactComponent} from 'components/shared';
-import PageLayout from "../shared/layout/PageLayout";
-import Ribbon from "../../components/page/Ribbon";
-import {fundsSelectFund} from "../../actions/fund/fund";
-import {createFundRoot, getFundFromFundAndVersion} from "../../components/arr/ArrUtils";
-import {selectFundTab} from "../../actions/arr/fund";
-import {WebApi} from "../../actions";
-import {routerNavigate} from "../../actions/router";
-import {fundSelectSubNode} from "../../actions/arr/node";
-import Loading from "../../components/shared/loading/Loading";
+import PageLayout from '../shared/layout/PageLayout';
+import Ribbon from '../../components/page/Ribbon';
+import {fundsSelectFund} from '../../actions/fund/fund';
+import {createFundRoot, getFundFromFundAndVersion} from '../../components/arr/ArrUtils';
+import {selectFundTab} from '../../actions/arr/fund';
+import {WebApi} from '../../actions';
+import {routerNavigate} from '../../actions/router';
+import {fundSelectSubNode} from '../../actions/arr/node';
+import Loading from '../../components/shared/loading/Loading';
 import './NodePage.scss';
 
 class NodePage extends AbstractReactComponent {

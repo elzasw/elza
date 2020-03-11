@@ -1,10 +1,9 @@
 import PropTypes from 'prop-types';
 import * as React from 'react';
+import { ComponentClass, FunctionComponent } from 'react';
 import * as ReactDOM from 'react-dom';
-import utils from './utils';
 import Loading from '../loading/Loading';
-import {FunctionComponent} from 'react';
-import {ComponentClass} from 'react';
+import utils from './utils';
 
 const DEFAULT_ITEM_HEIGHT = 16;
 

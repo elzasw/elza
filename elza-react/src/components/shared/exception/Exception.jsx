@@ -1,10 +1,10 @@
 import React from 'react';
-import {modalDialogShow} from 'actions/global/modalDialog.jsx'
-import {connect} from 'react-redux'
-import AbstractReactComponent from "../../AbstractReactComponent";
-import NoFocusButton from "../button/NoFocusButton";
-import ExceptionDetail from "./ExceptionDetail";
-import i18n from "../../i18n";
+import {modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {connect} from 'react-redux';
+import AbstractReactComponent from '../../AbstractReactComponent';
+import NoFocusButton from '../button/NoFocusButton';
+import ExceptionDetail from './ExceptionDetail';
+import i18n from '../../i18n';
 
 class Exception extends AbstractReactComponent {
 

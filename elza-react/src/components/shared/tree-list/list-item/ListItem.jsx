@@ -1,9 +1,9 @@
-import React from "react";
-import PropTypes from "prop-types";
-import TreeNodeToggle from "./TreeNodeToggle.jsx";
-import DepthIndent from "./DepthIndent.jsx";
-import classNames from "classnames";
-import {propsEquals} from "components/Utils.jsx";
+import React from 'react';
+import PropTypes from 'prop-types';
+import TreeNodeToggle from './TreeNodeToggle.jsx';
+import DepthIndent from './DepthIndent.jsx';
+import classNames from 'classnames';
+import {propsEquals} from 'components/Utils.jsx';
 
 class ListItem extends React.PureComponent {
 

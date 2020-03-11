@@ -2,9 +2,9 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import { WebApi } from 'actions/index.jsx';
-import { AbstractReactComponent, Autocomplete, Utils } from 'components/shared';
-import { renderUserOrGroupItem } from './adminRenderUtils.jsx';
+import {WebApi} from 'actions/index.jsx';
+import {AbstractReactComponent, Autocomplete, Utils} from 'components/shared';
+import {renderUserOrGroupItem} from './adminRenderUtils.jsx';
 
 /**
  * Field pro vybrání skupiny nebo uživatele.

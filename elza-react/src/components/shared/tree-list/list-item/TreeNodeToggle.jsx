@@ -1,6 +1,6 @@
-import React from "react";
-import classNames from "classnames";
-import Icon from "components/shared/icon/Icon";
+import React from 'react';
+import classNames from 'classnames';
+import Icon from 'components/shared/icon/Icon';
 
 const TreeNodeToggle = (props) => {
     const {onClick, expanded, hidden} = props;

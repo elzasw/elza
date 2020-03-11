@@ -1,11 +1,7 @@
-import {getMapFromList, indexById} from 'stores/app/utils.jsx'
-import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx'
-import {DisplayType} from "../../../constants.tsx";
-import {
-    isNormalizeDurationLength,
-    normalizeDurationLength,
-    toDuration
-} from "../../../components/validate";
+import {getMapFromList, indexById} from 'stores/app/utils.jsx';
+import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx';
+import {DisplayType} from '../../../constants.tsx';
+import {isNormalizeDurationLength, normalizeDurationLength, toDuration} from '../../../components/validate';
 
 const availability = {
     REQUIRED : "REQUIRED",

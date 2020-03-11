@@ -1,4 +1,4 @@
-import './Resizer.scss'
+import './Resizer.scss';
 import React from 'react';
 
 const Resizer = (

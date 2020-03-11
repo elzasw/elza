@@ -6,17 +6,17 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, AddRemoveList, i18n, FormInput} from 'components/shared';
-import {decorateFormField} from 'components/form/FormUtils.jsx'
-import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
-import {initForm} from "actions/form/inlineForm.jsx"
-import {indexById} from 'stores/app/utils.jsx'
-import FundField from './FundField.jsx'
-import ScopeField from './ScopeField.jsx'
+import {AbstractReactComponent, AddRemoveList, FormInput, i18n} from 'components/shared';
+import {initForm} from 'actions/form/inlineForm.jsx';
+import {indexById} from 'stores/app/utils.jsx';
+import FundField from './FundField.jsx';
+import ScopeField from './ScopeField.jsx';
 import * as perms from 'actions/user/Permission.jsx';
-import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx'
+import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
 
-import './Permissions.scss';;
+import './Permissions.scss';
+
+;
 
 /**
  * Validace formuláře.

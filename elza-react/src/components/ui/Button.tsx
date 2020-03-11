@@ -1,6 +1,6 @@
 import classNames from 'classnames';
-import React, {memo, MouseEvent, PropsWithChildren} from 'react';
-import {Button as BootstrapButton, ButtonProps} from 'react-bootstrap';
+import React, { memo, MouseEvent, PropsWithChildren } from 'react';
+import { Button as BootstrapButton, ButtonProps } from 'react-bootstrap';
 import styles from './Button.module.scss';
 
 interface IProps extends ButtonProps {

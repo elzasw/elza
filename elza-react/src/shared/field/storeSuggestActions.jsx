@@ -1,8 +1,8 @@
 /**
  * Akce pro storeSuggest
  */
-import * as list from './../list'
-import * as SharedActions from "./../shared/SharedActions"
+import * as list from './../list';
+import * as SharedActions from './../shared/SharedActions';
 
 
 export function fetchListIfNeeded(area, apiCall) {

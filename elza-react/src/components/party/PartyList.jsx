@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 import {
     AbstractReactComponent,
     FormInput,
@@ -9,7 +9,7 @@ import {
     SearchWithGoto,
     StoreHorizontalLoader,
 } from 'components/shared';
-import { indexById } from 'stores/app/utils.jsx';
+import {indexById} from 'stores/app/utils.jsx';
 import {
     DEFAULT_PARTY_LIST_MAX_SIZE,
     partyDetailFetchIfNeeded,
@@ -17,15 +17,15 @@ import {
     partyListFilter,
     partyListInvalidate,
 } from 'actions/party/party.jsx';
-import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
 
 import './PartyList.scss';
 import PartyListItem from './PartyListItem';
 import Autocomplete from '../shared/autocomplete/Autocomplete';
 import ListPager from '../shared/listPager/ListPager';
 import * as perms from '../../actions/user/Permission';
-import { FOCUS_KEYS } from '../../constants.tsx';
-import { requestScopesIfNeeded } from '../../actions/refTables/scopesData';
+import {FOCUS_KEYS} from '../../constants.tsx';
+import {requestScopesIfNeeded} from '../../actions/refTables/scopesData';
 import * as StateApproval from '../enum/StateApproval';
 
 /**

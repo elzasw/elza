@@ -1,7 +1,6 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import './Splitter.scss'
-import AbstractReactComponent from "../../AbstractReactComponent";
+import './Splitter.scss';
+import AbstractReactComponent from '../../AbstractReactComponent';
 
 /**
  * Pane

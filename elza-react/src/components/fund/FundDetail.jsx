@@ -1,14 +1,14 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { connect } from 'react-redux';
-import { Button } from '../ui';
-import { AbstractReactComponent, i18n, Icon, StoreHorizontalLoader } from 'components/shared';
-import { indexById } from 'stores/app/utils.jsx';
-import { getFundFromFundAndVersion } from 'components/arr/ArrUtils.jsx';
-import { selectFundTab } from 'actions/arr/fund.jsx';
-import { refInstitutionsFetchIfNeeded } from 'actions/refTables/institutions.jsx';
-import { refRuleSetFetchIfNeeded } from 'actions/refTables/ruleSet.jsx';
-import { routerNavigate } from 'actions/router.jsx';
+import {connect} from 'react-redux';
+import {Button} from '../ui';
+import {AbstractReactComponent, i18n, Icon, StoreHorizontalLoader} from 'components/shared';
+import {indexById} from 'stores/app/utils.jsx';
+import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx';
+import {selectFundTab} from 'actions/arr/fund.jsx';
+import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx';
+import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx';
+import {routerNavigate} from 'actions/router.jsx';
 
 import './FundDetail.scss';
 

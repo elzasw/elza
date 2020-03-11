@@ -1,8 +1,8 @@
 import React from 'react';
-import { connect } from 'react-redux';
-import { AbstractReactComponent, i18n, StoreHorizontalLoader } from 'components/shared';
-import { AREA_EXT_SYSTEM_DETAIL, extSystemDetailFetchIfNeeded } from 'actions/admin/extSystem.jsx';
-import { storeFromArea } from 'shared/utils';
+import {connect} from 'react-redux';
+import {AbstractReactComponent, i18n, StoreHorizontalLoader} from 'components/shared';
+import {AREA_EXT_SYSTEM_DETAIL, extSystemDetailFetchIfNeeded} from 'actions/admin/extSystem.jsx';
+import {storeFromArea} from 'shared/utils';
 
 import './AdminExtSystemDetail.scss';
 

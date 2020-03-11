@@ -1,7 +1,7 @@
 // --
 import React from 'react';
-import { connect } from 'react-redux';
-import { AbstractReactComponent } from 'components/shared';
+import {connect} from 'react-redux';
+import {AbstractReactComponent} from 'components/shared';
 import * as perms from './../../actions/user/Permission.jsx';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import * as adminPermissions from './../../actions/admin/adminPermissions';

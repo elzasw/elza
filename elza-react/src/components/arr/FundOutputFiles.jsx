@@ -1,14 +1,14 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { connect } from 'react-redux';
-import { AbstractReactComponent, FileListBox, i18n, Icon, StoreHorizontalLoader } from 'components/shared';
-import { Button } from '../ui';
-import { fetchFundOutputFilesIfNeeded, fundOutputFilesFilterByText } from 'actions/arr/fundOutputFiles.jsx';
-import { UrlFactory } from 'actions/index.jsx';
+import {connect} from 'react-redux';
+import {AbstractReactComponent, FileListBox, i18n, Icon, StoreHorizontalLoader} from 'components/shared';
+import {Button} from '../ui';
+import {fetchFundOutputFilesIfNeeded, fundOutputFilesFilterByText} from 'actions/arr/fundOutputFiles.jsx';
+import {UrlFactory} from 'actions/index.jsx';
 
 import './FundFiles.scss';
 import './FundOutputFiles.scss';
-import { downloadFile } from '../../actions/global/download';
+import {downloadFile} from '../../actions/global/download';
 
 /**
  * Správa souborů.

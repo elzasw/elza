@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { AbstractReactComponent, Icon } from 'components/shared';
-import { PARTY_TYPE_CODES, RELATION_CLASS_CODES } from '../../constants.tsx';
+import {AbstractReactComponent, Icon} from 'components/shared';
+import {PARTY_TYPE_CODES, RELATION_CLASS_CODES} from '../../constants.tsx';
 import classNames from 'classnames';
 
 import './PartyListItem.scss';

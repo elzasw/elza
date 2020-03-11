@@ -2,7 +2,7 @@
  * Akce pro typy externích id.
  */
 import {WebApi} from 'actions/index.jsx';
-import {DetailActions} from 'shared/detail'
+import {DetailActions} from 'shared/detail';
 
 export const REF_EID_TYPES = 'refTables.eidTypes';
 

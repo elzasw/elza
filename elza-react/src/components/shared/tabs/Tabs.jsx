@@ -6,10 +6,10 @@
  **/
 
 import React from 'react';
-import { Nav, NavItem } from 'react-bootstrap';
+import {Nav, NavItem} from 'react-bootstrap';
 import * as Utils from '../../Utils';
-import { Shortcuts } from 'react-shortcuts';
-import { PropTypes } from 'prop-types';
+import {Shortcuts} from 'react-shortcuts';
+import {PropTypes} from 'prop-types';
 import defaultKeymap from './TabsKeymap.jsx';
 
 import './Tabs.scss';

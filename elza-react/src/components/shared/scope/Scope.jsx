@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { connect } from 'react-redux';
-import { requestScopesIfNeeded } from 'actions/refTables/scopesData.jsx';
-import { indexById } from 'stores/app/utils.jsx';
+import {connect} from 'react-redux';
+import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
+import {indexById} from 'stores/app/utils.jsx';
 import AbstractReactComponent from '../../AbstractReactComponent';
 import FormInput from '../form/FormInput';
 

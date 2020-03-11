@@ -2,7 +2,8 @@
  * Testovací stránka pro Autocomplete.
  */
 import React from 'react';
-import {Autocomplete, AbstractReactComponent} from 'components/index.jsx';
+import {AbstractReactComponent, Autocomplete} from 'components/index.jsx';
+
 export default class extends AbstractReactComponent {
     state = {
         acValue: null,

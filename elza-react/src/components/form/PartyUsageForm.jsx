@@ -1,13 +1,13 @@
 import React from 'react';
-import UsageForm from "./UsageForm"
+import UsageForm from './UsageForm';
 import * as types from 'actions/constants/ActionTypes.js';
-import { i18n } from 'components/shared';
-import {WebApi} from "../../actions/WebApi";
-import HorizontalLoader from "../shared/loading/HorizontalLoader";
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
+import {i18n} from 'components/shared';
+import {WebApi} from '../../actions/WebApi';
+import HorizontalLoader from '../shared/loading/HorizontalLoader';
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 
-import {connect} from "react-redux";
-import {modalDialogHide} from "../../actions/global/modalDialog";
+import {connect} from 'react-redux';
+import {modalDialogHide} from '../../actions/global/modalDialog';
 
 class PartyUsageForm extends React.Component {
 

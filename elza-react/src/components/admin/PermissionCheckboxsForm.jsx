@@ -2,17 +2,17 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import { FormCheck } from 'react-bootstrap';
-import { AbstractReactComponent, i18n, Icon } from 'components/shared';
+import {FormCheck} from 'react-bootstrap';
+import {AbstractReactComponent, i18n, Icon} from 'components/shared';
 import getMapFromList from '../../shared/utils/getMapFromList';
 import './PermissionCheckboxsForm.scss';
 import TooltipTrigger from '../shared/tooltip/TooltipTrigger';
-import { modalDialogShow } from '../../actions/global/modalDialog.jsx';
+import {modalDialogShow} from '../../actions/global/modalDialog.jsx';
 import FundNodesList from '../arr/FundNodesList';
 import FundNodesSelectForm from '../arr/FundNodesSelectForm';
-import { connect } from 'react-redux';
-import { WebApi } from '../../actions';
-import { FUND_ARR_NODE } from '../../actions/user/Permission';
+import {connect} from 'react-redux';
+import {WebApi} from '../../actions';
+import {FUND_ARR_NODE} from '../../actions/user/Permission';
 
 /**
  * Panel spravující oprávnění typu checkbox.

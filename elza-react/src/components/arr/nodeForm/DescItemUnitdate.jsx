@@ -1,14 +1,11 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {AbstractReactComponent, i18n} from 'components/shared';
-import {connect} from 'react-redux'
-import {decorateValue} from './DescItemUtils.jsx'
-import {OverlayTrigger, Tooltip} from 'react-bootstrap';
-import DescItemLabel from './DescItemLabel.jsx'
-import {indexById} from 'stores/app/utils.jsx'
-import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
+import {decorateValue} from './DescItemUtils.jsx';
+import DescItemLabel from './DescItemLabel.jsx';
+import {indexById} from 'stores/app/utils.jsx';
+import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 
-import './DescItemUnitdate.scss'
+import './DescItemUnitdate.scss';
 
 /**
  * Input prvek pro desc item - typ UNITDATE.

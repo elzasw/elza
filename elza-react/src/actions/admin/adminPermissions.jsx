@@ -1,6 +1,6 @@
 import {WebApi} from 'actions/index.jsx';
-import {DetailActions} from 'shared/detail'
-import * as SimpleListActions from "../../shared/list/simple/SimpleListActions";
+import {DetailActions} from 'shared/detail';
+import * as SimpleListActions from '../../shared/list/simple/SimpleListActions';
 
 export const ENTITY_PERMISSIONS = 'adminRegion.entityPermissions';
 export const USERS_PERMISSIONS_BY_FUND = 'adminRegion.usersPermissionsByFund';

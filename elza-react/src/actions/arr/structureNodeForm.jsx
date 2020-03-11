@@ -1,6 +1,6 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import { WebApi } from 'actions/index.jsx';
-import { indexById } from 'stores/app/utils.jsx';
+import {WebApi} from 'actions/index.jsx';
+import {indexById} from 'stores/app/utils.jsx';
 
 export function isStructureNodeForm(action) {
     switch (action.type) {

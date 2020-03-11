@@ -1,7 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import subNodeForm from './subNodeForm.jsx';
-import { structureFormActions } from 'actions/arr/subNodeForm.jsx';
-import { consolidateState } from 'components/Utils.jsx';
+import {structureFormActions} from 'actions/arr/subNodeForm.jsx';
+import {consolidateState} from 'components/Utils.jsx';
 
 const initialState = {
     id: null,

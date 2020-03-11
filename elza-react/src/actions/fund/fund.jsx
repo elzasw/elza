@@ -3,9 +3,10 @@
  */
 
 import * as types from 'actions/constants/ActionTypes.js';
-import { WebApi } from 'actions/index.jsx';
+import {WebApi} from 'actions/index.jsx';
 
-import { DEFAULT_LIST_SIZE } from '../../constants.tsx'
+import {DEFAULT_LIST_SIZE} from '../../constants.tsx';
+
 export const DEFAULT_FUND_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
 
 function _fundRegionDataKey(fundRegion) {

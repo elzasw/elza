@@ -1,7 +1,7 @@
 import * as types from '../../../actions/constants/ActionTypes.js';
-import subNodeForm from './subNodeForm.jsx'
-import {outputFormActions} from '../../../actions/arr/subNodeForm.jsx'
-import {consolidateState} from '../../../components/Utils.jsx'
+import subNodeForm from './subNodeForm.jsx';
+import {outputFormActions} from '../../../actions/arr/subNodeForm.jsx';
+import {consolidateState} from '../../../components/Utils.jsx';
 
 const initialState = {
     id: null,
@@ -105,7 +105,7 @@ export default function fundOutputDetail(state = initialState, action = {}) {
                 subNodeForm: subNodeForm(state.subNodeForm, action)
             }
         case types.FUND_OUTPUT_DETAIL_CLEAR:
-            return initialState;        
+            return initialState;
         default:
             return state
     }

@@ -1,37 +1,36 @@
- import * as types from 'actions/constants/ActionTypes.js';
-import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
+import * as types from 'actions/constants/ActionTypes.js';
+import {indexById, selectedAfterClose} from 'stores/app/utils.jsx';
 
-import {fund, fundInitState} from './fund.jsx'
-import nodeSetting from './nodeSetting.jsx'
-import fundSearch from './fundSearch.jsx'
-import visiblePolicy from './visiblePolicy.jsx'
-import {consolidateState} from 'components/Utils.jsx'
-import {isBulkAction} from 'actions/arr/bulkActions.jsx'
-import {isFundTreeAction} from 'actions/arr/fundTree.jsx'
-import {isFundSearchAction} from '../../../actions/arr/fundSearch.jsx'
-import {nodeFormActions, outputFormActions, structureFormActions} from 'actions/arr/subNodeForm.jsx'
-import {isSubNodeDaosAction} from 'actions/arr/subNodeDaos.jsx'
-import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx'
-import {isNodeInfoAction} from 'actions/arr/nodeInfo.jsx'
-import {isVersionValidation} from 'actions/arr/versionValidation.jsx'
-import {isNodeAction} from 'actions/arr/node.jsx'
-import {isNodesAction} from 'actions/arr/nodes.jsx'
-import {isDeveloperScenariosAction} from 'actions/global/developer.jsx'
-import {isNodeSettingsAction} from 'actions/arr/nodeSetting.jsx'
-import {isFundDataGridAction} from 'actions/arr/fundDataGrid.jsx'
-import {isFundChangeAction} from 'actions/global/change.jsx'
-import {isFundFilesAction} from 'actions/arr/fundFiles.jsx'
-import {isFundActionAction} from 'actions/arr/fundAction.jsx'
-import {isFundOutput} from 'actions/arr/fundOutput.jsx'
-import {isFundOutputFilesAction} from 'actions/arr/fundOutputFiles.jsx'
-import processAreaStores from "shared/utils/processAreaStores";
-import isCommonArea from "stores/utils/isCommonArea";
-import globalFundTree from "./globalFundTree";
-import {isStructureNodeForm} from "../../../actions/arr/structureNodeForm";
- import fundTree from "./fundTree";
+import {fund, fundInitState} from './fund.jsx';
+import nodeSetting from './nodeSetting.jsx';
+import fundSearch from './fundSearch.jsx';
+import visiblePolicy from './visiblePolicy.jsx';
+import {consolidateState} from 'components/Utils.jsx';
+import {isBulkAction} from 'actions/arr/bulkActions.jsx';
+import {isFundTreeAction} from 'actions/arr/fundTree.jsx';
+import {isFundSearchAction} from '../../../actions/arr/fundSearch.jsx';
+import {nodeFormActions, outputFormActions, structureFormActions} from 'actions/arr/subNodeForm.jsx';
+import {isSubNodeDaosAction} from 'actions/arr/subNodeDaos.jsx';
+import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx';
+import {isNodeInfoAction} from 'actions/arr/nodeInfo.jsx';
+import {isVersionValidation} from 'actions/arr/versionValidation.jsx';
+import {isNodeAction} from 'actions/arr/node.jsx';
+import {isNodesAction} from 'actions/arr/nodes.jsx';
+import {isDeveloperScenariosAction} from 'actions/global/developer.jsx';
+import {isNodeSettingsAction} from 'actions/arr/nodeSetting.jsx';
+import {isFundDataGridAction} from 'actions/arr/fundDataGrid.jsx';
+import {isFundChangeAction} from 'actions/global/change.jsx';
+import {isFundFilesAction} from 'actions/arr/fundFiles.jsx';
+import {isFundActionAction} from 'actions/arr/fundAction.jsx';
+import {isFundOutput} from 'actions/arr/fundOutput.jsx';
+import processAreaStores from 'shared/utils/processAreaStores';
+import isCommonArea from 'stores/utils/isCommonArea';
+import globalFundTree from './globalFundTree';
+import {isStructureNodeForm} from '../../../actions/arr/structureNodeForm';
+import fundTree from './fundTree';
 
 
- const initialCustomFundState = {
+const initialCustomFundState = {
      fundTreeNodes: fundTree(),
      versionId: null,
      fundId: null,

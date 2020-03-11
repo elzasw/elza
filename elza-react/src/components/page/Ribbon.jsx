@@ -5,21 +5,19 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
-import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
-import {RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, ModalDialog, Icon, AbstractReactComponent, i18n} from 'components/shared';
+import {connect} from 'react-redux';
+import {IndexLinkContainer, LinkContainer} from 'react-router-bootstrap';
+import {AbstractReactComponent, i18n, Icon, RibbonGroup, RibbonMenu, RibbonSplit} from 'components/shared';
 import {Dropdown} from 'react-bootstrap';
 import {Button} from '../ui';
-import {AppStore} from 'stores/index.jsx'
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
 import {logout} from 'actions/global/login.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
-import {userPasswordChange} from 'actions/admin/user.jsx'
-import {routerNavigate} from "actions/router.jsx"
-import PasswordForm from "../admin/PasswordForm";
+import {modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {userPasswordChange} from 'actions/admin/user.jsx';
+import {routerNavigate} from 'actions/router.jsx';
+import PasswordForm from '../admin/PasswordForm';
 
 class Ribbon extends AbstractReactComponent {
 

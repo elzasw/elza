@@ -1,4 +1,4 @@
-import {CLS} from "./factoryConsts";
+import {CLS} from './factoryConsts';
 
 export class Item {
 

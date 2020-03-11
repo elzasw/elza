@@ -1,4 +1,5 @@
-import * as commons from './commons'
+import * as commons from './commons';
+
 export {commons};
 export {default as debounce} from './debounce'
 export {default as defaultImport} from './defaultImport'

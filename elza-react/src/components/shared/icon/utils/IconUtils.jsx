@@ -1,7 +1,7 @@
-import React from "react";
-import {Circle} from "../glyphs";
+import React from 'react';
+import {Circle} from '../glyphs';
 
-export const inCircle = (WrappedComponent,customStyle) => { 
+export const inCircle = (WrappedComponent,customStyle) => {
     let IconWrapper = (props) => {
         const {secondaryStyle, ...otherProps} = props;
         let style = secondaryStyle ? {...secondaryStyle} : {fill:"white"};
@@ -13,7 +13,7 @@ export const inCircle = (WrappedComponent,customStyle) => {
                         <WrappedComponent style={style}/>
                     </g>
                 </svg>
-            </svg>       
+            </svg>
         )
     }
     return IconWrapper;

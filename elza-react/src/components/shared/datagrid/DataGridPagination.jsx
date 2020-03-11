@@ -4,14 +4,14 @@
 import React from 'react';
 import AbstractReactComponent from '../../AbstractReactComponent';
 import * as Utils from '../../Utils';
-import { normalizeInt, validateInt } from 'components/validate.jsx';
-import { Shortcuts } from 'react-shortcuts';
-import { PropTypes } from 'prop-types';
+import {normalizeInt, validateInt} from 'components/validate.jsx';
+import {Shortcuts} from 'react-shortcuts';
+import {PropTypes} from 'prop-types';
 import defaultKeymap from './DataGridPaginationKeymap.jsx';
 
 import './DataGridPagination.scss';
 import i18n from '../../i18n';
-import { Button } from '../../ui';
+import {Button} from '../../ui';
 
 export function getPagesCount(itemsCount, pageSize) {
     let pagesCount = Math.floor(itemsCount / pageSize);

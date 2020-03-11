@@ -1,5 +1,5 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {default as genericRefTable, genericRefTableState} from "./genericRefTable";
+import {default as genericRefTable, genericRefTableState} from './genericRefTable';
 
 export default function descItemTypes(state = genericRefTableState, action = {}) {
     switch (action.type) {

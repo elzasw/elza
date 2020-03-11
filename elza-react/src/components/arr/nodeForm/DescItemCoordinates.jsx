@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { AbstractReactComponent, FormInput, i18n, Icon, NoFocusButton } from 'components/shared';
-import { objectFromWKT, wktFromTypeAndData, wktType } from 'components/Utils.jsx';
-import { decorateValue } from './DescItemUtils.jsx';
-import { Button } from '../../ui';
+import {AbstractReactComponent, FormInput, i18n, Icon, NoFocusButton} from 'components/shared';
+import {objectFromWKT, wktFromTypeAndData, wktType} from 'components/Utils.jsx';
+import {decorateValue} from './DescItemUtils.jsx';
+import {Button} from '../../ui';
 import DescItemLabel from './DescItemLabel.jsx';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 

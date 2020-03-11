@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { AbstractReactComponent } from 'components/shared';
-import { connect } from 'react-redux';
+import {AbstractReactComponent} from 'components/shared';
+import {connect} from 'react-redux';
 
 import '../arr/NodeSubNodeForm.scss';
-import { ItemForm } from './ItemForm';
-import { accessPointFormActions } from './AccessPointFormActions';
-import { ItemFactory } from './ItemFactory';
+import {ItemForm} from './ItemForm';
+import {accessPointFormActions} from './AccessPointFormActions';
+import {ItemFactory} from './ItemFactory';
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.

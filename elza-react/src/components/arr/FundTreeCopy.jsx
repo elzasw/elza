@@ -3,8 +3,8 @@
  */
 
 import React from 'react';
-import { connect } from 'react-redux';
-import { AbstractReactComponent } from 'components/shared';
+import {connect} from 'react-redux';
+import {AbstractReactComponent} from 'components/shared';
 import FundTreeLazy from './FundTreeLazy';
 import * as types from 'actions/constants/ActionTypes.js';
 import {
@@ -17,10 +17,10 @@ import {
     fundTreeNodeCollapse,
     fundTreeNodeExpand,
 } from 'actions/arr/fundTree.jsx';
-import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
 
-import { fundTreeSelectNode } from '../../actions/arr/fundTree';
-import { FOCUS_KEYS } from '../../constants.tsx';
+import {fundTreeSelectNode} from '../../actions/arr/fundTree';
+import {FOCUS_KEYS} from '../../constants.tsx';
 
 class FundTreeCopy extends AbstractReactComponent {
     constructor(props) {

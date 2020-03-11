@@ -1,42 +1,32 @@
+import classNames from 'classnames';
+import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import {
-    AbstractReactComponent,
-    Autocomplete,
-    FormInput,
-    i18n,
-    Icon,
-    NoFocusButton,
-    TooltipTrigger,
-    Utils
-} from '../../components/shared';
 
-import {connect} from 'react-redux'
-import {propsEquals} from '../Utils'
-import {nodeFormActions} from '../../actions/arr/subNodeForm'
-import {hasDescItemTypeValue} from '../arr/ArrUtils'
-import {indexById} from '../../stores/app/utils'
-import classNames from 'classnames';
-import {Shortcuts} from 'react-shortcuts';
-import DescItemTypeSpec from "./ItemTypeSpec.jsx";
-import * as PropTypes from 'prop-types';
-import defaultKeymap from '../arr/nodeForm/DescItemTypeKeymap.jsx';
-import '../arr/nodeForm/AbstractDescItem.scss';
+import { connect } from 'react-redux';
+import { Shortcuts } from 'react-shortcuts';
+import { nodeFormActions } from '../../actions/arr/subNodeForm';
+import { WebApi } from '../../actions/index.jsx';
+import { i18n, Icon, NoFocusButton, TooltipTrigger, Utils } from '../../components/shared';
 import {
-    validate,
     convertValue,
+    DataType,
+    FragmentTypeVO,
     ItemTypeExt,
     RefType,
     RefTypeExt,
-    DataType,
-    FragmentTypeVO
+    validate,
 } from '../../stores/app/accesspoint/itemForm';
-import {valuesEquals} from '../Utils';
-import {WebApi} from '../../actions/index.jsx';
-import {objectById} from '../../stores/app/utils2';
-import {Dispatch} from "../../typings/globals";
-import {ItemFactoryInterface} from "./ItemFactoryInterface";
-import {DataTypeCode} from "../../stores/app/accesspoint/itemFormInterfaces";
+import { DataTypeCode } from '../../stores/app/accesspoint/itemFormInterfaces';
+import { indexById } from '../../stores/app/utils';
+import { objectById } from '../../stores/app/utils2';
+import { Dispatch } from '../../typings/globals';
+import { hasDescItemTypeValue } from '../arr/ArrUtils';
+import '../arr/nodeForm/AbstractDescItem.scss';
+import defaultKeymap from '../arr/nodeForm/DescItemTypeKeymap.jsx';
+import { propsEquals, valuesEquals } from '../Utils';
+import { ItemFactoryInterface } from './ItemFactoryInterface';
+import DescItemTypeSpec from './ItemTypeSpec.jsx';
 
 const placeholder = document.createElement("div");
 placeholder.className = "placeholder";

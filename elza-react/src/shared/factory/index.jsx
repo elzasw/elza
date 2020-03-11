@@ -1,20 +1,20 @@
 // -
-import {CLS} from "./factoryConsts";
-import {Item} from "./Item";
-import {ItemUnitdate} from "./ItemUnitdate";
-import {ItemRecordRef} from "./ItemRecordRef";
-import {ItemFileRef} from "./ItemFileRef";
-import {ItemPartyRef} from "./ItemPartyRef";
-import {ItemCoordinates} from "./ItemCoordinates";
-import {ItemDecimal} from "./ItemDecimal";
-import {ItemEnum} from "./ItemEnum";
-import {ItemFormattedText} from "./ItemFormattedText";
-import {ItemInt} from "./ItemInt";
-import {ItemJsonTable} from "./ItemJsonTable";
-import {ItemString} from "./ItemString";
-import {ItemStructure} from "./ItemStructure";
-import {ItemText} from "./ItemText";
-import {ItemUnitid} from "./ItemUnitid";
+import {CLS} from './factoryConsts';
+import {Item} from './Item';
+import {ItemUnitdate} from './ItemUnitdate';
+import {ItemRecordRef} from './ItemRecordRef';
+import {ItemFileRef} from './ItemFileRef';
+import {ItemPartyRef} from './ItemPartyRef';
+import {ItemCoordinates} from './ItemCoordinates';
+import {ItemDecimal} from './ItemDecimal';
+import {ItemEnum} from './ItemEnum';
+import {ItemFormattedText} from './ItemFormattedText';
+import {ItemInt} from './ItemInt';
+import {ItemJsonTable} from './ItemJsonTable';
+import {ItemString} from './ItemString';
+import {ItemStructure} from './ItemStructure';
+import {ItemText} from './ItemText';
+import {ItemUnitid} from './ItemUnitid';
 
 const itemsMap = {
     '.ArrItemUnitdateVO': ItemUnitdate,

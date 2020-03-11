@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { connect } from 'react-redux';
-import { Button } from '../ui';
-import { modalDialogShow } from 'actions/global/modalDialog.jsx';
-import { AbstractReactComponent, i18n, Icon } from 'components/shared';
-import { isNotBlankObject } from 'components/Utils.jsx';
+import {connect} from 'react-redux';
+import {Button} from '../ui';
+import {modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {AbstractReactComponent, i18n, Icon} from 'components/shared';
+import {isNotBlankObject} from 'components/Utils.jsx';
 import {
     normalizeDatation,
     RELATION_CLASS_TYPE_REPEATABILITY,

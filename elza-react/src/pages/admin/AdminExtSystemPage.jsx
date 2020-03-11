@@ -1,16 +1,11 @@
 import React from 'react';
 
 import {connect} from 'react-redux';
-import {i18n, RibbonGroup, Utils, Icon} from 'components/shared';
-import {Ribbon, AdminExtSystemDetail, AdminExtSystemList} from 'components/index.jsx';
+import {i18n, Icon, RibbonGroup, Utils} from 'components/shared';
+import {AdminExtSystemDetail, AdminExtSystemList, Ribbon} from 'components/index.jsx';
 import PageLayout from '../shared/layout/PageLayout';
 import {Shortcuts} from 'react-shortcuts';
-import {
-    extSystemCreate,
-    extSystemDelete,
-    extSystemUpdate,
-    AREA_EXT_SYSTEM_DETAIL,
-} from 'actions/admin/extSystem.jsx';
+import {AREA_EXT_SYSTEM_DETAIL, extSystemCreate, extSystemDelete, extSystemUpdate} from 'actions/admin/extSystem.jsx';
 import {Button} from '../../components/ui';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import ExtSystemForm from 'components/admin/ExtSystemForm.jsx';

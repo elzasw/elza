@@ -1,13 +1,13 @@
 // --
 import React from 'react';
-import { connect } from 'react-redux';
-import { AbstractReactComponent, i18n } from 'components/shared';
+import {connect} from 'react-redux';
+import {AbstractReactComponent, i18n} from 'components/shared';
 import * as perms from './../../actions/user/Permission.jsx';
 import AddRemoveList from '../shared/list/AddRemoveList';
-import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
+import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
 import SelectItemsForm from './SelectItemsForm';
 import UserAndGroupField from './UserAndGroupField';
-import { renderGroupItem, renderUserItem, renderUserOrGroupItem } from './adminRenderUtils';
+import {renderGroupItem, renderUserItem, renderUserOrGroupItem} from './adminRenderUtils';
 import FundsPermissionPanel from './FundsPermissionPanel';
 
 /**

@@ -2,12 +2,12 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import { connect } from 'react-redux';
-import { AbstractReactComponent, AddRemoveList, i18n, Icon, StoreHorizontalLoader, Tabs } from 'components/shared';
-import { getIdsList } from 'stores/app/utils.jsx';
-import { joinGroups, leaveGroup, usersUserDetailFetchIfNeeded } from 'actions/admin/user.jsx';
-import { modalDialogShow } from 'actions/global/modalDialog.jsx';
-import { renderGroupItem } from 'components/admin/adminRenderUtils.jsx';
+import {connect} from 'react-redux';
+import {AbstractReactComponent, AddRemoveList, i18n, Icon, StoreHorizontalLoader, Tabs} from 'components/shared';
+import {getIdsList} from 'stores/app/utils.jsx';
+import {joinGroups, leaveGroup, usersUserDetailFetchIfNeeded} from 'actions/admin/user.jsx';
+import {modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {renderGroupItem} from 'components/admin/adminRenderUtils.jsx';
 import './UserDetail.scss';
 import FundsPermissionPanel from './FundsPermissionPanel';
 import ScopesPermissionPanel from './ScopesPermissionPanel';
@@ -15,7 +15,7 @@ import AdvancedPermissionPanel from './AdvancedPermissionPanel';
 import SelectItemsForm from './SelectItemsForm';
 import GroupField from './GroupField';
 import AdminRightsContainer from './AdminRightsContainer';
-import { WebApi } from '../../actions/WebApi';
+import {WebApi} from '../../actions/WebApi';
 import DetailHeader from '../shared/detail/DetailHeader';
 
 /**

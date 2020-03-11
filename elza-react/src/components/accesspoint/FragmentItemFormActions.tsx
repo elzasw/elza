@@ -1,8 +1,5 @@
-import {valuesEquals} from '../Utils';
-import {i18n} from '../shared';
-import {ItemFormActions} from "./ItemFormActions";
-import {WebApi} from '../../actions/index.jsx';
-
+import { WebApi } from '../../actions/index.jsx';
+import { ItemFormActions } from './ItemFormActions';
 
 interface BaseAction {
     area: string;

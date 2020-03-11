@@ -1,9 +1,9 @@
-import { WebApi } from 'actions/index.jsx';
+import {WebApi} from 'actions/index.jsx';
 
-import { SimpleListActions } from 'shared/list';
-import { DetailActions } from 'shared/detail';
-import { indexById, storeFromArea } from 'shared/utils';
-import { refExternalSystemListInvalidate } from 'actions/refTables/externalSystems';
+import {SimpleListActions} from 'shared/list';
+import {DetailActions} from 'shared/detail';
+import {indexById, storeFromArea} from 'shared/utils';
+import {refExternalSystemListInvalidate} from 'actions/refTables/externalSystems';
 
 export const AREA_EXT_SYSTEM_LIST = 'extSystemList';
 export const AREA_EXT_SYSTEM_DETAIL = 'extSystemDetail';

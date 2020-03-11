@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { AbstractReactComponent, FormInput, Icon, NoFocusButton } from 'components/shared';
+import {AbstractReactComponent, FormInput, Icon, NoFocusButton} from 'components/shared';
 
 /**
  * Komponenta pro vytvoření stejných poliček pro editaci záznamu

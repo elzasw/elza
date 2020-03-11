@@ -1,6 +1,6 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {isPermissionAction} from 'actions/admin/permission.jsx'
-import permission from "./permission.jsx"
+import {isPermissionAction} from 'actions/admin/permission.jsx';
+import permission from './permission.jsx';
 
 const initialState = {
     id: null,

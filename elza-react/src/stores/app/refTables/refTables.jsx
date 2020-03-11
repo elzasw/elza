@@ -1,10 +1,10 @@
 import * as types from 'actions/constants/ActionTypes.js';
 
-import ruleSet from './ruleSet.jsx'
-import institutions from './institutions.jsx'
-import partyNameFormTypes from './partyNameFormTypes.jsx'
-import partyTypes from './partyTypes.jsx'
-import recordTypes from './recordTypes.jsx'
+import ruleSet from './ruleSet.jsx';
+import institutions from './institutions.jsx';
+import partyNameFormTypes from './partyNameFormTypes.jsx';
+import partyTypes from './partyTypes.jsx';
+import recordTypes from './recordTypes.jsx';
 import rulDataTypes from './rulDataTypes.jsx';
 import calendarTypes from './calendarTypes.jsx';
 import scopesData from './scopesData.jsx';
@@ -13,9 +13,9 @@ import visiblePolicyTypes from './visiblePolicyTypes.jsx';
 import outputTypes from './outputTypes.jsx';
 import templates from './templates.jsx';
 import externalSystems from './externalSystems.jsx';
-import structureTypes from "./structureTypes";
-import DetailReducer from "../../../shared/detail/DetailReducer";
-import processAreaStores from "../../../shared/utils/processAreaStores";
+import structureTypes from './structureTypes';
+import DetailReducer from '../../../shared/detail/DetailReducer';
+import processAreaStores from '../../../shared/utils/processAreaStores';
 
 const initialState = {
     ruleSet: ruleSet(),

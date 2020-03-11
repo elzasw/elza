@@ -1,16 +1,10 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-
-import {connect} from 'react-redux'
-import {i18n, RibbonGroup, Utils, Icon} from 'components/shared';
-import {Ribbon, AdminLogsDetail} from 'components/index.jsx';
-import PageLayout from "../shared/layout/PageLayout";
+import {RibbonGroup, Utils} from 'components/shared';
+import {AdminLogsDetail, Ribbon} from 'components/index.jsx';
+import PageLayout from '../shared/layout/PageLayout';
 import {Shortcuts} from 'react-shortcuts';
-import {Button} from 'react-bootstrap'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {storeFromArea} from 'shared/utils'
 import './AdminExtSystemPage.scss';
-import AbstractReactComponent from "../../components/AbstractReactComponent";
+import AbstractReactComponent from '../../components/AbstractReactComponent';
 
 import {PropTypes} from 'prop-types';
 

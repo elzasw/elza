@@ -1,6 +1,5 @@
 import React from 'react';
-import {AbstractReactComponent, Icon, i18n} from 'components/shared';
-import {connect} from 'react-redux'
+import {AbstractReactComponent, i18n} from 'components/shared';
 import classNames from 'classnames';
 import './DescItemLabel.scss';
 

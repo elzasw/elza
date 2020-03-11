@@ -1,49 +1,48 @@
-import { notEmpty, objectById } from "../../shared/utils";
-import * as factory from "../../shared/factory";
-
-/**
- * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
- */
-
+import {notEmpty, objectById} from '../../shared/utils';
+import * as factory from '../../shared/factory';
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import SubNodeForm from "./SubNodeForm";
+import SubNodeForm from './SubNodeForm';
 import {AbstractReactComponent, i18n, Icon, NoFocusButton} from 'components/shared';
 
-import {connect} from 'react-redux'
+import {connect} from 'react-redux';
 import {
     copyDescItemType,
     lockDescItemType,
     nocopyDescItemType,
-    unlockAllDescItemType,
     toggleCopyAllDescItemType,
-    unlockDescItemType
-} from 'actions/arr/nodeSetting.jsx'
-import {deleteNode} from '../../actions/arr/node.jsx'
-import {createFundRoot, isFundRootId} from './ArrUtils.jsx'
+    unlockAllDescItemType,
+    unlockDescItemType,
+} from 'actions/arr/nodeSetting.jsx';
+import {deleteNode} from '../../actions/arr/node.jsx';
+import {createFundRoot, isFundRootId} from './ArrUtils.jsx';
 import * as perms from 'actions/user/Permission.jsx';
-import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
+import {nodeFormActions} from 'actions/arr/subNodeForm.jsx';
 import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
-import ArrHistoryForm from 'components/arr/ArrHistoryForm.jsx'
-import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx'
+import ArrHistoryForm from 'components/arr/ArrHistoryForm.jsx';
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {WebApi} from 'actions/index.jsx';
-import {getMapFromList, indexById} from 'stores/app/utils.jsx'
+import {getMapFromList, indexById} from 'stores/app/utils.jsx';
 import {fundSelectSubNode} from 'actions/arr/node.jsx';
 import {addToastr, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
-import {DropdownButton, Dropdown} from 'react-bootstrap';
-import TemplateForm, {EXISTS_TEMPLATE, NEW_TEMPLATE} from "./TemplateForm";
-import TemplateUseForm from "./TemplateUseForm";
-import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
-import DescItemFactory from "components/arr/nodeForm/DescItemFactory.jsx";
-import {CLS, CLS_ITEM_ENUM} from "../../shared/factory/factoryConsts";
-import storeFromArea from "../../shared/utils/storeFromArea";
-import * as issuesActions from "../../actions/arr/issues";
-import IssueForm from "../form/IssueForm";
-import {objectEqualsDiff} from 'components/Utils'
-import {NODE_SUB_NODE_FORM_CMP} from "../../stores/app/arr/subNodeForm";
+import {Dropdown, DropdownButton} from 'react-bootstrap';
+import TemplateForm, {EXISTS_TEMPLATE, NEW_TEMPLATE} from './TemplateForm';
+import TemplateUseForm from './TemplateUseForm';
+import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx';
+import DescItemFactory from 'components/arr/nodeForm/DescItemFactory.jsx';
+import {CLS, CLS_ITEM_ENUM} from '../../shared/factory/factoryConsts';
+import storeFromArea from '../../shared/utils/storeFromArea';
+import * as issuesActions from '../../actions/arr/issues';
+import IssueForm from '../form/IssueForm';
+import {objectEqualsDiff} from 'components/Utils';
+import {NODE_SUB_NODE_FORM_CMP} from '../../stores/app/arr/subNodeForm';
 
 import './NodeSubNodeForm.scss';
+
+/**
+ * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
+ */
 
 class NodeSubNodeForm extends AbstractReactComponent {
     constructor(props) {

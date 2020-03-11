@@ -18,7 +18,7 @@
 /**
  * Ajax je pro validaci datace, i18n překlad
  **/
-import i18n from "./i18n";
+import i18n from './i18n';
 //import AjaxUtils from "./AjaxUtils";
 
 /**

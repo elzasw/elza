@@ -5,7 +5,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 import * as types from 'actions/constants/ActionTypes.js';
 import {Modal} from 'react-bootstrap';
-import i18n from "../../components/i18n";
+import i18n from '../../components/i18n';
 
 const AsyncWaitingDialog = connect()(class extends React.Component {
     constructor(props) {

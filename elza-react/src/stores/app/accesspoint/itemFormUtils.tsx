@@ -1,17 +1,19 @@
-import {getMapFromList, indexById} from '../utils2'
-import {hasDescItemTypeValue} from '../../../components/arr/ArrUtils'
-import {DisplayType} from "../../../constants";
-import {toDuration} from "../../../components/validate";
+import { hasDescItemTypeValue } from '../../../components/arr/ArrUtils';
+import { toDuration } from '../../../components/validate';
+import { DisplayType } from '../../../constants';
+import { getMapFromList, indexById } from '../utils2';
 import {
     ApItemExt,
-    ApItemVO, IFormData,
-    IItemFormState, ItemData,
+    ApItemVO,
+    IFormData,
+    IItemFormState,
+    ItemData,
     ItemTypeExt,
     ItemTypeLiteVO,
     RefType,
-    RefTypeExt
-} from "./itemForm";
-import {DataTypeCode} from "./itemFormInterfaces";
+    RefTypeExt,
+} from './itemForm';
+import { DataTypeCode } from './itemFormInterfaces';
 
 export enum ItemAvailability {
     REQUIRED= "REQUIRED",

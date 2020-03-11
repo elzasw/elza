@@ -7,7 +7,7 @@
 import PropTypes from 'prop-types';
 
 import * as React from 'react';
-import i18n from "./i18n";
+import i18n from './i18n';
 
 export default class LongText extends React.Component {
     static propTypes = {

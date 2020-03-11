@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbstractReactComponent, Autocomplete, i18n } from '../../components/shared';
+import {AbstractReactComponent, Autocomplete, i18n} from '../../components/shared';
 import classNames from 'classnames';
 
 import '../arr/nodeForm/DescItemTypeSpec.scss';

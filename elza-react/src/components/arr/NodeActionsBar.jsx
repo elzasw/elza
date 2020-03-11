@@ -9,19 +9,17 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import {connect} from 'react-redux'
-import {WebApi} from 'actions/index.jsx';
-import {getOneSettings} from 'components/arr/ArrUtils.jsx';
+import {connect} from 'react-redux';
 import {
     fundNodeSubNodeFulltextSearch,
     fundSelectSubNode,
     fundSubNodesNextPage,
-    fundSubNodesPrevPage
+    fundSubNodesPrevPage,
 } from 'actions/arr/node.jsx';
-import {AbstractReactComponent, i18n, Icon, Loading, Search} from 'components/shared';
-import AddNodeCross from './AddNodeCross'
-import GoToPositionForm from './GoToPositionForm'
-import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {AbstractReactComponent, i18n, Icon, Search} from 'components/shared';
+import AddNodeCross from './AddNodeCross';
+import GoToPositionForm from './GoToPositionForm';
+import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 
 import './NodeActionsBar.scss';
 

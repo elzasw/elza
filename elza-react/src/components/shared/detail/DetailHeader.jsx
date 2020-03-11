@@ -1,6 +1,6 @@
 import React from 'react';
-import AbstractReactComponent from "../../AbstractReactComponent";
-import "./DetailHeader.scss";
+import AbstractReactComponent from '../../AbstractReactComponent';
+import './DetailHeader.scss';
 // ---
 
 /**

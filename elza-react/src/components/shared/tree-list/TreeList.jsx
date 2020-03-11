@@ -1,12 +1,12 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import PropTypes from "prop-types";
-import ListItem from "./list-item/ListItem.jsx";
+import React from 'react';
+import ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
+import ListItem from './list-item/ListItem.jsx';
 import {Shortcuts} from 'react-shortcuts';
-import {addShortcutManager} from "components/Utils";
+import {addShortcutManager} from 'components/Utils';
 import defaultKeymap from './TreeListKeymap.jsx';
 import scrollIntoView from 'dom-scroll-into-view';
-import getItemName from "components/shared/utils/getItemName.jsx";
+import getItemName from 'components/shared/utils/getItemName.jsx';
 import './TreeList.scss';
 
 // node state codes

@@ -1,13 +1,26 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {connect} from 'react-redux'
-import {AbstractReactComponent, Icon, i18n, ListBox, StoreHorizontalLoader, HorizontalLoader, FormInput} from 'components/shared';
-import {fetchFundOutputFunctionsIfNeeded, fundOutputFunctionsFilterByState, fundOutputActionRun, fundOutputActionInterrupt} from 'actions/arr/fundOutputFunctions.jsx'
-import {fundActionFetchConfigIfNeeded} from 'actions/arr/fundAction.jsx'
-import {indexById} from 'stores/app/utils.jsx'
+import {connect} from 'react-redux';
+import {
+    AbstractReactComponent,
+    FormInput,
+    HorizontalLoader,
+    i18n,
+    Icon,
+    ListBox,
+    StoreHorizontalLoader,
+} from 'components/shared';
+import {
+    fetchFundOutputFunctionsIfNeeded,
+    fundOutputActionInterrupt,
+    fundOutputActionRun,
+    fundOutputFunctionsFilterByState,
+} from 'actions/arr/fundOutputFunctions.jsx';
+import {fundActionFetchConfigIfNeeded} from 'actions/arr/fundAction.jsx';
+import {indexById} from 'stores/app/utils.jsx';
 import {dateTimeToString} from 'components/Utils.jsx';
-import './FundOutputFunctions.scss'
-import {actionStateTranslation} from "../../actions/arr/fundAction";
+import './FundOutputFunctions.scss';
+import {actionStateTranslation} from '../../actions/arr/fundAction';
 
 const ACTION_RUNNING_STATE = ['RUNNING', 'WAITING', 'PLANNED'];
 const ACTION_NOT_RUNNING_STATE = ['FINISHED', 'ERROR', 'INTERRUPTED', 'OUTDATED'];

@@ -2,8 +2,8 @@
  * Render Modálního dialogu ze store
  */
 import React from 'react';
-import { connect } from 'react-redux';
-import { modalDialogHide } from 'actions/global/modalDialog.jsx';
+import {connect} from 'react-redux';
+import {modalDialogHide} from 'actions/global/modalDialog.jsx';
 
 import './ModalDialog.scss';
 import AbstractReactComponent from '../../AbstractReactComponent';

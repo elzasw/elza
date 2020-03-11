@@ -5,13 +5,13 @@
  * @since 18.1.2016
  */
 import React from 'react';
-import ReactDOM from 'react-dom';
 
-import './AdminFulltextPage.scss';;
-
-import {connect} from 'react-redux'
-import {Ribbon, AdminFulltextReindex} from 'components/index.jsx';
+import './AdminFulltextPage.scss';
+import {connect} from 'react-redux';
+import {AdminFulltextReindex, Ribbon} from 'components/index.jsx';
 import {PageLayout} from 'pages/index.jsx';
+
+;
 
 const AdminFulltextPage = class AdminFulltextPage extends React.Component {
     constructor(props) {

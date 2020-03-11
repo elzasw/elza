@@ -1,4 +1,4 @@
-import {SimpleListActions} from 'shared/list'
+import {SimpleListActions} from 'shared/list';
 
 import {WebApi} from 'actions/index.jsx';
 

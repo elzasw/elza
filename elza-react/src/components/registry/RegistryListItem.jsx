@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { AbstractReactComponent, Icon } from 'components/shared';
+import {AbstractReactComponent, Icon} from 'components/shared';
 import classNames from 'classnames';
 
 import './RegistryListItem.scss';

@@ -1,4 +1,4 @@
-import { WebApi } from 'actions/index.jsx';
+import {WebApi} from 'actions/index.jsx';
 
 import * as types from 'actions/constants/ActionTypes.js';
 

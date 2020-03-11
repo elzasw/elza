@@ -5,7 +5,7 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import {TooltipTrigger, AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent, i18n, TooltipTrigger} from 'components/shared';
 
 class ItemTooltipWrapper extends AbstractReactComponent {
 

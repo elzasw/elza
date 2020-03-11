@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { WebApi } from 'actions/index.jsx';
-import { AbstractReactComponent, Autocomplete } from 'components/shared';
+import {WebApi} from 'actions/index.jsx';
+import {AbstractReactComponent, Autocomplete} from 'components/shared';
 
 class FundField extends AbstractReactComponent {
 

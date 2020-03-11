@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { connect } from 'react-redux';
-import { Button } from '../ui';
-import { modalDialogShow } from 'actions/global/modalDialog.jsx';
-import { AbstractReactComponent, i18n, Icon } from 'components/shared';
-import { indexById, objectById } from 'stores/app/utils.jsx';
-import { normalizeNameObject } from 'actions/party/party.jsx';
+import {connect} from 'react-redux';
+import {Button} from '../ui';
+import {modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {AbstractReactComponent, i18n, Icon} from 'components/shared';
+import {indexById, objectById} from 'stores/app/utils.jsx';
+import {normalizeNameObject} from 'actions/party/party.jsx';
 
 import './PartyDetailNames.scss';
 import PartyNameForm from './PartyNameForm';

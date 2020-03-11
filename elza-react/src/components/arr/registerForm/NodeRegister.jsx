@@ -1,14 +1,10 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import ReactDOM from 'react-dom';
-
-import {WebApi} from 'actions/index.jsx';
-import {Icon, i18n, AbstractReactComponent} from 'components/shared';
-import {decorateAutocompleteValue} from './../nodeForm/DescItemUtils.jsx'
-import {objectById} from 'stores/app/utils.jsx'
+import {AbstractReactComponent} from 'components/shared';
+import {decorateAutocompleteValue} from './../nodeForm/DescItemUtils.jsx';
 
 import './NodeRegister.scss';
-import RegistryField from "../../registry/RegistryField";
+import RegistryField from '../../registry/RegistryField';
 
 class NodeRegister extends AbstractReactComponent {
 

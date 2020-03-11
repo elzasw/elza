@@ -1,22 +1,14 @@
 import PropTypes from 'prop-types';
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import {
-    Icon,
-    i18n,
-    AbstractReactComponent,
-    NoFocusButton
-} from '../../components/shared'
-import {connect} from 'react-redux'
+import { connect } from 'react-redux';
+import { IItemFormState } from '../../stores/app/accesspoint/itemForm';
+import { Dispatch } from '../../typings/globals';
 import '../arr/NodeSubNodeForm.scss';
-import { ItemForm } from "./ItemForm";
-import {apNameFormActions} from "./ApNameFormActions";
-import {ItemFactory} from "./ItemFactory";
-import {ItemFactoryInterface} from "./ItemFactoryInterface";
-import {Dispatch} from "../../typings/globals";
-import {ItemFormActions} from "./ItemFormActions";
-import {IItemFormState} from "../../stores/app/accesspoint/itemForm";
-
+import { apNameFormActions } from './ApNameFormActions';
+import { ItemFactory } from './ItemFactory';
+import { ItemFactoryInterface } from './ItemFactoryInterface';
+import { ItemForm } from './ItemForm';
+import { ItemFormActions } from './ItemFormActions';
 
 interface State {}
 

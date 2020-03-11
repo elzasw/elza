@@ -1,8 +1,8 @@
 /**
  * Akce pro typy připomínek.
  */
-import {DetailActions} from 'shared/detail'
-import {WebApi} from "../WebApi";
+import {DetailActions} from 'shared/detail';
+import {WebApi} from '../WebApi';
 
 export const AREA = 'refTables.issueTypes';
 

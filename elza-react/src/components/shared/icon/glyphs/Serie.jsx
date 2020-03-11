@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 const Serie = (props) => {
     return(
@@ -9,7 +9,7 @@ const Serie = (props) => {
             <rect width="7.12" height="5.61" x="0.301" y="7.14" ry="1.41" />
             <rect ry="1.41" y="1.45" x="12.6" height="5.61" width="7.12" />
             <rect width="7.12" height="5.61" x="12.6" y="12.6" ry="1.41" />
-        </svg>       
+        </svg>
     )
 }
 export default Serie;

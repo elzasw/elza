@@ -1,6 +1,6 @@
 import {WebApi} from 'actions/index.jsx';
-import * as SimpleListActions from "../../shared/list/simple/SimpleListActions";
-import * as DetailActions from "../../shared/detail/DetailActions";
+import * as SimpleListActions from '../../shared/list/simple/SimpleListActions';
+import * as DetailActions from '../../shared/detail/DetailActions';
 
 export const AREA_ADMIN_FUNDS = 'adminRegion.funds';
 export const AREA_ADMIN_FUND = 'adminRegion.fund';

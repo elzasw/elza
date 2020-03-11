@@ -1,11 +1,11 @@
 import React from 'react';
-import { reduxForm } from 'redux-form';
-import { AbstractReactComponent, FormInput, i18n, Icon } from 'components/shared';
+import {reduxForm} from 'redux-form';
+import {AbstractReactComponent, FormInput, i18n, Icon} from 'components/shared';
 import DatationField from '../party/DatationField';
-import { Col, Form, Modal, Row } from 'react-bootstrap';
-import { Button } from '../ui';
-import { submitForm } from 'components/form/FormUtils.jsx';
-import { calendarTypesFetchIfNeeded } from 'actions/refTables/calendarTypes.jsx';
+import {Col, Form, Modal, Row} from 'react-bootstrap';
+import {Button} from '../ui';
+import {submitForm} from 'components/form/FormUtils.jsx';
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
 
 import './ArrSearchForm.scss';
 

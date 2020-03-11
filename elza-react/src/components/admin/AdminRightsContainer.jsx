@@ -1,7 +1,7 @@
 // ---
 import React from 'react';
-import "./AdminRightsContainer.scss";
-import AbstractReactComponent from "../AbstractReactComponent";
+import './AdminRightsContainer.scss';
+import AbstractReactComponent from '../AbstractReactComponent';
 
 /**
  * Wrapper pro levou a pravou část pro stránky editace oprávnění.

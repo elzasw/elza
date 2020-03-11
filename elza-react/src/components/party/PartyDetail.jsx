@@ -1,5 +1,5 @@
 import React from 'react';
-import { reduxForm } from 'redux-form';
+import {reduxForm} from 'redux-form';
 import PartyListItem from './PartyListItem';
 import PartyDetailIdentifiers from './PartyDetailIdentifiers';
 import PartyDetailNames from './PartyDetailNames';
@@ -15,25 +15,25 @@ import {
     StoreHorizontalLoader,
     Utils,
 } from 'components/shared';
-import { Form } from 'react-bootstrap';
-import { Button } from '../ui';
-import { refPartyTypesFetchIfNeeded } from 'actions/refTables/partyTypes.jsx';
-import { calendarTypesFetchIfNeeded } from 'actions/refTables/calendarTypes.jsx';
-import { partyAdd, partyDetailFetchIfNeeded, partyUpdate } from 'actions/party/party.jsx';
-import { userDetailsSaveSettings } from 'actions/user/userDetail.jsx';
-import { getMapFromList, objectById } from 'stores/app/utils.jsx';
-import { Shortcuts } from 'react-shortcuts';
-import { getOneSettings, setSettings } from 'components/arr/ArrUtils.jsx';
-import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
+import {Form} from 'react-bootstrap';
+import {Button} from '../ui';
+import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx';
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
+import {partyAdd, partyDetailFetchIfNeeded, partyUpdate} from 'actions/party/party.jsx';
+import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx';
+import {getMapFromList, objectById} from 'stores/app/utils.jsx';
+import {Shortcuts} from 'react-shortcuts';
+import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
 import * as perms from 'actions/user/Permission.jsx';
-import { initForm } from 'actions/form/inlineForm.jsx';
-import { refRecordTypesFetchIfNeeded } from 'actions/refTables/recordTypes.jsx';
-import { PARTY_TYPE_CODES } from '../../constants.tsx';
-import { PropTypes } from 'prop-types';
+import {initForm} from 'actions/form/inlineForm.jsx';
+import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx';
+import {PARTY_TYPE_CODES} from '../../constants.tsx';
+import {PropTypes} from 'prop-types';
 import defaultKeymap from './PartyDetailKeymap.jsx';
 import './PartyDetail.scss';
-import { requestScopesIfNeeded } from '../../actions/refTables/scopesData';
-import { addToastrWarning } from '../shared/toastr/ToastrActions';
+import {requestScopesIfNeeded} from '../../actions/refTables/scopesData';
+import {addToastrWarning} from '../shared/toastr/ToastrActions';
 import * as StateApproval from '../enum/StateApproval';
 
 

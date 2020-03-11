@@ -1,4 +1,4 @@
-import * as Utils from '../Utils'
+import * as Utils from '../Utils';
 import * as ExceptionUtils from 'components/ExceptionUtils.jsx';
 import * as Toastr from 'components/shared/toastr/index.jsx';
 import * as Tabs from 'components/shared/tabs/Tabs.jsx';

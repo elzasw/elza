@@ -5,8 +5,8 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx';
 import {indexById} from 'stores/app/utils.jsx';
-import {ActionState} from '../../constants.tsx'
-import i18n from "../../components/i18n";
+import {ActionState} from '../../constants.tsx';
+import i18n from '../../components/i18n';
 
 
 export function actionStateTranslation(state) {

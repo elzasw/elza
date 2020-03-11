@@ -1,18 +1,18 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import { WebApi } from 'actions/index.jsx';
-import { AbstractReactComponent, Autocomplete, i18n, Icon, TooltipTrigger } from 'components/shared';
-import { connect } from 'react-redux';
-import { Dropdown, DropdownButton } from 'react-bootstrap';
-import { Button } from '../ui';
-import { refPartyTypesFetchIfNeeded } from 'actions/refTables/partyTypes.jsx';
+import {WebApi} from 'actions/index.jsx';
+import {AbstractReactComponent, Autocomplete, i18n, Icon, TooltipTrigger} from 'components/shared';
+import {connect} from 'react-redux';
+import {Dropdown, DropdownButton} from 'react-bootstrap';
+import {Button} from '../ui';
+import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx';
 import * as perms from 'actions/user/Permission.jsx';
-import { partyDetailFetchIfNeeded } from 'actions/party/party.jsx';
-import { routerNavigate } from 'actions/router.jsx';
-import { DEFAULT_LIST_SIZE } from '../../constants.tsx';
-import { modalDialogShow } from 'actions/global/modalDialog.jsx';
-import { debounce } from 'shared/utils';
+import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx';
+import {routerNavigate} from 'actions/router.jsx';
+import {DEFAULT_LIST_SIZE} from '../../constants.tsx';
+import {modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {debounce} from 'shared/utils';
 import classNames from 'classnames';
 
 import './PartyField.scss';

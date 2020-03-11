@@ -1,6 +1,6 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import fundTree from './../arr/fundTree.jsx';
-import { isFundTreeAction } from 'actions/arr/fundTree.jsx';
+import {isFundTreeAction} from 'actions/arr/fundTree.jsx';
 
 const initialState = {
     id: null,

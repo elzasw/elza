@@ -1,58 +1,28 @@
 import './ArrPage.scss';
 import './ArrParentPage.scss';
+import PropTypes from 'prop-types';
+
+import React from 'react';
+import {i18n} from 'components/shared';
+import {AbstractReactComponent, ArrFundPanel} from 'components/index.jsx';
+import * as types from 'actions/constants/ActionTypes.js';
+import {fundChangeReadMode, fundsFetchIfNeeded} from 'actions/arr/fund.jsx';
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
+import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
+import {setFocus} from 'actions/global/focus.jsx';
+import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
+import {routerNavigate} from 'actions/router.jsx';
+import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx';
+import {Shortcuts} from 'react-shortcuts';
+import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx';
+import PageLayout from '../shared/layout/PageLayout';
+import defaultKeymap from './ArrParentPageKeymap.jsx';
+import {FOCUS_KEYS} from '../../constants.tsx';
+import * as groups from '../../actions/refTables/groups';
 
 /**
  * Stránka předku archivních pomůcek, např. pro pořádání, přesuny atp. Společným znakem je vybraný aktivní archivní soubor.
  */
-
-import PropTypes from 'prop-types';
-
-import React from 'react';
-import ReactDOM from 'react-dom';
-import {indexById} from 'stores/app/utils.jsx'
-import {connect} from 'react-redux'
-import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
-import {Link, IndexLink} from 'react-router';
-import {Tabs, Icon, Ribbon, i18n, Utils} from 'components/shared';
-import {ArrFundPanel, FundSettingsForm} from 'components/index.jsx';
-import * as types from 'actions/constants/ActionTypes.js';
-
-import {
-    RibbonGroup,
-    AbstractReactComponent,
-    NodeTabs,
-    ListBox2,
-    LazyListBox,
-    FundPackets,
-    FundFiles,
-    FundTreeMain
-} from 'components/index.jsx';
-import {ButtonGroup, Button, DropdownButton, Dropdown, Collapse} from 'react-bootstrap';
-import {WebApi} from 'actions/index.jsx';
-import {modalDialogShow} from 'actions/global/modalDialog.jsx'
-import {showRegisterJp, fundsFetchIfNeeded} from 'actions/arr/fund.jsx'
-import {versionValidate, versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation.jsx'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {developerNodeScenariosRequest} from 'actions/global/developer.jsx'
-import {isFundRootId, getSettings, setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx';
-import {setFocus} from 'actions/global/focus.jsx'
-import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
-import {fundNodesPolicyFetchIfNeeded} from 'actions/arr/fundNodesPolicy.jsx'
-import {fundActionFormChange, fundActionFormShow} from 'actions/arr/fundAction.jsx'
-import {fundSelectSubNode} from 'actions/arr/nodes.jsx'
-import {createFundRoot} from 'components/arr/ArrUtils.jsx'
-import {setVisiblePolicyRequest} from 'actions/arr/visiblePolicy.jsx'
-import {routerNavigate} from 'actions/router.jsx'
-import {fundTreeFetchIfNeeded} from 'actions/arr/fundTree.jsx'
-import {Shortcuts} from 'react-shortcuts';
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import * as perms from 'actions/user/Permission.jsx';
-import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx'
-import PageLayout from "../shared/layout/PageLayout";
-import {fundChangeReadMode} from 'actions/arr/fund.jsx'
-import defaultKeymap from './ArrParentPageKeymap.jsx';
-import {FOCUS_KEYS} from "../../constants.tsx";
-import * as groups from "../../actions/refTables/groups";
 
 export default class ArrParentPage extends AbstractReactComponent {
 

@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
-import React from "react";
-import {WebApi} from "actions/index.jsx";
+import React from 'react';
+import {WebApi} from 'actions/index.jsx';
 import {AbstractReactComponent, Autocomplete} from 'components/shared';
-import {renderUserItem} from "./adminRenderUtils.jsx"
+import {renderUserItem} from './adminRenderUtils.jsx';
 
 class UserField extends AbstractReactComponent {
     static defaultProps = {
