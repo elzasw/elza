@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, FormInput, i18n, Icon, NoFocusButton} from 'components/shared';
-import {objectFromWKT, wktFromTypeAndData, wktType} from 'components/Utils.jsx';
-import {decorateValue} from './DescItemUtils.jsx';
-import {Button} from '../../ui';
+import { AbstractReactComponent, FormInput, i18n, Icon, NoFocusButton } from 'components/shared';
+import { objectFromWKT, wktFromTypeAndData, wktType } from 'components/Utils.jsx';
+import { decorateValue } from './DescItemUtils.jsx';
+import { Button } from '../../ui';
 import DescItemLabel from './DescItemLabel.jsx';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 
@@ -43,21 +43,21 @@ class DescItemCoordinates extends AbstractReactComponent {
 
     handleChangeData = (e) => {
         const val = wktFromTypeAndData(this.state.type, e.target.value);
-        if (val != this.props.descItem.value) {
+        if (val !== this.props.descItem.value) {
             this.props.onChange(val);
         }
     };
 
     handleChangeSelect = (e) => {
         const val = wktFromTypeAndData(e.target.value, this.state.data);
-        if (val != this.props.descItem.value) {
+        if (val !== this.props.descItem.value) {
             this.props.onChange(val);
         }
     };
 
     render() {
-        const {descItem, locked, repeatable, onUpload, readMode, cal} = this.props;
-        const {type, data} = this.state;
+        const { descItem, locked, repeatable, onUpload, readMode, cal } = this.props;
+        const { type, data } = this.state;
         let value = cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : descItem.value;
 
         if (readMode) {
@@ -69,7 +69,7 @@ class DescItemCoordinates extends AbstractReactComponent {
                 <div className='desc-item-value' key='cords'>
                     <Button variant="default" disabled>{wktType(type)}</Button>
                     {
-                        type == 'POINT' ?
+                        type === 'POINT' ?
                             <ItemTooltipWrapper tooltipTitle="dataType.coordinates.format">
                                 <input
                                     {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}

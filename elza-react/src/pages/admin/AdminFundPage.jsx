@@ -4,20 +4,17 @@
 import './AdminFundPage.scss';
 
 import React from 'react';
-import {connect} from 'react-redux'
-import {GroupDetail, AddGroupForm, Ribbon} from 'components/index.jsx';
-import PageLayout from "../shared/layout/PageLayout";
-import {i18n, Search, ListBox, AbstractReactComponent, Icon, RibbonGroup, StoreHorizontalLoader} from 'components/shared';
-import {indexById} from 'stores/app/utils.jsx'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
-import {renderGroupItem} from "components/admin/adminRenderUtils.jsx"
-import {fundsFilter, fundsFetchIfNeeded, selectFund} from "./../../actions/admin/fund";
-import {renderFundItem} from "../../components/admin/adminRenderUtils";
-import storeFromArea from "../../shared/utils/storeFromArea";
-import * as fund from "../../actions/admin/fund";
-import FundDetail from "../../components/admin/FundDetail";
-import FundsPermissionPanel from "../../components/admin/FundsPermissionPanel";
+import {connect} from 'react-redux';
+import {Ribbon} from 'components/index.jsx';
+import PageLayout from '../shared/layout/PageLayout';
+import {AbstractReactComponent, i18n, ListBox, RibbonGroup, Search, StoreHorizontalLoader} from 'components/shared';
+import {indexById} from 'stores/app/utils.jsx';
+import {fundsFetchIfNeeded, fundsFilter, selectFund} from './../../actions/admin/fund';
+import {renderFundItem} from '../../components/admin/adminRenderUtils';
+import storeFromArea from '../../shared/utils/storeFromArea';
+import * as fund from '../../actions/admin/fund';
+import FundDetail from '../../components/admin/FundDetail';
+import FundsPermissionPanel from '../../components/admin/FundsPermissionPanel';
 
 class AdminFundPage extends AbstractReactComponent {
     constructor(props) {
@@ -26,8 +23,8 @@ class AdminFundPage extends AbstractReactComponent {
         this.buildRibbon = this.buildRibbon.bind(this);
 
         this.state = {
-            fundRows: this.getFundRows(props)
-        }
+            fundRows: this.getFundRows(props),
+        };
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -44,8 +41,8 @@ class AdminFundPage extends AbstractReactComponent {
         }
 
         const rows = [
-            {id: FundsPermissionPanel.ALL_ID, name: i18n("admin.perms.tabs.funds.items.fundAll")},
-            ...funds.rows
+            {id: FundsPermissionPanel.ALL_ID, name: i18n('admin.perms.tabs.funds.items.fundAll')},
+            ...funds.rows,
         ];
 
         return rows;
@@ -64,7 +61,7 @@ class AdminFundPage extends AbstractReactComponent {
     };
 
     handleSearchClear = () => {
-        this.props.dispatch(fundsFilter(""));
+        this.props.dispatch(fundsFilter(''));
     };
 
     buildRibbon() {
@@ -73,20 +70,20 @@ class AdminFundPage extends AbstractReactComponent {
 
         let altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key='alt-actions' className="small">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup key='alt-actions' className="small">{altActions}</RibbonGroup>;
         }
         let itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key='item-actions' className="small">{itemActions}</RibbonGroup>
+            itemSection = <RibbonGroup key='item-actions' className="small">{itemActions}</RibbonGroup>;
         }
 
         return (
-            <Ribbon admin {...this.props}  altSection={altSection} itemSection={itemSection} />
-        )
+            <Ribbon admin {...this.props} altSection={altSection} itemSection={itemSection}/>
+        );
     }
 
     renderFundDetail = () => {
-        return <FundDetail />
+        return <FundDetail/>;
     };
 
     render() {
@@ -104,7 +101,7 @@ class AdminFundPage extends AbstractReactComponent {
                     onSearch={this.handleSearch}
                     onClear={this.handleSearchClear}
                     placeholder={i18n('search.input.search')}
-                    value={funds.filter.text || ""}
+                    value={funds.filter.text || ''}
                 />
                 <StoreHorizontalLoader store={funds}/>
                 {funds.fetched && <ListBox
@@ -133,7 +130,7 @@ class AdminFundPage extends AbstractReactComponent {
                 leftPanel={leftPanel}
                 centerPanel={centerPanel}
             />
-        )
+        );
     }
 }
 
@@ -147,7 +144,7 @@ function mapStateToProps(state) {
         splitter,
         funds: storeFromArea(state, fund.AREA_ADMIN_FUNDS),
         fund: storeFromArea(state, fund.AREA_ADMIN_FUND),
-    }
+    };
 }
 
 export default connect(mapStateToProps)(AdminFundPage);

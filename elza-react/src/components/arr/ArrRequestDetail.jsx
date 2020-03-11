@@ -3,47 +3,37 @@
  */
 
 import React from 'react';
-import {outputTypesFetchIfNeeded} from "actions/refTables/outputTypes.jsx";
-import {dateTimeToString} from "components/Utils.jsx";
-import {indexById} from 'stores/app/utils.jsx'
-import {connect} from 'react-redux'
-import {
-    StoreHorizontalLoader,
-    i18n,
-    FormInput,
-    AbstractReactComponent,
-    Utils
-} from 'components/shared';
+import {dateTimeToString} from 'components/Utils.jsx';
+import {connect} from 'react-redux';
+import {AbstractReactComponent, i18n, StoreHorizontalLoader, Utils} from 'components/shared';
 import FundNodesSelectForm from './FundNodesSelectForm';
 import FundNodesList from './FundNodesList';
 import NodeLabel from './NodeLabel';
-import {fundOutputDetailFetchIfNeeded, fundOutputEdit} from '../../actions/arr/fundOutput.jsx'
-import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
-import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx'
-import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
-import {fundOutputRemoveNodes, fundOutputAddNodes} from 'actions/arr/fundOutput.jsx'
-import {modalDialogShow} from 'actions/global/modalDialog.jsx'
+import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
-import RequestInlineForm from "./RequestInlineForm";
-import {DIGITIZATION, DAO, DAO_LINK, getRequestType} from './ArrUtils.jsx'
+import RequestInlineForm from './RequestInlineForm';
+import {DAO, DAO_LINK, DIGITIZATION, getRequestType} from './ArrUtils.jsx';
 import {refExternalSystemsFetchIfNeeded} from 'actions/refTables/externalSystems';
-import {FormLabel} from 'react-bootstrap'
+import {FormLabel} from 'react-bootstrap';
 import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './ArrRequestDetailKeymap.jsx';
+
 /**
  * Formulář detailu požadavku na digitalizaci.
  */
 class ArrRequestDetail extends AbstractReactComponent {
-    static contextTypes = { shortcuts: PropTypes.object };
-    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
-    UNSAFE_componentWillMount(){
-        Utils.addShortcutManager(this,defaultKeymap);
+    static contextTypes = {shortcuts: PropTypes.object};
+    static childContextTypes = {shortcuts: PropTypes.object.isRequired};
+
+    UNSAFE_componentWillMount() {
+        Utils.addShortcutManager(this, defaultKeymap);
     }
+
     getChildContext() {
-        return { shortcuts: this.shortcutManager };
+        return {shortcuts: this.shortcutManager};
     }
+
     static propTypes = {
         versionId: PropTypes.number.isRequired,
         fund: PropTypes.object.isRequired,
@@ -57,7 +47,7 @@ class ArrRequestDetail extends AbstractReactComponent {
 
         requestDetail.id !== null && this.props.dispatch(arrRequestActions.fetchDetailIfNeeded(versionId, requestDetail.id));
 
-        this.trySetFocus(this.props)
+        this.trySetFocus(this.props);
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -65,7 +55,7 @@ class ArrRequestDetail extends AbstractReactComponent {
 
         requestDetail.id !== null && this.props.dispatch(arrRequestActions.fetchDetailIfNeeded(versionId, requestDetail.id));
 
-        this.trySetFocus(nextProps)
+        this.trySetFocus(nextProps);
     }
 
     trySetFocus = (props) => {
@@ -82,7 +72,7 @@ class ArrRequestDetail extends AbstractReactComponent {
     };
 
     handleShortcuts = (action) => {
-        console.log("#handleShortcuts", '[' + action + ']', this);
+        console.log('#handleShortcuts', '[' + action + ']', this);
     };
 
     handleSaveRequest = (data) => {
@@ -95,16 +85,16 @@ class ArrRequestDetail extends AbstractReactComponent {
         this.props.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
             <FundNodesSelectForm
                 onSubmitForm={(ids, nodes) => {
-                    this.props.dispatch(arrRequestActions.addNodes(versionId, requestDetail, ids, requestDetail.data.digitizationFrontdeskId))
+                    this.props.dispatch(arrRequestActions.addNodes(versionId, requestDetail, ids, requestDetail.data.digitizationFrontdeskId));
                 }}
-            />))
+            />));
     };
 
     handleRemoveNode = (node) => {
         const {versionId, requestDetail} = this.props;
 
-        if (confirm(i18n("arr.fund.nodes.deleteNode"))) {
-            this.props.dispatch(arrRequestActions.removeNode(versionId, requestDetail, node.id))
+        if (confirm(i18n('arr.fund.nodes.deleteNode'))) {
+            this.props.dispatch(arrRequestActions.removeNode(versionId, requestDetail, node.id));
         }
     };
 
@@ -121,11 +111,11 @@ class ArrRequestDetail extends AbstractReactComponent {
             <div>
                 {nodeInfo}
             </div>
-        </div>
+        </div>;
     };
 
     renderDaoNodes = (req) => {
-        const NO_NODE_ID = "---";
+        const NO_NODE_ID = '---';
         // Mapa id node na node objekt
         const nodeMap = {};
         // Mapa id node na počet dao pod daným node
@@ -141,7 +131,7 @@ class ArrRequestDetail extends AbstractReactComponent {
                 refId = NO_NODE_ID;
             }
 
-            if (typeof countMap[refId] === "undefined") {
+            if (typeof countMap[refId] === 'undefined') {
                 countMap[refId] = 1;
             } else {
                 countMap[refId]++;
@@ -167,10 +157,10 @@ class ArrRequestDetail extends AbstractReactComponent {
 
         return <div>
             {countMap[NO_NODE_ID] > 0 && <div>
-                {i18n("arr.request.title.nodes.daosWithoutNode")} ({countMap[NO_NODE_ID]})
+                {i18n('arr.request.title.nodes.daosWithoutNode')} ({countMap[NO_NODE_ID]})
             </div>}
             {nodesInfo}
-        </div>
+        </div>;
     };
 
     render() {
@@ -193,75 +183,75 @@ class ArrRequestDetail extends AbstractReactComponent {
                 if (reqType === DIGITIZATION) {
                     extSystem = externalSystemsMap[req.digitizationFrontdeskId];
                 } else {
-                    extSystem = externalSystemsMap[req.digitalRepositoryId]
+                    extSystem = externalSystemsMap[req.digitalRepositoryId];
                 }
             }
 
             form = (
                 <div>
-                    <h2>{i18n("arr.request.title.request")}</h2>
+                    <h2>{i18n('arr.request.title.request')}</h2>
                     <div className="form-group">
-                        <label>{i18n("arr.request.title.created")}</label> {dateTimeToString(new Date(req.create))}
+                        <label>{i18n('arr.request.title.created')}</label> {dateTimeToString(new Date(req.create))}
                     </div>
                     {req.queued && <div className="form-group">
-                        <label>{i18n("arr.request.title.queued")}</label> {dateTimeToString(new Date(req.queued))}
+                        <label>{i18n('arr.request.title.queued')}</label> {dateTimeToString(new Date(req.queued))}
                     </div>}
                     {req.send && <div className="form-group">
-                        <label>{req.state == "QUEUED" ? i18n("arr.request.title.trysend") : i18n("arr.request.title.send")}</label> {dateTimeToString(new Date(req.send))}
+                        <label>{req.state === 'QUEUED' ? i18n('arr.request.title.trysend') : i18n('arr.request.title.send')}</label> {dateTimeToString(new Date(req.send))}
                     </div>}
                     <div className="form-group">
-                        <label>{i18n("arr.request.title.type")}</label> {i18n("arr.request.title.type." + reqType)}
+                        <label>{i18n('arr.request.title.type')}</label> {i18n('arr.request.title.type.' + reqType)}
                     </div>
 
                     <div className="form-group">
-                        <label>{i18n("arr.request.title.daoRequest.system")}</label> {extSystem ? extSystem.name : "-"}
+                        <label>{i18n('arr.request.title.daoRequest.system')}</label> {extSystem ? extSystem.name : '-'}
                     </div>
 
                     {reqType === DAO && <div className="form-group">
-                        <label>{i18n("arr.request.title.daoRequest.type")}</label> {i18n("arr.request.title.type.dao." + req.type)}
+                        <label>{i18n('arr.request.title.daoRequest.type')}</label> {i18n('arr.request.title.type.dao.' + req.type)}
                     </div>}
 
                     {reqType !== DAO_LINK && <RequestInlineForm
-                        disabled={req.state != "OPEN"}
+                        disabled={req.state !== 'OPEN'}
                         reqType={reqType}
                         initData={req}
                         onSave={this.handleSaveRequest}
                     />}
 
                     {<div className="form-group">
-                        <label>{i18n("arr.request.title.daoRequest.identifiers.code")}</label> {req.code}
+                        <label>{i18n('arr.request.title.daoRequest.identifiers.code')}</label> {req.code}
                     </div>}
 
                     {req.externalSystemCode && <div className="form-group">
-                        <label>{i18n("arr.request.title.daoRequest.identifiers.externalCode")}</label> {req.externalSystemCode}
+                        <label>{i18n('arr.request.title.daoRequest.identifiers.externalCode')}</label> {req.externalSystemCode}
                     </div>}
 
                     {reqType === DIGITIZATION && <div>
-                        <label className="control-label">{i18n("arr.request.title.nodes")}</label>
+                        <label className="control-label">{i18n('arr.request.title.nodes')}</label>
                         <FundNodesList
                             nodes={req.nodes}
                             onDeleteNode={this.handleRemoveNode}
                             onAddNode={this.handleAddNodes}
-                            readOnly={req.state != "OPEN"}
+                            readOnly={req.state !== 'OPEN'}
                         />
                     </div>}
                     {reqType === DAO && <div>
-                        <label className="control-label">{i18n("arr.request.title.nodes")}</label>
+                        <label className="control-label">{i18n('arr.request.title.nodes')}</label>
                         {this.renderDaoNodes(req)}
                     </div>}
                     {reqType === DAO_LINK && <div>
-                        <label className="control-label">{i18n("arr.request.title.nodes")}</label>
+                        <label className="control-label">{i18n('arr.request.title.nodes')}</label>
                         {this.renderDaoLinkNode(req)}
                     </div>}
-                    {req.state === "REJECTED" && req.rejectReason && <div>
-                        <FormLabel>{i18n("arr.request.title.rejectReason")}</FormLabel> {req.rejectReason}
+                    {req.state === 'REJECTED' && req.rejectReason && <div>
+                        <FormLabel>{i18n('arr.request.title.rejectReason')}</FormLabel> {req.rejectReason}
                     </div>}
                 </div>
-            )
+            );
         }
 
         return <Shortcuts name='ArrRequestDetail' handler={this.handleShortcuts}>
-            {requestDetail.id !== null && <StoreHorizontalLoader store={requestDetail} />}
+            {requestDetail.id !== null && <StoreHorizontalLoader store={requestDetail}/>}
             <div className='arr-request-detail-container'>
                 {form}
             </div>
@@ -275,7 +265,7 @@ function mapStateToProps(state) {
         externalSystems: refTables.externalSystems,
         focus,
         userDetail,
-    }
+    };
 }
 
 export default connect(mapStateToProps)(ArrRequestDetail);

@@ -1,13 +1,13 @@
 import './ArrFundPanel.scss';
 
 import React from 'react';
-import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n, Icon} from 'components/shared';
-import {Button} from '../ui';
-import {dateToString} from 'components/Utils.jsx';
-import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx';
-import {fundChangeReadMode} from 'actions/arr/fund.jsx';
-import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
+import { connect } from 'react-redux';
+import { AbstractReactComponent, i18n, Icon } from 'components/shared';
+import { Button } from '../ui';
+import { dateToString } from 'components/Utils.jsx';
+import { userDetailsSaveSettings } from 'actions/user/userDetail.jsx';
+import { fundChangeReadMode } from 'actions/arr/fund.jsx';
+import { getOneSettings, setSettings } from 'components/arr/ArrUtils.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 import classNames from 'classnames';
 import TooltipTrigger from '../shared/tooltip/TooltipTrigger';
@@ -15,7 +15,7 @@ import TooltipTrigger from '../shared/tooltip/TooltipTrigger';
 class ArrFundPanel extends AbstractReactComponent {
 
     setReadMode = (readMode) => {
-        const {fund, userDetail} = this.props;
+        const { fund, userDetail } = this.props;
         let settings = userDetail.settings;
 
         let item = getOneSettings(settings, 'FUND_READ_MODE', 'FUND', fund.id);
@@ -26,7 +26,7 @@ class ArrFundPanel extends AbstractReactComponent {
     };
 
     render() {
-        const {fund, userDetail} = this.props;
+        const { fund, userDetail } = this.props;
 
         let cls = ['arr-fund-panel'];
         let action;
@@ -34,7 +34,7 @@ class ArrFundPanel extends AbstractReactComponent {
         const fundId = fund.id;
 
         const settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
-        let readMode = settings.value != 'false';
+        let readMode = settings.value !== 'false';
 
         let arrPerm = false;
         if (fund.nodes && fund.nodes.activeIndex !== null) {
@@ -43,16 +43,18 @@ class ArrFundPanel extends AbstractReactComponent {
             arrPerm = subNodeForm.data && subNodeForm.data.arrPerm;
         }
 
-        if (fund.lockDate || (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) && !arrPerm)) {
+        if (fund.lockDate || (!userDetail.hasOne(perms.FUND_ARR_ALL, { type: perms.FUND_ARR, fundId }) && !arrPerm)) {
             readMode = true;
             action = <div className="action"><span>{i18n('arr.fund.panel.readOnly')}</span></div>;
         } else {
             if (readMode) {
-                action = <div className="action"><Button
-                    onClick={this.setReadMode.bind(this, false)}>{i18n('arr.fund.panel.allowEdit')}</Button></div>;
+                action = <div className="action"><Button variant="outline-secondary"
+                                                         onClick={this.setReadMode.bind(this, false)}>{i18n('arr.fund.panel.allowEdit')}</Button>
+                </div>;
             } else {
-                action = <div className="action"><Button
-                    onClick={this.setReadMode.bind(this, true)}>{i18n('arr.fund.panel.forbidEdit')}</Button></div>;
+                action = <div className="action"><Button variant="outline-secondary"
+                                                         onClick={this.setReadMode.bind(this, true)}>{i18n('arr.fund.panel.forbidEdit')}</Button>
+                </div>;
             }
         }
 
@@ -92,7 +94,7 @@ class ArrFundPanel extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {arrRegion, userDetail} = state;
+    const { arrRegion, userDetail } = state;
     let fund = null;
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];

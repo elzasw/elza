@@ -1,7 +1,6 @@
-import {WebApi} from 'actions/index.jsx';
+import { WebApi } from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
-import {savingApiWrapper} from 'actions/global/status.jsx';
-import {indexById, findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx'
+import { findByRoutingKeyInGlobalState } from 'stores/app/utils.jsx';
 
 export function isSubNodeDaosAction(action) {
     switch (action.type) {
@@ -10,7 +9,7 @@ export function isSubNodeDaosAction(action) {
         case types.CHANGE_DAOS:
             return true;
         default:
-            return false
+            return false;
     }
 }
 
@@ -36,19 +35,19 @@ export function fundSubNodeDaosFetchIfNeeded(versionId, nodeId, routingKey) {
 
             if (nodeId !== null) {  // pokud chceme reálně načíst objekt, provedeme fetch
                 return WebApi.getFundNodeDaos(versionId, nodeId)
-                    .then(json => {
-                        const newStore = getSubNodeDaos(getState(), versionId, routingKey);
-                        const newDataKey = newStore.currentDataKey;
-                        if (newDataKey === dataKey) {   // jen pokud příchozí objekt odpovídá dtům, které chceme ve store
-                            dispatch(fundSubNodeDaosReceive(versionId, nodeId, routingKey, json))
-                        }
-                    })
+                             .then(json => {
+                                 const newStore = getSubNodeDaos(getState(), versionId, routingKey);
+                                 const newDataKey = newStore.currentDataKey;
+                                 if (newDataKey === dataKey) {   // jen pokud příchozí objekt odpovídá dtům, které chceme ve store
+                                     dispatch(fundSubNodeDaosReceive(versionId, nodeId, routingKey, json));
+                                 }
+                             });
             } else {
                 // Response s prázdným objektem
-                dispatch(fundSubNodeDaosReceive(versionId, nodeId, routingKey, null))
+                dispatch(fundSubNodeDaosReceive(versionId, nodeId, routingKey, null));
             }
         }
-    }
+    };
 }
 
 export function fundSubNodeDaosReceive(versionId, nodeId, routingKey, json) {
@@ -58,8 +57,8 @@ export function fundSubNodeDaosReceive(versionId, nodeId, routingKey, json) {
         nodeId,
         routingKey,
         data: json,
-        receivedAt: Date.now()
-    }
+        receivedAt: Date.now(),
+    };
 }
 
 export function fundSubNodeDaosRequest(versionId, nodeId, routingKey) {
@@ -68,7 +67,7 @@ export function fundSubNodeDaosRequest(versionId, nodeId, routingKey) {
         versionId,
         dataKey: nodeId,
         routingKey,
-    }
+    };
 }
 
 function getSubNodeDaos(state, versionId, routingKey) {
@@ -93,6 +92,6 @@ export function fundSubNodeDaosInvalidate(versionId, nodeIds) {
     return {
         type: types.CHANGE_DAOS,
         versionId,
-        nodeIds: nodeIds
-    }
+        nodeIds: nodeIds,
+    };
 }

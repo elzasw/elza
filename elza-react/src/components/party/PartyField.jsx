@@ -1,18 +1,18 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import {WebApi} from 'actions/index.jsx';
-import {AbstractReactComponent, Autocomplete, i18n, Icon, TooltipTrigger} from 'components/shared';
-import {connect} from 'react-redux';
-import {Dropdown, DropdownButton} from 'react-bootstrap';
-import {Button} from '../ui';
-import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx';
+import { WebApi } from 'actions/index.jsx';
+import { AbstractReactComponent, Autocomplete, i18n, Icon, TooltipTrigger } from 'components/shared';
+import { connect } from 'react-redux';
+import { Dropdown, DropdownButton } from 'react-bootstrap';
+import { Button } from '../ui';
+import { refPartyTypesFetchIfNeeded } from 'actions/refTables/partyTypes.jsx';
 import * as perms from 'actions/user/Permission.jsx';
-import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx';
-import {routerNavigate} from 'actions/router.jsx';
-import {DEFAULT_LIST_SIZE} from '../../constants.tsx';
-import {modalDialogShow} from 'actions/global/modalDialog.jsx';
-import {debounce} from 'shared/utils';
+import { partyDetailFetchIfNeeded } from 'actions/party/party.jsx';
+import { routerNavigate } from 'actions/router.jsx';
+import { DEFAULT_LIST_SIZE } from '../../constants.tsx';
+import { modalDialogShow } from 'actions/global/modalDialog.jsx';
+import { debounce } from 'shared/utils';
 import classNames from 'classnames';
 
 import './PartyField.scss';
@@ -44,7 +44,7 @@ class PartyField extends AbstractReactComponent {
         versionId: PropTypes.number,
     };
 
-    state = {partyList: [], count: null, searchText: null};
+    state = { partyList: [], count: null, searchText: null };
 
     componentDidMount() {
         this.props.dispatch(refPartyTypesFetchIfNeeded());
@@ -59,8 +59,8 @@ class PartyField extends AbstractReactComponent {
     };
 
     handleSearchChange = debounce((text) => {
-        text = text == '' ? null : text;
-        this.setState({searchText: text});
+        text = text === '' ? null : text;
+        this.setState({ searchText: text });
         WebApi.findParty(text, this.props.versionId, this.props.partyTypeId, null, 0, AUTOCOMPLETE_PARTY_LIST_SIZE).then(json => {
             this.setState({
                 partyList: json.rows,
@@ -75,8 +75,8 @@ class PartyField extends AbstractReactComponent {
     };
 
     renderParty = (props) => {
-        const {refTables: {partyTypes: {relationTypesForClass}}} = this.props;
-        const {item, highlighted, selected, ...otherProps} = props;
+        const { refTables: { partyTypes: { relationTypesForClass } } } = this.props;
+        const { item, highlighted, selected, ...otherProps } = props;
 
         return <TooltipTrigger
             content={item.characteristics}
@@ -87,7 +87,7 @@ class PartyField extends AbstractReactComponent {
         >
             <PartyListItem
                 {...item}
-                className={classNames('item', {focus: highlighted, active: selected})}
+                className={classNames('item', { focus: highlighted, active: selected })}
                 relationTypesForClass={relationTypesForClass}
             />
         </TooltipTrigger>;
@@ -95,19 +95,19 @@ class PartyField extends AbstractReactComponent {
 
 
     handleChange = (e) => {
-        this.setState({searchText: null});
+        this.setState({ searchText: null });
         this.props.onChange(e);
     };
 
     handleBlur = (e) => {
-        this.setState({searchText: null});
+        this.setState({ searchText: null });
         this.props.onBlur(e);
     };
 
     renderFooter = () => {
 
-        const {refTables, footerButtons, userDetail} = this.props;
-        const {count} = this.state;
+        const { refTables, footerButtons, userDetail } = this.props;
+        const { count } = this.state;
 
         const buttons = footerButtons && userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR);
         const hasCount = count !== null && (count > AUTOCOMPLETE_PARTY_LIST_SIZE || count === 0);
@@ -133,15 +133,15 @@ class PartyField extends AbstractReactComponent {
     };
 
     handleImport = () => {
-        const {versionId} = this.props;
+        const { versionId } = this.props;
         this.refs.autocomplete.closeMenu();
         this.props.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={true}
                                                                                           versionId={versionId === null ? -1 : versionId}/>, 'dialog-lg'));
     };
 
     handleDetail = (id) => {
-        const {searchText} = this.state;
-        const {onDetail, onSelectModule, value} = this.props;
+        const { searchText } = this.state;
+        const { onDetail, onSelectModule, value } = this.props;
 
         this.refs.autocomplete.closeMenu();
 
@@ -163,7 +163,7 @@ class PartyField extends AbstractReactComponent {
     };
 
     render() {
-        const {value, footer, detail, undefined, ...otherProps} = this.props;
+        const { value, footer, detail, ...otherProps } = this.props;
 
         let footerRender;
         if (footer) {
@@ -185,7 +185,7 @@ class PartyField extends AbstractReactComponent {
         }
 
         let tmpVal = '';
-        if (undefined) {
+        if (this.props.undefined) {
             tmpVal = i18n('subNodeForm.descItemType.notIdentified');
         }
 
@@ -208,4 +208,4 @@ class PartyField extends AbstractReactComponent {
     }
 }
 
-export default connect(({refTables, userDetail}) => ({refTables, userDetail}))(PartyField);
+export default connect(({ refTables, userDetail }) => ({ refTables, userDetail }))(PartyField);

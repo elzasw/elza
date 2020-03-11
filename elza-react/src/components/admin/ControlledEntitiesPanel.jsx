@@ -1,14 +1,14 @@
 // --
 import React from 'react';
-import {connect} from "react-redux";
-import {AbstractReactComponent, i18n} from 'components/shared';
+import { connect } from 'react-redux';
+import { AbstractReactComponent, i18n } from 'components/shared';
 import * as perms from './../../actions/user/Permission.jsx';
-import AddRemoveList from "../shared/list/AddRemoveList";
-import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
-import SelectItemsForm from "./SelectItemsForm";
-import UserAndGroupField from "./UserAndGroupField";
-import {renderGroupItem, renderUserItem, renderUserOrGroupItem} from "./adminRenderUtils";
-import FundsPermissionPanel from './FundsPermissionPanel'
+import AddRemoveList from '../shared/list/AddRemoveList';
+import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
+import SelectItemsForm from './SelectItemsForm';
+import UserAndGroupField from './UserAndGroupField';
+import { renderGroupItem, renderUserItem, renderUserOrGroupItem } from './adminRenderUtils';
+import FundsPermissionPanel from './FundsPermissionPanel';
 
 /**
  * Komponenta pro přiřazení spravovaných entit.
@@ -19,14 +19,14 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
         super(props);
 
         this.state = {
-            permissions: this.buildPermissions(props.permissions)
+            permissions: this.buildPermissions(props.permissions),
         };
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         if (this.props.permissions !== nextProps.permissions) {
             this.setState({
-                permissions: this.buildPermissions(nextProps.permissions)
+                permissions: this.buildPermissions(nextProps.permissions),
             });
         }
     }
@@ -41,14 +41,14 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
             .filter(p => !p.inherited && (p.permission === perms.USER_CONTROL_ENTITITY || p.permission === perms.GROUP_CONTROL_ENTITITY))
             .map(p => {
                 return p;
-        });
+            });
 
         return permissionsList;
     };
 
     renderItem = (item, isActive, index, onCheckItem) => {
         if (item.id === FundsPermissionPanel.ALL_ID) {
-            return <div>{i18n("admin.perms.tabs.funds.items.fundAll")}</div>;
+            return <div>{i18n('admin.perms.tabs.funds.items.fundAll')}</div>;
         } else {
             return <div>
                 {item.fund.name}
@@ -57,21 +57,21 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
     };
 
     renderItem = (props) => {
-        const {item, isActive, index, onCheckItem} = props;
+        const { item, isActive } = props;
         if (item.permission === perms.USER_CONTROL_ENTITITY) {
-            return renderUserItem({item: item.userControl, selected: isActive});
+            return renderUserItem({ item: item.userControl, selected: isActive });
         } else if (item.permission === perms.GROUP_CONTROL_ENTITITY) {
-            return renderGroupItem({item: item.groupControl, selected: isActive});
+            return renderGroupItem({ item: item.groupControl, selected: isActive });
         }
     };
 
     handleAdd = () => {
-        const {onAddPermission} = this.props;
+        const { onAddPermission } = this.props;
 
         this.props.dispatch(modalDialogShow(this, i18n('admin.perm.advanced.control.entity.add.title'),
             <SelectItemsForm
                 onSubmitForm={(items) => {
-                    const {permissions} = this.state;
+                    const { permissions } = this.state;
                     const permissionsMap = {};
                     permissions.forEach(p => {
                         if (p.permission === perms.USER_CONTROL_ENTITITY) {
@@ -103,42 +103,42 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
                     onAddPermission(permissionsToAdd)
                         .then(data => {
                             const newPermissions = [...permissions, ...data];
-                            this.setState({permissions: newPermissions});
+                            this.setState({ permissions: newPermissions });
                             this.props.dispatch(modalDialogHide());
                         });
                 }}
                 fieldComponent={UserAndGroupField}
                 renderItem={renderUserOrGroupItem}
-            />
+            />,
         ));
     };
 
     handleRemove = (item, index) => {
-        const {onDeletePermission} = this.props;
-        const {permissions} = this.state;
+        const { onDeletePermission } = this.props;
+        const { permissions } = this.state;
         const newPermissions = [
             ...permissions.slice(0, index),
-            ...permissions.slice(index + 1)
+            ...permissions.slice(index + 1),
         ];
         onDeletePermission(item)
             .then(data => {
-                this.setState({permissions: newPermissions});
+                this.setState({ permissions: newPermissions });
             });
     };
 
     render() {
-        const {permissions} = this.state;
-        const {className} = this.props;
+        const { permissions } = this.state;
+        const { className } = this.props;
 
         return <AddRemoveList
-                label={i18n("admin.perms.tabs.advanced.controller.entities.title")}
-                addInLabel
-                className={className}
-                items={permissions}
-                renderItem={this.renderItem}
-                onAdd={this.handleAdd}
-                onRemove={this.handleRemove}
-            />;
+            label={i18n('admin.perms.tabs.advanced.controller.entities.title')}
+            addInLabel
+            className={className}
+            items={permissions}
+            renderItem={this.renderItem}
+            onAdd={this.handleAdd}
+            onRemove={this.handleRemove}
+        />;
     }
 }
 

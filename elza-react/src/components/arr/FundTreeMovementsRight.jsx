@@ -3,15 +3,23 @@
  */
 
 import React from 'react';
-import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Tabs} from 'components/shared';
-import FundTreeLazy from './FundTreeLazy'
+import {connect} from 'react-redux';
+import {AbstractReactComponent} from 'components/shared';
+import FundTreeLazy from './FundTreeLazy';
 import * as types from 'actions/constants/ActionTypes.js';
-import {Dropdown} from 'react-bootstrap';
-import {selectFundTab, closeFundTab} from 'actions/arr/fund.jsx'
-import {fundTreeFulltextChange, fundTreeFulltextSearch, fundTreeFulltextNextItem, fundTreeFulltextPrevItem, fundTreeSelectNode, fundTreeCollapse, fundTreeFocusNode, fundTreeFetchIfNeeded, fundTreeNodeExpand, fundTreeNodeCollapse} from 'actions/arr/fundTree.jsx'
-import {createFundRoot, getParentNode} from './ArrUtils.jsx'
-import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu.jsx'
+import {
+    fundTreeCollapse,
+    fundTreeFetchIfNeeded,
+    fundTreeFocusNode,
+    fundTreeFulltextChange,
+    fundTreeFulltextNextItem,
+    fundTreeFulltextPrevItem,
+    fundTreeFulltextSearch,
+    fundTreeNodeCollapse,
+    fundTreeNodeExpand,
+    fundTreeSelectNode,
+} from 'actions/arr/fundTree.jsx';
+import {contextMenuShow} from 'actions/global/contextMenu.jsx';
 
 class FundTreeMovementsRight extends AbstractReactComponent {
     constructor(props) {
@@ -63,10 +71,10 @@ class FundTreeMovementsRight extends AbstractReactComponent {
         var menu = (
             <ul className="dropdown-menu">
             </ul>
-        )
+        );
 
         this.props.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, this.props.versionId, node));
-        this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
+        this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y: e.clientY}));
     }
 
     /**
@@ -82,17 +90,17 @@ class FundTreeMovementsRight extends AbstractReactComponent {
      * Zabalení stromu
      */
     handleCollapse() {
-        this.props.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, this.props.versionId, this.props.fund))
+        this.props.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, this.props.versionId, this.props.fund));
     }
 
     render() {
-        const {fund} = this.props;
-
         return (
             <FundTreeLazy
                 {...this.props}
                 cutLongLabels={true}
-                onOpenCloseNode={(node, expand) => {expand ? this.props.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, node)) : this.props.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, this.props.versionId, node))}}
+                onOpenCloseNode={(node, expand) => {
+                    expand ? this.props.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, node)) : this.props.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, this.props.versionId, node));
+                }}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
                 onCollapse={this.handleCollapse}
@@ -101,7 +109,7 @@ class FundTreeMovementsRight extends AbstractReactComponent {
                 onFulltextPrevItem={this.handleFulltextPrevItem}
                 onFulltextNextItem={this.handleFulltextNextItem}
             />
-        )
+        );
     }
 }
 

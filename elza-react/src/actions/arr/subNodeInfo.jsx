@@ -2,8 +2,8 @@
  * Akce pro doplňující informace pro aktuálně vybraný formulář node.
  */
 
-import {WebApi} from 'actions/index.jsx';
-import {findByRoutingKeyInGlobalState, indexById} from 'stores/app/utils.jsx'
+import { WebApi } from 'actions/index.jsx';
+import { findByRoutingKeyInGlobalState } from 'stores/app/utils.jsx';
 
 import * as types from 'actions/constants/ActionTypes.js';
 
@@ -11,9 +11,9 @@ export function isSubNodeInfoAction(action) {
     switch (action.type) {
         case types.FUND_SUB_NODE_INFO_REQUEST:
         case types.FUND_SUB_NODE_INFO_RECEIVE:
-            return true
+            return true;
         default:
-            return false
+            return false;
     }
 }
 
@@ -49,7 +49,7 @@ export function fundSubNodeInfoFetchIfNeeded(versionId, nodeId, routingKey) {
                 return dispatch(fundSubNodeInfoFetch(versionId, nodeId, routingKey));
             }
         }
-    }
+    };
 }
 
 /**
@@ -68,7 +68,7 @@ export function fundSubNodeInfoFetch(versionId, nodeId, routingKey) {
         }
         dispatch(fundSubNodeInfoRequest(versionId, nodeId, routingKey));
         return WebApi.getNodeData(versionId, nodeId, false, false, true, null, null, node ? null : node.filterText)
-            .then(json => dispatch(fundSubNodeInfoReceive(versionId, nodeId, routingKey, {nodes: json.children})))
+                     .then(json => dispatch(fundSubNodeInfoReceive(versionId, nodeId, routingKey, { nodes: json.children })));
     };
 }
 
@@ -86,8 +86,8 @@ export function fundSubNodeInfoReceive(versionId, nodeId, routingKey, json) {
         nodeId,
         routingKey,
         childNodes: json.nodes,
-        receivedAt: Date.now()
-    }
+        receivedAt: Date.now(),
+    };
 }
 
 /**
@@ -102,5 +102,5 @@ export function fundSubNodeInfoRequest(versionId, nodeId, routingKey) {
         versionId,
         nodeId,
         routingKey,
-    }
+    };
 }

@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import {getScrollbarWidth} from "components/Utils.jsx";
-import classNames from "classnames";
+import { getScrollbarWidth } from 'components/Utils.jsx';
+import classNames from 'classnames';
 import './FloatingMenu.scss';
 
 
@@ -17,13 +17,14 @@ export default class FloatingMenu extends React.PureComponent {
         closeMenu: PropTypes.func,
         //@TODO: selectable placement direction
         //position: PropTypes.oneOf(["both", "horizontal", "vertical", "left", "right", "up", "down"])
-    }
+    };
 
     static defaultProps = {
         shouldUpdate: true,
-        closeMenu: ()=>{},
-        coordinates: {x:0,y:0}
-    }
+        closeMenu: () => {
+        },
+        coordinates: { x: 0, y: 0 },
+    };
 
     constructor(props) {
         super(props);
@@ -31,28 +32,27 @@ export default class FloatingMenu extends React.PureComponent {
     }
 
     componentDidMount = () => {
-        document.addEventListener("mousedown", this.handleDocumentClick, false);
+        document.addEventListener('mousedown', this.handleDocumentClick, false);
         this.setMenuPositions();
-    }
+    };
 
     componentWillUnmount = () => {
-        document.removeEventListener("mousedown", this.handleDocumentClick, false);
-    }
+        document.removeEventListener('mousedown', this.handleDocumentClick, false);
+    };
 
     componentDidUpdate = (prevProps, prevState) => {
-         if(this.props.shouldUpdate){
-             this.setMenuPositions();
-         }
-    }
+        if (this.props.shouldUpdate) {
+            this.setMenuPositions();
+        }
+    };
 
     handleDocumentClick = (e) => {
-        const {closeMenu} = this.props;
+        const { closeMenu } = this.props;
         // element relative to which the menu is placed
         const origin = ReactDOM.findDOMNode(this.props.target);
         // the menu element
         const menu = ReactDOM.findDOMNode(this.menu);
         let eventTarget = e.target;
-        let inside = false;
 
         // looks whether the click was made inside of the menu
         // (goes through parent nodes of the event target)
@@ -67,7 +67,7 @@ export default class FloatingMenu extends React.PureComponent {
 
         // call the closeMenu callback, if the click was made outside of the menu
         closeMenu();
-    }
+    };
 
     /**
      * Získá maximální a minimální rozměry elementu vůči origin elementu a okrajům obrazovky
@@ -81,13 +81,13 @@ export default class FloatingMenu extends React.PureComponent {
         var maxWidth = screen.width();
         var minWidth = originRect.width;
         var minHeight = 0;
-        return{
+        return {
             minHeight: minHeight,
             maxHeight: maxHeight,
             minWidth: minWidth,
-            maxWidth: maxWidth
+            maxWidth: maxWidth,
         };
-    }
+    };
 
     /**
      * Získá rozměry elementu vzhledem k velikostním omezením
@@ -96,7 +96,7 @@ export default class FloatingMenu extends React.PureComponent {
      * @return {object}
      */
     getConstrainedElementSize = (element, constraints) => {
-        const {maxWidth, maxHeight, minWidth, minHeight} = constraints;
+        const { maxWidth, maxHeight, minWidth, minHeight } = constraints;
         let scrollbarWidth = getScrollbarWidth();
         let height = element.getBoundingClientRect().height;
         let width = element.getBoundingClientRect().width;
@@ -104,9 +104,9 @@ export default class FloatingMenu extends React.PureComponent {
         const heightLimited = height > maxHeight;
         const heightStretched = height < minHeight;
 
-        if(heightLimited){
+        if (heightLimited) {
             height = maxHeight;
-        } else if(heightStretched){
+        } else if (heightStretched) {
             height = minHeight;
         }
 
@@ -114,19 +114,19 @@ export default class FloatingMenu extends React.PureComponent {
         const widthStretched = width < minWidth;
         const willLineBreak = width >= minWidth - scrollbarWidth;
 
-        if(heightLimited && !widthLimited && willLineBreak){
+        if (heightLimited && !widthLimited && willLineBreak) {
             width = width + scrollbarWidth;
-        } else if(widthLimited){
+        } else if (widthLimited) {
             width = maxWidth;
-        } else if (widthStretched){
+        } else if (widthStretched) {
             width = minWidth;
         }
 
         return {
             width,
-            height
+            height,
         };
-    }
+    };
 
     /**
      * Získá odsazení od okrajů stránky
@@ -139,17 +139,17 @@ export default class FloatingMenu extends React.PureComponent {
             top: nodeRect.top,
             bottom: screen.height() - nodeRect.bottom,
             left: nodeRect.left,
-            right: screen.width() - nodeRect.right
+            right: screen.width() - nodeRect.right,
         };
-    }
+    };
 
     /**
      * Nastaví automatickou velikost elementu
      * @param {object} element
      */
     resetElementSize = (element) => {
-        $(element).css({height: "auto",width: "auto"});
-    }
+        $(element).css({ height: 'auto', width: 'auto' });
+    };
 
     /**
      * Vrací objekt s umístěním našeptávače
@@ -160,10 +160,10 @@ export default class FloatingMenu extends React.PureComponent {
         const originOffset = this.getRectScreenOffset(rect);
         var placement = {};
 
-        if(size.width > (originOffset.right + rect.width)){
+        if (size.width > (originOffset.right + rect.width)) {
             placement.right = 0;
         } else {
-            placement.left = originOffset.left + "px";
+            placement.left = originOffset.left + 'px';
         }
         if (originOffset.bottom < originOffset.top) { // nevejde se dolu, dáme ho nahoru
             placement.bottom = originOffset.bottom + rect.height + 'px';
@@ -171,25 +171,25 @@ export default class FloatingMenu extends React.PureComponent {
             placement.top = rect.bottom + 'px';
         }
         return placement;
-    }
+    };
 
     getRectFromCoordinates = (x, y) => {
-         return {
+        return {
             left: x,
             right: x,
             top: y,
             bottom: y,
             width: 0,
-            height: 0
-        }
-    }
+            height: 0,
+        };
+    };
 
     setMenuPositions() {
-        const {coordinates, focusable} = this.props;
+        const { coordinates, focusable } = this.props;
         const targetNode = ReactDOM.findDOMNode(this.props.target);
         const containerNode = ReactDOM.findDOMNode(this.menu);
         let originRect = this.getRectFromCoordinates(coordinates.x, coordinates.y);
-        if(targetNode){
+        if (targetNode) {
             originRect = targetNode.getBoundingClientRect();
         }
 
@@ -198,14 +198,14 @@ export default class FloatingMenu extends React.PureComponent {
 
         //Zjistí velikost obsahu
         var constraints = this.getElementRelativeScreenConstraints(originRect);
-        var size = this.getConstrainedElementSize(containerNode,constraints);
+        var size = this.getConstrainedElementSize(containerNode, constraints);
         //Zjištění okrajů okna našeptávače
         var placement = this.getRelativeMenuPlacement(originRect, size);
 
         $(containerNode).css({
             height: size.height + 'px',
             width: size.width + 'px',
-            ...placement
+            ...placement,
         });
         if (focusable && this.menu.children && this.menu.children[0]) {
             this.menu.children[0].focus();
@@ -214,17 +214,18 @@ export default class FloatingMenu extends React.PureComponent {
     }
 
     render() {
-        const {children, onMouseDown, onMouseUp} = this.props;
-        const {style} = this.state;
+        const { children, onMouseDown, onMouseUp } = this.props;
 
         let cls = classNames({
-            "floating-menu": true,
-            "active": true
+            'floating-menu': true,
+            'active': true,
         });
 
         return (
-            <div ref={(ref)=>{this.menu = ref;}} className={cls} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
-              {children}
+            <div ref={(ref) => {
+                this.menu = ref;
+            }} className={cls} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
+                {children}
             </div>
         );
     }

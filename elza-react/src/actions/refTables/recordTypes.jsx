@@ -3,7 +3,6 @@
  */
 
 import {WebApi} from 'actions/index.jsx';
-
 import * as types from 'actions/constants/ActionTypes.js';
 
 /**
@@ -48,23 +47,4 @@ export function refRecordTypesRequest() {
     return {
         type: types.REF_RECORD_TYPES_REQUEST
     }
-}
-
-// funkce, ktera rekurzivne převede strom strop typu zaznamovych hesel na seznam těch, ktere odpovidaji zadanému typu osoby
-function getRecordTypes(types, partyTypeId){
-    var options = [];
-    if(types != null && types.length>0){
-        for(var i=0; i<types.length; i++){
-            if(types[i].partyTypeId == partyTypeId){
-                console.log(types[i].partyTypeId);
-               options[options.length] = types[i]; 
-            };
-
-            var childrens = this.getRecordTypes(types[i].children, partyTypeId);
-            for(var j=0; j<childrens.length; j++){
-                options[options.length] = childrens[j]; 
-            }
-        }
-    }
-    return options;
 }

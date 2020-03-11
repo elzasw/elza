@@ -71,7 +71,7 @@ if (!window.messages) {
 
 export default function(key, ...params) {
     if (key) {
-        if (key[0] == '^') {
+        if (key[0] === '^') {
             key = key.substring(1, key.length);
             const text = window.messages[key];
             return text != null ? String.format(text, ...params) : null;

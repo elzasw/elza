@@ -1,6 +1,5 @@
 import * as types from '../../actions/constants/ActionTypes.js';
-import {WebApi} from 'actions/index.jsx';
-import {indexById} from 'stores/app/utils.jsx';
+import { WebApi } from 'actions/index.jsx';
 
 export function isCustomFundAction(action) {
     switch (action.type) {
@@ -26,13 +25,13 @@ export function customFundActionSelectVersion(version, fundId) {
     return {
         type: types.CUSTOM_FUND_ACTION_SELECT_VERSION,
         version,
-        fundId
+        fundId,
     };
 }
 
 export function customFundActionFetchListIfNeeded(fundId) {
     return (dispatch, getState) => {
-        const {arrRegion: {customFund}} = getState();
+        const { arrRegion: { customFund } } = getState();
 
         if (customFund.id !== fundId || customFund.versionId === null) {
             return WebApi.getFundDetail(fundId).then(fund => {
@@ -44,5 +43,5 @@ export function customFundActionFetchListIfNeeded(fundId) {
                 }
             });
         }
-    }
+    };
 }

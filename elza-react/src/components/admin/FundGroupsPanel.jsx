@@ -1,19 +1,18 @@
 // --
 import React from 'react';
-import {connect} from 'react-redux'
-import {HorizontalLoader, AbstractReactComponent, Icon, i18n, fetching} from 'components/shared';
-import * as adminPermissions from "../../actions/admin/adminPermissions";
-import storeFromArea from "../../shared/utils/storeFromArea";
-import {modalDialogShow, modalDialogHide} from "../../actions/global/modalDialog";
-import AdminRightsContainer from "./AdminRightsContainer";
-import AddRemoveListBox from "../shared/listbox/AddRemoveListBox";
-import {renderGroupItem} from "./adminRenderUtils";
-import FundsPermissionPanel from "./FundsPermissionPanel";
-import {WebApi} from "../../actions/WebApi";
-import SelectItemsForm from "./SelectItemsForm";
-import getMapFromList from "../../shared/utils/getMapFromList";
-import GroupField from "./GroupField";
-import {changeGroupsForFund} from "../../actions/admin/adminPermissions";
+import { connect } from 'react-redux';
+import { AbstractReactComponent, HorizontalLoader, i18n } from 'components/shared';
+import * as adminPermissions from '../../actions/admin/adminPermissions';
+import storeFromArea from '../../shared/utils/storeFromArea';
+import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
+import AdminRightsContainer from './AdminRightsContainer';
+import AddRemoveListBox from '../shared/listbox/AddRemoveListBox';
+import { renderGroupItem } from './adminRenderUtils';
+import FundsPermissionPanel from './FundsPermissionPanel';
+import { WebApi } from '../../actions/WebApi';
+import SelectItemsForm from './SelectItemsForm';
+import getMapFromList from '../../shared/utils/getMapFromList';
+import GroupField from './GroupField';
 
 class FundGroupsPanel extends AbstractReactComponent {
     constructor(props) {
@@ -21,19 +20,19 @@ class FundGroupsPanel extends AbstractReactComponent {
 
         this.state = {
             permissions: [],
-            selectedPermission: props.selectedPermission
+            selectedPermission: props.selectedPermission,
         };
     }
 
     static defaultProps = {
         selectedPermission: {
             id: null,
-            index: 0
-        }
-    }
+            index: 0,
+        },
+    };
 
     componentDidMount() {
-        const {fundId} = this.props;
+        const { fundId } = this.props;
         this.props.dispatch(adminPermissions.fetchGroupsByFund(fundId));
     }
 
@@ -48,7 +47,7 @@ class FundGroupsPanel extends AbstractReactComponent {
         }
 
         // Check if the selected permission in props changed.
-        if(this.props.selectedPermission !== nextProps.selectedPermission){
+        if (this.props.selectedPermission !== nextProps.selectedPermission) {
             propsSelectedPermissionChanged = true;
         }
 
@@ -64,33 +63,34 @@ class FundGroupsPanel extends AbstractReactComponent {
         let newSelectedIndex = this.getIndexById(newSelectedId, permissions);
 
         // Selects the first item, if the index is not found for the selected id.
-        if(newSelectedIndex === -1) {
+        if (newSelectedIndex === -1) {
             newSelectedIndex = 0;
         }
 
         newState = {
             ...this.state,
-            permissions
-        }
+            permissions,
+        };
 
-        let permission = permissions[newSelectedIndex] || {id: null};
+        let permission = permissions[newSelectedIndex] || { id: null };
 
         this.selectItem(permission, newSelectedIndex);
 
         this.setState(newState);
     }
+
     /*
      * Sorts the groups by their names.
      */
-    sortPermissions(permissions){
+    sortPermissions(permissions) {
         permissions.sort((a, b) => {
             return a.name.localeCompare(b.name);
         });
     }
 
     handleRemove = (item, index) => {
-        const {fundId, onSelectItem} = this.props;
-        const {selectedPermission, permissions} = this.state;
+        const { fundId } = this.props;
+        const { selectedPermission, permissions } = this.state;
 
         let newPermissions = [...permissions];
 
@@ -102,15 +102,15 @@ class FundGroupsPanel extends AbstractReactComponent {
             newPermissions.splice(index, 1);
 
             // Decrements index, if selected item is last.
-            if(selectedPermission.index >= newPermissions.length){
+            if (selectedPermission.index >= newPermissions.length) {
                 newSelectedPermissionIndex = newPermissions.length - 1;
             }
             this.setState({
                 permissions: newPermissions,
                 selectedPermission: {
                     index: newSelectedPermissionIndex,
-                    id: null
-                }
+                    id: null,
+                },
             });
             //this.props.dispatch(changeGroupsForFund(fundId, newPermissions));
         });
@@ -120,23 +120,23 @@ class FundGroupsPanel extends AbstractReactComponent {
      * Gets index of item, that has the specified id, from the specified array. If no index is found, returns -1.
      */
     getIndexById = (id, permissions) => {
-        return permissions.findIndex(item => item.id === id)
-    }
+        return permissions.findIndex(item => item.id === id);
+    };
 
     handleAdd = () => {
         //const {fundId} = this.props;
-        const {selectedPermission} = this.state;
+        const { selectedPermission } = this.state;
 
         this.props.dispatch(modalDialogShow(this, i18n('admin.perms.fund.tabs.groups.add.title'),
             <SelectItemsForm
                 onSubmitForm={(groups) => {
-                    const {permissions} = this.state;
+                    const { permissions } = this.state;
                     const permissionsMap = getMapFromList(permissions);
                     const newPermissions = [...permissions];
-                    let newSelectedPermission = {...selectedPermission};
+                    let newSelectedPermission = { ...selectedPermission };
 
                     // Change the currently selected item only if items have been added
-                    if(groups.length > 0){
+                    if (groups.length > 0) {
                         let newSelectedId = null;
 
                         groups.forEach(group => {
@@ -146,7 +146,7 @@ class FundGroupsPanel extends AbstractReactComponent {
                                 newPermissions.push({
                                     ...group,
                                     permissions: [],
-                                    users: []
+                                    users: [],
                                 });
                             }
                         });
@@ -157,41 +157,41 @@ class FundGroupsPanel extends AbstractReactComponent {
 
                         newSelectedPermission = {
                             id: newSelectedId,
-                            index: newIndex
-                        }
-                    } 
+                            index: newIndex,
+                        };
+                    }
 
                     //this.props.dispatch(changeGroupsForFund(fundId, newPermissions));
                     this.setState({
                         permissions: newPermissions,
-                        selectedPermission: newSelectedPermission
+                        selectedPermission: newSelectedPermission,
                     });
 
                     this.props.dispatch(modalDialogHide());
                 }}
                 fieldComponent={GroupField}
                 renderItem={renderGroupItem}
-            />
+            />,
         ));
     };
 
     selectItem = (item, index) => {
-        const {onSelectItem} = this.props;
+        const { onSelectItem } = this.props;
         this.setState({
             selectedPermission: {
                 index: index,
-                id: item.id
-            }
+                id: item.id,
+            },
         });
         onSelectItem && onSelectItem(item, index);
-    }
+    };
 
     render() {
-        const {fundId, groups} = this.props;
-        const {selectedPermission, permissions} = this.state;
+        const { fundId, groups } = this.props;
+        const { selectedPermission, permissions } = this.state;
 
         if (!groups.fetched) {
-            return <HorizontalLoader/>
+            return <HorizontalLoader/>;
         }
 
         const group = selectedPermission.index !== null ? permissions[selectedPermission.index] : null;
@@ -214,14 +214,14 @@ class FundGroupsPanel extends AbstractReactComponent {
                 onDeletePermission={perm => WebApi.deleteGroupPermission(group.id, perm)}
                 onDeleteFundPermission={fundId => WebApi.deleteGroupFundPermission(group.id, fundId)}
             />}
-        </AdminRightsContainer>
+        </AdminRightsContainer>;
     }
 }
 
 function mapStateToProps(state) {
     return {
         groups: storeFromArea(state, adminPermissions.GROUPS_PERMISSIONS_BY_FUND),
-    }
+    };
 }
 
 export default connect(mapStateToProps)(FundGroupsPanel);

@@ -1,23 +1,20 @@
 // --
 import React from 'react';
-import {connect} from 'react-redux'
-import {AbstractReactComponent, Icon, i18n, fetching} from 'components/shared';
-import ListBox from "./../../components/shared/listbox/ListBox";
+import { connect } from 'react-redux';
+import { AbstractReactComponent, i18n } from 'components/shared';
 import * as perms from './../../actions/user/Permission.jsx';
-import {HorizontalLoader} from "../shared/index";
-import storeFromArea from "../../shared/utils/storeFromArea";
-import {modalDialogShow, modalDialogHide} from "../../actions/global/modalDialog";
-import * as adminPermissions from "./../../actions/admin/adminPermissions";
-import {WebApi} from "../../actions/WebApi";
-import PermissionCheckboxsForm from "./PermissionCheckboxsForm";
-import AdminRightsContainer from "./AdminRightsContainer";
-import AddRemoveListBox from "../shared/listbox/AddRemoveListBox";
-import SelectItemsForm from "./SelectItemsForm";
-import getMapFromList from "../../shared/utils/getMapFromList";
-import {renderScopeItem} from "./adminRenderUtils";
-import ScopeField from "./ScopeField";
-import indexById from "../../shared/utils/indexById";
-import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
+import storeFromArea from '../../shared/utils/storeFromArea';
+import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
+import * as adminPermissions from './../../actions/admin/adminPermissions';
+import PermissionCheckboxsForm from './PermissionCheckboxsForm';
+import AdminRightsContainer from './AdminRightsContainer';
+import AddRemoveListBox from '../shared/listbox/AddRemoveListBox';
+import SelectItemsForm from './SelectItemsForm';
+import getMapFromList from '../../shared/utils/getMapFromList';
+import { renderScopeItem } from './adminRenderUtils';
+import ScopeField from './ScopeField';
+import indexById from '../../shared/utils/indexById';
+import { requestScopesIfNeeded } from '../../actions/refTables/scopesData';
 
 /**
  * Panel spravující oprávnění na třídy rejstříků.
@@ -29,7 +26,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
         this.state = {
             permissions: [],
             selectedPermission: props.selectedPermission,
-            scopes: this.getScopes(props.scopesData)
+            scopes: this.getScopes(props.scopesData),
         };
     }
 
@@ -47,18 +44,17 @@ class ScopesPermissionPanel extends AbstractReactComponent {
         [perms.AP_EDIT_CONFIRMED]: perms.AP_EDIT_CONFIRMED_ALL,
     };
 
-    static ALL_ID = "ALL_ID";
+    static ALL_ID = 'ALL_ID';
 
     static defaultProps = {
         selectedPermission: {
             id: null,
-            index: 0
-        }
-    }
+            index: 0,
+        },
+    };
 
     buildPermission = (currObj, permission) => {
-        const {userId} = this.props;
-        let obj = currObj || {groupIds: {}};
+        let obj = currObj || { groupIds: {} };
 
         if (permission.inherited) {   // je zděděné ze skupiny
             obj.groupIds[permission.groupId] = permission.scope ? permission.scope.id : true;
@@ -72,7 +68,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        const {userId, groupId} = this.props;
+        const { userId, groupId } = this.props;
 
         if (userId) {
             this.props.dispatch(adminPermissions.fetchUser(userId));
@@ -88,7 +84,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
         if (this.props.entityPermissions.isFetching && !nextProps.entityPermissions.isFetching) {
             // Mapa scopeId na mapu hodnot oprávnění pro danou třídu rejstříků, pokud se jedná o položku all, má id ALL_ID
             const permScopeMap = {};
-            permScopeMap[ScopesPermissionPanel.ALL_ID] = {id: ScopesPermissionPanel.ALL_ID, groupIds: {}};
+            permScopeMap[ScopesPermissionPanel.ALL_ID] = { id: ScopesPermissionPanel.ALL_ID, groupIds: {} };
 
             nextProps.entityPermissions.data.permissions.forEach(p => {
                 let id = null;
@@ -107,6 +103,8 @@ class ScopesPermissionPanel extends AbstractReactComponent {
                     case perms.AP_EDIT_CONFIRMED:
                         id = p.scope.id;
                         permissionCode = p.permission;
+                        break;
+                    default:
                         break;
                 }
 
@@ -130,25 +128,26 @@ class ScopesPermissionPanel extends AbstractReactComponent {
         let newSelectedIndex = this.getIndexById(newSelectedId, permissions);
 
         // Selects the first item, if the index is not found for the selected id.
-        if(newSelectedIndex === -1) {
+        if (newSelectedIndex === -1) {
             newSelectedIndex = 0;
         }
 
         newState = {
             ...this.state,
-            permissions
-        }
+            permissions,
+        };
 
-        let permission = permissions[newSelectedIndex] || {id: null};
+        let permission = permissions[newSelectedIndex] || { id: null };
 
         this.selectItem(permission, newSelectedIndex);
 
         this.setState(newState);
     }
+
     /*
      * Sorts the scopes by their names. Puts the 'ALL' permissions at the beginning.
      */
-    sortPermissions(permissions){
+    sortPermissions(permissions) {
         permissions.sort((a, b) => {
             if (a.id === ScopesPermissionPanel.ALL_ID) {
                 return -1;
@@ -161,33 +160,33 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     }
 
     changePermission = (e, permCode) => {
-        const {onAddPermission, onDeletePermission} = this.props;
+        const { onAddPermission, onDeletePermission } = this.props;
         const value = e.target.checked;
-        const {selectedPermission, permissions} = this.state;
+        const { selectedPermission, permissions } = this.state;
         const permission = permissions[selectedPermission.index];
 
         const newPermission = {
-            ...permission
+            ...permission,
         };
 
-        const obj = newPermission[permCode] || {groupIds: {}};
+        const obj = newPermission[permCode] || { groupIds: {} };
 
         const newObj = {
             ...obj,
-            checked: value
+            checked: value,
         };
         newPermission[permCode] = newObj;
 
         const newPermissions = [
             ...permissions.slice(0, selectedPermission.index),
             newPermission,
-            ...permissions.slice(selectedPermission.index + 1)
+            ...permissions.slice(selectedPermission.index + 1),
         ];
 
         const usrPermission = {
             id: obj.id,
             permission: permission.id === ScopesPermissionPanel.ALL_ID ? ScopesPermissionPanel.permCodesMapRev[permCode] : permCode,
-            scope: permission.scope
+            scope: permission.scope,
         };
 
         if (value) {
@@ -208,8 +207,8 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     };
 
     handleRemove = (item, index) => {
-        const {onDeleteScopePermission} = this.props;
-        const {selectedPermission, permissions} = this.state;
+        const { onDeleteScopePermission } = this.props;
+        const { selectedPermission, permissions } = this.state;
 
         // Prepare new permissions
         let newPermissions = [...permissions];
@@ -235,19 +234,19 @@ class ScopesPermissionPanel extends AbstractReactComponent {
             newPermissions.splice(selectedPermission.index, 1);
 
             // Decrements index, if selected item is last.
-            if(selectedPermission.index >= newPermissions.length){
+            if (selectedPermission.index >= newPermissions.length) {
                 newSelectedPermissionIndex = newPermissions.length - 1;
             }
         } else {
             // Removes all permissions that are not inherited.
-            let newPermission = {...permission};
+            let newPermission = { ...permission };
 
             Object.values(ScopesPermissionPanel.permCodesMap).forEach(permCode => {
                 if (newPermission[permCode]) {
                     newPermission[permCode] = {
                         ...newPermission[permCode],
                         id: null,
-                        checked: false
+                        checked: false,
                     };
                 }
             });
@@ -260,8 +259,8 @@ class ScopesPermissionPanel extends AbstractReactComponent {
                 permissions: newPermissions,
                 selectedPermission: {
                     ...selectedPermission,
-                    index: newSelectedPermissionIndex
-                }
+                    index: newSelectedPermissionIndex,
+                },
             });
         });
     };
@@ -270,24 +269,24 @@ class ScopesPermissionPanel extends AbstractReactComponent {
      * Gets index of item, that has the specified id, from the specified array. If no index is found, returns -1.
      */
     getIndexById = (id, permissions) => {
-        return permissions.findIndex(item => item.id === id)
-    }
+        return permissions.findIndex(item => item.id === id);
+    };
 
     handleAdd = () => {
-        const {scopesData} = this.props;
-        const {selectedPermission} = this.state;
+        const { scopesData } = this.props;
+        const { selectedPermission } = this.state;
         let scopes = this.getScopes(scopesData);
 
         this.props.dispatch(modalDialogShow(this, i18n('admin.perms.tabs.scopes.add.title'),
             <SelectItemsForm
                 onSubmitForm={(scopes) => {
-                    const {permissions} = this.state;
+                    const { permissions } = this.state;
                     const permissionsMap = getMapFromList(permissions);
                     const newPermissions = [...permissions];
-                    let newSelectedPermission = {...selectedPermission};
+                    let newSelectedPermission = { ...selectedPermission };
 
                     // Change the currently selected item, only if items have been added
-                    if(scopes.length > 0){
+                    if (scopes.length > 0) {
                         let newSelectedId = null;
 
                         scopes.forEach(scope => {
@@ -307,28 +306,28 @@ class ScopesPermissionPanel extends AbstractReactComponent {
 
                         newSelectedPermission = {
                             id: newSelectedId,
-                            index: newIndex
-                        }
+                            index: newIndex,
+                        };
                     }
 
                     this.setState({
                         permissions: newPermissions,
-                        selectedPermission: newSelectedPermission
+                        selectedPermission: newSelectedPermission,
                     });
 
                     this.props.dispatch(modalDialogHide());
                 }}
                 fieldComponent={ScopeField}
-                fieldComponentProps={{scopes}}
+                fieldComponentProps={{ scopes }}
                 renderItem={renderScopeItem}
-            />
+            />,
         ));
     };
 
     renderItem = (props, onCheckItem) => {
-        const {item, index} = props;
+        const { item } = props;
         if (item.id === ScopesPermissionPanel.ALL_ID) {
-            return <div>{i18n("admin.perms.tabs.scopes.items.scopeAll")}</div>;
+            return <div>{i18n('admin.perms.tabs.scopes.items.scopeAll')}</div>;
         } else {
             return <div>
                 {item.scope.name}
@@ -337,15 +336,15 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     };
 
     selectItem = (item, index) => {
-        const {onSelectItem} = this.props;
+        const { onSelectItem } = this.props;
         this.setState({
             selectedPermission: {
                 index: index,
-                id: item.id
-            }
+                id: item.id,
+            },
         });
         onSelectItem && onSelectItem(item, index);
-    }
+    };
 
     /**
      * Získá pole dostupných scope ze store. Pokud ve store žádný neexistuje, načte je ze serveru.
@@ -354,7 +353,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
      */
     getScopes = (scopesData) => {
         const versionId = -1;
-        if (!scopesData.scopes){
+        if (!scopesData.scopes) {
             this.props.dispatch(requestScopesIfNeeded(versionId));
         }
         const scopeIndex = indexById(scopesData.scopes, versionId, 'versionId');
@@ -368,8 +367,8 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     };
 
     render() {
-        const {selectedPermission, permissions} = this.state;
-        const {entityPermissions, onSelectItem} = this.props;
+        const { selectedPermission, permissions } = this.state;
+        const { entityPermissions } = this.props;
 
         const permission = permissions[selectedPermission.index];
         let permissionAll = permissions[this.getIndexById(ScopesPermissionPanel.ALL_ID, permissions)];
@@ -385,7 +384,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
                 canDeleteItem={(item, index) => item.id !== ScopesPermissionPanel.ALL_ID}
                 onFocus={this.selectItem}
             />}
-            >
+        >
             {permission && <PermissionCheckboxsForm
                 permCodes={Object.values(ScopesPermissionPanel.permCodesMap)}
                 onChangePermission={this.changePermission}
@@ -395,7 +394,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
                 permissionAll={permission.id !== ScopesPermissionPanel.ALL_ID ? permissionAll : null}
                 permissionAllTitle="admin.perms.tabs.scopes.items.scopeAll"
             />}
-        </AdminRightsContainer>
+        </AdminRightsContainer>;
     }
 }
 
@@ -403,7 +402,7 @@ function mapStateToProps(state) {
     return {
         entityPermissions: storeFromArea(state, adminPermissions.ENTITY_PERMISSIONS),
         scopesData: state.refTables.scopesData,
-    }
+    };
 }
 
 

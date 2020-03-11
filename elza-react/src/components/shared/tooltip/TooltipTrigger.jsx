@@ -1,11 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import PropTypes from "prop-types";
-import {Button, Tooltip, Overlay} from 'react-bootstrap';
-import {indexById} from 'stores/app/utils.jsx'
-import AbstractReactComponent from "../../AbstractReactComponent";
+import PropTypes from 'prop-types';
+import { Overlay, Tooltip } from 'react-bootstrap';
+import AbstractReactComponent from '../../AbstractReactComponent';
 
-import "./TooltipTrigger.scss"
+import './TooltipTrigger.scss';
 
 const TOOLTIP_WINDOW_PADDING = 40;
 
@@ -28,7 +27,7 @@ class TooltipTrigger extends AbstractReactComponent {
         focusDelay: PropTypes.number,
         focusShowDelay: PropTypes.number,
         focusHideDelay: PropTypes.number,
-        tooltipClass: PropTypes.string
+        tooltipClass: PropTypes.string,
     };
 
     static defaultProps = {
@@ -36,9 +35,9 @@ class TooltipTrigger extends AbstractReactComponent {
         hideDelay: 200,
         focusShowDelay: 250,
         focusHideDelay: 1,
-        placement: "auto",
-        tooltipClass: ""
-    }
+        placement: 'auto',
+        tooltipClass: '',
+    };
 
     constructor(props) {
         super(props);
@@ -71,61 +70,62 @@ class TooltipTrigger extends AbstractReactComponent {
         // Zobrazení tooltipu se spožděním
         this.hoverDelay = setTimeout(() => {
             if (!this.state.focus && !this.state.overTooltip && !show) {
-                this.setState({showTooltip: false});
+                this.setState({ showTooltip: false });
             } else {
-                const {placement} = this.props;
+                const { placement } = this.props;
 
                 // Určení pozice tooltipu
                 const ww = window.innerWidth;
                 const wh = window.innerHeight;
                 let usePlacement;
-                let maxWidth, maxHeight;
+                let maxWidth,
+                    maxHeight;
                 const node = ReactDOM.findDOMNode(this.refs.ttTarget);
                 const rect = node.getBoundingClientRect();
                 switch (placement) {
-                    case "left":
+                    case 'left':
                         maxHeight = wh - (2 * TOOLTIP_WINDOW_PADDING);
                         maxWidth = rect.left - TOOLTIP_WINDOW_PADDING;
                         usePlacement = placement;
                         break;
-                    case "right":
+                    case 'right':
                         maxHeight = wh - (2 * TOOLTIP_WINDOW_PADDING);
                         maxWidth = (ww - rect.right) - TOOLTIP_WINDOW_PADDING;
                         usePlacement = placement;
                         break;
-                    case "top":
+                    case 'top':
                         maxWidth = ww - (2 * TOOLTIP_WINDOW_PADDING);
                         maxHeight = rect.top - TOOLTIP_WINDOW_PADDING;
                         usePlacement = placement;
                         break;
-                    case "bottom":
+                    case 'bottom':
                         maxWidth = ww - (2 * TOOLTIP_WINDOW_PADDING);
                         maxHeight = (wh - rect.bottom) - TOOLTIP_WINDOW_PADDING;
                         usePlacement = placement;
                         break;
-                    case "horizontal": {
+                    case 'horizontal': {
                         maxHeight = wh - (2 * TOOLTIP_WINDOW_PADDING);
                         if (rect.left > ww - rect.right) {
-                            usePlacement = "left";
+                            usePlacement = 'left';
                             maxWidth = rect.left - TOOLTIP_WINDOW_PADDING;
                         } else {
-                            usePlacement = "right";
+                            usePlacement = 'right';
                             maxWidth = (ww - rect.right) - TOOLTIP_WINDOW_PADDING;
                         }
                     }
-                    break;
-                    case "vertical": {
+                        break;
+                    case 'vertical': {
                         maxWidth = ww - (2 * TOOLTIP_WINDOW_PADDING);
                         if (rect.top > wh - rect.bottom) {
-                            usePlacement = "top";
+                            usePlacement = 'top';
                             maxHeight = rect.top - TOOLTIP_WINDOW_PADDING;
                         } else {
-                            usePlacement = "bottom";
+                            usePlacement = 'bottom';
                             maxHeight = (wh - rect.bottom) - TOOLTIP_WINDOW_PADDING;
                         }
                     }
-                    break;
-                    case "auto": {
+                        break;
+                    case 'auto': {
                         const left = rect.left * wh;
                         const right = (ww - rect.right) * wh;
                         const top = rect.top * ww;
@@ -134,7 +134,7 @@ class TooltipTrigger extends AbstractReactComponent {
                         const nums = [top, right, bottom, left];
                         const dirs = ['top', 'right', 'bottom', 'left'];
                         var max = 0;
-                        for (let a=1; a<nums.length; a++) {
+                        for (let a = 1; a < nums.length; a++) {
                             if (nums[a] > nums[max]) {
                                 max = a;
                             }
@@ -142,26 +142,29 @@ class TooltipTrigger extends AbstractReactComponent {
                         usePlacement = dirs[max];
 
                         switch (usePlacement) {
-                            case "left":
+                            case 'left':
                                 maxHeight = wh - (2 * TOOLTIP_WINDOW_PADDING);
                                 maxWidth = rect.left - TOOLTIP_WINDOW_PADDING;
                                 break;
-                            case "right":
+                            case 'right':
                                 maxHeight = wh - (2 * TOOLTIP_WINDOW_PADDING);
                                 maxWidth = (ww - rect.right) - TOOLTIP_WINDOW_PADDING;
                                 break;
-                            case "top":
+                            case 'top':
                                 maxWidth = ww - (2 * TOOLTIP_WINDOW_PADDING);
                                 maxHeight = rect.top - TOOLTIP_WINDOW_PADDING;
                                 break;
-                            case "bottom":
+                            case 'bottom':
                                 maxWidth = ww - (2 * TOOLTIP_WINDOW_PADDING);
                                 maxHeight = (wh - rect.bottom) - TOOLTIP_WINDOW_PADDING;
                                 break;
+                            default:
+                                break;
                         }
                     }
-
-                    break;
+                        break;
+                    default:
+                        break;
                 }
 
                 // Nastavení zobrazení včetně spočteného placement
@@ -169,22 +172,22 @@ class TooltipTrigger extends AbstractReactComponent {
                     showTooltip: true,
                     placement: usePlacement,
                     maxWidth,
-                    maxHeight
+                    maxHeight,
                 });
             }
         }, delay);
     };
 
     getDelay = (show) => {
-        const {delay, showDelay, hideDelay} = this.props;
+        const { delay, showDelay, hideDelay } = this.props;
         if (show) {
-            if (showDelay === null || typeof showDelay === "undefined"){
+            if (showDelay === null || typeof showDelay === 'undefined') {
                 return delay;
             } else {
                 return showDelay;
             }
         } else {
-            if (hideDelay === null || typeof hideDelay === "undefined") {
+            if (hideDelay === null || typeof hideDelay === 'undefined') {
                 return delay;
             } else {
                 return hideDelay;
@@ -193,15 +196,15 @@ class TooltipTrigger extends AbstractReactComponent {
     };
 
     getFocusDelay = (show) => {
-        const {focusDelay, focusShowDelay, focusHideDelay} = this.props;
+        const { focusDelay, focusShowDelay, focusHideDelay } = this.props;
         if (show) {
-            if (focusShowDelay === null || typeof focusShowDelay === "undefined"){
+            if (focusShowDelay === null || typeof focusShowDelay === 'undefined') {
                 return focusDelay;
             } else {
                 return focusShowDelay;
             }
         } else {
-            if (focusHideDelay === null || typeof focusHideDelay === "undefined") {
+            if (focusHideDelay === null || typeof focusHideDelay === 'undefined') {
                 return focusDelay;
             } else {
                 return focusHideDelay;
@@ -217,12 +220,12 @@ class TooltipTrigger extends AbstractReactComponent {
         if (this.props.holdOnHover) {
             const delay = this.getDelay(hover);
             this.setState({
-                overTooltip: hover
+                overTooltip: hover,
             }, () => {
                 this.showTooltip(hover, delay);
-            })
+            });
         }
-    }
+    };
 
     /**
      * Přepínání state pro focus
@@ -232,35 +235,35 @@ class TooltipTrigger extends AbstractReactComponent {
         if (this.props.holdOnFocus) {
             const delay = this.getFocusDelay(focus);
             this.setState({
-                focus: focus
+                focus: focus,
             }, () => {
-                this.showTooltip(focus, delay)
-            })
+                this.showTooltip(focus, delay);
+            });
         }
-    }
+    };
 
     render() {
         const {
-            className,
-            tooltipClass,
-            content,
-            children,
-            placement,
-            holdOnHover,
-            holdOnFocus,
-            delay,
-            showDelay,
-            hideDelay,
-            focusDelay,
-            focusShowDelay,
-            focusHideDelay,
-            ...otherProps
-        } = this.props;
-        const {maxWidth, maxHeight} = this.state;
+                  className,
+                  tooltipClass,
+                  content,
+                  children,
+                  placement,
+                  holdOnHover,
+                  holdOnFocus,
+                  delay,
+                  showDelay,
+                  hideDelay,
+                  focusDelay,
+                  focusShowDelay,
+                  focusHideDelay,
+                  ...otherProps
+              } = this.props;
+        const { maxWidth, maxHeight } = this.state;
 
         return (
             <span
-               className={"tooltip-trigger "+ (className ? className : "")}
+                className={'tooltip-trigger ' + (className ? className : '')}
                 ref="ttTarget"
                 onFocus={() => this.handleFocus(true)}
                 onBlur={() => this.handleFocus(false)}
@@ -279,13 +282,14 @@ class TooltipTrigger extends AbstractReactComponent {
                         onMouseLeave={() => this.handleTooltipHover(false)}
                         id='tt'
                     >
-                        <div className={"tooltip-inner-content "+tooltipClass} style={{maxWidth: maxWidth + "px", maxHeight: maxHeight + "px"}}>
+                        <div className={'tooltip-inner-content ' + tooltipClass}
+                             style={{ maxWidth: maxWidth + 'px', maxHeight: maxHeight + 'px' }}>
                             {content}
                         </div>
                     </Tooltip>
                 </Overlay>}
             </span>
-        )
+        );
     }
 }
 

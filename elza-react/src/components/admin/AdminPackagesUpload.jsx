@@ -6,11 +6,11 @@
  */
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {connect} from 'react-redux';
-import {Button} from '../ui';
-import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import { connect } from 'react-redux';
+import { Button } from '../ui';
+import { AbstractReactComponent, FormInput, i18n } from 'components/shared';
 
-import {importPackage} from 'actions/admin/packages.jsx';
+import { importPackage } from 'actions/admin/packages.jsx';
 
 class AdminPackagesUpload extends AbstractReactComponent {
     constructor(props) {
@@ -25,15 +25,15 @@ class AdminPackagesUpload extends AbstractReactComponent {
     }
 
     handleUpload() {
-        var file = this.refs.file;
-        var data = new FormData();
+        const file = this.refs.file;
+        let data = new FormData();
         data.append('file', ReactDOM.findDOMNode(file.refs.input).files[0]);
         this.props.dispatch(importPackage(data));
     }
 
     handleChangeFile() {
         console.log(ReactDOM.findDOMNode(this.refs.file.refs.input));
-        this.setState({disabled: ReactDOM.findDOMNode(this.refs.file.refs.input).files.length == 0});
+        this.setState({ disabled: ReactDOM.findDOMNode(this.refs.file.refs.input).files.length === 0 });
     }
 
     render() {

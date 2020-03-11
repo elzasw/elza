@@ -79,6 +79,8 @@ class ArrHistoryForm extends AbstractReactComponent {
             case 'BATCH_DELETE_DESC_ITEM':
             case 'IMPORT':
                 return i18n('arr.history.change.description.' + item.type, String(item.nodeChanges));
+            default:
+                console.log("default case..");
         }
 
         if (item.label) {
@@ -99,7 +101,7 @@ class ArrHistoryForm extends AbstractReactComponent {
 
     getItems = (fromIndex, toIndex) => {
         const {versionId} = this.props;
-        const {changeId, node, showHistoryForNode} = this.state;
+        const {changeId} = this.state;
 
         this.setState({
             fetching: true,
@@ -149,7 +151,7 @@ class ArrHistoryForm extends AbstractReactComponent {
 
     handleShowSelectedItem = () => {
         if (!this.props.locked) {
-            const {selectedIndex, activeIndex} = this.state;
+            const {selectedIndex} = this.state;
             this.setState({
                 activeIndex: selectedIndex,
             }, () => {
@@ -210,14 +212,14 @@ class ArrHistoryForm extends AbstractReactComponent {
 
     refreshRows = () => {
         const {showHistoryForNode, node} = this.state;
-        if (!(showHistoryForNode == true && node == null)) {
+        if (!(showHistoryForNode === true && node == null)) {
             this.refs.listbox.reload();
         }
     };
 
     handleDeleteChanges = () => {
         const {onDeleteChanges} = this.props;
-        const {node, changeId, selectedIndex, selectedItem} = this.state;
+        const {changeId, selectedIndex, selectedItem} = this.state;
 
         if (confirm(i18n('arr.history.deleteQuestion', selectedIndex + 1))) {
             onDeleteChanges(this.getNodeId(), changeId, selectedItem.changeId);
@@ -250,7 +252,7 @@ class ArrHistoryForm extends AbstractReactComponent {
 
     handleGoToDate = () => {
         const {versionId} = this.props;
-        const {goToDateValue, changeId, node, showHistoryForNode} = this.state;
+        const {goToDateValue, changeId} = this.state;
 
         return WebApi.findChangesByDate(versionId, this.getNodeId(), changeId, dateTimeToZonedUTC(goToDateValue))
                      .then(json => {
@@ -269,7 +271,7 @@ class ArrHistoryForm extends AbstractReactComponent {
 
         let content;
 
-        if (showHistoryForNode == true && node == null) {
+        if (showHistoryForNode === true && node == null) {
             content = <div
                 className="lazy-listbox-container listbox-container data-container loading">{i18n('arr.history.title.selectNode')}</div>;
         } else {

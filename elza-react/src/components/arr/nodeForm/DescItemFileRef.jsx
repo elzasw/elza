@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {WebApi} from 'actions/index.jsx';
-import {AbstractReactComponent, Autocomplete, i18n, Icon} from 'components/shared';
-import {decorateAutocompleteValue} from './DescItemUtils.jsx';
-import {Button} from '../../ui';
+import { WebApi } from 'actions/index.jsx';
+import { AbstractReactComponent, Autocomplete, i18n, Icon } from 'components/shared';
+import { decorateAutocompleteValue } from './DescItemUtils.jsx';
+import { Button } from '../../ui';
 import DescItemLabel from './DescItemLabel.jsx';
 
 import './DescItemFileRef.scss';
@@ -27,7 +27,7 @@ class DescItemFileRef extends AbstractReactComponent {
 
     handleSearchChange = (text) => {
 
-        text = text == '' ? null : text;
+        text = text === '' ? null : text;
 
         WebApi.findFundFiles(this.props.fundId, text).then(json => {
             this.setState({
@@ -62,7 +62,7 @@ class DescItemFileRef extends AbstractReactComponent {
     };
 
     render() {
-        const {descItem, locked, onChange, onBlur, readMode} = this.props;
+        const { descItem, locked, onChange, onBlur, readMode } = this.props;
         const value = descItem.file ? descItem.file : null;
 
         if (readMode) {
@@ -81,7 +81,7 @@ class DescItemFileRef extends AbstractReactComponent {
                 <Autocomplete
                     ref='autocomplete'
                     customFilter
-                    value={descItem.undefined ? {name: i18n('subNodeForm.descItemType.notIdentified')} : value}
+                    value={descItem.undefined ? { name: i18n('subNodeForm.descItemType.notIdentified') } : value}
                     items={this.state.fileList}
                     getItemId={(item) => item ? item.id : null}
                     getItemName={(item) => item ? item.name : ''}

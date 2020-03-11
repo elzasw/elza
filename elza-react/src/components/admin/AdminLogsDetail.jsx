@@ -1,26 +1,9 @@
 import React from 'react';
-import {connect} from 'react-redux'
-import {
-    AbstractReactComponent,
-    Search,
-    i18n,
-    FormInput,
-    Icon,
-    CollapsablePanel,
-    StoreHorizontalLoader
-} from 'components/shared';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
-import {Utils} from 'components/shared';
-import {objectById, indexById} from 'stores/app/utils.jsx';
-import {setInputFocus, dateTimeToString} from 'components/Utils.jsx'
-import {setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx'
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import {getMapFromList} from 'stores/app/utils.jsx'
-import {storeFromArea} from 'shared/utils'
-import {WebApi} from 'actions/index.jsx';
+import { AbstractReactComponent, FormInput, Icon } from 'components/shared';
+import { WebApi } from 'actions/index.jsx';
 
 import './AdminLogsDetail.scss';
-import {Col, Row} from "react-bootstrap";
+import { Col, Row } from 'react-bootstrap';
 
 
 /**
@@ -34,18 +17,18 @@ class AdminLogsDetail extends AbstractReactComponent {
         this.state = {
             lineCount: 300,
             fetched: false,
-            logs: []
+            logs: [],
         };
     }
 
     componentDidMount() {
         WebApi.getLogs(this.state.lineCount, this.state.firstLine).then(data => {
-            this.setState({logs: data.lines, fetched: true}, () => {
+            this.setState({ logs: data.lines, fetched: true }, () => {
                 this.scrollDown();
                 this.refresh();
             });
         }).catch(e => {
-            this.setState({logs: ['Chyba', e], fetched: true});
+            this.setState({ logs: ['Chyba', e], fetched: true });
         });
     }
 
@@ -74,7 +57,7 @@ class AdminLogsDetail extends AbstractReactComponent {
             ...this.state,
             lineCount: value,
             fetched: false,
-            logs: []
+            logs: [],
         }, () => {
             if (this.stop) {
                 this.refresh(true);
@@ -94,7 +77,7 @@ class AdminLogsDetail extends AbstractReactComponent {
     };
 
     refresh = (force = false) => {
-        const {lineCount, firstLine} = this.state;
+        const { lineCount, firstLine } = this.state;
 
         if (!force && this.stop) {
             return;
@@ -111,7 +94,7 @@ class AdminLogsDetail extends AbstractReactComponent {
                 this.setState({
                     ...this.state,
                     fetched: true,
-                    logs: newData.lines
+                    logs: newData.lines,
                 }, () => {
                     if (scrollDown) {
                         this.scrollDown();
@@ -122,7 +105,7 @@ class AdminLogsDetail extends AbstractReactComponent {
                 setTimeout(this.refresh, 3000);
             }
         }).catch(e => {
-            this.setState({logs: ['Chyba', e], fetched: true});
+            this.setState({ logs: ['Chyba', e], fetched: true });
         });
     };
 
@@ -138,13 +121,13 @@ class AdminLogsDetail extends AbstractReactComponent {
     }
 
     render() {
-        const {logs, fetched, lineCount} = this.state;
+        const { logs, fetched, lineCount } = this.state;
 
         const isOnEnd = this.isOnEnd();
 
-        let cls = "btn";
+        let cls = 'btn';
         if (isOnEnd) {
-            cls += " active";
+            cls += ' active';
         }
 
         return <section className="logs-detail">
@@ -154,21 +137,25 @@ class AdminLogsDetail extends AbstractReactComponent {
                         <button className={cls} onClick={this.scrollDown}>
                             <Icon glyph="fa-sort-desc"/>
                         </button>
-                        <button className="btn" onClick={this.pauseContinue}>{this.stop ? 'Pokračovat' : 'Pozastavit'}</button>
+                        <button className="btn"
+                                onClick={this.pauseContinue}>{this.stop ? 'Pokračovat' : 'Pozastavit'}</button>
                     </div>
                 </Col>
                 <Col xs="3">
-                    <FormInput type="number" value={lineCount} min="1" max="10000" onChange={this.changeLineCount} label={false} />
+                    <FormInput type="number" value={lineCount} min="1" max="10000" onChange={this.changeLineCount}
+                               label={false}/>
                 </Col>
             </Row>
             <Row className="">
                 <Col xs={12}>
-                    <textarea readOnly onScroll={() => {this.setState({})}} spellCheck="false" ref="textLog"
+                    <textarea readOnly onScroll={() => {
+                        this.setState({});
+                    }} spellCheck="false" ref="textLog"
                               className="logs" value={fetched ? logs.map(line => line + '\n').join('') : 'Načítání...'}>
                     </textarea>
                 </Col>
             </Row>
-        </section>
+        </section>;
     }
 }
 

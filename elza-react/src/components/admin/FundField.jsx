@@ -1,8 +1,7 @@
 import PropTypes from 'prop-types';
-import React from "react";
-import {WebApi} from "actions/index.jsx";
-import {AbstractReactComponent, Autocomplete} from 'components/shared';
-import {connect} from "react-redux";
+import React from 'react';
+import { WebApi } from 'actions/index.jsx';
+import { AbstractReactComponent, Autocomplete } from 'components/shared';
 
 class FundField extends AbstractReactComponent {
 
@@ -15,32 +14,33 @@ class FundField extends AbstractReactComponent {
     };
 
     state = {
-        dataList: []
+        dataList: [],
     };
 
     focus = () => {
-        this.refs.autocomplete.focus()
+        this.refs.autocomplete.focus();
     };
 
     handleSearchChange = (text) => {
-        const {excludedId} = this.props;
-        text = text == "" ? null : text;
+        const { excludedId } = this.props;
+        text = text === '' ? null : text;
         WebApi.findFunds(text).then(json => {
-            const newFunds = json.funds.filter((i)=>{
+            const newFunds = json.funds.filter((i) => {
                 if (i.id !== excludedId) {
                     return i;
                 }
             });
             this.setState({
-                dataList: newFunds
-            })
-        })
+                dataList: newFunds,
+            });
+            return null;
+        });
     };
 
     render() {
         // onChange nutno excludnout z other props - jinak by vlezno na autocomplete a přestal by fugnovat event on Change na komponentě
-        const {value, onChange, ...otherProps} = this.props;
-        const {dataList} = this.state;
+        const { value, onChange, ...otherProps } = this.props;
+        const { dataList } = this.state;
 
         return <Autocomplete
             ref="autocomplete"

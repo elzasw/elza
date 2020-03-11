@@ -3,13 +3,11 @@
  */
 
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {AbstractReactComponent, i18n} from 'components/shared';
-import {connect} from 'react-redux'
-import {normalizeString} from 'components/validate.jsx'
-import {decorateValue, inputValue} from './DescItemUtils.jsx'
-import DescItemLabel from './DescItemLabel.jsx'
-import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
+import { AbstractReactComponent, i18n } from 'components/shared';
+import { normalizeString } from 'components/validate.jsx';
+import { decorateValue, inputValue } from './DescItemUtils.jsx';
+import DescItemLabel from './DescItemLabel.jsx';
+import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 
 const DescItemString_MAX_LENGTH = 250;
 
@@ -21,7 +19,7 @@ class DescItemUnitid extends AbstractReactComponent {
     }
 
     focus() {
-        this.refs.focusEl.focus()
+        this.refs.focusEl.focus();
     }
 
     handleChange(e) {
@@ -33,18 +31,18 @@ class DescItemUnitid extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked, readMode, cal} = this.props;
-        let value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : inputValue(descItem.value);
+        const { descItem, locked, readMode, cal } = this.props;
+        let value = cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : inputValue(descItem.value);
 
         if (readMode) {
             return (
-                <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined} />
-            )
+                <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined}/>
+            );
         }
 
         let cls = [];
         if (cal) {
-            cls.push("calculable");
+            cls.push('calculable');
         }
 
         return (
@@ -60,7 +58,7 @@ class DescItemUnitid extends AbstractReactComponent {
                     />
                 </ItemTooltipWrapper>
             </div>
-        )
+        );
     }
 }
 

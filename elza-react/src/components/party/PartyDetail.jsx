@@ -1,5 +1,5 @@
 import React from 'react';
-import {reduxForm} from 'redux-form';
+import { reduxForm } from 'redux-form';
 import PartyListItem from './PartyListItem';
 import PartyDetailIdentifiers from './PartyDetailIdentifiers';
 import PartyDetailNames from './PartyDetailNames';
@@ -15,25 +15,25 @@ import {
     StoreHorizontalLoader,
     Utils,
 } from 'components/shared';
-import {Form} from 'react-bootstrap';
-import {Button} from '../ui';
-import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx';
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
-import {partyAdd, partyDetailFetchIfNeeded, partyUpdate} from 'actions/party/party.jsx';
-import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx';
-import {getMapFromList, objectById} from 'stores/app/utils.jsx';
-import {Shortcuts} from 'react-shortcuts';
-import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
+import { Form } from 'react-bootstrap';
+import { Button } from '../ui';
+import { refPartyTypesFetchIfNeeded } from 'actions/refTables/partyTypes.jsx';
+import { calendarTypesFetchIfNeeded } from 'actions/refTables/calendarTypes.jsx';
+import { partyAdd, partyDetailFetchIfNeeded, partyUpdate } from 'actions/party/party.jsx';
+import { userDetailsSaveSettings } from 'actions/user/userDetail.jsx';
+import { getMapFromList, objectById } from 'stores/app/utils.jsx';
+import { Shortcuts } from 'react-shortcuts';
+import { getOneSettings, setSettings } from 'components/arr/ArrUtils.jsx';
+import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
 import * as perms from 'actions/user/Permission.jsx';
-import {initForm} from 'actions/form/inlineForm.jsx';
-import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx';
-import {PARTY_TYPE_CODES} from '../../constants.tsx';
-import {PropTypes} from 'prop-types';
+import { initForm } from 'actions/form/inlineForm.jsx';
+import { refRecordTypesFetchIfNeeded } from 'actions/refTables/recordTypes.jsx';
+import { PARTY_TYPE_CODES } from '../../constants.tsx';
+import { PropTypes } from 'prop-types';
 import defaultKeymap from './PartyDetailKeymap.jsx';
 import './PartyDetail.scss';
-import {requestScopesIfNeeded} from '../../actions/refTables/scopesData';
-import {addToastrWarning} from '../shared/toastr/ToastrActions';
+import { requestScopesIfNeeded } from '../../actions/refTables/scopesData';
+import { addToastrWarning } from '../shared/toastr/ToastrActions';
 import * as StateApproval from '../enum/StateApproval';
 
 
@@ -65,15 +65,15 @@ const FIELDS_BY_PARTY_TYPE_CODE = {
  * Komponenta detailu osoby
  */
 class PartyDetail extends AbstractReactComponent {
-    static contextTypes = {shortcuts: PropTypes.object};
-    static childContextTypes = {shortcuts: PropTypes.object.isRequired};
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
 
     UNSAFE_componentWillMount() {
         Utils.addShortcutManager(this, defaultKeymap);
     }
 
     getChildContext() {
-        return {shortcuts: this.shortcutManager};
+        return { shortcuts: this.shortcutManager };
     }
 
     state = {
@@ -148,12 +148,12 @@ class PartyDetail extends AbstractReactComponent {
             tmpActiveIndexes = {};
         }
 
-        let activeIndexes = tmpActiveIndexes,
+        let activeIndexes           = tmpActiveIndexes,
             visibilitySettingsValue = {},
-            mergeIndex = {};
+            mergeIndex              = {};
 
         if (props.userDetail && props.userDetail.settings) {
-            const {settings} = props.userDetail;
+            const { settings } = props.userDetail;
             const visibilitySettings = getOneSettings(settings, SETTINGS_PARTY_PIN);
 
             if (visibilitySettings.value) {
@@ -179,12 +179,12 @@ class PartyDetail extends AbstractReactComponent {
                 console.warn('No settings for visibility - fallback to default - closed');
             }
         }
-        this.setState({activeIndexes, visibilitySettingsValue});
+        this.setState({ activeIndexes, visibilitySettingsValue });
     }
 
     fetchIfNeeded = (props = this.props) => {
         return new Promise((resolve, reject) => {
-            const {partyDetail: {id}} = props;
+            const { partyDetail: { id } } = props;
             this.props.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
             this.props.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
             this.props.dispatch(refRecordTypesFetchIfNeeded());
@@ -199,7 +199,7 @@ class PartyDetail extends AbstractReactComponent {
     };
 
     trySetFocus = (props = this.props) => {
-        const {_focus} = props;
+        const { _focus } = props;
 
         if (canSetFocus() && _focus) {
             if (isFocusFor(_focus, 'party', 2)) {
@@ -294,10 +294,10 @@ class PartyDetail extends AbstractReactComponent {
     };
 
     render() {
-        const {userDetail, partyDetail, fields, recordTypes, scopes} = this.props;
-        const {sourceInformation, creators} = fields;
+        const { userDetail, partyDetail, fields, recordTypes, scopes } = this.props;
+        const { sourceInformation, creators } = fields;
         const party = partyDetail.data;
-        const {activeIndexes, visibilitySettingsValue} = this.state;
+        const { activeIndexes, visibilitySettingsValue } = this.state;
 
         if (!partyDetail.fetched && !partyDetail.isFetching) {
             return <div className="unselected-msg">
@@ -326,7 +326,7 @@ class PartyDetail extends AbstractReactComponent {
 
             let relationClassTypes = partyType && partyType.relationTypes ? getMapFromList(partyType.relationTypes.map(i => i.relationClassType), 'code') : [];
 
-            const events = {onPin: this.handlePinToggle, onSelect: this.handleToggleActive};
+            const events = { onPin: this.handlePinToggle, onSelect: this.handleToggleActive };
 
             let headerCls = 'party-header';
             if (partyDetail.data.accessPoint.invalid) {
@@ -368,7 +368,7 @@ class PartyDetail extends AbstractReactComponent {
                 <Form className="party-body">
                     {parts.map((i, index) => {
                         const TYPE = i.type.toUpperCase();
-                        if (TYPE == UI_PARTY_GROUP_TYPE.IDENT) {
+                        if (TYPE === UI_PARTY_GROUP_TYPE.IDENT) {
                             const key = UI_PARTY_GROUP_TYPE.IDENT;
                             return <div key={index}>
                                 <CollapsablePanel tabIndex={0} isOpen={activeIndexes && activeIndexes[key] === true}
@@ -376,12 +376,12 @@ class PartyDetail extends AbstractReactComponent {
                                                   header={i.name} eventKey={key} {...events}>
                                     <PartyDetailNames party={party} partyType={partyType}
                                                       onPartyUpdate={this.handlePartyUpdate} canEdit={canEdit}/>
-                                    {party.partyType.code == PARTY_TYPE_CODES.GROUP_PARTY &&
+                                    {party.partyType.code === PARTY_TYPE_CODES.GROUP_PARTY &&
                                     <PartyDetailIdentifiers party={party} onPartyUpdate={this.handlePartyUpdate}
                                                             canEdit={canEdit}/>}
                                 </CollapsablePanel>
                             </div>;
-                        } else if (TYPE == UI_PARTY_GROUP_TYPE.CONCLUSION) {
+                        } else if (TYPE === UI_PARTY_GROUP_TYPE.CONCLUSION) {
                             const key = UI_PARTY_GROUP_TYPE.CONCLUSION;
                             return <div key={index}>
                                 <CollapsablePanel tabIndex={0} isOpen={activeIndexes && activeIndexes[key] === true}
@@ -443,7 +443,7 @@ class PartyDetail extends AbstractReactComponent {
                                                     element =
                                                         <FormInput {...inputProps} type="text" disabled={!canEdit}/>;
                                                 } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXTAREA) {
-                                                    const {initialValue, autofill, onUpdate, valid, invalid, dirty, pristine, active, visited, autofilled, ...textAreaProps} = inputProps;
+                                                    const { initialValue, autofill, onUpdate, valid, invalid, dirty, pristine, active, visited, autofilled, ...textAreaProps } = inputProps;
                                                     element = <FormInput {...textAreaProps} as="textarea"
                                                                          disabled={!canEdit}/>;
                                                 } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.RELATION) {
@@ -512,7 +512,7 @@ export default reduxForm({
         fields: PartyDetail.fields,
         validate: PartyDetail.validate,
     }, (state) => {
-        const {app: {partyDetail}, userDetail, refTables: {partyTypes, recordTypes}, focus, refTables} = state;
+        const { app: { partyDetail }, userDetail, refTables: { partyTypes, recordTypes }, focus, refTables } = state;
         return {
             partyDetail,
             userDetail,
@@ -523,5 +523,5 @@ export default reduxForm({
             scopes: refTables.scopesData.scopes,
         };
     },
-    {initForm: (onSave) => (initForm('partyDetail', PartyDetail.validate, onSave))},
+    { initForm: (onSave) => (initForm('partyDetail', PartyDetail.validate, onSave)) },
 )(PartyDetail);

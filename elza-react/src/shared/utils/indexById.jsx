@@ -4,7 +4,7 @@ export default function indexById(arr, id, attrName = 'id') {
     }
     const leng = arr.length;
     for (let a = 0; a < leng; a++) {
-        if (arr[a][attrName] == id) {
+        if (arr[a][attrName] === id) {
             return a;
         }
     }

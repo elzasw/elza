@@ -1,11 +1,10 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
-import Pane from './Pane'
-import AbstractReactComponent from "../../AbstractReactComponent";
-import Resizer from "../resizer/Resizer";
-import './Splitter.scss'
+import Pane from './Pane';
+import AbstractReactComponent from '../../AbstractReactComponent';
+import Resizer from '../resizer/Resizer';
+import './Splitter.scss';
 
 class Splitter extends AbstractReactComponent {
 
@@ -15,7 +14,7 @@ class Splitter extends AbstractReactComponent {
         leftDragged: false,
         rightDragged: false,
         leftSize: this.props.leftSize || 200,
-        rightSize: this.props.rightSize || 200
+        rightSize: this.props.rightSize || 200,
     };
 
     static propTypes = {
@@ -39,13 +38,13 @@ class Splitter extends AbstractReactComponent {
         const leftRef = this.refs.paneLeft;
         if (leftRef && this.state.leftSize) {
             leftRef.setState({
-                size: this.state.leftSize
+                size: this.state.leftSize,
             });
         }
         const rightRef = this.refs.paneRight;
         if (rightRef && this.state.rightSize) {
             rightRef.setState({
-                size: this.state.rightSize
+                size: this.state.rightSize,
             });
         }
     };
@@ -54,8 +53,8 @@ class Splitter extends AbstractReactComponent {
         if (nextProps.leftSize || nextProps.rightSize) {
             this.setState({
                 leftSize: nextProps.leftSize || this.state.leftSize,
-                rightSize: nextProps.rightSize || this.state.rightSize
-            }, this.updateChildPanes)
+                rightSize: nextProps.rightSize || this.state.rightSize,
+            }, this.updateChildPanes);
         }
     }
 
@@ -68,7 +67,7 @@ class Splitter extends AbstractReactComponent {
         if (document.selection) {
             document.selection.empty();
         } else {
-            window.getSelection().removeAllRanges()
+            window.getSelection().removeAllRanges();
         }
     };
 
@@ -100,7 +99,6 @@ class Splitter extends AbstractReactComponent {
                 const node = ReactDOM.findDOMNode(ref);
                 if (node.getBoundingClientRect) {
                     const width = node.getBoundingClientRect().width;
-                    const height = node.getBoundingClientRect().height;
                     const current = event.clientX;
                     const size = width;
                     const position = this.state.position;
@@ -113,28 +111,28 @@ class Splitter extends AbstractReactComponent {
                     }
                     this.setState({
                         position: current,
-                        resized: true
+                        resized: true,
                     });
 
                     let newState = {};
                     if (this.state.leftDragged) {
                         newState = {
                             leftSize: newSize,
-                            rightSize: this.state.rightSize
-                        }
+                            rightSize: this.state.rightSize,
+                        };
                     } else if (this.state.rightDragged) {
                         newState = {
                             leftSize: this.state.leftSize,
-                            rightSize: newSize
-                        }
+                            rightSize: newSize,
+                        };
                     }
                     if (this.props.onChange) {
-                        this.props.onChange({leftSize: newState.leftSize, rightSize: newState.rightSize});
+                        this.props.onChange({ leftSize: newState.leftSize, rightSize: newState.rightSize });
                     }
                     this.setState(newState);
 
                     ref.setState({
-                        size: newSize
+                        size: newSize,
                     });
                 }
             }
@@ -149,13 +147,13 @@ class Splitter extends AbstractReactComponent {
             this.setState({
                 active: false,
                 leftDragged: false,
-                rightDragged: false
+                rightDragged: false,
             });
         }
     };
 
     render() {
-        const {props: {left, right, center}} = this;
+        const { props: { left, right, center } } = this;
 
         const parts = [];
 
@@ -175,7 +173,7 @@ class Splitter extends AbstractReactComponent {
             <div ref='container' className='splitter-container'>
                 {parts}
             </div>
-        )
+        );
     }
 }
 

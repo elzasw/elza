@@ -1,4 +1,6 @@
 $border-radius: 0;
+$border-radius-lg: 0;
+$border-radius-sm: 0;
 $font-size-base: .75rem;
 
 @import "~bootstrap/scss/functions.scss";
@@ -15,6 +17,7 @@ $color-warn: #D90606;
 $color-success: #29b70c;
 $focus-border-color: #66afe9;
 $defaultBtnColor: #333333;
+$outlineBtnHoverBg: #e6e6e6;
 
 // App header
 $app-header-border: #DDDDDD;

@@ -1,14 +1,14 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {connect} from 'react-redux';
-import {AbstractReactComponent, FileListBox, i18n, Icon, StoreHorizontalLoader} from 'components/shared';
-import {Button} from '../ui';
-import {fetchFundOutputFilesIfNeeded, fundOutputFilesFilterByText} from 'actions/arr/fundOutputFiles.jsx';
-import {UrlFactory} from 'actions/index.jsx';
+import { connect } from 'react-redux';
+import { AbstractReactComponent, FileListBox, i18n, Icon, StoreHorizontalLoader } from 'components/shared';
+import { Button } from '../ui';
+import { fetchFundOutputFilesIfNeeded, fundOutputFilesFilterByText } from 'actions/arr/fundOutputFiles.jsx';
+import { UrlFactory } from 'actions/index.jsx';
 
 import './FundFiles.scss';
 import './FundOutputFiles.scss';
-import {downloadFile} from '../../actions/global/download';
+import { downloadFile } from '../../actions/global/download';
 
 /**
  * Správa souborů.
@@ -34,12 +34,12 @@ class FundOutputFiles extends AbstractReactComponent {
     }
 
     fetchIfNeeded = (props = this.props) => {
-        const {versionId, outputResultId} = props;
+        const { versionId, outputResultId } = props;
         this.props.dispatch(fetchFundOutputFilesIfNeeded(versionId, outputResultId));
     };
 
     handleTextSearch = (text) => {
-        const {versionId} = this.props;
+        const { versionId } = this.props;
         this.props.dispatch(fundOutputFilesFilterByText(versionId, text));
     };
 
@@ -48,7 +48,7 @@ class FundOutputFiles extends AbstractReactComponent {
     };
 
     handleDownloadAll = () => {
-        const {versionId, outputResultId} = this.props;
+        const { outputResultId } = this.props;
         this.props.dispatch(downloadFile(UrlFactory.downloadOutputResult(outputResultId)));
     };
 
@@ -57,7 +57,7 @@ class FundOutputFiles extends AbstractReactComponent {
     };
 
     render() {
-        const {fundOutputFiles} = this.props;
+        const { fundOutputFiles } = this.props;
 
         return <div className='fund-files fund-output-files'>
             <div className={'fund-files-header'}>

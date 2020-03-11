@@ -4,25 +4,24 @@
 
 import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx';
-import {permissionReceive} from "./permission.jsx"
-import {i18n} from 'components/shared'
-import {savingApiWrapper} from 'actions/global/status.jsx'
-import {modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
+import {i18n} from 'components/shared';
+import {savingApiWrapper} from 'actions/global/status.jsx';
+import {modalDialogHide} from 'actions/global/modalDialog.jsx';
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 
 export function joinUsers(groupId, userIds) {
     return (dispatch, getState) => {
         WebApi.joinGroup([groupId], userIds)
-            .then(() => {
-                dispatch(modalDialogHide());
-            })
-    }
+              .then(() => {
+                  dispatch(modalDialogHide());
+              });
+    };
 }
 
 export function leaveUser(groupId, userId) {
     return (dispatch, getState) => {
-        WebApi.leaveGroup(groupId, userId)
-    }
+        WebApi.leaveGroup(groupId, userId);
+    };
 }
 
 export function isGroupAction(action) {
@@ -34,9 +33,9 @@ export function isGroupAction(action) {
         case types.GROUPS_RECEIVE:
         case types.GROUPS_REQUEST:
         case types.GROUPS_SEARCH:
-            return true
+            return true;
         default:
-            return false
+            return false;
     }
 }
 
@@ -45,21 +44,21 @@ export function isGroupDetailAction(action) {
         case types.GROUPS_SELECT_GROUP:
         case types.GROUPS_GROUP_DETAIL_REQUEST:
         case types.GROUPS_GROUP_DETAIL_RECEIVE:
-            return true
+            return true;
         default:
-            return false
+            return false;
     }
 }
 
 function _groupDataKey(group) {
-    return group.filterText + '_'
+    return group.filterText + '_';
 }
 
 function _groupDetailDataKey(groupDetail) {
     if (groupDetail.id !== null) {
-        return groupDetail.id + '_'
+        return groupDetail.id + '_';
     } else {
-        return ''
+        return '';
     }
 }
 
@@ -67,14 +66,14 @@ export function groupsSelectGroup(id) {
     return {
         type: types.GROUPS_SELECT_GROUP,
         id,
-    }
+    };
 }
 
 export function groupsSearch(filterText) {
     return {
         type: types.GROUPS_SEARCH,
         filterText,
-    }
+    };
 }
 
 /**
@@ -83,22 +82,22 @@ export function groupsSearch(filterText) {
 export function groupsGroupDetailFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
-        const groupDetail = state.adminRegion.group.groupDetail
-        const dataKey = _groupDetailDataKey(groupDetail)
+        const groupDetail = state.adminRegion.group.groupDetail;
+        const dataKey = _groupDetailDataKey(groupDetail);
 
         if (groupDetail.currentDataKey !== dataKey) {
-            dispatch(groupsGroupDetailRequest(dataKey))
+            dispatch(groupsGroupDetailRequest(dataKey));
             WebApi.getGroup(groupDetail.id)
-                .then(json => {
-                    var newState = getState();
-                    const newGroupDetail = newState.adminRegion.group.groupDetail;
-                    const newDataKey = _groupDetailDataKey(newGroupDetail)
-                    if (newDataKey === dataKey) {
-                        dispatch(groupsGroupDetailReceive(json))
-                    }
-                })
+                  .then(json => {
+                      var newState = getState();
+                      const newGroupDetail = newState.adminRegion.group.groupDetail;
+                      const newDataKey = _groupDetailDataKey(newGroupDetail);
+                      if (newDataKey === dataKey) {
+                          dispatch(groupsGroupDetailReceive(json));
+                      }
+                  });
         }
-    }
+    };
 }
 
 /**
@@ -108,43 +107,43 @@ export function groupsFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
         const group = state.adminRegion.group;
-        const dataKey = _groupDataKey(group)
+        const dataKey = _groupDataKey(group);
 
         if (group.currentDataKey !== dataKey) {
-            dispatch(groupsRequest(dataKey))
+            dispatch(groupsRequest(dataKey));
 
             WebApi.findGroup(group.filterText)
-                .then(json => {
-                    var newState = getState();
-                    const newGroup = newState.adminRegion.group;
-                    const newDataKey = _groupDataKey(newGroup)
-                    if (newDataKey === dataKey) {
-                        dispatch(groupsReceive(json))
-                    }
-                })
+                  .then(json => {
+                      var newState = getState();
+                      const newGroup = newState.adminRegion.group;
+                      const newDataKey = _groupDataKey(newGroup);
+                      if (newDataKey === dataKey) {
+                          dispatch(groupsReceive(json));
+                      }
+                  });
         }
-    }
+    };
 }
 
 function groupsRequest(dataKey) {
     return {
         type: types.GROUPS_REQUEST,
         dataKey,
-    }
+    };
 }
 
 function groupsReceive(data) {
     return {
         type: types.GROUPS_RECEIVE,
         data,
-    }
+    };
 }
 
 function groupsGroupDetailRequest(dataKey) {
     return {
         type: types.GROUPS_GROUP_DETAIL_REQUEST,
         dataKey,
-    }
+    };
 }
 
 function groupsGroupDetailReceive(data) {
@@ -153,17 +152,17 @@ function groupsGroupDetailReceive(data) {
         dispatch({
             type: types.GROUPS_GROUP_DETAIL_RECEIVE,
             data,
-        })
+        });
 
         // Oprávnění z detailu
         // dispatch(permissionReceive("GROUP", data.permissions));
-    }
+    };
 }
 
 export function groupUpdate(groupId, name, description) {
     return (dispatch, getState) => {
         return savingApiWrapper(dispatch, WebApi.updateGroup(groupId, name, description));
-    }
+    };
 }
 
 export function groupCreate(name, code, description) {
@@ -172,11 +171,11 @@ export function groupCreate(name, code, description) {
             dispatch(addToastrSuccess(i18n('admin.group.add.success')));
             dispatch(groupsSelectGroup(response.id));
         });
-    }
+    };
 }
 
 export function groupDelete(id) {
     return (dispatch, getState) => {
         return savingApiWrapper(dispatch, WebApi.deleteGroup(id));
-    }
+    };
 }

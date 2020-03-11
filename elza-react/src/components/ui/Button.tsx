@@ -5,7 +5,7 @@ import styles from './Button.module.scss';
 
 interface IProps extends ButtonProps {
     className?: string
-    onClick?: (e: MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => void
+    onClick?: (e: MouseEvent<HTMLButtonElement>) => void
 }
 
 export const Button: React.FC<PropsWithChildren<IProps & any>> = memo(({children, className, ...buttonProps}) => {

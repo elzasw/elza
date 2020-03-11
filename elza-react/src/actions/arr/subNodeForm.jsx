@@ -2,27 +2,26 @@
  * Akce pro formulář JP.
  */
 
-import {DisplayType, FOCUS_KEYS} from "../../constants.tsx";
+import {DisplayType, FOCUS_KEYS} from '../../constants.tsx';
 import {WebApi} from 'actions/index.jsx';
-import {findByRoutingKeyInGlobalState, getMapFromList, getRoutingKeyType, indexById} from 'stores/app/utils.jsx'
-import {getFocusDescItemLocation} from 'stores/app/arr/subNodeFormUtils.jsx'
-import {valuesEquals} from 'components/Utils.jsx'
-import {setFocus} from 'actions/global/focus.jsx'
-import {increaseNodeVersion} from './node.jsx'
-import {outputIncreaseNodeVersion} from './outputActions.jsx'
+import {findByRoutingKeyInGlobalState, getRoutingKeyType, indexById} from 'stores/app/utils.jsx';
+import {getFocusDescItemLocation} from 'stores/app/arr/subNodeFormUtils.jsx';
+import {valuesEquals} from 'components/Utils.jsx';
+import {setFocus} from 'actions/global/focus.jsx';
+import {increaseNodeVersion} from './node.jsx';
+import {outputIncreaseNodeVersion} from './outputActions.jsx';
 import * as types from '../../actions/constants/ActionTypes.js';
-import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
+import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {i18n} from 'components/shared';
 import {statusSaved, statusSaving} from 'actions/global/status.jsx';
-import {debounce} from "shared/utils";
 import {fundNodeInfoReceive} from './nodeInfo.jsx';
-import NodeRequestController from "websocketController.jsx";
-import {fundSubNodeInfoReceive} from "./subNodeInfo";
-import {fromDuration} from "../../components/validate";
+import NodeRequestController from 'websocketController.jsx';
+import {fundSubNodeInfoReceive} from './subNodeInfo';
+import {fromDuration} from '../../components/validate';
 
 // Konfigurace velikosti cache dat pro formulář
 const CACHE_SIZE = 20;
-const CACHE_SIZE2 = CACHE_SIZE/2;
+const CACHE_SIZE2 = CACHE_SIZE / 2;
 
 export class ItemFormActions {
     constructor(area) {
@@ -36,7 +35,7 @@ export class ItemFormActions {
                 case types.FUND_SUB_NODE_FORM_CACHE_REQUEST:
                     return true;
                 default:
-                    return false
+                    return false;
             }
         } else {
             return false;
@@ -73,7 +72,7 @@ export class ItemFormActions {
                 case types.FUND_SUB_NODE_FORM_OUTPUT_CALC_SWITCH:
                     return true;
                 default:
-                    return false
+                    return false;
             }
         } else {
             return false;
@@ -98,8 +97,8 @@ export class ItemFormActions {
             versionId,
             routingKey,
             valueLocation,
-            result
-        }
+            result,
+        };
     }
 
     /**
@@ -116,8 +115,8 @@ export class ItemFormActions {
             versionId,
             routingKey,
             valueLocation,
-            onlyDescItems
-        }
+            onlyDescItems,
+        };
     }
 
     /**
@@ -136,8 +135,8 @@ export class ItemFormActions {
             routingKey,
             valueLocation,
             operationType,
-            descItemResult: descItemResult
-        }
+            descItemResult: descItemResult,
+        };
     }
 
     /**
@@ -152,8 +151,8 @@ export class ItemFormActions {
             area: this.area,
             versionId,
             routingKey,
-            valueLocation
-        }
+            valueLocation,
+        };
     }
 
     /**
@@ -166,7 +165,8 @@ export class ItemFormActions {
      * @return {Object} promise pro vrácení nových dat
      */
     // @Abstract
-    _getItemFormData(getState, dispatch, versionId, nodeId, routingKey, showChildren, showParents) {}
+    _getItemFormData(getState, dispatch, versionId, nodeId, routingKey, showChildren, showParents) {
+    }
 
     /**
      * Bylo zahájeno nové načítání dat.
@@ -179,7 +179,7 @@ export class ItemFormActions {
             area: this.area,
             versionId,
             routingKey,
-        }
+        };
     }
 
     /**
@@ -194,8 +194,8 @@ export class ItemFormActions {
             area: this.area,
             versionId,
             routingKey,
-            formsMap
-        }
+            formsMap,
+        };
     }
 
     /**
@@ -206,7 +206,8 @@ export class ItemFormActions {
      * @return subNodeForm store
      */
     // @Abstract
-    _getItemFormStore(state, versionId, routingKey) {}
+    _getItemFormStore(state, versionId, routingKey) {
+    }
 
     /**
      * Načtení store nadřazeného objektu, např. NODE v pořádání nebo OUTPUT.
@@ -216,7 +217,8 @@ export class ItemFormActions {
      * @return store
      */
     // @Abstract
-    _getParentObjStore(state, versionId, routingKey) {}
+    _getParentObjStore(state, versionId, routingKey) {
+    }
 
     /**
      * Nové načtení dat.
@@ -235,10 +237,10 @@ export class ItemFormActions {
                     const state = getState();
                     const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
                     if (subNodeForm.fetchingId == nodeId) {
-                        dispatch(this.fundSubNodeFormReceive(versionId, nodeId, routingKey, json, state.refTables.rulDataTypes, state.refTables.descItemTypes, state.refTables.groups.data, needClean))
+                        dispatch(this.fundSubNodeFormReceive(versionId, nodeId, routingKey, json, state.refTables.rulDataTypes, state.refTables.descItemTypes, state.refTables.groups.data, needClean));
                     }
-                })
-        }
+                });
+        };
     }
 
     /** Metoda pro volání API, aktualizace hodnoty
@@ -246,11 +248,13 @@ export class ItemFormActions {
      * @param {Object} formState stav formuláře
      */
     // @Abstract
-    _callUpdateDescItem(dispatch, formState, versionId, parentVersionId, parentId, descItem) {}
+    _callUpdateDescItem(dispatch, formState, versionId, parentVersionId, parentId, descItem) {
+    }
 
     /** Metoda pro volání API, vložení hodnoty */
     // @Abstract
-    _callCreateDescItem(versionId, parentId, parentVersionId, descItemTypeId, descItem) {}
+    _callCreateDescItem(versionId, parentId, parentVersionId, descItemTypeId, descItem) {
+    }
 
     /**
      * Odeslání hodnoty atributu na server - buď vytvoření nebo aktualizace.
@@ -261,7 +265,7 @@ export class ItemFormActions {
      *                         ve které je formulář
      * @param {Object} valueLocation konkrétní umístění hodnoty
      */
-    _formValueStore(dispatch, getState, versionId, routingKey, valueLocation, overrideDescItem=false) {
+    _formValueStore(dispatch, getState, versionId, routingKey, valueLocation, overrideDescItem = false) {
         const state = getState();
         const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
         const loc = subNodeForm.getLoc(subNodeForm, valueLocation);
@@ -277,7 +281,7 @@ export class ItemFormActions {
         if (refType.dataType.code === 'INT' && refType.viewDefinition === DisplayType.DURATION) {
             descItem = {
                 ...descItem,
-                value: fromDuration(descItem.value)
+                value: fromDuration(descItem.value),
             };
         }
 
@@ -288,13 +292,13 @@ export class ItemFormActions {
                 dispatch(statusSaving());
                 this._callUpdateDescItem(dispatch, subNodeForm, versionId, parentVersionId, parentId, descItem)
                     .then(json => {
-                        if(this.area === OutputFormActions.AREA || this.area === StructureFormActions.AREA){
+                        if (this.area === OutputFormActions.AREA || this.area === StructureFormActions.AREA) {
                             dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
                         } else {
                             dispatch(this._fundSubNodeUpdate(versionId, refTables, json));
                         }
                         dispatch(statusSaved());
-                    })
+                    });
             } else {
                 // check if not already saving
                 if (!loc.descItem.saving) {
@@ -304,22 +308,22 @@ export class ItemFormActions {
                     dispatch(this._fundSubNodeFormDescItemCreate(versionId, routingKey, valueLocation));
                     this._callCreateDescItem(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc.descItemType.id, descItem)
                         .then(json => {
-                            console.log("formValueStore - id undefined",json);
+                            console.log('formValueStore - id undefined', json);
                             dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'CREATE'));
                             dispatch(statusSaved());
-                        })
+                        });
                 }
             }
         }
     }
 
-    _fundSubNodeUpdate(versionId, refTables, data){
+    _fundSubNodeUpdate(versionId, refTables, data) {
         return {
             type: types.FUND_SUBNODE_UPDATE,
             data,
             versionId,
-            refTables
-        }
+            refTables,
+        };
     }
 
     /**
@@ -335,7 +339,7 @@ export class ItemFormActions {
             versionId,
             routingKey,
             valueLocation,
-        }
+        };
     }
 
     /**
@@ -356,7 +360,7 @@ export class ItemFormActions {
             const parentId = subNodeForm.data.parent.id;
             const parentVersionId = subNodeForm.data.parent.version;
 
-            if(!undef){
+            if (!undef) {
                 this._formValueStore(dispatch, getState, versionId, routingKey, valueLocation, descItem);
             } else {
                 this._callDeleteDescItem(versionId, parentId, parentVersionId, descItem);
@@ -388,7 +392,8 @@ export class ItemFormActions {
 
     /** Metoda pro volání API. */
     // @Abstract
-    _callArrCoordinatesImport(versionId, parentId, parentVersionId, descItemTypeId, file) {}
+    _callArrCoordinatesImport(versionId, parentId, parentVersionId, descItemTypeId, file) {
+    }
 
     /**
      * Akce přidání coordinates jako DescItem - Probíhá uploadem - doplnění hodnot pomocí WS
@@ -405,14 +410,15 @@ export class ItemFormActions {
                 .then(() => {
                     dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.successCoordinates')));
                 }).catch(() => {
-                    dispatch(addToastrDanger(i18n('import.toast.error'), i18n('import.toast.errorCoordinates')));
-                });
-        }
+                dispatch(addToastrDanger(i18n('import.toast.error'), i18n('import.toast.errorCoordinates')));
+            });
+        };
     }
 
     /** Metoda pro volání API. */
     // @Abstract
-    _callDescItemCsvImport(versionId, parentId, parentVersionId, descItemTypeId, file) {}
+    _callDescItemCsvImport(versionId, parentId, parentVersionId, descItemTypeId, file) {
+    }
 
     /**
      * Akce přidání csv jako DescItem - Probíhá uploadem.
@@ -431,7 +437,7 @@ export class ItemFormActions {
             }).catch(() => {
                 dispatch(addToastrDanger(i18n('import.toast.error'), i18n('import.toast.errorJsonTable')));
             });
-        }
+        };
     }
 
     /**
@@ -447,13 +453,13 @@ export class ItemFormActions {
             const loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
             // only when loc exists
-            if(loc){
-            WebApi.validateUnitdate(loc.descItem.value)
-                .then(json => {
-                    dispatch(this._fundSubNodeFormValueValidateResult(versionId, routingKey, valueLocation, json));
-                })
-        }
-    }
+            if (loc) {
+                WebApi.validateUnitdate(loc.descItem.value)
+                      .then(json => {
+                          dispatch(this._fundSubNodeFormValueValidateResult(versionId, routingKey, valueLocation, json));
+                      });
+            }
+        };
     }
 
     /**
@@ -478,9 +484,9 @@ export class ItemFormActions {
             });
 
             if (forceStore) {
-                this._formValueStore(dispatch, getState, versionId, routingKey, valueLocation)
+                this._formValueStore(dispatch, getState, versionId, routingKey, valueLocation);
             }
-        }
+        };
     }
 
     /**
@@ -512,9 +518,9 @@ export class ItemFormActions {
                     .then(json => {
                         const newValueLocation = {...valueLocation, descItemIndex: index};
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, newValueLocation, json, 'UPDATE'));
-                    })
+                    });
             }
-        }
+        };
     }
 
     /**
@@ -533,9 +539,9 @@ export class ItemFormActions {
                 routingKey,
                 valueLocation,
                 value,
-                dispatch
-            })
-        }
+                dispatch,
+            });
+        };
     }
 
     /**
@@ -554,9 +560,9 @@ export class ItemFormActions {
                 routingKey,
                 valueLocation,
                 value,
-                dispatch
-            })
-        }
+                dispatch,
+            });
+        };
     }
 
     /**
@@ -579,8 +585,8 @@ export class ItemFormActions {
             });
 
             // Vynucení uložení na server, pokud je validní jako celek
-            this._formValueStore(dispatch, getState, versionId, routingKey, valueLocation)
-        }
+            this._formValueStore(dispatch, getState, versionId, routingKey, valueLocation);
+        };
     }
 
     /**
@@ -603,12 +609,12 @@ export class ItemFormActions {
                     needUpdate = true;
                 }
 
-                return needUpdate
+                return needUpdate;
             } else {
-                return true
+                return true;
             }
         }
-        return false
+        return false;
     }
 
     /**
@@ -625,16 +631,17 @@ export class ItemFormActions {
                 versionId,
                 routingKey,
                 valueLocation,
-                receivedAt: Date.now()
+                receivedAt: Date.now(),
             });
 
-            this._formValueStore(dispatch, getState, versionId, routingKey, valueLocation)
-        }
+            this._formValueStore(dispatch, getState, versionId, routingKey, valueLocation);
+        };
     }
 
     /** Metoda pro volání API. */
     // @Abstract
-    _callDeleteDescItem(versionId, parentId, parentVersionId, descItem) {}
+    _callDeleteDescItem(versionId, parentId, parentVersionId, descItem) {
+    }
 
     /**
      * Smazání hodnoty atributu.
@@ -660,9 +667,9 @@ export class ItemFormActions {
                 this._callDeleteDescItem(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc.descItem)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'DELETE'));
-                    })
+                    });
             }
-        }
+        };
     }
 
     fundSubNodeFormHandleClose(versionId, routingKey) {
@@ -671,9 +678,9 @@ export class ItemFormActions {
             const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
             const valueLocation = getFocusDescItemLocation(subNodeForm);
             if (valueLocation !== null) {
-                dispatch(this.fundSubNodeFormValueBlur(versionId, routingKey, valueLocation))
+                dispatch(this.fundSubNodeFormValueBlur(versionId, routingKey, valueLocation));
             }
-        }
+        };
     }
 
     /**
@@ -689,13 +696,16 @@ export class ItemFormActions {
                 area: this.area,
                 versionId,
                 routingKey,
-                descItemTypeId
+                descItemTypeId,
             });
 
             //const state = getState();
             //const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
-            dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {descItemTypeId: descItemTypeId, descItemObjectId: null}))
-        }
+            dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
+                descItemTypeId: descItemTypeId,
+                descItemObjectId: null,
+            }));
+        };
     }
 
     fundSubNodeFormTemplateUse(versionId, routingKey, template, replaceValues, addItemTypeIds) {
@@ -709,15 +719,15 @@ export class ItemFormActions {
                 template,
                 replaceValues,
                 groups: state.refTables.groups.data,
-                addItemTypeIds
+                addItemTypeIds,
             });
             dispatch({
                 type: types.FUND_TEMPLATE_USE,
                 area: this.area,
                 versionId,
-                template
+                template,
             });
-        }
+        };
     }
 
     fundSubNodeFormTemplateUseOnly(versionId, template) {
@@ -726,22 +736,25 @@ export class ItemFormActions {
                 type: types.FUND_TEMPLATE_USE,
                 area: this.area,
                 versionId,
-                template
+                template,
             });
-        }
+        };
     }
 
     /** Metoda pro volání API. */
     // @Abstract
-    _callDeleteDescItemType(versionId, parentId, parentVersionId, descItemTypeId) {}
+    _callDeleteDescItemType(versionId, parentId, parentVersionId, descItemTypeId) {
+    }
 
     /** Metoda pro volání API. */
     // @Abstract
-    _callSetNotIdentifiedDescItem(versionId, elementId, parentNodeVersion, itemTypeId, itemSpecId, itemObjectId) {}
+    _callSetNotIdentifiedDescItem(versionId, elementId, parentNodeVersion, itemTypeId, itemSpecId, itemObjectId) {
+    }
 
     /** Metoda pro volání API. */
     // @Abstract
-    _callUnsetNotIdentifiedDescItem(versionId, elementId, parentNodeVersion, itemTypeId, itemSpecId, itemObjectId) {}
+    _callUnsetNotIdentifiedDescItem(versionId, elementId, parentNodeVersion, itemTypeId, itemSpecId, itemObjectId) {
+    }
 
     /**
      * Přidání PP (který je počítaný a ještě ve formuláři není) do formuláře
@@ -752,12 +765,12 @@ export class ItemFormActions {
     addCalculatedDescItem(versionId, itemTypeId, strict = false) {
         return (dispatch, getState) => {
             const state = getState();
-            const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+            const fundIndex = indexById(state.arrRegion.funds, versionId, 'versionId');
             if (fundIndex !== null) {
                 const getOutputId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
                 return WebApi.switchOutputCalculating(versionId, getOutputId, itemTypeId, strict);
             }
-        }
+        };
     }
 
     /**
@@ -771,7 +784,7 @@ export class ItemFormActions {
     switchOutputCalculating(versionId, itemTypeId, routingKey, valueLocation) {
         return (dispatch, getState) => {
             const state = getState();
-            const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+            const fundIndex = indexById(state.arrRegion.funds, versionId, 'versionId');
             if (fundIndex !== null) {
                 const getOutputId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
                 WebApi.switchOutputCalculating(versionId, getOutputId, itemTypeId).then(() => {
@@ -780,11 +793,11 @@ export class ItemFormActions {
                         area: this.area,
                         versionId,
                         routingKey,
-                        valueLocation
-                    })
+                        valueLocation,
+                    });
                 });
             }
-        }
+        };
     }
 
     /**
@@ -812,9 +825,9 @@ export class ItemFormActions {
                 this._callDeleteDescItemType(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc.descItemType.id)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'DELETE_DESC_ITEM_TYPE'));
-                    })
+                    });
             }
-        }
+        };
     }
 
     /**
@@ -831,8 +844,8 @@ export class ItemFormActions {
             versionId,
             routingKey,
             valueLocation,
-            copySiblingResult
-        }
+            copySiblingResult,
+        };
     }
 
     /**
@@ -848,11 +861,12 @@ export class ItemFormActions {
             versionId,
             routingKey,
             valueLocation,
-        }
+        };
     }
 
     // @Abstract
-    _getParentObjIdInfo(parentObjStore, routingKey) {}
+    _getParentObjIdInfo(parentObjStore, routingKey) {
+    }
 
     /**
      * Vyžádání dat - aby byla ve store k dispozici.
@@ -877,7 +891,7 @@ export class ItemFormActions {
                     dispatch(this._fundSubNodeFormFetch(versionId, parentObjIdInfo.parentId, routingKey, subNodeForm.needClean || needClean, showChildren, showParents));
                 }
             }
-        }
+        };
     }
 
     /**
@@ -903,8 +917,8 @@ export class ItemFormActions {
             refDescItemTypes: descItemTypes,
             groups,
             receivedAt: Date.now(),
-            needClean
-        }
+            needClean,
+        };
     }
 
     /**
@@ -920,13 +934,14 @@ export class ItemFormActions {
             versionId,
             nodeId,
             routingKey,
-        }
+        };
     }
 }
+
 //var debouncedGetFundNodeForm = debounce(WebApi.getFundNodeForm,200);
 class NodeFormActions extends ItemFormActions {
 
-    static AREA = "NODE";
+    static AREA = 'NODE';
 
     constructor() {
         super(NodeFormActions.AREA);
@@ -945,10 +960,10 @@ class NodeFormActions extends ItemFormActions {
         return (dispatch, getState) => {
             dispatch(this._fundSubNodeFormDescItemTypeDeleteInStore(versionId, routingKey, valueLocation, true));
             WebApi.copyOlderSiblingAttribute(versionId, nodeId, nodeVersionId, descItemTypeId)
-                .then(json => {
-                    dispatch(this.fundSubNodeFormDescItemTypeCopyFromPrevResponse(versionId, routingKey, valueLocation, json));
-                })
-        }
+                  .then(json => {
+                      dispatch(this.fundSubNodeFormDescItemTypeCopyFromPrevResponse(versionId, routingKey, valueLocation, json));
+                  });
+        };
     }
 
     /**
@@ -963,7 +978,7 @@ class NodeFormActions extends ItemFormActions {
                 const state = getState();
                 const node = this._getParentObjStore(state, versionId, routingKey);
                 if (node === null) {
-                    console.error("Node not found, versionId="+versionId);
+                    console.error('Node not found, versionId=' + versionId);
                     return;   // nemělo by nastat
                 }
 
@@ -980,9 +995,9 @@ class NodeFormActions extends ItemFormActions {
 
                             dispatch(this._fundSubNodeFormCacheRequest(versionId, routingKey));
                             WebApi.getFundNodeFormsWithAround(versionId, nodeId, CACHE_SIZE2)
-                                .then(json => {
-                                    dispatch(this._fundSubNodeFormCacheResponse(versionId, routingKey, json.forms))
-                                })
+                                  .then(json => {
+                                      dispatch(this._fundSubNodeFormCacheResponse(versionId, routingKey, json.forms));
+                                  });
                         } else {    // pro získání id okolí můžeme použít store
                             // Načtení okolí položky
                             const index = indexById(node.childNodes, nodeId);
@@ -992,12 +1007,12 @@ class NodeFormActions extends ItemFormActions {
                             const idsForFetch = [];
                             left.forEach(n => {
                                 if (!subNodeFormCache.dataCache[n.id]) {
-                                    idsForFetch.push(n.id)
+                                    idsForFetch.push(n.id);
                                 }
                             });
                             right.forEach(n => {
                                 if (!subNodeFormCache.dataCache[n.id]) {
-                                    idsForFetch.push(n.id)
+                                    idsForFetch.push(n.id);
                                 }
                             });
 
@@ -1006,9 +1021,9 @@ class NodeFormActions extends ItemFormActions {
                             if (idsForFetch.length > 0) {   // máme něco pro načtení
                                 dispatch(this._fundSubNodeFormCacheRequest(versionId, routingKey));
                                 WebApi.getFundNodeForms(versionId, idsForFetch)
-                                    .then(json => {
-                                        dispatch(this._fundSubNodeFormCacheResponse(versionId, routingKey, json.forms))
-                                    })
+                                      .then(json => {
+                                          dispatch(this._fundSubNodeFormCacheResponse(versionId, routingKey, json.forms));
+                                      });
                             }
                         }
                     }
@@ -1027,7 +1042,7 @@ class NodeFormActions extends ItemFormActions {
                         children: showChildren,
                         siblingsFrom: indexFrom,
                         siblingsMaxCount: node.pageSize,
-                        siblingsFilter: node.filterText
+                        siblingsFilter: node.filterText,
                     };
                     return WebApi.getNodeData(versionId, nodeParam, resultParam).then(json => {
 
@@ -1044,14 +1059,14 @@ class NodeFormActions extends ItemFormActions {
                     });
                 } else {    // je v cache, vrátíme ji
                     //console.log('### USE_CACHE')
-                    return new Promise(function (resolve, reject) {
-                        resolve(data)
-                    })
+                    return new Promise(function(resolve, reject) {
+                        resolve(data);
+                    });
                 }
             case 'DATA_GRID':   // není podpora kešování
                 const nodeParam = {nodeId};
                 const resultParam = {
-                    formData: true
+                    formData: true,
                 };
                 return WebApi.getNodeData(versionId, nodeParam, resultParam).then(json => json.formData);
         }
@@ -1064,16 +1079,16 @@ class NodeFormActions extends ItemFormActions {
             case 'NODE':
                 const node = this._getParentObjStore(state, versionId, routingKey);
                 if (node !== null) {
-                    return node.subNodeForm
+                    return node.subNodeForm;
                 } else {
-                    return null
+                    return null;
                 }
             case 'DATA_GRID':
-                const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+                const fundIndex = indexById(state.arrRegion.funds, versionId, 'versionId');
                 if (fundIndex !== null) {
-                    return state.arrRegion.funds[fundIndex].fundDataGrid.subNodeForm
+                    return state.arrRegion.funds[fundIndex].fundDataGrid.subNodeForm;
                 } else {
-                    return null
+                    return null;
                 }
         }
 
@@ -1091,11 +1106,11 @@ class NodeFormActions extends ItemFormActions {
                 }
                 break;
             case 'DATA_GRID':
-                const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+                const fundIndex = indexById(state.arrRegion.funds, versionId, 'versionId');
                 if (fundIndex !== null) {
                     return state.arrRegion.funds[fundIndex].fundDataGrid;
                 }
-                break
+                break;
         }
 
         return null;
@@ -1104,12 +1119,14 @@ class NodeFormActions extends ItemFormActions {
     // @Override
     _callUpdateDescItem(dispatch, formState, versionId, parentVersionId, parentId, descItem) {
         // Umělé navýšení verze o 1 - aby mohla pozitivně projít případná další update operace
-        console.log("Before update, parentVersionId: ",parentVersionId);
+        console.log('Before update, parentVersionId: ', parentVersionId);
         dispatch(increaseNodeVersion(versionId, parentId, parentVersionId));
 
-        console.log("update desc Item");
+        console.log('update desc Item');
         return new Promise((resolve, reject) => {
-            NodeRequestController.updateRequest(versionId, parentVersionId, parentId, descItem, (json) => {resolve(json)})
+            NodeRequestController.updateRequest(versionId, parentVersionId, parentId, descItem, (json) => {
+                resolve(json);
+            });
         });
     }
 
@@ -1120,7 +1137,7 @@ class NodeFormActions extends ItemFormActions {
 
     // @Override
     _callCreateDescItem(versionId, parentId, parentVersionId, descItemTypeId, descItem) {
-        console.log("create desc Item");
+        console.log('create desc Item');
         return WebApi.createDescItem(versionId, parentId, parentVersionId, descItemTypeId, descItem);
     }
 
@@ -1154,16 +1171,19 @@ class NodeFormActions extends ItemFormActions {
         const type = getRoutingKeyType(routingKey);
         switch (type) {
             case 'NODE':
-                return { parentId: parentObjStore.selectedSubNodeId, parentVersion: parentObjStore.subNodeForm.versionId };
+                return {
+                    parentId: parentObjStore.selectedSubNodeId,
+                    parentVersion: parentObjStore.subNodeForm.versionId,
+                };
             case 'DATA_GRID':
-                return { parentId: parentObjStore.nodeId, parentVersion: parentObjStore.subNodeForm.versionId };
+                return {parentId: parentObjStore.nodeId, parentVersion: parentObjStore.subNodeForm.versionId};
         }
     }
 }
 
 class OutputFormActions extends ItemFormActions {
 
-    static AREA = "OUTPUT";
+    static AREA = 'OUTPUT';
 
     constructor() {
         super(OutputFormActions.AREA);
@@ -1173,22 +1193,22 @@ class OutputFormActions extends ItemFormActions {
     //@Override
     _getItemFormData(getState, dispatch, versionId, nodeId, routingKey) {
         // není podpora kešování
-        return WebApi.getOutputNodeForm(versionId, nodeId)
+        return WebApi.getOutputNodeForm(versionId, nodeId);
     }
 
     // @Override
     _getItemFormStore(state, versionId, routingKey) {
-        const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+        const fundIndex = indexById(state.arrRegion.funds, versionId, 'versionId');
         if (fundIndex !== null) {
-            return state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm
+            return state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm;
         } else {
-            return null
+            return null;
         }
     }
 
     // @Override
     _getParentObjStore(state, versionId, routingKey) {
-        const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+        const fundIndex = indexById(state.arrRegion.funds, versionId, 'versionId');
         if (fundIndex !== null) {
             const fund = state.arrRegion.funds[fundIndex];
             return fund.fundOutput.fundOutputDetail;
@@ -1242,13 +1262,13 @@ class OutputFormActions extends ItemFormActions {
 
 // @Override
     _getParentObjIdInfo(parentObjStore, routingKey) {
-        return { parentId: parentObjStore.id, parentVersion: parentObjStore.version };
+        return {parentId: parentObjStore.id, parentVersion: parentObjStore.version};
     }
 }
 
 class StructureFormActions extends ItemFormActions {
 
-    static AREA = "STRUCTURE";
+    static AREA = 'STRUCTURE';
 
     constructor() {
         super(StructureFormActions.AREA);
@@ -1258,22 +1278,22 @@ class StructureFormActions extends ItemFormActions {
     //@Override
     _getItemFormData(getState, dispatch, versionId, nodeId, routingKey) {
         // není podpora kešování
-        return WebApi.getFormStructureItems(versionId, nodeId).then(i => ({...i, parent: {...i.parent,version:0}}))
+        return WebApi.getFormStructureItems(versionId, nodeId).then(i => ({...i, parent: {...i.parent, version: 0}}));
     }
 
     // @Override
     _getItemFormStore(state, versionId, routingKey) {
-        const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+        const fundIndex = indexById(state.arrRegion.funds, versionId, 'versionId');
         if (fundIndex !== null) {
-            return state.arrRegion.funds[fundIndex].structureNodeForm.subNodeForm
+            return state.arrRegion.funds[fundIndex].structureNodeForm.subNodeForm;
         } else {
-            return null
+            return null;
         }
     }
 
     // @Override
     _getParentObjStore(state, versionId, routingKey) {
-        const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
+        const fundIndex = indexById(state.arrRegion.funds, versionId, 'versionId');
         if (fundIndex !== null) {
             const fund = state.arrRegion.funds[fundIndex];
             return fund.structureNodeForm;
@@ -1324,12 +1344,11 @@ class StructureFormActions extends ItemFormActions {
 
 // @Override
     _getParentObjIdInfo(parentObjStore, routingKey) {
-        return { parentId: parentObjStore.id, parentVersion: parentObjStore.version };
+        return {parentId: parentObjStore.id, parentVersion: parentObjStore.version};
     }
 }
 
 
-
 export const nodeFormActions = new NodeFormActions();
-export const outputFormActions =  new OutputFormActions();
-export const structureFormActions =  new StructureFormActions();
+export const outputFormActions = new OutputFormActions();
+export const structureFormActions = new StructureFormActions();

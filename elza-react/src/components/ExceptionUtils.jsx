@@ -1,8 +1,8 @@
-import React from "react";
-import {addToastr} from "components/shared/toastr/ToastrActions.jsx";
-import LongText from "./LongText";
-import i18n from "./i18n";
-import Exception from "./shared/exception/Exception";
+import React from 'react';
+import { addToastr } from 'components/shared/toastr/ToastrActions.jsx';
+import LongText from './LongText';
+import i18n from './i18n';
+import Exception from './shared/exception/Exception';
 
 const TYPE2GROUP = {
     'ArrangementCode': 'arr',
@@ -14,7 +14,7 @@ const TYPE2GROUP = {
     'PackageCode': 'pkg',
     'RegistryCode': 'reg',
     'StructObjCode': 'sobj',
-    'UserCode': 'usr'
+    'UserCode': 'usr',
 };
 
 /**
@@ -36,6 +36,8 @@ export function createException(data) {
             toaster = resolveArrangement(data);
             break;
         }
+        default:
+            break;
     }
 
     if (toaster == null) {
@@ -54,14 +56,17 @@ function resolveBase(data) {
     switch (data.code) {
         case 'INSUFFICIENT_PERMISSIONS': {
             return createToaster(i18n('exception.base.INSUFFICIENT_PERMISSIONS'), data, (p) => {
-                return <small><b>{i18n('exception.base.INSUFFICIENT_PERMISSIONS.detail')}:</b> {p.permission && p.permission.map((item)=>i18n('permission.' + item)).join(", ")}</small>
+                return <small><b>{i18n('exception.base.INSUFFICIENT_PERMISSIONS.detail')}:</b> {p.permission && p.permission.map((item) => i18n('permission.' + item)).join(', ')}
+                </small>;
             });
         }
         case 'OPTIMISTIC_LOCKING_ERROR': {
             return createToaster(i18n('global.exception.permission.need'), data, (p, m) => {
-                return <LongText text={m} />
+                return <LongText text={m}/>;
             });
         }
+        default:
+            break;
     }
 }
 
@@ -100,10 +105,10 @@ function resolveDefault(data) {
         return null;
     }
 
-    const key = 'exception.' + TYPE2GROUP[data.type] + "." + data.code;
+    const key = 'exception.' + TYPE2GROUP[data.type] + '.' + data.code;
 
     if (!existsI18n(key)) {
-        console.warn("i18n('" + key + "') not found, please add to translate file");
+        console.warn('i18n(\'' + key + '\') not found, please add to translate file');
     }
 
     return createToaster(i18n(key, data.properties), data);
@@ -119,8 +124,9 @@ function resolveDefault(data) {
  * @param time         délka zobrazení - ms
  * @returns vytvořená komponenta
  */
-function createToaster(title, data, textRenderer, size = "lg", time = null) {
+function createToaster(title, data, textRenderer, size = 'lg', time = null) {
     const type = data.level ? data.level : 'danger';
-    return addToastr(title, [<Exception key="exception-key" title={title} data={data} textRenderer={textRenderer} />], type, size, time);
+    return addToastr(title, [<Exception key="exception-key" title={title} data={data}
+                                        textRenderer={textRenderer}/>], type, size, time);
 }
 

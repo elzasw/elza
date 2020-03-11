@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import TreeNodeToggle from "./TreeNodeToggle.jsx";
 import DepthIndent from "./DepthIndent.jsx";
 import classNames from "classnames";
-import getItemName from "components/shared/utils/getItemName.jsx";
 import {propsEquals} from "components/Utils.jsx";
 
 class ListItem extends React.PureComponent {
@@ -19,7 +18,7 @@ class ListItem extends React.PureComponent {
         className: "",
         ignoreDepth: false,
         onExpandCollapse: (e) => {throw "callback 'onExpandCollapse' for 'ListItem' is not defined"}
-    }
+    };
 
     static propTypes = {
         highlighted: PropTypes.bool,
@@ -32,7 +31,7 @@ class ListItem extends React.PureComponent {
         ignoreDepth: PropTypes.bool,
         onExpandCollapse: PropTypes.func,
         renderName: PropTypes.func
-    }
+    };
 
     constructor(props){
         super(props);
@@ -59,14 +58,14 @@ class ListItem extends React.PureComponent {
         const {
             item,
             name,
-            highlighted, 
-            selected, 
-            selectable, 
-            focusable, 
-            depth, 
-            expanded, 
-            className, 
-            onExpandCollapse, 
+            highlighted,
+            selected,
+            selectable,
+            focusable,
+            depth,
+            expanded,
+            className,
+            onExpandCollapse,
             ignoreDepth,
             hasChildren,
             indent,

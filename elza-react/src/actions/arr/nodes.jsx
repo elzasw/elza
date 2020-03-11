@@ -3,18 +3,16 @@
  */
 
 import {WebApi} from 'actions/index.jsx';
-import {indexById} from 'stores/app/utils.jsx'
 import * as types from 'actions/constants/ActionTypes.js';
-import {findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx'
-import {increaseMultipleNodesVersions, fundSelectSubNode, fundSelectSubNodeInt} from 'actions/arr/node.jsx';
+import {fundSelectSubNode, fundSelectSubNodeInt, increaseMultipleNodesVersions} from 'actions/arr/node.jsx';
 
 export function isNodesAction(action) {
     switch (action.type) {
         case types.FUND_FUND_CLOSE_NODE_TAB:
         case types.FUND_FUND_SELECT_NODE_TAB:
-            return true
+            return true;
         default:
-            return false
+            return false;
     }
 }
 
@@ -41,7 +39,7 @@ export function fundSelectNodeTab(versionId, nodeId, routingKey, index) {
         if (nodeTab.selectedSubNodeId != null) {    // musíme poslat akci vybrání subnode (aby se řádek vybral např. ve stromu)
             dispatch(fundSelectSubNodeInt(versionId, nodeTab.selectedSubNodeId, nodeTab, false, null, true));
         }
-    }
+    };
 }
 
 /**
@@ -58,7 +56,7 @@ function _fundCloseNodeTab(versionId, nodeId, routingKey, index) {
         nodeId,
         routingKey,
         index,
-    }
+    };
 }
 
 /**
@@ -73,7 +71,7 @@ export function fundCloseNodeTab(versionId, nodeId, routingKey, index) {
         var state = getState();
         var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
         var wasSelected = false;
-        if (activeFund.nodes.activeIndex == index) {  // zavíráme aktuálně vybranou
+        if (activeFund.nodes.activeIndex === index) {  // zavíráme aktuálně vybranou
             wasSelected = true;
         }
         dispatch(_fundCloseNodeTab(versionId, nodeId, routingKey, index));
@@ -81,23 +79,24 @@ export function fundCloseNodeTab(versionId, nodeId, routingKey, index) {
         var newActiveFund = newState.arrRegion.funds[newState.arrRegion.activeIndex];
         if (wasSelected) {
             if (newActiveFund.nodes.nodes.length > 0) {    // bude vybraná nějaká jiná, protože ještě nějaké záložky existují
-                const node = newActiveFund.nodes.nodes[newActiveFund.nodes.activeIndex]
+                const node = newActiveFund.nodes.nodes[newActiveFund.nodes.activeIndex];
                 dispatch(fundSelectNodeTab(versionId, node.id, node.routingKey, newActiveFund.nodes.activeIndex));
             } else {    // není žádná záložka
                 dispatch(fundSelectSubNodeInt(newActiveFund.versionId, null, null, false, null, false));
             }
         }
-    }
+    };
 }
 
 /**
  * Funkce přesunu uzlů. Všechny funkce musí vracet Promise.
  */
 const moveFunctions = {
-    "BEFORE": WebApi.moveNodesBefore,
-    "AFTER": WebApi.moveNodesAfter,
-    "UNDER": WebApi.moveNodesUnder
-}
+    'BEFORE': WebApi.moveNodesBefore,
+    'AFTER': WebApi.moveNodesAfter,
+    'UNDER': WebApi.moveNodesUnder,
+};
+
 /**
  * Funkce spouštějící a ukončující operaci přesunu.
  * @param {string} direction - směr přesunu uzlu
@@ -107,7 +106,7 @@ const moveFunctions = {
  * @param {Object} dest - cílový uzel, kterého se akce týká
  * @param {Object} destParent - nadřazený uzel pro dest
  */
-export function moveNodes(direction,versionId,nodes,nodesParent,dest,destParent){
+export function moveNodes(direction, versionId, nodes, nodesParent, dest, destParent) {
     return (dispatch, getState) => {
         var state = getState();
         var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
@@ -115,37 +114,39 @@ export function moveNodes(direction,versionId,nodes,nodesParent,dest,destParent)
         var nodesToUpdate = [...nodes];
         nodesToUpdate.push(nodesParent);
         var nextNodeParent;
-        if(direction === "UNDER"){
+        if (direction === 'UNDER') {
             nextNodeParent = dest;
         } else {
             nextNodeParent = destParent;
         }
         nodesToUpdate.push(nextNodeParent);
-        dispatch(increaseMultipleNodesVersions(versionId,nodesToUpdate));
+        dispatch(increaseMultipleNodesVersions(versionId, nodesToUpdate));
         dispatch(fundMoveStart(versionId));
-        return moveFunctions[direction](versionId, nodes, nodesParent, dest, destParent).then(()=>{
+        return moveFunctions[direction](versionId, nodes, nodesParent, dest, destParent).then(() => {
             dispatch(fundMoveFinish(versionId));
-            dispatch(fundSelectSubNode(versionId, nodeTab.selectedSubNodeId, nextNodeParent))
+            dispatch(fundSelectSubNode(versionId, nodeTab.selectedSubNodeId, nextNodeParent));
         });
-    }
+    };
 }
+
 /**
  * Akce zavolána při začátku přesunu
  * @param {int} versionId - verze AS určující pro, který AS se akce spustí
  */
-function fundMoveFinish(versionId){
+function fundMoveFinish(versionId) {
     return {
         type: types.FUND_NODES_MOVE_STOP,
-        versionId:versionId
+        versionId: versionId,
     };
 }
+
 /**
  * Akce zavolána po skončení přesunu
  * @param {int} versionId - verze AS určující pro, který AS se akce zastaví
  */
-function fundMoveStart(versionId){
+function fundMoveStart(versionId) {
     return {
         type: types.FUND_NODES_MOVE_START,
-        versionId:versionId
+        versionId: versionId,
     };
 }

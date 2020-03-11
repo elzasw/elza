@@ -2,17 +2,16 @@
  * Akce pro záložky otevřených stromů AS.
  */
 
-import {WebApi, UrlFactory} from 'actions/index.jsx';
-import {Toastr, i18n} from 'components/shared';
+import {UrlFactory, WebApi} from 'actions/index.jsx';
+import {i18n} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes.js';
-import {modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
-import {nodesRequest, nodesReceive} from 'actions/arr/node.jsx'
-import {createFundRoot, getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
-import {fundsSelectFund} from 'actions/fund/fund.jsx'
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
+import {nodesReceive, nodesRequest} from 'actions/arr/node.jsx';
+import {createFundRoot, getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx';
+import {fundsSelectFund} from 'actions/fund/fund.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
-import {storeLoadData} from 'actions/store/store.jsx'
-import {downloadAjaxFile} from "../global/download";
+import {storeLoadData} from 'actions/store/store.jsx';
+import {downloadAjaxFile} from '../global/download';
 
 /**
  * Fetch dat pro otevřené záložky AS, pokud je potřeba - např. název atp.
@@ -32,30 +31,30 @@ export function fundsFetchIfNeeded() {
         if (versionIds.length > 0) {
             dispatch(fundsRequest(versionIds));
             WebApi.getFundsByVersionIds(versionIds)
-                .then(json => {
-                    var funds = json.map(x => getFundFromFundAndVersion(x, x.versions[0]))
-                    dispatch(fundsReceive(funds));
+                  .then(json => {
+                      var funds = json.map(x => getFundFromFundAndVersion(x, x.versions[0]));
+                      dispatch(fundsReceive(funds));
 
-                    // Ještě musíme provést aktualizaci node, pokud je otevřený v záložce takový, který reprezentuje AS - virtuální kořenový NODE
-                    funds.forEach(fund => {
-                        var node = createFundRoot(fund);
-                        dispatch(nodesRequest(fund.versionId, [node.id]));
-                        dispatch(nodesReceive(fund.versionId, [node]));
-                    })
-                })
+                      // Ještě musíme provést aktualizaci node, pokud je otevřený v záložce takový, který reprezentuje AS - virtuální kořenový NODE
+                      funds.forEach(fund => {
+                          var node = createFundRoot(fund);
+                          dispatch(nodesRequest(fund.versionId, [node.id]));
+                          dispatch(nodesReceive(fund.versionId, [node]));
+                      });
+                  });
         }
-    }
+    };
 }
 
 export function fundsRequest(versionIds) {
     let fundMap = {};
     versionIds.forEach(id => {
-        fundMap[id] = true
+        fundMap[id] = true;
     });
     return {
         type: types.FUND_FUNDS_REQUEST,
-        fundMap
-    }
+        fundMap,
+    };
 }
 
 /**
@@ -63,16 +62,16 @@ export function fundsRequest(versionIds) {
  * @param {Array} funds data
  */
 export function fundsReceive(funds) {
-    var fundMap = {}
+    var fundMap = {};
     funds.forEach(fund => {
-        fundMap[fund.versionId] = fund
-    })
+        fundMap[fund.versionId] = fund;
+    });
 
     return {
         type: types.FUND_FUNDS_RECEIVE,
         funds,
-        fundMap
-    }
+        fundMap,
+    };
 }
 
 /**
@@ -87,7 +86,7 @@ export function createFund(data) {
         institutionId: data.institutionId,
         dateRange: data.dateRange,
         adminUsers: [],
-        adminGroups: []
+        adminGroups: [],
     };
 
     data.fundAdmins && data.fundAdmins.forEach(i => {
@@ -101,16 +100,16 @@ export function createFund(data) {
     return dispatch => {
         return savingApiWrapper(dispatch, WebApi.createFund(formData))
             .then((fund) => {
-                dispatch(addToastrSuccess(i18n("arr.fund.title.added")));
-                dispatch(fundsSelectFund(fund.id))
+                dispatch(addToastrSuccess(i18n('arr.fund.title.added')));
+                dispatch(fundsSelectFund(fund.id));
             });
-    }
+    };
 }
 
 export function updateFund(data) {
     return dispatch => {
         return savingApiWrapper(dispatch, WebApi.updateFund(data));
-    }
+    };
 }
 
 /**
@@ -122,32 +121,32 @@ export function approveFund(versionId, dateRange) {
     return dispatch => {
         return savingApiWrapper(dispatch, WebApi.approveVersion(versionId, dateRange))
             .then((json) => {
-                dispatch(addToastrSuccess(i18n("arr.fund.title.approved")));
-                dispatch(approveFundResult(json.versionId))
+                dispatch(addToastrSuccess(i18n('arr.fund.title.approved')));
+                dispatch(approveFundResult(json.versionId));
             });
-    }
+    };
 }
 
 export function deleteFund(fundId) {
     return dispatch => {
         return WebApi.deleteFund(fundId);
-    }
+    };
 }
 
 export function deleteFundHistory(fundId) {
     return dispatch => {
         return WebApi.deleteFundHistory(fundId);
-    }
+    };
 }
 
 export function exportFund(fundId, transformationName) {
     let requestData = {
-        fundsSections:[{fundVersionId:fundId}],
-        transformationName:transformationName
-    }
+        fundsSections: [{fundVersionId: fundId}],
+        transformationName: transformationName,
+    };
     return dispatch => {
-        dispatch(downloadAjaxFile(UrlFactory.exportFund(), "elza-data.xml", "POST", requestData));
-    }
+        dispatch(downloadAjaxFile(UrlFactory.exportFund(), 'elza-data.xml', 'POST', requestData));
+    };
 }
 
 /**
@@ -160,7 +159,7 @@ export function selectFundTab(fund) {
         var itemFound = null;
         const state = getState();
         const {stateRegion: {arrRegionFront}} = state;
-        for (let a=0; a<arrRegionFront.length; a++) {
+        for (let a = 0; a < arrRegionFront.length; a++) {
             const item = arrRegionFront[a];
             if (item.id === fund.id && item.versionId === fund.versionId) {
                 itemFound = item;
@@ -173,9 +172,9 @@ export function selectFundTab(fund) {
             dispatch({
                 type: types.FUND_SELECT_FUND_TAB,
                 fund,
-            })
+            });
         }
-    }
+    };
 }
 
 /**
@@ -185,15 +184,15 @@ export function selectFundTab(fund) {
 export function closeFundTab(fund) {
     return {
         type: types.FUND_CLOSE_FUND_TAB,
-        fund
-    }
+        fund,
+    };
 }
 
 export function showRegisterJp(show) {
     return {
         type: types.SHOW_REGISTER_JP,
-        showRegisterJp: show
-    }
+        showRegisterJp: show,
+    };
 }
 
 /**
@@ -203,8 +202,8 @@ export function showRegisterJp(show) {
 export function approveFundResult(versionId) {
     return {
         type: types.FUND_FUND_APPROVE_VERSION,
-        versionId: versionId
-    }
+        versionId: versionId,
+    };
 }
 
 /**
@@ -217,5 +216,5 @@ export function fundChangeReadMode(versionId, readMode) {
         type: types.FUND_FUND_CHANGE_READ_MODE,
         versionId,
         readMode,
-    }
+    };
 }

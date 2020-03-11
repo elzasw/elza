@@ -5,7 +5,7 @@ import {Button} from '../ui';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {AbstractReactComponent, i18n, Icon} from 'components/shared';
 import ApNameForm from './ApNameForm.jsx';
-import {WebApi as WebApi} from '../../actions/WebApi';
+import {WebApi} from '../../actions/WebApi';
 import './ApDetailNames.scss';
 import NewApItemNameFormModal from '../accesspoint/NewApItemNameFormModal';
 import UpdateApItemNameFormModal from '../accesspoint/UpdateApItemNameFormModal';

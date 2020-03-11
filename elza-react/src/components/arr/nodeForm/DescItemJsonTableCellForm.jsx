@@ -2,13 +2,11 @@
  * Formulář editace hodnoty v tabulce pro desc item typu tabulka.
  */
 
-import './DescItemJsonTableCellForm.scss'
+import './DescItemJsonTableCellForm.scss';
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
-import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, SubNodeForm, FormInput, Utils} from 'components/shared';
-import {validateInt, normalizeInt} from 'components/validate.jsx';
+import {connect} from 'react-redux';
+import {AbstractReactComponent, FormInput, Utils} from 'components/shared';
+import {normalizeInt} from 'components/validate.jsx';
 import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './DescItemJsonTableCellFormKeymap.jsx';
@@ -16,49 +14,54 @@ import defaultKeymap from './DescItemJsonTableCellFormKeymap.jsx';
 import $ from 'jquery';
 
 class DescItemJsonTableCellForm extends AbstractReactComponent {
-    static contextTypes = { shortcuts: PropTypes.object };
-    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
-    UNSAFE_componentWillMount(){
-        Utils.addShortcutManager(this,defaultKeymap);
+    static contextTypes = {shortcuts: PropTypes.object};
+    static childContextTypes = {shortcuts: PropTypes.object.isRequired};
+
+    UNSAFE_componentWillMount() {
+        Utils.addShortcutManager(this, defaultKeymap);
     }
+
     getChildContext() {
-        return { shortcuts: this.shortcutManager };
+        return {shortcuts: this.shortcutManager};
     }
+
     constructor(props) {
         super(props);
 
-        this.bindMethods("handleChange")
+        this.bindMethods('handleChange');
 
         this.state = {
-            value: props.value
-        }
+            value: props.value,
+        };
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         this.setState({
             value: nextProps.value,
-        })
+        });
     }
 
     componentDidMount() {
-        const {position} = this.props
+        const {position} = this.props;
 
         $('.desc-item-table-cell-edit .modal-dialog').css({
             top: position.y + 'px',
             left: position.x + 'px',
-        })
+        });
 
-        $(".modal-backdrop").hide();
+        $('.modal-backdrop').hide();
         // $(".modal-backdrop").css({opacity: 0})
     }
-    handleFormClose = ()=>{
+
+    handleFormClose = () => {
         const {onClose} = this.props;
         onClose();
-    }
+    };
     actionMap = {
-        "FORM_CLOSE": this.handleFormClose
-    }
-    handleShortcuts(action,e){
+        'FORM_CLOSE': this.handleFormClose,
+    };
+
+    handleShortcuts(action, e) {
         e.stopPropagation();
         e.preventDefault();
         this.actionMap[action](e);
@@ -70,41 +73,43 @@ class DescItemJsonTableCellForm extends AbstractReactComponent {
         const {dataType} = this.props;
         var normalizedValue = value;
         switch (dataType) {
-            case "INTEGER":
+            case 'INTEGER':
                 normalizedValue = normalizeInt(normalizedValue);
                 break;
-            case "TEXT":
+            case 'TEXT':
                 break;
+            default:
+                return null;
         }
 
         this.setState({
             value: normalizedValue,
-        })
+        });
 
-        const {onChange} = this.props
+        const {onChange} = this.props;
         onChange(normalizedValue);
     }
 
     render() {
-        const {className} = this.props
-        const {value} = this.state
+        const {className} = this.props;
+        const {value} = this.state;
 
         return (
-            <Shortcuts name="DescItemJsonTableCellForm" handler={(action,e)=>this.handleShortcuts(action,e)} className={"cell-edit-container " + (className ? className : "")} stopPropagation={false}>
+            <Shortcuts name="DescItemJsonTableCellForm" handler={(action, e) => this.handleShortcuts(action, e)}
+                       className={'cell-edit-container ' + (className ? className : '')} stopPropagation={false}>
                 <FormInput
                     type="text"
                     value={value}
                     onChange={this.handleChange}
-                       />
+                />
             </Shortcuts>
-        )
+        );
     }
 }
 
 function mapStateToProps(state) {
     // const {arrRegion, refTables} = state
-    return {
-    }
+    return {};
 }
 
-export default connect(mapStateToProps)(DescItemJsonTableCellForm)
+export default connect(mapStateToProps)(DescItemJsonTableCellForm);

@@ -2,14 +2,12 @@
  * Render Modálního dialogu ze store
  */
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
-import {modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {propsEquals} from 'components/Utils.jsx'
+import { connect } from 'react-redux';
+import { modalDialogHide } from 'actions/global/modalDialog.jsx';
 
-import './ModalDialog.scss'
-import AbstractReactComponent from "../../AbstractReactComponent";
-import ModalDialogWrapper from "./ModalDialogWrapper";
+import './ModalDialog.scss';
+import AbstractReactComponent from '../../AbstractReactComponent';
+import ModalDialogWrapper from './ModalDialogWrapper';
 
 class ModalDialog extends AbstractReactComponent {
 
@@ -22,14 +20,14 @@ class ModalDialog extends AbstractReactComponent {
      */
     handleClose = (closeType) => {
         // console.log("_closeType", closeType);
-        const {items} = this.props;
+        const { items } = this.props;
         this.props.dispatch(modalDialogHide());
 
-        items.length > 0 && items[items.length - 1].onClose && items[items.length - 1].onClose(closeType)
+        items.length > 0 && items[items.length - 1].onClose && items[items.length - 1].onClose(closeType);
     };
 
     render() {
-        const {items} = this.props;
+        const { items } = this.props;
         if (items.length < 1) {
             return <div></div>;
         }
@@ -37,18 +35,20 @@ class ModalDialog extends AbstractReactComponent {
         const dialogs = items.map((dialog, index) => {
             const visible = index === items.length - 1;
             const children = React.Children.map(dialog.content, (el) => React.cloneElement(el, {
-                    onClose: this.handleClose.bind(this, "DIALOG_CONTENT")
-                })
+                    onClose: this.handleClose.bind(this, 'DIALOG_CONTENT'),
+                }),
             );
 
-            return <ModalDialogWrapper key={index} className={`${visible ? "dialog-visible" : "dialog-hidden"} ${dialog.dialogClassName}`} title={dialog.title} onHide={this.handleClose.bind(this, "DIALOG")}>
+            return <ModalDialogWrapper key={index}
+                                       className={`${visible ? 'dialog-visible' : 'dialog-hidden'} ${dialog.dialogClassName}`}
+                                       title={dialog.title} onHide={this.handleClose.bind(this, 'DIALOG')}>
                 {children}
-            </ModalDialogWrapper>
+            </ModalDialogWrapper>;
         });
 
         return <div>
             {dialogs}
-        </div>
+        </div>;
     }
 }
 

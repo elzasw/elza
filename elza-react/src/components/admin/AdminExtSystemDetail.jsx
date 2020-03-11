@@ -1,40 +1,21 @@
 import React from 'react';
-import {connect} from 'react-redux'
-import {
-    AbstractReactComponent,
-    Search,
-    i18n,
-    FormInput,
-    Icon,
-    CollapsablePanel,
-    StoreHorizontalLoader
-} from 'components/shared';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx';
-import {
-    findExtSystemFetchIfNeeded,
-    extSystemDetailFetchIfNeeded,
-    AREA_EXT_SYSTEM_DETAIL
-} from 'actions/admin/extSystem.jsx'
-import {Utils} from 'components/shared';
-import {objectById, indexById} from 'stores/app/utils.jsx';
-import {setInputFocus, dateTimeToString} from 'components/Utils.jsx'
-import {setSettings, getOneSettings} from 'components/arr/ArrUtils.jsx'
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import {getMapFromList} from 'stores/app/utils.jsx'
-import {storeFromArea} from 'shared/utils'
+import { connect } from 'react-redux';
+import { AbstractReactComponent, i18n, StoreHorizontalLoader } from 'components/shared';
+import { AREA_EXT_SYSTEM_DETAIL, extSystemDetailFetchIfNeeded } from 'actions/admin/extSystem.jsx';
+import { storeFromArea } from 'shared/utils';
 
 import './AdminExtSystemDetail.scss';
 
 const EXT_SYSTEM_CLASS = {
-    ApExternalSystem: ".ApExternalSystemVO",
-    ArrDigitalRepository: ".ArrDigitalRepositoryVO",
-    ArrDigitizationFrontdesk: ".ArrDigitizationFrontdeskVO"
+    ApExternalSystem: '.ApExternalSystemVO',
+    ArrDigitalRepository: '.ArrDigitalRepositoryVO',
+    ArrDigitizationFrontdesk: '.ArrDigitizationFrontdeskVO',
 };
 
 const EXT_SYSTEM_CLASS_LABEL = {
-    [EXT_SYSTEM_CLASS.ApExternalSystem]: i18n("admin.extSystem.class.ApExternalSystemVO"),
-    [EXT_SYSTEM_CLASS.ArrDigitalRepository]: i18n("admin.extSystem.class.ArrDigitalRepositoryVO"),
-    [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: i18n("admin.extSystem.class.ArrDigitizationFrontdeskVO"),
+    [EXT_SYSTEM_CLASS.ApExternalSystem]: i18n('admin.extSystem.class.ApExternalSystemVO'),
+    [EXT_SYSTEM_CLASS.ArrDigitalRepository]: i18n('admin.extSystem.class.ArrDigitalRepositoryVO'),
+    [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: i18n('admin.extSystem.class.ArrDigitizationFrontdeskVO'),
 };
 
 /**
@@ -51,39 +32,39 @@ class AdminExtSystemDetail extends AbstractReactComponent {
     }
 
     fetchIfNeeded = (props = this.props) => {
-        const {extSystemDetail: {id}} = props;
+        const { extSystemDetail: { id } } = props;
         if (id) {
             this.props.dispatch(extSystemDetailFetchIfNeeded(id));
         }
     };
 
     render() {
-        const {extSystemDetail} = this.props;
+        const { extSystemDetail } = this.props;
         const extSystem = extSystemDetail.data;
 
         if (!extSystemDetail.isFetching && !extSystemDetail.fetched) {
             return <div className="unselected-msg">
                 <div className="title">{i18n('admin.extSystem.noSelection.title')}</div>
                 <div className="msg-text">{i18n('admin.extSystem.noSelection.message')}</div>
-            </div>
+            </div>;
         }
 
         let content;
         if (extSystemDetail.fetched && extSystem) {
-            const classJ = extSystem["@class"];
+            const classJ = extSystem['@class'];
             content = <div className="ext-system-detail">
-                {classJ == EXT_SYSTEM_CLASS.ApExternalSystem && <div>
+                {classJ === EXT_SYSTEM_CLASS.ApExternalSystem && <div>
                     <h4>{i18n('admin.extSystem.class')}</h4>
                     <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.ApExternalSystem]}</span>
 
                     <h4>{i18n('admin.extSystem.type')}</h4>
                     <span>{extSystem.type}</span>
                 </div>}
-                {classJ == EXT_SYSTEM_CLASS.ArrDigitalRepository && <div>
+                {classJ === EXT_SYSTEM_CLASS.ArrDigitalRepository && <div>
                     <h4>{i18n('admin.extSystem.class')}</h4>
                     <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.ArrDigitalRepository]}</span>
 
-                    {extSystem.viewDaoUrl != '' &&
+                    {extSystem.viewDaoUrl !== '' &&
                     <div>
                         <h4>{i18n('admin.extSystem.viewDaoUrl')}</h4>
                         <span>{extSystem.viewDaoUrl}</span>
@@ -107,7 +88,7 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                     <h4>{i18n('admin.extSystem.sendNotification')}</h4>
                     <span>{extSystem.sendNotification ? i18n('admin.extSystem.sendNotification.true') : i18n('admin.extSystem.sendNotification.false')}</span>
                 </div>}
-                {classJ == EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk && <div>
+                {classJ === EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk && <div>
                     <h4>{i18n('admin.extSystem.class')}</h4>
                     <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]}</span>
                 </div>}
@@ -150,9 +131,9 @@ class AdminExtSystemDetail extends AbstractReactComponent {
         }
 
         return <div>
-            <StoreHorizontalLoader store={extSystemDetail} />
+            <StoreHorizontalLoader store={extSystemDetail}/>
             {content}
-        </div>
+        </div>;
     }
 }
 
@@ -160,5 +141,5 @@ export default connect((state) => {
     const extSystemDetail = storeFromArea(state, AREA_EXT_SYSTEM_DETAIL);
     return {
         extSystemDetail,
-    }
+    };
 })(AdminExtSystemDetail);

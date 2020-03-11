@@ -3,14 +3,14 @@ import './ArrDataGridPage.scss';
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import {connect} from 'react-redux';
-import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx';
+import { connect } from 'react-redux';
+import { refRuleSetFetchIfNeeded } from 'actions/refTables/ruleSet.jsx';
 
 import ArrParentPage from './ArrParentPage.jsx';
-import {i18n, Icon, RibbonGroup, StoreHorizontalLoader} from 'components/shared';
-import {FundDataGrid, Ribbon} from 'components/index.jsx';
-import {Button} from '../../components/ui';
-import {modalDialogShow} from 'actions/global/modalDialog.jsx';
+import { i18n, Icon, RibbonGroup, StoreHorizontalLoader } from 'components/shared';
+import { FundDataGrid, Ribbon } from 'components/index.jsx';
+import { Button } from '../../components/ui';
+import { modalDialogShow } from 'actions/global/modalDialog.jsx';
 import DataGridExportDialog from '../../components/arr/DataGridExportDialog';
 
 /**
@@ -37,8 +37,6 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
      * @return {Object} view
      */
     buildRibbon(readMode, closed) {
-        const {arrRegion} = this.props;
-
         const activeFund = this.getActiveFund(this.props);
 
         var altActions = [];
@@ -84,7 +82,7 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
     }
 
     renderCenterPanel(readMode, closed) {
-        const {descItemTypes, calendarTypes, rulDataTypes, ruleSet, userDetail} = this.props;
+        const { descItemTypes, calendarTypes, rulDataTypes, ruleSet } = this.props;
         const fund = this.getActiveFund(this.props);
 
         return <div className="datagrid-content-container">
@@ -106,7 +104,7 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
 };
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, refTables, form, focus, developer, userDetail, tab} = state;
+    const { splitter, arrRegion, refTables, focus, developer, userDetail, tab } = state;
     return {
         splitter,
         arrRegion,

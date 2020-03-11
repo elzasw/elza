@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Icon, NoFocusButton, AbstractReactComponent, FormInput} from 'components/shared';
+import { AbstractReactComponent, FormInput, Icon, NoFocusButton } from 'components/shared';
 
 /**
  * Komponenta pro vytvoření stejných poliček pro editaci záznamu
@@ -9,7 +9,7 @@ import {Icon, NoFocusButton, AbstractReactComponent, FormInput} from 'components
 class RegistryLabel extends AbstractReactComponent {
 
     state = {
-        value: this.props.value
+        value: this.props.value,
     };
 
     static propTypes = {
@@ -17,31 +17,31 @@ class RegistryLabel extends AbstractReactComponent {
         onEnter: PropTypes.func.isRequired,
         onBlur: PropTypes.func.isRequired,
         onDelete: PropTypes.func.isRequired,
-        value: PropTypes.string.isRequired
+        value: PropTypes.string.isRequired,
     };
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         this.setState({
-            value: nextProps.value
-        })
+            value: nextProps.value,
+        });
     }
 
     handleKeyUp = (e) => {
-        e.keyCode == 13 && this.props.onEnter && this.props.onEnter(e);
+        e.keyCode === 13 && this.props.onEnter && this.props.onEnter(e);
     };
 
     handleChange = (e) => {
         this.setState({
-            value: e.target.value
+            value: e.target.value,
         });
     };
 
     focus = () => {
-        ReactDOM.findDOMNode(this.refs.input.refs.input).focus()
+        ReactDOM.findDOMNode(this.refs.input.refs.input).focus();
     };
 
     render() {
-        const {label, disabled, onBlur, onDelete} = this.props;
+        const { label, disabled, onBlur, onDelete } = this.props;
         return <div className="registry-label">
             <div className='title' title={label}>{label}</div>
             <div className="desc-item-value-container">
@@ -56,9 +56,9 @@ class RegistryLabel extends AbstractReactComponent {
                         onBlur={onBlur}
                     />
                 </span>
-                <NoFocusButton disabled={disabled} onClick={onDelete}><Icon glyph='fa-times' /></NoFocusButton>
+                <NoFocusButton disabled={disabled} onClick={onDelete}><Icon glyph='fa-times'/></NoFocusButton>
             </div>
-        </div>
+        </div>;
     }
 }
 

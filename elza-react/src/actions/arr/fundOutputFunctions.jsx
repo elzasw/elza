@@ -1,7 +1,6 @@
-import {WebApi} from 'actions/index.jsx';
+import { WebApi } from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
-import {indexById, objectById} from 'stores/app/utils.jsx'
-import {modalDialogHide} from 'actions/global/modalDialog.jsx'
+import { indexById, objectById } from 'stores/app/utils.jsx';
 
 export function isFundOutputFunctionsAction(action) {
     switch (action.type) {
@@ -10,12 +9,12 @@ export function isFundOutputFunctionsAction(action) {
         case types.FUND_OUTPUT_FUNCTIONS_FILTER:
             return true;
         default:
-            return false
+            return false;
     }
 }
 
 function _dataGridKey(state, outputId) {
-    return outputId + '-filterRecommended' + state.filterRecommended
+    return outputId + '-filterRecommended' + state.filterRecommended;
 }
 
 export function fetchFundOutputFunctionsIfNeeded(versionId, outputId) {
@@ -23,7 +22,7 @@ export function fetchFundOutputFunctionsIfNeeded(versionId, outputId) {
         const state = getState();
         const fund = objectById(state.arrRegion.funds, versionId, 'versionId');
         if (!fund || !outputId || !fund.fundOutput) {
-            return
+            return;
         }
         const fundOutputFunctions = fund.fundOutput.fundOutputFunctions;
         const dataKey = _dataGridKey(fundOutputFunctions, outputId);
@@ -31,51 +30,51 @@ export function fetchFundOutputFunctionsIfNeeded(versionId, outputId) {
             dispatch(_dataRequest(versionId, dataKey));
 
             WebApi.getFundOutputFunctions(outputId, fundOutputFunctions.filterRecommended)
-            .then(response => {
-                const newFund = objectById(state.arrRegion.funds, versionId, 'versionId');
-                if (newFund !== null) {
-                    const fundOutputDetail = fund.fundOutput.fundOutputDetail;
-                    const newFundOutputFunctions = fund.fundOutput.fundOutputFunctions;
-                    const newDataKey = _dataGridKey(newFundOutputFunctions, fundOutputDetail.id);
-                    if (newDataKey === dataKey) {
-                        dispatch(_dataReceive(versionId, response))
-                    }
-                }
-            })
+                  .then(response => {
+                      const newFund = objectById(state.arrRegion.funds, versionId, 'versionId');
+                      if (newFund !== null) {
+                          const fundOutputDetail = fund.fundOutput.fundOutputDetail;
+                          const newFundOutputFunctions = fund.fundOutput.fundOutputFunctions;
+                          const newDataKey = _dataGridKey(newFundOutputFunctions, fundOutputDetail.id);
+                          if (newDataKey === dataKey) {
+                              dispatch(_dataReceive(versionId, response));
+                          }
+                      }
+                  });
         }
-    }
+    };
 }
 
 function _dataRequest(versionId, dataKey) {
     return {
         type: types.FUND_OUTPUT_FUNCTIONS_REQUEST,
         versionId,
-        dataKey
-    }
+        dataKey,
+    };
 }
 
 function _dataReceive(versionId, data) {
     return {
         type: types.FUND_OUTPUT_FUNCTIONS_RECEIVE,
         versionId,
-        data
-    }
+        data,
+    };
 }
 
 export function fundOutputFunctionsFilterByState(versionId, filterRecommended) {
     return {
         type: types.FUND_OUTPUT_FUNCTIONS_FILTER,
         versionId,
-        filterRecommended
-    }
+        filterRecommended,
+    };
 }
 
 export function fundOutputActionRun(versionId, code) {
     return (dispatch, getState) => {
-        const {arrRegion: {funds}} = getState();
+        const { arrRegion: { funds } } = getState();
         const index = indexById(funds, versionId, 'versionId');
         if (index !== null) {
-            const {fundOutput : {fundOutputDetail}, versionId} = funds[index];
+            const { fundOutput: { fundOutputDetail }, versionId } = funds[index];
             if (fundOutputDetail) {
                 const nodeIds = fundOutputDetail.nodes.map(node => node.id);
                 return WebApi.queueBulkActionWithIds(versionId, code, nodeIds);
@@ -83,11 +82,11 @@ export function fundOutputActionRun(versionId, code) {
         } else {
             window.console.error('Active fund not found');
         }
-    }
+    };
 }
 
 export function fundOutputActionInterrupt(id) {
     return dispatch => {
-        WebApi.interruptBulkAction(id)
-    }
+        WebApi.interruptBulkAction(id);
+    };
 }

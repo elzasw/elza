@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {connect} from 'react-redux';
-import {Button} from '../ui';
-import {modalDialogShow} from 'actions/global/modalDialog.jsx';
-import {AbstractReactComponent, i18n, Icon} from 'components/shared';
-import {indexById, objectById} from 'stores/app/utils.jsx';
-import {normalizeNameObject} from 'actions/party/party.jsx';
+import { connect } from 'react-redux';
+import { Button } from '../ui';
+import { modalDialogShow } from 'actions/global/modalDialog.jsx';
+import { AbstractReactComponent, i18n, Icon } from 'components/shared';
+import { indexById, objectById } from 'stores/app/utils.jsx';
+import { normalizeNameObject } from 'actions/party/party.jsx';
 
 import './PartyDetailNames.scss';
 import PartyNameForm from './PartyNameForm';
@@ -30,17 +30,17 @@ class PartyDetailNames extends AbstractReactComponent {
         nameHelper(partyName.degreeBefore, nameBuilder);
         nameHelper(partyName.otherPart, nameBuilder);
         nameHelper(partyName.mainPart, nameBuilder);
-        let roman = null,
+        let roman    = null,
             geoAddon = null,
-            addon = null;
+            addon    = null;
         partyName.partyNameComplements.forEach((e) => {
             const type = objectById(partyType.complementTypes, e.complementTypeId);
             if (type) {
-                if (type.code == '2') {
+                if (type.code === '2') {
                     addon = e.complement;
-                } else if (type.code == '3') {
+                } else if (type.code === '3') {
                     roman = e.complement;
-                } else if (type.code == '4') {
+                } else if (type.code === '4') {
                     geoAddon = e.complement;
                 }
             }
@@ -104,20 +104,20 @@ class PartyDetailNames extends AbstractReactComponent {
             ...this.props.party,
             partyNames: this.props.party.partyNames.map(name => ({
                 ...name,
-                prefferedName: name.id == id,
+                prefferedName: name.id === id,
             })),
         };
         this.props.onPartyUpdate(party);
     };
 
     handlePartyNameAdd = () => {
-        const {partyType} = this.props;
+        const { partyType } = this.props;
         this.props.dispatch(modalDialogShow(this, i18n('party.detail.name.new'), <PartyNameForm partyType={partyType}
                                                                                                 onSubmitForm={this.partyNameAdd}/>, 'dialog-lg'));
     };
 
     handlePartyNameUpdate = (partyName) => {
-        const {partyType} = this.props;
+        const { partyType } = this.props;
         this.props.dispatch(modalDialogShow(this, i18n('party.detail.name.update'), <PartyNameForm partyType={partyType}
                                                                                                    initData={partyName}
                                                                                                    onSubmitForm={this.partyNameUpdate.bind(this, partyName)}/>, 'dialog-lg'));
@@ -136,7 +136,7 @@ class PartyDetailNames extends AbstractReactComponent {
     };
 
     render() {
-        const {party, partyType, canEdit} = this.props;
+        const { party, partyType, canEdit } = this.props;
 
         return <div className="party-detail-names">
             <div>

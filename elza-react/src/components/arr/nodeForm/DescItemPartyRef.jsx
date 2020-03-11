@@ -4,25 +4,21 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import ReactDOM from 'react-dom';
-
-import {WebApi} from 'actions/index.jsx';
-import {i18n, AbstractReactComponent} from 'components/shared';
-import {connect} from 'react-redux'
-import {decorateAutocompleteValue} from './DescItemUtils.jsx'
-import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx'
-import DescItemLabel from './DescItemLabel.jsx'
-import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
-import {storeFromArea, objectById} from 'shared/utils'
-import {partyDetailFetchIfNeeded, partyListFilter, partyDetailClear, AREA_PARTY_LIST} from 'actions/party/party.jsx'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import classNames from 'classnames'
-import {MODAL_DIALOG_VARIANT} from '../../../constants.tsx'
+import {AbstractReactComponent, i18n} from 'components/shared';
+import {connect} from 'react-redux';
+import {decorateAutocompleteValue} from './DescItemUtils.jsx';
+import DescItemLabel from './DescItemLabel.jsx';
+import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
+import {objectById, storeFromArea} from 'shared/utils';
+import {AREA_PARTY_LIST, partyDetailClear, partyDetailFetchIfNeeded, partyListFilter} from 'actions/party/party.jsx';
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
+import classNames from 'classnames';
+import {MODAL_DIALOG_VARIANT} from '../../../constants.tsx';
 
 
-import './DescItemPartyRef.scss'
-import PartyField from "../../party/PartyField";
-import PartySelectPage from "../../../pages/select/PartySelectPage";
+import './DescItemPartyRef.scss';
+import PartyField from '../../party/PartyField';
+import PartySelectPage from '../../../pages/select/PartySelectPage';
 
 class DescItemPartyRef extends AbstractReactComponent {
 
@@ -30,7 +26,7 @@ class DescItemPartyRef extends AbstractReactComponent {
         onChange: PropTypes.func.isRequired,
         onCreateParty: PropTypes.func.isRequired,
         onDetail: PropTypes.func.isRequired,
-        versionId: PropTypes.number
+        versionId: PropTypes.number,
     };
 
     focus = () => {
@@ -39,14 +35,14 @@ class DescItemPartyRef extends AbstractReactComponent {
 
 
     handleSelectModule = ({onSelect, filterText, value}) => {
-        const {partyList:{filter},  fundName, nodeName, itemName, specName, hasSpecification} = this.props;
-        this.props.dispatch(partyListFilter({...filter, text:filterText}));
+        const {partyList: {filter}, fundName, nodeName, itemName, specName, hasSpecification} = this.props;
+        this.props.dispatch(partyListFilter({...filter, text: filterText}));
         this.props.dispatch(partyDetailFetchIfNeeded(value ? value.id : null));
         this.props.dispatch(modalDialogShow(this, null, <PartySelectPage
             titles={[fundName, nodeName, itemName + (hasSpecification ? ': ' + specName : '')]}
             onSelect={(data) => {
                 onSelect(data);
-                this.props.dispatch(partyListFilter({text:null, type:null, itemSpecId: null}));
+                this.props.dispatch(partyListFilter({text: null, type: null, itemSpecId: null}));
                 this.props.dispatch(partyDetailClear());
                 this.props.dispatch(modalDialogHide());
             }}
@@ -59,9 +55,11 @@ class DescItemPartyRef extends AbstractReactComponent {
 
         if (readMode) {
             if (value) {
-                return <DescItemLabel onClick={onDetail.bind(this, descItem.party.id)} notIdentified={descItem.undefined} value={value.accessPoint.record} />;
+                return <DescItemLabel onClick={onDetail.bind(this, descItem.party.id)}
+                                      notIdentified={descItem.undefined} value={value.accessPoint.record}/>;
             } else {
-                return <DescItemLabel value={cal ? i18n("subNodeForm.descItemType.calculable") : ""} cal={cal} notIdentified={descItem.undefined} />
+                return <DescItemLabel value={cal ? i18n('subNodeForm.descItemType.calculable') : ''} cal={cal}
+                                      notIdentified={descItem.undefined}/>;
             }
         }
 
@@ -71,7 +69,7 @@ class DescItemPartyRef extends AbstractReactComponent {
                     ref="partyField"
                     {...otherProps}
                     value={value}
-                    detail={!descItem.undefined && (typePrefix != "output" || !cal)}
+                    detail={!descItem.undefined && (typePrefix !== 'output' || !cal)}
                     footerButtons={false}
                     footer={!singleDescItemTypeEdit}
                     undefined={descItem.undefined}
@@ -79,14 +77,15 @@ class DescItemPartyRef extends AbstractReactComponent {
                     {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked || descItem.undefined, ['autocomplete-party'])}
                 />
             </ItemTooltipWrapper>
-        </div>
+        </div>;
     }
 }
 
 export default connect((state, props) => {
-    let fundName = null, nodeName = null;
-    if (props.typePrefix != "output") {
-        const {arrRegion:{activeIndex,funds}} = state;
+    let fundName = null,
+        nodeName = null;
+    if (props.typePrefix !== 'output') {
+        const {arrRegion: {activeIndex, funds}} = state;
         const fund = funds[activeIndex];
         fundName = fund.name;
         const {nodes} = fund;
@@ -100,6 +99,6 @@ export default connect((state, props) => {
     return {
         partyList,
         fundName,
-        nodeName
-    }
+        nodeName,
+    };
 })(DescItemPartyRef);

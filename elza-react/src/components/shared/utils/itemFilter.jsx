@@ -1,58 +1,58 @@
 // flatten data in tree structure
 // converts:
-let itemsExample = [{
-    id:1,
-    name:"a",
-    children: [{
-        id:2,
-        name:"a1"
-    },{
-        id:3,
-        name:"a2",
-        children: [{
-            id:4,
-            name:"a2a"
-        }]
-    }]
-},{
-    id:5,
-    name:"b"
-}];
-
-// to:
-let flatItemsExample = {
-    1:{
-        id:1,
-        name:"a",
-        depth:0,
-        parent: null
-    },
-    2:{
-        id:2,
-        name:"a1",
-        depth:1,
-        parent:1
-    },
-    3:{
-        id:3,
-        name:"a2",
-        depth:1,
-        parent:1
-    },
-    4:{
-        id:4,
-        name:"a2a",
-        depth:2,
-        parent:3
-    },
-    5:{
-        id:5,
-        name:"b",
-        depth:0,
-        parent: null
-    },
-    ids: [1,2,3,4,5]
-}
+// let itemsExample = [{
+//     id:1,
+//     name:"a",
+//     children: [{
+//         id:2,
+//         name:"a1"
+//     },{
+//         id:3,
+//         name:"a2",
+//         children: [{
+//             id:4,
+//             name:"a2a"
+//         }]
+//     }]
+// },{
+//     id:5,
+//     name:"b"
+// }];
+//
+// // to:
+// let flatItemsExample = {
+//     1:{
+//         id:1,
+//         name:"a",
+//         depth:0,
+//         parent: null
+//     },
+//     2:{
+//         id:2,
+//         name:"a1",
+//         depth:1,
+//         parent:1
+//     },
+//     3:{
+//         id:3,
+//         name:"a2",
+//         depth:1,
+//         parent:1
+//     },
+//     4:{
+//         id:4,
+//         name:"a2a",
+//         depth:2,
+//         parent:3
+//     },
+//     5:{
+//         id:5,
+//         name:"b",
+//         depth:0,
+//         parent: null
+//     },
+//     ids: [1,2,3,4,5]
+// }
 
 let _getItemId = defaultGetItemId;
 

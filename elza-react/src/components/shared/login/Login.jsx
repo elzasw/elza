@@ -88,10 +88,18 @@ class Login extends AbstractReactComponent {
                     <Modal.Body>
                         {defaultEnabled && <div className="error">{i18n('login.defaultUserEnabled')}</div>}
                         {error && <div className="error">{error}</div>}
-                        <FormInput type="text" value={username} onChange={this.handleChange.bind(this, 'username')}
-                                   label={i18n('login.field.username')}/>
-                        <FormInput type="password" value={password} onChange={this.handleChange.bind(this, 'password')}
-                                   label={i18n('login.field.password')}/>
+                        <FormInput
+                            type="text"
+                            value={username}
+                            onChange={this.handleChange.bind(this, 'username')}
+                            label={i18n('login.field.username')}
+                        />
+                        <FormInput
+                            type="password"
+                            value={password}
+                            onChange={this.handleChange.bind(this, 'password')}
+                            label={i18n('login.field.password')}
+                        />
                         <div className="submit-button">
                             <Button
                                 type="submit"

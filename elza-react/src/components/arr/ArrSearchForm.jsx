@@ -1,11 +1,11 @@
 import React from 'react';
-import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, FormInput, i18n, Icon} from 'components/shared';
+import { reduxForm } from 'redux-form';
+import { AbstractReactComponent, FormInput, i18n, Icon } from 'components/shared';
 import DatationField from '../party/DatationField';
-import {Col, Form, Modal, Row} from 'react-bootstrap';
-import {Button} from '../ui';
-import {submitForm} from 'components/form/FormUtils.jsx';
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
+import { Col, Form, Modal, Row } from 'react-bootstrap';
+import { Button } from '../ui';
+import { submitForm } from 'components/form/FormUtils.jsx';
+import { calendarTypesFetchIfNeeded } from 'actions/refTables/calendarTypes.jsx';
 
 import './ArrSearchForm.scss';
 
@@ -62,7 +62,7 @@ class ArrSearchForm extends AbstractReactComponent {
 
     renderFormItem = (condition, index) => {
 
-        const {refTables: {calendarTypes}} = this.props;
+        const { refTables: { calendarTypes } } = this.props;
 
         switch (condition.type.value) {
             case TYPE_TEXT: {
@@ -92,6 +92,8 @@ class ArrSearchForm extends AbstractReactComponent {
                     </div>
                 </div>;
             }
+            default:
+                return null;
         }
     };
 
@@ -109,10 +111,10 @@ class ArrSearchForm extends AbstractReactComponent {
               } = this.props;
 
         const formForm = <div className="arr-search-form-container">
-            <Button className="action-button" onClick={() => condition.addField({type: TYPE_TEXT})}><Icon
+            <Button className="action-button" onClick={() => condition.addField({ type: TYPE_TEXT })}><Icon
                 glyph="fa-plus"/> {i18n('search.extended.form.text')}</Button>
             <Button className="action-button"
-                    onClick={() => condition.addField({type: TYPE_UNITDATE, calendarTypeId: 1, condition: GE})}><Icon
+                    onClick={() => condition.addField({ type: TYPE_UNITDATE, calendarTypeId: 1, condition: GE })}><Icon
                 glyph="fa-plus"/> {i18n('search.extended.form.unitdate')}</Button>
 
             <div className="items">

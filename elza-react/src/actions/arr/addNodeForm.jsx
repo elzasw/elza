@@ -6,15 +6,15 @@
  */
 
 import React from 'react';
-import {addNode, fundSelectSubNode} from 'actions/arr/node.jsx';
-import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx'
-import {i18n} from 'components/shared';
-import AddNodeForm from "../../components/arr/nodeForm/AddNodeForm";
-import CopyConflictForm from "../../components/arr/nodeForm/CopyConflictForm";
+import { addNode, fundSelectSubNode } from 'actions/arr/node.jsx';
+import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog.jsx';
+import { i18n } from 'components/shared';
+import AddNodeForm from '../../components/arr/nodeForm/AddNodeForm';
+import CopyConflictForm from '../../components/arr/nodeForm/CopyConflictForm';
 
-import {importForm} from 'actions/global/global.jsx';
-import {WebApi} from "../WebApi"
-import {globalFundTreeInvalidate} from "./globalFundTree";
+import { importForm } from 'actions/global/global.jsx';
+import { WebApi } from '../WebApi';
+import { globalFundTreeInvalidate } from './globalFundTree';
 
 /**
  * Vyvolá dialog pro přidání uzlu. Toto vyvolání dialogu slouží pro volání POUZE z pořádání! Po úspěšném volání je vybrán v pořádání přidaný node.
@@ -32,7 +32,7 @@ export function addNodeFormArr(direction, node, selectedSubNodeIndex, versionId)
         const inParentNode = node;
         const inNode = node.childNodes[selectedSubNodeIndex];
         dispatch(addNodeForm(direction, inNode, inParentNode, versionId, afterCreateCallback));
-    }
+    };
 }
 
 /**
@@ -48,12 +48,12 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
     return (dispatch) => {
         const onSubmit = (data, type, cb, emptyItemTypeIds) => {
             switch (type) {
-                case "NEW": {
+                case 'NEW': {
                     dispatch(addNode(data.indexNode, data.parentNode, data.versionId, data.direction, data.descItemCopyTypes, data.scenarioName, data.createItems, afterCreateCallback, emptyItemTypeIds));
                     dispatch(modalDialogHide());
                     break;
                 }
-                case "FILE": {
+                case 'FILE': {
                     let formData = new FormData();
                     for (const key in data) {
                         if (data.hasOwnProperty(key)) {
@@ -61,13 +61,15 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
                             formData.append(key, value);
                         }
                     }
-                    dispatch(importForm(formData, "Fund"));
+                    dispatch(importForm(formData, 'Fund'));
                     break;
                 }
-                case "OTHER": {
+                case 'OTHER': {
                     dispatch(handleSubmitOther(data, cb));
                     break;
                 }
+                default:
+                    break;
             }
         };
 
@@ -83,37 +85,37 @@ export function addNodeForm(direction, node, parentNode, versionId, afterCreateC
                 allowedDirections={allowedDirections}
             />,
             null,
-            dispatch(globalFundTreeInvalidate())
+            dispatch(globalFundTreeInvalidate()),
         ));
 
-    }
+    };
 }
 
 function handleSubmitOther(data, cb) {
     return (dispatch) => {
         WebApi.copyNodesValidate(data.targetFundVersionId, data.sourceFundVersionId, data.sourceNodes, data.ignoreRootNodes, data.selectedDirection)
-            .then(json => {
-                if (json.scopeError === true || json.fileConflict === true || json.packetConflict === true) {
-                    dispatch(modalDialogHide());
-                    dispatch(modalDialogShow(
-                        this,
-                        i18n('arr.fund.addNode.conflict'),
-                        <CopyConflictForm
-                            {...json}
-                            onSubmit={
-                                (filesConflictResolve,
-                                 structuresConflictResolve, cb) => dispatch(handleCopySubmit(data, filesConflictResolve, structuresConflictResolve, cb))
-                            }
+              .then(json => {
+                  if (json.scopeError === true || json.fileConflict === true || json.packetConflict === true) {
+                      dispatch(modalDialogHide());
+                      dispatch(modalDialogShow(
+                          this,
+                          i18n('arr.fund.addNode.conflict'),
+                          <CopyConflictForm
+                              {...json}
+                              onSubmit={
+                                  (filesConflictResolve,
+                                      structuresConflictResolve, cb) => dispatch(handleCopySubmit(data, filesConflictResolve, structuresConflictResolve, cb))
+                              }
 
-                        />
-                    ));
-                } else {
-                    dispatch(handleCopySubmit(data, cb));
-                }
-            }).catch(()=>{
-                cb();
+                          />,
+                      ));
+                  } else {
+                      dispatch(handleCopySubmit(data, cb));
+                  }
+              }).catch(() => {
+            cb();
         });
-    }
+    };
 }
 
 function handleCopySubmit(data, filesConflictResolve = null, structuresConflictResolve = null, cb) {
@@ -127,13 +129,13 @@ function handleCopySubmit(data, filesConflictResolve = null, structuresConflictR
             data.ignoreRootNodes,
             data.selectedDirection,
             filesConflictResolve,
-            structuresConflictResolve
+            structuresConflictResolve,
         ).then((json) => {
-                dispatch(modalDialogHide());
-                dispatch(globalFundTreeInvalidate());
-                cb();
-        }).catch(()=>{
+            dispatch(modalDialogHide());
+            dispatch(globalFundTreeInvalidate());
             cb();
-        })
-    }
+        }).catch(() => {
+            cb();
+        });
+    };
 }

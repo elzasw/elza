@@ -92,7 +92,7 @@ class FundForm extends AbstractReactComponent {
         }
 
         for (let a = 0; a < arr.length; a++) {
-            if (arr[a][attrName !== null ? attrName : 'id'].value == id) {
+            if (arr[a][attrName !== null ? attrName : 'id'].value === id) {
                 return a;
             }
         }
@@ -102,7 +102,7 @@ class FundForm extends AbstractReactComponent {
     submitReduxForm = (values, dispatch) => submitForm(FundForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
-        const {error, userDetail, fields: {fundAdmins, name, ruleSetId, apScopes: apScopes, institutionId, internalCode, dateRange}, handleSubmit, onClose, create, update, approve, ruleSet, refTables, submitting} = this.props;
+        const {userDetail, fields: {fundAdmins, name, ruleSetId, apScopes: apScopes, institutionId, internalCode, dateRange}, handleSubmit, onClose, create, update, approve, ruleSet, refTables, submitting} = this.props;
         let approveButton;
         if (approve) {
             if (this.isBulkActionRunning()) {

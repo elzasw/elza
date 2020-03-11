@@ -1,23 +1,23 @@
 //
 import React from 'react';
-import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
-import {Form, FormCheck, FormGroup, FormLabel, Modal} from 'react-bootstrap';
-import {Button} from '../ui';
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
-import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
-import {getSpecsIds} from 'components/arr/ArrUtils.jsx';
+import { reduxForm } from 'redux-form';
+import { AbstractReactComponent, FormInput, i18n } from 'components/shared';
+import { Form, FormCheck, FormGroup, FormLabel, Modal } from 'react-bootstrap';
+import { Button } from '../ui';
+import { decorateFormField, submitForm } from 'components/form/FormUtils.jsx';
+import { descItemTypesFetchIfNeeded } from 'actions/refTables/descItemTypes.jsx';
+import { getSpecsIds } from 'components/arr/ArrUtils.jsx';
 import './FundBulkModificationsForm.scss';
 import SimpleCheckListBox from './SimpleCheckListBox';
-import {validateInt} from '../validate';
+import { validateInt } from '../validate';
 import DescItemUnitdate from './nodeForm/DescItemUnitdate';
 import DescItemRecordRef from './nodeForm/DescItemRecordRef';
 import DatationField from './../party/DatationField';
-import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx';
-import {getMapFromList} from './../../stores/app/utils.jsx';
+import { FILTER_NULL_VALUE } from 'actions/arr/fundDataGrid.jsx';
+import { getMapFromList } from './../../stores/app/utils.jsx';
 
 const getDefaultOperationType = props => {
-    const {dataType} = props;
+    const { dataType } = props;
 
     let result;
 
@@ -37,8 +37,7 @@ const getDefaultOperationType = props => {
 };
 
 const getDefaultItemsArea = props => {
-    const {allItemsCount, checkedItemsCount} = props;
-    const uncheckedItemsCount = allItemsCount - checkedItemsCount;
+    const { allItemsCount, checkedItemsCount } = props;
 
     const showSelected = checkedItemsCount > 0 && checkedItemsCount < allItemsCount;
 
@@ -68,7 +67,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
             const refType = {
                 ...props.refType,
                 descItemSpecs: [
-                    {id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')},
+                    { id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty') },
                     ...props.refType.descItemSpecs,
                 ],
             };
@@ -112,6 +111,9 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                     case 'RECORD_REF': {
                         console.log(222222222, values);
                     }
+                        break;
+                    default:
+                        break;
                 }
 
                 if (props.refType.useSpecification && !values.replaceSpec) {
@@ -124,6 +126,8 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                 if (!values.replaceSpec) {
                     errors.replaceSpec = i18n('global.validation.required');
                 }
+                break;
+            default:
                 break;
         }
 
@@ -146,7 +150,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
     }
 
     supportFindAndReplace = () => {
-        const {dataType} = this.props;
+        const { dataType } = this.props;
 
         let result;
 
@@ -166,7 +170,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
     };
 
     supportReplace = () => {
-        const {dataType} = this.props;
+        const { dataType } = this.props;
 
         let result;
 
@@ -190,7 +194,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
     };
 
     supportSetSpecification = () => {
-        const {refType} = this.props;
+        const { refType } = this.props;
         return refType.useSpecification;
     };
 
@@ -201,7 +205,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
      * Vrací true v případě, že atribut tvoří hodnotu pouze specifikací - enum.
      */
     isEnumType = () => {
-        const {dataType} = this.props;
+        const { dataType } = this.props;
         return dataType.code === 'ENUM';
     };
 
@@ -210,7 +214,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                   allItemsCount,
                   checkedItemsCount,
                   refType,
-                  fields: {findText, replaceText, itemsArea, operationType, specs, replaceSpec},
+                  fields: { findText, replaceText, itemsArea, operationType, specs, replaceSpec },
                   handleSubmit,
                   onClose,
                   dataType,
@@ -295,7 +299,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                     cal: false,
                     readOnly: false,
                     onChange: data => {
-                        replaceText.onChange({value: data});
+                        replaceText.onChange({ value: data });
                     },
                     onBlur: e => {
                         // záměrně ignorujeme
@@ -396,7 +400,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                             <SimpleCheckListBox
                                 ref="specsListBox"
                                 items={[
-                                    {id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')},
+                                    { id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty') },
                                     ...refType.descItemSpecs,
                                 ]}
                                 {...specs}
@@ -502,7 +506,7 @@ export default reduxForm(
                 replaceText: val,
                 itemsArea: getDefaultItemsArea(props),
                 operationType: getDefaultOperationType(props),
-                specs: {type: 'unselected'},
+                specs: { type: 'unselected' },
             },
             descItemTypes: state.refTables.descItemTypes,
         };

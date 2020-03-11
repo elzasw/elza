@@ -4,24 +4,22 @@
  **/
 
 import React from 'react';
-import ReactDOM from 'react-dom';
-import AbstractReactComponent from "../../AbstractReactComponent";
-import LazyListBox from "./LazyListBox";
-import scrollIntoView from 'dom-scroll-into-view';
+import AbstractReactComponent from '../../AbstractReactComponent';
+import LazyListBox from './LazyListBox';
 
 import './ListBox2.scss';
 
 class ListBox2 extends AbstractReactComponent {
 
     handleGetItems = (fromIndex, toIndex) => {
-        const {items} = this.props
+        const {items} = this.props;
         return new Promise((resolve, reject) => {
-            resolve({items: items.slice(fromIndex, toIndex), count: items.length})
-        })
+            resolve({items: items.slice(fromIndex, toIndex), count: items.length});
+        });
     };
 
     render() {
-        const {items, itemHeight} = this.props;
+        const {itemHeight} = this.props;
 
         return (
             <LazyListBox
@@ -34,4 +32,4 @@ class ListBox2 extends AbstractReactComponent {
     }
 }
 
-export default ListBox2
+export default ListBox2;

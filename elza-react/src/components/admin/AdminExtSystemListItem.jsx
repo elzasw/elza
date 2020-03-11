@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {AbstractReactComponent, i18n, Icon} from 'components/shared';
-import classNames from 'classnames'
+import { AbstractReactComponent, Icon } from 'components/shared';
+import classNames from 'classnames';
 import './AdminExtSystemListItem.scss';
 
 /**
@@ -16,16 +16,16 @@ class AdminExtSystemListItem extends AbstractReactComponent {
 
 
     render() {
-        const {id, name, code, className, ...otherProps} = this.props;
+        const { id, name, code, className, ...otherProps } = this.props;
 
-        let icon = "fa-server";
+        let icon = 'fa-server';
 
         return <div classID={id} className={classNames('ext-system-list-item', className)} {...otherProps}>
             <div>
-                <Icon glyph={icon} />
+                <Icon glyph={icon}/>
                 <span className="name">{name}</span>
             </div>
-        </div>
+        </div>;
     };
 }
 

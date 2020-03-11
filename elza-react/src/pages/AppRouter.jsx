@@ -3,16 +3,15 @@
  */
 
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {withRouter} from 'react-router';
-import {connect} from 'react-redux'
+import {connect} from 'react-redux';
 import {AbstractReactComponent} from 'components/index.jsx';
-import {routerNavigateFinish} from 'actions/router.jsx'
+import {routerNavigateFinish} from 'actions/router.jsx';
 
 const localRouterHistory = [];
 
 function getIndexBefore(pathPrefix) {
-    for (let a=localRouterHistory.length - 1; a>=0; a--) {
+    for (let a = localRouterHistory.length - 1; a >= 0; a--) {
         const path = localRouterHistory[a];
         if (path.startsWith(pathPrefix)) {
             continue;
@@ -27,7 +26,7 @@ class AppRouter extends AbstractReactComponent {
     componentDidMount() {
         this.changeRouteIfNeeded(this.props.routerStore);
 
-        this.props.history.listen(this.handleRouterListener)
+        this.props.history.listen(this.handleRouterListener);
     }
 
     handleRouterListener = (info) => {
@@ -43,13 +42,13 @@ class AppRouter extends AbstractReactComponent {
         const navigateTo = routerStore.navigateTo;
 
         if (navigateTo) {
-            if (navigateTo.startsWith("/~arr")) {
-                const i = getIndexBefore("/arr");
+            if (navigateTo.startsWith('/~arr')) {
+                const i = getIndexBefore('/arr');
                 let navigateToBack;
                 if (i >= 0) {
                     navigateToBack = localRouterHistory[i];
                 } else {
-                    navigateToBack = "/";
+                    navigateToBack = '/';
                 }
                 this.props.history.push(navigateToBack);
                 this.props.dispatch(routerNavigateFinish());
@@ -61,16 +60,16 @@ class AppRouter extends AbstractReactComponent {
     };
 
     render() {
-        return <div style={{display: 'none'}}></div>
+        return <div style={{display: 'none'}}></div>;
     }
 }
 
 
 function mapStateToProps(state) {
-    const {router} = state
+    const {router} = state;
     return {
         routerStore: router,
-    }
+    };
 }
 
 export default withRouter(connect(mapStateToProps)(AppRouter));

@@ -3,20 +3,17 @@
  */
 
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {connect} from 'react-redux';
 import {AbstractReactComponent, i18n} from 'components/shared';
-import {FormCheck} from 'react-bootstrap'
-import {normalizeInt, fromDuration, toDuration, normalizeDuration} from 'components/validate.jsx'
-import {decorateValue, inputValue} from './DescItemUtils.jsx'
-import DescItemLabel from './DescItemLabel.jsx'
-import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
-import {DisplayType} from "../../../constants.tsx";
+import {normalizeDuration, normalizeInt} from 'components/validate.jsx';
+import {decorateValue, inputValue} from './DescItemUtils.jsx';
+import DescItemLabel from './DescItemLabel.jsx';
+import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
+import {DisplayType} from '../../../constants.tsx';
 
 class DescItemInt extends AbstractReactComponent {
 
     focus = () => {
-        this.refs.focusEl.focus()
+        this.refs.focusEl.focus();
     };
 
     handleChange = (e) => {
@@ -34,23 +31,23 @@ class DescItemInt extends AbstractReactComponent {
     };
 
     getDisplayType = () => {
-        const {refType:{viewDefinition}} = this.props;
+        const {refType: {viewDefinition}} = this.props;
         return viewDefinition ? viewDefinition : DisplayType.NUMBER;
     };
 
     render() {
         const {descItem, locked, readMode, cal} = this.props;
-        const value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : inputValue(descItem.value);
+        const value = cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : inputValue(descItem.value);
 
         if (readMode) {
             return (
-                <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined} />
-            )
+                <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined}/>
+            );
         }
 
         let cls = [];
         if (cal) {
-            cls.push("calculable");
+            cls.push('calculable');
         }
 
         return (
@@ -66,7 +63,7 @@ class DescItemInt extends AbstractReactComponent {
                     />
                 </ItemTooltipWrapper>
             </div>
-        )
+        );
     }
 }
 

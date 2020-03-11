@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {connect} from 'react-redux';
-import {Button} from '../ui';
-import {modalDialogShow} from 'actions/global/modalDialog.jsx';
-import {AbstractReactComponent, i18n, Icon} from 'components/shared';
-import {isNotBlankObject} from 'components/Utils.jsx';
+import { connect } from 'react-redux';
+import { Button } from '../ui';
+import { modalDialogShow } from 'actions/global/modalDialog.jsx';
+import { AbstractReactComponent, i18n, Icon } from 'components/shared';
+import { isNotBlankObject } from 'components/Utils.jsx';
 import {
     normalizeDatation,
     RELATION_CLASS_TYPE_REPEATABILITY,
@@ -28,7 +28,7 @@ class PartyDetailRelations extends AbstractReactComponent {
     };
 
     addIdentifier = (relation) => {
-        const {relationType, party} = this.props;
+        const { relationType, party } = this.props;
         return this.props.dispatch(relationCreate({
             ...relation,
             relationTypeId: relationType.id,
@@ -39,7 +39,7 @@ class PartyDetailRelations extends AbstractReactComponent {
     };
 
     update = (origRelation, newRelation) => {
-        const {relationType, party} = this.props;
+        const { relationType, party } = this.props;
         return this.props.dispatch(relationUpdate({
             ...origRelation,
             ...newRelation,
@@ -48,18 +48,17 @@ class PartyDetailRelations extends AbstractReactComponent {
             from: isNotBlankObject(newRelation.from) ? normalizeDatation(newRelation.from) : null,
             to: isNotBlankObject(newRelation.to) ? normalizeDatation(newRelation.to) : null,
         }));
-        console.warn('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     };
 
     handleRelationAdd = () => {
-        const {label, party, relationType, apTypesMap} = this.props;
+        const { label, party, relationType, apTypesMap } = this.props;
         this.props.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} apTypesMap={apTypesMap}
                                                                        relationType={relationType}
                                                                        onSubmitForm={this.addIdentifier}/>, 'dialog-lg'));
     };
 
     handleRelationUpdate = (relation) => {
-        const {label, party, relationType, apTypesMap} = this.props;
+        const { label, party, relationType, apTypesMap } = this.props;
         this.props.dispatch(modalDialogShow(this, label, <RelationForm partyId={party.id} apTypesMap={apTypesMap}
                                                                        relationType={relationType}
                                                                        initialValues={relation}
@@ -73,12 +72,12 @@ class PartyDetailRelations extends AbstractReactComponent {
     };
 
     render() {
-        const {party, label, relationType, canEdit} = this.props;
-        const relations = party.relations ? party.relations.filter(i => i.relationTypeId == relationType.id) : [];
+        const { party, label, relationType, canEdit } = this.props;
+        const relations = party.relations ? party.relations.filter(i => i.relationTypeId === relationType.id) : [];
 
         let addButton = null;
-        if (relationType.relationClassType.repeatability == RELATION_CLASS_TYPE_REPEATABILITY.MULTIPLE ||
-            (relationType.relationClassType.repeatability == RELATION_CLASS_TYPE_REPEATABILITY.UNIQUE &&
+        if (relationType.relationClassType.repeatability === RELATION_CLASS_TYPE_REPEATABILITY.MULTIPLE ||
+            (relationType.relationClassType.repeatability === RELATION_CLASS_TYPE_REPEATABILITY.UNIQUE &&
                 (!relations || relations.length < 1))) {
             addButton = <Button variant="action" onClick={this.handleRelationAdd}><Icon glyph="fa-plus"/></Button>;
         }
@@ -92,17 +91,17 @@ class PartyDetailRelations extends AbstractReactComponent {
                 {relations.map((relation, index) =>
                     <div key={relation.id} className="value-group relation-group flex">
                         <div className="flex-1">
-                            {(relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL
-                                || relationType.useUnitdate == USE_UNITDATE_ENUM.ONE)
+                            {(relationType.useUnitdate === USE_UNITDATE_ENUM.INTERVAL
+                                || relationType.useUnitdate === USE_UNITDATE_ENUM.ONE)
                             && relation.from
                             && (relation.from.value || relation.from.textDate || relation.from.note)
                             && <div className="flex flex-1 no-wrap-group">
-                                <label>{relationType.useUnitdate == USE_UNITDATE_ENUM.ONE ? i18n('party.relation.date') + ':' : i18n('party.relation.from') + ':'}</label>
+                                <label>{relationType.useUnitdate === USE_UNITDATE_ENUM.ONE ? i18n('party.relation.date') + ':' : i18n('party.relation.from') + ':'}</label>
                                 {relation.from.value && <div className="item">{relation.from.value}</div>}
                                 {relation.from.textDate && <div className="item">"{relation.from.textDate}"</div>}
                                 {relation.from.note && <div className="item note">{relation.from.note}</div>}
                             </div>}
-                            {relationType.useUnitdate == USE_UNITDATE_ENUM.INTERVAL
+                            {relationType.useUnitdate === USE_UNITDATE_ENUM.INTERVAL
                             && relation.to
                             && (relation.to.value || relation.to.textDate || relation.to.note)
                             && <div className="flex flex-1 no-wrap-group">

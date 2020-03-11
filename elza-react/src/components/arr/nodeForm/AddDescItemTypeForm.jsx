@@ -71,11 +71,11 @@ class AddDescItemTypeForm extends AbstractReactComponent {
                             <FormLabel>{node.name}</FormLabel>
                             <div>
                                 {node.children.map(item => {
-                                    return <a className="add-link btn btn-link" key={item.id} onClick={() => {
+                                    return <button className="add-link btn btn-link" key={item.id} onClick={() => {
                                         this.submitReduxForm({descItemTypeId: item}, this.props.dispatch);
                                     }}>
                                         <Icon glyph="fa-plus"/>{item.name}
-                                    </a>;
+                                    </button>;
                                 })}
                             </div>
                         </FormGroup>;

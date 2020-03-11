@@ -1,21 +1,21 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import {Input, Form} from 'react-bootstrap';
-import AbstractReactComponent from "components/AbstractReactComponent";
-import * as Utils from "components/Utils";
-import Icon from "components/shared/icon/Icon";
+import {Form} from 'react-bootstrap';
+import AbstractReactComponent from 'components/AbstractReactComponent';
+import * as Utils from 'components/Utils';
+import Icon from 'components/shared/icon/Icon';
 import {getBootstrapInputComponentInfo} from 'components/form/FormUtils.jsx';
 import './Autocomplete.scss';
 import {propsEquals} from 'components/Utils.jsx';
 import {Shortcuts} from 'react-shortcuts';
 import defaultKeymap from './AutocompleteKeymap.jsx';
-import ListItem from "components/shared/tree-list/list-item/ListItem.jsx";
-import List from "components/shared/tree-list/TreeList.jsx";
-import flattenItems, {filterItems, cleanItem} from "components/shared/utils/itemFilter.jsx";
-import FloatingMenu from "components/shared/floating-menu/FloatingMenu.jsx";
-import classNames from "classnames";
-import i18n from "components/i18n.jsx";
+import ListItem from 'components/shared/tree-list/list-item/ListItem.jsx';
+import List from 'components/shared/tree-list/TreeList.jsx';
+import flattenItems, {cleanItem, filterItems} from 'components/shared/utils/itemFilter.jsx';
+import FloatingMenu from 'components/shared/floating-menu/FloatingMenu.jsx';
+import classNames from 'classnames';
+import i18n from 'components/i18n.jsx';
 
 
 let _debugStates = false;
@@ -39,10 +39,10 @@ class TextInput extends AbstractReactComponent {
 // toggleable button meant for dropdown menus
 const DropdownButton = (props) => {
     const {toggled, ...otherProps} = props;
-    let glyph = toggled ? "fa-angle-up" : "fa-angle-down";
+    let glyph = toggled ? 'fa-angle-up' : 'fa-angle-down';
     let className = classNames({
         opened: toggled,
-        closed: !toggled
+        closed: !toggled,
     });
 
     return <SimpleButton className={className} glyph={glyph} {...otherProps}/>;
@@ -52,35 +52,35 @@ const DropdownButton = (props) => {
 const SimpleButton = (props) => {
     const {disabled, onMouseDown, glyph, onMouseUp} = props;
     let className = classNames({
-        "btn": true,
-        "btn-default": true,
+        'btn': true,
+        'btn-default': true,
         [props.className]: props.className,
-        "disabled": disabled
+        'disabled': disabled,
     });
 
     return (
         <div
-           disabled={disabled}
-           className={className}
-           onMouseDown={()=>{
-               if (!disabled) {
-                   onMouseDown && onMouseDown();
-               }
-           }}
-           onMouseUp={()=>{
-               if (!disabled) {
-                   onMouseUp && onMouseUp();
-               }
-           }}
-          >
-          <Icon glyph={glyph}/>
+            disabled={disabled}
+            className={className}
+            onMouseDown={() => {
+                if (!disabled) {
+                    onMouseDown && onMouseDown();
+                }
+            }}
+            onMouseUp={() => {
+                if (!disabled) {
+                    onMouseUp && onMouseUp();
+                }
+            }}
+        >
+            <Icon glyph={glyph}/>
         </div>
     );
 };
 
 export default class Autocomplete extends AbstractReactComponent {
-    static contextTypes = { shortcuts: PropTypes.object };
-    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    static contextTypes = {shortcuts: PropTypes.object};
+    static childContextTypes = {shortcuts: PropTypes.object.isRequired};
 
     static propTypes = {
         value: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
@@ -107,22 +107,32 @@ export default class Autocomplete extends AbstractReactComponent {
     static defaultProps = {
         useIdAsValue: false,
         value: {},
-        onSearchChange (text) {},
-        onChange (item) {},
-        renderItem: (props) => {return <ListItem {...props}/>;},
+        onSearchChange(text) {
+        },
+        onChange(item) {
+        },
+        renderItem: (props) => {
+            return <ListItem {...props}/>;
+        },
         getItemRenderClass: item => null,
         alwaysExpanded: false,
         inputProps: {},
         inline: false,
         touched: false,
         error: null,
-        allowSelectItem (item) {return true;},// vrati true, když může být daná položka vybrána
-        allowFocusItem (item) {return true;}, // vrati true, když může na danou položku najet klávesnicí nebo myší a může být focusovatelná
+        allowSelectItem(item) {
+            return true;
+        },// vrati true, když může být daná položka vybrána
+        allowFocusItem(item) {
+            return true;
+        }, // vrati true, když může na danou položku najet klávesnicí nebo myší a může být focusovatelná
         getItemId: (item) => item ? item.id : null,
         getItemName: (item) => item ? item.name : '',
-        itemFilter: (filterText, items, props) => { return filterItems(filterText, items, props); },
+        itemFilter: (filterText, items, props) => {
+            return filterItems(filterText, items, props);
+        },
         actions: [],
-        selectOnlyValue: false
+        selectOnlyValue: false,
     };
 
     defaultState = {
@@ -130,12 +140,12 @@ export default class Autocomplete extends AbstractReactComponent {
         isOpen: false,
         hasFocus: false,
         changed: false,
-        items: {ids:[]},
-        value: {}
+        items: {ids: []},
+        value: {},
     };
 
     getChildContext() {
-        return { shortcuts: this.shortcutManager };
+        return {shortcuts: this.shortcutManager};
     }
 
     constructor(props) {
@@ -162,8 +172,8 @@ export default class Autocomplete extends AbstractReactComponent {
             shouldItemRender = nextProps.shouldItemRender;
         } else {
             shouldItemRender = (item, value) => {
-                return nextProps.getItemName(item).toLowerCase().indexOf(value.toLowerCase()) !== -1
-            }
+                return nextProps.getItemName(item).toLowerCase().indexOf(value.toLowerCase()) !== -1;
+            };
         }
 
         // ---
@@ -172,13 +182,13 @@ export default class Autocomplete extends AbstractReactComponent {
         const nextRealValue = this.getRealValue(nextProps.value, nextProps);
         const prevId = props.getItemId ? props.getItemId(prevRealValue) : nextProps.getItemId(prevRealValue);
         const newId = nextProps.getItemId(nextRealValue);
-        _debugStates && console.log("getStateFromProps", "prevId", prevId, "newId", newId, "state", state);
+        _debugStates && console.log('getStateFromProps', 'prevId', prevId, 'newId', newId, 'state', state);
         if (prevId != newId) {
             // Změna stavu, při které byla vybrána jiná položka.
             changed = false;
             inputStrValue = nextProps.getItemName(nextRealValue);
             if (typeof inputStrValue === 'undefined') {
-                inputStrValue = ''
+                inputStrValue = '';
             }
         } else if (prevId === newId && !state.changed) {
             /* pokud došlo ke změně stavu, při které zůstala vybrána stejná položka
@@ -195,10 +205,10 @@ export default class Autocomplete extends AbstractReactComponent {
             value: nextRealValue,
             inputStrValue: inputStrValue,
             changed: changed,
-            items: this.flattenItems(nextProps)
+            items: this.flattenItems(nextProps),
         };
 
-        _debugStates && console.log("getStateFromProps", result);
+        _debugStates && console.log('getStateFromProps', result);
 
         return result;
     };
@@ -209,12 +219,12 @@ export default class Autocomplete extends AbstractReactComponent {
             return value;
         }
 
-        if (value == null || value == "") {
+        if (value == null || value == '') {
             return value;
         }
 
         const {getItemId} = props;
-        for (let a=0; a<props.items.length; a++) {
+        for (let a = 0; a < props.items.length; a++) {
             const i = props.items[a];
             if (getItemId(i) === value) {
                 return i;
@@ -230,19 +240,19 @@ export default class Autocomplete extends AbstractReactComponent {
 
         input.focus();
         // select whole input value
-        if(inputStrValue){
+        if (inputStrValue) {
             input.setSelectionRange(0, inputStrValue.length);
         }
-    }
+    };
 
     blur = () => {
         const input = ReactDOM.findDOMNode(this.input);
         input.blur();
-    }
+    };
 
     componentDidMount = () => {
         this.props.selectOnlyValue && this.selectOnlyValue();
-    }
+    };
 
     /*
     componentWillUpdate = (nextProps, nextState) => {
@@ -253,11 +263,11 @@ export default class Autocomplete extends AbstractReactComponent {
     selectOnlyValue = () => {
         const {items} = this.state;
         // filter result has only one selectable item
-        if(items.filteredCount === 1){
+        if (items.filteredCount === 1) {
             // select the only selectable item
             this.selectItem(items[items.firstItemId]);
         }
-    }
+    };
 
     // converts the items from given props to the proper format (deep hierarchy tree to flat tree)
     flattenItems = (props) => {
@@ -267,16 +277,16 @@ export default class Autocomplete extends AbstractReactComponent {
 
         // get info about item availability
         // (only when custom filter is not used and we need the info to pre-select value)
-        if(!props.customFilter && props.selectOnlyValue){
-            result = props.itemFilter("", result, {allowSelectItem, getItemName});
+        if (!props.customFilter && props.selectOnlyValue) {
+            result = props.itemFilter('', result, {allowSelectItem, getItemName});
         }
 
         return result;
-    }
+    };
 
     UNSAFE_componentWillMount = () => {
-        Utils.addShortcutManager(this,defaultKeymap);
-    }
+        Utils.addShortcutManager(this, defaultKeymap);
+    };
 
     handleChange = (event) => {
         const {onSearchChange} = this.props;
@@ -289,13 +299,13 @@ export default class Autocomplete extends AbstractReactComponent {
         this.openMenu();
 
         onSearchChange && onSearchChange(value);
-    }
+    };
 
     handleInputBlur = (e) => {
         const {value} = this.state;
 
         // ignore the blur event if set and reset the ignoreBlur value
-        if(this._ignoreBlur){
+        if (this._ignoreBlur) {
             this._ignoreBlur = false;
             this.focus();
             return false;
@@ -305,18 +315,18 @@ export default class Autocomplete extends AbstractReactComponent {
         this.callOnBlur(value);
         this.closeMenu();
         return true;
-    }
+    };
 
     handleInputFocus = () => {
         const {onFocus} = this.props;
-        if(this.state.hasFocus){
+        if (this.state.hasFocus) {
             return false;
         }
         this.setState({hasFocus: true});
         onFocus && onFocus();
 
         return true;
-    }
+    };
 
     openMenu = () => {
         const {isOpen} = this.state;
@@ -326,28 +336,28 @@ export default class Autocomplete extends AbstractReactComponent {
         }
 
         this.setState({
-            isOpen: true
+            isOpen: true,
         });
-    }
+    };
 
     closeMenu = () => {
         const {getItemName, value} = this.props;
         const {isOpen} = this.state;
 
-        if(isOpen){
+        if (isOpen) {
             this.setState({
-                isOpen:false,
-                inputStrValue: getItemName(value) || "", // reset input value
-                changed: false
+                isOpen: false,
+                inputStrValue: getItemName(value) || '', // reset input value
+                changed: false,
             });
         }
-    }
+    };
     handleEmptySelect = () => {
         const {onEmptySelect} = this.props;
         const {inputStrValue} = this.state;
 
         onEmptySelect && onEmptySelect(inputStrValue);
-    }
+    };
 
     callOnChange = (value) => {
         const {onChange, getItemId, useIdAsValue} = this.props;
@@ -377,10 +387,10 @@ export default class Autocomplete extends AbstractReactComponent {
         item && cleanItem(item);
 
         let newState = {
-            inputStrValue: "",
+            inputStrValue: '',
             value: {},
             isOpen: false,
-            changed:false
+            changed: false,
         };
 
         if (true || isOpen || changed) {
@@ -390,7 +400,7 @@ export default class Autocomplete extends AbstractReactComponent {
             if (tags) {
                 if (!item) {
                     item = {
-                        name: inputStrValue
+                        name: inputStrValue,
                     };
                 }
                 this.setState(newState, () => {
@@ -409,48 +419,55 @@ export default class Autocomplete extends AbstractReactComponent {
                     this.setState({
                         ...newState,
                         inputStrValue: name,
-                        value: item
+                        value: item,
                     }, () => {
                         this.callOnChange(item);
                     });
                 }
             }
         }
-    }
+    };
     actionMap = {
-        "MOVE_UP": (e) => {
+        'MOVE_UP': (e) => {
             e.preventDefault();
-            this.list && this.list.selectorMoveUp();},
-        "MOVE_DOWN": (e) => {
+            this.list && this.list.selectorMoveUp();
+        },
+        'MOVE_DOWN': (e) => {
             e.preventDefault();
-            this.list && this.list.selectorMoveDown();},
-        "MOVE_TO_PARENT_OR_CLOSE": (e) => {
+            this.list && this.list.selectorMoveDown();
+        },
+        'MOVE_TO_PARENT_OR_CLOSE': (e) => {
             e.preventDefault();
-            this.list && this.list.selectorMoveToParentOrClose();},
-        "MOVE_TO_CHILD_OR_OPEN": (e) => {
+            this.list && this.list.selectorMoveToParentOrClose();
+        },
+        'MOVE_TO_CHILD_OR_OPEN': (e) => {
             e.preventDefault();
-            this.list && this.list.selectorMoveToChildOrOpen();},
-        "SELECT_ITEM": (e) => {
-            if(this.list && this.state.isOpen){
+            this.list && this.list.selectorMoveToChildOrOpen();
+        },
+        'SELECT_ITEM': (e) => {
+            if (this.list && this.state.isOpen) {
                 e.preventDefault();
                 this.list.selectHighlightedItem();
-            }},
-        "OPEN_MENU": (e)=>{
+            }
+        },
+        'OPEN_MENU': (e) => {
             e.preventDefault();
-            !this.props.customFilter && this.openMenu();},
-        "CLOSE_MENU": (e) => {
-            if(this.state.isOpen){
+            !this.props.customFilter && this.openMenu();
+        },
+        'CLOSE_MENU': (e) => {
+            if (this.state.isOpen) {
                 e.preventDefault();
                 this.closeMenu();
-            }}
-    }
-    handleShortcuts = (action,e)=>{
+            }
+        },
+    };
+    handleShortcuts = (action, e) => {
         this.actionMap[action](e);
-    }
+    };
 
     recalculateFloatingMenu = () => {
         this.menu && this.menu.setMenuPositions();
-    }
+    };
 
     renderMenu() {
         const {items, changed, value} = this.state;
@@ -462,7 +479,7 @@ export default class Autocomplete extends AbstractReactComponent {
         let otherProps = {};
         let filteredItems = items;
 
-        if(!customFilter && filterText && filterText.length > 0 && changed && items){
+        if (!customFilter && filterText && filterText.length > 0 && changed && items) {
             filteredItems = itemFilter(this.state.inputStrValue, items, {allowSelectItem});
             highlightedItemId = filteredItems.firstItemId && filteredItems.firstItemId;
             filterActive = true;
@@ -471,33 +488,33 @@ export default class Autocomplete extends AbstractReactComponent {
         let menuShouldUpdate = false;
         // if the last saved item count is not the same as the new item count
         // the floating menu shoud be updated
-        if(items && this.itemCount !== filteredItems.ids.length){
+        if (items && this.itemCount !== filteredItems.ids.length) {
             menuShouldUpdate = true;
             this.itemCount = filteredItems.ids.length; // save the new item count
         }
 
         // add the favorites group if it exists and the input value
         // wasn't changed (the items are not filtered)
-        if(favoriteItems && favoriteItems.length > 0 && !changed){
+        if (favoriteItems && favoriteItems.length > 0 && !changed) {
             otherProps.groups = [{
-                name: "fav",
-                title: i18n("autocomplete.list.favoriteItems"),
+                name: 'fav',
+                title: i18n('autocomplete.list.favoriteItems'),
                 hideWhenEmpty: true,
                 hideTitle: false,
                 ignoreDepth: true,
-                ids: favoriteItems
-            },{
-                name: "all",
-                title: i18n("autocomplete.list.allItems"),
+                ids: favoriteItems,
+            }, {
+                name: 'all',
+                title: i18n('autocomplete.list.allItems'),
                 hideTitle: false,
-                priority: 1
+                priority: 1,
             }];
         }
         let headerComp;
         if (header) {
             headerComp = (
                 <div ref="autocompleteHeader" className='autocomplete-menu-header'>
-                  {header}
+                    {header}
                 </div>
             );
         }
@@ -505,7 +522,7 @@ export default class Autocomplete extends AbstractReactComponent {
         if (footer) {
             footerComp = (
                 <div ref="autocompleteFooter" className='autocomplete-menu-footer'>
-                  {footer}
+                    {footer}
                 </div>
             );
         }
@@ -514,9 +531,17 @@ export default class Autocomplete extends AbstractReactComponent {
             <FloatingMenu
                 target={this.wrap}
                 closeMenu={this.handleInputBlur}
-                ref={(menu)=>{this.menu = menu;}}
-              onMouseDown={()=>{console.log("ignore next blur"); this.focus(); this._ignoreBlur=true;}}
-              onMouseUp={()=>{this.focus();}}
+                ref={(menu) => {
+                    this.menu = menu;
+                }}
+                onMouseDown={() => {
+                    console.log('ignore next blur');
+                    this.focus();
+                    this._ignoreBlur = true;
+                }}
+                onMouseUp={() => {
+                    this.focus();
+                }}
                 //shouldUpdate={menuShouldUpdate}
                 // sets ignoreBlur to true to ignore the next input blur when the menu is clicked
             >
@@ -530,7 +555,9 @@ export default class Autocomplete extends AbstractReactComponent {
                     expandAll={filterActive || alwaysExpanded}
                     selectedItemId={selectedItemId}
                     highlightedItemId={highlightedItemId}
-                    ref={(list)=>{this.list = list;}}
+                    ref={(list) => {
+                        this.list = list;
+                    }}
                     //disableShortcuts
                     renderItem={renderItem}
                     includeId={selectedItemId}
@@ -546,50 +573,50 @@ export default class Autocomplete extends AbstractReactComponent {
         const hasError = touched && error;
 
         let newClassName = classNames({
-            "autocomplete-control-container":true,
-            "form-group": true,
-            "has-error": hasError,
-            [className]: className
+            'autocomplete-control-container': true,
+            'form-group': true,
+            'has-error': hasError,
+            [className]: className,
         });
 
         return newClassName;
     }
 
-    buildWrapperClass(){
+    buildWrapperClass() {
         const {error, touched, className} = this.props;
         const {hasFocus} = this.state;
         const hasError = touched && error;
 
         let newClassName = classNames({
-            "autocomplete-input-container":true,
-            "form-control": true,
-            "has-error": hasError,
-            "active": hasFocus
+            'autocomplete-input-container': true,
+            'form-control': true,
+            'has-error': hasError,
+            'active': hasFocus,
         });
 
         return newClassName;
     }
 
     // renders the additional actions next to the autocomplete input
-    renderActions(){
+    renderActions() {
         const {actions, customFilter, disabled} = this.props;
         let renderedActions = [...actions];
         // add the dropdown button to open menu if custom filter is not set
-        if(!customFilter){
+        if (!customFilter) {
             renderedActions.push(
                 <DropdownButton
-                   key="open"
-                   toggled={this.state.isOpen}
-                   disabled={disabled}
-                   onMouseDown={()=>{
-                       this._ignoreBlur = true;
-                       this.handleInputFocus();
-                       this.state.isOpen ? this.closeMenu() : this.openMenu();
-                  }}
-                  onMouseUp={()=>{
-                      this.focus();
-                  }}
-                />
+                    key="open"
+                    toggled={this.state.isOpen}
+                    disabled={disabled}
+                    onMouseDown={() => {
+                        this._ignoreBlur = true;
+                        this.handleInputFocus();
+                        this.state.isOpen ? this.closeMenu() : this.openMenu();
+                    }}
+                    onMouseUp={() => {
+                        this.focus();
+                    }}
+                />,
             );
         }
 
@@ -597,14 +624,14 @@ export default class Autocomplete extends AbstractReactComponent {
     }
 
     render() {
-        _debugStates && console.log("RENDER", "props", this.props, "state", this.state);
+        _debugStates && console.log('RENDER', 'props', this.props, 'state', this.state);
         const {customFilter, error, title, touched, inline} = this.props;
         const {inputStrValue, hasFocus} = this.state;
 
         const hasError = touched && error;
         let inlineProps = {};
         if (inline) {
-            error && (inlineProps.title = title ? title + "/" + error : error);
+            error && (inlineProps.title = title ? title + '/' + error : error);
         }
 
         const bootInfo = getBootstrapInputComponentInfo(this.props);
@@ -612,26 +639,30 @@ export default class Autocomplete extends AbstractReactComponent {
 
         return (
             <Shortcuts
-               handler={this.handleShortcuts}
-               name="Autocomplete"
-               className={this.buildMainClass()}
-               stopPropagation={this.state.isOpen}
+                handler={this.handleShortcuts}
+                name="Autocomplete"
+                className={this.buildMainClass()}
+                stopPropagation={this.state.isOpen}
             >
-                 <div
-                 >
+                <div
+                >
                     {this.props.label && <label className='control-label'>{this.props.label}</label>}
                     <div
                         key="inputWrapper"
                         className={this.buildWrapperClass()}
-                        ref={(wrap)=>{this.wrap = wrap;}}
+                        ref={(wrap) => {
+                            this.wrap = wrap;
+                        }}
                     >
                         <TextInput
-                            ref={(input)=>{this.input = input;}}
+                            ref={(input) => {
+                                this.input = input;
+                            }}
                             key="input"
                             className='input'
                             type='text'
-                          onFocus={this.handleInputFocus}
-                          //onFocusout={(e)=>{console.log("### onfocus out", document.activeElement, e);}}
+                            onFocus={this.handleInputFocus}
+                            //onFocusout={(e)=>{console.log("### onfocus out", document.activeElement, e);}}
                             onBlur={this.handleInputBlur}
                             {...inlineProps}
                             {...this.props.inputProps}
@@ -652,7 +683,7 @@ export default class Autocomplete extends AbstractReactComponent {
                     <span className={'glyphicon form-control-feedback glyphicon-' + bootInfo.feedbackIcon}></span>}
                     {this.props.help && <span className='help-block'>{this.props.help}</span>}
                 </div>
-                 {!inline && hasError && <Form.Control.Feedback>{error}</Form.Control.Feedback>}
+                {!inline && hasError && <Form.Control.Feedback>{error}</Form.Control.Feedback>}
             </Shortcuts>
         );
     }

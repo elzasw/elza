@@ -1,16 +1,14 @@
 // --
 import React from 'react';
-import {connect} from 'react-redux'
-import {AbstractReactComponent, Icon, i18n, fetching} from 'components/shared';
+import { connect } from 'react-redux';
+import { AbstractReactComponent } from 'components/shared';
 import * as perms from './../../actions/user/Permission.jsx';
-import {HorizontalLoader} from "../shared/index";
-import storeFromArea from "../../shared/utils/storeFromArea";
-import * as adminPermissions from "./../../actions/admin/adminPermissions";
-import {WebApi} from "../../actions/WebApi";
-import PermissionCheckboxsForm from "./PermissionCheckboxsForm";
-import AdminRightsContainer from "./AdminRightsContainer";
-import ControlledEntitiesPanel from "./ControlledEntitiesPanel";
-import "./PermissionsPanel.scss";
+import storeFromArea from '../../shared/utils/storeFromArea';
+import * as adminPermissions from './../../actions/admin/adminPermissions';
+import PermissionCheckboxsForm from './PermissionCheckboxsForm';
+import AdminRightsContainer from './AdminRightsContainer';
+import ControlledEntitiesPanel from './ControlledEntitiesPanel';
+import './PermissionsPanel.scss';
 
 /**
  * Panel spravující pokročilá oprávnění.
@@ -20,7 +18,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
         super(props);
 
         this.state = {
-            permission: null
+            permission: null,
         };
     }
 
@@ -33,11 +31,10 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
         perms.INTERPI_MAPPING_WR,
     ];
 
-    static ALL_ID = "ALL_ID";
+    static ALL_ID = 'ALL_ID';
 
     buildPermission = (currObj, permission) => {
-        const {userId} = this.props;
-        let obj = currObj || {groupIds: {}};
+        let obj = currObj || { groupIds: {} };
 
         if (permission.inherited) {   // je zděděné ze skupiny
             obj.groupIds[permission.groupId] = true;
@@ -51,7 +48,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        const {userId, groupId} = this.props;
+        const { userId, groupId } = this.props;
         if (userId) {
             this.props.dispatch(adminPermissions.fetchUser(userId));
         } else {
@@ -62,7 +59,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
     UNSAFE_componentWillReceiveProps(nextProps) {
         if (this.props.entityPermissions.isFetching && !nextProps.entityPermissions.isFetching) {
             const permission = {
-                id: AdvancedPermissionPanel.ALL_ID
+                id: AdvancedPermissionPanel.ALL_ID,
             };
 
             nextProps.entityPermissions.data.permissions.forEach(p => {
@@ -75,77 +72,79 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
                     case perms.FUND_ISSUE_ADMIN_ALL:
                         permission[p.permission] = this.buildPermission(permission[p.permission], p);
                         break;
+                    default:
+                        break;
                 }
             });
 
-            this.setState({permission});
+            this.setState({ permission });
         }
     }
 
     changePermission = (e, permCode) => {
-        const {onAddPermission, onDeletePermission} = this.props;
+        const { onAddPermission, onDeletePermission } = this.props;
         const value = e.target.checked;
-        const {permission} = this.state;
+        const { permission } = this.state;
 
         const newPermission = {
-            ...permission
+            ...permission,
         };
 
-        const obj = newPermission[permCode] || {groupIds: {}};
+        const obj = newPermission[permCode] || { groupIds: {} };
 
         const newObj = {
             ...obj,
-            checked: value
+            checked: value,
         };
         newPermission[permCode] = newObj;
 
         const usrPermission = {
             id: obj.id,
             permission: permCode,
-            scope: permission.scope
+            scope: permission.scope,
         };
 
         if (value) {
             onAddPermission([usrPermission]).then(data => {
                 newObj.id = data[0].id;
-                this.setState({permission: newPermission});
+                this.setState({ permission: newPermission });
             });
         } else {
             onDeletePermission(usrPermission).then(data => {
                 newObj.id = null;
-                this.setState({permission: newPermission});
+                this.setState({ permission: newPermission });
             });
         }
     };
 
     render() {
-        const {permission} = this.state;
-        const {onAddPermission, onDeletePermission, entityPermissions} = this.props;
+        const { permission } = this.state;
+        const { onAddPermission, onDeletePermission, entityPermissions } = this.props;
 
         return <AdminRightsContainer className="permissions-panel">
-                {permission && <PermissionCheckboxsForm
-                    permCodes={AdvancedPermissionPanel.permCodes}
-                    onChangePermission={this.changePermission}
-                    labelPrefix="admin.perms.tabs.advanced.perm."
-                    permission={permission}
-                    groups={entityPermissions.data.groups}
-                />}
-                {entityPermissions.fetched && <div className="controlled-entities-container">
-                    <ControlledEntitiesPanel
-                        className="controlled-entities"
-                        permissions={entityPermissions.data.permissions}
-                        onAddPermission={onAddPermission}
-                        onDeletePermission={onDeletePermission}
-                    />
-                </div>}
+            {permission && <PermissionCheckboxsForm
+                permCodes={AdvancedPermissionPanel.permCodes}
+                onChangePermission={this.changePermission}
+                labelPrefix="admin.perms.tabs.advanced.perm."
+                permission={permission}
+                groups={entityPermissions.data.groups}
+            />}
+            {entityPermissions.fetched && <div className="controlled-entities-container">
+                <ControlledEntitiesPanel
+                    className="controlled-entities"
+                    permissions={entityPermissions.data.permissions}
+                    onAddPermission={onAddPermission}
+                    onDeletePermission={onDeletePermission}
+                />
+            </div>}
         </AdminRightsContainer>;
     }
 }
 
 function mapStateToProps(state) {
     return {
-        entityPermissions: storeFromArea(state, adminPermissions.ENTITY_PERMISSIONS)
-    }
+        entityPermissions: storeFromArea(state, adminPermissions.ENTITY_PERMISSIONS),
+    };
 }
 
 

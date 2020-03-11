@@ -1,24 +1,22 @@
-import {ApItemVO, IItemFormState} from "../../stores/app/accesspoint/itemForm";
-import {valuesEquals} from '../Utils';
-import {i18n} from '../shared';
-import {fromDuration} from "../../components/validate";
-import {statusSaved, statusSaving} from '../../actions/global/status';
-import {DisplayType, FOCUS_KEYS} from "../../constants";
-import {increaseNodeVersion} from '../../actions/arr/node'
-import {WebApi} from '../../actions/index.jsx';
-import {setFocus} from '../../actions/global/focus'
-import {getFocusDescItemLocation} from '../../stores/app/arr/subNodeFormUtils'
-import {findByRoutingKeyInGlobalState, getMapFromList, getRoutingKeyType, indexById} from '../../stores/app/utils'
-import {ThunkAction} from "redux-thunk";
-import {AnyAction} from "redux";
-import * as types from '../../actions/constants/ActionTypes.js'
+import { AnyAction } from 'redux';
+import { ThunkAction } from 'redux-thunk';
+import * as types from '../../actions/constants/ActionTypes.js';
+import { setFocus } from '../../actions/global/focus';
+import { statusSaved, statusSaving } from '../../actions/global/status';
+import { WebApi } from '../../actions/index.jsx';
+import { fromDuration } from '../../components/validate';
+import { DisplayType, FOCUS_KEYS } from '../../constants';
+import { ApItemVO, IItemFormState } from '../../stores/app/accesspoint/itemForm';
+import { getFocusDescItemLocation } from '../../stores/app/arr/subNodeFormUtils';
+import { indexById } from '../../stores/app/utils';
+import { valuesEquals } from '../Utils';
+
 type ThunkResult<R> = ThunkAction<R, {
     refTables: {
         rulDataTypes: {},
         descItemTypes: {},
     }
 }, AnyAction, any>;
-
 
 
 interface BaseAction {
@@ -28,13 +26,13 @@ interface BaseAction {
 
 export abstract class ItemFormActions {
 
-    readonly area : string;
+    readonly area: string;
 
-    constructor(area : string) {
+    constructor(area: string) {
         this.area = area;
     }
 
-    isSubNodeFormActionOfArea(action: BaseAction, area : string) {
+    isSubNodeFormActionOfArea(action: BaseAction, area: string) {
         if (action.area === area) {
             switch (action.type) {
                 case types.ITEM_FORM_REQUEST:
@@ -59,14 +57,14 @@ export abstract class ItemFormActions {
                 case types.CHANGE_ACCESS_POINT:
                     return true;
                 default:
-                    return false
+                    return false;
             }
         } else {
             return false;
         }
     }
 
-    isSubNodeFormAction(action : BaseAction) {
+    isSubNodeFormAction(action: BaseAction) {
         return this.isSubNodeFormActionOfArea(action, this.area);
     }
 
@@ -80,8 +78,8 @@ export abstract class ItemFormActions {
             type: types.ITEM_FORM_VALUE_VALIDATE_RESULT,
             area: this.area,
             valueLocation,
-            result
-        }
+            result,
+        };
     }
 
     /**
@@ -94,8 +92,8 @@ export abstract class ItemFormActions {
             type: types.ITEM_FORM_DESC_ITEM_TYPE_DELETE,
             area: this.area,
             valueLocation,
-            onlyDescItems
-        }
+            onlyDescItems,
+        };
     }
 
     /**
@@ -110,8 +108,8 @@ export abstract class ItemFormActions {
             area: this.area,
             valueLocation,
             operationType,
-            descItemResult: descItemResult
-        }
+            descItemResult: descItemResult,
+        };
     }
 
     /**
@@ -122,8 +120,8 @@ export abstract class ItemFormActions {
         return {
             type: types.ITEM_FORM_VALUE_CREATE,
             area: this.area,
-            valueLocation
-        }
+            valueLocation,
+        };
     }
 
     /**
@@ -141,7 +139,7 @@ export abstract class ItemFormActions {
      * @param {Object} state globální store
      * @return subNodeForm store
      */
-    abstract _getItemFormStore(state) : IItemFormState;
+    abstract _getItemFormStore(state): IItemFormState;
 
     /**
      * Načtení store nadřazeného objektu, např. NODE v pořádání nebo OUTPUT.
@@ -163,16 +161,16 @@ export abstract class ItemFormActions {
             this._getItemFormData(getState, dispatch, showChildren, showParents)
                 .then(json => {
                     const state = getState();
-                    dispatch(this.fundSubNodeFormReceive(parent, json, state.refTables.rulDataTypes, state.refTables.descItemTypes, state.refTables.groups.data, needClean))
-                })
-        }
+                    dispatch(this.fundSubNodeFormReceive(parent, json, state.refTables.rulDataTypes, state.refTables.descItemTypes, state.refTables.groups.data, needClean));
+                });
+        };
     }
 
     /** Metoda pro volání API. */
-    abstract _callUpdateDescItem(parent, descItem) : Promise<any>;
+    abstract _callUpdateDescItem(parent, descItem): Promise<any>;
 
     /** Metoda pro volání API. */
-    abstract _callCreateDescItem(parent, descItemTypeId, descItem) : Promise<any>;
+    abstract _callCreateDescItem(parent, descItemTypeId, descItem): Promise<any>;
 
     /**
      * Odeslání hodnoty atributu na server - buď vytvoření nebo aktualizace.
@@ -181,7 +179,7 @@ export abstract class ItemFormActions {
      * @param {Object} valueLocation konkrétní umístění hodnoty
      * @param {Object|undefined} overrideDescItem forcing to save
      */
-    _formValueStore(dispatch: Function, getState: Function, valueLocation, overrideDescItem? : ApItemVO<any>) {
+    _formValueStore(dispatch: Function, getState: Function, valueLocation, overrideDescItem?: ApItemVO<any>) {
         const state = getState();
         const subNodeForm = this._getItemFormStore(state);
         const loc = subNodeForm.getLoc(subNodeForm, valueLocation);
@@ -196,7 +194,7 @@ export abstract class ItemFormActions {
         if (refType.dataType.code === 'INT' && refType.viewDefinition === DisplayType.DURATION) {
             item = {
                 ...item,
-                value: fromDuration(item.value)
+                value: fromDuration(item.value),
             };
         }
 
@@ -209,14 +207,14 @@ export abstract class ItemFormActions {
                     .then(json => {
                         let descItemResult = {};
                         if (json && Array.isArray(json) && json.length > 0) {
-                            descItemResult = {item: json[0]};
+                            descItemResult = { item: json[0] };
                         }
                         // if(this.area === OutputFormActions.AREA || this.area === StructureFormActions.AREA || this.area === AccessPointFormActions.AREA){
-                            dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, descItemResult, 'UPDATE'));
+                        dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, descItemResult, 'UPDATE'));
                         // }
                         dispatch(this._fundSubNodeUpdate(refTables, json));
                         dispatch(statusSaved());
-                    })
+                    });
             } else {
                 if (!loc!!.item!!.saving) {
                     dispatch(this._fundSubNodeFormDescItemCreate(valueLocation));
@@ -224,12 +222,12 @@ export abstract class ItemFormActions {
                         .then(json => {
                             let descItemResult = {};
                             if (json && Array.isArray(json) && json.length > 0) {
-                                descItemResult = {item: json[0]};
+                                descItemResult = { item: json[0] };
                             }
-                            console.log("formValueStore - id undefined",json);
+                            console.log('formValueStore - id undefined', json);
                             dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, descItemResult, 'CREATE'));
                             dispatch(statusSaved());
-                        })
+                        });
                 }
             }
         }
@@ -239,8 +237,8 @@ export abstract class ItemFormActions {
         return {
             type: types.FUND_SUBNODE_UPDATE,
             data,
-            refTables
-        }
+            refTables,
+        };
     }
 
     /**
@@ -252,7 +250,7 @@ export abstract class ItemFormActions {
             type: types.ITEM_FORM_VALUE_ADD,
             area: this.area,
             valueLocation,
-        }
+        };
     }
 
     /**
@@ -272,7 +270,7 @@ export abstract class ItemFormActions {
             if (!undef) {
                 this._formValueStore(dispatch, getState, valueLocation, descItem);
             } else {
-                this._callDeleteDescItem(subNodeForm.data!!.parent, descItem,);
+                this._callDeleteDescItem(subNodeForm.data!!.parent, descItem);
             }
         };
     }
@@ -292,9 +290,9 @@ export abstract class ItemFormActions {
                 WebApi.validateUnitdate(loc!!.item!!.value)
                     .then(json => {
                         dispatch(this._fundSubNodeFormValueValidateResult(valueLocation, json));
-                    })
+                    });
             }
-        }
+        };
     }
 
     /**
@@ -308,16 +306,16 @@ export abstract class ItemFormActions {
             dispatch({
                 type: types.ITEM_FORM_VALUE_CHANGE,
                 area: this.area,
-                        valueLocation,
+                valueLocation,
                 value,
                 dispatch,
                 formActions: this,
             });
 
             if (forceStore) {
-                this._formValueStore(dispatch, getState, valueLocation)
+                this._formValueStore(dispatch, getState, valueLocation);
             }
-        }
+        };
     }
 
     /**
@@ -339,19 +337,19 @@ export abstract class ItemFormActions {
                     index,
                 });
 
-                const descItem = {...loc!!.item, position: index + 1};
+                const descItem = { ...loc!!.item, position: index + 1 };
 
                 this._callUpdateDescItem(subNodeForm.data!!.parent, descItem)
                     .then(json => {
                         let descItemResult = {};
                         if (json && Array.isArray(json) && json.length > 0) {
-                            descItemResult = {item: json[0]};
+                            descItemResult = { item: json[0] };
                         }
-                        const newValueLocation = {...valueLocation, descItemIndex: index};
+                        const newValueLocation = { ...valueLocation, descItemIndex: index };
                         dispatch(this._fundSubNodeFormDescItemResponse(newValueLocation, descItemResult, 'UPDATE'));
-                    })
+                    });
             }
-        }
+        };
     }
 
     /**
@@ -364,11 +362,11 @@ export abstract class ItemFormActions {
             dispatch({
                 type: types.ITEM_FORM_VALUE_CHANGE_PARTY,
                 area: this.area,
-                        valueLocation,
+                valueLocation,
                 value,
-                dispatch
-            })
-        }
+                dispatch,
+            });
+        };
     }
 
     /**
@@ -381,11 +379,11 @@ export abstract class ItemFormActions {
             dispatch({
                 type: types.ITEM_FORM_VALUE_CHANGE_RECORD,
                 area: this.area,
-                        valueLocation,
+                valueLocation,
                 value,
-                dispatch
-            })
-        }
+                dispatch,
+            });
+        };
     }
 
     /**
@@ -399,13 +397,13 @@ export abstract class ItemFormActions {
             dispatch({
                 type: types.ITEM_FORM_VALUE_CHANGE_SPEC,
                 area: this.area,
-                        valueLocation,
+                valueLocation,
                 value,
             });
 
             // Vynucení uložení na server, pokud je validní jako celek
-            this._formValueStore(dispatch, getState, valueLocation)
-        }
+            this._formValueStore(dispatch, getState, valueLocation);
+        };
     }
 
     /**
@@ -428,12 +426,12 @@ export abstract class ItemFormActions {
                     needUpdate = true;
                 }
 
-                return needUpdate
+                return needUpdate;
             } else {
-                return true
+                return true;
             }
         }
-        return false
+        return false;
     }
 
     /**
@@ -445,12 +443,12 @@ export abstract class ItemFormActions {
             dispatch({
                 type: types.ITEM_FORM_VALUE_BLUR,
                 area: this.area,
-                        valueLocation,
-                receivedAt: Date.now()
+                valueLocation,
+                receivedAt: Date.now(),
             });
 
-            this._formValueStore(dispatch, getState, valueLocation)
-        }
+            this._formValueStore(dispatch, getState, valueLocation);
+        };
     }
 
     /** Metoda pro volání API. */
@@ -469,16 +467,16 @@ export abstract class ItemFormActions {
             dispatch({
                 type: types.ITEM_FORM_VALUE_DELETE,
                 area: this.area,
-                        valueLocation,
+                valueLocation,
             });
 
             if (typeof loc!!.item!!.id !== 'undefined') {
                 this._callDeleteDescItem(subNodeForm.data!!.parent, loc!!.item)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, json, 'DELETE'));
-                    })
+                    });
             }
-        }
+        };
     }
 
     fundSubNodeFormHandleClose(routingKey): ThunkResult<void> {
@@ -487,9 +485,9 @@ export abstract class ItemFormActions {
             const subNodeForm = this._getItemFormStore(state);
             const valueLocation = getFocusDescItemLocation(subNodeForm);
             if (valueLocation !== null) {
-                dispatch(this.fundSubNodeFormValueBlur(valueLocation))
+                dispatch(this.fundSubNodeFormValueBlur(valueLocation));
             }
-        }
+        };
     }
 
     /**
@@ -501,13 +499,16 @@ export abstract class ItemFormActions {
             dispatch({
                 type: types.ITEM_FORM_DESC_ITEM_TYPE_ADD,
                 area: this.area,
-                        descItemTypeId
+                descItemTypeId,
             });
 
             //const state = getState();
             //const subNodeForm = this._getItemFormStore(state);
-            dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {descItemTypeId: descItemTypeId, descItemObjectId: null}))
-        }
+            dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
+                descItemTypeId: descItemTypeId,
+                descItemObjectId: null,
+            }));
+        };
     }
 
     /** Metoda pro volání API. */
@@ -526,7 +527,7 @@ export abstract class ItemFormActions {
      */
     addCalculatedDescItem(itemTypeId, strict = false) {
         // Not implemented
-        console.warn("Not implemented addCalculatedDescItem");
+        console.warn('Not implemented addCalculatedDescItem');
     }
 
     /**
@@ -538,7 +539,7 @@ export abstract class ItemFormActions {
     switchOutputCalculating(itemTypeId, valueLocation) {
         return (dispatch, getState) => {
             const state = getState();
-            const fundIndex = indexById(state.arrRegion.funds, "versionId");
+            const fundIndex = indexById(state.arrRegion.funds, 'versionId');
             if (fundIndex !== null) {
                 const getOutputId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
 
@@ -547,11 +548,11 @@ export abstract class ItemFormActions {
                     dispatch({
                         type: types.ITEM_FORM_OUTPUT_CALC_SWITCH,
                         area: this.area,
-                        valueLocation
-                    })
+                        valueLocation,
+                    });
                 });
             }
-        }
+        };
     }
 
     /**
@@ -577,9 +578,9 @@ export abstract class ItemFormActions {
                 this._callDeleteDescItemType(subNodeForm.data!!.parent, loc!!.itemType.id)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, json, 'DELETE_DESC_ITEM_TYPE'));
-                    })
+                    });
             }
-        }
+        };
     }
 
     /**
@@ -592,8 +593,8 @@ export abstract class ItemFormActions {
             type: types.ITEM_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE,
             area: this.area,
             valueLocation,
-            copySiblingResult
-        }
+            copySiblingResult,
+        };
     }
 
     /**
@@ -605,7 +606,7 @@ export abstract class ItemFormActions {
             type: types.ITEM_FORM_VALUE_FOCUS,
             area: this.area,
             valueLocation,
-        }
+        };
     }
 
     /**
@@ -615,7 +616,7 @@ export abstract class ItemFormActions {
      * @param {boolean} showChildren
      * @param {boolean} showParents
      */
-    fundSubNodeFormFetchIfNeeded(parent: any, needClean : boolean = false, showChildren : boolean = false, showParents: boolean = false) {
+    fundSubNodeFormFetchIfNeeded(parent: any, needClean: boolean = false, showChildren: boolean = false, showParents: boolean = false) {
         return (dispatch, getState) => {
             const state = getState();
 
@@ -626,11 +627,11 @@ export abstract class ItemFormActions {
                 !state.refTables.descItemTypes.isFetching && state.refTables.descItemTypes.fetched
             ) {
                 const subNodeForm = this._getItemFormStore(state);
-                if (JSON.stringify(parent) !== JSON.stringify(subNodeForm.parent) || (!subNodeForm.fetched || subNodeForm.dirty || subNodeForm.needClean || needClean) && !subNodeForm.isFetching) {
+                if (JSON.stringify(parent) !== JSON.stringify(subNodeForm.parent) || ((!subNodeForm.fetched || subNodeForm.dirty || subNodeForm.needClean || needClean) && !subNodeForm.isFetching)) {
                     dispatch(this._fundSubNodeFormFetch(parent, subNodeForm.needClean || needClean, showChildren, showParents));
                 }
             }
-        }
+        };
     }
 
     /**
@@ -652,8 +653,8 @@ export abstract class ItemFormActions {
             refDescItemTypes: descItemTypes,
             groups,
             receivedAt: Date.now(),
-            needClean
-        }
+            needClean,
+        };
     }
 
     /**
@@ -664,7 +665,7 @@ export abstract class ItemFormActions {
         return {
             type: types.ITEM_FORM_REQUEST,
             area: this.area,
-            parent
-        }
+            parent,
+        };
     }
 }
