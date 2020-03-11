@@ -1,7 +1,4 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {indexById} from 'stores/app/utils.jsx'
-
-import {consolidateState} from 'components/Utils.jsx'
 
 const initialState = {
     isFormVisible: false,
@@ -9,34 +6,35 @@ const initialState = {
         isFetching: false,
         fetched: false,
         currentDataKey: null,
-        data: null
+        data: null,
     },
     form: {
         nodes: [],
-        code: ''
+        code: '',
     },
     list: {
         isFetching: false,
         fetched: false,
         currentDataKey: null,
-        data: null
+        data: null,
     },
     detail: {
         isFetching: false,
         fetched: false,
         currentDataKey: null,
-        data: null
-    }
+        data: null,
+    },
 };
 
 export default function fundAction(state = initialState, action = {}) {
     switch (action.type) {
         case types.CHANGE_FUND_ACTION: {
-            const newState = {...state,
+            const newState = {
+                ...state,
                 list: {
                     ...state.list,
-                    currentDataKey:null
-                }
+                    currentDataKey: null,
+                },
             };
 
             if (state.detail.data && state.detail.data.id === action.id) {
@@ -50,9 +48,9 @@ export default function fundAction(state = initialState, action = {}) {
                 isFormVisible: false,
                 detail: {
                     ...state.detail,
-                    currentDataKey: action.dataKey
-                }
-            }
+                    currentDataKey: action.dataKey,
+                },
+            };
         }
         case types.FUND_ACTION_ACTION_DETAIL_REQUEST: {
             return {
@@ -60,9 +58,9 @@ export default function fundAction(state = initialState, action = {}) {
                 detail: {
                     ...state.detail,
                     currentDataKey: action.dataKey,
-                    isFetching: true
-                }
-            }
+                    isFetching: true,
+                },
+            };
         }
         case types.FUND_ACTION_ACTION_DETAIL_RECEIVE: {
             if (state.detail.currentDataKey !== action.dataKey) {
@@ -74,9 +72,9 @@ export default function fundAction(state = initialState, action = {}) {
                     ...state.detail,
                     isFetching: false,
                     fetched: true,
-                    data: action.data
-                }
-            }
+                    data: action.data,
+                },
+            };
         }
         case types.FUND_ACTION_LIST_REQUEST: {
             return {
@@ -84,9 +82,9 @@ export default function fundAction(state = initialState, action = {}) {
                 list: {
                     ...state.list,
                     currentDataKey: action.dataKey,
-                    isFetching: true
-                }
-            }
+                    isFetching: true,
+                },
+            };
         }
         case types.FUND_ACTION_LIST_RECEIVE: {
             if (state.list.currentDataKey !== action.dataKey) {
@@ -98,9 +96,9 @@ export default function fundAction(state = initialState, action = {}) {
                     ...state.list,
                     isFetching: false,
                     fetched: true,
-                    data: action.data
-                }
-            }
+                    data: action.data,
+                },
+            };
         }
         case types.FUND_ACTION_CONFIG_REQUEST: {
             return {
@@ -108,9 +106,9 @@ export default function fundAction(state = initialState, action = {}) {
                 config: {
                     ...state.config,
                     currentDataKey: action.dataKey,
-                    isFetching: true
-                }
-            }
+                    isFetching: true,
+                },
+            };
         }
         case types.FUND_ACTION_CONFIG_RECEIVE: {
             if (state.config.currentDataKey !== action.dataKey) {
@@ -122,9 +120,9 @@ export default function fundAction(state = initialState, action = {}) {
                     ...state.config,
                     isFetching: false,
                     fetched: true,
-                    data: action.data
-                }
-            }
+                    data: action.data,
+                },
+            };
         }
         case types.FUND_ACTION_FORM_SHOW: {
             return {
@@ -132,31 +130,31 @@ export default function fundAction(state = initialState, action = {}) {
                 isFormVisible: true,
                 detail: {
                     ...state.detail,
-                    currentDataKey: null
-                }
-            }
+                    currentDataKey: null,
+                },
+            };
         }
         case types.FUND_ACTION_FORM_RESET: {
             return {
                 ...state,
-                form: initialState.form
-            }
+                form: initialState.form,
+            };
         }
         case types.FUND_ACTION_FORM_CHANGE: {
             return {
                 ...state,
                 form: {
                     ...state.form,
-                    ...action.data
-                }
-            }
+                    ...action.data,
+                },
+            };
         }
         case types.FUND_ACTION_FORM_SUBMIT: {
             return {
                 ...state,
                 isFormVisible: false,
-                form: initialState.form
-            }
+                form: initialState.form,
+            };
         }
 
         case types.FUND_INVALID: {
@@ -164,13 +162,13 @@ export default function fundAction(state = initialState, action = {}) {
                 ...state,
                 list: {
                     ...state.list,
-                    currentDataKey: null
+                    currentDataKey: null,
                 },
                 detail: {
                     ...state.detail,
-                    currentDataKey: null
-                }
-            }
+                    currentDataKey: null,
+                },
+            };
         }
 
         default:

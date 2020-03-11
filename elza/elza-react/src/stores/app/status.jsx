@@ -1,8 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {indexById} from 'stores/app/utils.jsx'
 
 const initialState = {
-    saveCounter:0
+    saveCounter: 0,
 };
 
 export default function status(state = initialState, action = {}) {
@@ -11,14 +10,14 @@ export default function status(state = initialState, action = {}) {
             return {
                 ...state,
                 saving: false,
-                saveCounter: state.saveCounter-1 >= 0 ? state.saveCounter-1 : 0
-            }
+                saveCounter: state.saveCounter - 1 >= 0 ? state.saveCounter - 1 : 0,
+            };
         case types.STATUS_SAVING:
             return {
                 ...state,
-                saveCounter: state.saveCounter+1
-            }
+                saveCounter: state.saveCounter + 1,
+            };
         default:
-            return state
+            return state;
     }
 }

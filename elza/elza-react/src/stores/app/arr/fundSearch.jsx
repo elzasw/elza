@@ -1,5 +1,4 @@
-import {indexById} from 'stores/app/utils.jsx'
-import {i18n} from 'components/shared';
+import { indexById } from 'stores/app/utils.jsx';
 import * as types from './../../../actions/constants/ActionTypes.js';
 
 const initialState = {
@@ -7,17 +6,18 @@ const initialState = {
     funds: [],
     isFetching: false,
     fetched: false,
-    currentDataKey: ''
+    currentDataKey: '',
 };
 
 const initialFundState = {
     expanded: false,
     isFetching: false,
     fetched: false,
-    nodes: []
+    nodes: [],
 };
 
 export default function fundSearch(state = initialState, action = {}) {
+    let index;
     switch (action.type) {
         case types.FUND_SEARCH_FULLTEXT_CHANGE: {
             if (action.fulltext === '') {
@@ -25,7 +25,7 @@ export default function fundSearch(state = initialState, action = {}) {
             } else {
                 return {
                     ...state,
-                    fulltext: action.fulltext
+                    fulltext: action.fulltext,
                 };
             }
         }
@@ -34,7 +34,7 @@ export default function fundSearch(state = initialState, action = {}) {
                 ...state,
                 isFetching: true,
                 currentDataKey: action.fulltext,
-            }
+            };
         }
         case types.FUND_SEARCH_FULLTEXT_RECEIVE: {
             return {
@@ -44,49 +44,49 @@ export default function fundSearch(state = initialState, action = {}) {
                 funds: action.funds.map(fund => {
                     return {
                         ...initialFundState,
-                        ...fund
-                    }
-                })
+                        ...fund,
+                    };
+                }),
             };
         }
         case types.FUND_SEARCH_EXPAND_FUND: {
-            var index = indexById(state.funds, action.fund.id);
+            index = indexById(state.funds, action.fund.id);
             const newFunds = [...state.funds];
-            const {fund} = action;
+            const { fund } = action;
 
-            Object.assign(newFunds[index], {...fund, expanded: !fund.expanded});
-            
+            Object.assign(newFunds[index], { ...fund, expanded: !fund.expanded });
+
             return {
                 ...state,
-                funds: newFunds
+                funds: newFunds,
             };
         }
         case types.FUND_SEARCH_FUND_REQUEST: {
-            var index = indexById(state.funds, action.fund.id);
+            index = indexById(state.funds, action.fund.id);
             const newFunds = [...state.funds];
 
-            Object.assign(newFunds[index], {...action.fund, isFetching: true});
-            
+            Object.assign(newFunds[index], { ...action.fund, isFetching: true });
+
             return {
                 ...state,
-                funds: newFunds
+                funds: newFunds,
             };
         }
-        case types.FUND_SEARCH_FUND_RECEIVE:{
-            var index = indexById(state.funds, action.fund.id);
+        case types.FUND_SEARCH_FUND_RECEIVE: {
+            index = indexById(state.funds, action.fund.id);
             const newFunds = [...state.funds];
 
             Object.assign(
-                newFunds[index], 
-                {...action.fund, isFetching: false, fetched: true, nodes: action.nodes}
+                newFunds[index],
+                { ...action.fund, isFetching: false, fetched: true, nodes: action.nodes },
             );
-            
+
             return {
                 ...state,
-                funds: newFunds
+                funds: newFunds,
             };
         }
         default:
-            return state
+            return state;
     }
 }

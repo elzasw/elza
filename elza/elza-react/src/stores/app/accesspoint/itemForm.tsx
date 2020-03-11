@@ -1,11 +1,11 @@
+import * as types from '../../../actions/constants/ActionTypes.js';
 import {i18n} from '../../../components/shared';
-import {getMapFromList, objectById} from '../utils2'
-import {validateCoordinatePoint, validateDouble, validateDuration, validateInt} from '../../../components/validate'
-import {valuesEquals} from '../../../components/Utils'
-import {DisplayType} from "../../../constants";
-import {ItemAvailability, updateFormData, consolidateDescItems, createItem, createItemFromDb, mergeAfterUpdate} from "./itemFormUtils";
-import {DataTypeCode} from "./itemFormInterfaces";
-import * as types from '../../../actions/constants/ActionTypes.js'
+import {valuesEquals} from '../../../components/Utils';
+import {validateCoordinatePoint, validateDouble, validateDuration, validateInt} from '../../../components/validate';
+import {DisplayType} from '../../../constants';
+import {getMapFromList, objectById} from '../utils2';
+import {DataTypeCode} from './itemFormInterfaces';
+import {consolidateDescItems, createItem, ItemAvailability, mergeAfterUpdate, updateFormData} from './itemFormUtils';
 
 export interface ILocation {
     itemType: ItemTypeExt;
@@ -142,7 +142,7 @@ export interface ApFormVO {
 }
 
 export interface ItemData extends ApFormVO {
-    parent: { id: number }
+    parent: {id: number}
 }
 
 export interface IItemFormState {
@@ -162,7 +162,7 @@ export interface IItemFormState {
     getLoc: (state: IItemFormState, valueLocation: IValueLocation) => ILocation | null;
 }
 
-const initialState : IItemFormState = {
+const initialState: IItemFormState = {
     isFetching: false,
     fetchingId: undefined,
     fetched: false,
@@ -175,7 +175,7 @@ const initialState : IItemFormState = {
     infoTypesMap: undefined,
     refTypesMap: undefined,
     updatedItem: undefined,
-    getLoc: getLoc
+    getLoc: getLoc,
 };
 
 interface IValueLocation {
@@ -183,22 +183,22 @@ interface IValueLocation {
     itemIndex?: number
 }
 
-function getLoc(state: IItemFormState, valueLocation: IValueLocation) : ILocation | null {
+function getLoc(state: IItemFormState, valueLocation: IValueLocation): ILocation | null {
     const formData = state.formData;
     if (!formData) {
-        console.warn("formData do not exist");
+        console.warn('formData do not exist');
         return null;
     }
     let itemType = formData.itemTypes[valueLocation.itemTypeIndex];
-    let item : ApItemExt<any> | null = null;
+    let item: ApItemExt<any> | null = null;
     if (typeof valueLocation.itemIndex !== 'undefined') {
         item = itemType.items[valueLocation.itemIndex];
     }
 
     return {
         itemType,
-        item
-    }
+        item,
+    };
 }
 
 interface IValidationError {
@@ -208,8 +208,8 @@ interface IValidationError {
     hasError: boolean
 }
 
-export function validate(item: ApItemVO<any>, refType: RefType, valueServerError?: string) : IValidationError {
-    const error :IValidationError = {hasError: false};
+export function validate(item: ApItemVO<any>, refType: RefType, valueServerError?: string): IValidationError {
+    const error: IValidationError = {hasError: false};
 
     // Specifikace
     if (refType.useSpecification) {
@@ -237,7 +237,7 @@ export function validate(item: ApItemVO<any>, refType: RefType, valueServerError
         case DataTypeCode.ENUM:
             break;
         case DataTypeCode.UNITDATE:
-            if (typeof item.calendarTypeId  == 'undefined') {// || item.calendarTypeId == ""
+            if (typeof item.calendarTypeId == 'undefined') {// || item.calendarTypeId == ""
                 error.calendarType = i18n('subNodeForm.validate.calendarType.required');
             }
             if (!item.value || item.value.length === 0) {
@@ -271,7 +271,7 @@ export function validate(item: ApItemVO<any>, refType: RefType, valueServerError
             if (!item.value || item.value.length === 0) {
                 error.value = i18n('subNodeForm.validate.value.notEmpty');
             } else {
-                error.value = validateDouble(item.value)
+                error.value = validateDouble(item.value);
             }
             break;
         case DataTypeCode.DATE:
@@ -286,7 +286,7 @@ export function validate(item: ApItemVO<any>, refType: RefType, valueServerError
     // Server validační chyba
     if (valueServerError) {
         if (error.value) {
-            error.value += " " + valueServerError;
+            error.value += ' ' + valueServerError;
         } else {
             error.value = valueServerError;
         }
@@ -303,56 +303,56 @@ export function validate(item: ApItemVO<any>, refType: RefType, valueServerError
 export function convertValue(value, descItem, type) {
     //  Data type to value conversion functions map
     const dataTypeMap = {
-        PARTY_REF: (value)=>{
+        PARTY_REF: (value) => {
             return {
                 value: value.id,
-                party: value
+                party: value,
             };
         },
-        FILE_REF: (value)=>{
+        FILE_REF: (value) => {
             return {
                 value: value.id,
-                file: value
+                file: value,
             };
         },
-        STRUCTURED: (value)=>{
+        STRUCTURED: (value) => {
             return {
                 value: value.id,
-                structureData: value
+                structureData: value,
             };
         },
-        RECORD_REF: (value)=>{
+        RECORD_REF: (value) => {
             return {
                 value: value.id,
-                record: value
+                record: value,
             };
         },
-        UNITDATE: (value, descItem)=>{
+        UNITDATE: (value, descItem) => {
             // change touched attribute when calendarTypeId changed
             const touched = descItem.calendarTypeId !== value.calendarTypeId;
             return {
                 value: value.value,
                 touched,
-                calendarTypeId: value.calendarTypeId
+                calendarTypeId: value.calendarTypeId,
             };
         },
-        DEFAULT: (value)=>{
+        DEFAULT: (value) => {
             return {value};
-        }
+        },
     };
     const convertFunction = dataTypeMap[type];
-    if(convertFunction){
+    if (convertFunction) {
         return convertFunction(value, descItem);
     } else {
-        return dataTypeMap["DEFAULT"](value);
+        return dataTypeMap['DEFAULT'](value);
     }
 }
 
 enum ActionOperation {
-    DELETE = "DELETE",
-    UPDATE = "UPDATE",
-    CREATE = "CREATE",
-    DELETE_DESC_ITEM_TYPE = "DELETE_DESC_ITEM_TYPE",
+    DELETE = 'DELETE',
+    UPDATE = 'UPDATE',
+    CREATE = 'CREATE',
+    DELETE_DESC_ITEM_TYPE = 'DELETE_DESC_ITEM_TYPE',
 }
 
 interface IAction {
@@ -369,6 +369,7 @@ interface IAction {
     descItemResult?: {
         item?: ApItemVO<any>
     },
+
     [extraProps: string]: any
 }
 
@@ -399,7 +400,7 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                         formData: {
                             ...state.formData,
 
-                        }
+                        },
                     };
                 /*case types.ITEM_FORM_FORM_VALUE_CHANGE_POSITION:
                     const descItems = [
@@ -421,16 +422,16 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                     loc.item = {
                         ...loc.item,
                         ...convertedValue,
-                        touched
+                        touched,
                     };
                     // Unitdate server validation
-                    if(refType.dataType.code === "UNITDATE"){
+                    if (refType.dataType.code === 'UNITDATE') {
                         if (loc.item!!.validateTimer) {
                             clearTimeout(loc.item!!.validateTimer);
                         }
                         // FIXME @randak tohle je blbě
                         const fc = () => action.dispatch(
-                            action.formActions.fundSubNodeFormValueValidate(action.valueLocation)
+                            action.formActions.fundSubNodeFormValueValidate(action.valueLocation),
                         );
                         loc.item!!.validateTimer = setTimeout(fc, 250);
                     }
@@ -439,8 +440,8 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                     return {
                         ...state,
                         formData: {
-                            ...state.formData
-                        }
+                            ...state.formData,
+                        },
                     };
                 case types.ITEM_FORM_VALUE_CHANGE_SPEC:
                     if (loc.item!!.specId !== action.value) {
@@ -451,8 +452,8 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                         return {
                             ...state,
                             formData: {
-                                ...state.formData
-                            }
+                                ...state.formData,
+                            },
                         };
                     } else {
                         return state;
@@ -465,8 +466,8 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                     return {
                         ...state,
                         formData: {
-                            ...state.formData
-                        }
+                            ...state.formData,
+                        },
                     };
                 case types.ITEM_FORM_VALUE_FOCUS:
                     loc.item!!.visited = true;
@@ -476,8 +477,8 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                     return {
                         ...state,
                         formData: {
-                            ...state.formData
-                        }
+                            ...state.formData,
+                        },
                     };
                 case types.ITEM_FORM_VALUE_CREATE:
                     loc.item!!.saving = true;
@@ -485,8 +486,8 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                     return {
                         ...state,
                         formData: {
-                            ...state.formData
-                        }
+                            ...state.formData,
+                        },
                     };
                 case types.ITEM_FORM_VALUE_ADD:
                     const item = createItem(loc.itemType, refType, true);
@@ -504,12 +505,12 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                                     ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex],
                                     items: [
                                         ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items,
-                                        item
-                                    ]
+                                        item,
+                                    ],
                                 },
-                                ...state.formData!!.itemTypes.slice(action.valueLocation.itemTypeIndex+1),
-                            ]
-                        }
+                                ...state.formData!!.itemTypes.slice(action.valueLocation.itemTypeIndex + 1),
+                            ],
+                        },
                     };
                 /*case types.ITEM_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:// TODO Asi nemáme
                     state.data.parent = action.copySiblingResult.node;
@@ -540,10 +541,10 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                             ...state.infoTypesMap,
                             [loc.itemType.id]: {
                                 ...infoType,
-                                calSt: 1 === infoType.calSt ? 0 : 1
-                            }
-                        }
-                    }
+                                calSt: 1 === infoType.calSt ? 0 : 1,
+                            },
+                        },
+                    };
                 }
 
                 case types.ITEM_FORM_VALUE_RESPONSE:
@@ -551,7 +552,7 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                         ...state,
                         data: {
                             ...state.data,
-                        }
+                        },
                     };
 
                     switch (action.operationType) {
@@ -593,14 +594,14 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                                                         prevValue: action.descItemResult.item ? action.descItemResult.item.value : null,
                                                         //prevDescItemSpecId: action.descItemResult.item && loc.itemType.useSpecification ? action.descItemResult.item.descItemSpecId : updateItem.prevDescItemSpecId,
                                                         //prevCalendarTypeId: action.descItemResult.item && action.descItemResult.prevCalendarTypeId ? action.descItemResult.item.prevCalendarTypeId : updateItem.prevCalendarTypeId,
-                                                        touched: false
+                                                        touched: false,
                                                     },
-                                                    ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(action.valueLocation.itemIndex!!+1)
-                                                ]
+                                                    ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(action.valueLocation.itemIndex!! + 1),
+                                                ],
                                             },
-                                            ...state.formData!!.itemTypes.slice(action.valueLocation.itemTypeIndex+1),
-                                        ]
-                                    }
+                                            ...state.formData!!.itemTypes.slice(action.valueLocation.itemTypeIndex + 1),
+                                        ],
+                                    },
                                 };
                             }
                             return state;
@@ -620,9 +621,9 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                                         //prevDescItemSpecId: loc.itemType.useSpecification ? action.descItemResult.item.descItemSpecId : undefined,
                                         prevCalendarTypeId: action.descItemResult.item.calendarTypeId || undefined,
                                         saving: false,
-                                        touched: false
+                                        touched: false,
                                     },
-                                    ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(itemIndex+1)
+                                    ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(itemIndex + 1),
                                 ];
 
                                 return {
@@ -633,11 +634,11 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                                             ...state.formData!!.itemTypes.slice(0, action.valueLocation.itemTypeIndex),
                                             {
                                                 ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex],
-                                                items: createItems.map((item, index) => ({...item, position: index})) // Aktualizace position - pokud by create byl na první hodnotě a za ní již nějaké uživatel uložil, musí se vše aktualizovat
+                                                items: createItems.map((item, index) => ({...item, position: index})), // Aktualizace position - pokud by create byl na první hodnotě a za ní již nějaké uživatel uložil, musí se vše aktualizovat
                                             },
-                                            ...state.formData!!.itemTypes.slice(action.valueLocation.itemTypeIndex+1),
-                                        ]
-                                    }
+                                            ...state.formData!!.itemTypes.slice(action.valueLocation.itemTypeIndex + 1),
+                                        ],
+                                    },
                                 };
 
                             }
@@ -659,11 +660,11 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                                     ...state.formData!!.itemTypes.slice(0, action.valueLocation.itemTypeIndex),
                                     {
                                         ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex],
-                                        items: []
+                                        items: [],
                                     },
-                                    ...state.formData!!.itemTypes.slice(action.valueLocation.itemTypeIndex+1),
-                                ]
-                            }
+                                    ...state.formData!!.itemTypes.slice(action.valueLocation.itemTypeIndex + 1),
+                                ],
+                            },
                         };
                     } else {
                         /*var infoType = state.infoTypesMap[loc.itemType.id]
@@ -686,8 +687,8 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                     return {
                         ...state,
                         formData: {
-                            ...state.formData
-                        }
+                            ...state.formData,
+                        },
                     };
                 case types.ITEM_FORM_VALUE_DELETE:
                     // loc.itemType.descItems = [
@@ -710,12 +711,12 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                                     ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex],
                                     items: [
                                         ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(0, action.valueLocation.itemIndex!!),
-                                        ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(action.valueLocation.itemIndex!! + 1)
-                                    ]
+                                        ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(action.valueLocation.itemIndex!! + 1),
+                                    ],
                                 },
-                                ...state.formData!!.itemTypes.slice(action.valueLocation.itemTypeIndex+1),
-                            ]
-                        }
+                                ...state.formData!!.itemTypes.slice(action.valueLocation.itemTypeIndex + 1),
+                            ],
+                        },
                     };
             }
 
@@ -736,7 +737,6 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
             //         }
             //     });
             // });
-
 
 
             const addItemType = objectById(state.data!!.itemTypes, action.descItemTypeId) as ItemTypeExt;
@@ -761,11 +761,11 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
 
             const itemTypes = [
                 ...state.formData!!.itemTypes,
-                descItemType
+                descItemType,
             ];
 
             itemTypes.sort((a, b) => {
-                return state.refTypesMap!!.get(a.id)!!.viewOrder - state.refTypesMap!!.get(b.id)!!.viewOrder
+                return state.refTypesMap!!.get(a.id)!!.viewOrder - state.refTypesMap!!.get(b.id)!!.viewOrder;
             });
 
             return {
@@ -773,7 +773,7 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                 formData: {
                     ...state.formData,
                     itemTypes,
-                }
+                },
             };
         case types.CHANGE_ACCESS_POINT:
             return {...state, dirty: true};
@@ -786,7 +786,7 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
             } else {
                 return state;
             }
-            // tuhle funkcionalitu nechceme
+        // tuhle funkcionalitu nechceme
         /*case types.ITEM_FORM_TEMPLATE_USE: {
             console.warn("ITEM_FORM_TEMPLATE_USE", action, state);
 
@@ -860,7 +860,7 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                     dataType: dataTypeMap.get(type.dataTypeId),
                     descItemSpecsMap: getMapFromList(type.descItemSpecs),
                     //viewDefinitionMap: type.viewDefinition ? getMapFromList(type.viewDefinition, "code") : null,
-                }
+                };
             }) as RefTypeExt[];
 
             // Sestavení mapy ref descItemType
@@ -889,7 +889,7 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
             var {node, parent} = action.data;
             let nodeId = (node && node.id) || (parent && parent.id);
 
-            if (nodeId != state.parent!!.id){
+            if (nodeId !== state.parent!!.id) {
                 // not the right node
                 return state;
             }
@@ -908,7 +908,7 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
 
             return resultUpdate;
         default:
-            return state
+            return state;
     }
 }
 

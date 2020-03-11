@@ -1,13 +1,11 @@
 import * as types from 'actions/constants/ActionTypes.js';
 
-import {indexById} from 'stores/app/utils.jsx'
-
 /**
  * Zdůvodu zpětné kompatibility jsou zachována původní policyTypeIds jako data a ostatní data jsou z requestu odlita do sekundárního attr
  */
 const initialState = {
     data: null,
-    otherData: null
+    otherData: null,
 };
 
 export default function visiblePolicy(state = initialState, action = {}) {
@@ -23,7 +21,7 @@ export default function visiblePolicy(state = initialState, action = {}) {
         case types.VISIBLE_POLICY_RECEIVE: {
             const data = [];
             for (let id in action.policyTypeIds) {
-                data.push({id: id, checked: action.policyTypeIds[id]});
+                data.push({ id: id, checked: action.policyTypeIds[id] });
             }
 
             return {
@@ -40,10 +38,10 @@ export default function visiblePolicy(state = initialState, action = {}) {
         case types.SET_VISIBLE_POLICY_RECEIVE:
             return {
                 ...state,
-                dirty: true
+                dirty: true,
             };
         default:
-            return state
+            return state;
     }
 }
 

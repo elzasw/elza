@@ -1,15 +1,14 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import subNodeForm from './subNodeForm.jsx'
-import {structureFormActions} from 'actions/arr/subNodeForm.jsx'
-import {consolidateState} from 'components/Utils.jsx'
-import {indexById} from 'stores/app/utils.jsx';
+import subNodeForm from './subNodeForm.jsx';
+import { structureFormActions } from 'actions/arr/subNodeForm.jsx';
+import { consolidateState } from 'components/Utils.jsx';
 
 const initialState = {
     id: null,
     fetched: false,
     fetching: false,
     currentDataKey: '',
-    subNodeForm: subNodeForm()
+    subNodeForm: subNodeForm(),
 };
 
 export default function structureNodeForm(state = initialState, action = {}) {
@@ -27,7 +26,7 @@ export default function structureNodeForm(state = initialState, action = {}) {
                 return {
                     ...state,
                     subNodeForm: subNodeForm(state.subNodeForm, action),
-                }
+                };
             } else {
                 return state;
             }
@@ -36,7 +35,7 @@ export default function structureNodeForm(state = initialState, action = {}) {
                 ...state,
                 id: action.id,
                 version: action.versionId,
-                subNodeForm: subNodeForm()
+                subNodeForm: subNodeForm(),
             };
         case types.STRUCTURE_NODE_FORM_REQUEST:
             return {
@@ -45,7 +44,7 @@ export default function structureNodeForm(state = initialState, action = {}) {
                 id: action.id,
                 fetching: true,
                 fetched: false,
-                currentDataKey: action.id
+                currentDataKey: action.id,
             };
         case types.STRUCTURE_NODE_FORM_RECEIVE:
             return {
@@ -56,7 +55,7 @@ export default function structureNodeForm(state = initialState, action = {}) {
                 ...action.data,
             };
         default:
-            return state
+            return state;
     }
 }
 

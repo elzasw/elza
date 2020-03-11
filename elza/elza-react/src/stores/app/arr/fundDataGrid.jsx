@@ -1,8 +1,8 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {consolidateState} from 'components/Utils.jsx'
-import subNodeForm from './subNodeForm.jsx'
-import {nodeFormActions} from 'actions/arr/subNodeForm.jsx'
-import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx'
+import { consolidateState } from 'components/Utils.jsx';
+import subNodeForm from './subNodeForm.jsx';
+import { nodeFormActions } from 'actions/arr/subNodeForm.jsx';
+import { getMapFromList } from 'stores/app/utils.jsx';
 
 const initialState = {
     initialised: false, // jestli byl prvotně inicializován, např. seznam zobrazovaných sloupců atp.
@@ -30,12 +30,12 @@ const initialState = {
     searchText: '',
     searchExtended: false,
     luceneQuery: false,
-    data: {type: "FORM"},
+    data: { type: 'FORM' },
     showFilterResult: false,
     searchedItems: [], // výsledky hledání dat
     searchedCurrentIndex: 0,    // index aktuálně vybrané položky ve výsledcích hledání
-    cellFocus: {row: 0, col: 0},
-}
+    cellFocus: { row: 0, col: 0 },
+};
 // new Array("4", "5", "8", "9", "11", "14", "17", "38", "42", "44", "50", "53").forEach(a => {
 //     initialState.visibleColumns[a] = true
 // });
@@ -45,15 +45,15 @@ function changeSearchedIndex(state, newIndex) {
         return {
             ...state,
             searchedCurrentIndex: 0,
-        }
+        };
     } else {
-        const info = state.searchedItems[newIndex]
-        var pageIndex = state.pageIndex
-        var selectedIds = state.selectedIds
+        const info = state.searchedItems[newIndex];
+        var pageIndex = state.pageIndex;
+        var selectedIds = state.selectedIds;
 
         if (info.index < state.pageIndex * state.pageSize || info.index >= (state.pageIndex + 1) * state.pageSize) { // je mimo aktuálně zobrazovanou stránku
-            pageIndex = Math.floor(info.index / state.pageSize)
-            selectedIds = []
+            pageIndex = Math.floor(info.index / state.pageSize);
+            selectedIds = [];
         }
 
         const row = info.index - pageIndex * state.pageSize;
@@ -64,14 +64,14 @@ function changeSearchedIndex(state, newIndex) {
             pageIndex: pageIndex,
             searchedCurrentIndex: newIndex,
             selectedRowIndexes: [row],
-            cellFocus: {row, col: state.cellFocus.col}
-        }
+            cellFocus: { row, col: state.cellFocus.col },
+        };
     }
 }
 
 export default function fundDataGrid(state = initialState, action = {}) {
     if (nodeFormActions.isSubNodeFormAction(action)) {
-        var result = {
+        const result = {
             ...state,
             subNodeForm: subNodeForm(state.subNodeForm, action),
         };
@@ -94,11 +94,11 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 subNodeForm: subNodeForm(),
                 searchedItems: [],
                 searchedCurrentIndex: 0,
-                cellFocus: {row: 0, col: 0},
-                data: {type: "FORM"},
-            }
+                cellFocus: { row: 0, col: 0 },
+                data: { type: 'FORM' },
+            };
         case types.STORE_SAVE: {
-            const {pageSize, initialised, pageIndex, filter, visibleColumns, columnsOrder, columnInfos} = state;
+            const { pageSize, initialised, pageIndex, filter, visibleColumns, columnsOrder, columnInfos } = state;
 
             return {
                 initialised,
@@ -108,7 +108,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 visibleColumns,
                 columnsOrder,
                 columnInfos,
-            }
+            };
         }
         case types.FUND_FUND_DATA_GRID_INIT: {
             let visibleColumns = {};
@@ -118,10 +118,10 @@ export default function fundDataGrid(state = initialState, action = {}) {
             if (state.visibleColumns && Object.keys(state.visibleColumns) > 0) {    // je definovaný
                 visibleColumns = state.visibleColumns;
             } else {    // není definováno, vezmeme z nastavení v pravidlech
-                visibleColumns = {}
+                visibleColumns = {};
                 action.initData.visibleColumns.forEach(id => {
                     visibleColumns[id] = true;
-                })
+                });
             }
 
             // Pokud je informace o sloupcích již jsou, nechají se, jinak se inicializují z akce, kde jsou nastavené v pravidlech
@@ -143,22 +143,22 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 fetchedFilter: false,
                 isFetchingData: false,
                 fetchedData: false,
-            }
+            };
         }
         case types.FUND_FUND_DATA_GRID_CHANGE_SELECTED_ROW_INDEXES:
             return {
                 ...state,
                 selectedRowIndexes: action.indexes,
-            }
+            };
         case types.FUND_FUND_DATA_GRID_CHANGE_CELL_FOCUS:
             return {
                 ...state,
-                cellFocus: {row: action.row, col: action.col},
-            }
+                cellFocus: { row: action.row, col: action.col },
+            };
         case types.FUND_FUND_DATA_GRID_FULLTEXT_NEXT_ITEM:
-            return changeSearchedIndex(state, state.searchedCurrentIndex + 1)
+            return changeSearchedIndex(state, state.searchedCurrentIndex + 1);
         case types.FUND_FUND_DATA_GRID_FULLTEXT_PREV_ITEM: {
-            return changeSearchedIndex(state, state.searchedCurrentIndex - 1)
+            return changeSearchedIndex(state, state.searchedCurrentIndex - 1);
         }
         case types.FUND_FUND_DATA_GRID_FULLTEXT_EXTENDED:
             return {
@@ -166,88 +166,88 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 searchText: '',
                 showFilterResult: false,
                 searchExtended: !state.searchExtended,
-            }
+            };
         case types.FUND_FUND_DATA_GRID_FULLTEXT_CLEAR:
             return {
                 ...state,
                 showFilterResult: false,
-            }
+            };
         case types.FUND_FUND_DATA_GRID_FULLTEXT_RESULT:
-            var midState = {
+            const midState = {
                 ...state,
                 searchedItems: action.searchedItems,
                 searchText: action.filterText,
                 showFilterResult: action.filterText !== '' || action.luceneQuery,
                 luceneQuery: action.luceneQuery,
-                data: action.data
-            }
-            return changeSearchedIndex(midState, 0)
+                data: action.data,
+            };
+            return changeSearchedIndex(midState, 0);
         case types.FUND_FUND_DATA_GRID_FILTER_CLEAR_ALL:
             return {
                 ...state,
                 filter: {},
                 fetchedFilter: false,
                 isFetchingFilter: false,
-            }
+            };
         case types.FUND_FUND_DATA_GRID_PREPARE_EDIT:
-            var result = {
+            const result = {
                 ...state,
                 nodeId: action.nodeId,
                 parentNodeId: action.parentNodeId,
                 descItemTypeId: action.descItemTypeId,
-            }
+            };
 
             if (action.nodeId !== state.subNodeForm.fetchingId) {
-                result.subNodeForm = subNodeForm()
+                result.subNodeForm = subNodeForm();
             }
 
-            return result
+            return result;
         case types.FUND_FUND_DATA_GRID_PAGE_SIZE:
             const isBiggerPage = action.pageIndex > state.pageIndex;
             return {
                 ...state,
                 pageSize: action.pageSize,
                 pageIndex: 0,
-                selectedIds: isBiggerPage ? state.selectedIds: [],
-                selectedRowIndexes: isBiggerPage ? state.selectedRowIndexes: [],
-                cellFocus: {row: 0, col: 0},
-            }
+                selectedIds: isBiggerPage ? state.selectedIds : [],
+                selectedRowIndexes: isBiggerPage ? state.selectedRowIndexes : [],
+                cellFocus: { row: 0, col: 0 },
+            };
         case types.FUND_FUND_DATA_GRID_COLUMNS_SETTINGS:
             return {
                 ...state,
                 visibleColumns: action.visibleColumns,
                 columnsOrder: action.columnsOrder,
-                cellFocus: {row: 0, col: 0},
-            }
+                cellFocus: { row: 0, col: 0 },
+            };
         case types.FUND_FUND_DATA_GRID_COLUMN_SIZE:
-            var columnInfos = {...state.columnInfos}
-            var info = columnInfos[action.columnId] || {}
-            info.width = action.width
-            columnInfos[action.columnId] = info
+            let columnInfos = { ...state.columnInfos };
+            const info = columnInfos[action.columnId] || {};
+            info.width = action.width;
+            columnInfos[action.columnId] = info;
             return {
                 ...state,
                 columnInfos: columnInfos,
-            }
+            };
         case types.FUND_FUND_DATA_GRID_SELECTION:
             return {
                 ...state,
                 selectedIds: [...action.ids],
-            }
+            };
         case types.FUND_FUND_DATA_GRID_PAGE_INDEX:
             return {
                 ...state,
                 pageIndex: action.pageIndex,
                 selectedIds: [],
-                cellFocus: {row: 0, col: 0},
-            }
+                cellFocus: { row: 0, col: 0 },
+            };
         case types.FUND_FUND_DATA_GRID_FILTER_CHANGE:
-            var filter = {...state.filter}
+            let filter = { ...state.filter };
 
             if (action.descItemTypeId !== null) {   // null je pro případ, kdy jen chceme aktualizovat data
                 if (action.filter) {
-                    filter[action.descItemTypeId] = action.filter
+                    filter[action.descItemTypeId] = action.filter;
                 } else {
-                    delete filter[action.descItemTypeId]
+                    delete filter[action.descItemTypeId];
                 }
             }
 
@@ -255,26 +255,26 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 ...state,
                 filter: filter,
                 fetchedFilter: false,
-                cellFocus: {row: 0, col: 0},
-            }
+                cellFocus: { row: 0, col: 0 },
+            };
         case types.FUND_FUND_DATA_GRID_FILTER_REQUEST:
             return {
                 ...state,
                 isFetchingFilter: true,
-            }
+            };
         case types.FUND_FUND_DATA_GRID_FILTER_RECEIVE:
             const viewInfo = {
                 pageIndex: state.pageIndex,
                 selectedIds: state.selectedIds,
                 selectedRowIndexes: state.selectedRowIndexes,
-                cellFocus: state.cellFocus
-            }
+                cellFocus: state.cellFocus,
+            };
 
             if (action.resetViewState) {    // reset stránkování označení atp.
                 viewInfo.pageIndex = 0;
                 viewInfo.selectedIds = [];
                 viewInfo.selectedRowIndexes = [0];
-                viewInfo.cellFocus = {row: 0, col: 0};
+                viewInfo.cellFocus = { row: 0, col: 0 };
             } else {
                 // Pokud je aktuální zobrazení stránky mimo záznamy, zobrazíme poslední stránku
                 if (viewInfo.pageIndex * state.pageSize >= action.itemsCount) {
@@ -282,9 +282,9 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 }
 
                 // Cell focus - pokud je mimo řádek, nastavíme na poslední řádek na stránce
-                const restRows = action.itemsCount - (viewInfo.pageIndex * state.pageSize)
+                const restRows = action.itemsCount - (viewInfo.pageIndex * state.pageSize);
                 if (viewInfo.cellFocus.row >= restRows) {
-                    viewInfo.cellFocus = {row: restRows - 1, col: viewInfo.cellFocus.col};
+                    viewInfo.cellFocus = { row: restRows - 1, col: viewInfo.cellFocus.col };
                 }
             }
 
@@ -296,21 +296,21 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 fetchedFilter: true,
                 itemsCount: action.itemsCount,
                 currentDataKey: '', // vynucení načtení dat!!!
-                ...viewInfo
-            }
+                ...viewInfo,
+            };
         case types.CHANGE_ADD_LEVEL:
         case types.CHANGE_DELETE_LEVEL:
         case types.CHANGE_MOVE_LEVEL: {
             return {
                 ...state,
-                rowsDirty: true
-            }
+                rowsDirty: true,
+            };
         }
         case types.FUND_NODE_INCREASE_VERSION:
             return {
                 ...state,
-                subNodeForm: subNodeForm(state.subNodeForm, action)
-            }
+                subNodeForm: subNodeForm(state.subNodeForm, action),
+            };
         case types.FUND_SUBNODE_UPDATE:
         case types.CHANGE_NODES:
             return {
@@ -318,13 +318,13 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 filterDirty: true,  // filtr po změně nějakého PP již nemusí odpovídat
                 currentDataKey: '',
                 subNodeForm: subNodeForm(state.subNodeForm, action),
-            }
+            };
         case types.FUND_FUND_DATA_GRID_DATA_REQUEST:
             return {
                 ...state,
                 isFetchingData: true,
                 currentDataKey: action.dataKey,
-            }
+            };
         case types.FUND_FUND_DATA_GRID_DATA_RECEIVE:
             // Pokud vrácené záznamy neobsahují ty záznamy, které jsou aktuálně v selectedIds, je selectedIds opraveno
             const rowsMap = getMapFromList(action.items);
@@ -342,8 +342,8 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 fetchedData: true,
                 items: action.items,
                 selectedIds: newSelectedIds,
-            }
+            };
         default:
-            return state
+            return state;
     }
 }

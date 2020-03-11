@@ -1,11 +1,5 @@
-import {combineReducers} from 'redux'
-import {reducer as formReducer} from 'redux-form';
-
-import {normalizeInt} from 'components/validate.jsx';
-
-
-
-
+import { combineReducers } from 'redux';
+import { reducer as formReducer } from 'redux-form';
 /**
  * Sestavení reducerů.
  */
@@ -43,17 +37,6 @@ import editRegistryForm from './app/registry/form/editRegistryForm.jsx';
 import addUserForm from './app/admin/addUserForm.jsx';
 
 
-const normalizePacketSize = (value, previousValue, allValues, previousAllValues) => {
-    const vv = normalizeInt(value, previousValue, allValues, previousAllValues);
-    if (vv > 32) {
-        return previousValue
-    }
-    return vv
-};
-
-
-
-
 const rootReducer = combineReducers({
     ap,
     app,
@@ -88,7 +71,7 @@ const rootReducer = combineReducers({
         editRegistryForm: editRegistryForm,
         searchForm,
         addUserForm,
-    })/*.normalize({
+    }),/*.normalize({
         templateSettingsForm: {
             'evenPageOffsetX': normalizeInt,
             'evenPageOffsetY': normalizeInt,
@@ -98,4 +81,4 @@ const rootReducer = combineReducers({
     })*/
 });
 
-export default rootReducer
+export default rootReducer;
