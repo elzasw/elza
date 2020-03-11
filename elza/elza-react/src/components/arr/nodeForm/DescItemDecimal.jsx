@@ -3,14 +3,11 @@
  */
 
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {AbstractReactComponent, i18n} from 'components/shared';
-import {normalizeDouble} from 'components/validate.jsx'
-import {decorateValue} from './DescItemUtils.jsx'
-import DescItemLabel from './DescItemLabel.jsx'
-import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
-
-import classNames from 'classnames';
+import { AbstractReactComponent, i18n } from 'components/shared';
+import { normalizeDouble } from 'components/validate.jsx';
+import { decorateValue } from './DescItemUtils.jsx';
+import DescItemLabel from './DescItemLabel.jsx';
+import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 
 class DescItemDecimal extends AbstractReactComponent {
     constructor(props) {
@@ -18,18 +15,18 @@ class DescItemDecimal extends AbstractReactComponent {
 
         this.bindMethods('handleChange', 'focus');
 
-        this.state = {value: this.convertToClient(props.descItem.value)}
+        this.state = { value: this.convertToClient(props.descItem.value) };
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        this.setState({value: this.convertToClient(nextProps.descItem.value)})
+        this.setState({ value: this.convertToClient(nextProps.descItem.value) });
     }
 
     convertToClient(value) {
         if (typeof value !== 'undefined' && value !== '' && value !== null) {
             return ('' + value).replace(/(\.)/, ',');
         } else {
-            return ''
+            return '';
         }
     }
 
@@ -37,44 +34,43 @@ class DescItemDecimal extends AbstractReactComponent {
         if (typeof value !== 'undefined' && value !== '' && value !== null) {
             return value.replace(/(,)/, '.');
         } else {
-            return ''
+            return '';
         }
     }
 
     focus() {
-        this.refs.focusEl.focus()
+        this.refs.focusEl.focus();
     }
 
     handleChange(e) {
-        var newValue = normalizeDouble(e.target.value);
+        const newValue = normalizeDouble(e.target.value);
+        const value = this.convertFromClient(newValue);
+        let prevValue;
 
-        var value = this.convertFromClient(newValue)
-
-        var prevValue
         if (typeof this.props.descItem.value !== 'undefined' && this.props.descItem.value !== '' && this.props.descItem.value !== null) {
-            prevValue = '' + this.props.descItem.value
+            prevValue = '' + this.props.descItem.value;
         } else {
-            prevValue = ''
+            prevValue = '';
         }
 
-        if (value != prevValue) {
+        if (value !== prevValue) {
             this.props.onChange(value);
         }
     }
 
     render() {
-        const {descItem, locked, readMode, cal} = this.props;
-        let value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : descItem.value;
+        const { descItem, locked, readMode, cal } = this.props;
+        let value = cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : descItem.value;
 
         if (readMode) {
             return (
-                <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined} />
-            )
+                <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined}/>
+            );
         }
 
         let cls = [];
         if (cal) {
-            cls.push("calculable");
+            cls.push('calculable');
         }
 
         value = cal && this.state.value === '' ? value : this.state.value;
@@ -92,7 +88,7 @@ class DescItemDecimal extends AbstractReactComponent {
                     />
                 </ItemTooltipWrapper>
             </div>
-        )
+        );
     }
 }
 

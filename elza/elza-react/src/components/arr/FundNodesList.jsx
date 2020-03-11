@@ -5,9 +5,8 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import NodeLabel from "./NodeLabel";
-import {AbstractReactComponent, AddRemoveList, Icon, i18n} from 'components/shared';
-import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
+import NodeLabel from './NodeLabel';
+import {AbstractReactComponent, AddRemoveList} from 'components/shared';
 
 import './FundNodesList.scss';
 
@@ -16,19 +15,19 @@ class FuncNodesList extends AbstractReactComponent {
         nodes: PropTypes.array.isRequired,
         onDeleteNode: PropTypes.func,
         onAddNode: PropTypes.func,
-        readOnly: PropTypes.bool
+        readOnly: PropTypes.bool,
     };
 
     handleDeleteItem = (node) => {
         const {onDeleteNode, readOnly} = this.props;
         if (!readOnly) {
-            onDeleteNode(node)
+            onDeleteNode(node);
         }
     };
 
     handleRenderItem = (props) => {
         const {item} = props;
-        return <NodeLabel node={item} />;
+        return <NodeLabel node={item}/>;
     };
 
     render() {
@@ -46,7 +45,7 @@ class FuncNodesList extends AbstractReactComponent {
                 renderItem={this.handleRenderItem}
                 {...other}
             />
-        )
+        );
     }
 }
 

@@ -4,17 +4,15 @@
 
 import React from 'react';
 import {AbstractReactComponent, i18n} from 'components/shared';
-import {connect} from 'react-redux'
-import {normalizeString} from 'components/validate.jsx'
-import {decorateAutocompleteValue} from './DescItemUtils.jsx'
-import DescItemLabel from './DescItemLabel.jsx'
-import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
+import {decorateAutocompleteValue} from './DescItemUtils.jsx';
+import DescItemLabel from './DescItemLabel.jsx';
+import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 
 import './DescItemDate.scss';
 
 import Moment from 'moment';
 import DateTimePicker from 'react-widgets/lib/DateTimePicker';
-import {formatDate} from "../../validate";
+import {formatDate} from '../../validate';
 
 const DescItemDate = class DescItemDate extends AbstractReactComponent {
     constructor(props) {
@@ -34,17 +32,17 @@ const DescItemDate = class DescItemDate extends AbstractReactComponent {
 
     render() {
         const {descItem, locked, readMode, cal} = this.props;
-        let value = cal && descItem.value == null ? i18n("subNodeForm.descItemType.calculable") : descItem.value;
+        let value = cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : descItem.value;
 
         if (readMode) {
             return (
-                <DescItemLabel value={Moment(descItem.value).format('l')} cal={cal} notIdentified={descItem.undefined} />
-            )
+                <DescItemLabel value={Moment(descItem.value).format('l')} cal={cal} notIdentified={descItem.undefined}/>
+            );
         }
 
         let cls = [];
         if (cal) {
-            cls.push("calculable");
+            cls.push('calculable');
         }
 
         return (
@@ -61,6 +59,6 @@ const DescItemDate = class DescItemDate extends AbstractReactComponent {
             </div>
         );
     }
-}
+};
 
 export default DescItemDate;

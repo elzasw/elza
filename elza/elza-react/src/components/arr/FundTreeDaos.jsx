@@ -2,27 +2,24 @@
  * Strom AS.
  */
 
-import React from "react";
-import {connect} from "react-redux";
-import {AbstractReactComponent, i18n, Tabs} from 'components/shared';
-import * as types from "actions/constants/ActionTypes.js";
-import {Dropdown} from "react-bootstrap";
-import {selectFundTab, closeFundTab} from "actions/arr/fund.jsx";
+import React from 'react';
+import {connect} from 'react-redux';
+import {AbstractReactComponent} from 'components/shared';
 import {
+    fundTreeCollapse,
+    fundTreeFetchIfNeeded,
+    fundTreeFocusNode,
     fundTreeFulltextChange,
-    fundTreeFulltextSearch,
     fundTreeFulltextNextItem,
     fundTreeFulltextPrevItem,
-    fundTreeSelectNode,
-    fundTreeCollapse,
-    fundTreeFocusNode,
-    fundTreeFetchIfNeeded,
+    fundTreeFulltextSearch,
+    fundTreeNodeCollapse,
     fundTreeNodeExpand,
-    fundTreeNodeCollapse
-} from "actions/arr/fundTree.jsx";
+    fundTreeSelectNode,
+} from 'actions/arr/fundTree.jsx';
 
-import {contextMenuShow, contextMenuHide} from "actions/global/contextMenu.jsx";
-import FundTreeLazy from "./FundTreeLazy";
+import {contextMenuShow} from 'actions/global/contextMenu.jsx';
+import FundTreeLazy from './FundTreeLazy';
 
 class FundTreeDaos extends AbstractReactComponent {
     constructor(props) {
@@ -74,10 +71,10 @@ class FundTreeDaos extends AbstractReactComponent {
         var menu = (
             <ul className="dropdown-menu">
             </ul>
-        )
+        );
 
         this.props.dispatch(fundTreeFocusNode(this.props.area, this.props.versionId, node));
-        this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
+        this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y: e.clientY}));
     }
 
     /**
@@ -93,17 +90,17 @@ class FundTreeDaos extends AbstractReactComponent {
      * Zabalení stromu
      */
     handleCollapse() {
-        this.props.dispatch(fundTreeCollapse(this.props.area, this.props.versionId, this.props.fund))
+        this.props.dispatch(fundTreeCollapse(this.props.area, this.props.versionId, this.props.fund));
     }
 
     render() {
-        const {fund} = this.props;
-
         return (
             <FundTreeLazy
                 {...this.props}
                 cutLongLabels={true}
-                onOpenCloseNode={(node, expand) => {expand ? this.props.dispatch(fundTreeNodeExpand(this.props.area, node)) : this.props.dispatch(fundTreeNodeCollapse(this.props.area, this.props.versionId, node))}}
+                onOpenCloseNode={(node, expand) => {
+                    expand ? this.props.dispatch(fundTreeNodeExpand(this.props.area, node)) : this.props.dispatch(fundTreeNodeCollapse(this.props.area, this.props.versionId, node));
+                }}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
                 onCollapse={this.handleCollapse}
@@ -112,7 +109,7 @@ class FundTreeDaos extends AbstractReactComponent {
                 onFulltextPrevItem={this.handleFulltextPrevItem}
                 onFulltextNextItem={this.handleFulltextNextItem}
             />
-        )
+        );
     }
 }
 

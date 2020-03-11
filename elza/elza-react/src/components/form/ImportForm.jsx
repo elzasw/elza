@@ -89,7 +89,7 @@ class ImportForm extends AbstractReactComponent {
     };
 
     render() {
-        const {fields: {transformationName, recordScope, xmlFile}, onClose, handleSubmit, refTables, values} = this.props;
+        const {fields: {transformationName, recordScope, xmlFile}, onClose, handleSubmit} = this.props;
 
         return (
             <div>

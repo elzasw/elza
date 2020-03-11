@@ -10,35 +10,17 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils.jsx';
 import {connect} from 'react-redux';
-import {
-    i18n,
-    Icon,
-    LazyListBox,
-    ListBox2,
-    Loading,
-    RibbonGroup,
-    Tabs,
-    Utils,
-} from 'components/shared';
+import {i18n, Icon, LazyListBox, ListBox2, Loading, RibbonGroup, Tabs, Utils} from 'components/shared';
 
 import ArrParentPage from './ArrParentPage.jsx';
 
-import {
-    FundFiles,
-    FundSettingsForm,
-    FundTreeMain,
-    NodeTabs,
-    Ribbon,
-} from 'components/index.jsx';
-import {DropdownButton, Dropdown} from 'react-bootstrap';
+import {FundFiles, FundSettingsForm, FundTreeMain, NodeTabs, Ribbon} from 'components/index.jsx';
+import {Dropdown, DropdownButton} from 'react-bootstrap';
 import {Button} from '../../components/ui';
 import {WebApi} from 'actions/index.jsx';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {fundExtendedView} from 'actions/arr/fundExtended.jsx';
-import {
-    versionValidationErrorNext,
-    versionValidationErrorPrevious,
-} from 'actions/arr/versionValidation.jsx';
+import {versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation.jsx';
 import {developerNodeScenariosRequest} from 'actions/global/developer.jsx';
 import {createFundRoot, getOneSettings, isFundRootId, setSettings} from 'components/arr/ArrUtils.jsx';
 import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus.jsx';
@@ -69,7 +51,6 @@ import {nodeWithIssueByFundVersion} from '../../actions/arr/issues';
 import IssueForm from '../../components/form/IssueForm';
 import ConfirmForm from '../../components/shared/form/ConfirmForm';
 
-const keyModifier = Utils.getKeyModifier();
 
 class ArrPage extends ArrParentPage {
 
@@ -774,7 +755,7 @@ class ArrPage extends ArrParentPage {
     handleSetVisiblePolicy(data) {
         const {node, versionId, dispatch} = this.props;
         const mapIds = {};
-        const {records, rules, nodeExtensions, ...others} = data;
+        const {records, rules, nodeExtensions} = data;
         if (rules !== NodeSettingsForm.VIEW_POLICY_STATE.PARENT) {
             records.forEach((val, index) => {
                 mapIds[parseInt(val.id)] = val.checked;
@@ -804,7 +785,7 @@ class ArrPage extends ArrParentPage {
             activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
         }
 
-        if (nodesPolicy.items.length == 0) {
+        if (nodesPolicy.items.length === 0) {
             return <div>{i18n('global.data.noitem')}</div>;
         }
 
@@ -929,7 +910,7 @@ class ArrPage extends ArrParentPage {
                     {data.groups.map(group => (
                         group.types.map(type => {
                             if (node.subNodeForm.infoTypesMap === null || node.subNodeForm.refTypesMap === null) {
-                                return;
+                                return null;
                             }
                             let infoTypes = node.subNodeForm.infoTypesMap[type.id];
                             let refTypes = node.subNodeForm.refTypesMap[type.id];
@@ -1019,7 +1000,7 @@ class ArrPage extends ArrParentPage {
         }
 
         const settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', activeFund.id);
-        const readMode = settings.value != 'false';
+        const readMode = settings.value !== 'false';
 
         const structureTabs = {};
         if (structureTypes && structureTypes.data) {

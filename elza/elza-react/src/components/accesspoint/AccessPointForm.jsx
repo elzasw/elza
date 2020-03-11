@@ -1,18 +1,12 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {
-    Icon,
-    i18n,
-    AbstractReactComponent,
-    NoFocusButton
-} from 'components/shared'
-import {connect} from 'react-redux'
+import { AbstractReactComponent } from 'components/shared';
+import { connect } from 'react-redux';
 
 import '../arr/NodeSubNodeForm.scss';
-import { ItemForm } from "./ItemForm";
-import {accessPointFormActions} from "./AccessPointFormActions";
-import {ItemFactory} from "./ItemFactory";
+import { ItemForm } from './ItemForm';
+import { accessPointFormActions } from './AccessPointFormActions';
+import { ItemFactory } from './ItemFactory';
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
@@ -36,7 +30,7 @@ class AccessPointForm extends AbstractReactComponent {
     };
 
     render() {
-        const {focus, closed, rulDataTypes, calendarTypes, structureTypes, descItemTypes, subNodeForm, readMode} = this.props;
+        const { focus, closed, rulDataTypes, calendarTypes, structureTypes, descItemTypes, subNodeForm, readMode } = this.props;
 
         return (
             <div className="output-item-form-container">
@@ -49,30 +43,33 @@ class AccessPointForm extends AbstractReactComponent {
                     descItemTypes={descItemTypes}
                     subNodeForm={subNodeForm}
                     closed={closed}
-                    conformityInfo={{missings: [], errors: []}}
+                    conformityInfo={{ missings: [], errors: [] }}
                     descItemCopyFromPrevEnabled={false}
                     focus={focus}
                     singleDescItemTypeId={null}
                     singleDescItemTypeEdit={false}
-                    onDescItemTypeCopyFromPrev={() => {}}
-                    onDescItemTypeLock={() => {}}
-                    onDescItemTypeCopy={() => {}}
+                    onDescItemTypeCopyFromPrev={() => {
+                    }}
+                    onDescItemTypeLock={() => {
+                    }}
+                    onDescItemTypeCopy={() => {
+                    }}
                     formActions={accessPointFormActions}
                     showNodeAddons={false}
                     readMode={closed || readMode}
                     descItemFactory={ItemFactory}
                 />
             </div>
-        )
+        );
     }
 }
 
 function mapStateToProps(state) {
-    const {focus} = state;
+    const { focus } = state;
 
     return {
         focus,
-    }
+    };
 }
 
 export default connect(mapStateToProps)(AccessPointForm);

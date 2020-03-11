@@ -90,8 +90,6 @@ class ArrRequestPage extends ArrParentPage {
      * @return {Object} view
      */
     buildRibbon(readMode, closed) {
-        const {userDetail} = this.props;
-
         const fund = this.getActiveFund(this.props);
         var itemActions = [];
         var altActions = [];
@@ -105,7 +103,7 @@ class ArrRequestPage extends ArrParentPage {
                     itemActions.push(
                         <Button key="send" onClick={() => {
                             this.handleSend(requestDetail.id);
-                        }} disabled={!detailLoaded || requestDetail.data.state != 'OPEN'}><Icon
+                        }} disabled={!detailLoaded || requestDetail.data.state !== 'OPEN'}><Icon
                             glyph="fa-youtube-play"/>
                             <div><span className="btnText">{i18n('ribbon.action.arr.fund.request.send')}</span></div>
                         </Button>,
@@ -113,7 +111,7 @@ class ArrRequestPage extends ArrParentPage {
                     itemActions.push(
                         <Button key="delete" onClick={() => {
                             this.handleDelete(requestDetail.id);
-                        }} disabled={!detailLoaded || requestDetail.data.state != 'OPEN'}><Icon glyph="fa-trash"/>
+                        }} disabled={!detailLoaded || requestDetail.data.state !== 'OPEN'}><Icon glyph="fa-trash"/>
                             <div><span className="btnText">{i18n('ribbon.action.arr.fund.request.delete')}</span></div>
                         </Button>,
                     );
@@ -154,9 +152,8 @@ class ArrRequestPage extends ArrParentPage {
     };
 
     renderListItem = (props) => {
-        const {item, active, index} = props;
+        const {item} = props;
         const {userDetail} = this.props;
-        const fund = this.getActiveFund(this.props);
 
         var cls = {};
 

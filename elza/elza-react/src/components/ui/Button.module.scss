@@ -2,4 +2,17 @@
 
 .button {
     color: $defaultBtnColor;
+
+    &[class*="btn-outline-"] {
+        background: #fff;
+
+        &:hover {
+            color: initial;
+            background: $outlineBtnHoverBg;
+        }
+    }
+
+    &:global(.btn-link) {
+        color: $color-link;
+    }
 }

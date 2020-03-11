@@ -1,17 +1,17 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, Autocomplete, FormInput, HorizontalLoader, i18n, Icon} from 'components/shared';
-import {Col, Form, FormGroup, Modal, Row} from 'react-bootstrap';
-import {Button} from '../ui';
-import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes.jsx';
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
-import {modalDialogHide} from 'actions/global/modalDialog.jsx';
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTypes.jsx';
-import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
-import {submitForm} from 'components/form/FormUtils.jsx';
-import {getTreeItemById} from './../../components/registry/registryUtils';
-import {PARTY_TYPE_CODES} from '../../constants.tsx';
+import { reduxForm } from 'redux-form';
+import { AbstractReactComponent, Autocomplete, FormInput, HorizontalLoader, i18n, Icon } from 'components/shared';
+import { Col, Form, FormGroup, Modal, Row } from 'react-bootstrap';
+import { Button } from '../ui';
+import { refPartyNameFormTypesFetchIfNeeded } from 'actions/refTables/partyNameFormTypes.jsx';
+import { calendarTypesFetchIfNeeded } from 'actions/refTables/calendarTypes.jsx';
+import { modalDialogHide } from 'actions/global/modalDialog.jsx';
+import { getRegistryRecordTypesIfNeeded } from 'actions/registry/registryRecordTypes.jsx';
+import { requestScopesIfNeeded } from 'actions/refTables/scopesData.jsx';
+import { submitForm } from 'components/form/FormUtils.jsx';
+import { getTreeItemById } from './../../components/registry/registryUtils';
+import { PARTY_TYPE_CODES } from '../../constants.tsx';
 
 import DatationField from './DatationField';
 
@@ -53,7 +53,6 @@ class AddPartyForm extends AbstractReactComponent {
         }, {});
 
     validate = (values) => {
-        const {partyType} = this.props;
         let errors = AddPartyForm.validateInline(values);
         if (!values.prefferedName.mainPart) {
             if (!errors.prefferedName) {
@@ -84,7 +83,7 @@ class AddPartyForm extends AbstractReactComponent {
 
 
     static validateInline = (values) => {
-        const errors = {prefferedName: {}};
+        const errors = { prefferedName: {} };
 
         errors.prefferedName.validFrom = DatationField.reduxValidate(values.prefferedName.validFrom);
         errors.prefferedName.validTo = DatationField.reduxValidate(values.validTo);
@@ -166,7 +165,7 @@ class AddPartyForm extends AbstractReactComponent {
     };
 
     dataRefresh = (props = this.props) => {
-        const {recordTypes, refTables: {partyNameFormTypes, scopesData: {scopes}, calendarTypes}, partyType} = props;
+        const { recordTypes, refTables: { partyNameFormTypes, scopesData: { scopes }, calendarTypes }, partyType } = props;
         this.props.dispatch(calendarTypesFetchIfNeeded());        // seznam typů kalendářů (gregoriánský, juliánský, ...)
         this.props.dispatch(refPartyNameFormTypesFetchIfNeeded());// nacteni seznamů typů forem jmen (uřední, ...)
         this.props.dispatch(getRegistryRecordTypesIfNeeded(partyType.id));
@@ -193,7 +192,7 @@ class AddPartyForm extends AbstractReactComponent {
      * Pokud nejsou nastaveny hodnoty - nastavíme hodnotu do pole scopeId
      */
     loadData(props) {
-        const {recordTypes, refTables: {partyNameFormTypes, scopesData: {scopes}, calendarTypes}, partyType} = props;
+        const { recordTypes, refTables: { scopesData: { scopes }, calendarTypes }, partyType } = props;
 
         const typeId = this.getPreselectRecordTypeId(recordTypes);
         const filteredScopes = scopes.filter(i => i.versionId === null)[0].scopes;
@@ -202,7 +201,7 @@ class AddPartyForm extends AbstractReactComponent {
         const firstCalId = calendarTypes.items[0].id;
 
 
-        this.setState({initialized: true, complementsTypes});
+        this.setState({ initialized: true, complementsTypes });
         this.props.load({
             partyType,
             accessPoint: {
@@ -210,8 +209,8 @@ class AddPartyForm extends AbstractReactComponent {
                 scopeId,
             },
             prefferedName: {
-                validFrom: {calendarTypeId: firstCalId},
-                validTo: {calendarTypeId: firstCalId},
+                validFrom: { calendarTypeId: firstCalId },
+                validTo: { calendarTypeId: firstCalId },
             },
         });
     }
@@ -230,7 +229,7 @@ class AddPartyForm extends AbstractReactComponent {
     onSubmit = (values) => {
         var partyTypeId = this.props.partyTypeId;
         var submitType = this.submitType;
-        return this.props.onSubmitForm(submitType, {...values, partyTypeId});
+        return this.props.onSubmitForm(submitType, { ...values, partyTypeId });
     };
 
     submitReduxForm = (values, dispatch) => submitForm(this.validate, values, this.props, this.onSubmit, dispatch);
@@ -241,7 +240,7 @@ class AddPartyForm extends AbstractReactComponent {
      * Vykreslení formuláře
      */
     render() {
-        const {complementsTypes} = this.state;
+        const { complementsTypes } = this.state;
 
         const {
                   fields: {
@@ -256,12 +255,9 @@ class AddPartyForm extends AbstractReactComponent {
                           mainPart,
                           otherPart,
                           partyNameComplements,
-                          note,
-                          validFrom,
-                          validTo,
                       },
                   },
-                  refTables: {partyNameFormTypes},
+                  refTables: { partyNameFormTypes },
                   partyType,
                   versionId,
                   handleSubmit,
@@ -270,7 +266,7 @@ class AddPartyForm extends AbstractReactComponent {
                   submitting,
               } = this.props;
 
-        const {initialized} = this.state;
+        const { initialized } = this.state;
 
         if (!initialized) {
             return <HorizontalLoader/>;
@@ -309,7 +305,7 @@ class AddPartyForm extends AbstractReactComponent {
                             <Col xs={12} md={6}>
                                 <FormInput type="text" label={i18n('party.name.otherPart')} {...otherPart} />
                             </Col>
-                            {partyType.code == PARTY_TYPE_CODES.PERSON && <Col xs={12}>
+                            {partyType.code === PARTY_TYPE_CODES.PERSON && <Col xs={12}>
                                 <Row>
                                     <Col xs={12} md={6}>
                                         <FormInput type="text"
@@ -375,5 +371,5 @@ export default reduxForm({
         refTables: state.refTables,
         recordTypes: state.registryRegionRecordTypes,
     }),
-    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addPartyForm', data})},
+    { load: data => ({ type: 'GLOBAL_INIT_FORM_DATA', form: 'addPartyForm', data }) },
 )(AddPartyForm);

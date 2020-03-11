@@ -5,10 +5,10 @@
  * @since 22.12.2015
  */
 import {WebApi} from 'actions/index.jsx';
-import {i18n, Toastr, LongText} from 'components/shared';
+import {i18n} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes.js';
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
-import {savingApiWrapper} from 'actions/global/status.jsx'
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
+import {savingApiWrapper} from 'actions/global/status.jsx';
 
 
 /**
@@ -19,7 +19,7 @@ export function getPackagesFetch() {
     return dispatch => {
         dispatch(getPackagesRequest());
         return WebApi.getPackages().then(json => dispatch(getPackagesReceive(json)));
-    }
+    };
 }
 
 /**
@@ -33,7 +33,7 @@ export function getPackagesFetchIfNeeded() {
         if ((!fetched || dirty) && !isFetching) {
             return dispatch(getPackagesFetch());
         }
-    }
+    };
 }
 
 /**
@@ -44,13 +44,13 @@ export function getPackagesFetchIfNeeded() {
  */
 export function deletePackage(code) {
     return dispatch => {
-        dispatch(deletePackageRequest(code))
+        dispatch(deletePackageRequest(code));
         return WebApi.deletePackage(code)
-                .then(json => dispatch(deletePackageReceive(code)))
-                .then(json => {
-                    dispatch(addToastrSuccess(i18n("admin.packages.message.delete.title"), i18n("admin.packages.message.delete.message", code)));
-                });
-    }
+                     .then(json => dispatch(deletePackageReceive(code)))
+                     .then(json => {
+                         dispatch(addToastrSuccess(i18n('admin.packages.message.delete.title'), i18n('admin.packages.message.delete.message', code)));
+                     });
+    };
 }
 
 /**
@@ -60,12 +60,12 @@ export function deletePackage(code) {
  */
 export function importPackage(data) {
     return dispatch => {
-        dispatch(importPackageRequest())
+        dispatch(importPackageRequest());
         return savingApiWrapper(dispatch, WebApi.importPackage(data)).then(json => dispatch(importPackageReceive()))
-            .then(json => {
-                dispatch(addToastrSuccess(i18n("admin.packages.message.import.title"), i18n("admin.packages.message.import.message")));
-        });
-    }
+                                                                     .then(json => {
+                                                                         dispatch(addToastrSuccess(i18n('admin.packages.message.import.title'), i18n('admin.packages.message.import.message')));
+                                                                     });
+    };
 }
 
 /**
@@ -73,8 +73,8 @@ export function importPackage(data) {
  */
 export function getPackagesRequest() {
     return {
-        type: types.ADMIN_PACKAGES_REQUEST
-    }
+        type: types.ADMIN_PACKAGES_REQUEST,
+    };
 }
 
 /**
@@ -85,8 +85,8 @@ export function getPackagesRequest() {
 export function getPackagesReceive(json) {
     return {
         type: types.ADMIN_PACKAGES_RECEIVE,
-        items: json
-    }
+        items: json,
+    };
 }
 
 /**
@@ -98,8 +98,8 @@ export function getPackagesReceive(json) {
 export function deletePackageRequest(code) {
     return {
         type: types.ADMIN_PACKAGES_DELETE_REQUEST,
-        code: code
-    }
+        code: code,
+    };
 }
 
 /**
@@ -111,8 +111,8 @@ export function deletePackageRequest(code) {
 export function deletePackageReceive(code) {
     return {
         type: types.ADMIN_PACKAGES_DELETE_RECEIVE,
-        code: code
-    }
+        code: code,
+    };
 }
 
 /**
@@ -122,8 +122,8 @@ export function deletePackageReceive(code) {
  */
 export function importPackageRequest() {
     return {
-        type: types.ADMIN_PACKAGES_IMPORT_REQUEST
-    }
+        type: types.ADMIN_PACKAGES_IMPORT_REQUEST,
+    };
 }
 
 /**
@@ -133,6 +133,6 @@ export function importPackageRequest() {
  */
 export function importPackageReceive() {
     return {
-        type: types.ADMIN_PACKAGES_IMPORT_RECEIVE
-    }
+        type: types.ADMIN_PACKAGES_IMPORT_RECEIVE,
+    };
 }

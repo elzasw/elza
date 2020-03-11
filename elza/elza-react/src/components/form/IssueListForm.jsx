@@ -1,14 +1,14 @@
 import PropTypes from 'prop-types';
 import * as React from 'react';
-import {Col, Form, Row} from 'react-bootstrap';
-import {Button} from '../ui';
-import {AbstractReactComponent, Icon} from 'components/shared';
+import { Col, Form, Row } from 'react-bootstrap';
+import { Button } from '../ui';
+import { AbstractReactComponent, Icon } from 'components/shared';
 import UserField from '../admin/UserField';
 import FormInput from '../shared/form/FormInput';
 import i18n from '../i18n';
 import ListBox from '../shared/listbox/ListBox';
-import {reduxForm} from 'redux-form';
-import {WebApi} from '../../actions';
+import { reduxForm } from 'redux-form';
+import { WebApi } from '../../actions';
 
 class IssueListForm extends AbstractReactComponent {
 
@@ -42,7 +42,7 @@ class IssueListForm extends AbstractReactComponent {
         'wrUsers[].description',
     ];
 
-    static initialValues = {open: true, rdUsers: [], wrUsers: []};
+    static initialValues = { open: true, rdUsers: [], wrUsers: [] };
 
     componentDidUpdate(prevProps, prevState, prevContext) {
         if (prevProps.id && !this.props.id) {
@@ -52,8 +52,8 @@ class IssueListForm extends AbstractReactComponent {
             && this.props.id
             && prevProps.id
             && prevProps.id === this.props.id
-            && this.props.fields.rdUsers.length !== prevProps.fields.rdUsers.length ||
-            this.props.fields.wrUsers.length !== prevProps.fields.wrUsers.length) {
+            && (this.props.fields.rdUsers.length !== prevProps.fields.rdUsers.length ||
+                this.props.fields.wrUsers.length !== prevProps.fields.wrUsers.length)) {
             this.props.asyncValidate();
         }
     }
@@ -69,14 +69,14 @@ class IssueListForm extends AbstractReactComponent {
         target.removeField(index);
     };
 
-    renderUser = (target) => ({item, index}) => {
+    renderUser = (target) => ({ item, index }) => {
         return <div>{item.username.value} <Button variant="action" bsSize="xs" className="pull-right"
                                                   onClick={this.deleteUser.bind(this, target, index)}><Icon
             glyph="fa-trash"/></Button></div>;
     };
 
     render() {
-        const {fields: {name, open, rdUsers, wrUsers}, id} = this.props;
+        const { fields: { name, open, rdUsers, wrUsers }, id } = this.props;
 
         const customProps = {
             disabled: id == null,
@@ -117,14 +117,14 @@ export default reduxForm({
         if (Object.keys(errors).length > 0) {
             return Promise.resolve(errors);
         }
-        const {id} = props;
+        const { id } = props;
         if (id) {
-            return WebApi.updateIssueList(id, {...values, fundId: props.fundId, id}).then((data) => {
+            return WebApi.updateIssueList(id, { ...values, fundId: props.fundId, id }).then((data) => {
                 props.onSave(data);
                 return {}; // No errors saved correctly
             });
         } else {
-            return WebApi.addIssueList({...values, fundId: props.fundId}).then((data) => {
+            return WebApi.addIssueList({ ...values, fundId: props.fundId }).then((data) => {
                 props.onCreate(data);
                 return {}; // No errors saved correctly
             });

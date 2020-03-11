@@ -92,6 +92,8 @@ class Layout extends AbstractReactComponent {
             case 'admin':
                 this.props.dispatch(routerNavigate('/admin'));
                 break;
+            default:
+                return null;
         }
     };
 

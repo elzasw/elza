@@ -1,9 +1,9 @@
-import {WebApi} from 'actions/index.jsx';
+import { WebApi } from 'actions/index.jsx';
 
-import {SimpleListActions} from 'shared/list'
-import {DetailActions} from 'shared/detail'
-import {storeFromArea, indexById, objectById} from 'shared/utils'
-import {refExternalSystemListInvalidate} from 'actions/refTables/externalSystems';
+import { SimpleListActions } from 'shared/list';
+import { DetailActions } from 'shared/detail';
+import { indexById, storeFromArea } from 'shared/utils';
+import { refExternalSystemListInvalidate } from 'actions/refTables/externalSystems';
 
 export const AREA_EXT_SYSTEM_LIST = 'extSystemList';
 export const AREA_EXT_SYSTEM_DETAIL = 'extSystemDetail';
@@ -16,9 +16,9 @@ export function extSystemListFetchIfNeeded() {
     return SimpleListActions.fetchIfNeeded(AREA_EXT_SYSTEM_LIST, null, () => WebApi.getAllExtSystem().then(json => {
         return {
             rows: json,
-            count: json.count
-        }
-    }))
+            count: json.count,
+        };
+    }));
 }
 
 export function extSystemDetailFetchIfNeeded(id) {
@@ -26,7 +26,7 @@ export function extSystemDetailFetchIfNeeded(id) {
         dispatch(DetailActions.fetchIfNeeded(AREA_EXT_SYSTEM_DETAIL, id, () => {
             return WebApi.getExtSystem(id).catch(() => dispatch(extSystemDetailClear()));
         }));
-    }
+    };
 }
 
 /**
@@ -46,12 +46,13 @@ export function extSystemListInvalidate() {
 }
 
 export function extSystemDetailInvalidate() {
-    return DetailActions.invalidate(AREA_EXT_SYSTEM_DETAIL, null)
+    return DetailActions.invalidate(AREA_EXT_SYSTEM_DETAIL, null);
 }
 
 export function extSystemDetailClear() {
     return extSystemDetailFetchIfNeeded(null);
 }
+
 /**
  * Přidání externího systémů
  */
@@ -62,8 +63,9 @@ export function extSystemCreate(data) {
             dispatch(extSystemDetailFetchIfNeeded(response.id));
             dispatch(refExternalSystemListInvalidate());
         });
-    }
+    };
 }
+
 /**
  * Editace externího systémů
  */
@@ -74,16 +76,16 @@ export function extSystemUpdate(data) {
             const store = getState();
             const detail = storeFromArea(store, AREA_EXT_SYSTEM_DETAIL);
             const list = storeFromArea(store, AREA_EXT_SYSTEM_LIST);
-            if (detail.id == response.id) {
+            if (detail.id === response.id) {
                 dispatch(extSystemDetailInvalidate());
             }
 
             if (list.rows && indexById(list.rows, response.id) !== null) {
-                dispatch(extSystemListInvalidate())
+                dispatch(extSystemListInvalidate());
             }
             dispatch(refExternalSystemListInvalidate());
-        })
-    }
+        });
+    };
 }
 
 /**
@@ -95,7 +97,7 @@ export function extSystemDelete(id) {
             const store = getState();
             const detail = storeFromArea(store, AREA_EXT_SYSTEM_DETAIL);
             const list = storeFromArea(store, AREA_EXT_SYSTEM_LIST);
-            if (detail.id == id) {
+            if (detail.id === id) {
                 dispatch(extSystemDetailClear());
             }
 
@@ -103,6 +105,6 @@ export function extSystemDelete(id) {
                 dispatch(extSystemListInvalidate());
             }
             dispatch(refExternalSystemListInvalidate());
-        })
-    }
+        });
+    };
 }

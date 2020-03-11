@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Modal} from 'react-bootstrap';
-import {setInputFocus} from 'components/Utils.jsx'
+import { Modal } from 'react-bootstrap';
+import { setInputFocus } from 'components/Utils.jsx';
 
 /**
  * Obal modálního dialogu
@@ -18,7 +18,7 @@ class ModalDialogWrapper extends React.Component {
                     setInputFocus(el, false);
                 }
             }
-        })
+        });
     }
 
     dialogWillHide = () => {
@@ -29,7 +29,7 @@ class ModalDialogWrapper extends React.Component {
      * Zajistí aby se callback na zavření dialogu zavolal vždy jen jednou! Bootstrap bug.
      */
     onHide = (e) => {
-        const {onHide} = this.props;
+        const { onHide } = this.props;
         if (!this.hide) {
             onHide && onHide(e);
             this.hide = true;
@@ -37,7 +37,7 @@ class ModalDialogWrapper extends React.Component {
     };
 
     render() {
-        const {title, onHide, className, children} = this.props;
+        const { title, className, children } = this.props;
 
         const renderHeader = title !== null;
 
@@ -55,4 +55,4 @@ class ModalDialogWrapper extends React.Component {
     }
 }
 
-export default ModalDialogWrapper
+export default ModalDialogWrapper;

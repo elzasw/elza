@@ -1,12 +1,9 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
-import {decorateFormField} from 'components/form/FormUtils.jsx'
-import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx'
-import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
-import {initForm} from "actions/form/inlineForm.jsx"
-import {indexById} from 'stores/app/utils.jsx'
+import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import {decorateFormField} from 'components/form/FormUtils.jsx';
+import {initForm} from 'actions/form/inlineForm.jsx';
 
 /**
  * Formulář inline editace požadavku na externí systém.
@@ -32,7 +29,7 @@ class RequestInlineForm extends AbstractReactComponent {
     state = {};
 
     componentDidMount() {
-        this.props.initForm(this.props.onSave)
+        this.props.initForm(this.props.onSave);
     }
 
     render() {
@@ -56,7 +53,7 @@ export default reduxForm({
             initialValues: props.initData,
             outputTypes: state.refTables.outputTypes.items,
             allTemplates: state.refTables.templates.items,
-        }
+        };
     },
-    {initForm: (onSave) => (initForm("requestEditForm", RequestInlineForm.validate, onSave))}
+    {initForm: (onSave) => (initForm('requestEditForm', RequestInlineForm.validate, onSave))},
 )(RequestInlineForm);

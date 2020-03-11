@@ -3,15 +3,23 @@
  */
 
 import React from 'react';
-import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Tabs} from 'components/shared';
-import FundTreeLazy from './FundTreeLazy'
+import {connect} from 'react-redux';
+import {AbstractReactComponent} from 'components/shared';
+import FundTreeLazy from './FundTreeLazy';
 import * as types from 'actions/constants/ActionTypes.js';
-import {Dropdown} from 'react-bootstrap';
-import {selectFundTab, closeFundTab} from 'actions/arr/fund.jsx'
-import {fundTreeFulltextChange, fundTreeFulltextSearch, fundTreeFulltextNextItem, fundTreeFulltextPrevItem, fundTreeSelectNode, fundTreeCollapse, fundTreeFocusNode, fundTreeFetchIfNeeded, fundTreeNodeExpand, fundTreeNodeCollapse} from 'actions/arr/fundTree.jsx'
-import {createFundRoot, getParentNode} from './ArrUtils.jsx'
-import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu.jsx'
+import {
+    fundTreeCollapse,
+    fundTreeFetchIfNeeded,
+    fundTreeFocusNode,
+    fundTreeFulltextChange,
+    fundTreeFulltextNextItem,
+    fundTreeFulltextPrevItem,
+    fundTreeFulltextSearch,
+    fundTreeNodeCollapse,
+    fundTreeNodeExpand,
+    fundTreeSelectNode,
+} from 'actions/arr/fundTree.jsx';
+import {contextMenuShow} from 'actions/global/contextMenu.jsx';
 
 class FundTreeMovementsLeft extends AbstractReactComponent {
     constructor(props) {
@@ -63,10 +71,10 @@ class FundTreeMovementsLeft extends AbstractReactComponent {
         var menu = (
             <ul className="dropdown-menu">
             </ul>
-        )
+        );
 
         this.props.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId, node));
-        this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
+        this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y: e.clientY}));
     }
 
     /**
@@ -75,7 +83,7 @@ class FundTreeMovementsLeft extends AbstractReactComponent {
      * @param e {Object} event
      */
     handleNodeClick(node, ensureItemVisible, e) {
-        e.shiftKey && this.unFocus()
+        e.shiftKey && this.unFocus();
         this.props.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId, node.id, e.ctrlKey, e.shiftKey, null, ensureItemVisible));
     }
 
@@ -83,7 +91,7 @@ class FundTreeMovementsLeft extends AbstractReactComponent {
         if (document.selection) {
             document.selection.empty();
         } else {
-            window.getSelection().removeAllRanges()
+            window.getSelection().removeAllRanges();
         }
     }
 
@@ -91,7 +99,7 @@ class FundTreeMovementsLeft extends AbstractReactComponent {
      * Zabalení stromu
      */
     handleCollapse() {
-        this.props.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId, this.props.fund))
+        this.props.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId, this.props.fund));
     }
 
     render() {
@@ -99,7 +107,9 @@ class FundTreeMovementsLeft extends AbstractReactComponent {
             <FundTreeLazy
                 {...this.props}
                 cutLongLabels={true}
-                onOpenCloseNode={(node, expand) => {expand ? this.props.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MOVEMENTS_LEFT, node)) : this.props.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId, node))}}
+                onOpenCloseNode={(node, expand) => {
+                    expand ? this.props.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MOVEMENTS_LEFT, node)) : this.props.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId, node));
+                }}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
                 onCollapse={this.handleCollapse}
@@ -108,7 +118,7 @@ class FundTreeMovementsLeft extends AbstractReactComponent {
                 onFulltextPrevItem={this.handleFulltextPrevItem}
                 onFulltextNextItem={this.handleFulltextNextItem}
             />
-        )
+        );
     }
 }
 

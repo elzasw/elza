@@ -1,37 +1,38 @@
-import React from "react";
+import React from 'react';
 
 export function renderUserOrGroupItem(props) {
-    const {item, ...otherProps} = props;
+    const { item } = props;
 
     console.log(props);
 
-    if(item){
+    if (item) {
         if (item.user) {
-            props.item = {item, ...item.user}
+            props.item = { item, ...item.user };
             return renderUserItem(props);
-        } else if (item.group){
-            props.item = {item, ...item.group}
+        } else if (item.group) {
+            props.item = { item, ...item.group };
             return renderGroupItem(props);
         }
     }
 }
+
 /**
  * Returns name of given user in "preferredName(username)" format.
  *
  * @param {object} user
  * @return {string} name
  */
-export function getUsername(user){
-    if(!user){
+export function getUsername(user) {
+    if (!user) {
         // if user does not exist
-        throw new Error("Invalid user object");
+        throw new Error('Invalid user object');
     }
-    if(user.preferredName){
+    if (user.preferredName) {
         // if user has preferredName defined
-        return user.preferredName + " (" + user.username + ")";
+        return user.preferredName + ' (' + user.username + ')';
     } else if (user.party && user.party.accessPoint && user.party.accessPoint.record) {
         // if user has record name
-        return user.party.accessPoint.record + " (" + user.username + ")";
+        return user.party.accessPoint.record + ' (' + user.username + ')';
     } else {
         return user.username;
     }
@@ -46,37 +47,39 @@ export function renderUserOrGroupLabel(item) {
 }
 
 export const EntityItem = props => {
-    const {item, getName, highlighted, selected, ...otherProps} = props;
+    const { item, getName, highlighted, selected, ...otherProps } = props;
     let cls = 'item';
     if (highlighted) {
-        cls += ' focus'
-        console.log("highlighted");
+        cls += ' focus';
+        console.log('highlighted');
     }
     if (selected) {
-        cls += ' active'
-        console.log("selected");
+        cls += ' active';
+        console.log('selected');
     }
 
-    let name = "unknown";
+    let name = 'unknown';
 
-    if(getName){
+    if (getName) {
         name = getName(item);
-    } else if(item && item.name){
+    } else if (item && item.name) {
         name = item.name;
     }
 
     return (
         <div
-           {...otherProps}
-           className={cls}
-           >{name}</div>
-    )
-};  
+            {...otherProps}
+            className={cls}
+        >{name}</div>
+    );
+};
 
 export function renderUserItem(props) {
-    return <EntityItem 
+    return <EntityItem
         {...props}
-        getName={(item)=>{/*console.log("get username",item);*/ return getUsername(item);}}
+        getName={(item) => {/*console.log("get username",item);*/
+            return getUsername(item);
+        }}
     />;
 }
 

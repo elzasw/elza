@@ -1,15 +1,15 @@
 import React from 'react';
-import {AbstractReactComponent, i18n, Icon, Loading, NoFocusButton} from 'components/shared';
-import {reduxForm} from 'redux-form';
-import {Form, FormCheck, Modal} from 'react-bootstrap';
-import {Button} from '../../ui';
+import { AbstractReactComponent, i18n, Icon, Loading, NoFocusButton } from 'components/shared';
+import { reduxForm } from 'redux-form';
+import { Form, FormCheck, Modal } from 'react-bootstrap';
+import { Button } from '../../ui';
 import '../NodeSubNodeForm.scss';
-import {structureFormActions} from '../../../actions/arr/subNodeForm';
+import { structureFormActions } from '../../../actions/arr/subNodeForm';
 import PropTypes from 'prop-types';
-import {getDescItemsAddTree, getOneSettings} from '../ArrUtils';
+import { getDescItemsAddTree, getOneSettings } from '../ArrUtils';
 import AddDescItemTypeForm from '../nodeForm/AddDescItemTypeForm';
-import {modalDialogShow} from '../../../actions/global/modalDialog';
-import {structureNodeFormFetchIfNeeded, structureNodeFormSelectId} from '../../../actions/arr/structureNodeForm';
+import { modalDialogShow } from '../../../actions/global/modalDialog';
+import { structureNodeFormFetchIfNeeded, structureNodeFormSelectId } from '../../../actions/arr/structureNodeForm';
 import DescItemType from '../nodeForm/DescItemType';
 import classNames from 'classnames';
 
@@ -39,18 +39,18 @@ class UpdateMultipleSub extends AbstractReactComponent {
     };
 
     UNSAFE_componentWillMount() {
-        const {fundVersionId, id} = this.props;
+        const { fundVersionId, id } = this.props;
         this.props.dispatch(structureNodeFormSelectId(fundVersionId, id));
         this.props.dispatch(structureNodeFormFetchIfNeeded(fundVersionId, id));
     }
 
     componentDidMount() {
-        const {fundVersionId} = this.props;
+        const { fundVersionId } = this.props;
         this.props.dispatch(structureFormActions.fundSubNodeFormFetchIfNeeded(fundVersionId, null));
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        const {fundVersionId, id} = nextProps;
+        const { fundVersionId, id } = nextProps;
         this.props.dispatch(structureNodeFormFetchIfNeeded(fundVersionId, id));
     }
 
@@ -58,7 +58,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
      * Zobrazení dialogu pro přidání atributu.
      */
     handleAddDescItemType = () => {
-        const {fundVersionId} = this.props;
+        const { fundVersionId } = this.props;
 
         const descItemTypes = this.descItemTypeItems();
 
@@ -74,7 +74,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
     };
 
     handleNotModify = (id) => {
-        const {fields: {autoincrementItemTypeIds, deleteItemTypeIds, items}} = this.props;
+        const { fields: { autoincrementItemTypeIds, deleteItemTypeIds, items } } = this.props;
         const incrementIndex = autoincrementItemTypeIds.value.indexOf(id);
         if (incrementIndex !== -1) {
             autoincrementItemTypeIds.onChange([
@@ -91,7 +91,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
         }
 
         if (items.value.hasOwnProperty(id)) {
-            const newItems = {...items.value};
+            const newItems = { ...items.value };
             delete newItems[id];
             items.onChange(newItems);
         }
@@ -99,18 +99,18 @@ class UpdateMultipleSub extends AbstractReactComponent {
     };
 
     handleModify = (id, descItems) => {
-        const {fields: {items}} = this.props;
+        const { fields: { items } } = this.props;
         if (!items.value.hasOwnProperty(id)) {
             items.onChange({
                 ...items.value,
-                [id]: descItems.map(i => ({...i, id: undefined})),
+                [id]: descItems.map(i => ({ ...i, id: undefined })),
             });
         }
 
     };
 
     handleDeleteToggle = (id) => {
-        const {fields: {autoincrementItemTypeIds, deleteItemTypeIds, items}} = this.props;
+        const { fields: { autoincrementItemTypeIds, deleteItemTypeIds, items } } = this.props;
         const indexInDeleted = deleteItemTypeIds.value.indexOf(id);
         if (indexInDeleted !== -1) {
             deleteItemTypeIds.onChange([
@@ -127,7 +127,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
             }
 
             if (items.value.hasOwnProperty(id)) {
-                const newItems = {...items.value};
+                const newItems = { ...items.value };
                 delete newItems[id];
                 items.onChange(newItems);
             }
@@ -140,7 +140,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
     };
 
     customInRender = (descItems, code, infoType) => {
-        const {fields: {autoincrementItemTypeIds, deleteItemTypeIds, items}} = this.props;
+        const { fields: { autoincrementItemTypeIds, deleteItemTypeIds, items } } = this.props;
         const parts = [];
 
 
@@ -195,8 +195,8 @@ class UpdateMultipleSub extends AbstractReactComponent {
     };
 
     getStrictMode = () => {
-        const {fund, userDetail} = this.props;
-        let {activeVersion: {strictMode}} = fund;
+        const { fund, userDetail } = this.props;
+        let { activeVersion: { strictMode } } = fund;
 
         const userStrictMode = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fund.id);
         if (userStrictMode && userStrictMode.value !== null) {
@@ -206,7 +206,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
     };
 
     descItemTypeItems = () => {
-        const {subNodeForm} = this.props;
+        const { subNodeForm } = this.props;
 
         const strictMode = this.getStrictMode();
         return getDescItemsAddTree(subNodeForm.formData.descItemGroups, subNodeForm.infoTypesMap, subNodeForm.refTypesMap, subNodeForm.infoGroups, strictMode);
@@ -219,13 +219,13 @@ class UpdateMultipleSub extends AbstractReactComponent {
 
 
     handleChange = (id, index, value) => {
-        const {fields: {items}} = this.props;
+        const { fields: { items } } = this.props;
         if (items.value.hasOwnProperty(id)) {
             items.onChange({
                 ...items.value,
                 [id]: [
                     ...items.value[id].slice(0, index),
-                    {...items.value[id][index], value},
+                    { ...items.value[id][index], value },
                     ...items.value[id].slice(index + 1),
                 ],
             });
@@ -233,13 +233,13 @@ class UpdateMultipleSub extends AbstractReactComponent {
     };
 
     handleChangeSpec = (id, index, descItemSpecId) => {
-        const {fields: {items}} = this.props;
+        const { fields: { items } } = this.props;
         if (items.value.hasOwnProperty(id)) {
             items.onChange({
                 ...items.value,
                 [id]: [
                     ...items.value[id].slice(0, index),
-                    {...items.value[id][index], descItemSpecId},
+                    { ...items.value[id][index], descItemSpecId },
                     ...items.value[id].slice(index + 1),
                 ],
             });
@@ -268,7 +268,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
 */
 
     handleOnDescItemAdd = (id) => {
-        const {fields: {items}} = this.props;
+        const { fields: { items } } = this.props;
         if (items.value.hasOwnProperty(id)) {
 
             const lastAdded = items.value[id][items.value[id].length - 1];
@@ -289,7 +289,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
     };
 
     handleOnDescItemDelete = (id, index) => {
-        const {fields: {items}} = this.props;
+        const { fields: { items } } = this.props;
         if (items.value.hasOwnProperty(id)) {
             items.onChange({
                 ...items.value,
@@ -302,8 +302,8 @@ class UpdateMultipleSub extends AbstractReactComponent {
     };
 
     renderDescItemType = (descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting) => {
-        const {fields: {items, deleteItemTypeIds}} = this.props;
-        const {fundId, subNodeForm, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, calendarTypes, closed, showNodeAddons, fundVersionId, typePrefix, descItemFactory} = this.props;
+        const { fields: { items, deleteItemTypeIds } } = this.props;
+        const { fundId, subNodeForm, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, calendarTypes, closed, showNodeAddons, fundVersionId, typePrefix, descItemFactory } = this.props;
 
         const refType = subNodeForm.refTypesMap[descItemType.id];
         const infoType = subNodeForm.infoTypesMap[descItemType.id];
@@ -314,7 +314,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
         const itemModified = items.value.hasOwnProperty(infoType.id);
 
 
-        const {descItems, ...allowedProps} = descItemType;
+        const { descItems, ...allowedProps } = descItemType;
 
         let hackedDescItems = [];
 
@@ -376,7 +376,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
                              showNodeAddons={showNodeAddons}
                              locked={!itemModified}
                              closed={closed}
-                             conformityInfo={{missings: [], errors: []}}
+                             conformityInfo={{ missings: [], errors: [] }}
                              descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
                              versionId={fundVersionId}
                              fundId={fundId}
@@ -406,11 +406,11 @@ class UpdateMultipleSub extends AbstractReactComponent {
      * @return {Object} view
      */
     renderDescItemGroup = (descItemGroup, descItemGroupIndex, nodeSetting) => {
-        const {singleDescItemTypeEdit, singleDescItemTypeId} = this.props;
+        const { singleDescItemTypeEdit, singleDescItemTypeId } = this.props;
 
         const descItemTypes = [];
         descItemGroup.descItemTypes.forEach((descItemType, descItemTypeIndex) => {
-            if (!singleDescItemTypeEdit || (singleDescItemTypeEdit && singleDescItemTypeId == descItemType.id)) {
+            if (!singleDescItemTypeEdit || (singleDescItemTypeEdit && singleDescItemTypeId === descItemType.id)) {
                 const i = this.renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting);
                 descItemTypes.push(i);
             }
@@ -434,7 +434,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
     };
 
     render() {
-        const {versionId, focus, fundId, rulDataTypes, calendarTypes, descItemTypes, handleSubmit, submitting, fields: {items}, onClose, subNodeForm, subNodeForm: {formData}, nodeSetting} = this.props;
+        const { handleSubmit, submitting, fields: { items }, onClose, subNodeForm, subNodeForm: { formData }, nodeSetting } = this.props;
 
         if (!subNodeForm || !subNodeForm.fetched) {
             return <Loading/>;
@@ -477,7 +477,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {arrRegion, focus, refTables, userDetail} = state;
+    const { arrRegion, focus, refTables, userDetail } = state;
     let fund = null;
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];

@@ -2,31 +2,24 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import {connect} from 'react-redux'
-import {Icon, AbstractReactComponent, Tabs, i18n} from 'components/shared';
-import {indexById, getIdsList} from 'stores/app/utils.jsx'
-import {dateToString} from 'components/Utils.jsx'
-import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
-import {selectFundTab} from 'actions/arr/fund.jsx'
-import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx'
-import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx'
-import {routerNavigate} from 'actions/router.jsx'
-import {changeGroupPermission} from 'actions/admin/permission.jsx'
-import {joinUsers, leaveUser, groupsGroupDetailFetchIfNeeded} from 'actions/admin/group.jsx'
-import {modalDialogShow} from 'actions/global/modalDialog.jsx'
-import {renderUserItem} from "components/admin/adminRenderUtils.jsx"
-import SelectItemsForm from "./SelectItemsForm";
-import UserField from "./UserField";
-import StoreHorizontalLoader from "../shared/loading/StoreHorizontalLoader";
-import AdminRightsContainer from "./AdminRightsContainer";
-import AddRemoveList from "../shared/list/AddRemoveList";
-import FundsPermissionPanel from "./FundsPermissionPanel";
-import ScopesPermissionPanel from "./ScopesPermissionPanel";
-import AdvancedPermissionPanel from "./AdvancedPermissionPanel";
-import {WebApi} from "../../actions/WebApi";
-import DetailHeader from "../shared/detail/DetailHeader";
+import {connect} from 'react-redux';
+import {AbstractReactComponent, i18n, Icon, Tabs} from 'components/shared';
+import {getIdsList} from 'stores/app/utils.jsx';
+import {groupsGroupDetailFetchIfNeeded, joinUsers, leaveUser} from 'actions/admin/group.jsx';
+import {modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {renderUserItem} from 'components/admin/adminRenderUtils.jsx';
+import SelectItemsForm from './SelectItemsForm';
+import UserField from './UserField';
+import StoreHorizontalLoader from '../shared/loading/StoreHorizontalLoader';
+import AdminRightsContainer from './AdminRightsContainer';
+import AddRemoveList from '../shared/list/AddRemoveList';
+import FundsPermissionPanel from './FundsPermissionPanel';
+import ScopesPermissionPanel from './ScopesPermissionPanel';
+import AdvancedPermissionPanel from './AdvancedPermissionPanel';
+import {WebApi} from '../../actions/WebApi';
+import DetailHeader from '../shared/detail/DetailHeader';
 
-import './GroupDetail.scss';;
+import './GroupDetail.scss';
 
 class GroupDetail extends AbstractReactComponent {
     static TAB_FUNDS = 0;
@@ -34,9 +27,9 @@ class GroupDetail extends AbstractReactComponent {
     static TAB_ADVANCED = 2;
 
     static tabItems = [
-        {id: GroupDetail.TAB_FUNDS, title: i18n("admin.perms.tabs.funds")},
-        {id: GroupDetail.TAB_SCOPES, title: i18n("admin.perms.tabs.scopes")},
-        {id: GroupDetail.TAB_ADVANCED, title: i18n("admin.perms.tabs.advanced")}
+        {id: GroupDetail.TAB_FUNDS, title: i18n('admin.perms.tabs.funds')},
+        {id: GroupDetail.TAB_SCOPES, title: i18n('admin.perms.tabs.scopes')},
+        {id: GroupDetail.TAB_ADVANCED, title: i18n('admin.perms.tabs.advanced')},
     ];
 
     /*
@@ -44,8 +37,8 @@ class GroupDetail extends AbstractReactComponent {
      */
     defaultSelectedItem = {
         id: null,
-        index: 0
-    }
+        index: 0,
+    };
     /*
      * Last selected fund item.
      */
@@ -59,8 +52,8 @@ class GroupDetail extends AbstractReactComponent {
         super(props);
 
         this.state = {
-            selectedTabItem: GroupDetail.tabItems[GroupDetail.TAB_FUNDS]
-        }
+            selectedTabItem: GroupDetail.tabItems[GroupDetail.TAB_FUNDS],
+        };
     }
 
     componentDidMount() {
@@ -72,7 +65,7 @@ class GroupDetail extends AbstractReactComponent {
         const nextGroupId = nextProps.groupDetail.id;
 
         // Reset selected permissions
-        if(groupId !== nextGroupId){
+        if (groupId !== nextGroupId) {
             this.selectedFund = this.defaultSelectedItem;
             this.selectedScope = this.defaultSelectedItem;
         }
@@ -95,7 +88,7 @@ class GroupDetail extends AbstractReactComponent {
                 fieldComponent={UserField}
                 fieldComponentProps={{excludedGroupId: groupDetail.id}}
                 renderItem={renderUserItem}
-            />
+            />,
         ));
     };
 
@@ -114,7 +107,9 @@ class GroupDetail extends AbstractReactComponent {
                     onAddPermission={perm => WebApi.addGroupPermission(groupDetail.id, perm)}
                     onDeletePermission={perm => WebApi.deleteGroupPermission(groupDetail.id, perm)}
                     onDeleteFundPermission={fundId => WebApi.deleteGroupFundPermission(groupDetail.id, fundId)}
-                    onSelectItem={(item, index) => {this.selectedFund = {index, id: item.id};}}
+                    onSelectItem={(item, index) => {
+                        this.selectedFund = {index, id: item.id};
+                    }}
                     selectedPermission={this.selectedFund}
                 />;
             case GroupDetail.TAB_SCOPES:
@@ -123,7 +118,9 @@ class GroupDetail extends AbstractReactComponent {
                     onAddPermission={perm => WebApi.addGroupPermission(groupDetail.id, perm)}
                     onDeletePermission={perm => WebApi.deleteGroupPermission(groupDetail.id, perm)}
                     onDeleteScopePermission={scopeId => WebApi.deleteGroupScopePermission(groupDetail.id, scopeId)}
-                    onSelectItem={(item, index) => {this.selectedScope = {index, id: item.id};}}
+                    onSelectItem={(item, index) => {
+                        this.selectedScope = {index, id: item.id};
+                    }}
                     selectedPermission={this.selectedScope}
                 />;
             case GroupDetail.TAB_ADVANCED:
@@ -142,8 +139,10 @@ class GroupDetail extends AbstractReactComponent {
         if (groupDetail.id === null) {
             return <div className='group-detail-container'>
                 <div className="unselected-msg">
-                    <div className="title">{groupCount > 0 ? i18n('admin.group.noSelection.title') : i18n('admin.group.emptyList.title')}</div>
-                    <div className="msg-text">{groupCount > 0 ? i18n('admin.group.noSelection.message') : i18n('admin.group.emptyList.message')}</div>
+                    <div
+                        className="title">{groupCount > 0 ? i18n('admin.group.noSelection.title') : i18n('admin.group.emptyList.title')}</div>
+                    <div
+                        className="msg-text">{groupCount > 0 ? i18n('admin.group.noSelection.message') : i18n('admin.group.emptyList.message')}</div>
                 </div>
             </div>;
         }
@@ -151,15 +150,15 @@ class GroupDetail extends AbstractReactComponent {
         return <div className="detail-container">
             <StoreHorizontalLoader store={groupDetail}/>
             {groupDetail.fetched && <AdminRightsContainer
-                    header={<DetailHeader
+                header={<DetailHeader
                     icon={<Icon glyph="fa-group"/>}
                     title={groupDetail.name}
                     subtitle={groupDetail.code}
-                    flagLeft={i18n("admin.group.title")}
+                    flagLeft={i18n('admin.group.title')}
                 />
                 }
                 left={<AddRemoveList
-                    label={<h4>{i18n("admin.group.title.users")}</h4>}
+                    label={<h4>{i18n('admin.group.title.users')}</h4>}
                     addInLabel
                     items={groupDetail.users}
                     onAdd={this.handleAddUsers}
@@ -170,11 +169,11 @@ class GroupDetail extends AbstractReactComponent {
                 />}
             >
                 <div className="permissions-container">
-                    <h4>{i18n("admin.group.title.permissions")}</h4>
+                    <h4>{i18n('admin.group.title.permissions')}</h4>
                     <Tabs.Container>
                         <Tabs.Tabs items={GroupDetail.tabItems}
-                            activeItem={selectedTabItem}
-                            onSelect={this.handleTabSelect}
+                                   activeItem={selectedTabItem}
+                                   onSelect={this.handleTabSelect}
                         />
                         <Tabs.Content>
                             {this.renderTabContent()}
@@ -188,12 +187,11 @@ class GroupDetail extends AbstractReactComponent {
 
 GroupDetail.propTypes = {
     groupDetail: PropTypes.object.isRequired,
-    groupCount: PropTypes.number.isRequired
+    groupCount: PropTypes.number.isRequired,
 };
 
 function mapStateToProps(state) {
-    return {
-    }
+    return {};
 }
 
 export default connect(mapStateToProps)(GroupDetail);

@@ -73,7 +73,7 @@ class IssueLists extends AbstractReactComponent {
     };
 
     filter = ({target: {value}}) => {
-        this.props.dispatch(issuesActions.protocolsConfig.filter({open: value == 'true'}));
+        this.props.dispatch(issuesActions.protocolsConfig.filter({open: value === 'true'}));
         // @ts-ignore
         this.setState({id: null, initialValues: IssueListForm.initialValues});
     };

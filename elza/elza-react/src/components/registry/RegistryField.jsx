@@ -64,7 +64,7 @@ class RegistryField extends AbstractReactComponent {
     };
 
     handleSearchChange = debounce((text) => {
-        text = text == '' ? null : text;
+        text = text === '' ? null : text;
         this.setState({searchText: text});
         const {roleTypeId, partyId, registryParent, apTypeId, versionId, itemSpecId, itemTypeId} = this.props;
         let promise = null;
@@ -83,7 +83,7 @@ class RegistryField extends AbstractReactComponent {
 
     handleDetail = (id) => {
         const {searchText} = this.state;
-        const {onChange, onBlur, onDetail, onSelectModule, value} = this.props;
+        const { onDetail, onSelectModule, value} = this.props;
 
         this.refs.autocomplete.closeMenu();
 
@@ -183,7 +183,7 @@ class RegistryField extends AbstractReactComponent {
     };
 
     render() {
-        const {value, footer, detail, className, undefined, ...otherProps} = this.props;
+        const {value, footer, detail, className, ...otherProps} = this.props;
 
         let footerRender = null;
         if (footer) {
@@ -203,7 +203,7 @@ class RegistryField extends AbstractReactComponent {
         }
 
         let tmpVal = '';
-        if (undefined) {
+        if (this.props.undefined) {
             tmpVal = i18n('subNodeForm.descItemType.notIdentified');
         }
 

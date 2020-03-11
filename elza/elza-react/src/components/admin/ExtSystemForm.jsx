@@ -82,11 +82,11 @@ class ExtSystemForm extends AbstractReactComponent {
 
         let requiredFields = [...REQUIRED_FIELDS.abstractExtSystem];
 
-        if (classJ == EXT_SYSTEM_CLASS.ApExternalSystem) {
+        if (classJ === EXT_SYSTEM_CLASS.ApExternalSystem) {
             requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ApExternalSystem]);
-        } else if (classJ == EXT_SYSTEM_CLASS.ArrDigitalRepository) {
+        } else if (classJ === EXT_SYSTEM_CLASS.ArrDigitalRepository) {
             requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitalRepository]);
-        } else if (classJ == EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk) {
+        } else if (classJ === EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk) {
             requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]);
         }
         return ExtSystemForm.requireFields(...requiredFields)(values);
@@ -106,13 +106,13 @@ class ExtSystemForm extends AbstractReactComponent {
                     {Object.values(EXT_SYSTEM_CLASS).map((i, index) => <option key={index}
                                                                                value={i}>{EXT_SYSTEM_CLASS_LABEL[i]}</option>)}
                 </FormInput>
-                {classJ.value == EXT_SYSTEM_CLASS.ApExternalSystem && <div>
+                {classJ.value === EXT_SYSTEM_CLASS.ApExternalSystem && <div>
                     <FormInput as="select" label={i18n('admin.extSystem.type')} {...type} disabled={id.value}>
                         <option key={null}/>
                         <option value={AP_EXT_SYSTEM_TYPE.INTERPI}>{i18n('admin.extSystem.interpi')}</option>
                     </FormInput>
                 </div>}
-                {classJ.value == EXT_SYSTEM_CLASS.ArrDigitalRepository && <div>
+                {classJ.value === EXT_SYSTEM_CLASS.ArrDigitalRepository && <div>
                     <FormInput type="text" label={i18n('admin.extSystem.viewDaoUrl')} {...viewDaoUrl} />
                     <FormInput type="text" label={i18n('admin.extSystem.viewFileUrl')} {...viewFileUrl} />
                     <FormInput type="text" label={i18n('admin.extSystem.viewThumbnailUrl')} {...viewThumbnailUrl} />
@@ -122,7 +122,7 @@ class ExtSystemForm extends AbstractReactComponent {
                         <option key="false" value={false}>{i18n('admin.extSystem.sendNotification.false')}</option>
                     </FormInput>
                 </div>}
-                {classJ.value == EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk && <div></div>}
+                {classJ.value === EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk && <div></div>}
                 <FormInput type="text" label={i18n('admin.extSystem.code')} {...code} disabled={id.value}/>
                 <FormInput type="text" label={i18n('admin.extSystem.name')} {...name} />
                 <FormInput type="text" label={i18n('admin.extSystem.url')} {...url} />

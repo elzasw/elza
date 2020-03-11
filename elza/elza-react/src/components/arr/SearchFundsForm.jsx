@@ -1,31 +1,34 @@
 import React from 'react';
-import { connect } from "react-redux";
+import { connect } from 'react-redux';
 import { Modal } from 'react-bootstrap';
 import classNames from 'classnames';
-import { decorateFormField, submitForm } from 'components/form/FormUtils.jsx'
-import { createReferenceMark, getNodeIcon, getFundFromFundAndVersion } from 'components/arr/ArrUtils.jsx'
-import { AbstractReactComponent, FormInput, Icon, i18n } from 'components/shared';
+import { createReferenceMark, getNodeIcon } from 'components/arr/ArrUtils.jsx';
+import { AbstractReactComponent, i18n, Icon } from 'components/shared';
 import { WebApi } from '../../actions/WebApi';
 
 import * as types from 'actions/constants/ActionTypes.js';
 
-import { routerNavigate } from 'actions/router.jsx'
-import { modalDialogHide } from 'actions/global/modalDialog.jsx'
-import * as fundSearchActions from '../../actions/arr/fundSearch.jsx'
-import Search from "../shared/search/Search";
-import Loading from "../shared/loading/Loading";
-import HorizontalLoader from "../shared/loading/HorizontalLoader";
+import { routerNavigate } from 'actions/router.jsx';
+import { modalDialogHide } from 'actions/global/modalDialog.jsx';
+import * as fundSearchActions from '../../actions/arr/fundSearch.jsx';
+import Search from '../shared/search/Search';
+import HorizontalLoader from '../shared/loading/HorizontalLoader';
 
-import { createFundRoot, getParentNode } from './ArrUtils.jsx'
+import { createFundRoot, getParentNode } from './ArrUtils.jsx';
 
-import { fundsSelectFund } from 'actions/fund/fund.jsx'
-import { selectFundTab } from 'actions/arr/fund.jsx'
-import { fundTreeFetch, fundTreeFulltextChange, fundTreeFulltextResult, fundTreeSelectNode } from 'actions/arr/fundTree.jsx';
-import { fundSelectSubNode } from 'actions/arr/node.jsx'
+import { fundsSelectFund } from 'actions/fund/fund.jsx';
+import { selectFundTab } from 'actions/arr/fund.jsx';
+import {
+    fundTreeFetch,
+    fundTreeFulltextChange,
+    fundTreeFulltextResult,
+    fundTreeSelectNode,
+} from 'actions/arr/fundTree.jsx';
+import { fundSelectSubNode } from 'actions/arr/node.jsx';
 
 import './SearchFundsForm.scss';
 
-const FUND_NAME_MAX_CHARS = 60
+const FUND_NAME_MAX_CHARS = 60;
 
 /**
  * Formulář pro vyhledávání nad archivními soubory.
@@ -68,7 +71,6 @@ class SearchFundsForm extends AbstractReactComponent {
      * Přejít na detail uzlu
      */
     handleNodeClick = (item) => {
-        const { fulltext, funds } = this.props.fundSearch;
         const itemFund = this.props.fundSearch.funds.find(fund => fund.nodes.some(nd => nd.id === item.id));
 
         // Přepnutí na stránku pořádání a zavření dialogu
@@ -80,10 +82,10 @@ class SearchFundsForm extends AbstractReactComponent {
     };
 
     /**
-    * Přepnutí do detailu uzlu.
-    * @param fund {Object} AS
-    * @param node {Object} uzel
-    */
+     * Přepnutí do detailu uzlu.
+     * @param fund {Object} AS
+     * @param node {Object} uzel
+     */
     navigateToNode = (fund, node) => {
         const { arrRegion } = this.props;
         const activeFund = this.getActiveIndex(arrRegion);
@@ -97,7 +99,7 @@ class SearchFundsForm extends AbstractReactComponent {
         } else {
             this.props.dispatch(this.fundSelectSubNode(activeFund, node, false, false));
         }
-    }
+    };
 
     /**
      * Výběr uzlu.
@@ -144,15 +146,15 @@ class SearchFundsForm extends AbstractReactComponent {
             }
 
             // Vyplní vyhledávací políčko na stránce pořádání
-            dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, fund.versionId, fulltext))
+            dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, fund.versionId, fulltext));
 
             const searchedData = this.getSearchedData(fund.id);
             const activeNodeIndex = searchedData.findIndex((data) => data.nodeId === node.id);
 
-            dispatch(fundTreeFulltextResult(types.FUND_TREE_AREA_MAIN, fund.versionId, fulltext, searchedData, false, { type: "FORM" }, null));
+            dispatch(fundTreeFulltextResult(types.FUND_TREE_AREA_MAIN, fund.versionId, fulltext, searchedData, false, { type: 'FORM' }, null));
             dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_MAIN, fund.versionId, node.id, parentNode, false, activeNodeIndex, true));
         };
-    }
+    };
 
     getActiveIndex(arrRegion) {
         return arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : null;
@@ -165,7 +167,7 @@ class SearchFundsForm extends AbstractReactComponent {
         const nodes = fundSearch.funds.find(fund => fund.id === fundId).nodes;
 
         let searchedData = [];
-        nodes.map((node) => {
+        nodes.forEach((node) => {
             let parentNode = getParentNode(node, activeFund.nodes.nodes);
             if (parentNode === null) {
                 parentNode = createFundRoot(activeFund);
@@ -173,9 +175,9 @@ class SearchFundsForm extends AbstractReactComponent {
 
             searchedData.push({
                 nodeId: node.id,
-                parent: parentNode
+                parent: parentNode,
             });
-        })
+        });
 
         return searchedData;
     }
@@ -198,19 +200,19 @@ class SearchFundsForm extends AbstractReactComponent {
 
         let name = fund.name;
         if (name.length > FUND_NAME_MAX_CHARS) {
-            name = name.substring(0, FUND_NAME_MAX_CHARS - 3) + '...'
+            name = name.substring(0, FUND_NAME_MAX_CHARS - 3) + '...';
         }
 
         return <div key={fund.id} className="fund">
             <div className={cls}>
-                <span className={expColCls} onClick={() => this.handleFundClick(fund)} />
-                <Icon className="item-icon" glyph="fa-database" />
+                <span className={expColCls} onClick={() => this.handleFundClick(fund)}/>
+                <Icon className="item-icon" glyph="fa-database"/>
                 <div title={fund.name} className="item-label">{name} {fund.count && `(${fund.count})`}</div>
             </div>
             {expanded && fund.nodes &&
-                <div className="nodes">
-                    {fund.nodes.map((node) => this.renderNode(node))}
-                </div>
+            <div className="nodes">
+                {fund.nodes.map((node) => this.renderNode(node))}
+            </div>
             }
         </div>;
     };
@@ -228,8 +230,8 @@ class SearchFundsForm extends AbstractReactComponent {
             <div className="levels">{levels}</div>
             <Icon className="item-icon" {...iconProps} />
             <div title={node.name} className="item-label">{node.name}</div>
-            <span className="detail-col fa fa-sign-out" onClick={() => this.handleNodeClick(node)} />
-        </div>
+            <span className="detail-col fa fa-sign-out" onClick={() => this.handleNodeClick(node)}/>
+        </div>;
     };
 
     render() {
@@ -245,16 +247,16 @@ class SearchFundsForm extends AbstractReactComponent {
                     placeholder={i18n('search.input.search')}
                     value={fundSearch.fulltext}
                 />
-                {fundSearch.isFetching && <HorizontalLoader hover showText={false} key="loader" />}
+                {fundSearch.isFetching && <HorizontalLoader hover showText={false} key="loader"/>}
                 {isFulltext && i18n('arr.fund.search.result.count', totalCount)}
                 <div className={`fund-search ${isFulltext && totalCount > 0 ? 'result' : 'no-fulltext'}`}>
                     {isFulltext
                         ? this.renderResult()
-                        : i18n('arr.fund.search.noFulltext'
+                        : i18n('arr.fund.search.noFulltext',
                         )}
                 </div>
             </Modal.Body>
-        )
+        );
     }
 
     renderResult = () => {
@@ -266,10 +268,10 @@ class SearchFundsForm extends AbstractReactComponent {
             result.push(
                 <div key="result" className="result-list">
                     {fundSearch.funds.length > 0 &&
-                        fundSearch.funds.map(fund => this.renderFund(fund))
+                    fundSearch.funds.map(fund => this.renderFund(fund))
                     }
-                </div>
-            )
+                </div>,
+            );
         }
 
         return result;
@@ -279,7 +281,7 @@ class SearchFundsForm extends AbstractReactComponent {
         let count = 0;
         funds.forEach(fund => count += fund.count);
         return count;
-    }
+    };
 }
 
 function mapStateToProps(state) {
@@ -287,8 +289,8 @@ function mapStateToProps(state) {
 
     return {
         fundSearch,
-        arrRegion: state.arrRegion
-    }
+        arrRegion: state.arrRegion,
+    };
 }
 
 export default connect(mapStateToProps)(SearchFundsForm);

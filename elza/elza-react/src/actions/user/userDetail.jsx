@@ -1,12 +1,11 @@
-import * as types from 'actions/constants/ActionTypes'
-import {WebApi} from 'actions/index.jsx';
-import {modalDialogHide} from 'actions/global/modalDialog.jsx'
+import * as types from 'actions/constants/ActionTypes';
+import { WebApi } from 'actions/index.jsx';
 
 export function userDetailChange(userDetail) {
     return {
         type: types.USER_DETAIL_CHANGE,
         userDetail,
-    }
+    };
 }
 
 export function reloadUserDetail(userIds) {
@@ -15,23 +14,23 @@ export function reloadUserDetail(userIds) {
         const userDetail = state.userDetail;
         if (userIds.indexOf(userDetail.id) !== -1) {
             WebApi.getUserDetail()
-                .then(userDetail => {
-                    dispatch(userDetailChange(userDetail))
-                });
+                  .then(userDetail => {
+                      dispatch(userDetailChange(userDetail));
+                  });
         }
-    }
+    };
 }
 
 export function userDetailClear() {
     return {
-        type: types.USER_DETAIL_CLEAR
-    }
+        type: types.USER_DETAIL_CLEAR,
+    };
 }
 
-export function userDetailRequest(){
+export function userDetailRequest() {
     return {
-        type: types.USER_DETAIL_REQUEST
-    }
+        type: types.USER_DETAIL_REQUEST,
+    };
 }
 
 /**
@@ -40,24 +39,24 @@ export function userDetailRequest(){
  */
 export function userDetailsSaveSettings(settings) {
     return (dispatch) => {
-        dispatch(userDetailRequestSettings(settings))
+        dispatch(userDetailRequestSettings(settings));
         return WebApi.setUserSettings(settings)
-            .then(data => {
-                dispatch(userDetailResponseSettings(data));
-            });
-    }
+                     .then(data => {
+                         dispatch(userDetailResponseSettings(data));
+                     });
+    };
 }
 
 function userDetailRequestSettings(settings) {
     return {
         type: types.USER_DETAIL_REQUEST_SETTINGS,
         settings,
-    }
+    };
 }
 
 function userDetailResponseSettings(settings) {
     return {
         type: types.USER_DETAIL_RESPONSE_SETTINGS,
         settings,
-    }
+    };
 }

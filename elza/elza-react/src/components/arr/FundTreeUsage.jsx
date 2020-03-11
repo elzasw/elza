@@ -3,9 +3,8 @@
  */
 
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
-import { AbstractReactComponent, i18n } from 'components/shared';
+import { AbstractReactComponent } from 'components/shared';
 import FundTreeLazy from './FundTreeLazy';
 import * as types from 'actions/constants/ActionTypes.js';
 
@@ -15,7 +14,6 @@ import {
 
 import { propsEquals } from 'components/Utils.jsx';
 import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
-import { fundTreeSelectNode } from '../../actions/arr/fundTree';
 import {FOCUS_KEYS} from "../../constants.tsx";
 
 class FundTreeUsage extends AbstractReactComponent {
@@ -68,26 +66,26 @@ class FundTreeUsage extends AbstractReactComponent {
 
     shouldComponentUpdate(nextProps, nextState) {
         return true;
-        if (this.state !== nextState) {
-            return true;
-        }
-        var eqProps = [
-            'focus',
-            'ensureItemVisible',
-            'dirty',
-            'expandedIds',
-            'fetched',
-            'searchedIds',
-            'nodes',
-            'selectedId',
-            'selectedIds',
-            'fetchingIncludeIds',
-            'filterCurrentIndex',
-            'filterText',
-            'focusId',
-            'isFetching'
-        ];
-        return !propsEquals(this.props, nextProps, eqProps);
+        // if (this.state !== nextState) {
+        //     return true;
+        // }
+        // var eqProps = [
+        //     'focus',
+        //     'ensureItemVisible',
+        //     'dirty',
+        //     'expandedIds',
+        //     'fetched',
+        //     'searchedIds',
+        //     'nodes',
+        //     'selectedId',
+        //     'selectedIds',
+        //     'fetchingIncludeIds',
+        //     'filterCurrentIndex',
+        //     'filterText',
+        //     'focusId',
+        //     'isFetching'
+        // ];
+        // return !propsEquals(this.props, nextProps, eqProps);
     }
 
     unFocus() {

@@ -2,10 +2,8 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import classNames from 'classnames';
-import i18n from "../../i18n";
 import './HorizontalLoader.scss';
-import HorizontalLoader from "./HorizontalLoader";
+import HorizontalLoader from './HorizontalLoader';
 
 /**
  * Loader pro načítání dat - horizontální, typicky pro dlouhé seznamy položek apod. - informace pro zobrazení zjišťuje ze store
@@ -27,7 +25,7 @@ export default class StoreHorizontalLoader extends React.Component {
     }
 
     render() {
-        const {store: {fetching, isFetching, fetched}, ...other} = this.props;
+        const { store: { fetching, isFetching, fetched }, ...other } = this.props;
 
         const useFetching = fetching || isFetching;
 
@@ -38,9 +36,9 @@ export default class StoreHorizontalLoader extends React.Component {
                 showText={!fetched}
                 hover={fetched}
                 {...other}
-            />
+            />;
         } else {
-            return <div></div>
+            return <div></div>;
         }
     }
 }

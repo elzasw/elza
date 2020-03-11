@@ -3,74 +3,83 @@
  */
 
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n} from 'components/shared';
+import { connect } from 'react-redux';
+import { AbstractReactComponent, i18n } from 'components/shared';
 import FundTreeLazy from './FundTreeLazy';
 import ArrSearchForm from './ArrSearchForm';
 import * as types from 'actions/constants/ActionTypes.js';
-import {Dropdown} from 'react-bootstrap';
-import {fundTreeFulltextChange, fundTreeFulltextSearch, fundTreeFocusNode, fundTreeFetchIfNeeded, fundTreeNodeExpand, fundTreeFulltextNextItem, fundTreeFulltextPrevItem, fundTreeNodeCollapse, fundTreeCollapse} from 'actions/arr/fundTree.jsx'
-import {fundSelectSubNode} from 'actions/arr/node.jsx'
-import {createFundRoot, getParentNode} from './ArrUtils.jsx'
-import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu.jsx'
-import {propsEquals} from 'components/Utils.jsx'
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {FOCUS_KEYS} from "../../constants.tsx";
-import PersistentSortDialog from "./PersisetntSortDialog";
-import {WebApi} from "../../actions/WebApi";
+import { Dropdown } from 'react-bootstrap';
+import {
+    fundTreeCollapse,
+    fundTreeFetchIfNeeded,
+    fundTreeFocusNode,
+    fundTreeFulltextChange,
+    fundTreeFulltextNextItem,
+    fundTreeFulltextPrevItem,
+    fundTreeFulltextSearch,
+    fundTreeNodeCollapse,
+    fundTreeNodeExpand,
+} from 'actions/arr/fundTree.jsx';
+import { fundSelectSubNode } from 'actions/arr/node.jsx';
+import { createFundRoot, getParentNode } from './ArrUtils.jsx';
+import { contextMenuHide, contextMenuShow } from 'actions/global/contextMenu.jsx';
+import { propsEquals } from 'components/Utils.jsx';
+import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
+import { modalDialogShow } from 'actions/global/modalDialog.jsx';
+import { FOCUS_KEYS } from '../../constants.tsx';
+import PersistentSortDialog from './PersisetntSortDialog';
+import { WebApi } from '../../actions/WebApi';
 
 class FundTreeMain extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
         this.bindMethods('callFundSelectSubNode', 'handleNodeClick', 'handleSelectInNewTab',
-        'handleContextMenu', 'handleFulltextChange', 'handleFulltextSearch',
-        'handleFulltextPrevItem', 'handleFulltextNextItem', 'handleCollapse',
-        'trySetFocus');
+            'handleContextMenu', 'handleFulltextChange', 'handleFulltextSearch',
+            'handleFulltextPrevItem', 'handleFulltextNextItem', 'handleCollapse',
+            'trySetFocus');
     }
 
     componentDidMount() {
-        const {versionId, expandedIds} = this.props;
+        const { versionId, expandedIds } = this.props;
         this.requestFundTreeData(versionId, expandedIds);
-        this.trySetFocus(this.props)
+        this.trySetFocus(this.props);
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        const {versionId, expandedIds} = nextProps;
+        const { versionId, expandedIds } = nextProps;
         this.requestFundTreeData(versionId, expandedIds);
-        this.trySetFocus(nextProps)
+        this.trySetFocus(nextProps);
     }
 
     trySetFocus(props) {
-        var {focus} = props
+        var { focus } = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, null, 1)) {   // focus po ztrátě
                 if (this.refs.tree) {   // ještě nemusí existovat
                     this.setState({}, () => {
-                        this.refs.tree.getWrappedInstance().focus()
-                        focusWasSet()
-                    })
+                        this.refs.tree.getWrappedInstance().focus();
+                        focusWasSet();
+                    });
                 }
 
             } else if (isFocusFor(focus, FOCUS_KEYS.ARR, 1, 'tree') || isFocusFor(focus, FOCUS_KEYS.ARR, 1)) {
                 this.setState({}, () => {
-                    this.refs.tree.getWrappedInstance().focus()
-                    focusWasSet()
-                })
+                    this.refs.tree.getWrappedInstance().focus();
+                    focusWasSet();
+                });
             }
         }
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-return true
-        if (this.state !== nextState) {
-            return true;
-        }
-        var eqProps = ['focus', 'ensureItemVisible', 'dirty', 'expandedIds', 'fund', 'fetched', 'searchedIds', 'nodes', 'selectedId', 'selectedIds', 'fetchingIncludeIds', 'filterCurrentIndex', 'filterText', 'focusId', 'isFetching']
-        return !propsEquals(this.props, nextProps, eqProps);
+        return true;
+        // if (this.state !== nextState) {
+        //     return true;
+        // }
+        // var eqProps = ['focus', 'ensureItemVisible', 'dirty', 'expandedIds', 'fund', 'fetched', 'searchedIds', 'nodes', 'selectedId', 'selectedIds', 'fetchingIncludeIds', 'filterCurrentIndex', 'filterText', 'focusId', 'isFetching'];
+        // return !propsEquals(this.props, nextProps, eqProps);
     }
 
     requestFundTreeData(versionId, expandedIds) {
@@ -83,20 +92,23 @@ return true
      * @param e {Object} event
      */
     handleContextMenu(node, e) {
-        const {readMode} = this.props;
+        const { readMode } = this.props;
         e.preventDefault();
         e.stopPropagation();
 
         var menu = (
             <ul className="dropdown-menu">
-                <Dropdown.Item onClick={this.handleSelectInNewTab.bind(this, node)}>{i18n('fundTree.action.openInNewTab')}</Dropdown.Item>
-                {!readMode && <Dropdown.Item onClick={() => this.handleOpenPersistentSortDialog(node)}>{i18n('arr.functions.persistentSort')}</Dropdown.Item>}
-                {!readMode && <Dropdown.Item onClick={() => this.computeAndVizualizeEJ(node)}>{i18n('arr.functions.computeAndVizualizeEJ')}</Dropdown.Item>}
+                <Dropdown.Item
+                    onClick={this.handleSelectInNewTab.bind(this, node)}>{i18n('fundTree.action.openInNewTab')}</Dropdown.Item>
+                {!readMode && <Dropdown.Item
+                    onClick={() => this.handleOpenPersistentSortDialog(node)}>{i18n('arr.functions.persistentSort')}</Dropdown.Item>}
+                {!readMode && <Dropdown.Item
+                    onClick={() => this.computeAndVizualizeEJ(node)}>{i18n('arr.functions.computeAndVizualizeEJ')}</Dropdown.Item>}
             </ul>
-        )
+        );
 
         this.props.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_MAIN, this.props.versionId, node));
-        this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
+        this.props.dispatch(contextMenuShow(this, menu, { x: e.clientX, y: e.clientY }));
     }
 
     /**
@@ -110,17 +122,18 @@ return true
     }
 
     handleOpenPersistentSortDialog = (node) => {
-        const {fund} = this.props;
+        const { fund } = this.props;
         this.props.dispatch(contextMenuHide());
 
-        this.props.dispatch(modalDialogShow(this, i18n("arr.functions.persistentSort"), <PersistentSortDialog versionId={fund.versionId} node={node}/>));
+        this.props.dispatch(modalDialogShow(this, i18n('arr.functions.persistentSort'), <PersistentSortDialog
+            versionId={fund.versionId} node={node}/>));
     };
 
     computeAndVizualizeEJ = (node) => {
-        const {fund} = this.props;
+        const { fund } = this.props;
         this.props.dispatch(contextMenuHide());
 
-        WebApi.queueBulkActionWithIds(fund.versionId, "ZP2015_INTRO_VYPOCET_EJ", [node.id]);
+        WebApi.queueBulkActionWithIds(fund.versionId, 'ZP2015_INTRO_VYPOCET_EJ', [node.id]);
     };
 
     /**
@@ -151,8 +164,8 @@ return true
     }
 
     handleFulltextSearch() {
-        const {fund} = this.props;
-        this.props.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_MAIN, this.props.versionId, null, fund.fundTree.searchFormData ? fund.fundTree.searchFormData : {type: "FORM"}));
+        const { fund } = this.props;
+        this.props.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_MAIN, this.props.versionId, null, fund.fundTree.searchFormData ? fund.fundTree.searchFormData : { type: 'FORM' }));
     }
 
     handleFulltextPrevItem() {
@@ -167,36 +180,36 @@ return true
      * Zabalení stromu
      */
     handleCollapse() {
-        this.props.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_MAIN, this.props.versionId, this.props.fund))
+        this.props.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_MAIN, this.props.versionId, this.props.fund));
     }
 
     handleExtendedSearch = () => {
-        const {fund} = this.props;
+        const { fund } = this.props;
         this.props.dispatch(modalDialogShow(this, i18n('search.extended.title'),
             <ArrSearchForm
                 onSubmitForm={this.handleExtendedSearchData}
-                initialValues={fund.fundTree.searchFormData ? fund.fundTree.searchFormData : {type: "FORM"}}
-            />
+                initialValues={fund.fundTree.searchFormData ? fund.fundTree.searchFormData : { type: 'FORM' }}
+            />,
         ));
     };
 
     handleExtendedSearchData = (result) => {
-        const {versionId} = this.props;
+        const { versionId } = this.props;
         let params = [];
 
         switch (result.type) {
-            case "FORM": {
+            case 'FORM': {
                 result.condition.forEach((conditionItem, index) => {
                     let param = {};
                     param.type = conditionItem.type;
                     param.value = conditionItem.value;
                     switch (conditionItem.type) {
-                        case "TEXT": {
-                            param["@class"] = ".TextSearchParam";
+                        case 'TEXT': {
+                            param['@class'] = '.TextSearchParam';
                             break;
                         }
-                        case "UNITDATE": {
-                            param["@class"] = ".UnitdateSearchParam";
+                        case 'UNITDATE': {
+                            param['@class'] = '.UnitdateSearchParam';
                             param.calendarId = parseInt(conditionItem.calendarTypeId);
                             param.condition = conditionItem.condition;
                             break;
@@ -207,7 +220,7 @@ return true
                 break;
             }
 
-            case "TEXT": {
+            case 'TEXT': {
                 this.props.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, this.props.versionId, result.text));
                 break;
             }
@@ -217,7 +230,7 @@ return true
     };
 
     render() {
-        const {actionAddons, className, fund, cutLongLabels} = this.props;
+        const { actionAddons, className, fund, cutLongLabels } = this.props;
         const searchText = typeof fund.fundTree.searchText !== 'undefined'
             ? fund.fundTree.searchText
             : fund.fundTree.filterText;
@@ -229,7 +242,9 @@ return true
                 actionAddons={actionAddons}
                 {...this.props}
                 cutLongLabels={cutLongLabels}
-                onOpenCloseNode={(node, expand) => {expand ? this.props.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MAIN, node)) : this.props.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MAIN, this.props.versionId, node))}}
+                onOpenCloseNode={(node, expand) => {
+                    expand ? this.props.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MAIN, node)) : this.props.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MAIN, this.props.versionId, node));
+                }}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
                 onFulltextChange={this.handleFulltextChange}
@@ -242,7 +257,7 @@ return true
                 extendedReadOnly={fund.fundTree.luceneQuery}
                 onClickExtendedSearch={this.handleExtendedSearch}
             />
-        )
+        );
     }
 }
 

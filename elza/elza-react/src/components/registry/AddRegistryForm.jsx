@@ -94,7 +94,7 @@ class AddRegistryForm extends AbstractReactComponent {
             return items[index]['addRecord'];
         } else {
             let neededValue = null;
-            items.map(
+            items.forEach(
                 (val) => {
                     if (neededValue === null && val['children']) {
                         neededValue = this.isValueUseable(val['children'], value);

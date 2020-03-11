@@ -1,30 +1,30 @@
 import React from 'react';
-import {connect} from 'react-redux';
-import {AbstractReactComponent, ControllableDropdownButton, i18n, Icon, RibbonGroup, Utils} from 'components/shared';
+import { connect } from 'react-redux';
+import { AbstractReactComponent, ControllableDropdownButton, i18n, Icon, RibbonGroup, Utils } from 'components/shared';
 import Ribbon from '../../components/page/Ribbon';
 import PartyList from '../../components/party/PartyList';
 import PartyDetail from '../../components/party/PartyDetail';
 import ImportForm from '../../components/form/ImportForm';
 import ExtImportForm from '../../components/form/ExtImportForm';
-import {Dropdown} from 'react-bootstrap';
-import {Button} from '../../components/ui';
-import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
-import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx';
-import {partyAdd, partyDelete, partyDetailFetchIfNeeded, partyListInvalidate} from 'actions/party/party.jsx';
-import {Shortcuts} from 'react-shortcuts';
-import {setFocus} from 'actions/global/focus.jsx';
+import { Dropdown } from 'react-bootstrap';
+import { Button } from '../../components/ui';
+import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog.jsx';
+import { refPartyTypesFetchIfNeeded } from 'actions/refTables/partyTypes.jsx';
+import { partyAdd, partyDelete, partyDetailFetchIfNeeded, partyListInvalidate } from 'actions/party/party.jsx';
+import { Shortcuts } from 'react-shortcuts';
+import { setFocus } from 'actions/global/focus.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 import defaultKeymap from './PartyPageKeymap.jsx';
 import './PartyPage.scss';
-import {apExtSystemListFetchIfNeeded} from 'actions/registry/apExtSystemList';
+import { apExtSystemListFetchIfNeeded } from 'actions/registry/apExtSystemList';
 import PageLayout from '../shared/layout/PageLayout';
-import {PropTypes} from 'prop-types';
-import {FOCUS_KEYS} from '../../constants.tsx';
+import { PropTypes } from 'prop-types';
+import { FOCUS_KEYS } from '../../constants.tsx';
 import ScopeLists from '../../components/arr/ScopeLists';
 import ApStateHistoryForm from '../../components/registry/ApStateHistoryForm';
 import ApStateChangeForm from '../../components/registry/ApStateChangeForm';
-import {WebApi} from '../../actions';
-import {partyDetailInvalidate} from '../../actions/party/party';
+import { WebApi } from '../../actions';
+import { partyDetailInvalidate } from '../../actions/party/party';
 
 /**
  * PARTY PAGE
@@ -32,15 +32,15 @@ import {partyDetailInvalidate} from '../../actions/party/party';
  * Stránka osob
  */
 class PartyPage extends AbstractReactComponent {
-    static contextTypes = {shortcuts: PropTypes.object};
-    static childContextTypes = {shortcuts: PropTypes.object.isRequired};
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
 
     UNSAFE_componentWillMount() {
         Utils.addShortcutManager(this, defaultKeymap);
     }
 
     getChildContext() {
-        return {shortcuts: this.shortcutManager};
+        return { shortcuts: this.shortcutManager };
     }
 
 
@@ -79,6 +79,8 @@ class PartyPage extends AbstractReactComponent {
             case 'area3':
                 this.props.dispatch(setFocus(FOCUS_KEYS.PARTY, 3));
                 break;
+            default:
+                return null;
         }
     };
 
@@ -117,13 +119,13 @@ class PartyPage extends AbstractReactComponent {
 
 
     handleShowApHistory = () => {
-        const {partyDetail: {data: {accessPoint: {id}}}} = this.props;
+        const { partyDetail: { data: { accessPoint: { id } } } } = this.props;
         const form = <ApStateHistoryForm accessPointId={id}/>;
         this.props.dispatch(modalDialogShow(this, i18n('ap.history.title'), form, 'dialog-lg'));
     };
 
     handleChangeApState = () => {
-        const {partyDetail: {data: {accessPoint: {id, typeId, scopeId}, partyType}}} = this.props;
+        const { partyDetail: { data: { accessPoint: { id, typeId, scopeId }, partyType } } } = this.props;
         const form = <ApStateChangeForm initialValues={{
             typeId: typeId,
             scopeId: scopeId,
@@ -168,9 +170,9 @@ class PartyPage extends AbstractReactComponent {
      * Sestavení Ribbon Menu - přidání položek pro osoby
      */
     buildRibbon = () => {
-        const {userDetail, partyDetail, refTables: {partyTypes}, extSystems, module, customRibbon} = this.props;
+        const { userDetail, partyDetail, refTables: { partyTypes }, extSystems, module, customRibbon } = this.props;
 
-        const parts = module && customRibbon ? customRibbon : {altActions: [], itemActions: [], primarySection: null};
+        const parts = module && customRibbon ? customRibbon : { altActions: [], itemActions: [], primarySection: null };
 
         const isSelected = partyDetail.id !== null;
         const altActions = [...parts.altActions];
@@ -272,7 +274,7 @@ class PartyPage extends AbstractReactComponent {
      * Vykreslení stránky pro osoby
      */
     render() {
-        const {splitter, status} = this.props;
+        const { splitter, status } = this.props;
 
         const leftPanel = <PartyList/>;
 
@@ -294,7 +296,7 @@ class PartyPage extends AbstractReactComponent {
 
 
 function mapStateToProps(state) {
-    const {app: {partyList, partyDetail, apExtSystemList}, splitter, refTables, userDetail, focus} = state;
+    const { app: { partyList, partyDetail, apExtSystemList }, splitter, refTables, userDetail, focus } = state;
 
     return {
         extSystems: apExtSystemList.fetched ? apExtSystemList.rows : null,

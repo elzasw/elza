@@ -38,7 +38,7 @@ class UserField extends AbstractReactComponent {
     }
 
     handleSearchChange(text) {
-        text = text == "" ? null : text;
+        text = text === "" ? null : text;
 
         WebApi.findUser(text, true, false, 200, this.props.excludedGroupId).then(json => {
             this.setState({

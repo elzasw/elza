@@ -1,10 +1,10 @@
 function areArraysEqual(a, b) {
     if (!a || !b) return false;
 
-    if (a.length != b.length) return false;
+    if (a.length !== b.length) return false;
 
-    for (var i = 0, length = a.length; i < length; i++) {
-        if (a[i] != b[i]) return false;
+    for (let i = 0, length = a.length; i < length; i++) {
+        if (a[i] !== b[i]) return false;
     }
 
     return true;
@@ -23,29 +23,30 @@ function topFromWindow(element) {
 function debounce(func, wait, immediate) {
     if (!wait) return func;
 
-	var timeout;
+    let timeout;
 
-	return function() {
-		var context = this, args = arguments;
+    return function() {
+        const context = this,
+              args = arguments;
 
-		var later = function() {
-			timeout = null;
+        const later = function() {
+            timeout = null;
 
-			if (!immediate) func.apply(context, args);
-		};
+            if (!immediate) func.apply(context, args);
+        };
 
-		var callNow = immediate && !timeout;
+        const callNow = immediate && !timeout;
 
-		clearTimeout(timeout);
-		timeout = setTimeout(later, wait);
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
 
-		if (callNow) func.apply(context, args);
-	};
+        if (callNow) func.apply(context, args);
+    };
 }
 
 export default {
     areArraysEqual: areArraysEqual,
     topDifference: topDifference,
     topFromWindow: topFromWindow,
-    debounce: debounce
+    debounce: debounce,
 };

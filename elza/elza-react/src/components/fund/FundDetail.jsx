@@ -1,14 +1,14 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {connect} from 'react-redux';
-import {Button} from '../ui';
-import {AbstractReactComponent, i18n, Icon, StoreHorizontalLoader} from 'components/shared';
-import {indexById} from 'stores/app/utils.jsx';
-import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx';
-import {selectFundTab} from 'actions/arr/fund.jsx';
-import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx';
-import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx';
-import {routerNavigate} from 'actions/router.jsx';
+import { connect } from 'react-redux';
+import { Button } from '../ui';
+import { AbstractReactComponent, i18n, Icon, StoreHorizontalLoader } from 'components/shared';
+import { indexById } from 'stores/app/utils.jsx';
+import { getFundFromFundAndVersion } from 'components/arr/ArrUtils.jsx';
+import { selectFundTab } from 'actions/arr/fund.jsx';
+import { refInstitutionsFetchIfNeeded } from 'actions/refTables/institutions.jsx';
+import { refRuleSetFetchIfNeeded } from 'actions/refTables/ruleSet.jsx';
+import { routerNavigate } from 'actions/router.jsx';
 
 import './FundDetail.scss';
 
@@ -39,7 +39,7 @@ class FundDetail extends AbstractReactComponent {
 
 
     render() {
-        const {fundDetail, focus, fundCount, refTables: {institutions, ruleSet}} = this.props;
+        const { fundDetail, fundCount, refTables: { institutions, ruleSet } } = this.props;
 
         if (fundDetail.id === null) {
             return <div className='fund-detail-container'>
@@ -78,8 +78,13 @@ class FundDetail extends AbstractReactComponent {
                             <label>{i18n('arr.fund.detail.ruleSet')}:</label>
                             <span>{rule}</span>
                         </div>
-                        <Button className='fund-detail-button' onClick={this.handleShowInArr.bind(this, ver)}><Icon
-                            glyph="fa-folder-open"/>&nbsp;{i18n('arr.fund.action.openInArr')}</Button>
+                        <Button
+                            className='fund-detail-button'
+                            variant="outline-secondary"
+                            onClick={this.handleShowInArr.bind(this, ver)}
+                        >
+                            <Icon glyph="fa-folder-open"/>&nbsp;{i18n('arr.fund.action.openInArr')}
+                        </Button>
                     </div>
                 </div>
             );

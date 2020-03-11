@@ -1,7 +1,6 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {WebApi} from 'actions/index.jsx'
-import {i18n} from 'components/shared';
-import {indexById} from 'stores/app/utils.jsx';
+import { WebApi } from 'actions/index.jsx';
+import { indexById } from 'stores/app/utils.jsx';
 
 export function isStructureNodeForm(action) {
     switch (action.type) {
@@ -11,7 +10,7 @@ export function isStructureNodeForm(action) {
         case types.STRUCTURE_NODE_FORM_SELECT_ID:
             return true;
         default:
-            return false
+            return false;
     }
 }
 
@@ -19,29 +18,30 @@ export function structureNodeFormSelectId(versionId, id) {
     return {
         type: types.STRUCTURE_NODE_FORM_SELECT_ID,
         versionId,
-        id
-    }
+        id,
+    };
 }
 
 function structureNodeFormRequest(versionId, id) {
     return {
         type: types.STRUCTURE_NODE_FORM_REQUEST,
         versionId,
-        id
-    }
+        id,
+    };
 }
+
 function structureNodeFormReceive(versionId, data) {
     return {
         type: types.STRUCTURE_NODE_FORM_RECEIVE,
         versionId,
-        data
-    }
+        data,
+    };
 }
 
 
 function _getArea(getState, versionId) {
     const state = getState();
-    const index = indexById(state.arrRegion.funds, versionId, "versionId");
+    const index = indexById(state.arrRegion.funds, versionId, 'versionId');
     if (index !== null) {
         const fund = state.arrRegion.funds[index];
         return fund.structureNodeForm;
@@ -57,23 +57,23 @@ export function structureNodeFormFetchIfNeeded(versionId, id) {
         const storeArea = _getArea(getState, versionId);
 
         if (storeArea === null) {
-            return
+            return;
         }
 
 
         if (storeArea.currentDataKey !== id) {
             dispatch(structureNodeFormRequest(versionId, id));
             WebApi.getStructureData(versionId, id)
-                .then(json => {
-                    const newStoreArea = _getArea(getState, versionId);
-                    if (newStoreArea === null) {
-                        return;
-                    }
+                  .then(json => {
+                      const newStoreArea = _getArea(getState, versionId);
+                      if (newStoreArea === null) {
+                          return;
+                      }
 
-                    if (json.id === id) {
-                        dispatch(structureNodeFormReceive(versionId, json))
-                    }
-                })
+                      if (json.id === id) {
+                          dispatch(structureNodeFormReceive(versionId, json));
+                      }
+                  });
         }
-    }
+    };
 }

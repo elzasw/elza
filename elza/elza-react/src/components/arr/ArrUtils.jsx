@@ -1,10 +1,10 @@
 /**
  * Utility pro pořádání.
  */
-import {getSetFromIdsList, indexById} from 'stores/app/utils.jsx'
+import { getSetFromIdsList, indexById } from 'stores/app/utils.jsx';
 import React from 'react';
-import {dateTimeToString, dateToString} from 'components/Utils.jsx'
-import {i18n} from 'components/shared';
+import { dateTimeToString } from 'components/Utils.jsx';
+import { i18n } from 'components/shared';
 
 /**
  * Načtení stromového uspořádání - kořenové jsou item group a pod nimi item types. Do stromu se vkládají jen položky, které ještě nejsou použivté v descItemGroups.
@@ -18,7 +18,7 @@ import {i18n} from 'components/shared';
  */
 export function getDescItemsAddTree(descItemGroups, infoTypesMapInput, refTypesMapInput, infoGroups, strictMode = false) {
     // Pro přidání chceme jen ty, které zatím ještě nemáme
-    let infoTypesMap = {...infoTypesMapInput};
+    let infoTypesMap = { ...infoTypesMapInput };
 
     descItemGroups.forEach(group => {
         group.descItemTypes.forEach(descItemType => {
@@ -39,7 +39,7 @@ export function getDescItemsAddTree(descItemGroups, infoTypesMapInput, refTypesM
                         // nový item type na základě původního z refTables
                         ...refTypesMapInput[infoType.id],
                         // obohacení o aktualizované stavy ze serveru
-                        ...itemType
+                        ...itemType,
                     });
                 }
             }
@@ -49,8 +49,8 @@ export function getDescItemsAddTree(descItemGroups, infoTypesMapInput, refTypesM
             descItemTypes.push({
                 groupItem: true,
                 id: infoGroup.code,
-                name: infoGroup.code === "DEFAULT" ? i18n("subNodeForm.descItemGroup.default") : infoGroup.name,
-                children: itemTypes
+                name: infoGroup.code === 'DEFAULT' ? i18n('subNodeForm.descItemGroup.default') : infoGroup.name,
+                children: itemTypes,
             });
         }
     });
@@ -59,9 +59,13 @@ export function getDescItemsAddTree(descItemGroups, infoTypesMapInput, refTypesM
 }
 
 export function getFundFromFundAndVersion(fund, version) {
-    var fundVersionClosed = version.lockDate != null;
-    var fund = Object.assign({}, fund, {versionId: version.id, lockDate: version.lockDate, activeVersion: version, closed: fundVersionClosed});
-    return fund;
+    const fundVersionClosed = version.lockDate != null;
+    return Object.assign({}, fund, {
+        versionId: version.id,
+        lockDate: version.lockDate,
+        activeVersion: version,
+        closed: fundVersionClosed,
+    });
 }
 
 export function getSpecsIds(refType, selectionType, selectedIds) {
@@ -78,7 +82,7 @@ export function getSpecsIds(refType, selectionType, selectedIds) {
             });
         }
     }
-    return specIds
+    return specIds;
 }
 
 export function getNodeParent(nodes, nodeId) {
@@ -102,14 +106,12 @@ export function getNodeParent(nodes, nodeId) {
 }
 
 export function getNodeFirstChild(nodes, nodeId) {
-    var result = null;
-
     var index = indexById(nodes, nodeId);
     if (index != null) {
         var depth = nodes[index].depth;
         index++;
-        if (index < nodes.length && nodes[index].depth == depth + 1) {
-            return nodes[index]
+        if (index < nodes.length && nodes[index].depth === depth + 1) {
+            return nodes[index];
         }
     }
 
@@ -131,9 +133,9 @@ export function getNodePrevSibling(nodes, nodeId) {
     }
 
     if (index >= 0) {
-        return nodes[index]
+        return nodes[index];
     } else {
-        return null
+        return null;
     }
 }
 
@@ -152,9 +154,9 @@ export function getNodeNextSibling(nodes, nodeId) {
     }
 
     if (index < nodes.length) {
-        return nodes[index]
+        return nodes[index];
     } else {
-        return null
+        return null;
     }
 }
 
@@ -200,7 +202,7 @@ export function setSettings(items, id, newItem) {
 
     for (let i = 0; i < items.length; i++) {
         let item = items[i];
-        if (item.id == id) {
+        if (item.id === id) {
             items[i] = newItem;
             break;
         }
@@ -223,16 +225,16 @@ export function getOneSettings(items, type = null, entityType = null, entityId =
     if (items != null) {
         for (let i = 0; i < items.length; i++) {
             let item = items[i];
-            if ((type == null || type == item.settingsType)
-                && (entityType == null || entityType == item.entityType)
-                && (entityId == null || entityId == item.entityId)
+            if ((type == null || type === item.settingsType)
+                && (entityType == null || entityType === item.entityType)
+                && (entityId == null || entityId === item.entityId)
             ) {
                 return item;
             }
         }
     }
 
-    return {entityType: entityType, entityId: entityId, settingsType: type, value: null}
+    return { entityType: entityType, entityId: entityId, settingsType: type, value: null };
 }
 
 /**
@@ -252,9 +254,9 @@ export function getSettings(items, type = null, entityType = null, entityId = nu
     }
 
     items.map((item) => {
-        if ((type == null || type == item.settingsType)
-            && (entityType == null || entityType == item.entityType)
-            && (entityId == null || entityId == item.entityId)
+        if ((type == null || type === item.settingsType)
+            && (entityType == null || entityType === item.entityType)
+            && (entityId == null || entityId === item.entityId)
         ) {
             result.push(item);
         }
@@ -270,7 +272,7 @@ export function getSettings(items, type = null, entityType = null, entityId = nu
  */
 export function createFundRoot(fund) {
     const version = typeof fund.versionId !== 'undefined' ? fund.versionId : fund.fundVersionId;
-    return {id: 'ROOT_' + version, name: fund.name, root: true};
+    return { id: 'ROOT_' + version, name: fund.name, root: true };
 }
 
 /**
@@ -281,7 +283,7 @@ export function createFundRoot(fund) {
 export function isFundRootId(nodeId) {
     var isRoot = false;
     if (typeof nodeId == 'string') {    // pravděpodobně root
-        if (nodeId.substring(0, 5) == 'ROOT_') {
+        if (nodeId.substring(0, 5) === 'ROOT_') {
             isRoot = true;
         }
     }
@@ -312,7 +314,7 @@ export function getParentNode(node, fundTreeNodes) {
  * @param elProps {Object} další properties pro přidání do renderovaných elementů
  */
 export function createReferenceMark(node, elProps) {
-    return createReferenceMarkFromArray(node.referenceMark, elProps)
+    return createReferenceMarkFromArray(node.referenceMark, elProps);
 }
 
 /**
@@ -326,20 +328,21 @@ export function createReferenceMarkFromArray(referenceMark, elProps) {
 
     if (referenceMark) {
         referenceMark.forEach((i, index) => {
-            if (index % 2 == 0) {
+            if (index % 2 === 0) {
                 if (i < 1000) {
-                    var cls = "level";
+                    var cls = 'level';
                     if (i > 999) {
-                        cls = "level small";
+                        cls = 'level small';
                     }
-                    levels.push(<span {...elProps} key={'level' + index} className={cls}>{i}</span>)
+                    levels.push(<span {...elProps} key={'level' + index} className={cls}>{i}</span>);
                 } else {
-                    var iStr = i + "";
-                    levels.push(<span {...elProps} key={'level' + index} title={i} className="level">_{iStr.substr(-2)}</span>)
+                    var iStr = i + '';
+                    levels.push(<span {...elProps} key={'level' + index} title={i}
+                                      className="level">_{iStr.substr(-2)}</span>);
                 }
             } else {
                 if (index + 1 < referenceMark.length) {
-                    levels.push(<span {...elProps} key={'sep' + index} className="separator">{i}</span>)
+                    levels.push(<span {...elProps} key={'sep' + index} className="separator">{i}</span>);
                 }
             }
         });
@@ -366,7 +369,7 @@ export function createReferenceMarkString(node) {
  * @param referenceMark {Array} pole reference mark
  */
 export function createReferenceMarkStringFromArray(referenceMark) {
-    return referenceMark.join(" ");
+    return referenceMark.join(' ');
 }
 
 /**
@@ -376,12 +379,12 @@ export function createReferenceMarkStringFromArray(referenceMark) {
  */
 export function createDigitizationName(digitizationRequest, userDetail) {
     // Uživatelské jméno chceme pouze pokud je definované nebo je jiné než přihlášený uživatel
-    const usernameTmp = digitizationRequest.username ? digitizationRequest.username : "System";
+    const usernameTmp = digitizationRequest.username ? digitizationRequest.username : 'System';
     const username = userDetail ? (usernameTmp !== userDetail.username ? usernameTmp : null) : usernameTmp;
-    const usernameStr = username ? "[" + username + "] " : "";
+    const usernameStr = username ? '[' + username + '] ' : '';
     let text = usernameStr + dateTimeToString(new Date(digitizationRequest.create));
     if (digitizationRequest.nodesCount != null) {
-        text += " (" + digitizationRequest.nodesCount + ")";
+        text += ' (' + digitizationRequest.nodesCount + ')';
     }
     return text;
 }
@@ -393,9 +396,9 @@ export function createDigitizationName(digitizationRequest, userDetail) {
  * @param userDetail detail přihlášeného uživatele
  */
 export function createDaoLinkName(daoLinkRequest, userDetail) {
-    let text = "";
+    let text = '';
     text += i18n('arr.request.title.type.DAO_LINK.' + daoLinkRequest.type);
-    text += " " + daoLinkRequest.didCode;
+    text += ' ' + daoLinkRequest.didCode;
     return text;
 }
 
@@ -406,7 +409,7 @@ export function createDaoLinkName(daoLinkRequest, userDetail) {
  */
 export function getGlyph(type) {
     if (type == null) {
-        return "fa-exclamation-triangle"
+        return 'fa-exclamation-triangle';
     } else {
         return type;
     }
@@ -414,26 +417,27 @@ export function getGlyph(type) {
 
 export function getNodeIcon(colorCoded, iconCode) {
     let iconStyle = {};
-    let backgroundColor, color;
+    let backgroundColor,
+        color;
 
-    if (colorCoded){
-        if (COLOR_MAP[iconCode]){
+    if (colorCoded) {
+        if (COLOR_MAP[iconCode]) {
             backgroundColor = COLOR_MAP[iconCode].background;
             color = COLOR_MAP[iconCode].color;
         } else {
-            backgroundColor = COLOR_MAP["default"].background;
-            color = COLOR_MAP["default"].color;
+            backgroundColor = COLOR_MAP['default'].background;
+            color = COLOR_MAP['default'].color;
         }
 
         iconStyle = {
-            backgroundColor:backgroundColor,
-            color:color
+            backgroundColor: backgroundColor,
+            color: color,
         };
     }
 
     let icon = getGlyph(iconCode);
 
-    if (ICON_REMAP[iconCode] && colorCoded){
+    if (ICON_REMAP[iconCode] && colorCoded) {
         icon = ICON_REMAP[iconCode];
     }
 
@@ -441,42 +445,44 @@ export function getNodeIcon(colorCoded, iconCode) {
         glyph: icon,
         style: iconStyle,
         fill: iconStyle.backgroundColor,
-        stroke: "none"
+        stroke: 'none',
     });
 }
 
 export const ICON_REMAP = {
-    "fa-folder-o":"folder",
-    "ez-serie":"serie",
-    "fa-sitemap":"sitemap",
-    "fa-file-text-o":"fileText",
-    "ez-item-part-o":"fileTextPart",
-    "fa-exclamation-triangle":"triangleExclamation"
+    'fa-folder-o': 'folder',
+    'ez-serie': 'serie',
+    'fa-sitemap': 'sitemap',
+    'fa-file-text-o': 'fileText',
+    'ez-item-part-o': 'fileTextPart',
+    'fa-exclamation-triangle': 'triangleExclamation',
 };
 
 const COLOR_MAP = {
-    "fa-database":{background:"#fff",color:"#000"},
-    "fa-folder-o":{background:"#ffcc00",color:"#fff"},
-    "ez-serie":{background:"#6696dd", color:"#fff"},
-    "fa-sitemap":{background:"#4444cc", color:"#fff"},
-    "fa-file-text-o":{background:"#ff972c", color:"#fff"},
-    "ez-item-part-o":{background:"#cc3820", color: "#fff"},
-    "default":{background:"#333", color: "#fff"}
-}
+    'fa-database': { background: '#fff', color: '#000' },
+    'fa-folder-o': { background: '#ffcc00', color: '#fff' },
+    'ez-serie': { background: '#6696dd', color: '#fff' },
+    'fa-sitemap': { background: '#4444cc', color: '#fff' },
+    'fa-file-text-o': { background: '#ff972c', color: '#fff' },
+    'ez-item-part-o': { background: '#cc3820', color: '#fff' },
+    'default': { background: '#333', color: '#fff' },
+};
 
-export const DIGITIZATION = "DIGITIZATION";
-export const DAO = "DAO";
-export const DAO_LINK = "DAO_LINK";
+export const DIGITIZATION = 'DIGITIZATION';
+export const DAO = 'DAO';
+export const DAO_LINK = 'DAO_LINK';
+
 export function getRequestType(digReq) {
-    switch (digReq["@class"]) {
-        case ".ArrDigitizationRequestVO":
+    switch (digReq['@class']) {
+        case '.ArrDigitizationRequestVO':
             return DIGITIZATION;
-        case ".ArrDaoLinkRequestVO":
+        case '.ArrDaoLinkRequestVO':
             return DAO_LINK;
-        case ".ArrDaoRequestVO":
+        case '.ArrDaoRequestVO':
             return DAO;
+        default:
+            return null;
     }
-    return null;
 }
 
 export function hasDescItemTypeValue(dataType) {
@@ -498,7 +504,7 @@ export function hasDescItemTypeValue(dataType) {
         case 'ENUM':
             return false;
         default:
-            console.error("Unsupported data type", dataType);
+            console.error('Unsupported data type', dataType);
             return false;
     }
 }

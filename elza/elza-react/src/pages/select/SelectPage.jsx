@@ -5,11 +5,6 @@ import {Button} from '../../components/ui';
 
 import './SelectPage.scss';
 
-const OPEN_PAGE = {
-    PARTY: 'party',
-    REGISTRY: 'registry',
-};
-
 /**
  * Stránka rejstříků.
  * Zobrazuje stranku s vyberem rejstriku a jeho detailem/editaci

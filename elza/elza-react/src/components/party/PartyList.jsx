@@ -1,20 +1,32 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {connect} from 'react-redux'
-import {ListBox, AbstractReactComponent, SearchWithGoto, i18n, ArrPanel, StoreHorizontalLoader, Icon, FormInput} from 'components/shared';
-import {indexById} from 'stores/app/utils.jsx'
-import {partyListFetchIfNeeded, partyListFilter, partyListInvalidate, partyDetailFetchIfNeeded, partyArrReset, PARTY_TYPE_CODES, RELATION_CLASS_CODES, DEFAULT_PARTY_LIST_MAX_SIZE} from 'actions/party/party.jsx'
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import {WebApi} from 'actions/index.jsx';
+import { connect } from 'react-redux';
+import {
+    AbstractReactComponent,
+    FormInput,
+    i18n,
+    ListBox,
+    SearchWithGoto,
+    StoreHorizontalLoader,
+} from 'components/shared';
+import { indexById } from 'stores/app/utils.jsx';
+import {
+    DEFAULT_PARTY_LIST_MAX_SIZE,
+    partyDetailFetchIfNeeded,
+    partyListFetchIfNeeded,
+    partyListFilter,
+    partyListInvalidate,
+} from 'actions/party/party.jsx';
+import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
 
 import './PartyList.scss';
-import PartyListItem from "./PartyListItem";
-import Autocomplete from "../shared/autocomplete/Autocomplete";
-import ListPager from "../shared/listPager/ListPager";
-import * as perms from "../../actions/user/Permission";
-import {FOCUS_KEYS} from "../../constants.tsx";
-import {requestScopesIfNeeded} from "../../actions/refTables/scopesData";
-import * as StateApproval from "../enum/StateApproval";
+import PartyListItem from './PartyListItem';
+import Autocomplete from '../shared/autocomplete/Autocomplete';
+import ListPager from '../shared/listPager/ListPager';
+import * as perms from '../../actions/user/Permission';
+import { FOCUS_KEYS } from '../../constants.tsx';
+import { requestScopesIfNeeded } from '../../actions/refTables/scopesData';
+import * as StateApproval from '../enum/StateApproval';
 
 /**
  * Komponenta list osob
@@ -22,16 +34,16 @@ import * as StateApproval from "../enum/StateApproval";
 class PartyList extends AbstractReactComponent {
 
     static propTypes = {
-        maxSize: PropTypes.number
+        maxSize: PropTypes.number,
     };
 
     static defaultProps = {
-        maxSize: DEFAULT_PARTY_LIST_MAX_SIZE
+        maxSize: DEFAULT_PARTY_LIST_MAX_SIZE,
     };
 
     componentDidMount() {
         this.fetchIfNeeded();
-        this.trySetFocus()
+        this.trySetFocus();
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -49,36 +61,40 @@ class PartyList extends AbstractReactComponent {
     };
 
     trySetFocus = (props = this.props) => {
-        const {focus} = props;
+        const { focus } = props;
 
         if (canSetFocus() && focus) {
             if (isFocusFor(focus, null, 1)) {   // focus po ztrátě
                 if (this.refs.partyList) {   // ještě nemusí existovat
                     this.setState({}, () => {
                         this.refs.partyList.focus();
-                        focusWasSet()
-                    })
+                        focusWasSet();
+                    });
                 }
             } else if (isFocusFor(focus, FOCUS_KEYS.PARTY, 1) || isFocusFor(focus, FOCUS_KEYS.PARTY, 1, 'list')) {
                 this.setState({}, () => {
                     this.refs.partyList.focus();
-                    focusWasSet()
-                })
+                    focusWasSet();
+                });
             }
         }
     };
 
     handleFilterType = (e) => {
         const val = e.target.value;
-        this.props.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, type: val == -1 ? null : val}));
+        this.props.dispatch(partyListFilter({ ...this.props.partyList.filter, from: 0, type: val === -1 ? null : val }));
     };
 
     handleFilterText = (filterText) => {
-        this.props.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, text: !filterText || filterText.length === 0 ? null : filterText}));
+        this.props.dispatch(partyListFilter({
+            ...this.props.partyList.filter,
+            from: 0,
+            text: !filterText || filterText.length === 0 ? null : filterText,
+        }));
     };
 
     handleFilterTextClear = () => {
-        this.props.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, text: null}));
+        this.props.dispatch(partyListFilter({ ...this.props.partyList.filter, from: 0, text: null }));
     };
 
     handlePartyDetail = (item) => {
@@ -86,66 +102,73 @@ class PartyList extends AbstractReactComponent {
     };
 
     handleFilterPartyScope = (item) => {
-        this.props.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, scopeId: item ? item.id : null}));
+        this.props.dispatch(partyListFilter({
+            ...this.props.partyList.filter,
+            from: 0,
+            scopeId: item ? item.id : null,
+        }));
     };
 
     handleFilterPartyState = (item) => {
-        this.props.dispatch(partyListFilter({...this.props.partyList.filter, from: 0, state: item ? item.id : null}));
+        this.props.dispatch(partyListFilter({ ...this.props.partyList.filter, from: 0, state: item ? item.id : null }));
     };
 
     handleFilterPrev = () => {
         let from = this.props.partyList.filter.from;
         if (this.props.partyList.filter.from >= DEFAULT_PARTY_LIST_MAX_SIZE) {
             from = this.props.partyList.filter.from - DEFAULT_PARTY_LIST_MAX_SIZE;
-            this.props.dispatch(partyListFilter({...this.props.partyList.filter, from}));
+            this.props.dispatch(partyListFilter({ ...this.props.partyList.filter, from }));
         }
     };
 
     handleFilterNext = () => {
-       let from = this.props.partyList.filter.from;
-       if (this.props.partyList.filter.from < this.props.partyList.count - DEFAULT_PARTY_LIST_MAX_SIZE) {
-           from = this.props.partyList.filter.from + DEFAULT_PARTY_LIST_MAX_SIZE;
-           this.props.dispatch(partyListFilter({...this.props.partyList.filter, from}));
-       }
+        let from = this.props.partyList.filter.from;
+        if (this.props.partyList.filter.from < this.props.partyList.count - DEFAULT_PARTY_LIST_MAX_SIZE) {
+            from = this.props.partyList.filter.from + DEFAULT_PARTY_LIST_MAX_SIZE;
+            this.props.dispatch(partyListFilter({ ...this.props.partyList.filter, from }));
+        }
     };
 
     filterScopes(scopes) {
         const { userDetail } = this.props;
-        return scopes.filter((scope) => userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {type: perms.AP_SCOPE_WR,scopeId: scope.id}));
+        return scopes.filter((scope) => userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
+            type: perms.AP_SCOPE_WR,
+            scopeId: scope.id,
+        }));
     }
 
     getScopesWithAll(scopes) {
-        const defaultValue = {name: i18n('registry.all')};
+        const defaultValue = { name: i18n('registry.all') };
         if (scopes && scopes.length > 0 && scopes[0] && scopes[0].scopes && scopes[0].scopes.length > 0) {
-            return this.filterScopes([defaultValue, ...scopes[0].scopes])
+            return this.filterScopes([defaultValue, ...scopes[0].scopes]);
         }
         return [defaultValue];
     }
 
-    getScopeById(scopeId, scopes){
+    getScopeById(scopeId, scopes) {
         return scopeId && scopes && scopes.length > 0 && scopes[0].scopes.find(scope => (scope.id === scopeId)).name;
     }
 
     getStateWithAll() {
-        const defaultValue = {name: i18n('party.apState')};
+        const defaultValue = { name: i18n('party.apState') };
         return [defaultValue, ...StateApproval.values.map(item => {
             return {
                 id: item,
-                name: StateApproval.getCaption(item)
-            }
-        })]
+                name: StateApproval.getCaption(item),
+            };
+        })];
     }
 
     renderListItem = (props) => {
-        const {item} = props;
+        const { item } = props;
         return <PartyListItem
             {...item}
             onClick={this.handlePartyDetail.bind(this, item)}
-            relationTypesForClass={this.props.relationTypesForClass} />
+            relationTypesForClass={this.props.relationTypesForClass}/>;
     };
 
     render() {
-        const {partyDetail, partyList, partyTypes, maxSize, scopes} = this.props;
+        const { partyDetail, partyList, partyTypes, maxSize, scopes } = this.props;
 
         let activeIndex = null;
         if (partyList.fetched && partyDetail.id !== null) {
@@ -167,7 +190,9 @@ class PartyList extends AbstractReactComponent {
                     onSelect={this.handlePartyDetail}
                 />;
             } else {
-                list = <ul><li className="noResult">{i18n('search.action.noResult')}</li></ul>;
+                list = <ul>
+                    <li className="noResult">{i18n('search.action.noResult')}</li>
+                </ul>;
             }
         }
 
@@ -176,18 +201,19 @@ class PartyList extends AbstractReactComponent {
         return <div className="party-list">
             <div className="filter">
                 <Autocomplete
-                    inputProps={ {placeholder: this.getScopeById(partyList.filter.scopeId, scopes) || i18n("party.recordScope")} }
+                    inputProps={{ placeholder: this.getScopeById(partyList.filter.scopeId, scopes) || i18n('party.recordScope') }}
                     items={this.getScopesWithAll(scopes)}
                     onChange={this.handleFilterPartyScope}
                     value={scopes && partyList.filter.scopeId ? this.getScopeById(partyList.filter.scopeId, scopes) : 'registry.all'}
                 />
                 <Autocomplete
-                    inputProps={ {placeholder: partyList.filter.state ? StateApproval.getCaption(partyList.filter.state) : i18n("party.apState")} }
+                    inputProps={{ placeholder: partyList.filter.state ? StateApproval.getCaption(partyList.filter.state) : i18n('party.apState') }}
                     items={this.getStateWithAll()}
                     onChange={this.handleFilterPartyState}
                     value={partyList.filter.state}
                 />
-                <FormInput as="select" className="type" onChange={this.handleFilterType} value={partyList.filter.type} disabled={!partyTypesFetched}>
+                <FormInput as="select" className="type" onChange={this.handleFilterType} value={partyList.filter.type}
+                           disabled={!partyTypesFetched}>
                     <option value={-1}>{i18n('global.all')}</option>
                     {partyTypes && partyTypes.map(type => <option value={type.id} key={type.id}>{type.name}</option>)}
                 </FormInput>
@@ -204,7 +230,8 @@ class PartyList extends AbstractReactComponent {
             </div>
             <StoreHorizontalLoader store={partyList}/>
             {list}
-            {isFetched && partyList.rows.length > maxSize && <span className="items-count">{i18n('party.list.itemsVisibleCountFrom', partyList.filteredRows.length, partyList.count)}</span>}
+            {isFetched && partyList.rows.length > maxSize && <span
+                className="items-count">{i18n('party.list.itemsVisibleCountFrom', partyList.filteredRows.length, partyList.count)}</span>}
             {partyList.count > maxSize && <ListPager
                 prev={this.handleFilterPrev}
                 next={this.handleFilterNext}
@@ -212,12 +239,12 @@ class PartyList extends AbstractReactComponent {
                 maxSize={maxSize}
                 totalCount={this.props.partyList.count}
             />}
-        </div>
+        </div>;
     }
 }
 
 export default connect((state) => {
-    const {app:{partyList, partyDetail}, userDetail, focus, refTables:{partyTypes, scopesData}} = state;
+    const { app: { partyList, partyDetail }, userDetail, focus, refTables: { partyTypes, scopesData } } = state;
     return {
         focus,
         partyList,
@@ -225,6 +252,6 @@ export default connect((state) => {
         partyTypes: partyTypes.fetched ? partyTypes.items : false,
         relationTypesForClass: partyTypes.fetched ? partyTypes.relationTypesForClass : false,
         scopes: scopesData.scopes,
-        userDetail
-    }
+        userDetail,
+    };
 })(PartyList);

@@ -1,8 +1,8 @@
-import {WebApi} from 'actions/index.jsx';
+import { WebApi } from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
-import {indexById, objectById} from 'stores/app/utils.jsx'
-import {modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {savingApiWrapper} from 'actions/global/status.jsx';
+import { objectById } from 'stores/app/utils.jsx';
+import { savingApiWrapper } from 'actions/global/status.jsx';
+
 export function isFundFilesAction(action) {
     switch (action.type) {
         case types.FUND_FILES_REQUEST:
@@ -10,12 +10,12 @@ export function isFundFilesAction(action) {
         case types.FUND_FILES_FILTER:
             return true;
         default:
-            return false
+            return false;
     }
 }
 
 function _dataGridKey(state) {
-    return '-filterText' + state.filterText
+    return '-filterText' + state.filterText;
 }
 
 export function fetchFundFilesIfNeeded(versionId, fundId) {
@@ -23,7 +23,7 @@ export function fetchFundFilesIfNeeded(versionId, fundId) {
         const state = getState();
         const fund = objectById(state.arrRegion.funds, versionId, 'versionId');
         if (!fund) {
-            return
+            return;
         }
 
         const fundFiles = fund.fundFiles;
@@ -32,42 +32,42 @@ export function fetchFundFilesIfNeeded(versionId, fundId) {
             dispatch(_dataRequest(versionId, dataKey));
 
             WebApi.findFundFiles(fundId, fundFiles.filterText)
-            .then(response => {
-                const newFund = objectById(state.arrRegion.funds, versionId, 'versionId');
-                if (newFund !== null) {
-                    const newFundFiles = fund.fundFiles;
-                    const newDataKey = _dataGridKey(newFundFiles);
-                    if (newDataKey === dataKey) {
-                        dispatch(_dataReceive(versionId, response))
-                    }
-                }
-            })
+                  .then(response => {
+                      const newFund = objectById(state.arrRegion.funds, versionId, 'versionId');
+                      if (newFund !== null) {
+                          const newFundFiles = fund.fundFiles;
+                          const newDataKey = _dataGridKey(newFundFiles);
+                          if (newDataKey === dataKey) {
+                              dispatch(_dataReceive(versionId, response));
+                          }
+                      }
+                  });
         }
-    }
+    };
 }
 
 function _dataRequest(versionId, dataKey) {
     return {
         type: types.FUND_FILES_REQUEST,
         versionId,
-        dataKey
-    }
+        dataKey,
+    };
 }
 
 function _dataReceive(versionId, data) {
     return {
         type: types.FUND_FILES_RECEIVE,
         versionId,
-        data
-    }
+        data,
+    };
 }
 
 export function fundFilesFilterByText(versionId, filterText) {
     return {
         type: types.FUND_FILES_FILTER,
         versionId,
-        filterText
-    }
+        filterText,
+    };
 }
 
 export function fundFilesCreate(fundId, data, callback = null) {
@@ -80,16 +80,16 @@ export function fundFilesCreate(fundId, data, callback = null) {
             }
         }
         if (data.file && data.file.length > 0) {
-            formData.append("file", data.file[0]);
+            formData.append('file', data.file[0]);
         }
-        formData.append("fundId", fundId);
-        formData.append("@class", ".ArrFileVO");
+        formData.append('fundId', fundId);
+        formData.append('@class', '.ArrFileVO');
 
         return savingApiWrapper(dispatch, WebApi.createFundFileRaw(formData)
-            .then((json) => {
-                return callback && callback(json);
-        }))
-    }
+                                                .then((json) => {
+                                                    return callback && callback(json);
+                                                }));
+    };
 }
 
 export function fundFilesReplace(fileId, file) {
@@ -98,13 +98,13 @@ export function fundFilesReplace(fileId, file) {
         const formData = new FormData();
 
         if (file) {
-            formData.append("file", file);
+            formData.append('file', file);
         }
-        formData.append("id", fileId);
-        formData.append("@class", ".ArrFileVO");
+        formData.append('id', fileId);
+        formData.append('@class', '.ArrFileVO');
 
-        savingApiWrapper(dispatch, WebApi.updateFundFileRaw(fileId, formData))
-    }
+        savingApiWrapper(dispatch, WebApi.updateFundFileRaw(fileId, formData));
+    };
 }
 
 export function fundFilesUpdate(fundId, fileId, data, callback = null) {
@@ -117,21 +117,21 @@ export function fundFilesUpdate(fundId, fileId, data, callback = null) {
             }
         }
         if (data.file && data.file.length > 0) {
-            formData.append("file", data.file[0]);
+            formData.append('file', data.file[0]);
         }
-        formData.append("id", fileId);
-        formData.append("fundId", fundId);
-        formData.append("@class", ".ArrFileVO");
+        formData.append('id', fileId);
+        formData.append('fundId', fundId);
+        formData.append('@class', '.ArrFileVO');
 
         savingApiWrapper(dispatch, WebApi.updateFundFileRaw(fileId, formData).then((json) => {
             return callback && callback(json);
         }));
-    }
+    };
 }
 
 
 export function fundFilesDelete(versionId, fundId, fileId) {
     return (dispatch, getState) => {
-        WebApi.deleteArrFile(fileId)
-    }
+        WebApi.deleteArrFile(fileId);
+    };
 }

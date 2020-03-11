@@ -2,10 +2,9 @@
  * Akce pro doplňující informace k záložce NODE.
  */
 
-import {WebApi} from 'actions/index.jsx';
-import {findByRoutingKeyInGlobalState, indexById} from 'stores/app/utils.jsx'
-import {barrier} from 'components/Utils.jsx'
-import {isFundRootId} from 'components/arr/ArrUtils.jsx'
+import { WebApi } from 'actions/index.jsx';
+import { findByRoutingKeyInGlobalState } from 'stores/app/utils.jsx';
+import { isFundRootId } from 'components/arr/ArrUtils.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 
 export function isNodeInfoAction(action) {
@@ -13,9 +12,9 @@ export function isNodeInfoAction(action) {
         case types.FUND_NODE_INFO_REQUEST:
         case types.FUND_NODE_INFO_RECEIVE:
         case types.FUND_NODE_INFO_INVALIDATE:
-            return true
+            return true;
         default:
-            return false
+            return false;
     }
 }
 
@@ -42,11 +41,11 @@ export function fundNodeInfoFetchIfNeeded(versionId, nodeId, routingKey, showPar
         const state = getState();
         const node = getNode(state, versionId, routingKey);
         //console.log("FETCH_NODE",node);
-        if (node != null && (!node.nodeInfoFetched || node.nodeInfoDirty ) && !node.isNodeInfoFetching) {
+        if (node != null && (!node.nodeInfoFetched || node.nodeInfoDirty) && !node.isNodeInfoFetching) {
             //console.log("FETCHING_NODE_INFO");
             return dispatch(fundNodeInfoFetch(versionId, nodeId, routingKey, showParents));
         }
-    }
+    };
 }
 
 /**
@@ -66,10 +65,10 @@ export function fundNodeInfoFetch(versionId, nodeId, routingKey, showParents) {
         request.then(data => {
             return {
                 childNodes: data.children ? data.children : [],
-                parentNodes: data.parents ? data.parents : []
-            }
+                parentNodes: data.parents ? data.parents : [],
+            };
         })
-        .then(json => dispatch(fundNodeInfoReceive(versionId, nodeId, routingKey, json)));
+               .then(json => dispatch(fundNodeInfoReceive(versionId, nodeId, routingKey, json)));
     };
 }
 
@@ -88,8 +87,8 @@ export function fundNodeInfoReceive(versionId, nodeId, routingKey, json, viewSta
         nodeCount: json.nodeCount,
         parentNodes: json.parentNodes,
         receivedAt: Date.now(),
-        viewStartIndexInvalidate
-    }
+        viewStartIndexInvalidate,
+    };
 }
 
 /**
@@ -100,9 +99,10 @@ export function fundNodeInfoRequest(versionId, nodeId, routingKey) {
         versionId,
         nodeId,
         routingKey,
-        type: types.FUND_NODE_INFO_REQUEST
-    }
+        type: types.FUND_NODE_INFO_REQUEST,
+    };
 }
+
 /**
  * Marks node info as invalid to force new data request.
  */
@@ -111,6 +111,6 @@ export function fundNodeInfoInvalidate(versionId, nodeId, routingKey) {
         versionId,
         nodeId,
         routingKey,
-        type: types.FUND_NODE_INFO_INVALIDATE
-    }
+        type: types.FUND_NODE_INFO_INVALIDATE,
+    };
 }

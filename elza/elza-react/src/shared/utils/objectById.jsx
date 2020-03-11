@@ -4,7 +4,7 @@ export default function objectById(arr, id, attrName = 'id') {
     }
     const len = arr.length;
     for (let a = 0; a < len; a++) {
-        if (arr[a][attrName] == id) {
+        if (arr[a][attrName] === id) {
             return arr[a];
         }
     }

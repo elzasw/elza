@@ -1,14 +1,14 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
 import classNames from 'classnames';
 
-import {i18n, Icon, RibbonGroup, RibbonSplit} from 'components/shared';
-import {Button} from '../../components/ui';
-import {AREA_PARTY_DETAIL} from 'actions/party/party.jsx';
-import {AREA_REGISTRY_DETAIL} from 'actions/registry/registry.jsx';
-import {storeFromArea} from 'shared/utils';
+import { i18n, Icon, RibbonGroup, RibbonSplit } from 'components/shared';
+import { Button } from '../../components/ui';
+import { AREA_PARTY_DETAIL } from 'actions/party/party.jsx';
+import { AREA_REGISTRY_DETAIL } from 'actions/registry/registry.jsx';
+import { storeFromArea } from 'shared/utils';
 import SelectPage from './SelectPage.jsx';
 import RegistryPage from '../registry/RegistryPage.jsx';
 import PartyPage from '../party/PartyPage.jsx';
@@ -37,7 +37,7 @@ class RegistrySelectPage extends SelectPage {
 
     handlePageChange = (page) => {
         if (this.state.openPage !== page) {
-            this.setState({openPage: page});
+            this.setState({ openPage: page });
         }
     };
 
@@ -45,7 +45,7 @@ class RegistrySelectPage extends SelectPage {
      * @override
      */
     handleConfirm = () => {
-        const {registryDetail, partyDetail, onSelect} = this.props;
+        const { registryDetail, partyDetail, onSelect } = this.props;
         switch (this.state.openPage) {
             case OPEN_PAGE.PARTY:
                 if (!partyDetail.fetched || partyDetail.isFetching || !partyDetail.id) {
@@ -59,19 +59,22 @@ class RegistrySelectPage extends SelectPage {
                 }
                 onSelect(registryDetail.data);
                 break;
+            default:
+                break;
         }
         this.handleClose();
     };
 
     buildRibbonParts() {
-        const {openPage} = this.state;
-        const {hasParty} = this.props;
+        const { openPage } = this.state;
+        const { hasParty } = this.props;
 
 
         const parts = super.buildRibbonParts();
         parts.primarySection.push(<RibbonSplit key={'ribbon-spliter-pages'}/>);
         const items = [];
-        items.push(<Button key="registry-btn-key-reg" className={classNames({active: openPage == OPEN_PAGE.REGISTRY})}
+        items.push(<Button key="registry-btn-key-reg"
+                           className={classNames({ active: openPage === OPEN_PAGE.REGISTRY })}
                            onClick={this.handlePageChange.bind(this, OPEN_PAGE.REGISTRY)}>
             <Icon glyph="fa-th-list"/>
             <div><span className="btnText">{i18n('ribbon.action.registry')}</span></div>
@@ -79,7 +82,7 @@ class RegistrySelectPage extends SelectPage {
 
         if (hasParty) {
             items.push(<Button key={'registry-btn-key-party'}
-                               className={classNames({active: openPage == OPEN_PAGE.PARTY})}
+                               className={classNames({ active: openPage === OPEN_PAGE.PARTY })}
                                onClick={this.handlePageChange.bind(this, OPEN_PAGE.PARTY)}>
                 <Icon glyph="fa-users"/>
                 <div><span className="btnText">{i18n('ribbon.action.party')}</span></div>
@@ -105,7 +108,7 @@ class RegistrySelectPage extends SelectPage {
     }
 
     render() {
-        const {openPage} = this.state;
+        const { openPage } = this.state;
         const props = this.getPageProps();
 
         switch (openPage) {
@@ -113,6 +116,8 @@ class RegistrySelectPage extends SelectPage {
                 return <RegistryPage {...props} />;
             case OPEN_PAGE.PARTY:
                 return <PartyPage {...props} />;
+            default:
+                break;
         }
     }
 }

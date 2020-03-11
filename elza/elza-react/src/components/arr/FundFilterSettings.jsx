@@ -130,6 +130,8 @@ const renderCoordinatesFields = (fields) => {
                 </div>,
             );
             return vals;
+        default:
+            return null;
     }
 };
 

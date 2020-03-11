@@ -4,14 +4,13 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import ReactDOM from 'react-dom'
 
 import './SearchWithGoto.scss';
-import AbstractReactComponent from "../../AbstractReactComponent";
-import NoFocusButton from "../button/NoFocusButton";
-import Search from "./Search";
-import Icon from "../icon/Icon";
-import i18n from "../../i18n";
+import AbstractReactComponent from '../../AbstractReactComponent';
+import NoFocusButton from '../button/NoFocusButton';
+import Search from './Search';
+import Icon from '../icon/Icon';
+import i18n from '../../i18n';
 
 class SearchWithGoto extends AbstractReactComponent {
     static propTypes = {
@@ -32,7 +31,7 @@ class SearchWithGoto extends AbstractReactComponent {
     };
 
     static defaultProps = {
-        type: "GO_TO",
+        type: 'GO_TO',
     };
 
     state = {
@@ -40,97 +39,105 @@ class SearchWithGoto extends AbstractReactComponent {
         showFilterResult: typeof this.props.showFilterResult !== 'undefined' ? this.props.showFilterResult : false,
     };
 
-    UNSAFE_componentWillReceiveProps(nextProps){
+    UNSAFE_componentWillReceiveProps(nextProps) {
         var filterText = this.state.filterText;
         if (nextProps.filterText !== 'undefined' && nextProps.filterText !== this.props.filterText) {
-            filterText = nextProps.filterText
+            filterText = nextProps.filterText;
         }
 
         this.setState({
             filterText: filterText,
             showFilterResult: typeof nextProps.showFilterResult !== 'undefined' ? nextProps.showFilterResult : this.state.showFilterResult,
-        })
+        });
     }
 
     handleOnSearch = (filterText, searchByEnter, shiftKey) => {
-        const {type, onFulltextNextItem, onFulltextPrevItem, itemsCount, selIndex, showFilterResult, onFulltextSearch} = this.props;
+        const { type, onFulltextNextItem, onFulltextPrevItem, itemsCount, selIndex, showFilterResult, onFulltextSearch } = this.props;
 
         switch (type) {
-            case "GO_TO":
+            case 'GO_TO':
                 if (searchByEnter) {    // při hledání pomocí enter se chováme jinak - pokud již něco vyledaného je, jdeme na další (případně předchozí) výsledek
                     if (showFilterResult) { // je něco vyhledáno a nic mezitím nebylo změněno
                         if (!shiftKey) {
                             if (selIndex + 1 < itemsCount) {
-                                onFulltextNextItem()
+                                onFulltextNextItem();
                             }
                         } else {
                             if (selIndex > 0) {
-                                onFulltextPrevItem()
+                                onFulltextPrevItem();
                             }
                         }
                     } else {
-                        onFulltextSearch(filterText)
+                        onFulltextSearch(filterText);
                     }
                 } else {    // standardní hledání kliknutím na tlačítko hledat
-                    onFulltextSearch(filterText)
+                    onFulltextSearch(filterText);
                 }
                 break;
-            case "INFO":
+            case 'INFO':
                 onFulltextSearch(filterText);
+                break;
+            default:
                 break;
         }
     };
 
     handleFulltextChange = (value) => {
-        const {onFulltextChange} = this.props;
+        const { onFulltextChange } = this.props;
 
         this.setState({
             filterText: value,
             showFilterResult: false,
         }, () => {
-            onFulltextChange && onFulltextChange(value)
-        })
+            onFulltextChange && onFulltextChange(value);
+        });
     };
 
     handleClear = () => {
-        const {onFulltextSearch} = this.props;
+        const { onFulltextSearch } = this.props;
 
         this.handleFulltextChange('');
-        onFulltextSearch('')
+        onFulltextSearch('');
     };
 
     render() {
-        const {type, itemsCount, allItemsCount, textAreaInput, placeholder, selIndex, onFulltextNextItem, onFulltextPrevItem,
-            extendedSearch, onClickExtendedSearch, extendedReadOnly} = this.props;
-        const {filterText, showFilterResult} = this.state;
+        const {
+                  type, itemsCount, allItemsCount, textAreaInput, placeholder, selIndex, onFulltextNextItem, onFulltextPrevItem,
+                  extendedSearch, onClickExtendedSearch, extendedReadOnly,
+              } = this.props;
+        const { filterText, showFilterResult } = this.state;
 
         const actionAddons = [];
         switch (type) {
-            case "GO_TO": {
+            case 'GO_TO': {
                 if (showFilterResult) {
                     let searchedInfo;
                     if (itemsCount > 0) {
                         searchedInfo = <div className='fa-tree-lazy-search-info'>
                             ({selIndex + 1} z {itemsCount})
-                        </div>
+                        </div>;
                     } else {
                         searchedInfo = <div className='fa-tree-lazy-search-info'>
                             ({i18n('search.not.found')})
-                        </div>
+                        </div>;
                     }
 
                     if (itemsCount > 1) {
                         let prevButtonEnabled = selIndex > 0;
                         let nextButtonEnabled = selIndex < itemsCount - 1;
 
-                        actionAddons.push(<NoFocusButton disabled={!nextButtonEnabled} className="next" onClick={onFulltextNextItem}><Icon glyph='fa-chevron-down'/></NoFocusButton>)
-                        actionAddons.push(<NoFocusButton disabled={!prevButtonEnabled} className="prev" onClick={onFulltextPrevItem}><Icon glyph='fa-chevron-up'/></NoFocusButton>)
+                        actionAddons.push(<NoFocusButton disabled={!nextButtonEnabled} className="next"
+                                                         onClick={onFulltextNextItem}><Icon
+                            glyph='fa-chevron-down'/></NoFocusButton>);
+                        actionAddons.push(<NoFocusButton disabled={!prevButtonEnabled} className="prev"
+                                                         onClick={onFulltextPrevItem}><Icon
+                            glyph='fa-chevron-up'/></NoFocusButton>);
                     }
-                    actionAddons.push(searchedInfo)
+                    actionAddons.push(searchedInfo);
                 }
             }
-            break;
-            case "INFO": {
+                break;
+            case 'INFO': {
                 if (showFilterResult) {
                     let searchedText;
                     const filtered = this.props.filterText ? true : false;
@@ -150,10 +157,10 @@ class SearchWithGoto extends AbstractReactComponent {
                             searchedText = i18n('search.found.more', itemsCount, allItemsCount);
                         }
                     }
-                    actionAddons.push(<div className='fa-tree-lazy-search-info'>{searchedText}</div>)
+                    actionAddons.push(<div className='fa-tree-lazy-search-info'>{searchedText}</div>);
                 }
             }
-            break;
+                break;
         }
 
         return <Search
@@ -167,8 +174,8 @@ class SearchWithGoto extends AbstractReactComponent {
             extendedSearch={extendedSearch}
             onClickExtendedSearch={onClickExtendedSearch}
             extendedReadOnly={extendedReadOnly}
-        />
+        />;
     }
 }
 
-export default SearchWithGoto
+export default SearchWithGoto;

@@ -81,7 +81,6 @@ class AddUserForm extends AbstractReactComponent {
     };
 
     transformData = (data) => {
-        const {create} = this.props;
         const {passwordAgain, shibbolethCheckbox, password, shibboleth, passwordCheckbox, ...other} = data;
 
         let newData = {

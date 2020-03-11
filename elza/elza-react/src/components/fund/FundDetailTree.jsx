@@ -3,73 +3,82 @@
  */
 
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Tabs} from 'components/shared';
+import { connect } from 'react-redux';
+import { AbstractReactComponent, i18n } from 'components/shared';
 import * as types from 'actions/constants/ActionTypes.js';
-import {Dropdown} from 'react-bootstrap';
-import {fundTreeFulltextChange, fundTreeFulltextSearch, fundTreeSelectNode, fundTreeFocusNode, fundTreeFetchIfNeeded, fundTreeNodeExpand, fundTreeFulltextNextItem, fundTreeFulltextPrevItem, fundTreeNodeCollapse, fundTreeCollapse} from 'actions/arr/fundTree.jsx'
-import {fundSelectSubNode} from 'actions/arr/node.jsx';
-import {createFundRoot, getParentNode} from './../arr/ArrUtils.jsx'
-import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu.jsx'
-import {propsEquals} from 'components/Utils.jsx'
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx'
-import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx'
-import {selectFundTab} from 'actions/arr/fund.jsx'
-import {routerNavigate} from 'actions/router.jsx'
-import FundTreeLazy from "../arr/FundTreeLazy";
-import {FOCUS_KEYS} from "../../constants.tsx";
+import { Dropdown } from 'react-bootstrap';
+import {
+    fundTreeCollapse,
+    fundTreeFetchIfNeeded,
+    fundTreeFocusNode,
+    fundTreeFulltextChange,
+    fundTreeFulltextNextItem,
+    fundTreeFulltextPrevItem,
+    fundTreeFulltextSearch,
+    fundTreeNodeCollapse,
+    fundTreeNodeExpand,
+    fundTreeSelectNode,
+} from 'actions/arr/fundTree.jsx';
+import { fundSelectSubNode } from 'actions/arr/node.jsx';
+import { createFundRoot, getParentNode } from './../arr/ArrUtils.jsx';
+import { contextMenuHide, contextMenuShow } from 'actions/global/contextMenu.jsx';
+import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
+import { getFundFromFundAndVersion } from 'components/arr/ArrUtils.jsx';
+import { selectFundTab } from 'actions/arr/fund.jsx';
+import { routerNavigate } from 'actions/router.jsx';
+import FundTreeLazy from '../arr/FundTreeLazy';
+import { FOCUS_KEYS } from '../../constants.tsx';
 
 class FundDetailTree extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
         this.bindMethods('callFundSelectSubNode', 'handleNodeClick', 'handleNodeDoubleClick', 'handleSelectInNewTab', 'handleSelectInTab',
-        'handleContextMenu', 'handleFulltextChange', 'handleFulltextSearch',
-        'handleFulltextPrevItem', 'handleFulltextNextItem', 'handleCollapse',
-        'trySetFocus');
+            'handleContextMenu', 'handleFulltextChange', 'handleFulltextSearch',
+            'handleFulltextPrevItem', 'handleFulltextNextItem', 'handleCollapse',
+            'trySetFocus');
     }
 
     componentDidMount() {
-        const {versionId, expandedIds} = this.props;
+        const { versionId, expandedIds } = this.props;
         this.requestFundTreeData(versionId, expandedIds);
-        this.trySetFocus(this.props)
+        this.trySetFocus(this.props);
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        const {versionId, expandedIds} = nextProps;
+        const { versionId, expandedIds } = nextProps;
         this.requestFundTreeData(versionId, expandedIds);
-        this.trySetFocus(nextProps)
+        this.trySetFocus(nextProps);
     }
 
     trySetFocus(props) {
-        var {focus} = props
+        var { focus } = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, null, 1)) {   // focus po ztrátě
                 if (this.refs.tree) {   // ještě nemusí existovat
                     this.setState({}, () => {
-                        this.refs.tree.getWrappedInstance().focus()
-                        focusWasSet()
-                    })
+                        this.refs.tree.getWrappedInstance().focus();
+                        focusWasSet();
+                    });
                 }
 
             } else if (isFocusFor(focus, FOCUS_KEYS.ARR, 1, 'tree') || isFocusFor(focus, FOCUS_KEYS.ARR, 1)) {
                 this.setState({}, () => {
-                    this.refs.tree.getWrappedInstance().focus()
-                    focusWasSet()
-                })
+                    this.refs.tree.getWrappedInstance().focus();
+                    focusWasSet();
+                });
             }
         }
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-return true
-        if (this.state !== nextState) {
-            return true;
-        }
-        var eqProps = ['focus', 'ensureItemVisible', 'dirty', 'expandedIds', 'fund', 'fetched', 'searchedIds', 'nodes', 'selectedId', 'selectedIds', 'fetchingIncludeIds', 'filterCurrentIndex', 'filterText', 'focusId', 'isFetching']
-        return !propsEquals(this.props, nextProps, eqProps);
+        return true;
+        // if (this.state !== nextState) {
+        //     return true;
+        // }
+        // var eqProps = ['focus', 'ensureItemVisible', 'dirty', 'expandedIds', 'fund', 'fetched', 'searchedIds', 'nodes', 'selectedId', 'selectedIds', 'fetchingIncludeIds', 'filterCurrentIndex', 'filterText', 'focusId', 'isFetching']
+        // return !propsEquals(this.props, nextProps, eqProps);
     }
 
     requestFundTreeData(versionId, expandedIds) {
@@ -87,13 +96,15 @@ return true
 
         var menu = (
             <ul className="dropdown-menu">
-                <Dropdown.Item onClick={this.handleSelectInNewTab.bind(this, node)}>{i18n('fundTree.action.openInNewTab')}</Dropdown.Item>
-                <Dropdown.Item onClick={this.handleSelectInTab.bind(this, node)}>{i18n('fundTree.action.open')}</Dropdown.Item>
+                <Dropdown.Item
+                    onClick={this.handleSelectInNewTab.bind(this, node)}>{i18n('fundTree.action.openInNewTab')}</Dropdown.Item>
+                <Dropdown.Item
+                    onClick={this.handleSelectInTab.bind(this, node)}>{i18n('fundTree.action.open')}</Dropdown.Item>
             </ul>
-        )
+        );
 
         this.props.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, node));
-        this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
+        this.props.dispatch(contextMenuShow(this, menu, { x: e.clientX, y: e.clientY }));
     }
 
     /**
@@ -123,10 +134,10 @@ return true
      */
     callFundSelectSubNode(node, openNewTab) {
         // Přepnutí na stránku pořádání
-        this.props.dispatch(routerNavigate('/arr'))
+        this.props.dispatch(routerNavigate('/arr'));
 
         // Otevření archivního souboru
-        const {fund} = this.props
+        const { fund } = this.props;
         var fundObj = getFundFromFundAndVersion(fund, fund.versions[0]);
         this.props.dispatch(selectFundTab(fundObj));
 
@@ -144,7 +155,7 @@ return true
      * @param e
      */
     handleNodeClick(node, ensureItemVisible, e) {
-        this.props.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, node.id, false, false, null))
+        this.props.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, node.id, false, false, null));
     }
 
     /**
@@ -176,11 +187,11 @@ return true
      * Zabalení stromu
      */
     handleCollapse() {
-        this.props.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, this.props.fund))
+        this.props.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, this.props.fund));
     }
 
     render() {
-        const {fund, cutLongLabels} = this.props;
+        const { cutLongLabels } = this.props;
 
         return (
             <FundTreeLazy
@@ -188,7 +199,9 @@ return true
                 {...this.props}
                 className={this.props.className}
                 cutLongLabels={cutLongLabels}
-                onOpenCloseNode={(node, expand) => {expand ? this.props.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, node)) : this.props.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, node))}}
+                onOpenCloseNode={(node, expand) => {
+                    expand ? this.props.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, node)) : this.props.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, node));
+                }}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
                 onNodeDoubleClick={this.handleNodeDoubleClick}
@@ -198,7 +211,7 @@ return true
                 onFulltextNextItem={this.handleFulltextNextItem}
                 onCollapse={this.handleCollapse}
             />
-        )
+        );
     }
 }
 

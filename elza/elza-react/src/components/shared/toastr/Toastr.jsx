@@ -1,14 +1,13 @@
 import PropTypes from 'prop-types';
-import React from 'react'
-import {createElement} from "react";
+import React, {createElement} from 'react';
 import {Alert} from 'react-bootstrap';
-import {connect} from 'react-redux'
-import {addToastr, removeToastr} from './ToastrActions.jsx'
+import {connect} from 'react-redux';
+import {removeToastr} from './ToastrActions.jsx';
 
 import './Toastr.scss';
-import AbstractReactComponent from "../../AbstractReactComponent";
-import Icon from "../icon/Icon";
-import i18n from "../../i18n";
+import AbstractReactComponent from '../../AbstractReactComponent';
+import Icon from '../icon/Icon';
+import i18n from '../../i18n';
 
 /**
  *  Toastr.
@@ -30,7 +29,7 @@ import i18n from "../../i18n";
 class Toastr extends AbstractReactComponent {
 
     static propTypes = {
-        store: PropTypes.object.isRequired
+        store: PropTypes.object.isRequired,
     };
 
     handleDismiss = (index) => {
@@ -47,6 +46,8 @@ class Toastr extends AbstractReactComponent {
                 return <Icon glyph="fa-info-circle"/>;
             case 'danger':
                 return <Icon glyph="fa-exclamation-circle"/>;
+            default:
+                return null;
         }
     }
 
@@ -59,8 +60,11 @@ class Toastr extends AbstractReactComponent {
             let message;
             if (t.extended) {
                 message = <div>
-                    {createElement(t.messageComponent, {key:"message", ...t.messageComponentProps, onClose: () => this.handleDismiss(index)})}
-                </div>
+                    {createElement(t.messageComponent, {
+                        key: 'message', ...t.messageComponentProps,
+                        onClose: () => this.handleDismiss(index),
+                    })}
+                </div>;
             } else {
                 message = <div>{t.message}</div>;
             }
@@ -68,8 +72,8 @@ class Toastr extends AbstractReactComponent {
             return <Alert
                 key={'toast-' + index}
                 variant={t.style}
-                bsSize={t.size ? t.size : "lg"}
-                className={t.visible && "fade"}
+                bsSize={t.size ? t.size : 'lg'}
+                className={t.visible && 'fade'}
                 closeLabel={i18n('global.action.close')}
                 onClose={() => (this.handleDismiss(index))}
             >
@@ -78,14 +82,14 @@ class Toastr extends AbstractReactComponent {
                     <h4>{t.title}</h4>
                     {message}
                 </div>
-            </Alert>
+            </Alert>;
         });
 
         return (
             <div className="toastrAlertBox">
                 {rows}
             </div>
-        )
+        );
     }
 }
 

@@ -1,26 +1,25 @@
-import {WebApi} from 'actions/index.jsx';
-import {i18n} from 'components/shared';
+import { WebApi } from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 
 export function fundNodesPolicyFetchIfNeeded(fundVersionId) {
     return (dispatch, getState) => {
-        var state = getState();
+        const state = getState();
 
-        var funds = state.arrRegion.funds;
-        var fund = null;
+        const funds = state.arrRegion.funds;
+        let fund = null;
         funds.forEach(item => {
-            if (item.versionId == fundVersionId) {
+            if (item.versionId === fundVersionId) {
                 fund = item;
             }
         });
 
         if (fund != null) {
-            var fundNodesPolicy = fund.fundNodesPolicy;
+            const fundNodesPolicy = fund.fundNodesPolicy;
             if ((!fundNodesPolicy.fetched || fundNodesPolicy.dirty) && !fundNodesPolicy.isFetching) {
                 return dispatch(fundNodesPolicyFetch(fundVersionId));
             }
         }
-    }
+    };
 }
 
 /**
@@ -28,10 +27,10 @@ export function fundNodesPolicyFetchIfNeeded(fundVersionId) {
  */
 export function fundNodesPolicyFetch(fundVersionId) {
     return dispatch => {
-        dispatch(fundNodesPolicyRequest(fundVersionId))
+        dispatch(fundNodesPolicyRequest(fundVersionId));
         return WebApi.getFundPolicy(fundVersionId)
-            .then(json => dispatch(fundNodesPolicyReceive(fundVersionId, json)));
-    }
+                     .then(json => dispatch(fundNodesPolicyReceive(fundVersionId, json)));
+    };
 }
 
 /**
@@ -43,8 +42,8 @@ export function fundNodesPolicyReceive(fundVersionId, json) {
         type: types.FUND_FUND_NODES_POLICY_RECEIVE,
         items: json,
         versionId: fundVersionId,
-        receivedAt: Date.now()
-    }
+        receivedAt: Date.now(),
+    };
 }
 
 /**
@@ -53,6 +52,6 @@ export function fundNodesPolicyReceive(fundVersionId, json) {
 export function fundNodesPolicyRequest(fundVersionId) {
     return {
         type: types.FUND_FUND_NODES_POLICY_REQUEST,
-        versionId: fundVersionId
-    }
+        versionId: fundVersionId,
+    };
 }

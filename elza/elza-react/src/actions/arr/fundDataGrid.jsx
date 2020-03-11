@@ -2,14 +2,13 @@
  * Akce pro hromadné tabulkové zobrazení a úpravy AS.
  */
 
-import {WebApi} from 'actions/index.jsx';
+import { WebApi } from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
-import {indexById, objectById} from 'stores/app/utils.jsx'
-import {modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {COL_REFERENCE_MARK} from "components/arr/FundDataGridConst";
+import { objectById } from 'stores/app/utils.jsx';
+import { COL_REFERENCE_MARK } from 'components/arr/FundDataGridConst';
 
 // Null hodnota, která se používaná v klientovi pro reprezentaci null hodnoty
-export const FILTER_NULL_VALUE = "____$<NULL>$___"
+export const FILTER_NULL_VALUE = '____$<NULL>$___';
 
 export function isFundDataGridAction(action) {
     switch (action.type) {
@@ -34,9 +33,9 @@ export function isFundDataGridAction(action) {
         case types.FUND_FUND_DATA_GRID_FULLTEXT_PREV_ITEM:
         case types.FUND_FUND_DATA_GRID_CHANGE_CELL_FOCUS:
         case types.FUND_FUND_DATA_GRID_CHANGE_SELECTED_ROW_INDEXES:
-            return true
+            return true;
         default:
-            return false
+            return false;
     }
 }
 
@@ -47,33 +46,30 @@ export function fundBulkModifications(versionId, descItemTypeId, specsIds, opera
         switch (operationType) {
             case 'findAndReplace':
                 return WebApi.replaceDataValues(versionId, descItemTypeId, specsIds, findText, replaceText, nodes, selectionType);
-                break;
             case 'replace':
                 return WebApi.placeDataValues(versionId, descItemTypeId, specsIds, replaceText, replaceSpecId, nodes, selectionType);
-                break;
             case 'delete':
                 return WebApi.deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType);
-                break;
             case 'setSpecification':
                 return WebApi.setSpecification(versionId, descItemTypeId, specsIds, replaceSpecId, nodes, selectionType);
-                break;
             default:
                 console.warn('#####fundBulkModifications - operation not implemented', operationType);
+                return null;
         }
-    }
+    };
 }
 
 export function fundDataInitIfNeeded(versionId, initData) {
     return (dispatch, getState) => {
-        const fundDataGrid = getFundDataGrid(getState, versionId)
+        const fundDataGrid = getFundDataGrid(getState, versionId);
         if (fundDataGrid && !fundDataGrid.initialised) {
             dispatch({
                 type: types.FUND_FUND_DATA_GRID_INIT,
                 versionId,
                 initData,
-            })
+            });
         }
-    }
+    };
 }
 
 export function fundDataFulltextSearch(versionId, filterText, luceneQuery, searchParams, data) {
@@ -81,7 +77,7 @@ export function fundDataFulltextSearch(versionId, filterText, luceneQuery, searc
         return WebApi.getFilteredFulltextNodes(versionId, filterText, luceneQuery, searchParams).then(json => {
             dispatch(fundDataFulltextSearchResult(versionId, filterText, luceneQuery, json, data));
         });
-    }
+    };
 }
 
 function fundDataFulltextSearchResult(versionId, filterText, luceneQuery, searchedItems, data) {
@@ -91,8 +87,8 @@ function fundDataFulltextSearchResult(versionId, filterText, luceneQuery, search
         filterText,
         luceneQuery,
         searchedItems,
-        data
-    }
+        data,
+    };
 }
 
 export function fundDataChangeCellFocus(versionId, row, col) {
@@ -101,85 +97,86 @@ export function fundDataChangeCellFocus(versionId, row, col) {
         versionId,
         row,
         col,
-    }
+    };
 }
+
 export function fundDataChangeRowIndexes(versionId, indexes) {
     return {
         type: types.FUND_FUND_DATA_GRID_CHANGE_SELECTED_ROW_INDEXES,
         versionId,
-        indexes
-    }
+        indexes,
+    };
 }
 
 export function fundDataFulltextExtended(versionId) {
     return {
         type: types.FUND_FUND_DATA_GRID_FULLTEXT_EXTENDED,
         versionId,
-    }
+    };
 }
 
 export function fundDataFulltextClear(versionId) {
     return {
         type: types.FUND_FUND_DATA_GRID_FULLTEXT_CLEAR,
         versionId,
-    }
+    };
 }
 
 export function fundDataFulltextPrevItem(versionId) {
     return {
         type: types.FUND_FUND_DATA_GRID_FULLTEXT_PREV_ITEM,
         versionId,
-    }
+    };
 }
 
 export function fundDataFulltextNextItem(versionId) {
     return {
         type: types.FUND_FUND_DATA_GRID_FULLTEXT_NEXT_ITEM,
         versionId,
-    }
+    };
 }
 
 function getFundDataGrid(getState, versionId) {
     const state = getState();
-    const fund = objectById(state.arrRegion.funds, versionId, 'versionId')
+    const fund = objectById(state.arrRegion.funds, versionId, 'versionId');
     if (!fund) {
-        return null
+        return null;
     }
 
-    const fundDataGrid = fund.fundDataGrid
+    const fundDataGrid = fund.fundDataGrid;
     return fundDataGrid;
 }
 
 export function fundDataGridFetchFilterIfNeeded(versionId) {
     return (dispatch, getState) => {
-        const fundDataGrid = getFundDataGrid(getState, versionId)
+        const fundDataGrid = getFundDataGrid(getState, versionId);
         if (fundDataGrid && !fundDataGrid.fetchedFilter && !fundDataGrid.isFetchingFilter) {
-            dispatch(fundDataGridFilter(versionId, fundDataGrid.filter))
+            dispatch(fundDataGridFilter(versionId, fundDataGrid.filter));
         }
-    }
+    };
 }
 
 function _fundDataGridKey(state) {
-    var str = ''
-    str += '-pg' + state.pageSize
-    str += '-pi' + state.pageIndex
-    str += '-vc'
+    var str = '';
+    str += '-pg' + state.pageSize;
+    str += '-pi' + state.pageIndex;
+    str += '-vc';
     Object.keys(state.visibleColumns).sort().forEach(k => {
-        str += '-' + k
-    })
-    str += '-fi'
+        str += '-' + k;
+    });
+    str += '-fi';
     Object.keys(state.filter).sort().forEach(k => {
-        str += '-' + k
-        str += JSON.stringify(state.filter[k])
-    })
-    return str
+        str += '-' + k;
+        str += JSON.stringify(state.filter[k]);
+    });
+    return str;
 }
 
 export function fundDataGridFilterClearAll(versionId) {
     return {
         type: types.FUND_FUND_DATA_GRID_FILTER_CLEAR_ALL,
         versionId,
-    }
+    };
 }
 
 export function fundDataGridPrepareEdit(versionId, nodeId, parentNodeId, descItemTypeId) {
@@ -189,7 +186,7 @@ export function fundDataGridPrepareEdit(versionId, nodeId, parentNodeId, descIte
         nodeId,
         parentNodeId,
         descItemTypeId,
-    }
+    };
 }
 
 /**
@@ -198,13 +195,13 @@ export function fundDataGridPrepareEdit(versionId, nodeId, parentNodeId, descIte
  */
 export function fundDataGridRefreshRows(versionId) {
     return (dispatch, getState) => {
-        const fundDataGrid = getFundDataGrid(getState, versionId)
+        const fundDataGrid = getFundDataGrid(getState, versionId);
         if (!fundDataGrid) {
-            return
+            return;
         }
 
         dispatch(_fundDataGridFilter(versionId, fundDataGrid.filter, false));
-    }
+    };
 }
 
 export function fundDataGridFilterChange(versionId, descItemTypeId, filter) {
@@ -214,43 +211,46 @@ export function fundDataGridFilterChange(versionId, descItemTypeId, filter) {
             versionId,
             descItemTypeId,
             filter,
-        })
-    }
+        });
+    };
 }
 
 export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize) {
     return (dispatch, getState) => {
-        const fundDataGrid = getFundDataGrid(getState, versionId)
+        const fundDataGrid = getFundDataGrid(getState, versionId);
         if (!fundDataGrid) {
-            return
+            return;
         }
 
         if (!fundDataGrid.fetchedFilter || fundDataGrid.isFetchingFilter) {  // již musí být načtený filtr
-            return
+            return;
         }
 
-        const dataKey = _fundDataGridKey(fundDataGrid)
+        const dataKey = _fundDataGridKey(fundDataGrid);
         if (fundDataGrid.currentDataKey !== dataKey) {
-            dispatch(_dataRequest(versionId, dataKey))
+            dispatch(_dataRequest(versionId, dataKey));
 
             WebApi.getFilteredNodes(versionId, pageIndex, pageSize, Object.keys(fundDataGrid.visibleColumns)).then(nodes => {
                 const newState = getState();
-                const newFund = objectById(newState.arrRegion.funds, versionId, 'versionId')
+                const newFund = objectById(newState.arrRegion.funds, versionId, 'versionId');
                 if (newFund !== null) {
-                    const newFundDataGrid = newFund.fundDataGrid
-                    const newDataKey = _fundDataGridKey(newFundDataGrid)
+                    const newFundDataGrid = newFund.fundDataGrid;
+                    const newDataKey = _fundDataGridKey(newFundDataGrid);
 
                     if (newDataKey === dataKey) {   // ještě je pořád v tom stavu, pro jaký se načítala data
                         var items = nodes.map(node => {
-                            const {valuesMap, ...nodeRest} = node
-                            return {id: nodeRest.node.id, ...nodeRest, ...node.valuesMap, referenceMark: node.referenceMark}
-                        })
-                        dispatch(_dataReceive(versionId, items))
+                            const { valuesMap, ...nodeRest } = node;
+                            return {
+                                id: nodeRest.node.id, ...nodeRest, ...node.valuesMap,
+                                referenceMark: node.referenceMark,
+                            };
+                        });
+                        dispatch(_dataReceive(versionId, items));
                     }
                 }
-            })
+            });
         }
-    }
+    };
 }
 
 /**
@@ -258,8 +258,8 @@ export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize) {
  */
 export function fundDataGridSetPageSize(versionId, pageSize) {
     return (dispatch, getState) => {
-        dispatch(_setPageSize(versionId, pageSize))
-    }
+        dispatch(_setPageSize(versionId, pageSize));
+    };
 }
 
 /**
@@ -271,7 +271,7 @@ export function fundDataGridSetColumnsSettings(versionId, visibleColumns, column
         versionId,
         visibleColumns,
         columnsOrder,
-    }
+    };
 }
 
 /**
@@ -279,8 +279,8 @@ export function fundDataGridSetColumnsSettings(versionId, visibleColumns, column
  */
 export function fundDataGridSetPageIndex(versionId, pageIndex) {
     return (dispatch, getState) => {
-        dispatch(_setPageIndex(versionId, pageIndex))
-    }
+        dispatch(_setPageIndex(versionId, pageIndex));
+    };
 }
 
 /**
@@ -291,7 +291,7 @@ function _setPageSize(versionId, pageSize) {
         type: types.FUND_FUND_DATA_GRID_PAGE_SIZE,
         versionId,
         pageSize,
-    }
+    };
 }
 
 /**
@@ -303,7 +303,7 @@ export function fundDataGridSetColumnSize(versionId, columnId, width) {
         versionId,
         columnId,
         width,
-    }
+    };
 }
 
 /**
@@ -314,7 +314,7 @@ export function fundDataGridSetSelection(versionId, ids) {
         type: types.FUND_FUND_DATA_GRID_SELECTION,
         versionId,
         ids,
-    }
+    };
 }
 
 /**
@@ -325,45 +325,45 @@ function _setPageIndex(versionId, pageIndex) {
         type: types.FUND_FUND_DATA_GRID_PAGE_INDEX,
         versionId,
         pageIndex,
-    }
+    };
 }
 
 /**
  * Filtrování dat podle předaného filtru.
  */
 export function fundDataGridFilter(versionId, filter) {
-    return _fundDataGridFilter(versionId, filter, true)
+    return _fundDataGridFilter(versionId, filter, true);
 }
 
 export function createFilterStructure(filter) {
-    const callFilter = {columnFilters: {filters: {}}}
+    const callFilter = { columnFilters: { filters: {} } };
 
     // Ladění objektu filtru pro server
     Object.keys(filter).forEach(key => {
         if (key === COL_REFERENCE_MARK) {
             callFilter.nodeId = filter[COL_REFERENCE_MARK].nodeId;
         } else {
-            callFilter.columnFilters.filters[key] = {...filter[key]};
+            callFilter.columnFilters.filters[key] = { ...filter[key] };
             const filterData = callFilter.columnFilters.filters[key];
 
             // Typy selected a unselected na velká písmena
             if (typeof filterData.specsType !== 'undefined' && filterData.specsType !== null) {
-                filterData.specsType = filterData.specsType.toUpperCase()
+                filterData.specsType = filterData.specsType.toUpperCase();
             }
             if (typeof filterData.valuesType !== 'undefined' && filterData.valuesType !== null) {
-                filterData.valuesType = filterData.valuesType.toUpperCase()
+                filterData.valuesType = filterData.valuesType.toUpperCase();
             }
 
             // Hodnoty null na reálné null
             if (filterData.values) {
                 filterData.values = filterData.values.map(v => {
-                    return v === FILTER_NULL_VALUE ? null : v
-                })
+                    return v === FILTER_NULL_VALUE ? null : v;
+                });
             }
             if (filterData.specs) {
                 filterData.specs = filterData.specs.map(v => {
-                    return v === FILTER_NULL_VALUE ? null : Number(v)
-                })
+                    return v === FILTER_NULL_VALUE ? null : Number(v);
+                });
             }
         }
     });
@@ -372,14 +372,14 @@ export function createFilterStructure(filter) {
 
 function _fundDataGridFilter(versionId, filter, resetViewState = true) {
     return (dispatch, getState) => {
-        dispatch(_filterRequest(versionId))
+        dispatch(_filterRequest(versionId));
         const callFilter = createFilterStructure(filter);
 
         WebApi.filterNodes(versionId, callFilter)
-            .then(json => {
-                dispatch(_filterReceive(versionId, json, resetViewState))
-            })
-    }
+              .then(json => {
+                  dispatch(_filterReceive(versionId, json, resetViewState));
+              });
+    };
 }
 
 /**
@@ -389,7 +389,7 @@ function _filterRequest(versionId) {
     return {
         type: types.FUND_FUND_DATA_GRID_FILTER_REQUEST,
         versionId,
-    }
+    };
 }
 
 /**
@@ -401,7 +401,7 @@ function _filterReceive(versionId, itemsCount, resetViewState) {
         versionId,
         itemsCount,
         resetViewState,
-    }
+    };
 }
 
 /**
@@ -412,7 +412,7 @@ function _dataRequest(versionId, dataKey) {
         type: types.FUND_FUND_DATA_GRID_DATA_REQUEST,
         versionId,
         dataKey,
-    }
+    };
 }
 
 /**
@@ -423,5 +423,5 @@ function _dataReceive(versionId, items) {
         type: types.FUND_FUND_DATA_GRID_DATA_RECEIVE,
         versionId,
         items,
-    }
+    };
 }

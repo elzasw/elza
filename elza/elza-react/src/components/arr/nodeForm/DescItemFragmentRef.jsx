@@ -1,25 +1,25 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
-import {AbstractReactComponent, i18n, Icon} from 'components/shared';
+import { AbstractReactComponent, i18n, Icon } from 'components/shared';
 
 import './DescItemFileRef.scss';
-import {modalDialogShow} from '../../../actions/global/modalDialog';
-import {WebApi} from '../../../actions/WebApi';
-import {AccessPointFormActions} from '../../accesspoint/AccessPointFormActions';
-import {Button} from '../../ui';
+import { modalDialogShow } from '../../../actions/global/modalDialog';
+import { WebApi } from '../../../actions/WebApi';
+import { AccessPointFormActions } from '../../accesspoint/AccessPointFormActions';
+import { Button } from '../../ui';
 
 let FragmentFormModal;
-import("../../accesspoint/FragmentFormModal").then((a) => {
+import('../../accesspoint/FragmentFormModal').then((a) => {
     FragmentFormModal = a.default;
 });
 
 class DescItemFragmentRef extends AbstractReactComponent {
 
     static propTypes = {
-        fragmentType: PropTypes.object.isRequired
+        fragmentType: PropTypes.object.isRequired,
     };
 
     focus = () => {
@@ -31,37 +31,42 @@ class DescItemFragmentRef extends AbstractReactComponent {
             const store = getState();
             const parentAp = store.ap.form.parent;
             dispatch({
-                type: "CHANGE_ACCESS_POINT",
+                type: 'CHANGE_ACCESS_POINT',
                 id: parentAp.id,
-                area: AccessPointFormActions.AREA
-            })
-        }
+                area: AccessPointFormActions.AREA,
+            });
+        };
     };
 
     handleFragmentCreate = () => {
         WebApi.createFragment(this.props.fragmentType.code).then(data => {
-            this.props.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.new'), <FragmentFormModal fragmentId={data.id} onSubmit={() => {
+            this.props.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.new'), <FragmentFormModal
+                fragmentId={data.id} onSubmit={() => {
                 this.props.onChange(data.id);
                 WebApi.confirmFragment(data.id).then(() => {
                     this.props.onBlur();
                 });
-            }} />, "dialog-lg"));
-        })
+            }}/>, 'dialog-lg'));
+        });
     };
 
     handleFragmentEdit = () => {
-        this.props.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.new'), <FragmentFormModal fragmentId={this.props.descItem.value} onSubmit={() => {
+        this.props.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.new'), <FragmentFormModal
+            fragmentId={this.props.descItem.value} onSubmit={() => {
             this.props.dispatch(this.changeAccessPoint());
-        }} />, "dialog-lg"));
+        }}/>, 'dialog-lg'));
     };
 
     render() {
-        const {descItem, locked, readMode, cal, typePrefix, ...otherProps} = this.props;
+        const { descItem, locked, readMode } = this.props;
         return <div className='desc-item-value desc-item-value-parts'>
-            {!locked && !readMode && descItem.value == null && <Button variant="action" block ref="button" onClick={this.handleFragmentCreate}><Icon glyph="fa-plus-circle"/></Button>}
+            {!locked && !readMode && descItem.value == null &&
+            <Button variant="action" block ref="button" onClick={this.handleFragmentCreate}><Icon
+                glyph="fa-plus-circle"/></Button>}
             {descItem.value !== null && <span>{descItem.fragment && descItem.fragment.value}</span>}
-            {!locked && !readMode && descItem.fragment && <Button variant="action" ref="button" onClick={this.handleFragmentEdit}><Icon glyph="fa-pencil"/></Button>}
-        </div>
+            {!locked && !readMode && descItem.fragment &&
+            <Button variant="action" ref="button" onClick={this.handleFragmentEdit}><Icon glyph="fa-pencil"/></Button>}
+        </div>;
     }
 }
 

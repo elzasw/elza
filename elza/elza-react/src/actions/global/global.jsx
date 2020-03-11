@@ -1,11 +1,11 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {savingApiWrapper} from 'actions/global/status.jsx';
-import {modalDialogHide} from 'actions/global/modalDialog.jsx';
-import {WebApi} from 'actions/index.jsx';
-import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
-import {i18n, Utils} from 'components/shared'
-import {registryListInvalidate} from 'actions/registry/registry.jsx'
-import {partyListInvalidate} from 'actions/party/party.jsx'
+import { savingApiWrapper } from 'actions/global/status.jsx';
+import { modalDialogHide } from 'actions/global/modalDialog.jsx';
+import { WebApi } from 'actions/index.jsx';
+import { addToastrSuccess } from 'components/shared/toastr/ToastrActions.jsx';
+import { i18n, Utils } from 'components/shared';
+import { registryListInvalidate } from 'actions/registry/registry.jsx';
+import { partyListInvalidate } from 'actions/party/party.jsx';
 
 export const ObjectInfo = class ObjectInfo {
     constructor() {
@@ -25,13 +25,13 @@ export const ObjectInfo = class ObjectInfo {
         console.log('addFund', fund);
         this.fundIds.add(fund.id);
     }
-}
+};
 
 export function getObjectInfo(objectInfo) {
     return {
         type: types.GLOBAL_GET_OBJECT_INFO,
-        objectInfo
-    }
+        objectInfo,
+    };
 }
 
 
@@ -50,9 +50,11 @@ export function importForm(data, messageType) {
                     dispatch(partyListInvalidate);
                     dispatch(registryListInvalidate);
                     break;
+                default:
+                    return;
             }
         }).catch(() => {
             dispatch(modalDialogHide());
         });
-    }
+    };
 }
