@@ -1,37 +1,36 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {indexById} from 'stores/app/utils.jsx'
-import fundTree from './fundTree.jsx'
-import nodes from './nodes.jsx'
-import fundDataGrid from './fundDataGrid.jsx'
-import bulkActions from './bulkActions.jsx'
-import versionValidation from './versionValidation.jsx'
-import fundNodesPolicy from './fundNodesPolicy.jsx'
-import fundFiles from './fundFiles.jsx'
-import fundOutput from './fundOutput.jsx'
-import fundAction from './fundAction.jsx'
-import {consolidateState} from 'components/Utils.jsx'
-import {isBulkAction} from 'actions/arr/bulkActions.jsx'
-import {isFundTreeAction} from 'actions/arr/fundTree.jsx'
-import {nodeFormActions, outputFormActions, structureFormActions} from 'actions/arr/subNodeForm.jsx'
-import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx'
-import {isNodeInfoAction} from 'actions/arr/nodeInfo.jsx'
-import {isVersionValidation} from 'actions/arr/versionValidation.jsx'
-import {isNodeAction} from 'actions/arr/node.jsx'
-import {isNodesAction} from 'actions/arr/nodes.jsx'
-import {isSubNodeDaosAction} from 'actions/arr/subNodeDaos.jsx'
-import {isDeveloperScenariosAction} from 'actions/global/developer.jsx'
-import {isFundDataGridAction} from 'actions/arr/fundDataGrid.jsx'
-import {isFundChangeAction} from 'actions/global/change.jsx'
-import {isFundFilesAction} from 'actions/arr/fundFiles.jsx'
-import {isFundActionAction} from 'actions/arr/fundAction.jsx'
-import {getRoutingKeyType} from 'stores/app/utils.jsx'
-import {isFundOutput} from 'actions/arr/fundOutput.jsx'
-import DetailReducer from "shared/detail/DetailReducer";
-import SimpleListReducer from "shared/list/simple/SimpleListReducer";
-import processAreaStores from "shared/utils/processAreaStores";
-import isCommonArea from "stores/utils/isCommonArea";
-import structureNodeForm from "./structureNodeForm";
-import {isStructureNodeForm} from "../../../actions/arr/structureNodeForm";
+import { getRoutingKeyType } from 'stores/app/utils.jsx';
+import fundTree from './fundTree.jsx';
+import nodes from './nodes.jsx';
+import fundDataGrid from './fundDataGrid.jsx';
+import bulkActions from './bulkActions.jsx';
+import versionValidation from './versionValidation.jsx';
+import fundNodesPolicy from './fundNodesPolicy.jsx';
+import fundFiles from './fundFiles.jsx';
+import fundOutput from './fundOutput.jsx';
+import fundAction from './fundAction.jsx';
+import { consolidateState } from 'components/Utils.jsx';
+import { isBulkAction } from 'actions/arr/bulkActions.jsx';
+import { isFundTreeAction } from 'actions/arr/fundTree.jsx';
+import { nodeFormActions, outputFormActions, structureFormActions } from 'actions/arr/subNodeForm.jsx';
+import { isSubNodeInfoAction } from 'actions/arr/subNodeInfo.jsx';
+import { isNodeInfoAction } from 'actions/arr/nodeInfo.jsx';
+import { isVersionValidation } from 'actions/arr/versionValidation.jsx';
+import { isNodeAction } from 'actions/arr/node.jsx';
+import { isNodesAction } from 'actions/arr/nodes.jsx';
+import { isSubNodeDaosAction } from 'actions/arr/subNodeDaos.jsx';
+import { isDeveloperScenariosAction } from 'actions/global/developer.jsx';
+import { isFundDataGridAction } from 'actions/arr/fundDataGrid.jsx';
+import { isFundChangeAction } from 'actions/global/change.jsx';
+import { isFundFilesAction } from 'actions/arr/fundFiles.jsx';
+import { isFundActionAction } from 'actions/arr/fundAction.jsx';
+import { isFundOutput } from 'actions/arr/fundOutput.jsx';
+import DetailReducer from 'shared/detail/DetailReducer';
+import SimpleListReducer from 'shared/list/simple/SimpleListReducer';
+import processAreaStores from 'shared/utils/processAreaStores';
+import isCommonArea from 'stores/utils/isCommonArea';
+import structureNodeForm from './structureNodeForm';
+import { isStructureNodeForm } from '../../../actions/arr/structureNodeForm';
 
 export function fundInitState(fundWithVersion) {
     const result = {
@@ -46,17 +45,17 @@ export function fundInitState(fundWithVersion) {
         fundOutput: fundOutput(),
         fundDataGrid: fundDataGrid(),
         fundFiles: fundFiles(),
-        fundTree: fundTree(undefined, {type: ''}),
-        fundTreeMovementsLeft: fundTree(undefined, {type: ''}),
-        fundTreeMovementsRight: fundTree(undefined, {type: ''}),
+        fundTree: fundTree(undefined, { type: '' }),
+        fundTreeMovementsLeft: fundTree(undefined, { type: '' }),
+        fundTreeMovementsRight: fundTree(undefined, { type: '' }),
         moving: false,
         fundTreeDaosLeft: fundTree(),
         fundTreeDaosRight: fundTree(),
-        fundTreeNodes: fundTree(undefined, {type: ''}),
-        nodes: nodes(undefined, {type: ''}),
+        fundTreeNodes: fundTree(undefined, { type: '' }),
+        nodes: nodes(undefined, { type: '' }),
         fundNodesPolicy: fundNodesPolicy(),
-        bulkActions: bulkActions(undefined, {type: ''}),
-        versionValidation: versionValidation(undefined, {type: ''}),
+        bulkActions: bulkActions(undefined, { type: '' }),
+        versionValidation: versionValidation(undefined, { type: '' }),
         fundNodesError: {}, // zatím jen pomocný, je řešeno ve state
         requestList: SimpleListReducer(),   // seznam požadavků na digitalizaci
         requestDetail: DetailReducer(), // detail vybraného požadavku na digitalizaci
@@ -70,7 +69,7 @@ export function fundInitState(fundWithVersion) {
         reducer: fund,
     };
 
-    result.fundTreeMovementsLeft = {...result.fundTreeMovementsLeft};
+    result.fundTreeMovementsLeft = { ...result.fundTreeMovementsLeft };
     result.fundTreeMovementsLeft.multipleSelection = true;
     result.fundTreeMovementsLeft.multipleSelectionOneLevel = true;
 
@@ -108,6 +107,8 @@ function updateFundTree(state, action) {
         case types.FUND_TREE_AREA_DAOS_RIGHT:
             state.fundTreeDaosRight = fundTree(state.fundTreeDaosRight, action);
             break;
+        default:
+            break;
     }
 }
 
@@ -117,43 +118,43 @@ export function fund(state, action) {
     }
 
     if (isBulkAction(action)) {
-        const result = {...state, bulkActions: bulkActions(state.bulkActions, action)};
+        const result = { ...state, bulkActions: bulkActions(state.bulkActions, action) };
         return consolidateState(state, result);
     }
     if (isFundActionAction(action)) {
-        const result = {...state, fundAction: fundAction(state.fundAction, action)};
+        const result = { ...state, fundAction: fundAction(state.fundAction, action) };
         return consolidateState(state, result);
     }
 
     if (isFundOutput(action)) {
-        const result = {...state, fundOutput: fundOutput(state.fundOutput, action)};
+        const result = { ...state, fundOutput: fundOutput(state.fundOutput, action) };
         return consolidateState(state, result);
     }
 
     if (isStructureNodeForm(action)) {
-        const result = {...state, structureNodeForm: structureNodeForm(state.structureNodeForm, action)};
+        const result = { ...state, structureNodeForm: structureNodeForm(state.structureNodeForm, action) };
         return consolidateState(state, result);
     }
 
     if (isFundFilesAction(action)) {
-        const result = {...state, fundFiles: fundFiles(state.fundFiles, action)};
+        const result = { ...state, fundFiles: fundFiles(state.fundFiles, action) };
         return consolidateState(state, result);
     }
 
     if (isFundTreeAction(action)) {
-        const result = {...state};
+        const result = { ...state };
         updateFundTree(result, action);
         return consolidateState(state, result);
     }
 
     if (isVersionValidation(action)) {
-        const result = {...state, versionValidation: versionValidation(state.versionValidation, action)};
+        const result = { ...state, versionValidation: versionValidation(state.versionValidation, action) };
         return consolidateState(state, result);
     }
 
     if (isFundDataGridAction(action)) {
-        const result = {...state, fundDataGrid: fundDataGrid(state.fundDataGrid, action)};
-        return consolidateState(state, result)
+        const result = { ...state, fundDataGrid: fundDataGrid(state.fundDataGrid, action) };
+        return consolidateState(state, result);
     }
 
     if (nodeFormActions.isSubNodeFormAction(action)) {
@@ -168,20 +169,22 @@ export function fund(state, action) {
                 return consolidateState(state, result);
             }
             case 'DATA_GRID': {
-                const result = {...state, fundDataGrid: fundDataGrid(state.fundDataGrid, action)};
-                return consolidateState(state, result)
+                const result = { ...state, fundDataGrid: fundDataGrid(state.fundDataGrid, action) };
+                return consolidateState(state, result);
             }
+            default:
+                break;
         }
     } else if (outputFormActions.isSubNodeFormAction(action)) {
-        const result = {...state, fundOutput: fundOutput(state.fundOutput, action)};
-        return consolidateState(state, result)
+        const result = { ...state, fundOutput: fundOutput(state.fundOutput, action) };
+        return consolidateState(state, result);
     } else if (structureFormActions.isSubNodeFormAction(action)) {
-        const result = {...state, structureNodeForm: structureNodeForm(state.structureNodeForm, action)};
-        return consolidateState(state, result)
+        const result = { ...state, structureNodeForm: structureNodeForm(state.structureNodeForm, action) };
+        return consolidateState(state, result);
     }
 
     if (false
-        || nodeFormActions.isSubNodeFormCacheAction(action, "NODE")
+        || nodeFormActions.isSubNodeFormCacheAction(action, 'NODE')
         || isSubNodeInfoAction(action)
         || isNodeInfoAction(action)
         || isNodeAction(action)
@@ -203,7 +206,7 @@ export function fund(state, action) {
             nodes: nodes(state.nodes, action),
             fundTree: fundTree(state.fundTree, action),
             fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
-            fundNodesError: {}
+            fundNodesError: {},
         };
         return consolidateState(state, result);
     }
@@ -227,9 +230,9 @@ export function fund(state, action) {
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
                 fundFiles: fundFiles(state.fundFiles, action),
                 fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
-                bulkActions: bulkActions(undefined, {type: ''}),
-                fundAction: fundAction(undefined, {type: ''}),
-                versionValidation: versionValidation(undefined, {type: ''}),
+                bulkActions: bulkActions(undefined, { type: '' }),
+                fundAction: fundAction(undefined, { type: '' }),
+                versionValidation: versionValidation(undefined, { type: '' }),
                 fundNodesError: {},
                 requestList: SimpleListReducer(),
                 requestDetail: DetailReducer(),
@@ -243,7 +246,7 @@ export function fund(state, action) {
                 reducer: fund,
             };
         case types.STORE_SAVE:
-            const {id, versionId, name, lockDate, activeVersion, lastUseTemplateName} = state;
+            const { id, versionId, name, lockDate, activeVersion, lastUseTemplateName } = state;
             return {
                 id,
                 activeVersion,
@@ -283,8 +286,8 @@ export function fund(state, action) {
         case types.FUND_TEMPLATE_USE: {
             return {
                 ...state,
-                lastUseTemplateName: action.template.name
-            }
+                lastUseTemplateName: action.template.name,
+            };
         }
         case types.CHANGE_FUND_ACTION: {
             const result = {
@@ -297,17 +300,17 @@ export function fund(state, action) {
         case types.CHANGE_FILES: {
             return {
                 ...state,
-                fundFiles: fundFiles(state.fundFiles, action)
-            }
+                fundFiles: fundFiles(state.fundFiles, action),
+            };
         }
         case types.FUND_FUNDS_REQUEST:
             if (action.fundMap[state.versionId]) {
                 return {
                     ...state,
                     isFetching: true,
-                }
+                };
             } else {
-                return state
+                return state;
             }
         case types.FUND_FUNDS_RECEIVE:
             if (action.fundMap[state.versionId]) {
@@ -316,9 +319,9 @@ export function fund(state, action) {
                     dirty: false,
                     isFetching: false,
                     ...action.fundMap[state.versionId],
-                }
+                };
             } else {
-                return state
+                return state;
             }
         case types.CHANGE_FUND:
             return {
@@ -326,12 +329,12 @@ export function fund(state, action) {
                 dirty: true,
             };
         case types.GLOBAL_CONTEXT_MENU_HIDE: {
-            const result = {...state};
+            const result = { ...state };
             updateFundTree(result, action);
             return consolidateState(state, result);
         }
         case types.FUND_FUND_SELECT_SUBNODE: {
-            const result = {...state, nodes: nodes(state.nodes, action)};
+            const result = { ...state, nodes: nodes(state.nodes, action) };
             updateFundTree(result, action);
             return consolidateState(state, result);
         }
@@ -368,14 +371,14 @@ export function fund(state, action) {
         case types.FUND_NODES_MOVE_START: {
             const result = {
                 ...state,
-                moving: true
+                moving: true,
             };
             return consolidateState(state, result);
         }
         case types.FUND_NODES_MOVE_STOP: {
             const result = {
                 ...state,
-                moving: false
+                moving: false,
             };
             return consolidateState(state, result);
         }
@@ -394,11 +397,11 @@ export function fund(state, action) {
         }
         case types.FUND_FUND_APPROVE_VERSION:
 
-            if (state.closed == false) {
+            if (state.closed === false) {
                 return {
                     ...state,
                     closed: true,
-                }
+                };
             }
 
             return state;
@@ -415,7 +418,7 @@ export function fund(state, action) {
                 ...state,
                 fundAction: fundAction(state.fundAction, action),
                 fundOutput: fundOutput(state.fundOutput, action),
-                nodes: nodes(state.nodes, action)
+                nodes: nodes(state.nodes, action),
             };
             return consolidateState(state, result);
 

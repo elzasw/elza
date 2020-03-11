@@ -1,6 +1,4 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {i18n} from 'components/shared';
-import {indexById} from "stores/app/utils.jsx";
 
 const initialState = {
     isFetching: false,
@@ -16,7 +14,7 @@ export default function subNodeDaos(state = initialState, action = {}) {
         case types.FUND_SUB_NODE_DAOS_REQUEST:
             return {
                 ...state,
-                currentDataKey: action.dataKey
+                currentDataKey: action.dataKey,
             };
 
         case types.FUND_SUB_NODE_DAOS_RECEIVE:
@@ -25,17 +23,17 @@ export default function subNodeDaos(state = initialState, action = {}) {
                 isFetching: false,
                 fetched: true,
                 dirty: false,
-                data: action.data
+                data: action.data,
             };
 
         // ------ WebSocket -----
         case types.CHANGE_DAOS:
             return {
-                ...state,currentDataKey: false
+                ...state, currentDataKey: false,
             };
 
         default:
-            return state
+            return state;
     }
 }
 

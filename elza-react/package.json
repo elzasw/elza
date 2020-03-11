@@ -109,7 +109,8 @@
     "rules": {
       "@typescript-eslint/no-angle-bracket-type-assertion": "off",
       "@typescript-eslint/no-unused-vars": "off",
-      "no-restricted-globals": "off"
+      "no-restricted-globals": "off",
+      "eqeqeq": "off"
     }
   }
 }
