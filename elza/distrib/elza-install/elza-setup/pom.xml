@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>elza-install</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>1.3.0-SNAPSHOT</version>
+        <version>1.3.0-rc-1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -227,14 +225,14 @@
                                 </goals>
                                 <configuration>
                                   <target>
-                                    <property name="project.build.directory" value="${project.build.directory}"/>
-                                    <property name="project.version" value="${project.version}"/>
-                                    <property name="tomcat.path" value="${tomcat.path}"/>
-                                    <property name="signtool.params" value="${signtool.params}"/>
-                                    <property name="signtool.path" value="${signtool.path}"/>
-                                    <property name="signtool.enabled" value="${signtool.enabled}"/>
-                                    <property name="innosetup.path" value="${innosetup.path}"/>
-                                    <ant antfile="build.xml"/>
+                                    <property name="project.build.directory" value="${project.build.directory}" />
+                                    <property name="project.version" value="${project.version}" />
+                                    <property name="tomcat.path" value="${tomcat.path}" />
+                                    <property name="signtool.params" value="${signtool.params}" />
+                                    <property name="signtool.path" value="${signtool.path}" />
+                                    <property name="signtool.enabled" value="${signtool.enabled}" />
+                                    <property name="innosetup.path" value="${innosetup.path}" />
+                                    <ant antfile="build.xml" />
                                   </target>
                                 </configuration>
                             </execution>
