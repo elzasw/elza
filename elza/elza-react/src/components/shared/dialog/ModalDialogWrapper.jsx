@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Modal } from 'react-bootstrap';
-import { setInputFocus } from 'components/Utils.jsx';
+import {Modal} from 'react-bootstrap';
+import {setInputFocus} from 'components/Utils.jsx';
 
 /**
  * Obal modálního dialogu

@@ -1,9 +1,9 @@
 import React from 'react';
 import {WebApi} from 'actions/index.jsx';
-import {SimpleListActions} from 'shared/list'
-import {DetailActions} from 'shared/detail'
+import {SimpleListActions} from 'shared/list';
+import {DetailActions} from 'shared/detail';
 import {i18n} from 'components/shared';
-import {addToastrWarning} from '../../components/shared/toastr/ToastrActions.jsx'
+import {addToastrWarning} from '../../components/shared/toastr/ToastrActions.jsx';
 
 export const AREA_SCOPE_LIST = "scopeList";
 export const AREA_SCOPE_DETAIL = "scopeDetail";

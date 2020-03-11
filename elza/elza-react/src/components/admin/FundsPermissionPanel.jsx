@@ -1,16 +1,16 @@
 // --
 import React from 'react';
-import { connect } from 'react-redux';
-import { AbstractReactComponent, HorizontalLoader, i18n } from 'components/shared';
+import {connect} from 'react-redux';
+import {AbstractReactComponent, HorizontalLoader, i18n} from 'components/shared';
 import * as perms from './../../actions/user/Permission.jsx';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import * as adminPermissions from './../../actions/admin/adminPermissions';
 import PermissionCheckboxsForm from './PermissionCheckboxsForm';
 import AdminRightsContainer from './AdminRightsContainer';
-import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
+import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
 import SelectItemsForm from './SelectItemsForm';
 import FundField from './FundField';
-import { renderFundItem } from './adminRenderUtils';
+import {renderFundItem} from './adminRenderUtils';
 import getMapFromList from '../../shared/utils/getMapFromList';
 import AddRemoveListBox from '../shared/listbox/AddRemoveListBox';
 import './PermissionsPanel.scss';

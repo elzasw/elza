@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types';
-import React from "react";
-import {WebApi} from "actions/index.jsx";
+import React from 'react';
+import {WebApi} from 'actions/index.jsx';
 import {AbstractReactComponent, Autocomplete} from 'components/shared';
-import {connect} from "react-redux"
-import {renderGroupItem} from "./adminRenderUtils.jsx"
+import {connect} from 'react-redux';
+import {renderGroupItem} from './adminRenderUtils.jsx';
 
 const GroupField = class GroupField extends AbstractReactComponent {
     constructor(props) {

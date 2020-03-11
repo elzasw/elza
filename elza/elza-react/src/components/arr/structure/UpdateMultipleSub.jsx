@@ -1,15 +1,15 @@
 import React from 'react';
-import { AbstractReactComponent, i18n, Icon, Loading, NoFocusButton } from 'components/shared';
-import { reduxForm } from 'redux-form';
-import { Form, FormCheck, Modal } from 'react-bootstrap';
-import { Button } from '../../ui';
+import {AbstractReactComponent, i18n, Icon, Loading, NoFocusButton} from 'components/shared';
+import {reduxForm} from 'redux-form';
+import {Form, FormCheck, Modal} from 'react-bootstrap';
+import {Button} from '../../ui';
 import '../NodeSubNodeForm.scss';
-import { structureFormActions } from '../../../actions/arr/subNodeForm';
+import {structureFormActions} from '../../../actions/arr/subNodeForm';
 import PropTypes from 'prop-types';
-import { getDescItemsAddTree, getOneSettings } from '../ArrUtils';
+import {getDescItemsAddTree, getOneSettings} from '../ArrUtils';
 import AddDescItemTypeForm from '../nodeForm/AddDescItemTypeForm';
-import { modalDialogShow } from '../../../actions/global/modalDialog';
-import { structureNodeFormFetchIfNeeded, structureNodeFormSelectId } from '../../../actions/arr/structureNodeForm';
+import {modalDialogShow} from '../../../actions/global/modalDialog';
+import {structureNodeFormFetchIfNeeded, structureNodeFormSelectId} from '../../../actions/arr/structureNodeForm';
 import DescItemType from '../nodeForm/DescItemType';
 import classNames from 'classnames';
 

@@ -5,15 +5,14 @@
 
 import './LazyListBox.scss';
 
-import React from "react";
-import VirtualList from "../virtual-list/VirtualList";
-import AbstractReactComponent from "../../AbstractReactComponent";
+import React from 'react';
+import VirtualList from '../virtual-list/VirtualList';
+import AbstractReactComponent from '../../AbstractReactComponent';
 import ReactDOM from 'react-dom';
-import {indexById} from 'stores/app/utils.jsx'
+import {indexById} from 'stores/app/utils.jsx';
 import classNames from 'classnames';
-import scrollIntoView from 'dom-scroll-into-view';
 import {Shortcuts} from 'react-shortcuts';
-import * as Utils from "../../Utils";
+import * as Utils from '../../Utils';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './LazyListBoxKeymap.jsx';
 

@@ -1,13 +1,14 @@
-import './VersionValidationState.scss';;
-
-/**
- * Komponenta pro zobrazení stavu verze
- */
-
+import './VersionValidationState.scss';
 import PropTypes from 'prop-types';
 
 import React from 'react';
 import {AbstractReactComponent, i18n, Icon} from 'components/shared';
+
+;
+
+/**
+ * Komponenta pro zobrazení stavu verze
+ */
 
 class VersionValidationState extends AbstractReactComponent {
     constructor(props) {

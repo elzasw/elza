@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { connect } from 'react-redux';
-import { AbstractReactComponent } from 'components/shared';
+import {connect} from 'react-redux';
+import {AbstractReactComponent} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes.js';
 import {
     fundTreeCollapse,
@@ -15,7 +15,7 @@ import {
     fundTreeNodeExpand,
     fundTreeSelectNode,
 } from 'actions/arr/fundTree.jsx';
-import { getMapFromList } from 'stores/app/utils.jsx';
+import {getMapFromList} from 'stores/app/utils.jsx';
 import './FundNodesSelect.scss';
 import FundTreeLazy from './FundTreeLazy';
 

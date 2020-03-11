@@ -1,12 +1,12 @@
 import React from 'react';
-import UsageForm from "./UsageForm"
+import UsageForm from './UsageForm';
 import * as types from 'actions/constants/ActionTypes.js';
-import { i18n } from 'components/shared';
-import {WebApi} from "../../actions/WebApi";
-import HorizontalLoader from "../shared/loading/HorizontalLoader";
-import {addToastrSuccess} from "../shared/toastr/ToastrActions";
-import {connect} from "react-redux";
-import {modalDialogHide} from "../../actions/global/modalDialog";
+import {i18n} from 'components/shared';
+import {WebApi} from '../../actions/WebApi';
+import HorizontalLoader from '../shared/loading/HorizontalLoader';
+import {addToastrSuccess} from '../shared/toastr/ToastrActions';
+import {connect} from 'react-redux';
+import {modalDialogHide} from '../../actions/global/modalDialog';
 
 class RegistryUsageForm extends React.Component {
 

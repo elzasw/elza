@@ -1,6 +1,6 @@
-import {normalizeDoubleWithDot, pad2} from 'components/validate.jsx'
+import {normalizeDoubleWithDot, pad2} from 'components/validate.jsx';
 import {ShortcutManager} from 'react-shortcuts';
-import "./Utils.scss";
+import './Utils.scss';
 import $ from 'jquery';
 
 export function consolidateState(prevState, newState) {

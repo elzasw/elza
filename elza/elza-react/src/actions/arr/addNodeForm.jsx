@@ -6,15 +6,15 @@
  */
 
 import React from 'react';
-import { addNode, fundSelectSubNode } from 'actions/arr/node.jsx';
-import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog.jsx';
-import { i18n } from 'components/shared';
+import {addNode, fundSelectSubNode} from 'actions/arr/node.jsx';
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {i18n} from 'components/shared';
 import AddNodeForm from '../../components/arr/nodeForm/AddNodeForm';
 import CopyConflictForm from '../../components/arr/nodeForm/CopyConflictForm';
 
-import { importForm } from 'actions/global/global.jsx';
-import { WebApi } from '../WebApi';
-import { globalFundTreeInvalidate } from './globalFundTree';
+import {importForm} from 'actions/global/global.jsx';
+import {WebApi} from '../WebApi';
+import {globalFundTreeInvalidate} from './globalFundTree';
 
 /**
  * Vyvolá dialog pro přidání uzlu. Toto vyvolání dialogu slouží pro volání POUZE z pořádání! Po úspěšném volání je vybrán v pořádání přidaný node.

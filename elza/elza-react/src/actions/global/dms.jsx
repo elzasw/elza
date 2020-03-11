@@ -1,5 +1,5 @@
-import * as SimpleListActions from "../../shared/list/simple/SimpleListActions";
-import {WebApi} from "../WebApi";
+import * as SimpleListActions from '../../shared/list/simple/SimpleListActions';
+import {WebApi} from '../WebApi';
 
 export const MIME_TYPES_AREA = "mimeTypesList";
 

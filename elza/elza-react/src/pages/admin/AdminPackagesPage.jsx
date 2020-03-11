@@ -1,13 +1,11 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 
-import {connect} from 'react-redux'
-import {Ribbon, AdminPackagesList, AdminPackagesUpload, i18n, Icon, RibbonGroup} from 'components';
+import {connect} from 'react-redux';
+import {AdminPackagesList, AdminPackagesUpload, Ribbon} from 'components';
 import {UrlFactory} from 'actions/index.jsx';
-import {Button} from 'react-bootstrap'
 
 import './AdminPackagesPage.scss';
-import PageLayout from "../shared/layout/PageLayout";
+import PageLayout from '../shared/layout/PageLayout';
 
 /**
  * Stránka pro správu importovaných balíčků

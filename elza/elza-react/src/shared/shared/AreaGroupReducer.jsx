@@ -1,4 +1,4 @@
-import processAreaStores from "./../utils/processAreaStores";
+import processAreaStores from './../utils/processAreaStores';
 
 const initialState = {
     reducer: areaGroupReducer,

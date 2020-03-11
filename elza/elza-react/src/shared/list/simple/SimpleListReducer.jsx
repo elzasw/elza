@@ -1,5 +1,5 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {REQUEST, RESPONSE, FILTER, SELECT_PARENT, INVALIDATE, RESET} from './SimpleListActions'
+import {FILTER, INVALIDATE, REQUEST, RESET, RESPONSE, SELECT_PARENT} from './SimpleListActions';
 
 const simpleFilter = (rows, filter) => rows;
 

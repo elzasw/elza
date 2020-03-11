@@ -1,4 +1,4 @@
-import { indexById } from 'stores/app/utils.jsx';
+import {indexById} from 'stores/app/utils.jsx';
 
 /**
  * Načtení store pro konkrétní areu.

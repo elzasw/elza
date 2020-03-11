@@ -4,7 +4,7 @@
 
 import * as types from '../constants/ActionTypes.js';
 
- /**
+/**
  * Increase output version. Zvýšení probíhá o 1.
  * @param fundVersionId verze AS
  * @param outputId id výstupu

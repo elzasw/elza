@@ -1,5 +1,5 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {RELATION_CLASS_CODES} from '../../../constants.tsx'
+import {RELATION_CLASS_CODES} from '../../../constants.tsx';
 
 const initialState = {
     isFetching: false,

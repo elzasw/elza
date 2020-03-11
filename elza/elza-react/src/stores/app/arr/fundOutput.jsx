@@ -1,13 +1,13 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {indexById} from 'stores/app/utils.jsx'
-import fundOutputDetail from './fundOutputDetail.jsx'
-import fundOutputFiles from './fundOutputFiles.jsx'
-import fundOutputFunctions from './fundOutputFunctions.jsx'
-import {isFundOutputDetail} from 'actions/arr/fundOutput.jsx'
-import {isFundOutputFilesAction} from 'actions/arr/fundOutputFiles.jsx'
-import {isFundOutputFunctionsAction} from 'actions/arr/fundOutputFunctions.jsx'
-import {consolidateState} from 'components/Utils.jsx'
-import {outputFormActions} from 'actions/arr/subNodeForm.jsx'
+import {indexById} from 'stores/app/utils.jsx';
+import fundOutputDetail from './fundOutputDetail.jsx';
+import fundOutputFiles from './fundOutputFiles.jsx';
+import fundOutputFunctions from './fundOutputFunctions.jsx';
+import {isFundOutputDetail} from 'actions/arr/fundOutput.jsx';
+import {isFundOutputFilesAction} from 'actions/arr/fundOutputFiles.jsx';
+import {isFundOutputFunctionsAction} from 'actions/arr/fundOutputFunctions.jsx';
+import {consolidateState} from 'components/Utils.jsx';
+import {outputFormActions} from 'actions/arr/subNodeForm.jsx';
 
 const initialState = {
     fetched: false,

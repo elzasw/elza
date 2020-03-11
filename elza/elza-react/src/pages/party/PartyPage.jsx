@@ -1,30 +1,30 @@
 import React from 'react';
-import { connect } from 'react-redux';
-import { AbstractReactComponent, ControllableDropdownButton, i18n, Icon, RibbonGroup, Utils } from 'components/shared';
+import {connect} from 'react-redux';
+import {AbstractReactComponent, ControllableDropdownButton, i18n, Icon, RibbonGroup, Utils} from 'components/shared';
 import Ribbon from '../../components/page/Ribbon';
 import PartyList from '../../components/party/PartyList';
 import PartyDetail from '../../components/party/PartyDetail';
 import ImportForm from '../../components/form/ImportForm';
 import ExtImportForm from '../../components/form/ExtImportForm';
-import { Dropdown } from 'react-bootstrap';
-import { Button } from '../../components/ui';
-import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog.jsx';
-import { refPartyTypesFetchIfNeeded } from 'actions/refTables/partyTypes.jsx';
-import { partyAdd, partyDelete, partyDetailFetchIfNeeded, partyListInvalidate } from 'actions/party/party.jsx';
-import { Shortcuts } from 'react-shortcuts';
-import { setFocus } from 'actions/global/focus.jsx';
+import {Dropdown} from 'react-bootstrap';
+import {Button} from '../../components/ui';
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx';
+import {partyAdd, partyDelete, partyDetailFetchIfNeeded, partyListInvalidate} from 'actions/party/party.jsx';
+import {Shortcuts} from 'react-shortcuts';
+import {setFocus} from 'actions/global/focus.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 import defaultKeymap from './PartyPageKeymap.jsx';
 import './PartyPage.scss';
-import { apExtSystemListFetchIfNeeded } from 'actions/registry/apExtSystemList';
+import {apExtSystemListFetchIfNeeded} from 'actions/registry/apExtSystemList';
 import PageLayout from '../shared/layout/PageLayout';
-import { PropTypes } from 'prop-types';
-import { FOCUS_KEYS } from '../../constants.tsx';
+import {PropTypes} from 'prop-types';
+import {FOCUS_KEYS} from '../../constants.tsx';
 import ScopeLists from '../../components/arr/ScopeLists';
 import ApStateHistoryForm from '../../components/registry/ApStateHistoryForm';
 import ApStateChangeForm from '../../components/registry/ApStateChangeForm';
-import { WebApi } from '../../actions';
-import { partyDetailInvalidate } from '../../actions/party/party';
+import {WebApi} from '../../actions';
+import {partyDetailInvalidate} from '../../actions/party/party';
 
 /**
  * PARTY PAGE

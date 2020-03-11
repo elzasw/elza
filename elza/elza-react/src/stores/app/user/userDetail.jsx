@@ -1,5 +1,5 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import { getSetFromIdsList } from 'stores/app/utils.jsx';
+import {getSetFromIdsList} from 'stores/app/utils.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 
 function hasRight(right) {

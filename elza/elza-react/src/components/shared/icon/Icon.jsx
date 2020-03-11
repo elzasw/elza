@@ -1,8 +1,8 @@
-import React from "react";
-import FontIcon from "components/shared/icon/FontIcon.jsx";
-import * as Glyphs from "components/shared/icon/glyphs";
-import * as Utils from "components/shared/icon/utils/IconUtils";
-import "./Icon.scss";
+import React from 'react';
+import FontIcon from 'components/shared/icon/FontIcon.jsx';
+import * as Glyphs from 'components/shared/icon/glyphs';
+import * as Utils from 'components/shared/icon/utils/IconUtils';
+import './Icon.scss';
 
 const iconMap = {
     "folder": Utils.inCircle(Glyphs.Folder),

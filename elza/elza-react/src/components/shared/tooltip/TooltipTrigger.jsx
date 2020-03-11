@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import { Overlay, Tooltip } from 'react-bootstrap';
+import {Overlay, Tooltip} from 'react-bootstrap';
 import AbstractReactComponent from '../../AbstractReactComponent';
 
 import './TooltipTrigger.scss';

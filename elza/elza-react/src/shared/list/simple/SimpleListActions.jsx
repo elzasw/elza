@@ -1,4 +1,4 @@
-import {storeFromArea} from "./../../utils";
+import {storeFromArea} from './../../utils';
 
 export const REQUEST = 'list.simple.request';
 export const RESPONSE = 'list.simple.response';

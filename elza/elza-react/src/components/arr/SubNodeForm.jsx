@@ -1,31 +1,31 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { AbstractReactComponent, i18n, Icon } from 'components/shared';
+import {AbstractReactComponent, i18n, Icon} from 'components/shared';
 import AddFileForm from './AddFileForm';
-import { connect } from 'react-redux';
-import { Accordion, Card } from 'react-bootstrap';
-import { indexById } from 'stores/app/utils.jsx';
+import {connect} from 'react-redux';
+import {Accordion, Card} from 'react-bootstrap';
+import {indexById} from 'stores/app/utils.jsx';
 import DescItemType from './nodeForm/DescItemType.jsx';
-import { partyAdd, partyDetailFetchIfNeeded } from 'actions/party/party.jsx';
-import { registryAdd, registryDetailFetchIfNeeded } from 'actions/registry/registry.jsx';
-import { routerNavigate } from 'actions/router.jsx';
-import { setInputFocus } from 'components/Utils.jsx';
-import { canSetFocus, focusWasSet, isFocusFor, setFocus } from 'actions/global/focus.jsx';
-import { UrlFactory } from 'actions/index.jsx';
-import { selectTab } from 'actions/global/tab.jsx';
-import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog.jsx';
-import { fundFilesCreate } from 'actions/arr/fundFiles.jsx';
-import { getOneSettings, setSettings } from 'components/arr/ArrUtils.jsx';
-import { userDetailsSaveSettings } from 'actions/user/userDetail.jsx';
+import {partyAdd, partyDetailFetchIfNeeded} from 'actions/party/party.jsx';
+import {registryAdd, registryDetailFetchIfNeeded} from 'actions/registry/registry.jsx';
+import {routerNavigate} from 'actions/router.jsx';
+import {setInputFocus} from 'components/Utils.jsx';
+import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus.jsx';
+import {UrlFactory} from 'actions/index.jsx';
+import {selectTab} from 'actions/global/tab.jsx';
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {fundFilesCreate} from 'actions/arr/fundFiles.jsx';
+import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
+import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx';
 import './SubNodeForm.scss';
-import { downloadFile } from '../../actions/global/download';
-import { FOCUS_KEYS } from '../../constants.tsx';
-import { objectEqualsDiff } from '../Utils';
-import { SUB_NODE_FORM_CMP } from '../../stores/app/arr/subNodeForm';
+import {downloadFile} from '../../actions/global/download';
+import {FOCUS_KEYS} from '../../constants.tsx';
+import {objectEqualsDiff} from '../Utils';
+import {SUB_NODE_FORM_CMP} from '../../stores/app/arr/subNodeForm';
 
 import classNames from 'classnames';
-import { Button } from '../ui';
+import {Button} from '../ui';
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.

@@ -1,4 +1,4 @@
-import {ApFormVO, ApItemExt} from "./itemForm";
+import { ApFormVO, ApItemExt } from './itemForm';
 
 export enum DataTypeCode {
     FILE_REF = "FILE_REF",

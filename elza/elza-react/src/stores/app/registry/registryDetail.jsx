@@ -1,6 +1,6 @@
 import DetailReducer from 'shared/detail/DetailReducer';
-import { RESPONSE } from 'shared/detail/DetailActions';
-import { i18n } from 'components/shared';
+import {RESPONSE} from 'shared/detail/DetailActions';
+import {i18n} from 'components/shared';
 
 const intialState = {
     variantRecordInternalId: 0,

@@ -1,30 +1,30 @@
 import React from 'react';
-import { connect } from 'react-redux';
-import { Modal } from 'react-bootstrap';
+import {connect} from 'react-redux';
+import {Modal} from 'react-bootstrap';
 import classNames from 'classnames';
-import { createReferenceMark, getNodeIcon } from 'components/arr/ArrUtils.jsx';
-import { AbstractReactComponent, i18n, Icon } from 'components/shared';
-import { WebApi } from '../../actions/WebApi';
+import {createReferenceMark, getNodeIcon} from 'components/arr/ArrUtils.jsx';
+import {AbstractReactComponent, i18n, Icon} from 'components/shared';
+import {WebApi} from '../../actions/WebApi';
 
 import * as types from 'actions/constants/ActionTypes.js';
 
-import { routerNavigate } from 'actions/router.jsx';
-import { modalDialogHide } from 'actions/global/modalDialog.jsx';
+import {routerNavigate} from 'actions/router.jsx';
+import {modalDialogHide} from 'actions/global/modalDialog.jsx';
 import * as fundSearchActions from '../../actions/arr/fundSearch.jsx';
 import Search from '../shared/search/Search';
 import HorizontalLoader from '../shared/loading/HorizontalLoader';
 
-import { createFundRoot, getParentNode } from './ArrUtils.jsx';
+import {createFundRoot, getParentNode} from './ArrUtils.jsx';
 
-import { fundsSelectFund } from 'actions/fund/fund.jsx';
-import { selectFundTab } from 'actions/arr/fund.jsx';
+import {fundsSelectFund} from 'actions/fund/fund.jsx';
+import {selectFundTab} from 'actions/arr/fund.jsx';
 import {
     fundTreeFetch,
     fundTreeFulltextChange,
     fundTreeFulltextResult,
     fundTreeSelectNode,
 } from 'actions/arr/fundTree.jsx';
-import { fundSelectSubNode } from 'actions/arr/node.jsx';
+import {fundSelectSubNode} from 'actions/arr/node.jsx';
 
 import './SearchFundsForm.scss';
 

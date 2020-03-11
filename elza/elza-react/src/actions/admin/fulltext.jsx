@@ -6,8 +6,8 @@
  */
 import {WebApi} from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
- 
- /**
+
+/**
  * Získání stavu indexování ze serveru.
  * @returns function dispatch
  */

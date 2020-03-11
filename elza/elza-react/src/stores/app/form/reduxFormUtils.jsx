@@ -1,4 +1,4 @@
-import {valuesEquals} from 'components/Utils.jsx'
+import {valuesEquals} from 'components/Utils.jsx';
 
 const getValue = (field, state, dest, exportInitialValues) => {
     const dotIndex = field.indexOf('.');

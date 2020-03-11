@@ -18,11 +18,11 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 
-import classNames from 'classnames'
+import classNames from 'classnames';
 
-import i18n from "../../i18n";
-import NoFocusButton from "../button/NoFocusButton";
-import Icon from "../icon/Icon";
+import i18n from '../../i18n';
+import NoFocusButton from '../button/NoFocusButton';
+import Icon from '../icon/Icon';
 
 class ToggleContent extends React.Component {
     constructor(props) {

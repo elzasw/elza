@@ -1,6 +1,6 @@
-import { WebApi } from 'actions/index.jsx';
+import {WebApi} from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
-import { indexById, objectById } from 'stores/app/utils.jsx';
+import {indexById, objectById} from 'stores/app/utils.jsx';
 
 export function isFundOutputFunctionsAction(action) {
     switch (action.type) {

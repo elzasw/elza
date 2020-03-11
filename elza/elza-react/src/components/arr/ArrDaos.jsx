@@ -5,11 +5,11 @@ import './ArrDaos.scss';
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import { connect } from 'react-redux';
-import { AbstractReactComponent, HorizontalLoader, Icon, Splitter } from 'components/shared';
-import { indexById } from 'stores/app/utils.jsx';
+import {connect} from 'react-redux';
+import {AbstractReactComponent, HorizontalLoader, Icon, Splitter} from 'components/shared';
+import {indexById} from 'stores/app/utils.jsx';
 import * as daoActions from 'actions/arr/daoActions.jsx';
-import { WebApi } from 'actions/index.jsx';
+import {WebApi} from 'actions/index.jsx';
 import ArrDao from './ArrDao';
 
 import flattenItems from 'components/shared/utils/itemFilter.jsx';
@@ -47,7 +47,7 @@ class ArrDaos extends AbstractReactComponent {
 
     handleFetch = (prevProps, nextProps) => {
         const { type, unassigned, fund, nodeId, daoPackageId } = nextProps;
-        
+
         if (type === 'NODE') {
             if (nodeId != null) {
                 this.props.dispatch(daoActions.fetchNodeDaoListIfNeeded(fund.versionId, nodeId));

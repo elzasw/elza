@@ -1,5 +1,5 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {default as genericRefTable, genericRefTableState} from "./genericRefTable";
+import {default as genericRefTable, genericRefTableState} from './genericRefTable';
 
 const initialState = {
     ...genericRefTableState,

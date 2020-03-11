@@ -6,9 +6,9 @@
 
 import {WebApi} from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
-import {indexById} from 'stores/app/utils.jsx'
-import {fundSelectSubNode} from './node.jsx'
-import {createFundRoot} from 'components/arr/ArrUtils.jsx'
+import {indexById} from 'stores/app/utils.jsx';
+import {fundSelectSubNode} from './node.jsx';
+import {createFundRoot} from 'components/arr/ArrUtils.jsx';
 
 export function isFundTreeAction(action) {
     switch (action.type) {

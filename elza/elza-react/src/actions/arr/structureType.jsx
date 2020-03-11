@@ -3,10 +3,10 @@
  */
 
 
-import {DEFAULT_LIST_SIZE} from '../../constants.tsx'
-import {SimpleListActions} from 'shared/list'
+import {DEFAULT_LIST_SIZE} from '../../constants.tsx';
+import {SimpleListActions} from 'shared/list';
 
-import {WebApi} from "../../actions/WebApi";
+import {WebApi} from '../../actions/WebApi';
 
 export const DEFAULT_STRUCTURE_TYPE_MAX_SIZE = DEFAULT_LIST_SIZE;
 

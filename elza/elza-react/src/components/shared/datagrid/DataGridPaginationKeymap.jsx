@@ -1,4 +1,5 @@
-import * as Utils from "../../Utils";
+import * as Utils from '../../Utils';
+
 var keyModifier = Utils.getKeyModifier()
 
 var defaultKeymap = {

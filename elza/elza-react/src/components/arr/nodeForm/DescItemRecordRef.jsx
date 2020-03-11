@@ -1,24 +1,24 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import { WebApi } from 'actions/index.jsx';
-import { AbstractReactComponent, i18n } from 'components/shared';
-import { connect } from 'react-redux';
-import { decorateAutocompleteValue } from './DescItemUtils.jsx';
+import {WebApi} from 'actions/index.jsx';
+import {AbstractReactComponent, i18n} from 'components/shared';
+import {connect} from 'react-redux';
+import {decorateAutocompleteValue} from './DescItemUtils.jsx';
 import DescItemLabel from './DescItemLabel.jsx';
 import './DescItemRecordRef.scss';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
-import { modalDialogShow } from 'actions/global/modalDialog.jsx';
+import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {
     AREA_REGISTRY_LIST,
     registryDetailClear,
     registryDetailFetchIfNeeded,
     registryListFilter,
 } from 'actions/registry/registry.jsx';
-import { AREA_PARTY_LIST, partyDetailClear, partyListFilter } from 'actions/party/party.jsx';
+import {AREA_PARTY_LIST, partyDetailClear, partyListFilter} from 'actions/party/party.jsx';
 import classNames from 'classnames';
-import { objectById, storeFromArea } from 'shared/utils';
-import { MODAL_DIALOG_VARIANT } from '../../../constants.tsx';
+import {objectById, storeFromArea} from 'shared/utils';
+import {MODAL_DIALOG_VARIANT} from '../../../constants.tsx';
 
 
 //import RegistrySelectPage from 'pages/select/RegistrySelectPage.jsx'

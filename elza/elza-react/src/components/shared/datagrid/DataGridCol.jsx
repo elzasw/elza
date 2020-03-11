@@ -1,5 +1,5 @@
 import React from 'react';
-import AbstractReactComponent from "../../AbstractReactComponent";
+import AbstractReactComponent from '../../AbstractReactComponent';
 
 class DataGridCol extends AbstractReactComponent {
     static propTypes = {

@@ -6,11 +6,11 @@
  */
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { connect } from 'react-redux';
-import { Button } from '../ui';
-import { AbstractReactComponent, FormInput, i18n } from 'components/shared';
+import {connect} from 'react-redux';
+import {Button} from '../ui';
+import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
 
-import { importPackage } from 'actions/admin/packages.jsx';
+import {importPackage} from 'actions/admin/packages.jsx';
 
 class AdminPackagesUpload extends AbstractReactComponent {
     constructor(props) {

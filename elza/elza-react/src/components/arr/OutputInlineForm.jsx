@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, FormInput} from 'components/shared';
-import {decorateFormField} from 'components/form/FormUtils.jsx'
-import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx'
-import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
-import {initForm} from "actions/form/inlineForm.jsx"
-import {indexById} from 'stores/app/utils.jsx'
+import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import {decorateFormField} from 'components/form/FormUtils.jsx';
+import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx';
+import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx';
+import {initForm} from 'actions/form/inlineForm.jsx';
+import {indexById} from 'stores/app/utils.jsx';
 
 /**
  * Formulář inline editace výstupu.

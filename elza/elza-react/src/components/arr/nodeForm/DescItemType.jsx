@@ -1,28 +1,20 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {
-    AbstractReactComponent,
-    FormInput,
-    i18n,
-    Icon,
-    NoFocusButton,
-    TooltipTrigger,
-    Utils,
-} from 'components/shared';
-import { connect } from 'react-redux';
-import { propsEquals, valuesEquals } from 'components/Utils.jsx';
-import { nodeFormActions } from 'actions/arr/subNodeForm.jsx';
-import { hasDescItemTypeValue } from 'components/arr/ArrUtils.jsx';
-import { indexById } from 'stores/app/utils.jsx';
+import {AbstractReactComponent, FormInput, i18n, Icon, NoFocusButton, TooltipTrigger, Utils} from 'components/shared';
+import {connect} from 'react-redux';
+import {propsEquals, valuesEquals} from 'components/Utils.jsx';
+import {nodeFormActions} from 'actions/arr/subNodeForm.jsx';
+import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx';
+import {indexById} from 'stores/app/utils.jsx';
 import classNames from 'classnames';
 import * as perms from 'actions/user/Permission.jsx';
-import { Shortcuts } from 'react-shortcuts';
+import {Shortcuts} from 'react-shortcuts';
 import DescItemTypeSpec from './DescItemTypeSpec';
-import { PropTypes } from 'prop-types';
+import {PropTypes} from 'prop-types';
 import defaultKeymap from './DescItemTypeKeymap.jsx';
 import './AbstractDescItem.scss';
-import { convertValue, validate } from 'stores/app/arr/subNodeForm.jsx';
-import { WebApi } from 'actions/index.jsx';
+import {convertValue, validate} from 'stores/app/arr/subNodeForm.jsx';
+import {WebApi} from 'actions/index.jsx';
 import objectById from '../../../shared/utils/objectById';
 
 const placeholder = document.createElement('div');

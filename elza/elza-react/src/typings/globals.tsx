@@ -1,4 +1,4 @@
-import {AnyAction} from "redux";
+import { AnyAction } from 'redux';
 
 export type ThunkAction<R, S, E> = (dispatch: Dispatch<S>, getState: () => S, extraArgument: E) => R;
 

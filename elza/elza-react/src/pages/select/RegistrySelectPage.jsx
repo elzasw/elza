@@ -1,14 +1,14 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 
 import classNames from 'classnames';
 
-import { i18n, Icon, RibbonGroup, RibbonSplit } from 'components/shared';
-import { Button } from '../../components/ui';
-import { AREA_PARTY_DETAIL } from 'actions/party/party.jsx';
-import { AREA_REGISTRY_DETAIL } from 'actions/registry/registry.jsx';
-import { storeFromArea } from 'shared/utils';
+import {i18n, Icon, RibbonGroup, RibbonSplit} from 'components/shared';
+import {Button} from '../../components/ui';
+import {AREA_PARTY_DETAIL} from 'actions/party/party.jsx';
+import {AREA_REGISTRY_DETAIL} from 'actions/registry/registry.jsx';
+import {storeFromArea} from 'shared/utils';
 import SelectPage from './SelectPage.jsx';
 import RegistryPage from '../registry/RegistryPage.jsx';
 import PartyPage from '../party/PartyPage.jsx';

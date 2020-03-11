@@ -12,11 +12,11 @@
 import React from 'react';
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils.jsx';
 //import {store} from '../stores/AppStore.jsx';
-import {addToastrDanger, addToastrWarning, addToastrInfo, addToastr} from 'components/shared/toastr/ToastrActions.jsx'
 import {createException} from 'components/ExceptionUtils.jsx';
-import i18n from "./i18n";
+import i18n from './i18n';
 
 import $ from 'jquery';
+
 const serverContextPath = window.serverContextPath;
 
 // Nastavení úrovně logování

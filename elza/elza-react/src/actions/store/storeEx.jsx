@@ -1,5 +1,5 @@
-import {save} from 'stores'
-import {storeStateData} from './store.jsx'
+import {save} from 'stores';
+import {storeStateData} from './store.jsx';
 
 // Globální proměnná pro možnost vypnutí ukládání stavu do local storage
 var _storeSaveEnabled = true

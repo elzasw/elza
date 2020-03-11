@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {FormControl, FormGroup, FormLabel, Form, FormCheck} from 'react-bootstrap';
-import AbstractReactComponent from "../../AbstractReactComponent";
+import {Form, FormCheck, FormControl, FormGroup, FormLabel} from 'react-bootstrap';
+import AbstractReactComponent from '../../AbstractReactComponent';
 
 class FormInput extends AbstractReactComponent {
     static defaultProps = {

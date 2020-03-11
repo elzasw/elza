@@ -7,14 +7,13 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {Form} from 'react-bootstrap';
-import {decorateFormField} from 'components/form/FormUtils.jsx';
-import AbstractReactComponent from "../AbstractReactComponent";
-import FormInput from "../shared/form/FormInput";
-import i18n from "../i18n";
-import {connect} from 'react-redux'
-import {UrlFactory} from "../../actions/WebApi";
-import {modalDialogHide} from "../../actions/global/modalDialog";
-import {downloadFile} from "../../actions/global/download";
+import AbstractReactComponent from '../AbstractReactComponent';
+import FormInput from '../shared/form/FormInput';
+import i18n from '../i18n';
+import {connect} from 'react-redux';
+import {UrlFactory} from '../../actions/WebApi';
+import {modalDialogHide} from '../../actions/global/modalDialog';
+import {downloadFile} from '../../actions/global/download';
 
 
 const transformSubmitData = (values) => {

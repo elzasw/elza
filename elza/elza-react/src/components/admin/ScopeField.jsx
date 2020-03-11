@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 
-import React from "react";
+import React from 'react';
 import {AbstractReactComponent, Autocomplete} from 'components/shared';
-import {connect} from "react-redux"
+import {connect} from 'react-redux';
 
 const ScopeField = class ScopeField extends AbstractReactComponent {
     constructor(props) {

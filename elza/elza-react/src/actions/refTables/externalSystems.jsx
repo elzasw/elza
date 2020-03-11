@@ -1,5 +1,5 @@
 import {WebApi} from 'actions/index.jsx';
-import {SimpleListActions} from 'shared/list'
+import {SimpleListActions} from 'shared/list';
 import * as types from 'actions/constants/ActionTypes.js';
 
 const AREA_AP_EXT_SYSTEM_LIST = 'apExtSystemList';

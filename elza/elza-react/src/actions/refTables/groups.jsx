@@ -2,7 +2,7 @@
  * Akce pro skupiny v pořádání.
  */
 import {WebApi} from 'actions/index.jsx';
-import {DetailActions} from 'shared/detail'
+import {DetailActions} from 'shared/detail';
 
 export const REF_GROUPS = 'refTables.groups';
 

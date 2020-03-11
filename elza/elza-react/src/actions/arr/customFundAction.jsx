@@ -1,5 +1,5 @@
 import * as types from '../../actions/constants/ActionTypes.js';
-import { WebApi } from 'actions/index.jsx';
+import {WebApi} from 'actions/index.jsx';
 
 export function isCustomFundAction(action) {
     switch (action.type) {

@@ -5,17 +5,16 @@
  * @since 22.12.2015
  */
 import * as types from 'actions/constants/ActionTypes.js';
-import packages from './packages.jsx'
-import user from './user.jsx'
-import group from './group.jsx'
-import fulltext from './fulltext.jsx'
-import {isUserAction} from 'actions/admin/user.jsx'
-import {isGroupAction} from 'actions/admin/group.jsx'
-import {isPermissionAction} from 'actions/admin/permission.jsx'
-import DetailReducer from "shared/detail/DetailReducer";
-import * as DetailActions from "shared/detail/DetailActions";
-import processAreaStores from "../../../shared/utils/processAreaStores";
-import SimpleListReducer from "../../../shared/list/simple/SimpleListReducer";
+import packages from './packages.jsx';
+import user from './user.jsx';
+import group from './group.jsx';
+import fulltext from './fulltext.jsx';
+import {isUserAction} from 'actions/admin/user.jsx';
+import {isGroupAction} from 'actions/admin/group.jsx';
+import {isPermissionAction} from 'actions/admin/permission.jsx';
+import DetailReducer from 'shared/detail/DetailReducer';
+import processAreaStores from '../../../shared/utils/processAreaStores';
+import SimpleListReducer from '../../../shared/list/simple/SimpleListReducer';
 
 /**
  * Výchozí stav store

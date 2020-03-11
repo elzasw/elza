@@ -9,7 +9,7 @@
  * @return {Object} objekt pro dekoraci input prvku
  */
 
-import {modalDialogHide} from 'actions/global/modalDialog.jsx'
+import {modalDialogHide} from 'actions/global/modalDialog.jsx';
 
 export function decorateFormField(field, inline = false) {
     if (field.touched && field.error) {

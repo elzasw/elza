@@ -8,9 +8,9 @@ import * as Utils from '../../Utils';
 import Resizer from '../resizer/Resizer';
 import DataGridRow from './DataGridRow';
 import i18n from '../../i18n';
-import { getScrollbarWidth, propsEquals } from 'components/Utils.jsx';
-import { Shortcuts } from 'react-shortcuts';
-import { PropTypes } from 'prop-types';
+import {getScrollbarWidth, propsEquals} from 'components/Utils.jsx';
+import {Shortcuts} from 'react-shortcuts';
+import {PropTypes} from 'prop-types';
 import defaultKeymap from './DataGridKeymap.jsx';
 
 import './DataGrid.scss';

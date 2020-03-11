@@ -1,4 +1,4 @@
-import {storeFromArea} from "./../utils";
+import {storeFromArea} from './../utils';
 
 export const INIT_REDUCER = 'shared.initReducer';
 

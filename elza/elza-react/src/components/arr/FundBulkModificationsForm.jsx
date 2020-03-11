@@ -1,20 +1,20 @@
 //
 import React from 'react';
-import { reduxForm } from 'redux-form';
-import { AbstractReactComponent, FormInput, i18n } from 'components/shared';
-import { Form, FormCheck, FormGroup, FormLabel, Modal } from 'react-bootstrap';
-import { Button } from '../ui';
-import { decorateFormField, submitForm } from 'components/form/FormUtils.jsx';
-import { descItemTypesFetchIfNeeded } from 'actions/refTables/descItemTypes.jsx';
-import { getSpecsIds } from 'components/arr/ArrUtils.jsx';
+import {reduxForm} from 'redux-form';
+import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import {Form, FormCheck, FormGroup, FormLabel, Modal} from 'react-bootstrap';
+import {Button} from '../ui';
+import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
+import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
+import {getSpecsIds} from 'components/arr/ArrUtils.jsx';
 import './FundBulkModificationsForm.scss';
 import SimpleCheckListBox from './SimpleCheckListBox';
-import { validateInt } from '../validate';
+import {validateInt} from '../validate';
 import DescItemUnitdate from './nodeForm/DescItemUnitdate';
 import DescItemRecordRef from './nodeForm/DescItemRecordRef';
 import DatationField from './../party/DatationField';
-import { FILTER_NULL_VALUE } from 'actions/arr/fundDataGrid.jsx';
-import { getMapFromList } from './../../stores/app/utils.jsx';
+import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx';
+import {getMapFromList} from './../../stores/app/utils.jsx';
 
 const getDefaultOperationType = props => {
     const { dataType } = props;

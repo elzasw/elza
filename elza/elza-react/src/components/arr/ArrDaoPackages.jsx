@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { connect } from 'react-redux';
-import { AbstractReactComponent, i18n, ListBox, Search, StoreHorizontalLoader } from 'components/shared';
+import {connect} from 'react-redux';
+import {AbstractReactComponent, i18n, ListBox, Search, StoreHorizontalLoader} from 'components/shared';
 import * as daoActions from 'actions/arr/daoActions.jsx';
 import classNames from 'classnames';
 import './ArrDaoPackages.scss';

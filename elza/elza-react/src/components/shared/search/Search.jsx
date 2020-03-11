@@ -11,7 +11,6 @@ import './Search.scss';
 import FormInput from '../form/FormInput';
 import NoFocusButton from '../button/NoFocusButton';
 import Icon from '../icon/Icon';
-import i18n from '../../i18n';
 
 /**
  *  Komponenta pro vyhledávání

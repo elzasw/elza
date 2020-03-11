@@ -2,14 +2,14 @@
  * Akce pro digitalizaci.
  */
 
-import * as SimpleListActions from "shared/list/simple/SimpleListActions";
-import * as DetailActions from "shared/detail/DetailActions";
+import * as SimpleListActions from 'shared/list/simple/SimpleListActions';
+import * as DetailActions from 'shared/detail/DetailActions';
 import {WebApi} from 'actions/index.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {i18n} from 'components/shared';
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx'
-import {modalDialogHide} from 'actions/global/modalDialog.jsx'
-import {storeFromArea} from "shared/utils";
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
+import {modalDialogHide} from 'actions/global/modalDialog.jsx';
+import {storeFromArea} from 'shared/utils';
 
 const AREA_PREPARED_REQUESTS = "preparedRequestList";
 const AREA_REQUEST_LIST_SUFFIX = ".requestList";

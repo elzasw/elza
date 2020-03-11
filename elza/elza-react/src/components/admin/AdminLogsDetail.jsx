@@ -1,9 +1,9 @@
 import React from 'react';
-import { AbstractReactComponent, FormInput, Icon } from 'components/shared';
-import { WebApi } from 'actions/index.jsx';
+import {AbstractReactComponent, FormInput, Icon} from 'components/shared';
+import {WebApi} from 'actions/index.jsx';
 
 import './AdminLogsDetail.scss';
-import { Col, Row } from 'react-bootstrap';
+import {Col, Row} from 'react-bootstrap';
 
 
 /**

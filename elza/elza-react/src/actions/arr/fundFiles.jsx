@@ -1,7 +1,7 @@
-import { WebApi } from 'actions/index.jsx';
+import {WebApi} from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
-import { objectById } from 'stores/app/utils.jsx';
-import { savingApiWrapper } from 'actions/global/status.jsx';
+import {objectById} from 'stores/app/utils.jsx';
+import {savingApiWrapper} from 'actions/global/status.jsx';
 
 export function isFundFilesAction(action) {
     switch (action.type) {

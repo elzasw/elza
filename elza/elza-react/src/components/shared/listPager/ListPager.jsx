@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import './ListPager.scss';
-import { Icon } from 'components/shared';
+import {Icon} from 'components/shared';
 
 /**
  * Komponenta k ovládání stránkování seznamu

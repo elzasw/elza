@@ -1,23 +1,21 @@
 import './NodeTabs.scss';
-
-/**
- * Komponenta záložek otevřených JP.
- */
-
 import PropTypes from 'prop-types';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
+import {connect} from 'react-redux';
 import {AbstractReactComponent, i18n, Tabs} from 'components/shared';
-import {fundCloseNodeTab, fundSelectNodeTab} from 'actions/arr/nodes.jsx'
-import {nodesFetchIfNeeded} from 'actions/arr/node.jsx'
-import {propsEquals} from 'components/Utils.jsx'
-import {indexById} from 'stores/app/utils.jsx'
-import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
-import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus.jsx'
-import NodePanel from "./NodePanel";
-import {FOCUS_KEYS} from "../../constants.tsx";
+import {fundCloseNodeTab, fundSelectNodeTab} from 'actions/arr/nodes.jsx';
+import {nodesFetchIfNeeded} from 'actions/arr/node.jsx';
+import {propsEquals} from 'components/Utils.jsx';
+import {createReferenceMarkString} from 'components/arr/ArrUtils.jsx';
+import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus.jsx';
+import NodePanel from './NodePanel';
+import {FOCUS_KEYS} from '../../constants.tsx';
+
+/**
+ * Komponenta záložek otevřených JP.
+ */
 
 class NodeTabs extends AbstractReactComponent {
     constructor(props) {

@@ -1,9 +1,9 @@
 import * as types from '../../../actions/constants/ActionTypes.js';
-import {consolidateState} from '../../../components/Utils.jsx'
-import {accessPointFormActions} from "../../../components/accesspoint/AccessPointFormActions";
-import {itemForm} from "./itemForm";
-import {apNameFormActions} from "../../../components/accesspoint/ApNameFormActions";
-import {fragmentItemFormActions} from "../../../components/accesspoint/FragmentItemFormActions";
+import {consolidateState} from '../../../components/Utils.jsx';
+import {accessPointFormActions} from '../../../components/accesspoint/AccessPointFormActions';
+import {itemForm} from './itemForm';
+import {apNameFormActions} from '../../../components/accesspoint/ApNameFormActions';
+import {fragmentItemFormActions} from '../../../components/accesspoint/FragmentItemFormActions';
 
 const initialState = {
     id: null,

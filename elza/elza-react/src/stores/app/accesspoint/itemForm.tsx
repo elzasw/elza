@@ -1,11 +1,11 @@
 import * as types from '../../../actions/constants/ActionTypes.js';
-import {i18n} from '../../../components/shared';
-import {valuesEquals} from '../../../components/Utils';
-import {validateCoordinatePoint, validateDouble, validateDuration, validateInt} from '../../../components/validate';
-import {DisplayType} from '../../../constants';
-import {getMapFromList, objectById} from '../utils2';
-import {DataTypeCode} from './itemFormInterfaces';
-import {consolidateDescItems, createItem, ItemAvailability, mergeAfterUpdate, updateFormData} from './itemFormUtils';
+import { i18n } from '../../../components/shared';
+import { valuesEquals } from '../../../components/Utils';
+import { validateCoordinatePoint, validateDouble, validateDuration, validateInt } from '../../../components/validate';
+import { DisplayType } from '../../../constants';
+import { getMapFromList, objectById } from '../utils2';
+import { DataTypeCode } from './itemFormInterfaces';
+import { consolidateDescItems, createItem, ItemAvailability, mergeAfterUpdate, updateFormData } from './itemFormUtils';
 
 export interface ILocation {
     itemType: ItemTypeExt;

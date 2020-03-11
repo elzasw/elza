@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import HorizontalPane from './HorizontalPane'
-import AbstractReactComponent from "../../AbstractReactComponent";
-import Resizer from "../resizer/Resizer";
-import './HorizontalSplitter.scss'
+import HorizontalPane from './HorizontalPane';
+import AbstractReactComponent from '../../AbstractReactComponent';
+import Resizer from '../resizer/Resizer';
+import './HorizontalSplitter.scss';
 
 class HorizontalSplitter extends AbstractReactComponent {
 

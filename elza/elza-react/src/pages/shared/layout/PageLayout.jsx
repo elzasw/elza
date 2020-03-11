@@ -1,7 +1,6 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 
-import {connect} from 'react-redux'
+import {connect} from 'react-redux';
 import classNames from 'classnames';
 import {Splitter, ToggleContent} from 'components/shared';
 import {splitterResize} from 'actions/global/splitter.jsx';

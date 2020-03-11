@@ -1,5 +1,5 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {indexById} from 'stores/app/utils.jsx'
+import {indexById} from 'stores/app/utils.jsx';
 
 const bulkActionsInitState = {
     isDirty: true,

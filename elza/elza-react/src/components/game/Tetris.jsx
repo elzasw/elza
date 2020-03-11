@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
-import lev from "./TetrisLevels";
+import lev from './TetrisLevels';
 import './Tetris.scss';
 
 const ww = 10;

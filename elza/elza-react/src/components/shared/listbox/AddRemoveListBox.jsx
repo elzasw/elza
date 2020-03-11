@@ -2,12 +2,12 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import ListBox from "./ListBox";
-import AbstractReactComponent from "../../AbstractReactComponent";
-import NoFocusButton from "../button/NoFocusButton";
-import i18n from "../../i18n";
-import Icon from "../icon/Icon";
-import "./AddRemoveListBox.scss";
+import ListBox from './ListBox';
+import AbstractReactComponent from '../../AbstractReactComponent';
+import NoFocusButton from '../button/NoFocusButton';
+import i18n from '../../i18n';
+import Icon from '../icon/Icon';
+import './AddRemoveListBox.scss';
 
 /**
  * Listbox s možností přidávat a odebírat položky.

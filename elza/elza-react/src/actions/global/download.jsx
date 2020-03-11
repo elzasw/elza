@@ -1,6 +1,6 @@
-import { i18n } from 'components/shared';
-import { addToastr } from 'components/shared/toastr/ToastrActions.jsx';
-import { createException } from 'components/ExceptionUtils.jsx';
+import {i18n} from 'components/shared';
+import {addToastr} from 'components/shared/toastr/ToastrActions.jsx';
+import {createException} from 'components/ExceptionUtils.jsx';
 
 /**
  *  Downloads file from specified url

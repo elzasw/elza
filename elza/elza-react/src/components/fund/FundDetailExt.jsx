@@ -1,14 +1,14 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { connect } from 'react-redux';
-import { Button } from '../ui';
-import { AbstractReactComponent, i18n } from 'components/shared';
-import { dateToString } from 'components/Utils.jsx';
-import { getFundFromFundAndVersion } from 'components/arr/ArrUtils.jsx';
-import { selectFundTab } from 'actions/arr/fund.jsx';
-import { routerNavigate } from 'actions/router.jsx';
-import { downloadFile } from 'actions/global/download';
-import { UrlFactory } from 'actions/index.jsx';
+import {connect} from 'react-redux';
+import {Button} from '../ui';
+import {AbstractReactComponent, i18n} from 'components/shared';
+import {dateToString} from 'components/Utils.jsx';
+import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx';
+import {selectFundTab} from 'actions/arr/fund.jsx';
+import {routerNavigate} from 'actions/router.jsx';
+import {downloadFile} from 'actions/global/download';
+import {UrlFactory} from 'actions/index.jsx';
 
 import './FundDetailExt.scss';
 

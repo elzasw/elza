@@ -1,8 +1,8 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import { _WebApi, WebApi } from 'actions/index.jsx';
-import { userDetailChange, userDetailRequest } from 'actions/user/userDetail.jsx';
-import { routerNavigate } from 'actions/router.jsx';
-import { partyDetailClear, partyDetailInvalidate, partyListInvalidate } from 'actions/party/party.jsx';
+import {_WebApi, WebApi} from 'actions/index.jsx';
+import {userDetailChange, userDetailRequest} from 'actions/user/userDetail.jsx';
+import {routerNavigate} from 'actions/router.jsx';
+import {partyDetailClear, partyDetailInvalidate, partyListInvalidate} from 'actions/party/party.jsx';
 
 
 /**

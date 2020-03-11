@@ -1,23 +1,22 @@
 import PropTypes from 'prop-types';
 import * as React from 'react';
 import TextareaAutosize from 'react-autosize-textarea';
-import {Dropdown, DropdownButton} from 'react-bootstrap';
-import {connect} from 'react-redux';
+import { Dropdown, DropdownButton } from 'react-bootstrap';
+import { connect } from 'react-redux';
 import * as issuesActions from '../../actions/arr/issues';
-import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
+import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
 import * as perms from '../../actions/user/Permission';
-import {WebApi} from '../../actions/WebApi';
-import {Button} from '../../components/ui';
+import { WebApi } from '../../actions/WebApi';
+import { Button } from '../../components/ui';
 import objectById from '../../shared/utils/objectById';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import IssueForm from '../form/IssueForm';
 import i18n from '../i18n';
 import Icon from '../shared/icon/Icon';
 import Loading from '../shared/loading/Loading';
-import {dateTimeToString} from '../Utils';
+import { dateTimeToString } from '../Utils';
 
 import './LecturingBottom.scss';
-
 
 /**
  * Spodní část lektoringu, zajištující seznam komentářů, komentování a editaci

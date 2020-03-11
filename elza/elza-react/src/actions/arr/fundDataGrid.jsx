@@ -2,10 +2,10 @@
  * Akce pro hromadné tabulkové zobrazení a úpravy AS.
  */
 
-import { WebApi } from 'actions/index.jsx';
+import {WebApi} from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
-import { objectById } from 'stores/app/utils.jsx';
-import { COL_REFERENCE_MARK } from 'components/arr/FundDataGridConst';
+import {objectById} from 'stores/app/utils.jsx';
+import {COL_REFERENCE_MARK} from 'components/arr/FundDataGridConst';
 
 // Null hodnota, která se používaná v klientovi pro reprezentaci null hodnoty
 export const FILTER_NULL_VALUE = '____$<NULL>$___';

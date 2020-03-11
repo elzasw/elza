@@ -4,8 +4,8 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import {AbstractReactComponent, Icon, i18n} from 'components/shared';
-import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx'
+import {AbstractReactComponent, i18n, Icon} from 'components/shared';
+import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx';
 
 import './NodeLabel.scss';
 

@@ -1,23 +1,23 @@
 import React from 'react';
-import { outputTypesFetchIfNeeded } from 'actions/refTables/outputTypes.jsx';
-import { connect } from 'react-redux';
-import { addShortcutManager } from 'components/Utils.jsx';
-import { AbstractReactComponent, FormInput, HorizontalLoader, i18n } from 'components/shared';
+import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx';
+import {connect} from 'react-redux';
+import {addShortcutManager} from 'components/Utils.jsx';
+import {AbstractReactComponent, FormInput, HorizontalLoader, i18n} from 'components/shared';
 import {
     fundOutputAddNodes,
     fundOutputDetailFetchIfNeeded,
     fundOutputEdit,
     fundOutputRemoveNodes,
 } from 'actions/arr/fundOutput.jsx';
-import { descItemTypesFetchIfNeeded } from 'actions/refTables/descItemTypes.jsx';
-import { refRulDataTypesFetchIfNeeded } from 'actions/refTables/rulDataTypes.jsx';
-import { calendarTypesFetchIfNeeded } from 'actions/refTables/calendarTypes.jsx';
-import { outputFormActions } from 'actions/arr/subNodeForm.jsx';
-import { modalDialogShow } from 'actions/global/modalDialog.jsx';
+import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
+import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx';
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
+import {outputFormActions} from 'actions/arr/subNodeForm.jsx';
+import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import OutputInlineForm from 'components/arr/OutputInlineForm.jsx';
-import { PropTypes } from 'prop-types';
+import {PropTypes} from 'prop-types';
 import './ArrOutputDetail.scss';
-import { Shortcuts } from 'react-shortcuts';
+import {Shortcuts} from 'react-shortcuts';
 import OutputSubNodeForm from './OutputSubNodeForm';
 import FundNodesList from './FundNodesList';
 import FundNodesSelectForm from './FundNodesSelectForm';

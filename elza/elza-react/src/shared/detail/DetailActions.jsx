@@ -1,4 +1,4 @@
-import {storeFromArea} from "./../utils";
+import {storeFromArea} from './../utils';
 
 export const SELECT = 'detail.select';
 export const REQUEST = 'detail.request';

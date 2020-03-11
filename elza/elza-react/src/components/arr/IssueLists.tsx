@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types';
 import * as React from 'react';
-import {Col, Modal, Row} from 'react-bootstrap';
-import {connect} from 'react-redux';
-import {WebApi} from '../../actions';
+import { Col, Modal, Row } from 'react-bootstrap';
+import { connect } from 'react-redux';
+import { WebApi } from '../../actions';
 import * as issuesActions from '../../actions/arr/issues';
-import {AbstractReactComponent, Icon} from '../../components/shared';
-import {Button} from '../../components/ui';
+import { AbstractReactComponent, Icon } from '../../components/shared';
+import { Button } from '../../components/ui';
 import indexById from '../../shared/utils/indexById';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import IssueListForm from '../form/IssueListForm';
@@ -15,7 +15,6 @@ import ListBox from '../shared/listbox/ListBox';
 import Loading from '../shared/loading/Loading';
 
 import './IssueLists.scss';
-
 
 type Props = {}
 type P = {

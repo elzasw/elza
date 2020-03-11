@@ -3,10 +3,10 @@
  */
 
 import React from 'react';
-import { connect } from 'react-redux';
-import { AbstractReactComponent, i18n } from 'components/shared';
+import {connect} from 'react-redux';
+import {AbstractReactComponent, i18n} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes.js';
-import { Dropdown } from 'react-bootstrap';
+import {Dropdown} from 'react-bootstrap';
 import {
     fundTreeCollapse,
     fundTreeFetchIfNeeded,
@@ -19,15 +19,15 @@ import {
     fundTreeNodeExpand,
     fundTreeSelectNode,
 } from 'actions/arr/fundTree.jsx';
-import { fundSelectSubNode } from 'actions/arr/node.jsx';
-import { createFundRoot, getParentNode } from './../arr/ArrUtils.jsx';
-import { contextMenuHide, contextMenuShow } from 'actions/global/contextMenu.jsx';
-import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
-import { getFundFromFundAndVersion } from 'components/arr/ArrUtils.jsx';
-import { selectFundTab } from 'actions/arr/fund.jsx';
-import { routerNavigate } from 'actions/router.jsx';
+import {fundSelectSubNode} from 'actions/arr/node.jsx';
+import {createFundRoot, getParentNode} from './../arr/ArrUtils.jsx';
+import {contextMenuHide, contextMenuShow} from 'actions/global/contextMenu.jsx';
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
+import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx';
+import {selectFundTab} from 'actions/arr/fund.jsx';
+import {routerNavigate} from 'actions/router.jsx';
 import FundTreeLazy from '../arr/FundTreeLazy';
-import { FOCUS_KEYS } from '../../constants.tsx';
+import {FOCUS_KEYS} from '../../constants.tsx';
 
 class FundDetailTree extends AbstractReactComponent {
     constructor(props) {

@@ -1,11 +1,11 @@
 import React from 'react';
-import { reduxForm } from 'redux-form';
-import { AbstractReactComponent, i18n } from 'components/shared';
-import { Col, Form, FormCheck, Modal, Nav, NavItem, Row } from 'react-bootstrap';
-import { Button } from '../ui';
-import { objectById } from 'stores/app/utils.jsx';
-import { visiblePolicyFetchIfNeeded } from 'actions/arr/visiblePolicy.jsx';
-import { FormInput, Loading } from '../shared/index';
+import {reduxForm} from 'redux-form';
+import {AbstractReactComponent, i18n} from 'components/shared';
+import {Col, Form, FormCheck, Modal, Nav, NavItem, Row} from 'react-bootstrap';
+import {Button} from '../ui';
+import {objectById} from 'stores/app/utils.jsx';
+import {visiblePolicyFetchIfNeeded} from 'actions/arr/visiblePolicy.jsx';
+import {FormInput, Loading} from '../shared/index';
 import getMapFromList from '../../shared/utils/getMapFromList';
 
 import './NodeSettingsForm.scss';

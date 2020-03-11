@@ -1,9 +1,7 @@
-import AjaxUtils from "../components/AjaxUtils";
-import {DEFAULT_LIST_SIZE} from '../constants'
-import {CommentVO, IssueListVO, IssueStateVO, IssueVO} from "../types";
-
 // @ts-ignore
-import $ from 'jquery';
+import AjaxUtils from '../components/AjaxUtils';
+import { DEFAULT_LIST_SIZE } from '../constants';
+import { CommentVO, IssueListVO, IssueStateVO, IssueVO } from '../types';
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
 

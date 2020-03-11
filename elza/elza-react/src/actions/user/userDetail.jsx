@@ -1,5 +1,5 @@
 import * as types from 'actions/constants/ActionTypes';
-import { WebApi } from 'actions/index.jsx';
+import {WebApi} from 'actions/index.jsx';
 
 export function userDetailChange(userDetail) {
     return {

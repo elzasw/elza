@@ -1,13 +1,13 @@
 import './ArrFundPanel.scss';
 
 import React from 'react';
-import { connect } from 'react-redux';
-import { AbstractReactComponent, i18n, Icon } from 'components/shared';
-import { Button } from '../ui';
-import { dateToString } from 'components/Utils.jsx';
-import { userDetailsSaveSettings } from 'actions/user/userDetail.jsx';
-import { fundChangeReadMode } from 'actions/arr/fund.jsx';
-import { getOneSettings, setSettings } from 'components/arr/ArrUtils.jsx';
+import {connect} from 'react-redux';
+import {AbstractReactComponent, i18n, Icon} from 'components/shared';
+import {Button} from '../ui';
+import {dateToString} from 'components/Utils.jsx';
+import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx';
+import {fundChangeReadMode} from 'actions/arr/fund.jsx';
+import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 import classNames from 'classnames';
 import TooltipTrigger from '../shared/tooltip/TooltipTrigger';

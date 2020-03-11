@@ -1,5 +1,5 @@
 import React from 'react';
-import { addToastr } from 'components/shared/toastr/ToastrActions.jsx';
+import {addToastr} from 'components/shared/toastr/ToastrActions.jsx';
 import LongText from './LongText';
 import i18n from './i18n';
 import Exception from './shared/exception/Exception';

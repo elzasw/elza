@@ -9,8 +9,7 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import ReactDOM from 'react-dom';
-import {connect} from 'react-redux'
+import {connect} from 'react-redux';
 import {addNodeFormArr} from 'actions/arr/addNodeForm.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 import {AbstractReactComponent, i18n} from 'components/shared';

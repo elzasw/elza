@@ -1,17 +1,17 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { reduxForm } from 'redux-form';
-import { AbstractReactComponent, Autocomplete, FormInput, HorizontalLoader, i18n, Icon } from 'components/shared';
-import { Col, Form, FormGroup, Modal, Row } from 'react-bootstrap';
-import { Button } from '../ui';
-import { refPartyNameFormTypesFetchIfNeeded } from 'actions/refTables/partyNameFormTypes.jsx';
-import { calendarTypesFetchIfNeeded } from 'actions/refTables/calendarTypes.jsx';
-import { modalDialogHide } from 'actions/global/modalDialog.jsx';
-import { getRegistryRecordTypesIfNeeded } from 'actions/registry/registryRecordTypes.jsx';
-import { requestScopesIfNeeded } from 'actions/refTables/scopesData.jsx';
-import { submitForm } from 'components/form/FormUtils.jsx';
-import { getTreeItemById } from './../../components/registry/registryUtils';
-import { PARTY_TYPE_CODES } from '../../constants.tsx';
+import {reduxForm} from 'redux-form';
+import {AbstractReactComponent, Autocomplete, FormInput, HorizontalLoader, i18n, Icon} from 'components/shared';
+import {Col, Form, FormGroup, Modal, Row} from 'react-bootstrap';
+import {Button} from '../ui';
+import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes.jsx';
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
+import {modalDialogHide} from 'actions/global/modalDialog.jsx';
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTypes.jsx';
+import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
+import {submitForm} from 'components/form/FormUtils.jsx';
+import {getTreeItemById} from './../../components/registry/registryUtils';
+import {PARTY_TYPE_CODES} from '../../constants.tsx';
 
 import DatationField from './DatationField';
 

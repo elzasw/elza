@@ -1,20 +1,20 @@
 // --
 import React from 'react';
-import { connect } from 'react-redux';
-import { AbstractReactComponent, i18n } from 'components/shared';
+import {connect} from 'react-redux';
+import {AbstractReactComponent, i18n} from 'components/shared';
 import * as perms from './../../actions/user/Permission.jsx';
 import storeFromArea from '../../shared/utils/storeFromArea';
-import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
+import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
 import * as adminPermissions from './../../actions/admin/adminPermissions';
 import PermissionCheckboxsForm from './PermissionCheckboxsForm';
 import AdminRightsContainer from './AdminRightsContainer';
 import AddRemoveListBox from '../shared/listbox/AddRemoveListBox';
 import SelectItemsForm from './SelectItemsForm';
 import getMapFromList from '../../shared/utils/getMapFromList';
-import { renderScopeItem } from './adminRenderUtils';
+import {renderScopeItem} from './adminRenderUtils';
 import ScopeField from './ScopeField';
 import indexById from '../../shared/utils/indexById';
-import { requestScopesIfNeeded } from '../../actions/refTables/scopesData';
+import {requestScopesIfNeeded} from '../../actions/refTables/scopesData';
 
 /**
  * Panel spravující oprávnění na třídy rejstříků.

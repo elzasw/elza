@@ -2,11 +2,11 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import {connect} from 'react-redux'
-import {storeFromArea} from "./../utils";
+import {connect} from 'react-redux';
+import {storeFromArea} from './../utils';
 import {FormControl} from 'react-bootstrap';
-import * as StoreSuggest from "./storeSuggestActions.jsx";
-import Autocomplete from "../../components/shared/autocomplete/Autocomplete";
+import * as StoreSuggest from './storeSuggestActions.jsx';
+import Autocomplete from '../../components/shared/autocomplete/Autocomplete';
 
 /**
  * Store suggest

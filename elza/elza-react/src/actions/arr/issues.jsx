@@ -1,10 +1,10 @@
-import {SimpleListActions} from 'shared/list'
-import {DetailActions} from 'shared/detail'
-import {WebApi} from "../WebApi";
-import {addToastrInfo} from "../../components/shared/toastr/ToastrActions";
-import {fundSelectSubNode} from "./node";
-import {i18n} from "../../components/shared";
-import {createFundRoot} from "../../components/arr/ArrUtils";
+import {SimpleListActions} from 'shared/list';
+import {DetailActions} from 'shared/detail';
+import {WebApi} from '../WebApi';
+import {addToastrInfo} from '../../components/shared/toastr/ToastrActions';
+import {fundSelectSubNode} from './node';
+import {i18n} from '../../components/shared';
+import {createFundRoot} from '../../components/arr/ArrUtils';
 
 export const AREA_LIST = "issueList";
 export const AREA_PROTOCOL = "issueProtocol";

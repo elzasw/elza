@@ -1,6 +1,4 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {i18n} from 'components/shared';
-import {indexById} from 'stores/app/utils.jsx'
 
 
 const initialState = {

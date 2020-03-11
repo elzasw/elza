@@ -1,5 +1,5 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {REQUEST, RESPONSE, SELECT, INVALIDATE, UPDATE_VALUE, RESET} from './DetailActions'
+import {INVALIDATE, REQUEST, RESET, RESPONSE, SELECT, UPDATE_VALUE} from './DetailActions';
 
 /**
  * Implicitní funkce pro načtení data key.

@@ -1,5 +1,5 @@
 import * as types from 'actions/constants/ActionTypes.js';
-import {consolidateState} from 'components/Utils.jsx'
+import {consolidateState} from 'components/Utils.jsx';
 
 const panelInitialState = {
     id: null,

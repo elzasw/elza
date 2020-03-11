@@ -3,12 +3,12 @@
  */
 
 import React from 'react';
-import { connect } from 'react-redux';
-import { AbstractReactComponent, i18n } from 'components/shared';
+import {connect} from 'react-redux';
+import {AbstractReactComponent, i18n} from 'components/shared';
 import FundTreeLazy from './FundTreeLazy';
 import ArrSearchForm from './ArrSearchForm';
 import * as types from 'actions/constants/ActionTypes.js';
-import { Dropdown } from 'react-bootstrap';
+import {Dropdown} from 'react-bootstrap';
 import {
     fundTreeCollapse,
     fundTreeFetchIfNeeded,
@@ -20,15 +20,14 @@ import {
     fundTreeNodeCollapse,
     fundTreeNodeExpand,
 } from 'actions/arr/fundTree.jsx';
-import { fundSelectSubNode } from 'actions/arr/node.jsx';
-import { createFundRoot, getParentNode } from './ArrUtils.jsx';
-import { contextMenuHide, contextMenuShow } from 'actions/global/contextMenu.jsx';
-import { propsEquals } from 'components/Utils.jsx';
-import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
-import { modalDialogShow } from 'actions/global/modalDialog.jsx';
-import { FOCUS_KEYS } from '../../constants.tsx';
+import {fundSelectSubNode} from 'actions/arr/node.jsx';
+import {createFundRoot, getParentNode} from './ArrUtils.jsx';
+import {contextMenuHide, contextMenuShow} from 'actions/global/contextMenu.jsx';
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
+import {modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {FOCUS_KEYS} from '../../constants.tsx';
 import PersistentSortDialog from './PersisetntSortDialog';
-import { WebApi } from '../../actions/WebApi';
+import {WebApi} from '../../actions/WebApi';
 
 class FundTreeMain extends AbstractReactComponent {
     constructor(props) {

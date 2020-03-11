@@ -1,5 +1,6 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import fundTree from './fundTree';
+
 const initialState = {
     fundTreeCopy: fundTree(undefined, { type: '' }),
     fundTreeUsage: fundTree(undefined, { type: '' }),

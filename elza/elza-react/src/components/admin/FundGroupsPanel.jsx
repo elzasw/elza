@@ -1,15 +1,15 @@
 // --
 import React from 'react';
-import { connect } from 'react-redux';
-import { AbstractReactComponent, HorizontalLoader, i18n } from 'components/shared';
+import {connect} from 'react-redux';
+import {AbstractReactComponent, HorizontalLoader, i18n} from 'components/shared';
 import * as adminPermissions from '../../actions/admin/adminPermissions';
 import storeFromArea from '../../shared/utils/storeFromArea';
-import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
+import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
 import AdminRightsContainer from './AdminRightsContainer';
 import AddRemoveListBox from '../shared/listbox/AddRemoveListBox';
-import { renderGroupItem } from './adminRenderUtils';
+import {renderGroupItem} from './adminRenderUtils';
 import FundsPermissionPanel from './FundsPermissionPanel';
-import { WebApi } from '../../actions/WebApi';
+import {WebApi} from '../../actions/WebApi';
 import SelectItemsForm from './SelectItemsForm';
 import getMapFromList from '../../shared/utils/getMapFromList';
 import GroupField from './GroupField';

@@ -1,4 +1,4 @@
-import StoreUtils from "./StoreUtils";
+import StoreUtils from './StoreUtils';
 import {indexById} from 'stores/app/utils.jsx';
 
 /**

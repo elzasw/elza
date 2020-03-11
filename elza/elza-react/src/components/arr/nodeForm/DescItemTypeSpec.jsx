@@ -1,9 +1,8 @@
 import React from 'react';
-import {Autocomplete, Icon, i18n, AbstractReactComponent} from 'components/shared';
-import {getSetFromIdsList} from "stores/app/utils.jsx";
+import {AbstractReactComponent, Autocomplete, i18n} from 'components/shared';
 import classNames from 'classnames';
 
-import "./DescItemTypeSpec.scss";
+import './DescItemTypeSpec.scss';
 
 /**
  * Komponenta pro zobrazení specifikace pro daný atribut.

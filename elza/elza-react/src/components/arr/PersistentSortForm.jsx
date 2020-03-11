@@ -7,17 +7,16 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
 import {Form, FormCheck} from 'react-bootstrap';
-import {decorateFormField} from 'components/form/FormUtils.jsx';
-import AbstractReactComponent from "../AbstractReactComponent";
-import FormInput from "../shared/form/FormInput";
-import i18n from "../i18n";
-import {Autocomplete} from "../shared";
-import {connect} from 'react-redux'
-import {WebApi} from "../../actions/WebApi";
-import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx'
-import {PERSISTENT_SORT_CODE} from "../../constants.tsx";
-import {modalDialogHide} from "../../actions/global/modalDialog";
-import {refRulDataTypesFetchIfNeeded} from "../../actions/refTables/rulDataTypes";
+import AbstractReactComponent from '../AbstractReactComponent';
+import FormInput from '../shared/form/FormInput';
+import i18n from '../i18n';
+import {Autocomplete} from '../shared';
+import {connect} from 'react-redux';
+import {WebApi} from '../../actions/WebApi';
+import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
+import {PERSISTENT_SORT_CODE} from '../../constants.tsx';
+import {modalDialogHide} from '../../actions/global/modalDialog';
+import {refRulDataTypesFetchIfNeeded} from '../../actions/refTables/rulDataTypes';
 
 
 const transformSubmitData = (values) => {

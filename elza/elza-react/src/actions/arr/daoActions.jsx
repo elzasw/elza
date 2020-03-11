@@ -1,9 +1,9 @@
 /** Akce pro DAO. */
 
-import * as SimpleListActions from "shared/list/simple/SimpleListActions";
-import * as DetailActions from "shared/detail/DetailActions";
+import * as SimpleListActions from 'shared/list/simple/SimpleListActions';
+import * as DetailActions from 'shared/detail/DetailActions';
 import {WebApi} from 'actions/index.jsx';
-import {fundSubNodeDaosInvalidate} from 'actions/arr/subNodeDaos.jsx'
+import {fundSubNodeDaosInvalidate} from 'actions/arr/subNodeDaos.jsx';
 
 const AREA_PACKAGE_LIST_SUFFIX = ".daoPackageList";
 const AREA_DAO_UNASSIGNED_PACKAGE_LIST_SUFFIX = ".daoUnassignedPackageList";
