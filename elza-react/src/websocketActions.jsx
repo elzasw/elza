@@ -1,12 +1,12 @@
 import React from 'react';
-import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket.jsx';
-import {onReceivedNodeChange} from 'websocketController.jsx';
+import { webSocketConnect, webSocketDisconnect } from 'actions/global/webSocket.jsx';
+import { onReceivedNodeChange } from 'websocketController.jsx';
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import * as daoActions from 'actions/arr/daoActions';
-import {store} from 'stores/index.jsx';
-import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
-import {i18n} from 'components/shared';
-import {checkUserLogged} from 'actions/global/login.jsx';
+import { store } from 'stores/index.jsx';
+import { addToastrDanger, addToastrSuccess } from 'components/shared/toastr/ToastrActions.jsx';
+import { i18n } from 'components/shared';
+import { checkUserLogged } from 'actions/global/login.jsx';
 
 import {
     changeAccessPoint,
@@ -50,17 +50,17 @@ import {
     structureChange,
     updateExtSystem,
     userChange,
-} from './actions/global/change.jsx';
+} from 'actions/global/change.jsx';
 
-import {Stomp} from 'stompjs';
+import { Stomp } from 'stompjs';
 import URLParse from 'url-parse';
 
-import {reloadUserDetail} from 'actions/user/userDetail';
-import {fundTreeFetch} from './actions/arr/fundTree';
-import * as types from './actions/constants/ActionTypes';
-import {fundNodeSubNodeFulltextSearch} from './actions/arr/node';
-import {PERSISTENT_SORT_CODE, ZP2015_INTRO_VYPOCET_EJ} from './constants.tsx';
-import * as issuesActions from './actions/arr/issues';
+import { reloadUserDetail } from 'actions/user/userDetail';
+import { fundTreeFetch } from 'actions/arr/fundTree';
+import * as types from 'actions/constants/ActionTypes';
+import { fundNodeSubNodeFulltextSearch } from 'actions/arr/node';
+import { PERSISTENT_SORT_CODE, ZP2015_INTRO_VYPOCET_EJ } from './constants.tsx';
+import * as issuesActions from 'actions/arr/issues';
 
 
 const serverContextPath = window.serverContextPath;
@@ -69,10 +69,10 @@ const url = new URLParse(serverContextPath + '/stomp');
 
 const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
 
-const wsUrl = wsProtocol+ "//" + url.host + url.pathname;
+const wsUrl = wsProtocol + "//" + url.host + url.pathname;
 console.log("Websocekt URL", wsUrl);
 
-class websocket{
+class websocket {
     constructor(url, eventMap) {
         this.nextReceiptId = 0;
         this.pendingRequests = {};
@@ -82,17 +82,19 @@ class websocket{
     }
 
     connect = (heartbeatOut = 20000, heartbeatIn = 20000) => {
-        this.stompClient = Stomp.client(this.url);
-        this.stompClient.debug = null
-        this.stompClient.heartbeat.outgoing = heartbeatOut;
-        this.stompClient.heartbeat.incoming = heartbeatIn;
-        this.stompClient.onreceipt = this.onReceipt;
-        this.stompClient.onerror = this.onError; // Napodobeni chovani z vyssi verze
-        console.info("Websocket connecting to " + url);
-        this.stompClient.connect({}, this.onConnect, this.onError);
+        if (Stomp) {
+            this.stompClient = Stomp.client(this.url);
+            this.stompClient.debug = null
+            this.stompClient.heartbeat.outgoing = heartbeatOut;
+            this.stompClient.heartbeat.incoming = heartbeatIn;
+            this.stompClient.onreceipt = this.onReceipt;
+            this.stompClient.onerror = this.onError; // Napodobeni chovani z vyssi verze
+            console.info("Websocket connecting to " + url);
+            this.stompClient.connect({}, this.onConnect, this.onError);
+        }
     }
 
-    disconnect = (error=false) => {
+    disconnect = (error = false) => {
         if (this.stompClient && this.stompClient.ws.readyState < 3) {
             // When ready state is not CLOSING(2) or CLOSED(3) and stompClient exists
             console.log("Websocket disconnected");
@@ -132,30 +134,30 @@ class websocket{
         store.dispatch(webSocketConnect());
         console.info('Websocket connected');
         this.stompClient.subscribe('/topic/api/changes', this.onMessage);
-        }
+    }
 
     onError = (error) => {
-        const {body, headers, command} = error;
+        const { body, headers, command } = error;
 
-        store.dispatch(checkUserLogged((logged)=>{
-            if(logged){
-        if (command === "ERROR" && headers) {
-            // Error message received from server
+        store.dispatch(checkUserLogged((logged) => {
+            if (logged) {
+                if (command === "ERROR" && headers) {
+                    // Error message received from server
 
-            this.disconnect(true);
+                    this.disconnect(true);
                     let message = headers.message || "";
 
-                    if(body){
-            const bodyObj = JSON.parse(body);
+                    if (body) {
+                        const bodyObj = JSON.parse(body);
                         message = bodyObj.message;
                     }
 
                     store.dispatch(addToastrDanger(i18n('global.error.ws'), message));
                 } else {
-            // Unknown error -> probably lost connection -> try to reconnect
-            this.disconnect();
-            console.info('Websocket lost connection. Reconnecting...');
-            setTimeout(this.connect, 5000);
+                    // Unknown error -> probably lost connection -> try to reconnect
+                    this.disconnect();
+                    console.info('Websocket lost connection. Reconnecting...');
+                    setTimeout(this.connect, 5000);
                 }
             }
         }));
@@ -166,30 +168,30 @@ class websocket{
         const eventType = body.eventType;
         console.info("WEBSOCKET MESSAGE:", body);
 
-        if(this.eventMap[eventType]){
+        if (this.eventMap[eventType]) {
             this.eventMap[eventType](body);
-    } else {
+        } else {
             console.warn("Unknown event type '" + eventType + "'", body);
-    }
+        }
     }
 
     onReceipt = (frame) => {
-        let {body, headers} = frame;
+        let { body, headers } = frame;
         const receiptId = headers["receipt-id"];
         console.info("WEBSOCKET RECEIPT:", frame, "| Remaining requests:", this.pendingRequests);
 
         let request = receiptId && this.pendingRequests[receiptId];
 
-        if(request){
-        const bodyObj = JSON.parse(body);
-            if(bodyObj && !bodyObj.errorMessage){
+        if (request) {
+            const bodyObj = JSON.parse(body);
+            if (bodyObj && !bodyObj.errorMessage) {
                 request.onSuccess(bodyObj);
-    } else {
+            } else {
                 request.onError(bodyObj);
-    }
+            }
             delete this.pendingRequests[receiptId];
         } else {
-            console.warn("Unknown request - id:",receiptId);
+            console.warn("Unknown request - id:", receiptId);
         }
     }
 }
@@ -252,7 +254,7 @@ let eventMap = {
     'DELETE_NODES': deleteNodes,
     'FUND_EXTENSION_CHANGE': fundExtensionChange,
     'STRUCTURE_DATA_CHANGE': structureDataChange,
-    'ACCESS_POINT_UPDATE':accessPointUpdate,
+    'ACCESS_POINT_UPDATE': accessPointUpdate,
     'FRAGMENT_UPDATE': fragmentUpdate,
     'ISSUE_LIST_UPDATE': issueListUpdate,
     'ISSUE_LIST_CREATE': issueListCreate,
@@ -435,7 +437,7 @@ function filesChangeEvent(value) {
 }
 
 function nodesChange(value) {
-    if(!onReceivedNodeChange(value.entityIds)) {
+    if (!onReceivedNodeChange(value.entityIds)) {
         store.dispatch(changeNodes(value.versionId, value.entityIds));
     }
 }
@@ -498,15 +500,15 @@ function getFund() {
     return state.arrRegion.activeIndex != null ? state.arrRegion.funds[state.arrRegion.activeIndex] : null;
 }
 
-function partyUpdate(value){
+function partyUpdate(value) {
     store.dispatch(changeParty(value.ids[0]));
 }
 
-function partyCreate(value){
+function partyCreate(value) {
     store.dispatch(changePartyCreate(value.ids));
 }
 
-function partyDelete(value){
+function partyDelete(value) {
     store.dispatch(changePartyDelete(value.ids[0]));
 }
 
@@ -514,15 +516,15 @@ function partyDelete(value){
  * Externí systémy
  */
 
-function extSystemCreate(value){
+function extSystemCreate(value) {
     store.dispatch(createExtSystem(value.ids[0]));
 }
 
-function extSystemUpdate(value){
+function extSystemUpdate(value) {
     store.dispatch(updateExtSystem(value.ids[0]));
 }
 
-function extSystemDelete(value){
+function extSystemDelete(value) {
     store.dispatch(deleteExtSystem(value.ids[0]));
 }
 
@@ -534,17 +536,17 @@ function fragmentUpdate(value) {
     store.dispatch(changeFragment(value.ids));
 }
 
-function issueListUpdate({id}) {
+function issueListUpdate({ id }) {
     store.dispatch(issuesActions.protocol.invalidate(id));
     store.dispatch(issuesActions.protocols.invalidate());
 }
 
-function issueListCreate({id}) {
+function issueListCreate({ id }) {
     store.dispatch(issuesActions.protocol.invalidate(id));
     store.dispatch(issuesActions.protocols.invalidate());
 }
 
-function issueUpdate({issueListId, ids}) {
+function issueUpdate({ issueListId, ids }) {
     store.dispatch(issuesActions.list.invalidate(issueListId));
     store.dispatch(issuesActions.detail.invalidate(issueListId));
     ids.forEach(id => {
@@ -552,7 +554,7 @@ function issueUpdate({issueListId, ids}) {
     });
 }
 
-function issueCreate({issueListId}) {
+function issueCreate({ issueListId }) {
     store.dispatch(issuesActions.list.invalidate(issueListId));
 }
 

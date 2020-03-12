@@ -96,7 +96,7 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
 
 
     handleDelete = (id) => {
-        if (confirm(i18n('party.detail.identifier.delete'))) {
+        if (window.confirm(i18n('party.detail.identifier.delete'))) {
             this.partyGroupIdentifierDelete(id);
         }
     };

@@ -1,13 +1,13 @@
 import * as types from 'actions/constants/ActionTypes.js';
 
 import React from 'react';
-import {i18n} from 'components/shared';
-import {Button} from '../../components/ui';
-import {addToastrDanger, addToastrInfo, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
-import {fundOutputSelectOutput} from 'actions/arr/fundOutput.jsx';
-import {routerNavigate} from 'actions/router.jsx';
-import {indexById} from 'stores/app/utils.jsx';
-import {partyDetailClear, partyDetailInvalidate, partyListInvalidate} from 'actions/party/party.jsx';
+import { i18n } from 'components/shared';
+import { Button } from '../../components/ui';
+import { addToastrDanger, addToastrInfo, addToastrSuccess } from 'components/shared/toastr/ToastrActions.jsx';
+import { fundOutputSelectOutput } from 'actions/arr/fundOutput.jsx';
+import { routerNavigate } from 'actions/router.jsx';
+import { indexById } from 'stores/app/utils.jsx';
+import { partyDetailClear, partyDetailInvalidate, partyListInvalidate } from 'actions/party/party.jsx';
 import {
     AREA_EXT_SYSTEM_DETAIL,
     AREA_EXT_SYSTEM_LIST,
@@ -23,18 +23,18 @@ import {
     preparedListInvalidate,
     queueListInvalidate,
 } from 'actions/arr/arrRequestActions.jsx';
-import {storeFromArea} from 'shared/utils';
+import { storeFromArea } from 'shared/utils';
 import {
     AREA_REGISTRY_DETAIL,
     AREA_REGISTRY_LIST,
     registryDetailInvalidate,
     registryListInvalidate,
 } from 'actions/registry/registry.jsx';
-import {refExternalSystemListInvalidate} from 'actions/refTables/externalSystems';
-import {structureTypeInvalidate} from '../arr/structureType';
-import {AccessPointFormActions} from '../../components/accesspoint/AccessPointFormActions';
-import {ApNameFormActions} from '../../components/accesspoint/ApNameFormActions';
-import {FragmentItemFormActions} from '../../components/accesspoint/FragmentItemFormActions';
+import { refExternalSystemListInvalidate } from 'actions/refTables/externalSystems';
+import { structureTypeInvalidate } from '../arr/structureType';
+import { AccessPointFormActions } from '../../components/accesspoint/AccessPointFormActions';
+import { ApNameFormActions } from '../../components/accesspoint/ApNameFormActions';
+import { FragmentItemFormActions } from '../../components/accesspoint/FragmentItemFormActions';
 
 export function isFundChangeAction(action) {
     switch (action.type) {
@@ -151,7 +151,7 @@ export function changeFundAction(versionId, id) {
 
 export function changeParty(partyId) {
     return (dispatch, getState) => {
-        const {app: {partyList, partyDetail}} = getState();
+        const { app: { partyList, partyDetail } } = getState();
         if (partyList.filteredRows && indexById(partyList.filteredRows, partyId) !== null) {
             dispatch(partyListInvalidate());
         }
@@ -173,7 +173,7 @@ export function changePartyCreate(partyIds) {
 
 export function changePartyDelete(partyId) {
     return (dispatch, getState) => {
-        const {app: {partyList, partyDetail}} = getState();
+        const { app: { partyList, partyDetail } } = getState();
         if (partyList.filteredRows && indexById(partyList.filteredRows, partyId) !== null) {
             dispatch(partyListInvalidate());
         }
@@ -343,7 +343,7 @@ export function fundOutputStateChange(versionId, outputId, state) {
 
 export function fundOutputStateChangeToastr(versionId, entityId, state) {
     return (dispatch, getState) => {
-        const {arrRegion} = getState();
+        const { arrRegion } = getState();
         if (arrRegion.activeIndex != null) {
             const fund = arrRegion.funds[arrRegion.activeIndex];
             if (fund === null || fund.versionId !== versionId) {

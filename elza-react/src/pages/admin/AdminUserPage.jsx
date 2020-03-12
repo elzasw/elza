@@ -128,7 +128,7 @@ class AdminUserPage extends AbstractReactComponent {
     }
 
     handleChangeUserActive() {
-        if (confirm(i18n('admin.user.changeActive.confirm'))) {
+        if (window.confirm(i18n('admin.user.changeActive.confirm'))) {
             const {user} = this.props;
             this.props.dispatch(adminUserChangeActive(user.userDetail.id, !user.userDetail.active));
         }

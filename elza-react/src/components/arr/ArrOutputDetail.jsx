@@ -121,7 +121,7 @@ class ArrOutputDetail extends AbstractReactComponent {
     handleRemoveNode = (node) => {
         const { fund, fundOutputDetail } = this.props;
 
-        if (confirm(i18n('arr.fund.nodes.deleteNode'))) {
+        if (window.confirm(i18n('arr.fund.nodes.deleteNode'))) {
             this.props.dispatch(fundOutputRemoveNodes(fund.versionId, fundOutputDetail.id, [node.id]));
         }
     };

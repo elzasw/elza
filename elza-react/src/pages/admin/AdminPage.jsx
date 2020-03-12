@@ -57,13 +57,13 @@ class AdminPage extends AbstractReactComponent {
     };
 
     handleResetLocalStorage = () => {
-        if (confirm(i18n('global.title.processAction'))) {
+        if (window.confirm(i18n('global.title.processAction'))) {
             resetLocalStorage();
         }
     };
 
     handleResetServerCache = () => {
-        if (confirm(i18n('global.title.processAction'))) {
+        if (window.confirm(i18n('global.title.processAction'))) {
             WebApi.resetServerCache().then(() => {
                 this.props.dispatch(addToastrSuccess(i18n('admin.resetServerCache.success')));
             });

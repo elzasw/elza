@@ -31,7 +31,7 @@ class ArrDao extends AbstractReactComponent {
 
     handleUnlink = () => {
         const {onUnlink} = this.props;
-        if (confirm(i18n('arr.daos.unlink.confirm'))) {
+        if (window.confirm(i18n('arr.daos.unlink.confirm'))) {
             onUnlink();
         }
     };

@@ -3,12 +3,12 @@
  */
 
 import React from 'react';
-import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import { connect } from 'react-redux';
+import { AbstractReactComponent, i18n } from 'components/shared';
 import FundTreeLazy from './FundTreeLazy';
 import ArrSearchForm from './ArrSearchForm';
 import * as types from 'actions/constants/ActionTypes.js';
-import {Dropdown} from 'react-bootstrap';
+import { Dropdown } from 'react-bootstrap';
 import {
     fundTreeCollapse,
     fundTreeFetchIfNeeded,
@@ -20,14 +20,14 @@ import {
     fundTreeNodeCollapse,
     fundTreeNodeExpand,
 } from 'actions/arr/fundTree.jsx';
-import {fundSelectSubNode} from 'actions/arr/node.jsx';
-import {createFundRoot, getParentNode} from './ArrUtils.jsx';
-import {contextMenuHide, contextMenuShow} from 'actions/global/contextMenu.jsx';
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
-import {modalDialogShow} from 'actions/global/modalDialog.jsx';
-import {FOCUS_KEYS} from '../../constants.tsx';
+import { fundSelectSubNode } from 'actions/arr/node.jsx';
+import { createFundRoot, getParentNode } from './ArrUtils.jsx';
+import { contextMenuHide, contextMenuShow } from 'actions/global/contextMenu.jsx';
+import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
+import { modalDialogShow } from 'actions/global/modalDialog.jsx';
+import { FOCUS_KEYS } from '../../constants.tsx';
 import PersistentSortDialog from './PersisetntSortDialog';
-import {WebApi} from '../../actions/WebApi';
+import { WebApi } from '../../actions/WebApi';
 
 class FundTreeMain extends AbstractReactComponent {
     constructor(props) {
@@ -54,7 +54,7 @@ class FundTreeMain extends AbstractReactComponent {
     trySetFocus(props) {
         var { focus } = props;
 
-        if (canSetFocus()) {
+        if (canSetFocus() && this.refs.tree.getWrappedInstance) {
             if (isFocusFor(focus, null, 1)) {   // focus po ztrátě
                 if (this.refs.tree) {   // ještě nemusí existovat
                     this.setState({}, () => {
@@ -125,7 +125,7 @@ class FundTreeMain extends AbstractReactComponent {
         this.props.dispatch(contextMenuHide());
 
         this.props.dispatch(modalDialogShow(this, i18n('arr.functions.persistentSort'), <PersistentSortDialog
-            versionId={fund.versionId} node={node}/>));
+            versionId={fund.versionId} node={node} />));
     };
 
     computeAndVizualizeEJ = (node) => {

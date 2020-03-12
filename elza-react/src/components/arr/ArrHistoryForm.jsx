@@ -221,7 +221,7 @@ class ArrHistoryForm extends AbstractReactComponent {
         const {onDeleteChanges} = this.props;
         const {changeId, selectedIndex, selectedItem} = this.state;
 
-        if (confirm(i18n('arr.history.deleteQuestion', selectedIndex + 1))) {
+        if (window.confirm(i18n('arr.history.deleteQuestion', selectedIndex + 1))) {
             onDeleteChanges(this.getNodeId(), changeId, selectedItem.changeId);
         }
     };

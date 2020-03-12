@@ -66,7 +66,7 @@ class PartyDetailRelations extends AbstractReactComponent {
     };
 
     handleRelationDelete = (id) => {
-        if (confirm(i18n('party.relation.delete.confirm'))) {
+        if (window.confirm(i18n('party.relation.delete.confirm'))) {
             this.props.dispatch(relationDelete(id));
         }
     };

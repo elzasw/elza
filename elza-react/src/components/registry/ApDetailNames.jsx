@@ -82,13 +82,13 @@ class ApDetailNames extends AbstractReactComponent {
     };
 
     handleDelete = (id) => {
-        if (confirm(i18n('accesspoint.detail.name.delete'))) {
+        if (window.confirm(i18n('accesspoint.detail.name.delete'))) {
             this.nameDelete(id);
         }
     };
 
     handleSelectPreferred = (id) => {
-        if (confirm(i18n('accesspoint.detail.name.setPreferredNameAlert'))) {
+        if (window.confirm(i18n('accesspoint.detail.name.setPreferredNameAlert'))) {
             this.nameSetPreffered(id);
         }
     };

@@ -564,7 +564,7 @@ class FundDataGrid extends AbstractReactComponent {
             };
             let specsIds = getSpecsIds(refTypeX, data.specs.type, data.specs.ids);
             specsIds = specsIds.map(specsId => specsId !== FILTER_NULL_VALUE ? specsId : null);
-            if (selectionType !== 'FUND' || confirm(i18n('arr.fund.bulkModifications.warn'))) {
+            if (selectionType !== 'FUND' || window.confirm(i18n('arr.fund.bulkModifications.warn'))) {
                 return this.props.dispatch(fundBulkModifications(versionId, refType.id, specsIds, data.operationType, data.findText, replaceText, data.replaceSpec, nodes, selectionType));
             }
         };

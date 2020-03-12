@@ -253,7 +253,7 @@ class SubNodeForm extends AbstractReactComponent {
 
         const msgI18n = descItemType.calSt === 1 ? 'subNodeForm.calculate-auto.confirm' : 'subNodeForm.calculate-user.confirm';
 
-        if (confirm(i18n(msgI18n))) {
+        if (window.confirm(i18n(msgI18n))) {
             this.props.dispatch(this.props.formActions.switchOutputCalculating(versionId, descItemType.id, routingKey, valueLocation));
         }
     }

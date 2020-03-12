@@ -38,7 +38,7 @@ class AdminRequestsQueuePage extends AbstractReactComponent {
     }
 
     handleDelete = (item) => {
-        if (confirm(i18n('requestQueue.delete.confirm'))) {
+        if (window.confirm(i18n('requestQueue.delete.confirm'))) {
             WebApi.removeArrRequestQueueItem(item.request.id);
         }
     };
