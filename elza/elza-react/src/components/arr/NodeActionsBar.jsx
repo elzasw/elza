@@ -48,15 +48,15 @@ class NodeActionsBar extends AbstractReactComponent {
     handleFindPosition() {
         const {node} = this.props;
 
-        if(!this.isFilterUsed()){ // Pokud je aktivní filtr je goto zakázáno
+        if (!this.isFilterUsed()) { // Pokud je aktivní filtr je goto zakázáno
             let count = 0;
             if (node.nodeCount) {
                 count = node.nodeCount;
             }
             this.props.dispatch(modalDialogShow(this, i18n('arr.fund.subNodes.findPosition'),
-                    <GoToPositionForm onSubmitForm={this.handleFindPositionSubmit} maxPosition={count} />
-                )
-            )
+                <GoToPositionForm onSubmitForm={this.handleFindPositionSubmit} maxPosition={count}/>,
+                ),
+            );
         }
     }
 
@@ -64,7 +64,7 @@ class NodeActionsBar extends AbstractReactComponent {
      * Akce kontrolující zda je na uzly použit filtr
      * @return {bool} nodesFiltered
      */
-    isFilterUsed(){
+    isFilterUsed() {
         const {node} = this.props;
         var nodesFiltered = node.filterText ? true : false;
         return nodesFiltered;
@@ -72,28 +72,28 @@ class NodeActionsBar extends AbstractReactComponent {
 
     render() {
         const {simplified, node, selectedSubNodeIndex, versionId, userDetail, fundId, closed, onSwitchNode, arrPerm} = this.props;
-        var selectedSubNodeNumber = selectedSubNodeIndex + 1; // pořadí vybraného záznamu v akordeonu
-        var gotoTitle = this.isFilterUsed() ? i18n('arr.fund.subNodes.findPosition.filterActive') : i18n('arr.fund.subNodes.findPosition')
+        var gotoTitle = this.isFilterUsed() ? i18n('arr.fund.subNodes.findPosition.filterActive') : i18n('arr.fund.subNodes.findPosition');
 
         let text = node.nodeCount;
         if (node.selectedSubNodeId && node.nodeIndex !== null) {
-            text = (node.nodeIndex + 1) + " / " + text;
+            text = (node.nodeIndex + 1) + ' / ' + text;
         }
 
         const onNextAction = (e) => {
             if (simplified) onSwitchNode('nextItem', e);
             else this.props.dispatch(fundSubNodesNextPage(versionId, node.id, node.routingKey));
-        }
+        };
 
         const onPrevAction = (e) => {
-        if (simplified) onSwitchNode('prevItem', e);
-        else this.props.dispatch(fundSubNodesPrevPage(versionId, node.id, node.routingKey));
-        }
+            if (simplified) onSwitchNode('prevItem', e);
+            else this.props.dispatch(fundSubNodesPrevPage(versionId, node.id, node.routingKey));
+        };
 
-        return(
+        return (
             <div key='actions' className='node-actions-bar'>
                 <div key='actions' className='actions'>
-                    <AddNodeCross node={node} selectedSubNodeIndex={selectedSubNodeIndex} versionId={versionId} userDetail={userDetail} fundId={fundId} arrPerm={arrPerm} closed={closed}/>
+                    <AddNodeCross node={node} selectedSubNodeIndex={selectedSubNodeIndex} versionId={versionId}
+                                  userDetail={userDetail} fundId={fundId} arrPerm={arrPerm} closed={closed}/>
                     <div className="button-wrap">
                         <div className="left-side">
                             {!simplified &&
@@ -103,8 +103,12 @@ class NodeActionsBar extends AbstractReactComponent {
                                 className='search-input'
                                 placeholder={i18n('search.input.filter')}
                                 value={node.filterText}
-                                onClear={() => {this.props.dispatch(fundNodeSubNodeFulltextSearch(''))}}
-                                onSearch={(value) => {this.props.dispatch(fundNodeSubNodeFulltextSearch(value))}}
+                                onClear={() => {
+                                    this.props.dispatch(fundNodeSubNodeFulltextSearch(''));
+                                }}
+                                onSearch={(value) => {
+                                    this.props.dispatch(fundNodeSubNodeFulltextSearch(value));
+                                }}
                                 filter
                             />
                             }
@@ -114,41 +118,41 @@ class NodeActionsBar extends AbstractReactComponent {
                                 {text}
                             </div>
                             <div
-                            className='btn btn-default'
-                            onClick={this.handleFindPosition}
-                            disabled={this.isFilterUsed()}
-                            title={gotoTitle}
+                                className='btn btn-default'
+                                onClick={this.handleFindPosition}
+                                disabled={this.isFilterUsed()}
+                                title={gotoTitle}
                             >
-                                <Icon glyph="fa-hand-o-down" />
+                                <Icon glyph="fa-hand-o-down"/>
                             </div>
                             <div
-                            className='btn btn-default'
-                            disabled={!simplified && node.viewStartIndex === 0}
-                            onClick={(e) => onPrevAction(e)}
-                            title={i18n(
-                                `arr.fund.subNodes.prev${simplified ? '' : 'Page'}`,
-                                simplified ? node.pageSize : null
-                            )}
+                                className='btn btn-default'
+                                disabled={!simplified && node.viewStartIndex === 0}
+                                onClick={(e) => onPrevAction(e)}
+                                title={i18n(
+                                    `arr.fund.subNodes.prev${simplified ? '' : 'Page'}`,
+                                    simplified ? node.pageSize : null,
+                                )}
                             >
-                                <Icon glyph={simplified ? "fa-caret-left" : "fa-backward"} />
+                                <Icon glyph={simplified ? 'fa-caret-left' : 'fa-backward'}/>
                             </div>
                             <div
-                            className='btn btn-default'
-                            disabled={!simplified && node.viewStartIndex + node.pageSize >= node.nodeCount}
-                            onClick={(e) => onNextAction(e)}
-                            title={i18n(
-                                `arr.fund.subNodes.next${simplified ? '' : 'Page'}`,
-                                simplified ? node.pageSize : null
-                            )}
+                                className='btn btn-default'
+                                disabled={!simplified && node.viewStartIndex + node.pageSize >= node.nodeCount}
+                                onClick={(e) => onNextAction(e)}
+                                title={i18n(
+                                    `arr.fund.subNodes.next${simplified ? '' : 'Page'}`,
+                                    simplified ? node.pageSize : null,
+                                )}
                             >
-                                <Icon glyph={simplified ? "fa-caret-right" : "fa-forward"} />
+                                <Icon glyph={simplified ? 'fa-caret-right' : 'fa-forward'}/>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         );
-        }
+    }
 }
 
 NodeActionsBar.propTypes = {

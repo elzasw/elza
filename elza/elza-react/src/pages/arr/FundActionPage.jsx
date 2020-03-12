@@ -164,7 +164,7 @@ class FundActionPage extends ArrParentPage {
                     const newNodes = [
                         ...form.nodes,
                     ];
-                    nodes.map(item => {
+                    nodes.forEach(item => {
                         indexById(newNodes, item.id) === null && newNodes.push(item);
                     });
                     this.props.dispatch(fundActionFormChange(versionId, {nodes: newNodes}));
@@ -262,6 +262,8 @@ class FundActionPage extends ArrParentPage {
                         // case ActionState.FINISHED:
                         // case ActionState.ERROR:
                         // case ActionState.INTERRUPTED:
+                        default:
+                            break;
                     }
                 }
             }

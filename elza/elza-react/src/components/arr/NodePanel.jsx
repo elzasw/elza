@@ -260,12 +260,13 @@ class NodePanel extends AbstractReactComponent {
                     this.props.dispatch(addNodeFormArr('ATEND', node, focusItemIndex, versionId));
                 }
                 break;
+            default:
+                break;
         }
     }
 
     handleAccordionShortcuts(action, e) {
         const {node} = this.props;
-        const {focusItemIndex} = this.state;
         const index = indexById(node.childNodes, node.selectedSubNodeId);
         let preventDefaultActions = ['prevItem', 'nextItem', 'toggleItem'];
         if (preventDefaultActions.indexOf(action) >= 0) {
@@ -306,6 +307,8 @@ class NodePanel extends AbstractReactComponent {
                 break;
             case 'ACCORDION_MOVE_END':
                 this.selectorMoveEnd();
+                break;
+            default:
                 break;
         }
     }
@@ -444,11 +447,11 @@ class NodePanel extends AbstractReactComponent {
 
     shouldComponentUpdate(nextProps, nextState) {
         return true;
-        if (this.state !== nextState) {
-            return true;
-        }
-        var eqProps = ['versionId', 'fund', 'node', 'calendarTypes', 'descItemTypes', 'rulDataTypes', 'fundId', 'closed'];
-        return !propsEquals(this.props, nextProps, eqProps);
+        // if (this.state !== nextState) {
+        //     return true;
+        // }
+        // var eqProps = ['versionId', 'fund', 'node', 'calendarTypes', 'descItemTypes', 'rulDataTypes', 'fundId', 'closed'];
+        // return !propsEquals(this.props, nextProps, eqProps);
     }
 
     /**
@@ -638,7 +641,7 @@ class NodePanel extends AbstractReactComponent {
             var policyTypes = item.nodeConformity.policyTypeIdsVisible;
 
             var description = (item.nodeConformity.description) ? '<br />' + item.nodeConformity.description : '';
-            var messages = new Array();
+            var messages = [];
 
             var errors = item.nodeConformity.errorList;
             var missings = item.nodeConformity.missingList;
@@ -970,7 +973,7 @@ class NodePanel extends AbstractReactComponent {
             if (errors && errors.length > 0) {
                 errors.forEach(error => {
                     if (conformityInfo.errors[error.descItemObjectId] == null) {
-                        conformityInfo.errors[error.descItemObjectId] = new Array();
+                        conformityInfo.errors[error.descItemObjectId] = [];
                     }
                     if (error.policyTypeId == null
                         || policyTypes[error.policyTypeId] == null
@@ -984,7 +987,7 @@ class NodePanel extends AbstractReactComponent {
             if (missings && missings.length > 0) {
                 missings.forEach(missing => {
                     if (conformityInfo.missings[missing.descItemTypeId] == null) {
-                        conformityInfo.missings[missing.descItemTypeId] = new Array();
+                        conformityInfo.missings[missing.descItemTypeId] = [];
                     }
                     if (missing.policyTypeId == null
                         || policyTypes[missing.policyTypeId] == null

@@ -11,9 +11,6 @@ import {AbstractReactComponent, i18n} from 'components/shared';
 import {getIndexStateFetchIfNeeded, reindex} from 'actions/admin/fulltext.jsx';
 
 class AdminFulltextReindex extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-    }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         if (!nextProps.fetched) {

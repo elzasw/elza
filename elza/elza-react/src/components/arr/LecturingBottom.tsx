@@ -133,7 +133,7 @@ class LecturingBottom extends React.Component {
             state = objectById(issueStates.data, data.issueStateId);
         }
 
-        const textFieldDisabled = submitting || state && state.finalState;
+        const textFieldDisabled = submitting || (state && state.finalState);
 
         const CustomArea = TextareaAutosize as any;
 

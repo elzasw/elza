@@ -125,6 +125,8 @@ class RegistryPage extends AbstractReactComponent {
             case 'area2':
                 this.props.dispatch(setFocus(FOCUS_KEYS.REGISTRY, 2));
                 break;
+            default:
+                break;
         }
     };
 

@@ -14,7 +14,7 @@ const getValue = (field, state, dest, exportInitialValues) => {
         if (rest[0] === '.') {
             rest = rest.substring(1);
         }
-        const array = state && state[key] || [];
+        const array = (state && state[key]) || [];
         if (rest) {
             if (!dest[key]) {
                 dest[key] = [];
@@ -35,11 +35,11 @@ const getValue = (field, state, dest, exportInitialValues) => {
         if (!dest[key]) {
             dest[key] = {};
         }
-        getValue(rest, state && state[key] || {}, dest[key], exportInitialValues);
+        getValue(rest, (state && state[key]) || {}, dest[key], exportInitialValues);
     } else {
         dest[field] = state[field] && (exportInitialValues ? state[field].initial : state[field].value);
     }
-}
+};
 const mergeStateForField = (field, localState, serverState) => {
     const dotIndex = field.indexOf('.');
     const openIndex = field.indexOf('[');
@@ -55,7 +55,7 @@ const mergeStateForField = (field, localState, serverState) => {
             rest = rest.substring(1);
         }
 
-        const localArray = localState && localState[key] || [];
+        const localArray = (localState && localState[key]) || [];
 
         if (!serverState[key]) {
             serverState[key] = [];
@@ -63,7 +63,7 @@ const mergeStateForField = (field, localState, serverState) => {
         const serverArray = serverState[key];
 
         // Necháme z lokálního pole jen ty, které nemají id
-        if (key !== "creators") { /// Hotfix - TODO @stanekpa - ignorace merge
+        if (key !== 'creators') { /// Hotfix - TODO @stanekpa - ignorace merge
             localArray.forEach(item => {
                 if (!item._merged) {
                     if (item.id.value) {    // existující položka v local, zatím ignorujeme, v budoucnu můžeme její aktuální změny promítnout do server
@@ -74,7 +74,7 @@ const mergeStateForField = (field, localState, serverState) => {
                         }
                     }
                 }
-            })
+            });
         }
 
         // const array = state && state[key] || [];
@@ -101,7 +101,7 @@ const mergeStateForField = (field, localState, serverState) => {
         // getValue(rest, state && state[key] || {}, dest[key], exportInitialValues);
     } else {
         if (!localState[field]) {
-            console.log(localState, field)
+            console.log(localState, field);
         }
         if (localState[field] && localState[field].touched) {    // hodnota byla lokálně upravena, pokud initial je stejná jako server initial, vezmeme naší lokální aktuálně upravovanou
             if (valuesEquals(localState[field].initial, serverState[field].initial)) {
@@ -110,7 +110,7 @@ const mergeStateForField = (field, localState, serverState) => {
         }
         // dest[field] = state[field] && (exportInitialValues ? state[field].initial : state[field].value);
     }
-}
+};
 
 const setAttribute = (field, state, dest, commonAttrs, fieldAttrs) => {
     const dotIndex = field.indexOf('.');
@@ -126,7 +126,7 @@ const setAttribute = (field, state, dest, commonAttrs, fieldAttrs) => {
         if (rest[0] === '.') {
             rest = rest.substring(1);
         }
-        const array = state && state[key] || [];
+        const array = (state && state[key]) || [];
         if (rest) {
             if (!dest[key]) {
                 dest[key] = [];
@@ -142,7 +142,7 @@ const setAttribute = (field, state, dest, commonAttrs, fieldAttrs) => {
                 return {
                     ...item,
                     ...fieldAttrs,
-                }
+                };
             });
         }
     } else if (dotIndex > 0) {
@@ -152,30 +152,30 @@ const setAttribute = (field, state, dest, commonAttrs, fieldAttrs) => {
         if (!dest[key]) {
             dest[key] = {...commonAttrs};
         }
-        setAttribute(rest, state && state[key] || {...commonAttrs}, dest[key], commonAttrs, fieldAttrs);
+        setAttribute(rest, (state && state[key]) || {...commonAttrs}, dest[key], commonAttrs, fieldAttrs);
     } else {
         dest[field] = state[field] && ({
-                ...state[field],
-                ...fieldAttrs
-            });
+            ...state[field],
+            ...fieldAttrs,
+        });
     }
-}
+};
 
 const getValues = (fields, state, exportInitialValues = false) =>
     fields.reduce((accumulator, field) => {
         getValue(field, state, accumulator, exportInitialValues);
         return accumulator;
-    }, {})
+    }, {});
 const setAttributes = (fields, state, commonAttrs, fieldAttrs) =>
     fields.reduce((accumulator, field) => {
         setAttribute(field, state, accumulator, commonAttrs, fieldAttrs);
         return accumulator;
-    }, {...commonAttrs})
+    }, {...commonAttrs});
 const mergeState = (fields, localState, serverState) => {
     fields.forEach(field => {
         mergeStateForField(field, localState, serverState);
-    })
-}
+    });
+};
 // ##########################################################################
 
 /**
@@ -222,4 +222,4 @@ export default {
     setAttributes,
     mergeState,
     read,
-}
+};

@@ -296,6 +296,8 @@ class ArrStructurePanel extends AbstractReactComponent {
                 case 'ArrowUp':
                     this.focusOnItem(-1);
                     break;
+                default:
+                    break;
             }
         }
     };
@@ -381,7 +383,7 @@ class ArrStructurePanel extends AbstractReactComponent {
         }
         if (error.impossibleItemTypeIds.length > 0) {
             const items = [];
-            error.impossibleItemTypeIds.map((id, index) => {
+            error.impossibleItemTypeIds.forEach((id, index) => {
                 const descItem = objectById(descItemTypes, id);
                 items.push(<li key={index}>{descItem.name}</li>);
             });
@@ -394,7 +396,7 @@ class ArrStructurePanel extends AbstractReactComponent {
         }
         if (error.requiredItemTypeIds.length > 0) {
             const items = [];
-            error.requiredItemTypeIds.map((id) => {
+            error.requiredItemTypeIds.forEach((id) => {
                 const descItem = objectById(descItemTypes, id);
                 items.push(<li>{descItem.name}</li>);
             });

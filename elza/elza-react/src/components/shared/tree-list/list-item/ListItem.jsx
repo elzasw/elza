@@ -17,7 +17,7 @@ class ListItem extends React.PureComponent {
         expanded: false,
         className: "",
         ignoreDepth: false,
-        onExpandCollapse: (e) => {throw "callback 'onExpandCollapse' for 'ListItem' is not defined"}
+        onExpandCollapse: (e) => {throw new Error("callback 'onExpandCollapse' for 'ListItem' is not defined")}
     };
 
     static propTypes = {
@@ -32,10 +32,6 @@ class ListItem extends React.PureComponent {
         onExpandCollapse: PropTypes.func,
         renderName: PropTypes.func
     };
-
-    constructor(props){
-        super(props);
-    }
 
     shouldComponentUpdate(nextProps){
         // re-renders only when one of these props changes

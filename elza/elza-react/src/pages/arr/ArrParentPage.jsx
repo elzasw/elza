@@ -81,6 +81,8 @@ export default class ArrParentPage extends AbstractReactComponent {
             case "TOGGLE_READ_MODE":
                 this.toggleReadMode();
                 break;
+            default:
+                break;
         }
     }
 

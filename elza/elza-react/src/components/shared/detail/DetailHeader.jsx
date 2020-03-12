@@ -10,7 +10,7 @@ import './DetailHeader.scss';
 export default class DetailHeader extends AbstractReactComponent {
     render() {
         const {icon, title, flagLeft, flagRight, rowFlagColor, subtitle} = this.props;
-        let _flagColor = rowFlagColor ? `dh-color-${_flagColor}` : "";
+        let _flagColor = rowFlagColor ? `dh-color-${rowFlagColor}` : "";
         return <div className="detail-header-container">
             <div className="detail-header-main">
                 {icon && <dic className="detail-header-icon">

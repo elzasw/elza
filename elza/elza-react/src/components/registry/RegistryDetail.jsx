@@ -129,6 +129,8 @@ class RegistryDetail extends AbstractReactComponent {
                     this.handleGoToParty();
                 }
                 break;
+            default:
+                break;
         }
     };
 
@@ -356,7 +358,7 @@ class RegistryDetail extends AbstractReactComponent {
             }
             if (error.impossibleItemTypeIds && error.impossibleItemTypeIds.length > 0) {
                 const items = [];
-                error.impossibleItemTypeIds.map((id) => {
+                error.impossibleItemTypeIds.forEach((id) => {
                     const type = subNodeForm.refTypesMap.get(id);
                     items.push(<li>{type.name}</li>);
                 });
@@ -369,7 +371,7 @@ class RegistryDetail extends AbstractReactComponent {
             }
             if (error.requiredItemTypeIds && error.requiredItemTypeIds.length > 0) {
                 const items = [];
-                error.requiredItemTypeIds.map((id) => {
+                error.requiredItemTypeIds.forEach((id) => {
                     const type = subNodeForm.refTypesMap.get(id);
                     items.push(<li>{type.name}</li>);
                 });
@@ -410,7 +412,7 @@ class RegistryDetail extends AbstractReactComponent {
             }
             if (error.impossibleItemTypeIds && error.impossibleItemTypeIds.length > 0) {
                 const items = [];
-                error.impossibleItemTypeIds.map((id) => {
+                error.impossibleItemTypeIds.forEach((id) => {
                     const type = objectById(itemTypes, id);
                     items.push(<li>{type.name}</li>);
                 });
@@ -423,7 +425,7 @@ class RegistryDetail extends AbstractReactComponent {
             }
             if (error.requiredItemTypeIds && error.requiredItemTypeIds.length > 0) {
                 const items = [];
-                error.requiredItemTypeIds.map((id) => {
+                error.requiredItemTypeIds.forEach((id) => {
                     const type = objectById(itemTypes, id);
                     items.push(<li>{type.name}</li>);
                 });

@@ -197,7 +197,7 @@ class FundTreeMain extends AbstractReactComponent {
         let params = [];
 
         switch (result.type) {
-            case 'FORM': {
+            case 'FORM':
                 result.condition.forEach((conditionItem, index) => {
                     let param = {};
                     param.type = conditionItem.type;
@@ -213,16 +213,18 @@ class FundTreeMain extends AbstractReactComponent {
                             param.condition = conditionItem.condition;
                             break;
                         }
+                        default:
+                            break;
                     }
                     params.push(param);
                 });
                 break;
-            }
 
-            case 'TEXT': {
+            case 'TEXT':
                 this.props.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, this.props.versionId, result.text));
                 break;
-            }
+            default:
+                break;
         }
 
         return this.props.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_MAIN, versionId, params, result, true));

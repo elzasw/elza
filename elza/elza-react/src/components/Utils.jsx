@@ -18,13 +18,13 @@ export function chooseInputEl(el1, el2) {
         var el1Rect = el1.getBoundingClientRect();
         var el2Rect = el2.getBoundingClientRect();
 
-            if (el1Rect.top < el2Rect.top) {
-                result = el1;
-            } else if (el1Rect.top == el2Rect.top && el1Rect.left < el2Rect.left) {
-                result = el1;
-            } else {
-                result = el2;
-            }
+        if (el1Rect.top < el2Rect.top) {
+            result = el1;
+        } else if (el1Rect.top == el2Rect.top && el1Rect.left < el2Rect.left) {
+            result = el1;
+        } else {
+            result = el2;
+        }
     } else if (!el1 && el2) {
         result = el2;
     } else if (el1 && !el2) {
@@ -53,7 +53,7 @@ export function setInputFocus(el, selectContent = false) {
     // Vlastní prvky podle definovaného tab indexu
     const custom = $('div,shortcut', el)
         .filter(function() {
-            return $(this).attr("tabIndex") >= 0;
+            return $(this).attr('tabIndex') >= 0;
         })
         .get(0);
     elem = chooseInputEl(elem, custom);
@@ -63,101 +63,101 @@ export function setInputFocus(el, selectContent = false) {
         if (selectContent) {
             elem.select();
         }
-        return true
+        return true;
     }
-    return false
+    return false;
 }
 
 export function propsEquals(x, y, attrs) {
     if (typeof attrs !== 'undefined' && attrs !== null) {
-        for (var a=0; a<attrs.length; a++) {
+        for (var a = 0; a < attrs.length; a++) {
             var p = attrs[a];
 
-            if ( ! x.hasOwnProperty( p ) ) continue;
-              // other properties were tested using x.constructor === y.constructor
+            if (!x.hasOwnProperty(p)) continue;
+            // other properties were tested using x.constructor === y.constructor
 
-            if ( ! y.hasOwnProperty( p ) ) {
+            if (!y.hasOwnProperty(p)) {
                 return false;
             }
-              // allows to compare x[ p ] and y[ p ] when set to undefined
+            // allows to compare x[ p ] and y[ p ] when set to undefined
 
-            if ( x[ p ] === y[ p ] ) continue;
-              // if they have the same strict value or identity then they are equal
+            if (x[p] === y[p]) continue;
+            // if they have the same strict value or identity then they are equal
 
-            if ( typeof( x[ p ] ) !== "object" ) {
+            if (typeof (x[p]) !== 'object') {
                 return false;
             }
-              // Numbers, Strings, Functions, Booleans must be strictly equal
+            // Numbers, Strings, Functions, Booleans must be strictly equal
 
-            if (x[ p ] !==  y[ p ] ) {
+            if (x[p] !== y[p]) {
                 return false;
             }
         }
         return true;
     } else {
-        return stateEquals(x, y)
+        return stateEquals(x, y);
     }
 }
 
 export function stateEquals(x, y) {
-  for ( var p in x ) {
-    if ( ! x.hasOwnProperty( p ) ) continue;
-      // other properties were tested using x.constructor === y.constructor
+    for (var p in x) {
+        if (!x.hasOwnProperty(p)) continue;
+        // other properties were tested using x.constructor === y.constructor
 
-    if ( ! y.hasOwnProperty( p ) ) {
-        return false;
-    }
-      // allows to compare x[ p ] and y[ p ] when set to undefined
+        if (!y.hasOwnProperty(p)) {
+            return false;
+        }
+        // allows to compare x[ p ] and y[ p ] when set to undefined
 
-    if ( x[ p ] === y[ p ] ) continue;
-      // if they have the same strict value or identity then they are equal
+        if (x[p] === y[p]) continue;
+        // if they have the same strict value or identity then they are equal
 
-    if ( typeof( x[ p ] ) !== "object" && typeof( x[ p ] ) !== "boolean") {
-        return false;
-    }
+        if (typeof (x[p]) !== 'object' && typeof (x[p]) !== 'boolean') {
+            return false;
+        }
 
-    // Numbers, Strings, Functions, Booleans must be strictly equal
-    if (x[ p ] !==  y[ p ] ) {
+        // Numbers, Strings, Functions, Booleans must be strictly equal
+        if (x[p] !== y[p]) {
 //console.log(p)
-        return false;
+            return false;
+        }
     }
-  }
     return true;
 }
 
-export function objectEquals( x, y ) {
-  if ( x === y ) return true;
+export function objectEquals(x, y) {
+    if (x === y) return true;
     // if both x and y are null or undefined and exactly the same
 
-  if ( ! ( x instanceof Object ) || ! ( y instanceof Object ) ) return false;
+    if (!(x instanceof Object) || !(y instanceof Object)) return false;
     // if they are not strictly equal, they both need to be Objects
 
-  if ( x.constructor !== y.constructor ) return false;
+    if (x.constructor !== y.constructor) return false;
     // they must have the exact same prototype chain, the closest we can do is
     // test there constructor.
 
-  for ( var p in x ) {
-    if ( ! x.hasOwnProperty( p ) ) continue;
-      // other properties were tested using x.constructor === y.constructor
+    for (var p in x) {
+        if (!x.hasOwnProperty(p)) continue;
+        // other properties were tested using x.constructor === y.constructor
 
-    if ( ! y.hasOwnProperty( p ) ) return false;
-      // allows to compare x[ p ] and y[ p ] when set to undefined
+        if (!y.hasOwnProperty(p)) return false;
+        // allows to compare x[ p ] and y[ p ] when set to undefined
 
-    if ( x[ p ] === y[ p ] ) continue;
-      // if they have the same strict value or identity then they are equal
+        if (x[p] === y[p]) continue;
+        // if they have the same strict value or identity then they are equal
 
-    if ( typeof( x[ p ] ) !== "object" ) return false;
-      // Numbers, Strings, Functions, Booleans must be strictly equal
+        if (typeof (x[p]) !== 'object') return false;
+        // Numbers, Strings, Functions, Booleans must be strictly equal
 
-    if ( ! objectEquals( x[ p ],  y[ p ] ) ) return false;
-      // Objects and Arrays must be tested recursively
-  }
+        if (!objectEquals(x[p], y[p])) return false;
+        // Objects and Arrays must be tested recursively
+    }
 
-  for ( p in y ) {
-    if ( y.hasOwnProperty( p ) && ! x.hasOwnProperty( p ) ) return false;
-      // allows x[ p ] to be set to undefined
-  }
-  return true;
+    for (p in y) {
+        if (y.hasOwnProperty(p) && !x.hasOwnProperty(p)) return false;
+        // allows x[ p ] to be set to undefined
+    }
+    return true;
 }
 
 /**
@@ -170,35 +170,35 @@ export function objectEquals( x, y ) {
  * @param log    true/false - zda-li se má logovat; POZOR, v případě, že je true se prochází vždy celé porovávání; může způsobit pokles výkonu
  * @returns {boolean} true pokud se shodují
  */
-export function objectEqualsDiff( x, y, ignore = {}, path = "", log = false ) {
+export function objectEqualsDiff(x, y, ignore = {}, path = '', log = false) {
     // if ( x === y || ignore[path] ) return true;
     // if both x and y are null or undefined and exactly the same
 
     // fast compare
-    if ( JSON.stringify(x) === JSON.stringify(y) || ignore[path] ) return true;
+    if (JSON.stringify(x) === JSON.stringify(y) || ignore[path]) return true;
 
-    if ( ! ( x instanceof Object ) || ! ( y instanceof Object ) ) {
-        log && console.warn("diff 1", path, x, y);
+    if (!(x instanceof Object) || !(y instanceof Object)) {
+        log && console.warn('diff 1', path, x, y);
         return false;
     }
     // if they are not strictly equal, they both need to be Objects
 
-    if ( x.constructor !== y.constructor ) {
-        log && console.warn("diff 2", path, x.constructor, y.constructor);
+    if (x.constructor !== y.constructor) {
+        log && console.warn('diff 2', path, x.constructor, y.constructor);
         return false;
     }
     // they must have the exact same prototype chain, the closest we can do is
     // test there constructor.
 
     let res = true;
-    for ( var p in x ) {
-        let pathProp = path + "." + p;
-        if ( ! x.hasOwnProperty( p ) ) continue;
+    for (var p in x) {
+        let pathProp = path + '.' + p;
+        if (!x.hasOwnProperty(p)) continue;
         // other properties were tested using x.constructor === y.constructor
 
-        if ( ! y.hasOwnProperty( p ) && !(ignore[pathProp] || ignore[endWith(p)]) )  {
+        if (!y.hasOwnProperty(p) && !(ignore[pathProp] || ignore[endWith(p)])) {
             if (log) {
-                console.warn("diff 3", path, p);
+                console.warn('diff 3', path, p);
                 res = false;
                 continue;
             } else {
@@ -207,12 +207,12 @@ export function objectEqualsDiff( x, y, ignore = {}, path = "", log = false ) {
         }
         // allows to compare x[ p ] and y[ p ] when set to undefined
 
-        if ( x[ p ] === y[ p ] ) continue;
+        if (x[p] === y[p]) continue;
         // if they have the same strict value or identity then they are equal
 
-        if ( typeof( x[ p ] ) !== "object" && !(ignore[pathProp] || ignore[endWith(p)]) ) {
+        if (typeof (x[p]) !== 'object' && !(ignore[pathProp] || ignore[endWith(p)])) {
             if (log) {
-                console.warn("diff 4", path, p, x[p], y[p]);
+                console.warn('diff 4', path, p, x[p], y[p]);
                 res = false;
                 continue;
             } else {
@@ -221,7 +221,7 @@ export function objectEqualsDiff( x, y, ignore = {}, path = "", log = false ) {
         }
         // Numbers, Strings, Functions, Booleans must be strictly equal
 
-        if ( !ignore[pathProp] && !ignore[endWith(p)] && ! objectEqualsDiff( x[ p ],  y[ p ], ignore, pathProp, log ) ) {
+        if (!ignore[pathProp] && !ignore[endWith(p)] && !objectEqualsDiff(x[p], y[p], ignore, pathProp, log)) {
             if (log) {
                 //console.warn("diff 5", path, p, x[p], y[p]);
                 res = false;
@@ -233,9 +233,9 @@ export function objectEqualsDiff( x, y, ignore = {}, path = "", log = false ) {
         // Objects and Arrays must be tested recursively
     }
 
-    for ( p in y ) {
-        let pathProp = path + "." + p;
-        if ( !(ignore[pathProp] || ignore[endWith(p)]) && y.hasOwnProperty( p ) && ! x.hasOwnProperty( p ) ) {
+    for (p in y) {
+        let pathProp = path + '.' + p;
+        if (!(ignore[pathProp] || ignore[endWith(p)]) && y.hasOwnProperty(p) && !x.hasOwnProperty(p)) {
             if (log) {
                 //console.warn("diff 6", path, p);
                 res = false;
@@ -250,11 +250,11 @@ export function objectEqualsDiff( x, y, ignore = {}, path = "", log = false ) {
 }
 
 export function endWith(prop) {
-    return "|" + prop;
+    return '|' + prop;
 }
 
 export function startWith(prop) {
-    return "." + prop;
+    return '.' + prop;
 }
 
 /**
@@ -264,7 +264,7 @@ export function startWith(prop) {
  */
 export function buildIgnoreMap(...items) {
     if (items === null || items.length === 0) {
-        return {}
+        return {};
     } else {
         const result = {};
         items.forEach(item => result[item] = true);
@@ -275,11 +275,11 @@ export function buildIgnoreMap(...items) {
 export function lenToBytesStr(len) {
     var lenStr;
     if (len < 1000) {
-        lenStr = ('' + len).substring(0, 3) + " B";
+        lenStr = ('' + len).substring(0, 3) + ' B';
     } else if (len < 1000000) {
-        lenStr = ('' + (len/1000)).substring(0, 3) + " kB";
+        lenStr = ('' + (len / 1000)).substring(0, 3) + ' kB';
     } else {
-        lenStr = ('' + (len/1000000)).substring(0, 3) + " MB";
+        lenStr = ('' + (len / 1000000)).substring(0, 3) + ' MB';
     }
     return lenStr;
 }
@@ -300,34 +300,30 @@ export function humanFileSize(bytes, si = false) {
     return bytes.toFixed(1) + ' ' + units[u];
 }
 
-export function roughSizeOfObject( object ) {
+export function roughSizeOfObject(object) {
 
     var objectList = [];
-    var stack = [ object ];
+    var stack = [object];
     var bytes = 0;
 
-    while ( stack.length ) {
+    while (stack.length) {
         var value = stack.pop();
 
-        if ( typeof value === 'boolean' ) {
+        if (typeof value === 'boolean') {
             bytes += 4;
-        }
-        else if ( typeof value === 'string' ) {
+        } else if (typeof value === 'string') {
             bytes += value.length * 2;
-        }
-        else if ( typeof value === 'number' ) {
+        } else if (typeof value === 'number') {
             bytes += 8;
-        }
-        else if
+        } else if
         (
             typeof value === 'object'
-            && objectList.indexOf( value ) === -1
-        )
-        {
-            objectList.push( value );
+            && objectList.indexOf(value) === -1
+        ) {
+            objectList.push(value);
 
-            for( var i in value ) {
-                stack.push( value[ i ] );
+            for (var i in value) {
+                stack.push(value[i]);
             }
         }
     }
@@ -335,7 +331,8 @@ export function roughSizeOfObject( object ) {
 }
 
 export function StringSet() {
-    var setObj = {}, val = {};
+    var setObj = {},
+        val = {};
 
     this.add = function(str) {
         setObj[str] = val;
@@ -384,7 +381,7 @@ export function StringMap() {
     };
 
     this.contains = function(key) {
-        return typeof(setObj[key]) !== 'undefined';
+        return typeof (setObj[key]) !== 'undefined';
     };
 
     this.remove = function(key) {
@@ -430,17 +427,19 @@ export function getKeyModifier() {
 }
 
 export function init() {
-    Array.prototype.each = function(callback){
+    // eslint-disable-next-line no-extend-native
+    Array.prototype.each = function(callback) {
         if (!callback) return false;
-        for (var i=0; i<this.length; i++){
-            if (callback(this[i], i) == false) break;
+        for (let i = 0; i < this.length; i++) {
+            if (callback(this[i], i) === false) break;
         }
     };
-    Array.prototype.one = function(callback){
-        var result = null;
+    // eslint-disable-next-line no-extend-native
+    Array.prototype.one = function(callback) {
+        let result = null;
         if (!callback) return result;
-        for (var i=0; i<this.length; i++){
-            var ret = callback(this[i], i);
+        for (let i = 0; i < this.length; i++) {
+            const ret = callback(this[i], i);
             if (typeof ret != 'undefined' && ret !== null) {
                 result = ret;
                 break;
@@ -451,40 +450,39 @@ export function init() {
     if (typeof Object.values != 'function') {
         Object.values = x =>
             Object.keys(x).reduce((y, z) =>
-            y.push(x[z]) && y, []);
+                y.push(x[z]) && y, []);
     }
     if (typeof Object.assign != 'function') {
-      (function () {
-        Object.assign = function (target) {
-          'use strict';
-          if (target === undefined || target === null) {
-            throw new TypeError('Cannot convert undefined or null to object');
-          }
-
-          var output = Object(target);
-          for (var index = 1; index < arguments.length; index++) {
-            var source = arguments[index];
-            if (source !== undefined && source !== null) {
-              for (var nextKey in source) {
-                if (source.hasOwnProperty(nextKey)) {
-                  output[nextKey] = source[nextKey];
+        (function() {
+            Object.assign = function(target) {
+                if (target === undefined || target === null) {
+                    throw new TypeError('Cannot convert undefined or null to object');
                 }
-              }
-            }
-          }
-          return output;
-        };
-      })();
+
+                let output = Object(target);
+                for (let index = 1; index < arguments.length; index++) {
+                    const source = arguments[index];
+                    if (source !== undefined && source !== null) {
+                        for (let nextKey in source) {
+                            if (source.hasOwnProperty(nextKey)) {
+                                output[nextKey] = source[nextKey];
+                            }
+                        }
+                    }
+                }
+                return output;
+            };
+        })();
     }
 }
 
 export function barrierCall(index, promise, onData, onError) {
     promise
-        .then((result)=>{
+        .then((result) => {
             //console.log("Promise #" + index + " OK", result);
             onData(index, result);
         })
-        .catch((error)=>{
+        .catch((error) => {
             //console.log("Promise #" + index + " ERROR", error);
             onError(index, error);
         });
@@ -493,14 +491,14 @@ export function barrierCall(index, promise, onData, onError) {
 export function barrier(...promises) {
     var errors = {};
     var results = {};
-    return new Promise(function (resolve, reject) {
+    return new Promise(function(resolve, reject) {
 
         var tryFinish = () => {
             //console.log("TRY FINISH", results, errors, Object.keys(results).length, Object.keys(errors).length, promises.length);
             if (Object.keys(results).length + Object.keys(errors).length == promises.length) {
                 var result = {};
-                Object.keys(results).forEach(key => result[key] = { error: false, data: results[key] });
-                Object.keys(errors).forEach(key => result[key] = { error: true, data: errors[key] });
+                Object.keys(results).forEach(key => result[key] = {error: false, data: results[key]});
+                Object.keys(errors).forEach(key => result[key] = {error: true, data: errors[key]});
 
                 if (Object.keys(errors).length > 0) {
                     reject(result);
@@ -508,20 +506,20 @@ export function barrier(...promises) {
                     resolve(result);
                 }
             }
-        }
+        };
         var handleData = (index, data) => {
             results[index] = data;
             tryFinish();
-        }
+        };
         var handleError = (index, data) => {
             errors[index] = data;
             tryFinish();
-        }
+        };
 
-        for (var a=0; a<promises.length; a++) {
+        for (var a = 0; a < promises.length; a++) {
             barrierCall(a, promises[a], handleData, handleError);
         }
-    })
+    });
 }
 
 /**
@@ -533,7 +531,7 @@ export function dateToString(date) {
     var dd = date.getDate().toString();
     var mm = (date.getMonth() + 1).toString();
     var yyyy = date.getFullYear().toString();
-    return (dd[1] ? dd : "0" + dd[0]) + "." + (mm[1] ? mm : "0" + mm[0]) + "." + yyyy;
+    return (dd[1] ? dd : '0' + dd[0]) + '.' + (mm[1] ? mm : '0' + mm[0]) + '.' + yyyy;
 }
 
 /**
@@ -546,8 +544,8 @@ export function timeToString(date) {
     var ii = date.getMinutes().toString();
     var ss = date.getSeconds().toString();
     /** Formátování - místo 01 = 1 **/
-    var f = (col) => (col[1] ? col : "0" + col[0]);
-    return f(hh) + ":" + f(ii) + ":" + f(ss);
+    var f = (col) => (col[1] ? col : '0' + col[0]);
+    return f(hh) + ':' + f(ii) + ':' + f(ss);
 }
 
 /**
@@ -563,8 +561,8 @@ export function dateTimeToString(date) {
     var hh = date.getHours().toString();
     var ii = date.getMinutes().toString();
     /** Formátování - místo 01 = 1 **/
-    var f = (col) => (col[1] ? col : "0" + col[0]);
-    return f(dd) + "." + f(mm) + "." + yyyy + " " + f(hh) + ":" + f(ii);
+    var f = (col) => (col[1] ? col : '0' + col[0]);
+    return f(dd) + '.' + f(mm) + '.' + yyyy + ' ' + f(hh) + ':' + f(ii);
 }
 
 /**
@@ -576,14 +574,14 @@ export function valuesEquals(v1, v2) {
         return true;
     }
 
-    var v1empty = typeof v1 === 'undefined' || v1 === null || v1.length === 0
-    var v2empty = typeof v2 === 'undefined' || v2 === null || v2.length === 0
+    var v1empty = typeof v1 === 'undefined' || v1 === null || v1.length === 0;
+    var v2empty = typeof v2 === 'undefined' || v2 === null || v2.length === 0;
 
     if (v1empty && v2empty) {
-        return true
+        return true;
     }
 
-    return false
+    return false;
 }
 
 /**
@@ -596,14 +594,14 @@ export function valuesEquals(v1, v2) {
  * @returns object
  */
 export function objectFromWKT(value) {
-    if (typeof value === 'undefined' || value === null || value == '' || typeof value === "object") {
-        return {type: "POINT", data: null};
+    if (typeof value === 'undefined' || value === null || value == '' || typeof value === 'object') {
+        return {type: 'POINT', data: null};
     }
     const state = {type: null, data: null};
-    const start = value.indexOf("(");
+    const start = value.indexOf('(');
     state.type = value.substr(0, start).trim();
-    if (state.type === "POINT") {
-        state.data = value.substr(start + 1, value.length - start - 2).split(", ").join("\n").split(" ").join(",");
+    if (state.type === 'POINT') {
+        state.data = value.substr(start + 1, value.length - start - 2).split(', ').join('\n').split(' ').join(',');
     } else {
         state.data = value.substr(start + 2, value.length - start - 4);
     }
@@ -624,13 +622,13 @@ export function objectFromWKT(value) {
  * @returns string WK Text
  */
 export function wktFromTypeAndData(type, val) {
-    let points = val.split(",").map(function (dat) {
+    let points = val.split(',').map(function(dat) {
         return normalizeDoubleWithDot(dat);
-    }).join(" ").split("\n").join(", ");
-    if (type === "POLYGON") {
-        points = "(" + points + ", " + points.substr(0, points.indexOf(",")) + ")";
+    }).join(' ').split('\n').join(', ');
+    if (type === 'POLYGON') {
+        points = '(' + points + ', ' + points.substr(0, points.indexOf(',')) + ')';
     }
-    return type + "(" + points + ")";
+    return type + '(' + points + ')';
 }
 
 /**
@@ -641,14 +639,14 @@ export function wktFromTypeAndData(type, val) {
  */
 export function wktType(type) {
     switch (type) {
-        case "POINT":
-            return "B";
-        case "POLYGON":
-            return "P";
-        case "LINESTRING":
-            return "L";
+        case 'POINT':
+            return 'B';
+        case 'POLYGON':
+            return 'P';
+        case 'LINESTRING':
+            return 'L';
         default:
-            return "N";
+            return 'N';
     }
 }
 
@@ -696,12 +694,13 @@ export function detectIE() {
     return false;
 }
 
-var _scrollbarWidth = null
+var _scrollbarWidth = null;
+
 export function calculateScrollbarWidth() {
     if (_scrollbarWidth == null) {
         // Create the measurement node
-        var scrollDiv = document.createElement("div");
-        scrollDiv.className = "scrollbar-measure";
+        var scrollDiv = document.createElement('div');
+        scrollDiv.className = 'scrollbar-measure';
         document.body.appendChild(scrollDiv);
 
         // Get the scrollbar width
@@ -711,6 +710,7 @@ export function calculateScrollbarWidth() {
         document.body.removeChild(scrollDiv);
     }
 }
+
 calculateScrollbarWidth();
 
 export function getScrollbarWidth() {
@@ -724,7 +724,7 @@ export function getScrollbarWidth() {
  */
 function _dtpad(number) {
     var r = String(number);
-    if ( r.length === 1 ) {
+    if (r.length === 1) {
         r = '0' + r;
     }
     return r;
@@ -741,12 +741,12 @@ export function dateTimeToLocalUTC(date) {
     }
 
     return date.getFullYear()
-        + '-' + _dtpad( date.getMonth() + 1)
-        + '-' + _dtpad( date.getDate())
-        + 'T' + _dtpad( date.getHours())
-        + ':' + _dtpad( date.getMinutes())
-        + ':' + _dtpad( date.getSeconds())
-        + '.' + _dtpad( date.getMilliseconds());
+        + '-' + _dtpad(date.getMonth() + 1)
+        + '-' + _dtpad(date.getDate())
+        + 'T' + _dtpad(date.getHours())
+        + ':' + _dtpad(date.getMinutes())
+        + ':' + _dtpad(date.getSeconds())
+        + '.' + _dtpad(date.getMilliseconds());
 }
 
 /**
@@ -762,12 +762,12 @@ export function dateTimeToZonedUTC(date) {
     const zone = date.getTimezoneOffset();
 
     return date.getFullYear()
-        + '-' + _dtpad( date.getMonth() + 1)
-        + '-' + _dtpad( date.getDate())
-        + 'T' + _dtpad( date.getHours())
-        + ':' + _dtpad( date.getMinutes())
-        + ':' + _dtpad( date.getSeconds())
-        + '.' + _dtpad( date.getMilliseconds())
+        + '-' + _dtpad(date.getMonth() + 1)
+        + '-' + _dtpad(date.getDate())
+        + 'T' + _dtpad(date.getHours())
+        + ':' + _dtpad(date.getMinutes())
+        + ':' + _dtpad(date.getSeconds())
+        + '.' + _dtpad(date.getMilliseconds())
         + toZoneString(zone);
 }
 
@@ -776,11 +776,11 @@ function toZoneString(zone) {
     const zoneTmp = positive ? zone : -zone;
     let h = Math.floor(zoneTmp / 60);
     let m = Math.floor(zoneTmp % 60);
-    return (positive ? "-" : "+") + pad2(h) + ":" + pad2(m);
+    return (positive ? '-' : '+') + pad2(h) + ':' + pad2(m);
 }
 
 export const removeUndefined = (obj) => {
-    for (let key in obj ) {
+    for (let key in obj) {
         if (obj.hasOwnProperty(key)) {
             if (obj[key] === undefined || obj[key] === null) {
                 delete obj[key];
@@ -791,21 +791,22 @@ export const removeUndefined = (obj) => {
 };
 export const isNotBlankObject = (obj) => {
     const newObj = removeUndefined(obj);
-    return Object.keys(newObj).length > 0
+    return Object.keys(newObj).length > 0;
 };
+
 /**
  * Vloží zkratky z výchozí keymapy do druhé předané keymapy, pokud se v ní nenachází
  * @param {object} defaultKeymap - výchozí keymapa, ze které budou zkratky čteny
  * @param {object} keymap - keymapa, do které budou zkratky vloženy
  * @return {object}
  */
-function overrideKeymap(defaultKeymap,keymap) {
+function overrideKeymap(defaultKeymap, keymap) {
     keymap = {...keymap};
-    for(let component in defaultKeymap){
-        if(keymap && keymap[component]){
+    for (let component in defaultKeymap) {
+        if (keymap && keymap[component]) {
             let newComponentKeymap = {};
-            for(let action in defaultKeymap[component]){
-                if(!keymap[component][action]){
+            for (let action in defaultKeymap[component]) {
+                if (!keymap[component][action]) {
                     newComponentKeymap[action] = defaultKeymap[component][action];
                 } else {
                     newComponentKeymap[action] = keymap[component][action];
@@ -821,23 +822,24 @@ function overrideKeymap(defaultKeymap,keymap) {
     }
     return keymap;
 }
+
 /**
  * Spojí dvě keymapy, případně přepíše hodnoty výchozí keymapy hodnotami z rozšiřující
  * @param {object} defaultKeymap - výchozí keymapa
  * @param {object} extendingKeymap - rozšiřující keymapa
  * @return {object} mergedKeymap - nová keymapa
  */
-export function mergeKeymaps(defaultKeymap,extendingKeymap){
+export function mergeKeymaps(defaultKeymap, extendingKeymap) {
     let mergedKeymap = {};
-    for(let c in defaultKeymap){ //vytvoření nového objektu, aby se nepřepisoval původní
+    for (let c in defaultKeymap) { //vytvoření nového objektu, aby se nepřepisoval původní
         mergedKeymap[c] = {};
-        for(let a in defaultKeymap[c]){
+        for (let a in defaultKeymap[c]) {
             mergedKeymap[c][a] = defaultKeymap[c][a];
         }
     }
-    for(let component in extendingKeymap){
-        if(mergedKeymap && mergedKeymap[component]){
-            for(let action in extendingKeymap[component]){
+    for (let component in extendingKeymap) {
+        if (mergedKeymap && mergedKeymap[component]) {
+            for (let action in extendingKeymap[component]) {
                 mergedKeymap[component][action] = extendingKeymap[component][action];
             }
         } else {
@@ -846,28 +848,30 @@ export function mergeKeymaps(defaultKeymap,extendingKeymap){
     }
     return mergedKeymap;
 }
+
 /**
  * Zkontroluje, jestli objekt neobsahuje duplicitní hodnoty. Pokud je hodnotou pole, jsou prohledány všechny jeho hodnoty
  * => ["a","b"] je považováno za duplicitní s "a". hodnota "b" je pak dále porovnávána s dalšími hodnotami.
  * Objekty jsou porovnávány jako stringy
  * @param {object} object - objekt, ve kterém se budou hledat duplicity
  */
-function checkValueDuplicity(object){
+function checkValueDuplicity(object) {
     let newObj = {};
-    for(let i in object){
+    for (let i in object) {
         let objectValue = object[i];
-        if(!Array.isArray(objectValue)){
+        if (!Array.isArray(objectValue)) {
             objectValue = [objectValue];
         }
-        for(let j=0;j<objectValue.length;j++){
-            if(typeof newObj[objectValue[j]] === "undefined"){
+        for (let j = 0; j < objectValue.length; j++) {
+            if (typeof newObj[objectValue[j]] === 'undefined') {
                 newObj[objectValue[j]] = i;
             } else {
-                console.warn("Duplicity found for '"+objectValue[j]+"' assigned to '"+i+"'. Already used in '"+newObj[objectValue[j]]+"'");
+                console.warn('Duplicity found for \'' + objectValue[j] + '\' assigned to \'' + i + '\'. Already used in \'' + newObj[objectValue[j]] + '\'');
             }
         }
     }
 }
+
 /**
  * Přidá na předanou komponentu shortcut manager s předanou keymapou.
  * Pokud shortcut manager existuje v kontextu komponenty je mu pouze doplněna keymapa o hodnoty z předané keymapy.
@@ -876,17 +880,17 @@ function checkValueDuplicity(object){
  * @param {object} defaultKeymap - výchozí keymapa
  * @param {object} overridingKeymap -
  */
-export function addShortcutManager(component,defaultKeymap,overridingKeymap = null) {
+export function addShortcutManager(component, defaultKeymap, overridingKeymap = null) {
     let shortcutManager;
-    if(component.context && component.context.shortcuts && !overridingKeymap){
+    if (component.context && component.context.shortcuts && !overridingKeymap) {
         let keymap = component.context.shortcuts._keymap;
-        component.context.shortcuts._keymap = overrideKeymap(defaultKeymap,keymap);
+        component.context.shortcuts._keymap = overrideKeymap(defaultKeymap, keymap);
         shortcutManager = component.context.shortcuts;
     } else {
-        if(overridingKeymap){
-            defaultKeymap = overrideKeymap(defaultKeymap,overridingKeymap);
+        if (overridingKeymap) {
+            defaultKeymap = overrideKeymap(defaultKeymap, overridingKeymap);
         }
-        shortcutManager = new ShortcutManager(defaultKeymap)
+        shortcutManager = new ShortcutManager(defaultKeymap);
     }
     component.shortcutManager = shortcutManager;
 }

@@ -25,11 +25,7 @@ class FundField extends AbstractReactComponent {
         const { excludedId } = this.props;
         text = text === '' ? null : text;
         WebApi.findFunds(text).then(json => {
-            const newFunds = json.funds.filter((i) => {
-                if (i.id !== excludedId) {
-                    return i;
-                }
-            });
+            const newFunds = json.funds.filter((i) => i.id !== excludedId);
             this.setState({
                 dataList: newFunds,
             });

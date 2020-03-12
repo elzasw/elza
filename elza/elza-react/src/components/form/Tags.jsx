@@ -10,10 +10,6 @@ import {AbstractReactComponent, Icon} from 'components/shared';
  */
 
 const Tags = class Tags extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-
-    }
 
     render() {
         const {items, onRemove, renderItem} = this.props;

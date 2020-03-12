@@ -1,19 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import {connect} from 'react-redux';
-import {LinkContainer} from 'react-router-bootstrap';
-import {FundForm, i18n, Icon, PartyListItem, Ribbon} from 'components/index.jsx';
-import {AbstractReactComponent, RibbonGroup, Utils} from 'components/shared';
-import {Button} from '../../components/ui';
-import {modalDialogShow} from 'actions/global/modalDialog.jsx';
-import {createFund} from 'actions/arr/fund.jsx';
-import {storeLoadData} from 'actions/store/store.jsx';
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
+import { connect } from 'react-redux';
+import { LinkContainer } from 'react-router-bootstrap';
+import { FundForm, i18n, Icon, PartyListItem, Ribbon } from 'components/index.jsx';
+import { AbstractReactComponent, RibbonGroup, Utils } from 'components/shared';
+import { Button } from '../../components/ui';
+import { modalDialogShow } from 'actions/global/modalDialog.jsx';
+import { createFund } from 'actions/arr/fund.jsx';
+import { storeLoadData } from 'actions/store/store.jsx';
+import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 import PageLayout from '../shared/layout/PageLayout';
 import './HomePage.scss';
-import {FOCUS_KEYS} from '../../constants.tsx';
+import { FOCUS_KEYS } from '../../constants.tsx';
 import SearchFundsForm from '../../components/arr/SearchFundsForm';
 
 // Testování
@@ -33,7 +33,7 @@ class HomePage extends AbstractReactComponent {
     }
 
     trySetFocus = (props) => {
-        const {focus} = props;
+        const { focus } = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, null, 1)) {   // focus po ztrátě
@@ -61,15 +61,15 @@ class HomePage extends AbstractReactComponent {
         this.props.dispatch(modalDialogShow(
             this,
             i18n('arr.fund.title.search'),
-            <SearchFundsForm/>,
+            <SearchFundsForm />,
         ));
     };
 
     handleAddFund = () => {
-        const {userDetail} = this.props;
+        const { userDetail } = this.props;
         let initData = {};
         if (!userDetail.hasOne(perms.ADMIN, perms.FUND_ADMIN)) {
-            initData.fundAdmins = [{id: 'default', user: userDetail}];
+            initData.fundAdmins = [{ id: 'default', user: userDetail }];
         }
         this.props.dispatch(modalDialogShow(
             this,
@@ -85,18 +85,18 @@ class HomePage extends AbstractReactComponent {
     };
 
     buildRibbon = () => {
-        const {userDetail} = this.props;
+        const { userDetail } = this.props;
         const altActions = [];
         if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_CREATE)) {
             altActions.push(
-                <Button key="add-fa" onClick={this.handleAddFund}><Icon glyph="fa-plus-circle"/>
+                <Button key="add-fa" onClick={this.handleAddFund}><Icon glyph="fa-plus-circle" />
                     <div><span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span></div>
                 </Button>,
             );
         }
 
         altActions.push(
-            <Button key="search-fa" onClick={this.handleFundsSearchForm}><Icon glyph="fa-search"/>
+            <Button key="search-fa" onClick={this.handleFundsSearchForm}><Icon glyph="fa-search" />
                 <div><span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span></div>
             </Button>,
         );
@@ -126,6 +126,8 @@ class HomePage extends AbstractReactComponent {
             case 'ARR_REGION_FUND':
                 glyph = 'fa-file-text';
                 break;
+            default:
+                break;
         }
 
         const hasDesc = desc && desc.length > 0;
@@ -138,8 +140,8 @@ class HomePage extends AbstractReactComponent {
         }
 
         return <Button className='history-list-item history-button'
-                       onClick={() => this.props.dispatch(storeLoadData(type, data))} key={'button-' + keyIndex}>
-            <Icon glyph={glyph}/>
+            onClick={() => this.props.dispatch(storeLoadData(type, data))} key={'button-' + keyIndex}>
+            <Icon glyph={glyph} />
             <div className='history-name'>{name}</div>
             {false && descComp}
         </Button>;
@@ -161,14 +163,16 @@ class HomePage extends AbstractReactComponent {
     };
 
     renderHistory = () => {
-        const {stateRegion} = this.props;
+        const { stateRegion } = this.props;
+        //eslint-disable-next-line array-callback-return
         const partyItems = stateRegion.partyDetailFront.map((x, index) => {
             if (x.data) {
                 const name = x.data.name;
                 const desc = x.data.partyType.name;
-                return this.renderHistoryItem(name, desc, 'PARTY_REGION', {partyDetail: x}, index);
+                return this.renderHistoryItem(name, desc, 'PARTY_REGION', { partyDetail: x }, index);
             }
         });
+        //eslint-disable-next-line array-callback-return
         const registryItems = stateRegion.registryRegionFront.map((x, index) => {
             if (x.data) {
                 const name = x.data.record;
@@ -220,9 +224,9 @@ class HomePage extends AbstractReactComponent {
      * Vykreslení odkazu do příslušných modulů
      */
     renderLink = (to, text, glyph = 'fa-arrow-right') => <LinkContainer key={to} to={to}
-                                                                        className='history-list-item history-button link'>
+        className='history-list-item history-button link'>
         <Button>
-            <Icon glyph={glyph}/>
+            <Icon glyph={glyph} />
             <div className='history-name'>{text}</div>
         </Button>
     </LinkContainer>;
@@ -231,7 +235,7 @@ class HomePage extends AbstractReactComponent {
         // Test komponent - jen pro vývojové účely
         // return <AutocompleteTest/>
 
-        const {splitter} = this.props;
+        const { splitter } = this.props;
 
         let centerPanel = <div className='splitter-home'>
             {this.renderHistory()}
@@ -247,7 +251,7 @@ class HomePage extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, refTables, stateRegion, focus, userDetail} = state;
+    const { splitter, arrRegion, refTables, stateRegion, focus, userDetail } = state;
     return {
         splitter,
         arrRegion,

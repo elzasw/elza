@@ -1,4 +1,4 @@
-import {WebApi} from "actions/WebApi";
+import {WebApi} from 'actions/WebApi';
 
 /**
  *  Trida pro zpracovani pozadavku na upravy v poradani

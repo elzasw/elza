@@ -102,7 +102,7 @@ class FundForm extends AbstractReactComponent {
     submitReduxForm = (values, dispatch) => submitForm(FundForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
-        const {userDetail, fields: {fundAdmins, name, ruleSetId, apScopes: apScopes, institutionId, internalCode, dateRange}, handleSubmit, onClose, create, update, approve, ruleSet, refTables, submitting} = this.props;
+        const {fields: {fundAdmins, name, ruleSetId, apScopes, institutionId, internalCode, dateRange}, handleSubmit, onClose, create, update, approve, ruleSet, refTables, submitting} = this.props;
         let approveButton;
         if (approve) {
             if (this.isBulkActionRunning()) {
@@ -115,7 +115,6 @@ class FundForm extends AbstractReactComponent {
         }
         const ruleSets = refTables.ruleSet.items;
         const institutions = refTables.institutions.items;
-        const admin = userDetail.isAdmin();
 
         return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
             <Modal.Body>

@@ -99,7 +99,7 @@ class DataGridColumnsSettings extends AbstractReactComponent {
         });
 
         const rightSelectedIds = [];
-        visible.map((item, index) => {
+        visible.forEach((item, index) => {
             if (selectedMap[index]) {
                 rightSelectedIds.push(item.id);
             }
@@ -130,7 +130,7 @@ class DataGridColumnsSettings extends AbstractReactComponent {
         // Ziskání
 
         const newLeftSelected = [];
-        newAvailable.map((item, index) => {
+        newAvailable.forEach((item, index) => {
             if (rightSelectedIds.indexOf(item.id) > -1) {
                 newLeftSelected.push(index);
             }

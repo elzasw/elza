@@ -23,7 +23,7 @@ const initialState = {
     multipleSelection: false,
     multipleSelectionOneLevel: false,
     luceneQuery: false,
-}
+};
 
 function getOneSelectedIdIfExists(state) {
     if (state.multipleSelection && Object.keys(state.selectedIds).length == 1) {
@@ -42,11 +42,11 @@ function removeChildren(nodes, collapsedNode, selectedIdsMap) {
     var containsSelectedIds = [];
 
     while (++index < max) {
-        let node = nodes[index]
+        let node = nodes[index];
         if (node.depth > collapsedNode.depth) { // potomek, odebereme
             // ale až na konci
             if (selectedIdsMap[node.id]) {
-                containsSelectedIds.push(node.id)
+                containsSelectedIds.push(node.id);
             }
         } else {    // už není potomek, končíme procházení
             break;
@@ -57,11 +57,17 @@ function removeChildren(nodes, collapsedNode, selectedIdsMap) {
         containsSelectedIds: containsSelectedIds,
         nodes: [
             ...nodes.slice(0, start + 1),
-            ...nodes.slice(index)
-        ]
-    }
+            ...nodes.slice(index),
+        ],
+    };
 }
+
 export default function fundTree(state = initialState, action = {}) {
+    let index;
+    let result;
+    let removeInfo;
+    let ensureItemVisible;
+    let oneSelectedId;
     switch (action.type) {
         case types.STORE_LOAD:
             return {
@@ -71,7 +77,7 @@ export default function fundTree(state = initialState, action = {}) {
                 dirty: false,
                 fetchingIncludeIds: {},
                 nodes: [],
-            }
+            };
 
         case types.FUND_FUND_TREE_CONFIGURE: {
             let selectedIds = state.selectedIds;
@@ -82,7 +88,7 @@ export default function fundTree(state = initialState, action = {}) {
                 selectedIds = {};
             } else if (!state.multipleSelection && action.multipleSelection) {
                 if (state.selectedId !== null) {
-                    selectedIds = { [selectedId]: true };
+                    selectedIds = {[selectedId]: true};
                     selectedId = null;
                 }
             } else if (state.multipleSelection && action.multipleSelection) {
@@ -91,7 +97,7 @@ export default function fundTree(state = initialState, action = {}) {
                         const keys = Object.keys(state.selectedIds);
                         let sameLevel = true;
                         const testLevel = state.nodes[indexById(state.nodes, keys[0])].depth;
-                        for (let a=1; a<keys.length; a++) {
+                        for (let a = 1; a < keys.length; a++) {
                             const currLevel = state.nodes[indexById(state.nodes, keys[a])].depth;
                             if (currLevel !== testLevel) {
                                 sameLevel = false;
@@ -111,14 +117,14 @@ export default function fundTree(state = initialState, action = {}) {
                 selectedId,
                 multipleSelection: action.multipleSelection,
                 multipleSelectionOneLevel: action.multipleSelectionOneLevel,
-            }
+            };
         }
         case types.CHANGE_ADD_LEVEL:
-            return {...state, dirty: true}
+            return {...state, dirty: true};
 
         case types.CHANGE_DELETE_LEVEL: {
 
-            var refresh = false;
+            let refresh = false;
 
             if (action.nodeId == state.selectedId || action.parentNodeId == state.selectedId) {
                 refresh = true;
@@ -133,18 +139,18 @@ export default function fundTree(state = initialState, action = {}) {
             }
 
             if (refresh) {
-                return {...state, dirty: true, selectedId: null}
+                return {...state, dirty: true, selectedId: null};
             }
 
             return state;
         }
 
         case types.FUND_NODE_CHANGE:
-            var index = indexById(state.nodes, action.parentNode.id);
+            index = indexById(state.nodes, action.parentNode.id);
             if (index != null) {
                 state.nodes[index].version = action.parentNode.version;
             }
-            return {...state, dirty: true}
+            return {...state, dirty: true};
         case types.STORE_SAVE:
             const {selectedId, selectedIds, focusId, expandedIds, searchedIds, filterText, filterCurrentIndex, multipleSelection, multipleSelectionOneLevel} = state;
             return {
@@ -154,12 +160,12 @@ export default function fundTree(state = initialState, action = {}) {
                 expandedIds,
                 multipleSelection,
                 multipleSelectionOneLevel,
-            }
+            };
         case types.GLOBAL_CONTEXT_MENU_HIDE:
-            var result = {
+            result = {
                 ...state,
-                focusId: null
-            }
+                focusId: null,
+            };
             return consolidateState(state, result);
         case types.FUND_FUND_TREE_FULLTEXT_CHANGE:
             return {
@@ -169,8 +175,8 @@ export default function fundTree(state = initialState, action = {}) {
                 filterCurrentIndex: -1,
                 searchedIds: [],
                 searchedParents: [],
-                luceneQuery: false
-            }
+                luceneQuery: false,
+            };
         case types.FUND_FUND_TREE_FULLTEXT_RESULT:
             if (state.filterText == action.filterText) {    // jen pokud výsledek odpovídá aktuálnímu stavu v hledací komponentě
                 const searchedIds = [];
@@ -178,7 +184,7 @@ export default function fundTree(state = initialState, action = {}) {
                 action.searchedData.forEach(i => {
                     searchedIds.push(i.nodeId);
                     searchedParents[i.nodeId] = i.parent;
-                })
+                });
 
                 return {
                     ...state,
@@ -188,8 +194,8 @@ export default function fundTree(state = initialState, action = {}) {
                     searchedIds: searchedIds,
                     searchedParents: searchedParents,
                     searchFormData: action.searchFormData,
-                    luceneQuery: action.luceneQuery
-                }
+                    luceneQuery: action.luceneQuery,
+                };
             } else {
                 return state;
             }
@@ -204,8 +210,8 @@ export default function fundTree(state = initialState, action = {}) {
                     ...state,
                     lastSelectedId: null,
                     ensureItemVisible: action.ensureItemVisible,
-                    filterCurrentIndex: newCurrentIndex
-                }
+                    filterCurrentIndex: newCurrentIndex,
+                };
                 newState.selectedIds = {...state.selectedIds};
 
                 if (action.ctrl) {
@@ -217,7 +223,7 @@ export default function fundTree(state = initialState, action = {}) {
                             if (keys.length > 0) {  // kontrolujeme stejný level - depth
                                 const indexSelected = indexById(newState.nodes, keys[0]);
                                 const indexNewSelection = indexById(newState.nodes, action.nodeId);
-                                if (newState.nodes[indexSelected].depth == newState.nodes[indexNewSelection].depth) {
+                                if (newState.nodes[indexSelected].depth === newState.nodes[indexNewSelection].depth) {
                                     newState.selectedIds[action.nodeId] = true;
                                     newState.lastSelectedId = action.nodeId;
                                 }
@@ -237,9 +243,9 @@ export default function fundTree(state = initialState, action = {}) {
 
                         if (state.multipleSelectionOneLevel) {
                             const depth = newState.nodes[indexSelected].depth;
-                            if (depth == newState.nodes[indexNewSelection].depth) {
-                                for (let a=Math.min(indexSelected, indexNewSelection); a<= Math.max(indexSelected, indexNewSelection); a++) {
-                                    if (state.nodes[a].depth == depth) {
+                            if (depth === newState.nodes[indexNewSelection].depth) {
+                                for (let a = Math.min(indexSelected, indexNewSelection); a <= Math.max(indexSelected, indexNewSelection); a++) {
+                                    if (state.nodes[a].depth === depth) {
                                         newState.selectedIds[state.nodes[a].id] = true;
                                     }
                                 }
@@ -247,7 +253,7 @@ export default function fundTree(state = initialState, action = {}) {
                                 newState.lastSelectedId = state.lastSelectedId;
                             }
                         } else {
-                            for (let a=Math.min(indexSelected, indexNewSelection); a<= Math.max(indexSelected, indexNewSelection); a++) {
+                            for (let a = Math.min(indexSelected, indexNewSelection); a <= Math.max(indexSelected, indexNewSelection); a++) {
                                 newState.selectedIds[state.nodes[a].id] = true;
                             }
                         }
@@ -263,7 +269,7 @@ export default function fundTree(state = initialState, action = {}) {
                 }
                 return newState;
             } else {
-                if (state.selectedId !== action.nodeId || (action.newFilterCurrentIndex != null && state.filterCurrentIndex != action.newFilterCurrentIndex)) {
+                if (state.selectedId !== action.nodeId || (action.newFilterCurrentIndex != null && state.filterCurrentIndex !== action.newFilterCurrentIndex)) {
                     let newCurrentIndex = state.filterCurrentIndex;
                     if (action.newFilterCurrentIndex != null) {
                         newCurrentIndex = action.newFilterCurrentIndex;
@@ -273,14 +279,14 @@ export default function fundTree(state = initialState, action = {}) {
                         ...state,
                         ensureItemVisible: action.ensureItemVisible,
                         selectedId: action.nodeId,
-                        filterCurrentIndex: newCurrentIndex
-                    }
+                        filterCurrentIndex: newCurrentIndex,
+                    };
                 } else {
                     return state;
                 }
             }
         case types.FUND_FUND_SELECT_SUBNODE:
-            if (state.selectedId !== action.subNodeId || (action.newFilterCurrentIndex != null && state.filterCurrentIndex != action.newFilterCurrentIndex)) {
+            if (state.selectedId !== action.subNodeId || (action.newFilterCurrentIndex !== null && state.filterCurrentIndex !== action.newFilterCurrentIndex)) {
                 let newCurrentIndex = state.filterCurrentIndex;
                 if (action.newFilterCurrentIndex != null) {
                     newCurrentIndex = action.newFilterCurrentIndex;
@@ -290,8 +296,8 @@ export default function fundTree(state = initialState, action = {}) {
                     ...state,
                     ensureItemVisible: action.ensureItemVisible,
                     selectedId: action.subNodeId,
-                    filterCurrentIndex: newCurrentIndex
-                }
+                    filterCurrentIndex: newCurrentIndex,
+                };
             } else {
                 return state;
             }
@@ -300,7 +306,7 @@ export default function fundTree(state = initialState, action = {}) {
                 return {
                     ...state,
                     focusId: action.node.id,
-                    ensureItemVisible: false
+                    ensureItemVisible: false,
                 };
             } else {
                 return state;
@@ -313,14 +319,19 @@ export default function fundTree(state = initialState, action = {}) {
                     ensureItemVisible: false,
                     nodes: [
                         ...state.nodes.slice(0, index + 1),
-                        {id: '___' + Math.random(), name: i18n('global.data.loading'), depth: action.node.depth + 1, isFetching: true},
-                        ...state.nodes.slice(index + 1)
+                        {
+                            id: '___' + Math.random(),
+                            name: i18n('global.data.loading'),
+                            depth: action.node.depth + 1,
+                            isFetching: true,
+                        },
+                        ...state.nodes.slice(index + 1),
                     ],
                 });
             } else {
                 return Object.assign({}, state, {
                     ensureItemVisible: false,
-                    expandedIds: {...state.expandedIds, [action.node.id]: true}
+                    expandedIds: {...state.expandedIds, [action.node.id]: true},
                 });
             }
         case types.FUND_FUND_TREE_COLLAPSE:
@@ -330,53 +341,52 @@ export default function fundTree(state = initialState, action = {}) {
                 ensureItemVisible: false,
                 expandedIds: initialState.expandedIds,
                 nodes: [
-                    state.nodes[0]
+                    state.nodes[0],
                 ],
                 selectedId: initialState.selectedId,
-                selectedIds: initialState.selectedIds
+                selectedIds: initialState.selectedIds,
             });
         case types.FUND_FUND_TREE_COLLAPSE_NODE: {
             let expandedIds = {...state.expandedIds};
             delete expandedIds[action.node.id];
 
-            let selectedIdsMap
+            let selectedIdsMap;
             if (state.multipleSelection) {
-                selectedIdsMap = state.selectedIds
+                selectedIdsMap = state.selectedIds;
             } else {
-                selectedIdsMap = {}
+                selectedIdsMap = {};
                 if (state.selectedId !== null) {
-                    selectedIdsMap[state.selectedId] = true
+                    selectedIdsMap[state.selectedId] = true;
                 }
             }
-            var removeInfo = removeChildren(state.nodes, action.node, selectedIdsMap);
+            removeInfo = removeChildren(state.nodes, action.node, selectedIdsMap);
 
-            let newSelectedId
-            let newSelectedIds
+            let newSelectedId;
+            let newSelectedIds;
             if (state.multipleSelection) {
                 if (removeInfo.containsSelectedIds.length > 0) { // některá id jsou v seznamu zabalených
-                    newSelectedIds = {...state.selectedIds}
+                    newSelectedIds = {...state.selectedIds};
                     removeInfo.containsSelectedIds.forEach(id => {
-                        delete newSelectedIds[id]
-                    })
+                        delete newSelectedIds[id];
+                    });
                 } else {
-                    newSelectedIds = state.selectedIds
+                    newSelectedIds = state.selectedIds;
                 }
             } else {
                 if (removeInfo.containsSelectedIds.length > 0) { // dané id je v seznamu zabalených
-                    newSelectedId = null
+                    newSelectedId = null;
                 } else {
-                    newSelectedId = state.selectedId
+                    newSelectedId = state.selectedId;
                 }
             }
 
-            var ret = Object.assign({}, state, {
+            return Object.assign({}, state, {
                 ensureItemVisible: false,
                 expandedIds: expandedIds,
                 nodes: removeInfo.nodes,
                 selectedId: newSelectedId,
                 selectedIds: newSelectedIds,
             });
-            return ret;
         }
         case types.FUND_FUND_TREE_REQUEST:
             var fetchingIncludeIds = [];
@@ -388,37 +398,37 @@ export default function fundTree(state = initialState, action = {}) {
             return Object.assign({}, state, {
                 isFetching: true,
                 ensureItemVisible: false,
-                fetchingIncludeIds: fetchingIncludeIds
-            })
+                fetchingIncludeIds: fetchingIncludeIds,
+            });
         case types.FUND_FUND_TREE_RECEIVE:
             if (action.nodeId !== null && typeof action.nodeId !== 'undefined') {
                 if (state.expandedIds[action.nodeId]) { // ještě je stále rozbalený
-                    var index = indexById(state.nodes, action.nodeId);
+                    index = indexById(state.nodes, action.nodeId);
                     if (index != null) {
                         var node = state.nodes[index];
-                        var removeInfo = removeChildren(state.nodes, node, {});
+                        removeInfo = removeChildren(state.nodes, node, {});
                         var nodes = removeInfo.nodes;
 
-                        var ensureItemVisible = false;
-                        var oneSelectedId = getOneSelectedIdIfExists(state);
+                        ensureItemVisible = false;
+                        oneSelectedId = getOneSelectedIdIfExists(state);
                         if (oneSelectedId !== null) {
                             if (indexById(action.nodes, oneSelectedId) !== null) {    // je označená položka z těch, co se právě načetly
                                 ensureItemVisible = true;
                             }
                         }
 
-                        var result = Object.assign({}, state, {
+                        result = Object.assign({}, state, {
                             ensureItemVisible: ensureItemVisible,
                             isFetching: false,
                             fetched: true,
                             nodes: [
                                 ...nodes.slice(0, index + 1),
                                 ...action.nodes,
-                                ...nodes.slice(index + 1)
+                                ...nodes.slice(index + 1),
                             ],
                             fetchingIncludeIds: {},
-                            lastUpdated: action.receivedAt
-                        })
+                            lastUpdated: action.receivedAt,
+                        });
 
                         result.expandedIds = {...result.expandedIds};
                         action.expandedIdsExtension.forEach(id => {
@@ -427,21 +437,21 @@ export default function fundTree(state = initialState, action = {}) {
 
                         return result;
                     } else {
-                        return Object.assign({}, state, { ensureItemVisible: false, fetchingIncludeIds: {} });
+                        return Object.assign({}, state, {ensureItemVisible: false, fetchingIncludeIds: {}});
                     }
                 } else {
-                    return Object.assign({}, state, { ensureItemVisible: false, fetchingIncludeIds: {} });
+                    return Object.assign({}, state, {ensureItemVisible: false, fetchingIncludeIds: {}});
                 }
             } else {
-                var ensureItemVisible = false;
-                var oneSelectedId = getOneSelectedIdIfExists(state);
+                ensureItemVisible = false;
+                oneSelectedId = getOneSelectedIdIfExists(state);
                 if (oneSelectedId !== null) {
                     if (indexById(action.nodes, oneSelectedId) !== null) {    // je označená položka z těch, co se právě načetly
                         ensureItemVisible = true;
                     }
                 }
 
-                var result = Object.assign({}, state, {
+                result = Object.assign({}, state, {
                     isFetching: false,
                     fetched: true,
                     dirty: false,
@@ -449,8 +459,8 @@ export default function fundTree(state = initialState, action = {}) {
                     ensureItemVisible: ensureItemVisible,
                     expandedIds: action.expandedIds,
                     fetchingIncludeIds: {},
-                    lastUpdated: action.receivedAt
-                })
+                    lastUpdated: action.receivedAt,
+                });
 
                 result.expandedIds = {...result.expandedIds};
                 action.expandedIdsExtension.forEach(id => {
@@ -460,14 +470,14 @@ export default function fundTree(state = initialState, action = {}) {
             }
 
         case types.CHANGE_MOVE_LEVEL:
-            return Object.assign({}, state, { ensureItemVisible: false, dirty: true });
+            return Object.assign({}, state, {ensureItemVisible: false, dirty: true});
 
         case types.CHANGE_NODES:
         case types.CHANGE_CONFORMITY_INFO:
         case types.CHANGE_NODE_REQUESTS:
             var isDirty = false;
             var nodeId;
-            for(var i = 0; i < state.nodes.length; i++) {
+            for (var i = 0; i < state.nodes.length; i++) {
                 nodeId = state.nodes[i].id;
                 if (action.nodeIds && action.nodeIds.indexOf(nodeId) >= 0) {
                     isDirty = true;
@@ -476,19 +486,19 @@ export default function fundTree(state = initialState, action = {}) {
             }
             // pouze, pokud mám některý načtený
             if (isDirty) {
-                return Object.assign({}, state, { ensureItemVisible: false, dirty: true });
+                return Object.assign({}, state, {ensureItemVisible: false, dirty: true});
             }
 
             return state;
-        case types.FUND_SUBNODE_UPDATE:{
+        case types.FUND_SUBNODE_UPDATE: {
             let data = action.data;
             let nodes = state.nodes;
             let nodeId = action.data.node ? action.data.node.id : action.data.parent.id;
             let index = indexById(nodes, nodeId);
             let updatedNode = nodes[index];
 
-            for(let i in updatedNode){
-                if(typeof data[i] !== "undefined"){
+            for (let i in updatedNode) {
+                if (typeof data[i] !== 'undefined') {
                     updatedNode[i] = data[i];
                 }
             }
@@ -496,12 +506,12 @@ export default function fundTree(state = initialState, action = {}) {
             return {...state};
         }
         case types.NODES_DELETE: {
-            let result = {
-                ...state
+            result = {
+                ...state,
             };
 
             let expandedIds = {};
-            Object.keys(result.expandedIds).forEach(function(key,index) {
+            Object.keys(result.expandedIds).forEach(function(key, index) {
                 let nodeId = parseInt(key);
                 if (action.nodeIds.indexOf(nodeId) < 0) {
                     expandedIds[nodeId] = true;
@@ -510,7 +520,7 @@ export default function fundTree(state = initialState, action = {}) {
             result.expandedIds = expandedIds;
 
             let fetchingIncludeIds = {};
-            Object.keys(result.fetchingIncludeIds).forEach(function(key,index) {
+            Object.keys(result.fetchingIncludeIds).forEach(function(key, index) {
                 let nodeId = parseInt(key);
                 if (action.nodeIds.indexOf(nodeId) < 0) {
                     fetchingIncludeIds[nodeId] = true;
@@ -519,7 +529,7 @@ export default function fundTree(state = initialState, action = {}) {
             result.fetchingIncludeIds = fetchingIncludeIds;
 
             let selectedIds = {};
-            Object.keys(result.selectedIds).forEach(function(key,index) {
+            Object.keys(result.selectedIds).forEach(function(key, index) {
                 let nodeId = parseInt(key);
                 if (action.nodeIds.indexOf(nodeId) < 0) {
                     fetchingIncludeIds[nodeId] = true;
@@ -535,6 +545,6 @@ export default function fundTree(state = initialState, action = {}) {
         }
 
         default:
-            return state
+            return state;
     }
 }

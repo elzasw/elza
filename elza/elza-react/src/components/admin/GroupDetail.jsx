@@ -129,11 +129,13 @@ class GroupDetail extends AbstractReactComponent {
                     onAddPermission={perm => WebApi.addGroupPermission(groupDetail.id, perm)}
                     onDeletePermission={perm => WebApi.deleteGroupPermission(groupDetail.id, perm)}
                 />;
+            default:
+                break;
         }
     };
 
     render() {
-        const {groupDetail, focus, groupCount} = this.props;
+        const {groupDetail, groupCount} = this.props;
         const {selectedTabItem} = this.state;
 
         if (groupDetail.id === null) {

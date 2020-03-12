@@ -26,10 +26,6 @@ class TagsField extends AbstractReactComponent {
         renderTagItem: PropTypes.func, // funkce pro renderování názvu položky v tag input, standardně se renderuje atribut name, předpis: x => x.name
     };
 
-    constructor(props) {
-        super(props);
-    }
-
     getFieldValue = () => {
         const {value} = this.props;
         return Array.isArray(value) ? value : [];

@@ -13,10 +13,6 @@ import './ArrDao.scss';
 
 class ArrDao extends AbstractReactComponent {
 
-    constructor(props) {
-        super(props);
-    }
-
     static propTypes = {
         dao: PropTypes.object.isRequired,
         daoFile: PropTypes.object,
@@ -74,7 +70,7 @@ class ArrDao extends AbstractReactComponent {
             </div>}
             <div key="actions" className="dao-actions">
                 {dao.url && <div key="left" className="left">
-                    <a target="_blank" href={dao.url}><NoFocusButton><Icon
+                    <a target="_blank" rel="noopener noreferrer"  href={dao.url}><NoFocusButton><Icon
                         glyph="fa-external-link"/>{i18n('arr.daos.title.action.url')}</NoFocusButton></a>
                     <NoFocusButton onClick={() => this.copyToClipboard(dao.url)}><Icon
                         glyph="fa-paste"/>{i18n('arr.daos.title.action.copy')}</NoFocusButton>
@@ -98,7 +94,7 @@ class ArrDao extends AbstractReactComponent {
         const {daoFile} = this.props;
         const exists = daoFile.thumbnailUrl;
         const cls = exists ? 'thumbnail' : 'thumbnail empty';
-        const img = exists ? <img src={daoFile.thumbnailUrl}/> :
+        const img = exists ? <img src={daoFile.thumbnailUrl} alt=""/> :
             <div className="empty-img"><Icon glyph="fa-remove"/></div>;
         return <div title={exists ? daoFile.thumbnailUrl : i18n('arr.daos.title.thumbnail.empty')}
                     className={cls}>{img}</div>;
@@ -127,7 +123,7 @@ class ArrDao extends AbstractReactComponent {
             <div className="dao-file-info">
                 <div className="dao-file-info-base">
                     {i18n('arr.daos.title.select-file')}
-                    <a title={i18n('arr.daos.title.action.url')} target="_blank" href={daoFile.url}><NoFocusButton><Icon
+                    <a title={i18n('arr.daos.title.action.url')} target="_blank" rel="noopener noreferrer"  href={daoFile.url}><NoFocusButton><Icon
                         glyph="fa-external-link"/></NoFocusButton></a>
                     <NoFocusButton title={i18n('arr.daos.title.action.copy')}
                                    onClick={() => this.copyToClipboard(daoFile.url)}><Icon

@@ -31,7 +31,7 @@ class SubNodeDao extends AbstractReactComponent {
         let daoResults = [];
 
         if (dao.url) {
-            daoResults.push(<div className="link"><a target="_blank"
+            daoResults.push(<div className="link"><a target="_blank" rel="noopener noreferrer"
                                                      href={dao.url}>{dao.label} - {dao.fileCount} {i18n(filesLabel)}</a>
             </div>);
         } else {

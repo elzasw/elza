@@ -15,9 +15,6 @@ import DateTimePicker from 'react-widgets/lib/DateTimePicker';
 import {formatDate} from '../../validate';
 
 const DescItemDate = class DescItemDate extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-    }
 
     focus() {
         this.refs.focusEl.refs.inner.focus();

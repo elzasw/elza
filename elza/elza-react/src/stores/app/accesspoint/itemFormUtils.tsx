@@ -279,7 +279,7 @@ function mergeDescItems(state: IItemFormState, resultDescItemType: ItemTypeExt, 
             // Nakopírování nově přijatých hodnot, případně ponechání stejných (na základě objectId a prev value == value ze serveru, které již uživatel upravil a nejsou odeslané)
             newType.items.forEach(descItem => {
                 const prevDescItem = prevDescItemMap.get(descItem.objectId!!);
-                if (prevDescItem && (prevItemHasSamePrevValue(prevDescItem, descItem) && prevDescItem.touched || (!descItem.value && !descItem.undefined))) {   // původní hodnota přijatá ze serveru má stejné hodnoty jako jsou nyní v nově přijatých datech na serveru a uživatel nám aktuální data upravil
+                if (prevDescItem && (prevItemHasSamePrevValue(prevDescItem, descItem) && (prevDescItem.touched || (!descItem.value && !descItem.undefined)))) {   // původní hodnota přijatá ze serveru má stejné hodnoty jako jsou nyní v nově přijatých datech na serveru a uživatel nám aktuální data upravil
                     const item = prevDescItem;
                     if(state.updatedItem && (state.updatedItem.objectId === descItem.objectId)){
                         item.value = state.updatedItem.value;

@@ -98,7 +98,7 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
     };
 
     render() {
-        const { permissionAllTitle, permissionAll, groups, permission, labelPrefix, onChangePermission, permCodes } = this.props;
+        const { permissionAllTitle, groups, permission, labelPrefix, onChangePermission, permCodes } = this.props;
         const groupMap = groups ? getMapFromList(groups) : {};
 
         return <div className="permission-checkbox-form">

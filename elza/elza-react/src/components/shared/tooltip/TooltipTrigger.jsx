@@ -70,9 +70,9 @@ class TooltipTrigger extends AbstractReactComponent {
         // Zobrazení tooltipu se spožděním
         this.hoverDelay = setTimeout(() => {
             if (!this.state.focus && !this.state.overTooltip && !show) {
-                this.setState({ showTooltip: false });
+                this.setState({showTooltip: false});
             } else {
-                const { placement } = this.props;
+                const {placement} = this.props;
 
                 // Určení pozice tooltipu
                 const ww = window.innerWidth;
@@ -103,7 +103,7 @@ class TooltipTrigger extends AbstractReactComponent {
                         maxHeight = (wh - rect.bottom) - TOOLTIP_WINDOW_PADDING;
                         usePlacement = placement;
                         break;
-                    case 'horizontal': {
+                    case 'horizontal':
                         maxHeight = wh - (2 * TOOLTIP_WINDOW_PADDING);
                         if (rect.left > ww - rect.right) {
                             usePlacement = 'left';
@@ -112,9 +112,9 @@ class TooltipTrigger extends AbstractReactComponent {
                             usePlacement = 'right';
                             maxWidth = (ww - rect.right) - TOOLTIP_WINDOW_PADDING;
                         }
-                    }
+
                         break;
-                    case 'vertical': {
+                    case 'vertical':
                         maxWidth = ww - (2 * TOOLTIP_WINDOW_PADDING);
                         if (rect.top > wh - rect.bottom) {
                             usePlacement = 'top';
@@ -123,9 +123,9 @@ class TooltipTrigger extends AbstractReactComponent {
                             usePlacement = 'bottom';
                             maxHeight = (wh - rect.bottom) - TOOLTIP_WINDOW_PADDING;
                         }
-                    }
+
                         break;
-                    case 'auto': {
+                    case 'auto':
                         const left = rect.left * wh;
                         const right = (ww - rect.right) * wh;
                         const top = rect.top * ww;
@@ -161,7 +161,7 @@ class TooltipTrigger extends AbstractReactComponent {
                             default:
                                 break;
                         }
-                    }
+
                         break;
                     default:
                         break;
@@ -179,7 +179,7 @@ class TooltipTrigger extends AbstractReactComponent {
     };
 
     getDelay = (show) => {
-        const { delay, showDelay, hideDelay } = this.props;
+        const {delay, showDelay, hideDelay} = this.props;
         if (show) {
             if (showDelay === null || typeof showDelay === 'undefined') {
                 return delay;
@@ -196,7 +196,7 @@ class TooltipTrigger extends AbstractReactComponent {
     };
 
     getFocusDelay = (show) => {
-        const { focusDelay, focusShowDelay, focusHideDelay } = this.props;
+        const {focusDelay, focusShowDelay, focusHideDelay} = this.props;
         if (show) {
             if (focusShowDelay === null || typeof focusShowDelay === 'undefined') {
                 return focusDelay;
@@ -259,7 +259,7 @@ class TooltipTrigger extends AbstractReactComponent {
                   focusHideDelay,
                   ...otherProps
               } = this.props;
-        const { maxWidth, maxHeight } = this.state;
+        const {maxWidth, maxHeight} = this.state;
 
         return (
             <span
@@ -283,7 +283,7 @@ class TooltipTrigger extends AbstractReactComponent {
                         id='tt'
                     >
                         <div className={'tooltip-inner-content ' + tooltipClass}
-                             style={{ maxWidth: maxWidth + 'px', maxHeight: maxHeight + 'px' }}>
+                             style={{maxWidth: maxWidth + 'px', maxHeight: maxHeight + 'px'}}>
                             {content}
                         </div>
                     </Tooltip>

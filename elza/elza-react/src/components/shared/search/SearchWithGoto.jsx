@@ -52,7 +52,7 @@ class SearchWithGoto extends AbstractReactComponent {
     }
 
     handleOnSearch = (filterText, searchByEnter, shiftKey) => {
-        const { type, onFulltextNextItem, onFulltextPrevItem, itemsCount, selIndex, showFilterResult, onFulltextSearch } = this.props;
+        const {type, onFulltextNextItem, onFulltextPrevItem, itemsCount, selIndex, showFilterResult, onFulltextSearch} = this.props;
 
         switch (type) {
             case 'GO_TO':
@@ -83,7 +83,7 @@ class SearchWithGoto extends AbstractReactComponent {
     };
 
     handleFulltextChange = (value) => {
-        const { onFulltextChange } = this.props;
+        const {onFulltextChange} = this.props;
 
         this.setState({
             filterText: value,
@@ -94,7 +94,7 @@ class SearchWithGoto extends AbstractReactComponent {
     };
 
     handleClear = () => {
-        const { onFulltextSearch } = this.props;
+        const {onFulltextSearch} = this.props;
 
         this.handleFulltextChange('');
         onFulltextSearch('');
@@ -105,11 +105,11 @@ class SearchWithGoto extends AbstractReactComponent {
                   type, itemsCount, allItemsCount, textAreaInput, placeholder, selIndex, onFulltextNextItem, onFulltextPrevItem,
                   extendedSearch, onClickExtendedSearch, extendedReadOnly,
               } = this.props;
-        const { filterText, showFilterResult } = this.state;
+        const {filterText, showFilterResult} = this.state;
 
         const actionAddons = [];
         switch (type) {
-            case 'GO_TO': {
+            case 'GO_TO':
                 if (showFilterResult) {
                     let searchedInfo;
                     if (itemsCount > 0) {
@@ -135,9 +135,8 @@ class SearchWithGoto extends AbstractReactComponent {
                     }
                     actionAddons.push(searchedInfo);
                 }
-            }
                 break;
-            case 'INFO': {
+            case 'INFO':
                 if (showFilterResult) {
                     let searchedText;
                     const filtered = this.props.filterText ? true : false;
@@ -159,7 +158,8 @@ class SearchWithGoto extends AbstractReactComponent {
                     }
                     actionAddons.push(<div className='fa-tree-lazy-search-info'>{searchedText}</div>);
                 }
-            }
+                break;
+            default:
                 break;
         }
 

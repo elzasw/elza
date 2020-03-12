@@ -46,7 +46,7 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
 
         const results = [];
         let i = 0;
-        Object.keys(formData).map(itemTypeId => {
+        Object.keys(formData).forEach(itemTypeId => {
             const itemType = descItemTypes.items[indexById(descItemTypes.items, itemTypeId)];
             const items = formData[itemTypeId];
             items.forEach(item => {

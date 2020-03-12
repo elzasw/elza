@@ -35,9 +35,9 @@ export function nodeInitState(node, prevNodesNode) {
             data: {
                 after: [],
                 before: [],
-                child: []
-            }
-        }
+                child: [],
+            },
+        },
     };
 
     if (prevNodesNode) {
@@ -48,9 +48,9 @@ export function nodeInitState(node, prevNodesNode) {
         result.subNodeDaos = prevNodesNode.subNodeDaos;
     } else {
         result.routingKey = _routingKeyAreaPrefix + _nextRoutingKey++;
-        result.subNodeForm = subNodeForm(undefined, {type:''});
-        result.subNodeFormCache = subNodeFormCache(undefined, {type:''});
-        result.subNodeInfo = subNodeInfo(undefined, {type:''});
+        result.subNodeForm = subNodeForm(undefined, {type: ''});
+        result.subNodeFormCache = subNodeFormCache(undefined, {type: ''});
+        result.subNodeInfo = subNodeInfo(undefined, {type: ''});
         result.subNodeDaos = subNodeDaos();
     }
 
@@ -83,7 +83,7 @@ export function nodeInitState(node, prevNodesNode) {
         result.selectedSubNodeId = null;
         result.filterText = '';
         result.searchedIds = {};
-        result.subNodeFormCache = subNodeFormCache(undefined, {type:''})
+        result.subNodeFormCache = subNodeFormCache(undefined, {type: ''});
         result.changeParent = true;
     }
 
@@ -100,7 +100,7 @@ function getViewStartIndex(state, selectedId) {
             if(newIndex > lastPageIndex){
                 newIndex = lastPageIndex;
             }*/
-            return Math.max(newIndex, 0)
+            return Math.max(newIndex, 0);
         }
     }
     return state.viewStartIndex;
@@ -111,10 +111,10 @@ const nodeInitialState = {
     name: null,
     routingKey: _routingKeyAreaPrefix + _nextRoutingKey++,
     selectedSubNodeId: null,
-    subNodeForm: subNodeForm(undefined, {type:''}),
-    subNodeFormCache: subNodeFormCache(undefined, {type:''}),
+    subNodeForm: subNodeForm(undefined, {type: ''}),
+    subNodeFormCache: subNodeFormCache(undefined, {type: ''}),
     subNodeDaos: subNodeDaos(),
-    subNodeInfo: subNodeInfo(undefined, {type:''}),
+    subNodeInfo: subNodeInfo(undefined, {type: ''}),
     isNodeInfoFetching: false,
     nodeInfoFetched: false,
     nodeInfoDirty: false,
@@ -129,11 +129,12 @@ const nodeInitialState = {
         data: {
             after: [],
             before: [],
-            child: []
-        }
-    }
-}
-    //nodeInfo: nodeInfo(undefined, {type:''}),
+            child: [],
+        },
+    },
+};
+
+//nodeInfo: nodeInfo(undefined, {type:''}),
 
 export function node(state = nodeInitialState, action) {
     if (nodeFormActions.isSubNodeFormAction(action)) {
@@ -148,7 +149,7 @@ export function node(state = nodeInitialState, action) {
         return {
             ...state,
             subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
-        }
+        };
     }
 
     if (isSubNodeInfoAction(action)) {
@@ -181,10 +182,10 @@ export function node(state = nodeInitialState, action) {
                 nodeIndex: 0,
                 parentNodes: [],
                 pageSize: _pageSize,
-                subNodeForm: subNodeForm(undefined, {type:''}),
-                subNodeFormCache: subNodeFormCache(undefined, {type:''}),
+                subNodeForm: subNodeForm(undefined, {type: ''}),
+                subNodeFormCache: subNodeFormCache(undefined, {type: ''}),
                 subNodeDaos: subNodeDaos(),
-                subNodeInfo: subNodeInfo(undefined, {type:''}),
+                subNodeInfo: subNodeInfo(undefined, {type: ''}),
                 routingKey: _routingKeyAreaPrefix + _nextRoutingKey++,
                 changeParent: true,
                 developerScenarios: {
@@ -193,10 +194,10 @@ export function node(state = nodeInitialState, action) {
                     data: {
                         after: [],
                         before: [],
-                        child: []
-                    }
-                }
-            }
+                        child: [],
+                    },
+                },
+            };
         case types.STORE_SAVE:
             const {id, name, selectedSubNodeId, viewStartIndex} = state;
             return {
@@ -204,15 +205,15 @@ export function node(state = nodeInitialState, action) {
                 name,
                 selectedSubNodeId,
                 viewStartIndex,
-            }
+            };
         case types.FUND_NODES_REQUEST:
             if (action.nodeMap[state.id]) {
                 return {
                     ...state,
                     isFetching: true,
-                }
+                };
             } else {
-                return state
+                return state;
             }
         case types.FUND_NODES_RECEIVE:
             if (action.nodeMap[state.id]) {
@@ -220,35 +221,35 @@ export function node(state = nodeInitialState, action) {
                     ...state,
                     dirty: false,
                     isFetching: false,
-                    ...action.nodeMap[state.id]
-                }
+                    ...action.nodeMap[state.id],
+                };
             } else {
-                return state
+                return state;
             }
         case types.FUND_NODE_INCREASE_VERSION:
             var result = {
                 ...state,
                 subNodeForm: subNodeForm(state.subNodeForm, action),    // změna pro formulář, pokud je potřeba
-            }
+            };
             if (result.id === action.nodeId && result.version === action.nodeVersionId) { // změníme aktuální node
                 result.version = result.version + 1;
             }
-            for (let a=0; a<result.childNodes.length; a++) {
+            for (let a = 0; a < result.childNodes.length; a++) {
                 if (result.childNodes[a].id === action.nodeId && result.childNodes[a].version === action.nodeVersionId) {   // změna tohoto node
                     result.childNodes = [
                         ...result.childNodes.slice(0, a),
                         {
                             ...result.childNodes[a],
-                            version: result.childNodes[a].version + 1
+                            version: result.childNodes[a].version + 1,
                         },
-                        ...result.childNodes.slice(a + 1)
-                    ]
+                        ...result.childNodes.slice(a + 1),
+                    ];
                     break;
                 }
             }
             return consolidateState(state, result);
         case types.CHANGE_NODES:
-        case types.CHANGE_FUND_RECORD:{
+        case types.CHANGE_FUND_RECORD: {
             let result = {
                 ...state,
                 subNodeForm: subNodeForm(state.subNodeForm, action),
@@ -273,26 +274,26 @@ export function node(state = nodeInitialState, action) {
 
             return consolidateState(state, result);
         }
-        case types.FUND_SUBNODE_UPDATE:{
-            console.log("UPDATE_CHILD",state,action);
+        case types.FUND_SUBNODE_UPDATE: {
+            console.log('UPDATE_CHILD', state, action);
             const data = action.data;
             const node = data.node;
 
             let childNodes = state.childNodes;
             let index = indexById(childNodes, node && node.id);
-            console.log("update index", index);
+            console.log('update index', index);
             let updatedNode = childNodes[index];
             // copy same values from source object
             // not needed for WS update -> should be removed
             // (have to be tested first)
-            for(let i in updatedNode){
-                if(typeof data[i] !== "undefined"){
+            for (let i in updatedNode) {
+                if (typeof data[i] !== 'undefined') {
                     updatedNode[i] = data[i];
                 }
             }
-            if(updatedNode.accordionLeft!=data.formTitle.titleLeft)
+            if (updatedNode.accordionLeft != data.formTitle.titleLeft)
                 updatedNode.accordionLeft = data.formTitle.titleLeft;
-            if(updatedNode.accordionRight != data.formTitle.titleRight)
+            if (updatedNode.accordionRight != data.formTitle.titleRight)
                 updatedNode.accordionRight = data.formTitle.titleRight;
             //console.log("update node", updatedNode);
 
@@ -302,32 +303,32 @@ export function node(state = nodeInitialState, action) {
                 subNodeForm: subNodeForm(state.subNodeForm, action),
                 subNodeDaos: subNodeDaos(state.subNodeDaos, action),
                 subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
-            }
+            };
             return consolidateState(state, result);
         }
-        case types.FUND_FUND_CHANGE_READ_MODE:{
+        case types.FUND_FUND_CHANGE_READ_MODE: {
             var result = {
                 ...state,
                 subNodeForm: subNodeForm(state.subNodeForm, action),
-            }
+            };
             return consolidateState(state, result);
         }
-        case types.FUND_FUND_SUBNODES_NEXT:{
-            if ((state.viewStartIndex + state.pageSize/2) < state.nodeCount) {
+        case types.FUND_FUND_SUBNODES_NEXT: {
+            if ((state.viewStartIndex + state.pageSize / 2) < state.nodeCount) {
                 return {
                     ...state,
-                    viewStartIndex: state.viewStartIndex + state.pageSize/2,
-                }
+                    viewStartIndex: state.viewStartIndex + state.pageSize / 2,
+                };
             } else {
                 return state;
             }
         }
-        case types.FUND_FUND_SUBNODES_PREV:{
+        case types.FUND_FUND_SUBNODES_PREV: {
             if (state.viewStartIndex > 0) {
                 return {
                     ...state,
-                    viewStartIndex: Math.max(state.viewStartIndex - state.pageSize/2, 0)
-                }
+                    viewStartIndex: Math.max(state.viewStartIndex - state.pageSize / 2, 0),
+                };
             } else {
                 return state;
             }
@@ -336,8 +337,8 @@ export function node(state = nodeInitialState, action) {
             if ((state.viewStartIndex + state.pageSize) < state.nodeCount) {
                 return {
                     ...state,
-                    viewStartIndex: state.viewStartIndex + state.pageSize
-                }
+                    viewStartIndex: state.viewStartIndex + state.pageSize,
+                };
             } else {
                 return state;
             }
@@ -345,46 +346,46 @@ export function node(state = nodeInitialState, action) {
             if (state.viewStartIndex > 0) {
                 return {
                     ...state,
-                    viewStartIndex: Math.max(state.viewStartIndex - state.pageSize, 0)
-                }
+                    viewStartIndex: Math.max(state.viewStartIndex - state.pageSize, 0),
+                };
             } else {
                 return state;
             }
         case types.FUND_FUND_SUBNODES_FULLTEXT_SEARCH:
             return {
                 ...state,
-                filterText: action.filterText
-            }
-        case types.FUND_FUND_SUBNODES_FULLTEXT_RESULT:{
+                filterText: action.filterText,
+            };
+        case types.FUND_FUND_SUBNODES_FULLTEXT_RESULT: {
             if (state.filterText === '') {
                 var result = {
                     ...state,
                     nodeInfoDirty: true,
                     searchedIds: {},
-                    viewStartIndex: 0
-                }
+                    viewStartIndex: 0,
+                };
                 result.viewStartIndex = getViewStartIndex(result, state.selectedSubNodeId);
                 return result;
             }
 
-            var searchedIds = {}
+            var searchedIds = {};
             action.nodeIds.forEach(n => {
                 searchedIds[n.nodeId] = true;
-            })
+            });
 
             var childNodes = [];
             state.childNodes.forEach(n => {
                 if (searchedIds[n.id]) {
                     childNodes.push(n);
                 }
-            })
+            });
 
             var result = {
                 ...state,
                 childNodes: childNodes,
                 searchedIds: searchedIds,
-                viewStartIndex: 0
-            }
+                viewStartIndex: 0,
+            };
             result.viewStartIndex = getViewStartIndex(result, state.selectedSubNodeId);
             return result;
         }
@@ -392,7 +393,7 @@ export function node(state = nodeInitialState, action) {
             return {
                 ...state,
                 isNodeInfoFetching: true,
-            }
+            };
         case types.FUND_NODE_INFO_RECEIVE: {
             let result = {
                 ...state,
@@ -404,7 +405,7 @@ export function node(state = nodeInitialState, action) {
                 nodeCount: action.nodeCount,
                 nodeIndex: action.nodeIndex,
                 parentNodes: action.parentNodes === null ? state.parentNodes : action.parentNodes,
-                lastUpdated: action.receivedAt
+                lastUpdated: action.receivedAt,
             };
 
             // Změna view tak, aby byla daná položka vidět
@@ -419,7 +420,7 @@ export function node(state = nodeInitialState, action) {
                 ...state,
                 dirty: true,
                 changeParent: true,
-                nodeInfoDirty: true
+                nodeInfoDirty: true,
             };
             return result;
         }
@@ -433,14 +434,14 @@ export function node(state = nodeInitialState, action) {
             var result = {
                 ...state,
                 selectedSubNodeId: action.subNodeId,
-                nodeIndex: action.subNodeIndex
+                nodeIndex: action.subNodeIndex,
             };
 
             // Pokud daná položka není ve filtrovaných položkách, zrušíme filtr
             if (action.subNodeId !== null && indexById(state.childNodes, action.subNodeId) === null) {
-                result.filterText = ''
-                result.searchedIds = {}
-                result.childNodes = [...state.childNodes]
+                result.filterText = '';
+                result.searchedIds = {};
+                result.childNodes = [...state.childNodes];
                 result.viewStartIndex = 0;
             }
 
@@ -452,24 +453,24 @@ export function node(state = nodeInitialState, action) {
             // Data vztahující se k vybranému ID
             if (state.selectedSubNodeId != action.subNodeId) {
                 result.subNodeDaos = subNodeDaos();
-                result.subNodeForm = subNodeForm(undefined, {type:''});
-                result.subNodeInfo = subNodeInfo(undefined, {type:''});
+                result.subNodeForm = subNodeForm(undefined, {type: ''});
+                result.subNodeInfo = subNodeInfo(undefined, {type: ''});
             }
             return result;
 
         case types.CHANGE_VISIBLE_POLICY:
         case types.CHANGE_CONFORMITY_INFO:
         case types.CHANGE_NODE_REQUESTS:
-            console.log("change node requests",state,action);
-            return Object.assign({}, state, { nodeInfoDirty: true });
+            console.log('change node requests', state, action);
+            return Object.assign({}, state, {nodeInfoDirty: true});
 
         case types.CHANGE_ADD_LEVEL:
-            return Object.assign({}, state, { dirty: true, changeParent: true });
+            return Object.assign({}, state, {dirty: true, changeParent: true});
 
         case types.FUND_NODE_CHANGE:
             switch (action.action) {
                 // Přidání SubNode
-                case "ADD":
+                case 'ADD':
                     /**
                      * Předpokládá v akci attrs
                      * indexNode - Node objekt který slouží k nalezení a před/za který umístímě nový node
@@ -480,43 +481,45 @@ export function node(state = nodeInitialState, action) {
                     var nodeIndex = indexById(state.childNodes, action.indexNode.id);
                     if (nodeIndex != null) {
                         switch (action.direction) {
-                            case "AFTER":
-                            case "BEFORE":
-                                nodeIndex = action.direction == "BEFORE" ? nodeIndex : nodeIndex + 1;
+                            case 'AFTER':
+                            case 'BEFORE':
+                                nodeIndex = action.direction == 'BEFORE' ? nodeIndex : nodeIndex + 1;
 
                                 var childNodes = [
                                     ...state.childNodes.slice(0, nodeIndex),
                                     nodeInitState(action.newNode),
-                                    ...state.childNodes.slice(nodeIndex)
-                                ]
+                                    ...state.childNodes.slice(nodeIndex),
+                                ];
 
                                 return {
                                     ...state,
                                     version: action.parentNode.version,
                                     childNodes: [...childNodes],
                                     filterText: '',
-                                    searchedIds: {}
+                                    searchedIds: {},
                                 };
-                            case "CHILD":
+                            case 'CHILD':
                                 var childNodes = [
                                     ...state.childNodes,
-                                    nodeInitState(action.newNode)
-                                ]
+                                    nodeInitState(action.newNode),
+                                ];
 
                                 return {
                                     ...state,
                                     version: action.parentNode.version,
                                     childNodes: [...childNodes],
                                     filterText: '',
-                                    searchedIds: {}
+                                    searchedIds: {},
                                 };
+                            default:
+                                break;
                         }
                     }
                     return {
                         ...state,
                         version: action.parentNode.version,
                     };
-                case "DELETE":
+                case 'DELETE':
                     var nodeIndex = indexById(state.childNodes, action.node.id);
                     if (nodeIndex != null) {
                         return {
@@ -524,8 +527,8 @@ export function node(state = nodeInitialState, action) {
                             version: action.parentNode.version,
                             childNodes: [
                                 ...state.childNodes.slice(0, nodeIndex),
-                                ...state.childNodes.slice(nodeIndex + 1)
-                            ]
+                                ...state.childNodes.slice(nodeIndex + 1),
+                            ],
                         };
                     }
                     return {
@@ -541,36 +544,36 @@ export function node(state = nodeInitialState, action) {
                 developerScenarios: {
                     isFetching: false,
                     isDirty: false,
-                    data: action.data
-                }
+                    data: action.data,
+                },
             };
         case types.DEVELOPER_SCENARIOS_DIRTY:
             return {
                 ...state,
                 developerScenarios: {
                     ...state.developerScenarios,
-                    isDirty: true
-                }
+                    isDirty: true,
+                },
             };
         case types.DEVELOPER_SCENARIOS_FETCHING:
             return {
                 ...state,
                 developerScenarios: {
                     ...state.developerScenarios,
-                    isFetching: true
-                }
+                    isFetching: true,
+                },
             };
 
         case types.FUND_INVALID:
-            return consolidateState(state,{
+            return consolidateState(state, {
                 ...state,
                 subNodeForm: subNodeForm(state.subNodeForm, action),
-                subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action)
+                subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
             });
 
         case types.NODES_DELETE: {
             let result = {
-                ...state
+                ...state,
             };
 
             if (result.selectedSubNodeId != null && action.nodeIds.indexOf(result.selectedSubNodeId) >= 0) {
