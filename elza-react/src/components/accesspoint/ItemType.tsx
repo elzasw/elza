@@ -24,12 +24,12 @@ import { Dispatch } from '../../typings/globals';
 import { hasDescItemTypeValue } from '../arr/ArrUtils';
 import '../arr/nodeForm/AbstractDescItem.scss';
 import defaultKeymap from '../arr/nodeForm/DescItemTypeKeymap.jsx';
-import { propsEquals, valuesEquals } from '../Utils';
+import { valuesEquals } from '../Utils';
 import { ItemFactoryInterface } from './ItemFactoryInterface';
 import DescItemTypeSpec from './ItemTypeSpec.jsx';
 
-const placeholder = document.createElement("div");
-placeholder.className = "placeholder";
+const placeholder = document.createElement('div');
+placeholder.className = 'placeholder';
 
 interface FromState {
 }
@@ -47,7 +47,7 @@ export interface Props {
     infoType: RefTypeExt;
     rulDataType: DataType;
     calendarTypes: any;
-    structureTypes: {data: {id:number, code: string, name: string}[]};
+    structureTypes: {data: {id: number, code: string, name: string}[]};
     onCreateParty: Function;
     onDetailParty: Function;
     onCreateRecord: Function;
@@ -85,14 +85,15 @@ interface ItemFormClassState {
 /**
  * Atribut - desc item type.
  */
-class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClassState>  {
-    static contextTypes = { shortcuts: PropTypes.object };
-    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClassState> {
+    static contextTypes = {shortcuts: PropTypes.object};
+    static childContextTypes = {shortcuts: PropTypes.object.isRequired};
 
     static defaultProps = {
         draggable: true,
         hideDelete: false,
-        onCreatePacket: ()=>{}
+        onCreatePacket: () => {
+        },
     };
     shortcutManager: any;
     containers: {};
@@ -107,45 +108,47 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
     over: any;
     private nodePlacement: string;
 
-    UNSAFE_componentWillMount(){
-        Utils.addShortcutManager(this,defaultKeymap);
+    UNSAFE_componentWillMount() {
+        Utils.addShortcutManager(this, defaultKeymap);
     }
+
     getChildContext() {
-        return { shortcuts: this.shortcutManager };
+        return {shortcuts: this.shortcutManager};
     }
+
     constructor(props) {
         super(props);
 
         this.containers = {};
         this.state = {
-            descItemType: {...props.descItemType}
+            descItemType: {...props.descItemType},
         };
 
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         this.setState({
-            descItemType: {...nextProps.descItemType}
+            descItemType: {...nextProps.descItemType},
         });
     }
 
     shouldComponentUpdate(nextProps, nextState) {
         return true;
-        const eqProps = ['descItemType', 'rulDataType', 'calendarTypes', 'locked', 'copy', 'readMode'];
-        return !propsEquals(this.props, nextProps, eqProps);
+        // const eqProps = ['descItemType', 'rulDataType', 'calendarTypes', 'locked', 'copy', 'readMode'];
+        // return !propsEquals(this.props, nextProps, eqProps);
     }
 
     handleDescItemTypeShortcuts(action) {
-        console.log("#handleDescItemTypeShortcuts", '[' + action + ']', this);
+        console.log('#handleDescItemTypeShortcuts', '[' + action + ']', this);
 
         const {locked} = this.props;
 
         switch (action) {
             case 'deleteDescItemType':
                 if (!locked && this.getShowDeleteDescItemType()) {
-                    this.props.onDescItemTypeRemove()
+                    this.props.onDescItemTypeRemove();
                 }
-                break
+                break;
         }
     }
 
@@ -157,17 +160,17 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         switch (action) {
             case 'addDescItem':
                 if (!locked && !readMode) {   // přidávat hodnoty lze jen pokud není zamčeno
-                    onDescItemAdd()
+                    onDescItemAdd();
                 }
                 break;
             case 'deleteDescItem':
                 if (!locked && !readMode && infoType.rep === 1) {   // mazat hodnoty lze jen u vícehodnotových atributů a není zamčeno
                     const descItem = descItemType.items[descItemIndex];
                     if (this.getShowDeleteDescItem(descItem)) {
-                        onDescItemRemove(descItemIndex)
+                        onDescItemRemove(descItemIndex);
                     }
                 }
-                break
+                break;
         }
     }
 
@@ -183,28 +186,28 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
                 return;
             }
             descItem = descItemType.items[indexDesIt];
-            ref = this.refs[refPrefix + descItem.formKey]
+            ref = this.refs[refPrefix + descItem.formKey];
         } else if (typeof item.descItemIndex !== 'undefined' && item.descItemIndex !== null) {   // konkrétní index
             descItem = descItemType.items[item.descItemIndex];
-            ref = this.refs[refPrefix + descItem.formKey]
+            ref = this.refs[refPrefix + descItem.formKey];
         } else {    // obecně atribut - dáme na první hodnotu
             descItem = descItemType.items[0];
-            ref = this.refs[refPrefix + descItem.formKey]
+            ref = this.refs[refPrefix + descItem.formKey];
         }
 
         if (ref) {
             if (refType.useSpecification) { // focus bude na specifikaci
                 if (ref.focus) {
-                    ref.focus()
+                    ref.focus();
                 } else {
-                    console.error('Cannot find focus method for desc item', ref)
+                    console.error('Cannot find focus method for desc item', ref);
                 }
             } else {    // focus bude na vlastní hodnotu atributu
                 descItem = ref.getWrappedInstance();
                 if (descItem.focus) {
-                    descItem.focus()
+                    descItem.focus();
                 } else {
-                    console.error('Cannot find focus method for desc item', descItem)
+                    console.error('Cannot find focus method for desc item', descItem);
                 }
             }
         }
@@ -235,16 +238,16 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
                 onBlur={this.handleBlur.bind(this, descItemIndex)}
                 onFocus={this.handleFocus.bind(this, descItemIndex)}
                 strictMode={strictMode}
-                />
+            />
         );
     }
 
     /*
      * Unitdate server validation
      */
-    validateUnitdate = (value, descItemIndex)=>{
+    validateUnitdate = (value, descItemIndex) => {
         return () => {
-            WebApi.validateUnitdate(value).then((result)=>{
+            WebApi.validateUnitdate(value).then((result) => {
                 const {refType} = this.props;
                 let newDescItemType = this.state.descItemType;
                 const newDescItem = {...newDescItemType.items[descItemIndex]};
@@ -259,7 +262,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
                 newDescItemType.items[descItemIndex] = newDescItem;
                 this.setState({
                     descItemType: newDescItemType,
-                    error: result //unitdate validation expects different format
+                    error: result, //unitdate validation expects different format
                 });
             });
         };
@@ -285,10 +288,10 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         const newDescItem = {
             ...descItem,
             ...convertedValue,
-            touched
+            touched,
         };
         // Unitdate server validation
-        if (rulDataType.code === "UNITDATE") {
+        if (rulDataType.code === 'UNITDATE') {
             // debouncing validation request
             if (newDescItem.validateTimer) {
                 clearTimeout(descItem.validateTimer);
@@ -305,7 +308,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         this.setState({
             descItemType: newDescItemType,
             value,
-            error
+            error,
         });
     }
 
@@ -359,9 +362,9 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
 
         let specId;
         if (typeof value !== 'undefined' && value !== null && value !== '') {
-            specId = Number(value)
+            specId = Number(value);
         } else {
-            specId = ''
+            specId = '';
         }
 
         this.props.onChangeSpec(descItemIndex, specId);
@@ -382,13 +385,13 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
 
         // resets the modified value and error
         this.setState({
-            value:null,
-            error:null
+            value: null,
+            error: null,
         });
 
         const itemElement = this.containers[descItemIndex];
         // returns back the "draggable" attribute
-        itemElement.setAttribute("draggable", true);
+        itemElement.setAttribute('draggable', true);
     }
 
     /**
@@ -401,7 +404,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         // removes attribute "draggable" due to a bug in Mozilla Firefox,
         // see https://bugzilla.mozilla.org/show_bug.cgi?id=1189486
         // or https://bugzilla.mozilla.org/show_bug.cgi?id=800050
-        itemElement.removeAttribute("draggable");
+        itemElement.removeAttribute('draggable');
     }
 
     cancelDragging(e) {
@@ -413,26 +416,26 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
     handleDragStart(e): boolean {
         // Pokud je AS uzavřené, nelze dělat DND
         if (this.props.closed) {
-            return this.cancelDragging(e)
+            return this.cancelDragging(e);
         }
 
         // Pokud nekliknul na dragger, nelze přesouvat
         const drgs = e.target.getElementsByClassName('dragger');
         if (drgs.length !== 1) {
-            return this.cancelDragging(e)
+            return this.cancelDragging(e);
         }
 
         // Nelze přesouvat neuložené položky
         const index = e.currentTarget.dataset.id;
         if (typeof this.props.descItemType.items[index].id === 'undefined') {
-            return this.cancelDragging(e)
+            return this.cancelDragging(e);
         }
 
         const draggerRect = drgs[0].getBoundingClientRect();
         const clickOnDragger = (e.clientX >= draggerRect.left && e.clientX <= draggerRect.right
-        && e.clientY >= draggerRect.top && e.clientY <= draggerRect.bottom);
+            && e.clientY >= draggerRect.top && e.clientY <= draggerRect.bottom);
         if (!clickOnDragger) {
-            return this.cancelDragging(e)
+            return this.cancelDragging(e);
         }
 
         this.dragged = e.currentTarget;
@@ -440,7 +443,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         e.dataTransfer.effectAllowed = 'move';
 
         // Firefox requires dataTransfer data to be set
-        e.dataTransfer.setData("text/html", e.currentTarget);
+        e.dataTransfer.setData('text/html', e.currentTarget);
         return true;
     }
 
@@ -451,14 +454,18 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         this.removePlaceholder();
 
         if (!this.over || !this.dragged) {
-            return
+            return;
         }
 
         // Update data
         let from = Number(this.dragged.dataset.id);
         let to = Number(this.over.dataset.id);
-        if (from < to) to--;
-        if (this.nodePlacement == "after") to++;
+        if (from < to) {
+            to--;
+        }
+        if (this.nodePlacement == 'after') {
+            to++;
+        }
         //console.log(from, to);
         if (from !== to) {
             this.props.onChangePosition(from, to);
@@ -472,52 +479,54 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
             }
             el = el.parentNode;
         }
-        return false
+        return false;
     }
 
     removePlaceholder() {
-        placeholder.parentNode === this.dragged.parentNode.parentNode && this.dragged.parentNode.parentNode.removeChild(placeholder)
+        placeholder.parentNode === this.dragged.parentNode.parentNode && this.dragged.parentNode.parentNode.removeChild(placeholder);
     }
 
     handleDragLeave(e) {
         e.preventDefault();
         this.over = null;
         this.dragged && this.removePlaceholder();
-        return
+        return;
     }
 
     handleDragOver(e) {
         e.preventDefault();
 
         if (!this.dragged) {
-            e.dataTransfer.dropEffect = "none";
-            return
+            e.dataTransfer.dropEffect = 'none';
+            return;
         }
 
-        this.dragged.style.display = "none";
+        this.dragged.style.display = 'none';
 
         const dragOverContainer = ReactDOM.findDOMNode(this.refs.dragOverContainer);
         if (!this.isUnderContainer(e.target, dragOverContainer)) {
-            e.dataTransfer.dropEffect = "none";
+            e.dataTransfer.dropEffect = 'none';
             this.over = null;
             this.removePlaceholder();
-            return
+            return;
         }
 
-        if (e.target.className == "placeholder") return;
+        if (e.target.className == 'placeholder') {
+            return;
+        }
 
         let realTarget = e.target;
         let found = false;
         while (realTarget !== null) {
             if (typeof realTarget.dataset.id !== 'undefined') {
                 found = true;
-                break
+                break;
             }
-            realTarget = realTarget.parentNode
+            realTarget = realTarget.parentNode;
         }
 
         if (!found) {
-            return
+            return;
         }
 
         // Over chceme na div s datasetem
@@ -530,10 +539,10 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         const height2 = (overRect.bottom - overRect.top) / 2;
 
         if (e.clientY < overRect.top + height2) {
-            this.nodePlacement = "before";
+            this.nodePlacement = 'before';
             parent.insertBefore(placeholder, useTarget);
         } else if (e.clientY >= overRect.top + height2) {
-            this.nodePlacement = "after";
+            this.nodePlacement = 'after';
             parent.insertBefore(placeholder, useTarget.nextElementSibling);
         } else {
 
@@ -552,7 +561,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         }
 
         let structureType;
-        if(structureTypes){
+        if (structureTypes) {
             structureType = objectById(structureTypes.data, refType.structureTypeId);
         }
 
@@ -562,30 +571,38 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         }
 
         const additionalProps = {
-            [DataTypeCode.PARTY_REF]:{
+            [DataTypeCode.PARTY_REF]: {
                 itemName: refType.shortcut,
                 specName: specName,
-                onDetail: (value)=>{this.handleDetailParty(descItemIndex, value);},
-                onCreateParty: (value)=>{this.handleCreateParty(descItemIndex, value);}
+                onDetail: (value) => {
+                    this.handleDetailParty(descItemIndex, value);
+                },
+                onCreateParty: (value) => {
+                    this.handleCreateParty(descItemIndex, value);
+                },
             },
             [DataTypeCode.RECORD_REF]: {
                 itemName: refType.shortcut,
                 specName: specName,
-                onDetail: (value)=>{this.handleDetailRecord(descItemIndex, value);},
-                onCreateRecord: (value)=>{this.handleCreateRecord(descItemIndex);},
+                onDetail: (value) => {
+                    this.handleDetailRecord(descItemIndex, value);
+                },
+                onCreateRecord: (value) => {
+                    this.handleCreateRecord(descItemIndex);
+                },
             },
-            [DataTypeCode.STRUCTURED]:{
+            [DataTypeCode.STRUCTURED]: {
                 structureTypeCode: structureType ? structureType.code : null,
                 structureTypeName: structureType ? structureType.name : null,
             },
-            [DataTypeCode.UNITDATE]:{
-                calendarTypes: calendarTypes
+            [DataTypeCode.UNITDATE]: {
+                calendarTypes: calendarTypes,
             },
-            [DataTypeCode.INT]:{
-                refType
+            [DataTypeCode.INT]: {
+                refType,
             },
-            [DataTypeCode.APFRAG_REF]:{
-                fragmentType
+            [DataTypeCode.APFRAG_REF]: {
+                fragmentType,
             },
             // Neimplmentované typy
             // [DataTypeCode.FILE_REF]: {},
@@ -611,7 +628,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
             key: itemComponentKey,
             descItemFactory,
             repeatable: infoType.rep == 1,
-            ...additionalProps[rulDataType.code]
+            ...additionalProps[rulDataType.code],
         };
 
         return descItemFactory.createItem(rulDataType.code, descItemProps);
@@ -637,22 +654,20 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
             cls += ' draggable-desc-items';
         }
 
-        const parts : React.ReactNode[] = [];
+        const parts: React.ReactNode[] = [];
         let partsCls = 'desc-item-value-container';
 
         const key = descItem.formKey;
 
         if (refType.useSpecification) {
             parts.push(
-                this.renderDescItemSpec('spec_' + key, descItem, descItemIndex, locked)
+                this.renderDescItemSpec('spec_' + key, descItem, descItemIndex, locked),
             );
             if (rulDataType.code != 'ENUM') {
                 partsCls += ' desc-item-spec-and-value';
             }
         }
-        partsCls += " dt" + rulDataType.code;
-
-
+        partsCls += ' dt' + rulDataType.code;
 
         let dragProps;
         if (Utils.detectIE() || readMode || !draggable) {
@@ -663,63 +678,66 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
                 draggable: infoType.rep === 1,
                 onDragStart: this.handleDragStart,
                 onDragEnd: this.handleDragEnd,
-            }
+            };
         }
 
         // render value (if not enum)
-        if(rulDataType.code != "ENUM"){
+        if (rulDataType.code != 'ENUM') {
             parts.push(this.renderDescItemValue(descItem, descItemIndex, locked));
         }
 
         return (
-            <Shortcuts key={key} name='DescItem' handler={this.handleDescItemShortcuts.bind(this, descItemIndex)} alwaysFireHandler global>
-                <div key="container" className={cls} {...dragProps} ref={(ref)=>{this.containers[descItemIndex] = ref;}}>
+            <Shortcuts key={key} name='DescItem' handler={this.handleDescItemShortcuts.bind(this, descItemIndex)}
+                       alwaysFireHandler global>
+                <div key="container" className={cls} {...dragProps} ref={(ref) => {
+                    this.containers[descItemIndex] = ref;
+                }}>
                     {!readMode && infoType.rep == 1 && draggable &&
-                      <div className='dragger'>
-                            <Icon className="up" glyph="fa-angle-up"/>
-                            <Icon className="down" glyph="fa-angle-down"/>&nbsp;
+                    <div className='dragger'>
+                        <Icon className="up" glyph="fa-angle-up"/>
+                        <Icon className="down" glyph="fa-angle-down"/>&nbsp;
                     </div>}
 
                     <div key="container" className={partsCls}>
-                      {parts}
+                        {parts}
                     </div>
                     {actions.length > 0 && <div key="actions" className='desc-item-action-container'>{actions}</div>}
                 </div>
             </Shortcuts>
-        )
+        );
     }
 
     getShowDeleteDescItem(descItem) {
         const {refType, infoType, closed, locked, readMode} = this.props;
 
         if (closed || locked || readMode) {
-            return false
+            return false;
         }
 
         // ##
         // # Má se zobrazovat ikona mazání z hlediska hodnoty desc item?
         // ##
         if (nodeFormActions.descItemNeedStore(descItem, refType)) {
-            return false
+            return false;
         }
 
         if (typeof descItem.id !== 'undefined') {   // je na serveru, můžeme smazat
-            return true
+            return true;
         }
 
         if (descItem.touched) { // změnil pole, ale není v DB, je možné ji smazat
-            return true
+            return true;
         }
 
         // Mazat lze jen hodnota, která není povinná z hlediska specifikace
         if (refType.useSpecification && hasDescItemTypeValue(refType.dataType) && typeof descItem.descItemSpecId !== 'undefined' && descItem.descItemSpecId !== '') {
-            const infoSpec = infoType.descItemSpecsMap[descItem.descItemSpecId]
+            const infoSpec = infoType.descItemSpecsMap[descItem.descItemSpecId];
             if (infoSpec.type == 'REQUIRED' || infoSpec.type == 'RECOMMENDED') {
-                return false
+                return false;
             }
         }
 
-        return true
+        return true;
     }
 
     getShowDeleteDescItemType() {
@@ -727,29 +745,28 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         const {descItemType} = this.state;
 
         if (closed || readMode || hideDelete) {
-            return false
+            return false;
         }
 
         if (descItemType.items.length === 0) {
-            return true
+            return true;
         }
 
-        let descItemsShowDeleteItem = false
+        let descItemsShowDeleteItem = false;
         for (let a = 0; a < descItemType.items.length; a++) {
-            let descItem = descItemType.items[a]
+            let descItem = descItemType.items[a];
 
             if (nodeFormActions.descItemNeedStore(descItem, refType)) {
-                return false
+                return false;
             }
 
             if (this.getShowDeleteDescItem(descItem)) {
-                descItemsShowDeleteItem = true
+                descItemsShowDeleteItem = true;
             }
         }
 
-        return descItemsShowDeleteItem
+        return descItemsShowDeleteItem;
     }
-
 
     /**
      * Renderování nadpisu atributu - včetně akcí pro atribut.
@@ -759,11 +776,11 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         const {
             showNodeAddons, descItemCopyFromPrevEnabled,
             copy, locked, infoType, refType, conformityInfo, closed, readMode, notIdentified,
-            rulDataType, onDescItemNotIdentified, customActions
+            rulDataType, onDescItemNotIdentified, customActions,
         } = this.props;
         const {descItemType} = this.state;
 
-        const actions : React.ReactNode[] = [];
+        const actions: React.ReactNode[] = [];
 
         // Sestavení akcí
         if (showNodeAddons && !closed && !readMode) {
@@ -777,7 +794,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
                                                                            glyph="fa-files-o"/></NoFocusButton>,
                 <NoFocusButton title={i18n('subNodeForm.descItemType.lock')} key="lock"
                                onClick={this.handleDescItemTypeLock}><Icon
-                    className={locked ? 'locked' : 'unlocked'} glyph="fa-lock"/></NoFocusButton>
+                    className={locked ? 'locked' : 'unlocked'} glyph="fa-lock"/></NoFocusButton>,
             );
         }
 
@@ -792,7 +809,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         const missings = conformityInfo.missings[descItemType.id];
         if (missings && missings.length > 0) {
             const messages = missings.map(missing => missing.description);
-            const tooltip = <div>{messages}</div>
+            const tooltip = <div>{messages}</div>;
             actions.push(<TooltipTrigger
                 key="state"
                 content={tooltip}
@@ -813,11 +830,12 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
                 }
             }
         }
-        const tooltip = <div dangerouslySetInnerHTML={{__html: titleText}}></div>
+        const tooltip = <div dangerouslySetInnerHTML={{__html: titleText}}></div>;
 
         if (infoType.rep === 1 && !(locked || closed || readMode)) {
             const {onDescItemAdd} = this.props;
-            actions.push(<NoFocusButton key="add" onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}>
+            actions.push(<NoFocusButton key="add" onClick={onDescItemAdd}
+                                        title={i18n('subNodeForm.descItemType.title.add')}>
                 <Icon glyph="fa-plus"/>
             </NoFocusButton>);
         }
@@ -829,7 +847,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
                 }
             }}
                                         title={i18n('subNodeForm.descItemType.title.notIdentified')}><Icon
-                glyph="fa-low-vision" className={notIdentified ? 'notIdentified' : 'identified'} /></NoFocusButton>);
+                glyph="fa-low-vision" className={notIdentified ? 'notIdentified' : 'identified'}/></NoFocusButton>);
         }
 
         // Render
@@ -851,7 +869,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
                 {descItemType.items.filter(i => i.touched).length > 0 &&
                 <span key="edited" className="desc-item-type-edited">{i18n('subNodeForm.descItem.edited')}</span>}
             </div>
-        )
+        );
     }
 
     /**
@@ -875,15 +893,16 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         this.props.onDescItemTypeCopyFromPrev();
     }
 
-
     render() {
-        const {onDescItemRemove, rulDataType, infoType,
-            locked, conformityInfo, closed, readMode, onDescItemNotIdentified} = this.props;
+        const {
+            onDescItemRemove, rulDataType, infoType,
+            locked, conformityInfo, closed, readMode, onDescItemNotIdentified,
+        } = this.props;
         const {descItemType} = this.state;
 
         const label = this.renderLabel();
         const items = descItemType.items.map((descItem, descItemIndex) => {
-            const actions : React.ReactNode[] = [];
+            const actions: React.ReactNode[] = [];
 
             if (!readMode && infoType.rep === 1 && !(infoType.cal && !infoType.calSt)) {
                 if (rulDataType.code !== 'ENUM' && infoType.ind) {
@@ -916,25 +935,26 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
 
             let canModifyDescItem = !(locked || closed);
 
-            return this.renderDescItem(descItemType, descItem, descItemIndex, actions, !canModifyDescItem)
+            return this.renderDescItem(descItemType, descItem, descItemIndex, actions, !canModifyDescItem);
         });
 
         const cls = classNames({
             'read-mode': readMode,
             'desc-item-type': true,
             active: descItemType.hasFocus,
-            ['el-' + infoType.width]: true
+            ['el-' + infoType.width]: true,
         });
 
         return (
-            <Shortcuts name='DescItemType' className={cls} handler={this.handleDescItemTypeShortcuts} global alwaysFireHandler>
+            <Shortcuts name='DescItemType' className={cls} handler={this.handleDescItemTypeShortcuts} global
+                       alwaysFireHandler>
                 {label}
                 <div ref='dragOverContainer' className='desc-item-type-desc-items' onDragOver={this.handleDragOver}
                      onDragLeave={this.handleDragLeave}>
                     {items}
                 </div>
             </Shortcuts>
-        )
+        );
     }
 }
 
@@ -942,8 +962,8 @@ function mapStateToProps(state, ownProps: Props) {
     const {userDetail} = state;
 
     return {
-        userDetail
-    }
+        userDetail,
+    };
 }
 
 export default connect(mapStateToProps)(ItemTypeClass as any);

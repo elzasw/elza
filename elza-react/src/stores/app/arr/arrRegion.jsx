@@ -178,7 +178,7 @@ export default function arrRegion(state = initialState, action) {
 
         case types.DELETE_FUND: {
             const newFunds = [];
-            state.funds.map(function(item) {
+            state.funds.forEach(function(item) {
                 if (item.id != action.fundId) {
                     newFunds.push(item);
                 }
@@ -304,7 +304,7 @@ export default function arrRegion(state = initialState, action) {
 
             var i = 0;
             state.funds.forEach(fund => {
-                if (fund.id = action.fundId) {
+                if (fund.id === action.fundId) {
                     state = processFund(state, action, i++);
                 }
             });

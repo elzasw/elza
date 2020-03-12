@@ -76,11 +76,12 @@ const renderDateFields = (fields) => {
 };
 
 const renderCoordinatesFields = (fields) => {
+    let descItem;
     switch (fields.length) {
         case 0:
             return null;
         case 1:
-            var descItem = {
+            descItem = {
                 hasFocus: false,
                 value: typeof fields[0].value !== 'undefined' ? fields[0].value : '',
                 error: {value: fields[0].error},
@@ -100,8 +101,8 @@ const renderCoordinatesFields = (fields) => {
                 </div>
             );
         case 2:
-            var vals = [];
-            var descItem = {
+            let vals = [];
+            descItem = {
                 hasFocus: false,
                 value: typeof fields[0].value !== 'undefined' ? fields[0].value : '',
                 error: {},
@@ -166,6 +167,8 @@ const renderUnitdateFields = (calendarTypes, fields) => {
                 </div>,
             );
             return vals;
+        default:
+            break;
     }
 };
 
@@ -224,7 +227,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     }
 
     componentDidMount() {
-        const {dataType, refType} = this.props;
+        const {refType} = this.props;
         if (refType.id !== COL_REFERENCE_MARK) {
             if (refType.useSpecification) {  // má specifikace, nebo u obalů budeme místo specifikací zobrazovat výběr typů obsalů
                 this.callFilterUniqueSpecs();   // v metodě se dále volá value search - až po načtení specifikací
@@ -241,7 +244,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     }
 
     callFilterUniqueSpecs = () => {
-        const {versionId, refType, dataType} = this.props;
+        const {versionId, refType} = this.props;
 
         this.setState({isFetchingSpecIds: true});
         WebApi.findUniqueSpecIds(versionId, refType.id, createFilterStructure(this.props.filters)).then(specIds => {
@@ -400,6 +403,8 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     useValues[1] = 10000;
                 }
                 break;
+            default:
+                break;
         }
 
         this.setState({
@@ -411,7 +416,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
 
     renderValueFilter() {
         const {dataType} = this.props;
-        const {isFetchingItemTypeValues, valueItems, selectedValueItems, selectedValueItemsType, conditionSelectedCode} = this.state;
+        const {isFetchingItemTypeValues, valueItems, selectedValueItems, selectedValueItemsType} = this.state;
 
         if (!hasDescItemTypeValue(dataType)) {
             return null;
@@ -442,7 +447,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         let renderFields;
         let validateField;
         let normalizeField;
-        var items = [];
+        let items = [];
         if (dataType) {
             switch (dataType.code) {
                 case 'TEXT':
@@ -585,6 +590,8 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                 case 'JSON_TABLE':
                 case 'ENUM':
                     break;
+                default:
+                    break;
             }
         }
 
@@ -641,7 +648,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
 
     handleSubmit() {
         const {selectedValueItems, selectedValueItemsType, valueAccodrionType, selectedSpecItems, selectedSpecItemsType, conditionSelectedCode, conditionValues} = this.state;
-        const {onSubmitForm, refType, dataType} = this.props;
+        const {onSubmitForm, refType} = this.props;
 
         var data = {
             values: selectedValueItems,
@@ -664,6 +671,8 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             case 'VALUE':
                 data.conditionType = 'NONE';
                 data.condition = null;
+                break;
+            default:
                 break;
         }
 
@@ -691,7 +700,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
 
     render() {
         const {filter, refType, onClose, dataType} = this.props;
-        const {isFetchingSpecIds, refMarkSelectedNode, conditionHasErrors, valueAccodrionType, conditionSelectedCode, conditionValues, selectedValueItems, selectedSpecItems, selectedSpecItemsType, specItems} = this.state;
+        const {isFetchingSpecIds, refMarkSelectedNode, conditionHasErrors, valueAccodrionType, conditionSelectedCode, conditionValues, selectedSpecItems, selectedSpecItemsType, specItems} = this.state;
 
         var specContent = null;
         if (refType.id === COL_REFERENCE_MARK) {

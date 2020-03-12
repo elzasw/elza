@@ -21,56 +21,58 @@ class NodeTabs extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleTabSelect', 'trySetFocus')
+        this.bindMethods('handleTabSelect', 'trySetFocus');
     }
 
     componentDidMount() {
         this.props.dispatch(nodesFetchIfNeeded(this.props.versionId));
-        this.trySetFocus(this.props)
+        this.trySetFocus(this.props);
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(nodesFetchIfNeeded(nextProps.versionId));
-        this.trySetFocus(nextProps)
+        this.trySetFocus(nextProps);
     }
 
     trySetFocus(props) {
-        var {focus} = props
+        var {focus} = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, FOCUS_KEYS.ARR, 2, 'tabs')) {
                 this.setState({}, () => {
-                   ReactDOM.findDOMNode(this.refs.tabs).focus()
-                   focusWasSet()
-                })
+                    ReactDOM.findDOMNode(this.refs.tabs).focus();
+                    focusWasSet();
+                });
             }
         }
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-return true
-        if (this.state !== nextState) {
-            return true;
-        }
-        var eqProps = ['versionId', 'fund', 'nodes', 'activeIndex', 'fundId', 'descItemTypes',
-            'rulDataTypes', 'calendarTypes', 'showRegisterJp', 'closed']
-        return !propsEquals(this.props, nextProps, eqProps);
+        return true;
+        // if (this.state !== nextState) {
+        //     return true;
+        // }
+        // var eqProps = ['versionId', 'fund', 'nodes', 'activeIndex', 'fundId', 'descItemTypes',
+        //     'rulDataTypes', 'calendarTypes', 'showRegisterJp', 'closed'];
+        // return !propsEquals(this.props, nextProps, eqProps);
     }
 
     handleTabSelect(item) {
-        const {versionId} = this.props
+        const {versionId} = this.props;
 
-        this.props.dispatch(fundSelectNodeTab(versionId, item.id, item.key, item.index))
+        this.props.dispatch(fundSelectNodeTab(versionId, item.id, item.key, item.index));
         // this.props.dispatch(fundSelectNodeTab(item.index))
-        this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'tabs'))
+        this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'tabs'));
     }
 
     render() {
-        const {fund, nodes, activeIndex, versionId, rulDataTypes, showRegisterJp,
-                calendarTypes, descItemTypes, fundId, closed, displayAccordion} = this.props;
+        const {
+                  fund, nodes, activeIndex, versionId, rulDataTypes, showRegisterJp,
+                  calendarTypes, descItemTypes, fundId, closed, displayAccordion,
+              } = this.props;
 
         if (nodes.length == 0) {
-            return <div></div>
+            return <div></div>;
         }
 
         var tabs = nodes.map((node, i) => {
@@ -78,10 +80,10 @@ return true
             return {
                 id: node.id,
                 index: i,
-                key: node.id + "_" + i,
+                key: node.id + '_' + i,
                 title: <span title={name} className="node-tab-title">{name}</span>,
-                desc: <span className="node-tab-desc">{createReferenceMarkString(node)}</span>
-            }
+                desc: <span className="node-tab-desc">{createReferenceMarkString(node)}</span>,
+            };
         });
 
         var activeNode = nodes[activeIndex];
@@ -90,27 +92,27 @@ return true
         return (
             <Tabs.Container ref='tabs' className={`node-tabs-container ${tabs.length <= 1 ? 'node-no--tabs' : ''}`}>
                 {tabs.length > 1 &&
-                    <Tabs.Tabs
-                        closable
-                        items={tabs} activeItem={activeTab}
-                        onSelect={this.handleTabSelect}
-                        onClose={item=>this.props.dispatch(fundCloseNodeTab(versionId, item.id, item.key, item.index))}
-                    />
+                <Tabs.Tabs
+                    closable
+                    items={tabs} activeItem={activeTab}
+                    onSelect={this.handleTabSelect}
+                    onClose={item => this.props.dispatch(fundCloseNodeTab(versionId, item.id, item.key, item.index))}
+                />
                 }
                 <Tabs.Content>
                     {activeNode &&
-                        <NodePanel
-                            versionId={versionId}
-                            fund={fund}
-                            closed={closed}
-                            fundId={fundId}
-                            node={activeNode}
-                            rulDataTypes={rulDataTypes}
-                            calendarTypes={calendarTypes}
-                            descItemTypes={descItemTypes}
-                            showRegisterJp={showRegisterJp}
-                            displayAccordion={displayAccordion}
-                        />
+                    <NodePanel
+                        versionId={versionId}
+                        fund={fund}
+                        closed={closed}
+                        fundId={fundId}
+                        node={activeNode}
+                        rulDataTypes={rulDataTypes}
+                        calendarTypes={calendarTypes}
+                        descItemTypes={descItemTypes}
+                        showRegisterJp={showRegisterJp}
+                        displayAccordion={displayAccordion}
+                    />
                     }
                 </Tabs.Content>
             </Tabs.Container>
@@ -129,14 +131,14 @@ NodeTabs.propTypes = {
     descItemTypes: PropTypes.object.isRequired,
     showRegisterJp: PropTypes.bool.isRequired,
     displayAccordion: PropTypes.bool.isRequired,
-    closed: PropTypes.bool.isRequired
-}
+    closed: PropTypes.bool.isRequired,
+};
 
 function mapStateToProps(state) {
-    const {focus} = state
+    const {focus} = state;
     return {
         focus,
-    }
+    };
 }
 
 export default connect(mapStateToProps)(NodeTabs);

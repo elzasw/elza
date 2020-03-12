@@ -1069,6 +1069,8 @@ class NodeFormActions extends ItemFormActions {
                     formData: true,
                 };
                 return WebApi.getNodeData(versionId, nodeParam, resultParam).then(json => json.formData);
+            default:
+                break;
         }
     }
 
@@ -1090,6 +1092,8 @@ class NodeFormActions extends ItemFormActions {
                 } else {
                     return null;
                 }
+            default:
+                break;
         }
 
         return null;
@@ -1110,6 +1114,8 @@ class NodeFormActions extends ItemFormActions {
                 if (fundIndex !== null) {
                     return state.arrRegion.funds[fundIndex].fundDataGrid;
                 }
+                break;
+            default:
                 break;
         }
 
@@ -1177,6 +1183,8 @@ class NodeFormActions extends ItemFormActions {
                 };
             case 'DATA_GRID':
                 return {parentId: parentObjStore.nodeId, parentVersion: parentObjStore.subNodeForm.versionId};
+            default:
+                break;
         }
     }
 }

@@ -1,21 +1,21 @@
 import React from 'react';
-
-import {ApplicationActions, EmailSettingsActions} from 'actions/index.jsx';
 import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket.jsx';
-import {onReceivedNodeChange} from "websocketController.jsx";
+import {onReceivedNodeChange} from 'websocketController.jsx';
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import * as daoActions from 'actions/arr/daoActions';
 import {store} from 'stores/index.jsx';
 import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
-import {i18n} from "components/shared";
-import {checkUserLogged} from "actions/global/login.jsx";
+import {i18n} from 'components/shared';
+import {checkUserLogged} from 'actions/global/login.jsx';
 
 import {
+    changeAccessPoint,
     changeAddLevel,
     changeApproveVersion,
     changeConformityInfo,
     changeDeleteLevel,
     changeFiles,
+    changeFragment,
     changeFund,
     changeFundAction,
     changeFundRecord,
@@ -30,6 +30,7 @@ import {
     changePartyCreate,
     changePartyDelete,
     changeRegistry,
+    changeRequest,
     changeRequestItemQueue,
     changeVisiblePolicy,
     createExtSystem,
@@ -49,20 +50,17 @@ import {
     structureChange,
     updateExtSystem,
     userChange,
-    changeAccessPoint,
-    changeFragment,
-    changeRequest
 } from './actions/global/change.jsx';
 
 import {Stomp} from 'stompjs';
-import URLParse from "url-parse";
+import URLParse from 'url-parse';
 
 import {reloadUserDetail} from 'actions/user/userDetail';
-import {fundTreeFetch} from "./actions/arr/fundTree";
-import * as types from "./actions/constants/ActionTypes";
-import {fundNodeSubNodeFulltextSearch} from "./actions/arr/node";
-import {PERSISTENT_SORT_CODE, ZP2015_INTRO_VYPOCET_EJ} from "./constants.tsx";
-import * as issuesActions from "./actions/arr/issues";
+import {fundTreeFetch} from './actions/arr/fundTree';
+import * as types from './actions/constants/ActionTypes';
+import {fundNodeSubNodeFulltextSearch} from './actions/arr/node';
+import {PERSISTENT_SORT_CODE, ZP2015_INTRO_VYPOCET_EJ} from './constants.tsx';
+import * as issuesActions from './actions/arr/issues';
 
 
 const serverContextPath = window.serverContextPath;

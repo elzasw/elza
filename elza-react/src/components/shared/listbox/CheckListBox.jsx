@@ -127,7 +127,7 @@ class ListBox extends AbstractReactComponent {
             const selectedIndexes = Object.keys(activeIndexes);
 
             checkedIndexes = {...checkedIndexes};
-            Object.keys(activeIndexes).map((i) => {
+            Object.keys(activeIndexes).forEach((i) => {
                 const checkedIndex = checkedIndexes[i];
                 if (checkedIndex) {
                     delete checkedIndexes[i];
@@ -496,7 +496,7 @@ class ListBox extends AbstractReactComponent {
                         key="box"
                         className="listbox-item-checkbox"
                         inline
-                        checked={checkedIndexes && checkedIndexes[index] || false}
+                        checked={(checkedIndexes && checkedIndexes[index]) || false}
                         onChange={(e) => this.selectedItemOperation(this.props.onCheck)}
                     />
                     }
@@ -519,7 +519,7 @@ class ListBox extends AbstractReactComponent {
                         Vybrat vše
                     </Button>
                     <div className="listbox-selection-count">
-                        Vybráno: {checkedIndexes && Object.keys(checkedIndexes).length || 0}
+                        Vybráno: {(checkedIndexes && Object.keys(checkedIndexes).length) || 0}
                     </div>
                 </div>
                 }

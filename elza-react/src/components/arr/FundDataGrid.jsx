@@ -532,6 +532,8 @@ class FundDataGrid extends AbstractReactComponent {
                     nodes = [];
                     selectionType = 'FUND';
                     break;
+                default:
+                    break;
             }
 
             // Zpracování hodnoty pro odeslání - musíme ji správně převést do testového formáltu pro odeslání na serveru
@@ -764,6 +766,8 @@ class FundDataGrid extends AbstractReactComponent {
                             param.condition = conditionItem.condition;
                             break;
                         }
+                        default:
+                            break;
                     }
                     params.push(param);
                 });
@@ -774,6 +778,8 @@ class FundDataGrid extends AbstractReactComponent {
                 text = result.text;
                 break;
             }
+            default:
+                break;
         }
 
         return this.props.dispatch(fundDataFulltextSearch(versionId, text, true, params, result));

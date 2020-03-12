@@ -3,12 +3,12 @@
  */
 
 import React from 'react';
-import { Provider } from 'react-redux'
+import {Provider} from 'react-redux';
 
 
 import Layout from 'pages/Layout.jsx';
-import {Route} from "react-router";
-import {BrowserRouter} from "react-router-dom";
+import {Route} from 'react-router';
+import {BrowserRouter} from 'react-router-dom';
 
 const serverContextPath = window.serverContextPath;
 const __DEVTOOLS__ = window.__DEVTOOLS__;

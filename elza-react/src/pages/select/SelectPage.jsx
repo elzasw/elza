@@ -12,7 +12,7 @@ import './SelectPage.scss';
 class SelectPage extends AbstractReactComponent {
 
     handleConfirm() {
-        throw 'You have to override this method!!!';
+        throw new Error('You have to override this method!!!');
     };
 
     handleClose = () => {
@@ -20,8 +20,8 @@ class SelectPage extends AbstractReactComponent {
     };
 
     static renderTitles = (titles) => {
-        const itemss = [];
-        titles.map((i, index, self) => {
+        let itemss = [];
+        titles.forEach((i, index, self) => {
             itemss.push(<div key={index}>{i}</div>);
             (index + 1) < self.length && itemss.push(<span>&nbsp;>&nbsp;</span>);
         });

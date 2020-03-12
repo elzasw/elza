@@ -49,15 +49,15 @@ class NodeSubNodeForm extends AbstractReactComponent {
         super(props);
 
         this.bindMethods(
-            "renderFormActions",
-            "handleDeleteNode",
-            "handleDescItemTypeCopyFromPrev",
-            "handleDescItemTypeLock",
-            "handleDescItemTypeCopy",
-            "handleDescItemTypeUnlockAll",
-            "handleCopyAll",
-            "getNodeSetting",
-            "initFocus",
+            'renderFormActions',
+            'handleDeleteNode',
+            'handleDescItemTypeCopyFromPrev',
+            'handleDescItemTypeLock',
+            'handleDescItemTypeCopy',
+            'handleDescItemTypeUnlockAll',
+            'handleCopyAll',
+            'getNodeSetting',
+            'initFocus',
         );
     }
 
@@ -76,14 +76,14 @@ class NodeSubNodeForm extends AbstractReactComponent {
     getNodeSetting() {
         const {nodeSettings, nodeId} = this.props;
 
-        let nodeSetting
+        let nodeSetting;
         if (nodeSettings) {
-            nodeSetting = nodeSettings.nodes[nodeSettings.nodes.map(function (node) {
+            nodeSetting = nodeSettings.nodes[nodeSettings.nodes.map(function(node) {
                 return node.id;
             }).indexOf(nodeId)];
         }
 
-        return nodeSetting
+        return nodeSetting;
     }
 
     /**
@@ -133,15 +133,15 @@ class NodeSubNodeForm extends AbstractReactComponent {
         const {versionId, fund: {nodes}} = this.props;
         const node = nodes.nodes[nodes.activeIndex];
         const nodeObj = getMapFromList(node.childNodes)[node.selectedSubNodeId];
-        const form = <ArrHistoryForm versionId={versionId} node={nodeObj} onDeleteChanges={this.handleDeleteChanges} />
-        this.props.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, "dialog-lg"));
-    }
+        const form = <ArrHistoryForm versionId={versionId} node={nodeObj} onDeleteChanges={this.handleDeleteChanges}/>;
+        this.props.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, 'dialog-lg'));
+    };
 
     handleDeleteChanges = (nodeId, fromChangeId, toChangeId) => {
         WebApi.revertChanges(this.props.versionId, nodeId, fromChangeId, toChangeId).then(() => {
             this.props.dispatch(modalDialogHide());
         });
-    }
+    };
     /**
      * Vybere sousední nebo nadřazenou JP po smazání
      * @param {number} versionId
@@ -155,16 +155,16 @@ class NodeSubNodeForm extends AbstractReactComponent {
         let newNodeId = outdatedParent.childNodes[0];
         let selectedParent = false;
         // if the old parent had only one child node
-        if (childNodeCount <= 1){
+        if (childNodeCount <= 1) {
             newNodeId = outdatedParent.id;
             let newParent = outdatedParent.parentNodes[0];
-            const selectNearestParent = (parents)=>{
+            const selectNearestParent = (parents) => {
                 newParent = parents[0];
                 // if there are no parents even in the server response
                 // set the newParent as the root node virtual parent
-                if(!newParent){
-                    if(outdatedParent.depth > 1){
-                        console.warn("Missing parent on level deeper than root", outdatedParent);
+                if (!newParent) {
+                    if (outdatedParent.depth > 1) {
+                        console.warn('Missing parent on level deeper than root', outdatedParent);
                     }
                     // create virtual parent for fund root node
                     newParent = createFundRoot(this.props.fund);
@@ -173,7 +173,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                 callback(true);
             };
             // if parent doesn't exist, get parents from server
-            if(!newParent){
+            if (!newParent) {
                 WebApi.getNodeParents(versionId, newNodeId).then(selectNearestParent);
             }
             // if parent exists, use it
@@ -181,15 +181,15 @@ class NodeSubNodeForm extends AbstractReactComponent {
                 selectNearestParent([newParent]);
             }
         } else {
-            if (prevIndex === 0){ //Pokud je smazaná JP první, bude jako další vybrána následující JP
-            newNodeId = outdatedParent.childNodes[prevIndex + 1].id;
-        } else { //Bude vybrána předcházející JP
-            newNodeId = outdatedParent.childNodes[prevIndex - 1].id;
-        }
-        this.props.dispatch(fundSelectSubNode(versionId, newNodeId, outdatedParent));
+            if (prevIndex === 0) { //Pokud je smazaná JP první, bude jako další vybrána následující JP
+                newNodeId = outdatedParent.childNodes[prevIndex + 1].id;
+            } else { //Bude vybrána předcházející JP
+                newNodeId = outdatedParent.childNodes[prevIndex - 1].id;
+            }
+            this.props.dispatch(fundSelectSubNode(versionId, newNodeId, outdatedParent));
             callback(false);
-    }
-    }
+        }
+    };
     /**
      * Funkce zavolána po skončení smazání JP
      * @param {number} versionId
@@ -199,12 +199,13 @@ class NodeSubNodeForm extends AbstractReactComponent {
     afterDeleteCallback = (versionId, prevNode, parentNode) => {
         this.selectSubnodeAfterDelete(versionId, prevNode, (selectedParent) => {
             this.props.dispatch(addToastrSuccess(i18n('arr.fund.deleteNode.deleted')));
-            if(selectedParent){
-                this.props.dispatch(addToastr(i18n('arr.fund.deleteNode.noSibling'), null,"info","lg",5000));
+            if (selectedParent) {
+                this.props.dispatch(addToastr(i18n('arr.fund.deleteNode.noSibling'), null, 'info', 'lg', 5000));
             }
         });
 
-    }
+    };
+
     handleDeleteNode() {
         if (window.confirm(i18n('arr.fund.deleteNode.confirm'))) {
             this.props.dispatch(deleteNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId, this.afterDeleteCallback));
@@ -218,12 +219,12 @@ class NodeSubNodeForm extends AbstractReactComponent {
      * @param descItemTypeId {Integer} id desc item type
      */
     handleDescItemTypeCopyFromPrev(descItemGroupIndex, descItemTypeIndex, descItemTypeId) {
-        const {routingKey} = this.props
+        const {routingKey} = this.props;
 
         const valueLocation = {
             descItemGroupIndex,
             descItemTypeIndex,
-        }
+        };
         this.props.dispatch(nodeFormActions.fundSubNodeFormValuesCopyFromPrev(this.props.versionId, this.props.selectedSubNode.id, this.props.selectedSubNode.version, descItemTypeId, routingKey, valueLocation));
     }
 
@@ -236,7 +237,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
         const {fundId, userDetail, issueProtocol, nodeId, nodeSettings} = this.props;
         const editPermAllowed = userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId},
-                                                 perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId});
+            perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId});
 
         const isProtocolLoaded = issueProtocol.fetched && issueProtocol.data && fundId === issueProtocol.data.fundId;
 
@@ -245,25 +246,27 @@ class NodeSubNodeForm extends AbstractReactComponent {
         const isCopyAll = nodeSetting && nodeSetting.copyAll;
 
         const haveProtocolPermissionToWrite =
-            isProtocolLoaded && (
-                userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL) || (
-                    userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
-                    userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
-                    userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(issueProtocol.data.id) !== -1
-                )
-            );
+                  isProtocolLoaded && (
+                      userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL) || (
+                          userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
+                          userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
+                          userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(issueProtocol.data.id) !== -1
+                      )
+                  );
 
         return (
             <div ref="nodeToolbar" className='node-form-actions-container'>
                 <div className='node-form-actions'>
                     <div className='section'>
-                        <NoFocusButton onClick={this.props.onAddDescItemType}><Icon glyph="fa-plus-circle"/>{i18n('subNodeForm.section.item')}</NoFocusButton>
+                        <NoFocusButton onClick={this.props.onAddDescItemType}><Icon
+                            glyph="fa-plus-circle"/>{i18n('subNodeForm.section.item')}</NoFocusButton>
                     </div>
                     <div className='section'>
                         <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}>
                             <Icon glyph="fa-unlock"/>
                         </NoFocusButton>
-                        <NoFocusButton onClick={this.handleCopyAll} active={isCopyAll} title={i18n('subNodeForm.section.copyAll')}>
+                        <NoFocusButton onClick={this.handleCopyAll} active={isCopyAll}
+                                       title={i18n('subNodeForm.section.copyAll')}>
                             <Icon glyph="fa-files-o"/>
                         </NoFocusButton>
                         <NoFocusButton onClick={this.props.onVisiblePolicy}>
@@ -281,28 +284,32 @@ class NodeSubNodeForm extends AbstractReactComponent {
                     <div className='section'>
                         <NoFocusButton onClick={this.props.onDigitizationRequest}>
                             <Icon glyph="fa-camera"/>
-                            {i18n("subNodeForm.digitizationRequest")}
+                            {i18n('subNodeForm.digitizationRequest')}
                         </NoFocusButton>
                         {editPermAllowed &&
                         <NoFocusButton onClick={this.props.onDigitizationSync}>
                             <Icon glyph="fa-camera"/>
-                            {i18n("subNodeForm.digitizationSync")}
+                            {i18n('subNodeForm.digitizationSync')}
                         </NoFocusButton>}
                     </div>
                     {isProtocolLoaded && <div className='section'>
-                        <NoFocusButton onClick={this.handleCreateIssueNode} disabled={!haveProtocolPermissionToWrite} title={i18n("subNodeForm.issueAdd")}>
+                        <NoFocusButton onClick={this.handleCreateIssueNode} disabled={!haveProtocolPermissionToWrite}
+                                       title={i18n('subNodeForm.issueAdd')}>
                             <Icon glyph="fa-commenting"/>
                         </NoFocusButton>
                     </div>}
                     <div className='section'>
-                        <DropdownButton variant="default" title={<Icon glyph="fa-ellipsis-h" />} noCaret id="arr-structure-panel-add">
-                            <Dropdown.Item eventKey="1" onClick={this.handleCreateTemplate}>{i18n("subNodeForm.section.createTemplate")}</Dropdown.Item>
-                            <Dropdown.Item eventKey="2" onClick={this.handleUseTemplate}>{i18n("subNodeForm.section.useTemplate")}</Dropdown.Item>
+                        <DropdownButton variant="default" title={<Icon glyph="fa-ellipsis-h"/>} noCaret
+                                        id="arr-structure-panel-add">
+                            <Dropdown.Item eventKey="1"
+                                           onClick={this.handleCreateTemplate}>{i18n('subNodeForm.section.createTemplate')}</Dropdown.Item>
+                            <Dropdown.Item eventKey="2"
+                                           onClick={this.handleUseTemplate}>{i18n('subNodeForm.section.useTemplate')}</Dropdown.Item>
                         </DropdownButton>
                     </div>
                 </div>
             </div>
-        )
+        );
     }
 
     handleCreateIssueNode = () => {
@@ -310,18 +317,19 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
         let node;
         if (fund.nodes && fund.nodes.activeIndex !== null) {
-            node = fund.nodes.nodes[fund.nodes.activeIndex]
+            node = fund.nodes.nodes[fund.nodes.activeIndex];
         }
 
-        dispatch(modalDialogShow(this, i18n("arr.issues.add.node.title"), <IssueForm onSubmit={(data) => WebApi.addIssue({
-            ...data,
-            issueListId: issueProtocol.id,
-            nodeId: node.selectedSubNodeId
-        })}  onSubmitSuccess={(data) => {
+        dispatch(modalDialogShow(this, i18n('arr.issues.add.node.title'), <IssueForm
+            onSubmit={(data) => WebApi.addIssue({
+                ...data,
+                issueListId: issueProtocol.id,
+                nodeId: node.selectedSubNodeId,
+            })} onSubmitSuccess={(data) => {
             dispatch(issuesActions.list.invalidate(data.issueListId));
             dispatch(issuesActions.detail.invalidate(data.id));
             dispatch(modalDialogHide());
-        }} />));
+        }}/>));
     };
 
     handleCreateTemplate = () => {
@@ -334,12 +342,13 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
         const initialValues = {
             type: NEW_TEMPLATE,
-            withValues: true
+            withValues: true,
         };
 
         const templates = fundTemplates.value ? JSON.parse(fundTemplates.value).map(template => template.name) : [];
 
-        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.addTemplate.create'), <TemplateForm initialValues={initialValues} templates={templates} onSubmitForm={(data) => {
+        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.addTemplate.create'), <TemplateForm
+            initialValues={initialValues} templates={templates} onSubmitForm={(data) => {
 
             const template = this.createTemplate(data.name, data.withValues);
 
@@ -359,7 +368,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                     const index = indexById(value, data.name, 'name');
 
                     if (index == null) {
-                        console.error("Nebyla nalezena šablona s názvem: " + data.name);
+                        console.error('Nebyla nalezena šablona s názvem: ' + data.name);
                     } else {
                         value[index] = template;
                         fundTemplates.value = JSON.stringify(value);
@@ -369,8 +378,10 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
                     return this.props.dispatch(modalDialogHide());
                 }
+                default:
+                    break;
             }
-        }} />));
+        }}/>));
     };
 
     /**
@@ -391,7 +402,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                         const itemCls = factory.createClass(item);
                         const newItem = itemCls.copyItem(withValues);
                         // enums are always stored
-                        if(withValues || item[CLS] === CLS_ITEM_ENUM) {
+                        if (withValues || item[CLS] === CLS_ITEM_ENUM) {
                             newItem.strValue = itemCls.toSimpleString();
                         }
                         items.push(newItem);
@@ -405,7 +416,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
         let template = {
             name: name,
             withValues: withValues,
-            formData: formData
+            formData: formData,
         };
         return template;
     };
@@ -421,18 +432,19 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
         const initialValues = {
             replaceValues: false,
-            name: templates.indexOf(fund.lastUseTemplateName) >= 0 ? fund.lastUseTemplateName : null
+            name: templates.indexOf(fund.lastUseTemplateName) >= 0 ? fund.lastUseTemplateName : null,
         };
 
-        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.useTemplate.title'), <TemplateUseForm initialValues={initialValues} templates={templates} onSubmitForm={(data) => {
+        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.useTemplate.title'), <TemplateUseForm
+            initialValues={initialValues} templates={templates} onSubmitForm={(data) => {
             const value = JSON.parse(fundTemplates.value);
             const index = indexById(value, data.name, 'name');
 
             if (index == null) {
-                console.error("Nebyla nalezena šablona s názvem: " + data.name);
+                console.error('Nebyla nalezena šablona s názvem: ' + data.name);
             } else {
                 const template = value[index];
-                console.debug("Apply template", template);
+                console.debug('Apply template', template);
 
                 const formData = template.formData;
                 let createItems = [];
@@ -442,18 +454,18 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
                 const actualFormData = this.createFormData(subNodeForm);
 
-                Object.keys(formData).map(itemTypeId => {
+                Object.keys(formData).forEach(itemTypeId => {
                     this.processItemType(formData, itemTypeId, actualFormData, data, deleteItemsAdded, deleteItems, updateItems, createItems);
                 });
 
-                Object.keys(deleteItemsAdded).map(itemObjectId => {
+                Object.keys(deleteItemsAdded).forEach(itemObjectId => {
                     let updateItemsTemp = [];
                     for (let i = 0; i < updateItems.length; i++) {
                         const updateItem = updateItems[i];
                         if (itemObjectId === updateItem.descItemObjectId) {
                             createItems.push({
                                 ...updateItem,
-                                descItemObjectId: null
+                                descItemObjectId: null,
                             });
                         } else {
                             updateItemsTemp.push(updateItem);
@@ -472,7 +484,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                     return this.props.dispatch(modalDialogHide());
                 }
             }
-        }} />));
+        }}/>));
 
     };
 
@@ -481,7 +493,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
         items.forEach(item => {
             const newItem = {
                 ...item,
-                itemTypeId: itemTypeId
+                itemTypeId: itemTypeId,
             };
 
             if (notEmpty(newItem.value) || (newItem['@class'] === '.ArrItemEnumVO' && notEmpty(item.descItemSpecId))) {
@@ -513,7 +525,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                     const updateItem = {
                         ...item,
                         descItemObjectId: itemOrig.descItemObjectId,
-                        itemTypeId: itemTypeId
+                        itemTypeId: itemTypeId,
                     };
                     updateItems.push(updateItem);
                 }
@@ -546,7 +558,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                 const updateItem = {
                     ...item,
                     descItemObjectId: existsItem.descItemObjectId,
-                    itemTypeId: itemTypeId
+                    itemTypeId: itemTypeId,
                 };
                 updateItems.push(updateItem);
             }
@@ -593,10 +605,12 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
     render() {
         const {singleDescItemTypeEdit, userDetail} = this.props;
-        const {versionId, focus, closed, fundId, routingKey, rulDataTypes, calendarTypes, descItemTypes, structureTypes,
-            subNodeForm, conformityInfo, descItemCopyFromPrevEnabled, singleDescItemTypeId, readMode, arrPerm} = this.props;
+        const {
+                  versionId, focus, closed, fundId, routingKey, rulDataTypes, calendarTypes, descItemTypes, structureTypes,
+                  subNodeForm, conformityInfo, descItemCopyFromPrevEnabled, singleDescItemTypeId, readMode, arrPerm,
+              } = this.props;
 
-        console.info("{NodeSubNodeForm}");
+        console.info('{NodeSubNodeForm}');
 
         let formActions;
         if (userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) || arrPerm) {
@@ -634,9 +648,9 @@ class NodeSubNodeForm extends AbstractReactComponent {
                     showNodeAddons={true}
                     descItemFactory={DescItemFactory}
                     arrPerm={arrPerm}
-                    />
+                />
             </div>
-        )
+        );
     }
 }
 
@@ -646,7 +660,7 @@ function mapStateToProps(state) {
     let structureTypes = null;
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];
-        structureTypes = objectById(refTables.structureTypes.data, fund.versionId, "versionId");
+        structureTypes = objectById(refTables.structureTypes.data, fund.versionId, 'versionId');
     }
 
     return {
@@ -657,7 +671,7 @@ function mapStateToProps(state) {
         userDetail,
         groups: refTables.groups.data,
         issueProtocol: storeFromArea(state, issuesActions.AREA_PROTOCOL),
-    }
+    };
 }
 
 NodeSubNodeForm.propTypes = {
@@ -687,6 +701,6 @@ NodeSubNodeForm.propTypes = {
     singleDescItemTypeEdit: PropTypes.bool,
     readMode: PropTypes.bool,
     arrPerm: PropTypes.bool,
-}
+};
 
 export default connect(mapStateToProps)(NodeSubNodeForm);

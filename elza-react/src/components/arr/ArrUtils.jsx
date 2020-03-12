@@ -253,7 +253,7 @@ export function getSettings(items, type = null, entityType = null, entityId = nu
         return result;
     }
 
-    items.map((item) => {
+    items.forEach((item) => {
         if ((type == null || type === item.settingsType)
             && (entityType == null || entityType === item.entityType)
             && (entityId == null || entityId === item.entityId)

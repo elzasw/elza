@@ -105,6 +105,8 @@ class AddNodeForm extends AbstractReactComponent {
                 node = inNode;
                 parentNode = inParentNode;
                 break;
+            default:
+                break;
         }
 
         return {
@@ -288,7 +290,7 @@ class AddNodeForm extends AbstractReactComponent {
                         if (template.formData != null) {
                             const formData = template.formData;
                             const createItems = [];
-                            Object.keys(formData).map(itemTypeId => {
+                            Object.keys(formData).forEach(itemTypeId => {
                                 const items = formData[itemTypeId];
                                 items.forEach(item => {
                                     if (this.notEmpty(item.value) || (item['@class'] === '.ArrItemEnumVO' && this.notEmpty(item.descItemSpecId))) {
@@ -346,7 +348,7 @@ class AddNodeForm extends AbstractReactComponent {
             const sourceNodes = [];
 
             for (let nodeItem in fundTreeCopy.selectedIds) {
-                const n = fundTreeCopy.nodes.find(i => {
+                const n = fundTreeCopy.nodes.forEach(i => {
                     if (i.id == nodeItem) {
                         return i;
                     }
@@ -486,7 +488,7 @@ class AddNodeForm extends AbstractReactComponent {
                                     ref="selsel"
                                     as="select"
                                     disabled={loading || submitting}
-                                    label={i18n('arr.fund.addNode.direction')}
+                                    // label={i18n('arr.fund.addNode.direction')}
                                     defaultValue={initDirection}
                                     onChange={this.handleDirectionChange}
                                     label={options}

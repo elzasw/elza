@@ -8,13 +8,12 @@ export function isNodeSettingsAction(action) {
     switch (action.type) {
         case types.NODE_DESC_ITEM_TYPE_LOCK:
         case types.NODE_DESC_ITEM_TYPE_UNLOCK:
-        //case types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL:
         case types.NODE_DESC_ITEM_TYPE_COPY_ALL:
         case types.NODE_DESC_ITEM_TYPE_COPY:
         case types.NODE_DESC_ITEM_TYPE_NOCOPY:
-            return true
+            return true;
         default:
-            return false
+            return false;
     }
 }
 

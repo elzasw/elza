@@ -159,6 +159,7 @@ export const Tabs = class Tabs extends React.Component {
      **/
     render() {
         let tabs = this.props.items.map((item, i) => {
+            let closeTitle = i18n('tabs.action.closeTab');
             let closeAction;
             let closeAction2;
             if (this.props.closable) {
@@ -166,7 +167,7 @@ export const Tabs = class Tabs extends React.Component {
                     glyph="fa-times"/></NoFocusButton>;
             }
 
-            let closeTitle = i18n('tabs.action.closeTab');                                          // popisek ikony zavírající záložku
+            // popisek ikony zavírající záložku
             let key = typeof item.key !== 'undefined' ? item.key : item.id;
             return <NavItem tabIndex={-1} key={key} ref={'tab' + i} eventKey={key}><span
                 title={item.title || item.name}>{item.title || item.name}</span>

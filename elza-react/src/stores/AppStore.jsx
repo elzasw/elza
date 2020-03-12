@@ -28,7 +28,7 @@ const _logCollapsed = true;
 const loggerMiddleware = window.__DEV__ ? createLogger({
     collapsed: _logCollapsed,
     duration: _logActionDuration,
-    predicate: (getState, action) => (action.type !== types.STORE_STATE_DATA && action.type !== types.GLOBAL_SPLITTER_RESIZE)
+    predicate: (getState, action) => (action.type !== types.STORE_STATE_DATA && action.type !== types.GLOBAL_SPLITTER_RESIZE),
 }) : null;
 
 /**
@@ -36,12 +36,12 @@ const loggerMiddleware = window.__DEV__ ? createLogger({
  */
 const inlineFormSupport = new class {
     constructor() {
-        this.forms = {}
-        this.init = {}
-        this.fields = {}
-        this.initFields = {}
-        this.initialFormData = {}
-        this.wasChanged = {}
+        this.forms = {};
+        this.init = {};
+        this.fields = {};
+        this.initFields = {};
+        this.initialFormData = {};
+        this.wasChanged = {};
     }
 
 
@@ -68,10 +68,10 @@ const inlineFormSupport = new class {
      */
     setInit(formName, validate, onSave) {
         if (!validate) {
-            console.error("Chyba inicializace formuláře", formName, " chybí validate.");
+            console.error('Chyba inicializace formuláře', formName, ' chybí validate.');
         }
         if (!onSave) {
-            console.error("Chyba inicializace formuláře", formName, " chybí onSave.");
+            console.error('Chyba inicializace formuláře', formName, ' chybí onSave.');
         }
         this.init[formName] = {validate, onSave};
     }
@@ -86,7 +86,7 @@ const inlineFormSupport = new class {
     getFormState(formName, state, ignoreNotFound = false) {
         const formState = state.form[formName];
         if (!formState) {
-            !ignoreNotFound && console.error("Nenalezen store pro formulář", formName);
+            !ignoreNotFound && console.error('Nenalezen store pro formulář', formName);
             return {};
         }
         return formState;
@@ -127,28 +127,28 @@ const inlineFormSupport = new class {
     // }
 
     mergeFormState(formName, localFormState, serverFormState, action) {
-        console.log("....MERGE", "local", localFormState, "server", JSON.parse(JSON.stringify(serverFormState)))
+        console.log('....MERGE', 'local', localFormState, 'server', JSON.parse(JSON.stringify(serverFormState)));
 
         reduxFormUtils.mergeState(this.initFields[formName], localFormState, serverFormState);
-        console.log("....MERGED", serverFormState);
+        console.log('....MERGED', serverFormState);
 
         return serverFormState;
     }
 
     // DEEP
     getMergedFormState(state, dispatch, action) {
-        console.log(">>>>>MERGE<<<<<")
+        console.log('>>>>>MERGE<<<<<');
 
         const formState = this.getFormState(action.form, state);
 
         var result = {
             ...formState,
-        }
+        };
 
         const data = action.data;
         this.fields[action.form].forEach((field, fieldIndex) => {
             var fd = {
-                ...formState[field]
+                ...formState[field],
             };
             result[field] = fd;
 
@@ -187,7 +187,7 @@ const inlineFormSupport = new class {
         const formState = this.getFormState(action.form, state, true);
 
         var someFieldExist = false;
-        for (let a=0; a<this.initFields[action.form].length; a++) {
+        for (let a = 0; a < this.initFields[action.form].length; a++) {
             const field = this.initFields[action.form][a];
 
             const dotIndex = field.indexOf('.');
@@ -235,7 +235,7 @@ const inlineFormSupport = new class {
 
             var changed = false;
             const keys = Object.keys(changedInfo);
-            for (let a=0; a<keys.length; a++) {
+            for (let a = 0; a < keys.length; a++) {
                 if (changedInfo[keys[a]]) {
                     changed = true;
                     break;
@@ -255,10 +255,10 @@ const inlineFormSupport = new class {
 
     _hasErrors(errors) {
         const fields = Object.keys(errors);
-        for (let a=0; a<fields.length; a++) {
+        for (let a = 0; a < fields.length; a++) {
             const value = errors[fields[a]];
             if (value) {
-                if (typeof value === "object") {
+                if (typeof value === 'object') {
                     if (this._hasErrors(value)) {
                         return true;
                     }
@@ -324,7 +324,7 @@ const inlineFormSupport = new class {
 
         const init = this.init[action.form];
         if (!init) {
-            console.error("Formulář není inicializován dispatchem initForm", action.form);
+            console.error('Formulář není inicializován dispatchem initForm', action.form);
             return;
         }
 
@@ -338,9 +338,9 @@ const inlineFormSupport = new class {
             const formState = this.getFormState(action.form, state);
             const newFormState = this.setAttributes(action.form, formState, {sendToServer: true}, {touched: false});
             dispatch({
-                type: "redux-form/REPLACE_STATE",
+                type: 'redux-form/REPLACE_STATE',
                 formState: newFormState,
-            })
+            });
 
             // Odeslání dat na server
             init.onSave(data);
@@ -348,13 +348,13 @@ const inlineFormSupport = new class {
     }
 }();
 
-const inlineFormMiddleware = function (_ref) {
+const inlineFormMiddleware = function(_ref) {
     const getState = _ref.getState;
     const dispatch = _ref.dispatch;
 
     return (next) => {
         return (action) => {
-            if (action.type === "redux-form/INITIALIZE") {
+            if (action.type === 'redux-form/INITIALIZE') {
                 if (inlineFormSupport.isSupported(action.form)) {
                     // Pokud formulář již existuje, pouze provedeme merge dat
                     if (inlineFormSupport.exists(getState(), dispatch, action)) {  // merge
@@ -362,7 +362,7 @@ const inlineFormMiddleware = function (_ref) {
                         // Načtení aktuálních formulářových dat
                         const localFormState = inlineFormSupport.getFormState(action.form, getState());
 
-                        delete getState().form[action.form]
+                        delete getState().form[action.form];
                         // Promítnutí aktuálních nových příchozích dat do store
                         next(action);
 
@@ -397,23 +397,23 @@ const inlineFormMiddleware = function (_ref) {
                 } else {    // standardní poslání dál, není to náš formulář
                     next(action);
                 }
-            } else if (action.type === "redux-form/INPLACE_INIT") {
+            } else if (action.type === 'redux-form/INPLACE_INIT') {
                 inlineFormSupport.setInit(action.form, action.validate, action.onSave);
-            } else if (action.type === "redux-form/ADD_ARRAY_VALUE" || action.type === "redux-form/REMOVE_ARRAY_VALUE") {
+            } else if (action.type === 'redux-form/ADD_ARRAY_VALUE' || action.type === 'redux-form/REMOVE_ARRAY_VALUE') {
                 if (inlineFormSupport.isSupported(action.form)) {
                     inlineFormSupport.setBigChange(action.form);
                 }
                 next(action);
 
-                if (action.type === "redux-form/REMOVE_ARRAY_VALUE") {
+                if (action.type === 'redux-form/REMOVE_ARRAY_VALUE') {
                     inlineFormSupport.trySave(getState(), dispatch, action);
                 }
-            } else if (action.type === "redux-form/CHANGE") {
+            } else if (action.type === 'redux-form/CHANGE') {
                 if (inlineFormSupport.isSupported(action.form)) {
                     var newAction = {
                         ...action,
                         touch: true,
-                    }
+                    };
                     next(newAction);
 
                     // Aktualizace wasChanged
@@ -434,20 +434,22 @@ const inlineFormMiddleware = function (_ref) {
                 next(action);
 
                 switch (action.type) {
-                    case "redux-form/BLUR":
+                    case 'redux-form/BLUR':
                         inlineFormSupport.trySave(getState(), dispatch, action);
+                        break;
+                    default:
                         break;
                 }
             }
-        }
-    }
-}
+        };
+    };
+};
 
 
 let createStoreWithMiddleware;
 
 if (typeof window.__DEVTOOLS__ !== 'undefined' && window.__DEVTOOLS__) {
-    const { persistState } = require('redux-devtools');
+    const {persistState} = require('redux-devtools');
     const DevTools = require('../DevTools').default;
     createStoreWithMiddleware = compose(
         applyMiddleware(
@@ -455,23 +457,23 @@ if (typeof window.__DEVTOOLS__ !== 'undefined' && window.__DEVTOOLS__) {
             thunkMiddleware,
             // promiseMiddleware,
             loggerMiddleware,
-            inlineFormMiddleware
+            inlineFormMiddleware,
         ),
         DevTools.instrument(),
-        persistState(window.location.href.match(/[?&]debug_session=([^&#]+)\b/))
-    )(createStore)
-} else if(loggerMiddleware) {
+        persistState(window.location.href.match(/[?&]debug_session=([^&#]+)\b/)),
+    )(createStore);
+} else if (loggerMiddleware) {
     createStoreWithMiddleware = compose(
         applyMiddleware(
             thunkMiddleware,
             loggerMiddleware,
-            inlineFormMiddleware
+            inlineFormMiddleware,
         ),
-    )(createStore)
+    )(createStore);
 } else {
     createStoreWithMiddleware = compose(
-        applyMiddleware(thunkMiddleware, inlineFormMiddleware)
-    )(createStore)
+        applyMiddleware(thunkMiddleware, inlineFormMiddleware),
+    )(createStore);
 }
 
 
@@ -483,8 +485,8 @@ export const store = function configureStore(initialState) {
         module.hot.accept('./reducers.jsx', () => {
             const nextRootReducer = require('./reducers.jsx').default;
 
-            state.replaceReducer(nextRootReducer)
-        })
+            state.replaceReducer(nextRootReducer);
+        });
     }
     return state;
 }(initialState);
@@ -504,20 +506,21 @@ store.dispatch(selectFundTab(fund));
 */
 
 // Resize
-window.addEventListener("resize", () => {
+window.addEventListener('resize', () => {
     const state = store.getState();
-    store.dispatch(splitterResize(state.splitter.leftSize, state.splitter.rightSize))
+    store.dispatch(splitterResize(state.splitter.leftSize, state.splitter.rightSize));
 });
 
 if (_logStoreSize) {
     let curr;
+
     function handleChange() {
         let prev = curr;
         curr = store.getState().arrRegion;
 
         if (curr !== prev) {
             var lenStr = lenToBytesStr(roughSizeOfObject(curr));
-            console.log("Velikost store", lenStr);
+            console.log('Velikost store', lenStr);
             //console.log("@@@@@@@@@@@@@@@@@@@@@@CHANGE", prev, curr);
         }
     }
@@ -528,7 +531,7 @@ if (_logStoreSize) {
 
 export const save = function(store) {
     const action = {
-        type: types.STORE_SAVE
+        type: types.STORE_SAVE,
     };
 
     //var rrd = registryRegionData(store.registryRegionData, action)
@@ -541,17 +544,17 @@ export const save = function(store) {
         arrRegion: arrRegion(store.arrRegion, action),
         fundRegion: fundRegion(store.fundRegion, action),
         adminRegion: adminRegion(store.adminRegion, action),
-        splitter: splitter(store.splitter, action)
+        splitter: splitter(store.splitter, action),
     };
     // console.log("SAVE", result)
     return result;
-}
+};
 
 /**
  * Registrace inline formulářů.
  */
-inlineFormSupport.addForm("outputEditForm");
-inlineFormSupport.addForm("permissionsEditForm");
-inlineFormSupport.addForm("partyDetail");
-inlineFormSupport.addForm("requestEditForm");
+inlineFormSupport.addForm('outputEditForm');
+inlineFormSupport.addForm('permissionsEditForm');
+inlineFormSupport.addForm('partyDetail');
+inlineFormSupport.addForm('requestEditForm');
 

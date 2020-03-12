@@ -82,7 +82,7 @@ class DatationField extends AbstractReactComponent {
 
     render() {
         const {label, labelTextual, labelNote, fields} = this.props;
-        const {allowedText, allowedNote, calendars, initialized} = this.state;
+        const {allowedText, allowedNote, calendars} = this.state;
 
         const tooltipText = i18n('^dataType.unitdate.format');
         const tooltip = tooltipText ? <div dangerouslySetInnerHTML={{__html: tooltipText}}></div> : null;
@@ -302,6 +302,8 @@ class DT {
                 return this.getDay() + '.' + this.getMonth() + '.' + this.getYear() + ' ' + this.getHours() + ':' + this.getMinutes();
             case DT.FORMATS.DATE_TIME:
                 return this.getDay() + '.' + this.getMonth() + '.' + this.getYear() + ' ' + this.getHours() + ':' + this.getMinutes() + ':' + this.getSeconds();
+            default:
+                break;
         }
     };
 

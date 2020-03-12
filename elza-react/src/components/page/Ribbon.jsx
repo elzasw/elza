@@ -263,12 +263,12 @@ class Ribbon extends AbstractReactComponent {
         itemSection && parts.push(itemSection);
 
         const partsWithSplit = [];
-        {parts.forEach((part, index) => {
+        parts.forEach((part, index) => {
             partsWithSplit.push(part);
             if (index + 1 < parts.length) {
                 partsWithSplit.push(<RibbonSplit key={"ribbon-spliter-"+(index+1)} />)
             }
-        })}
+        });
 
         return <RibbonMenu>
             {partsWithSplit}

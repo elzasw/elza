@@ -15,9 +15,6 @@ import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import {refExternalSystemsFetchIfNeeded} from 'actions/refTables/externalSystems';
 
 const ArrRequestForm = class extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-    }
 
     static propTypes = {
         fundVersionId: PropTypes.number.isRequired,
@@ -152,7 +149,7 @@ const ArrRequestForm = class extends AbstractReactComponent {
 
         const showDaoTypeSelect = type === 'DAO';
         const showDigitizationFrontdeskSelect = type === 'DIGITIZATION';
-        const showRequestFields = (type === 'DAO' && daoType.value || type !== 'DAO');
+        const showRequestFields = ((type === 'DAO' && daoType.value) || type !== 'DAO');
 
         let digitizationFrontdesks = [];
 

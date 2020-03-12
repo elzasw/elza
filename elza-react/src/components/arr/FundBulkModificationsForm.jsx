@@ -17,7 +17,7 @@ import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx';
 import {getMapFromList} from './../../stores/app/utils.jsx';
 
 const getDefaultOperationType = props => {
-    const { dataType } = props;
+    const {dataType} = props;
 
     let result;
 
@@ -37,7 +37,7 @@ const getDefaultOperationType = props => {
 };
 
 const getDefaultItemsArea = props => {
-    const { allItemsCount, checkedItemsCount } = props;
+    const {allItemsCount, checkedItemsCount} = props;
 
     const showSelected = checkedItemsCount > 0 && checkedItemsCount < allItemsCount;
 
@@ -67,7 +67,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
             const refType = {
                 ...props.refType,
                 descItemSpecs: [
-                    { id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty') },
+                    {id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')},
                     ...props.refType.descItemSpecs,
                 ],
             };
@@ -89,14 +89,14 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                 }
 
                 switch (props.dataType.code) {
-                    case 'INT': {
+                    case 'INT':
                         const result = validateInt(values.replaceText);
                         if (result) {
                             errors.replaceText = result;
                         }
                         break;
-                    }
-                    case 'UNITDATE': {
+
+                    case 'UNITDATE':
                         try {
                             DatationField.validate(values.replaceText.value);
                         } catch (err) {
@@ -107,10 +107,10 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                             errors.replaceText = i18n('global.validation.required');
                         }
                         break;
-                    }
-                    case 'RECORD_REF': {
+
+                    case 'RECORD_REF':
                         console.log(222222222, values);
-                    }
+
                         break;
                     default:
                         break;
@@ -138,10 +138,6 @@ class FundBulkModificationsForm extends AbstractReactComponent {
         return errors;
     };
 
-    constructor(props) {
-        super(props);
-    }
-
     UNSAFE_componentWillReceiveProps(nextProps) {
     }
 
@@ -150,7 +146,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
     }
 
     supportFindAndReplace = () => {
-        const { dataType } = this.props;
+        const {dataType} = this.props;
 
         let result;
 
@@ -170,7 +166,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
     };
 
     supportReplace = () => {
-        const { dataType } = this.props;
+        const {dataType} = this.props;
 
         let result;
 
@@ -194,7 +190,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
     };
 
     supportSetSpecification = () => {
-        const { refType } = this.props;
+        const {refType} = this.props;
         return refType.useSpecification;
     };
 
@@ -205,7 +201,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
      * Vrací true v případě, že atribut tvoří hodnotu pouze specifikací - enum.
      */
     isEnumType = () => {
-        const { dataType } = this.props;
+        const {dataType} = this.props;
         return dataType.code === 'ENUM';
     };
 
@@ -214,7 +210,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                   allItemsCount,
                   checkedItemsCount,
                   refType,
-                  fields: { findText, replaceText, itemsArea, operationType, specs, replaceSpec },
+                  fields: {findText, replaceText, itemsArea, operationType, specs, replaceSpec},
                   handleSubmit,
                   onClose,
                   dataType,
@@ -299,7 +295,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                     cal: false,
                     readOnly: false,
                     onChange: data => {
-                        replaceText.onChange({ value: data });
+                        replaceText.onChange({value: data});
                     },
                     onBlur: e => {
                         // záměrně ignorujeme
@@ -375,6 +371,8 @@ class FundBulkModificationsForm extends AbstractReactComponent {
             case 'delete':
                 submitButtonTitle = 'arr.fund.bulkModifications.action.delete';
                 break;
+            default:
+                break;
         }
 
         return (
@@ -400,7 +398,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                             <SimpleCheckListBox
                                 ref="specsListBox"
                                 items={[
-                                    { id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty') },
+                                    {id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')},
                                     ...refType.descItemSpecs,
                                 ]}
                                 {...specs}
@@ -506,7 +504,7 @@ export default reduxForm(
                 replaceText: val,
                 itemsArea: getDefaultItemsArea(props),
                 operationType: getDefaultOperationType(props),
-                specs: { type: 'unselected' },
+                specs: {type: 'unselected'},
             },
             descItemTypes: state.refTables.descItemTypes,
         };

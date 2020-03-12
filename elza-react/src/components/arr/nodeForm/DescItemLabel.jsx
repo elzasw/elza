@@ -13,12 +13,13 @@ class DescItemLabel extends AbstractReactComponent {
         }
 
         // Sestavení hodnoty - změna znaku < na entitu, nahrazení enterů <br/>
-        var updatedValue = value ? ("" + value).replace(/\</g,"&lt;").replace(/(?:\r\n|\r|\n)/g, '<br />') : "";
+        var updatedValue = value ? ("" + value).replace(/</g,"&lt;").replace(/(?:\r\n|\r|\n)/g, '<br />') : "";
 
         let renderItem;
         if (onClick == null) {
             renderItem = <div dangerouslySetInnerHTML={{__html: updatedValue}}></div>;
         } else {
+            // eslint-disable-next-line jsx-a11y/anchor-is-valid
             renderItem = <a style={{'cursor': 'pointer'}} onClick={onClick} dangerouslySetInnerHTML={{__html: updatedValue}}></a>;
         }
 

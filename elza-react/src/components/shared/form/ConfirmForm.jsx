@@ -18,10 +18,6 @@ class ConfirmForm extends AbstractReactComponent {
         locked: false,
     };
 
-    constructor(props) {
-        super(props);
-    }
-
     componentDidMount() {
     }
 

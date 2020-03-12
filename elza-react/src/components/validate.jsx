@@ -48,7 +48,7 @@ export function validateDuration(duration) {
  * @param value
  */
 export function validateCoordinatePoint(value) {
-    if (value.indexOf("POINT") === 0) {
+    if (value.indexOf('POINT') === 0) {
         let left = value.indexOf('(') + 1;
         let right = value.indexOf(')');
         if ((right - left) === 0) {
@@ -56,7 +56,7 @@ export function validateCoordinatePoint(value) {
         }
         let data = value.substr(left, value.indexOf(')') - left).split(' ');
         if (value === '' || value === ' ' || data.length !== 2 || data[0] == null || data[0] === '' || data[1] == null || data[1] === '') {
-            return i18n("subNodeForm.errorPointCoordinates");
+            return i18n('subNodeForm.errorPointCoordinates');
         } else {
             return null;
         }
@@ -70,7 +70,7 @@ export function validateCoordinatePoint(value) {
  **/
 export function validateDouble(doubleNumber) {
     const stringNumber = '' + doubleNumber;
-    if (stringNumber.replace(",", "").length > 18 || (stringNumber.indexOf(",") !== -1 && stringNumber.substr(stringNumber.indexOf(",") + 1).length > 6))
+    if (stringNumber.replace(',', '').length > 18 || (stringNumber.indexOf(',') !== -1 && stringNumber.substr(stringNumber.indexOf(',') + 1).length > 6))
         return i18n('validate.validateDouble.outOfRange');
     return null;
 };
@@ -82,6 +82,7 @@ export function validateDouble(doubleNumber) {
  * volání funkce: validateDate('19.st.', function (message){console.log(message); });
  * @deprecated Nepoužívá se - pokud se bude znovu používat nutno vyextrahovat do extra souboru
  **/
+
 /*export function validateDate(dateNumber, callback = function () {
 }) {
     AjaxUtils.ajaxGet('/api/validate/unitDate', {value: dateNumber})
@@ -101,7 +102,7 @@ export function normalizeInt(number) {
     var pole = ('' + number);
     var output = '';
     for (var i = 0, len = pole.length; i < len; i++) {
-        if ((i === 0 && pole[i] === '-') || pole[i] === "0" || parseInt(pole[i])) {
+        if ((i === 0 && pole[i] === '-') || pole[i] === '0' || parseInt(pole[i])) {
             output += pole[i];
         }
     }
@@ -118,7 +119,7 @@ export function normalizeDuration(duration) {
     let allow = '';
     let k = 0;
     for (let i = 0, len = pole.length; i < len; i++) {
-        if (parseInt(pole[i]) || pole[i] === "0" || pole[i] === ':') {
+        if (parseInt(pole[i]) || pole[i] === '0' || pole[i] === ':') {
             if (pole[i] === ':') {
                 k++;
             }
@@ -139,7 +140,7 @@ export function fromDuration(duration) {
     const pole = ('' + duration);
     let allow = '';
     for (let i = 0, len = pole.length; i < len; i++) {
-        if (parseInt(pole[i]) || pole[i] === "0" || pole[i] === ':') {
+        if (parseInt(pole[i]) || pole[i] === '0' || pole[i] === ':') {
             allow += pole[i];
         }
     }
@@ -164,7 +165,7 @@ export function toDuration(number) {
     let h = Math.floor(number / 3600);
     let m = Math.floor(number % 3600 / 60);
     let s = Math.floor(number % 3600 % 60);
-    return pad2(h) + ":" + pad2(m) + ":" + pad2(s);
+    return pad2(h) + ':' + pad2(m) + ':' + pad2(s);
 }
 
 /**
@@ -193,7 +194,7 @@ export function isNormalizeDurationLength(duration) {
  * @returns {string}
  */
 export function pad2(number) {
-    return (number < 10 ? '0' : '') + number
+    return (number < 10 ? '0' : '') + number;
 }
 
 /**
@@ -204,8 +205,8 @@ export function pad2(number) {
  */
 export function formatDate(date) {
     let month = date.getMonth() + 1,
-        day = date.getDate(),
-        year = date.getFullYear();
+        day   = date.getDate(),
+        year  = date.getFullYear();
     return [year, pad2(month), pad2(day)].join('-');
 }
 
@@ -237,7 +238,7 @@ export function normalizeDoubleWithDot(number) {
     var existComa = false;
     for (var i = 0, len = pole.length; i < len; i++) {
         if ((i === 0 && pole[i] === '-') || parseInt(pole[i]) || pole[i] === '0' || ((pole[i] == ',' || pole[i] == '.') && !existComa && (existComa = true))) {
-            output += pole[i]
+            output += pole[i];
         }
     }
     return output;
@@ -345,14 +346,14 @@ function testValidations() {
         for (var l = testValues.length; l > 0; l--) {
             results.push([0, 0]);
         }
-        performanceTest(testValues, test, oldTest, times).map((item, index) => {
+        performanceTest(testValues, test, oldTest, times).forEach((item, index) => {
             results[index][0] += item[1];
             results[index][1] += item[2];
         });
 
-        results.map((item, index) => {
+        results.forEach((item, index) => {
             console.debug(testValues[index], 'new: ' + item[0] / times, 'old:' + item[1] / times, 'compare:' + (item[0] / times - item[1] / times));
-        })
+        });
     };
 
     /** Testovací data */
@@ -367,7 +368,7 @@ function testValidations() {
         121212312310000000000002,
         {},
         '0',
-        '-0'
+        '-0',
     ];
     const intTestNormalizationValues = [
         12,
@@ -379,8 +380,8 @@ function testValidations() {
         -121212312312,
         121212312312,
         '12,4a5',
-        '12.4a5'
-    ]
+        '12.4a5',
+    ];
     const doubleTestValidationValues = [
         '12',
         '12,5',
@@ -392,7 +393,7 @@ function testValidations() {
         '-1012312345678945611',
         '-10123123467,894571',
         '0,3',
-        '-0,3'
+        '-0,3',
     ];
     const doubleTestNormalizationValues = [
         12,
@@ -408,7 +409,7 @@ function testValidations() {
         '-12,4a5',
         '-12.4a5',
         '0,3',
-        '-0,3'
+        '-0,3',
     ];
     const dateTestValues = [
         '19.st',
@@ -418,26 +419,26 @@ function testValidations() {
         '25.3.1958',
         '25.3.1958 18:23',
         '25. 3. 1958 18:23',
-        '13. červen 1953'
+        '13. červen 1953',
     ];
     const stringTestValues = [
         'fij iofwhe urh wuioeh wofhsdjk nsdjkvnifgnweuif nwuif nweuif',
-        'fij iofwhe urh wuioeh wofhsdjk nsdjkvnifgnweuif nwuif nweuifgh fherjklfh wejklf jklv bnsdjklfn sjkfhnwekjfwefh weuirfh weuif sjkn sdjkfnjk hrjkl hsdjklfbh sdjkfb weflh bweuilfh eklvnsdjkln bweuifh weuifbh eruigberhilgb fbsdb weuiwerilb fbslkf wehfweih weoů fhweůh fweůohfůqwogl hfelwfe'
+        'fij iofwhe urh wuioeh wofhsdjk nsdjkvnifgnweuif nwuif nweuifgh fherjklfh wejklf jklv bnsdjklfn sjkfhnwekjfwefh weuirfh weuif sjkn sdjkfnjk hrjkl hsdjklfbh sdjkfb weflh bweuilfh eklvnsdjkln bweuifh weuifbh eruigberhilgb fbsdb weuiwerilb fbslkf wehfweih weoů fhweůh fweůohfůqwogl hfelwfe',
     ];
 
     /** Testování funkčnosti */
     basicTest(intTestValidationValues, validateInt, FORMAT_EACH, [
         null,
-        "Nejedná se o celé číslo",
+        'Nejedná se o celé číslo',
         null,
-        "Nejedná se o celé číslo",
-        "Zadané číslo je mimo rozsah celého čísla typu INT",
-        "Zadané číslo je mimo rozsah celého čísla typu INT",
-        "Zadané číslo je mimo rozsah celého čísla typu INT",
-        "Zadané číslo je mimo rozsah celého čísla typu INT",
-        "Nejedná se o celé číslo",
+        'Nejedná se o celé číslo',
+        'Zadané číslo je mimo rozsah celého čísla typu INT',
+        'Zadané číslo je mimo rozsah celého čísla typu INT',
+        'Zadané číslo je mimo rozsah celého čísla typu INT',
+        'Zadané číslo je mimo rozsah celého čísla typu INT',
+        'Nejedná se o celé číslo',
         null,
-        null
+        null,
     ]);
     basicTest(doubleTestValidationValues, validateDouble);
     //basicTest(dateTestValues, validateDate);

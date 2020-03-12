@@ -24,9 +24,9 @@ export function isFundTreeAction(action) {
         case types.FUND_FUND_TREE_FULLTEXT_RESULT:
         case types.SELECT_FUND_GLOBAL:
         case types.FUND_FUND_TREE_INVALIDATE:
-            return true
+            return true;
         default:
-            return false
+            return false;
     }
 }
 
@@ -41,7 +41,7 @@ export function fundTreeSelectNode(area, versionId, nodeId, ctrl, shift, newFilt
         shift,
         newFilterCurrentIndex,
         ensureItemVisible,
-    }
+    };
 }
 
 /**
@@ -51,14 +51,14 @@ export function fundTreeSelectNode(area, versionId, nodeId, ctrl, shift, newFilt
  * @param {Object} node uzel
  * @param {boolean} pokud je true, je pod rozbalovaný uzel přidán nový uzel s informací, že se načítají data
  */
-export function _fundTreeNodeExpand(area, versionId, node, addWaitingNode=false) {
+export function _fundTreeNodeExpand(area, versionId, node, addWaitingNode = false) {
     return {
         type: types.FUND_FUND_TREE_EXPAND_NODE,
         area,
         node,
         versionId,
         addWaitingNode,
-    }
+    };
 }
 
 /**
@@ -74,8 +74,8 @@ export function fundTreeConfigure(area, versionId, multipleSelection, multipleSe
         area,
         versionId,
         multipleSelection,
-        multipleSelectionOneLevel
-    }
+        multipleSelectionOneLevel,
+    };
 }
 
 /**
@@ -90,7 +90,7 @@ export function fundTreeCollapse(area, versionId, node) {
         area,
         node,
         versionId,
-    }
+    };
 }
 
 /**
@@ -105,7 +105,7 @@ export function fundTreeFulltextChange(area, versionId, filterText) {
         area,
         versionId,
         filterText,
-    }
+    };
 }
 
 /**
@@ -115,15 +115,15 @@ export function fundTreeFulltextChange(area, versionId, filterText) {
  * {int} versionId verze AS
  */
 function getFundTreeForFund(state, area, versionId) {
-    var fundTree
+    var fundTree;
     if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {  // fundRegion
-        return state.fundRegion.fundDetail.fundTree
+        return state.fundRegion.fundDetail.fundTree;
     } else if (area === types.FUND_TREE_AREA_COPY) {
-        return state.arrRegion.globalFundTree.fundTreeCopy
+        return state.arrRegion.globalFundTree.fundTreeCopy;
     } else if (area === types.CUSTOM_FUND_TREE_AREA_NODES) {
-        return state.arrRegion.customFund.fundTreeNodes
+        return state.arrRegion.customFund.fundTreeNodes;
     } else {    // arrRegion
-        var index = indexById(state.arrRegion.funds, versionId, "versionId");
+        var index = indexById(state.arrRegion.funds, versionId, 'versionId');
         if (index != null) {
             var fund = state.arrRegion.funds[index];
             var fundTree = getFundTree(fund, area);
@@ -136,15 +136,15 @@ function getFundTreeForFund(state, area, versionId) {
 }
 
 function getFundForTree(state, area, versionId) {
-    var fundTree
+    var fundTree;
     if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {  // fundRegion
-        return state.fundRegion
+        return state.fundRegion;
     } else if (area === types.FUND_TREE_AREA_COPY) {
         return state.arrRegion.globalFundTree.fundTreeCopy;
     } else if (area === types.CUSTOM_FUND_TREE_AREA_NODES) {
-        return state.arrRegion.customFund.fundTreeNodes
+        return state.arrRegion.customFund.fundTreeNodes;
     } else {    // arrRegion
-        var index = indexById(state.arrRegion.funds, versionId, "versionId");
+        var index = indexById(state.arrRegion.funds, versionId, 'versionId');
         if (index != null) {
             return state.arrRegion.funds[index];
         }
@@ -167,7 +167,7 @@ function changeCurrentIndex(dispatch, area, fund, versionId, fundTree, newIndex)
         var nodeParent = fundTree.searchedParents[nodeId];
 
         if (nodeParent === null) {
-            nodeParent = createFundRoot(fund)
+            nodeParent = createFundRoot(fund);
         }
         switch (area) {
             case types.FUND_TREE_AREA_MAIN:
@@ -180,22 +180,24 @@ function changeCurrentIndex(dispatch, area, fund, versionId, fundTree, newIndex)
                 dispatch(fundTreeSelectNode(area, versionId, nodeId, nodeParent, false, newIndex, true));
                 break;
             case types.FUND_TREE_AREA_MOVEMENTS_LEFT:
-                dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true))
+                dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true));
                 break;
             case types.FUND_TREE_AREA_MOVEMENTS_RIGHT:
-                dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true))
+                dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true));
                 break;
             case types.FUND_TREE_AREA_FUNDS_FUND_DETAIL:
-                dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true))
+                dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true));
                 break;
             case types.FUND_TREE_AREA_NODES:
-                dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true))
+                dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true));
                 break;
             case types.FUND_TREE_AREA_DAOS_LEFT:
-                dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true))
+                dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true));
                 break;
             case types.FUND_TREE_AREA_DAOS_RIGHT:
-                dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true))
+                dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true));
+                break;
+            default:
                 break;
         }
     }
@@ -210,7 +212,7 @@ export function fundTreeFulltextNextItem(area, versionId) {
     return (dispatch, getState) => {
         var state = getState();
         var fundTree = getFundTreeForFund(state, area, versionId);
-        console.log(123,fundTree);
+        console.log(123, fundTree);
         if (fundTree && fundTree.searchedIds.length > 0) {
             var newIndex;
             if (fundTree.filterCurrentIndex == -1) {
@@ -220,7 +222,7 @@ export function fundTreeFulltextNextItem(area, versionId) {
             }
             changeCurrentIndex(dispatch, area, getFundForTree(state, area, versionId), versionId, fundTree, newIndex);
         }
-    }
+    };
 }
 
 /**
@@ -242,7 +244,7 @@ export function fundTreeFulltextPrevItem(area, versionId) {
             }
             changeCurrentIndex(dispatch, area, getFundForTree(state, area, versionId), versionId, fundTree, newIndex);
         }
-    }
+    };
 }
 
 /**
@@ -256,32 +258,32 @@ export function fundTreeFulltextSearch(area, versionId, params, result, luceneQu
         var fundTree = getFundTreeForFund(state, area, versionId);
         if (fundTree) {
             if ((fundTree.filterText && fundTree.filterText.length > 0) || luceneQuery) {
-                var searchParentNodeId
+                var searchParentNodeId;
                 // V případě stromu, který má multi select hledáme v celém stromu
                 // V případě stromu, který má single select hledáme POD vybranou položkou
                 if (fundTree.multipleSelection) { // hledáme v celém stromu
-                    searchParentNodeId = null
+                    searchParentNodeId = null;
                 } else {    // hledáme pod vybranou položkou, pokud nějaká je
                     if (fundTree.selectedId !== null) {   // vybraná položka, hledáme pod ní
-                        searchParentNodeId = fundTree.selectedId
+                        searchParentNodeId = fundTree.selectedId;
                     } else {    // nice není vybráno, hledáme v celém stromě
-                        searchParentNodeId = null
+                        searchParentNodeId = null;
                     }
                 }
 
                 return WebApi.findInFundTree(versionId, searchParentNodeId, fundTree.filterText, 'SUBTREE', params, luceneQuery)
-                    .then(json => {
-                        dispatch(fundTreeFulltextResult(area, versionId, fundTree.filterText, json, false, result, luceneQuery))
-                        if (json.length > 0) {
-                            var newFundTree = getFundTreeForFund(getState(), area, versionId)
-                            changeCurrentIndex(dispatch, area, getFundForTree(state, area, versionId), versionId, newFundTree, 0);
-                        }
-                    });
+                             .then(json => {
+                                 dispatch(fundTreeFulltextResult(area, versionId, fundTree.filterText, json, false, result, luceneQuery));
+                                 if (json.length > 0) {
+                                     var newFundTree = getFundTreeForFund(getState(), area, versionId);
+                                     changeCurrentIndex(dispatch, area, getFundForTree(state, area, versionId), versionId, newFundTree, 0);
+                                 }
+                             });
             } else {
-                return dispatch(fundTreeFulltextResult(area, versionId, fundTree.filterText, [], true, null, false))
+                return dispatch(fundTreeFulltextResult(area, versionId, fundTree.filterText, [], true, null, false));
             }
         }
-    }
+    };
 }
 
 /**
@@ -301,8 +303,8 @@ export function fundTreeFulltextResult(area, versionId, filterText, searchedData
         searchedData,
         clearFilter,
         searchFormData,
-        luceneQuery
-    }
+        luceneQuery,
+    };
 }
 
 /**
@@ -313,30 +315,31 @@ export function fundTreeFulltextResult(area, versionId, filterText, searchedData
 export function fundTreeNodeExpand(area, node) {
     return (dispatch, getState) => {
         var state = getState();
-        var fundTree
-        var versionId
-        let activeFund, activeNode;
+        var fundTree;
+        var versionId;
+        let activeFund,
+            activeNode;
         if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {  // fundRegion
-            versionId = state.fundRegion.fundDetail.versionId
-            fundTree = state.fundRegion.fundDetail.fundTree
+            versionId = state.fundRegion.fundDetail.versionId;
+            fundTree = state.fundRegion.fundDetail.fundTree;
         } else if (area === types.CUSTOM_FUND_TREE_AREA_NODES) {
             versionId = state.arrRegion.customFund.versionId;
-            fundTree = state.arrRegion.customFund.fundTreeNodes
+            fundTree = state.arrRegion.customFund.fundTreeNodes;
         } else if (area === types.FUND_TREE_AREA_COPY) {
             versionId = state.arrRegion.globalFundTree.versionId;
-            fundTree = state.arrRegion.globalFundTree.fundTreeCopy
+            fundTree = state.arrRegion.globalFundTree.fundTreeCopy;
         } else {    // arrRegion
             activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
             activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
             versionId = activeFund.versionId;
             fundTree = getFundTree(activeFund, area);
-            console.log(activeFund.nodes.nodes[activeFund.nodes.activeIndex].selectedSubNodeId,node.id);
+            console.log(activeFund.nodes.nodes[activeFund.nodes.activeIndex].selectedSubNodeId, node.id);
         }
-        dispatch(_fundTreeNodeExpand(area, versionId, node, true))
+        dispatch(_fundTreeNodeExpand(area, versionId, node, true));
 
         var nodeId = node.id;
-        var expandedIds = {...fundTree.expandedIds, [nodeId]: true}
-        if(activeNode && activeNode.selectedSubNodeId === nodeId){
+        var expandedIds = {...fundTree.expandedIds, [nodeId]: true};
+        if (activeNode && activeNode.selectedSubNodeId === nodeId) {
             /*let json = {
                 nodes:[...activeNode.subNodeInfo.childNodes],
                 expandedIdsExtension:[]
@@ -345,8 +348,8 @@ export function fundTreeNodeExpand(area, node) {
             //return dispatch(fundTreeReceive(area, versionId, nodeId, expandedIds, [], json));
         }
         return WebApi.getFundTree(versionId, nodeId, expandedIds)
-            .then(json => dispatch(fundTreeReceive(area, versionId, nodeId, expandedIds, [], json)));
-    }
+                     .then(json => dispatch(fundTreeReceive(area, versionId, nodeId, expandedIds, [], json)));
+    };
 }
 
 /**
@@ -361,7 +364,7 @@ export function fundTreeFocusNode(area, versionId, node) {
         area,
         node,
         versionId,
-    }
+    };
 }
 
 /**
@@ -376,7 +379,7 @@ export function fundTreeNodeCollapse(area, versionId, node) {
         area,
         node,
         versionId,
-    }
+    };
 }
 
 /**
@@ -398,6 +401,8 @@ function getFundTree(fund, area) {
             return fund.fundTreeDaosLeft;
         case types.FUND_TREE_AREA_DAOS_RIGHT:
             return fund.fundTreeDaosRight;
+        default:
+            break;
     }
 }
 
@@ -412,11 +417,11 @@ export function fundTreeFetchIfNeeded(area, sourceVersionId, expandedIds, select
     return (dispatch, getState) => {
         var state = getState();
 
-        var fundTree
-        var versionId
+        var fundTree;
+        var versionId;
         if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {  // fundRegion
-            versionId = state.fundRegion.fundDetail.versionId
-            fundTree = state.fundRegion.fundDetail.fundTree
+            versionId = state.fundRegion.fundDetail.versionId;
+            fundTree = state.fundRegion.fundDetail.fundTree;
         } else if (area === types.FUND_TREE_AREA_COPY) {
             versionId = state.arrRegion.globalFundTree.versionId;
             fundTree = state.arrRegion.globalFundTree.fundTreeCopy;
@@ -425,7 +430,7 @@ export function fundTreeFetchIfNeeded(area, sourceVersionId, expandedIds, select
             fundTree = state.arrRegion.customFund.fundTreeNodes;
         } else {    // arrRegion
             var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
-            versionId = activeFund.versionId
+            versionId = activeFund.versionId;
             fundTree = getFundTree(activeFund, area);
         }
 
@@ -435,7 +440,7 @@ export function fundTreeFetchIfNeeded(area, sourceVersionId, expandedIds, select
         if (fundTree.multipleSelection) {
             selectedIds = Object.keys(fundTree.selectedIds);
         } else {
-            if (typeof fundTree.selectedId !== "undefined" && fundTree.selectedId !== null) {
+            if (typeof fundTree.selectedId !== 'undefined' && fundTree.selectedId !== null) {
                 selectedIds = [fundTree.selectedId];
             } else {
                 selectedIds = [];
@@ -467,7 +472,7 @@ export function fundTreeFetchIfNeeded(area, sourceVersionId, expandedIds, select
         }
 
         return Promise.resolve(fundTree);
-    }
+    };
 }
 
 /**
@@ -477,17 +482,17 @@ export function fundTreeFetchIfNeeded(area, sourceVersionId, expandedIds, select
  * @param {nodeId} pokud je uvedeno, obsahuje id node, pro který se mají vracet data, pokud není uveden, vrací se celý strom
  * @param {expandedIds} seznam rozbalených uzlů
  */
-export function fundTreeFetch(area, versionId, nodeId, expandedIds, includeIds=[]) {
+export function fundTreeFetch(area, versionId, nodeId, expandedIds, includeIds = []) {
 
     return dispatch => {
-        dispatch(fundTreeRequest(area, versionId, nodeId, expandedIds, includeIds))
+        dispatch(fundTreeRequest(area, versionId, nodeId, expandedIds, includeIds));
         return WebApi.getFundTree(versionId, nodeId, expandedIds, includeIds)
-            .then(json => {
-                dispatch(fundTreeReceive(area, versionId, nodeId, expandedIds, includeIds, json))
-                console.log("fundTree",json);
-                return json;
-            });
-    }
+                     .then(json => {
+                         dispatch(fundTreeReceive(area, versionId, nodeId, expandedIds, includeIds, json));
+                         console.log('fundTree', json);
+                         return json;
+                     });
+    };
 }
 
 /**
@@ -508,8 +513,8 @@ export function fundTreeReceive(area, versionId, nodeId, expandedIds, includeIds
         includeIds,
         nodes: json.nodes,
         expandedIdsExtension: json.expandedIdsExtension,
-        receivedAt: Date.now()
-    }
+        receivedAt: Date.now(),
+    };
 }
 
 /**
@@ -527,5 +532,5 @@ export function fundTreeRequest(area, versionId, nodeId, expandedIds, includeIds
         nodeId,
         expandedIds,
         includeIds,
-    }
+    };
 }

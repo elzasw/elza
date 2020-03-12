@@ -11,8 +11,8 @@ import './TreeList.scss';
 
 // node state codes
 const nodeStates = {
-    "EXPANDED": 1,
-    "COLLAPSED": 2
+    'EXPANDED': 1,
+    'COLLAPSED': 2,
 };
 
 // example of items object
@@ -20,31 +20,31 @@ const exampleItems = {
     1: {
         id: 1,
         depth: 0,
-        parent: null
+        parent: null,
         /* ... item data*/
     },
     2: {
         id: 2,
         depth: 1,
-        parent: 1
+        parent: 1,
         /* ... item data*/
     },
-    ids:[1, 2]
+    ids: [1, 2],
 };
 
 // example of groups object
 const exampleGroups = [{
-    name: "main", // required
-    title: "Main group",
+    name: 'main', // required
+    title: 'Main group',
     hideWhenEmpty: true,
     hideTitle: true,
     ignoreDepth: true,
-    ids: ["1", "2", "3"] // optional - when ids are undefined, takes all
+    ids: ['1', '2', '3'], // optional - when ids are undefined, takes all
 }];
 
 class TreeList extends React.Component {
-    static contextTypes = { shortcuts: PropTypes.object };
-    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    static contextTypes = {shortcuts: PropTypes.object};
+    static childContextTypes = {shortcuts: PropTypes.object.isRequired};
 
     static propTypes = {
         items: PropTypes.object.isRequired,
@@ -54,48 +54,52 @@ class TreeList extends React.Component {
         allowFocusItem: PropTypes.func,
         renderIdDelimiter: PropTypes.string,
         loop: PropTypes.bool,
-        tree: PropTypes.bool
-    }
+        tree: PropTypes.bool,
+    };
 
     // default group configuration object
     static defaultGroup = {
-        name: "all",
-        hideTitle: true
-    }
+        name: 'all',
+        hideTitle: true,
+    };
 
     static defaultProps = {
-        items: {ids:[]},
+        items: {ids: []},
         groups: [TreeList.defaultGroup],
         renderItem: (props) => {
             const {item, ...otherProps} = props;
             return <ListItem {...otherProps}/>;
         },
-        allowSelectItem: (item) => {return true;},
-        allowFocusItem: (item) => {return true;},
-        renderIdDelimiter: "@",
-        loop: false
-    }
+        allowSelectItem: (item) => {
+            return true;
+        },
+        allowFocusItem: (item) => {
+            return true;
+        },
+        renderIdDelimiter: '@',
+        loop: false,
+    };
 
     getChildContext() {
-        return { shortcuts: this.shortcutManager };
+        return {shortcuts: this.shortcutManager};
     }
 
-    constructor(props){
+    constructor(props) {
         super(props);
-        this.itemRefs = {ids:[]};
+        this.itemRefs = {ids: []};
         this.prevHeight = 0;
         this.scrollTop = 0;
         this.state = {
             highlightedItem: {
                 index: null,
-                id: null
+                id: null,
             },
             items: props.items,
-            expandedIds: {}
+            expandedIds: {},
         };
     }
 
-    componentDidUpdate(prevProps, prevState){
+    componentDidUpdate(prevProps, prevState) {
         const {onContentChange, highlightedItemId} = this.props;
         const {highlightedItem} = this.state;
 
@@ -104,18 +108,19 @@ class TreeList extends React.Component {
 
         // restore scrollTop on list after expanded ids changed
         const scrollTop = this.scrollTop;
-        if(prevState.expandedIds !== this.state.expandedIds){
+        if (prevState.expandedIds !== this.state.expandedIds) {
             onContentChange && onContentChange(this.list);
             this.list.scrollTop = scrollTop;
         }
 
         // highlight item specified in props, but only when it doesn't
         // match the currently highlighted item
-        if(prevProps.highlightedItemId !== highlightedItemId){
+        if (prevProps.highlightedItemId !== highlightedItemId) {
             this.highlightItem(highlightedItemId);
         }
     }
-    componentDidMount(){
+
+    componentDidMount() {
         this.highlightItem(this.props.highlightedItemId);
     }
 
@@ -124,50 +129,50 @@ class TreeList extends React.Component {
      */
     buildId = (id, groupName) => {
         const {renderIdDelimiter} = this.props;
-        if (!id && id !== 0){
-            console.warn("Id not specified");
+        if (!id && id !== 0) {
+            console.warn('Id not specified');
             return null;
         }
-        return [id,groupName].join(renderIdDelimiter);
-    }
+        return [id, groupName].join(renderIdDelimiter);
+    };
 
     /**
      * Restores the id and groupname from rendered item id
      */
     restoreId = (renderId) => {
         const {renderIdDelimiter} = this.props;
-        if(!renderId && renderId !== 0){
-            console.warn("Invalid rendered item id", renderId);
+        if (!renderId && renderId !== 0) {
+            console.warn('Invalid rendered item id', renderId);
             return [];
         }
         return renderId.split(renderIdDelimiter);
-    }
+    };
 
     /**
      * Decides which item has higher priority
      * (items must have priority property for this to have any effect)
      */
-    orderByPriority = (a,b)=>{
-        if(a.priority){
-            if(b.priority){
-                if(b.priority < a.priority){
+    orderByPriority = (a, b) => {
+        if (a.priority) {
+            if (b.priority) {
+                if (b.priority < a.priority) {
                     return -1;
                 }
                 return 1;
             }
             return -1;
         }
-        if (b.priority){
+        if (b.priority) {
             return 1;
         }
         return 0;
-    }
+    };
 
     /**
      * Create render id from group with the highest priority
      * where the specified id exists
      */
-    getHighPriorityRenderedId = (id, force=false) => {
+    getHighPriorityRenderedId = (id, force = false) => {
         const {highlightedItemId, groups} = this.props;
 
         // order groups by priority
@@ -175,17 +180,16 @@ class TreeList extends React.Component {
         orderedGroups.sort(this.orderByPriority);
 
         // search the priority ordered groups for specified id
-        for(let g = 0; g < orderedGroups.length; g++){
+        for (let g = 0; g < orderedGroups.length; g++) {
             const groupId = orderedGroups[g].name;
             const renderId = this.buildId(id, groupId);
             // return the first matching id (has highest priority)
-            if(this.itemRefs[renderId] || force){
+            if (this.itemRefs[renderId] || force) {
                 return renderId;
-                break;
             }
         }
         return null;
-    }
+    };
 
     /**
      * Checks if items object has data with tree structure
@@ -194,14 +198,14 @@ class TreeList extends React.Component {
     checkIfTree = (items) => {
         const {tree} = this.props;
         let hasDepth = tree;
-        if(typeof tree == "undefined"){
+        if (typeof tree == 'undefined') {
             let depth;
             // looks through all items
-            for(let i = 0; i<items.ids.length; i++){
+            for (let i = 0; i < items.ids.length; i++) {
                 const itemId = items.ids[i];
                 const item = items[itemId];
                 // stops when depth difference is found
-                if(typeof depth !== "undefined" && depth !== item.depth){
+                if (typeof depth !== 'undefined' && depth !== item.depth) {
                     hasDepth = true;
                     break;
                 }
@@ -209,15 +213,15 @@ class TreeList extends React.Component {
             }
         }
         this.setState({
-            isTree: hasDepth
+            isTree: hasDepth,
         });
-    }
+    };
 
-    UNSAFE_componentWillReceiveProps(nextProps){
+    UNSAFE_componentWillReceiveProps(nextProps) {
         this.checkIfTree(nextProps.items);
         this.setState({
             items: nextProps.items,
-            expandedIds: {}
+            expandedIds: {},
         });
     }
 
@@ -231,14 +235,14 @@ class TreeList extends React.Component {
         const itemId = restoredId[0];
         const itemGroup = restoredId[1];
 
-        if(itemId >= 0){
+        if (itemId >= 0) {
             const includeItem = items[itemId];
 
-            if(includeItem){
+            if (includeItem) {
                 let parentId = includeItem.parent;
                 let parentRenderId;
 
-                while(parentId){
+                while (parentId) {
                     parentRenderId = this.buildId(parentId, itemGroup);
                     newExpandedIds[parentRenderId] = nodeStates.EXPANDED;
                     parentId = items[parentId].parent;
@@ -247,9 +251,9 @@ class TreeList extends React.Component {
         }
 
         this.setState({expandedIds: newExpandedIds});
-    }
+    };
 
-    UNSAFE_componentWillMount(){
+    UNSAFE_componentWillMount() {
         const {includeId, items} = this.props;
         this.checkIfTree(items);
 
@@ -261,24 +265,24 @@ class TreeList extends React.Component {
 
     focus = () => {
         ReactDOM.findDOMNode(this.list).focus();
-    }
+    };
 
     highlightItem = (id) => {
         let itemId = id;
         //console.log("highlight item "+id);
-        if(!this.itemRefs[id]){
+        if (!this.itemRefs[id]) {
             itemId = this.getHighPriorityRenderedId(id);
         }
-        if(!itemId && itemId !== 0){
+        if (!itemId && itemId !== 0) {
             itemId = this.state.highlightedItem.id || this.itemRefs.ids[0];
         }
         this.setState({
             highlightedItem: {
                 index: this.itemRefs.ids.indexOf(id),
-                id: itemId
-            }
+                id: itemId,
+            },
         });
-    }
+    };
 
     /**
      * Scrolls the view to show specified item
@@ -290,14 +294,14 @@ class TreeList extends React.Component {
             var listNode = ReactDOM.findDOMNode(this.list);
             scrollIntoView(itemNode, listNode, {onlyScrollIfNeeded: true, allowHorizontalScroll: false});
         }
-    }
+    };
 
     /**
      * Toggles the node's expand/collapse state
      * @param id id of the node
      * @param expand true - force expand, false - force collapse
      */
-    toggleNode = (id, expand=null) => {
+    toggleNode = (id, expand = null) => {
         const {expandedIds} = this.state;
         const {onToggleNode} = this.props;
 
@@ -315,13 +319,13 @@ class TreeList extends React.Component {
         }
 
         onToggleNode && onToggleNode(node);
-    }
+    };
 
     expandNode = (id, node) => {
         const {onExpandNode} = this.props;
         this.changeNodeState(id, nodeStates.EXPANDED);
         onExpandNode && onExpandNode(node);
-    }
+    };
 
     collapseNode = (id, node) => {
         const {onCollapseNode} = this.props;
@@ -334,9 +338,9 @@ class TreeList extends React.Component {
         let newExpandedIds = {...expandedIds};
         newExpandedIds[id] = state;
         this.setState({
-            expandedIds: newExpandedIds
+            expandedIds: newExpandedIds,
         });
-    }
+    };
 
     /**
      * Gets id of the item relatively placed to the item with the specified id
@@ -345,7 +349,7 @@ class TreeList extends React.Component {
      * @param {bool} loop when true, loops to the other end when one end is reached
      * @return {number} id of the next possible item. when no possible item, returns null.
      */
-    getRelativeSelectableItemId = (id,step,loop=false) => {
+    getRelativeSelectableItemId = (id, step, loop = false) => {
         const {allowFocusItem} = this.props;
         const items = this.itemRefs.ids;
         let index = this.itemRefs.ids.indexOf(id);
@@ -358,7 +362,7 @@ class TreeList extends React.Component {
         index = index > 0 ? index : 0;
         var nextIndex = index + step;
         while (nextIndex !== index) {
-            if(loop){
+            if (loop) {
                 if (nextIndex >= items.length) {
                     // Loop to the beginning
                     nextIndex = 0;
@@ -366,7 +370,7 @@ class TreeList extends React.Component {
                     // Loop to the end
                     nextIndex = items.length - 1;
                 }
-            } else if(!loop && nextIndex >= items.length || !loop && nextIndex < 0){
+            } else if ((!loop && nextIndex >= items.length) || (!loop && nextIndex < 0)) {
                 return items[index];
             }
             var item = items[nextIndex];
@@ -376,7 +380,7 @@ class TreeList extends React.Component {
             isDecrementing ? nextIndex-- : nextIndex++;
         }
         return null;
-    }
+    };
 
     selectorMoveToChildOrOpen = (e) => {
         const {highlightedItem, expandedIds, items} = this.state;
@@ -385,7 +389,7 @@ class TreeList extends React.Component {
         const node = items[nodeId];
         const isExpanded = this.isExpanded(highlightedItem.id);
 
-        if(node){
+        if (node) {
             if (node.children && node.children.length > 0) {
                 if (isExpanded) {
                     // Move to child, if expanded
@@ -399,7 +403,7 @@ class TreeList extends React.Component {
                 }
             }
         }
-    }
+    };
 
     selectorMoveToParentOrClose = (e) => {
         const {items, highlightedItem, expandedIds} = this.state;
@@ -409,7 +413,7 @@ class TreeList extends React.Component {
         const node = items[nodeId];
         const isExpanded = this.isExpanded(highlightedItem.id);
 
-        if(node){
+        if (node) {
             if (isExpanded) {
                 // Collapse node, if expanded and has children
                 this.toggleNode(highlightedItem.id, false);
@@ -420,10 +424,10 @@ class TreeList extends React.Component {
                 this.highlightItem(renderedParentId);
             }
         }
-    }
+    };
 
     getHighlightedNode = () => {
-        const {highlightedItem:{id, index}} = this.state;
+        const {highlightedItem: {id, index}} = this.state;
         const nodeId = id;
 
         if (id !== null) {
@@ -431,27 +435,27 @@ class TreeList extends React.Component {
         }
 
         return null;
-    }
+    };
 
     getNodeById = (id) => {
         const {items} = this.state;
         const restoredId = this.restoreId(id);
         const nodeId = restoredId[0];
 
-        if(id !== null){
+        if (id !== null) {
             return items[nodeId];
         } else {
             return null;
         }
-    }
+    };
 
     selectorMoveDown = (e) => {
         this.selectorMoveRelative(1);
-    }
+    };
 
     selectorMoveUp = (e) => {
         this.selectorMoveRelative(-1);
-    }
+    };
 
     selectorMoveRelative = (step) => {
         const {highlightedItem} = this.state;
@@ -459,7 +463,7 @@ class TreeList extends React.Component {
         const index = this.getRelativeSelectableItemId(highlightedItem.id, step, loop);
 
         this.highlightItem(index);
-    }
+    };
 
     selectItem = (item) => {
         const {allowSelectItem, onChange} = this.props;
@@ -467,7 +471,7 @@ class TreeList extends React.Component {
         if (item) {
             if (allowSelectItem(item)) {
                 this.setState({
-                    value: item
+                    value: item,
                 }, () => {
                     onChange && onChange(item);
                 });
@@ -475,19 +479,19 @@ class TreeList extends React.Component {
         } else {
             onChange && onChange(null);
         }
-    }
+    };
 
     selectHighlightedItem = () => {
         const item = this.getHighlightedNode();
         this.selectItem(item);
-    }
+    };
 
     handleExpandCollapse = (id, e) => {
         e.stopPropagation();
         e.preventDefault();
 
         this.toggleNode(id);
-    }
+    };
 
     /**
      * Determines whether the node should be expanded
@@ -503,8 +507,8 @@ class TreeList extends React.Component {
 
         // returns true if the node is either EXPANDED or if it is not explicitly set
         // to COLLAPSED, has children and expandAll prop is true
-        return isExpanded || ( isNotCollapsed && hasChildren );
-    }
+        return isExpanded || (isNotCollapsed && hasChildren);
+    };
 
     renderGroupTitle = (props) => {
         const {title, name} = props;
@@ -514,7 +518,7 @@ class TreeList extends React.Component {
                 <hr/>
             </div>
         );
-    }
+    };
 
     renderItems = () => {
         const {items, highlightedItem, isTree} = this.state;
@@ -527,13 +531,13 @@ class TreeList extends React.Component {
         //debugger;
 
         // reset itemRefs
-        this.itemRefs = {ids:[]};
+        this.itemRefs = {ids: []};
 
         // loop through groups
-        for(let gid = 0; gid < groups.length; gid++){
+        for (let gid = 0; gid < groups.length; gid++) {
             const group = {
                 ...TreeList.defaultGroup,
-                ...groups[gid]
+                ...groups[gid],
             };
             const {name, title, ids, ignoreDepth, hideTitle, hideWhenEmpty} = group;
 
@@ -543,38 +547,40 @@ class TreeList extends React.Component {
 
             // hide the group title when there are no items in the group
             // and it is set in the group props
-            if(hideWhenEmpty && groupsItemsIds.length <= 0){
+            if (hideWhenEmpty && groupsItemsIds.length <= 0) {
                 continue;
             } else if (!hideTitle) {
                 renderedItems.push(this.renderGroupTitle({name, title}));
             }
 
             // loop through group's items
-            for(let i = 0; i < groupsItemsIds.length; i++){
+            for (let i = 0; i < groupsItemsIds.length; i++) {
                 const itemId = groupsItemsIds[i];
                 const item = items[itemId];
 
-                if(!item){continue;} // skip item if it doesnt exist
+                if (!item) {
+                    continue;
+                } // skip item if it doesnt exist
 
                 const renderedItemId = this.buildId(itemId, name);
                 const isExpanded = this.isExpanded(renderedItemId);
 
                 // render items as tree
-                if(!ignoreDepth && isTree){
+                if (!ignoreDepth && isTree) {
                     // skip item if it has higher, than currently
                     // allowed, depth (its parent is not expanded)
-                    if(currentDepth < item.depth){
+                    if (currentDepth < item.depth) {
                         continue;
                     }
                     // when item depth is lower than the currently allowed one,
                     // set the allowed depth the same value (end of a subtree)
-                    if(currentDepth > item.depth){
+                    if (currentDepth > item.depth) {
                         currentDepth = item.depth;
                     }
 
                     // when the item is expanded, increase the allowed depth level
                     // to render its subtree
-                    if(isExpanded){
+                    if (isExpanded) {
                         currentDepth = item.depth + 1;
                     }
                 }
@@ -594,11 +600,19 @@ class TreeList extends React.Component {
                     selected: isSelected,
                     selectable: allowSelectItem(item),
                     focusable: allowFocusItem(item),
-                    onMouseEnter: (e) => {this.highlightItem(renderedItemId);},
-                    onExpandCollapse: (e) => {this.handleExpandCollapse(renderedItemId, e)},
-                    onClick: (e) => {this.selectItem(item);},
+                    onMouseEnter: (e) => {
+                        this.highlightItem(renderedItemId);
+                    },
+                    onExpandCollapse: (e) => {
+                        this.handleExpandCollapse(renderedItemId, e);
+                    },
+                    onClick: (e) => {
+                        this.selectItem(item);
+                    },
                     key: renderedItemId,
-                    ref: (ref)=>{this.itemRefs[renderedItemId] = ref;}
+                    ref: (ref) => {
+                        this.itemRefs[renderedItemId] = ref;
+                    },
                 });
 
                 this.itemRefs.ids.push(renderedItemId);
@@ -607,45 +621,47 @@ class TreeList extends React.Component {
         }
 
         return renderedItems;
-    }
+    };
 
     actionMap = {
-        "MOVE_UP": this.selectorMoveUp,
-        "MOVE_DOWN": this.selectorMoveDown,
-        "MOVE_TO_PARENT_OR_CLOSE": this.selectorMoveToParentOrClose,
-        "MOVE_TO_CHILD_OR_OPEN": this.selectorMoveToChildOrOpen,
-        "SELECT_ITEM": this.selectHighlightedItem
-    }
+        'MOVE_UP': this.selectorMoveUp,
+        'MOVE_DOWN': this.selectorMoveDown,
+        'MOVE_TO_PARENT_OR_CLOSE': this.selectorMoveToParentOrClose,
+        'MOVE_TO_CHILD_OR_OPEN': this.selectorMoveToChildOrOpen,
+        'SELECT_ITEM': this.selectHighlightedItem,
+    };
 
-    handleShortcuts = (action,e)=>{
-        if(!this.props.disableShortcuts){
+    handleShortcuts = (action, e) => {
+        if (!this.props.disableShortcuts) {
             e.preventDefault();
             this.actionMap[action](e);
         }
-    }
+    };
 
     handleScroll = (e) => {
         // save the current scroll position
         this.scrollTop = this.list.scrollTop;
-    }
+    };
 
 
-    render(){
+    render() {
         return (
             <Shortcuts
-               handler={this.handleShortcuts}
-               name='List'
-               alwaysFireHandler
-               className='tree-list'
-               key="treeListShortcuts"
+                handler={this.handleShortcuts}
+                name='List'
+                alwaysFireHandler
+                className='tree-list'
+                key="treeListShortcuts"
             >
                 <div
-                   ref={(list)=>{this.list = list;}}
-                   key="treeList"
-                   className='tree-list'
-                   onScroll={this.handleScroll}
+                    ref={(list) => {
+                        this.list = list;
+                    }}
+                    key="treeList"
+                    className='tree-list'
+                    onScroll={this.handleScroll}
                 >
-                  {this.renderItems()}
+                    {this.renderItems()}
                 </div>
             </Shortcuts>
         );

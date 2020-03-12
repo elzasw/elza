@@ -8,6 +8,7 @@ import PropTypes from 'prop-types';
 
 import * as React from 'react';
 import i18n from './i18n';
+import {Button} from './ui';
 
 export default class LongText extends React.Component {
     static propTypes = {
@@ -26,7 +27,7 @@ export default class LongText extends React.Component {
             const max = this.props.max || 164;
             if (text.length > max) {
                 text = text.substring(0, max-3) + "...";
-                more = <span> (<a href="#" onClick={this.handleShowMore}>{i18n('global.action.show.more')}</a>)</span>
+                more = <span> (<Button variant="link" onClick={this.handleShowMore}>{i18n('global.action.show.more')}</Button>)</span>
             }
         }
 

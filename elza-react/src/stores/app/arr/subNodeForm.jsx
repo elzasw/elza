@@ -495,6 +495,8 @@ export default function subNodeForm(state = initialState, action = {}) {
                 case 'DELETE_DESC_ITEM_TYPE':
                     // nic dalšího není potřeba, node se aktualizuje výše
                     break;
+                default:
+                    break;
             }
 
             newState.formData = {...state.formData};
@@ -507,7 +509,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             const formData = template.formData;
             const replaceValues = template.replaceValues;
 
-            Object.keys(formData).map(itemTypeId => {
+            Object.keys(formData).forEach(itemTypeId => {
                 let existsItemType = false;
                 const items = formData[itemTypeId];
 
