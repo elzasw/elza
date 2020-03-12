@@ -1118,66 +1118,68 @@ export function updateFormData(state, data, refTypesMap, groups, updatedItem, di
         state.infoGroupsMap = {};
         state.infoTypesMap = {};                     // mapa id descItemTypeInfo na descItemTypeInfo
 
-        state.infoGroups = groups.ids.map((groupId, index) => {
-            const group = groups[groupId];
-            const resultGroup = {
-                code: group.code,
-                name: group.name,
-                position: index + 1,
-                types: group.itemTypes.map(it => {
-                    const itemType = refTypesMap[it.id];
-                    const itemSpecs = itemType.descItemSpecs;
+        state.infoGroups = !groups
+            ? []
+            : groups.ids.map((groupId, index) => {
+                const group = groups[groupId];
+                const resultGroup = {
+                    code: group.code,
+                    name: group.name,
+                    position: index + 1,
+                    types: group.itemTypes.map(it => {
+                        const itemType = refTypesMap[it.id];
+                        const itemSpecs = itemType.descItemSpecs;
 
-                    const dataItemType = dataItemTypeMap[it.id] || {};
-                    const dataItemSpecs = dataItemType.specs || [];
+                        const dataItemType = dataItemTypeMap[it.id] || {};
+                        const dataItemSpecs = dataItemType.specs || [];
 
-                    const finalItemSpecs = itemSpecs.map(spec => {
-                        const specIndex = indexById(dataItemSpecs, spec.id);
-                        if (specIndex == null) {
-                            return {
-                                id: spec.id,
-                                type: 'IMPOSSIBLE',
-                                rep: 0,
-                            };
-                        } else {
-                            const dataSpec = dataItemSpecs[specIndex];
-                            return {
-                                ...dataSpec,
-                                type: typesNumToStrMap[dataSpec.type],
-                            };
-                        }
-                    });
+                        const finalItemSpecs = itemSpecs.map(spec => {
+                            const specIndex = indexById(dataItemSpecs, spec.id);
+                            if (specIndex == null) {
+                                return {
+                                    id: spec.id,
+                                    type: 'IMPOSSIBLE',
+                                    rep: 0,
+                                };
+                            } else {
+                                const dataSpec = dataItemSpecs[specIndex];
+                                return {
+                                    ...dataSpec,
+                                    type: typesNumToStrMap[dataSpec.type],
+                                };
+                            }
+                        });
 
-                    const finalItemType = {
-                        ...dataItemType,
-                        type: dataItemType.type ? typesNumToStrMap[dataItemType.type] : 'IMPOSSIBLE',
-                        specs: finalItemSpecs,
-                        descItemSpecsMap: getMapFromList(finalItemSpecs),
-                    };
+                        const finalItemType = {
+                            ...dataItemType,
+                            type: dataItemType.type ? typesNumToStrMap[dataItemType.type] : 'IMPOSSIBLE',
+                            specs: finalItemSpecs,
+                            descItemSpecsMap: getMapFromList(finalItemSpecs),
+                        };
 
-                    const resultItemType = {
-                        cal: 0,
-                        calSt: 0,
-                        descItemSpecsMap: {},
-                        favoriteSpecIds: [],
-                        id: itemType.id,
-                        ind: 0,
-                        rep: 0,
-                        specs: [],
-                        type: 'IMPOSSIBLE',
-                        width: 1,
-                        ...finalItemType,
-                    };
-                    state.infoTypesMap[resultItemType.id] = resultItemType;
+                        const resultItemType = {
+                            cal: 0,
+                            calSt: 0,
+                            descItemSpecsMap: {},
+                            favoriteSpecIds: [],
+                            id: itemType.id,
+                            ind: 0,
+                            rep: 0,
+                            specs: [],
+                            type: 'IMPOSSIBLE',
+                            width: 1,
+                            ...finalItemType,
+                        };
+                        state.infoTypesMap[resultItemType.id] = resultItemType;
 
-                    return resultItemType;
-                }),
-            };
+                        return resultItemType;
+                    }),
+                };
 
-            state.infoGroupsMap[resultGroup.code] = resultGroup;
+                state.infoGroupsMap[resultGroup.code] = resultGroup;
 
-            return resultGroup;
-        });
+                return resultGroup;
+            });
 
         // Mapa číselníku decsItemType
         state.refTypesMap = refTypesMap;
