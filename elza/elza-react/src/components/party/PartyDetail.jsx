@@ -1,5 +1,5 @@
 import React from 'react';
-import {reduxForm} from 'redux-form';
+import { reduxForm } from 'redux-form';
 import PartyListItem from './PartyListItem';
 import PartyDetailIdentifiers from './PartyDetailIdentifiers';
 import PartyDetailNames from './PartyDetailNames';
@@ -15,25 +15,25 @@ import {
     StoreHorizontalLoader,
     Utils,
 } from 'components/shared';
-import {Form} from 'react-bootstrap';
-import {Button} from '../ui';
-import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx';
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
-import {partyAdd, partyDetailFetchIfNeeded, partyUpdate} from 'actions/party/party.jsx';
-import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx';
-import {getMapFromList, objectById} from 'stores/app/utils.jsx';
-import {Shortcuts} from 'react-shortcuts';
-import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
+import { Form } from 'react-bootstrap';
+import { Button } from '../ui';
+import { refPartyTypesFetchIfNeeded } from 'actions/refTables/partyTypes.jsx';
+import { calendarTypesFetchIfNeeded } from 'actions/refTables/calendarTypes.jsx';
+import { partyAdd, partyDetailFetchIfNeeded, partyUpdate } from 'actions/party/party.jsx';
+import { userDetailsSaveSettings } from 'actions/user/userDetail.jsx';
+import { getMapFromList, objectById } from 'stores/app/utils.jsx';
+import { Shortcuts } from 'react-shortcuts';
+import { getOneSettings, setSettings } from 'components/arr/ArrUtils.jsx';
+import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
 import * as perms from 'actions/user/Permission.jsx';
-import {initForm} from 'actions/form/inlineForm.jsx';
-import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx';
-import {PARTY_TYPE_CODES} from '../../constants.tsx';
-import {PropTypes} from 'prop-types';
+import { initForm } from 'actions/form/inlineForm.jsx';
+import { refRecordTypesFetchIfNeeded } from 'actions/refTables/recordTypes.jsx';
+import { PARTY_TYPE_CODES } from '../../constants.tsx';
+import { PropTypes } from 'prop-types';
 import defaultKeymap from './PartyDetailKeymap.jsx';
 import './PartyDetail.scss';
-import {requestScopesIfNeeded} from '../../actions/refTables/scopesData';
-import {addToastrWarning} from '../shared/toastr/ToastrActions';
+import { requestScopesIfNeeded } from '../../actions/refTables/scopesData';
+import { addToastrWarning } from '../shared/toastr/ToastrActions';
 import * as StateApproval from '../enum/StateApproval';
 
 
@@ -109,11 +109,12 @@ class PartyDetail extends AbstractReactComponent {
         const errors = PartyDetail.requireFields(...required)(values);
         errors.creators = [];
 
-        values.creators.forEach((i, index) => {
-            if (!(i && i !== '' && typeof i == 'object')) {
-                errors.creators[index] = i18n('global.validation.required');
-            }
-        });
+        if (values.creators)
+            values.creators.forEach((i, index) => {
+                if (!(i && i !== '' && typeof i == 'object')) {
+                    errors.creators[index] = i18n('global.validation.required');
+                }
+            });
         if (errors.creators.length === 0) {
             delete errors.creators;
         }
@@ -148,9 +149,9 @@ class PartyDetail extends AbstractReactComponent {
             tmpActiveIndexes = {};
         }
 
-        let activeIndexes           = tmpActiveIndexes,
+        let activeIndexes = tmpActiveIndexes,
             visibilitySettingsValue = {},
-            mergeIndex              = {};
+            mergeIndex = {};
 
         if (props.userDetail && props.userDetail.settings) {
             const { settings } = props.userDetail;
@@ -336,7 +337,7 @@ class PartyDetail extends AbstractReactComponent {
             content = <div tabIndex={0} ref='partyDetail' className="party-detail">
                 <div className={headerCls}>
                     <div className="header-icon">
-                        <Icon glyph={icon}/>
+                        <Icon glyph={icon} />
                     </div>
                     <div className="header-content">
                         <div>
@@ -357,7 +358,7 @@ class PartyDetail extends AbstractReactComponent {
                 <div className="party-type">
                     {party.partyType.description}
                     <div className="right-part"
-                         title={party.accessPoint.comment ? party.accessPoint.comment : i18n('ap.state.title.noComment')}>
+                        title={party.accessPoint.comment ? party.accessPoint.comment : i18n('ap.state.title.noComment')}>
                         <span
                             className="state-approval-label">{StateApproval.getCaption(party.accessPoint.stateApproval)}</span>
                         {party.accessPoint.scopeId && <span className="scope-label">
@@ -372,36 +373,36 @@ class PartyDetail extends AbstractReactComponent {
                             const key = UI_PARTY_GROUP_TYPE.IDENT;
                             return <div key={index}>
                                 <CollapsablePanel tabIndex={0} isOpen={activeIndexes && activeIndexes[key] === true}
-                                                  pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true}
-                                                  header={i.name} eventKey={key} {...events}>
+                                    pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true}
+                                    header={i.name} eventKey={key} {...events}>
                                     <PartyDetailNames party={party} partyType={partyType}
-                                                      onPartyUpdate={this.handlePartyUpdate} canEdit={canEdit}/>
+                                        onPartyUpdate={this.handlePartyUpdate} canEdit={canEdit} />
                                     {party.partyType.code === PARTY_TYPE_CODES.GROUP_PARTY &&
-                                    <PartyDetailIdentifiers party={party} onPartyUpdate={this.handlePartyUpdate}
-                                                            canEdit={canEdit}/>}
+                                        <PartyDetailIdentifiers party={party} onPartyUpdate={this.handlePartyUpdate}
+                                            canEdit={canEdit} />}
                                 </CollapsablePanel>
                             </div>;
                         } else if (TYPE === UI_PARTY_GROUP_TYPE.CONCLUSION) {
                             const key = UI_PARTY_GROUP_TYPE.CONCLUSION;
                             return <div key={index}>
                                 <CollapsablePanel tabIndex={0} isOpen={activeIndexes && activeIndexes[key] === true}
-                                                  pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true}
-                                                  header={i.name} eventKey={key} {...events}>
+                                    pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true}
+                                    header={i.name} eventKey={key} {...events}>
                                     <FormInput as="textarea" {...sourceInformation}
-                                               label={i18n('party.detail.sources')}/>
+                                        label={i18n('party.detail.sources')} />
                                     <label className="group-label">{i18n('party.detail.creators')}{canEdit &&
-                                    <Button variant="action" onClick={() => creators.addField({})}><Icon
-                                        glyph="fa-plus"/></Button>}</label>
+                                        <Button variant="action" onClick={() => creators.addField({})}><Icon
+                                            glyph="fa-plus" /></Button>}</label>
                                     {creators.map((creator, index) => <div key={index + '-' + creator.id}
-                                                                           className="value-group">
+                                        className="value-group">
                                         <div className='desc-item-value desc-item-value-parts'>
                                             <PartyField
                                                 onCreate={this.handleAddParty.bind(this, creator)} {...creator} />
                                             {canEdit && <Button variant="action" onClick={() => {
-                                                if (confirm(i18n('party.detail.creator.delete'))) {
+                                                if (window.confirm(i18n('party.detail.creator.delete'))) {
                                                     creators.removeField(index);
                                                 }
-                                            }}><Icon glyph="fa-trash"/></Button>}
+                                            }}><Icon glyph="fa-trash" /></Button>}
                                         </div>
                                     </div>)}
                                 </CollapsablePanel>
@@ -441,36 +442,36 @@ class PartyDetail extends AbstractReactComponent {
 
                                                 if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXT) {
                                                     element =
-                                                        <FormInput {...inputProps} type="text" disabled={!canEdit}/>;
+                                                        <FormInput {...inputProps} type="text" disabled={!canEdit} />;
                                                 } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXTAREA) {
                                                     const { initialValue, autofill, onUpdate, valid, invalid, dirty, pristine, active, visited, autofilled, ...textAreaProps } = inputProps;
                                                     element = <FormInput {...textAreaProps} as="textarea"
-                                                                         disabled={!canEdit}/>;
+                                                        disabled={!canEdit} />;
                                                 } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.RELATION) {
                                                     const type = objectById(partyType.relationTypes, item.definition, 'code');
                                                     if (type) {
                                                         element =
                                                             <PartyDetailRelations party={party} relationType={type}
-                                                                                  apTypesMap={apTypesMap}
-                                                                                  label={item.name} canEdit={canEdit}/>;
+                                                                apTypesMap={apTypesMap}
+                                                                label={item.name} canEdit={canEdit} />;
                                                     } else {
                                                         element = i18n('party.detail.ui.unknownRelation');
                                                     }
                                                 } else if (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.RELATION_CLASS) {
                                                     if (relationClassTypes[item.definition]) {
                                                         element = <PartyDetailRelationClass party={party}
-                                                                                            partyType={partyType}
-                                                                                            apTypesMap={apTypesMap}
-                                                                                            relationClassType={relationClassTypes[item.definition]}
-                                                                                            label={item.name}
-                                                                                            canEdit={canEdit}/>;
+                                                            partyType={partyType}
+                                                            apTypesMap={apTypesMap}
+                                                            relationClassType={relationClassTypes[item.definition]}
+                                                            label={item.name}
+                                                            canEdit={canEdit} />;
                                                     } else {
                                                         element = i18n('party.detail.ui.unknownRelation');
                                                     }
                                                 }
 
                                                 items.push(<div key={key}
-                                                                className={'el-' + (item.width ? item.width : 0)}>
+                                                    className={'el-' + (item.width ? item.width : 0)}>
                                                     {element}
                                                 </div>);
                                             }
@@ -484,10 +485,10 @@ class PartyDetail extends AbstractReactComponent {
                             const key = i.code;
 
                             return <CollapsablePanel tabIndex={0} key={key}
-                                                     isOpen={activeIndexes && activeIndexes[key] === true}
-                                                     pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true}
-                                                     header={i.name}
-                                                     eventKey={key} {...events}>
+                                isOpen={activeIndexes && activeIndexes[key] === true}
+                                pinned={visibilitySettingsValue && visibilitySettingsValue[key] === true}
+                                header={i.name}
+                                eventKey={key} {...events}>
                                 <div className="elements-container">
                                     {items}
                                 </div>
@@ -501,27 +502,27 @@ class PartyDetail extends AbstractReactComponent {
         }
 
         return <Shortcuts name='PartyDetail' handler={this.handleShortcuts} className="party-detail-wrapper">
-            <StoreHorizontalLoader store={partyDetail}/>
+            <StoreHorizontalLoader store={partyDetail} />
             {content}
         </Shortcuts>;
     }
 }
 
 export default reduxForm({
-        form: 'partyDetail',
-        fields: PartyDetail.fields,
-        validate: PartyDetail.validate,
-    }, (state) => {
-        const { app: { partyDetail }, userDetail, refTables: { partyTypes, recordTypes }, focus, refTables } = state;
-        return {
-            partyDetail,
-            userDetail,
-            partyTypes,
-            recordTypes,
-            _focus: focus,
-            initialValues: partyDetail.fetched ? partyDetail.data : {},
-            scopes: refTables.scopesData.scopes,
-        };
-    },
+    form: 'partyDetail',
+    fields: PartyDetail.fields,
+    validate: PartyDetail.validate,
+}, (state) => {
+    const { app: { partyDetail }, userDetail, refTables: { partyTypes, recordTypes }, focus, refTables } = state;
+    return {
+        partyDetail,
+        userDetail,
+        partyTypes,
+        recordTypes,
+        _focus: focus,
+        initialValues: partyDetail.fetched ? partyDetail.data : {},
+        scopes: refTables.scopesData.scopes,
+    };
+},
     { initForm: (onSave) => (initForm('partyDetail', PartyDetail.validate, onSave)) },
 )(PartyDetail);

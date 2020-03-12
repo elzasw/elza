@@ -82,7 +82,7 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
     };
 
     handleRemoveNode = (node) => {
-        if (confirm(i18n('arr.fund.nodes.deleteNode'))) {
+        if (window.confirm(i18n('arr.fund.nodes.deleteNode'))) {
             this.props.onRemoveNodePermission(this.props.fundId, node);
         }
     };

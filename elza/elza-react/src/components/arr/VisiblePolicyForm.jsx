@@ -33,7 +33,7 @@ class VisiblePolicyForm extends AbstractReactComponent {
     };
 
     handleResetVisiblePolicy = () => {
-        if (confirm(i18n('visiblePolicy.action.reset.confirm'))) {
+        if (window.confirm(i18n('visiblePolicy.action.reset.confirm'))) {
             this.props.onSubmitForm({records: []});
             this.props.dispatch(modalDialogHide());
         }

@@ -278,7 +278,7 @@ export function fundOutputGenerate(outputId) {
                     default:
                         break;
                 }
-                if (confirm(i18n('ribbon.action.arr.output.generate.continue', i18n(message)))) {
+                if (window.confirm(i18n('ribbon.action.arr.output.generate.continue', i18n(message)))) {
                     WebApi.outputGenerate(outputId, true);
                 }
             }

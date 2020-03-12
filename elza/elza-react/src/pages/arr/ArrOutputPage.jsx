@@ -388,7 +388,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     handleUsageEnd() {
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
-        if (confirm(i18n('arr.output.usageEnd.confirm'))) {
+        if (window.confirm(i18n('arr.output.usageEnd.confirm'))) {
             this.props.dispatch(fundOutputUsageEnd(fund.versionId, fundOutputDetail.id));
         }
     }
@@ -396,7 +396,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     handleDelete() {
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
-        if (confirm(i18n('arr.output.delete.confirm'))) {
+        if (window.confirm(i18n('arr.output.delete.confirm'))) {
             this.props.dispatch(fundOutputDelete(fund.versionId, fundOutputDetail.id));
         }
     }
@@ -587,7 +587,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     handleRevertToOpen() {
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
-        //if (confirm(i18n('arr.output.revert.confirm'))) {
+        //if (window.confirm(i18n('arr.output.revert.confirm'))) {
         this.props.dispatch(fundOutputRevert(fund.versionId, fundOutputDetail.id));
         //}
     }

@@ -299,7 +299,7 @@ class FundPage extends AbstractReactComponent {
         const {fundRegion} = this.props;
         const fundDetail = fundRegion.fundDetail;
 
-        if (confirm(i18n('arr.fund.action.delete.confirm', fundDetail.name))) {
+        if (window.confirm(i18n('arr.fund.action.delete.confirm', fundDetail.name))) {
             this.props.dispatch(deleteFund(fundDetail.id));
         }
     }
@@ -308,7 +308,7 @@ class FundPage extends AbstractReactComponent {
         const {fundRegion} = this.props;
         const fundDetail = fundRegion.fundDetail;
 
-        if (confirm(i18n('arr.fund.action.deletehistory.confirm', fundDetail.name))) {
+        if (window.confirm(i18n('arr.fund.action.deletehistory.confirm', fundDetail.name))) {
             this.props.dispatch(deleteFundHistory(fundDetail.id));
         }
     }

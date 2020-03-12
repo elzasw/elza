@@ -1,21 +1,22 @@
 import React from 'react';
-import {connect} from 'react-redux';
-import {AbstractReactComponent, Autocomplete, i18n, Icon} from 'components/shared';
-import {decorateAutocompleteValue} from './DescItemUtils.jsx';
-import {WebApi} from 'actions/WebApi';
+import { connect } from 'react-redux';
+import { AbstractReactComponent, Autocomplete, i18n, Icon } from 'components/shared';
+import { decorateAutocompleteValue } from './DescItemUtils.jsx';
+import { WebApi } from 'actions';
 import DescItemLabel from './DescItemLabel.jsx';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 import PropTypes from 'prop-types';
 import './DescItemStructureRef.scss';
 import classNames from 'classnames';
-import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog';
+import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
 import AddStructureDataForm from 'components/arr/structure/AddStructureDataForm';
-import {structureTypeInvalidate} from 'actions/arr/structureType';
-import {Button} from '../../ui';
+import { structureTypeInvalidate } from 'actions/arr/structureType';
+import { Button } from '../../ui';
+
 
 
 class DescItemStructureRef extends AbstractReactComponent {
-    state = {data: [], active: false};
+    state = { data: [], active: false };
 
     static propTypes = {
         fundVersionId: PropTypes.number.isRequired,
@@ -23,23 +24,23 @@ class DescItemStructureRef extends AbstractReactComponent {
     };
 
     handleFocus = () => {
-        this.setState({active: true});
+        this.setState({ active: true });
         this.props.onFocus && this.props.onFocus();
     };
 
     handleBlur = () => {
-        this.setState({active: false});
+        this.setState({ active: false });
         this.props.onBlur && this.props.onBlur();
     };
 
     handleSearchChange = (text) => {
-        const {versionId, structureTypeCode} = this.props;
+        const { versionId, structureTypeCode } = this.props;
         WebApi.findStructureData(versionId, structureTypeCode, text, true)
-              .then(({rows}) => {
-                  this.setState({
-                      data: rows,
-                  });
-              });
+            .then(({ rows }) => {
+                this.setState({
+                    data: rows,
+                });
+            });
     };
 
     findValue = () => {
@@ -48,7 +49,7 @@ class DescItemStructureRef extends AbstractReactComponent {
     };
 
     addNewStructure = () => {
-        const {structureTypeCode, versionId, fundId, structureTypeName, onChange, descItemFactory} = this.props;
+        const { structureTypeCode, versionId, fundId, structureTypeName, onChange, descItemFactory } = this.props;
         WebApi.createStructureData(versionId, structureTypeCode, this.findValue()).then(structureData => {
             this.props.dispatch(
                 modalDialogShow(
@@ -103,29 +104,29 @@ class DescItemStructureRef extends AbstractReactComponent {
      * @returns Element
      */
     renderItem = (props) => {
-        const {item, highlighted, selected, ...otherProps} = props;
-        return <div {...otherProps} className={classNames('item', {focus: highlighted, active: selected})}
-                    key={item.id}>
+        const { item, highlighted, selected, ...otherProps } = props;
+        return <div {...otherProps} className={classNames('item', { focus: highlighted, active: selected })}
+            key={item.id}>
             {item.value} <span className="item-complement">{item.complement}</span>
         </div>;
     };
 
     renderFooter = () => {
-        const {structureTypeName} = this.props;
+        const { structureTypeName } = this.props;
         return <div className="create-structure">
-            <Button onClick={this.addNewStructure}><Icon glyph='fa-plus'/>{i18n('arr.structure.add', structureTypeName)}
+            <Button onClick={this.addNewStructure}><Icon glyph='fa-plus' />{i18n('arr.structure.add', structureTypeName)}
             </Button>
         </div>;
     };
 
     render() {
-        const {descItem, onChange, onBlur, locked, singleDescItemTypeEdit, readMode, cal} = this.props;
+        const { descItem, onChange, onBlur, locked, singleDescItemTypeEdit, readMode, cal } = this.props;
         const structureData = descItem.structureData;
         if (readMode || descItem.undefined) {
             const calValue = cal && structureData === null ? i18n('subNodeForm.descItemType.calculable') : '';
             return (
                 <DescItemLabel value={structureData ? structureData.value : calValue} cal={cal}
-                               notIdentified={descItem.undefined}/>
+                    notIdentified={descItem.undefined} />
             );
         }
 
@@ -146,7 +147,7 @@ class DescItemStructureRef extends AbstractReactComponent {
                         items={this.state.data}
                         onSearchChange={this.handleSearchChange}
                         onChange={onChange}
-                        renderItem={descItem.undefined ? {name: i18n('subNodeForm.descItemType.notIdentified')} : this.renderItem}
+                        renderItem={descItem.undefined ? { name: i18n('subNodeForm.descItemType.notIdentified') } : this.renderItem}
                         getItemName={item => item ? item.value : ''}
                         onEmptySelect={this.addNewStructure}
                         footer={this.renderFooter()}

@@ -93,7 +93,7 @@ class ArrRequestDetail extends AbstractReactComponent {
     handleRemoveNode = (node) => {
         const {versionId, requestDetail} = this.props;
 
-        if (confirm(i18n('arr.fund.nodes.deleteNode'))) {
+        if (window.confirm(i18n('arr.fund.nodes.deleteNode'))) {
             this.props.dispatch(arrRequestActions.removeNode(versionId, requestDetail, node.id));
         }
     };

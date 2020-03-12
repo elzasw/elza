@@ -155,7 +155,7 @@ class RegistryPage extends AbstractReactComponent {
 
     /* MCV-45365
     handleSetValidParty = () => {
-        confirm(i18n('party.setValid.confirm')) && this.props.dispatch(setValidRegistry(this.props.registryDetail.data.id));
+        window.confirm(i18n('party.setValid.confirm')) && this.props.dispatch(setValidRegistry(this.props.registryDetail.data.id));
     };
     */
 

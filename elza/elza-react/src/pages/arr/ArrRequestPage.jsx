@@ -146,7 +146,7 @@ class ArrRequestPage extends ArrParentPage {
 
     handleDelete = (id) => {
         const fund = this.getActiveFund(this.props);
-        if (confirm(i18n('ribbon.action.arr.fund.request.delete.confirm'))) {
+        if (window.confirm(i18n('ribbon.action.arr.fund.request.delete.confirm'))) {
             this.props.dispatch(arrRequestActions.deleteRequest(fund.versionId, id));
         }
     };
