@@ -902,7 +902,7 @@ public class DescItemFactory implements InitializingBean {
             URI tempUri = URI.create(dataTemp.getValue()).normalize();
             dataTemp.setSchema(tempUri.getScheme());
 
-            if(dataTemp.getSchema().equals(ELZA_NODE)) {
+            if(!dataTemp.isDeletingProcess() && dataTemp.getSchema().equals(ELZA_NODE)) {
                 ArrNode node = nodeRepository.findOneByUuid(tempUri.getAuthority()); //hledání podle UUID
                 if(node != null) {
                     dataTemp.setArrNode(node);

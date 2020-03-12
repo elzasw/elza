@@ -33,6 +33,9 @@ public class ArrDataUriRef extends ArrData {
     @JoinColumn(name="nodeId")
     private ArrNode arrNode;
 
+    @Transient
+    private boolean deletingProcess = false;
+
     private static ApFulltextProvider fulltextProvider;
 
     public ArrDataUriRef() {
@@ -106,6 +109,14 @@ public class ArrDataUriRef extends ArrData {
     protected boolean isEqualValueInternal(ArrData srcData) {
         ArrDataUriRef src = (ArrDataUriRef) srcData;
         return value.equals(src.value);
+    }
+
+    public boolean isDeletingProcess() {
+        return deletingProcess;
+    }
+
+    public void setDeletingProcess(boolean deletingProcess) {
+        this.deletingProcess = deletingProcess;
     }
 
     @Override
