@@ -139,9 +139,6 @@ public class ArrangementService {
     private ScopeRepository scopeRepository;
 
     @Autowired
-    private DataUriRefRepository dataUriRefRepository;
-
-    @Autowired
     private EntityManager em;
 
     @Autowired
@@ -670,6 +667,7 @@ public class ArrangementService {
             ArrDataUriRef arrDataUriRef = new ArrDataUriRef((ArrDataUriRef) arrDescItem.getData());
             arrDataUriRef.setDataId(null);
             arrDataUriRef.setArrNode(null);
+            arrDataUriRef.setDeletingProcess(true);
             arrDescItem.setData(arrDataUriRef);
         }
         descriptionItemService.updateDescriptionItems(arrDescItemList, fundVersion, deleteChange);
