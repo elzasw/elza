@@ -1,0 +1,40 @@
+package ZP2015;
+
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.drools.model.AvailableDescItems;
+import cz.tacr.elza.drools.model.ActiveLevel;
+import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.DescItem;
+
+import java.util.Arrays;
+import java.util.Set;
+import cz.tacr.elza.domain.RulItemType;
+
+rule "Zakázané typy obalů"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ZP2015_PACKET_TYPE")
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_PACKET_TYPE_SAMOST")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.IMPOSSIBLE);
+end
+
+rule "Možné typy obalů"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ZP2015_PACKET_TYPE")
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_PACKET_TYPE_SVZ",
+                                        "ZP2015_PACKET_TYPE_ETJ",
+                                        "ZP2015_PACKET_TYPE_KTZ",
+                                        "ZP2015_PACKET_TYPE_TBS",
+                                        "ZP2015_PACKET_TYPE_AKA",
+                                        "ZP2015_PACKET_TYPE_KDI",
+                                        "ZP2015_PACKET_TYPE_VKA",
+                                        "ZP2015_PACKET_TYPE_DDI",
+                                        "ZP2015_PACKET_TYPE_BOX",
+                                        "ZP2015_PACKET_TYPE_OTH")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
