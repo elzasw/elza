@@ -2642,6 +2642,7 @@
         <description>Datace pořízení filmového / zvukového záznamu</description>
         <shortcut>pořízení filmového / zvukového záznamu</shortcut>
     </item-spec>
+    <!-- Typ ukládací jednotky -->
     <item-spec code="ZP2015_PACKET_TYPE_SAMOST" item-type="ZP2015_PACKET_TYPE">
         <name>Samostatně</name>
         <description>Samostatně</description>
@@ -2656,6 +2657,56 @@
         <name>Fascikl</name>
         <description>Fascikl</description>
         <shortcut>fas</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_SVZ" item-type="ZP2015_PACKET_TYPE">
+        <name>Svazek</name>
+        <description>Svazek</description>
+        <shortcut>svz</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_ETJ" item-type="ZP2015_PACKET_TYPE">
+        <name>Etuje</name>
+        <description>Etuje</description>
+        <shortcut>etj</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_KTZ" item-type="ZP2015_PACKET_TYPE">
+        <name>Kartotéční zásuvka</name>
+        <description>Kartotéční zásuvka</description>
+        <shortcut>ktz</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_TBS" item-type="ZP2015_PACKET_TYPE">
+        <name>Tubus</name>
+        <description>Tubus</description>
+        <shortcut>tbs</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_AKA" item-type="ZP2015_PACKET_TYPE">
+        <name>Audiokazeta</name>
+        <description>Audiokazeta</description>
+        <shortcut>aka</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_KDI" item-type="ZP2015_PACKET_TYPE">
+        <name>Kompaktní disk</name>
+        <description>Kompaktní disk</description>
+        <shortcut>kdi</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_VKA" item-type="ZP2015_PACKET_TYPE">
+        <name>Videokazeta</name>
+        <description>Videokazeta</description>
+        <shortcut>vka</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_DDI" item-type="ZP2015_PACKET_TYPE">
+        <name>Digitální disk</name>
+        <description>Digitální disk</description>
+        <shortcut>ddi</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_BOX" item-type="ZP2015_PACKET_TYPE">
+        <name>Krabička</name>
+        <description>Krabička</description>
+        <shortcut>box</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_OTH" item-type="ZP2015_PACKET_TYPE">
+        <name>Jiné</name>
+        <description>Jiné</description>
+        <shortcut>oth</shortcut>
     </item-spec>
 
     <!-- typ vystpupu -->
