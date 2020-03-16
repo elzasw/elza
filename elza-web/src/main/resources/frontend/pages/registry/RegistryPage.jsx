@@ -239,7 +239,15 @@ class RegistryPage extends AbstractReactComponent {
                 );
             }
         }
-        if (userDetail.hasOne(perms.FUND_ADMIN, perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
+        if (userDetail.hasOne(
+            perms.FUND_ADMIN,
+            perms.AP_SCOPE_WR_ALL,
+            perms.AP_SCOPE_WR,
+            perms.AP_CONFIRM_ALL,
+            perms.AP_CONFIRM,
+            perms.AP_EDIT_CONFIRMED_ALL,
+            perms.AP_EDIT_CONFIRMED,
+        )) {
             altActions.push(
                 <Button key='scopeManagement' onClick={this.handleScopeManagement}>
                     <Icon glyph='fa-wrench'/>
@@ -298,8 +306,15 @@ class RegistryPage extends AbstractReactComponent {
                 </Button>
             );
 
-            if (userDetail.hasOne(perms.FUND_ADMIN, perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
-                itemActions.push(
+            if (userDetail.hasOne(
+                perms.FUND_ADMIN,
+                perms.AP_SCOPE_WR_ALL,
+                perms.AP_SCOPE_WR,
+                perms.AP_CONFIRM_ALL,
+                perms.AP_CONFIRM,
+                perms.AP_EDIT_CONFIRMED_ALL,
+                perms.AP_EDIT_CONFIRMED,
+            )) {                itemActions.push(
                     <Button key='change-state' onClick={this.handleChangeApState}>
                         <Icon glyph="fa-pencil"/>
                         <div><span className="btnText">{i18n('ap.changeState')}</span></div>
