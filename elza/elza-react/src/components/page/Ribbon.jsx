@@ -28,7 +28,7 @@ class Ribbon extends AbstractReactComponent {
         arr: PropTypes.bool,
         altSection: PropTypes.object,
         itemSection: PropTypes.object,
-        fundId: PropTypes.number
+        fundId: PropTypes.number,
     };
 
     static defaultProps = {
@@ -38,11 +38,11 @@ class Ribbon extends AbstractReactComponent {
     state = {};
 
     componentDidMount() {
-        this.trySetFocus()
+        this.trySetFocus();
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        this.trySetFocus(nextProps)
+        this.trySetFocus(nextProps);
     }
 
     trySetFocus = (props = this.props) => {
@@ -51,15 +51,15 @@ class Ribbon extends AbstractReactComponent {
         if (canSetFocus()) {
             if (isFocusFor(focus, null, null, 'ribbon')) {
                 this.setState({}, () => {
-                   ReactDOM.findDOMNode(this.refs.ribbonDefaultFocus).focus();
-                   focusWasSet()
-                })
+                    ReactDOM.findDOMNode(this.refs.ribbonDefaultFocus).focus();
+                    focusWasSet();
+                });
             }
         }
     };
 
     handleBack = () => {
-        this.props.dispatch(routerNavigate("/~arr"));
+        this.props.dispatch(routerNavigate('/~arr'));
     };
 
     handleLogout = () => {
@@ -67,7 +67,8 @@ class Ribbon extends AbstractReactComponent {
     };
 
     handlePasswordChangeForm = () => {
-        this.props.dispatch(modalDialogShow(this, i18n('admin.user.passwordChange.title'), <PasswordForm onSubmitForm={this.handlePasswordChange} />))
+        this.props.dispatch(modalDialogShow(this, i18n('admin.user.passwordChange.title'), <PasswordForm
+            onSubmitForm={this.handlePasswordChange}/>));
     };
 
     handlePasswordChange = (data) => {
@@ -88,47 +89,48 @@ class Ribbon extends AbstractReactComponent {
             section = (
                 <RibbonGroup key="ribbon-group-admin" className="large">
                     {administersUser && <LinkContainer key="ribbon-btn-admin-user" to="/admin/user">
-                        <Button variant={"default"}>
+                        <Button variant={'default'}>
                             <Icon glyph="fa-user"/>
-                            <span className="btnText">{ i18n('ribbon.action.admin.user')}</span>
+                            <span className="btnText">{i18n('ribbon.action.admin.user')}</span>
                         </Button>
                     </LinkContainer>}
                     {administersGroup && <LinkContainer key="ribbon-btn-admin-groups" to="/admin/group">
-                        <Button variant={"default"}>
+                        <Button variant={'default'}>
                             <Icon glyph="fa-group"/>
                             <span className="btnText">{i18n('ribbon.action.admin.group')}</span>
                         </Button>
                     </LinkContainer>}
-                    {(administersGroup || administersUser) && <LinkContainer key="ribbon-btn-admin-funds" to="/admin/fund">
-                        <Button variant={"default"}>
+                    {(administersGroup || administersUser) &&
+                    <LinkContainer key="ribbon-btn-admin-funds" to="/admin/fund">
+                        <Button variant={'default'}>
                             <Icon glyph="fa-database"/>
                             <span className="btnText">{i18n('ribbon.action.admin.fund')}</span>
                         </Button>
                     </LinkContainer>}
                     {isSuperuser && [<LinkContainer key="ribbon-btn-admin-packages" to="/admin/packages">
-                        <Button variant={"default"}>
+                        <Button variant={'default'}>
                             <Icon glyph="fa-archive"/>
                             <span className="btnText">{i18n('ribbon.action.admin.packages')}</span>
                         </Button>
                     </LinkContainer>,
-                    <LinkContainer key="ribbon-btn-admin-requestsQueue" to="/admin/requestsQueue">
-                        <Button variant={"default"}>
-                            <Icon glyph="fa-shopping-basket"/>
-                            <span className="btnText">{i18n('ribbon.action.admin.requestsQueue')}</span>
-                        </Button>
-                    </LinkContainer>,
-                    <LinkContainer key="ribbon-btn-admin-external-systems" to="/admin/extSystem">
-                        <Button variant={"default"}>
-                            <Icon glyph="fa-external-link"/>
-                            <span className="btnText">{i18n('ribbon.action.admin.externalSystems')}</span>
-                        </Button>
-                    </LinkContainer>,
-                    <LinkContainer key="ribbon-btn-admin-show-logs" to="/admin/logs">
-                        <Button variant={"default"}>
-                            <Icon glyph="fa-file-text-o"/>
-                            <span className="btnText">{i18n('ribbon.action.admin.showLogs')}</span>
-                        </Button>
-                    </LinkContainer>]}
+                        <LinkContainer key="ribbon-btn-admin-requestsQueue" to="/admin/requestsQueue">
+                            <Button variant={'default'}>
+                                <Icon glyph="fa-shopping-basket"/>
+                                <span className="btnText">{i18n('ribbon.action.admin.requestsQueue')}</span>
+                            </Button>
+                        </LinkContainer>,
+                        <LinkContainer key="ribbon-btn-admin-external-systems" to="/admin/extSystem">
+                            <Button variant={'default'}>
+                                <Icon glyph="fa-external-link"/>
+                                <span className="btnText">{i18n('ribbon.action.admin.externalSystems')}</span>
+                            </Button>
+                        </LinkContainer>,
+                        <LinkContainer key="ribbon-btn-admin-show-logs" to="/admin/logs">
+                            <Button variant={'default'}>
+                                <Icon glyph="fa-file-text-o"/>
+                                <span className="btnText">{i18n('ribbon.action.admin.showLogs')}</span>
+                            </Button>
+                        </LinkContainer>]}
                 </RibbonGroup>
             );
         }
@@ -137,26 +139,26 @@ class Ribbon extends AbstractReactComponent {
             if (userDetail.hasRdPage(fundId)) {    // právo na čtení
                 arrParts.push(
                     <IndexLinkContainer key="ribbon-btn-arr-index" to="/arr">
-                        <Button ref='ribbonDefaultFocus' variant={"default"}>
-                            <Icon glyph="fa-sitemap" />
+                        <Button ref='ribbonDefaultFocus' variant={'default'}>
+                            <Icon glyph="fa-sitemap"/>
                             <span className="btnText">{i18n('ribbon.action.arr.arr')}</span>
                         </Button>
-                    </IndexLinkContainer>
+                    </IndexLinkContainer>,
                 );
                 arrParts.push(
                     <LinkContainer key="ribbon-btn-arr-dataGrid" to="/arr/dataGrid">
-                        <Button variant={"default"}>
-                            <Icon glyph="fa-table" />
+                        <Button variant={'default'}>
+                            <Icon glyph="fa-table"/>
                             <span className="btnText">{i18n('ribbon.action.arr.dataGrid')}</span>
                         </Button>
-                    </LinkContainer>
+                    </LinkContainer>,
                 );
             }
             if (userDetail.hasArrPage(fundId)) {    // právo na pořádání
                 arrParts.push(
                     <LinkContainer key="ribbon-btn-arr-movements" to="/arr/movements">
-                        <Button variant={"default"}>
-                            <Icon glyph="fa-exchange" />
+                        <Button variant={'default'}>
+                            <Icon glyph="fa-exchange"/>
                             <span className="btnText">{i18n('ribbon.action.arr.movements')}</span>
                         </Button>
                     </LinkContainer>);
@@ -165,8 +167,8 @@ class Ribbon extends AbstractReactComponent {
             if (userDetail.hasArrOutputPage(fundId)) {    // právo na výstupy
                 arrParts.push(
                     <LinkContainer key="ribbon-btn-arr-output" to="/arr/output">
-                        <Button variant={"default"}>
-                            <Icon glyph="fa-print" />
+                        <Button variant={'default'}>
+                            <Icon glyph="fa-print"/>
                             <span className="btnText">{i18n('ribbon.action.arr.output')}</span>
                         </Button>
                     </LinkContainer>);
@@ -175,8 +177,8 @@ class Ribbon extends AbstractReactComponent {
             if (userDetail.hasFundActionPage(fundId)) {    // právo na hromadné akce
                 arrParts.push(
                     <LinkContainer key="ribbon-btn-arr-actions" to="/arr/actions">
-                        <Button variant={"default"}>
-                            <Icon glyph="fa-calculator" />
+                        <Button variant={'default'}>
+                            <Icon glyph="fa-calculator"/>
                             <span className="btnText">{i18n('ribbon.action.arr.fund.bulkActions')}</span>
                         </Button>
                     </LinkContainer>);
@@ -185,15 +187,15 @@ class Ribbon extends AbstractReactComponent {
             if (userDetail.hasArrPage(fundId)) {    // právo na pořádání
                 arrParts.push(
                     <LinkContainer key="ribbon-btn-arr-requests" to="/arr/requests">
-                        <Button variant={"default"}>
-                            <Icon glyph="fa-shopping-basket" />
+                        <Button variant={'default'}>
+                            <Icon glyph="fa-shopping-basket"/>
                             <span className="btnText">{i18n('ribbon.action.arr.fund.requests')}</span>
                         </Button>
                     </LinkContainer>);
                 arrParts.push(
                     <LinkContainer key="ribbon-btn-arr-daos" to="/arr/daos">
-                        <Button variant={"default"}>
-                            <Icon glyph="fa-camera" />
+                        <Button variant={'default'}>
+                            <Icon glyph="fa-camera"/>
                             <span className="btnText">{i18n('ribbon.action.arr.fund.daos')}</span>
                         </Button>
                     </LinkContainer>);
@@ -210,35 +212,36 @@ class Ribbon extends AbstractReactComponent {
         if (subMenu) {  // submenu se šipkou zpět
             parts.push(
                 <RibbonGroup key="ribbon-group-main" className="large big-icon">
-                    <Button variant={"default"} className="large" onClick={this.handleBack} title={i18n('ribbon.action.back')}><Icon glyph="fa-arrow-circle-o-left" /></Button>
-                </RibbonGroup>
-            )
+                    <Button variant={'default'} className="large" onClick={this.handleBack}
+                            title={i18n('ribbon.action.back')}><Icon glyph="fa-arrow-circle-o-left"/></Button>
+                </RibbonGroup>,
+            );
         } else if (primarySection) {
             section = primarySection;
         } else {    // standardní menu s hlavním rozcestníkem
             parts.push(
                 <RibbonGroup key="ribbon-group-main" className="large">
                     <IndexLinkContainer key="ribbon-btn-home" to="/">
-                        <Button ref='ribbonDefaultFocus' variant={"default"}>
-                            <Icon glyph="fa-home" />
+                        <Button ref='ribbonDefaultFocus' variant={'default'}>
+                            <Icon glyph="fa-home"/>
                             <span className="btnText">{i18n('ribbon.action.home')}</span>
                         </Button>
                     </IndexLinkContainer>
                     <LinkContainer key="ribbon-btn-fund" to="/fund">
-                        <Button variant={"default"}>
-                            <Icon glyph="fa-database" />
+                        <Button variant={'default'}>
+                            <Icon glyph="fa-database"/>
                             <span className="btnText">{i18n('ribbon.action.fund')}</span>
                         </Button>
                     </LinkContainer>
                     <LinkContainer key="ribbon-btn-registry" to="/registry">
-                        <Button variant={"default"}>
-                            <Icon glyph="fa-th-list" />
+                        <Button variant={'default'}>
+                            <Icon glyph="fa-th-list"/>
                             <span className="btnText">{i18n('ribbon.action.registry')}</span>
                         </Button>
                     </LinkContainer>
                     <LinkContainer key="ribbon-btn-party" to="/party">
-                        <Button variant={"default"}>
-                            <Icon glyph="fa-users" />
+                        <Button variant={'default'}>
+                            <Icon glyph="fa-users"/>
                             <span className="btnText">{i18n('ribbon.action.party')}</span>
                         </Button>
                     </LinkContainer>
@@ -246,17 +249,17 @@ class Ribbon extends AbstractReactComponent {
                         perms.ADMIN,
                         perms.USR_PERM,
                         perms.USER_CONTROL_ENTITITY,
-                        perms.GROUP_CONTROL_ENTITITY
+                        perms.GROUP_CONTROL_ENTITITY,
                     ) && <LinkContainer key="ribbon-btn-admin" to="/admin">
-                        <Button variant={"default"}>
-                            <Icon glyph="fa-cog" />
+                        <Button variant={'default'}>
+                            <Icon glyph="fa-cog"/>
                             <span className="btnText">{i18n('ribbon.action.admin')}</span>
                         </Button>
                     </LinkContainer>}
-                </RibbonGroup>
-            )
+                </RibbonGroup>,
+            );
         }
-                // <LinkContainer key="ribbon-btn-arr" to="/arr"><Button><Icon glyph="fa-file-text" /><div><span className="btnText">{i18n('ribbon.action.arr')}</span></div></Button></LinkContainer>
+        // <LinkContainer key="ribbon-btn-arr" to="/arr"><Button><Icon glyph="fa-file-text" /><div><span className="btnText">{i18n('ribbon.action.arr')}</span></div></Button></LinkContainer>
 
         section && parts.push(section);
         altSection && parts.push(altSection);
@@ -266,30 +269,37 @@ class Ribbon extends AbstractReactComponent {
         parts.forEach((part, index) => {
             partsWithSplit.push(part);
             if (index + 1 < parts.length) {
-                partsWithSplit.push(<RibbonSplit key={"ribbon-spliter-"+(index+1)} />)
+                partsWithSplit.push(<RibbonSplit key={'ribbon-spliter-' + (index + 1)}/>);
             }
         });
 
         return <RibbonMenu>
             {partsWithSplit}
             <RibbonGroup className="small" right>
-                <Dropdown className="user-menu" variant='default' key='user-menu' id='user-menu'>
-                    <Dropdown.Toggle  noCaret>
+                <Dropdown className="user-menu">
+                    <Dropdown.Toggle
+                        key='user-menu'
+                        id='user-menu'
+                    >
                         {userDetail.username} <Icon glyph="fa-user" />
                     </Dropdown.Toggle>
+
                     <Dropdown.Menu>
-                        { userDetail.authTypes.indexOf('PASSWORD') >= 0 &&
-                            [<Dropdown.Item eventKey="1" onClick={this.handlePasswordChangeForm}>{i18n('ribbon.action.admin.user.passwordChange')}</Dropdown.Item>,<Dropdown.Item divider/>]
+                        {userDetail.authTypes.indexOf('PASSWORD') >= 0 &&
+                        [<Dropdown.Item eventKey="1"
+                                        onClick={this.handlePasswordChangeForm}>{i18n('ribbon.action.admin.user.passwordChange')}</Dropdown.Item>,
+                            <Dropdown.Divider/>]
                         }
-                        <Dropdown.Item eventKey="2" onClick={this.handleLogout}>{i18n('ribbon.action.logout')}</Dropdown.Item>
+                        <Dropdown.Item eventKey="2"
+                                       onClick={this.handleLogout}>{i18n('ribbon.action.logout')}</Dropdown.Item>
                     </Dropdown.Menu>
                 </Dropdown>
                 {saveCounter > 0 && <div className="save-msg-container">
                     <span className="save-msg">
-                    <Icon glyph="fa-spinner fa-spin" />{i18n('ribbon.saving')}</span>
+                    <Icon glyph="fa-spinner fa-spin"/>{i18n('ribbon.saving')}</span>
                 </div>}
             </RibbonGroup>
-        </RibbonMenu>
+        </RibbonMenu>;
     }
 }
 
@@ -300,7 +310,7 @@ function mapStateToProps(state) {
         login,
         userDetail,
         status,
-    }
+    };
 }
 
 export default connect(mapStateToProps)(Ribbon);

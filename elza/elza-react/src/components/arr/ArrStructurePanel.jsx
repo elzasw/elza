@@ -456,7 +456,7 @@ class ArrStructurePanel extends AbstractReactComponent {
 
         return <div className={'arr-structure-panel'}>
             {!readMode && <div className="actions">
-                <DropdownButton variant="default" title={<Icon glyph="fa-plus-circle"/>} noCaret
+                <DropdownButton variant="default" title={<Icon glyph="fa-plus-circle"/>}
                                 id="arr-structure-panel-add">
                     <Dropdown.Item eventKey="1"
                                    onClick={this.handleCreate}>{i18n('arr.structure.addOne')}</Dropdown.Item>

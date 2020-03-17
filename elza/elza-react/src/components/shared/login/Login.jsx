@@ -93,12 +93,14 @@ class Login extends AbstractReactComponent {
                             value={username}
                             onChange={this.handleChange.bind(this, 'username')}
                             label={i18n('login.field.username')}
+                            required
                         />
                         <FormInput
                             type="password"
                             value={password}
                             onChange={this.handleChange.bind(this, 'password')}
                             label={i18n('login.field.password')}
+                            required
                         />
                         <div className="submit-button">
                             <Button

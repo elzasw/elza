@@ -157,7 +157,7 @@ class LecturingTop extends React.Component {
         return <div className="lecturing-top">
             <div className="actions-container">
                 <div className="actions">
-                    <DropdownButton disabled={!canWrite} variant="default" id='dropdown-add-comment' noCaret
+                    <DropdownButton disabled={!canWrite} variant="default" id='dropdown-add-comment'
                                     title={(<Icon glyph='fa-plus-circle'/> as any as string)}>
                         <Dropdown.Item eventKey="1" onClick={this.newArr}>{i18n('arr.issues.add.arr')}</Dropdown.Item>
                         <Dropdown.Item eventKey="2" disabled={!this.props.node || !this.props.node.selectedSubNodeId}
@@ -224,7 +224,7 @@ class LecturingTop extends React.Component {
                                 </div>
                             </div>
                             {canWrite && <div className="actions">
-                                <DropdownButton pullRight variant={'action' as any} id='issue-type' noCaret
+                                <DropdownButton pullRight variant={'action' as any} id='issue-type'
                                                 title={<Icon glyph='fa-ellipsis-h'/> as any as string}>
                                     {issueTypes.data.map(i => <Dropdown.Item key={'issue-type-' + i.id}
                                                                              disabled={i.id === issueTypeId}

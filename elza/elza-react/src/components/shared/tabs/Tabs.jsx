@@ -6,7 +6,7 @@
  **/
 
 import React from 'react';
-import {Nav, NavItem} from 'react-bootstrap';
+import {Nav} from 'react-bootstrap';
 import * as Utils from '../../Utils';
 import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
@@ -23,15 +23,15 @@ import i18n from '../../i18n';
  *  $param obj children                 vnitřní části komponenty (přepínací panel, data zobrazovaná pod záložkami)
  **/
 export const Container = class TabsContainer extends React.Component {
-    static contextTypes = { shortcuts: PropTypes.object };
-    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    static contextTypes = {shortcuts: PropTypes.object};
+    static childContextTypes = {shortcuts: PropTypes.object.isRequired};
 
     UNSAFE_componentWillMount() {
         Utils.addShortcutManager(this, defaultKeymap);
     }
 
     getChildContext() {
-        return { shortcuts: this.shortcutManager };
+        return {shortcuts: this.shortcutManager};
     }
 
     handleShortcuts = (action, e) => {
@@ -50,7 +50,7 @@ export const Container = class TabsContainer extends React.Component {
             return;
         }
 
-        const { activeItem, items, onSelect } = tabs.props;
+        const {activeItem, items, onSelect} = tabs.props;
 
         if (items.length === 0) {
             return;
@@ -161,18 +161,24 @@ export const Tabs = class Tabs extends React.Component {
         let tabs = this.props.items.map((item, i) => {
             let closeTitle = i18n('tabs.action.closeTab');
             let closeAction;
-            let closeAction2;
             if (this.props.closable) {
-                closeAction = <NoFocusButton title={closeTitle} onClick={this.handleTabClose.bind(this, item)}><Icon
-                    glyph="fa-times"/></NoFocusButton>;
+                closeAction = <NoFocusButton title={closeTitle} onClick={this.handleTabClose.bind(this, item)}>
+                    <Icon glyph="fa-times"/>
+                </NoFocusButton>;
             }
 
             // popisek ikony zavírající záložku
             let key = typeof item.key !== 'undefined' ? item.key : item.id;
-            return <NavItem tabIndex={-1} key={key} ref={'tab' + i} eventKey={key}><span
-                title={item.title || item.name}>{item.title || item.name}</span>
-                <small>{item.desc}</small>
-                {closeAction}{closeAction2}</NavItem>;    // vlastni kod založky
+            return (
+                <Nav.Item key={key} as="li">
+                    <Nav.Link tabIndex={-1} ref={'tab' + i} eventKey={key}>
+                        <span title={item.title || item.name}>{item.title || item.name}</span>
+
+                        <small>{item.desc}</small>
+                        {closeAction}
+                    </Nav.Link>
+                </Nav.Item>
+            );
         });
 
 
@@ -182,8 +188,14 @@ export const Tabs = class Tabs extends React.Component {
             activeKey = typeof this.props.activeItem.key !== 'undefined' ? this.props.activeItem.key : this.props.activeItem.id;
         }
         return (
-            <Nav className="tabs-tabs-container" ref="tabs" variant="tabs" onSelect={this.handleTabSelect}
-                 activeKey={activeKey}>
+            <Nav
+                as="ul"
+                className="tabs-tabs-container"
+                ref="tabs"
+                variant="tabs"
+                onSelect={this.handleTabSelect}
+                activeKey={activeKey}
+            >
                 {tabs}
             </Nav>
         );
