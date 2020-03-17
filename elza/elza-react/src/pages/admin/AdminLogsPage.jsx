@@ -8,19 +8,19 @@ import AbstractReactComponent from '../../components/AbstractReactComponent';
 
 import {PropTypes} from 'prop-types';
 
-var keyModifier = Utils.getKeyModifier()
+var keyModifier = Utils.getKeyModifier();
 var defaultKeymap = {
-    AdminLogsPage: {}
-}
+    AdminLogsPage: {},
+};
 
 class AdminLogsPage extends AbstractReactComponent {
-    static contextTypes = { shortcuts: PropTypes.object };
-    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
-    UNSAFE_componentWillMount(){
-        Utils.addShortcutManager(this,defaultKeymap);
+    static contextTypes = {shortcuts: PropTypes.object};
+    static childContextTypes = {shortcuts: PropTypes.object.isRequired};
+    UNSAFE_componentWillMount() {
+        Utils.addShortcutManager(this, defaultKeymap);
     }
     getChildContext() {
-        return { shortcuts: this.shortcutManager };
+        return {shortcuts: this.shortcutManager};
     }
     handleShortcuts = () => {};
 
@@ -35,11 +35,19 @@ class AdminLogsPage extends AbstractReactComponent {
 
         let altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key='alt-actions' className="small">{altActions}</RibbonGroup>
+            altSection = (
+                <RibbonGroup key="alt-actions" className="small">
+                    {altActions}
+                </RibbonGroup>
+            );
         }
         let itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key='item-actions' className="small">{itemActions}</RibbonGroup>
+            itemSection = (
+                <RibbonGroup key="item-actions" className="small">
+                    {itemActions}
+                </RibbonGroup>
+            );
         }
 
         return <Ribbon admin altSection={altSection} itemSection={itemSection} {...this.props} />;
@@ -51,20 +59,21 @@ class AdminLogsPage extends AbstractReactComponent {
      * Vykreslení stránky pro osoby
      */
     render() {
-
         const leftPanel = null;
 
         const centerPanel = <AdminLogsDetail />;
 
-        return <Shortcuts name='AdminLogsPage' handler={this.handleShortcuts}>
-            <PageLayout
-                splitter={{}}
-                className='admin-logs-page'
-                ribbon={this.buildRibbon()}
-                leftPanel={leftPanel}
-                centerPanel={centerPanel}
-            />
-        </Shortcuts>;
+        return (
+            <Shortcuts name="AdminLogsPage" handler={this.handleShortcuts}>
+                <PageLayout
+                    splitter={{}}
+                    className="admin-logs-page"
+                    ribbon={this.buildRibbon()}
+                    leftPanel={leftPanel}
+                    centerPanel={centerPanel}
+                />
+            </Shortcuts>
+        );
     }
 }
 

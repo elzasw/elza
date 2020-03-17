@@ -17,7 +17,7 @@ export default function fundForm(state, action) {
                     if (action.value === '') {
                         return {
                             ...state,
-                            rulArrTypeId: { ...state.rulArrTypeId, value: '' },
+                            rulArrTypeId: {...state.rulArrTypeId, value: ''},
                         };
                     } else {
                         return state;

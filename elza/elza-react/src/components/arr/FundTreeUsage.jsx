@@ -26,7 +26,7 @@ class FundTreeUsage extends AbstractReactComponent {
             'handleFulltextPrevItem',
             'handleFulltextNextItem',
             'handleCollapse',
-            'trySetFocus'
+            'trySetFocus',
         );
     }
 
@@ -39,7 +39,7 @@ class FundTreeUsage extends AbstractReactComponent {
     }
 
     trySetFocus(props) {
-        var { focus } = props;
+        var {focus} = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, null, 1)) {
@@ -100,7 +100,7 @@ class FundTreeUsage extends AbstractReactComponent {
     }
 
     render() {
-        const { className, cutLongLabels } = this.props;
+        const {className, cutLongLabels} = this.props;
         return (
             <FundTreeLazy
                 {...this.props}

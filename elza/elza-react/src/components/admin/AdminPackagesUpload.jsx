@@ -33,16 +33,16 @@ class AdminPackagesUpload extends AbstractReactComponent {
 
     handleChangeFile() {
         console.log(ReactDOM.findDOMNode(this.refs.file.refs.input));
-        this.setState({ disabled: ReactDOM.findDOMNode(this.refs.file.refs.input).files.length === 0 });
+        this.setState({disabled: ReactDOM.findDOMNode(this.refs.file.refs.input).files.length === 0});
     }
 
     render() {
-
         return (
             <div>
-                <FormInput onChange={this.handleChangeFile} ref="file" name="file" type="file"/>
-                <Button disabled={this.state.disabled}
-                        onClick={this.handleUpload}>{i18n('admin.packages.action.import')}</Button>
+                <FormInput onChange={this.handleChangeFile} ref="file" name="file" type="file" />
+                <Button disabled={this.state.disabled} onClick={this.handleUpload}>
+                    {i18n('admin.packages.action.import')}
+                </Button>
             </div>
         );
     }

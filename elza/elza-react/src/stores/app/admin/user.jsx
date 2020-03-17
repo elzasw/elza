@@ -7,30 +7,30 @@ const initialState = {
     fetched: false,
     isFetching: false,
     filterText: '',
-    filterState: { type: "all" },
+    filterState: {type: 'all'},
     currentDataKey: '',
     users: [],
     usersCount: 0,
     userDetail: userDetail(),
-}
+};
 
 export default function user(state = initialState, action = {}) {
     if (isUserDetailAction(action) || isPermissionAction(action)) {
         return {
             ...state,
-            userDetail: userDetail(state.userDetail, action)
-        }
+            userDetail: userDetail(state.userDetail, action),
+        };
     }
 
     switch (action.type) {
         case types.STORE_SAVE:
-            const {filterText, filterState} = state
+            const {filterText, filterState} = state;
 
             return {
                 filterText,
                 filterState,
                 userDetail: userDetail(state.userDetail, action),
-            }
+            };
         case types.STORE_LOAD:
             if (action.adminRegion) {
                 return {
@@ -38,15 +38,15 @@ export default function user(state = initialState, action = {}) {
                     fetched: false,
                     isFetching: false,
                     filterText: '',
-                    filterState: { type: "all" },
+                    filterState: {type: 'all'},
                     currentDataKey: '',
                     users: [],
                     usersCount: 0,
                     ...action.adminRegion.user,
                     userDetail: userDetail(action.adminRegion.user.userDetail, action),
-                }
+                };
             } else {
-                return state
+                return state;
             }
         case types.USERS_SEARCH:
             return {
@@ -54,13 +54,13 @@ export default function user(state = initialState, action = {}) {
                 filterText: typeof action.filterText !== 'undefined' ? action.filterText : '',
                 filterState: action.filterState,
                 currentDataKey: '',
-            }
+            };
         case types.USERS_REQUEST:
             return {
                 ...state,
                 isFetching: true,
                 currentDataKey: action.dataKey,
-            }
+            };
         case types.USERS_RECEIVE:
             return {
                 ...state,
@@ -68,15 +68,14 @@ export default function user(state = initialState, action = {}) {
                 fetched: true,
                 users: action.data.users,
                 usersCount: action.data.usersCount,
-            }
+            };
         case types.CHANGE_USER:
             return {
                 ...state,
                 userDetail: userDetail(state.userDetail, action),
-                currentDataKey:''
-            }
+                currentDataKey: '',
+            };
         default:
-            return state
+            return state;
     }
 }
-

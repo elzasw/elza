@@ -21,13 +21,9 @@ import {dateTimeToString} from 'components/Utils.jsx';
 import {WebApi} from 'actions/index.jsx';
 
 class AdminRequestsQueuePage extends AbstractReactComponent {
-
     buildRibbon() {
-        return (
-            <Ribbon admin {...this.props} />
-        );
+        return <Ribbon admin {...this.props} />;
     }
-
 
     componentDidMount() {
         this.props.dispatch(arrRequestActions.fetchInQueueListIfNeeded());
@@ -37,7 +33,7 @@ class AdminRequestsQueuePage extends AbstractReactComponent {
         this.props.dispatch(arrRequestActions.fetchInQueueListIfNeeded());
     }
 
-    handleDelete = (item) => {
+    handleDelete = item => {
         if (window.confirm(i18n('requestQueue.delete.confirm'))) {
             WebApi.removeArrRequestQueueItem(item.request.id);
         }
@@ -63,39 +59,52 @@ class AdminRequestsQueuePage extends AbstractReactComponent {
     render() {
         const {requestInQueueList, splitter} = this.props;
 
-        let centerPanel = <div>
-            <StoreHorizontalLoader store={requestInQueueList}/>
-            {requestInQueueList.fetched && <Table striped bordered condensed hover>
-                <thead>
-                <tr>
-                    <th>{i18n('requestQueue.title.create')}</th>
-                    <th>{i18n('requestQueue.title.attemptToSend')}</th>
-                    <th>{i18n('requestQueue.title.description')}</th>
-                    <th>{i18n('requestQueue.title.error')}</th>
-                    <th>{i18n('requestQueue.title.username')}</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                {requestInQueueList.rows.map(item => {
-                    let type = getRequestType(item.request);
-                    return <tr key={item.id}>
-                        <td>{dateTimeToString(new Date(item.create))}</td>
-                        <td>{item.attemptToSend && dateTimeToString(new Date(item.attemptToSend))}</td>
-                        <td>{i18n('arr.request.title.type.' + type)} {this.createDescription(type, item.request)}</td>
-                        <td>{item.error}</td>
-                        <td>{item.request.username}</td>
-                        <td><Button onClick={() => this.handleDelete(item)}>{i18n('global.action.delete')}</Button></td>
-                    </tr>;
-                })}
-                </tbody>
-            </Table>}
-        </div>;
+        let centerPanel = (
+            <div>
+                <StoreHorizontalLoader store={requestInQueueList} />
+                {requestInQueueList.fetched && (
+                    <Table striped bordered condensed hover>
+                        <thead>
+                            <tr>
+                                <th>{i18n('requestQueue.title.create')}</th>
+                                <th>{i18n('requestQueue.title.attemptToSend')}</th>
+                                <th>{i18n('requestQueue.title.description')}</th>
+                                <th>{i18n('requestQueue.title.error')}</th>
+                                <th>{i18n('requestQueue.title.username')}</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {requestInQueueList.rows.map(item => {
+                                let type = getRequestType(item.request);
+                                return (
+                                    <tr key={item.id}>
+                                        <td>{dateTimeToString(new Date(item.create))}</td>
+                                        <td>{item.attemptToSend && dateTimeToString(new Date(item.attemptToSend))}</td>
+                                        <td>
+                                            {i18n('arr.request.title.type.' + type)}{' '}
+                                            {this.createDescription(type, item.request)}
+                                        </td>
+                                        <td>{item.error}</td>
+                                        <td>{item.request.username}</td>
+                                        <td>
+                                            <Button onClick={() => this.handleDelete(item)}>
+                                                {i18n('global.action.delete')}
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </Table>
+                )}
+            </div>
+        );
 
         return (
             <PageLayout
                 splitter={splitter}
-                className='admin-requestsQueue-page'
+                className="admin-requestsQueue-page"
                 ribbon={this.buildRibbon()}
                 centerPanel={centerPanel}
             />
@@ -110,7 +119,11 @@ class AdminRequestsQueuePage extends AbstractReactComponent {
  * @returns {{packages: *}}
  */
 function mapStateToProps(state) {
-    const {app: {requestInQueueList}, splitter, userDetail} = state;
+    const {
+        app: {requestInQueueList},
+        splitter,
+        userDetail,
+    } = state;
     return {
         splitter,
         requestInQueueList,

@@ -59,7 +59,7 @@ class ImportForm extends AbstractReactComponent {
         });
     }
 
-    save = (values) => {
+    save = values => {
         //validate
         this.setState({
             isRunning: true,
@@ -89,21 +89,32 @@ class ImportForm extends AbstractReactComponent {
     };
 
     render() {
-        const {fields: {transformationName, recordScope, xmlFile}, onClose, handleSubmit} = this.props;
+        const {
+            fields: {transformationName, recordScope, xmlFile},
+            onClose,
+            handleSubmit,
+        } = this.props;
 
         return (
             <div>
-                {
-                    !this.state.isRunning && <div>
+                {!this.state.isRunning && (
+                    <div>
                         <Form onSubmit={handleSubmit(this.save)}>
                             <Modal.Body>
                                 {
                                     <div>
-                                        <FormInput as="select"
-                                                   label={i18n('import.transformationName')} {...transformationName}>
-                                            <option key='blankName'/>
+                                        <FormInput
+                                            as="select"
+                                            label={i18n('import.transformationName')}
+                                            {...transformationName}
+                                        >
+                                            <option key="blankName" />
                                             {this.state.transformationNames.map((i, index) => {
-                                                return <option key={index + 'name'} value={i}>{i}</option>;
+                                                return (
+                                                    <option key={index + 'name'} value={i}>
+                                                        {i}
+                                                    </option>
+                                                );
                                             })}
                                         </FormInput>
                                         <Autocomplete
@@ -112,52 +123,56 @@ class ImportForm extends AbstractReactComponent {
                                             help={null} /// TODO odstranit z decorateFormField help
                                             label={i18n('import.registryScope')}
                                             items={this.state.defaultScopes}
-                                            getItemId={(item) => item ? item : null}
-                                            getItemName={(item) => item ? item.name : ''}
-                                            onChange={
-                                                value => {
-                                                    if (value) {
-                                                        recordScope.onChange({id: value.id, name: value.name});
-                                                    }
+                                            getItemId={item => (item ? item : null)}
+                                            getItemName={item => (item ? item.name : '')}
+                                            onChange={value => {
+                                                if (value) {
+                                                    recordScope.onChange({id: value.id, name: value.name});
                                                 }
-                                            }
+                                            }}
                                         />
-                                        {recordScope.value &&
-                                        <div className="selected-data-container">
-                                            <div className="selected-data">
-                                                {recordScope.value.name}
+                                        {recordScope.value && (
+                                            <div className="selected-data-container">
+                                                <div className="selected-data">{recordScope.value.name}</div>
                                             </div>
-                                        </div>
-                                        }
+                                        )}
                                     </div>
                                 }
 
                                 <label>{i18n('import.file')}</label>
-                                <FormInput type="file" {...xmlFile} {...decorateFormField(xmlFile)} value={null}/>
+                                <FormInput type="file" {...xmlFile} {...decorateFormField(xmlFile)} value={null} />
                             </Modal.Body>
                             <Modal.Footer>
-                                <Button type="submit"
-                                        onClick={handleSubmit(this.save)}>{i18n('global.action.import')}</Button>
-                                <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                                <Button type="submit" onClick={handleSubmit(this.save)}>
+                                    {i18n('global.action.import')}
+                                </Button>
+                                <Button variant="link" onClick={onClose}>
+                                    {i18n('global.action.cancel')}
+                                </Button>
                             </Modal.Footer>
                         </Form>
                     </div>
-                }
-                {this.state.isRunning && <div>
-                    <Modal.Body>
-                        <Icon className="fa-spin" glyph="fa-refresh"/> {i18n('import.running')}
-                    </Modal.Body>
-                </div>}
+                )}
+                {this.state.isRunning && (
+                    <div>
+                        <Modal.Body>
+                            <Icon className="fa-spin" glyph="fa-refresh" /> {i18n('import.running')}
+                        </Modal.Body>
+                    </div>
+                )}
             </div>
         );
     }
 }
 
-export default reduxForm({
-    form: 'importForm',
-    fields: ['ruleSetId', 'transformationName', 'recordScope', 'stopOnError', 'xmlFile'],
-    validate: ImportForm.validate,
-}, state => ({
-    defaultScopes: state.defaultScopes,
-    refTables: state.refTables,
-}))(ImportForm);
+export default reduxForm(
+    {
+        form: 'importForm',
+        fields: ['ruleSetId', 'transformationName', 'recordScope', 'stopOnError', 'xmlFile'],
+        validate: ImportForm.validate,
+    },
+    state => ({
+        defaultScopes: state.defaultScopes,
+        refTables: state.refTables,
+    }),
+)(ImportForm);

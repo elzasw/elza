@@ -10,7 +10,6 @@ const initialState = {
 
 export default function visiblePolicy(state = initialState, action = {}) {
     switch (action.type) {
-
         case types.VISIBLE_POLICY_REQUEST:
             return {
                 ...state,
@@ -21,7 +20,7 @@ export default function visiblePolicy(state = initialState, action = {}) {
         case types.VISIBLE_POLICY_RECEIVE: {
             const data = [];
             for (let id in action.policyTypeIds) {
-                data.push({ id: id, checked: action.policyTypeIds[id] });
+                data.push({id: id, checked: action.policyTypeIds[id]});
             }
 
             return {
@@ -44,4 +43,3 @@ export default function visiblePolicy(state = initialState, action = {}) {
             return state;
     }
 }
-

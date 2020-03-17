@@ -12,7 +12,6 @@ import {ItemFactory} from './ItemFactory';
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
 class AccessPointForm extends AbstractReactComponent {
-
     static propTypes = {
         selectedSubNodeId: PropTypes.number.isRequired,
         rulDataTypes: PropTypes.object.isRequired,
@@ -30,7 +29,16 @@ class AccessPointForm extends AbstractReactComponent {
     };
 
     render() {
-        const { focus, closed, rulDataTypes, calendarTypes, structureTypes, descItemTypes, subNodeForm, readMode } = this.props;
+        const {
+            focus,
+            closed,
+            rulDataTypes,
+            calendarTypes,
+            structureTypes,
+            descItemTypes,
+            subNodeForm,
+            readMode,
+        } = this.props;
 
         return (
             <div className="output-item-form-container">
@@ -43,17 +51,14 @@ class AccessPointForm extends AbstractReactComponent {
                     descItemTypes={descItemTypes}
                     subNodeForm={subNodeForm}
                     closed={closed}
-                    conformityInfo={{ missings: [], errors: [] }}
+                    conformityInfo={{missings: [], errors: []}}
                     descItemCopyFromPrevEnabled={false}
                     focus={focus}
                     singleDescItemTypeId={null}
                     singleDescItemTypeEdit={false}
-                    onDescItemTypeCopyFromPrev={() => {
-                    }}
-                    onDescItemTypeLock={() => {
-                    }}
-                    onDescItemTypeCopy={() => {
-                    }}
+                    onDescItemTypeCopyFromPrev={() => {}}
+                    onDescItemTypeLock={() => {}}
+                    onDescItemTypeCopy={() => {}}
                     formActions={accessPointFormActions}
                     showNodeAddons={false}
                     readMode={closed || readMode}
@@ -65,7 +70,7 @@ class AccessPointForm extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const { focus } = state;
+    const {focus} = state;
 
     return {
         focus,

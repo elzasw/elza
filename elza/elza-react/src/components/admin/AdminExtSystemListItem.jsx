@@ -8,25 +8,25 @@ import './AdminExtSystemListItem.scss';
  * Komponenta item externího systému
  */
 class AdminExtSystemListItem extends AbstractReactComponent {
-
     static propTypes = {
         onClick: PropTypes.func,
         record: PropTypes.object.isRequired,
     };
 
-
     render() {
-        const { id, name, code, className, ...otherProps } = this.props;
+        const {id, name, code, className, ...otherProps} = this.props;
 
         let icon = 'fa-server';
 
-        return <div classID={id} className={classNames('ext-system-list-item', className)} {...otherProps}>
-            <div>
-                <Icon glyph={icon}/>
-                <span className="name">{name}</span>
+        return (
+            <div classID={id} className={classNames('ext-system-list-item', className)} {...otherProps}>
+                <div>
+                    <Icon glyph={icon} />
+                    <span className="name">{name}</span>
+                </div>
             </div>
-        </div>;
-    };
+        );
+    }
 }
 
 export default AdminExtSystemListItem;

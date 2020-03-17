@@ -83,12 +83,16 @@ class AdminUserPage extends AbstractReactComponent {
 
     handlePartyAdd(partyTypeId, callback) {
         this.props.dispatch(partyAdd(partyTypeId, -1, callback));
-    };
+    }
 
     handleCreateUserForm() {
-        this.props.dispatch(modalDialogShow(this, i18n('admin.user.add.title'), <AddUserForm create
-                                                                                             onSubmitForm={this.handleCreateUser}
-                                                                                             onCreateParty={this.handlePartyAdd}/>));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('admin.user.add.title'),
+                <AddUserForm create onSubmitForm={this.handleCreateUser} onCreateParty={this.handlePartyAdd} />,
+            ),
+        );
     }
 
     handleCreateUser(data) {
@@ -96,17 +100,30 @@ class AdminUserPage extends AbstractReactComponent {
     }
 
     handleChangeUserPasswordForm() {
-        this.props.dispatch(modalDialogShow(this, i18n('admin.user.passwordChange.title'), <PasswordForm admin={true}
-                                                                                                         onSubmitForm={this.handleChangeUserPassword}/>));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('admin.user.passwordChange.title'),
+                <PasswordForm admin={true} onSubmitForm={this.handleChangeUserPassword} />,
+            ),
+        );
     }
 
     handleChangeUserPassword(data) {
-        const {user: {userDetail: {id}}} = this.props;
+        const {
+            user: {
+                userDetail: {id},
+            },
+        } = this.props;
         return this.props.dispatch(adminPasswordChange(id, data.password));
     }
 
     handleUpdateUser(data) {
-        const {user: {userDetail: {id}}} = this.props;
+        const {
+            user: {
+                userDetail: {id},
+            },
+        } = this.props;
         return this.props.dispatch(userUpdate(id, data.username, data.valuesMap));
     }
 
@@ -122,8 +139,13 @@ class AdminUserPage extends AbstractReactComponent {
                 passwordCheckbox: authTypes.indexOf('PASSWORD') >= 0,
                 shibbolethCheckbox: authTypes.indexOf('SHIBBOLETH') >= 0,
             };
-            this.props.dispatch(modalDialogShow(this, i18n('admin.user.update.title'), <AddUserForm
-                initialValues={initData} onSubmitForm={this.handleUpdateUser}/>));
+            this.props.dispatch(
+                modalDialogShow(
+                    this,
+                    i18n('admin.user.update.title'),
+                    <AddUserForm initialValues={initData} onSubmitForm={this.handleUpdateUser} />,
+                ),
+            );
         }
     }
 
@@ -140,8 +162,11 @@ class AdminUserPage extends AbstractReactComponent {
         const altActions = [];
         const itemActions = [];
         altActions.push(
-            <Button key="add-user" onClick={this.handleCreateUserForm}><Icon glyph="fa-plus-circle"/>
-                <div><span className="btnText">{i18n('ribbon.action.admin.user.add')}</span></div>
+            <Button key="add-user" onClick={this.handleCreateUserForm}>
+                <Icon glyph="fa-plus-circle" />
+                <div>
+                    <span className="btnText">{i18n('ribbon.action.admin.user.add')}</span>
+                </div>
             </Button>,
         );
 
@@ -149,41 +174,56 @@ class AdminUserPage extends AbstractReactComponent {
 
         if (userDetail.id != null) {
             itemActions.push(
-                <Button key="change-active-user" onClick={this.handleChangeUserActive}><Icon
-                    glyph={user.userDetail.active ? 'fa-ban' : 'fa-check'}/>
-                    <div><span
-                        className="btnText">{user.userDetail.active ? i18n('ribbon.action.admin.user.deactivate') : i18n('ribbon.action.admin.user.activate')}</span>
+                <Button key="change-active-user" onClick={this.handleChangeUserActive}>
+                    <Icon glyph={user.userDetail.active ? 'fa-ban' : 'fa-check'} />
+                    <div>
+                        <span className="btnText">
+                            {user.userDetail.active
+                                ? i18n('ribbon.action.admin.user.deactivate')
+                                : i18n('ribbon.action.admin.user.activate')}
+                        </span>
                     </div>
                 </Button>,
             );
             const userData = user.users[indexById(user.users, userDetail.id)];
             if (userData && userData.authTypes.indexOf('PASSWORD') >= 0) {
                 itemActions.push(
-                    <Button key="password-change-user" onClick={this.handleChangeUserPasswordForm}><Icon
-                        glyph='fa-key'/>
-                        <div><span className="btnText">{i18n('ribbon.action.admin.user.passwordChange')}</span></div>
+                    <Button key="password-change-user" onClick={this.handleChangeUserPasswordForm}>
+                        <Icon glyph="fa-key" />
+                        <div>
+                            <span className="btnText">{i18n('ribbon.action.admin.user.passwordChange')}</span>
+                        </div>
                     </Button>,
                 );
             }
             itemActions.push(
-                <Button key="username-change-user" onClick={this.handleChangeUsernameForm}><Icon glyph='fa-edit'/>
-                    <div><span className="btnText">{i18n('ribbon.action.admin.user.edit')}</span></div>
+                <Button key="username-change-user" onClick={this.handleChangeUsernameForm}>
+                    <Icon glyph="fa-edit" />
+                    <div>
+                        <span className="btnText">{i18n('ribbon.action.admin.user.edit')}</span>
+                    </div>
                 </Button>,
             );
         }
 
         let altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key='alt-actions' className="small">{altActions}</RibbonGroup>;
+            altSection = (
+                <RibbonGroup key="alt-actions" className="small">
+                    {altActions}
+                </RibbonGroup>
+            );
         }
         let itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key='item-actions' className="small">{itemActions}</RibbonGroup>;
+            itemSection = (
+                <RibbonGroup key="item-actions" className="small">
+                    {itemActions}
+                </RibbonGroup>
+            );
         }
 
-        return (
-            <Ribbon admin {...this.props} altSection={altSection} itemSection={itemSection}/>
-        );
+        return <Ribbon admin {...this.props} altSection={altSection} itemSection={itemSection} />;
     }
 
     handleFilterStateChange(e) {
@@ -210,33 +250,30 @@ class AdminUserPage extends AbstractReactComponent {
                     <option value="all">{i18n('admin.user.filter.all')}</option>
                     <option value="onlyActive">{i18n('admin.user.filter.onlyActive')}</option>
                 </FormControl>
-                <StoreHorizontalLoader store={user}/>
-                {user.fetched && <ListBox
-                    className='user-listbox'
-                    ref='userList'
-                    items={user.users}
-                    activeIndex={activeIndex}
-                    renderItemContent={renderUserItem}
-                    onFocus={this.handleSelect}
-                    onSelect={this.handleSelect}
-                />}
+                <StoreHorizontalLoader store={user} />
+                {user.fetched && (
+                    <ListBox
+                        className="user-listbox"
+                        ref="userList"
+                        items={user.users}
+                        activeIndex={activeIndex}
+                        renderItemContent={renderUserItem}
+                        onFocus={this.handleSelect}
+                        onSelect={this.handleSelect}
+                    />
+                )}
             </div>
         );
 
         let centerPanel;
         if (user.userDetail.id) {
-            centerPanel = (
-                <UserDetail
-                    userDetail={user.userDetail}
-                    userCount={user.users.length}
-                />
-            );
+            centerPanel = <UserDetail userDetail={user.userDetail} userCount={user.users.length} />;
         }
 
         return (
             <PageLayout
                 splitter={splitter}
-                className='admin-user-page'
+                className="admin-user-page"
                 ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}
                 centerPanel={centerPanel}

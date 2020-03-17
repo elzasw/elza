@@ -14,7 +14,6 @@ import AddDescItemTypeForm from '../arr/nodeForm/AddDescItemTypeForm';
  * <AddRegistryForm onSubmit={this.handleCallAddRegistry} />
  */
 class FragmentFormModal extends AbstractReactComponent {
-
     static propTypes = {
         fragmentId: PropTypes.number.isRequired,
         fragmentItemForm: PropTypes.object.isRequired,
@@ -22,7 +21,6 @@ class FragmentFormModal extends AbstractReactComponent {
 
     add = () => {
         const {fragmentItemForm} = this.props;
-
 
         const formData = fragmentItemForm.formData;
         const itemTypes = [];
@@ -35,7 +33,8 @@ class FragmentFormModal extends AbstractReactComponent {
         });
 
         fragmentItemForm.refTypesMap.forEach(refType => {
-            if (infoTypesMap.has(refType.id)) {    // ještě ji na formuláři nemáme
+            if (infoTypesMap.has(refType.id)) {
+                // ještě ji na formuláři nemáme
                 const infoType = infoTypesMap.get(refType.id);
                 // v nestriktním modu přidáváme všechny jinak jen možné
                 if (!strictMode || infoType.type !== 'IMPOSSIBLE') {
@@ -54,13 +53,18 @@ class FragmentFormModal extends AbstractReactComponent {
             },
         ];
 
-        const submit = (data) => {
+        const submit = data => {
             this.props.dispatch(fragmentItemFormActions.fundSubNodeFormDescItemTypeAdd(data.descItemTypeId.id));
         };
 
         // Modální dialog
-        this.props.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), <AddDescItemTypeForm
-            descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('subNodeForm.descItemType.title.add'),
+                <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit} />,
+            ),
+        );
     };
 
     onClose = () => {
@@ -75,19 +79,23 @@ class FragmentFormModal extends AbstractReactComponent {
         return (
             <div>
                 <Modal.Body>
-                    <NoFocusButton onClick={this.add}><Icon glyph="fa-plus-circle"/>{i18n('subNodeForm.section.item')}
+                    <NoFocusButton onClick={this.add}>
+                        <Icon glyph="fa-plus-circle" />
+                        {i18n('subNodeForm.section.item')}
                     </NoFocusButton>
-                    <FragmentItemForm parent={{id: fragmentId}}/>
+                    <FragmentItemForm parent={{id: fragmentId}} />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="link" onClick={this.onClose}>{i18n('global.action.close')}</Button>
+                    <Button variant="link" onClick={this.onClose}>
+                        {i18n('global.action.close')}
+                    </Button>
                 </Modal.Footer>
             </div>
         );
     }
 }
 
-export default connect((state) => {
+export default connect(state => {
     return {
         fragmentItemForm: state.ap.fragmentItemForm,
     };

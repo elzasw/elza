@@ -4,12 +4,12 @@ import {consolidateState} from 'components/Utils.jsx';
 const panelInitialState = {
     id: null,
     name: null,
-    versionId: null
+    versionId: null,
 };
 
 export function panel(state = panelInitialState, action = {}) {
     switch (action.type) {
-        case types.REGISTRY_SELECT:{
+        case types.REGISTRY_SELECT: {
             const fund = action.fa;
             if (fund) {
                 const result = {

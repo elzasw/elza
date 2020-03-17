@@ -9,7 +9,6 @@ const initialState = {
 };
 
 export default function globalFundTree(state = initialState, action = {}) {
-
     if (action.area === types.FUND_TREE_AREA_USAGE) {
         switch (action.type) {
             case types.FUND_FUND_TREE_INVALIDATE: {
@@ -48,7 +47,6 @@ export default function globalFundTree(state = initialState, action = {}) {
                 multipleSelection: true,
             },
         };
-
     }
     return state;
 }

@@ -62,9 +62,9 @@ export default function flattenItems(items, props) {
 
     const flatTreeItems = getFlatTree(items);
     return flatTreeItems;
-};
+}
 
-function defaultGetItemId(item){
+function defaultGetItemId(item) {
     return item.id;
 }
 
@@ -73,19 +73,19 @@ let _items;
 
 function getFlatTree(items) {
     // reset _items
-    _items = {ids:[]};
+    _items = {ids: []};
     items.forEach(node => _getFlatSubTree(node, 0));
     return _items;
-};
+}
 
-function _getFlatSubTree(node, depth, parentId=null) {
+function _getFlatSubTree(node, depth, parentId = null) {
     node = {...node};
     node.parent = parentId;
     node.depth = depth;
     let nodeId = _getItemId(node);
 
-    if(!nodeId && nodeId !== 0){
-        nodeId = "noid";
+    if (!nodeId && nodeId !== 0) {
+        nodeId = 'noid';
     }
 
     _items[nodeId] = node;
@@ -93,17 +93,17 @@ function _getFlatSubTree(node, depth, parentId=null) {
 
     // go through each child recursively
     node.children && node.children.forEach(child => _getFlatSubTree(child, depth + 1, node.id));
-};
+}
 
-export function cleanItem(item){
+export function cleanItem(item) {
     delete item.depth;
     delete item.parent;
 }
 
-function nameContains(filterText, itemName){
+function nameContains(filterText, itemName) {
     const caseSensitive = false;
 
-    if(!caseSensitive){
+    if (!caseSensitive) {
         itemName = itemName.toLowerCase();
         filterText = filterText.toLowerCase();
     }
@@ -111,16 +111,17 @@ function nameContains(filterText, itemName){
     return itemName.indexOf(filterText) >= 0;
 }
 
-function defaultAllowSelectItem(item){
+function defaultAllowSelectItem(item) {
     return true;
 }
 
-function defaultGetItemName(item){
+function defaultGetItemName(item) {
     return item.name;
 }
 
-export function filterItems(filterText = "", items, props){
-    let newItems = {ids:[]}, currentDepth = 0;
+export function filterItems(filterText = '', items, props) {
+    let newItems = {ids: []},
+        currentDepth = 0;
     let parents = [];
     let _itemAdded = false; // indicates whether the previous item was added or not
     let _empty = true; // indicates whether any one of the items was selected
@@ -129,29 +130,29 @@ export function filterItems(filterText = "", items, props){
     const allowSelectItem = props.allowSelectItem || defaultAllowSelectItem;
     const getItemName = props.getItemName || defaultGetItemName;
 
-    for(let i = 0; i < items.ids.length; i++){
+    for (let i = 0; i < items.ids.length; i++) {
         const itemId = items.ids[i];
         const item = items[itemId];
 
         // when depth increases, add previous item as a potential parent,
         // but only when it wasn't added already
-        if(item.depth > currentDepth && i > 0){
+        if (item.depth > currentDepth && i > 0) {
             currentDepth = item.depth;
-            const prevItemId = items.ids[i-1];
+            const prevItemId = items.ids[i - 1];
             const prevItem = items[prevItemId];
 
-            if(!_itemAdded){
+            if (!_itemAdded) {
                 parents.push(prevItem);
             }
         }
 
         // when depth decreases, remove previously added potential parents,
         // that are no longer viable (none of their children were selected)
-        if(item.depth < currentDepth){
+        if (item.depth < currentDepth) {
             let newParents = [];
-            for(let p = 0; p < parents.length; p++){
+            for (let p = 0; p < parents.length; p++) {
                 const parent = parents[p];
-                if(parent.depth < item.depth){
+                if (parent.depth < item.depth) {
                     newParents.push(parent);
                 }
             }
@@ -164,17 +165,17 @@ export function filterItems(filterText = "", items, props){
 
         // checks if the item matches the specified filter condition
         // and if it can be selected
-        if(filterCondition(filterText, getItemName(item)) && allowSelectItem(item)){
+        if (filterCondition(filterText, getItemName(item)) && allowSelectItem(item)) {
             // when item matches the condition, add all current potential
             // parents as proper items before adding the item itself
-            for(let p = 0; p < parents.length; p++){
+            for (let p = 0; p < parents.length; p++) {
                 const parent = parents[p];
                 const parentId = parent.id;
                 newItems[parentId] = parent;
                 newItems.ids.push(parentId);
             }
             // when no item has been added yet, selects current item as first item
-            if(_empty){
+            if (_empty) {
                 newItems.firstItemId = item.id;
             }
             parents = [];
@@ -189,5 +190,3 @@ export function filterItems(filterText = "", items, props){
 
     return newItems;
 }
-
-

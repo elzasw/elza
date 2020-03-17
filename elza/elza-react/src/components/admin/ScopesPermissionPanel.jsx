@@ -54,12 +54,14 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     };
 
     buildPermission = (currObj, permission) => {
-        let obj = currObj || { groupIds: {} };
+        let obj = currObj || {groupIds: {}};
 
-        if (permission.inherited) {   // je zděděné ze skupiny
+        if (permission.inherited) {
+            // je zděděné ze skupiny
             obj.groupIds[permission.groupId] = permission.scope ? permission.scope.id : true;
             obj.checked = obj.checked || false;
-        } else {    // je přímo přiřazen
+        } else {
+            // je přímo přiřazen
             obj.id = permission.id;
             obj.checked = true;
         }
@@ -68,7 +70,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        const { userId, groupId } = this.props;
+        const {userId, groupId} = this.props;
 
         if (userId) {
             this.props.dispatch(adminPermissions.fetchUser(userId));
@@ -84,7 +86,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
         if (this.props.entityPermissions.isFetching && !nextProps.entityPermissions.isFetching) {
             // Mapa scopeId na mapu hodnot oprávnění pro danou třídu rejstříků, pokud se jedná o položku all, má id ALL_ID
             const permScopeMap = {};
-            permScopeMap[ScopesPermissionPanel.ALL_ID] = { id: ScopesPermissionPanel.ALL_ID, groupIds: {} };
+            permScopeMap[ScopesPermissionPanel.ALL_ID] = {id: ScopesPermissionPanel.ALL_ID, groupIds: {}};
 
             nextProps.entityPermissions.data.permissions.forEach(p => {
                 let id = null;
@@ -124,7 +126,10 @@ class ScopesPermissionPanel extends AbstractReactComponent {
         this.sortPermissions(permissions);
 
         // Creates new selected id from props. Uses state, if the selected permission in props didn't change.
-        let newSelectedId = nextProps.selectedPermission.index >= 0 ? nextProps.selectedPermission.id : this.state.selectedPermission.id;
+        let newSelectedId =
+            nextProps.selectedPermission.index >= 0
+                ? nextProps.selectedPermission.id
+                : this.state.selectedPermission.id;
         let newSelectedIndex = this.getIndexById(newSelectedId, permissions);
 
         // Selects the first item, if the index is not found for the selected id.
@@ -137,7 +142,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
             permissions,
         };
 
-        let permission = permissions[newSelectedIndex] || { id: null };
+        let permission = permissions[newSelectedIndex] || {id: null};
 
         this.selectItem(permission, newSelectedIndex);
 
@@ -160,16 +165,16 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     }
 
     changePermission = (e, permCode) => {
-        const { onAddPermission, onDeletePermission } = this.props;
+        const {onAddPermission, onDeletePermission} = this.props;
         const value = e.target.checked;
-        const { selectedPermission, permissions } = this.state;
+        const {selectedPermission, permissions} = this.state;
         const permission = permissions[selectedPermission.index];
 
         const newPermission = {
             ...permission,
         };
 
-        const obj = newPermission[permCode] || { groupIds: {} };
+        const obj = newPermission[permCode] || {groupIds: {}};
 
         const newObj = {
             ...obj,
@@ -185,7 +190,10 @@ class ScopesPermissionPanel extends AbstractReactComponent {
 
         const usrPermission = {
             id: obj.id,
-            permission: permission.id === ScopesPermissionPanel.ALL_ID ? ScopesPermissionPanel.permCodesMapRev[permCode] : permCode,
+            permission:
+                permission.id === ScopesPermissionPanel.ALL_ID
+                    ? ScopesPermissionPanel.permCodesMapRev[permCode]
+                    : permCode,
             scope: permission.scope,
         };
 
@@ -207,8 +215,8 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     };
 
     handleRemove = (item, index) => {
-        const { onDeleteScopePermission } = this.props;
-        const { selectedPermission, permissions } = this.state;
+        const {onDeleteScopePermission} = this.props;
+        const {selectedPermission, permissions} = this.state;
 
         // Prepare new permissions
         let newPermissions = [...permissions];
@@ -217,7 +225,8 @@ class ScopesPermissionPanel extends AbstractReactComponent {
         const permission = permissions[selectedPermission.index];
         let hasInheritRight = false;
         Object.values(ScopesPermissionPanel.permCodesMap).forEach(permCode => {
-            if (permission[permCode] && Object.keys(permission[permCode].groupIds).length > 0) {  // má nějaké zděděné právo
+            if (permission[permCode] && Object.keys(permission[permCode].groupIds).length > 0) {
+                // má nějaké zděděné právo
                 // Test, zda je na tento scope
                 Object.values(permission[permCode].groupIds).forEach(v => {
                     if (v !== true && v === item.id) {
@@ -239,7 +248,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
             }
         } else {
             // Removes all permissions that are not inherited.
-            let newPermission = { ...permission };
+            let newPermission = {...permission};
 
             Object.values(ScopesPermissionPanel.permCodesMap).forEach(permCode => {
                 if (newPermission[permCode]) {
@@ -273,70 +282,73 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     };
 
     handleAdd = () => {
-        const { scopesData } = this.props;
-        const { selectedPermission } = this.state;
+        const {scopesData} = this.props;
+        const {selectedPermission} = this.state;
         let scopes = this.getScopes(scopesData);
 
-        this.props.dispatch(modalDialogShow(this, i18n('admin.perms.tabs.scopes.add.title'),
-            <SelectItemsForm
-                onSubmitForm={(scopes) => {
-                    const { permissions } = this.state;
-                    const permissionsMap = getMapFromList(permissions);
-                    const newPermissions = [...permissions];
-                    let newSelectedPermission = { ...selectedPermission };
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('admin.perms.tabs.scopes.add.title'),
+                <SelectItemsForm
+                    onSubmitForm={scopes => {
+                        const {permissions} = this.state;
+                        const permissionsMap = getMapFromList(permissions);
+                        const newPermissions = [...permissions];
+                        let newSelectedPermission = {...selectedPermission};
 
-                    // Change the currently selected item, only if items have been added
-                    if (scopes.length > 0) {
-                        let newSelectedId = null;
+                        // Change the currently selected item, only if items have been added
+                        if (scopes.length > 0) {
+                            let newSelectedId = null;
 
-                        scopes.forEach(scope => {
-                            if (!permissionsMap[scope.id]) { // jen pokud ještě přidaný není
-                                // Select the first added item.
-                                newSelectedId = newSelectedId === null ? scope.id : newSelectedId;
-                                newPermissions.push({
-                                    id: scope.id,
-                                    scope: scope,
-                                });
-                            }
+                            scopes.forEach(scope => {
+                                if (!permissionsMap[scope.id]) {
+                                    // jen pokud ještě přidaný není
+                                    // Select the first added item.
+                                    newSelectedId = newSelectedId === null ? scope.id : newSelectedId;
+                                    newPermissions.push({
+                                        id: scope.id,
+                                        scope: scope,
+                                    });
+                                }
+                            });
+
+                            this.sortPermissions(newPermissions);
+
+                            let newIndex = this.getIndexById(newSelectedId, newPermissions);
+
+                            newSelectedPermission = {
+                                id: newSelectedId,
+                                index: newIndex,
+                            };
+                        }
+
+                        this.setState({
+                            permissions: newPermissions,
+                            selectedPermission: newSelectedPermission,
                         });
 
-                        this.sortPermissions(newPermissions);
-
-                        let newIndex = this.getIndexById(newSelectedId, newPermissions);
-
-                        newSelectedPermission = {
-                            id: newSelectedId,
-                            index: newIndex,
-                        };
-                    }
-
-                    this.setState({
-                        permissions: newPermissions,
-                        selectedPermission: newSelectedPermission,
-                    });
-
-                    this.props.dispatch(modalDialogHide());
-                }}
-                fieldComponent={ScopeField}
-                fieldComponentProps={{ scopes }}
-                renderItem={renderScopeItem}
-            />,
-        ));
+                        this.props.dispatch(modalDialogHide());
+                    }}
+                    fieldComponent={ScopeField}
+                    fieldComponentProps={{scopes}}
+                    renderItem={renderScopeItem}
+                />,
+            ),
+        );
     };
 
     renderItem = (props, onCheckItem) => {
-        const { item } = props;
+        const {item} = props;
         if (item.id === ScopesPermissionPanel.ALL_ID) {
             return <div>{i18n('admin.perms.tabs.scopes.items.scopeAll')}</div>;
         } else {
-            return <div>
-                {item.scope.name}
-            </div>;
+            return <div>{item.scope.name}</div>;
         }
     };
 
     selectItem = (item, index) => {
-        const { onSelectItem } = this.props;
+        const {onSelectItem} = this.props;
         this.setState({
             selectedPermission: {
                 index: index,
@@ -351,7 +363,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
      * @param {object} scopesData
      * @return {array}
      */
-    getScopes = (scopesData) => {
+    getScopes = scopesData => {
         const versionId = -1;
         if (!scopesData.scopes) {
             this.props.dispatch(requestScopesIfNeeded(versionId));
@@ -367,34 +379,40 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     };
 
     render() {
-        const { selectedPermission, permissions } = this.state;
-        const { entityPermissions } = this.props;
+        const {selectedPermission, permissions} = this.state;
+        const {entityPermissions} = this.props;
 
         const permission = permissions[selectedPermission.index];
         let permissionAll = permissions[this.getIndexById(ScopesPermissionPanel.ALL_ID, permissions)];
 
-        return <AdminRightsContainer
-            className="permissions-panel"
-            left={<AddRemoveListBox
-                items={permissions}
-                activeIndex={selectedPermission.index}
-                renderItemContent={this.renderItem}
-                onAdd={this.handleAdd}
-                onRemove={this.handleRemove}
-                canDeleteItem={(item, index) => item.id !== ScopesPermissionPanel.ALL_ID}
-                onFocus={this.selectItem}
-            />}
-        >
-            {permission && <PermissionCheckboxsForm
-                permCodes={Object.values(ScopesPermissionPanel.permCodesMap)}
-                onChangePermission={this.changePermission}
-                labelPrefix="admin.perms.tabs.scopes.perm."
-                permission={permission}
-                groups={entityPermissions.data.groups}
-                permissionAll={permission.id !== ScopesPermissionPanel.ALL_ID ? permissionAll : null}
-                permissionAllTitle="admin.perms.tabs.scopes.items.scopeAll"
-            />}
-        </AdminRightsContainer>;
+        return (
+            <AdminRightsContainer
+                className="permissions-panel"
+                left={
+                    <AddRemoveListBox
+                        items={permissions}
+                        activeIndex={selectedPermission.index}
+                        renderItemContent={this.renderItem}
+                        onAdd={this.handleAdd}
+                        onRemove={this.handleRemove}
+                        canDeleteItem={(item, index) => item.id !== ScopesPermissionPanel.ALL_ID}
+                        onFocus={this.selectItem}
+                    />
+                }
+            >
+                {permission && (
+                    <PermissionCheckboxsForm
+                        permCodes={Object.values(ScopesPermissionPanel.permCodesMap)}
+                        onChangePermission={this.changePermission}
+                        labelPrefix="admin.perms.tabs.scopes.perm."
+                        permission={permission}
+                        groups={entityPermissions.data.groups}
+                        permissionAll={permission.id !== ScopesPermissionPanel.ALL_ID ? permissionAll : null}
+                        permissionAllTitle="admin.perms.tabs.scopes.items.scopeAll"
+                    />
+                )}
+            </AdminRightsContainer>
+        );
     }
 }
 
@@ -404,6 +422,5 @@ function mapStateToProps(state) {
         scopesData: state.refTables.scopesData,
     };
 }
-
 
 export default connect(mapStateToProps)(ScopesPermissionPanel);

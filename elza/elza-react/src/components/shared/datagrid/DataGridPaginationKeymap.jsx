@@ -1,11 +1,11 @@
 import * as Utils from '../../Utils';
 
-var keyModifier = Utils.getKeyModifier()
+var keyModifier = Utils.getKeyModifier();
 
 var defaultKeymap = {
-    DataGridPagination:{
-        "CONFIRM":"enter"
-    }
-}
+    DataGridPagination: {
+        CONFIRM: 'enter',
+    },
+};
 
 export default defaultKeymap;

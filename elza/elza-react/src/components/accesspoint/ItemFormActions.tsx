@@ -1,23 +1,27 @@
-import { AnyAction } from 'redux';
-import { ThunkAction } from 'redux-thunk';
+import {AnyAction} from 'redux';
+import {ThunkAction} from 'redux-thunk';
 import * as types from '../../actions/constants/ActionTypes.js';
-import { setFocus } from '../../actions/global/focus';
-import { statusSaved, statusSaving } from '../../actions/global/status';
-import { WebApi } from '../../actions/index.jsx';
-import { fromDuration } from '../../components/validate';
-import { DisplayType, FOCUS_KEYS } from '../../constants';
-import { ApItemVO, IItemFormState } from '../../stores/app/accesspoint/itemForm';
-import { getFocusDescItemLocation } from '../../stores/app/arr/subNodeFormUtils';
-import { indexById } from '../../stores/app/utils';
-import { valuesEquals } from '../Utils';
+import {setFocus} from '../../actions/global/focus';
+import {statusSaved, statusSaving} from '../../actions/global/status';
+import {WebApi} from '../../actions/index.jsx';
+import {fromDuration} from '../../components/validate';
+import {DisplayType, FOCUS_KEYS} from '../../constants';
+import {ApItemVO, IItemFormState} from '../../stores/app/accesspoint/itemForm';
+import {getFocusDescItemLocation} from '../../stores/app/arr/subNodeFormUtils';
+import {indexById} from '../../stores/app/utils';
+import {valuesEquals} from '../Utils';
 
-type ThunkResult<R> = ThunkAction<R, {
-    refTables: {
-        rulDataTypes: {},
-        descItemTypes: {},
-    }
-}, AnyAction, any>;
-
+type ThunkResult<R> = ThunkAction<
+    R,
+    {
+        refTables: {
+            rulDataTypes: {};
+            descItemTypes: {};
+        };
+    },
+    AnyAction,
+    any
+>;
 
 interface BaseAction {
     area: string;
@@ -25,7 +29,6 @@ interface BaseAction {
 }
 
 export abstract class ItemFormActions {
-
     readonly area: string;
 
     constructor(area: string) {
@@ -158,11 +161,19 @@ export abstract class ItemFormActions {
     _fundSubNodeFormFetch(parent, needClean, showChildren, showParents) {
         return (dispatch, getState) => {
             dispatch(this.fundSubNodeFormRequest(parent));
-            this._getItemFormData(getState, dispatch, showChildren, showParents)
-                .then(json => {
-                    const state = getState();
-                    dispatch(this.fundSubNodeFormReceive(parent, json, state.refTables.rulDataTypes, state.refTables.descItemTypes, state.refTables.groups.data, needClean));
-                });
+            this._getItemFormData(getState, dispatch, showChildren, showParents).then(json => {
+                const state = getState();
+                dispatch(
+                    this.fundSubNodeFormReceive(
+                        parent,
+                        json,
+                        state.refTables.rulDataTypes,
+                        state.refTables.descItemTypes,
+                        state.refTables.groups.data,
+                        needClean,
+                    ),
+                );
+            });
         };
     }
 
@@ -203,31 +214,29 @@ export abstract class ItemFormActions {
 
             // Reálné provedení operace
             if (typeof item.id !== 'undefined') {
-                this._callUpdateDescItem(parent, item)
-                    .then(json => {
-                        let descItemResult = {};
-                        if (json && Array.isArray(json) && json.length > 0) {
-                            descItemResult = { item: json[0] };
-                        }
-                        // if(this.area === OutputFormActions.AREA || this.area === StructureFormActions.AREA || this.area === AccessPointFormActions.AREA){
-                        dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, descItemResult, 'UPDATE'));
-                        // }
-                        dispatch(this._fundSubNodeUpdate(refTables, json));
-                        dispatch(statusSaved());
-                    });
+                this._callUpdateDescItem(parent, item).then(json => {
+                    let descItemResult = {};
+                    if (json && Array.isArray(json) && json.length > 0) {
+                        descItemResult = {item: json[0]};
+                    }
+                    // if(this.area === OutputFormActions.AREA || this.area === StructureFormActions.AREA || this.area === AccessPointFormActions.AREA){
+                    dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, descItemResult, 'UPDATE'));
+                    // }
+                    dispatch(this._fundSubNodeUpdate(refTables, json));
+                    dispatch(statusSaved());
+                });
             } else {
                 if (!loc!!.item!!.saving) {
                     dispatch(this._fundSubNodeFormDescItemCreate(valueLocation));
-                    this._callCreateDescItem(subNodeForm.data!!.parent, loc!!.itemType.id, item)
-                        .then(json => {
-                            let descItemResult = {};
-                            if (json && Array.isArray(json) && json.length > 0) {
-                                descItemResult = { item: json[0] };
-                            }
-                            console.log('formValueStore - id undefined', json);
-                            dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, descItemResult, 'CREATE'));
-                            dispatch(statusSaved());
-                        });
+                    this._callCreateDescItem(subNodeForm.data!!.parent, loc!!.itemType.id, item).then(json => {
+                        let descItemResult = {};
+                        if (json && Array.isArray(json) && json.length > 0) {
+                            descItemResult = {item: json[0]};
+                        }
+                        console.log('formValueStore - id undefined', json);
+                        dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, descItemResult, 'CREATE'));
+                        dispatch(statusSaved());
+                    });
                 }
             }
         }
@@ -287,10 +296,9 @@ export abstract class ItemFormActions {
 
             // only when loc exists
             if (loc) {
-                WebApi.validateUnitdate(loc!!.item!!.value)
-                    .then(json => {
-                        dispatch(this._fundSubNodeFormValueValidateResult(valueLocation, json));
-                    });
+                WebApi.validateUnitdate(loc!!.item!!.value).then(json => {
+                    dispatch(this._fundSubNodeFormValueValidateResult(valueLocation, json));
+                });
             }
         };
     }
@@ -337,17 +345,16 @@ export abstract class ItemFormActions {
                     index,
                 });
 
-                const descItem = { ...loc!!.item, position: index + 1 };
+                const descItem = {...loc!!.item, position: index + 1};
 
-                this._callUpdateDescItem(subNodeForm.data!!.parent, descItem)
-                    .then(json => {
-                        let descItemResult = {};
-                        if (json && Array.isArray(json) && json.length > 0) {
-                            descItemResult = { item: json[0] };
-                        }
-                        const newValueLocation = { ...valueLocation, descItemIndex: index };
-                        dispatch(this._fundSubNodeFormDescItemResponse(newValueLocation, descItemResult, 'UPDATE'));
-                    });
+                this._callUpdateDescItem(subNodeForm.data!!.parent, descItem).then(json => {
+                    let descItemResult = {};
+                    if (json && Array.isArray(json) && json.length > 0) {
+                        descItemResult = {item: json[0]};
+                    }
+                    const newValueLocation = {...valueLocation, descItemIndex: index};
+                    dispatch(this._fundSubNodeFormDescItemResponse(newValueLocation, descItemResult, 'UPDATE'));
+                });
             }
         };
     }
@@ -471,10 +478,9 @@ export abstract class ItemFormActions {
             });
 
             if (typeof loc!!.item!!.id !== 'undefined') {
-                this._callDeleteDescItem(subNodeForm.data!!.parent, loc!!.item)
-                    .then(json => {
-                        dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, json, 'DELETE'));
-                    });
+                this._callDeleteDescItem(subNodeForm.data!!.parent, loc!!.item).then(json => {
+                    dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, json, 'DELETE'));
+                });
             }
         };
     }
@@ -504,10 +510,12 @@ export abstract class ItemFormActions {
 
             //const state = getState();
             //const subNodeForm = this._getItemFormStore(state);
-            dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
-                descItemTypeId: descItemTypeId,
-                descItemObjectId: null,
-            }));
+            dispatch(
+                setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
+                    descItemTypeId: descItemTypeId,
+                    descItemObjectId: null,
+                }),
+            );
         };
     }
 
@@ -575,10 +583,9 @@ export abstract class ItemFormActions {
             dispatch(this._fundSubNodeFormDescItemTypeDeleteInStore(valueLocation, false));
 
             if (hasDescItemsForDelete) {
-                this._callDeleteDescItemType(subNodeForm.data!!.parent, loc!!.itemType.id)
-                    .then(json => {
-                        dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, json, 'DELETE_DESC_ITEM_TYPE'));
-                    });
+                this._callDeleteDescItemType(subNodeForm.data!!.parent, loc!!.itemType.id).then(json => {
+                    dispatch(this._fundSubNodeFormDescItemResponse(valueLocation, json, 'DELETE_DESC_ITEM_TYPE'));
+                });
             }
         };
     }
@@ -616,19 +623,36 @@ export abstract class ItemFormActions {
      * @param {boolean} showChildren
      * @param {boolean} showParents
      */
-    fundSubNodeFormFetchIfNeeded(parent: any, needClean: boolean = false, showChildren: boolean = false, showParents: boolean = false) {
+    fundSubNodeFormFetchIfNeeded(
+        parent: any,
+        needClean: boolean = false,
+        showChildren: boolean = false,
+        showParents: boolean = false,
+    ) {
         return (dispatch, getState) => {
             const state = getState();
 
             // Fetch může být pouze v případě, že už jsou načteny číselníkové hodnoty na typy položek v ref
             if (
-                !state.refTables.rulDataTypes.isFetching && state.refTables.rulDataTypes.fetched
-                &&
-                !state.refTables.descItemTypes.isFetching && state.refTables.descItemTypes.fetched
+                !state.refTables.rulDataTypes.isFetching &&
+                state.refTables.rulDataTypes.fetched &&
+                !state.refTables.descItemTypes.isFetching &&
+                state.refTables.descItemTypes.fetched
             ) {
                 const subNodeForm = this._getItemFormStore(state);
-                if (JSON.stringify(parent) !== JSON.stringify(subNodeForm.parent) || ((!subNodeForm.fetched || subNodeForm.dirty || subNodeForm.needClean || needClean) && !subNodeForm.isFetching)) {
-                    dispatch(this._fundSubNodeFormFetch(parent, subNodeForm.needClean || needClean, showChildren, showParents));
+                if (
+                    JSON.stringify(parent) !== JSON.stringify(subNodeForm.parent) ||
+                    ((!subNodeForm.fetched || subNodeForm.dirty || subNodeForm.needClean || needClean) &&
+                        !subNodeForm.isFetching)
+                ) {
+                    dispatch(
+                        this._fundSubNodeFormFetch(
+                            parent,
+                            subNodeForm.needClean || needClean,
+                            showChildren,
+                            showParents,
+                        ),
+                    );
                 }
             }
         };

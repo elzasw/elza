@@ -72,60 +72,90 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
     }
 
     buildRibbon() {
-        const {group: {groupDetail}} = this.props;
+        const {
+            group: {groupDetail},
+        } = this.props;
         const altActions = [];
         const itemActions = [];
 
         altActions.push(
-            <Button variant={'default'} key="add-group" onClick={this.handleCreateGroupForm}><Icon
-                glyph="fa-plus-circle"/>
-                <div><span className="btnText">{i18n('ribbon.action.admin.group.add')}</span></div>
+            <Button variant={'default'} key="add-group" onClick={this.handleCreateGroupForm}>
+                <Icon glyph="fa-plus-circle" />
+                <div>
+                    <span className="btnText">{i18n('ribbon.action.admin.group.add')}</span>
+                </div>
             </Button>,
         );
 
         if (groupDetail.id !== null) {
             itemActions.push(
-                <Button variant={'default'} key="delete-group" onClick={this.handleDeleteGroup}><Icon glyph="fa-trash"/>
-                    <div><span className="btnText">{i18n('ribbon.action.admin.group.delete')}</span></div>
+                <Button variant={'default'} key="delete-group" onClick={this.handleDeleteGroup}>
+                    <Icon glyph="fa-trash" />
+                    <div>
+                        <span className="btnText">{i18n('ribbon.action.admin.group.delete')}</span>
+                    </div>
                 </Button>,
             );
             itemActions.push(
-                <Button variant={'default'} key="edit-group" onClick={this.handleEditGroupForm}><Icon glyph="fa-edit"/>
-                    <div><span className="btnText">{i18n('ribbon.action.admin.group.edit')}</span></div>
+                <Button variant={'default'} key="edit-group" onClick={this.handleEditGroupForm}>
+                    <Icon glyph="fa-edit" />
+                    <div>
+                        <span className="btnText">{i18n('ribbon.action.admin.group.edit')}</span>
+                    </div>
                 </Button>,
             );
         }
 
         let altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key='alt-actions' className="small">{altActions}</RibbonGroup>;
+            altSection = (
+                <RibbonGroup key="alt-actions" className="small">
+                    {altActions}
+                </RibbonGroup>
+            );
         }
         let itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key='item-actions' className="small">{itemActions}</RibbonGroup>;
+            itemSection = (
+                <RibbonGroup key="item-actions" className="small">
+                    {itemActions}
+                </RibbonGroup>
+            );
         }
 
-        return (
-            <Ribbon admin {...this.props} altSection={altSection} itemSection={itemSection}/>
-        );
+        return <Ribbon admin {...this.props} altSection={altSection} itemSection={itemSection} />;
     }
 
     handleDeleteGroup() {
-        const {group: {groupDetail: {id}}} = this.props;
+        const {
+            group: {
+                groupDetail: {id},
+            },
+        } = this.props;
         this.props.dispatch(groupDelete(id)).then(response => {
             this.props.dispatch(addToastrSuccess(i18n('admin.group.delete.success')));
         });
     }
 
     handleCreateGroupForm() {
-        this.props.dispatch(modalDialogShow(this, i18n('admin.group.add.title'), <AddGroupForm create
-                                                                                               onSubmitForm={this.handleCreateGroup}/>));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('admin.group.add.title'),
+                <AddGroupForm create onSubmitForm={this.handleCreateGroup} />,
+            ),
+        );
     }
 
     handleEditGroupForm() {
         const {group} = this.props;
-        this.props.dispatch(modalDialogShow(this, i18n('admin.group.edit.title'), <AddGroupForm
-            initData={group.groupDetail} onSubmitForm={this.handleUpdateGroup}/>));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('admin.group.edit.title'),
+                <AddGroupForm initData={group.groupDetail} onSubmitForm={this.handleUpdateGroup} />,
+            ),
+        );
     }
 
     handleCreateGroup(data) {
@@ -133,7 +163,11 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
     }
 
     handleUpdateGroup(data) {
-        const {group: {groupDetail: {id}}} = this.props;
+        const {
+            group: {
+                groupDetail: {id},
+            },
+        } = this.props;
         return this.props.dispatch(groupUpdate(id, data.name, data.description));
     }
 
@@ -153,30 +187,29 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
                     placeholder={i18n('search.input.search')}
                     value={group.filterText || ''}
                 />
-                <StoreHorizontalLoader store={group}/>
-                {group.fetched && <ListBox
-                    className='group-listbox'
-                    ref='groupList'
-                    items={group.groups}
-                    activeIndex={activeIndex}
-                    renderItemContent={renderGroupItem}
-                    onFocus={this.handleSelect}
-                    onSelect={this.handleSelect}
-                />}
+                <StoreHorizontalLoader store={group} />
+                {group.fetched && (
+                    <ListBox
+                        className="group-listbox"
+                        ref="groupList"
+                        items={group.groups}
+                        activeIndex={activeIndex}
+                        renderItemContent={renderGroupItem}
+                        onFocus={this.handleSelect}
+                        onSelect={this.handleSelect}
+                    />
+                )}
             </div>
         );
 
         const centerPanel = (
-            <GroupDetail
-                groupDetail={group.groupDetail}
-                groupCount={group.groups ? group.groups.length : 0}
-            />
+            <GroupDetail groupDetail={group.groupDetail} groupCount={group.groups ? group.groups.length : 0} />
         );
 
         return (
             <PageLayout
                 splitter={splitter}
-                className='admin-group-page'
+                className="admin-group-page"
                 ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}
                 centerPanel={centerPanel}

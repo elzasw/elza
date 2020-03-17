@@ -1,9 +1,8 @@
-
 export const genericRefTableState = {
     isFetching: false,
     fetched: false,
     dirty: false,
-    items: []
+    items: [],
 };
 
 /**
@@ -20,7 +19,7 @@ export default function genericRefTable(request, receive, state, action) {
         case request:
             return {
                 ...state,
-                isFetching: true
+                isFetching: true,
             };
         case receive:
             return {
@@ -29,9 +28,9 @@ export default function genericRefTable(request, receive, state, action) {
                 fetched: true,
                 dirty: false,
                 items: action.items,
-                lastUpdated: action.receivedAt
+                lastUpdated: action.receivedAt,
             };
         default:
-            return state
+            return state;
     }
 }

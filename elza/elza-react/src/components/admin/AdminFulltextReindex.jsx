@@ -11,7 +11,6 @@ import {AbstractReactComponent, i18n} from 'components/shared';
 import {getIndexStateFetchIfNeeded, reindex} from 'actions/admin/fulltext.jsx';
 
 class AdminFulltextReindex extends AbstractReactComponent {
-
     UNSAFE_componentWillReceiveProps(nextProps) {
         if (!nextProps.fetched) {
             this.props.dispatch(getIndexStateFetchIfNeeded());
@@ -25,15 +24,14 @@ class AdminFulltextReindex extends AbstractReactComponent {
     }
 
     renderReindexing() {
-        return (
-            <div>{i18n('admin.fulltext.message.reindexing')}</div>
-        );
+        return <div>{i18n('admin.fulltext.message.reindexing')}</div>;
     }
 
     renderNotReindexing() {
         return (
-            <Button onClick={this.startReindexing.bind(this)}
-                    bsSize="xsmall">{i18n('admin.fulltext.action.reindex')}</Button>
+            <Button onClick={this.startReindexing.bind(this)} bsSize="xsmall">
+                {i18n('admin.fulltext.action.reindex')}
+            </Button>
         );
     }
 

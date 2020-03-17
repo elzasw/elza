@@ -42,37 +42,57 @@ class EditableFileForm extends AbstractReactComponent {
 
     state = {};
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-    }
+    UNSAFE_componentWillReceiveProps(nextProps) {}
 
     componentDidMount() {
         this.props.load(this.props.initData);
         this.props.dispatch(dms.mimeTypesFetchIfNeeded());
     }
 
-    submitReduxForm = (values, dispatch) => submitForm(EditableFileForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
+    submitReduxForm = (values, dispatch) =>
+        submitForm(EditableFileForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
-        const {fields: {name, content, fileName, mimeType}, handleSubmit, onClose, dms, create} = this.props;
+        const {
+            fields: {name, content, fileName, mimeType},
+            handleSubmit,
+            onClose,
+            dms,
+            create,
+        } = this.props;
 
         return (
             <div className="add-file-form-container">
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
                         <FormInput type="text" label={i18n('dms.file.name')} {...name} {...decorateFormField(name)} />
-                        <FormInput label={i18n('dms.file.mimeType')}
-                                   as="select" {...mimeType} {...decorateFormField(mimeType)}>
+                        <FormInput
+                            label={i18n('dms.file.mimeType')}
+                            as="select"
+                            {...mimeType}
+                            {...decorateFormField(mimeType)}
+                        >
                             <option value={''}></option>
                             {dms.fetched && dms.rows.map(x => <option value={x}>{x}</option>)}
                         </FormInput>
-                        <FormInput type="text"
-                                   label={i18n('dms.file.fileName')} {...fileName} {...decorateFormField(fileName)} />
-                        <FormInput as="textarea"
-                                   label={i18n('dms.file.content')} {...content} {...decorateFormField(content)} />
+                        <FormInput
+                            type="text"
+                            label={i18n('dms.file.fileName')}
+                            {...fileName}
+                            {...decorateFormField(fileName)}
+                        />
+                        <FormInput
+                            as="textarea"
+                            label={i18n('dms.file.content')}
+                            {...content}
+                            {...decorateFormField(content)}
+                        />
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit">{i18n(create ? 'global.action.add' : 'global.action.update')}</Button>
-                        <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                        <Button variant="link" onClick={onClose}>
+                            {i18n('global.action.cancel')}
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </div>

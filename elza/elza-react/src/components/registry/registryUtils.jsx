@@ -4,13 +4,13 @@
  * @param id id
  * @return {*} node nebo null
  */
-function _getNodeById (node, id) {
+function _getNodeById(node, id) {
     if (node.id === id) {
         return node;
     }
 
     if (node.children) {
-        for (let a=0; a<node.children.length; a++) {
+        for (let a = 0; a < node.children.length; a++) {
             const n = _getNodeById(node.children[a], id);
             if (n) {
                 return n;
@@ -28,11 +28,11 @@ function _getNodeById (node, id) {
  * @return položka nebo null
  */
 export function getTreeItemById(id, items) {
-    if (typeof id === "undefined" || id === "" || id === null) {
+    if (typeof id === 'undefined' || id === '' || id === null) {
         return null;
     }
 
-    for (let a=0; a<items.length; a++) {
+    for (let a = 0; a < items.length; a++) {
         const n = _getNodeById(items[a], id);
         if (n) {
             return n;

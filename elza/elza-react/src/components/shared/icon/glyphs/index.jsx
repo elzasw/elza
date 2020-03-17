@@ -1,4 +1,3 @@
-
 export {default as Folder} from './Folder';
 export {default as Circle} from './Circle';
 export {default as Serie} from './Serie';

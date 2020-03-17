@@ -3,8 +3,7 @@ function findByRoutingKeyInNodes(nodesState, versionId, routingKey) {
     for (let a = 0; a < nodes.length; a++) {
         // TODO May need revision for type comparison
         // FIXME
-        if (nodes[a].routingKey == routingKey)
-            return { node: nodes[a], nodeIndex: a };
+        if (nodes[a].routingKey == routingKey) return {node: nodes[a], nodeIndex: a};
     }
     return null;
 }
@@ -27,7 +26,7 @@ function findByRoutingKeyInGlobalState(globalState, versionId, routingKey) {
             // TODO May need revision for type comparison
             // FIXME
             if (nodes[a].routingKey == routingKey)
-                return { fundIndex: fundIndex, fund: fund, node: nodes[a], nodeIndex: a };
+                return {fundIndex: fundIndex, fund: fund, node: nodes[a], nodeIndex: a};
         }
     }
     return null;
@@ -47,9 +46,10 @@ exports.getMapFromList = getMapFromList;
 
 function getSetFromIdsList(list) {
     let map = {};
-    list && list.forEach(x => {
-        map[x] = true;
-    });
+    list &&
+        list.forEach(x => {
+            map[x] = true;
+        });
     return map;
 }
 
@@ -62,13 +62,11 @@ function getIdsList(objectList, attrName = 'id') {
 exports.getIdsList = getIdsList;
 
 function indexById(arr, id, attrName = 'id') {
-    if (arr == null)
-        return null;
+    if (arr == null) return null;
 
     for (let a = 0; a < arr.length; a++) {
         const uuid = arr[a][attrName];
-        if (uuid === id || (!uuid && !id))
-            return a;
+        if (uuid === id || (!uuid && !id)) return a;
     }
     return null;
 }
@@ -76,13 +74,11 @@ function indexById(arr, id, attrName = 'id') {
 exports.indexById = indexById;
 
 function objectById(arr, id, attrName = 'id') {
-    if (arr == null)
-        return null;
+    if (arr == null) return null;
 
     for (let a = 0; a < arr.length; a++) {
         const uuid = arr[a][attrName];
-        if (uuid === id || (!uuid && !id))
-            return arr[a];
+        if (uuid === id || (!uuid && !id)) return arr[a];
     }
     return null;
 }
@@ -102,4 +98,3 @@ function selectedAfterClose(arr, index) {
 }
 
 exports.selectedAfterClose = selectedAfterClose;
-

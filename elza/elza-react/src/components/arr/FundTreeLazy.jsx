@@ -84,12 +84,14 @@ class FundTreeLazy extends AbstractReactComponent {
     selectorMoveDown = () => {
         const {nodes, selectedId, multipleSelection} = this.props;
         if (!multipleSelection) {
-            if (selectedId !== null) {  // něco je označeno
+            if (selectedId !== null) {
+                // něco je označeno
                 var index = indexById(nodes, selectedId);
                 if (index !== null && index + 1 < nodes.length) {
                     this.handleNodeClick(nodes[index + 1], true);
                 }
-            } else {    // není nic označeno, označíme první položku stromu
+            } else {
+                // není nic označeno, označíme první položku stromu
                 if (nodes.length > 0) {
                     this.handleNodeClick(nodes[0], true);
                 }
@@ -102,9 +104,11 @@ class FundTreeLazy extends AbstractReactComponent {
             var index = indexById(nodes, selectedId);
             if (index !== null) {
                 var node = nodes[index];
-                if (node.hasChildren && expandedIds[node.id]) { // je rozbalen, zabalíme ho
+                if (node.hasChildren && expandedIds[node.id]) {
+                    // je rozbalen, zabalíme ho
                     onOpenCloseNode(node, false);
-                } else {    // jdeme na parenta
+                } else {
+                    // jdeme na parenta
                     var parent = getNodeParent(nodes, selectedId);
                     parent && this.handleNodeClick(parent, true);
                 }
@@ -118,13 +122,16 @@ class FundTreeLazy extends AbstractReactComponent {
             if (index !== null) {
                 var node = nodes[index];
                 if (node.hasChildren) {
-                    if (!expandedIds[node.id]) {    // je zabalen, rozbalíme ho
+                    if (!expandedIds[node.id]) {
+                        // je zabalen, rozbalíme ho
                         onOpenCloseNode(node, true);
-                    } else {    // jdeme na prvního potomka
+                    } else {
+                        // jdeme na prvního potomka
                         var firstChild = getNodeFirstChild(nodes, selectedId);
                         firstChild && parseInt(firstChild.id) && this.handleNodeClick(firstChild, true);
                     }
-                } else {    // nemá potomky, nic neděláme
+                } else {
+                    // nemá potomky, nic neděláme
                 }
             }
         }
@@ -138,10 +145,10 @@ class FundTreeLazy extends AbstractReactComponent {
         onNodeDoubleClick && onNodeDoubleClick(node, ensureItemVisible, e);
     };
     actionMap = {
-        'MOVE_UP': this.selectorMoveUp,
-        'MOVE_DOWN': this.selectorMoveDown,
-        'MOVE_TO_PARENT_OR_CLOSE': this.selectorMoveToParentOrClose,
-        'MOVE_TO_CHILD_OR_OPEN': this.selectorMoveToChildOrOpen,
+        MOVE_UP: this.selectorMoveUp,
+        MOVE_DOWN: this.selectorMoveDown,
+        MOVE_TO_PARENT_OR_CLOSE: this.selectorMoveToParentOrClose,
+        MOVE_TO_CHILD_OR_OPEN: this.selectorMoveToChildOrOpen,
     };
     handleShortcuts = (action, e) => {
         if (this.actionMap && typeof this.actionMap[action] === 'function') {
@@ -159,8 +166,22 @@ class FundTreeLazy extends AbstractReactComponent {
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['ensureItemVisible', 'filterText', 'expandedIds', 'selectedId', 'selectedIds', 'nodes', 'focusId', 'isFetching',
-            'fetched', 'searchedIds', 'filterCurrentIndex', 'handleNodeClick', 'handleNodeDoubleClick', 'colorCoded'];
+        var eqProps = [
+            'ensureItemVisible',
+            'filterText',
+            'expandedIds',
+            'selectedId',
+            'selectedIds',
+            'nodes',
+            'focusId',
+            'isFetching',
+            'fetched',
+            'searchedIds',
+            'filterCurrentIndex',
+            'handleNodeClick',
+            'handleNodeDoubleClick',
+            'colorCoded',
+        ];
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -172,15 +193,15 @@ class FundTreeLazy extends AbstractReactComponent {
      * @param node {Object} uzel
      * @return {Object} view
      */
-    renderNode = (node) => {
+    renderNode = node => {
         const {onNodeDoubleClick, onOpenCloseNode, onContextMenu} = this.props;
 
         const expanded = node.hasChildren && this.props.expandedIds[node.id];
         const arrPerm = node.arrPerm;
 
         const clickProps = {
-            onClick: (e) => this.handleNodeClick(node, false, e),
-            onDoubleClick: (e) => this.handleNodeDoubleClick(node, false, e),
+            onClick: e => this.handleNodeClick(node, false, e),
+            onDoubleClick: e => this.handleNodeDoubleClick(node, false, e),
         };
 
         let expCol;
@@ -188,7 +209,11 @@ class FundTreeLazy extends AbstractReactComponent {
             const expColCls = 'exp-col ' + (expanded ? 'fa fa-minus-square-o' : 'fa fa-plus-square-o');
             expCol = <span className={expColCls} onClick={onOpenCloseNode.bind(this, node, !expanded)}></span>;
         } else {
-            expCol = <span {...clickProps} className='exp-col'>&nbsp;</span>;
+            expCol = (
+                <span {...clickProps} className="exp-col">
+                    &nbsp;
+                </span>
+            );
         }
 
         let active = false;
@@ -221,29 +246,47 @@ class FundTreeLazy extends AbstractReactComponent {
 
         const iconProps = getNodeIcon(this.props.colorCoded, node.icon);
 
-        return <div key={node.id} className={cls}>
-            {levels}
-            {expCol}
-            <Icon {...clickProps} className={iconClass} {...iconProps}/>
-            <div
-                title={title}
-                className='node-label'
-                {...clickProps}
-                onContextMenu={onContextMenu ? onContextMenu.bind(this, node) : null}>
-                {name}
-                {this.props.showCountStats && node.count && <span className="count-label">({node.count})</span>}
-                {this.props.onLinkClick && node.link &&
-                <Icon glyph="fa-sign-out fa-lg" onClick={() => this.props.onLinkClick(node)}/>}
+        return (
+            <div key={node.id} className={cls}>
+                {levels}
+                {expCol}
+                <Icon {...clickProps} className={iconClass} {...iconProps} />
+                <div
+                    title={title}
+                    className="node-label"
+                    {...clickProps}
+                    onContextMenu={onContextMenu ? onContextMenu.bind(this, node) : null}
+                >
+                    {name}
+                    {this.props.showCountStats && node.count && <span className="count-label">({node.count})</span>}
+                    {this.props.onLinkClick && node.link && (
+                        <Icon glyph="fa-sign-out fa-lg" onClick={() => this.props.onLinkClick(node)} />
+                    )}
+                </div>
             </div>
-        </div>;
+        );
     };
 
     render() {
         const {
-                  fetched, isFetching, className, actionAddons, multipleSelection, onFulltextNextItem, onFulltextPrevItem, onFulltextSearch,
-                  onFulltextChange, filterText, searchedIds, filterCurrentIndex, filterResult,
-                  extendedSearch, onClickExtendedSearch, extendedReadOnly, showCollapseAll,
-              } = this.props;
+            fetched,
+            isFetching,
+            className,
+            actionAddons,
+            multipleSelection,
+            onFulltextNextItem,
+            onFulltextPrevItem,
+            onFulltextSearch,
+            onFulltextChange,
+            filterText,
+            searchedIds,
+            filterCurrentIndex,
+            filterResult,
+            extendedSearch,
+            onClickExtendedSearch,
+            extendedReadOnly,
+            showCollapseAll,
+        } = this.props;
 
         let index;
         if (this.props.ensureItemVisible) {
@@ -261,43 +304,57 @@ class FundTreeLazy extends AbstractReactComponent {
             cls += ' ' + className;
         }
 
-        return <div className={cls}>
-            <div className='fa-traa-header-container'>
-                {this.props.showSearch && <SearchWithGoto
-                    filterText={filterText}
-                    itemsCount={searchedIds ? searchedIds.length : 0}
-                    selIndex={filterCurrentIndex}
-                    showFilterResult={filterResult}
-                    onFulltextChange={onFulltextChange}
-                    onFulltextSearch={onFulltextSearch}
-                    onFulltextNextItem={onFulltextNextItem}
-                    onFulltextPrevItem={onFulltextPrevItem}
-                    extendedSearch={extendedSearch}
-                    extendedReadOnly={extendedReadOnly}
-                    onClickExtendedSearch={onClickExtendedSearch}
-                />}
+        return (
+            <div className={cls}>
+                <div className="fa-traa-header-container">
+                    {this.props.showSearch && (
+                        <SearchWithGoto
+                            filterText={filterText}
+                            itemsCount={searchedIds ? searchedIds.length : 0}
+                            selIndex={filterCurrentIndex}
+                            showFilterResult={filterResult}
+                            onFulltextChange={onFulltextChange}
+                            onFulltextSearch={onFulltextSearch}
+                            onFulltextNextItem={onFulltextNextItem}
+                            onFulltextPrevItem={onFulltextPrevItem}
+                            extendedSearch={extendedSearch}
+                            extendedReadOnly={extendedReadOnly}
+                            onClickExtendedSearch={onClickExtendedSearch}
+                        />
+                    )}
+                </div>
+                <Shortcuts
+                    className="fa-tree-wrapper"
+                    name="FundTreeLazy"
+                    tabIndex={0}
+                    handler={(action, e) => this.handleShortcuts(action, e)}
+                    ref="treeWrapper"
+                >
+                    <div className="fa-tree-lazy-actions">
+                        {showCollapseAll && (
+                            <Button className="tree-collapse" onClick={this.props.onCollapse}>
+                                <Icon glyph="fa-compress" />
+                                Sbalit vše
+                            </Button>
+                        )}
+                        {actionAddons}
+                    </div>
+                    <div className="fa-tree-lazy-container" ref="treeContainer">
+                        <StoreHorizontalLoader store={{fetched, isFetching}} />
+                        {this.state.treeContainer && (
+                            <VirtualList
+                                scrollTopPadding={TREE_TOP_PADDING}
+                                tagName="div"
+                                scrollToIndex={index}
+                                container={this.state.treeContainer}
+                                items={this.props.nodes}
+                                renderItem={this.renderNode}
+                            />
+                        )}
+                    </div>
+                </Shortcuts>
             </div>
-            <Shortcuts className="fa-tree-wrapper" name="FundTreeLazy" tabIndex={0}
-                       handler={(action, e) => this.handleShortcuts(action, e)} ref="treeWrapper">
-                <div className="fa-tree-lazy-actions">
-                    {showCollapseAll &&
-                    <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='fa-compress'/>Sbalit
-                        vše</Button>}
-                    {actionAddons}
-                </div>
-                <div className='fa-tree-lazy-container' ref="treeContainer">
-                    <StoreHorizontalLoader store={{fetched, isFetching}}/>
-                    {this.state.treeContainer && <VirtualList
-                        scrollTopPadding={TREE_TOP_PADDING}
-                        tagName='div'
-                        scrollToIndex={index}
-                        container={this.state.treeContainer}
-                        items={this.props.nodes}
-                        renderItem={this.renderNode}
-                    />}
-                </div>
-            </Shortcuts>
-        </div>;
+        );
     }
 }
 

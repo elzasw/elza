@@ -24,7 +24,6 @@ import FundTreeLazy from './FundTreeLazy';
  * Implicitně pokud se neuvede, je výběr multiselect libovolných položek ve stromu.
  */
 class FundNodesSelect extends AbstractReactComponent {
-
     static propTypes = {
         multipleSelection: PropTypes.bool,
         multipleSelectionOneLevel: PropTypes.bool,
@@ -45,7 +44,14 @@ class FundNodesSelect extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        const { multipleSelection, multipleSelectionOneLevel, selectedId, fund: { fundTreeNodes, versionId }, onChange, area } = this.props;
+        const {
+            multipleSelection,
+            multipleSelectionOneLevel,
+            selectedId,
+            fund: {fundTreeNodes, versionId},
+            onChange,
+            area,
+        } = this.props;
 
         this.props.dispatch(fundTreeConfigure(area, versionId, multipleSelection, multipleSelectionOneLevel));
         this.props.dispatch(fundTreeSelectNode(area, versionId, selectedId, false, false));
@@ -54,11 +60,19 @@ class FundNodesSelect extends AbstractReactComponent {
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        const { fund: { fundTreeNodes, versionId }, multipleSelection, onChange } = nextProps;
+        const {
+            fund: {fundTreeNodes, versionId},
+            multipleSelection,
+            onChange,
+        } = nextProps;
 
-        const selectionChanged = this.checkSelectionChanged(this.props.fund.fundTreeNodes, fundTreeNodes, multipleSelection);
+        const selectionChanged = this.checkSelectionChanged(
+            this.props.fund.fundTreeNodes,
+            fundTreeNodes,
+            multipleSelection,
+        );
         selectionChanged && this.handleChange(versionId, fundTreeNodes.expandedIds, multipleSelection, onChange);
-    };
+    }
 
     checkSelectionChanged(prevFundTreeNodes, fundTreeNodes, multipleSelection) {
         if (multipleSelection) {
@@ -72,7 +86,7 @@ class FundNodesSelect extends AbstractReactComponent {
     }
 
     handleChange = (versionId, expandedIds, multipleSelection, onChange) => {
-        this.requestFundTreeData(versionId, expandedIds).then((fundTree) => {
+        this.requestFundTreeData(versionId, expandedIds).then(fundTree => {
             if (!onChange) {
                 return;
             }
@@ -97,14 +111,16 @@ class FundNodesSelect extends AbstractReactComponent {
     };
 
     requestFundTreeData = (versionId, expandedIds) => {
-        const { area } = this.props;
+        const {area} = this.props;
         return this.props.dispatch(fundTreeFetchIfNeeded(area, versionId, expandedIds));
     };
 
     handleNodeClick = (node, ensureItemVisible, e) => {
-        const { fund, area } = this.props;
+        const {fund, area} = this.props;
         e.shiftKey && this.unFocus();
-        this.props.dispatch(fundTreeSelectNode(area, fund.versionId, node.id, e.ctrlKey, e.shiftKey, null, ensureItemVisible));
+        this.props.dispatch(
+            fundTreeSelectNode(area, fund.versionId, node.id, e.ctrlKey, e.shiftKey, null, ensureItemVisible),
+        );
     };
 
     unFocus() {
@@ -115,33 +131,36 @@ class FundNodesSelect extends AbstractReactComponent {
         }
     }
 
-    handleFulltextChange = (value) => {
-        const { fund, area } = this.props;
+    handleFulltextChange = value => {
+        const {fund, area} = this.props;
         this.props.dispatch(fundTreeFulltextChange(area, fund.versionId, value));
     };
 
     handleFulltextSearch = () => {
-        const { fund, area } = this.props;
+        const {fund, area} = this.props;
         this.props.dispatch(fundTreeFulltextSearch(area, fund.versionId));
     };
 
     handleFulltextPrevItem = () => {
-        const { fund, area } = this.props;
+        const {fund, area} = this.props;
         this.props.dispatch(fundTreeFulltextPrevItem(area, fund.versionId));
     };
 
     handleFulltextNextItem = () => {
-        const { fund, area } = this.props;
+        const {fund, area} = this.props;
         this.props.dispatch(fundTreeFulltextNextItem(area, fund.versionId));
     };
 
     handleCollapse = () => {
-        const { fund, area } = this.props;
+        const {fund, area} = this.props;
         this.props.dispatch(fundTreeCollapse(area, fund.versionId, fund));
     };
 
     handleNodeExpandCollapse = (node, expand) => {
-        const { fund: { versionId }, area } = this.props;
+        const {
+            fund: {versionId},
+            area,
+        } = this.props;
         if (expand) {
             this.props.dispatch(fundTreeNodeExpand(area, node));
         } else {
@@ -150,11 +169,13 @@ class FundNodesSelect extends AbstractReactComponent {
     };
 
     render() {
-        const { fund: { fundTreeNodes } } = this.props;
+        const {
+            fund: {fundTreeNodes},
+        } = this.props;
         return (
             <div className="add-nodes-form-container">
                 <FundTreeLazy
-                    ref='tree'
+                    ref="tree"
                     {...fundTreeNodes}
                     cutLongLabels={true}
                     onOpenCloseNode={this.handleNodeExpandCollapse}
@@ -171,7 +192,7 @@ class FundNodesSelect extends AbstractReactComponent {
 }
 
 function mapStateToProps(state, props) {
-    const { arrRegion } = state;
+    const {arrRegion} = state;
     return {
         fund: props.fund ? props.fund : arrRegion.funds[arrRegion.activeIndex],
     };

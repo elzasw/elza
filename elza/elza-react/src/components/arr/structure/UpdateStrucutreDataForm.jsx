@@ -9,7 +9,6 @@ import Loading from '../../shared/loading/Loading';
 import PropTypes from 'prop-types';
 
 class UpdateStructureDataForm extends AbstractReactComponent {
-
     static propTypes = {
         multiple: PropTypes.bool,
         fundVersionId: PropTypes.number.isRequired,
@@ -32,23 +31,28 @@ class UpdateStructureDataForm extends AbstractReactComponent {
     render() {
         const {onClose, fundVersionId, fundId, structureNodeForm, readMode, descItemFactory} = this.props;
 
-        return <div>
-            <Modal.Body>
-                {structureNodeForm.fetched ?
-                    <StructureSubNodeForm
-                        versionId={fundVersionId}
-                        readMode={readMode}
-                        fundId={fundId}
-                        selectedSubNodeId={structureNodeForm.id}
-                        descItemFactory={descItemFactory}
-                    /> :
-                    <Loading/>
-                }
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="link" onClick={onClose}>{i18n('global.action.close')}</Button>
-            </Modal.Footer>
-        </div>;
+        return (
+            <div>
+                <Modal.Body>
+                    {structureNodeForm.fetched ? (
+                        <StructureSubNodeForm
+                            versionId={fundVersionId}
+                            readMode={readMode}
+                            fundId={fundId}
+                            selectedSubNodeId={structureNodeForm.id}
+                            descItemFactory={descItemFactory}
+                        />
+                    ) : (
+                        <Loading />
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="link" onClick={onClose}>
+                        {i18n('global.action.close')}
+                    </Button>
+                </Modal.Footer>
+            </div>
+        );
     }
 }
 

@@ -34,7 +34,7 @@ class AdminFundPage extends AbstractReactComponent {
         }
     }
 
-    getFundRows = (props) => {
+    getFundRows = props => {
         const {funds} = props;
         if (!funds.fetched) {
             return [];
@@ -52,11 +52,11 @@ class AdminFundPage extends AbstractReactComponent {
         this.props.dispatch(fundsFetchIfNeeded());
     }
 
-    handleSelect = (item) => {
+    handleSelect = item => {
         this.props.dispatch(selectFund(item.id));
     };
 
-    handleSearch = (filterText) => {
+    handleSearch = filterText => {
         this.props.dispatch(fundsFilter(filterText));
     };
 
@@ -70,20 +70,26 @@ class AdminFundPage extends AbstractReactComponent {
 
         let altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key='alt-actions' className="small">{altActions}</RibbonGroup>;
+            altSection = (
+                <RibbonGroup key="alt-actions" className="small">
+                    {altActions}
+                </RibbonGroup>
+            );
         }
         let itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key='item-actions' className="small">{itemActions}</RibbonGroup>;
+            itemSection = (
+                <RibbonGroup key="item-actions" className="small">
+                    {itemActions}
+                </RibbonGroup>
+            );
         }
 
-        return (
-            <Ribbon admin {...this.props} altSection={altSection} itemSection={itemSection}/>
-        );
+        return <Ribbon admin {...this.props} altSection={altSection} itemSection={itemSection} />;
     }
 
     renderFundDetail = () => {
-        return <FundDetail/>;
+        return <FundDetail />;
     };
 
     render() {
@@ -103,17 +109,19 @@ class AdminFundPage extends AbstractReactComponent {
                     placeholder={i18n('search.input.search')}
                     value={funds.filter.text || ''}
                 />
-                <StoreHorizontalLoader store={funds}/>
-                {funds.fetched && <ListBox
-                    key="funds"
-                    className='fund-listbox'
-                    ref='fundList'
-                    items={fundRows}
-                    activeIndex={activeIndex}
-                    renderItemContent={renderFundItem}
-                    onFocus={this.handleSelect}
-                    onSelect={this.handleSelect}
-                />}
+                <StoreHorizontalLoader store={funds} />
+                {funds.fetched && (
+                    <ListBox
+                        key="funds"
+                        className="fund-listbox"
+                        ref="fundList"
+                        items={fundRows}
+                        activeIndex={activeIndex}
+                        renderItemContent={renderFundItem}
+                        onFocus={this.handleSelect}
+                        onSelect={this.handleSelect}
+                    />
+                )}
             </div>
         );
 
@@ -125,7 +133,7 @@ class AdminFundPage extends AbstractReactComponent {
         return (
             <PageLayout
                 splitter={splitter}
-                className='admin-fund-page'
+                className="admin-fund-page"
                 ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}
                 centerPanel={centerPanel}

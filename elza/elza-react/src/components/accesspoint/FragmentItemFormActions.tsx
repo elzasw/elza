@@ -1,5 +1,5 @@
-import { WebApi } from '../../actions/index.jsx';
-import { ItemFormActions } from './ItemFormActions';
+import {WebApi} from '../../actions/index.jsx';
+import {ItemFormActions} from './ItemFormActions';
 
 interface BaseAction {
     area: string;
@@ -7,8 +7,7 @@ interface BaseAction {
 }
 
 export class FragmentItemFormActions extends ItemFormActions {
-
-    static AREA = "AP_FRAGMENT";
+    static AREA = 'AP_FRAGMENT';
 
     constructor() {
         super(FragmentItemFormActions.AREA);
@@ -25,7 +24,7 @@ export class FragmentItemFormActions extends ItemFormActions {
 
     // @Override
     _getItemFormStore(state) {
-        return state.ap.fragmentItemForm
+        return state.ap.fragmentItemForm;
     }
 
     // @Override
@@ -35,17 +34,17 @@ export class FragmentItemFormActions extends ItemFormActions {
 
     // @Override
     _callCreateDescItem(parent, descItemTypeId, item) {
-        return WebApi.changeFragmentItems(parent.id, [{updateOp: "CREATE", item}])
+        return WebApi.changeFragmentItems(parent.id, [{updateOp: 'CREATE', item}]);
     }
 
     // @Override
     _callUpdateDescItem(parent, item) {
-        return WebApi.changeFragmentItems(parent.id, [{updateOp: "UPDATE", item}]);
+        return WebApi.changeFragmentItems(parent.id, [{updateOp: 'UPDATE', item}]);
     }
 
     // @Override
     _callDeleteDescItem(parent, item) {
-        return WebApi.changeFragmentItems(parent.id, [{updateOp: "DELETE", item}]);
+        return WebApi.changeFragmentItems(parent.id, [{updateOp: 'DELETE', item}]);
     }
 
     // @Override

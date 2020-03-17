@@ -3,11 +3,13 @@ import * as types from 'actions/constants/ActionTypes.js';
 export function savingApiWrapper(dispatch, apiPromise) {
     dispatch(statusSaving());
 
-    apiPromise.then((result) => {
-        dispatch(statusSaved());
-    }).catch((err) => {
-        dispatch(statusSaved());
-    })
+    apiPromise
+        .then(result => {
+            dispatch(statusSaved());
+        })
+        .catch(err => {
+            dispatch(statusSaved());
+        });
 
     return apiPromise;
 }
@@ -15,10 +17,10 @@ export function savingApiWrapper(dispatch, apiPromise) {
 export function statusSaving() {
     return {
         type: types.STATUS_SAVING,
-    }
+    };
 }
 export function statusSaved() {
     return {
         type: types.STATUS_SAVED,
-    }
+    };
 }

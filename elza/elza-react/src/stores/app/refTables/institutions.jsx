@@ -3,13 +3,13 @@ import {default as genericRefTable, genericRefTableState} from './genericRefTabl
 
 export default function institutions(state = genericRefTableState, action = {}) {
     switch (action.type) {
-        case types.CHANGE_INSTITUTION:{
+        case types.CHANGE_INSTITUTION: {
             return {
                 ...state,
-                dirty: true
-            }
+                dirty: true,
+            };
         }
         default:
-            return genericRefTable(types.REF_INSTITUTIONS_REQUEST, types.REF_INSTITUTIONS_RECEIVE, state, action)
+            return genericRefTable(types.REF_INSTITUTIONS_REQUEST, types.REF_INSTITUTIONS_RECEIVE, state, action);
     }
 }

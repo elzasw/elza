@@ -1,5 +1,3 @@
 import {Item} from './Item';
 
-export class ItemInt extends Item {
-
-}
+export class ItemInt extends Item {}

@@ -55,7 +55,7 @@ export function nodeInitState(node, prevNodesNode) {
     }
 
     if (prevNodesNode && prevNodesNode.id == node.id) {
-//        result.nodeInfo = prevNodesNode.nodeInfo;
+        //        result.nodeInfo = prevNodesNode.nodeInfo;
         result.dirty = prevNodesNode.dirty;
         result.isFetching = prevNodesNode.isFetching;
         result.isNodeInfoFetching = prevNodesNode.isNodeInfoFetching;
@@ -70,7 +70,7 @@ export function nodeInitState(node, prevNodesNode) {
         result.searchedIds = prevNodesNode.searchedIds;
         result.changeParent = false;
     } else {
-//        result.nodeInfo = nodeInfo(undefined, {type:''});
+        //        result.nodeInfo = nodeInfo(undefined, {type:''});
         result.dirty = false;
         result.isFetching = false;
         result.isNodeInfoFetching = false;
@@ -93,7 +93,8 @@ export function nodeInitState(node, prevNodesNode) {
 function getViewStartIndex(state, selectedId) {
     const {pageSize, viewStartIndex, nodeIndex} = state;
     const index = nodeIndex;
-    if (index >= 0) {   // -1 může být, pokud nejsou data seznamu položek accordionu (childNodes) ještě načtena
+    if (index >= 0) {
+        // -1 může být, pokud nejsou data seznamu položek accordionu (childNodes) ještě načtena
         if (index < viewStartIndex || index >= viewStartIndex + pageSize) {
             let newIndex = index - Math.floor(pageSize / 2);
             /*let lastPageIndex = childNodeIds.length - pageSize;
@@ -229,13 +230,18 @@ export function node(state = nodeInitialState, action) {
         case types.FUND_NODE_INCREASE_VERSION:
             var result = {
                 ...state,
-                subNodeForm: subNodeForm(state.subNodeForm, action),    // změna pro formulář, pokud je potřeba
+                subNodeForm: subNodeForm(state.subNodeForm, action), // změna pro formulář, pokud je potřeba
             };
-            if (result.id === action.nodeId && result.version === action.nodeVersionId) { // změníme aktuální node
+            if (result.id === action.nodeId && result.version === action.nodeVersionId) {
+                // změníme aktuální node
                 result.version = result.version + 1;
             }
             for (let a = 0; a < result.childNodes.length; a++) {
-                if (result.childNodes[a].id === action.nodeId && result.childNodes[a].version === action.nodeVersionId) {   // změna tohoto node
+                if (
+                    result.childNodes[a].id === action.nodeId &&
+                    result.childNodes[a].version === action.nodeVersionId
+                ) {
+                    // změna tohoto node
                     result.childNodes = [
                         ...result.childNodes.slice(0, a),
                         {
@@ -314,7 +320,7 @@ export function node(state = nodeInitialState, action) {
             return consolidateState(state, result);
         }
         case types.FUND_FUND_SUBNODES_NEXT: {
-            if ((state.viewStartIndex + state.pageSize / 2) < state.nodeCount) {
+            if (state.viewStartIndex + state.pageSize / 2 < state.nodeCount) {
                 return {
                     ...state,
                     viewStartIndex: state.viewStartIndex + state.pageSize / 2,
@@ -334,7 +340,7 @@ export function node(state = nodeInitialState, action) {
             }
         }
         case types.FUND_FUND_SUBNODES_NEXT_PAGE:
-            if ((state.viewStartIndex + state.pageSize) < state.nodeCount) {
+            if (state.viewStartIndex + state.pageSize < state.nodeCount) {
                 return {
                     ...state,
                     viewStartIndex: state.viewStartIndex + state.pageSize,
@@ -430,7 +436,6 @@ export function node(state = nodeInitialState, action) {
                 return state;
             }
 
-
             var result = {
                 ...state,
                 selectedSubNodeId: action.subNodeId,
@@ -499,10 +504,7 @@ export function node(state = nodeInitialState, action) {
                                     searchedIds: {},
                                 };
                             case 'CHILD':
-                                var childNodes = [
-                                    ...state.childNodes,
-                                    nodeInitState(action.newNode),
-                                ];
+                                var childNodes = [...state.childNodes, nodeInitState(action.newNode)];
 
                                 return {
                                     ...state,
@@ -584,7 +586,7 @@ export function node(state = nodeInitialState, action) {
             result.subNodeFormCache = subNodeFormCache(result.subNodeFormCache, action);
 
             let childNodes = [];
-            result.childNodes.forEach((node) => {
+            result.childNodes.forEach(node => {
                 if (action.nodeIds.indexOf(node.id) < 0) {
                     childNodes.push(node);
                 }

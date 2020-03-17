@@ -27,25 +27,24 @@ import i18n from '../../i18n';
  *      addToastrWarning('title', 'message,...)
  **/
 class Toastr extends AbstractReactComponent {
-
     static propTypes = {
         store: PropTypes.object.isRequired,
     };
 
-    handleDismiss = (index) => {
+    handleDismiss = index => {
         this.props.dispatch(removeToastr(index));
     };
 
     static getIconStyle(style) {
         switch (style) {
             case 'success':
-                return <Icon glyph="fa-check"/>;
+                return <Icon glyph="fa-check" />;
             case 'warning':
-                return <Icon glyph="fa-exclamation"/>;
+                return <Icon glyph="fa-exclamation" />;
             case 'info':
-                return <Icon glyph="fa-info-circle"/>;
+                return <Icon glyph="fa-info-circle" />;
             case 'danger':
-                return <Icon glyph="fa-exclamation-circle"/>;
+                return <Icon glyph="fa-exclamation-circle" />;
             default:
                 return null;
         }
@@ -59,38 +58,39 @@ class Toastr extends AbstractReactComponent {
 
             let message;
             if (t.extended) {
-                message = <div>
-                    {createElement(t.messageComponent, {
-                        key: 'message', ...t.messageComponentProps,
-                        onClose: () => this.handleDismiss(index),
-                    })}
-                </div>;
+                message = (
+                    <div>
+                        {createElement(t.messageComponent, {
+                            key: 'message',
+                            ...t.messageComponentProps,
+                            onClose: () => this.handleDismiss(index),
+                        })}
+                    </div>
+                );
             } else {
                 message = <div>{t.message}</div>;
             }
 
-            return <Alert
-                key={'toast-' + index}
-                variant={t.style}
-                bsSize={t.size ? t.size : 'lg'}
-                className={t.visible && 'fade'}
-                closeLabel={i18n('global.action.close')}
-                onClose={() => (this.handleDismiss(index))}
-            >
-                <div className="icon-container">{Toastr.getIconStyle(t.style)}</div>
-                <div className="content">
-                    <h4>{t.title}</h4>
-                    {message}
-                </div>
-            </Alert>;
+            return (
+                <Alert
+                    key={'toast-' + index}
+                    variant={t.style}
+                    bsSize={t.size ? t.size : 'lg'}
+                    className={t.visible && 'fade'}
+                    closeLabel={i18n('global.action.close')}
+                    onClose={() => this.handleDismiss(index)}
+                >
+                    <div className="icon-container">{Toastr.getIconStyle(t.style)}</div>
+                    <div className="content">
+                        <h4>{t.title}</h4>
+                        {message}
+                    </div>
+                </Alert>
+            );
         });
 
-        return (
-            <div className="toastrAlertBox">
-                {rows}
-            </div>
-        );
+        return <div className="toastrAlertBox">{rows}</div>;
     }
 }
 
-export default connect((state) => ({store: state.toastr}))(Toastr);
+export default connect(state => ({store: state.toastr}))(Toastr);

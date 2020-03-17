@@ -1,11 +1,11 @@
 import * as types from '../../../actions/constants/ActionTypes.js';
-import { i18n } from '../../../components/shared';
-import { valuesEquals } from '../../../components/Utils';
-import { validateCoordinatePoint, validateDouble, validateDuration, validateInt } from '../../../components/validate';
-import { DisplayType } from '../../../constants';
-import { getMapFromList, objectById } from '../utils2';
-import { DataTypeCode } from './itemFormInterfaces';
-import { consolidateDescItems, createItem, ItemAvailability, mergeAfterUpdate, updateFormData } from './itemFormUtils';
+import {i18n} from '../../../components/shared';
+import {valuesEquals} from '../../../components/Utils';
+import {validateCoordinatePoint, validateDouble, validateDuration, validateInt} from '../../../components/validate';
+import {DisplayType} from '../../../constants';
+import {getMapFromList, objectById} from '../utils2';
+import {DataTypeCode} from './itemFormInterfaces';
+import {consolidateDescItems, createItem, ItemAvailability, mergeAfterUpdate, updateFormData} from './itemFormUtils';
 
 export interface ILocation {
     itemType: ItemTypeExt;
@@ -31,11 +31,11 @@ export interface ItemTypeLiteVO {
 
     // nad míru objektu
     hasFocus?: any;
-    useSpecification?: boolean
+    useSpecification?: boolean;
 }
 
 export interface ApItemVO<V> {
-    '@class': string | null,
+    '@class': string | null;
     id?: number;
     objectId?: number;
     position?: number;
@@ -78,7 +78,6 @@ export interface ApItemExt<V> extends ApItemVO<V> {
 
 export interface ItemSpec {
     id: number;
-
 }
 
 export interface DataType {
@@ -87,7 +86,7 @@ export interface DataType {
 }
 
 export interface RefType {
-    id: number,
+    id: number;
     name: string;
     dataType: DataType;
     descItemSpecsMap: Map<number, ItemSpec>;
@@ -106,7 +105,6 @@ export interface RefType {
     structureTypeId: number;
     fragmentTypeId: number;
     descItemSpecs: ItemSpec[];
-
 }
 
 export interface FragmentTypeVO {
@@ -116,20 +114,20 @@ export interface FragmentTypeVO {
 }
 
 export interface RefTypeExt extends RefType {
-    cal: number,
-    calSt: number,
-    favoriteSpecIds: any[],
-    ind: number,
-    rep: number,
-    specs: any[],
-    type: ItemAvailability,
+    cal: number;
+    calSt: number;
+    favoriteSpecIds: any[];
+    ind: number;
+    rep: number;
+    specs: any[];
+    type: ItemAvailability;
 
     // nad míru objektu
     hasFocus?: any;
 }
 
 export interface ItemTypeExt extends ItemTypeLiteVO {
-    items: ApItemExt<any>[]
+    items: ApItemExt<any>[];
 }
 
 export interface IFormData {
@@ -137,12 +135,12 @@ export interface IFormData {
 }
 
 export interface ApFormVO {
-    items: ApItemVO<any>[],
-    itemTypes: ItemTypeLiteVO[],
+    items: ApItemVO<any>[];
+    itemTypes: ItemTypeLiteVO[];
 }
 
 export interface ItemData extends ApFormVO {
-    parent: {id: number}
+    parent: {id: number};
 }
 
 export interface IItemFormState {
@@ -153,7 +151,7 @@ export interface IItemFormState {
     dirty: boolean;
     needClean: boolean;
     versionId?: number;
-    parent?: {id: number, [key: string]: any};
+    parent?: {id: number; [key: string]: any};
     data?: ItemData;
     infoTypes?: RefType[];
     infoTypesMap?: Map<any, RefTypeExt>;
@@ -167,7 +165,7 @@ const initialState: IItemFormState = {
     fetchingId: undefined,
     fetched: false,
     dirty: false,
-    needClean: false,   // pokud je true, přenačtou se data a vymaže se aktuální editace - obdoba jako nové zobrazení formuláře
+    needClean: false, // pokud je true, přenačtou se data a vymaže se aktuální editace - obdoba jako nové zobrazení formuláře
     versionId: undefined,
     parent: undefined,
     formData: undefined,
@@ -179,8 +177,8 @@ const initialState: IItemFormState = {
 };
 
 interface IValueLocation {
-    itemTypeIndex: number
-    itemIndex?: number
+    itemTypeIndex: number;
+    itemIndex?: number;
 }
 
 function getLoc(state: IItemFormState, valueLocation: IValueLocation): ILocation | null {
@@ -202,10 +200,10 @@ function getLoc(state: IItemFormState, valueLocation: IValueLocation): ILocation
 }
 
 interface IValidationError {
-    spec?: string
-    value?: string
-    calendarType?: string
-    hasError: boolean
+    spec?: string;
+    value?: string;
+    calendarType?: string;
+    hasError: boolean;
 }
 
 export function validate(item: ApItemVO<any>, refType: RefType, valueServerError?: string): IValidationError {
@@ -213,7 +211,8 @@ export function validate(item: ApItemVO<any>, refType: RefType, valueServerError
 
     // Specifikace
     if (refType.useSpecification) {
-        if (typeof item.specId === 'undefined') {// || item.descItemSpecId === ''
+        if (typeof item.specId === 'undefined') {
+            // || item.descItemSpecId === ''
             error.spec = i18n('subNodeForm.validate.spec.required');
         }
     }
@@ -237,7 +236,8 @@ export function validate(item: ApItemVO<any>, refType: RefType, valueServerError
         case DataTypeCode.ENUM:
             break;
         case DataTypeCode.UNITDATE:
-            if (typeof item.calendarTypeId == 'undefined') {// || item.calendarTypeId == ""
+            if (typeof item.calendarTypeId == 'undefined') {
+                // || item.calendarTypeId == ""
                 error.calendarType = i18n('subNodeForm.validate.calendarType.required');
             }
             if (!item.value || item.value.length === 0) {
@@ -298,30 +298,30 @@ export function validate(item: ApItemVO<any>, refType: RefType, valueServerError
 }
 
 /*
-* Converts the value to specified type through the dataTypeMap
-*/
+ * Converts the value to specified type through the dataTypeMap
+ */
 export function convertValue(value, descItem, type) {
     //  Data type to value conversion functions map
     const dataTypeMap = {
-        PARTY_REF: (value) => {
+        PARTY_REF: value => {
             return {
                 value: value.id,
                 party: value,
             };
         },
-        FILE_REF: (value) => {
+        FILE_REF: value => {
             return {
                 value: value.id,
                 file: value,
             };
         },
-        STRUCTURED: (value) => {
+        STRUCTURED: value => {
             return {
                 value: value.id,
                 structureData: value,
             };
         },
-        RECORD_REF: (value) => {
+        RECORD_REF: value => {
             return {
                 value: value.id,
                 record: value,
@@ -336,7 +336,7 @@ export function convertValue(value, descItem, type) {
                 calendarTypeId: value.calendarTypeId,
             };
         },
-        DEFAULT: (value) => {
+        DEFAULT: value => {
             return {value};
         },
     };
@@ -356,21 +356,21 @@ enum ActionOperation {
 }
 
 interface IAction {
-    valueLocation?: IValueLocation,
-    type?: string,
-    readMode?: boolean,
+    valueLocation?: IValueLocation;
+    type?: string;
+    readMode?: boolean;
     result?: {
-        valid: boolean,
-        message: string
-    },
-    index?: number,
-    value?: any,
-    operationType?: ActionOperation,
+        valid: boolean;
+        message: string;
+    };
+    index?: number;
+    value?: any;
+    operationType?: ActionOperation;
     descItemResult?: {
-        item?: ApItemVO<any>
-    },
+        item?: ApItemVO<any>;
+    };
 
-    [extraProps: string]: any
+    [extraProps: string]: any;
 }
 
 export function itemForm(state: IItemFormState = initialState, action: IAction = {}) {
@@ -399,7 +399,6 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                         ...state,
                         formData: {
                             ...state.formData,
-
                         },
                     };
                 /*case types.ITEM_FORM_FORM_VALUE_CHANGE_POSITION:
@@ -430,9 +429,8 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                             clearTimeout(loc.item!!.validateTimer);
                         }
                         // FIXME @randak tohle je blbě
-                        const fc = () => action.dispatch(
-                            action.formActions.fundSubNodeFormValueValidate(action.valueLocation),
-                        );
+                        const fc = () =>
+                            action.dispatch(action.formActions.fundSubNodeFormValueValidate(action.valueLocation));
                         loc.item!!.validateTimer = setTimeout(fc, 250);
                     }
                     loc.item!!.error = validate(loc.item!!, refType);
@@ -461,7 +459,6 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                 case types.ITEM_FORM_VALUE_BLUR:
                     loc.item!!.hasFocus = false;
                     loc.itemType.hasFocus = false;
-
 
                     return {
                         ...state,
@@ -493,7 +490,6 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                     const item = createItem(loc.itemType, refType, true);
                     item.position = loc.itemType.items.length + 1;
                     //loc.itemType.items = [...loc.itemType.descItems, descItem];
-
 
                     return {
                         ...state,
@@ -577,7 +573,9 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                             return state;
                         case ActionOperation.UPDATE:
                             if (action.descItemResult) {
-                                const updateItem = state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items[action.valueLocation.itemIndex!!];
+                                const updateItem = state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items[
+                                    action.valueLocation.itemIndex!!
+                                ];
                                 return {
                                     ...newState,
                                     formData: {
@@ -587,16 +585,24 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                                             {
                                                 ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex],
                                                 items: [
-                                                    ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(0, action.valueLocation.itemIndex!!),
+                                                    ...state.formData!!.itemTypes[
+                                                        action.valueLocation.itemTypeIndex
+                                                    ].items.slice(0, action.valueLocation.itemIndex!!),
                                                     {
                                                         ...updateItem,
-                                                        objectId: action.descItemResult.item ? action.descItemResult.item.objectId : null,
-                                                        prevValue: action.descItemResult.item ? action.descItemResult.item.value : null,
+                                                        objectId: action.descItemResult.item
+                                                            ? action.descItemResult.item.objectId
+                                                            : null,
+                                                        prevValue: action.descItemResult.item
+                                                            ? action.descItemResult.item.value
+                                                            : null,
                                                         //prevDescItemSpecId: action.descItemResult.item && loc.itemType.useSpecification ? action.descItemResult.item.descItemSpecId : updateItem.prevDescItemSpecId,
                                                         //prevCalendarTypeId: action.descItemResult.item && action.descItemResult.prevCalendarTypeId ? action.descItemResult.item.prevCalendarTypeId : updateItem.prevCalendarTypeId,
                                                         touched: false,
                                                     },
-                                                    ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(action.valueLocation.itemIndex!! + 1),
+                                                    ...state.formData!!.itemTypes[
+                                                        action.valueLocation.itemTypeIndex
+                                                    ].items.slice(action.valueLocation.itemIndex!! + 1),
                                                 ],
                                             },
                                             ...state.formData!!.itemTypes.slice(action.valueLocation.itemTypeIndex + 1),
@@ -608,9 +614,13 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                         case ActionOperation.CREATE:
                             if (action.descItemResult && action.descItemResult.item) {
                                 const itemIndex = action.valueLocation.itemIndex!!;
-                                const createItemxx = state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items[itemIndex];
+                                const createItemxx = state.formData!!.itemTypes[action.valueLocation.itemTypeIndex]
+                                    .items[itemIndex];
                                 const createItems = [
-                                    ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(0, itemIndex),
+                                    ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(
+                                        0,
+                                        itemIndex,
+                                    ),
                                     {
                                         ...createItemxx,
                                         objectId: action.descItemResult.item.objectId,
@@ -623,7 +633,9 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                                         saving: false,
                                         touched: false,
                                     },
-                                    ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(itemIndex + 1),
+                                    ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(
+                                        itemIndex + 1,
+                                    ),
                                 ];
 
                                 return {
@@ -640,7 +652,6 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                                         ],
                                     },
                                 };
-
                             }
                             return state;
                         case ActionOperation.DELETE_DESC_ITEM_TYPE:
@@ -650,8 +661,8 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
 
                     return state;
                 case types.ITEM_FORM_DESC_ITEM_TYPE_DELETE:
-
-                    if (action.onlyDescItems) { // jen desc items, nic víc
+                    if (action.onlyDescItems) {
+                        // jen desc items, nic víc
                         return {
                             ...state,
                             formData: {
@@ -710,8 +721,13 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                                 {
                                     ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex],
                                     items: [
-                                        ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(0, action.valueLocation.itemIndex!!),
-                                        ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(action.valueLocation.itemIndex!! + 1),
+                                        ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(
+                                            0,
+                                            action.valueLocation.itemIndex!!,
+                                        ),
+                                        ...state.formData!!.itemTypes[action.valueLocation.itemTypeIndex].items.slice(
+                                            action.valueLocation.itemIndex!! + 1,
+                                        ),
                                     ],
                                 },
                                 ...state.formData!!.itemTypes.slice(action.valueLocation.itemTypeIndex + 1),
@@ -719,10 +735,7 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                         },
                     };
             }
-
         }
-
-
     }
 
     switch (action.type) {
@@ -738,7 +751,6 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
             //     });
             // });
 
-
             const addItemType = objectById(state.data!!.itemTypes, action.descItemTypeId) as ItemTypeExt;
 
             // ##
@@ -746,7 +758,6 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
             // ##
 
             // Dohledání skupiny, pokud existuje
-
 
             // Přidání prvku do skupiny a seřazení prvků podle position
             const descItemType = {...addItemType, items: []};
@@ -758,11 +769,7 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
             // Upravení a opravení seznamu hodnot, případně přidání prázdných
             consolidateDescItems(descItemType, infoType, refType, true);
 
-
-            const itemTypes = [
-                ...state.formData!!.itemTypes,
-                descItemType,
-            ];
+            const itemTypes = [...state.formData!!.itemTypes, descItemType];
 
             itemTypes.sort((a, b) => {
                 return state.refTypesMap!!.get(a.id)!!.viewOrder - state.refTypesMap!!.get(b.id)!!.viewOrder;
@@ -778,7 +785,8 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
         case types.CHANGE_ACCESS_POINT:
             return {...state, dirty: true};
         case types.ITEM_FORM_CHANGE_READ_MODE:
-            if (action.readMode) {  // změna na read mode - musíme vyresetovat všechny změny ve formuláři
+            if (action.readMode) {
+                // změna na read mode - musíme vyresetovat všechny změny ve formuláři
                 return {
                     ...state,
                     needClean: true,
@@ -835,7 +843,6 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                 }
             };
         }*/
-
 
         case types.ITEM_FORM_REQUEST:
             return {
@@ -911,4 +918,3 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
             return state;
     }
 }
-

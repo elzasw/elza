@@ -38,15 +38,15 @@ const OutputState = {
  * Formulář detailu a editace verze výstupu.
  */
 class ArrOutputDetail extends AbstractReactComponent {
-    static contextTypes = { shortcuts: PropTypes.object };
-    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    static contextTypes = {shortcuts: PropTypes.object};
+    static childContextTypes = {shortcuts: PropTypes.object.isRequired};
 
     UNSAFE_componentWillMount() {
         addShortcutManager(this, defaultKeymap);
     }
 
     getChildContext() {
-        return { shortcuts: this.shortcutManager };
+        return {shortcuts: this.shortcutManager};
     }
 
     static propTypes = {
@@ -63,8 +63,9 @@ class ArrOutputDetail extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        const { versionId, fundOutputDetail } = this.props;
-        fundOutputDetail.id !== null && this.props.dispatch(fundOutputDetailFetchIfNeeded(versionId, fundOutputDetail.id));
+        const {versionId, fundOutputDetail} = this.props;
+        fundOutputDetail.id !== null &&
+            this.props.dispatch(fundOutputDetailFetchIfNeeded(versionId, fundOutputDetail.id));
         this.props.dispatch(outputTypesFetchIfNeeded());
 
         this.requestData(this.props.versionId, this.props.fundOutputDetail);
@@ -73,8 +74,9 @@ class ArrOutputDetail extends AbstractReactComponent {
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        const { versionId, fundOutputDetail } = nextProps;
-        fundOutputDetail.id !== null && this.props.dispatch(fundOutputDetailFetchIfNeeded(versionId, fundOutputDetail.id));
+        const {versionId, fundOutputDetail} = nextProps;
+        fundOutputDetail.id !== null &&
+            this.props.dispatch(fundOutputDetailFetchIfNeeded(versionId, fundOutputDetail.id));
         this.props.dispatch(outputTypesFetchIfNeeded());
 
         this.requestData(nextProps.versionId, nextProps.fundOutputDetail);
@@ -96,9 +98,8 @@ class ArrOutputDetail extends AbstractReactComponent {
         this.props.dispatch(calendarTypesFetchIfNeeded());
     }
 
-    trySetFocus = (props) => {
+    trySetFocus = props => {
         //let {focus} = props;
-
         // if (canSetFocus()) {
         //     if (isFocusFor(focus, 'fund-output', 1)) {
         //         this.refs.fundOutputList && this.setState({}, () => {
@@ -109,17 +110,17 @@ class ArrOutputDetail extends AbstractReactComponent {
         // }
     };
 
-    handleShortcuts = (action) => {
+    handleShortcuts = action => {
         console.log('#handleShortcuts', '[' + action + ']', this);
     };
 
-    handleSaveOutput = (data) => {
-        const { fund, fundOutputDetail } = this.props;
+    handleSaveOutput = data => {
+        const {fund, fundOutputDetail} = this.props;
         this.props.dispatch(fundOutputEdit(fund.versionId, fundOutputDetail.id, data));
     };
 
-    handleRemoveNode = (node) => {
-        const { fund, fundOutputDetail } = this.props;
+    handleRemoveNode = node => {
+        const {fund, fundOutputDetail} = this.props;
 
         if (window.confirm(i18n('arr.fund.nodes.deleteNode'))) {
             this.props.dispatch(fundOutputRemoveNodes(fund.versionId, fundOutputDetail.id, [node.id]));
@@ -127,14 +128,19 @@ class ArrOutputDetail extends AbstractReactComponent {
     };
 
     handleAddNodes = () => {
-        const { fund, fundOutputDetail } = this.props;
+        const {fund, fundOutputDetail} = this.props;
 
-        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
-            <FundNodesSelectForm
-                onSubmitForm={(ids, nodes) => {
-                    this.props.dispatch(fundOutputAddNodes(fund.versionId, fundOutputDetail.id, ids));
-                }}
-            />));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.fund.nodes.title.select'),
+                <FundNodesSelectForm
+                    onSubmitForm={(ids, nodes) => {
+                        this.props.dispatch(fundOutputAddNodes(fund.versionId, fundOutputDetail.id, ids));
+                    }}
+                />,
+            ),
+        );
     };
 
     isEditable = (item = this.props.fundOutputDetail) => {
@@ -142,89 +148,119 @@ class ArrOutputDetail extends AbstractReactComponent {
     };
 
     renderOutputFiles() {
-        const { fundOutputDetail, versionId, fund } = this.props;
-        const { fundOutput: { fundOutputFiles } } = fund;
+        const {fundOutputDetail, versionId, fund} = this.props;
+        const {
+            fundOutput: {fundOutputFiles},
+        } = fund;
 
         if (fundOutputDetail.outputResultId === null) {
             return null;
         }
 
-        return <FundOutputFiles
-            ref="fundOutputFiles"
-            versionId={versionId}
-            outputResultId={fundOutputDetail.outputResultId}
-            fundOutputFiles={fundOutputFiles}
-        />;
+        return (
+            <FundOutputFiles
+                ref="fundOutputFiles"
+                versionId={versionId}
+                outputResultId={fundOutputDetail.outputResultId}
+                fundOutputFiles={fundOutputFiles}
+            />
+        );
     }
 
     render() {
         const {
-                  fundOutputDetail, focus,
-                  fund, versionId, descItemTypes,
-                  calendarTypes, rulDataTypes, closed, readMode,
-              } = this.props;
+            fundOutputDetail,
+            focus,
+            fund,
+            versionId,
+            descItemTypes,
+            calendarTypes,
+            rulDataTypes,
+            closed,
+            readMode,
+        } = this.props;
 
         if (fundOutputDetail.id === null) {
-            return <div className='arr-output-detail-container'>
-                <div className="unselected-msg">
-                    <div className="title">{i18n('arr.output.noSelection.title')}</div>
-                    <div className="msg-text">{i18n('arr.output.noSelection.message')}</div>
+            return (
+                <div className="arr-output-detail-container">
+                    <div className="unselected-msg">
+                        <div className="title">{i18n('arr.output.noSelection.title')}</div>
+                        <div className="msg-text">{i18n('arr.output.noSelection.message')}</div>
+                    </div>
                 </div>
-            </div>;
+            );
         }
 
-        const fetched = fundOutputDetail.fetched && fundOutputDetail.subNodeForm.fetched && calendarTypes.fetched && descItemTypes.fetched;
+        const fetched =
+            fundOutputDetail.fetched &&
+            fundOutputDetail.subNodeForm.fetched &&
+            calendarTypes.fetched &&
+            descItemTypes.fetched;
         if (!fetched) {
-            return <HorizontalLoader/>;
+            return <HorizontalLoader />;
         }
 
-        let form = <OutputSubNodeForm
-            versionId={versionId}
-            fundId={fund.id}
-            selectedSubNodeId={fundOutputDetail.id}
-            rulDataTypes={rulDataTypes}
-            calendarTypes={calendarTypes}
-            descItemTypes={descItemTypes}
-            subNodeForm={fundOutputDetail.subNodeForm}
-            closed={!this.isEditable()}
-            focus={focus}
-            readMode={closed || readMode}
-        />;
+        let form = (
+            <OutputSubNodeForm
+                versionId={versionId}
+                fundId={fund.id}
+                selectedSubNodeId={fundOutputDetail.id}
+                rulDataTypes={rulDataTypes}
+                calendarTypes={calendarTypes}
+                descItemTypes={descItemTypes}
+                subNodeForm={fundOutputDetail.subNodeForm}
+                closed={!this.isEditable()}
+                focus={focus}
+                readMode={closed || readMode}
+            />
+        );
 
-        return <Shortcuts name='ArrOutputDetail' className={'arr-output-detail-container'} style={{ height: '100%' }}
-                          handler={this.handleShortcuts}>
-            <div className="output-definition-commons">
-                <OutputInlineForm
-                    disabled={closed || readMode || !this.isEditable()}
-                    initData={fundOutputDetail}
-                    onSave={this.handleSaveOutput}
-                />
-                {fundOutputDetail.error && <div>
-                    <FormInput as="textarea" value={fundOutputDetail.error} disabled
-                               label={i18n('arr.output.title.error')}/>
-                </div>}
-            </div>
-            <div>
-                <label className="control-label">{i18n('arr.output.title.nodes')}</label>
-                <FundNodesList
-                    nodes={fundOutputDetail.nodes}
-                    onDeleteNode={this.handleRemoveNode}
-                    onAddNode={this.handleAddNodes}
-                    readOnly={closed || readMode || !this.isEditable()}
-                />
-            </div>
-            <hr className="small"/>
-            {this.renderOutputFiles()}
-            <h4 className={'desc-items-title'}>{i18n('developer.title.descItems')}</h4>
-            <ToggleContent opened={false} withText>
-                {form}
-            </ToggleContent>
-        </Shortcuts>;
+        return (
+            <Shortcuts
+                name="ArrOutputDetail"
+                className={'arr-output-detail-container'}
+                style={{height: '100%'}}
+                handler={this.handleShortcuts}
+            >
+                <div className="output-definition-commons">
+                    <OutputInlineForm
+                        disabled={closed || readMode || !this.isEditable()}
+                        initData={fundOutputDetail}
+                        onSave={this.handleSaveOutput}
+                    />
+                    {fundOutputDetail.error && (
+                        <div>
+                            <FormInput
+                                as="textarea"
+                                value={fundOutputDetail.error}
+                                disabled
+                                label={i18n('arr.output.title.error')}
+                            />
+                        </div>
+                    )}
+                </div>
+                <div>
+                    <label className="control-label">{i18n('arr.output.title.nodes')}</label>
+                    <FundNodesList
+                        nodes={fundOutputDetail.nodes}
+                        onDeleteNode={this.handleRemoveNode}
+                        onAddNode={this.handleAddNodes}
+                        readOnly={closed || readMode || !this.isEditable()}
+                    />
+                </div>
+                <hr className="small" />
+                {this.renderOutputFiles()}
+                <h4 className={'desc-items-title'}>{i18n('developer.title.descItems')}</h4>
+                <ToggleContent opened={false} withText>
+                    {form}
+                </ToggleContent>
+            </Shortcuts>
+        );
     }
 }
 
 function mapStateToProps(state) {
-    const { focus, userDetail } = state;
+    const {focus, userDetail} = state;
     return {
         outputTypes: state.refTables.outputTypes.items,
         focus,

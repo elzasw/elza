@@ -11,23 +11,23 @@ const initialState = {
     groups: [],
     groupsCount: 0,
     groupDetail: groupDetail(),
-}
+};
 
 export default function group(state = initialState, action = {}) {
     if (isGroupDetailAction(action) || isPermissionAction(action)) {
         return {
             ...state,
-            groupDetail: groupDetail(state.groupDetail, action)
-        }
+            groupDetail: groupDetail(state.groupDetail, action),
+        };
     }
 
     switch (action.type) {
         case types.STORE_SAVE:
-            const {filterText} = state
+            const {filterText} = state;
             return {
                 filterText,
                 groupDetail: groupDetail(state.groupDetail, action),
-            }
+            };
         case types.STORE_LOAD:
             if (action.adminRegion) {
                 return {
@@ -40,9 +40,9 @@ export default function group(state = initialState, action = {}) {
                     groupsCount: 0,
                     ...action.adminRegion.group,
                     groupDetail: groupDetail(action.adminRegion.group.groupDetail, action),
-                }
+                };
             } else {
-                return state
+                return state;
             }
         case types.GROUPS_SEARCH:
             return {
@@ -50,13 +50,13 @@ export default function group(state = initialState, action = {}) {
                 filterText: typeof action.filterText !== 'undefined' ? action.filterText : '',
                 filterState: action.filterState,
                 currentDataKey: '',
-            }
+            };
         case types.GROUPS_REQUEST:
             return {
                 ...state,
                 isFetching: true,
                 currentDataKey: action.dataKey,
-            }
+            };
         case types.GROUPS_RECEIVE:
             return {
                 ...state,
@@ -64,15 +64,14 @@ export default function group(state = initialState, action = {}) {
                 fetched: true,
                 groups: action.data.groups,
                 groupsCount: action.data.groupsCount,
-            }
+            };
         case types.GROUP_DELETE:
         case types.CHANGE_GROUP:
             return {
                 currentDataKey: '',
-                groupDetail: groupDetail(state.groupDetail, action)
-            }
+                groupDetail: groupDetail(state.groupDetail, action),
+            };
         default:
-            return state
+            return state;
     }
 }
-

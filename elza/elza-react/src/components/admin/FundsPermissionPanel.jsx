@@ -56,12 +56,14 @@ class FundsPermissionPanel extends AbstractReactComponent {
     };
 
     buildPermission = (currObj, permission) => {
-        let obj = currObj || { groupIds: {} };
+        let obj = currObj || {groupIds: {}};
 
-        if (permission.inherited) {   // je zděděné ze skupiny
+        if (permission.inherited) {
+            // je zděděné ze skupiny
             obj.groupIds[permission.groupId] = permission.fund ? permission.fund.id : true;
             obj.checked = obj.checked || false;
-        } else {    // je přímo přiřazen
+        } else {
+            // je přímo přiřazen
             obj.id = permission.id;
             obj.checked = true;
         }
@@ -70,16 +72,18 @@ class FundsPermissionPanel extends AbstractReactComponent {
     };
 
     buildNodePermission = (currObj, permission) => {
-        let obj = currObj || { groupIds: {} };
+        let obj = currObj || {groupIds: {}};
 
-        if (permission.groupId) {   // je zděděné ze skupiny
+        if (permission.groupId) {
+            // je zděděné ze skupiny
             if (!obj.groupIds[permission.groupId]) {
                 obj.groupIds[permission.groupId] = {
                     [permission.fund.id]: [],
                 };
             }
             obj.groupIds[permission.groupId][permission.fund.id].push(permission.node.id);
-        } else {    // je přímo přiřazen
+        } else {
+            // je přímo přiřazen
             if (!obj.ids) {
                 obj.ids = [];
             }
@@ -90,7 +94,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        const { userId, groupId } = this.props;
+        const {userId, groupId} = this.props;
 
         if (userId) {
             this.props.dispatch(adminPermissions.fetchUser(userId));
@@ -115,7 +119,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
         if (this.props.entityPermissions.isFetching && !nextProps.entityPermissions.isFetching) {
             // Mapa fundId na mapu hodnot oprávnění pro danou položku AS, pokud se jedná o položku all, má id ALL_ID
             const permFundMap = {};
-            permFundMap[FundsPermissionPanel.ALL_ID] = { id: FundsPermissionPanel.ALL_ID, groupIds: {} };
+            permFundMap[FundsPermissionPanel.ALL_ID] = {id: FundsPermissionPanel.ALL_ID, groupIds: {}};
 
             nextProps.entityPermissions.data.permissions.forEach(p => {
                 let id = null;
@@ -170,7 +174,10 @@ class FundsPermissionPanel extends AbstractReactComponent {
         this.sortPermissions(permissions);
 
         // Creates new selected id from props. Uses state, if the selected permission in props didn't change.
-        let newSelectedId = nextProps.selectedPermission.index >= 0 ? nextProps.selectedPermission.id : this.state.selectedPermission.id;
+        let newSelectedId =
+            nextProps.selectedPermission.index >= 0
+                ? nextProps.selectedPermission.id
+                : this.state.selectedPermission.id;
         let newSelectedIndex = this.getIndexById(newSelectedId, permissions);
 
         // Selects the first item, if the index is not found for the selected id.
@@ -183,7 +190,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
             permissions,
         };
 
-        let permission = permissions[newSelectedIndex] || { id: null };
+        let permission = permissions[newSelectedIndex] || {id: null};
 
         this.selectItem(permission, newSelectedIndex);
 
@@ -208,7 +215,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
     }
 
     removeNodePermission = (fundId, node) => {
-        const { onDeletePermission, entityPermissions, userId, groupId } = this.props;
+        const {onDeletePermission, entityPermissions, userId, groupId} = this.props;
 
         entityPermissions.data.permissions.forEach(perm => {
             if (perm.permission === 'FUND_ARR_NODE' && perm.fund.id === fundId && perm.node.id === node.id) {
@@ -221,11 +228,10 @@ class FundsPermissionPanel extends AbstractReactComponent {
                 });
             }
         });
-
     };
 
     addNodePermission = (fundId, nodes) => {
-        const { onAddPermission, userId, groupId } = this.props;
+        const {onAddPermission, userId, groupId} = this.props;
         const permission = this.getPermission();
 
         const usrPermissions = nodes.map(node => {
@@ -251,16 +257,16 @@ class FundsPermissionPanel extends AbstractReactComponent {
     };
 
     changePermission = (e, permCode) => {
-        const { onAddPermission, onDeletePermission } = this.props;
+        const {onAddPermission, onDeletePermission} = this.props;
         const value = e.target.checked;
-        const { selectedPermission, permissions } = this.state;
+        const {selectedPermission, permissions} = this.state;
         const permission = this.getPermission();
 
         const newPermission = {
             ...permission,
         };
 
-        const obj = newPermission[permCode] || { groupIds: {} };
+        const obj = newPermission[permCode] || {groupIds: {}};
 
         const newObj = {
             ...obj,
@@ -276,7 +282,10 @@ class FundsPermissionPanel extends AbstractReactComponent {
 
         const usrPermission = {
             id: obj.id,
-            permission: permission.id === FundsPermissionPanel.ALL_ID ? FundsPermissionPanel.permCodesMapRev[permCode] : permCode,
+            permission:
+                permission.id === FundsPermissionPanel.ALL_ID
+                    ? FundsPermissionPanel.permCodesMapRev[permCode]
+                    : permCode,
             fund: permission.fund,
         };
 
@@ -298,8 +307,8 @@ class FundsPermissionPanel extends AbstractReactComponent {
     };
 
     handleRemove = (item, index) => {
-        const { onDeleteFundPermission } = this.props;
-        const { selectedPermission, permissions } = this.state;
+        const {onDeleteFundPermission} = this.props;
+        const {selectedPermission, permissions} = this.state;
 
         // Prepare new permissions
         let newPermissions = [...permissions];
@@ -308,7 +317,8 @@ class FundsPermissionPanel extends AbstractReactComponent {
         const permission = this.getPermission();
         let hasInheritRight = false;
         Object.values(FundsPermissionPanel.permCodesMap).forEach(permCode => {
-            if (permission[permCode] && Object.keys(permission[permCode].groupIds).length > 0) {  // má nějaké zděděné právo
+            if (permission[permCode] && Object.keys(permission[permCode].groupIds).length > 0) {
+                // má nějaké zděděné právo
                 // Test, zda je na tento fund
                 Object.values(permission[permCode].groupIds).forEach(v => {
                     if (v !== true && v === item.id) {
@@ -330,7 +340,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
             }
         } else {
             // Removes all permissions that are not inherited.
-            let newPermission = { ...permission };
+            let newPermission = {...permission};
 
             Object.values(FundsPermissionPanel.permCodesMap).forEach(permCode => {
                 if (newPermission[permCode]) {
@@ -364,68 +374,71 @@ class FundsPermissionPanel extends AbstractReactComponent {
     };
 
     handleAdd = () => {
-        const { selectedPermission } = this.state;
+        const {selectedPermission} = this.state;
 
-        this.props.dispatch(modalDialogShow(this, i18n('admin.perms.tabs.funds.add.title'),
-            <SelectItemsForm
-                onSubmitForm={(funds) => {
-                    const { permissions } = this.state;
-                    const permissionsMap = getMapFromList(permissions);
-                    const newPermissions = [...permissions];
-                    let newSelectedPermission = { ...selectedPermission };
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('admin.perms.tabs.funds.add.title'),
+                <SelectItemsForm
+                    onSubmitForm={funds => {
+                        const {permissions} = this.state;
+                        const permissionsMap = getMapFromList(permissions);
+                        const newPermissions = [...permissions];
+                        let newSelectedPermission = {...selectedPermission};
 
-                    // Change the currently selected item, only if items have been added
-                    if (funds.length > 0) {
-                        let newSelectedId = null;
+                        // Change the currently selected item, only if items have been added
+                        if (funds.length > 0) {
+                            let newSelectedId = null;
 
-                        funds.forEach(fund => {
-                            if (!permissionsMap[fund.id]) { // jen pokud ještě přidaný není
-                                // Select the first added item.
-                                newSelectedId = newSelectedId === null ? fund.id : newSelectedId;
-                                newPermissions.push({
-                                    id: fund.id,
-                                    fund: fund,
-                                });
-                            }
+                            funds.forEach(fund => {
+                                if (!permissionsMap[fund.id]) {
+                                    // jen pokud ještě přidaný není
+                                    // Select the first added item.
+                                    newSelectedId = newSelectedId === null ? fund.id : newSelectedId;
+                                    newPermissions.push({
+                                        id: fund.id,
+                                        fund: fund,
+                                    });
+                                }
+                            });
+
+                            this.sortPermissions(newPermissions);
+
+                            let newIndex = this.getIndexById(newSelectedId, newPermissions);
+
+                            newSelectedPermission = {
+                                id: newSelectedId,
+                                index: newIndex,
+                            };
+                        }
+
+                        this.setState({
+                            permissions: newPermissions,
+                            selectedPermission: newSelectedPermission,
                         });
 
-                        this.sortPermissions(newPermissions);
-
-                        let newIndex = this.getIndexById(newSelectedId, newPermissions);
-
-                        newSelectedPermission = {
-                            id: newSelectedId,
-                            index: newIndex,
-                        };
-                    }
-
-                    this.setState({
-                        permissions: newPermissions,
-                        selectedPermission: newSelectedPermission,
-                    });
-
-                    this.props.dispatch(modalDialogHide());
-                }}
-                fieldComponent={FundField}
-                renderItem={renderFundItem}
-            />,
-        ));
+                        this.props.dispatch(modalDialogHide());
+                    }}
+                    fieldComponent={FundField}
+                    renderItem={renderFundItem}
+                />,
+            ),
+        );
     };
 
     renderItem = (props, onCheckItem) => {
-        const { item } = props;
+        const {item} = props;
         //console.log("fund perms panel", item);
         if (item.id === FundsPermissionPanel.ALL_ID) {
             return <div>{i18n('admin.perms.tabs.funds.items.fundAll')}</div>;
         } else if (item.fund) {
-            return <div>
-                {item.fund.name}
-            </div>;
+            return <div>{item.fund.name}</div>;
         }
     };
 
     selectItem = (item, index) => {
-        const { onSelectItem } = this.props;
+        const {onSelectItem} = this.props;
         this.setState({
             selectedPermission: {
                 index: index,
@@ -439,8 +452,8 @@ class FundsPermissionPanel extends AbstractReactComponent {
      * Returns permissions for fund
      */
     getPermission = () => {
-        const { selectedPermission, permissions } = this.state;
-        const { fundId } = this.props;
+        const {selectedPermission, permissions} = this.state;
+        const {fundId} = this.props;
 
         let permission;
         if (fundId) {
@@ -464,11 +477,11 @@ class FundsPermissionPanel extends AbstractReactComponent {
     };
 
     render() {
-        const { selectedPermission, permissions } = this.state;
-        const { fundId, entityPermissions, groupId } = this.props;
+        const {selectedPermission, permissions} = this.state;
+        const {fundId, entityPermissions, groupId} = this.props;
 
         if (!entityPermissions.fetched) {
-            return <HorizontalLoader/>;
+            return <HorizontalLoader />;
         }
 
         let permission = this.getPermission();
@@ -484,32 +497,38 @@ class FundsPermissionPanel extends AbstractReactComponent {
 
         let left;
         if (!fundId) {
-            left = <AddRemoveListBox
-                items={permissions}
-                activeIndex={selectedPermission.index}
-                renderItemContent={this.renderItem}
-                onAdd={this.handleAdd}
-                onRemove={this.handleRemove}
-                canDeleteItem={(item, index) => item.id !== FundsPermissionPanel.ALL_ID}
-                onFocus={this.selectItem}
-            />;
+            left = (
+                <AddRemoveListBox
+                    items={permissions}
+                    activeIndex={selectedPermission.index}
+                    renderItemContent={this.renderItem}
+                    onAdd={this.handleAdd}
+                    onRemove={this.handleRemove}
+                    canDeleteItem={(item, index) => item.id !== FundsPermissionPanel.ALL_ID}
+                    onFocus={this.selectItem}
+                />
+            );
         }
 
-        return <AdminRightsContainer className="permissions-panel" left={left}>
-            {permission && <PermissionCheckboxsForm
-                permCodes={permCodes}
-                onChangePermission={this.changePermission}
-                onAddNodePermission={this.addNodePermission}
-                onRemoveNodePermission={this.removeNodePermission}
-                labelPrefix="admin.perms.tabs.funds.perm."
-                permission={permission}
-                groups={entityPermissions.data.groups}
-                permissionAll={permission.id !== FundsPermissionPanel.ALL_ID ? permissionAll : null}
-                permissionAllTitle="admin.perms.tabs.funds.items.fundAll"
-                fundId={selectedPermission.id === FundsPermissionPanel.ALL_ID ? null : selectedPermission.id}
-                groupId={groupId}
-            />}
-        </AdminRightsContainer>;
+        return (
+            <AdminRightsContainer className="permissions-panel" left={left}>
+                {permission && (
+                    <PermissionCheckboxsForm
+                        permCodes={permCodes}
+                        onChangePermission={this.changePermission}
+                        onAddNodePermission={this.addNodePermission}
+                        onRemoveNodePermission={this.removeNodePermission}
+                        labelPrefix="admin.perms.tabs.funds.perm."
+                        permission={permission}
+                        groups={entityPermissions.data.groups}
+                        permissionAll={permission.id !== FundsPermissionPanel.ALL_ID ? permissionAll : null}
+                        permissionAllTitle="admin.perms.tabs.funds.items.fundAll"
+                        fundId={selectedPermission.id === FundsPermissionPanel.ALL_ID ? null : selectedPermission.id}
+                        groupId={groupId}
+                    />
+                )}
+            </AdminRightsContainer>
+        );
     }
 }
 
@@ -518,6 +537,5 @@ function mapStateToProps(state) {
         entityPermissions: storeFromArea(state, adminPermissions.ENTITY_PERMISSIONS),
     };
 }
-
 
 export default connect(mapStateToProps)(FundsPermissionPanel);

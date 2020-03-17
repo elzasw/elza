@@ -5,12 +5,12 @@ const initialState = {
     data: [],
     isFetching: false,
     fetched: false,
-    currentDataKey: ''
+    currentDataKey: '',
 };
 
 export default function fundOutputFunctions(state = initialState, action = {}) {
     switch (action.type) {
-        case types.STORE_LOAD:{
+        case types.STORE_LOAD: {
             return {
                 ...state,
                 selectedIds: [],
@@ -18,46 +18,46 @@ export default function fundOutputFunctions(state = initialState, action = {}) {
                 isFetching: false,
                 fetched: false,
                 currentDataKey: '',
-            }
+            };
         }
-        case types.STORE_SAVE:{
+        case types.STORE_SAVE: {
             const {filterRecommended} = state;
             return {
-                filterRecommended
-            }
+                filterRecommended,
+            };
         }
-        case types.FUND_OUTPUT_FUNCTIONS_REQUEST:{
+        case types.FUND_OUTPUT_FUNCTIONS_REQUEST: {
             return {
                 ...state,
                 isFetching: true,
-                currentDataKey: action.dataKey
-            }
+                currentDataKey: action.dataKey,
+            };
         }
-        case types.FUND_OUTPUT_FUNCTIONS_RECEIVE:{
+        case types.FUND_OUTPUT_FUNCTIONS_RECEIVE: {
             return {
                 ...state,
                 isFetching: false,
                 fetched: true,
-                data: action.data
-            }
+                data: action.data,
+            };
         }
-        case types.FUND_OUTPUT_FUNCTIONS_FILTER:{
+        case types.FUND_OUTPUT_FUNCTIONS_FILTER: {
             return {
                 ...state,
                 filterRecommended: action.filterRecommended,
-                currentDataKey: ''
-            }
+                currentDataKey: '',
+            };
         }
         case types.OUTPUT_CHANGES_DETAIL:
         case types.OUTPUT_STATE_CHANGE:
-        case types.CHANGE_FUND_ACTION:{
+        case types.CHANGE_FUND_ACTION: {
             return {
                 ...state,
                 fetched: false,
-                currentDataKey: ''
-            }
+                currentDataKey: '',
+            };
         }
         default:
-            return state
+            return state;
     }
 }

@@ -30,18 +30,17 @@ export function fundsFetchIfNeeded() {
 
         if (versionIds.length > 0) {
             dispatch(fundsRequest(versionIds));
-            WebApi.getFundsByVersionIds(versionIds)
-                  .then(json => {
-                      var funds = json.map(x => getFundFromFundAndVersion(x, x.versions[0]));
-                      dispatch(fundsReceive(funds));
+            WebApi.getFundsByVersionIds(versionIds).then(json => {
+                var funds = json.map(x => getFundFromFundAndVersion(x, x.versions[0]));
+                dispatch(fundsReceive(funds));
 
-                      // Ještě musíme provést aktualizaci node, pokud je otevřený v záložce takový, který reprezentuje AS - virtuální kořenový NODE
-                      funds.forEach(fund => {
-                          var node = createFundRoot(fund);
-                          dispatch(nodesRequest(fund.versionId, [node.id]));
-                          dispatch(nodesReceive(fund.versionId, [node]));
-                      });
-                  });
+                // Ještě musíme provést aktualizaci node, pokud je otevřený v záložce takový, který reprezentuje AS - virtuální kořenový NODE
+                funds.forEach(fund => {
+                    var node = createFundRoot(fund);
+                    dispatch(nodesRequest(fund.versionId, [node.id]));
+                    dispatch(nodesReceive(fund.versionId, [node]));
+                });
+            });
         }
     };
 }
@@ -89,20 +88,20 @@ export function createFund(data) {
         adminGroups: [],
     };
 
-    data.fundAdmins && data.fundAdmins.forEach(i => {
-        if (i.user) {
-            formData.adminUsers.push(i.user);
-        } else if (i.group) {
-            formData.adminGroups.push(i.group);
-        }
-    });
+    data.fundAdmins &&
+        data.fundAdmins.forEach(i => {
+            if (i.user) {
+                formData.adminUsers.push(i.user);
+            } else if (i.group) {
+                formData.adminGroups.push(i.group);
+            }
+        });
 
     return dispatch => {
-        return savingApiWrapper(dispatch, WebApi.createFund(formData))
-            .then((fund) => {
-                dispatch(addToastrSuccess(i18n('arr.fund.title.added')));
-                dispatch(fundsSelectFund(fund.id));
-            });
+        return savingApiWrapper(dispatch, WebApi.createFund(formData)).then(fund => {
+            dispatch(addToastrSuccess(i18n('arr.fund.title.added')));
+            dispatch(fundsSelectFund(fund.id));
+        });
     };
 }
 
@@ -119,11 +118,10 @@ export function updateFund(data) {
  */
 export function approveFund(versionId, dateRange) {
     return dispatch => {
-        return savingApiWrapper(dispatch, WebApi.approveVersion(versionId, dateRange))
-            .then((json) => {
-                dispatch(addToastrSuccess(i18n('arr.fund.title.approved')));
-                dispatch(approveFundResult(json.versionId));
-            });
+        return savingApiWrapper(dispatch, WebApi.approveVersion(versionId, dateRange)).then(json => {
+            dispatch(addToastrSuccess(i18n('arr.fund.title.approved')));
+            dispatch(approveFundResult(json.versionId));
+        });
     };
 }
 
@@ -158,7 +156,9 @@ export function selectFundTab(fund) {
         // Dohledání dříve otevřeného fundo v konkrétní verzi
         var itemFound = null;
         const state = getState();
-        const {stateRegion: {arrRegionFront}} = state;
+        const {
+            stateRegion: {arrRegionFront},
+        } = state;
         for (let a = 0; a < arrRegionFront.length; a++) {
             const item = arrRegionFront[a];
             if (item.id === fund.id && item.versionId === fund.versionId) {

@@ -40,7 +40,10 @@ export default function structureNodeForm(state = initialState, action = {}) {
         case types.STRUCTURE_NODE_FORM_REQUEST:
             return {
                 ...state,
-                subNodeForm: state.subNodeForm.nodeId && state.subNodeForm.nodeId !== action.id ? subNodeForm() : state.subNodeForm,
+                subNodeForm:
+                    state.subNodeForm.nodeId && state.subNodeForm.nodeId !== action.id
+                        ? subNodeForm()
+                        : state.subNodeForm,
                 id: action.id,
                 fetching: true,
                 fetched: false,
@@ -58,4 +61,3 @@ export default function structureNodeForm(state = initialState, action = {}) {
             return state;
     }
 }
-

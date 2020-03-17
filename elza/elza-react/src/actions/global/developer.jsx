@@ -11,38 +11,38 @@ export function isDeveloperScenariosAction(action) {
         case types.DEVELOPER_SCENARIOS_RECEIVED:
         case types.DEVELOPER_SCENARIOS_FETCHING:
         case types.DEVELOPER_SCENARIOS_DIRTY:
-            return true
+            return true;
         default:
-            return false
+            return false;
     }
 }
 
 export function developerSet(enabled) {
     return {
         type: types.DEVELOPER_SET,
-        enabled
-    }
+        enabled,
+    };
 }
 
 export function developerNodeScenariosRequest(node, versionId) {
-    return (dispatch) => {
+    return dispatch => {
         dispatch(developerNodeScenariosFetching(node.id, node.key, versionId));
         barrier(
-            WebApi.getNodeAddScenarios(node, versionId, "AFTER", true),
-            WebApi.getNodeAddScenarios(node, versionId, "BEFORE", true),
-            WebApi.getNodeAddScenarios(node, versionId, "CHILD", true)
+            WebApi.getNodeAddScenarios(node, versionId, 'AFTER', true),
+            WebApi.getNodeAddScenarios(node, versionId, 'BEFORE', true),
+            WebApi.getNodeAddScenarios(node, versionId, 'CHILD', true),
         )
             .then(data => {
                 return {
                     after: data[0].data,
                     before: data[1].data,
-                    child: data[2].data
-                }
+                    child: data[2].data,
+                };
             })
             .then(json => {
                 dispatch(developerNodeScenariosReceived(json, node.id, node.key, versionId));
-            })
-    }
+            });
+    };
 }
 
 export function developerNodeScenariosReceived(data, nodeId, routingKey, versionId) {
@@ -51,8 +51,8 @@ export function developerNodeScenariosReceived(data, nodeId, routingKey, version
         data,
         nodeId,
         routingKey,
-        versionId
-    }
+        versionId,
+    };
 }
 
 export function developerNodeScenariosFetching(nodeId, routingKey, versionId) {
@@ -60,14 +60,14 @@ export function developerNodeScenariosFetching(nodeId, routingKey, versionId) {
         type: types.DEVELOPER_SCENARIOS_FETCHING,
         nodeId,
         routingKey,
-        versionId
-    }
+        versionId,
+    };
 }
 export function developerNodeScenariosDirty(nodeId, routingKey, versionId) {
     return {
         type: types.DEVELOPER_SCENARIOS_DIRTY,
         nodeId,
         routingKey,
-        versionId
-    }
+        versionId,
+    };
 }

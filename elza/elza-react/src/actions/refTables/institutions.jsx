@@ -12,10 +12,13 @@ import * as types from 'actions/constants/ActionTypes.js';
 export function refInstitutionsFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
-        if ((!state.refTables.institutions.fetched || state.refTables.institutions.dirty) && !state.refTables.institutions.isFetching) {
+        if (
+            (!state.refTables.institutions.fetched || state.refTables.institutions.dirty) &&
+            !state.refTables.institutions.isFetching
+        ) {
             return dispatch(refInstitutionsFetch());
         }
-    }
+    };
 }
 
 /**
@@ -23,10 +26,9 @@ export function refInstitutionsFetchIfNeeded() {
  */
 export function refInstitutionsFetch() {
     return dispatch => {
-        dispatch(refInstitutionsRequest())
-        return WebApi.getInstitutions()
-            .then(json => dispatch(refInstitutionsReceive(json)));
-    }
+        dispatch(refInstitutionsRequest());
+        return WebApi.getInstitutions().then(json => dispatch(refInstitutionsReceive(json)));
+    };
 }
 
 /**
@@ -37,8 +39,8 @@ export function refInstitutionsReceive(json) {
     return {
         type: types.REF_INSTITUTIONS_RECEIVE,
         items: json,
-        receivedAt: Date.now()
-    }
+        receivedAt: Date.now(),
+    };
 }
 
 /**
@@ -46,6 +48,6 @@ export function refInstitutionsReceive(json) {
  */
 export function refInstitutionsRequest() {
     return {
-        type: types.REF_INSTITUTIONS_REQUEST
-    }
+        type: types.REF_INSTITUTIONS_REQUEST,
+    };
 }

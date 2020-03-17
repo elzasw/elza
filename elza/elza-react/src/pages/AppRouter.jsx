@@ -22,14 +22,13 @@ function getIndexBefore(pathPrefix) {
 }
 
 class AppRouter extends AbstractReactComponent {
-
     componentDidMount() {
         this.changeRouteIfNeeded(this.props.routerStore);
 
         this.props.history.listen(this.handleRouterListener);
     }
 
-    handleRouterListener = (info) => {
+    handleRouterListener = info => {
         const {pathname} = info;
         localRouterHistory.push(pathname);
     };
@@ -38,7 +37,7 @@ class AppRouter extends AbstractReactComponent {
         this.changeRouteIfNeeded(nextProps.routerStore);
     }
 
-    changeRouteIfNeeded = (routerStore) => {
+    changeRouteIfNeeded = routerStore => {
         const navigateTo = routerStore.navigateTo;
 
         if (navigateTo) {
@@ -63,7 +62,6 @@ class AppRouter extends AbstractReactComponent {
         return <div style={{display: 'none'}}></div>;
     }
 }
-
 
 function mapStateToProps(state) {
     const {router} = state;

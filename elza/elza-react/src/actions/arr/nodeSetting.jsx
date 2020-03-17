@@ -26,8 +26,8 @@ export function lockDescItemType(nodeId, descItemTypeId) {
     return {
         type: types.NODE_DESC_ITEM_TYPE_LOCK,
         nodeId: nodeId,
-        descItemTypeId: descItemTypeId
-    }
+        descItemTypeId: descItemTypeId,
+    };
 }
 
 /**
@@ -38,8 +38,8 @@ export function lockDescItemType(nodeId, descItemTypeId) {
 export function toggleCopyAllDescItemType(nodeId, descItemTypeId) {
     return {
         type: types.NODE_DESC_ITEM_TYPE_COPY_ALL,
-        nodeId: nodeId
-    }
+        nodeId: nodeId,
+    };
 }
 
 /**
@@ -49,8 +49,8 @@ export function toggleCopyAllDescItemType(nodeId, descItemTypeId) {
 export function unlockAllDescItemType(nodeId) {
     return {
         //type: types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL,
-        nodeId: nodeId
-    }
+        nodeId: nodeId,
+    };
 }
 
 /**
@@ -60,8 +60,8 @@ export function unlockAllDescItemType(nodeId) {
 export function unlockDescItemType(nodeId, descItemTypeId) {
     return {
         //type: types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL,
-        nodeId: nodeId
-    }
+        nodeId: nodeId,
+    };
 }
 
 /**
@@ -73,8 +73,8 @@ export function copyDescItemType(nodeId, descItemTypeId) {
     return {
         type: types.NODE_DESC_ITEM_TYPE_COPY,
         nodeId: nodeId,
-        descItemTypeId: descItemTypeId
-    }
+        descItemTypeId: descItemTypeId,
+    };
 }
 
 /**
@@ -86,6 +86,6 @@ export function nocopyDescItemType(nodeId, descItemTypeId) {
     return {
         type: types.NODE_DESC_ITEM_TYPE_NOCOPY,
         nodeId: nodeId,
-        descItemTypeId: descItemTypeId
-    }
+        descItemTypeId: descItemTypeId,
+    };
 }

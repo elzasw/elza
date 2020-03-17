@@ -27,7 +27,6 @@ const getDefaultLogin = () => {
     }
 };
 
-
 class Login extends AbstractReactComponent {
     defaultState = {
         ...getDefaultLogin(),
@@ -41,7 +40,7 @@ class Login extends AbstractReactComponent {
     }
 
     fetch = () => {
-        WebApi.getSsoEntities().then((data) => {
+        WebApi.getSsoEntities().then(data => {
             this.setState({sso: data});
         });
     };
@@ -54,7 +53,7 @@ class Login extends AbstractReactComponent {
         this.setState({[field]: event.target.value});
     };
 
-    handleLoginError = (err) => {
+    handleLoginError = err => {
         console.log(err);
         if (err.data && err.data.message) {
             this.setState({error: err.data.message});
@@ -63,15 +62,18 @@ class Login extends AbstractReactComponent {
         }
     };
 
-    handleLogin = (e) => {
+    handleLogin = e => {
         e.preventDefault();
         const {username, password, sso} = this.state;
 
-        this.props.dispatch(login(username, password)).then((data) => {
-            this.setState({...this.defaultState, sso});
-        }).catch((err) => {
-            this.handleLoginError(err);
-        });
+        this.props
+            .dispatch(login(username, password))
+            .then(data => {
+                this.setState({...this.defaultState, sso});
+            })
+            .catch(err => {
+                this.handleLoginError(err);
+            });
     };
 
     render() {
@@ -82,51 +84,62 @@ class Login extends AbstractReactComponent {
         // to prevent flicker on page reload
         const displayLoginDialog = !login.logged && userDetail.fetched;
 
-        return <div className="login-container">
-            {displayLoginDialog && <ModalDialogWrapper className="login" ref='wrapper' title={i18n('login.form.title')}>
-                <Form onSubmit={this.handleLogin}>
-                    <Modal.Body>
-                        {defaultEnabled && <div className="error">{i18n('login.defaultUserEnabled')}</div>}
-                        {error && <div className="error">{error}</div>}
-                        <FormInput
-                            type="text"
-                            value={username}
-                            onChange={this.handleChange.bind(this, 'username')}
-                            label={i18n('login.field.username')}
-                            required
-                        />
-                        <FormInput
-                            type="password"
-                            value={password}
-                            onChange={this.handleChange.bind(this, 'password')}
-                            label={i18n('login.field.password')}
-                            required
-                        />
-                        <div className="submit-button">
-                            <Button
-                                type="submit"
-                                variant="outline-secondary"
-                                onClick={this.handleLogin}
-                                disabled={submitting}
-                            >
-                                {i18n('login.action.login')}
-                            </Button>
-                        </div>
-                    </Modal.Body>
-                    {sso && sso.length > 0 && <Modal.Footer>
-                        <div className="or-message">{i18n('login.or-message')}</div>
-                        <div>{sso.map(((l, i) => {
-                            return <a key={i} href={l.url} className="btn btn-default" role="button">{l.name}</a>;
-                        }))}</div>
-                    </Modal.Footer>}
-                </Form>
-            </ModalDialogWrapper>}
-        </div>;
+        return (
+            <div className="login-container">
+                {displayLoginDialog && (
+                    <ModalDialogWrapper className="login" ref="wrapper" title={i18n('login.form.title')}>
+                        <Form onSubmit={this.handleLogin}>
+                            <Modal.Body>
+                                {defaultEnabled && <div className="error">{i18n('login.defaultUserEnabled')}</div>}
+                                {error && <div className="error">{error}</div>}
+                                <FormInput
+                                    type="text"
+                                    value={username}
+                                    onChange={this.handleChange.bind(this, 'username')}
+                                    label={i18n('login.field.username')}
+                                    required
+                                />
+                                <FormInput
+                                    type="password"
+                                    value={password}
+                                    onChange={this.handleChange.bind(this, 'password')}
+                                    label={i18n('login.field.password')}
+                                    required
+                                />
+                                <div className="submit-button">
+                                    <Button
+                                        type="submit"
+                                        variant="outline-secondary"
+                                        onClick={this.handleLogin}
+                                        disabled={submitting}
+                                    >
+                                        {i18n('login.action.login')}
+                                    </Button>
+                                </div>
+                            </Modal.Body>
+                            {sso && sso.length > 0 && (
+                                <Modal.Footer>
+                                    <div className="or-message">{i18n('login.or-message')}</div>
+                                    <div>
+                                        {sso.map((l, i) => {
+                                            return (
+                                                <a key={i} href={l.url} className="btn btn-default" role="button">
+                                                    {l.name}
+                                                </a>
+                                            );
+                                        })}
+                                    </div>
+                                </Modal.Footer>
+                            )}
+                        </Form>
+                    </ModalDialogWrapper>
+                )}
+            </div>
+        );
     }
 }
 
-export default connect((state) => {
-        const {userDetail, login} = state;
-        return {userDetail, login};
-    },
-)(Login);
+export default connect(state => {
+    const {userDetail, login} = state;
+    return {userDetail, login};
+})(Login);

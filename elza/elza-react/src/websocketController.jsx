@@ -5,40 +5,40 @@ import {WebApi} from 'actions/WebApi';
  */
 
 class NodeRequestController {
-    constructor(){
+    constructor() {
         this.nodes = {};
     }
-    updateRequest(fundVersionId, nodeVersionId, nodeId, descItem, onSuccess, onError){
+    updateRequest(fundVersionId, nodeVersionId, nodeId, descItem, onSuccess, onError) {
         let request = this.nodes[nodeId];
 
-        if(!request){
+        if (!request) {
             this.nodes[nodeId] = new NodeRequests();
         }
         this.nodes[nodeId].updateRequest(fundVersionId, nodeVersionId, nodeId, descItem, onSuccess, onError);
     }
-    sendNextUpdate(nodeId, descItemObjectId){
+    sendNextUpdate(nodeId, descItemObjectId) {
         let node = this.nodes[nodeId];
 
-        if(node){
+        if (node) {
             node.sendNextUpdate(descItemObjectId);
 
-            if(Object.keys(node.descItems).length <= 0){
+            if (Object.keys(node.descItems).length <= 0) {
                 delete this.nodes[nodeId];
             }
         }
     }
 }
 
-class NodeRequests{
-    constructor(){
+class NodeRequests {
+    constructor() {
         this.descItems = {};
         this.skipUpdatesCount = 0;
     }
-    updateRequest(fundVersionId, nodeVersionId, nodeId, descItem, onSuccess, onError){
+    updateRequest(fundVersionId, nodeVersionId, nodeId, descItem, onSuccess, onError) {
         let descItemObjectId = descItem.descItemObjectId;
         let descItemRequest = this.descItems[descItemObjectId];
 
-        if(!descItemRequest){
+        if (!descItemRequest) {
             this.descItems[descItemObjectId] = new DescItemUpdateRequest();
         }
         let requestData = {
@@ -47,7 +47,7 @@ class NodeRequests{
             nodeId: nodeId,
             descItem: descItem,
             onSuccess: onSuccess,
-            onError: onError
+            onError: onError,
         };
         this.skipUpdatesCount++;
         this.descItems[descItemObjectId].addRequest(requestData);
@@ -60,20 +60,20 @@ class NodeRequests{
      * Return true if event is our own. Return false if event is not our
      * and should be processed
      */
-    onReceivedNodeChange(){
-        if(this.skipUpdatesCount > 0){
+    onReceivedNodeChange() {
+        if (this.skipUpdatesCount > 0) {
             this.skipUpdatesCount--;
             return true;
         }
         return false;
     }
-    sendNextUpdate(descItemObjectId){
+    sendNextUpdate(descItemObjectId) {
         let descItem = this.descItems[descItemObjectId];
 
-        if(descItem){
+        if (descItem) {
             descItem.sendNextUpdate();
 
-            if(descItem.pendingRequests.length <= 0){
+            if (descItem.pendingRequests.length <= 0) {
                 delete this.descItems[descItemObjectId];
             }
         }
@@ -81,46 +81,46 @@ class NodeRequests{
 }
 
 class DescItemUpdateRequest {
-    constructor(){
+    constructor() {
         this.running = null;
         this.pendingRequests = [];
     }
-    addRequest(requestData){
-        if(this.running){
+    addRequest(requestData) {
+        if (this.running) {
             this.pendingRequests.push(requestData);
         } else {
             this.sendUpdate(requestData);
         }
     }
-    sendUpdate(requestData){
+    sendUpdate(requestData) {
         this.running = requestData;
         const {fundVersionId, nodeId, nodeVersionId, descItem, onSuccess, onError} = requestData;
-        let realRequest = WebApi.updateDescItem(fundVersionId,nodeId,nodeVersionId,descItem);
-        realRequest.then((response) => {
-            onSuccess && onSuccess(response);
-            onUpdateResponse(requestData,response);
-        }).catch((reason) => {
-            onError && onError(reason);
-        });
+        let realRequest = WebApi.updateDescItem(fundVersionId, nodeId, nodeVersionId, descItem);
+        realRequest
+            .then(response => {
+                onSuccess && onSuccess(response);
+                onUpdateResponse(requestData, response);
+            })
+            .catch(reason => {
+                onError && onError(reason);
+            });
     }
-    sendNextUpdate(){
+    sendNextUpdate() {
         this.running = null;
 
-        if(this.pendingRequests.length > 0){
+        if (this.pendingRequests.length > 0) {
             let request = this.pendingRequests[0];
             this.sendUpdate(request);
             this.pendingRequests.shift();
         }
     }
-    onResponse(){
-
-    }
+    onResponse() {}
 }
 
-function onUpdateResponse(request, response){
+function onUpdateResponse(request, response) {
     let nodeId = request.nodeId;
     let descItemObjectId = request.descItem.descItemObjectId;
-    nodeRequestController.sendNextUpdate(nodeId,descItemObjectId);
+    nodeRequestController.sendNextUpdate(nodeId, descItemObjectId);
 }
 
 /**
@@ -129,9 +129,9 @@ function onUpdateResponse(request, response){
  * This happen is we caused the update event
  * @param {*} entityIds
  */
-export function onReceivedNodeChange(entityIds){
+export function onReceivedNodeChange(entityIds) {
     let node = nodeRequestController.nodes[entityIds[0]];
-    if(node && node.onReceivedNodeChange()){
+    if (node && node.onReceivedNodeChange()) {
         return true;
     }
     return false;

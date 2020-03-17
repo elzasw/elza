@@ -40,8 +40,7 @@ class DataGridColumnsSettings extends AbstractReactComponent {
         };
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-    }
+    UNSAFE_componentWillReceiveProps(nextProps) {}
 
     handleChangeOrder(from, to) {
         var visible = [...this.state.visible];
@@ -105,7 +104,6 @@ class DataGridColumnsSettings extends AbstractReactComponent {
             }
         });
 
-
         // Upravení seznamu visible
         const newVisible = [];
         visible.forEach((item, index) => {
@@ -153,20 +151,22 @@ class DataGridColumnsSettings extends AbstractReactComponent {
     }
 
     renderItemContent(props) {
-        return (<div>{props.item.name}</div>);
+        return <div>{props.item.name}</div>;
     }
 
     render() {
         const {onSubmitForm, onClose} = this.props;
         const {available, visible, leftSelected, rightSelected} = this.state;
 
-        const cls = this.props.className ? 'datagrid-columns-settings-container ' + this.props.className : 'datagrid-columns-settings-container';
+        const cls = this.props.className
+            ? 'datagrid-columns-settings-container ' + this.props.className
+            : 'datagrid-columns-settings-container';
         return (
             <div>
                 <Modal.Body>
                     <div className={cls}>
-                        <div className='panels-container'>
-                            <div className='left'>
+                        <div className="panels-container">
+                            <div className="left">
                                 <h4>{i18n('arr.fund.columnSettings.available')}</h4>
                                 <ListBox
                                     items={available}
@@ -177,13 +177,13 @@ class DataGridColumnsSettings extends AbstractReactComponent {
                                     onDoubleClick={this.handleAddVisible}
                                 />
                             </div>
-                            <div className='center'>
+                            <div className="center">
                                 <div className="action-buttons">
                                     <Button onClick={this.handleAddVisible}>&gt;</Button>
                                     <Button onClick={this.handleRemoveVisible}>&lt;</Button>
                                 </div>
                             </div>
-                            <div className='right'>
+                            <div className="right">
                                 <h4>{i18n('arr.fund.columnSettings.visible')}</h4>
                                 <ListBox
                                     items={visible}
@@ -201,7 +201,9 @@ class DataGridColumnsSettings extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={() => onSubmitForm(this.state.visible)}>{i18n('global.action.store')}</Button>
-                    <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button variant="link" onClick={onClose}>
+                        {i18n('global.action.cancel')}
+                    </Button>
                 </Modal.Footer>
             </div>
         );
@@ -211,4 +213,3 @@ class DataGridColumnsSettings extends AbstractReactComponent {
 // columns - musí být seřazeno podle definovaného pořadí!!!
 
 export default DataGridColumnsSettings;
-

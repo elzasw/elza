@@ -29,58 +29,55 @@ import globalFundTree from './globalFundTree';
 import {isStructureNodeForm} from '../../../actions/arr/structureNodeForm';
 import fundTree from './fundTree';
 
-
 const initialCustomFundState = {
-     fundTreeNodes: fundTree(),
-     versionId: null,
-     fundId: null,
- };
+    fundTreeNodes: fundTree(),
+    versionId: null,
+    fundId: null,
+};
 
- const initialState = {
-     activeIndex: null,
-     nodeSettings: nodeSetting(undefined, {}),
-     extendedView: false,
-     showRegisterJp: false,
-     visiblePolicy: visiblePolicy(),
-     funds: [],
-     customFund: customFund(),
-     globalFundTree: globalFundTree(undefined, {}),
-     fundSearch: fundSearch(undefined, {})
- };
+const initialState = {
+    activeIndex: null,
+    nodeSettings: nodeSetting(undefined, {}),
+    extendedView: false,
+    showRegisterJp: false,
+    visiblePolicy: visiblePolicy(),
+    funds: [],
+    customFund: customFund(),
+    globalFundTree: globalFundTree(undefined, {}),
+    fundSearch: fundSearch(undefined, {}),
+};
 
- function customFund(state = initialCustomFundState, action = {}) {
-     if (isFundTreeAction(action)) {
-         return {
-             ...state,
-             fundTreeNodes: fundTree(state.fundTreeNodes, action)
-         }
-     }
+function customFund(state = initialCustomFundState, action = {}) {
+    if (isFundTreeAction(action)) {
+        return {
+            ...state,
+            fundTreeNodes: fundTree(state.fundTreeNodes, action),
+        };
+    }
 
-     switch (action.type) {
-         case types.CUSTOM_FUND_ACTION_SELECT_VERSION: {
-             return {
-                 ...state,
-                 versionId: action.version.id,
-                 fundId: action.fundId,
-                 customFund: customFund(),
-             }
-         }
-         default:
-             return {
-                 ...state,
-                 fundTreeNodes: fundTree(),
-             }
-     }
- }
+    switch (action.type) {
+        case types.CUSTOM_FUND_ACTION_SELECT_VERSION: {
+            return {
+                ...state,
+                versionId: action.version.id,
+                fundId: action.fundId,
+                customFund: customFund(),
+            };
+        }
+        default:
+            return {
+                ...state,
+                fundTreeNodes: fundTree(),
+            };
+    }
+}
 
 function selectFundTab(state, action) {
     return {
         ...state,
-        funds: [
-            fundInitState(action.fund)
-        ],
-        activeIndex: 0
-    }
+        funds: [fundInitState(action.fund)],
+        activeIndex: 0,
+    };
 }
 
 function processFund(state, action, index) {
@@ -89,12 +86,8 @@ function processFund(state, action, index) {
         if (newFund !== state.funds[index]) {
             var result = {
                 ...state,
-                funds: [
-                    ...state.funds.slice(0, index),
-                    newFund,
-                    ...state.funds.slice(index + 1)
-                ]
-            }
+                funds: [...state.funds.slice(0, index), newFund, ...state.funds.slice(index + 1)],
+            };
             return consolidateState(state, result);
         } else {
             return state;
@@ -106,7 +99,8 @@ function processFund(state, action, index) {
 
 export default function arrRegion(state = initialState, action) {
     if (isCommonArea(action.area)) {
-        if (action.area.startsWith("fund[")) { // area pro zpracování na předaný fund, ten zde můžeme zpracovat
+        if (action.area.startsWith('fund[')) {
+            // area pro zpracování na předaný fund, ten zde můžeme zpracovat
             return processAreaStores(state, action);
         }
     }
@@ -114,60 +108,70 @@ export default function arrRegion(state = initialState, action) {
     if (isFundSearchAction(action)) {
         return {
             ...state,
-            fundSearch: fundSearch(state.fundSearch, action)
-        }
+            fundSearch: fundSearch(state.fundSearch, action),
+        };
     }
 
-    if (isBulkAction(action)
-        || (isFundTreeAction(action) && (action.area !== types.FUND_TREE_AREA_COPY && action.area !== types.FUND_TREE_AREA_USAGE && action.area !== types.CUSTOM_FUND_TREE_AREA_NODES))
-        || nodeFormActions.isSubNodeFormAction(action) || outputFormActions.isSubNodeFormAction(action) ||  structureFormActions.isSubNodeFormAction(action)
-        || nodeFormActions.isSubNodeFormCacheAction(action) || outputFormActions.isSubNodeFormCacheAction(action) || structureFormActions.isSubNodeFormCacheAction(action)
-        || isSubNodeDaosAction(action)
-        || isSubNodeInfoAction(action)
-        || isNodeInfoAction(action)
-        || isVersionValidation(action)
-        || isNodeAction(action)
-        || isNodesAction(action)
-        || isDeveloperScenariosAction(action)
-        || isFundDataGridAction(action)
-        || isFundChangeAction(action)
-        || isFundFilesAction(action)
-        || isFundActionAction(action)
-        || isFundOutput(action)
-        || isStructureNodeForm(action)
+    if (
+        isBulkAction(action) ||
+        (isFundTreeAction(action) &&
+            action.area !== types.FUND_TREE_AREA_COPY &&
+                action.area !== types.FUND_TREE_AREA_USAGE &&
+                action.area !== types.CUSTOM_FUND_TREE_AREA_NODES) ||
+        nodeFormActions.isSubNodeFormAction(action) ||
+        outputFormActions.isSubNodeFormAction(action) ||
+        structureFormActions.isSubNodeFormAction(action) ||
+        nodeFormActions.isSubNodeFormCacheAction(action) ||
+        outputFormActions.isSubNodeFormCacheAction(action) ||
+        structureFormActions.isSubNodeFormCacheAction(action) ||
+        isSubNodeDaosAction(action) ||
+        isSubNodeInfoAction(action) ||
+        isNodeInfoAction(action) ||
+        isVersionValidation(action) ||
+        isNodeAction(action) ||
+        isNodesAction(action) ||
+        isDeveloperScenariosAction(action) ||
+        isFundDataGridAction(action) ||
+        isFundChangeAction(action) ||
+        isFundFilesAction(action) ||
+        isFundActionAction(action) ||
+        isFundOutput(action) ||
+        isStructureNodeForm(action)
     ) {
-        const index = indexById(state.funds, action.versionId, "versionId");
+        const index = indexById(state.funds, action.versionId, 'versionId');
         if (index !== null) {
-            return processFund(state, action, index)
+            return processFund(state, action, index);
         } else {
-            return state
+            return state;
         }
     }
 
-    if (isFundTreeAction(action) && (action.area === types.FUND_TREE_AREA_USAGE || action.area === types.FUND_TREE_AREA_COPY)) {
+    if (
+        isFundTreeAction(action) &&
+        (action.area === types.FUND_TREE_AREA_USAGE || action.area === types.FUND_TREE_AREA_COPY)
+    ) {
         return {
             ...state,
-            globalFundTree: globalFundTree(state.globalFundTree, action)
-        }
+            globalFundTree: globalFundTree(state.globalFundTree, action),
+        };
     }
 
     if (isFundTreeAction(action) && action.area === types.CUSTOM_FUND_TREE_AREA_NODES) {
         return {
             ...state,
             customFund: customFund(state.customFund, action),
-        }
+        };
     }
 
     if (isNodeSettingsAction(action)) {
-        var result =  {
+        var result = {
             ...state,
-            nodeSettings: nodeSetting(state.nodeSettings, action)
+            nodeSettings: nodeSetting(state.nodeSettings, action),
         };
         return consolidateState(state, result);
     }
 
     switch (action.type) {
-
         //case types.LOGOUT:
         case types.LOGIN_SUCCESS: {
             if (action.reset) {
@@ -192,20 +196,20 @@ export default function arrRegion(state = initialState, action) {
             return {
                 ...state,
                 funds: newFunds,
-                activeIndex: newIndex
-            }
+                activeIndex: newIndex,
+            };
         }
         case types.SHOW_REGISTER_JP: {
             return {
                 ...state,
-                showRegisterJp: action.showRegisterJp
-            }
+                showRegisterJp: action.showRegisterJp,
+            };
         }
         case types.CUSTOM_FUND_ACTION_SELECT_VERSION: {
             return {
                 ...state,
                 customFund: customFund(state.customFund, action),
-            }
+            };
         }
         case types.STORE_LOAD:
             if (action.arrRegion) {
@@ -213,31 +217,30 @@ export default function arrRegion(state = initialState, action) {
                     ...state,
                     ...action.arrRegion,
                     funds: action.arrRegion.funds.map(fundobj => fund(fundobj, action)),
-                    extendedView: false
-                }
+                    extendedView: false,
+                };
             } else if (action.arrRegionFund) {
-                var index = indexById(state.funds, action.arrRegionFund.versionId, "versionId");
-                if (index !== null) {   // existuje, nahradí se
+                var index = indexById(state.funds, action.arrRegionFund.versionId, 'versionId');
+                if (index !== null) {
+                    // existuje, nahradí se
                     return {
                         ...state,
                         activeIndex: index,
                         funds: [
                             ...state.funds.slice(0, index),
                             fund(action.arrRegionFund, action),
-                            ...state.funds.slice(index + 1)
+                            ...state.funds.slice(index + 1),
                         ],
-                        extendedView: false
-                    }
-                } else {    // přidáme novou
+                        extendedView: false,
+                    };
+                } else {
+                    // přidáme novou
                     return {
                         ...state,
                         activeIndex: state.funds.length,
-                        funds: [
-                            ...state.funds,
-                            fund(action.arrRegionFund, action),
-                        ],
-                        extendedView: false
-                    }
+                        funds: [...state.funds, fund(action.arrRegionFund, action)],
+                        extendedView: false,
+                    };
                 }
             } else {
                 return state;
@@ -247,10 +250,10 @@ export default function arrRegion(state = initialState, action) {
             return {
                 activeIndex,
                 nodeSettings,
-                funds: state.funds.map(fundobj => fund(fundobj, action))
-            }
+                funds: state.funds.map(fundobj => fund(fundobj, action)),
+            };
         case types.FUND_EXTENDED_VIEW:
-            var result = {...state, extendedView: action.enable}
+            var result = {...state, extendedView: action.enable};
             return consolidateState(state, result);
         case types.FUND_NODE_INCREASE_VERSION:
         case types.FUND_NODE_CHANGE:
@@ -275,7 +278,7 @@ export default function arrRegion(state = initialState, action) {
         case types.OUTPUT_STATE_CHANGE:
         case types.NODES_DELETE:
         case types.CHANGE_FUND_ACTION:
-            var index = indexById(state.funds, action.versionId, "versionId");
+            var index = indexById(state.funds, action.versionId, 'versionId');
             return processFund(state, action, index);
 
         case types.FUND_FUNDS_REQUEST:
@@ -291,17 +294,16 @@ export default function arrRegion(state = initialState, action) {
                 } else {
                     return fundObj;
                 }
-            })
+            });
             if (changed) {
                 return {
                     ...state,
-                    funds: newFunds
-                }
+                    funds: newFunds,
+                };
             } else {
-                return state
+                return state;
             }
         case types.CHANGE_FUND:
-
             var i = 0;
             state.funds.forEach(fund => {
                 if (fund.id === action.fundId) {
@@ -314,46 +316,44 @@ export default function arrRegion(state = initialState, action) {
             var index = state.activeIndex;
             return processFund(state, action, index);
         case types.FUND_CLOSE_FUND_TAB:
-            var index = indexById(state.funds, action.fund.versionId, "versionId");
+            var index = indexById(state.funds, action.fund.versionId, 'versionId');
             var newActiveIndex = state.activeIndex;
-            if (state.activeIndex == index) {   // byl vybrán, budeme řešit novou vybranou záložku
+            if (state.activeIndex == index) {
+                // byl vybrán, budeme řešit novou vybranou záložku
                 newActiveIndex = selectedAfterClose(state.funds, index);
             } else if (index < state.activeIndex) {
                 newActiveIndex--;
             }
             return {
                 ...state,
-                funds: [
-                    ...state.funds.slice(0, index),
-                    ...state.funds.slice(index + 1)
-                ],
-                activeIndex: newActiveIndex
-            }
+                funds: [...state.funds.slice(0, index), ...state.funds.slice(index + 1)],
+                activeIndex: newActiveIndex,
+            };
         case types.FUND_SELECT_FUND_TAB:
             return selectFundTab(state, action);
-        case types.CHANGE_FILES:{
+        case types.CHANGE_FILES: {
             const result = {
-                ...state
+                ...state,
             };
 
             let someFundChanged = false;
             const funds = state.funds.map(fundObj => {
                 if (fundObj.id === action.fundId) {
                     someFundChanged = true;
-                    return fund(fundObj, action)
+                    return fund(fundObj, action);
                 } else {
-                    return fundObj
+                    return fundObj;
                 }
             });
             if (someFundChanged) {
-                result.funds = funds
+                result.funds = funds;
             }
 
             return result;
         }
         case types.CHANGE_CONFORMITY_INFO:
-        case types.CHANGE_NODE_REQUESTS:{
-            const index = indexById(state.funds, action.fundVersionId, "versionId");
+        case types.CHANGE_NODE_REQUESTS: {
+            const index = indexById(state.funds, action.fundVersionId, 'versionId');
 
             // změna se ho netýká, vracím původní stav
             if (index == null) {
@@ -365,26 +365,28 @@ export default function arrRegion(state = initialState, action) {
                 funds: [
                     ...state.funds.slice(0, index),
                     fund(state.funds[index], action),
-                    ...state.funds.slice(index + 1)
-                ]
-            }
+                    ...state.funds.slice(index + 1),
+                ],
+            };
         }
-        case types.CHANGE_APPROVE_VERSION:{
+        case types.CHANGE_APPROVE_VERSION: {
             const funds = state.funds;
             let update = false;
 
-            funds.forEach(fund => {if (fund.versionId == action.versionId) {
-                if (fund.closed == false) {
-                    update = true;
-                    fund.closed = true;
+            funds.forEach(fund => {
+                if (fund.versionId == action.versionId) {
+                    if (fund.closed == false) {
+                        update = true;
+                        fund.closed = true;
+                    }
                 }
-            }});
+            });
 
             if (update) {
-                return {...state}
+                return {...state};
             }
 
-            return state
+            return state;
         }
         case types.VISIBLE_POLICY_REQUEST:
         case types.VISIBLE_POLICY_RECEIVE:
@@ -393,23 +395,22 @@ export default function arrRegion(state = initialState, action) {
             return {
                 ...state,
                 visiblePolicy: visiblePolicy(state.visiblePolicy, action),
-            }
+            };
 
         case types.FUND_FUND_NODES_POLICY_RECEIVE:
-        case types.FUND_FUND_NODES_POLICY_REQUEST:{
-            const index = indexById(state.funds, action.versionId, "versionId");
+        case types.FUND_FUND_NODES_POLICY_REQUEST: {
+            const index = indexById(state.funds, action.versionId, 'versionId');
             return processFund(state, action, index);
         }
-        case types.FUND_INVALID: {
+        case types.FUND_INVALID: {
             let result = {...state};
             action.fundVersionIds.forEach(fundVersionId => {
-                const index = indexById(state.funds, fundVersionId, "versionId");
-                result = processFund(result, action, index)
+                const index = indexById(state.funds, fundVersionId, 'versionId');
+                result = processFund(result, action, index);
             });
             return consolidateState(state, result);
         }
         default:
-            return state
+            return state;
     }
 }
-

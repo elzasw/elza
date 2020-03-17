@@ -8,22 +8,22 @@ const initialState = {
     fetching: false,
     currentDataKey: '',
     permission: permission(),
-}
+};
 
 export default function groupDetail(state = initialState, action = {}) {
     if (isPermissionAction(action)) {
         return {
             ...state,
-            permission: permission(state.permission, action)
-        }
+            permission: permission(state.permission, action),
+        };
     }
 
     switch (action.type) {
         case types.STORE_SAVE:
-            const {id} = state
+            const {id} = state;
             return {
                 id,
-            }
+            };
         case types.STORE_LOAD:
             return {
                 ...state,
@@ -31,7 +31,7 @@ export default function groupDetail(state = initialState, action = {}) {
                 fetching: false,
                 currentDataKey: '',
                 permission: permission(),
-            }
+            };
         case types.GROUPS_SELECT_GROUP:
             if (state.id !== action.id) {
                 return {
@@ -39,16 +39,16 @@ export default function groupDetail(state = initialState, action = {}) {
                     id: action.id,
                     currentDataKey: '',
                     fetched: false,
-                }
+                };
             } else {
-                return state
+                return state;
             }
         case types.GROUPS_GROUP_DETAIL_REQUEST:
             return {
                 ...state,
                 fetching: true,
                 currentDataKey: action.dataKey,
-            }
+            };
         case types.GROUPS_GROUP_DETAIL_RECEIVE:
             const {permissions, ...mainData} = action.data;
             return {
@@ -57,22 +57,21 @@ export default function groupDetail(state = initialState, action = {}) {
                 permissions,
                 fetching: false,
                 fetched: true,
-            }
+            };
         case types.CHANGE_GROUP:
-            if(state.id !== initialState.id && action.ids.indexOf(state.id) !== -1) {
+            if (state.id !== initialState.id && action.ids.indexOf(state.id) !== -1) {
                 return {
                     ...state,
-                    currentDataKey: ''
-                }
+                    currentDataKey: '',
+                };
             }
             return state;
         case types.GROUP_DELETE:
-            if(state.id === action.id) {
-                return initialState
+            if (state.id === action.id) {
+                return initialState;
             }
             return state;
         default:
-            return state
+            return state;
     }
 }
-

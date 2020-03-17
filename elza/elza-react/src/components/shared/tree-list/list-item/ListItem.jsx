@@ -6,7 +6,6 @@ import classNames from 'classnames';
 import {propsEquals} from 'components/Utils.jsx';
 
 class ListItem extends React.PureComponent {
-
     static defaultProps = {
         highlighted: false,
         indent: 10,
@@ -15,9 +14,11 @@ class ListItem extends React.PureComponent {
         focusable: true,
         depth: 0,
         expanded: false,
-        className: "",
+        className: '',
         ignoreDepth: false,
-        onExpandCollapse: (e) => {throw new Error("callback 'onExpandCollapse' for 'ListItem' is not defined")}
+        onExpandCollapse: e => {
+            throw new Error("callback 'onExpandCollapse' for 'ListItem' is not defined");
+        },
     };
 
     static propTypes = {
@@ -30,23 +31,23 @@ class ListItem extends React.PureComponent {
         className: PropTypes.string,
         ignoreDepth: PropTypes.bool,
         onExpandCollapse: PropTypes.func,
-        renderName: PropTypes.func
+        renderName: PropTypes.func,
     };
 
-    shouldComponentUpdate(nextProps){
+    shouldComponentUpdate(nextProps) {
         // re-renders only when one of these props changes
-        return !propsEquals(this.props, nextProps,[
-            "name",
-            "highlighted",
-            "selected",
-            "selectable",
-            "focusable",
-            "depth",
-            "expanded",
-            "className",
-            "ignoreDepth",
-            "hasChildren",
-            "indent"
+        return !propsEquals(this.props, nextProps, [
+            'name',
+            'highlighted',
+            'selected',
+            'selectable',
+            'focusable',
+            'depth',
+            'expanded',
+            'className',
+            'ignoreDepth',
+            'hasChildren',
+            'indent',
         ]);
     }
 
@@ -70,24 +71,23 @@ class ListItem extends React.PureComponent {
         } = this.props;
 
         const cls = classNames({
-            "item": true,
-            "focus": highlighted,
-            "active": selected,
-            "not-selectable": !selectable,
-            "not-focusable": !focusable,
-            [className]: className
+            item: true,
+            focus: highlighted,
+            active: selected,
+            'not-selectable': !selectable,
+            'not-focusable': !focusable,
+            [className]: className,
         });
 
         return (
-            <div
-                {...otherProps}
-                className={cls}
-            >
-                {!ignoreDepth && depth >= 0 && <DepthIndent depth={depth} indentSize={indent}/>}
-                {!ignoreDepth && <TreeNodeToggle expanded={expanded} hidden={!hasChildren} onClick={onExpandCollapse}/>}
+            <div {...otherProps} className={cls}>
+                {!ignoreDepth && depth >= 0 && <DepthIndent depth={depth} indentSize={indent} />}
+                {!ignoreDepth && (
+                    <TreeNodeToggle expanded={expanded} hidden={!hasChildren} onClick={onExpandCollapse} />
+                )}
                 <div className="item-text">{renderName ? renderName(item) : name}</div>
             </div>
-        )
+        );
     }
 }
 

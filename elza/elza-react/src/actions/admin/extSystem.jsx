@@ -13,19 +13,23 @@ export const AREA_EXT_SYSTEM_DETAIL = 'extSystemDetail';
  *
  */
 export function extSystemListFetchIfNeeded() {
-    return SimpleListActions.fetchIfNeeded(AREA_EXT_SYSTEM_LIST, null, () => WebApi.getAllExtSystem().then(json => {
-        return {
-            rows: json,
-            count: json.count,
-        };
-    }));
+    return SimpleListActions.fetchIfNeeded(AREA_EXT_SYSTEM_LIST, null, () =>
+        WebApi.getAllExtSystem().then(json => {
+            return {
+                rows: json,
+                count: json.count,
+            };
+        }),
+    );
 }
 
 export function extSystemDetailFetchIfNeeded(id) {
     return (dispatch, getState) => {
-        dispatch(DetailActions.fetchIfNeeded(AREA_EXT_SYSTEM_DETAIL, id, () => {
-            return WebApi.getExtSystem(id).catch(() => dispatch(extSystemDetailClear()));
-        }));
+        dispatch(
+            DetailActions.fetchIfNeeded(AREA_EXT_SYSTEM_DETAIL, id, () => {
+                return WebApi.getExtSystem(id).catch(() => dispatch(extSystemDetailClear()));
+            }),
+        );
     };
 }
 

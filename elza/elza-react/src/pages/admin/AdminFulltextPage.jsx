@@ -11,8 +11,6 @@ import {connect} from 'react-redux';
 import {AdminFulltextReindex, Ribbon} from 'components/index.jsx';
 import {PageLayout} from 'pages/index.jsx';
 
-;
-
 const AdminFulltextPage = class AdminFulltextPage extends React.Component {
     constructor(props) {
         super(props);
@@ -21,9 +19,7 @@ const AdminFulltextPage = class AdminFulltextPage extends React.Component {
     }
 
     buildRibbon() {
-        return (
-            <Ribbon admin {...this.props} />
-        )
+        return <Ribbon admin {...this.props} />;
     }
 
     render() {
@@ -33,18 +29,18 @@ const AdminFulltextPage = class AdminFulltextPage extends React.Component {
             <div>
                 <AdminFulltextReindex {...this.props.fulltext} />
             </div>
-        )
+        );
 
         return (
             <PageLayout
                 splitter={splitter}
-                className='admin-fulltext-page'
+                className="admin-fulltext-page"
                 ribbon={this.buildRibbon()}
                 centerPanel={centerPanel}
             />
-        )
+        );
     }
-}
+};
 
 /**
  * Namapování state do properties.
@@ -53,12 +49,12 @@ const AdminFulltextPage = class AdminFulltextPage extends React.Component {
  * @returns {{fulltext: *}}
  */
 function mapStateToProps(state) {
-    const {splitter, adminRegion} = state
+    const {splitter, adminRegion} = state;
 
     return {
         splitter,
-        fulltext: adminRegion.fulltext
-    }
+        fulltext: adminRegion.fulltext,
+    };
 }
 
 export default connect(mapStateToProps)(AdminFulltextPage);

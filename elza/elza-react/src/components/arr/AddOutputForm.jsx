@@ -14,7 +14,6 @@ import {indexById} from 'stores/app/utils.jsx';
  */
 
 class AddOutputForm extends AbstractReactComponent {
-
     static defaultProps = {
         create: false,
     };
@@ -56,10 +55,18 @@ class AddOutputForm extends AbstractReactComponent {
         this.props.dispatch(outputTypesFetchIfNeeded());
     }
 
-    submitReduxForm = (values, dispatch) => submitForm(AddOutputForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
+    submitReduxForm = (values, dispatch) =>
+        submitForm(AddOutputForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
-        const {fields: {name, internalCode, templateId, outputTypeId}, create, handleSubmit, onClose, outputTypes, allTemplates} = this.props;
+        const {
+            fields: {name, internalCode, templateId, outputTypeId},
+            create,
+            handleSubmit,
+            onClose,
+            outputTypes,
+            allTemplates,
+        } = this.props;
 
         let templates = false;
         if (outputTypeId.value) {
@@ -77,23 +84,49 @@ class AddOutputForm extends AbstractReactComponent {
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
                         <FormInput type="text" label={i18n('arr.output.name')} {...name} {...decorateFormField(name)} />
-                        <FormInput type="text"
-                                   label={i18n('arr.output.internalCode')} {...internalCode} {...decorateFormField(internalCode)} />
-                        {create && <FormInput as="select"
-                                              label={i18n('arr.output.outputType')} {...outputTypeId} {...decorateFormField(outputTypeId)}>
-                            <option key='-outputTypeId'/>
-                            {outputTypes.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
-                        </FormInput>}
-                        <FormInput as="select" label={i18n('arr.output.template')} {...templateId}
-                                   disabled={!outputTypeId.value || !templates}>
-                            <option key='-templateId'/>
-                            {templates && templates.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
+                        <FormInput
+                            type="text"
+                            label={i18n('arr.output.internalCode')}
+                            {...internalCode}
+                            {...decorateFormField(internalCode)}
+                        />
+                        {create && (
+                            <FormInput
+                                as="select"
+                                label={i18n('arr.output.outputType')}
+                                {...outputTypeId}
+                                {...decorateFormField(outputTypeId)}
+                            >
+                                <option key="-outputTypeId" />
+                                {outputTypes.map(i => (
+                                    <option key={i.id} value={i.id}>
+                                        {i.name}
+                                    </option>
+                                ))}
+                            </FormInput>
+                        )}
+                        <FormInput
+                            as="select"
+                            label={i18n('arr.output.template')}
+                            {...templateId}
+                            disabled={!outputTypeId.value || !templates}
+                        >
+                            <option key="-templateId" />
+                            {templates &&
+                                templates.map(i => (
+                                    <option key={i.id} value={i.id}>
+                                        {i.name}
+                                    </option>
+                                ))}
                         </FormInput>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button
-                            type="submit">{create ? i18n('global.action.create') : i18n('global.action.update')}</Button>
-                        <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                        <Button type="submit">
+                            {create ? i18n('global.action.create') : i18n('global.action.update')}
+                        </Button>
+                        <Button variant="link" onClick={onClose}>
+                            {i18n('global.action.cancel')}
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </div>
@@ -101,7 +134,8 @@ class AddOutputForm extends AbstractReactComponent {
     }
 }
 
-export default reduxForm({
+export default reduxForm(
+    {
         form: 'addOutputForm',
         fields: ['name', 'internalCode', 'outputTypeId', 'templateId'],
     },

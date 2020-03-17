@@ -84,7 +84,7 @@ export function propsEquals(x, y, attrs) {
             if (x[p] === y[p]) continue;
             // if they have the same strict value or identity then they are equal
 
-            if (typeof (x[p]) !== 'object') {
+            if (typeof x[p] !== 'object') {
                 return false;
             }
             // Numbers, Strings, Functions, Booleans must be strictly equal
@@ -112,13 +112,13 @@ export function stateEquals(x, y) {
         if (x[p] === y[p]) continue;
         // if they have the same strict value or identity then they are equal
 
-        if (typeof (x[p]) !== 'object' && typeof (x[p]) !== 'boolean') {
+        if (typeof x[p] !== 'object' && typeof x[p] !== 'boolean') {
             return false;
         }
 
         // Numbers, Strings, Functions, Booleans must be strictly equal
         if (x[p] !== y[p]) {
-//console.log(p)
+            //console.log(p)
             return false;
         }
     }
@@ -146,7 +146,7 @@ export function objectEquals(x, y) {
         if (x[p] === y[p]) continue;
         // if they have the same strict value or identity then they are equal
 
-        if (typeof (x[p]) !== 'object') return false;
+        if (typeof x[p] !== 'object') return false;
         // Numbers, Strings, Functions, Booleans must be strictly equal
 
         if (!objectEquals(x[p], y[p])) return false;
@@ -210,7 +210,7 @@ export function objectEqualsDiff(x, y, ignore = {}, path = '', log = false) {
         if (x[p] === y[p]) continue;
         // if they have the same strict value or identity then they are equal
 
-        if (typeof (x[p]) !== 'object' && !(ignore[pathProp] || ignore[endWith(p)])) {
+        if (typeof x[p] !== 'object' && !(ignore[pathProp] || ignore[endWith(p)])) {
             if (log) {
                 console.warn('diff 4', path, p, x[p], y[p]);
                 res = false;
@@ -267,7 +267,7 @@ export function buildIgnoreMap(...items) {
         return {};
     } else {
         const result = {};
-        items.forEach(item => result[item] = true);
+        items.forEach(item => (result[item] = true));
         return result;
     }
 }
@@ -277,9 +277,9 @@ export function lenToBytesStr(len) {
     if (len < 1000) {
         lenStr = ('' + len).substring(0, 3) + ' B';
     } else if (len < 1000000) {
-        lenStr = ('' + (len / 1000)).substring(0, 3) + ' kB';
+        lenStr = ('' + len / 1000).substring(0, 3) + ' kB';
     } else {
-        lenStr = ('' + (len / 1000000)).substring(0, 3) + ' MB';
+        lenStr = ('' + len / 1000000).substring(0, 3) + ' MB';
     }
     return lenStr;
 }
@@ -301,7 +301,6 @@ export function humanFileSize(bytes, si = false) {
 }
 
 export function roughSizeOfObject(object) {
-
     var objectList = [];
     var stack = [object];
     var bytes = 0;
@@ -315,11 +314,7 @@ export function roughSizeOfObject(object) {
             bytes += value.length * 2;
         } else if (typeof value === 'number') {
             bytes += 8;
-        } else if
-        (
-            typeof value === 'object'
-            && objectList.indexOf(value) === -1
-        ) {
+        } else if (typeof value === 'object' && objectList.indexOf(value) === -1) {
             objectList.push(value);
 
             for (var i in value) {
@@ -381,7 +376,7 @@ export function StringMap() {
     };
 
     this.contains = function(key) {
-        return typeof (setObj[key]) !== 'undefined';
+        return typeof setObj[key] !== 'undefined';
     };
 
     this.remove = function(key) {
@@ -407,7 +402,7 @@ export function browser() {
         // At least Safari 3+: "[object HTMLElementConstructor]"
         safari: Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0,
         // Internet Explorer 6-11
-        ie: /*@cc_on!@*/false || !!document.documentMode,
+        ie: /*@cc_on!@*/ false || !!document.documentMode,
         // Edge 20+
         edge: !window.ie && !!window.StyleMedia,
         // Chrome 1+
@@ -448,9 +443,7 @@ export function init() {
         return result;
     };
     if (typeof Object.values != 'function') {
-        Object.values = x =>
-            Object.keys(x).reduce((y, z) =>
-                y.push(x[z]) && y, []);
+        Object.values = x => Object.keys(x).reduce((y, z) => y.push(x[z]) && y, []);
     }
     if (typeof Object.assign != 'function') {
         (function() {
@@ -478,11 +471,11 @@ export function init() {
 
 export function barrierCall(index, promise, onData, onError) {
     promise
-        .then((result) => {
+        .then(result => {
             //console.log("Promise #" + index + " OK", result);
             onData(index, result);
         })
-        .catch((error) => {
+        .catch(error => {
             //console.log("Promise #" + index + " ERROR", error);
             onError(index, error);
         });
@@ -492,13 +485,12 @@ export function barrier(...promises) {
     var errors = {};
     var results = {};
     return new Promise(function(resolve, reject) {
-
         var tryFinish = () => {
             //console.log("TRY FINISH", results, errors, Object.keys(results).length, Object.keys(errors).length, promises.length);
             if (Object.keys(results).length + Object.keys(errors).length == promises.length) {
                 var result = {};
-                Object.keys(results).forEach(key => result[key] = {error: false, data: results[key]});
-                Object.keys(errors).forEach(key => result[key] = {error: true, data: errors[key]});
+                Object.keys(results).forEach(key => (result[key] = {error: false, data: results[key]}));
+                Object.keys(errors).forEach(key => (result[key] = {error: true, data: errors[key]}));
 
                 if (Object.keys(errors).length > 0) {
                     reject(result);
@@ -544,7 +536,7 @@ export function timeToString(date) {
     var ii = date.getMinutes().toString();
     var ss = date.getSeconds().toString();
     /** Formátování - místo 01 = 1 **/
-    var f = (col) => (col[1] ? col : '0' + col[0]);
+    var f = col => (col[1] ? col : '0' + col[0]);
     return f(hh) + ':' + f(ii) + ':' + f(ss);
 }
 
@@ -561,7 +553,7 @@ export function dateTimeToString(date) {
     var hh = date.getHours().toString();
     var ii = date.getMinutes().toString();
     /** Formátování - místo 01 = 1 **/
-    var f = (col) => (col[1] ? col : '0' + col[0]);
+    var f = col => (col[1] ? col : '0' + col[0]);
     return f(dd) + '.' + f(mm) + '.' + yyyy + ' ' + f(hh) + ':' + f(ii);
 }
 
@@ -601,7 +593,12 @@ export function objectFromWKT(value) {
     const start = value.indexOf('(');
     state.type = value.substr(0, start).trim();
     if (state.type === 'POINT') {
-        state.data = value.substr(start + 1, value.length - start - 2).split(', ').join('\n').split(' ').join(',');
+        state.data = value
+            .substr(start + 1, value.length - start - 2)
+            .split(', ')
+            .join('\n')
+            .split(' ')
+            .join(',');
     } else {
         state.data = value.substr(start + 2, value.length - start - 4);
     }
@@ -622,9 +619,14 @@ export function objectFromWKT(value) {
  * @returns string WK Text
  */
 export function wktFromTypeAndData(type, val) {
-    let points = val.split(',').map(function(dat) {
-        return normalizeDoubleWithDot(dat);
-    }).join(' ').split('\n').join(', ');
+    let points = val
+        .split(',')
+        .map(function(dat) {
+            return normalizeDoubleWithDot(dat);
+        })
+        .join(' ')
+        .split('\n')
+        .join(', ');
     if (type === 'POLYGON') {
         points = '(' + points + ', ' + points.substr(0, points.indexOf(',')) + ')';
     }
@@ -740,13 +742,21 @@ export function dateTimeToLocalUTC(date) {
         return date;
     }
 
-    return date.getFullYear()
-        + '-' + _dtpad(date.getMonth() + 1)
-        + '-' + _dtpad(date.getDate())
-        + 'T' + _dtpad(date.getHours())
-        + ':' + _dtpad(date.getMinutes())
-        + ':' + _dtpad(date.getSeconds())
-        + '.' + _dtpad(date.getMilliseconds());
+    return (
+        date.getFullYear() +
+        '-' +
+        _dtpad(date.getMonth() + 1) +
+        '-' +
+        _dtpad(date.getDate()) +
+        'T' +
+        _dtpad(date.getHours()) +
+        ':' +
+        _dtpad(date.getMinutes()) +
+        ':' +
+        _dtpad(date.getSeconds()) +
+        '.' +
+        _dtpad(date.getMilliseconds())
+    );
 }
 
 /**
@@ -761,14 +771,22 @@ export function dateTimeToZonedUTC(date) {
 
     const zone = date.getTimezoneOffset();
 
-    return date.getFullYear()
-        + '-' + _dtpad(date.getMonth() + 1)
-        + '-' + _dtpad(date.getDate())
-        + 'T' + _dtpad(date.getHours())
-        + ':' + _dtpad(date.getMinutes())
-        + ':' + _dtpad(date.getSeconds())
-        + '.' + _dtpad(date.getMilliseconds())
-        + toZoneString(zone);
+    return (
+        date.getFullYear() +
+        '-' +
+        _dtpad(date.getMonth() + 1) +
+        '-' +
+        _dtpad(date.getDate()) +
+        'T' +
+        _dtpad(date.getHours()) +
+        ':' +
+        _dtpad(date.getMinutes()) +
+        ':' +
+        _dtpad(date.getSeconds()) +
+        '.' +
+        _dtpad(date.getMilliseconds()) +
+        toZoneString(zone)
+    );
 }
 
 function toZoneString(zone) {
@@ -779,7 +797,7 @@ function toZoneString(zone) {
     return (positive ? '-' : '+') + pad2(h) + ':' + pad2(m);
 }
 
-export const removeUndefined = (obj) => {
+export const removeUndefined = obj => {
     for (let key in obj) {
         if (obj.hasOwnProperty(key)) {
             if (obj[key] === undefined || obj[key] === null) {
@@ -789,7 +807,7 @@ export const removeUndefined = (obj) => {
     }
     return obj;
 };
-export const isNotBlankObject = (obj) => {
+export const isNotBlankObject = obj => {
     const newObj = removeUndefined(obj);
     return Object.keys(newObj).length > 0;
 };
@@ -831,7 +849,8 @@ function overrideKeymap(defaultKeymap, keymap) {
  */
 export function mergeKeymaps(defaultKeymap, extendingKeymap) {
     let mergedKeymap = {};
-    for (let c in defaultKeymap) { //vytvoření nového objektu, aby se nepřepisoval původní
+    for (let c in defaultKeymap) {
+        //vytvoření nového objektu, aby se nepřepisoval původní
         mergedKeymap[c] = {};
         for (let a in defaultKeymap[c]) {
             mergedKeymap[c][a] = defaultKeymap[c][a];
@@ -866,7 +885,15 @@ function checkValueDuplicity(object) {
             if (typeof newObj[objectValue[j]] === 'undefined') {
                 newObj[objectValue[j]] = i;
             } else {
-                console.warn('Duplicity found for \'' + objectValue[j] + '\' assigned to \'' + i + '\'. Already used in \'' + newObj[objectValue[j]] + '\'');
+                console.warn(
+                    "Duplicity found for '" +
+                        objectValue[j] +
+                        "' assigned to '" +
+                        i +
+                        "'. Already used in '" +
+                        newObj[objectValue[j]] +
+                        "'",
+                );
             }
         }
     }

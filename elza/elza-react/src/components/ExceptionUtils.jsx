@@ -5,16 +5,16 @@ import i18n from './i18n';
 import Exception from './shared/exception/Exception';
 
 const TYPE2GROUP = {
-    'ArrangementCode': 'arr',
-    'BaseCode': 'base',
-    'BulkActionCode': 'ba',
-    'DigitizationCode': 'dig',
-    'ExternalCode': 'ext',
-    'OutputCode': 'out',
-    'PackageCode': 'pkg',
-    'RegistryCode': 'reg',
-    'StructObjCode': 'sobj',
-    'UserCode': 'usr',
+    ArrangementCode: 'arr',
+    BaseCode: 'base',
+    BulkActionCode: 'ba',
+    DigitizationCode: 'dig',
+    ExternalCode: 'ext',
+    OutputCode: 'out',
+    PackageCode: 'pkg',
+    RegistryCode: 'reg',
+    StructObjCode: 'sobj',
+    UserCode: 'usr',
 };
 
 /**
@@ -23,7 +23,6 @@ const TYPE2GROUP = {
  * @param data data výjimky
  */
 export function createException(data) {
-
     let toaster;
 
     // prohledání extra definovaných vyjímek
@@ -55,14 +54,18 @@ export function createException(data) {
 function resolveBase(data) {
     switch (data.code) {
         case 'INSUFFICIENT_PERMISSIONS': {
-            return createToaster(i18n('exception.base.INSUFFICIENT_PERMISSIONS'), data, (p) => {
-                return <small><b>{i18n('exception.base.INSUFFICIENT_PERMISSIONS.detail')}:</b> {p.permission && p.permission.map((item) => i18n('permission.' + item)).join(', ')}
-                </small>;
+            return createToaster(i18n('exception.base.INSUFFICIENT_PERMISSIONS'), data, p => {
+                return (
+                    <small>
+                        <b>{i18n('exception.base.INSUFFICIENT_PERMISSIONS.detail')}:</b>{' '}
+                        {p.permission && p.permission.map(item => i18n('permission.' + item)).join(', ')}
+                    </small>
+                );
             });
         }
         case 'OPTIMISTIC_LOCKING_ERROR': {
             return createToaster(i18n('global.exception.permission.need'), data, (p, m) => {
-                return <LongText text={m}/>;
+                return <LongText text={m} />;
             });
         }
         default:
@@ -76,7 +79,8 @@ function resolveBase(data) {
  * @param data data výjimky
  */
 function resolveArrangement(data) {
-    switch (data.code) {
+    switch (
+        data.code
         /*
        Legacy code - jen pro ukázku jak to udělat
         case 'X_DELETE_ERROR': {
@@ -87,6 +91,7 @@ function resolveArrangement(data) {
             });
         }
         */
+    ) {
     }
 }
 
@@ -108,7 +113,7 @@ function resolveDefault(data) {
     const key = 'exception.' + TYPE2GROUP[data.type] + '.' + data.code;
 
     if (!existsI18n(key)) {
-        console.warn('i18n(\'' + key + '\') not found, please add to translate file');
+        console.warn("i18n('" + key + "') not found, please add to translate file");
     }
 
     return createToaster(i18n(key, data.properties), data);
@@ -126,7 +131,11 @@ function resolveDefault(data) {
  */
 function createToaster(title, data, textRenderer, size = 'lg', time = null) {
     const type = data.level ? data.level : 'danger';
-    return addToastr(title, [<Exception key="exception-key" title={title} data={data}
-                                        textRenderer={textRenderer}/>], type, size, time);
+    return addToastr(
+        title,
+        [<Exception key="exception-key" title={title} data={data} textRenderer={textRenderer} />],
+        type,
+        size,
+        time,
+    );
 }
-

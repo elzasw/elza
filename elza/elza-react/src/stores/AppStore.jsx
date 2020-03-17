@@ -25,16 +25,19 @@ const _logActionDuration = false;
 const _logCollapsed = true;
 
 // Store a middleware
-const loggerMiddleware = window.__DEV__ ? createLogger({
-    collapsed: _logCollapsed,
-    duration: _logActionDuration,
-    predicate: (getState, action) => (action.type !== types.STORE_STATE_DATA && action.type !== types.GLOBAL_SPLITTER_RESIZE),
-}) : null;
+const loggerMiddleware = window.__DEV__
+    ? createLogger({
+          collapsed: _logCollapsed,
+          duration: _logActionDuration,
+          predicate: (getState, action) =>
+              action.type !== types.STORE_STATE_DATA && action.type !== types.GLOBAL_SPLITTER_RESIZE,
+      })
+    : null;
 
 /**
  * Třída pro definici inline formulářů.
  */
-const inlineFormSupport = new class {
+const inlineFormSupport = new (class {
     constructor() {
         this.forms = {};
         this.init = {};
@@ -43,7 +46,6 @@ const inlineFormSupport = new class {
         this.initialFormData = {};
         this.wasChanged = {};
     }
-
 
     addForm(formName) {
         this.forms[formName] = true;
@@ -93,7 +95,12 @@ const inlineFormSupport = new class {
     }
 
     setAttributes(formName, formState, commonAttrs, fieldAttrs) {
-        const formStateWithAttrs = reduxFormUtils.setAttributes(this.initFields[formName], formState, commonAttrs, fieldAttrs);
+        const formStateWithAttrs = reduxFormUtils.setAttributes(
+            this.initFields[formName],
+            formState,
+            commonAttrs,
+            fieldAttrs,
+        );
         return formStateWithAttrs;
     }
 
@@ -154,15 +161,18 @@ const inlineFormSupport = new class {
 
             var value = data[field];
             if (fd.touched) {
-                if (fd.initial != value) {    // upravil hodnotu, ale mezitím někdo změnil tuto hodnotu, přepíšeme mu jí tou, co přišla
+                if (fd.initial != value) {
+                    // upravil hodnotu, ale mezitím někdo změnil tuto hodnotu, přepíšeme mu jí tou, co přišla
                     fd.initial = value;
                     fd.value = value;
                     fd.touched = false;
                     fd.visited = false;
-                } else {    // editoval ji, ale někdo cizí menil jinou hodnotu, můžeme ji tedy nechat
+                } else {
+                    // editoval ji, ale někdo cizí menil jinou hodnotu, můžeme ji tedy nechat
                     // ...necháme hodnotu
                 }
-            } else {    // hodnotu neměnil, můžeme ji přepsat
+            } else {
+                // hodnotu neměnil, můžeme ji přepsat
                 // Ostatní příznaky není třeba měnit
                 fd.initial = value;
                 fd.value = value;
@@ -193,9 +203,11 @@ const inlineFormSupport = new class {
             const dotIndex = field.indexOf('.');
             const openIndex = field.indexOf('[');
             let f;
-            if (dotIndex >= 0 && (openIndex < 0 || dotIndex < openIndex)) { // is dot notation
+            if (dotIndex >= 0 && (openIndex < 0 || dotIndex < openIndex)) {
+                // is dot notation
                 f = field.substring(0, dotIndex);
-            } else if (openIndex >= 0 && (dotIndex < 0 || openIndex < dotIndex)) {  // is array notation
+            } else if (openIndex >= 0 && (dotIndex < 0 || openIndex < dotIndex)) {
+                // is array notation
                 f = field.substring(0, openIndex);
             } else {
                 f = field;
@@ -229,7 +241,8 @@ const inlineFormSupport = new class {
     wasDataChanged(formName, state) {
         const changedInfo = this.wasChanged[formName];
         if (changedInfo) {
-            if (changedInfo.bigChange) {    // bigChange bude nastaveno např. při odebrání nebo přidání řádků v kolekcích - již se to špatně testuje a tak při této změně dáme big změnu a již nebudeme testovat
+            if (changedInfo.bigChange) {
+                // bigChange bude nastaveno např. při odebrání nebo přidání řádků v kolekcích - již se to špatně testuje a tak při této změně dáme big změnu a již nebudeme testovat
                 return true;
             }
 
@@ -302,7 +315,8 @@ const inlineFormSupport = new class {
             changedInfo = {};
             this.wasChanged[action.form] = changedInfo;
         }
-        if (!changedInfo.bigChange) {   // pokud je již big změna, nemá cenu udržovat podrobnosti o fieldech
+        if (!changedInfo.bigChange) {
+            // pokud je již big změna, nemá cenu udržovat podrobnosti o fieldech
             if (currentValue != initialValue) {
                 changedInfo[action.field] = true;
             } else {
@@ -346,18 +360,19 @@ const inlineFormSupport = new class {
             init.onSave(data);
         }
     }
-}();
+})();
 
 const inlineFormMiddleware = function(_ref) {
     const getState = _ref.getState;
     const dispatch = _ref.dispatch;
 
-    return (next) => {
-        return (action) => {
+    return next => {
+        return action => {
             if (action.type === 'redux-form/INITIALIZE') {
                 if (inlineFormSupport.isSupported(action.form)) {
                     // Pokud formulář již existuje, pouze provedeme merge dat
-                    if (inlineFormSupport.exists(getState(), dispatch, action)) {  // merge
+                    if (inlineFormSupport.exists(getState(), dispatch, action)) {
+                        // merge
                         // Uchování aktuálního store pro pozdější merge
                         // Načtení aktuálních formulářových dat
                         const localFormState = inlineFormSupport.getFormState(action.form, getState());
@@ -387,19 +402,24 @@ const inlineFormMiddleware = function(_ref) {
 
                         // Uchování prvotních dat pro porovnání změn po MERGE
                         inlineFormSupport.storeInitialData(getState(), action);
-                    } else {    // init
+                    } else {
+                        // init
                         next(action);
                         inlineFormSupport.setFields(action.form, action.fields);
 
                         // Uchování prvotních dat pro porovnání změn
                         inlineFormSupport.storeInitialData(getState(), action);
                     }
-                } else {    // standardní poslání dál, není to náš formulář
+                } else {
+                    // standardní poslání dál, není to náš formulář
                     next(action);
                 }
             } else if (action.type === 'redux-form/INPLACE_INIT') {
                 inlineFormSupport.setInit(action.form, action.validate, action.onSave);
-            } else if (action.type === 'redux-form/ADD_ARRAY_VALUE' || action.type === 'redux-form/REMOVE_ARRAY_VALUE') {
+            } else if (
+                action.type === 'redux-form/ADD_ARRAY_VALUE' ||
+                action.type === 'redux-form/REMOVE_ARRAY_VALUE'
+            ) {
                 if (inlineFormSupport.isSupported(action.form)) {
                     inlineFormSupport.setBigChange(action.form);
                 }
@@ -427,7 +447,8 @@ const inlineFormMiddleware = function(_ref) {
                     //         formState: vfs.formState,
                     //     })
                     // }
-                } else {    // standardní poslání dál, není to náš formulář
+                } else {
+                    // standardní poslání dál, není to náš formulář
                     next(action);
                 }
             } else {
@@ -444,7 +465,6 @@ const inlineFormMiddleware = function(_ref) {
         };
     };
 };
-
 
 let createStoreWithMiddleware;
 
@@ -463,22 +483,15 @@ if (typeof window.__DEVTOOLS__ !== 'undefined' && window.__DEVTOOLS__) {
         persistState(window.location.href.match(/[?&]debug_session=([^&#]+)\b/)),
     )(createStore);
 } else if (loggerMiddleware) {
-    createStoreWithMiddleware = compose(
-        applyMiddleware(
-            thunkMiddleware,
-            loggerMiddleware,
-            inlineFormMiddleware,
-        ),
-    )(createStore);
+    createStoreWithMiddleware = compose(applyMiddleware(thunkMiddleware, loggerMiddleware, inlineFormMiddleware))(
+        createStore,
+    );
 } else {
-    createStoreWithMiddleware = compose(
-        applyMiddleware(thunkMiddleware, inlineFormMiddleware),
-    )(createStore);
+    createStoreWithMiddleware = compose(applyMiddleware(thunkMiddleware, inlineFormMiddleware))(createStore);
 }
 
-
 const initialState = {};
-export const store = function configureStore(initialState) {
+export const store = (function configureStore(initialState) {
     const state = createStoreWithMiddleware(rootReducer, initialState);
     if (module.hot) {
         // Enable Webpack hot module replacement for reducers
@@ -489,7 +502,7 @@ export const store = function configureStore(initialState) {
         });
     }
     return state;
-}(initialState);
+})(initialState);
 
 /*
   const finalCreateStore = compose(
@@ -528,7 +541,6 @@ if (_logStoreSize) {
     store.subscribe(handleChange);
 }
 
-
 export const save = function(store) {
     const action = {
         type: types.STORE_SAVE,
@@ -557,4 +569,3 @@ inlineFormSupport.addForm('outputEditForm');
 inlineFormSupport.addForm('permissionsEditForm');
 inlineFormSupport.addForm('partyDetail');
 inlineFormSupport.addForm('requestEditForm');
-

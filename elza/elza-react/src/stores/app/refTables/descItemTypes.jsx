@@ -3,13 +3,13 @@ import {default as genericRefTable, genericRefTableState} from './genericRefTabl
 
 export default function descItemTypes(state = genericRefTableState, action = {}) {
     switch (action.type) {
-        case types.CHANGE_PACKAGE:{
+        case types.CHANGE_PACKAGE: {
             return {
                 ...state,
-                dirty: true
-            }
+                dirty: true,
+            };
         }
         default:
-            return genericRefTable(types.REF_DESC_ITEM_TYPES_REQUEST, types.REF_DESC_ITEM_TYPES_RECEIVE, state, action)
+            return genericRefTable(types.REF_DESC_ITEM_TYPES_REQUEST, types.REF_DESC_ITEM_TYPES_RECEIVE, state, action);
     }
 }

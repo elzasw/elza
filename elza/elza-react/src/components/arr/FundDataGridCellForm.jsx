@@ -25,7 +25,7 @@ class FundDataGridCellForm extends AbstractReactComponent {
 
         this.state = {
             fundDataGrid: this.getFundDataGrid(props),
-            dataLoaded: false,  // data dialogu jsou načtena a můžeme dialog správně napozicovat
+            dataLoaded: false, // data dialogu jsou načtena a můžeme dialog správně napozicovat
         };
     }
 
@@ -35,19 +35,24 @@ class FundDataGridCellForm extends AbstractReactComponent {
 
         const hasData = this.requestData(nextProps.versionId, newFundDataGrid);
 
-        if (hasData && dataLoaded !== hasData) {   // data byla načtená a předtím ještě ne, napozivujeme jednou dialog
+        if (hasData && dataLoaded !== hasData) {
+            // data byla načtená a předtím ještě ne, napozivujeme jednou dialog
             this.setState({}, this.handlePosition);
         }
 
-        const loadingChanged = this.isLoading(this.props, this.state.fundDataGrid) !== this.isLoading(nextProps, newFundDataGrid);
+        const loadingChanged =
+            this.isLoading(this.props, this.state.fundDataGrid) !== this.isLoading(nextProps, newFundDataGrid);
 
-        this.setState({
-            fundDataGrid: newFundDataGrid,
-        }, () => {
-            if (loadingChanged) {
-                this.refs.subNodeForm.getWrappedInstance().initFocus();
-            }
-        });
+        this.setState(
+            {
+                fundDataGrid: newFundDataGrid,
+            },
+            () => {
+                if (loadingChanged) {
+                    this.refs.subNodeForm.getWrappedInstance().initFocus();
+                }
+            },
+        );
     }
 
     containsDescItem(formData, descItemTypeId) {
@@ -109,7 +114,8 @@ class FundDataGridCellForm extends AbstractReactComponent {
 
         const hasData = this.requestData(this.props.versionId, this.state.fundDataGrid);
 
-        if (hasData && dataLoaded !== hasData) {   // data byla načtená a předtím ještě ne, napozivujeme jednou dialog
+        if (hasData && dataLoaded !== hasData) {
+            // data byla načtená a předtím ještě ne, napozivujeme jednou dialog
             this.setState({}, this.handlePosition);
         }
     }
@@ -135,7 +141,13 @@ class FundDataGridCellForm extends AbstractReactComponent {
             const formData = subNodeForm.formData;
 
             if (!this.containsDescItem(formData, validFundDataGrid.descItemTypeId)) {
-                this.props.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, routingKey, validFundDataGrid.descItemTypeId));
+                this.props.dispatch(
+                    nodeFormActions.fundSubNodeFormDescItemTypeAdd(
+                        versionId,
+                        routingKey,
+                        validFundDataGrid.descItemTypeId,
+                    ),
+                );
             } else {
                 // Máme data a jsou v pořádku
                 this.setState({dataLoaded: true});
@@ -171,7 +183,6 @@ class FundDataGridCellForm extends AbstractReactComponent {
 
         var form;
         if (!this.isLoading(this.props, fundDataGrid)) {
-
             const conformityInfo = {
                 errors: {},
                 missings: {},
@@ -181,11 +192,11 @@ class FundDataGridCellForm extends AbstractReactComponent {
                 <NodeSubNodeForm
                     singleDescItemTypeEdit
                     singleDescItemTypeId={fundDataGrid.descItemTypeId}
-                    ref='subNodeForm'
+                    ref="subNodeForm"
                     nodeId={fundDataGrid.parentNodeId}
                     versionId={versionId}
                     selectedSubNodeId={fundDataGrid.nodeId}
-                    routingKey='DATA_GRID'
+                    routingKey="DATA_GRID"
                     subNodeForm={fundDataGrid.subNodeForm}
                     descItemTypeInfos={fundDataGrid.subNodeForm.descItemTypeInfos}
                     rulDataTypes={rulDataTypes}
@@ -193,25 +204,23 @@ class FundDataGridCellForm extends AbstractReactComponent {
                     descItemTypes={descItemTypes}
                     conformityInfo={conformityInfo}
                     parentNode={{}}
-                    onVisiblePolicy={() => {
-                    }}
+                    onVisiblePolicy={() => {}}
                     fundId={fundId}
                     selectedSubNode={fundDataGrid.subNodeForm.data.parent}
                     descItemCopyFromPrevEnabled={false}
                     closed={closed}
-                    onAddDescItemType={() => {
-                    }}
+                    onAddDescItemType={() => {}}
                 />
             );
         }
 
         return (
-            <div ref='mainDiv' className={className} style={style}>
-                <Modal.Body>
-                    {form}
-                </Modal.Body>
+            <div ref="mainDiv" className={className} style={style}>
+                <Modal.Body>{form}</Modal.Body>
                 <Modal.Footer>
-                    <Button variant="link" onClick={onClose}>{i18n('global.action.close')}</Button>
+                    <Button variant="link" onClick={onClose}>
+                        {i18n('global.action.close')}
+                    </Button>
                 </Modal.Footer>
             </div>
         );

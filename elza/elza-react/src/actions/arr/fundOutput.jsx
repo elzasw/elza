@@ -60,20 +60,18 @@ function _fundOutputDetailDataKey(fundOutputDetail) {
 
 export function fundOutputUsageEnd(versionId, outputId) {
     return (dispatch, getState) => {
-        WebApi.outputUsageEnd(versionId, outputId)
-              .then((json) => {
-                  dispatch(addToastrSuccess(i18n('arr.output.title.usageEnded')));
-              });
+        WebApi.outputUsageEnd(versionId, outputId).then(json => {
+            dispatch(addToastrSuccess(i18n('arr.output.title.usageEnded')));
+        });
     };
 }
 
 export function fundOutputAddNodes(versionId, outputId, nodeIds) {
     return (dispatch, getState) => {
-        WebApi.fundOutputAddNodes(versionId, outputId, nodeIds)
-              .then((json) => {
-                  dispatch(addToastrSuccess(i18n('arr.output.title.nodesAdded')));
-                  dispatch(modalDialogHide());
-              });
+        WebApi.fundOutputAddNodes(versionId, outputId, nodeIds).then(json => {
+            dispatch(addToastrSuccess(i18n('arr.output.title.nodesAdded')));
+            dispatch(modalDialogHide());
+        });
     };
 }
 
@@ -85,30 +83,27 @@ export function fundOutputRemoveNodes(versionId, outputId, nodeIds) {
 
 export function fundOutputDelete(versionId, outputId) {
     return (dispatch, getState) => {
-        WebApi.outputDelete(versionId, outputId)
-              .then((json) => {
-                  dispatch(addToastrSuccess(i18n('arr.output.title.deleted')));
-                  dispatch(fundOutputDetailClear(versionId));
-              });
+        WebApi.outputDelete(versionId, outputId).then(json => {
+            dispatch(addToastrSuccess(i18n('arr.output.title.deleted')));
+            dispatch(fundOutputDetailClear(versionId));
+        });
     };
 }
 
 export function fundOutputRevert(versionId, outputId) {
     return (dispatch, getState) => {
-        WebApi.outputRevert(versionId, outputId)
-              .then((json) => {
-                  dispatch(addToastrSuccess(i18n('arr.output.title.revert')));
-              });
+        WebApi.outputRevert(versionId, outputId).then(json => {
+            dispatch(addToastrSuccess(i18n('arr.output.title.revert')));
+        });
     };
 }
 
 export function fundOutputClone(versionId, outputId) {
     return (dispatch, getState) => {
-        WebApi.outputClone(versionId, outputId)
-              .then((json) => {
-                  dispatch(fundOutputSelectOutput(versionId, json.id));
-                  dispatch(addToastrSuccess(i18n('arr.output.title.clone')));
-              });
+        WebApi.outputClone(versionId, outputId).then(json => {
+            dispatch(fundOutputSelectOutput(versionId, json.id));
+            dispatch(addToastrSuccess(i18n('arr.output.title.clone')));
+        });
     };
 }
 
@@ -123,17 +118,14 @@ export function fundOutputClone(versionId, outputId) {
 //         />))
 // };
 
-
 export function fundOutputCreate(versionId, data) {
     return (dispatch, getState) => {
-        return savingApiWrapper(dispatch, WebApi.createOutput(versionId, data))
-            .then((json) => {
-                dispatch(addToastrSuccess(i18n('arr.output.title.added')));
-                dispatch(fundOutputSelectOutput(versionId, json.id));
-                // handleAddNodes(json, dispatch);
-                return json;
-
-            });
+        return savingApiWrapper(dispatch, WebApi.createOutput(versionId, data)).then(json => {
+            dispatch(addToastrSuccess(i18n('arr.output.title.added')));
+            dispatch(fundOutputSelectOutput(versionId, json.id));
+            // handleAddNodes(json, dispatch);
+            return json;
+        });
     };
 }
 
@@ -177,18 +169,17 @@ export function fundOutputDetailFetchIfNeeded(versionId, outputId) {
 
         if (fundOutputDetail.currentDataKey !== dataKey) {
             dispatch(fundOutputDetailRequest(versionId, dataKey));
-            WebApi.getFundOutputDetail(versionId, outputId)
-                  .then(json => {
-                      const newFundOutput = _getFundOutput(versionId, getState);
-                      if (newFundOutput == null) {
-                          return;
-                      }
-                      const newFundOutputDetail = newFundOutput.fundOutputDetail;
-                      const newDataKey = _fundOutputDetailDataKey(newFundOutputDetail);
-                      if (newDataKey === dataKey) {
-                          dispatch(fundOutputDetailReceive(versionId, json));
-                      }
-                  });
+            WebApi.getFundOutputDetail(versionId, outputId).then(json => {
+                const newFundOutput = _getFundOutput(versionId, getState);
+                if (newFundOutput == null) {
+                    return;
+                }
+                const newFundOutputDetail = newFundOutput.fundOutputDetail;
+                const newDataKey = _fundOutputDetailDataKey(newFundOutputDetail);
+                if (newDataKey === dataKey) {
+                    dispatch(fundOutputDetailReceive(versionId, json));
+                }
+            });
         }
     };
 }
@@ -206,17 +197,16 @@ export function fundOutputFetchIfNeeded(versionId) {
         const dataKey = _fundOutputDataKey(fundOutput);
         if (fundOutput.currentDataKey !== dataKey) {
             dispatch(fundOutputRequest(versionId, dataKey));
-            WebApi.getOutputs(versionId, fundOutput.filterState !== -1 ? fundOutput.filterState : null)
-                  .then(json => {
-                      const newFundOutput = _getFundOutput(versionId, getState);
-                      if (newFundOutput == null) {
-                          return;
-                      }
-                      const newDataKey = _fundOutputDataKey(newFundOutput);
-                      if (newDataKey === dataKey) {
-                          dispatch(fundOutputReceive(versionId, json));
-                      }
-                  });
+            WebApi.getOutputs(versionId, fundOutput.filterState !== -1 ? fundOutput.filterState : null).then(json => {
+                const newFundOutput = _getFundOutput(versionId, getState);
+                if (newFundOutput == null) {
+                    return;
+                }
+                const newDataKey = _fundOutputDataKey(newFundOutput);
+                if (newDataKey === dataKey) {
+                    dispatch(fundOutputReceive(versionId, json));
+                }
+            });
         }
     };
 }
@@ -252,7 +242,6 @@ function fundOutputDetailReceive(versionId, data) {
         data,
     };
 }
-
 
 export function fundOutputDetailClear(versionId) {
     return {

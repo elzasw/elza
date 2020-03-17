@@ -11,10 +11,13 @@ import * as types from 'actions/constants/ActionTypes.js';
 export function refRecordTypesFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
-        if ((!state.refTables.recordTypes.fetched || state.refTables.recordTypes.dirty) && !state.refTables.recordTypes.isFetching) {
+        if (
+            (!state.refTables.recordTypes.fetched || state.refTables.recordTypes.dirty) &&
+            !state.refTables.recordTypes.isFetching
+        ) {
             return dispatch(refRecordTypesFetch());
         }
-    }
+    };
 }
 
 /**
@@ -22,10 +25,11 @@ export function refRecordTypesFetchIfNeeded() {
  */
 export function refRecordTypesFetch() {
     return dispatch => {
-        dispatch(refRecordTypesRequest())
-        return WebApi.getRecordTypes()
-            .then(json => {dispatch(refRecordTypesReceive(json))});
-    }
+        dispatch(refRecordTypesRequest());
+        return WebApi.getRecordTypes().then(json => {
+            dispatch(refRecordTypesReceive(json));
+        });
+    };
 }
 
 /**
@@ -36,8 +40,8 @@ export function refRecordTypesReceive(json) {
     return {
         type: types.REF_RECORD_TYPES_RECEIVE,
         items: json,
-        receivedAt: Date.now()
-    }
+        receivedAt: Date.now(),
+    };
 }
 
 /**
@@ -45,6 +49,6 @@ export function refRecordTypesReceive(json) {
  */
 export function refRecordTypesRequest() {
     return {
-        type: types.REF_RECORD_TYPES_REQUEST
-    }
+        type: types.REF_RECORD_TYPES_REQUEST,
+    };
 }

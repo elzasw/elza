@@ -2,8 +2,6 @@
 // A jelikož require není striktní jako export tak dovolí cyklické volání...
 import * as FormUtils from 'components/form/FormUtils.jsx';
 
-;
-
 export {default as AbstractReactComponent} from './AbstractReactComponent';
 export {default as i18n} from './i18n';
 export {default as Icon} from './shared/icon/Icon';
@@ -25,7 +23,6 @@ export {default as AddRegistryForm} from 'components/registry/AddRegistryForm.js
 export {default as EditRegistryForm} from 'components/registry/EditRegistryForm.jsx';
 export {default as RegistryLabel} from 'components/registry/RegistryLabel.jsx';
 export {default as RegistryField} from 'components/registry/RegistryField.jsx';
-
 
 export {default as FundDetail} from 'components/fund/FundDetail.jsx';
 export {default as FundDetailExt} from 'components/fund/FundDetailExt.jsx';

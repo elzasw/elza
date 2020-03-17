@@ -9,7 +9,6 @@ import './RegistryListItem.scss';
  * Komponenta item listu osob
  */
 class RegistryListItem extends AbstractReactComponent {
-
     static propTypes = {
         onClick: PropTypes.func,
         partyType: PropTypes.object.isRequired,
@@ -21,7 +20,7 @@ class RegistryListItem extends AbstractReactComponent {
     };
 
     getDisplayIds = () => {
-        const { eidTypes } = this.props;
+        const {eidTypes} = this.props;
         const eids = this.props.externalIds;
         if (!eids || eids.length === 0) {
             return [this.props.id];
@@ -47,7 +46,7 @@ class RegistryListItem extends AbstractReactComponent {
     };
 
     render() {
-        const { className, isActive, id, record, invalid, scopeName } = this.props;
+        const {className, isActive, id, record, invalid, scopeName} = this.props;
 
         const cls = classNames(className, 'registry-list-item', {
             active: isActive,
@@ -57,20 +56,26 @@ class RegistryListItem extends AbstractReactComponent {
         const typeNames = this.getApTypeNames().join(' | ');
         const displayId = this.getDisplayIds().join(', ');
 
-        return <div key={'record-id-' + id} className={cls}>
-            <div>
-                <Icon glyph='fa-file-o'/>
-                <span className="name" title={record}>{record}</span>
+        return (
+            <div key={'record-id-' + id} className={cls}>
+                <div>
+                    <Icon glyph="fa-file-o" />
+                    <span className="name" title={record}>
+                        {record}
+                    </span>
+                </div>
+                <div>
+                    <span className="types" title={typeNames}>
+                        {typeNames}
+                    </span>
+                    <span className="ids" title={displayId}>
+                        {displayId}
+                    </span>
+                </div>
+                <div>{scopeName}</div>
             </div>
-            <div>
-                <span className="types" title={typeNames}>{typeNames}</span>
-                <span className="ids" title={displayId}>{displayId}</span>
-            </div>
-            <div>
-                {scopeName}
-            </div>
-        </div>;
-    };
+        );
+    }
 }
 
 export default RegistryListItem;

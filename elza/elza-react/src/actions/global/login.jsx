@@ -4,29 +4,30 @@ import {userDetailChange, userDetailRequest} from 'actions/user/userDetail.jsx';
 import {routerNavigate} from 'actions/router.jsx';
 import {partyDetailClear, partyDetailInvalidate, partyListInvalidate} from 'actions/party/party.jsx';
 
-
 /**
  * Checks if user is logged on server by requesting userDetail.
  * If yes, saves the returned detail to store.
  * If not, resets store to default.
  */
-export function checkUserLogged(callback = () => {
-}) {
+export function checkUserLogged(callback = () => {}) {
     return (dispatch, getState) => {
         const state = getState();
         dispatch(userDetailRequest());
         // calls original _getUserDetail method, which is not postponed until login
-        _WebApi.getUserDetail().then(userDetail => {
-            if (userDetail && !state.login.logged) {
-                // fake local login if user is logged on server
-                dispatch(loginSuccess(userDetail));
-                callback(true);
-            }
-        }, (error) => {
-            dispatch(userDetailChange(null));
-            dispatch(loginFail());
-            callback(false);
-        });
+        _WebApi.getUserDetail().then(
+            userDetail => {
+                if (userDetail && !state.login.logged) {
+                    // fake local login if user is logged on server
+                    dispatch(loginSuccess(userDetail));
+                    callback(true);
+                }
+            },
+            error => {
+                dispatch(userDetailChange(null));
+                dispatch(loginFail());
+                callback(false);
+            },
+        );
     };
 }
 
@@ -49,7 +50,7 @@ function loginSuccess(forcedUserDetail) {
             dispatch(action);
         } else {
             dispatch(userDetailRequest());
-            WebApi.getUserDetail().then((userDetail) => {
+            WebApi.getUserDetail().then(userDetail => {
                 dispatch(saveLoggedUser(userDetail));
                 action.reset = state.userDetail.id !== userDetail.id;
                 dispatch(action);
@@ -83,7 +84,7 @@ function saveLoggedUser(userDetail, reset) {
 
 export function login(username, password) {
     return (dispatch, getState) => {
-        return _WebApi.login(username, password).then((data) => {
+        return _WebApi.login(username, password).then(data => {
             dispatch(loginSuccess());
         });
     };

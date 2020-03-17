@@ -4,7 +4,7 @@ const initialState = {
     reducer: areaGroupReducer,
 };
 
-const __AGR_INIT = "___AGR_INIT";
+const __AGR_INIT = '___AGR_INIT';
 
 /**
  * Reducer pro použití jako skupina standardních (např. list nebo detail) reducerů.
@@ -18,11 +18,10 @@ export default function areaGroupReducer(state, action = {type: __AGR_INIT}) {
         case __AGR_INIT: {
             return {
                 ...initialState,
-                ...state
-            }
+                ...state,
+            };
         }
         default:
             return state;
     }
 }
-

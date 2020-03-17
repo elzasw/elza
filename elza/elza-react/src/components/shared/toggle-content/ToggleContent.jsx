@@ -31,18 +31,18 @@ class ToggleContent extends React.Component {
         this.handleToggle = this.handleToggle.bind(this);
         this.state = {
             opened: typeof this.props.opened == 'undefined' ? true : this.props.opened,
-            openedIcon: this.props.openedIcon || "fa-chevron-up",
-            closedIcon: this.props.closedIcon || "fa-chevron-down",
-            alwaysRender: typeof this.props.alwaysRender == 'undefined' ? false : this.props.alwaysRender
+            openedIcon: this.props.openedIcon || 'fa-chevron-up',
+            closedIcon: this.props.closedIcon || 'fa-chevron-down',
+            alwaysRender: typeof this.props.alwaysRender == 'undefined' ? false : this.props.alwaysRender,
         };
     }
 
     static childContextTypes = {
-        isParentOpened: PropTypes.bool
+        isParentOpened: PropTypes.bool,
     };
 
     getChildContext() {
-        return { isParentOpened: this.state.opened };
+        return {isParentOpened: this.state.opened};
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -52,7 +52,7 @@ class ToggleContent extends React.Component {
     }
 
     handleToggle() {
-        this.setState({ opened: !this.state.opened });
+        this.setState({opened: !this.state.opened});
         this.props.onShowHide && this.props.onShowHide(!this.state.opened);
     }
 
@@ -61,10 +61,10 @@ class ToggleContent extends React.Component {
         const toggleGlyph = this.state.opened ? this.state.openedIcon : this.state.closedIcon;
 
         const cls = classNames({
-            "toggle-content-container": true,
+            'toggle-content-container': true,
             opened: this.state.opened,
             closed: !this.state.opened,
-            [this.props.className]: true
+            [this.props.className]: true,
         });
 
         const title = this.state.opened ? i18n('toggle.action.minimize') : i18n('toggle.action.restore');
@@ -74,31 +74,33 @@ class ToggleContent extends React.Component {
         if (render) {
             children = React.Children.map(this.props.children, child => {
                 return React.cloneElement(child);
-            })
+            });
         }
 
-        if (withText){
+        if (withText) {
             return (
                 <div className={cls}>
                     <div className="toggle-container">
-                        <NoFocusButton className="toggle" title={title} onClick={this.handleToggle}><Icon glyph={toggleGlyph} /></NoFocusButton>
+                        <NoFocusButton className="toggle" title={title} onClick={this.handleToggle}>
+                            <Icon glyph={toggleGlyph} />
+                        </NoFocusButton>
                         <label>{text}</label>
                     </div>
-                    <div className="content">
-                        {children}
-                    </div>
+                    <div className="content">{children}</div>
                 </div>
-            )
+            );
         }
 
         return (
             <div className={cls}>
                 {children}
                 <div className="toggle-container">
-                    <NoFocusButton className="toggle" title={title} onClick={this.handleToggle}><Icon glyph={toggleGlyph} /></NoFocusButton>
+                    <NoFocusButton className="toggle" title={title} onClick={this.handleToggle}>
+                        <Icon glyph={toggleGlyph} />
+                    </NoFocusButton>
                 </div>
             </div>
-        )
+        );
     }
 }
 

@@ -11,18 +11,17 @@ const initialState = {
     fetched: false,
     registryTypeId: undefined,
     item: null,
-    LastUpdated: null
+    LastUpdated: null,
 };
 
 export default function registryRegionRecordTypes(state = initialState, action = {}) {
-
     switch (action.type) {
         case types.REGISTRY_RECORD_TYPES_REQUEST: {
             return {
                 ...state,
                 registryTypeId: action.registryTypeId,
-                isFetching: true
-            }
+                isFetching: true,
+            };
         }
         case types.REGISTRY_RECORD_TYPES_RECEIVE: {
             return {
@@ -31,10 +30,10 @@ export default function registryRegionRecordTypes(state = initialState, action =
                 registryTypeId: action.registryTypeId,
                 isFetching: false,
                 fetched: true,
-                lastUpdated: action.receivedAt
-            }
+                lastUpdated: action.receivedAt,
+            };
         }
         default:
-            return state
+            return state;
     }
 }

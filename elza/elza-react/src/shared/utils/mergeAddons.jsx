@@ -12,7 +12,7 @@ export default function mergeAddons(propsAddons, customAddons, customsAtBegin = 
     if (!propsAddons) {
         newAddons = customAddons;
     } else {
-        newAddons = [customAddons, propsAddons]
+        newAddons = [customAddons, propsAddons];
     }
     return newAddons;
 }

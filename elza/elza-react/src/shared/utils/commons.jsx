@@ -32,13 +32,17 @@ export function dateToLocalUTC(date) {
         return date;
     }
 
-    return date.getFullYear()
-        + '-' + _dtpad(date.getMonth() + 1)
-        + '-' + _dtpad(date.getDate())
-        + 'T00'
-        + ':00'
-        + ':00'
-        + '.000';
+    return (
+        date.getFullYear() +
+        '-' +
+        _dtpad(date.getMonth() + 1) +
+        '-' +
+        _dtpad(date.getDate()) +
+        'T00' +
+        ':00' +
+        ':00' +
+        '.000'
+    );
 }
 
 /**
@@ -51,13 +55,21 @@ export function dateTimeToLocalUTC(date) {
         return date;
     }
 
-    return date.getFullYear()
-        + '-' + _dtpad(date.getMonth() + 1)
-        + '-' + _dtpad(date.getDate())
-        + 'T' + _dtpad(date.getHours())
-        + ':' + _dtpad(date.getMinutes())
-        + ':' + _dtpad(date.getSeconds())
-        + '.' + _dtpad(date.getMilliseconds());
+    return (
+        date.getFullYear() +
+        '-' +
+        _dtpad(date.getMonth() + 1) +
+        '-' +
+        _dtpad(date.getDate()) +
+        'T' +
+        _dtpad(date.getHours()) +
+        ':' +
+        _dtpad(date.getMinutes()) +
+        ':' +
+        _dtpad(date.getSeconds()) +
+        '.' +
+        _dtpad(date.getMilliseconds())
+    );
 }
 
 // NECHAT - pro testování !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -98,7 +110,7 @@ export function localUTCToDateTime(str) {
 
     const dt = str.split(/[: T-]/).map(parseFloat);
     const seconds = dt[5] ? Math.floor(dt[5]) : 0;
-    const milliseconds = dt[5] ? ((dt[5] - seconds) * 1000) : 0;
+    const milliseconds = dt[5] ? (dt[5] - seconds) * 1000 : 0;
     return new Date(dt[0], dt[1] - 1, dt[2], dt[3] || 0, dt[4] || 0, seconds, milliseconds);
 }
 
@@ -114,7 +126,7 @@ export function dateToDateTimeString(date) {
     let hh = date.getHours().toString();
     let ii = date.getMinutes().toString();
     /** Formátování - místo 01 = 1 **/
-    const f = (col) => (col[1] ? col : '0' + col[0]);
+    const f = col => (col[1] ? col : '0' + col[0]);
     return f(dd) + '.' + f(mm) + '.' + yyyy + ' ' + f(hh) + ':' + f(ii);
 }
 
@@ -123,7 +135,7 @@ export function dateToDateTimeString(date) {
  * @param number string
  **/
 export function normalizeInt(number) {
-    let pole = ('' + number);
+    let pole = '' + number;
     let output = '';
     for (let i = 0, len = pole.length; i < len; i++) {
         if ((i === 0 && pole[i] === '-') || pole[i] === '0' || parseInt(pole[i])) {
@@ -141,7 +153,7 @@ export function normalizePhone(number) {
     if (!number) {
         return number;
     }
-    let pole = ('' + number);
+    let pole = '' + number;
     let output = '';
     for (let i = 0, len = pole.length; i < len; i++) {
         if ((i === 0 && pole[i] === '+') || pole[i] === '0' || parseInt(pole[i])) {
@@ -150,7 +162,6 @@ export function normalizePhone(number) {
     }
     return output;
 }
-
 
 /**
  * Normalizace textu na delku výchozí 255 znaků
@@ -191,7 +202,12 @@ export function normalizeDouble(number) {
     let output = '';
     let existComa = false;
     for (let i = 0, len = pole.length; i < len; i++) {
-        if ((i === 0 && pole[i] === '-') || parseInt(pole[i]) || pole[i] === '0' || ((pole[i] === ',' || pole[i] === '.') && !existComa && (existComa = true))) {
+        if (
+            (i === 0 && pole[i] === '-') ||
+            parseInt(pole[i]) ||
+            pole[i] === '0' ||
+            ((pole[i] === ',' || pole[i] === '.') && !existComa && (existComa = true))
+        ) {
             output += pole[i] === ',' ? '.' : pole[i];
         }
     }

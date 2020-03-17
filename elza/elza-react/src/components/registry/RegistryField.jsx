@@ -22,7 +22,6 @@ import {refRecordTypesFetchIfNeeded} from '../../actions/refTables/recordTypes';
 const AUTOCOMPLETE_REGISTRY_LIST_SIZE = DEFAULT_LIST_SIZE;
 
 class RegistryField extends AbstractReactComponent {
-
     static defaultProps = {
         detail: false,
         footer: false,
@@ -63,7 +62,7 @@ class RegistryField extends AbstractReactComponent {
         this.refs.autocomplete.focus();
     };
 
-    handleSearchChange = debounce((text) => {
+    handleSearchChange = debounce(text => {
         text = text === '' ? null : text;
         this.setState({searchText: text});
         const {roleTypeId, partyId, registryParent, apTypeId, versionId, itemSpecId, itemTypeId} = this.props;
@@ -71,7 +70,16 @@ class RegistryField extends AbstractReactComponent {
         if (roleTypeId || partyId) {
             promise = WebApi.findRecordForRelation(text, roleTypeId, partyId, 0, AUTOCOMPLETE_REGISTRY_LIST_SIZE);
         } else {
-            promise = WebApi.findRegistry(text, registryParent, apTypeId, versionId, itemTypeId, itemSpecId, 0, AUTOCOMPLETE_REGISTRY_LIST_SIZE);
+            promise = WebApi.findRegistry(
+                text,
+                registryParent,
+                apTypeId,
+                versionId,
+                itemTypeId,
+                itemSpecId,
+                0,
+                AUTOCOMPLETE_REGISTRY_LIST_SIZE,
+            );
         }
         promise.then(json => {
             this.setState({
@@ -81,15 +89,15 @@ class RegistryField extends AbstractReactComponent {
         });
     }, 500);
 
-    handleDetail = (id) => {
+    handleDetail = id => {
         const {searchText} = this.state;
-        const { onDetail, onSelectModule, value} = this.props;
+        const {onDetail, onSelectModule, value} = this.props;
 
         this.refs.autocomplete.closeMenu();
 
         if (onSelectModule) {
             onSelectModule({
-                onSelect: (data) => {
+                onSelect: data => {
                     this.handleChange(data);
                     this.handleBlur(data);
                 },
@@ -104,12 +112,17 @@ class RegistryField extends AbstractReactComponent {
         }
     };
 
-
     handleImport = () => {
         const {versionId} = this.props;
         this.refs.autocomplete.closeMenu();
-        this.props.dispatch(modalDialogShow(this, i18n('extImport.title'), <ExtImportForm isParty={false}
-                                                                                          versionId={versionId}/>, 'dialog-lg'));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('extImport.title'),
+                <ExtImportForm isParty={false} versionId={versionId} />,
+                'dialog-lg',
+            ),
+        );
     };
 
     handleCreateRecord = () => {
@@ -117,13 +130,13 @@ class RegistryField extends AbstractReactComponent {
         this.props.onCreateRecord();
     };
 
-    handleChange = (e) => {
+    handleChange = e => {
         this.setState({searchText: null});
         const value = this.normalizeValue(e);
         this.props.onChange(value);
     };
 
-    handleBlur = (e) => {
+    handleBlur = e => {
         this.setState({searchText: null});
         const value = this.normalizeValue(e);
         this.props.onBlur(value);
@@ -136,44 +149,50 @@ class RegistryField extends AbstractReactComponent {
         const buttons = footerButtons && userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR);
         const hasCount = count !== null && (count > AUTOCOMPLETE_REGISTRY_LIST_SIZE || count === 0);
 
-        return hasCount || buttons ? <div>
-            {buttons && <div className="create-record">
-                <Button onClick={this.handleCreateRecord} type="button"><Icon
-                    glyph='fa-plus'/>{i18n('registry.addNewRegistry')}</Button>
-                <Button onClick={this.handleImport} type="button"><Icon
-                    glyph='fa-plus'/> {i18n('ribbon.action.registry.importExt')}</Button>
-            </div>}
-            {count > AUTOCOMPLETE_REGISTRY_LIST_SIZE && <div className="items-count">
-                {i18n('registryField.visibleCount', registryList.length, count)}
-            </div>}
-            {count === 0 && <div className="items-count">
-                {i18n('registryField.noItemsFound')}
-            </div>}
-        </div> : null;
+        return hasCount || buttons ? (
+            <div>
+                {buttons && (
+                    <div className="create-record">
+                        <Button onClick={this.handleCreateRecord} type="button">
+                            <Icon glyph="fa-plus" />
+                            {i18n('registry.addNewRegistry')}
+                        </Button>
+                        <Button onClick={this.handleImport} type="button">
+                            <Icon glyph="fa-plus" /> {i18n('ribbon.action.registry.importExt')}
+                        </Button>
+                    </div>
+                )}
+                {count > AUTOCOMPLETE_REGISTRY_LIST_SIZE && (
+                    <div className="items-count">{i18n('registryField.visibleCount', registryList.length, count)}</div>
+                )}
+                {count === 0 && <div className="items-count">{i18n('registryField.noItemsFound')}</div>}
+            </div>
+        ) : null;
     };
 
-    renderRecord = (props) => {
+    renderRecord = props => {
         const {item, highlighted, selected, ...otherProps} = props;
         const {apTypeIdMap, eidTypes} = this.props;
 
-        return <TooltipTrigger
-            content={item.characteristics}
-            holdOnHover
-            placement="horizontal"
-            className="tooltip-container"
-            {...otherProps}
-        >
-            <RegistryListItem
-                {...item}
-                eidTypes={eidTypes}
-                apTypeIdMap={apTypeIdMap}
-                className={classNames('item', {focus: highlighted, active: selected})}
-            />
-        </TooltipTrigger>;
+        return (
+            <TooltipTrigger
+                content={item.characteristics}
+                holdOnHover
+                placement="horizontal"
+                className="tooltip-container"
+                {...otherProps}
+            >
+                <RegistryListItem
+                    {...item}
+                    eidTypes={eidTypes}
+                    apTypeIdMap={apTypeIdMap}
+                    className={classNames('item', {focus: highlighted, active: selected})}
+                />
+            </TooltipTrigger>
+        );
     };
 
-
-    normalizeValue = (obj) => {
+    normalizeValue = obj => {
         // změna typu aby se objekt dal použít jako návazný
         const newobj = {
             ...obj,
@@ -193,11 +212,8 @@ class RegistryField extends AbstractReactComponent {
         let actions = [];
         if (detail) {
             actions.push(
-                <div
-                    onClick={this.handleDetail.bind(this, value ? value.id : null)}
-                    className='btn btn-default detail'
-                >
-                    <Icon glyph='fa-th-list'/>
+                <div onClick={this.handleDetail.bind(this, value ? value.id : null)} className="btn btn-default detail">
+                    <Icon glyph="fa-th-list" />
                 </div>,
             );
         }
@@ -207,31 +223,35 @@ class RegistryField extends AbstractReactComponent {
             tmpVal = i18n('subNodeForm.descItemType.notIdentified');
         }
 
-        return <Autocomplete
-            {...otherProps}
-            ref='autocomplete'
-            customFilter
-            className={classNames('autocomplete-record', className)}
-            footer={footerRender}
-            items={this.state.registryList}
-            getItemId={(item) => item ? item.id : null}
-            getItemName={(item) => item && item.record ? item.record : tmpVal}
-            onSearchChange={this.handleSearchChange}
-            renderItem={this.renderRecord}
-            actions={[actions]}
-            onChange={this.handleChange}
-            onBlur={this.handleBlur}
-            value={value}
-        />;
+        return (
+            <Autocomplete
+                {...otherProps}
+                ref="autocomplete"
+                customFilter
+                className={classNames('autocomplete-record', className)}
+                footer={footerRender}
+                items={this.state.registryList}
+                getItemId={item => (item ? item.id : null)}
+                getItemName={item => (item && item.record ? item.record : tmpVal)}
+                onSearchChange={this.handleSearchChange}
+                renderItem={this.renderRecord}
+                actions={[actions]}
+                onChange={this.handleChange}
+                onBlur={this.handleBlur}
+                value={value}
+            />
+        );
     }
 }
 
-export default connect(
-    (state) => {
-        const {userDetail, refTables: {recordTypes, eidTypes}} = state;
-        return {
-            apTypeIdMap: recordTypes.typeIdMap,
-            userDetail,
-            eidTypes: eidTypes.data,
-        };
-    })(RegistryField);
+export default connect(state => {
+    const {
+        userDetail,
+        refTables: {recordTypes, eidTypes},
+    } = state;
+    return {
+        apTypeIdMap: recordTypes.typeIdMap,
+        userDetail,
+        eidTypes: eidTypes.data,
+    };
+})(RegistryField);

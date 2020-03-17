@@ -20,11 +20,9 @@ class FundFilterCondition extends AbstractReactComponent {
         };
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-    }
+    UNSAFE_componentWillReceiveProps(nextProps) {}
 
-    componentDidMount() {
-    }
+    componentDidMount() {}
 
     handleCodeChange(e) {
         const {values, onChange} = this.props;
@@ -48,8 +46,9 @@ class FundFilterCondition extends AbstractReactComponent {
         var hasErrors = false;
         var newErrors = [...errors];
         const error = validateField(selectedCode, selectedItem.values, updatedValue, index);
-        if (error instanceof Promise) { // promise pro validaci - asi serverová validace
-            hasErrors = true;   // nevíme, zda projde validace, raději nastavíme, že je chyba - aby nešel formulář uložit
+        if (error instanceof Promise) {
+            // promise pro validaci - asi serverová validace
+            hasErrors = true; // nevíme, zda projde validace, raději nastavíme, že je chyba - aby nešel formulář uložit
 
             // Zavolání asynchronnní validace
             error
@@ -72,9 +71,9 @@ class FundFilterCondition extends AbstractReactComponent {
                     // On change
                     onChange(selectedCode, values, hasErrors);
                 })
-                .catch(() => {
-                });
-        } else {    // vlastní validační hláška
+                .catch(() => {});
+        } else {
+            // vlastní validační hláška
             newErrors[index] = error;
         }
 
@@ -118,22 +117,21 @@ class FundFilterCondition extends AbstractReactComponent {
         return (
             <div className={cls}>
                 {lbl}
-                <div className='inputs-container'>
-                    <FormInput as='select' onChange={this.handleCodeChange} value={selectedCode}>
+                <div className="inputs-container">
+                    <FormInput as="select" onChange={this.handleCodeChange} value={selectedCode}>
                         {items.map(i => {
                             return (
-                                <option key={i.code} value={i.code}>{i.name}</option>
+                                <option key={i.code} value={i.code}>
+                                    {i.name}
+                                </option>
                             );
                         })}
                     </FormInput>
                 </div>
-                <div className='vlaues-container'>
-                    {this.renderValues()}
-                </div>
+                <div className="vlaues-container">{this.renderValues()}</div>
             </div>
         );
     }
 }
 
 export default FundFilterCondition;
-

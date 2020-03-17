@@ -43,33 +43,57 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
 
         var itemActions = [];
         itemActions.push(
-            <Button key="export-dataGrid" onClick={() => {
-                this.handleDataGridExport(activeFund.versionId);
-            }}><Icon glyph="fa-download"/>
-                <div><span className="btnText">{i18n('ribbon.action.arr.dataGrid.export')}</span></div>
+            <Button
+                key="export-dataGrid"
+                onClick={() => {
+                    this.handleDataGridExport(activeFund.versionId);
+                }}
+            >
+                <Icon glyph="fa-download" />
+                <div>
+                    <span className="btnText">{i18n('ribbon.action.arr.dataGrid.export')}</span>
+                </div>
             </Button>,
         );
 
         var altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>;
+            altSection = (
+                <RibbonGroup key="alt" className="small">
+                    {altActions}
+                </RibbonGroup>
+            );
         }
 
         var itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>;
+            itemSection = (
+                <RibbonGroup key="item" className="small">
+                    {itemActions}
+                </RibbonGroup>
+            );
         }
 
         return (
-            <Ribbon arr subMenu fundId={activeFund ? activeFund.id : null} altSection={altSection}
-                    itemSection={itemSection}/>
+            <Ribbon
+                arr
+                subMenu
+                fundId={activeFund ? activeFund.id : null}
+                altSection={altSection}
+                itemSection={itemSection}
+            />
         );
     }
 
     handleDataGridExport(versionId) {
         const fund = this.getActiveFund(this.props);
-        this.props.dispatch(modalDialogShow(this, i18n('dataGrid.export.title'), <DataGridExportDialog
-            versionId={versionId} fundDataGrid={fund.fundDataGrid}/>));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('dataGrid.export.title'),
+                <DataGridExportDialog versionId={versionId} fundDataGrid={fund.fundDataGrid} />,
+            ),
+        );
     }
 
     hasPageShowRights(userDetail, activeFund) {
@@ -82,29 +106,33 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
     }
 
     renderCenterPanel(readMode, closed) {
-        const { descItemTypes, calendarTypes, rulDataTypes, ruleSet } = this.props;
+        const {descItemTypes, calendarTypes, rulDataTypes, ruleSet} = this.props;
         const fund = this.getActiveFund(this.props);
 
-        return <div className="datagrid-content-container">
-            <StoreHorizontalLoader store={ruleSet}/>
-            {ruleSet.fetched && <FundDataGrid
-                versionId={fund.versionId}
-                fundId={fund.id}
-                fund={fund}
-                closed={fund.closed}
-                readMode={readMode}
-                fundDataGrid={fund.fundDataGrid}
-                descItemTypes={descItemTypes}
-                calendarTypes={calendarTypes}
-                rulDataTypes={rulDataTypes}
-                ruleSet={ruleSet}
-            />}
-        </div>;
+        return (
+            <div className="datagrid-content-container">
+                <StoreHorizontalLoader store={ruleSet} />
+                {ruleSet.fetched && (
+                    <FundDataGrid
+                        versionId={fund.versionId}
+                        fundId={fund.id}
+                        fund={fund}
+                        closed={fund.closed}
+                        readMode={readMode}
+                        fundDataGrid={fund.fundDataGrid}
+                        descItemTypes={descItemTypes}
+                        calendarTypes={calendarTypes}
+                        rulDataTypes={rulDataTypes}
+                        ruleSet={ruleSet}
+                    />
+                )}
+            </div>
+        );
     }
 };
 
 function mapStateToProps(state) {
-    const { splitter, arrRegion, refTables, focus, developer, userDetail, tab } = state;
+    const {splitter, arrRegion, refTables, focus, developer, userDetail, tab} = state;
     return {
         splitter,
         arrRegion,

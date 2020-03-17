@@ -15,7 +15,6 @@ import Loading from '../shared/loading/Loading';
 import * as scopeActions from '../../actions/scopes/scopes';
 
 class ScopeListForm extends AbstractReactComponent {
-
     static propTypes = {
         onCreate: PropTypes.func.isRequired,
         onSave: PropTypes.func.isRequired,
@@ -56,12 +55,14 @@ class ScopeListForm extends AbstractReactComponent {
     componentDidUpdate(prevProps, prevState, prevContext) {
         if (prevProps.id && !this.props.id) {
             this.props.resetForm();
-        } else if (this.props.fields
-            && prevProps.fields
-            && this.props.id
-            && prevProps.id
-            && prevProps.id === this.props.id
-            && this.props.fields.connectedScopes.length !== prevProps.fields.connectedScopes.length) {
+        } else if (
+            this.props.fields &&
+            prevProps.fields &&
+            this.props.id &&
+            prevProps.id &&
+            prevProps.id === this.props.id &&
+            this.props.fields.connectedScopes.length !== prevProps.fields.connectedScopes.length
+        ) {
             this.props.asyncValidate();
         }
     }
@@ -76,7 +77,7 @@ class ScopeListForm extends AbstractReactComponent {
         // this.refetchScopes();
     }
 
-    fetchData = (props) => {
+    fetchData = props => {
         props.dispatch(scopeActions.scopesListFetchIfNeeded());
         props.dispatch(scopeActions.languagesListFetchIfNeeded());
     };
@@ -87,7 +88,7 @@ class ScopeListForm extends AbstractReactComponent {
     //     });
     // }
 
-    connectScope = (target) => (value) => {
+    connectScope = target => value => {
         if (!value || target.filter(i => i.id.value === value.id).length > 0) {
             return;
         }
@@ -102,13 +103,23 @@ class ScopeListForm extends AbstractReactComponent {
         });
     };
 
-    renderConnectedScope = (target) => ({item, index}) => {
-        return <div>{item.name.value} <Button variant="action" bsSize="xs" className="pull-right"
-                                              onClick={this.disconnectScope.bind(this, target, index)}><Icon
-            glyph="fa-trash"/></Button></div>;
+    renderConnectedScope = target => ({item, index}) => {
+        return (
+            <div>
+                {item.name.value}{' '}
+                <Button
+                    variant="action"
+                    bsSize="xs"
+                    className="pull-right"
+                    onClick={this.disconnectScope.bind(this, target, index)}
+                >
+                    <Icon glyph="fa-trash" />
+                </Button>
+            </div>
+        );
     };
 
-    handleFieldChange = (e) => {
+    handleFieldChange = e => {
         this.props.fields[e.target.name].onChange(e.target.value);
         this.saveData(e.target.name, e.target.value);
     };
@@ -129,46 +140,78 @@ class ScopeListForm extends AbstractReactComponent {
     };
 
     render() {
-        const {fields: {name, code, language, connectedScopes}, id, scopeList, languageList} = this.props;
+        const {
+            fields: {name, code, language, connectedScopes},
+            id,
+            scopeList,
+            languageList,
+        } = this.props;
 
         const customProps = {
             disabled: id == null,
         };
 
         if (!scopeList.fetched || !languageList.fetched) {
-            return <HorizontalLoader/>;
+            return <HorizontalLoader />;
         }
 
-        const languagesOptions = languageList.rows.map(i => <option value={i.code} key={i.code}>{i.name}</option>);
+        const languagesOptions = languageList.rows.map(i => (
+            <option value={i.code} key={i.code}>
+                {i.name}
+            </option>
+        ));
         const connectableScopes = scopeList.rows.filter(s => s.id !== id);
-        return <Form onSubmit={null}>
-            <Row>
-                <Col xs={6}>
-                    <FormInput type="text" {...code} {...customProps} label={i18n('accesspoint.scope.code')}
-                               onChange={this.handleFieldChange}/>
-                </Col>
-                <Col xs={6}>
-                    <FormInput as="select" {...language} {...customProps} label={i18n('accesspoint.scope.language')}
-                               onChange={this.handleFieldChange}>
-                        <option key={0} value={null}/>
-                        {languagesOptions}
-                    </FormInput>
-                </Col>
-            </Row>
-            <FormInput type="text" {...name} {...customProps} label={i18n('accesspoint.scope.name')}
-                       onChange={this.handleFieldChange}/>
-            <label>{i18n('accesspoint.scope.relatedScopes')}</label>
-            {scopeList.fetched ?
-                <ScopeField scopes={connectableScopes} onChange={this.connectScope(connectedScopes)} {...customProps}
-                            value={null}/>
-                : <Loading/>
-            }
-            <ListBox items={connectedScopes} renderItemContent={this.renderConnectedScope(connectedScopes)}/>
-        </Form>;
+        return (
+            <Form onSubmit={null}>
+                <Row>
+                    <Col xs={6}>
+                        <FormInput
+                            type="text"
+                            {...code}
+                            {...customProps}
+                            label={i18n('accesspoint.scope.code')}
+                            onChange={this.handleFieldChange}
+                        />
+                    </Col>
+                    <Col xs={6}>
+                        <FormInput
+                            as="select"
+                            {...language}
+                            {...customProps}
+                            label={i18n('accesspoint.scope.language')}
+                            onChange={this.handleFieldChange}
+                        >
+                            <option key={0} value={null} />
+                            {languagesOptions}
+                        </FormInput>
+                    </Col>
+                </Row>
+                <FormInput
+                    type="text"
+                    {...name}
+                    {...customProps}
+                    label={i18n('accesspoint.scope.name')}
+                    onChange={this.handleFieldChange}
+                />
+                <label>{i18n('accesspoint.scope.relatedScopes')}</label>
+                {scopeList.fetched ? (
+                    <ScopeField
+                        scopes={connectableScopes}
+                        onChange={this.connectScope(connectedScopes)}
+                        {...customProps}
+                        value={null}
+                    />
+                ) : (
+                    <Loading />
+                )}
+                <ListBox items={connectedScopes} renderItemContent={this.renderConnectedScope(connectedScopes)} />
+            </Form>
+        );
     }
 }
 
-export default reduxForm({
+export default reduxForm(
+    {
         form: 'scopeList',
         fields: ScopeListForm.fields,
         initialValues: ScopeListForm.initialValues,
@@ -181,7 +224,8 @@ export default reduxForm({
             }
             return Promise.resolve({});
         },
-    }, state => {
+    },
+    state => {
         return {
             languageList: storeFromArea(state, scopeActions.AREA_LANGUAGE_LIST),
             scopeList: storeFromArea(state, scopeActions.AREA_SCOPE_LIST),

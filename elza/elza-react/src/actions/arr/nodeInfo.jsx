@@ -62,13 +62,14 @@ export function fundNodeInfoFetch(versionId, nodeId, routingKey, showParents) {
         } else {
             request = WebApi.getNodeData(versionId, nodeId, false, true, true);
         }
-        request.then(data => {
-            return {
-                childNodes: data.children ? data.children : [],
-                parentNodes: data.parents ? data.parents : [],
-            };
-        })
-               .then(json => dispatch(fundNodeInfoReceive(versionId, nodeId, routingKey, json)));
+        request
+            .then(data => {
+                return {
+                    childNodes: data.children ? data.children : [],
+                    parentNodes: data.parents ? data.parents : [],
+                };
+            })
+            .then(json => dispatch(fundNodeInfoReceive(versionId, nodeId, routingKey, json)));
     };
 }
 

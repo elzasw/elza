@@ -87,33 +87,39 @@ class FundPage extends AbstractReactComponent {
         if (!userDetail.hasOne(perms.ADMIN, perms.FUND_ADMIN)) {
             initData.fundAdmins = [{id: 'default', user: userDetail}];
         }
-        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.title.add'),
-            <FundForm
-                create
-                initData={initData}
-                onSubmitForm={(data) => {
-                    return this.props.dispatch(createFund(data));
-                }}
-            />));
-    }
-
-    handleImport() {
         this.props.dispatch(
-            modalDialogShow(this,
-                i18n('import.title.fund'),
-                <ImportForm fund={true}/>,
+            modalDialogShow(
+                this,
+                i18n('arr.fund.title.add'),
+                <FundForm
+                    create
+                    initData={initData}
+                    onSubmitForm={data => {
+                        return this.props.dispatch(createFund(data));
+                    }}
+                />,
             ),
         );
     }
 
+    handleImport() {
+        this.props.dispatch(modalDialogShow(this, i18n('import.title.fund'), <ImportForm fund={true} />));
+    }
+
     handleExportDialog() {
-        const {fundRegion: {fundDetail}} = this.props;
+        const {
+            fundRegion: {fundDetail},
+        } = this.props;
         this.props.dispatch(
-            modalDialogShow(this,
+            modalDialogShow(
+                this,
                 i18n('export.title.fund'),
-                <ExportForm fund={true} onSubmitForm={data => {
-                    return this.props.dispatch(exportFund(fundDetail.versionId, data.transformationName));
-                }}/>,
+                <ExportForm
+                    fund={true}
+                    onSubmitForm={data => {
+                        return this.props.dispatch(exportFund(fundDetail.versionId, data.transformationName));
+                    }}
+                />,
             ),
         );
     }
@@ -122,7 +128,9 @@ class FundPage extends AbstractReactComponent {
      * Zobrazení dualogu uzavření verze AS.
      */
     handleApproveFundVersion() {
-        const {fundRegion: {fundDetail}} = this.props;
+        const {
+            fundRegion: {fundDetail},
+        } = this.props;
 
         const data = {
             dateRange: fundDetail.activeVersion.dateRange,
@@ -136,7 +144,8 @@ class FundPage extends AbstractReactComponent {
                     initData={data}
                     onSubmitForm={data => {
                         return this.props.dispatch(approveFund(fundDetail.versionId, data.dateRange));
-                    }}/>,
+                    }}
+                />,
             ),
         );
     }
@@ -151,14 +160,24 @@ class FundPage extends AbstractReactComponent {
         const initData = {
             ruleSetId: fundDetail.activeVersion.ruleSetId,
         };
-        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.title.ruleSet'),
-            <FundForm ruleSet initData={initData}
-                      onSubmitForm={(data) => this.handleCallEditFundVersion({
-                          ...data,
-                          name: fundDetail.name,
-                          institutionId: fundDetail.institutionId,
-                          internalCode: fundDetail.internalCode,
-                      })}/>));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.fund.title.ruleSet'),
+                <FundForm
+                    ruleSet
+                    initData={initData}
+                    onSubmitForm={data =>
+                        this.handleCallEditFundVersion({
+                            ...data,
+                            name: fundDetail.name,
+                            institutionId: fundDetail.institutionId,
+                            internalCode: fundDetail.internalCode,
+                        })
+                    }
+                />,
+            ),
+        );
     }
 
     handleEditFundVersion() {
@@ -166,28 +185,34 @@ class FundPage extends AbstractReactComponent {
         const fundDetail = fundRegion.fundDetail;
 
         const that = this;
-        Utils.barrier(
-            WebApi.getScopes(fundDetail.versionId),
-            WebApi.getAllScopes(),
-        )
-             .then(data => {
-                 return {
-                     scopes: data[0].data,
-                     scopeList: data[1].data,
-                 };
-             })
-             .then(json => {
-                 const data = {
-                     name: fundDetail.name,
-                     institutionId: fundDetail.institutionId,
-                     internalCode: fundDetail.internalCode,
-                     ruleSetId: fundDetail.activeVersion.ruleSetId,
-                     apScopes: json.scopes,
-                 };
-                 that.dispatch(modalDialogShow(that, i18n('arr.fund.title.update'),
-                     <FundForm update initData={data} scopeList={json.scopeList}
-                               onSubmitForm={that.handleCallEditFundVersion}/>));
-             });
+        Utils.barrier(WebApi.getScopes(fundDetail.versionId), WebApi.getAllScopes())
+            .then(data => {
+                return {
+                    scopes: data[0].data,
+                    scopeList: data[1].data,
+                };
+            })
+            .then(json => {
+                const data = {
+                    name: fundDetail.name,
+                    institutionId: fundDetail.institutionId,
+                    internalCode: fundDetail.internalCode,
+                    ruleSetId: fundDetail.activeVersion.ruleSetId,
+                    apScopes: json.scopes,
+                };
+                that.dispatch(
+                    modalDialogShow(
+                        that,
+                        i18n('arr.fund.title.update'),
+                        <FundForm
+                            update
+                            initData={data}
+                            scopeList={json.scopeList}
+                            onSubmitForm={that.handleCallEditFundVersion}
+                        />,
+                    ),
+                );
+            });
     }
 
     handleCallEditFundVersion(data) {
@@ -203,11 +228,7 @@ class FundPage extends AbstractReactComponent {
      * Vyvolání dialogu s vyhledáním na všemi AS.
      */
     handleFundsSearchForm = () => {
-        this.props.dispatch(modalDialogShow(
-            this,
-            i18n('arr.fund.title.search'),
-            <SearchFundsForm/>,
-        ));
+        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.title.search'), <SearchFundsForm />));
     };
 
     buildRibbon() {
@@ -216,22 +237,31 @@ class FundPage extends AbstractReactComponent {
         const altActions = [];
         if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_CREATE)) {
             altActions.push(
-                <Button key="add-fa" onClick={this.handleAddFund}><Icon glyph="fa-plus-circle"/>
-                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span></div>
+                <Button key="add-fa" onClick={this.handleAddFund}>
+                    <Icon glyph="fa-plus-circle" />
+                    <div>
+                        <span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span>
+                    </div>
                 </Button>,
             );
         }
 
         altActions.push(
-            <Button key="search-fa" onClick={this.handleFundsSearchForm}><Icon glyph="fa-search"/>
-                <div><span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span></div>
+            <Button key="search-fa" onClick={this.handleFundsSearchForm}>
+                <Icon glyph="fa-search" />
+                <div>
+                    <span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span>
+                </div>
             </Button>,
         );
 
         if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_CREATE)) {
             altActions.push(
-                <Button key="fa-import" onClick={this.handleImport}><Icon glyph='fa-upload'/>
-                    <div><span className="btnText">{i18n('ribbon.action.arr.fund.import')}</span></div>
+                <Button key="fa-import" onClick={this.handleImport}>
+                    <Icon glyph="fa-upload" />
+                    <div>
+                        <span className="btnText">{i18n('ribbon.action.arr.fund.import')}</span>
+                    </div>
                 </Button>,
             );
         }
@@ -240,41 +270,61 @@ class FundPage extends AbstractReactComponent {
         if (fundRegion.fundDetail.id !== null && !fundRegion.fundDetail.fetching && fundRegion.fundDetail.fetched) {
             if (userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId: fundRegion.fundDetail.id})) {
                 itemActions.push(
-                    <Button key="edit-version" onClick={this.handleEditFundVersion}><Icon glyph="fa-pencil"/>
-                        <div><span className="btnText">{i18n('ribbon.action.arr.fund.update')}</span></div>
+                    <Button key="edit-version" onClick={this.handleEditFundVersion}>
+                        <Icon glyph="fa-pencil" />
+                        <div>
+                            <span className="btnText">{i18n('ribbon.action.arr.fund.update')}</span>
+                        </div>
                     </Button>,
-                    <Button key="rule-set-version" onClick={this.handleRuleSetUpdateFundVersion}><Icon
-                        glyph="fa-code-fork"/>
-                        <div><span className="btnText">{i18n('ribbon.action.arr.fund.ruleSet')}</span></div>
+                    <Button key="rule-set-version" onClick={this.handleRuleSetUpdateFundVersion}>
+                        <Icon glyph="fa-code-fork" />
+                        <div>
+                            <span className="btnText">{i18n('ribbon.action.arr.fund.ruleSet')}</span>
+                        </div>
                     </Button>,
-                    <Button key="approve-version" onClick={this.handleApproveFundVersion}><Icon
-                        glyph="fa-calendar-check-o"/>
-                        <div><span className="btnText">{i18n('ribbon.action.arr.fund.approve')}</span></div>
-                    </Button>);
+                    <Button key="approve-version" onClick={this.handleApproveFundVersion}>
+                        <Icon glyph="fa-calendar-check-o" />
+                        <div>
+                            <span className="btnText">{i18n('ribbon.action.arr.fund.approve')}</span>
+                        </div>
+                    </Button>,
+                );
             }
             if (userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL)) {
                 itemActions.push(
-                    <Button key="fa-lecturing" onClick={this.handleIssuesSettings}><Icon glyph='fa-commenting'/>
-                        <div><span className="btnText">{i18n('arr.issues.settings.title')}</span></div>
+                    <Button key="fa-lecturing" onClick={this.handleIssuesSettings}>
+                        <Icon glyph="fa-commenting" />
+                        <div>
+                            <span className="btnText">{i18n('arr.issues.settings.title')}</span>
+                        </div>
                     </Button>,
                 );
             }
             if (userDetail.hasOne(perms.FUND_ADMIN)) {
                 itemActions.push(
-                    <Button key="fa-delete" onClick={this.handleDeleteFund}><Icon glyph='fa-trash'/>
-                        <div><span className="btnText">{i18n('arr.fund.action.delete')}</span></div>
+                    <Button key="fa-delete" onClick={this.handleDeleteFund}>
+                        <Icon glyph="fa-trash" />
+                        <div>
+                            <span className="btnText">{i18n('arr.fund.action.delete')}</span>
+                        </div>
                     </Button>,
                 );
                 itemActions.push(
-                    <Button key="fa-deletehistory" onClick={this.handleDeleteFundHistory}><Icon glyph='fa-trash'/>
-                        <div><span className="btnText">{i18n('arr.fund.action.deletehistory')}</span></div>
+                    <Button key="fa-deletehistory" onClick={this.handleDeleteFundHistory}>
+                        <Icon glyph="fa-trash" />
+                        <div>
+                            <span className="btnText">{i18n('arr.fund.action.deletehistory')}</span>
+                        </div>
                     </Button>,
                 );
             }
             if (userDetail.hasOne(perms.FUND_EXPORT_ALL, {type: perms.FUND_EXPORT, fundId: fundRegion.fundDetail.id})) {
                 itemActions.push(
-                    <Button key="fa-export" onClick={this.handleExportDialog}><Icon glyph='fa-download'/>
-                        <div><span className="btnText">{i18n('ribbon.action.arr.fund.export')}</span></div>
+                    <Button key="fa-export" onClick={this.handleExportDialog}>
+                        <Icon glyph="fa-download" />
+                        <div>
+                            <span className="btnText">{i18n('ribbon.action.arr.fund.export')}</span>
+                        </div>
                     </Button>,
                 );
             }
@@ -282,17 +332,23 @@ class FundPage extends AbstractReactComponent {
 
         let altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key="alt-actions" className="small">{altActions}</RibbonGroup>;
+            altSection = (
+                <RibbonGroup key="alt-actions" className="small">
+                    {altActions}
+                </RibbonGroup>
+            );
         }
 
         let itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key="item-actions" className="small">{itemActions}</RibbonGroup>;
+            itemSection = (
+                <RibbonGroup key="item-actions" className="small">
+                    {itemActions}
+                </RibbonGroup>
+            );
         }
 
-        return (
-            <Ribbon ref='ribbon' fund altSection={altSection} itemSection={itemSection} {...this.props} />
-        );
+        return <Ribbon ref="ribbon" fund altSection={altSection} itemSection={itemSection} {...this.props} />;
     }
 
     handleDeleteFund() {
@@ -317,8 +373,9 @@ class FundPage extends AbstractReactComponent {
         const {fundRegion} = this.props;
         const fundDetail = fundRegion.fundDetail;
 
-        this.props.dispatch(modalDialogShow(this, i18n('arr.issues.settings.title'), <IssueLists
-            fundId={fundDetail.id}/>));
+        this.props.dispatch(
+            modalDialogShow(this, i18n('arr.issues.settings.title'), <IssueLists fundId={fundDetail.id} />),
+        );
     };
 
     handleShowInArr(item) {
@@ -333,19 +390,18 @@ class FundPage extends AbstractReactComponent {
 
     renderListItem(props) {
         const {item} = props;
-        return (
-            [
-                <div className='item-row'>
-                    <div className='name'>{item.name}</div>
-                    <div className='btn btn-action' onClick={this.handleShowInArr.bind(this, item)} variant='link'><Icon
-                        glyph="fa-folder-open"/></div>
-                </div>,
-                <div className='item-row desc'>
-                    <div>{item.internalCode}</div>
-                    <div>{item.id}</div>
-                </div>,
-            ]
-        );
+        return [
+            <div className="item-row">
+                <div className="name">{item.name}</div>
+                <div className="btn btn-action" onClick={this.handleShowInArr.bind(this, item)} variant="link">
+                    <Icon glyph="fa-folder-open" />
+                </div>
+            </div>,
+            <div className="item-row desc">
+                <div>{item.internalCode}</div>
+                <div>{item.id}</div>
+            </div>,
+        ];
     }
 
     handleSelect(item) {
@@ -401,42 +457,39 @@ class FundPage extends AbstractReactComponent {
                     allItemsCount={fundRegion.fundsCount}
                 />
                 <ListBox
-                    className='fund-listbox'
-                    ref='fundList'
+                    className="fund-listbox"
+                    ref="fundList"
                     items={fundRegion.funds}
                     activeIndex={activeIndex}
                     renderItemContent={this.renderListItem}
                     onFocus={this.handleSelect}
                     onSelect={this.handleSelect}
                 />
-                {fundRegion.fundsCount > maxSize && <ListPager
-                    prev={this.handleFilterPrev}
-                    next={this.handleFilterNext}
-                    from={fundRegion.filter.from}
-                    maxSize={maxSize}
-                    totalCount={fundRegion.fundsCount}
-                />}
+                {fundRegion.fundsCount > maxSize && (
+                    <ListPager
+                        prev={this.handleFilterPrev}
+                        next={this.handleFilterNext}
+                        from={fundRegion.filter.from}
+                        maxSize={maxSize}
+                        totalCount={fundRegion.fundsCount}
+                    />
+                )}
             </div>
         );
 
-        const centerPanel = <FundDetail
-            fundDetail={fundRegion.fundDetail}
-            focus={focus}
-            fundCount={fundRegion.funds.length}
-        />;
+        const centerPanel = (
+            <FundDetail fundDetail={fundRegion.fundDetail} focus={focus} fundCount={fundRegion.funds.length} />
+        );
 
         let rightPanel;
         if (fundRegion.fundDetail.fetched) {
-            rightPanel = <FundDetailExt
-                fundDetail={fundRegion.fundDetail}
-                focus={focus}
-            />;
+            rightPanel = <FundDetailExt fundDetail={fundRegion.fundDetail} focus={focus} />;
         }
 
         return (
             <PageLayout
                 splitter={splitter}
-                className='fund-page'
+                className="fund-page"
                 ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}
                 centerPanel={centerPanel}

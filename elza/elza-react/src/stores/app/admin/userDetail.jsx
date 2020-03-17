@@ -8,21 +8,20 @@ const initialState = {
     fetching: false,
     currentDataKey: '',
     permission: permission(),
-}
+};
 
 export default function userDetail(state = initialState, action = {}) {
     if (isPermissionAction(action)) {
         return {
             ...state,
-            permission: permission(state.permission, action)
-        }
+            permission: permission(state.permission, action),
+        };
     }
 
     switch (action.type) {
         case types.STORE_SAVE:
-            const {id} = state
-            return {
-            }
+            const {id} = state;
+            return {};
         case types.STORE_LOAD:
             return {
                 ...state,
@@ -30,7 +29,7 @@ export default function userDetail(state = initialState, action = {}) {
                 fetching: false,
                 currentDataKey: '',
                 permission: permission(),
-            }
+            };
         case types.USERS_SELECT_USER:
             if (state.id !== action.id) {
                 return {
@@ -38,16 +37,16 @@ export default function userDetail(state = initialState, action = {}) {
                     id: action.id,
                     currentDataKey: '',
                     fetched: false,
-                }
+                };
             } else {
-                return state
+                return state;
             }
         case types.USERS_USER_DETAIL_REQUEST:
             return {
                 ...state,
                 fetching: true,
                 currentDataKey: action.dataKey,
-            }
+            };
         case types.USERS_USER_DETAIL_RECEIVE:
             const {permissions, ...mainData} = action.data;
             return {
@@ -56,18 +55,17 @@ export default function userDetail(state = initialState, action = {}) {
                 permissions,
                 fetching: false,
                 fetched: true,
-            }
-        case types.CHANGE_USER:{
-            if(state.id !== initialState.id && action.userIds.indexOf(state.id) !== -1) {
+            };
+        case types.CHANGE_USER: {
+            if (state.id !== initialState.id && action.userIds.indexOf(state.id) !== -1) {
                 return {
                     ...state,
-                    currentDataKey: ''
-                }
+                    currentDataKey: '',
+                };
             }
             return state;
         }
         default:
-            return state
+            return state;
     }
 }
-

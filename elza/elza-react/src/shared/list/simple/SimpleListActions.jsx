@@ -18,7 +18,7 @@ export function invalidate(area, data) {
         type: INVALIDATE,
         area,
         data,
-    }
+    };
 }
 
 /**
@@ -32,7 +32,7 @@ export function filter(area, filter) {
         type: FILTER,
         area,
         filter,
-    }
+    };
 }
 
 /**
@@ -43,8 +43,8 @@ export function filter(area, filter) {
 export function reset(area) {
     return {
         type: RESET,
-        area
-    }
+        area,
+    };
 }
 
 /**
@@ -56,39 +56,39 @@ export function reset(area) {
  */
 export function fetchIfNeeded(area, parent, getData, forceFetch = false) {
     return (dispatch, getState) => {
-
         // Spočtení data key
         var store = storeFromArea(getState(), area);
 
         // Pokud ve store není potřebné parent, dáme ho tam, aby se nám správně spočetl data key
         if (store.parent !== parent) {
             var same = false;
-            if (typeof store.parent === "object" && typeof parent === "object") {   // porovnáme objekty
+            if (typeof store.parent === 'object' && typeof parent === 'object') {
+                // porovnáme objekty
                 if (JSON.stringify(store.parent) === JSON.stringify(parent)) {
                     same = true;
                 }
             }
 
             if (!same) {
-                dispatch(selectParent(area, parent))
+                dispatch(selectParent(area, parent));
                 store = storeFromArea(getState(), area);
             }
         }
 
-        const dataKey = store.getDataKey.bind(store)()
+        const dataKey = store.getDataKey.bind(store)();
         if (forceFetch || store.currentDataKey !== dataKey) {
-            dispatch(request(area, dataKey))
+            dispatch(request(area, dataKey));
 
-            getData(store.parent, store.filter)
-                .then(json => {
-                    const newStore = storeFromArea(getState(), area);
-                    const newDataKey = newStore.getDataKey.bind(newStore)()
-                    if (newDataKey === dataKey) {   // jen pokud přídchozí objekt odpovídá datům, které chceme ve store
-                        dispatch(response(area, json.rows, json.count))
-                    }
-                })  // TODO [stanekpa] - řešit catch a vrácení datakey!
+            getData(store.parent, store.filter).then(json => {
+                const newStore = storeFromArea(getState(), area);
+                const newDataKey = newStore.getDataKey.bind(newStore)();
+                if (newDataKey === dataKey) {
+                    // jen pokud přídchozí objekt odpovídá datům, které chceme ve store
+                    dispatch(response(area, json.rows, json.count));
+                }
+            }); // TODO [stanekpa] - řešit catch a vrácení datakey!
         }
-    }
+    };
 }
 
 /**
@@ -120,7 +120,7 @@ function selectParent(area, parent) {
         type: SELECT_PARENT,
         area,
         parent,
-    }
+    };
 }
 
 /**
@@ -134,7 +134,7 @@ function request(area, dataKey) {
         type: REQUEST,
         area,
         dataKey,
-    }
+    };
 }
 
 export function setData(area, parent, data) {
@@ -155,7 +155,7 @@ export function setData(area, parent, data) {
 
         // Response dat
         dispatch(response(area, data, data.length));
-    }
+    };
 }
 
 /**
@@ -170,6 +170,6 @@ function response(area, rows, count) {
         type: RESPONSE,
         area,
         rows,
-        count
-    }
+        count,
+    };
 }

@@ -41,19 +41,19 @@ class FundTreeCopy extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        const { versionId, expandedIds } = this.props;
+        const {versionId, expandedIds} = this.props;
         this.requestFundTreeData(versionId, expandedIds);
         this.trySetFocus(this.props);
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        const { versionId, expandedIds } = nextProps;
+        const {versionId, expandedIds} = nextProps;
         this.requestFundTreeData(versionId, expandedIds);
         this.trySetFocus(nextProps);
     }
 
     trySetFocus(props) {
-        var { focus } = props;
+        var {focus} = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, null, 1)) {
@@ -65,10 +65,7 @@ class FundTreeCopy extends AbstractReactComponent {
                         focusWasSet();
                     });
                 }
-            } else if (
-                isFocusFor(focus, FOCUS_KEYS.ARR, 1, 'treeCopy') ||
-                isFocusFor(focus, FOCUS_KEYS.ARR, 1)
-            ) {
+            } else if (isFocusFor(focus, FOCUS_KEYS.ARR, 1, 'treeCopy') || isFocusFor(focus, FOCUS_KEYS.ARR, 1)) {
                 this.setState({}, () => {
                     this.refs.treeCopy.getWrappedInstance().focus();
                     focusWasSet();
@@ -103,9 +100,7 @@ class FundTreeCopy extends AbstractReactComponent {
     }
 
     requestFundTreeData(versionId, expandedIds) {
-        this.props.dispatch(
-            fundTreeFetchIfNeeded(types.FUND_TREE_AREA_COPY, versionId, expandedIds),
-        );
+        this.props.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_COPY, versionId, expandedIds));
     }
 
     /**
@@ -140,54 +135,36 @@ class FundTreeCopy extends AbstractReactComponent {
      * Zabalení stromu
      */
     handleCollapse() {
-        this.props.dispatch(
-            fundTreeCollapse(
-                types.FUND_TREE_AREA_COPY,
-                this.props.versionId,
-                this.props.fund,
-            ),
-        );
+        this.props.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_COPY, this.props.versionId, this.props.fund));
     }
 
     handleFulltextChange(value) {
-        this.props.dispatch(
-            fundTreeFulltextChange(
-                types.FUND_TREE_AREA_COPY,
-                this.props.versionId,
-                value,
-            ),
-        );
+        this.props.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_COPY, this.props.versionId, value));
     }
 
     handleFulltextSearch() {
-        const { searchFormData } = this.props;
+        const {searchFormData} = this.props;
 
         this.props.dispatch(
             fundTreeFulltextSearch(
                 types.FUND_TREE_AREA_COPY,
                 this.props.versionId,
                 null,
-                searchFormData
-                    ? searchFormData
-                    : { type: 'FORM' },
+                searchFormData ? searchFormData : {type: 'FORM'},
             ),
         );
     }
 
     handleFulltextPrevItem() {
-        this.props.dispatch(
-            fundTreeFulltextPrevItem(types.FUND_TREE_AREA_COPY, this.props.versionId),
-        );
+        this.props.dispatch(fundTreeFulltextPrevItem(types.FUND_TREE_AREA_COPY, this.props.versionId));
     }
 
     handleFulltextNextItem() {
-        this.props.dispatch(
-            fundTreeFulltextNextItem(types.FUND_TREE_AREA_COPY, this.props.versionId),
-        );
+        this.props.dispatch(fundTreeFulltextNextItem(types.FUND_TREE_AREA_COPY, this.props.versionId));
     }
 
     render() {
-        const { actionAddons, className, cutLongLabels } = this.props;
+        const {actionAddons, className, cutLongLabels} = this.props;
         return (
             <FundTreeLazy
                 ref="treeCopy"
@@ -199,12 +176,8 @@ class FundTreeCopy extends AbstractReactComponent {
                     expand
                         ? this.props.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_COPY, node))
                         : this.props.dispatch(
-                        fundTreeNodeCollapse(
-                            types.FUND_TREE_AREA_COPY,
-                            this.props.versionId,
-                            node,
-                        ),
-                        );
+                              fundTreeNodeCollapse(types.FUND_TREE_AREA_COPY, this.props.versionId, node),
+                          );
                 }}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}

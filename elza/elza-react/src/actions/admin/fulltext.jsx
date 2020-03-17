@@ -13,9 +13,9 @@ import * as types from 'actions/constants/ActionTypes.js';
  */
 export function getIndexStateFetch() {
     return dispatch => {
-        dispatch(getIndexStateRequest())
+        dispatch(getIndexStateRequest());
         return WebApi.getIndexingState().then(json => dispatch(getIndexStateRecieve(json)));
-    }
+    };
 }
 
 /**
@@ -29,7 +29,7 @@ export function getIndexStateFetchIfNeeded() {
         if (!state.adminRegion.fulltext.fetched && !state.adminRegion.fulltext.isFetching) {
             return dispatch(getIndexStateFetch());
         }
-    }
+    };
 }
 
 /**
@@ -38,8 +38,8 @@ export function getIndexStateFetchIfNeeded() {
 export function reindex() {
     WebApi.reindex();
     return {
-        type: types.ADMIN_FULLTEXT_REINDEXING_REQUEST
-    }
+        type: types.ADMIN_FULLTEXT_REINDEXING_REQUEST,
+    };
 }
 
 /**
@@ -47,8 +47,8 @@ export function reindex() {
  */
 export function getIndexStateRequest() {
     return {
-        type: types.ADMIN_FULLTEXT_REINDEXING_STATE_REQUEST
-    }
+        type: types.ADMIN_FULLTEXT_REINDEXING_STATE_REQUEST,
+    };
 }
 
 /**
@@ -59,6 +59,6 @@ export function getIndexStateRequest() {
 export function getIndexStateRecieve(json) {
     return {
         type: types.ADMIN_FULLTEXT_REINDEXING_STATE_RECEIVE,
-        indexingState: json
-    }
+        indexingState: json,
+    };
 }

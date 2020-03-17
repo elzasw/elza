@@ -42,7 +42,16 @@ class VisiblePolicyForm extends AbstractReactComponent {
     submitReduxForm = (values, dispatch) => submitForm(validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
-        const {fields: {records}, handleSubmit, onClose, nodeId, fundVersionId, visiblePolicy, visiblePolicyTypes, arrRegion} = this.props;
+        const {
+            fields: {records},
+            handleSubmit,
+            onClose,
+            nodeId,
+            fundVersionId,
+            visiblePolicy,
+            visiblePolicyTypes,
+            arrRegion,
+        } = this.props;
 
         let activeFund = null;
         if (arrRegion.activeIndex != null) {
@@ -69,17 +78,20 @@ class VisiblePolicyForm extends AbstractReactComponent {
             <div>
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
-                        {records.map((val, index) =>
+                        {records.map((val, index) => (
                             <div key={index}>
-                                <FormCheck {...val.checked}
-                                           value={true}>{visiblePolicyTypeItems[val.id.initialValue].name}</FormCheck>
-                            </div>,
-                        )}
+                                <FormCheck {...val.checked} value={true}>
+                                    {visiblePolicyTypeItems[val.id.initialValue].name}
+                                </FormCheck>
+                            </div>
+                        ))}
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit">{i18n('visiblePolicy.action.save')}</Button>
                         <Button onClick={this.handleResetVisiblePolicy}>{i18n('visiblePolicy.action.reset')}</Button>
-                        <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                        <Button variant="link" onClick={onClose}>
+                            {i18n('global.action.cancel')}
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </div>
@@ -87,12 +99,15 @@ class VisiblePolicyForm extends AbstractReactComponent {
     }
 }
 
-export default reduxForm({
-    form: 'visiblePolicyForm',
-    fields: ['records[].id', 'records[].checked'],
-}, state => ({
-    initialValues: {records: state.arrRegion.visiblePolicy.data},
-    visiblePolicy: state.arrRegion.visiblePolicy,
-    visiblePolicyTypes: state.refTables.visiblePolicyTypes,
-    arrRegion: state.arrRegion,
-}))(VisiblePolicyForm);
+export default reduxForm(
+    {
+        form: 'visiblePolicyForm',
+        fields: ['records[].id', 'records[].checked'],
+    },
+    state => ({
+        initialValues: {records: state.arrRegion.visiblePolicy.data},
+        visiblePolicy: state.arrRegion.visiblePolicy,
+        visiblePolicyTypes: state.refTables.visiblePolicyTypes,
+        arrRegion: state.arrRegion,
+    }),
+)(VisiblePolicyForm);

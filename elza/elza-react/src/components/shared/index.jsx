@@ -3,12 +3,7 @@ import * as ExceptionUtils from 'components/ExceptionUtils.jsx';
 import * as Toastr from 'components/shared/toastr/index.jsx';
 import * as Tabs from 'components/shared/tabs/Tabs.jsx';
 
-export {
-    Utils,
-    ExceptionUtils,
-    Toastr,
-    Tabs
-}
+export {Utils, ExceptionUtils, Toastr, Tabs};
 export {default as AbstractReactComponent} from 'components/AbstractReactComponent.jsx';
 
 export {default as i18n} from 'components/i18n.jsx';

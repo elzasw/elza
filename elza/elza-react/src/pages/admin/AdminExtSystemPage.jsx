@@ -32,8 +32,7 @@ class AdminExtSystemPage extends AbstractReactComponent {
         return {shortcuts: this.shortcutManager};
     }
 
-    handleShortcuts = () => {
-    };
+    handleShortcuts = () => {};
 
     /**
      * ADD EXTERNAL SYSTEM
@@ -42,10 +41,17 @@ class AdminExtSystemPage extends AbstractReactComponent {
      */
 
     handleAddExtSystem = () => {
-        this.props.dispatch(modalDialogShow(this, i18n('admin.extSystem.add.title'), <ExtSystemForm
-            onSubmitForm={(data) => {
-                return this.props.dispatch(extSystemCreate(data));
-            }}/>));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('admin.extSystem.add.title'),
+                <ExtSystemForm
+                    onSubmitForm={data => {
+                        return this.props.dispatch(extSystemCreate(data));
+                    }}
+                />,
+            ),
+        );
     };
 
     /**
@@ -55,10 +61,18 @@ class AdminExtSystemPage extends AbstractReactComponent {
      */
     handleEditExtSystem = () => {
         const {data} = this.props.extSystemDetail;
-        this.props.dispatch(modalDialogShow(this, i18n('admin.extSystem.edit.title'), <ExtSystemForm
-            initialValues={data} onSubmitForm={(data) => {
-            return this.props.dispatch(extSystemUpdate(data));
-        }}/>));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('admin.extSystem.edit.title'),
+                <ExtSystemForm
+                    initialValues={data}
+                    onSubmitForm={data => {
+                        return this.props.dispatch(extSystemUpdate(data));
+                    }}
+                />,
+            ),
+        );
     };
 
     /**
@@ -67,7 +81,8 @@ class AdminExtSystemPage extends AbstractReactComponent {
      * Kliknutí na tlačítko pro smazání systému
      */
     handleDeleteExtSystem = () => {
-        window.confirm(i18n('admin.extSystem.delete.confirm')) && this.props.dispatch(extSystemDelete(this.props.extSystemDetail.data.id));
+        window.confirm(i18n('admin.extSystem.delete.confirm')) &&
+            this.props.dispatch(extSystemDelete(this.props.extSystemDetail.data.id));
     };
 
     /**
@@ -76,43 +91,71 @@ class AdminExtSystemPage extends AbstractReactComponent {
      * Sestavení Ribbon Menu - přidání položek pro osoby
      */
     buildRibbon = () => {
-        const {extSystemDetail: {id, fetched}} = this.props;
+        const {
+            extSystemDetail: {id, fetched},
+        } = this.props;
 
         const altActions = [];
         const itemActions = [];
 
         altActions.push(
-            <Button key="add-ext-system" onClick={this.handleAddExtSystem}
-                    title={i18n('ribbon.action.admin.extSystem.add.title')} variant={'default'}>
-                <Icon glyph="fa-download"/>
-                <div><span className="btnText">{i18n('ribbon.action.admin.extSystem.add')}</span></div>
+            <Button
+                key="add-ext-system"
+                onClick={this.handleAddExtSystem}
+                title={i18n('ribbon.action.admin.extSystem.add.title')}
+                variant={'default'}
+            >
+                <Icon glyph="fa-download" />
+                <div>
+                    <span className="btnText">{i18n('ribbon.action.admin.extSystem.add')}</span>
+                </div>
             </Button>,
         );
         if (id && fetched) {
             itemActions.push(
-                <Button key="edit-ext-system" onClick={this.handleEditExtSystem}
-                        title={i18n('ribbon.action.admin.extSystem.edit.title')} variant={'default'}>
-                    <Icon glyph="fa-download"/>
-                    <div><span className="btnText">{i18n('ribbon.action.admin.extSystem.edit')}</span></div>
+                <Button
+                    key="edit-ext-system"
+                    onClick={this.handleEditExtSystem}
+                    title={i18n('ribbon.action.admin.extSystem.edit.title')}
+                    variant={'default'}
+                >
+                    <Icon glyph="fa-download" />
+                    <div>
+                        <span className="btnText">{i18n('ribbon.action.admin.extSystem.edit')}</span>
+                    </div>
                 </Button>,
             );
 
             itemActions.push(
-                <Button key="delete-ext-system" onClick={this.handleDeleteExtSystem}
-                        title={i18n('ribbon.action.admin.extSystem.delete.title')} variant={'default'}>
-                    <Icon glyph="fa-minus-circle"/>
-                    <div><span className="btnText">{i18n('ribbon.action.admin.extSystem.delete')}</span></div>
+                <Button
+                    key="delete-ext-system"
+                    onClick={this.handleDeleteExtSystem}
+                    title={i18n('ribbon.action.admin.extSystem.delete.title')}
+                    variant={'default'}
+                >
+                    <Icon glyph="fa-minus-circle" />
+                    <div>
+                        <span className="btnText">{i18n('ribbon.action.admin.extSystem.delete')}</span>
+                    </div>
                 </Button>,
             );
         }
 
         let altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key='alt-actions' className="small">{altActions}</RibbonGroup>;
+            altSection = (
+                <RibbonGroup key="alt-actions" className="small">
+                    {altActions}
+                </RibbonGroup>
+            );
         }
         let itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key='item-actions' className="small">{itemActions}</RibbonGroup>;
+            itemSection = (
+                <RibbonGroup key="item-actions" className="small">
+                    {itemActions}
+                </RibbonGroup>
+            );
         }
 
         return <Ribbon admin altSection={altSection} itemSection={itemSection} {...this.props} />;
@@ -126,22 +169,23 @@ class AdminExtSystemPage extends AbstractReactComponent {
     render() {
         const {splitter} = this.props;
 
-        const leftPanel = <AdminExtSystemList/>;
+        const leftPanel = <AdminExtSystemList />;
 
-        const centerPanel = <AdminExtSystemDetail/>;
+        const centerPanel = <AdminExtSystemDetail />;
 
-        return <Shortcuts name='AdminExtSystemPage' handler={this.handleShortcuts}>
-            <PageLayout
-                splitter={splitter}
-                className='admin-ext-system-page'
-                ribbon={this.buildRibbon()}
-                leftPanel={leftPanel}
-                centerPanel={centerPanel}
-            />
-        </Shortcuts>;
+        return (
+            <Shortcuts name="AdminExtSystemPage" handler={this.handleShortcuts}>
+                <PageLayout
+                    splitter={splitter}
+                    className="admin-ext-system-page"
+                    ribbon={this.buildRibbon()}
+                    leftPanel={leftPanel}
+                    centerPanel={centerPanel}
+                />
+            </Shortcuts>
+        );
     }
 }
-
 
 /**
  * Namapování state do properties.

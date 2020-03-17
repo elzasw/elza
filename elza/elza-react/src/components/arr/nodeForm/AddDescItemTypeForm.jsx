@@ -12,7 +12,6 @@ import './AddDescItemTypeForm.scss';
  */
 
 class AddDescItemTypeForm extends AbstractReactComponent {
-
     static validate = (values, props) => {
         const errors = {};
 
@@ -57,49 +56,81 @@ class AddDescItemTypeForm extends AbstractReactComponent {
 
     submitOptions = {finishOnSubmit: true};
 
-    submitReduxForm = (values, dispatch) => submitForm(AddDescItemTypeForm.validate, values, this.props, this.props.onSubmitForm, dispatch, this.submitOptions);
+    submitReduxForm = (values, dispatch) =>
+        submitForm(
+            AddDescItemTypeForm.validate,
+            values,
+            this.props,
+            this.props.onSubmitForm,
+            dispatch,
+            this.submitOptions,
+        );
 
     render() {
-        const {fields: {descItemTypeId}, handleSubmit, onClose, descItemTypes, submitting} = this.props;
+        const {
+            fields: {descItemTypeId},
+            handleSubmit,
+            onClose,
+            descItemTypes,
+            submitting,
+        } = this.props;
         const {possibleItemTypes} = this.state;
 
-        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
-            <Modal.Body>
-                <div>
-                    {possibleItemTypes.map((node, index) => {
-                        return <FormGroup key={index}>
-                            <FormLabel>{node.name}</FormLabel>
-                            <div>
-                                {node.children.map(item => {
-                                    return <button className="add-link btn btn-link" key={item.id} onClick={() => {
-                                        this.submitReduxForm({descItemTypeId: item}, this.props.dispatch);
-                                    }}>
-                                        <Icon glyph="fa-plus"/>{item.name}
-                                    </button>;
-                                })}
-                            </div>
-                        </FormGroup>;
-                    })}
-                </div>
-                <div className="autocomplete-desc-item-type">
-                    <Autocomplete
-                        tree
-                        alwaysExpanded
-                        label={i18n('subNodeForm.descItemType.all')}
-                        {...descItemTypeId}
-                        {...decorateFormField(descItemTypeId)}
-                        items={descItemTypes}
-                        getItemRenderClass={item => item.groupItem ? null : ' type-' + item.type.toLowerCase()}
-                        allowSelectItem={(item) => !item.groupItem}
-                        onBlurValidation={false}
-                    />
-                </div>
-            </Modal.Body>
-            <Modal.Footer>
-                <Button type="submit" disabled={submitting}>{i18n('global.action.add')}</Button>
-                <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
-            </Modal.Footer>
-        </Form>;
+        return (
+            <Form onSubmit={handleSubmit(this.submitReduxForm)}>
+                <Modal.Body>
+                    <div>
+                        {possibleItemTypes.map((node, index) => {
+                            return (
+                                <FormGroup key={index}>
+                                    <FormLabel>{node.name}</FormLabel>
+                                    <div>
+                                        {node.children.map(item => {
+                                            return (
+                                                <button
+                                                    className="add-link btn btn-link"
+                                                    key={item.id}
+                                                    onClick={() => {
+                                                        this.submitReduxForm(
+                                                            {descItemTypeId: item},
+                                                            this.props.dispatch,
+                                                        );
+                                                    }}
+                                                >
+                                                    <Icon glyph="fa-plus" />
+                                                    {item.name}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </FormGroup>
+                            );
+                        })}
+                    </div>
+                    <div className="autocomplete-desc-item-type">
+                        <Autocomplete
+                            tree
+                            alwaysExpanded
+                            label={i18n('subNodeForm.descItemType.all')}
+                            {...descItemTypeId}
+                            {...decorateFormField(descItemTypeId)}
+                            items={descItemTypes}
+                            getItemRenderClass={item => (item.groupItem ? null : ' type-' + item.type.toLowerCase())}
+                            allowSelectItem={item => !item.groupItem}
+                            onBlurValidation={false}
+                        />
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button type="submit" disabled={submitting}>
+                        {i18n('global.action.add')}
+                    </Button>
+                    <Button variant="link" onClick={onClose}>
+                        {i18n('global.action.cancel')}
+                    </Button>
+                </Modal.Footer>
+            </Form>
+        );
     }
 }
 

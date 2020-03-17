@@ -7,21 +7,21 @@ export function scopesDataReceive(versionId, data) {
     return {
         type: types.REF_SCOPES_TYPES_RECEIVE,
         versionId: versionId,
-        data: data
+        data: data,
     };
 }
 
 export function scopesFetching(versionId) {
     return {
         type: types.REF_SCOPES_TYPES_FETCHING,
-        versionId: versionId
+        versionId: versionId,
     };
 }
 
 export function scopesDirty(versionId) {
     return {
         type: types.REF_SCOPES_TYPES_DIRTY,
-        versionId: versionId
+        versionId: versionId,
     };
 }
 
@@ -38,15 +38,15 @@ export function requestScopesIfNeeded(versionId = -1) {
             dispatch(scopesFetching(versionId));
             return dispatch(requestScopes(versionId));
         }
-    }
+    };
 }
 
 export function requestScopes(versionId = -1) {
     return dispatch => {
         const promise = versionId === -1 ? WebApi.getAllScopes() : WebApi.getScopes(versionId);
 
-        promise.then((json) => {
+        promise.then(json => {
             dispatch(scopesDataReceive(versionId, json));
         });
-    }
+    };
 }

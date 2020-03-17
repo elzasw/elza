@@ -16,9 +16,15 @@ import {i18n} from 'components/shared';
  * @param strictMode použít striktní mód a nezařazovat nemožné item type
  * @return {Array} strom
  */
-export function getDescItemsAddTree(descItemGroups, infoTypesMapInput, refTypesMapInput, infoGroups, strictMode = false) {
+export function getDescItemsAddTree(
+    descItemGroups,
+    infoTypesMapInput,
+    refTypesMapInput,
+    infoGroups,
+    strictMode = false,
+) {
     // Pro přidání chceme jen ty, které zatím ještě nemáme
-    let infoTypesMap = { ...infoTypesMapInput };
+    let infoTypesMap = {...infoTypesMapInput};
 
     descItemGroups.forEach(group => {
         group.descItemTypes.forEach(descItemType => {
@@ -32,7 +38,8 @@ export function getDescItemsAddTree(descItemGroups, infoTypesMapInput, refTypesM
         const itemTypes = [];
         infoGroup.types.forEach(infoType => {
             const itemType = infoTypesMap[infoType.id];
-            if (itemType) {    // ještě ji na formuláři nemáme
+            if (itemType) {
+                // ještě ji na formuláři nemáme
                 // v nestriktním modu přidáváme všechny jinak jen možné
                 if (!strictMode || itemType.type !== 'IMPOSSIBLE') {
                     itemTypes.push({
@@ -45,7 +52,8 @@ export function getDescItemsAddTree(descItemGroups, infoTypesMapInput, refTypesM
             }
         });
 
-        if (itemTypes.length > 0) { // nějaké položky máme, přidáme skupinu i s položkami
+        if (itemTypes.length > 0) {
+            // nějaké položky máme, přidáme skupinu i s položkami
             descItemTypes.push({
                 groupItem: true,
                 id: infoGroup.code,
@@ -221,20 +229,20 @@ export function setSettings(items, id, newItem) {
  * @returns {Object} objekt itemu
  */
 export function getOneSettings(items, type = null, entityType = null, entityId = null) {
-
     if (items != null) {
         for (let i = 0; i < items.length; i++) {
             let item = items[i];
-            if ((type == null || type === item.settingsType)
-                && (entityType == null || entityType === item.entityType)
-                && (entityId == null || entityId === item.entityId)
+            if (
+                (type == null || type === item.settingsType) &&
+                (entityType == null || entityType === item.entityType) &&
+                (entityId == null || entityId === item.entityId)
             ) {
                 return item;
             }
         }
     }
 
-    return { entityType: entityType, entityId: entityId, settingsType: type, value: null };
+    return {entityType: entityType, entityId: entityId, settingsType: type, value: null};
 }
 
 /**
@@ -253,10 +261,11 @@ export function getSettings(items, type = null, entityType = null, entityId = nu
         return result;
     }
 
-    items.forEach((item) => {
-        if ((type == null || type === item.settingsType)
-            && (entityType == null || entityType === item.entityType)
-            && (entityId == null || entityId === item.entityId)
+    items.forEach(item => {
+        if (
+            (type == null || type === item.settingsType) &&
+            (entityType == null || entityType === item.entityType) &&
+            (entityId == null || entityId === item.entityId)
         ) {
             result.push(item);
         }
@@ -272,7 +281,7 @@ export function getSettings(items, type = null, entityType = null, entityId = nu
  */
 export function createFundRoot(fund) {
     const version = typeof fund.versionId !== 'undefined' ? fund.versionId : fund.fundVersionId;
-    return { id: 'ROOT_' + version, name: fund.name, root: true };
+    return {id: 'ROOT_' + version, name: fund.name, root: true};
 }
 
 /**
@@ -282,7 +291,8 @@ export function createFundRoot(fund) {
  */
 export function isFundRootId(nodeId) {
     var isRoot = false;
-    if (typeof nodeId == 'string') {    // pravděpodobně root
+    if (typeof nodeId == 'string') {
+        // pravděpodobně root
         if (nodeId.substring(0, 5) === 'ROOT_') {
             isRoot = true;
         }
@@ -334,15 +344,26 @@ export function createReferenceMarkFromArray(referenceMark, elProps) {
                     if (i > 999) {
                         cls = 'level small';
                     }
-                    levels.push(<span {...elProps} key={'level' + index} className={cls}>{i}</span>);
+                    levels.push(
+                        <span {...elProps} key={'level' + index} className={cls}>
+                            {i}
+                        </span>,
+                    );
                 } else {
                     var iStr = i + '';
-                    levels.push(<span {...elProps} key={'level' + index} title={i}
-                                      className="level">_{iStr.substr(-2)}</span>);
+                    levels.push(
+                        <span {...elProps} key={'level' + index} title={i} className="level">
+                            _{iStr.substr(-2)}
+                        </span>,
+                    );
                 }
             } else {
                 if (index + 1 < referenceMark.length) {
-                    levels.push(<span {...elProps} key={'sep' + index} className="separator">{i}</span>);
+                    levels.push(
+                        <span {...elProps} key={'sep' + index} className="separator">
+                            {i}
+                        </span>,
+                    );
                 }
             }
         });
@@ -417,8 +438,7 @@ export function getGlyph(type) {
 
 export function getNodeIcon(colorCoded, iconCode) {
     let iconStyle = {};
-    let backgroundColor,
-        color;
+    let backgroundColor, color;
 
     if (colorCoded) {
         if (COLOR_MAP[iconCode]) {
@@ -441,12 +461,12 @@ export function getNodeIcon(colorCoded, iconCode) {
         icon = ICON_REMAP[iconCode];
     }
 
-    return ({
+    return {
         glyph: icon,
         style: iconStyle,
         fill: iconStyle.backgroundColor,
         stroke: 'none',
-    });
+    };
 }
 
 export const ICON_REMAP = {
@@ -459,13 +479,13 @@ export const ICON_REMAP = {
 };
 
 const COLOR_MAP = {
-    'fa-database': { background: '#fff', color: '#000' },
-    'fa-folder-o': { background: '#ffcc00', color: '#fff' },
-    'ez-serie': { background: '#6696dd', color: '#fff' },
-    'fa-sitemap': { background: '#4444cc', color: '#fff' },
-    'fa-file-text-o': { background: '#ff972c', color: '#fff' },
-    'ez-item-part-o': { background: '#cc3820', color: '#fff' },
-    'default': { background: '#333', color: '#fff' },
+    'fa-database': {background: '#fff', color: '#000'},
+    'fa-folder-o': {background: '#ffcc00', color: '#fff'},
+    'ez-serie': {background: '#6696dd', color: '#fff'},
+    'fa-sitemap': {background: '#4444cc', color: '#fff'},
+    'fa-file-text-o': {background: '#ff972c', color: '#fff'},
+    'ez-item-part-o': {background: '#cc3820', color: '#fff'},
+    default: {background: '#333', color: '#fff'},
 };
 
 export const DIGITIZATION = 'DIGITIZATION';

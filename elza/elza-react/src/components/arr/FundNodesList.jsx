@@ -18,16 +18,16 @@ class FuncNodesList extends AbstractReactComponent {
         readOnly: PropTypes.bool,
     };
 
-    handleDeleteItem = (node) => {
+    handleDeleteItem = node => {
         const {onDeleteNode, readOnly} = this.props;
         if (!readOnly) {
             onDeleteNode(node);
         }
     };
 
-    handleRenderItem = (props) => {
+    handleRenderItem = props => {
         const {item} = props;
-        return <NodeLabel node={item}/>;
+        return <NodeLabel node={item} />;
     };
 
     render() {

@@ -11,7 +11,7 @@ import * as types from 'actions/constants/ActionTypes.js';
  */
 const initialState = {
     lastKey: 0,
-    toasts: []
+    toasts: [],
 };
 
 export default function toastr(state = initialState, action = {}) {
@@ -32,17 +32,14 @@ export default function toastr(state = initialState, action = {}) {
                         size: action.size,
                         time: action.time,
                         key: key + 1,
-                        visible: true
-                    }
-                ]
+                        visible: true,
+                    },
+                ],
             };
         case types.TOASTR_REMOVE:
             return {
                 ...state,
-                toasts: [
-                    ...state.toasts.splice(0, action.index),
-                    ...state.toasts.splice(action.index + 1)
-                ]
+                toasts: [...state.toasts.splice(0, action.index), ...state.toasts.splice(action.index + 1)],
             };
         default:
             return state;

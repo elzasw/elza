@@ -22,12 +22,7 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
     constructor(props) {
         super(props, 'fa-page');
 
-        this.bindMethods(
-            'handleMoveUnder',
-            'getMoveInfo',
-            'handleMoveAfter',
-            'handleMoveBefore',
-            'getDestNode');
+        this.bindMethods('handleMoveUnder', 'getMoveInfo', 'handleMoveAfter', 'handleMoveBefore', 'getDestNode');
     }
 
     componentDidMount() {
@@ -40,7 +35,9 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
 
     getDestNode() {
         const fund = this.getActiveFund(this.props);
-        return fund.fundTreeMovementsRight.nodes[indexById(fund.fundTreeMovementsRight.nodes, fund.fundTreeMovementsRight.selectedId)];
+        return fund.fundTreeMovementsRight.nodes[
+            indexById(fund.fundTreeMovementsRight.nodes, fund.fundTreeMovementsRight.selectedId)
+        ];
     }
 
     handleShortcuts(action, e) {
@@ -52,7 +49,9 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
         const fund = this.getActiveFund(this.props);
 
         //  Zjištění seznamu označených NODE na přesun
-        var nodes = Object.keys(fund.fundTreeMovementsLeft.selectedIds).map(id => fund.fundTreeMovementsLeft.nodes[indexById(fund.fundTreeMovementsLeft.nodes, id)]);
+        var nodes = Object.keys(fund.fundTreeMovementsLeft.selectedIds).map(
+            id => fund.fundTreeMovementsLeft.nodes[indexById(fund.fundTreeMovementsLeft.nodes, id)],
+        );
         var nodesParent = getNodeParent(fund.fundTreeMovementsLeft.nodes, nodes[0].id);
 
         // Zjištění node kam přesouvat
@@ -64,17 +63,23 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
 
     handleMoveUnder() {
         var info = this.getMoveInfo();
-        this.props.dispatch(moveNodes('UNDER', info.versionId, info.nodes, info.nodesParent, info.dest, info.destParent));
+        this.props.dispatch(
+            moveNodes('UNDER', info.versionId, info.nodes, info.nodesParent, info.dest, info.destParent),
+        );
     }
 
     handleMoveAfter() {
         var info = this.getMoveInfo();
-        this.props.dispatch(moveNodes('AFTER', info.versionId, info.nodes, info.nodesParent, info.dest, info.destParent));
+        this.props.dispatch(
+            moveNodes('AFTER', info.versionId, info.nodes, info.nodesParent, info.dest, info.destParent),
+        );
     }
 
     handleMoveBefore() {
         var info = this.getMoveInfo();
-        this.props.dispatch(moveNodes('BEFORE', info.versionId, info.nodes, info.nodesParent, info.dest, info.destParent));
+        this.props.dispatch(
+            moveNodes('BEFORE', info.versionId, info.nodes, info.nodesParent, info.dest, info.destParent),
+        );
     }
 
     checkMoveUnder() {
@@ -89,7 +94,8 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
         // Test, zda se nepřesouvá sám pod sebe
         var ok = true;
         for (var a = 0; a < parents.length; a++) {
-            if (fund.fundTreeMovementsLeft.selectedIds[parents[a].id]) {    // přesouvaný je v nadřazených v cíli, takto nelze přesouvat
+            if (fund.fundTreeMovementsLeft.selectedIds[parents[a].id]) {
+                // přesouvaný je v nadřazených v cíli, takto nelze přesouvat
                 ok = false;
                 break;
             }
@@ -103,7 +109,8 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
         var destNode = this.getDestNode();
         if (!destNode) return false;
 
-        if (destNode.depth == 1) {  // u kořene nelze tuto akci volat
+        if (destNode.depth == 1) {
+            // u kořene nelze tuto akci volat
             return false;
         }
 
@@ -113,7 +120,8 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
         // Test, zda se nepřesouvá sám pod sebe
         var ok = true;
         for (var a = 0; a < parents.length; a++) {
-            if (fund.fundTreeMovementsLeft.selectedIds[parents[a].id]) {    // přesouvaný je v nadřazených v cíli, takto nelze přesouvat
+            if (fund.fundTreeMovementsLeft.selectedIds[parents[a].id]) {
+                // přesouvaný je v nadřazených v cíli, takto nelze přesouvat
                 ok = false;
                 break;
             }
@@ -134,17 +142,30 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
 
         var altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>;
+            altSection = (
+                <RibbonGroup key="alt" className="small">
+                    {altActions}
+                </RibbonGroup>
+            );
         }
 
         var itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>;
+            itemSection = (
+                <RibbonGroup key="item" className="small">
+                    {itemActions}
+                </RibbonGroup>
+            );
         }
 
         return (
-            <Ribbon arr subMenu fundId={activeFund ? activeFund.id : null} altSection={altSection}
-                    itemSection={itemSection}/>
+            <Ribbon
+                arr
+                subMenu
+                fundId={activeFund ? activeFund.id : null}
+                altSection={altSection}
+                itemSection={itemSection}
+            />
         );
     }
 
@@ -163,38 +184,29 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
 
         return (
             <div className="movements-content-container">
-                <div className={fund.moving ? 'moving-overlay visible' : 'moving-overlay'}><Icon
-                    glyph="fa-cog fa-spin"/>
+                <div className={fund.moving ? 'moving-overlay visible' : 'moving-overlay'}>
+                    <Icon glyph="fa-cog fa-spin" />
                     <div>Probíhá přesun</div>
                 </div>
-                <div key={1} className='tree-left-container'>
-
-                    <FundTreeMovementsLeft
-                        fund={fund}
-                        versionId={fund.versionId}
-                        {...fund.fundTreeMovementsLeft}
-                    />
+                <div key={1} className="tree-left-container">
+                    <FundTreeMovementsLeft fund={fund} versionId={fund.versionId} {...fund.fundTreeMovementsLeft} />
                 </div>
-                <div key={2} className='tree-actions-container'>
-
-                    <Button onClick={this.handleMoveBefore} disabled={!moveBeforeAfter}><Icon glyph="ez-move-before2"/>
+                <div key={2} className="tree-actions-container">
+                    <Button onClick={this.handleMoveBefore} disabled={!moveBeforeAfter}>
+                        <Icon glyph="ez-move-before2" />
                         <div>{i18n('arr.movements.move.before')}</div>
                     </Button>
-                    <Button onClick={this.handleMoveUnder} disabled={!moveUnder}><Icon glyph="ez-move-under"/>
+                    <Button onClick={this.handleMoveUnder} disabled={!moveUnder}>
+                        <Icon glyph="ez-move-under" />
                         <div>{i18n('arr.movements.move.under')}</div>
                     </Button>
-                    <Button onClick={this.handleMoveAfter} disabled={!moveBeforeAfter}><Icon glyph="ez-move-after2"/>
+                    <Button onClick={this.handleMoveAfter} disabled={!moveBeforeAfter}>
+                        <Icon glyph="ez-move-after2" />
                         <div>{i18n('arr.movements.move.after')}</div>
                     </Button>
-
                 </div>
-                <div key={3} className='tree-right-container'>
-
-                    <FundTreeMovementsRight
-                        fund={fund}
-                        versionId={fund.versionId}
-                        {...fund.fundTreeMovementsRight}
-                    />
+                <div key={3} className="tree-right-container">
+                    <FundTreeMovementsRight fund={fund} versionId={fund.versionId} {...fund.fundTreeMovementsRight} />
                 </div>
             </div>
         );

@@ -17,14 +17,13 @@ import List from 'components/shared/tree-list/TreeList.jsx';
 import ListItem from '../shared/tree-list/list-item/ListItem';
 
 class ArrDaos extends AbstractReactComponent {
-
     state = {
         leftSize: 240,
     };
 
     static propTypes = {
         type: PropTypes.oneOf(['PACKAGE', 'NODE', 'NODE_ASSIGN']).isRequired,
-        unassigned: PropTypes.bool,   // jen v případě packages
+        unassigned: PropTypes.bool, // jen v případě packages
         fund: PropTypes.object.isRequired,
         selectedDaoId: PropTypes.object,
         nodeId: PropTypes.number,
@@ -46,7 +45,7 @@ class ArrDaos extends AbstractReactComponent {
     }
 
     handleFetch = (prevProps, nextProps) => {
-        const { type, unassigned, fund, nodeId, daoPackageId } = nextProps;
+        const {type, unassigned, fund, nodeId, daoPackageId} = nextProps;
 
         if (type === 'NODE') {
             if (nodeId != null) {
@@ -58,17 +57,19 @@ class ArrDaos extends AbstractReactComponent {
             }
         } else if (type === 'PACKAGE') {
             if (daoPackageId != null) {
-                this.props.dispatch(daoActions.fetchDaoPackageDaoListIfNeeded(fund.versionId, daoPackageId, unassigned));
+                this.props.dispatch(
+                    daoActions.fetchDaoPackageDaoListIfNeeded(fund.versionId, daoPackageId, unassigned),
+                );
             }
         }
     };
 
-    renderItem = (props) => {
-        return <ListItem renderName={props.item.renderName} {...props}/>;
+    renderItem = props => {
+        return <ListItem renderName={props.item.renderName} {...props} />;
     };
 
-    handleSelect = (item) => {
-        const { onSelect, type, fund } = this.props;
+    handleSelect = item => {
+        const {onSelect, type, fund} = this.props;
 
         let daoList = {};
         if (type === 'NODE') {
@@ -86,8 +87,8 @@ class ArrDaos extends AbstractReactComponent {
         onSelect && onSelect(daoItem, daoFileId);
     };
 
-    handlePrevDaoFile = (daoItem) => {
-        const { selectedDaoFileId, onSelect } = this.props;
+    handlePrevDaoFile = daoItem => {
+        const {selectedDaoFileId, onSelect} = this.props;
         const index = indexById(daoItem.fileList, selectedDaoFileId);
         if (index != null) {
             const file = daoItem.fileList[index - 1];
@@ -95,8 +96,8 @@ class ArrDaos extends AbstractReactComponent {
         }
     };
 
-    handleNextDaoFile = (daoItem) => {
-        const { selectedDaoFileId, onSelect } = this.props;
+    handleNextDaoFile = daoItem => {
+        const {selectedDaoFileId, onSelect} = this.props;
         const index = indexById(daoItem.fileList, selectedDaoFileId);
         if (index != null) {
             const file = daoItem.fileList[index + 1];
@@ -104,23 +105,31 @@ class ArrDaos extends AbstractReactComponent {
         }
     };
 
-    handleUnlink = (dao) => {
-        const { fund } = this.props;
+    handleUnlink = dao => {
+        const {fund} = this.props;
         WebApi.deleteDaoLink(fund.versionId, dao.daoLink.id);
     };
 
-    renderDao = (item) => {
-        const name = item.label || (item.code + ' (' + item.daoId + ')');
-        return <div className="item-name" title={name}>{name}</div>;
+    renderDao = item => {
+        const name = item.label || item.code + ' (' + item.daoId + ')';
+        return (
+            <div className="item-name" title={name}>
+                {name}
+            </div>
+        );
     };
 
-    renderFile = (file) => {
-        const name = file.fileName || (file.code + ' (' + file.id + ')');
-        return <div className="item-file" title={name}><Icon glyph='fa-file-o'/> {name}</div>;
+    renderFile = file => {
+        const name = file.fileName || file.code + ' (' + file.id + ')';
+        return (
+            <div className="item-file" title={name}>
+                <Icon glyph="fa-file-o" /> {name}
+            </div>
+        );
     };
 
     render() {
-        const { type, fund, nodeId, daoPackageId, readMode, selectedDaoId, selectedDaoFileId, splitter } = this.props;
+        const {type, fund, nodeId, daoPackageId, readMode, selectedDaoId, selectedDaoFileId, splitter} = this.props;
 
         let daoList = {};
         if (type === 'NODE') {
@@ -133,7 +142,7 @@ class ArrDaos extends AbstractReactComponent {
 
         const showPart = !(!daoList.fetched && daoPackageId);
 
-        let items = { ids: [] };
+        let items = {ids: []};
 
         let selectedDao = null;
         let selectedDaoFile = null;
@@ -172,39 +181,49 @@ class ArrDaos extends AbstractReactComponent {
                 });
             });
 
-            items = flattenItems(preItems, { getItemId: i => i.id });
+            items = flattenItems(preItems, {getItemId: i => i.id});
         }
 
         return (
             <div className="daos-container">
                 <Splitter
                     leftSize={this.state.leftSize}
-                    onChange={({ leftSize, rightSize }) => {
-                        this.setState({ leftSize: leftSize });
+                    onChange={({leftSize, rightSize}) => {
+                        this.setState({leftSize: leftSize});
                     }}
-                    left={<div className="daos-list">
-                        <div className="title">Digitální entity</div>
-                        <div className="daos-list-items">
-                            <List
-                                items={items}
-                                onChange={this.handleSelect}
-                                expandAll={true}
-                                selectedItemId={selectedItemId}
-                                ref={(list) => {
-                                    this.list = list;
-                                }}
-                                renderItem={this.renderItem}
-                            />
-                            {!daoList.fetched && daoPackageId && <HorizontalLoader/>}
+                    left={
+                        <div className="daos-list">
+                            <div className="title">Digitální entity</div>
+                            <div className="daos-list-items">
+                                <List
+                                    items={items}
+                                    onChange={this.handleSelect}
+                                    expandAll={true}
+                                    selectedItemId={selectedItemId}
+                                    ref={list => {
+                                        this.list = list;
+                                    }}
+                                    renderItem={this.renderItem}
+                                />
+                                {!daoList.fetched && daoPackageId && <HorizontalLoader />}
+                            </div>
                         </div>
-                    </div>}
-                    center={<div className="daos-detail">
-                        {selectedDao && <ArrDao fund={fund} readMode={readMode} dao={selectedDao}
-                                                prevDaoFile={() => this.handlePrevDaoFile(selectedDao)}
-                                                nextDaoFile={() => this.handleNextDaoFile(selectedDao)}
-                                                daoFile={selectedDaoFile}
-                                                onUnlink={() => this.handleUnlink(selectedDao)}/>}
-                    </div>}
+                    }
+                    center={
+                        <div className="daos-detail">
+                            {selectedDao && (
+                                <ArrDao
+                                    fund={fund}
+                                    readMode={readMode}
+                                    dao={selectedDao}
+                                    prevDaoFile={() => this.handlePrevDaoFile(selectedDao)}
+                                    nextDaoFile={() => this.handleNextDaoFile(selectedDao)}
+                                    daoFile={selectedDaoFile}
+                                    onUnlink={() => this.handleUnlink(selectedDao)}
+                                />
+                            )}
+                        </div>
+                    }
                 />
             </div>
         );

@@ -34,27 +34,28 @@ export function getObjectInfo(objectInfo) {
     };
 }
 
-
 export function importForm(data, messageType) {
     return (dispatch, getState) => {
-        savingApiWrapper(dispatch, WebApi.xmlImport(data)).then(() => {
-            dispatch(modalDialogHide());
-            dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.success' + messageType)));
-            switch (messageType) {
-                case 'Fund':
-                    break;
-                case 'Record':
-                    dispatch(registryListInvalidate);
-                    break;
-                case 'Party':
-                    dispatch(partyListInvalidate);
-                    dispatch(registryListInvalidate);
-                    break;
-                default:
-                    return;
-            }
-        }).catch(() => {
-            dispatch(modalDialogHide());
-        });
+        savingApiWrapper(dispatch, WebApi.xmlImport(data))
+            .then(() => {
+                dispatch(modalDialogHide());
+                dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.success' + messageType)));
+                switch (messageType) {
+                    case 'Fund':
+                        break;
+                    case 'Record':
+                        dispatch(registryListInvalidate);
+                        break;
+                    case 'Party':
+                        dispatch(partyListInvalidate);
+                        dispatch(registryListInvalidate);
+                        break;
+                    default:
+                        return;
+                }
+            })
+            .catch(() => {
+                dispatch(modalDialogHide());
+            });
     };
 }

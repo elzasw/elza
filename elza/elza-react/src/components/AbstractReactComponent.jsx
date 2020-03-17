@@ -6,9 +6,8 @@ import {propsEquals} from './Utils.jsx';
  *
  */
 class AbstractReactComponent extends React.Component {
-
     UNSAFE_componentWillUpdate() {
-    //console.log(this);
+        //console.log(this);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -23,11 +22,11 @@ class AbstractReactComponent extends React.Component {
      * @deprecated nově používáme syntaxi () => {}
      */
     bindMethods(...methods) {
-        methods.forEach( (method) => {
+        methods.forEach(method => {
             if (!this[method]) {
-                console.warn("Cannot bind method " + method + ".");
+                console.warn('Cannot bind method ' + method + '.');
             } else {
-                this[method] = this[method].bind(this)
+                this[method] = this[method].bind(this);
             }
         });
     }

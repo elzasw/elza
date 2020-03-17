@@ -15,20 +15,20 @@ import DescItemDate from './DescItemDate.jsx';
 
 export default class DescItemFactory {
     static typeComponentMap = {
-        'PARTY_REF': DescItemPartyRef,
-        'RECORD_REF': DescItemRecordRef,
-        'STRUCTURED': DescItemStructureRef,
-        'FILE_REF': DescItemFileRef,
-        'UNITDATE': DescItemUnitdate,
-        'UNITID': DescItemUnitid,
-        'JSON_TABLE': DescItemJsonTable,
-        'STRING': DescItemString,
-        'FORMATTED_TEXT': DescItemText,
-        'TEXT': DescItemText,
-        'DECIMAL': DescItemDecimal,
-        'INT': DescItemInt,
-        'COORDINATES': DescItemCoordinates,
-        'DATE': DescItemDate,
+        PARTY_REF: DescItemPartyRef,
+        RECORD_REF: DescItemRecordRef,
+        STRUCTURED: DescItemStructureRef,
+        FILE_REF: DescItemFileRef,
+        UNITDATE: DescItemUnitdate,
+        UNITID: DescItemUnitid,
+        JSON_TABLE: DescItemJsonTable,
+        STRING: DescItemString,
+        FORMATTED_TEXT: DescItemText,
+        TEXT: DescItemText,
+        DECIMAL: DescItemDecimal,
+        INT: DescItemInt,
+        COORDINATES: DescItemCoordinates,
+        DATE: DescItemDate,
     };
 
     static createDescItem = (type, props) => {
@@ -36,6 +36,6 @@ export default class DescItemFactory {
         if (!DescItem) {
             throw new Error(`Unknown desc item data type code: ${type}`);
         }
-        return <DescItem {...props}/>;
+        return <DescItem {...props} />;
     };
 }

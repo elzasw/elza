@@ -13,7 +13,6 @@ import PartyPage from '../party/PartyPage';
  * Zobrazuje stranku s vyberem rejstriku a jeho detailem/editaci
  */
 class PartySelectPage extends SelectPage {
-
     /**
      * @override
      */
@@ -27,17 +26,19 @@ class PartySelectPage extends SelectPage {
 
     buildRibbonParts() {
         const parts = super.buildRibbonParts();
-        parts.primarySection.push(<RibbonSplit key={'ribbon-spliter-pages'}/>);
+        parts.primarySection.push(<RibbonSplit key={'ribbon-spliter-pages'} />);
         parts.primarySection.push(
             <RibbonGroup key="ribbon-group-pages" className="large">
                 <Button className="active">
-                    <Icon glyph="fa-users"/>
-                    <div><span className="btnText">{i18n('ribbon.action.party')}</span></div>
+                    <Icon glyph="fa-users" />
+                    <div>
+                        <span className="btnText">{i18n('ribbon.action.party')}</span>
+                    </div>
                 </Button>
             </RibbonGroup>,
         );
         return parts;
-    };
+    }
 
     render() {
         const props = this.getPageProps();
@@ -45,10 +46,9 @@ class PartySelectPage extends SelectPage {
     }
 }
 
-export default connect((state) => {
+export default connect(state => {
     const partyDetail = storeFromArea(state, AREA_PARTY_DETAIL);
     return {
         partyDetail,
     };
 })(PartySelectPage);
-

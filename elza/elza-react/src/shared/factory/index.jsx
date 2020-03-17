@@ -30,7 +30,7 @@ const itemsMap = {
     '.ArrItemStringVO': ItemString,
     '.ArrItemStructureVO': ItemStructure,
     '.ArrItemTextVO': ItemText,
-    '.ArrItemUnitidVO': ItemUnitid
+    '.ArrItemUnitidVO': ItemUnitid,
 };
 
 export function createClass(item) {
@@ -39,7 +39,7 @@ export function createClass(item) {
     if (cls) {
         return new cls(item);
     } else {
-        console.error("Invalid item class", item);
+        console.error('Invalid item class', item);
         return new Item(item);
     }
 }

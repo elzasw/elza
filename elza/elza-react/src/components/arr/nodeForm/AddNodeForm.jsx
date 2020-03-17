@@ -27,17 +27,10 @@ class AddNodeForm extends AbstractReactComponent {
     static propTypes = {
         node: PropTypes.object.isRequired, // node pro který se akce volá
         parentNode: PropTypes.object.isRequired, // nadřený node pro vstupní node
-        initDirection: PropTypes.oneOf([
-            'BEFORE',
-            'AFTER',
-            'CHILD',
-            'ATEND',
-        ]),
+        initDirection: PropTypes.oneOf(['BEFORE', 'AFTER', 'CHILD', 'ATEND']),
         nodeSettings: PropTypes.object.isRequired,
         onSubmit: PropTypes.func.isRequired,
-        allowedDirections: PropTypes.arrayOf(
-            PropTypes.oneOf(['BEFORE', 'AFTER', 'CHILD', 'ATEND']),
-        ),
+        allowedDirections: PropTypes.arrayOf(PropTypes.oneOf(['BEFORE', 'AFTER', 'CHILD', 'ATEND'])),
     };
 
     state = {
@@ -84,9 +77,7 @@ class AddNodeForm extends AbstractReactComponent {
      * @param {Object} inParentNode nadřazený uzel k inNode
      */
     formatDataForServer = (inDirection, inNode, inParentNode) => {
-        let direction,
-            node,
-            parentNode;
+        let direction, node, parentNode;
 
         switch (inDirection) {
             case 'ATEND':
@@ -136,11 +127,7 @@ class AddNodeForm extends AbstractReactComponent {
         // nastavi odpovidajiciho rodice a direction pro dotaz
         var dataServ = this.formatDataForServer(newDirection, node, parentNode);
         // ajax dotaz na scenare
-        WebApi.getNodeAddScenarios(
-            dataServ.activeNode,
-            versionId,
-            dataServ.direction,
-        ).then(
+        WebApi.getNodeAddScenarios(dataServ.activeNode, versionId, dataServ.direction).then(
             result => {
                 // resolved
                 // select first scenario
@@ -171,16 +158,10 @@ class AddNodeForm extends AbstractReactComponent {
 
     handleScenarioChange = e => {
         if (e.target.value === TEMPLATE_SCENARIOS) {
-            const {
-                      arrRegion,
-                      userDetail,
-                  } = this.props;
+            const {arrRegion, userDetail} = this.props;
 
             const settings = userDetail.settings;
-            const fund =
-                      arrRegion.activeIndex != null
-                          ? arrRegion.funds[arrRegion.activeIndex]
-                          : null;
+            const fund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
             let lastUseTemplateName = null;
             if (fund) {
                 lastUseTemplateName = this.getLastUseTemplateName(settings, fund);
@@ -220,9 +201,11 @@ class AddNodeForm extends AbstractReactComponent {
 
                     // všechny ID descItemTypes z aktivního node
                     itemsToCopy = [];
-                    for (let a = 0; a < activeNode.subNodeForm.formData.descItemGroups.length; a++) { // pro všecny DescItemGroups
+                    for (let a = 0; a < activeNode.subNodeForm.formData.descItemGroups.length; a++) {
+                        // pro všecny DescItemGroups
                         let descItemGroup = activeNode.subNodeForm.formData.descItemGroups[a];
-                        for (let i = 0; i < descItemGroup.descItemTypes.length; i++) { // pro všechny položky na formuláři
+                        for (let i = 0; i < descItemGroup.descItemTypes.length; i++) {
+                            // pro všechny položky na formuláři
                             let descItemType = descItemGroup.descItemTypes[i];
                             itemsToCopy = [...itemsToCopy, descItemType.id];
                         }
@@ -235,7 +218,7 @@ class AddNodeForm extends AbstractReactComponent {
         return itemsToCopy;
     };
 
-    notEmpty = (value) => {
+    notEmpty = value => {
         return value != null && value !== '';
     };
 
@@ -246,23 +229,19 @@ class AddNodeForm extends AbstractReactComponent {
     handleFormSubmit = e => {
         e.preventDefault();
         const {
-                  onSubmit,
-                  node,
-                  parentNode,
-                  versionId,
-                  activeFund,
-                  userDetail,
-                  initDirection,
-                  globalFundTree: {fundTreeCopy},
-              } = this.props;
+            onSubmit,
+            node,
+            parentNode,
+            versionId,
+            activeFund,
+            userDetail,
+            initDirection,
+            globalFundTree: {fundTreeCopy},
+        } = this.props;
         const {selectedDirection, selectedScenario, template} = this.state;
 
         // nastavi odpovidajiciho rodice a direction pro dotaz
-        const dataServ = this.formatDataForServer(
-            selectedDirection,
-            node,
-            parentNode,
-        );
+        const dataServ = this.formatDataForServer(selectedDirection, node, parentNode);
         if (this.state.selectedType === 'NEW') {
             // Data pro poslání do on submit - obsahují všechny informace pro založení
             const submitData = {
@@ -293,7 +272,10 @@ class AddNodeForm extends AbstractReactComponent {
                             Object.keys(formData).forEach(itemTypeId => {
                                 const items = formData[itemTypeId];
                                 items.forEach(item => {
-                                    if (this.notEmpty(item.value) || (item['@class'] === '.ArrItemEnumVO' && this.notEmpty(item.descItemSpecId))) {
+                                    if (
+                                        this.notEmpty(item.value) ||
+                                        (item['@class'] === '.ArrItemEnumVO' && this.notEmpty(item.descItemSpecId))
+                                    ) {
                                         const newItem = {
                                             ...item,
                                             itemTypeId: itemTypeId,
@@ -308,14 +290,15 @@ class AddNodeForm extends AbstractReactComponent {
                                 submitData.createItems = createItems;
                             }
                         }
-                        this.props.dispatch(nodeFormActions.fundSubNodeFormTemplateUseOnly(activeFund.versionId, template));
+                        this.props.dispatch(
+                            nodeFormActions.fundSubNodeFormTemplateUseOnly(activeFund.versionId, template),
+                        );
                     }
                 }
             }
 
             onSubmit(submitData, 'NEW', null, emptyItemTypeIds);
         } else if (this.state.selectedSourceAS === 'FILE') {
-
             const submitData = {
                 xmlFile: this.state.importXml,
                 scopeId: this.state.selectedScope.id,
@@ -336,7 +319,9 @@ class AddNodeForm extends AbstractReactComponent {
                 importPositionParams.parentNode = parentNode;
                 importPositionParams.direction = selectedDirection;
             }
-            submitData.importPositionParams = new Blob([JSON.stringify(importPositionParams)], {type: 'application/json'});
+            submitData.importPositionParams = new Blob([JSON.stringify(importPositionParams)], {
+                type: 'application/json',
+            });
 
             onSubmit(submitData, 'FILE');
         } else if (this.state.selectedSourceAS === 'OTHER') {
@@ -402,7 +387,7 @@ class AddNodeForm extends AbstractReactComponent {
     };
 
     changeNodeSource = (type, source) => {
-        return (e) => {
+        return e => {
             const nextState = {...this.state};
             if (type) {
                 nextState.selectedType = type;
@@ -422,15 +407,15 @@ class AddNodeForm extends AbstractReactComponent {
 
     render() {
         const {
-                  allowedDirections,
-                  onClose,
-                  node,
-                  parentNode,
-                  versionId,
-                  initDirection,
-                  arrRegion,
-                  userDetail,
-              } = this.props;
+            allowedDirections,
+            onClose,
+            node,
+            parentNode,
+            versionId,
+            initDirection,
+            arrRegion,
+            userDetail,
+        } = this.props;
         const {scenarios, loading, submitting, valid} = this.state;
         const notRoot = !isFundRootId(parentNode.id);
 
@@ -496,43 +481,34 @@ class AddNodeForm extends AbstractReactComponent {
                             </Col>
                         </Row>
                     </FormGroup>
-                    {this.state.selectedType === 'NEW'
-                        ? this.renderCreateNew()
-                        : this.renderCreateExisting()}
+                    {this.state.selectedType === 'NEW' ? this.renderCreateNew() : this.renderCreateExisting()}
                 </Modal.Body>
                 <Modal.Footer>
                     <Row>
                         <Col xs={4}>
-                            {this.state.selectedType === 'EXISTING' &&
-                            <FormCheck
-                                disabled={submitting}
-                                type={'checkbox'}
-                                inline
-                                checked={this.state.ignoreRootNodes}
-                                onChange={() => {
-                                    this.setState(prevState => {
-                                        return {
-                                            ignoreRootNodes: !prevState.ignoreRootNodes,
-                                        };
-                                    });
-                                }}
-                            >
-                                {i18n('arr.fund.addNode.ignoreRootNodes')}
-                            </FormCheck>}
+                            {this.state.selectedType === 'EXISTING' && (
+                                <FormCheck
+                                    disabled={submitting}
+                                    type={'checkbox'}
+                                    inline
+                                    checked={this.state.ignoreRootNodes}
+                                    onChange={() => {
+                                        this.setState(prevState => {
+                                            return {
+                                                ignoreRootNodes: !prevState.ignoreRootNodes,
+                                            };
+                                        });
+                                    }}
+                                >
+                                    {i18n('arr.fund.addNode.ignoreRootNodes')}
+                                </FormCheck>
+                            )}
                         </Col>
                         <Col xs={4} xsOffset={4}>
-                            <Button
-                                disabled={submitting || !valid}
-                                type="submit"
-                                onClick={this.handleFormSubmit}
-                            >
+                            <Button disabled={submitting || !valid} type="submit" onClick={this.handleFormSubmit}>
                                 {i18n('global.action.store')}
                             </Button>
-                            <Button
-                                disabled={submitting}
-                                variant="link"
-                                onClick={onClose}
-                            >
+                            <Button disabled={submitting} variant="link" onClick={onClose}>
                                 {i18n('global.action.cancel')}
                             </Button>
                         </Col>
@@ -564,17 +540,13 @@ class AddNodeForm extends AbstractReactComponent {
                             value={scenarios[i].name}
                             checked={selectedScenario === scenarios[i].name}
                             label={scenarios[i].name}
-                        >
-                        </FormCheck>,
+                        ></FormCheck>,
                     );
                 }
             }
 
             let strictMode = false;
-            const fund =
-                      arrRegion.activeIndex != null
-                          ? arrRegion.funds[arrRegion.activeIndex]
-                          : null;
+            const fund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
 
             const settings = userDetail.settings;
 
@@ -584,12 +556,7 @@ class AddNodeForm extends AbstractReactComponent {
 
                 strictMode = fund.activeVersion.strictMode;
 
-                let userStrictMode = getOneSettings(
-                    userDetail.settings,
-                    'FUND_STRICT_MODE',
-                    'FUND',
-                    fund.id,
-                );
+                let userStrictMode = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fund.id);
                 if (userStrictMode && userStrictMode.value !== null) {
                     strictMode = userStrictMode.value === 'true';
                 }
@@ -625,13 +592,8 @@ class AddNodeForm extends AbstractReactComponent {
                     label={i18n('subNodeForm.add.fromTemplate')}
                 />,
             );
-
         } else {
-            scnRadios.push(
-                <div>
-                    {i18n('arr.fund.addNode.noDirection')}
-                </div>,
-            );
+            scnRadios.push(<div>{i18n('arr.fund.addNode.noDirection')}</div>);
         }
 
         let defaultValueTemplate = '';
@@ -645,31 +607,35 @@ class AddNodeForm extends AbstractReactComponent {
         return (
             <div>
                 <FormGroup>
-                    <FormLabel>
-                        {i18n('arr.fund.addNode.scenario')}
-                    </FormLabel>
-                    {loading
-                        ? <HorizontalLoader/>
-                        : <div>
-                            <FormGroup key="Scenarios">
-                                {scnRadios}
-                            </FormGroup>
-                            {selectedScenario === TEMPLATE_SCENARIOS &&
-                            <FormInput
-                                ref="select"
-                                key={'tmpl-select'}
-                                as="select"
-                                name={'template'}
-                                disabled={loading || submitting}
-                                label={''}
-                                onChange={this.handleTemplateChange}
-                                defaultValue={defaultValueTemplate}
-                            >
-                                <option value={''} key="no-select">{i18n('global.action.select')}</option>
-                                {templates.map(tmp => <option value={tmp} key={tmp}>{tmp}</option>)}
-                            </FormInput>
-                            }
-                        </div>}
+                    <FormLabel>{i18n('arr.fund.addNode.scenario')}</FormLabel>
+                    {loading ? (
+                        <HorizontalLoader />
+                    ) : (
+                        <div>
+                            <FormGroup key="Scenarios">{scnRadios}</FormGroup>
+                            {selectedScenario === TEMPLATE_SCENARIOS && (
+                                <FormInput
+                                    ref="select"
+                                    key={'tmpl-select'}
+                                    as="select"
+                                    name={'template'}
+                                    disabled={loading || submitting}
+                                    label={''}
+                                    onChange={this.handleTemplateChange}
+                                    defaultValue={defaultValueTemplate}
+                                >
+                                    <option value={''} key="no-select">
+                                        {i18n('global.action.select')}
+                                    </option>
+                                    {templates.map(tmp => (
+                                        <option value={tmp} key={tmp}>
+                                            {tmp}
+                                        </option>
+                                    ))}
+                                </FormInput>
+                            )}
+                        </div>
+                    )}
                 </FormGroup>
             </div>
         );
@@ -687,13 +653,9 @@ class AddNodeForm extends AbstractReactComponent {
                                     disabled={submitting}
                                     inline
                                     name="selectSource"
-                                    checked={
-                                        this.state.selectedSourceAS === 'FILE'
-                                    }
+                                    checked={this.state.selectedSourceAS === 'FILE'}
                                     onChange={this.changeNodeSource('EXISTING', 'FILE')}
-                                    label={i18n(
-                                        'arr.fund.addNode.type.existing.file',
-                                    )}
+                                    label={i18n('arr.fund.addNode.type.existing.file')}
                                 />
                             </Col>
                             <Col xs={7}>
@@ -701,26 +663,20 @@ class AddNodeForm extends AbstractReactComponent {
                                     disabled={submitting}
                                     inline
                                     name="selectSource"
-                                    checked={
-                                        this.state.selectedSourceAS === 'OTHER'
-                                    }
+                                    checked={this.state.selectedSourceAS === 'OTHER'}
                                     onChange={this.changeNodeSource('EXISTING', 'OTHER')}
-                                    label={i18n(
-                                        'arr.fund.addNode.type.existing.other',
-                                    )}
+                                    label={i18n('arr.fund.addNode.type.existing.other')}
                                 />
                             </Col>
                         </Row>
                     </Col>
                 </Row>
             </FormGroup>,
-            this.state.selectedSourceAS === 'OTHER'
-                ? this.renderCreateFromOther()
-                : this.renderCreateFromFile(),
+            this.state.selectedSourceAS === 'OTHER' ? this.renderCreateFromOther() : this.renderCreateFromFile(),
         ];
     }
 
-    setValidatedState = (state) => {
+    setValidatedState = state => {
         const newState = {
             ...this.state,
             ...state,
@@ -732,16 +688,15 @@ class AddNodeForm extends AbstractReactComponent {
             valid,
         });
     };
-    handleScopeChange = (item) => {
+    handleScopeChange = item => {
         this.setValidatedState({
             selectedScope: item,
         });
     };
-    handleFileChange = (e) => {
+    handleFileChange = e => {
         this.setValidatedState({
             importXml: e.target.files[0],
         });
-
     };
 
     renderCreateFromFile() {
@@ -761,12 +716,7 @@ class AddNodeForm extends AbstractReactComponent {
                 />
             </FormGroup>,
             <FormGroup>
-                <FormControl
-                    disabled={submitting}
-                    name="soubor"
-                    type="file"
-                    onChange={this.handleFileChange}
-                />
+                <FormControl disabled={submitting} name="soubor" type="file" onChange={this.handleFileChange} />
             </FormGroup>,
         ];
     }
@@ -777,9 +727,7 @@ class AddNodeForm extends AbstractReactComponent {
 
         return [
             <FormGroup>
-                <FormLabel>
-                    {i18n('arr.fund.addNode.type.existing.archiveFile')}
-                </FormLabel>
+                <FormLabel>{i18n('arr.fund.addNode.type.existing.archiveFile')}</FormLabel>
                 <FundField
                     excludedId={versionId}
                     ref="fundField"
@@ -798,20 +746,18 @@ class AddNodeForm extends AbstractReactComponent {
                 />
             </FormGroup>,
             <div>
-                {fund &&
-                <FormLabel>
-                    {i18n('arr.history.title.nodeChanges')}
-                </FormLabel>}
-                {fund &&
-                <FundTreeCopy
-                    disabled={submitting}
-                    className="fund-tree-container-fixed"
-                    fund={fund}
-                    cutLongLabels={true}
-                    versionId={fund.versions[0].id || 0}
-                    ref="treeCopy"
-                    {...fundTreeCopy}
-                />}
+                {fund && <FormLabel>{i18n('arr.history.title.nodeChanges')}</FormLabel>}
+                {fund && (
+                    <FundTreeCopy
+                        disabled={submitting}
+                        className="fund-tree-container-fixed"
+                        fund={fund}
+                        cutLongLabels={true}
+                        versionId={fund.versions[0].id || 0}
+                        ref="treeCopy"
+                        {...fundTreeCopy}
+                    />
+                )}
             </div>,
         ];
     }

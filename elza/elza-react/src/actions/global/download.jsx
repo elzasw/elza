@@ -7,7 +7,7 @@ import {createException} from 'components/ExceptionUtils.jsx';
  *  @param url {String} url of file
  */
 export function downloadFile(url) {
-    return (dispatch) => {
+    return dispatch => {
         var link = document.createElement('a');
         link.href = url;
         link.style.cssText = 'display:none';
@@ -21,7 +21,6 @@ export function downloadFile(url) {
             link.parentElement.removeChild(link);
         }, 1000);
     };
-
 }
 
 /**
@@ -30,7 +29,7 @@ export function downloadFile(url) {
  *  @param url {String} url of file
  */
 export function downloadFileInFrame(url, id) {
-    return (dispatch) => {
+    return dispatch => {
         const frameId = 'downloadFrame-' + id;
         const timerInterval = 4000;
         const timerTimeout = 60000;
@@ -39,7 +38,8 @@ export function downloadFileInFrame(url, id) {
             dispatch(addToastr(title, message, type, 'lg', timerInterval));
         };
 
-        if (document.getElementById(frameId)) { //Vypíše upozornění pokud existuje frame se stejným id
+        if (document.getElementById(frameId)) {
+            //Vypíše upozornění pokud existuje frame se stejným id
             createToaster(i18n('download.allreadyDownloading'), '', 'info');
             return;
         }
@@ -53,7 +53,8 @@ export function downloadFileInFrame(url, id) {
         let counter = 0;
         const timer = setInterval(function() {
             counter++;
-            const iframeDoc = downloadFrame.contentDocument || (downloadFrame.contentWindow && downloadFrame.contentWindow.document); //načte document framu
+            const iframeDoc =
+                downloadFrame.contentDocument || (downloadFrame.contentWindow && downloadFrame.contentWindow.document); //načte document framu
             const timedOut = counter > timerTimeout / timerInterval;
 
             //Pokud je frame načten (začalo stahování) nebo vypršel čas, smaže vytvořený frame a případně vypíše upozornění, že čas vypršel.
@@ -64,7 +65,6 @@ export function downloadFileInFrame(url, id) {
             }
         }, timerInterval);
     };
-
 }
 
 /**
@@ -76,16 +76,16 @@ export function downloadFileInFrame(url, id) {
  *  @param contentType {String} request contentType
  */
 export function downloadAjaxFile(address, filename, method = 'GET', data = null, contentType = 'application/json') {
-    return (dispatch) => {
+    return dispatch => {
         var req = new XMLHttpRequest();
         req.open(method, address, true);
         req.responseType = 'blob';
 
         req.onload = function(event) {
-            const { readyState, status } = event.target;
+            const {readyState, status} = event.target;
             if (readyState !== 4 || status !== 200) {
                 const reader = new FileReader();
-                reader.onloadend = (e) => {
+                reader.onloadend = e => {
                     // parse the read data to json and create exception
                     const data = JSON.parse(e.srcElement.result);
                     dispatch(createException(data));
@@ -105,7 +105,7 @@ export function downloadAjaxFile(address, filename, method = 'GET', data = null,
             if (!resContentType) {
                 console.log('Missing content type header');
             }
-            var blob = new Blob([req.response], { type: resContentType });
+            var blob = new Blob([req.response], {type: resContentType});
 
             if (typeof window.navigator.msSaveBlob !== 'undefined') {
                 // IE workaround for HTML7007, Edge workaround for Issue #7260192

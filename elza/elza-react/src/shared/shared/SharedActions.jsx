@@ -12,7 +12,7 @@ export function init(area, store) {
         type: INIT_REDUCER,
         area,
         store,
-    }
+    };
 }
 
 export function initIfNeeded(area, redudcer) {
@@ -22,7 +22,7 @@ export function initIfNeeded(area, redudcer) {
             const newStore = redudcer();
             dispatch(init(area, newStore));
         }
-    }
+    };
 }
 
 /**

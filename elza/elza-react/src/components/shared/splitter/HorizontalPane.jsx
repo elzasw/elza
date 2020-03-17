@@ -7,7 +7,6 @@ import AbstractReactComponent from '../../AbstractReactComponent';
  * state je upravován z venku pomocí ref
  */
 class HorizontalPane extends AbstractReactComponent {
-
     state = {};
 
     render() {
@@ -19,7 +18,7 @@ class HorizontalPane extends AbstractReactComponent {
             <div className={this.props.className} style={style}>
                 {this.props.children}
             </div>
-        )
+        );
     }
 }
 

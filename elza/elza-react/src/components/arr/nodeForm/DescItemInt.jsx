@@ -11,12 +11,11 @@ import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 import {DisplayType} from '../../../constants.tsx';
 
 class DescItemInt extends AbstractReactComponent {
-
     focus = () => {
         this.refs.focusEl.focus();
     };
 
-    handleChange = (e) => {
+    handleChange = e => {
         let newValue;
 
         if (this.getDisplayType() === DisplayType.DURATION) {
@@ -31,18 +30,19 @@ class DescItemInt extends AbstractReactComponent {
     };
 
     getDisplayType = () => {
-        const {refType: {viewDefinition}} = this.props;
+        const {
+            refType: {viewDefinition},
+        } = this.props;
         return viewDefinition ? viewDefinition : DisplayType.NUMBER;
     };
 
     render() {
         const {descItem, locked, readMode, cal} = this.props;
-        const value = cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : inputValue(descItem.value);
+        const value =
+            cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : inputValue(descItem.value);
 
         if (readMode) {
-            return (
-                <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined}/>
-            );
+            return <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined} />;
         }
 
         let cls = [];
@@ -51,11 +51,11 @@ class DescItemInt extends AbstractReactComponent {
         }
 
         return (
-            <div className='desc-item-value'>
+            <div className="desc-item-value">
                 <ItemTooltipWrapper tooltipTitle="dataType.int.format">
                     <input
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
-                        ref='focusEl'
+                        ref="focusEl"
                         type="text"
                         disabled={locked || descItem.undefined}
                         value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value}

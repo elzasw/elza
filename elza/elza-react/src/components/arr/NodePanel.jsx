@@ -57,12 +57,26 @@ class NodePanel extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderParents', 'renderRow',
-            'renderChildren', 'handleOpenItem', 'handleSetVisiblePolicy',
-            'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
-            'getParentNodes', 'getChildNodes', 'getSiblingNodes',
-            'renderAccordion', 'renderState', 'transformConformityInfo', 'renderRowItem',
-            'handleShortcuts', 'trySetFocus', 'handleAddDescItemType', 'handleVisiblePolicy',
+        this.bindMethods(
+            'renderParents',
+            'renderRow',
+            'renderChildren',
+            'handleOpenItem',
+            'handleSetVisiblePolicy',
+            'handleCloseItem',
+            'handleParentNodeClick',
+            'handleChildNodeClick',
+            'getParentNodes',
+            'getChildNodes',
+            'getSiblingNodes',
+            'renderAccordion',
+            'renderState',
+            'transformConformityInfo',
+            'renderRowItem',
+            'handleShortcuts',
+            'trySetFocus',
+            'handleAddDescItemType',
+            'handleVisiblePolicy',
             'ensureItemVisibleNoForm',
         );
 
@@ -85,11 +99,11 @@ class NodePanel extends AbstractReactComponent {
     selectorMoveTop = () => {
         this.selectorMoveToIndex(0);
     };
-    selectorMoveRelative = (step) => {
+    selectorMoveRelative = step => {
         const {focusItemIndex} = this.state;
         this.selectorMoveToIndex(focusItemIndex + step);
     };
-    selectorMoveToIndex = (index) => {
+    selectorMoveToIndex = index => {
         const {node, versionId} = this.props;
         if (node.selectedSubNodeId === null) {
             const pageMax = node.viewStartIndex + node.pageSize - 1;
@@ -140,8 +154,10 @@ class NodePanel extends AbstractReactComponent {
 
         var scroll = false;
         if (
-            (!this.props.node.nodeInfoFetched || !this.props.node.subNodeForm.fetched)
-            && (nextProps.node.nodeInfoFetched && nextProps.node.subNodeForm.fetched)) {    // předchozí stav byl, že něco nebylo načteno, nový je, že je vše načteno
+            (!this.props.node.nodeInfoFetched || !this.props.node.subNodeForm.fetched) &&
+            nextProps.node.nodeInfoFetched && nextProps.node.subNodeForm.fetched
+        ) {
+            // předchozí stav byl, že něco nebylo načteno, nový je, že je vše načteno
             scroll = true;
             scroll = true;
         }
@@ -192,13 +208,16 @@ class NodePanel extends AbstractReactComponent {
         var {focus, node} = props;
 
         if (canSetFocus()) {
-            if (isFocusFor(focus, FOCUS_KEYS.ARR, 2, 'accordion') || (node.selectedSubNodeId === null && isFocusFor(focus, FOCUS_KEYS.ARR, 2))) {
+            if (
+                isFocusFor(focus, FOCUS_KEYS.ARR, 2, 'accordion') ||
+                (node.selectedSubNodeId === null && isFocusFor(focus, FOCUS_KEYS.ARR, 2))
+            ) {
                 this.setState({}, () => {
                     ReactDOM.findDOMNode(this.refs.content).focus();
                     focusWasSet();
                 });
             }
-                // Jen pokud není třeba focus na něco nižšího, např. prvek formuláře atp
+            // Jen pokud není třeba focus na něco nižšího, např. prvek formuláře atp
             // Voláno jen pokud formulář úspěšně focus nenastavil - např. pokud jsou všechna pole formuláře zamčena
             else if (isFocusExactFor(focus, FOCUS_KEYS.ARR, 2)) {
                 this.setState({}, () => {
@@ -221,7 +240,7 @@ class NodePanel extends AbstractReactComponent {
         var settingsValues = settings.value != 'false';
         const readMode = closed || settingsValues;
 
-        const actionWithBlur = (action) => {
+        const actionWithBlur = action => {
             const el = document.activeElement;
             if (el && el.blur) {
                 el.blur();
@@ -320,16 +339,24 @@ class NodePanel extends AbstractReactComponent {
         const {node, versionId} = this.props;
         const nodeId = node.selectedSubNodeId;
 
-        const form = <ArrRequestForm
-            fundVersionId={versionId}
-            type="DIGITIZATION"
-            onSubmitForm={(send, data) => {
-                WebApi.arrDigitizationRequestAddNodes(versionId, data.requestId, send, data.description, [nodeId], parseInt(data.digitizationFrontdesk))
-                      .then(() => {
-                          this.props.dispatch(modalDialogHide());
-                      });
-            }}
-        />;
+        const form = (
+            <ArrRequestForm
+                fundVersionId={versionId}
+                type="DIGITIZATION"
+                onSubmitForm={(send, data) => {
+                    WebApi.arrDigitizationRequestAddNodes(
+                        versionId,
+                        data.requestId,
+                        send,
+                        data.description,
+                        [nodeId],
+                        parseInt(data.digitizationFrontdesk),
+                    ).then(() => {
+                        this.props.dispatch(modalDialogHide());
+                    });
+                }}
+            />
+        );
         this.props.dispatch(modalDialogShow(this, i18n('arr.request.digitizationRequest.form.title'), form));
     };
 
@@ -340,26 +367,32 @@ class NodePanel extends AbstractReactComponent {
         const {node, versionId} = this.props;
         const nodeId = node.selectedSubNodeId;
 
-        const confirmForm = <ConfirmForm
-            confirmMessage={i18n('arr.daos.node.sync.confirm-message')}
-            submittingMessage={i18n('arr.daos.node.sync.submitting-message')}
-            submitTitle={i18n('global.action.run')}
-            onSubmit={() => {
-                return WebApi.syncDaoLink(versionId, nodeId);
-            }}
-            onSubmitSuccess={() => {
-                this.props.dispatch(modalDialogHide());
-            }}
-        />;
+        const confirmForm = (
+            <ConfirmForm
+                confirmMessage={i18n('arr.daos.node.sync.confirm-message')}
+                submittingMessage={i18n('arr.daos.node.sync.submitting-message')}
+                submitTitle={i18n('global.action.run')}
+                onSubmit={() => {
+                    return WebApi.syncDaoLink(versionId, nodeId);
+                }}
+                onSubmitSuccess={() => {
+                    this.props.dispatch(modalDialogHide());
+                }}
+            />
+        );
         this.props.dispatch(modalDialogShow(this, i18n('arr.daos.node.sync.title'), confirmForm));
     };
 
     handleVisiblePolicy() {
         const {node, versionId} = this.props;
-        const form = <NodeSettingsForm nodeId={node.selectedSubNodeId} fundVersionId={versionId}
-                                       onSubmit={this.handleSetVisiblePolicy}
-                                       onSubmitSuccess={() => this.props.dispatch(modalDialogHide())}
-        />;
+        const form = (
+            <NodeSettingsForm
+                nodeId={node.selectedSubNodeId}
+                fundVersionId={versionId}
+                onSubmit={this.handleSetVisiblePolicy}
+                onSubmitSuccess={() => this.props.dispatch(modalDialogHide())}
+            />
+        );
         this.props.dispatch(modalDialogShow(this, i18n('visiblePolicy.form.title'), form));
     }
 
@@ -373,8 +406,9 @@ class NodePanel extends AbstractReactComponent {
             });
         }
 
-        const nodeExtensionsIds = Object.values(nodeExtensions).filter(i => i.checked).map(i => i.id);
-
+        const nodeExtensionsIds = Object.values(nodeExtensions)
+            .filter(i => i.checked)
+            .map(i => i.id);
 
         return WebApi.setVisiblePolicy(node.selectedSubNodeId, versionId, mapIds, false, nodeExtensionsIds).then(() => {
             dispatch(setVisiblePolicyReceive(node.selectedSubNodeId, versionId));
@@ -385,7 +419,12 @@ class NodePanel extends AbstractReactComponent {
      * Zobrazení dialogu pro přidání atributu.
      */
     handleAddDescItemType() {
-        const {node: {subNodeForm, selectedSubNodeId, routingKey}, versionId, fund, userDetail} = this.props;
+        const {
+            node: {subNodeForm, selectedSubNodeId, routingKey},
+            versionId,
+            fund,
+            userDetail,
+        } = this.props;
         let strictMode = fund.activeVersion.strictMode;
 
         let userStrictMode = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fund.id);
@@ -394,7 +433,13 @@ class NodePanel extends AbstractReactComponent {
         }
 
         const formData = subNodeForm.formData;
-        const descItemTypes = getDescItemsAddTree(formData.descItemGroups, subNodeForm.infoTypesMap, subNodeForm.refTypesMap, subNodeForm.infoGroups, strictMode);
+        const descItemTypes = getDescItemsAddTree(
+            formData.descItemGroups,
+            subNodeForm.infoTypesMap,
+            subNodeForm.refTypesMap,
+            subNodeForm.infoGroups,
+            strictMode,
+        );
 
         // Zatím zakomentováno, možná se bude ještě nějak řadit - zatím není jasné podle čeho řadit - podle uvedení v yaml nebo jinak?
         // function typeId(type) {
@@ -415,12 +460,14 @@ class NodePanel extends AbstractReactComponent {
         // // Seřazení podle position
         // descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
 
-        var submit = (data) => {
-            return this.props.dispatch(nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, routingKey, data.descItemTypeId.id));
+        var submit = data => {
+            return this.props.dispatch(
+                nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, routingKey, data.descItemTypeId.id),
+            );
         };
 
         // Modální dialog
-        const form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>;
+        const form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit} />;
         this.props.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
     }
 
@@ -462,11 +509,18 @@ class NodePanel extends AbstractReactComponent {
     requestData(versionId, node, settings) {
         if (node.selectedSubNodeId != null) {
             this.props.dispatch(descItemTypesFetchIfNeeded());
-            this.props.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, node.routingKey, node.dirty, settings.showChildren, settings.showParents));
+            this.props.dispatch(
+                nodeFormActions.fundSubNodeFormFetchIfNeeded(
+                    versionId,
+                    node.routingKey,
+                    node.dirty,
+                    settings.showChildren,
+                    settings.showParents,
+                ),
+            );
             this.props.dispatch(refRulDataTypesFetchIfNeeded());
 
             this.props.dispatch(fundSubNodeDaosFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
-
         }
         this.props.dispatch(visiblePolicyTypesFetchIfNeeded());
         this.props.dispatch(calendarTypesFetchIfNeeded());
@@ -494,7 +548,9 @@ class NodePanel extends AbstractReactComponent {
      */
     handleChildNodeClick(node) {
         var subNodeId = node.id;
-        var subNodeParentNode = this.getSiblingNodes()[indexById(this.getSiblingNodes(), this.props.node.selectedSubNodeId)];
+        var subNodeParentNode = this.getSiblingNodes()[
+            indexById(this.getSiblingNodes(), this.props.node.selectedSubNodeId)
+        ];
         this.props.dispatch(fundSelectSubNode(this.props.versionId, subNodeId, subNodeParentNode, false, null, true));
     }
 
@@ -520,9 +576,11 @@ class NodePanel extends AbstractReactComponent {
         if (node.subNodeInfo.fetched || node.selectedSubNodeId == null) {
             children = this.renderRow(nodes, 'children', 'children', this.handleChildNodeClick);
         } else {
-            children = <div key='children' className='children'>
-                <HorizontalLoader text={i18n('global.data.loading.node.children')}/>
-            </div>;
+            children = (
+                <div key="children" className="children">
+                    <HorizontalLoader text={i18n('global.data.loading.node.children')} />
+                </div>
+            );
         }
         return children;
     }
@@ -548,11 +606,13 @@ class NodePanel extends AbstractReactComponent {
         }
 
         return (
-            <ListBox key={key} className={myClass}
-                     items={usedItems}
-                     renderItemContent={this.renderRowItem.bind(this, onClick)}
-                     canSelectItem={(item, index) => typeof item.id !== 'undefined'}
-                     onSelect={(item, index) => onClick(item)}
+            <ListBox
+                key={key}
+                className={myClass}
+                items={usedItems}
+                renderItemContent={this.renderRowItem.bind(this, onClick)}
+                canSelectItem={(item, index) => typeof item.id !== 'undefined'}
+                onSelect={(item, index) => onClick(item)}
             />
         );
     }
@@ -564,17 +624,20 @@ class NodePanel extends AbstractReactComponent {
      */
     renderRowItem(onClick, props) {
         const {item} = props;
-        var icon = item.icon ? <Icon className="node-icon" glyph={getGlyph(item.icon)}/> : '';
+        var icon = item.icon ? <Icon className="node-icon" glyph={getGlyph(item.icon)} /> : '';
         var refmark = createReferenceMarkString(item);
         var levels = '';
-        if (refmark != '')
-            levels = <span className="reference-mark">{refmark}</span>;
+        if (refmark != '') levels = <span className="reference-mark">{refmark}</span>;
         var name = item.name ? item.name : <i>{i18n('fundTree.node.name.undefined', item.id)}</i>;
-        name = <span title={name} className="name"><span>{name}</span></span>;
+        name = (
+            <span title={name} className="name">
+                <span>{name}</span>
+            </span>
+        );
         const click = typeof item.id !== 'undefined' ? onClick.bind(this, item) : null;
 
         return (
-            <div key={item.id} className='node' onClick={click}>
+            <div key={item.id} className="node" onClick={click}>
                 {levels} {icon} &nbsp;{name}
             </div>
         );
@@ -640,7 +703,7 @@ class NodePanel extends AbstractReactComponent {
 
             var policyTypes = item.nodeConformity.policyTypeIdsVisible;
 
-            var description = (item.nodeConformity.description) ? '<br />' + item.nodeConformity.description : '';
+            var description = item.nodeConformity.description ? '<br />' + item.nodeConformity.description : '';
             var messages = [];
 
             var errors = item.nodeConformity.errorList;
@@ -648,48 +711,79 @@ class NodePanel extends AbstractReactComponent {
 
             var errorsHide = 0;
             if (errors && errors.length > 0) {
-                messages.push(<div key="errors" className="error">Chyby</div>);
+                messages.push(
+                    <div key="errors" className="error">
+                        Chyby
+                    </div>,
+                );
                 errors.forEach(error => {
                     var cls = 'message';
-                    if (error.policyTypeId != null
-                        && policyTypes[error.policyTypeId] != null
-                        && policyTypes[error.policyTypeId] == false) {
+                    if (
+                        error.policyTypeId != null &&
+                        policyTypes[error.policyTypeId] != null &&
+                        policyTypes[error.policyTypeId] == false
+                    ) {
                         cls += ' ignore';
                         errorsHide++;
                     }
-                    messages.push(<div key={'err' + _id++} className={cls}>{error.description}</div>);
+                    messages.push(
+                        <div key={'err' + _id++} className={cls}>
+                            {error.description}
+                        </div>,
+                    );
                 });
             }
 
             var missingsHide = 0;
             if (missings && missings.length > 0) {
-                messages.push(<div key="missings" className="missing">Chybějící</div>);
+                messages.push(
+                    <div key="missings" className="missing">
+                        Chybějící
+                    </div>,
+                );
                 missings.forEach(missing => {
                     var cls = 'message';
-                    if (missing.policyTypeId != null
-                        && policyTypes[missing.policyTypeId] != null
-                        && policyTypes[missing.policyTypeId] == false) {
+                    if (
+                        missing.policyTypeId != null &&
+                        policyTypes[missing.policyTypeId] != null &&
+                        policyTypes[missing.policyTypeId] == false
+                    ) {
                         cls += ' ignore';
                         missingsHide++;
                     }
-                    messages.push(<div key={'mis' + _id++} className={cls}>{missing.description}</div>);
+                    messages.push(
+                        <div key={'mis' + _id++} className={cls}>
+                            {missing.description}
+                        </div>,
+                    );
                 });
             }
 
             if (item.nodeConformity.state === 'OK') {
-                icon = <Icon glyph="fa-check"/>;
+                icon = <Icon glyph="fa-check" />;
                 tooltip = <div>{i18n('arr.node.status.ok') + description}</div>;
             } else {
-                if ((missings == null || missingsHide == missings.length) && (errors == null || errorsHide == errors.length)) {
-                    icon = <Icon glyph="fa-check-circle"/>;
-                    tooltip = <div>{i18n('arr.node.status.okx')} {description} {messages}</div>;
+                if (
+                    (missings == null || missingsHide == missings.length) &&
+                    (errors == null || errorsHide == errors.length)
+                ) {
+                    icon = <Icon glyph="fa-check-circle" />;
+                    tooltip = (
+                        <div>
+                            {i18n('arr.node.status.okx')} {description} {messages}
+                        </div>
+                    );
                 } else {
-                    icon = <Icon glyph="fa-exclamation-circle"/>;
-                    tooltip = <div>{i18n('arr.node.status.err')} {description} {messages}</div>;
+                    icon = <Icon glyph="fa-exclamation-circle" />;
+                    tooltip = (
+                        <div>
+                            {i18n('arr.node.status.err')} {description} {messages}
+                        </div>
+                    );
                 }
             }
         } else {
-            icon = <Icon glyph="fa-exclamation-triangle"/>;
+            icon = <Icon glyph="fa-exclamation-triangle" />;
             tooltip = <div>{i18n('arr.node.status.undefined')}</div>;
         }
 
@@ -702,9 +796,7 @@ class NodePanel extends AbstractReactComponent {
                 showDelay={50}
                 hideDelay={0}
             >
-                <div>
-                    {icon}
-                </div>
+                <div>{icon}</div>
             </TooltipTrigger>
         );
     }
@@ -716,14 +808,22 @@ class NodePanel extends AbstractReactComponent {
 
         return (
             <TooltipTrigger
-                content={<span>{item.issues.map((i) => <div key={i.id}>#{i.number} - {i.description}</div>)}</span>}
+                content={
+                    <span>
+                        {item.issues.map(i => (
+                            <div key={i.id}>
+                                #{i.number} - {i.description}
+                            </div>
+                        ))}
+                    </span>
+                }
                 holdOnHover
                 placement="auto"
                 className="issue"
                 showDelay={50}
                 hideDelay={0}
             >
-                <Icon glyph="fa-commenting"/>
+                <Icon glyph="fa-commenting" />
             </TooltipTrigger>
         );
     }
@@ -743,14 +843,17 @@ class NodePanel extends AbstractReactComponent {
             if (!node.selectedSubNodeId) {
                 console.warn('Není vybraná JP!', node);
             } else {
-                rows.push(<HorizontalLoader key="loading" text={i18n('global.data.loading.node')}/>);
+                rows.push(<HorizontalLoader key="loading" text={i18n('global.data.loading.node')} />);
             }
         } else {
             if (node.viewStartIndex > 0 && displayAccordion) {
                 rows.push(
-                    <Button key="prev"
-                            onClick={() => this.props.dispatch(fundSubNodesPrev(versionId, node.id, node.routingKey))}>
-                        <Icon glyph="fa-chevron-left"/>{i18n('arr.fund.prev')}
+                    <Button
+                        key="prev"
+                        onClick={() => this.props.dispatch(fundSubNodesPrev(versionId, node.id, node.routingKey))}
+                    >
+                        <Icon glyph="fa-chevron-left" />
+                        {i18n('arr.fund.prev')}
                     </Button>,
                 );
             }
@@ -759,7 +862,9 @@ class NodePanel extends AbstractReactComponent {
 
                 const state = this.renderState(item);
                 const issues = this.renderIssues(item);
-                const accordionLeft = item.accordionLeft ? item.accordionLeft : i18n('accordion.title.left.name.undefined', item.id);
+                const accordionLeft = item.accordionLeft
+                    ? item.accordionLeft
+                    : i18n('accordion.title.left.name.undefined', item.id);
                 const accordionRight = item.accordionRight ? item.accordionRight : '';
                 const referenceMark = <span className="reference-mark">{createReferenceMarkString(item)}</span>;
                 const focused = a === this.state.focusItemIndex;
@@ -770,33 +875,53 @@ class NodePanel extends AbstractReactComponent {
                     const title = item.digitizationRequests.map(digReq => {
                         return createDigitizationName(digReq, userDetail);
                     });
-                    digitizationInfo = <div className="digitizationInfo" title={title}>
-                        <Icon glyph="fa-shopping-basket"/>
-                    </div>;
+                    digitizationInfo = (
+                        <div className="digitizationInfo" title={title}>
+                            <Icon glyph="fa-shopping-basket" />
+                        </div>
+                    );
                 }
 
                 if (node.selectedSubNodeId === item.id) {
                     rows.push(
-                        <div key={item.id} ref={'accheader-' + item.id}
-                             className={'accordion-item opened' + (focused ? ' focused' : '') + (disabled ? ' disabled' : '')}>
-                            <div key='header' className='accordion-header-container'
-                                 onClick={displayAccordion ? this.handleCloseItem.bind(this, item) : () => ''}>
+                        <div
+                            key={item.id}
+                            ref={'accheader-' + item.id}
+                            className={
+                                'accordion-item opened' + (focused ? ' focused' : '') + (disabled ? ' disabled' : '')
+                            }
+                        >
+                            <div
+                                key="header"
+                                className="accordion-header-container"
+                                onClick={displayAccordion ? this.handleCloseItem.bind(this, item) : () => ''}
+                            >
                                 <div className={'accordion-header'}>
-                                    <div title={accordionLeft} className='accordion-header-left'
-                                         key='accordion-header-left'>
-                                        {referenceMark} <span className="title"
-                                                              title={accordionLeft}>{accordionLeft}</span>
+                                    <div
+                                        title={accordionLeft}
+                                        className="accordion-header-left"
+                                        key="accordion-header-left"
+                                    >
+                                        {referenceMark}{' '}
+                                        <span className="title" title={accordionLeft}>
+                                            {accordionLeft}
+                                        </span>
                                     </div>
-                                    <div title={accordionRight} className='accordion-header-right'
-                                         key='accordion-header-right'>
-                                        <span className="title" title={accordionRight}>{accordionRight}</span>
+                                    <div
+                                        title={accordionRight}
+                                        className="accordion-header-right"
+                                        key="accordion-header-right"
+                                    >
+                                        <span className="title" title={accordionRight}>
+                                            {accordionRight}
+                                        </span>
                                     </div>
                                     {issues}
                                     {state}
                                     {digitizationInfo}
                                 </div>
                             </div>
-                            <div key="body" className='accordion-body'>
+                            <div key="body" className="accordion-body">
                                 {form}
                                 {daos}
                             </div>
@@ -804,19 +929,35 @@ class NodePanel extends AbstractReactComponent {
                     );
                 } else if (displayAccordion) {
                     rows.push(
-                        <div key={item.id} ref={'accheader-' + item.id}
-                             className={'accordion-item closed' + (focused ? ' focused' : '')}>
-                            <div key='header' className='accordion-header-container'
-                                 onClick={this.handleOpenItem.bind(this, item)}>
-                                <div className='accordion-header'>
-                                    <div title={accordionLeft} className='accordion-header-left'
-                                         key='accordion-header-left'>
-                                        {referenceMark} <span className="title"
-                                                              title={accordionLeft}>{accordionLeft}</span>
+                        <div
+                            key={item.id}
+                            ref={'accheader-' + item.id}
+                            className={'accordion-item closed' + (focused ? ' focused' : '')}
+                        >
+                            <div
+                                key="header"
+                                className="accordion-header-container"
+                                onClick={this.handleOpenItem.bind(this, item)}
+                            >
+                                <div className="accordion-header">
+                                    <div
+                                        title={accordionLeft}
+                                        className="accordion-header-left"
+                                        key="accordion-header-left"
+                                    >
+                                        {referenceMark}{' '}
+                                        <span className="title" title={accordionLeft}>
+                                            {accordionLeft}
+                                        </span>
                                     </div>
-                                    <div title={accordionRight} className='accordion-header-right'
-                                         key='accordion-header-right'>
-                                        <span className="title" title={accordionRight}>{accordionRight}</span>
+                                    <div
+                                        title={accordionRight}
+                                        className="accordion-header-right"
+                                        key="accordion-header-right"
+                                    >
+                                        <span className="title" title={accordionRight}>
+                                            {accordionRight}
+                                        </span>
                                     </div>
                                     {issues}
                                     {state}
@@ -828,19 +969,35 @@ class NodePanel extends AbstractReactComponent {
                 }
             }
 
-            if (node.nodeCount > node.pageSize && node.viewStartIndex + node.pageSize / 2 < node.nodeCount && node.nodeCount - node.viewStartIndex > node.pageSize && displayAccordion) {
+            if (
+                node.nodeCount > node.pageSize &&
+                node.viewStartIndex + node.pageSize / 2 < node.nodeCount &&
+                node.nodeCount - node.viewStartIndex > node.pageSize &&
+                displayAccordion
+            ) {
                 rows.push(
-                    <Button key="next"
-                            onClick={() => this.props.dispatch(fundSubNodesNext(versionId, node.id, node.routingKey))}><Icon
-                        glyph="fa-chevron-right"/>{i18n('arr.fund.next')}</Button>,
+                    <Button
+                        key="next"
+                        onClick={() => this.props.dispatch(fundSubNodesNext(versionId, node.id, node.routingKey))}
+                    >
+                        <Icon glyph="fa-chevron-right" />
+                        {i18n('arr.fund.next')}
+                    </Button>,
                 );
             }
         }
         return (
-            <Shortcuts name='Accordion' key='content' className='content' ref='content'
-                       handler={(action, e) => this.handleAccordionShortcuts(action, e)} tabIndex={0} global
-                       stopPropagation={false}>
-                <div className='inner-wrapper' ref="innerAccordionWrapper">
+            <Shortcuts
+                name="Accordion"
+                key="content"
+                className="content"
+                ref="content"
+                handler={(action, e) => this.handleAccordionShortcuts(action, e)}
+                tabIndex={0}
+                global
+                stopPropagation={false}
+            >
+                <div className="inner-wrapper" ref="innerAccordionWrapper">
                     <div className="menu-wrapper">
                         <NodeActionsBar
                             simplified={!displayAccordion}
@@ -854,7 +1011,7 @@ class NodePanel extends AbstractReactComponent {
                             onSwitchNode={this.handleAccordionShortcuts.bind(this)}
                         />
                     </div>
-                    <div className='content-wrapper' ref='accordionContent'>
+                    <div className="content-wrapper" ref="accordionContent">
                         {rows}
                     </div>
                 </div>
@@ -862,12 +1019,18 @@ class NodePanel extends AbstractReactComponent {
         );
     }
 
-
     render() {
         const {
-                  calendarTypes, versionId, rulDataTypes, node,
-                  fundId, userDetail, fund, closed, descItemTypes,
-              } = this.props;
+            calendarTypes,
+            versionId,
+            rulDataTypes,
+            node,
+            fundId,
+            userDetail,
+            fund,
+            closed,
+            descItemTypes,
+        } = this.props;
 
         const settings = this.getSettingsFromProps();
         const readMode = settings.readMode;
@@ -880,61 +1043,74 @@ class NodePanel extends AbstractReactComponent {
             var descItemCopyFromPrevEnabled = false;
             var i1 = indexById(node.childNodes, node.selectedSubNodeId);
             var i2 = indexById(node.childNodes, node.selectedSubNodeId);
-            if (i1 !== null && i2 !== null && i2 > 0 && i1 > 0) {   // před danám nodem existuje nějaký záznam a v případě filtrování existuje před daným nodem také nějaký záznam
-                if (node.childNodes[i1 - 1].id == node.childNodes[i2 - 1].id) {  // jedná se o stejné záznamy, můžeme zobrazit akci kopírování
+            if (i1 !== null && i2 !== null && i2 > 0 && i1 > 0) {
+                // před danám nodem existuje nějaký záznam a v případě filtrování existuje před daným nodem také nějaký záznam
+                if (node.childNodes[i1 - 1].id == node.childNodes[i2 - 1].id) {
+                    // jedná se o stejné záznamy, můžeme zobrazit akci kopírování
                     descItemCopyFromPrevEnabled = true;
                 }
             }
 
-
             // Formulář editace JP
             var conformityInfo = this.transformConformityInfo(node);
             // descItemTypeInfos={node.subNodeForm.descItemTypeInfos}
-            form = <NodeSubNodeForm
-                key={'sub-node-form-' + node.selectedSubNodeId}
-                ref='subNodeForm'
-                singleDescItemTypeEdit={false}
+            form = (
+                <NodeSubNodeForm
+                    key={'sub-node-form-' + node.selectedSubNodeId}
+                    ref="subNodeForm"
+                    singleDescItemTypeEdit={false}
+                    nodeId={node.id}
+                    versionId={versionId}
+                    selectedSubNodeId={node.selectedSubNodeId}
+                    routingKey={node.routingKey}
+                    subNodeForm={node.subNodeForm}
+                    rulDataTypes={rulDataTypes}
+                    calendarTypes={calendarTypes}
+                    descItemTypes={descItemTypes}
+                    conformityInfo={conformityInfo}
+                    parentNode={node}
+                    fundId={fundId}
+                    selectedSubNode={node.subNodeForm.data.parent}
+                    descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
+                    closed={closed}
+                    onAddDescItemType={this.handleAddDescItemType}
+                    onVisiblePolicy={this.handleVisiblePolicy}
+                    onDigitizationRequest={this.handleDigitizationRequest}
+                    onDigitizationSync={this.handleDigitizationSync}
+                    readMode={readMode}
+                    arrPerm={arrPerm}
+                />
+            );
+        } else {
+            form = <HorizontalLoader text={i18n('global.data.loading.form')} />;
+        }
+
+        const daos = (
+            <SubNodeDao
                 nodeId={node.id}
                 versionId={versionId}
                 selectedSubNodeId={node.selectedSubNodeId}
                 routingKey={node.routingKey}
-                subNodeForm={node.subNodeForm}
-                rulDataTypes={rulDataTypes}
-                calendarTypes={calendarTypes}
-                descItemTypes={descItemTypes}
-                conformityInfo={conformityInfo}
-                parentNode={node}
-                fundId={fundId}
-                selectedSubNode={node.subNodeForm.data.parent}
-                descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
-                closed={closed}
-                onAddDescItemType={this.handleAddDescItemType}
-                onVisiblePolicy={this.handleVisiblePolicy}
-                onDigitizationRequest={this.handleDigitizationRequest}
-                onDigitizationSync={this.handleDigitizationSync}
                 readMode={readMode}
-                arrPerm={arrPerm}
-            />;
-        } else {
-            form = <HorizontalLoader text={i18n('global.data.loading.form')}/>;
-        }
-
-        const daos = <SubNodeDao
-            nodeId={node.id}
-            versionId={versionId}
-            selectedSubNodeId={node.selectedSubNodeId}
-            routingKey={node.routingKey}
-            readMode={readMode}
-            daos={node.subNodeDaos}/>;
+                daos={node.subNodeDaos}
+            />
+        );
 
         var cls = classNames({
             'node-panel-container': true,
         });
 
         return (
-            <Shortcuts name='NodePanel' key={'node-panel'} className={cls} handler={this.handleShortcuts} tabIndex={0}
-                       global stopPropagation={false}>
-                <div key='main' className='main'>
+            <Shortcuts
+                name="NodePanel"
+                key={'node-panel'}
+                className={cls}
+                handler={this.handleShortcuts}
+                tabIndex={0}
+                global
+                stopPropagation={false}
+            >
+                <div key="main" className="main">
                     {settings.showParents && this.renderParents()}
                     {this.renderAccordion(form, daos, readMode, arrPerm)}
                     {settings.showChildren && this.renderChildren()}
@@ -975,9 +1151,11 @@ class NodePanel extends AbstractReactComponent {
                     if (conformityInfo.errors[error.descItemObjectId] == null) {
                         conformityInfo.errors[error.descItemObjectId] = [];
                     }
-                    if (error.policyTypeId == null
-                        || policyTypes[error.policyTypeId] == null
-                        || policyTypes[error.policyTypeId] == true) {
+                    if (
+                        error.policyTypeId == null ||
+                        policyTypes[error.policyTypeId] == null ||
+                        policyTypes[error.policyTypeId] == true
+                    ) {
                         conformityInfo.errors[error.descItemObjectId].push(error);
                     }
                 });
@@ -989,9 +1167,11 @@ class NodePanel extends AbstractReactComponent {
                     if (conformityInfo.missings[missing.descItemTypeId] == null) {
                         conformityInfo.missings[missing.descItemTypeId] = [];
                     }
-                    if (missing.policyTypeId == null
-                        || policyTypes[missing.policyTypeId] == null
-                        || policyTypes[missing.policyTypeId] == true) {
+                    if (
+                        missing.policyTypeId == null ||
+                        policyTypes[missing.policyTypeId] == null ||
+                        policyTypes[missing.policyTypeId] == true
+                    ) {
                         conformityInfo.missings[missing.descItemTypeId].push(missing);
                     }
                 });

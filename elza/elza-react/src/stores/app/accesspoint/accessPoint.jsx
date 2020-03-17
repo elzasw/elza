@@ -12,7 +12,7 @@ const initialState = {
     currentDataKey: '',
     form: itemForm(),
     nameItemForm: itemForm(),
-    fragmentItemForm: itemForm()
+    fragmentItemForm: itemForm(),
 };
 
 export default function accessPoint(state = initialState, action = {}) {
@@ -37,23 +37,22 @@ export default function accessPoint(state = initialState, action = {}) {
     }
 
     switch (action.type) {
-        case types.STORE_SAVE:{
+        case types.STORE_SAVE: {
             const {id} = state;
             return {
-                id
-            }
+                id,
+            };
         }
-        case types.STORE_LOAD:{
+        case types.STORE_LOAD: {
             return {
                 ...state,
                 fetched: false,
                 fetching: false,
                 currentDataKey: '',
-                form: itemForm()
-            }
+                form: itemForm(),
+            };
         }
         default:
-            return state
+            return state;
     }
 }
-

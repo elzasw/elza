@@ -10,13 +10,13 @@ import * as types from 'actions/constants/ActionTypes.js';
  * @param {Object} menu obsah menu - <ul className="dropdown-menu"> a její obsah
  * @param {Object} position pozice
  */
-export function contextMenuShow(component, menu, position={x:0,y:0}) {
+export function contextMenuShow(component, menu, position = {x: 0, y: 0}) {
     return {
         type: types.GLOBAL_CONTEXT_MENU_SHOW,
         component,
         menu,
         position,
-    }
+    };
 }
 
 /**
@@ -28,7 +28,7 @@ export function contextMenuHide() {
         if (state.contextMenu.visible) {
             return dispatch({
                 type: types.GLOBAL_CONTEXT_MENU_HIDE,
-            })
+            });
         }
-    }
+    };
 }

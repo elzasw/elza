@@ -33,36 +33,47 @@ class FundDetailTree extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('callFundSelectSubNode', 'handleNodeClick', 'handleNodeDoubleClick', 'handleSelectInNewTab', 'handleSelectInTab',
-            'handleContextMenu', 'handleFulltextChange', 'handleFulltextSearch',
-            'handleFulltextPrevItem', 'handleFulltextNextItem', 'handleCollapse',
-            'trySetFocus');
+        this.bindMethods(
+            'callFundSelectSubNode',
+            'handleNodeClick',
+            'handleNodeDoubleClick',
+            'handleSelectInNewTab',
+            'handleSelectInTab',
+            'handleContextMenu',
+            'handleFulltextChange',
+            'handleFulltextSearch',
+            'handleFulltextPrevItem',
+            'handleFulltextNextItem',
+            'handleCollapse',
+            'trySetFocus',
+        );
     }
 
     componentDidMount() {
-        const { versionId, expandedIds } = this.props;
+        const {versionId, expandedIds} = this.props;
         this.requestFundTreeData(versionId, expandedIds);
         this.trySetFocus(this.props);
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        const { versionId, expandedIds } = nextProps;
+        const {versionId, expandedIds} = nextProps;
         this.requestFundTreeData(versionId, expandedIds);
         this.trySetFocus(nextProps);
     }
 
     trySetFocus(props) {
-        var { focus } = props;
+        var {focus} = props;
 
         if (canSetFocus()) {
-            if (isFocusFor(focus, null, 1)) {   // focus po ztrátě
-                if (this.refs.tree) {   // ještě nemusí existovat
+            if (isFocusFor(focus, null, 1)) {
+                // focus po ztrátě
+                if (this.refs.tree) {
+                    // ještě nemusí existovat
                     this.setState({}, () => {
                         this.refs.tree.getWrappedInstance().focus();
                         focusWasSet();
                     });
                 }
-
             } else if (isFocusFor(focus, FOCUS_KEYS.ARR, 1, 'tree') || isFocusFor(focus, FOCUS_KEYS.ARR, 1)) {
                 this.setState({}, () => {
                     this.refs.tree.getWrappedInstance().focus();
@@ -96,15 +107,17 @@ class FundDetailTree extends AbstractReactComponent {
 
         var menu = (
             <ul className="dropdown-menu">
-                <Dropdown.Item
-                    onClick={this.handleSelectInNewTab.bind(this, node)}>{i18n('fundTree.action.openInNewTab')}</Dropdown.Item>
-                <Dropdown.Item
-                    onClick={this.handleSelectInTab.bind(this, node)}>{i18n('fundTree.action.open')}</Dropdown.Item>
+                <Dropdown.Item onClick={this.handleSelectInNewTab.bind(this, node)}>
+                    {i18n('fundTree.action.openInNewTab')}
+                </Dropdown.Item>
+                <Dropdown.Item onClick={this.handleSelectInTab.bind(this, node)}>
+                    {i18n('fundTree.action.open')}
+                </Dropdown.Item>
             </ul>
         );
 
         this.props.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, node));
-        this.props.dispatch(contextMenuShow(this, menu, { x: e.clientX, y: e.clientY }));
+        this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y: e.clientY}));
     }
 
     /**
@@ -137,13 +150,14 @@ class FundDetailTree extends AbstractReactComponent {
         this.props.dispatch(routerNavigate('/arr'));
 
         // Otevření archivního souboru
-        const { fund } = this.props;
+        const {fund} = this.props;
         var fundObj = getFundFromFundAndVersion(fund, fund.versions[0]);
         this.props.dispatch(selectFundTab(fundObj));
 
         // Vybrání položky - jako formulář
         var parentNode = getParentNode(node, this.props.nodes);
-        if (parentNode == null) {   // root
+        if (parentNode == null) {
+            // root
             parentNode = createFundRoot(this.props.fund);
         }
         this.props.dispatch(fundSelectSubNode(this.props.versionId, node.id, parentNode, openNewTab, null, false));
@@ -155,7 +169,16 @@ class FundDetailTree extends AbstractReactComponent {
      * @param e
      */
     handleNodeClick(node, ensureItemVisible, e) {
-        this.props.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, node.id, false, false, null));
+        this.props.dispatch(
+            fundTreeSelectNode(
+                types.FUND_TREE_AREA_FUNDS_FUND_DETAIL,
+                this.props.versionId,
+                node.id,
+                false,
+                false,
+                null,
+            ),
+        );
     }
 
     /**
@@ -168,7 +191,9 @@ class FundDetailTree extends AbstractReactComponent {
     }
 
     handleFulltextChange(value) {
-        this.props.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, value));
+        this.props.dispatch(
+            fundTreeFulltextChange(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, value),
+        );
     }
 
     handleFulltextSearch() {
@@ -187,20 +212,26 @@ class FundDetailTree extends AbstractReactComponent {
      * Zabalení stromu
      */
     handleCollapse() {
-        this.props.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, this.props.fund));
+        this.props.dispatch(
+            fundTreeCollapse(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, this.props.fund),
+        );
     }
 
     render() {
-        const { cutLongLabels } = this.props;
+        const {cutLongLabels} = this.props;
 
         return (
             <FundTreeLazy
-                ref='tree'
+                ref="tree"
                 {...this.props}
                 className={this.props.className}
                 cutLongLabels={cutLongLabels}
                 onOpenCloseNode={(node, expand) => {
-                    expand ? this.props.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, node)) : this.props.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, node));
+                    expand
+                        ? this.props.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, node))
+                        : this.props.dispatch(
+                              fundTreeNodeCollapse(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, node),
+                          );
                 }}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
@@ -216,4 +247,3 @@ class FundDetailTree extends AbstractReactComponent {
 }
 
 export default connect()(FundDetailTree);
-

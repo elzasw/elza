@@ -10,7 +10,6 @@ import LazyListBox from './LazyListBox';
 import './ListBox2.scss';
 
 class ListBox2 extends AbstractReactComponent {
-
     handleGetItems = (fromIndex, toIndex) => {
         const {items} = this.props;
         return new Promise((resolve, reject) => {
@@ -22,12 +21,7 @@ class ListBox2 extends AbstractReactComponent {
         const {itemHeight} = this.props;
 
         return (
-            <LazyListBox
-                {...this.props}
-                getItems={this.handleGetItems}
-                itemHeight={itemHeight || 24}
-                fetchNow={true}
-            />
+            <LazyListBox {...this.props} getItems={this.handleGetItems} itemHeight={itemHeight || 24} fetchNow={true} />
         );
     }
 }

@@ -32,7 +32,7 @@ class FundUsersPanel extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        const { fundId } = this.props;
+        const {fundId} = this.props;
         this.props.dispatch(adminPermissions.fetchUsersByFund(fundId));
     }
 
@@ -59,7 +59,9 @@ class FundUsersPanel extends AbstractReactComponent {
         this.sortPermissions(permissions);
 
         // Creates new selected id from props. Uses state, if the selected permission in props didn't change.
-        let newSelectedId = propsSelectedPermissionChanged ? nextProps.selectedPermission.id : this.state.selectedPermission.id;
+        let newSelectedId = propsSelectedPermissionChanged
+            ? nextProps.selectedPermission.id
+            : this.state.selectedPermission.id;
         let newSelectedIndex = this.getIndexById(newSelectedId, permissions);
 
         // Selects the first item, if the index is not found for the selected id.
@@ -72,7 +74,7 @@ class FundUsersPanel extends AbstractReactComponent {
             permissions,
         };
 
-        let permission = permissions[newSelectedIndex] || { id: null };
+        let permission = permissions[newSelectedIndex] || {id: null};
 
         this.selectItem(permission, newSelectedIndex);
 
@@ -89,15 +91,18 @@ class FundUsersPanel extends AbstractReactComponent {
     }
 
     handleRemove = (item, index) => {
-        const { fundId } = this.props;
-        const { selectedPermission, permissions } = this.state;
+        const {fundId} = this.props;
+        const {selectedPermission, permissions} = this.state;
 
         // Prepare new permissions
         let newPermissions = [...permissions];
 
         let newSelectedPermissionIndex = selectedPermission.index;
 
-        const api = fundId === FundsPermissionPanel.ALL_ID ? WebApi.deleteUserFundAllPermission(item.id) : WebApi.deleteUserFundPermission(item.id, fundId);
+        const api =
+            fundId === FundsPermissionPanel.ALL_ID
+                ? WebApi.deleteUserFundAllPermission(item.id)
+                : WebApi.deleteUserFundPermission(item.id, fundId);
         api.then(data => {
             // Remove selected item
             newPermissions.splice(index, 1);
@@ -126,58 +131,63 @@ class FundUsersPanel extends AbstractReactComponent {
 
     handleAdd = () => {
         //const {fundId} = this.props;
-        const { selectedPermission } = this.state;
+        const {selectedPermission} = this.state;
 
-        this.props.dispatch(modalDialogShow(this, i18n('admin.perms.fund.tabs.users.add.title'),
-            <SelectItemsForm
-                onSubmitForm={(users) => {
-                    const { permissions } = this.state;
-                    const permissionsMap = getMapFromList(permissions);
-                    const newPermissions = [...permissions];
-                    let newSelectedPermission = { ...selectedPermission };
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('admin.perms.fund.tabs.users.add.title'),
+                <SelectItemsForm
+                    onSubmitForm={users => {
+                        const {permissions} = this.state;
+                        const permissionsMap = getMapFromList(permissions);
+                        const newPermissions = [...permissions];
+                        let newSelectedPermission = {...selectedPermission};
 
-                    // Change the currently selected item, only if items have been added
-                    if (users.length > 0) {
-                        let newSelectedId = null;
+                        // Change the currently selected item, only if items have been added
+                        if (users.length > 0) {
+                            let newSelectedId = null;
 
-                        users.forEach(user => {
-                            if (!permissionsMap[user.id]) { // jen pokud ještě přidaný není
-                                // Select the first added item.
-                                newSelectedId = newSelectedId === null ? user.id : newSelectedId;
-                                newPermissions.push({
-                                    ...user,
-                                    permissions: [],
-                                    groups: [],
-                                });
-                            }
+                            users.forEach(user => {
+                                if (!permissionsMap[user.id]) {
+                                    // jen pokud ještě přidaný není
+                                    // Select the first added item.
+                                    newSelectedId = newSelectedId === null ? user.id : newSelectedId;
+                                    newPermissions.push({
+                                        ...user,
+                                        permissions: [],
+                                        groups: [],
+                                    });
+                                }
+                            });
+
+                            this.sortPermissions(newPermissions);
+
+                            let newIndex = this.getIndexById(newSelectedId, newPermissions);
+
+                            newSelectedPermission = {
+                                id: newSelectedId,
+                                index: newIndex,
+                            };
+                        }
+
+                        //this.props.dispatch(changeUsersForFund(fundId, newPermissions));
+                        this.setState({
+                            permissions: newPermissions,
+                            selectedPermission: newSelectedPermission,
                         });
 
-                        this.sortPermissions(newPermissions);
-
-                        let newIndex = this.getIndexById(newSelectedId, newPermissions);
-
-                        newSelectedPermission = {
-                            id: newSelectedId,
-                            index: newIndex,
-                        };
-                    }
-
-                    //this.props.dispatch(changeUsersForFund(fundId, newPermissions));
-                    this.setState({
-                        permissions: newPermissions,
-                        selectedPermission: newSelectedPermission,
-                    });
-
-                    this.props.dispatch(modalDialogHide());
-                }}
-                fieldComponent={UserField}
-                renderItem={renderUserItem}
-            />,
-        ));
+                        this.props.dispatch(modalDialogHide());
+                    }}
+                    fieldComponent={UserField}
+                    renderItem={renderUserItem}
+                />,
+            ),
+        );
     };
 
     selectItem = (item, index) => {
-        const { onSelectItem } = this.props;
+        const {onSelectItem} = this.props;
         this.setState({
             selectedPermission: {
                 index: index,
@@ -188,34 +198,40 @@ class FundUsersPanel extends AbstractReactComponent {
     };
 
     render() {
-        const { fundId, users } = this.props;
-        const { selectedPermission, permissions } = this.state;
+        const {fundId, users} = this.props;
+        const {selectedPermission, permissions} = this.state;
 
         if (!users.fetched) {
-            return <HorizontalLoader/>;
+            return <HorizontalLoader />;
         }
 
         const user = selectedPermission.index !== null ? permissions[selectedPermission.index] : null;
 
-        return <AdminRightsContainer
-            className="permissions-panel"
-            left={<AddRemoveListBox
-                items={permissions}
-                activeIndex={selectedPermission.index}
-                renderItemContent={renderUserItem}
-                onAdd={this.handleAdd}
-                onRemove={this.handleRemove}
-                onFocus={this.selectItem}
-            />}
-        >
-            {user && <FundsPermissionPanel
-                fundId={fundId}
-                userId={user.id}
-                onAddPermission={perm => WebApi.addUserPermission(user.id, perm)}
-                onDeletePermission={perm => WebApi.deleteUserPermission(user.id, perm)}
-                onDeleteFundPermission={fundId => WebApi.deleteUserFundPermission(user.id, fundId)}
-            />}
-        </AdminRightsContainer>;
+        return (
+            <AdminRightsContainer
+                className="permissions-panel"
+                left={
+                    <AddRemoveListBox
+                        items={permissions}
+                        activeIndex={selectedPermission.index}
+                        renderItemContent={renderUserItem}
+                        onAdd={this.handleAdd}
+                        onRemove={this.handleRemove}
+                        onFocus={this.selectItem}
+                    />
+                }
+            >
+                {user && (
+                    <FundsPermissionPanel
+                        fundId={fundId}
+                        userId={user.id}
+                        onAddPermission={perm => WebApi.addUserPermission(user.id, perm)}
+                        onDeletePermission={perm => WebApi.deleteUserPermission(user.id, perm)}
+                        onDeleteFundPermission={fundId => WebApi.deleteUserFundPermission(user.id, fundId)}
+                    />
+                )}
+            </AdminRightsContainer>
+        );
     }
 }
 

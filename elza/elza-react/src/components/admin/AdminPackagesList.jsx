@@ -32,7 +32,7 @@ class AdminPackagesList extends AbstractReactComponent {
         this.props.dispatch(getPackagesFetchIfNeeded());
     }
 
-    handleDownload = (code) => {
+    handleDownload = code => {
         const {getExportUrl} = this.props;
         this.props.dispatch(downloadFile(getExportUrl(code)));
     };
@@ -41,46 +41,62 @@ class AdminPackagesList extends AbstractReactComponent {
         const {items} = this.props;
 
         let mapItems = {};
-        items.forEach(item => mapItems[item.code] = item);
+        items.forEach(item => (mapItems[item.code] = item));
 
         return (
             <Table striped bordered condensed hover>
                 <thead>
-                <tr>
-                    <th>{i18n('admin.packages.label.code')}</th>
-                    <th>{i18n('admin.packages.label.name')}</th>
-                    <th>{i18n('admin.packages.label.version')}</th>
-                    <th>{i18n('admin.packages.label.description')}</th>
-                    <th>{i18n('admin.packages.label.dependencies')}</th>
-                    <th>{i18n('admin.packages.label.dependencies.by')}</th>
-                    <th>{i18n('admin.packages.label.action')}</th>
-                </tr>
+                    <tr>
+                        <th>{i18n('admin.packages.label.code')}</th>
+                        <th>{i18n('admin.packages.label.name')}</th>
+                        <th>{i18n('admin.packages.label.version')}</th>
+                        <th>{i18n('admin.packages.label.description')}</th>
+                        <th>{i18n('admin.packages.label.dependencies')}</th>
+                        <th>{i18n('admin.packages.label.dependencies.by')}</th>
+                        <th>{i18n('admin.packages.label.action')}</th>
+                    </tr>
                 </thead>
                 <tbody>
-                {items.map((item) => <tr key={item.code}>
-                    <td>{item.code}</td>
-                    <td>{item.name}</td>
-                    <td>{item.version}</td>
-                    <td>{item.description}</td>
-                    <td>{item.dependencies && item.dependencies.map(((dependency, index) => <span
-                        title={mapItems[dependency.code].name}
-                        key={index}>{dependency.code} ({dependency.version}/{mapItems[dependency.code].version})<br/></span>))}</td>
-                    <td>{item.dependenciesBy && item.dependenciesBy.map(((dependency, index) => <span
-                        title={mapItems[dependency.code].name} key={index}>{dependency.code}<br/></span>))}</td>
-                    <td>
-                        <ButtonToolbar>
-                            <Button onClick={() => this.handleDownload(item.code)}
-                                    bsSize="xsmall">{i18n('global.action.download')}</Button>
-                            <Button onClick={this.handleDeletePackage.bind(this, item.code)}
-                                    bsSize="xsmall">{i18n('global.action.delete')}</Button>
-                        </ButtonToolbar>
-                    </td>
-                </tr>)}
+                    {items.map(item => (
+                        <tr key={item.code}>
+                            <td>{item.code}</td>
+                            <td>{item.name}</td>
+                            <td>{item.version}</td>
+                            <td>{item.description}</td>
+                            <td>
+                                {item.dependencies &&
+                                    item.dependencies.map((dependency, index) => (
+                                        <span title={mapItems[dependency.code].name} key={index}>
+                                            {dependency.code} ({dependency.version}/{mapItems[dependency.code].version})
+                                            <br />
+                                        </span>
+                                    ))}
+                            </td>
+                            <td>
+                                {item.dependenciesBy &&
+                                    item.dependenciesBy.map((dependency, index) => (
+                                        <span title={mapItems[dependency.code].name} key={index}>
+                                            {dependency.code}
+                                            <br />
+                                        </span>
+                                    ))}
+                            </td>
+                            <td>
+                                <ButtonToolbar>
+                                    <Button onClick={() => this.handleDownload(item.code)} bsSize="xsmall">
+                                        {i18n('global.action.download')}
+                                    </Button>
+                                    <Button onClick={this.handleDeletePackage.bind(this, item.code)} bsSize="xsmall">
+                                        {i18n('global.action.delete')}
+                                    </Button>
+                                </ButtonToolbar>
+                            </td>
+                        </tr>
+                    ))}
                 </tbody>
             </Table>
         );
     }
 }
-
 
 export default connect()(AdminPackagesList);

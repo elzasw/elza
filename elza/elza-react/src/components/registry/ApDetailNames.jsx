@@ -11,7 +11,6 @@ import NewApItemNameFormModal from '../accesspoint/NewApItemNameFormModal';
 import UpdateApItemNameFormModal from '../accesspoint/UpdateApItemNameFormModal';
 
 class ApDetailNames extends AbstractReactComponent {
-
     static propTypes = {
         canEdit: PropTypes.bool.isRequired,
         accessPoint: PropTypes.object.isRequired,
@@ -20,11 +19,11 @@ class ApDetailNames extends AbstractReactComponent {
         renderError: PropTypes.func.isRequired,
     };
 
-    getName = (name) => {
+    getName = name => {
         return name.fullName;
     };
 
-    nameAdd = (data) => {
+    nameAdd = data => {
         const {accessPoint} = this.props;
         WebApi.createAccessPointName(accessPoint.id, data).then(() => {
             this.props.refreshParty();
@@ -40,14 +39,14 @@ class ApDetailNames extends AbstractReactComponent {
         });
     };
 
-    nameDelete = (id) => {
+    nameDelete = id => {
         const {accessPoint} = this.props;
         WebApi.deleteAccessPointName(accessPoint.id, id).then(() => {
             this.props.refreshParty();
         });
     };
 
-    nameSetPreffered = (id) => {
+    nameSetPreffered = id => {
         const {accessPoint} = this.props;
         WebApi.setPreferredAccessPointName(accessPoint.id, id).then(() => {
             this.props.refreshParty();
@@ -59,35 +58,65 @@ class ApDetailNames extends AbstractReactComponent {
         if (type.ruleSystemId != null) {
             const accessPointId = this.props.accessPoint.id;
             WebApi.createAccessPointStructuredName(accessPointId).then(data => {
-                this.props.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.new'), <NewApItemNameFormModal
-                    objectId={data.objectId} accessPointId={accessPointId}
-                    onSubmit={this.props.refreshParty}/>, 'dialog-lg'));
+                this.props.dispatch(
+                    modalDialogShow(
+                        this,
+                        i18n('accesspoint.detail.name.new'),
+                        <NewApItemNameFormModal
+                            objectId={data.objectId}
+                            accessPointId={accessPointId}
+                            onSubmit={this.props.refreshParty}
+                        />,
+                        'dialog-lg',
+                    ),
+                );
             });
         } else {
-            this.props.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.new'), <ApNameForm
-                onSubmit={this.nameAdd}/>, 'dialog-lg'));
+            this.props.dispatch(
+                modalDialogShow(
+                    this,
+                    i18n('accesspoint.detail.name.new'),
+                    <ApNameForm onSubmit={this.nameAdd} />,
+                    'dialog-lg',
+                ),
+            );
         }
     };
 
-    handleNameUpdate = (name) => {
+    handleNameUpdate = name => {
         const {type} = this.props;
         if (type.ruleSystemId != null) {
-            this.props.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.new'), <UpdateApItemNameFormModal
-                objectId={name.objectId} accessPointId={this.props.accessPoint.id}
-                onSubmit={this.props.refreshParty}/>, 'dialog-lg'));
+            this.props.dispatch(
+                modalDialogShow(
+                    this,
+                    i18n('accesspoint.detail.name.new'),
+                    <UpdateApItemNameFormModal
+                        objectId={name.objectId}
+                        accessPointId={this.props.accessPoint.id}
+                        onSubmit={this.props.refreshParty}
+                    />,
+                    'dialog-lg',
+                ),
+            );
         } else {
-            this.props.dispatch(modalDialogShow(this, i18n('accesspoint.detail.name.update'), <ApNameForm
-                initialValues={name} onSubmit={this.nameUpdate.bind(this, name)}/>, 'dialog-lg'));
+            this.props.dispatch(
+                modalDialogShow(
+                    this,
+                    i18n('accesspoint.detail.name.update'),
+                    <ApNameForm initialValues={name} onSubmit={this.nameUpdate.bind(this, name)} />,
+                    'dialog-lg',
+                ),
+            );
         }
     };
 
-    handleDelete = (id) => {
+    handleDelete = id => {
         if (window.confirm(i18n('accesspoint.detail.name.delete'))) {
             this.nameDelete(id);
         }
     };
 
-    handleSelectPreferred = (id) => {
+    handleSelectPreferred = id => {
         if (window.confirm(i18n('accesspoint.detail.name.setPreferredNameAlert'))) {
             this.nameSetPreffered(id);
         }
@@ -96,30 +125,50 @@ class ApDetailNames extends AbstractReactComponent {
     render() {
         const {accessPoint, canEdit, renderError} = this.props;
 
-        return <div className="accesspoint-detail-names">
-            <div>
-                <label className="group-label">{i18n('accesspoint.detail.formNames')}</label>
-                {canEdit && <Button variant="action" onClick={this.handleNameAdd}><Icon glyph="fa-plus"/></Button>}
-            </div>
-            <div className="name-group">
-                {accessPoint.names.map((name, index) =>
-                    <div key={name.id} className={name.preferredName ? 'preffered value-group' : 'value-group'}>
-                        <div className="value">{this.getName(name)}</div>
-                        <div className="actions">
-                            {renderError(name)}
-                            {canEdit && <Button variant="action" onClick={() => this.handleNameUpdate(name)}><Icon
-                                glyph="fa-pencil"/></Button>}
-                            {canEdit && !name.preferredName && <span>
-                                <Button className="delete" variant="action"
-                                        onClick={() => this.handleDelete(name.objectId)}><Icon
-                                    glyph="fa-trash"/></Button>
-                                <Button variant="action" onClick={() => this.handleSelectPreferred(name.objectId)}><Icon
-                                    glyph="fa-star"/></Button>
-                            </span>}
+        return (
+            <div className="accesspoint-detail-names">
+                <div>
+                    <label className="group-label">{i18n('accesspoint.detail.formNames')}</label>
+                    {canEdit && (
+                        <Button variant="action" onClick={this.handleNameAdd}>
+                            <Icon glyph="fa-plus" />
+                        </Button>
+                    )}
+                </div>
+                <div className="name-group">
+                    {accessPoint.names.map((name, index) => (
+                        <div key={name.id} className={name.preferredName ? 'preffered value-group' : 'value-group'}>
+                            <div className="value">{this.getName(name)}</div>
+                            <div className="actions">
+                                {renderError(name)}
+                                {canEdit && (
+                                    <Button variant="action" onClick={() => this.handleNameUpdate(name)}>
+                                        <Icon glyph="fa-pencil" />
+                                    </Button>
+                                )}
+                                {canEdit && !name.preferredName && (
+                                    <span>
+                                        <Button
+                                            className="delete"
+                                            variant="action"
+                                            onClick={() => this.handleDelete(name.objectId)}
+                                        >
+                                            <Icon glyph="fa-trash" />
+                                        </Button>
+                                        <Button
+                                            variant="action"
+                                            onClick={() => this.handleSelectPreferred(name.objectId)}
+                                        >
+                                            <Icon glyph="fa-star" />
+                                        </Button>
+                                    </span>
+                                )}
+                            </div>
                         </div>
-                    </div>)}
+                    ))}
+                </div>
             </div>
-        </div>;
+        );
     }
 }
 

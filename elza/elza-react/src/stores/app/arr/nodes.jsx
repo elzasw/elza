@@ -20,11 +20,7 @@ function processNode(state, action, index) {
         if (newNode !== state.nodes[index]) {
             var result = {
                 ...state,
-                nodes: [
-                    ...state.nodes.slice(0, index),
-                    newNode,
-                    ...state.nodes.slice(index + 1),
-                ],
+                nodes: [...state.nodes.slice(0, index), newNode, ...state.nodes.slice(index + 1)],
             };
             return consolidateState(state, result);
         } else {
@@ -36,16 +32,16 @@ function processNode(state, action, index) {
 }
 
 export default function nodes(state = nodesInitialState, action) {
-    if (false
-        || nodeFormActions.isSubNodeFormAction(action)
-        || isSubNodeInfoAction(action)
-        || isNodeInfoAction(action)
-        || isNodeAction(action)
-        || isSubNodeDaosAction(action)
-        || isDeveloperScenariosAction(action)
-        || nodeFormActions.isSubNodeFormCacheAction(action)
+    if (
+        false ||
+        nodeFormActions.isSubNodeFormAction(action) ||
+        isSubNodeInfoAction(action) ||
+        isNodeInfoAction(action) ||
+        isNodeAction(action) ||
+        isSubNodeDaosAction(action) ||
+        isDeveloperScenariosAction(action) ||
+        nodeFormActions.isSubNodeFormCacheAction(action)
     ) {
-
         if (action.type === types.CHANGE_DAOS) {
             let result = {
                 ...state,
@@ -69,7 +65,6 @@ export default function nodes(state = nodesInitialState, action) {
     let changed;
     switch (action.type) {
         case types.CHANGE_VISIBLE_POLICY:
-
             changed = false;
             nodes = [...state.nodes];
 
@@ -124,9 +119,7 @@ export default function nodes(state = nodesInitialState, action) {
             console.log('UPDATE_CHILD - nodes', action);
             let data = action.data;
             nodes = state.nodes;
-            var nodesChange = [
-                ...nodes,
-            ];
+            var nodesChange = [...nodes];
 
             changed = false;
 
@@ -151,11 +144,7 @@ export default function nodes(state = nodesInitialState, action) {
 
                     changed = true;
 
-                    nodesChange = [
-                        ...nodesChange.slice(0, i),
-                        nodeChange,
-                        ...nodesChange.slice(i + 1),
-                    ];
+                    nodesChange = [...nodesChange.slice(0, i), nodeChange, ...nodesChange.slice(i + 1)];
                 }
             }
 
@@ -170,22 +159,22 @@ export default function nodes(state = nodesInitialState, action) {
         case types.FUND_FUND_SELECT_SUBNODE:
             var newState;
 
-            if (action.subNodeParentNode == null) { // jen nulování
+            if (action.subNodeParentNode == null) {
+                // jen nulování
                 return state;
             }
 
             // 1. Záložka
-            if (action.openNewTab || state.nodes.length == 0) {   // otevře se vždy nová záložka, pokud není žádná
+            if (action.openNewTab || state.nodes.length == 0) {
+                // otevře se vždy nová záložka, pokud není žádná
                 // Založíme novou záložku a vybereme ji
                 newState = {
                     ...state,
-                    nodes: [
-                        ...state.nodes,
-                        nodeInitState(action.subNodeParentNode),
-                    ],
+                    nodes: [...state.nodes, nodeInitState(action.subNodeParentNode)],
                     activeIndex: state.nodes.length,
                 };
-            } else {    // pokusí se použít aktuální
+            } else {
+                // pokusí se použít aktuální
                 var index = state.activeIndex;
                 if (state.nodes[index].id !== action.subNodeParentNode.id) {
                     newState = {
@@ -207,11 +196,7 @@ export default function nodes(state = nodesInitialState, action) {
             if (newNode !== newState.nodes[index]) {
                 return {
                     ...newState,
-                    nodes: [
-                        ...newState.nodes.slice(0, index),
-                        newNode,
-                        ...newState.nodes.slice(index + 1),
-                    ],
+                    nodes: [...newState.nodes.slice(0, index), newNode, ...newState.nodes.slice(index + 1)],
                 };
             } else {
                 return consolidateState(state, newState);
@@ -219,17 +204,15 @@ export default function nodes(state = nodesInitialState, action) {
         case types.FUND_FUND_CLOSE_NODE_TAB:
             var index = action.index;
             var newActiveIndex = state.activeIndex;
-            if (state.activeIndex == index) {   // byl vybrán, budeme řešit novou vybranou záložku
+            if (state.activeIndex == index) {
+                // byl vybrán, budeme řešit novou vybranou záložku
                 newActiveIndex = selectedAfterClose(state.nodes, index);
             } else if (index < state.activeIndex) {
                 newActiveIndex--;
             }
             return {
                 ...state,
-                nodes: [
-                    ...state.nodes.slice(0, index),
-                    ...state.nodes.slice(index + 1),
-                ],
+                nodes: [...state.nodes.slice(0, index), ...state.nodes.slice(index + 1)],
                 activeIndex: newActiveIndex,
             };
         case types.FUND_FUND_SELECT_NODE_TAB:
@@ -244,9 +227,7 @@ export default function nodes(state = nodesInitialState, action) {
         case types.CHANGE_CONFORMITY_INFO:
         case types.CHANGE_NODE_REQUESTS:
             nodes = state.nodes;
-            var nodesChange = [
-                ...nodes,
-            ];
+            var nodesChange = [...nodes];
 
             changed = false;
 
@@ -271,11 +252,7 @@ export default function nodes(state = nodesInitialState, action) {
 
                         changed = true;
 
-                        nodesChange = [
-                            ...nodesChange.slice(0, i),
-                            nodeChange,
-                            ...nodesChange.slice(i + 1),
-                        ];
+                        nodesChange = [...nodesChange.slice(0, i), nodeChange, ...nodesChange.slice(i + 1)];
                     }
                 }
             }
@@ -289,7 +266,6 @@ export default function nodes(state = nodesInitialState, action) {
 
             return state;
         case types.FUND_NODE_CHANGE:
-
             changed = false;
             nodes = [...state.nodes];
 
@@ -304,7 +280,6 @@ export default function nodes(state = nodesInitialState, action) {
             }
             return state;
         case types.CHANGE_ADD_LEVEL:
-
             changed = false;
             nodes = [...state.nodes];
 

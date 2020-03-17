@@ -22,26 +22,31 @@ export function getPagesCount(itemsCount, pageSize) {
 }
 
 function getCurrPageDesc(pageIndex, pagesCount) {
-    return (pageIndex + 1) + ' z ' + pagesCount;
+    return pageIndex + 1 + ' z ' + pagesCount;
 }
 
 class DataGridPagination extends AbstractReactComponent {
-    static contextTypes = { shortcuts: PropTypes.object };
-    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    static contextTypes = {shortcuts: PropTypes.object};
+    static childContextTypes = {shortcuts: PropTypes.object.isRequired};
 
     UNSAFE_componentWillMount() {
         Utils.addShortcutManager(this, defaultKeymap);
     }
 
     getChildContext() {
-        return { shortcuts: this.shortcutManager };
+        return {shortcuts: this.shortcutManager};
     }
 
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleCurrPageFocus', 'handleCurrPageBlur', 'handleCurrPageChange',
-            'processCurrPageChange', 'renderButton');
+        this.bindMethods(
+            'handleCurrPageFocus',
+            'handleCurrPageBlur',
+            'handleCurrPageChange',
+            'processCurrPageChange',
+            'renderButton',
+        );
 
         this.state = this.getStateFromProps(props, false);
     }
@@ -77,16 +82,17 @@ class DataGridPagination extends AbstractReactComponent {
     }
 
     processCurrPageChange(clearFocus) {
-        const { onSetPageIndex, pageIndex, itemsCount, pageSize } = this.props;
-        var { currPageValue } = this.state;
+        const {onSetPageIndex, pageIndex, itemsCount, pageSize} = this.props;
+        var {currPageValue} = this.state;
         currPageValue--; // převedeme na index
         const pagesCount = getPagesCount(itemsCount, pageSize);
 
-        if (validateInt(currPageValue) === null) {   // je validní, ještě musí být ve správném intervalu
+        if (validateInt(currPageValue) === null) {
+            // je validní, ještě musí být ve správném intervalu
             if (currPageValue < 0) {
                 if (pageIndex !== 0) {
                     if (clearFocus) {
-                        this.setState({ focused: false });
+                        this.setState({focused: false});
                     }
 
                     onSetPageIndex(0);
@@ -95,7 +101,7 @@ class DataGridPagination extends AbstractReactComponent {
             } else if (currPageValue >= pagesCount) {
                 if (pageIndex !== pagesCount - 1) {
                     if (clearFocus) {
-                        this.setState({ focused: false });
+                        this.setState({focused: false});
                     }
 
                     onSetPageIndex(pagesCount - 1);
@@ -103,7 +109,7 @@ class DataGridPagination extends AbstractReactComponent {
                 }
             } else if (pageIndex !== currPageValue) {
                 if (clearFocus) {
-                    this.setState({ focused: false });
+                    this.setState({focused: false});
                 }
 
                 onSetPageIndex(currPageValue);
@@ -115,7 +121,7 @@ class DataGridPagination extends AbstractReactComponent {
     }
 
     handleCurrPageBlur() {
-        const { pageIndex, itemsCount, pageSize } = this.props;
+        const {pageIndex, itemsCount, pageSize} = this.props;
         const pagesCount = getPagesCount(itemsCount, pageSize);
 
         if (this.processCurrPageChange(true)) {
@@ -129,11 +135,15 @@ class DataGridPagination extends AbstractReactComponent {
 
     renderButton(disabled, onClick, content) {
         const cls = disabled ? 'disabled' : '';
-        return <Button className={cls} variant="link" disable={disabled} onClick={onClick}>{content}</Button>;
+        return (
+            <Button className={cls} variant="link" disable={disabled} onClick={onClick}>
+                {content}
+            </Button>
+        );
     }
 
     actionMap = {
-        'CONFIRM': () => this.processCurrPageChange(false),
+        CONFIRM: () => this.processCurrPageChange(false),
     };
     handleShortcuts = (action, e) => {
         e.stopPropagation();
@@ -142,32 +152,65 @@ class DataGridPagination extends AbstractReactComponent {
     };
 
     render() {
-        const { onSetPageIndex, onChangePageSize, itemsCount, pageSize, pageIndex } = this.props;
+        const {onSetPageIndex, onChangePageSize, itemsCount, pageSize, pageIndex} = this.props;
         const pagesCount = getPagesCount(itemsCount, pageSize);
 
-        const options = [25, 50, 100, 250].map(val => <option key={val} value={val}>{val}</option>);
+        const options = [25, 50, 100, 250].map(val => (
+            <option key={val} value={val}>
+                {val}
+            </option>
+        ));
 
         const cls = this.props.className ? 'pagination-container ' + this.props.className : 'pagination-container';
         return (
             <Shortcuts name="DataGridPagination" handler={this.handleShortcuts}>
                 <nav className={cls}>
                     <ul className="pagination">
-                        <li key='start'>{this.renderButton(pageIndex === 0, () => pageIndex > 0 && onSetPageIndex(0), '«')}</li>
-                        <li key='prev'>{this.renderButton(pageIndex === 0, () => pageIndex > 0 && onSetPageIndex(pageIndex - 1), '‹')}</li>
-                        <li key='goTo' className='input'><span>
-                            <input
-                                type='text' value={this.state.currPageValue}
-                                onChange={this.handleCurrPageChange}
-                                onFocus={this.handleCurrPageFocus}
-                                onBlur={this.handleCurrPageBlur}
-                            />
-                        </span></li>
-                        <li key='pageSize' className='input'><span><select value={pageSize}
-                                                                           onChange={e => onChangePageSize(Number(e.target.value))}>{options}</select></span>
+                        <li key="start">
+                            {this.renderButton(pageIndex === 0, () => pageIndex > 0 && onSetPageIndex(0), '«')}
                         </li>
-                        <li key='next'>{this.renderButton(pageIndex + 1 >= pagesCount, () => pageIndex + 1 < pagesCount && onSetPageIndex(pageIndex + 1), '›')}</li>
-                        <li key='end'>{this.renderButton(pageIndex === pagesCount - 1, () => pageIndex < pagesCount - 1 && onSetPageIndex(pagesCount - 1), '»')}</li>
-                        <li key='rowsCount'><p>{i18n('fund.grid.rowsCount', itemsCount)}</p></li>
+                        <li key="prev">
+                            {this.renderButton(
+                                pageIndex === 0,
+                                () => pageIndex > 0 && onSetPageIndex(pageIndex - 1),
+                                '‹',
+                            )}
+                        </li>
+                        <li key="goTo" className="input">
+                            <span>
+                                <input
+                                    type="text"
+                                    value={this.state.currPageValue}
+                                    onChange={this.handleCurrPageChange}
+                                    onFocus={this.handleCurrPageFocus}
+                                    onBlur={this.handleCurrPageBlur}
+                                />
+                            </span>
+                        </li>
+                        <li key="pageSize" className="input">
+                            <span>
+                                <select value={pageSize} onChange={e => onChangePageSize(Number(e.target.value))}>
+                                    {options}
+                                </select>
+                            </span>
+                        </li>
+                        <li key="next">
+                            {this.renderButton(
+                                pageIndex + 1 >= pagesCount,
+                                () => pageIndex + 1 < pagesCount && onSetPageIndex(pageIndex + 1),
+                                '›',
+                            )}
+                        </li>
+                        <li key="end">
+                            {this.renderButton(
+                                pageIndex === pagesCount - 1,
+                                () => pageIndex < pagesCount - 1 && onSetPageIndex(pagesCount - 1),
+                                '»',
+                            )}
+                        </li>
+                        <li key="rowsCount">
+                            <p>{i18n('fund.grid.rowsCount', itemsCount)}</p>
+                        </li>
                     </ul>
                 </nav>
             </Shortcuts>

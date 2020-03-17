@@ -32,14 +32,13 @@ let _ReplaceId = null;
  * Správa souborů.
  */
 class FundFiles extends AbstractReactComponent {
-
     static propTypes = {
         fundId: PropTypes.number.isRequired,
         versionId: PropTypes.number.isRequired,
         files: PropTypes.array,
         filterText: PropTypes.string.isRequired,
         fetched: PropTypes.bool.isRequired,
-        fundFiles: PropTypes.object.isRequired,   // store fund files
+        fundFiles: PropTypes.object.isRequired, // store fund files
         dms: PropTypes.object.isRequired,
         readMode: PropTypes.bool,
     };
@@ -62,18 +61,24 @@ class FundFiles extends AbstractReactComponent {
         this.props.dispatch(dms.mimeTypesFetchIfNeeded());
     };
 
-    handleTextSearch = (text) => {
+    handleTextSearch = text => {
         const {versionId} = this.props;
         this.props.dispatch(fundFilesFilterByText(versionId, text));
     };
 
-    handleEdit = (id) => {
+    handleEdit = id => {
         const {fundId} = this.props;
-        this.props.dispatch(showAsyncWaiting(null, null, WebApi.getEditableFundFile(fundId, id), dmsFile => {
-            const form = <EditableFileForm initialValues={dmsFile}
-                                           onSubmitForm={data => this.handleEditEditableSubmit(id, data)}/>;
-            this.props.dispatch(modalDialogShow(this, i18n('dms.file.title.editable.edit'), form));
-        }));
+        this.props.dispatch(
+            showAsyncWaiting(null, null, WebApi.getEditableFundFile(fundId, id), dmsFile => {
+                const form = (
+                    <EditableFileForm
+                        initialValues={dmsFile}
+                        onSubmitForm={data => this.handleEditEditableSubmit(id, data)}
+                    />
+                );
+                this.props.dispatch(modalDialogShow(this, i18n('dms.file.title.editable.edit'), form));
+            }),
+        );
     };
 
     handleDownloadByMimeType = (id, outputMimeType) => {
@@ -82,50 +87,62 @@ class FundFiles extends AbstractReactComponent {
         this.props.dispatch(downloadFile(UrlFactory.downloadGeneratedDmsFile(id, fundId, outputMimeType)));
     };
 
-    handleDelete = (id) => {
+    handleDelete = id => {
         const {fundId, versionId} = this.props;
         this.props.dispatch(fundFilesDelete(versionId, fundId, id));
     };
 
     handleCreateFromFile = () => {
-        this.props.dispatch(modalDialogShow(this, i18n('dms.file.title.file.add'), <AddFileForm
-            onSubmitForm={this.handleCreateFromFileSubmit}/>));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('dms.file.title.file.add'),
+                <AddFileForm onSubmitForm={this.handleCreateFromFileSubmit} />,
+            ),
+        );
     };
 
     handleCreateEditable = () => {
         if (this.hasMimeTypes()) {
-            this.props.dispatch(modalDialogShow(this, i18n('dms.file.title.editable.add'), <EditableFileForm create
-                                                                                                             onSubmitForm={this.handleCreateEditableSubmit}/>));
+            this.props.dispatch(
+                modalDialogShow(
+                    this,
+                    i18n('dms.file.title.editable.add'),
+                    <EditableFileForm create onSubmitForm={this.handleCreateEditableSubmit} />,
+                ),
+            );
         }
     };
 
-    handleCreateFromFileSubmit = (data) => {
+    handleCreateFromFileSubmit = data => {
         const {fundId} = this.props;
         return this.props.dispatch(fundFilesCreate(fundId, data));
     };
 
-    handleCreateEditableSubmit = (data) => {
+    handleCreateEditableSubmit = data => {
         const {fundId} = this.props;
         return this.props.dispatch(fundFilesCreate(fundId, data));
     };
 
     handleEditEditableSubmit = (id, data) => {
         const {fundId} = this.props;
-        return this.props.dispatch(fundFilesUpdate(fundId, id, data, () => {
-            this.props.dispatch(modalDialogHide());
-        }));
+        return this.props.dispatch(
+            fundFilesUpdate(fundId, id, data, () => {
+                this.props.dispatch(modalDialogHide());
+            }),
+        );
     };
 
-    handleDownload = (id) => {
+    handleDownload = id => {
         this.props.dispatch(downloadFile(UrlFactory.downloadDmsFile(id)));
     };
 
-    handleReplace = (id) => {
+    handleReplace = id => {
         ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).click();
         _ReplaceId = id;
     };
 
-    handleReplaceSubmit = (e) => {
+    handleReplaceSubmit = e => {
         const fileList = e.target.files;
 
         if (fileList.length != 1) {
@@ -155,52 +172,65 @@ class FundFiles extends AbstractReactComponent {
     render() {
         const {fundFiles, readMode, dms} = this.props;
 
-        return <div className='fund-files'>
-            <StoreHorizontalLoader store={fundFiles}/>
+        return (
+            <div className="fund-files">
+                <StoreHorizontalLoader store={fundFiles} />
 
-            {!readMode && fundFiles.fetched && <div className="actions-container">
-                <div className="actions">
-                    <DropdownButton variant="default" id='dropdown-add-file'
-                                    title={<Icon glyph='fa-plus-circle'/>}>
-                        <Dropdown.Item onClick={this.handleCreateFromFile}>
-                            {i18n('arr.fund.files.action.add.fromFile')}
-                        </Dropdown.Item>
-                        <Dropdown.Item disabled={!this.hasMimeTypes()} onClick={this.handleCreateEditable}>
-                            {!this.hasMimeTypes() ?
-                                <TooltipTrigger
-                                    key="info"
-                                    content={<div
-                                        style={{maxWidth: '300px'}}>{i18n('arr.fund.files.noMimetypeConfig')}</div>}
-                                    placement="left"
-                                    showDelay={1}
-                                    holdOnHover
-                                >
-                                    {i18n('arr.fund.files.action.add.editable')}
-                                </TooltipTrigger> :
-                                i18n('arr.fund.files.action.add.editable')
-                            }
-                        </Dropdown.Item>
-                    </DropdownButton>
-                </div>
-            </div>}
-            <FormInput className="hidden" type="file" ref='uploadInput' onChange={this.handleReplaceSubmit}/>
+                {!readMode && fundFiles.fetched && (
+                    <div className="actions-container">
+                        <div className="actions">
+                            <DropdownButton
+                                variant="default"
+                                id="dropdown-add-file"
+                                title={<Icon glyph="fa-plus-circle" />}
+                            >
+                                <Dropdown.Item onClick={this.handleCreateFromFile}>
+                                    {i18n('arr.fund.files.action.add.fromFile')}
+                                </Dropdown.Item>
+                                <Dropdown.Item disabled={!this.hasMimeTypes()} onClick={this.handleCreateEditable}>
+                                    {!this.hasMimeTypes() ? (
+                                        <TooltipTrigger
+                                            key="info"
+                                            content={
+                                                <div style={{maxWidth: '300px'}}>
+                                                    {i18n('arr.fund.files.noMimetypeConfig')}
+                                                </div>
+                                            }
+                                            placement="left"
+                                            showDelay={1}
+                                            holdOnHover
+                                        >
+                                            {i18n('arr.fund.files.action.add.editable')}
+                                        </TooltipTrigger>
+                                    ) : (
+                                        i18n('arr.fund.files.action.add.editable')
+                                    )}
+                                </Dropdown.Item>
+                            </DropdownButton>
+                        </div>
+                    </div>
+                )}
+                <FormInput className="hidden" type="file" ref="uploadInput" onChange={this.handleReplaceSubmit} />
 
-            {fundFiles.fetched && <FileListBox
-                ref="listBox"
-                items={fundFiles.data.rows}
-                searchable
-                filterText={fundFiles.filterText}
-                onSearch={this.handleTextSearch}
-                onDownload={this.handleDownload}
-                onReplace={this.handleReplace}
-                onDelete={this.handleDelete}
-                onEdit={this.handleEdit}
-                supportEdit={(id, item) => item.editable}
-                onDownloadPdf={(id) => this.handleDownloadByMimeType(id, 'application/pdf')}
-                readMode={readMode}
-                supportDownloadPdf={(id, item) => item.generatePdf}
-            />}
-        </div>;
+                {fundFiles.fetched && (
+                    <FileListBox
+                        ref="listBox"
+                        items={fundFiles.data.rows}
+                        searchable
+                        filterText={fundFiles.filterText}
+                        onSearch={this.handleTextSearch}
+                        onDownload={this.handleDownload}
+                        onReplace={this.handleReplace}
+                        onDelete={this.handleDelete}
+                        onEdit={this.handleEdit}
+                        supportEdit={(id, item) => item.editable}
+                        onDownloadPdf={id => this.handleDownloadByMimeType(id, 'application/pdf')}
+                        readMode={readMode}
+                        supportDownloadPdf={(id, item) => item.generatePdf}
+                    />
+                )}
+            </div>
+        );
     }
 }
 

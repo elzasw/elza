@@ -13,7 +13,6 @@ import Loading from '../shared/loading/Loading';
  * Implicitně pokud se neuvede, je výběr multiselect libovolných položek ve stromu.
  */
 class FundNodesSelectForm extends AbstractReactComponent {
-
     static propTypes = {
         ...FundNodesSelect.propTypes,
     };
@@ -33,7 +32,7 @@ class FundNodesSelectForm extends AbstractReactComponent {
         this.fetch(this.props);
     }
 
-    fetch = (props) => {
+    fetch = props => {
         if (props.fundId) {
             props.dispatch(customFundActionFetchListIfNeeded(props.fundId));
         }
@@ -64,7 +63,7 @@ class FundNodesSelectForm extends AbstractReactComponent {
         let someSelected = selectedNodes.length > 0;
 
         if (fund && fund.fundId !== fundId) {
-            return <Loading/>;
+            return <Loading />;
         }
 
         return (
@@ -79,8 +78,12 @@ class FundNodesSelectForm extends AbstractReactComponent {
                     />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button disabled={!someSelected} onClick={this.handleSubmit}>{i18n('global.action.select')}</Button>
-                    <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button disabled={!someSelected} onClick={this.handleSubmit}>
+                        {i18n('global.action.select')}
+                    </Button>
+                    <Button variant="link" onClick={onClose}>
+                        {i18n('global.action.cancel')}
+                    </Button>
                 </Modal.Footer>
             </div>
         );
@@ -95,4 +98,3 @@ function mapStateToProps(state, props) {
 }
 
 export default connect(mapStateToProps)(FundNodesSelectForm);
-

@@ -8,9 +8,9 @@
 
 export function initForm(formName, validate, onSave) {
     return {
-        type: "redux-form/INPLACE_INIT",
+        type: 'redux-form/INPLACE_INIT',
         form: formName,
         validate,
         onSave,
-    }
+    };
 }

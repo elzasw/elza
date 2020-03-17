@@ -7,7 +7,6 @@ import classNames from 'classnames';
 import './ArrDaoPackages.scss';
 
 class ArrDaoPackages extends AbstractReactComponent {
-
     static propTypes = {
         fund: PropTypes.object.isRequired,
         unassigned: PropTypes.bool.isRequired,
@@ -22,8 +21,8 @@ class ArrDaoPackages extends AbstractReactComponent {
         this.fetchIfNeeded(nextProps);
     }
 
-    fetchIfNeeded = (props) => {
-        const { fund, unassigned } = props;
+    fetchIfNeeded = props => {
+        const {fund, unassigned} = props;
 
         if (unassigned) {
             this.props.dispatch(daoActions.fetchDaoUnassignedPackageListIfNeeded(fund.versionId));
@@ -32,13 +31,13 @@ class ArrDaoPackages extends AbstractReactComponent {
         }
     };
 
-    handleSearch = (text) => {
-        const { fund, unassigned } = this.props;
+    handleSearch = text => {
+        const {fund, unassigned} = this.props;
 
         if (unassigned) {
-            this.props.dispatch(daoActions.filterDaoUnassignedPackageList(fund.versionId, { fulltext: text }));
+            this.props.dispatch(daoActions.filterDaoUnassignedPackageList(fund.versionId, {fulltext: text}));
         } else {
-            this.props.dispatch(daoActions.filterDaoPackageList(fund.versionId, { fulltext: text }));
+            this.props.dispatch(daoActions.filterDaoPackageList(fund.versionId, {fulltext: text}));
         }
     };
 
@@ -51,7 +50,7 @@ class ArrDaoPackages extends AbstractReactComponent {
     };
 
     render() {
-        const { fund, unassigned, activeIndex } = this.props;
+        const {fund, unassigned, activeIndex} = this.props;
 
         const list = unassigned ? fund.daoUnassignedPackageList : fund.daoPackageList;
 
@@ -64,22 +63,27 @@ class ArrDaoPackages extends AbstractReactComponent {
                     onSearch={this.handleSearch}
                     onClear={this.handleClear}
                 />
-                <StoreHorizontalLoader store={list}/>
-                {list.fetched && <ListBox
-                    key="list"
-                    items={list.rows}
-                    onFocus={this.handleSelect}
-                    activeIndex={activeIndex}
-                    renderItemContent={(props) => <div
-                        className={classNames({ active: props.active })}>{props.item.batchInfoLabel || ('[' + props.item.code + ']')}</div>}
-                />}
+                <StoreHorizontalLoader store={list} />
+                {list.fetched && (
+                    <ListBox
+                        key="list"
+                        items={list.rows}
+                        onFocus={this.handleSelect}
+                        activeIndex={activeIndex}
+                        renderItemContent={props => (
+                            <div className={classNames({active: props.active})}>
+                                {props.item.batchInfoLabel || '[' + props.item.code + ']'}
+                            </div>
+                        )}
+                    />
+                )}
             </div>
         );
     }
 }
 
 function mapStateToProps(state) {
-    const { arrRegion } = state;
+    const {arrRegion} = state;
     let fund = null;
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];

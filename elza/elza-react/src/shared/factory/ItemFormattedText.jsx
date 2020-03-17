@@ -1,5 +1,3 @@
 import {Item} from './Item';
 
-export class ItemFormattedText extends Item {
-
-}
+export class ItemFormattedText extends Item {}

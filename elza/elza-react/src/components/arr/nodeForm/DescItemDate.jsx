@@ -15,12 +15,11 @@ import DateTimePicker from 'react-widgets/lib/DateTimePicker';
 import {formatDate} from '../../validate';
 
 const DescItemDate = class DescItemDate extends AbstractReactComponent {
-
     focus() {
         this.refs.focusEl.refs.inner.focus();
     }
 
-    handleChange = (e) => {
+    handleChange = e => {
         const newValue = e == null ? null : formatDate(e);
         if (newValue !== null && newValue !== this.props.descItem.value) {
             this.props.onChange(newValue);
@@ -33,7 +32,11 @@ const DescItemDate = class DescItemDate extends AbstractReactComponent {
 
         if (readMode) {
             return (
-                <DescItemLabel value={Moment(descItem.value).format('l')} cal={cal} notIdentified={descItem.undefined}/>
+                <DescItemLabel
+                    value={Moment(descItem.value).format('l')}
+                    cal={cal}
+                    notIdentified={descItem.undefined}
+                />
             );
         }
 
@@ -43,7 +46,7 @@ const DescItemDate = class DescItemDate extends AbstractReactComponent {
         }
 
         return (
-            <div className='desc-item-value'>
+            <div className="desc-item-value">
                 <ItemTooltipWrapper tooltipTitle="dataType.date.format">
                     <DateTimePicker
                         ref="focusEl"

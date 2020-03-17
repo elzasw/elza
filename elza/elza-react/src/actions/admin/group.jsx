@@ -11,10 +11,9 @@ import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 
 export function joinUsers(groupId, userIds) {
     return (dispatch, getState) => {
-        WebApi.joinGroup([groupId], userIds)
-              .then(() => {
-                  dispatch(modalDialogHide());
-              });
+        WebApi.joinGroup([groupId], userIds).then(() => {
+            dispatch(modalDialogHide());
+        });
     };
 }
 
@@ -87,15 +86,14 @@ export function groupsGroupDetailFetchIfNeeded() {
 
         if (groupDetail.currentDataKey !== dataKey) {
             dispatch(groupsGroupDetailRequest(dataKey));
-            WebApi.getGroup(groupDetail.id)
-                  .then(json => {
-                      var newState = getState();
-                      const newGroupDetail = newState.adminRegion.group.groupDetail;
-                      const newDataKey = _groupDetailDataKey(newGroupDetail);
-                      if (newDataKey === dataKey) {
-                          dispatch(groupsGroupDetailReceive(json));
-                      }
-                  });
+            WebApi.getGroup(groupDetail.id).then(json => {
+                var newState = getState();
+                const newGroupDetail = newState.adminRegion.group.groupDetail;
+                const newDataKey = _groupDetailDataKey(newGroupDetail);
+                if (newDataKey === dataKey) {
+                    dispatch(groupsGroupDetailReceive(json));
+                }
+            });
         }
     };
 }
@@ -112,15 +110,14 @@ export function groupsFetchIfNeeded() {
         if (group.currentDataKey !== dataKey) {
             dispatch(groupsRequest(dataKey));
 
-            WebApi.findGroup(group.filterText)
-                  .then(json => {
-                      var newState = getState();
-                      const newGroup = newState.adminRegion.group;
-                      const newDataKey = _groupDataKey(newGroup);
-                      if (newDataKey === dataKey) {
-                          dispatch(groupsReceive(json));
-                      }
-                  });
+            WebApi.findGroup(group.filterText).then(json => {
+                var newState = getState();
+                const newGroup = newState.adminRegion.group;
+                const newDataKey = _groupDataKey(newGroup);
+                if (newDataKey === dataKey) {
+                    dispatch(groupsReceive(json));
+                }
+            });
         }
     };
 }
@@ -166,7 +163,7 @@ export function groupUpdate(groupId, name, description) {
 }
 
 export function groupCreate(name, code, description) {
-    return (dispatch) => {
+    return dispatch => {
         return savingApiWrapper(dispatch, WebApi.createGroup(name, code, description)).then(response => {
             dispatch(addToastrSuccess(i18n('admin.group.add.success')));
             dispatch(groupsSelectGroup(response.id));

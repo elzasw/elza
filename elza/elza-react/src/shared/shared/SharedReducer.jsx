@@ -4,7 +4,7 @@ import {INIT_REDUCER} from './SharedActions';
  * Společný store pro různá data, např. pro globální čísleníky pro fieldy atp. Převážně využíván např. fieldy z shared (jako StatField atp.).
  */
 const initialState = {
-    stores: {},   // mapa název reduceru na jeho store
+    stores: {}, // mapa název reduceru na jeho store
     reducer: shared,
 };
 
@@ -17,8 +17,8 @@ export default function shared(state = initialState, action = {}) {
                 stores: {
                     ...state.stores,
                     [area]: action.store,
-                }
-            }
+                },
+            };
         }
         default:
             if (action.area) {
@@ -30,14 +30,13 @@ export default function shared(state = initialState, action = {}) {
                         stores: {
                             ...state.stores,
                             [action.area]: newStore,
-                        }
-                    }
+                        },
+                    };
                 } else {
-                    return state
+                    return state;
                 }
             } else {
-                return state
+                return state;
             }
     }
 }
-

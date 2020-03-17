@@ -59,7 +59,7 @@ class RegistryDetail extends AbstractReactComponent {
     }
 
     state = {
-        activeIndexes: {'NAMES': true, 'DESCRIPTION': true},
+        activeIndexes: {NAMES: true, DESCRIPTION: true},
     };
 
     componentDidMount() {
@@ -70,7 +70,9 @@ class RegistryDetail extends AbstractReactComponent {
     UNSAFE_componentWillReceiveProps(nextProps) {
         this.fetchIfNeeded(nextProps);
         this.trySetFocus(nextProps);
-        const {registryDetail: {id, fetched, data}} = nextProps;
+        const {
+            registryDetail: {id, fetched, data},
+        } = nextProps;
         if ((id !== this.props.registryDetail.id && fetched) || (!this.props.registryDetail.fetched && fetched)) {
             if (data) {
                 this.setState({});
@@ -79,9 +81,12 @@ class RegistryDetail extends AbstractReactComponent {
     }
 
     fetchIfNeeded = (props = this.props) => {
-        const {registryDetail: {id, fetched}, dispatch} = props;
-        dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
-        dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
+        const {
+            registryDetail: {id, fetched},
+            dispatch,
+        } = props;
+        dispatch(refPartyTypesFetchIfNeeded()); // nacteni typu osob (osoba, rod, událost, ...)
+        dispatch(calendarTypesFetchIfNeeded()); // načtení typů kalendářů (gregoriánský, juliánský, ...)
         dispatch(descItemTypesFetchIfNeeded());
         dispatch(refRulDataTypesFetchIfNeeded());
         dispatch(requestScopesIfNeeded());
@@ -117,7 +122,7 @@ class RegistryDetail extends AbstractReactComponent {
         }
     };
 
-    handleShortcuts = (action) => {
+    handleShortcuts = action => {
         switch (action) {
             case 'editRecord':
                 if (this.canEdit()) {
@@ -135,13 +140,15 @@ class RegistryDetail extends AbstractReactComponent {
     };
 
     handleRecordUpdate = () => {
-        const {registryDetail: {data}} = this.props;
+        const {
+            registryDetail: {data},
+        } = this.props;
         this.props.dispatch(
             modalDialogShow(
                 this,
                 i18n('registry.update.title'),
                 <EditRegistryForm
-                    key='editRegistryForm'
+                    key="editRegistryForm"
                     initData={data}
                     parentApTypeId={data.apTypeId}
                     onSubmitForm={this.handleRecordUpdateCall}
@@ -150,19 +157,25 @@ class RegistryDetail extends AbstractReactComponent {
         );
     };
 
+    handleRecordUpdateCall = value => {
+        const {
+            registryDetail: {data},
+        } = this.props;
 
-    handleRecordUpdateCall = (value) => {
-        const {registryDetail: {data}} = this.props;
-
-        return this.props.dispatch(registryUpdate(data.id, value.typeId, () => {
-            // Nastavení focus
-            this.props.dispatch(setFocus(FOCUS_KEYS.REGISTRY, 2));
-        }));
-
+        return this.props.dispatch(
+            registryUpdate(data.id, value.typeId, () => {
+                // Nastavení focus
+                this.props.dispatch(setFocus(FOCUS_KEYS.REGISTRY, 2));
+            }),
+        );
     };
 
     canEdit() {
-        const {userDetail, registryDetail: {data, fetched}, apTypeIdMap} = this.props;
+        const {
+            userDetail,
+            registryDetail: {data, fetched},
+            apTypeIdMap,
+        } = this.props;
 
         // Pokud je načteno && není osoba
         if (!fetched || data.partyId) {
@@ -182,7 +195,7 @@ class RegistryDetail extends AbstractReactComponent {
         });
     }
 
-    getRecordId = (data) => {
+    getRecordId = data => {
         if (data.externalId) {
             if (data.externalSystem && data.externalSystem.name) {
                 return data.externalSystem.name + ':' + data.externalId;
@@ -194,7 +207,7 @@ class RegistryDetail extends AbstractReactComponent {
         }
     };
 
-    getApId = (ap) => {
+    getApId = ap => {
         const {eidTypes} = this.props;
         const eids = ap.externalIds;
         if (!eids || eids.length == 0) {
@@ -216,20 +229,32 @@ class RegistryDetail extends AbstractReactComponent {
 
         if (type.parents) {
             type.parents.reverse().forEach((name, i) => {
-                elements.push(<span key={'name-' + i} className="hierarchy-level">{name.toUpperCase()}</span>);
-                elements.push(<span key={'delimiter-' + i} className="hierarchy-delimiter">{delimiter}</span>);
+                elements.push(
+                    <span key={'name-' + i} className="hierarchy-level">
+                        {name.toUpperCase()}
+                    </span>,
+                );
+                elements.push(
+                    <span key={'delimiter-' + i} className="hierarchy-delimiter">
+                        {delimiter}
+                    </span>,
+                );
             });
         }
-        elements.push(<span key="name-main" className="hierarchy-level main">{type.name.toUpperCase()}</span>);
+        elements.push(
+            <span key="name-main" className="hierarchy-level main">
+                {type.name.toUpperCase()}
+            </span>,
+        );
 
         return elements;
     };
 
     getScopeLabel = (scopeId, scopes) => {
-        return scopeId && scopes[0].scopes.find(scope => (scope.id === scopeId)).name.toUpperCase();
+        return scopeId && scopes[0].scopes.find(scope => scope.id === scopeId).name.toUpperCase();
     };
 
-    handleToggleActive = (identificator) => {
+    handleToggleActive = identificator => {
         this.setState({
             activeIndexes: {
                 ...this.state.activeIndexes,
@@ -243,14 +268,16 @@ class RegistryDetail extends AbstractReactComponent {
     };
 
     editDescription = () => {
-        const {registryDetail: {data}} = this.props;
+        const {
+            registryDetail: {data},
+        } = this.props;
         this.props.dispatch(
             modalDialogShow(
                 this,
                 i18n('accesspoint.update.description'),
                 <ApChangeDescriptionForm
                     initialValues={{description: data.characteristics}}
-                    onSubmit={(result) => {
+                    onSubmit={result => {
                         return WebApi.changeDescription(data.id, result).then(() => {
                             this.props.dispatch(registryDetailInvalidate());
                             this.props.dispatch(modalDialogHide());
@@ -264,7 +291,6 @@ class RegistryDetail extends AbstractReactComponent {
         const {ap} = this.props;
         const subNodeForm = ap.form;
 
-
         const formData = subNodeForm.formData;
         const itemTypes = [];
         const strictMode = true;
@@ -276,7 +302,8 @@ class RegistryDetail extends AbstractReactComponent {
         });
 
         subNodeForm.refTypesMap.forEach(refType => {
-            if (infoTypesMap.has(refType.id)) {    // ještě ji na formuláři nemáme
+            if (infoTypesMap.has(refType.id)) {
+                // ještě ji na formuláři nemáme
                 const infoType = infoTypesMap.get(refType.id);
                 // v nestriktním modu přidáváme všechny jinak jen možné
                 if (!strictMode || infoType.type !== 'IMPOSSIBLE') {
@@ -295,39 +322,50 @@ class RegistryDetail extends AbstractReactComponent {
             },
         ];
 
-        const submit = (data) => {
+        const submit = data => {
             this.props.dispatch(modalDialogHide());
             this.props.dispatch(accessPointFormActions.fundSubNodeFormDescItemTypeAdd(data.descItemTypeId.id));
         };
 
         // Modální dialog
-        this.props.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), <AddDescItemTypeForm
-            descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('subNodeForm.descItemType.title.add'),
+                <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit} />,
+            ),
+        );
     };
 
     renderActions = () => {
-        return <div className="form-actions-container">
-            <div className="form-actions">
-                <div className="section">
-                    <NoFocusButton onClick={this.add}><Icon glyph="fa-plus-circle"/>{i18n('subNodeForm.section.item')}
-                    </NoFocusButton>
+        return (
+            <div className="form-actions-container">
+                <div className="form-actions">
+                    <div className="section">
+                        <NoFocusButton onClick={this.add}>
+                            <Icon glyph="fa-plus-circle" />
+                            {i18n('subNodeForm.section.item')}
+                        </NoFocusButton>
+                    </div>
                 </div>
             </div>
-        </div>;
+        );
     };
 
     renderTooltip = (icon, content) => {
-        return <TooltipTrigger
-            content={content}
-            holdOnHover
-            placement="auto"
-            tooltipClass="error-message"
-            className="status btn"
-            showDelay={50}
-            hideDelay={0}
-        >
-            <Icon glyph={icon}/>
-        </TooltipTrigger>;
+        return (
+            <TooltipTrigger
+                content={content}
+                holdOnHover
+                placement="auto"
+                tooltipClass="error-message"
+                className="status btn"
+                showDelay={50}
+                hideDelay={0}
+            >
+                <Icon glyph={icon} />
+            </TooltipTrigger>
+        );
     };
 
     renderApError = (state, errorDescription) => {
@@ -341,7 +379,7 @@ class RegistryDetail extends AbstractReactComponent {
         }
     };
 
-    renderApItemsError = (data) => {
+    renderApItemsError = data => {
         const {ap} = this.props;
         const subNodeForm = ap.form;
         const {state, errorDescription} = data;
@@ -358,7 +396,7 @@ class RegistryDetail extends AbstractReactComponent {
             }
             if (error.impossibleItemTypeIds && error.impossibleItemTypeIds.length > 0) {
                 const items = [];
-                error.impossibleItemTypeIds.forEach((id) => {
+                error.impossibleItemTypeIds.forEach(id => {
                     const type = subNodeForm.refTypesMap.get(id);
                     items.push(<li>{type.name}</li>);
                 });
@@ -371,7 +409,7 @@ class RegistryDetail extends AbstractReactComponent {
             }
             if (error.requiredItemTypeIds && error.requiredItemTypeIds.length > 0) {
                 const items = [];
-                error.requiredItemTypeIds.forEach((id) => {
+                error.requiredItemTypeIds.forEach(id => {
                     const type = subNodeForm.refTypesMap.get(id);
                     items.push(<li>{type.name}</li>);
                 });
@@ -384,13 +422,16 @@ class RegistryDetail extends AbstractReactComponent {
             }
 
             if (content.length > 0) {
-                return <span className={'pull-right'}>{this.renderTooltip('fa-exclamation-circle',
-                    <div>{content}</div>)}</span>;
+                return (
+                    <span className={'pull-right'}>
+                        {this.renderTooltip('fa-exclamation-circle', <div>{content}</div>)}
+                    </span>
+                );
             }
         }
     };
 
-    renderApNameItemsError = (data) => {
+    renderApNameItemsError = data => {
         const {ap, refTables} = this.props;
 
         const itemTypes = refTables.descItemTypes.items;
@@ -412,7 +453,7 @@ class RegistryDetail extends AbstractReactComponent {
             }
             if (error.impossibleItemTypeIds && error.impossibleItemTypeIds.length > 0) {
                 const items = [];
-                error.impossibleItemTypeIds.forEach((id) => {
+                error.impossibleItemTypeIds.forEach(id => {
                     const type = objectById(itemTypes, id);
                     items.push(<li>{type.name}</li>);
                 });
@@ -425,7 +466,7 @@ class RegistryDetail extends AbstractReactComponent {
             }
             if (error.requiredItemTypeIds && error.requiredItemTypeIds.length > 0) {
                 const items = [];
-                error.requiredItemTypeIds.forEach((id) => {
+                error.requiredItemTypeIds.forEach(id => {
                     const type = objectById(itemTypes, id);
                     items.push(<li>{type.name}</li>);
                 });
@@ -443,8 +484,7 @@ class RegistryDetail extends AbstractReactComponent {
         }
     };
 
-    renderApNamesError = (names) => {
-
+    renderApNamesError = names => {
         let showError = false;
         for (let i = 0; i < names.length; i++) {
             const name = names[i];
@@ -477,14 +517,16 @@ class RegistryDetail extends AbstractReactComponent {
         }
 
         if (!id) {
-            return <div className="unselected-msg">
-                <div className="title">{i18n('registry.noSelection.title')}</div>
-                <div className="msg-text">{i18n('registry.noSelection.message')}</div>
-            </div>;
+            return (
+                <div className="unselected-msg">
+                    <div className="title">{i18n('registry.noSelection.title')}</div>
+                    <div className="msg-text">{i18n('registry.noSelection.message')}</div>
+                </div>
+            );
         }
 
         if (!fetched || (id && !data) || eidTypes == null) {
-            return <StoreHorizontalLoader store={registryDetail}/>;
+            return <StoreHorizontalLoader store={registryDetail} />;
         }
 
         const disableEdit = !this.canEdit();
@@ -494,95 +536,149 @@ class RegistryDetail extends AbstractReactComponent {
             headerCls += ' invalid';
         }
 
-        const delimiter = <Icon glyph="fa-angle-right"/>;
+        const delimiter = <Icon glyph="fa-angle-right" />;
         const apTypeNames = this.renderApTypeNames(data.typeId, delimiter);
 
-        return <div className='registry'>
-            <Shortcuts name='RegistryDetail' handler={this.handleShortcuts} global>
-                <div className="registry-detail">
-                    <div className={headerCls}>
-                        <div className="header-icon">
-                            <Icon glyph={icon}/>
-                        </div>
-                        <div className={'header-content'}>
-                            <div>
+        return (
+            <div className="registry">
+                <Shortcuts name="RegistryDetail" handler={this.handleShortcuts} global>
+                    <div className="registry-detail">
+                        <div className={headerCls}>
+                            <div className="header-icon">
+                                <Icon glyph={icon} />
+                            </div>
+                            <div className={'header-content'}>
                                 <div>
-                                    <div className="title">{data.record} {data.invalid && '(Neplatné)'}</div>
+                                    <div>
+                                        <div className="title">
+                                            {data.record} {data.invalid && '(Neplatné)'}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        {this.renderApError(data.state, data.errorDescription)}
+                                        <NoFocusButton
+                                            disabled={disableEdit}
+                                            className="registry-record-edit btn-action"
+                                            onClick={this.handleRecordUpdate}
+                                        >
+                                            <Icon glyph="fa-pencil" />
+                                        </NoFocusButton>
+                                        {data.partyId && (
+                                            <NoFocusButton
+                                                className="registry-record-party btn-action"
+                                                onClick={this.handleGoToParty}
+                                            >
+                                                <Icon glyph="fa-user" />
+                                            </NoFocusButton>
+                                        )}
+                                    </div>
                                 </div>
                                 <div>
-                                    {this.renderApError(data.state, data.errorDescription)}
-                                    <NoFocusButton disabled={disableEdit} className="registry-record-edit btn-action"
-                                                   onClick={this.handleRecordUpdate}>
-                                        <Icon glyph='fa-pencil'/>
-                                    </NoFocusButton>
-                                    {data.partyId && <NoFocusButton className="registry-record-party btn-action"
-                                                                    onClick={this.handleGoToParty}>
-                                        <Icon glyph='fa-user'/>
-                                    </NoFocusButton>}
+                                    <div className="description">{this.getApId(data)}</div>
                                 </div>
                             </div>
-                            <div>
-                                <div className="description">{this.getApId(data)}</div>
+                        </div>
+                        <div className="registry-type">
+                            {apTypeNames}
+                            <div
+                                className="right-part"
+                                title={data.comment ? data.comment : i18n('ap.state.title.noComment')}
+                            >
+                                <span className="state-approval-label">
+                                    {StateApproval.getCaption(data.stateApproval)}
+                                </span>
+                                {data.scopeId && (
+                                    <span className="scope-label">
+                                        {scopes && this.getScopeLabel(data.scopeId, scopes)}
+                                    </span>
+                                )}
                             </div>
                         </div>
-                    </div>
-                    <div className="registry-type">
-                        {apTypeNames}
-                        <div className="right-part"
-                             title={data.comment ? data.comment : i18n('ap.state.title.noComment')}>
-                            <span className="state-approval-label">{StateApproval.getCaption(data.stateApproval)}</span>
-                            {data.scopeId && <span className="scope-label">
-                                {scopes && this.getScopeLabel(data.scopeId, scopes)}
-                            </span>}
-                        </div>
-                    </div>
-                    <CollapsablePanel tabIndex={0} key={'NAMES'}
-                                      isOpen={activeIndexes && activeIndexes['NAMES'] === true} header={
-                        <div>{i18n('accesspoint.detail.formNames')}{this.renderApNamesError(data.names)}</div>}
-                                      eventKey={'NAMES'} onPin={this.handlePinToggle}
-                                      onSelect={this.handleToggleActive}>
-                        <div className={'cp-15'}>
-                            <ApDetailNames accessPoint={data} type={apTypeIdMap[data.typeId]} canEdit={!disableEdit}
-                                           refreshParty={this.refreshData} renderError={this.renderApNameItemsError}/>
-                        </div>
-                    </CollapsablePanel>
-                    <CollapsablePanel tabIndex={0} key={'DESCRIPTION'}
-                                      isOpen={activeIndexes && activeIndexes['DESCRIPTION'] === true} header={
-                        <div>{i18n('accesspoint.detail.description')}{this.renderApItemsError(data)}</div>}
-                                      eventKey={'DESCRIPTION'} onPin={this.handlePinToggle}
-                                      onSelect={this.handleToggleActive}>
-                        {this.showForm() && !disableEdit && this.renderActions()}
-                        <div className={'cp-15'}>
-                            <div className="elements-container">
-                                <div className={'el-12'}>
-                                    <label>{i18n('registry.detail.characteristics')} {data.ruleSystemId == null && !disableEdit &&
-                                    <Button onClick={this.editDescription}><Icon glyph="fa-pencil"/></Button>}</label>
-                                    <div>{data.characteristics}</div>
+                        <CollapsablePanel
+                            tabIndex={0}
+                            key={'NAMES'}
+                            isOpen={activeIndexes && activeIndexes['NAMES'] === true}
+                            header={
+                                <div>
+                                    {i18n('accesspoint.detail.formNames')}
+                                    {this.renderApNamesError(data.names)}
                                 </div>
+                            }
+                            eventKey={'NAMES'}
+                            onPin={this.handlePinToggle}
+                            onSelect={this.handleToggleActive}
+                        >
+                            <div className={'cp-15'}>
+                                <ApDetailNames
+                                    accessPoint={data}
+                                    type={apTypeIdMap[data.typeId]}
+                                    canEdit={!disableEdit}
+                                    refreshParty={this.refreshData}
+                                    renderError={this.renderApNameItemsError}
+                                />
                             </div>
-                            {this.showForm() && <AccessPointForm
-                                versionId={null}
-                                fundId={null}
-                                selectedSubNodeId={ap.id}
-                                rulDataTypes={refTables.rulDataTypes.items}
-                                calendarTypes={refTables.calendarTypes.items}
-                                descItemTypes={refTables.descItemTypes.items}
-                                structureTypes={objectById(refTables.structureTypes.data, null, 'versionId')}
-                                subNodeForm={ap.form}
-                                closed={false}
-                                focus={null}
-                                readMode={disableEdit}
-                            />}
-                        </div>
-                    </CollapsablePanel>
-                </div>
-            </Shortcuts>
-        </div>;
+                        </CollapsablePanel>
+                        <CollapsablePanel
+                            tabIndex={0}
+                            key={'DESCRIPTION'}
+                            isOpen={activeIndexes && activeIndexes['DESCRIPTION'] === true}
+                            header={
+                                <div>
+                                    {i18n('accesspoint.detail.description')}
+                                    {this.renderApItemsError(data)}
+                                </div>
+                            }
+                            eventKey={'DESCRIPTION'}
+                            onPin={this.handlePinToggle}
+                            onSelect={this.handleToggleActive}
+                        >
+                            {this.showForm() && !disableEdit && this.renderActions()}
+                            <div className={'cp-15'}>
+                                <div className="elements-container">
+                                    <div className={'el-12'}>
+                                        <label>
+                                            {i18n('registry.detail.characteristics')}{' '}
+                                            {data.ruleSystemId == null && !disableEdit && (
+                                                <Button onClick={this.editDescription}>
+                                                    <Icon glyph="fa-pencil" />
+                                                </Button>
+                                            )}
+                                        </label>
+                                        <div>{data.characteristics}</div>
+                                    </div>
+                                </div>
+                                {this.showForm() && (
+                                    <AccessPointForm
+                                        versionId={null}
+                                        fundId={null}
+                                        selectedSubNodeId={ap.id}
+                                        rulDataTypes={refTables.rulDataTypes.items}
+                                        calendarTypes={refTables.calendarTypes.items}
+                                        descItemTypes={refTables.descItemTypes.items}
+                                        structureTypes={objectById(refTables.structureTypes.data, null, 'versionId')}
+                                        subNodeForm={ap.form}
+                                        closed={false}
+                                        focus={null}
+                                        readMode={disableEdit}
+                                    />
+                                )}
+                            </div>
+                        </CollapsablePanel>
+                    </div>
+                </Shortcuts>
+            </div>
+        );
     }
 }
 
-export default connect((state) => {
-    const {app: {registryDetail}, userDetail, focus, refTables, ap} = state;
+export default connect(state => {
+    const {
+        app: {registryDetail},
+        userDetail,
+        focus,
+        refTables,
+        ap,
+    } = state;
     return {
         ap,
         focus,

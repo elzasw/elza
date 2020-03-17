@@ -28,12 +28,12 @@ class TemplateSettingsForm extends React.Component {
 
     render() {
         const {
-                  handleSubmit,
-                  submitting,
-                  fields: {evenPageOffsetX, evenPageOffsetY, oddPageOffsetX, oddPageOffsetY},
-                  engine,
-                  readMode,
-              } = this.props;
+            handleSubmit,
+            submitting,
+            fields: {evenPageOffsetX, evenPageOffsetY, oddPageOffsetX, oddPageOffsetY},
+            engine,
+            readMode,
+        } = this.props;
 
         const commonProps = {
             disabled: readMode || submitting,
@@ -42,26 +42,36 @@ class TemplateSettingsForm extends React.Component {
         if (engine && engine === 'JASPER') {
             return (
                 <Form onSubmit={handleSubmit(this.handleSubmit)}>
-                    <FormInput  {...evenPageOffsetX} {...commonProps}
-                                label={i18n('arr.output.template.oddPageOffsetX')}/>
-                    <FormInput  {...evenPageOffsetY} {...commonProps}
-                                label={i18n('arr.output.template.oddPageOffsetY')}/>
-                    <FormInput  {...oddPageOffsetX} {...commonProps}
-                                label={i18n('arr.output.template.evenPageOffsetX')}/>
-                    <FormInput  {...oddPageOffsetY} {...commonProps}
-                                label={i18n('arr.output.template.evenPageOffsetY')}/>
-                    {!readMode && <Button className="output-settings-submit" disabled={submitting} type="submit">
-                        {i18n('arr.output.template.set')}
-                    </Button>}
+                    <FormInput
+                        {...evenPageOffsetX}
+                        {...commonProps}
+                        label={i18n('arr.output.template.oddPageOffsetX')}
+                    />
+                    <FormInput
+                        {...evenPageOffsetY}
+                        {...commonProps}
+                        label={i18n('arr.output.template.oddPageOffsetY')}
+                    />
+                    <FormInput
+                        {...oddPageOffsetX}
+                        {...commonProps}
+                        label={i18n('arr.output.template.evenPageOffsetX')}
+                    />
+                    <FormInput
+                        {...oddPageOffsetY}
+                        {...commonProps}
+                        label={i18n('arr.output.template.evenPageOffsetY')}
+                    />
+                    {!readMode && (
+                        <Button className="output-settings-submit" disabled={submitting} type="submit">
+                            {i18n('arr.output.template.set')}
+                        </Button>
+                    )}
                 </Form>
             );
         }
 
-        return (
-            <div>
-                {i18n('arr.output.panel.template.noSettings')}
-            </div>
-        );
+        return <div>{i18n('arr.output.panel.template.noSettings')}</div>;
     }
 }
 
@@ -73,7 +83,6 @@ export default reduxForm(
     (state, {outputSettings}) => {
         return {
             initialValues: outputSettings,
-
         };
     },
 )(TemplateSettingsForm);

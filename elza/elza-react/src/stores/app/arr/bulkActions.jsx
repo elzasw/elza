@@ -6,7 +6,7 @@ const bulkActionsInitState = {
     isFetching: false,
     actions: [],
     states: [],
-    mandatory: false
+    mandatory: false,
 };
 
 export default function bulkActions(state = bulkActionsInitState, action) {
@@ -20,7 +20,7 @@ export default function bulkActions(state = bulkActionsInitState, action) {
                 states: action.data.states !== undefined ? action.data.states : [],
                 isFetching: false,
                 isDirty: false,
-                mandatory: action.mandatory
+                mandatory: action.mandatory,
             };
         case types.BULK_ACTIONS_VERSION_VALIDATE_RECEIVED_DATA:
             return {
@@ -29,7 +29,7 @@ export default function bulkActions(state = bulkActionsInitState, action) {
                 states: action.data.states !== undefined ? action.data.states : [],
                 isFetching: false,
                 isDirty: false,
-                mandatory: action.mandatory
+                mandatory: action.mandatory,
             };
         case types.BULK_ACTIONS_STATE_IS_DIRTY:
             var index = indexById(state.states, action.code, 'code');
@@ -41,8 +41,8 @@ export default function bulkActions(state = bulkActionsInitState, action) {
                 states: [
                     ...state.states.slice(0, index),
                     {...state.states[index], isDirty: true},
-                    ...state.states.slice(index + 1)
-                ]
+                    ...state.states.slice(index + 1),
+                ],
             };
         case types.BULK_ACTIONS_STATE_CHANGE:
             if (indexById(state.states, action.entityId, 'code') == null) {
@@ -51,7 +51,7 @@ export default function bulkActions(state = bulkActionsInitState, action) {
             return {
                 ...state,
                 isDirty: true,
-                isFetching: false
+                isFetching: false,
             };
         case types.CHANGE_CONFORMITY_INFO:
             return {

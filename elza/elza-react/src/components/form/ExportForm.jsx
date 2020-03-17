@@ -14,7 +14,6 @@ import FormInput from '../shared/form/FormInput';
 import i18n from '../i18n';
 
 class ExportForm extends AbstractReactComponent {
-
     static propTypes = {};
 
     state = {
@@ -33,7 +32,6 @@ class ExportForm extends AbstractReactComponent {
         });
     }
 
-
     validate = (values, props) => {
         const errors = {};
         return errors;
@@ -41,31 +39,48 @@ class ExportForm extends AbstractReactComponent {
 
     submitOptions = {finishOnSubmit: true};
 
-    submitReduxForm = (values, dispatch) => submitForm(this.validate, values, this.props, this.props.onSubmitForm, dispatch, this.submitOptions);
+    submitReduxForm = (values, dispatch) =>
+        submitForm(this.validate, values, this.props, this.props.onSubmitForm, dispatch, this.submitOptions);
 
     render() {
-        const {fields: {transformationName}, onClose, handleSubmit} = this.props;
+        const {
+            fields: {transformationName},
+            onClose,
+            handleSubmit,
+        } = this.props;
         const {isFetching} = this.state;
 
-        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
-            <Modal.Body>
-                {isFetching ? <HorizontalLoader/> : <FormInput as="select"
-                                                               label={i18n('export.transformationName')}
-                                                               {...transformationName}
-                                                               {...decorateFormField(transformationName)}
-                >
-                    <option key='blankName'/>
-                    {this.state.transformationNames.map((i, index) => {
-                        return <option key={index + 'name'} value={i}>{i}</option>;
-                    })}
-                </FormInput>
-                }
-            </Modal.Body>
-            <Modal.Footer>
-                <Button type="submit">{i18n('global.action.export')}</Button>
-                <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
-            </Modal.Footer>
-        </Form>;
+        return (
+            <Form onSubmit={handleSubmit(this.submitReduxForm)}>
+                <Modal.Body>
+                    {isFetching ? (
+                        <HorizontalLoader />
+                    ) : (
+                        <FormInput
+                            as="select"
+                            label={i18n('export.transformationName')}
+                            {...transformationName}
+                            {...decorateFormField(transformationName)}
+                        >
+                            <option key="blankName" />
+                            {this.state.transformationNames.map((i, index) => {
+                                return (
+                                    <option key={index + 'name'} value={i}>
+                                        {i}
+                                    </option>
+                                );
+                            })}
+                        </FormInput>
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button type="submit">{i18n('global.action.export')}</Button>
+                    <Button variant="link" onClick={onClose}>
+                        {i18n('global.action.cancel')}
+                    </Button>
+                </Modal.Footer>
+            </Form>
+        );
     }
 }
 

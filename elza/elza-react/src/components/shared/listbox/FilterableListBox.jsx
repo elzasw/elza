@@ -41,9 +41,10 @@ class FilterableListBox extends AbstractReactComponent {
         //   selectionType === 'unselected', selectedIds obsahuje seznam NEvybraných id
 
         const {selectionType, selectedIds} = props;
-        const supportInverseSelection = props.supportInverseSelection !== undefined ? props.supportInverseSelection : true;
+        const supportInverseSelection =
+            props.supportInverseSelection !== undefined ? props.supportInverseSelection : true;
         var state = {
-            selectionType: supportInverseSelection ? (selectionType || 'unselected') : 'selected',
+            selectionType: supportInverseSelection ? selectionType || 'unselected' : 'selected',
             selectedIds: {},
             filterText: props.filterText || '',
             supportInverseSelection,
@@ -75,7 +76,7 @@ class FilterableListBox extends AbstractReactComponent {
         }
     }
 
-    handleCheckItem = (item) => {
+    handleCheckItem = item => {
         const {selectionType, selectedIds} = this.state;
         const {onChange} = this.props;
 
@@ -92,22 +93,26 @@ class FilterableListBox extends AbstractReactComponent {
             }
         });
         if (selectionType === 'selected') {
-            if (chekckedCount === item.length) {    // všechny byly označené, všechny je odznačíme
+            if (chekckedCount === item.length) {
+                // všechny byly označené, všechny je odznačíme
                 item.forEach(i => {
                     delete newSelectedIds[i.id];
                     unselectedIds.push(i.id);
                 });
-            } else {    // minimálně jedna nebyla označená - všechny je označíme
+            } else {
+                // minimálně jedna nebyla označená - všechny je označíme
                 item.forEach(i => {
                     newSelectedIds[i.id] = true;
                 });
             }
         } else {
-            if (unchekckedCount === item.length) {    // všechny byly označené, všechny je odznačíme
+            if (unchekckedCount === item.length) {
+                // všechny byly označené, všechny je odznačíme
                 item.forEach(i => {
                     newSelectedIds[i.id] = true;
                 });
-            } else {    // minimálně jedna nebyla označená - všechny je označíme
+            } else {
+                // minimálně jedna nebyla označená - všechny je označíme
                 item.forEach(i => {
                     delete newSelectedIds[i.id];
                     unselectedIds.push(i.id);
@@ -177,7 +182,7 @@ class FilterableListBox extends AbstractReactComponent {
         const checked = selectionType === 'selected' ? !!selectedIds[item.id] : !selectedIds[item.id];
 
         return (
-            <div className='checkbox-item'>
+            <div className="checkbox-item">
                 <FormCheck tabIndex={-1} checked={checked} onMouseDown={onCheckItem}></FormCheck>
                 {item.name}
             </div>
@@ -185,15 +190,18 @@ class FilterableListBox extends AbstractReactComponent {
     }
 
     handleSearchChange(e) {
-        this.setState({
-            filterText: e.target.value,
-            rerender: {},
-        }, () => {
-            if (__FilterableListBox_timer) {
-                clearTimeout(__FilterableListBox_timer);
-            }
-            __FilterableListBox_timer = setTimeout(this.handleSearch, 250);
-        });
+        this.setState(
+            {
+                filterText: e.target.value,
+                rerender: {},
+            },
+            () => {
+                if (__FilterableListBox_timer) {
+                    clearTimeout(__FilterableListBox_timer);
+                }
+                __FilterableListBox_timer = setTimeout(this.handleSearch, 250);
+            },
+        );
     }
 
     handleSearch() {
@@ -203,10 +211,13 @@ class FilterableListBox extends AbstractReactComponent {
     }
 
     handleSearchClear() {
-        this.setState({
-            filterText: '',
-            rerender: {},
-        }, () => this.handleSearch());
+        this.setState(
+            {
+                filterText: '',
+                rerender: {},
+            },
+            () => this.handleSearch(),
+        );
     }
 
     focus() {
@@ -227,24 +238,31 @@ class FilterableListBox extends AbstractReactComponent {
             <div className={cls}>
                 {lbl}
                 <div className="search-action-container">
-                    {(searchable || altSearch) && <div className='search-container'>
-                        {searchable && <Search
-                            placeholder={i18n('search.input.search')}
-                            filterText={filterText}
-                            onChange={this.handleSearchChange}
-                            onSearch={this.handleSearch}
-                            onClear={this.handleSearchClear}
-                        />}
-                        {altSearch}
-                    </div>}
-                    <div className='actions-container'>
-                        <Button variant="link" onClick={this.handleSelectAll}>{i18n('global.title.selectAll')}</Button>
+                    {(searchable || altSearch) && (
+                        <div className="search-container">
+                            {searchable && (
+                                <Search
+                                    placeholder={i18n('search.input.search')}
+                                    filterText={filterText}
+                                    onChange={this.handleSearchChange}
+                                    onSearch={this.handleSearch}
+                                    onClear={this.handleSearchClear}
+                                />
+                            )}
+                            {altSearch}
+                        </div>
+                    )}
+                    <div className="actions-container">
+                        <Button variant="link" onClick={this.handleSelectAll}>
+                            {i18n('global.title.selectAll')}
+                        </Button>
                         /
-                        <Button variant="link"
-                                onClick={this.handleUnselectAll}>{i18n('global.title.unselectAll')}</Button>
+                        <Button variant="link" onClick={this.handleUnselectAll}>
+                            {i18n('global.title.unselectAll')}
+                        </Button>
                     </div>
                 </div>
-                <div className='list-container'>
+                <div className="list-container">
                     {this.props.children}
                     <ListBox
                         multiselect
@@ -258,6 +276,6 @@ class FilterableListBox extends AbstractReactComponent {
             </div>
         );
     }
-};
+}
 
 export default FilterableListBox;

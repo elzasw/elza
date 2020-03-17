@@ -36,7 +36,8 @@ export function fundSelectNodeTab(versionId, nodeId, routingKey, index) {
             routingKey,
             index,
         });
-        if (nodeTab.selectedSubNodeId != null) {    // musíme poslat akci vybrání subnode (aby se řádek vybral např. ve stromu)
+        if (nodeTab.selectedSubNodeId != null) {
+            // musíme poslat akci vybrání subnode (aby se řádek vybral např. ve stromu)
             dispatch(fundSelectSubNodeInt(versionId, nodeTab.selectedSubNodeId, nodeTab, false, null, true));
         }
     };
@@ -71,17 +72,20 @@ export function fundCloseNodeTab(versionId, nodeId, routingKey, index) {
         var state = getState();
         var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
         var wasSelected = false;
-        if (activeFund.nodes.activeIndex === index) {  // zavíráme aktuálně vybranou
+        if (activeFund.nodes.activeIndex === index) {
+            // zavíráme aktuálně vybranou
             wasSelected = true;
         }
         dispatch(_fundCloseNodeTab(versionId, nodeId, routingKey, index));
         var newState = getState();
         var newActiveFund = newState.arrRegion.funds[newState.arrRegion.activeIndex];
         if (wasSelected) {
-            if (newActiveFund.nodes.nodes.length > 0) {    // bude vybraná nějaká jiná, protože ještě nějaké záložky existují
+            if (newActiveFund.nodes.nodes.length > 0) {
+                // bude vybraná nějaká jiná, protože ještě nějaké záložky existují
                 const node = newActiveFund.nodes.nodes[newActiveFund.nodes.activeIndex];
                 dispatch(fundSelectNodeTab(versionId, node.id, node.routingKey, newActiveFund.nodes.activeIndex));
-            } else {    // není žádná záložka
+            } else {
+                // není žádná záložka
                 dispatch(fundSelectSubNodeInt(newActiveFund.versionId, null, null, false, null, false));
             }
         }
@@ -92,9 +96,9 @@ export function fundCloseNodeTab(versionId, nodeId, routingKey, index) {
  * Funkce přesunu uzlů. Všechny funkce musí vracet Promise.
  */
 const moveFunctions = {
-    'BEFORE': WebApi.moveNodesBefore,
-    'AFTER': WebApi.moveNodesAfter,
-    'UNDER': WebApi.moveNodesUnder,
+    BEFORE: WebApi.moveNodesBefore,
+    AFTER: WebApi.moveNodesAfter,
+    UNDER: WebApi.moveNodesUnder,
 };
 
 /**

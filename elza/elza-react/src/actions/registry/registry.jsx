@@ -12,15 +12,13 @@ import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {addToastrWarning} from '../../components/shared/toastr/ToastrActions.jsx';
 
 export const DEFAULT_REGISTRY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
-export const AREA_REGISTRY_LIST = "registryList";
+export const AREA_REGISTRY_LIST = 'registryList';
 
 let AddRegistryForm;
-import('../../components/registry/AddRegistryForm').then((a) => {
+import('../../components/registry/AddRegistryForm').then(a => {
     AddRegistryForm = a.default;
 });
 //import AddRegistryForm from "../../components/registry/AddRegistryForm";
-
-
 
 /**
  * Načtení seznamu rejstříků dle filtru
@@ -29,7 +27,21 @@ import('../../components/registry/AddRegistryForm').then((a) => {
  * @param size {number} počet položek v seznamu - velikost jedné stránky
  */
 export function registryListFetchIfNeeded(from = 0, size = DEFAULT_REGISTRY_LIST_MAX_SIZE) {
-    return SimpleListActions.fetchIfNeeded(AREA_REGISTRY_LIST, true, (parent, filter) => WebApi.findRegistry(filter.text, filter.registryParentId, filter.registryTypeId, filter.versionId, filter.itemTypeId, filter.itemSpecId, filter.from, size, filter.scopeId, filter.excludeInvalid, filter.state));
+    return SimpleListActions.fetchIfNeeded(AREA_REGISTRY_LIST, true, (parent, filter) =>
+        WebApi.findRegistry(
+            filter.text,
+            filter.registryParentId,
+            filter.registryTypeId,
+            filter.versionId,
+            filter.itemTypeId,
+            filter.itemSpecId,
+            filter.from,
+            size,
+            filter.scopeId,
+            filter.excludeInvalid,
+            filter.state,
+        ),
+    );
 }
 
 /**
@@ -48,57 +60,69 @@ export function registryListInvalidate() {
     return SimpleListActions.invalidate(AREA_REGISTRY_LIST, null);
 }
 
-
-export const AREA_REGISTRY_DETAIL = "registryDetail";
+export const AREA_REGISTRY_DETAIL = 'registryDetail';
 
 export function registryDetailFetchIfNeeded(id) {
     return (dispatch, getState) => {
-        dispatch(DetailActions.fetchIfNeeded(AREA_REGISTRY_DETAIL, id, () => {
-            return WebApi.getAccessPoint(id).then((data) => {
-                if (data && data.invalid) {
-                    dispatch(addToastrWarning(i18n("registry.invalid.warning")));
-                }
-                return data;
-            }).catch(() => dispatch(registryDetailClear()));
-        }));
-    }
+        dispatch(
+            DetailActions.fetchIfNeeded(AREA_REGISTRY_DETAIL, id, () => {
+                return WebApi.getAccessPoint(id)
+                    .then(data => {
+                        if (data && data.invalid) {
+                            dispatch(addToastrWarning(i18n('registry.invalid.warning')));
+                        }
+                        return data;
+                    })
+                    .catch(() => dispatch(registryDetailClear()));
+            }),
+        );
+    };
 }
 
 export function registryDetailInvalidate() {
-    return DetailActions.invalidate(AREA_REGISTRY_DETAIL, null)
+    return DetailActions.invalidate(AREA_REGISTRY_DETAIL, null);
 }
 
 export function registryDetailClear() {
     return registryDetailFetchIfNeeded(null);
 }
 
-
 export function registryAdd(versionId, callback, showSubmitTypes = false) {
-    return (dispatch) => {
+    return dispatch => {
         const title = i18n('registry.addRegistry');
-        dispatch(modalDialogShow(this, title,
-            <AddRegistryForm
-                versionId={versionId}
-                showSubmitTypes={showSubmitTypes}
-                onSubmitForm={(data, submitType) => (dispatch(registryRecordCreate(callback, data, submitType)))}
-            />
-            )
-        )
-
-    }
+        dispatch(
+            modalDialogShow(
+                this,
+                title,
+                <AddRegistryForm
+                    versionId={versionId}
+                    showSubmitTypes={showSubmitTypes}
+                    onSubmitForm={(data, submitType) => dispatch(registryRecordCreate(callback, data, submitType))}
+                />,
+            ),
+        );
+    };
 }
 
 function registryRecordCreate(callback, data, submitType) {
     return (dispatch, getState) => {
-        savingApiWrapper(dispatch, (
-            data.structured ?
-                WebApi.confirmStructuredAccessPoint(data.id).then(() => data.structuredObj) :
-                WebApi.createAccessPoint(data.name, data.complement, data.langaugeCode, data.description, data.typeId, data.scopeId)
-        )).then(json => {
+        savingApiWrapper(
+            dispatch,
+            data.structured
+                ? WebApi.confirmStructuredAccessPoint(data.id).then(() => data.structuredObj)
+                : WebApi.createAccessPoint(
+                      data.name,
+                      data.complement,
+                      data.langaugeCode,
+                      data.description,
+                      data.typeId,
+                      data.scopeId,
+                  ),
+        ).then(json => {
             dispatch(modalDialogHide());
             callback && callback(json, submitType);
         });
-    }
+    };
 }
 
 export function registryUpdate(id, typeId, callback = null) {
@@ -114,14 +138,14 @@ export function registryUpdate(id, typeId, callback = null) {
             }
 
             if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
-                dispatch(registryListInvalidate())
+                dispatch(registryListInvalidate());
             }
 
             if (callback !== null) {
                 dispatch(callback);
             }
         });
-    }
+    };
 }
 
 export function apMigrate(id) {
@@ -137,10 +161,10 @@ export function apMigrate(id) {
             }
 
             if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
-                dispatch(registryListInvalidate())
+                dispatch(registryListInvalidate());
             }
         });
-    }
+    };
 }
 
 export function registryDelete(id) {
@@ -154,10 +178,10 @@ export function registryDelete(id) {
             }
 
             if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
-                dispatch(registryListInvalidate())
+                dispatch(registryListInvalidate());
             }
         });
-    }
+    };
 }
 /* MCV-45365
 export function setValidRegistry(id) {
@@ -183,16 +207,15 @@ export function registrySetFolder(recordId) {
             const store = getState();
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
 
-            dispatch(registryListFilter({
-                ...list.filter,
-                parents: [
-                    {id: item.id, name: item.record},
-                    ...item.parents
-                ],
-                typesToRoot: item.typesToRoot,
-                text: null,
-                registryParentId: item.id,
-            }));
+            dispatch(
+                registryListFilter({
+                    ...list.filter,
+                    parents: [{id: item.id, name: item.record}, ...item.parents],
+                    typesToRoot: item.typesToRoot,
+                    text: null,
+                    registryParentId: item.id,
+                }),
+            );
         });
-    }
+    };
 }

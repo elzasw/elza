@@ -10,7 +10,6 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 
-
 /**
  * Získání seznamu importovaných balíčků ze serveru.
  * @returns {Function} dispatch
@@ -29,7 +28,11 @@ export function getPackagesFetch() {
  */
 export function getPackagesFetchIfNeeded() {
     return (dispatch, getState) => {
-        const {adminRegion: {packages: {fetched, dirty, isFetching}}} = getState();
+        const {
+            adminRegion: {
+                packages: {fetched, dirty, isFetching},
+            },
+        } = getState();
         if ((!fetched || dirty) && !isFetching) {
             return dispatch(getPackagesFetch());
         }
@@ -46,10 +49,15 @@ export function deletePackage(code) {
     return dispatch => {
         dispatch(deletePackageRequest(code));
         return WebApi.deletePackage(code)
-                     .then(json => dispatch(deletePackageReceive(code)))
-                     .then(json => {
-                         dispatch(addToastrSuccess(i18n('admin.packages.message.delete.title'), i18n('admin.packages.message.delete.message', code)));
-                     });
+            .then(json => dispatch(deletePackageReceive(code)))
+            .then(json => {
+                dispatch(
+                    addToastrSuccess(
+                        i18n('admin.packages.message.delete.title'),
+                        i18n('admin.packages.message.delete.message', code),
+                    ),
+                );
+            });
     };
 }
 
@@ -61,10 +69,16 @@ export function deletePackage(code) {
 export function importPackage(data) {
     return dispatch => {
         dispatch(importPackageRequest());
-        return savingApiWrapper(dispatch, WebApi.importPackage(data)).then(json => dispatch(importPackageReceive()))
-                                                                     .then(json => {
-                                                                         dispatch(addToastrSuccess(i18n('admin.packages.message.import.title'), i18n('admin.packages.message.import.message')));
-                                                                     });
+        return savingApiWrapper(dispatch, WebApi.importPackage(data))
+            .then(json => dispatch(importPackageReceive()))
+            .then(json => {
+                dispatch(
+                    addToastrSuccess(
+                        i18n('admin.packages.message.import.title'),
+                        i18n('admin.packages.message.import.message'),
+                    ),
+                );
+            });
     };
 }
 

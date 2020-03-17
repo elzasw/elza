@@ -30,7 +30,7 @@ import {formatDate} from '../validate';
 var _ffs_validateTimer;
 var _ffs_prevReject = null;
 
-const renderTextFields = (fields) => {
+const renderTextFields = fields => {
     return fields.map((field, index) => {
         var decorate;
         if (field.error) {
@@ -42,16 +42,19 @@ const renderTextFields = (fields) => {
         }
 
         return (
-            <div key={index} className='value-container'>
-                <FormInput {...decorate} type="text" value={field.value}
-                           onChange={(e) => field.onChange(e.target.value)}/>
+            <div key={index} className="value-container">
+                <FormInput
+                    {...decorate}
+                    type="text"
+                    value={field.value}
+                    onChange={e => field.onChange(e.target.value)}
+                />
             </div>
         );
     });
 };
 
-const renderDateFields = (fields) => {
-
+const renderDateFields = fields => {
     return fields.map((field, index) => {
         let decorate;
         if (field.error) {
@@ -63,19 +66,19 @@ const renderDateFields = (fields) => {
         }
 
         return (
-            <div key={index} className='value-container'>
+            <div key={index} className="value-container">
                 <DateTimePicker
                     {...decorate}
                     time={false}
                     value={field.value == null ? null : new Date(field.value)}
-                    onChange={(value) => field.onChange(formatDate(value))}
+                    onChange={value => field.onChange(formatDate(value))}
                 />
             </div>
         );
     });
 };
 
-const renderCoordinatesFields = (fields) => {
+const renderCoordinatesFields = fields => {
     let descItem;
     switch (fields.length) {
         case 0:
@@ -87,17 +90,20 @@ const renderCoordinatesFields = (fields) => {
                 error: {value: fields[0].error},
             };
             return (
-                <div key={0} className='value-container'>
+                <div key={0} className="value-container">
                     <DescItemCoordinates
                         onChange={fields[0].onChange}
                         descItem={descItem}
-                        onFocus={() => {
-                        }}
-                        onBlur={() => {
-                        }}
+                        onFocus={() => {}}
+                        onBlur={() => {}}
                     />
-                    {false && <FormInput type="text" value={fields[0].value}
-                                         onChange={(e) => fields[0].onChange(e.target.value)}/>}
+                    {false && (
+                        <FormInput
+                            type="text"
+                            value={fields[0].value}
+                            onChange={e => fields[0].onChange(e.target.value)}
+                        />
+                    )}
                 </div>
             );
         case 2:
@@ -108,24 +114,29 @@ const renderCoordinatesFields = (fields) => {
                 error: {},
             };
             vals.push(
-                <div key={0} className='value-container'>
+                <div key={0} className="value-container">
                     <DescItemCoordinates
                         onChange={fields[0].onChange}
                         descItem={descItem}
-                        onFocus={() => {
-                        }}
-                        onBlur={() => {
-                        }}
+                        onFocus={() => {}}
+                        onBlur={() => {}}
                     />
                 </div>,
             );
             vals.push(
-                <div key={1} className='value-container'>
-                    <FormInput as="select" defaultValue={10000} value={fields[1].value}
-                               onChange={(e) => fields[1].onChange(e.target.value)}>
+                <div key={1} className="value-container">
+                    <FormInput
+                        as="select"
+                        defaultValue={10000}
+                        value={fields[1].value}
+                        onChange={e => fields[1].onChange(e.target.value)}
+                    >
                         {[100, 500, 1000, 10000, 20000, 50000, 100000].map(l => {
-                            return <option key={l}
-                                           value={l}>{i18n('arr.fund.filterSettings.condition.coordinates.near.' + l)}</option>;
+                            return (
+                                <option key={l} value={l}>
+                                    {i18n('arr.fund.filterSettings.condition.coordinates.near.' + l)}
+                                </option>
+                            );
                         })}
                     </FormInput>
                 </div>,
@@ -143,26 +154,30 @@ const renderUnitdateFields = (calendarTypes, fields) => {
         case 2:
             var vals = [];
             vals.push(
-                <div key={0} className='value-container'>
-                    <FormInput as="select"
-                               value={typeof fields[0].value !== 'undefined' ? fields[0].value : 1}
-                               onChange={(e) => {
-                                   fields[0].onChange(e.target.value);
-                               }}
+                <div key={0} className="value-container">
+                    <FormInput
+                        as="select"
+                        value={typeof fields[0].value !== 'undefined' ? fields[0].value : 1}
+                        onChange={e => {
+                            fields[0].onChange(e.target.value);
+                        }}
                     >
                         {calendarTypes.items.map(calendarType => (
-                            <option key={calendarType.id} value={calendarType.id}>{calendarType.name}</option>
+                            <option key={calendarType.id} value={calendarType.id}>
+                                {calendarType.name}
+                            </option>
                         ))}
                     </FormInput>
                 </div>,
             );
             vals.push(
-                <div key={1} className='value-container'>
-                    <FormInput type="text"
-                               value={fields[1].value}
-                               onChange={(e) => {
-                                   fields[1].onChange(e.target.value);
-                               }}
+                <div key={1} className="value-container">
+                    <FormInput
+                        type="text"
+                        value={fields[1].value}
+                        onChange={e => {
+                            fields[1].onChange(e.target.value);
+                        }}
                     />
                 </div>,
             );
@@ -176,9 +191,17 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     constructor(props) {
         super(props);
 
-        this.bindMethods('callValueSearch', 'handleValueSearch',
-            'handleValueItemsChange', 'renderConditionFilter', 'handleSpecItemsChange', 'handleConditionChange',
-            'handleSubmit', 'renderValueFilter', 'getConditionInfo');
+        this.bindMethods(
+            'callValueSearch',
+            'handleValueSearch',
+            'handleValueItemsChange',
+            'renderConditionFilter',
+            'handleSpecItemsChange',
+            'handleConditionChange',
+            'handleSubmit',
+            'renderValueFilter',
+            'getConditionInfo',
+        );
 
         let state = {
             valueItems: [],
@@ -214,7 +237,9 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         if (condInfo.items.length > 0) {
             // ? je vybrana podminka
             const conditionHasValue = state.conditionSelectedCode !== 'NONE';
-            const valueHasValue = state.selectedValueItemsType === 'selected' || (state.selectedValueItems && state.selectedValueItems.length > 0);
+            const valueHasValue =
+                state.selectedValueItemsType === 'selected' ||
+                (state.selectedValueItems && state.selectedValueItems.length > 0);
             if (conditionHasValue || !valueHasValue) {
                 state.valueAccodrionType = 'CONDITION';
             }
@@ -223,24 +248,27 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         this.state = state;
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-    }
+    UNSAFE_componentWillReceiveProps(nextProps) {}
 
     componentDidMount() {
         const {refType} = this.props;
         if (refType.id !== COL_REFERENCE_MARK) {
-            if (refType.useSpecification) {  // má specifikace, nebo u obalů budeme místo specifikací zobrazovat výběr typů obsalů
-                this.callFilterUniqueSpecs();   // v metodě se dále volá value search - až po načtení specifikací
+            if (refType.useSpecification) {
+                // má specifikace, nebo u obalů budeme místo specifikací zobrazovat výběr typů obsalů
+                this.callFilterUniqueSpecs(); // v metodě se dále volá value search - až po načtení specifikací
             } else {
-                this.callValueSearch('');   // zde musíme volat value search ručně, protože se nenačítají specifikace
+                this.callValueSearch(''); // zde musíme volat value search ručně, protože se nenačítají specifikace
             }
         }
     }
 
     handleValueSearch(text) {
-        this.setState({
-            valueSearchText: text,
-        }, this.callValueSearch);
+        this.setState(
+            {
+                valueSearchText: text,
+            },
+            this.callValueSearch,
+        );
     }
 
     callFilterUniqueSpecs = () => {
@@ -257,12 +285,11 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                 });
             }
 
-            refType.descItemSpecs.forEach((spec) => {
+            refType.descItemSpecs.forEach(spec => {
                 if (specIds.indexOf(spec.id) >= 0) {
                     specItems.push(spec);
                 }
             });
-
 
             this.setState({specItems, isFetchingSpecIds: false}, () => this.callValueSearch(''));
         });
@@ -272,7 +299,8 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         const {versionId, refType, dataType} = this.props;
         const {valueSearchText} = this.state;
 
-        if (!hasDescItemTypeValue(dataType)) {  // pokud nemá hodnotu, nemůžeme volat
+        if (!hasDescItemTypeValue(dataType)) {
+            // pokud nemá hodnotu, nemůžeme volat
             return;
         }
 
@@ -280,7 +308,8 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         if (refType.useSpecification) {
             specIds = this.refs.specsListBox.getSpecsIds();
 
-            if (specIds.length === 0) { // pokud nemá nic vybráno, nevrátily by se žádné položky a není třeba volat server
+            if (specIds.length === 0) {
+                // pokud nemá nic vybráno, nevrátily by se žádné položky a není třeba volat server
                 this.setState({
                     valueItems: [],
                 });
@@ -295,32 +324,43 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             });
 
             this.setState({isFetchingItemTypeValues: true});
-            WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, useSpecIds, 200)
-                  .then(json => {
-                      var valueItems = json.map(i => ({id: i, name: i}));
+            WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, useSpecIds, 200).then(json => {
+                var valueItems = json.map(i => ({id: i, name: i}));
 
-                      // TODO [stanekpa] Toto zde nebude, když se na server přidělá podpora na vracení a hledání NULL hodnot - problé je ale v locales (řetězec arr.fund.filterSettings.value.empty), měly by se doplnit i na server
-                      if (valueSearchText == '' || i18n('arr.fund.filterSettings.value.empty').toLowerCase().indexOf(valueSearchText) !== -1) {   // u prázdného hledání a případně u hledání prázdné hodnoty doplňujeme null položku
-                          valueItems = [{
-                              id: FILTER_NULL_VALUE,
-                              name: i18n('arr.fund.filterSettings.value.empty'),
-                          }, ...valueItems];
-                      }
+                // TODO [stanekpa] Toto zde nebude, když se na server přidělá podpora na vracení a hledání NULL hodnot - problé je ale v locales (řetězec arr.fund.filterSettings.value.empty), měly by se doplnit i na server
+                if (
+                    valueSearchText == '' ||
+                    i18n('arr.fund.filterSettings.value.empty')
+                        .toLowerCase()
+                        .indexOf(valueSearchText) !== -1
+                ) {
+                    // u prázdného hledání a případně u hledání prázdné hodnoty doplňujeme null položku
+                    valueItems = [
+                        {
+                            id: FILTER_NULL_VALUE,
+                            name: i18n('arr.fund.filterSettings.value.empty'),
+                        },
+                        ...valueItems,
+                    ];
+                }
 
-                      this.setState({
-                          valueItems: valueItems,
-                          isFetchingItemTypeValues: false,
-                      });
-                  });
+                this.setState({
+                    valueItems: valueItems,
+                    isFetchingItemTypeValues: false,
+                });
+            });
         }
     }
 
     handleSpecItemsChange(data) {
         const {type, ids} = data;
-        this.setState({
-            selectedSpecItems: ids,
-            selectedSpecItemsType: type,
-        }, this.callValueSearch);
+        this.setState(
+            {
+                selectedSpecItems: ids,
+                selectedSpecItemsType: type,
+            },
+            this.callValueSearch,
+        );
     }
 
     handleValueItemsChange(type, ids) {
@@ -422,13 +462,14 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             return null;
         }
 
-        if (dataType.code === 'UNITDATE' || dataType.code === 'TEXT' || dataType.code === 'COORDINATES') { // zde je výjimka a nechceme dle hodnoty
+        if (dataType.code === 'UNITDATE' || dataType.code === 'TEXT' || dataType.code === 'COORDINATES') {
+            // zde je výjimka a nechceme dle hodnoty
             return null;
         }
 
         return (
             <FilterableListBox
-                className='filter-content-container'
+                className="filter-content-container"
                 searchable
                 items={valueItems}
                 selectionType={selectedValueItemsType}
@@ -436,7 +477,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                 onChange={this.handleValueItemsChange}
                 onSearch={this.handleValueSearch}
             >
-                {isFetchingItemTypeValues && <HorizontalLoader hover showText={false}/>}
+                {isFetchingItemTypeValues && <HorizontalLoader hover showText={false} />}
             </FilterableListBox>
         );
     }
@@ -549,10 +590,9 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                             }
                             _ffs_prevReject = reject;
                             var fc = () => {
-                                WebApi.validateUnitdate(value)
-                                      .then(json => {
-                                          resolve(json.message);
-                                      });
+                                WebApi.validateUnitdate(value).then(json => {
+                                    resolve(json.message);
+                                });
                             };
                             _ffs_validateTimer = setTimeout(fc, 250);
                         });
@@ -619,7 +659,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
 
         return (
             <FundFilterCondition
-                className='filter-content-container'
+                className="filter-content-container"
                 selectedCode={conditionSelectedCode}
                 values={conditionValues}
                 onChange={this.handleConditionChange}
@@ -647,7 +687,15 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     };
 
     handleSubmit() {
-        const {selectedValueItems, selectedValueItemsType, valueAccodrionType, selectedSpecItems, selectedSpecItemsType, conditionSelectedCode, conditionValues} = this.state;
+        const {
+            selectedValueItems,
+            selectedValueItemsType,
+            valueAccodrionType,
+            selectedSpecItems,
+            selectedSpecItemsType,
+            conditionSelectedCode,
+            conditionValues,
+        } = this.state;
         const {onSubmitForm, refType} = this.props;
 
         var data = {
@@ -681,11 +729,14 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         // ##
         var outData = null;
 
-        if (data.valuesType === 'selected' || data.values.length > 0) {      // je zadáno filtrování podle hodnoty
+        if (data.valuesType === 'selected' || data.values.length > 0) {
+            // je zadáno filtrování podle hodnoty
             outData = data;
-        } else if ((refType.useSpecification) && (data.specsType === 'selected' || data.specs.length > 0)) {     // je zadáno filtrování podle specifikace
+        } else if (refType.useSpecification && (data.specsType === 'selected' || data.specs.length > 0)) {
+            // je zadáno filtrování podle specifikace
             outData = data;
-        } else if (data.conditionType !== 'NONE') { // je zadáno filtrování podle podmínky
+        } else if (data.conditionType !== 'NONE') {
+            // je zadáno filtrování podle podmínky
             outData = data;
         }
 
@@ -700,7 +751,17 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
 
     render() {
         const {filter, refType, onClose, dataType} = this.props;
-        const {isFetchingSpecIds, refMarkSelectedNode, conditionHasErrors, valueAccodrionType, conditionSelectedCode, conditionValues, selectedSpecItems, selectedSpecItemsType, specItems} = this.state;
+        const {
+            isFetchingSpecIds,
+            refMarkSelectedNode,
+            conditionHasErrors,
+            valueAccodrionType,
+            conditionSelectedCode,
+            conditionValues,
+            selectedSpecItems,
+            selectedSpecItemsType,
+            specItems,
+        } = this.state;
 
         var specContent = null;
         if (refType.id === COL_REFERENCE_MARK) {
@@ -708,13 +769,13 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         } else if (refType.useSpecification) {
             specContent = (
                 <SimpleCheckListBox
-                    ref='specsListBox'
+                    ref="specsListBox"
                     items={specItems}
                     label={i18n('arr.fund.filterSettings.filterBySpecification.title')}
                     value={{type: selectedSpecItemsType, ids: selectedSpecItems}}
                     onChange={this.handleSpecItemsChange}
                 >
-                    {isFetchingSpecIds && <HorizontalLoader hover showText={false}/>}
+                    {isFetchingSpecIds && <HorizontalLoader hover showText={false} />}
                 </SimpleCheckListBox>
             );
         }
@@ -723,8 +784,11 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         var conditionContent;
         var hasAllValues = true;
 
-        let okButtons = [<Button key="clear" className="pull-left"
-                                 onClick={this.handleClearSubmit}>{i18n('arr.fund.filterSettings.action.clear')}</Button>];
+        let okButtons = [
+            <Button key="clear" className="pull-left" onClick={this.handleClearSubmit}>
+                {i18n('arr.fund.filterSettings.action.clear')}
+            </Button>,
+        ];
         if (refType.id !== COL_REFERENCE_MARK) {
             valueContent = this.renderValueFilter();
 
@@ -745,34 +809,45 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             }
 
             const okDisabled = conditionHasErrors || !hasAllValues;
-            okButtons.push(<Button key="store" disabled={okDisabled}
-                                   onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>);
-        } else {    // referenční označení
-            valueContent = <FundNodesSelect
-                selectedId={filter && filter.nodeId != null ? filter.nodeId : null}
-                multipleSelection={false}
-                onChange={this.handleNodeSelectChange}
-            />;
+            okButtons.push(
+                <Button key="store" disabled={okDisabled} onClick={this.handleSubmit}>
+                    {i18n('global.action.store')}
+                </Button>,
+            );
+        } else {
+            // referenční označení
+            valueContent = (
+                <FundNodesSelect
+                    selectedId={filter && filter.nodeId != null ? filter.nodeId : null}
+                    multipleSelection={false}
+                    onChange={this.handleNodeSelectChange}
+                />
+            );
 
             const okDisabled = refMarkSelectedNode === null;
-            okButtons.push(<Button key="store" disabled={okDisabled}
-                                   onClick={this.handleRefMarkSubmit}>{i18n('global.action.select')}</Button>);
+            okButtons.push(
+                <Button key="store" disabled={okDisabled} onClick={this.handleRefMarkSubmit}>
+                    {i18n('global.action.select')}
+                </Button>,
+            );
         }
 
         let accordion;
         if (conditionContent && valueContent) {
-            accordion =
-                <Accordion className="accordion-simple bordered" activeKey={valueAccodrionType} onSelect={type => {
-                    this.setState({valueAccodrionType: type});
-                }}>
+            accordion = (
+                <Accordion
+                    className="accordion-simple bordered"
+                    activeKey={valueAccodrionType}
+                    onSelect={type => {
+                        this.setState({valueAccodrionType: type});
+                    }}
+                >
                     <Card className={valueAccodrionType === 'CONDITION' ? 'open' : ''}>
                         <Card.Header>
                             <h4>{i18n('arr.fund.filterSettings.filterByCondition.title')}</h4>
                         </Card.Header>
                         <Accordion.Collapse eventKey="CONDITION">
-                            <Card.Body>
-                                {conditionContent}
-                            </Card.Body>
+                            <Card.Body>{conditionContent}</Card.Body>
                         </Accordion.Collapse>
                     </Card>
                     <Card className={valueAccodrionType === 'VALUE' ? 'open' : ''}>
@@ -780,36 +855,43 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                             <h4>{i18n('arr.fund.filterSettings.filterByValue.title')}</h4>
                         </Card.Header>
                         <Accordion.Collapse eventKey="VALUE">
-                            <Card.Body>
-                                {valueContent}
-                            </Card.Body>
+                            <Card.Body>{valueContent}</Card.Body>
                         </Accordion.Collapse>
                     </Card>
-                </Accordion>;
+                </Accordion>
+            );
         } else {
-            accordion = <div>
-                {conditionContent && <div>
-                    <h4>{i18n('arr.fund.filterSettings.filterByCondition.title')}</h4>
-                    {conditionContent}
-                </div>}
-                {valueContent && <div>
-                    <h4>{i18n('arr.fund.filterSettings.filterByValue.title')}</h4>
-                    {valueContent}
-                </div>}
-            </div>;
+            accordion = (
+                <div>
+                    {conditionContent && (
+                        <div>
+                            <h4>{i18n('arr.fund.filterSettings.filterByCondition.title')}</h4>
+                            {conditionContent}
+                        </div>
+                    )}
+                    {valueContent && (
+                        <div>
+                            <h4>{i18n('arr.fund.filterSettings.filterByValue.title')}</h4>
+                            {valueContent}
+                        </div>
+                    )}
+                </div>
+            );
         }
 
         return (
-            <div className='fund-filter-settings-container'>
+            <div className="fund-filter-settings-container">
                 <Modal.Body>
-                    <div className='filters-container'>
+                    <div className="filters-container">
                         {specContent}
                         {accordion}
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
                     {okButtons}
-                    <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button variant="link" onClick={onClose}>
+                        {i18n('global.action.cancel')}
+                    </Button>
                 </Modal.Footer>
             </div>
         );

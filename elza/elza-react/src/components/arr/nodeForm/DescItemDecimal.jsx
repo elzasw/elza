@@ -15,11 +15,11 @@ class DescItemDecimal extends AbstractReactComponent {
 
         this.bindMethods('handleChange', 'focus');
 
-        this.state = { value: this.convertToClient(props.descItem.value) };
+        this.state = {value: this.convertToClient(props.descItem.value)};
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        this.setState({ value: this.convertToClient(nextProps.descItem.value) });
+        this.setState({value: this.convertToClient(nextProps.descItem.value)});
     }
 
     convertToClient(value) {
@@ -47,7 +47,11 @@ class DescItemDecimal extends AbstractReactComponent {
         const value = this.convertFromClient(newValue);
         let prevValue;
 
-        if (typeof this.props.descItem.value !== 'undefined' && this.props.descItem.value !== '' && this.props.descItem.value !== null) {
+        if (
+            typeof this.props.descItem.value !== 'undefined' &&
+            this.props.descItem.value !== '' &&
+            this.props.descItem.value !== null
+        ) {
             prevValue = '' + this.props.descItem.value;
         } else {
             prevValue = '';
@@ -59,13 +63,11 @@ class DescItemDecimal extends AbstractReactComponent {
     }
 
     render() {
-        const { descItem, locked, readMode, cal } = this.props;
+        const {descItem, locked, readMode, cal} = this.props;
         let value = cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : descItem.value;
 
         if (readMode) {
-            return (
-                <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined}/>
-            );
+            return <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined} />;
         }
 
         let cls = [];
@@ -76,11 +78,11 @@ class DescItemDecimal extends AbstractReactComponent {
         value = cal && this.state.value === '' ? value : this.state.value;
 
         return (
-            <div className='desc-item-value'>
+            <div className="desc-item-value">
                 <ItemTooltipWrapper tooltipTitle="dataType.decimal.format">
                     <input
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
-                        ref='focusEl'
+                        ref="focusEl"
                         type="text"
                         disabled={locked || descItem.undefined}
                         onChange={this.handleChange}

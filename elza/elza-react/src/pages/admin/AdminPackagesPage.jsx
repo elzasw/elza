@@ -14,29 +14,28 @@ import PageLayout from '../shared/layout/PageLayout';
  * @since 22.12.2015
  */
 class AdminPackagesPage extends React.Component {
-
     buildRibbon = () => {
-        return (
-            <Ribbon admin {...this.props} />
-        )
+        return <Ribbon admin {...this.props} />;
     };
 
     render() {
         const {splitter} = this.props;
 
-        const centerPanel = <div>
-            <AdminPackagesList getExportUrl={UrlFactory.exportPackage} {...this.props.packages} />
-            <AdminPackagesUpload />
-        </div>;
+        const centerPanel = (
+            <div>
+                <AdminPackagesList getExportUrl={UrlFactory.exportPackage} {...this.props.packages} />
+                <AdminPackagesUpload />
+            </div>
+        );
 
         return (
             <PageLayout
                 splitter={splitter}
-                className='admin-packages-page'
+                className="admin-packages-page"
                 ribbon={this.buildRibbon()}
                 centerPanel={centerPanel}
             />
-        )
+        );
     }
 }
 
@@ -47,11 +46,14 @@ class AdminPackagesPage extends React.Component {
  * @returns {{packages: *}}
  */
 function mapStateToProps(state) {
-    const {splitter, adminRegion: {packages}} = state;
+    const {
+        splitter,
+        adminRegion: {packages},
+    } = state;
     return {
         splitter,
-        packages
-    }
+        packages,
+    };
 }
 
 export default connect(mapStateToProps)(AdminPackagesPage);

@@ -30,18 +30,20 @@ export function fundSubNodeDaosFetchIfNeeded(versionId, nodeId, routingKey) {
         }
 
         const dataKey = nodeId;
-        if (store.currentDataKey !== dataKey) { // pokus se data key neschoduje, provedeme fetch
+        if (store.currentDataKey !== dataKey) {
+            // pokus se data key neschoduje, provedeme fetch
             dispatch(fundSubNodeDaosRequest(versionId, nodeId, routingKey));
 
-            if (nodeId !== null) {  // pokud chceme reálně načíst objekt, provedeme fetch
-                return WebApi.getFundNodeDaos(versionId, nodeId)
-                             .then(json => {
-                                 const newStore = getSubNodeDaos(getState(), versionId, routingKey);
-                                 const newDataKey = newStore.currentDataKey;
-                                 if (newDataKey === dataKey) {   // jen pokud příchozí objekt odpovídá dtům, které chceme ve store
-                                     dispatch(fundSubNodeDaosReceive(versionId, nodeId, routingKey, json));
-                                 }
-                             });
+            if (nodeId !== null) {
+                // pokud chceme reálně načíst objekt, provedeme fetch
+                return WebApi.getFundNodeDaos(versionId, nodeId).then(json => {
+                    const newStore = getSubNodeDaos(getState(), versionId, routingKey);
+                    const newDataKey = newStore.currentDataKey;
+                    if (newDataKey === dataKey) {
+                        // jen pokud příchozí objekt odpovídá dtům, které chceme ve store
+                        dispatch(fundSubNodeDaosReceive(versionId, nodeId, routingKey, json));
+                    }
+                });
             } else {
                 // Response s prázdným objektem
                 dispatch(fundSubNodeDaosReceive(versionId, nodeId, routingKey, null));

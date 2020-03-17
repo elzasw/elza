@@ -8,12 +8,12 @@ import {WebApi} from 'actions/index.jsx';
 export function changeUserPermission(userId, permissions) {
     return (dispatch, getState) => {
         WebApi.changeUserPermission(userId, permissions);
-    }
+    };
 }
 export function changeGroupPermission(groupId, permissions) {
     return (dispatch, getState) => {
         WebApi.changeGroupPermission(groupId, permissions);
-    }
+    };
 }
 
 export function isPermissionAction(action) {
@@ -22,9 +22,9 @@ export function isPermissionAction(action) {
         case types.PERMISSIONS_PERMISSION_ADD:
         case types.PERMISSIONS_PERMISSION_REMOVE:
         case types.PERMISSIONS_PERMISSION_RECEIVE:
-            return true
+            return true;
         default:
-            return false
+            return false;
     }
 }
 
@@ -32,14 +32,14 @@ export function permissionAdd(area) {
     return {
         type: types.PERMISSIONS_PERMISSION_ADD,
         area,
-    }
+    };
 }
 export function permissionRemove(area, index) {
     return {
         type: types.PERMISSIONS_PERMISSION_REMOVE,
         area,
         index,
-    }
+    };
 }
 export function permissionChange(area, index, value) {
     return {
@@ -47,18 +47,16 @@ export function permissionChange(area, index, value) {
         area,
         index,
         value,
-    }
+    };
 }
 
 export function permissionReceive(area, permissions) {
     return {
         type: types.PERMISSIONS_PERMISSION_RECEIVE,
         area,
-        permissions
-    }
+        permissions,
+    };
 }
 export function permissionBlur(area, index) {
-    return (dispatch, getState) => {
-        
-    }
+    return (dispatch, getState) => {};
 }

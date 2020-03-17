@@ -1,13 +1,13 @@
 import * as types from 'actions/constants/ActionTypes.js';
 
 import React from 'react';
-import { i18n } from 'components/shared';
-import { Button } from '../../components/ui';
-import { addToastrDanger, addToastrInfo, addToastrSuccess } from 'components/shared/toastr/ToastrActions.jsx';
-import { fundOutputSelectOutput } from 'actions/arr/fundOutput.jsx';
-import { routerNavigate } from 'actions/router.jsx';
-import { indexById } from 'stores/app/utils.jsx';
-import { partyDetailClear, partyDetailInvalidate, partyListInvalidate } from 'actions/party/party.jsx';
+import {i18n} from 'components/shared';
+import {Button} from '../../components/ui';
+import {addToastrDanger, addToastrInfo, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
+import {fundOutputSelectOutput} from 'actions/arr/fundOutput.jsx';
+import {routerNavigate} from 'actions/router.jsx';
+import {indexById} from 'stores/app/utils.jsx';
+import {partyDetailClear, partyDetailInvalidate, partyListInvalidate} from 'actions/party/party.jsx';
 import {
     AREA_EXT_SYSTEM_DETAIL,
     AREA_EXT_SYSTEM_LIST,
@@ -23,18 +23,18 @@ import {
     preparedListInvalidate,
     queueListInvalidate,
 } from 'actions/arr/arrRequestActions.jsx';
-import { storeFromArea } from 'shared/utils';
+import {storeFromArea} from 'shared/utils';
 import {
     AREA_REGISTRY_DETAIL,
     AREA_REGISTRY_LIST,
     registryDetailInvalidate,
     registryListInvalidate,
 } from 'actions/registry/registry.jsx';
-import { refExternalSystemListInvalidate } from 'actions/refTables/externalSystems';
-import { structureTypeInvalidate } from '../arr/structureType';
-import { AccessPointFormActions } from '../../components/accesspoint/AccessPointFormActions';
-import { ApNameFormActions } from '../../components/accesspoint/ApNameFormActions';
-import { FragmentItemFormActions } from '../../components/accesspoint/FragmentItemFormActions';
+import {refExternalSystemListInvalidate} from 'actions/refTables/externalSystems';
+import {structureTypeInvalidate} from '../arr/structureType';
+import {AccessPointFormActions} from '../../components/accesspoint/AccessPointFormActions';
+import {ApNameFormActions} from '../../components/accesspoint/ApNameFormActions';
+import {FragmentItemFormActions} from '../../components/accesspoint/FragmentItemFormActions';
 
 export function isFundChangeAction(action) {
     switch (action.type) {
@@ -67,7 +67,6 @@ export function changeNodeRequests(fundVersionId, nodeIds) {
 }
 
 export function changeIndexingFinished() {
-
     addToastrSuccess(i18n('admin.fulltext.message.success'));
 
     return {
@@ -76,21 +75,18 @@ export function changeIndexingFinished() {
 }
 
 export function changePackage() {
-
     return {
         type: types.CHANGE_PACKAGE,
     };
 }
 
 export function changeInstitution() {
-
     return {
         type: types.CHANGE_INSTITUTION,
     };
 }
 
 export function changePackets(fundId) {
-
     return {
         type: types.CHANGE_PACKETS,
         fundId: fundId,
@@ -105,7 +101,6 @@ export function changeFiles(fundId, name) {
 }
 
 export function changeNodes(versionId, nodeIds) {
-
     return {
         type: types.CHANGE_NODES,
         versionId,
@@ -122,7 +117,6 @@ export function changeOutputs(versionId, getOutputIds) {
 }
 
 export function changeDeleteLevel(versionId, nodeId, parentNodeId) {
-
     return {
         type: types.CHANGE_DELETE_LEVEL,
         versionId,
@@ -132,7 +126,6 @@ export function changeDeleteLevel(versionId, nodeId, parentNodeId) {
 }
 
 export function changeAddLevel(versionId, nodeId, parentNodeId) {
-
     return {
         type: types.CHANGE_ADD_LEVEL,
         versionId,
@@ -151,7 +144,9 @@ export function changeFundAction(versionId, id) {
 
 export function changeParty(partyId) {
     return (dispatch, getState) => {
-        const { app: { partyList, partyDetail } } = getState();
+        const {
+            app: {partyList, partyDetail},
+        } = getState();
         if (partyList.filteredRows && indexById(partyList.filteredRows, partyId) !== null) {
             dispatch(partyListInvalidate());
         }
@@ -173,7 +168,9 @@ export function changePartyCreate(partyIds) {
 
 export function changePartyDelete(partyId) {
     return (dispatch, getState) => {
-        const { app: { partyList, partyDetail } } = getState();
+        const {
+            app: {partyList, partyDetail},
+        } = getState();
         if (partyList.filteredRows && indexById(partyList.filteredRows, partyId) !== null) {
             dispatch(partyListInvalidate());
         }
@@ -241,7 +238,6 @@ export function deleteExtSystem(extSystemId) {
 }
 
 export function changeApproveVersion(fundId, versionId) {
-
     return {
         type: types.CHANGE_APPROVE_VERSION,
         versionId,
@@ -250,7 +246,6 @@ export function changeApproveVersion(fundId, versionId) {
 }
 
 export function changeMoveLevel(versionId) {
-
     return {
         type: types.CHANGE_MOVE_LEVEL,
         versionId,
@@ -265,7 +260,7 @@ export function changeRegistry(changedIds) {
         if (detail.id && changedIds.indexOf(detail.id) !== -1) {
             dispatch(registryDetailInvalidate());
         }
-        if (list.data && list.data.filter((n) => changedIds.indexOf(n) !== -1).length > 0) {
+        if (list.data && list.data.filter(n => changedIds.indexOf(n) !== -1).length > 0) {
             dispatch(registryListInvalidate());
         }
     };
@@ -321,7 +316,7 @@ export function changeFundRecord(versionId, nodeId, version) {
 export function changeVisiblePolicy(versionId, nodeId, invalidateNodes) {
     var nodeIdsMap = {};
 
-    nodeId.forEach(item => nodeIdsMap[item] = true);
+    nodeId.forEach(item => (nodeIdsMap[item] = true));
 
     return {
         type: types.CHANGE_VISIBLE_POLICY,
@@ -343,17 +338,24 @@ export function fundOutputStateChange(versionId, outputId, state) {
 
 export function fundOutputStateChangeToastr(versionId, entityId, state) {
     return (dispatch, getState) => {
-        const { arrRegion } = getState();
+        const {arrRegion} = getState();
         if (arrRegion.activeIndex != null) {
             const fund = arrRegion.funds[arrRegion.activeIndex];
             if (fund === null || fund.versionId !== versionId) {
                 return;
             }
 
-            const showBtn = <Button variant="link" onClick={() => {
-                dispatch(routerNavigate('/arr/output'));
-                dispatch(fundOutputSelectOutput(versionId, entityId));
-            }}>{i18n('change.arr.output.clickToShow')}</Button>;
+            const showBtn = (
+                <Button
+                    variant="link"
+                    onClick={() => {
+                        dispatch(routerNavigate('/arr/output'));
+                        dispatch(fundOutputSelectOutput(versionId, entityId));
+                    }}
+                >
+                    {i18n('change.arr.output.clickToShow')}
+                </Button>
+            );
 
             switch (state) {
                 case 'GENERATING':
@@ -370,7 +372,6 @@ export function fundOutputStateChangeToastr(versionId, entityId, state) {
         }
     };
 }
-
 
 export function userChange(userIds) {
     return {
@@ -448,7 +449,9 @@ export function structureChange(data) {
         const store = getState();
         const list = storeFromArea(store, 'arrStructure');
         if (list && list.parent && list.parent.fundVersionId) {
-            let funds = store.arrRegion.funds.filter(i => i.id == data.fundId && i.versionId == list.parent.fundVersionId);
+            let funds = store.arrRegion.funds.filter(
+                i => i.id == data.fundId && i.versionId == list.parent.fundVersionId,
+            );
             if (funds.length > 0) {
                 dispatch(structureTypeInvalidate());
                 for (let fund of funds) {
@@ -485,7 +488,6 @@ export function changeAccessPoint(ids) {
             });
         }
     };
-
 }
 
 export function changeFragment(ids) {
@@ -500,5 +502,4 @@ export function changeFragment(ids) {
             });
         }
     };
-
 }

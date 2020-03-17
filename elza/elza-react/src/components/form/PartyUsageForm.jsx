@@ -10,42 +10,44 @@ import {connect} from 'react-redux';
 import {modalDialogHide} from '../../actions/global/modalDialog';
 
 class PartyUsageForm extends React.Component {
-
     state = {
-        data: null
+        data: null,
     };
 
-    componentDidMount(){
+    componentDidMount() {
         this.fetchData();
     }
 
     fetchData = () => {
         WebApi.findPartyUsage(this.props.detail.id).then(data => {
-            this.setState({data})
-        })
+            this.setState({data});
+        });
     };
 
-    handleReplace = (selectedReplacementNode) => {
+    handleReplace = selectedReplacementNode => {
         if (selectedReplacementNode) {
             WebApi.replaceParty(this.props.detail.id, selectedReplacementNode.id).then(() => {
-                this.props.dispatch(addToastrSuccess(i18n("party.replaceSuccess")));
+                this.props.dispatch(addToastrSuccess(i18n('party.replaceSuccess')));
                 this.props.dispatch(modalDialogHide());
             });
         }
     };
 
-    render(){
+    render() {
         const {data} = this.state;
-        if (data) return <UsageForm
-            detail={this.props.detail}
-            treeArea={types.FUND_TREE_AREA_USAGE}
-            replaceText={i18n("party.replaceText")}
-            onReplace={this.handleReplace}
-            type="party"
-            data={data}
-        />;
+        if (data)
+            return (
+                <UsageForm
+                    detail={this.props.detail}
+                    treeArea={types.FUND_TREE_AREA_USAGE}
+                    replaceText={i18n('party.replaceText')}
+                    onReplace={this.handleReplace}
+                    type="party"
+                    data={data}
+                />
+            );
 
-        return <HorizontalLoader/>
+        return <HorizontalLoader />;
     }
 }
 

@@ -43,31 +43,45 @@ const RunActionForm = class RunActionForm extends AbstractReactComponent {
         closeOnSubmit: true,
     };
 
-    submitReduxForm = (values, dispatch) => submitForm(validate, values, this.props, this.props.onSubmitForm, dispatch, this.submitOptions);
-
+    submitReduxForm = (values, dispatch) =>
+        submitForm(validate, values, this.props, this.props.onSubmitForm, dispatch, this.submitOptions);
 
     render() {
-        const {fields: {code}, handleSubmit, onClose, actionConfig, submitting} = this.props;
+        const {
+            fields: {code},
+            handleSubmit,
+            onClose,
+            actionConfig,
+            submitting,
+        } = this.props;
         return (
             <div className="run-action-form-container">
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
-                        <FormInput as="select"
-                                   label={i18n('arr.fundAction.form.type')}
-                                   key='code-action'
-                                   ref='code-action'
-                                   className='form-control'
-                                   {...code}
-                                   {...decorateFormField(code)}
+                        <FormInput
+                            as="select"
+                            label={i18n('arr.fundAction.form.type')}
+                            key="code-action"
+                            ref="code-action"
+                            className="form-control"
+                            {...code}
+                            {...decorateFormField(code)}
                         >
-                            <option key="novalue" value={null}/>
-                            {actionConfig.map((item) => (
-                                <option key={item.code} value={item.code}>{item.name}</option>))}
+                            <option key="novalue" value={null} />
+                            {actionConfig.map(item => (
+                                <option key={item.code} value={item.code}>
+                                    {item.name}
+                                </option>
+                            ))}
                         </FormInput>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type="submit" disabled={submitting}>{i18n('global.action.run')}</Button>
-                        <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                        <Button type="submit" disabled={submitting}>
+                            {i18n('global.action.run')}
+                        </Button>
+                        <Button variant="link" onClick={onClose}>
+                            {i18n('global.action.cancel')}
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </div>
@@ -81,15 +95,23 @@ RunActionForm.propTypes = {
     versionId: PropTypes.number.isRequired,
 };
 
-export default reduxForm({
+export default reduxForm(
+    {
         form: 'RunActionForm',
         fields: ['code'],
-    }, (state, props) => {
-        const {arrRegion: {funds, activeIndex}} = state;
+    },
+    (state, props) => {
+        const {
+            arrRegion: {funds, activeIndex},
+        } = state;
 
         let actionConfig = null;
         if (activeIndex !== null && funds[activeIndex].fundAction) {
-            const {fundAction: {config: {fetched, data}}} = funds[activeIndex];
+            const {
+                fundAction: {
+                    config: {fetched, data},
+                },
+            } = funds[activeIndex];
             if (fetched) {
                 actionConfig = data;
             }

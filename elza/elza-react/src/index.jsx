@@ -28,7 +28,6 @@ import Root from './router';
 //import {Button,} from 'react-bootstrap';
 //import {bootstrapUtils} from 'react-bootstrap';
 
-
 //bootstrapUtils.addStyle(Button, 'action');
 
 // CustomEvent polyfill pro IE 9+
@@ -100,19 +99,31 @@ window.onerror = function(message, url, line, column, error) {
         if (stackTrace.stack) {
             stackTrace = stackTrace.stack;
         }
-    } catch (e) {
-    }
+    } catch (e) {}
 
-    store.dispatch(addToastr(i18n('exception.client'), [<Exception key="exception-key-onerror"
-                                                                   title={i18n('exception.client')} data={{
-        message,
-        stackTrace: stackTrace,
-        properties: {
-            url,
-            line,
-            column,
-        },
-    }}/>], 'danger', 'lg', null));
+    store.dispatch(
+        addToastr(
+            i18n('exception.client'),
+            [
+                <Exception
+                    key="exception-key-onerror"
+                    title={i18n('exception.client')}
+                    data={{
+                        message,
+                        stackTrace: stackTrace,
+                        properties: {
+                            url,
+                            line,
+                            column,
+                        },
+                    }}
+                />,
+            ],
+            'danger',
+            'lg',
+            null,
+        ),
+    );
 };
 
 // Globální vypnutí focus na split buttony
@@ -123,14 +134,14 @@ SplitToggle.defaultProps = {
 };
 */
 // {
-    // const testBodyfocus = () => {
-    //     if (document.activeElement === document.body) { // focus je na body, nastavíme ho podle aktuálně přepnuté oblasti
-    //         store.dispatch(setFocus(FOCUS_KEYS.NONE, 1));
-    //     }
-    //
-    //     setTimeout(testBodyfocus, 150);
-    // };
-    //testBodyfocus()
+// const testBodyfocus = () => {
+//     if (document.activeElement === document.body) { // focus je na body, nastavíme ho podle aktuálně přepnuté oblasti
+//         store.dispatch(setFocus(FOCUS_KEYS.NONE, 1));
+//     }
+//
+//     setTimeout(testBodyfocus, 150);
+// };
+//testBodyfocus()
 // }
 /*
 import {setFocus} from 'actions/global/focus.jsx';
@@ -154,8 +165,7 @@ scheduleStoreSave();
 const render = Component => {
     const MOUNT_POINT = document.getElementById('content');
 
-    ReactDOM.render(<Component store={store}/>, MOUNT_POINT);
+    ReactDOM.render(<Component store={store} />, MOUNT_POINT);
 };
-
 
 render(Root);

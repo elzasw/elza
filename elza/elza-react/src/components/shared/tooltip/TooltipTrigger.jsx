@@ -15,7 +15,6 @@ const TOOLTIP_WINDOW_PADDING = 40;
  * @since 22.11.2016
  */
 class TooltipTrigger extends AbstractReactComponent {
-
     static propTypes = {
         content: PropTypes.object,
         placement: PropTypes.oneOf(['left', 'right', 'top', 'bottom', 'vertical', 'horizontal', 'auto']),
@@ -46,12 +45,11 @@ class TooltipTrigger extends AbstractReactComponent {
             showTooltip: false,
             overTooltip: false,
             focus: false,
-            placement: null,    // určí se až před zobrazením
+            placement: null, // určí se až před zobrazením
         };
-    };
-
-    UNSAFE_componentWillMount() {
     }
+
+    UNSAFE_componentWillMount() {}
 
     componentWillUnmount() {
         clearTimeout(this.hoverDelay);
@@ -78,50 +76,49 @@ class TooltipTrigger extends AbstractReactComponent {
                 const ww = window.innerWidth;
                 const wh = window.innerHeight;
                 let usePlacement;
-                let maxWidth,
-                    maxHeight;
+                let maxWidth, maxHeight;
                 const node = ReactDOM.findDOMNode(this.refs.ttTarget);
                 const rect = node.getBoundingClientRect();
                 switch (placement) {
                     case 'left':
-                        maxHeight = wh - (2 * TOOLTIP_WINDOW_PADDING);
+                        maxHeight = wh - 2 * TOOLTIP_WINDOW_PADDING;
                         maxWidth = rect.left - TOOLTIP_WINDOW_PADDING;
                         usePlacement = placement;
                         break;
                     case 'right':
-                        maxHeight = wh - (2 * TOOLTIP_WINDOW_PADDING);
-                        maxWidth = (ww - rect.right) - TOOLTIP_WINDOW_PADDING;
+                        maxHeight = wh - 2 * TOOLTIP_WINDOW_PADDING;
+                        maxWidth = ww - rect.right - TOOLTIP_WINDOW_PADDING;
                         usePlacement = placement;
                         break;
                     case 'top':
-                        maxWidth = ww - (2 * TOOLTIP_WINDOW_PADDING);
+                        maxWidth = ww - 2 * TOOLTIP_WINDOW_PADDING;
                         maxHeight = rect.top - TOOLTIP_WINDOW_PADDING;
                         usePlacement = placement;
                         break;
                     case 'bottom':
-                        maxWidth = ww - (2 * TOOLTIP_WINDOW_PADDING);
-                        maxHeight = (wh - rect.bottom) - TOOLTIP_WINDOW_PADDING;
+                        maxWidth = ww - 2 * TOOLTIP_WINDOW_PADDING;
+                        maxHeight = wh - rect.bottom - TOOLTIP_WINDOW_PADDING;
                         usePlacement = placement;
                         break;
                     case 'horizontal':
-                        maxHeight = wh - (2 * TOOLTIP_WINDOW_PADDING);
+                        maxHeight = wh - 2 * TOOLTIP_WINDOW_PADDING;
                         if (rect.left > ww - rect.right) {
                             usePlacement = 'left';
                             maxWidth = rect.left - TOOLTIP_WINDOW_PADDING;
                         } else {
                             usePlacement = 'right';
-                            maxWidth = (ww - rect.right) - TOOLTIP_WINDOW_PADDING;
+                            maxWidth = ww - rect.right - TOOLTIP_WINDOW_PADDING;
                         }
 
                         break;
                     case 'vertical':
-                        maxWidth = ww - (2 * TOOLTIP_WINDOW_PADDING);
+                        maxWidth = ww - 2 * TOOLTIP_WINDOW_PADDING;
                         if (rect.top > wh - rect.bottom) {
                             usePlacement = 'top';
                             maxHeight = rect.top - TOOLTIP_WINDOW_PADDING;
                         } else {
                             usePlacement = 'bottom';
-                            maxHeight = (wh - rect.bottom) - TOOLTIP_WINDOW_PADDING;
+                            maxHeight = wh - rect.bottom - TOOLTIP_WINDOW_PADDING;
                         }
 
                         break;
@@ -143,20 +140,20 @@ class TooltipTrigger extends AbstractReactComponent {
 
                         switch (usePlacement) {
                             case 'left':
-                                maxHeight = wh - (2 * TOOLTIP_WINDOW_PADDING);
+                                maxHeight = wh - 2 * TOOLTIP_WINDOW_PADDING;
                                 maxWidth = rect.left - TOOLTIP_WINDOW_PADDING;
                                 break;
                             case 'right':
-                                maxHeight = wh - (2 * TOOLTIP_WINDOW_PADDING);
-                                maxWidth = (ww - rect.right) - TOOLTIP_WINDOW_PADDING;
+                                maxHeight = wh - 2 * TOOLTIP_WINDOW_PADDING;
+                                maxWidth = ww - rect.right - TOOLTIP_WINDOW_PADDING;
                                 break;
                             case 'top':
-                                maxWidth = ww - (2 * TOOLTIP_WINDOW_PADDING);
+                                maxWidth = ww - 2 * TOOLTIP_WINDOW_PADDING;
                                 maxHeight = rect.top - TOOLTIP_WINDOW_PADDING;
                                 break;
                             case 'bottom':
-                                maxWidth = ww - (2 * TOOLTIP_WINDOW_PADDING);
-                                maxHeight = (wh - rect.bottom) - TOOLTIP_WINDOW_PADDING;
+                                maxWidth = ww - 2 * TOOLTIP_WINDOW_PADDING;
+                                maxHeight = wh - rect.bottom - TOOLTIP_WINDOW_PADDING;
                                 break;
                             default:
                                 break;
@@ -178,7 +175,7 @@ class TooltipTrigger extends AbstractReactComponent {
         }, delay);
     };
 
-    getDelay = (show) => {
+    getDelay = show => {
         const {delay, showDelay, hideDelay} = this.props;
         if (show) {
             if (showDelay === null || typeof showDelay === 'undefined') {
@@ -195,7 +192,7 @@ class TooltipTrigger extends AbstractReactComponent {
         }
     };
 
-    getFocusDelay = (show) => {
+    getFocusDelay = show => {
         const {focusDelay, focusShowDelay, focusHideDelay} = this.props;
         if (show) {
             if (focusShowDelay === null || typeof focusShowDelay === 'undefined') {
@@ -216,14 +213,17 @@ class TooltipTrigger extends AbstractReactComponent {
      * Přepínání state pro hover
      * @param {Bool} hover - true - přepne this.state.overTooltip na true, false - přepne this.state.overTooltip na false
      */
-    handleTooltipHover = (hover) => {
+    handleTooltipHover = hover => {
         if (this.props.holdOnHover) {
             const delay = this.getDelay(hover);
-            this.setState({
-                overTooltip: hover,
-            }, () => {
-                this.showTooltip(hover, delay);
-            });
+            this.setState(
+                {
+                    overTooltip: hover,
+                },
+                () => {
+                    this.showTooltip(hover, delay);
+                },
+            );
         }
     };
 
@@ -231,34 +231,37 @@ class TooltipTrigger extends AbstractReactComponent {
      * Přepínání state pro focus
      * @param {Bool} focus - true - přepne this.state.focus na true, false - přepne this.state.focus na false
      */
-    handleFocus = (focus) => {
+    handleFocus = focus => {
         if (this.props.holdOnFocus) {
             const delay = this.getFocusDelay(focus);
-            this.setState({
-                focus: focus,
-            }, () => {
-                this.showTooltip(focus, delay);
-            });
+            this.setState(
+                {
+                    focus: focus,
+                },
+                () => {
+                    this.showTooltip(focus, delay);
+                },
+            );
         }
     };
 
     render() {
         const {
-                  className,
-                  tooltipClass,
-                  content,
-                  children,
-                  placement,
-                  holdOnHover,
-                  holdOnFocus,
-                  delay,
-                  showDelay,
-                  hideDelay,
-                  focusDelay,
-                  focusShowDelay,
-                  focusHideDelay,
-                  ...otherProps
-              } = this.props;
+            className,
+            tooltipClass,
+            content,
+            children,
+            placement,
+            holdOnHover,
+            holdOnFocus,
+            delay,
+            showDelay,
+            hideDelay,
+            focusDelay,
+            focusShowDelay,
+            focusHideDelay,
+            ...otherProps
+        } = this.props;
         const {maxWidth, maxHeight} = this.state;
 
         return (
@@ -272,22 +275,26 @@ class TooltipTrigger extends AbstractReactComponent {
                 {...otherProps}
             >
                 {children}
-                {content && <Overlay
-                    show={this.state.showTooltip}
-                    placement={this.state.placement}
-                    target={() => this.refs.ttTarget}
-                >
-                    <Tooltip
-                        onMouseOver={() => this.handleTooltipHover(true)}
-                        onMouseLeave={() => this.handleTooltipHover(false)}
-                        id='tt'
+                {content && (
+                    <Overlay
+                        show={this.state.showTooltip}
+                        placement={this.state.placement}
+                        target={() => this.refs.ttTarget}
                     >
-                        <div className={'tooltip-inner-content ' + tooltipClass}
-                             style={{maxWidth: maxWidth + 'px', maxHeight: maxHeight + 'px'}}>
-                            {content}
-                        </div>
-                    </Tooltip>
-                </Overlay>}
+                        <Tooltip
+                            onMouseOver={() => this.handleTooltipHover(true)}
+                            onMouseLeave={() => this.handleTooltipHover(false)}
+                            id="tt"
+                        >
+                            <div
+                                className={'tooltip-inner-content ' + tooltipClass}
+                                style={{maxWidth: maxWidth + 'px', maxHeight: maxHeight + 'px'}}
+                            >
+                                {content}
+                            </div>
+                        </Tooltip>
+                    </Overlay>
+                )}
             </span>
         );
     }
