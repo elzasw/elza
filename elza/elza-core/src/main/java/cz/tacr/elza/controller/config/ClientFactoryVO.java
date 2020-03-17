@@ -713,18 +713,18 @@ public class ClientFactoryVO {
 
         //TODO : kam dat URi-REF ve switchi?
         switch (dataType) {
-        case TEXT:
-            return ArrItemTextVO.newInstance(item);
-        case FORMATTED_TEXT:
-            return ArrItemFormattedTextVO.newInstance(item);
-        case FILE_REF:
-            return ArrItemFileRefVO.newInstance(item, this.attachmentService);
-        case ENUM:
-            return ArrItemEnumVO.newInstance(item);
-        case INT:
-            return ArrItemIntVO.newInstance(item);
-        case RECORD_REF:
-            return ArrItemRecordRefVO.newInstance(item, apFactory);
+            case TEXT:
+                return ArrItemTextVO.newInstance(item);
+            case FORMATTED_TEXT:
+                return ArrItemFormattedTextVO.newInstance(item);
+            case FILE_REF:
+                return ArrItemFileRefVO.newInstance(item, this.attachmentService);
+            case ENUM:
+                return ArrItemEnumVO.newInstance(item);
+            case INT:
+                return ArrItemIntVO.newInstance(item);
+            case RECORD_REF:
+                return ArrItemRecordRefVO.newInstance(item, apFactory);
         }
 
         // TODO: refactorize following code to the solution without mappers
@@ -759,6 +759,15 @@ public class ClientFactoryVO {
                 break;
             case URI_REF:
                 itemVO = new ArrItemUriRefVO();
+                break;
+            case BIT:
+                itemVO = new ArrItemBitVO();
+                break;
+            case STRING_50:
+                itemVO = new ArrItemString50VO();
+                break;
+            case STRING_250:
+                itemVO = new ArrItemString250VO();
                 break;
             default:
                 throw new NotImplementedException(item.getItemType().getDataTypeId().toString());

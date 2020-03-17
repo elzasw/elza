@@ -20,7 +20,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.ap.item.*;
 import cz.tacr.elza.controller.vo.nodes.*;
+import cz.tacr.elza.controller.vo.nodes.descitems.*;
 import cz.tacr.elza.domain.UsrAuthentication;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -47,39 +49,7 @@ import com.jayway.restassured.specification.RequestSpecification;
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.controller.ArrangementController.FaFilteredFulltextParam;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemCoordinatesVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemDateVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemDecimalVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemEnumVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemFormattedTextVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemIntVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemJsonTableVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemPartyRefVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemTextVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemUnitdateVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemUnitidVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
-import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDateVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDecimalVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFormattedTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemJsonTableVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPartyRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemRecordRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUriRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrStructuredObject;
@@ -1285,6 +1255,24 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 break;
             }
 
+            case "BIT": {
+                descItem = new ArrItemBitVO();
+                ((ArrItemBitVO) descItem).setValue(((boolean) value));
+                break;
+            }
+
+            case "STRING_50": {
+                descItem = new ArrItemString50VO();
+                ((ArrItemString50VO) descItem).setValue((String) value);
+                break;
+            }
+
+            case "STRING_250": {
+                descItem = new ArrItemString250VO();
+                ((ArrItemString250VO) descItem).setValue((String) value);
+                break;
+            }
+
             case "DATE": {
                 descItem = new ArrItemDateVO();
                 ((ArrItemDateVO) descItem).setValue((LocalDate) value);
@@ -1364,6 +1352,18 @@ public abstract class AbstractControllerTest extends AbstractTest {
             case STRING: {
                 item = new ApItemStringVO();
                 ((ApItemStringVO) item).setValue((String) value);
+                break;
+            }
+
+            case STRING_50: {
+                item = new ApItemString50VO();
+                ((ApItemString50VO) item).setValue((String) value);
+                break;
+            }
+
+            case STRING_250: {
+                item = new ApItemString250VO();
+                ((ApItemString250VO) item).setValue((String) value);
                 break;
             }
 

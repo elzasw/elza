@@ -808,7 +808,7 @@ public class StructObjService {
                                                                  @Nullable final Boolean assignable,
                                                                  final int from,
                                                                  final int count) {
-        return structObjRepository.findStructureData(structureType.getStructuredTypeId(), 
+        return structObjRepository.findStructureData(structureType.getStructuredTypeId(),
                                                      fund.getFundId(), search, assignable, from, count);
     }
 
@@ -923,6 +923,8 @@ public class StructObjService {
                 data = new ArrDataText((String) value);
                 break;
             case STRING:
+            case STRING_50:
+            case STRING_250:
                 data = new ArrDataString((String) value);
                 break;
             default:
@@ -1256,7 +1258,7 @@ public class StructObjService {
             }
         }
     }
-    
+
     /**
      * Vyhledání povolených strukturovaných typů ve verzi AS.
      *

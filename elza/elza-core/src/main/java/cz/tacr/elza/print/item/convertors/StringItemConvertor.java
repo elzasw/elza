@@ -33,7 +33,13 @@ public class StringItemConvertor extends AbstractItemConvertor {
         case FORMATTED_TEXT:
             ArrDataText ftext = (ArrDataText) data;
             return ftext.getValue();
-        default:
+        case STRING_50:
+            ArrDataString str50 = (ArrDataString) data;
+            return str50.getValue();
+        case STRING_250:
+            ArrDataString str250 = (ArrDataString) data;
+            return str250.getValue();
+            default:
             return null;
         }
     }

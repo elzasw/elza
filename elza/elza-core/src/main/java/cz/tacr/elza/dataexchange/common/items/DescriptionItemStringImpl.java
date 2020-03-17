@@ -50,6 +50,8 @@ public class DescriptionItemStringImpl extends DescriptionItemString {
 	private static ArrData createStringData(DataType dataType, String value) {
 		switch (dataType) {
 		case STRING:
+        case STRING_50:
+        case STRING_250:
 			ArrDataString str = new ArrDataString();
 			str.setValue(value);
 			return str;

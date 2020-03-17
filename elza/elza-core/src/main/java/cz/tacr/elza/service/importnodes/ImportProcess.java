@@ -14,7 +14,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.importnodes.vo.descitems.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.castor.core.util.Assert;
@@ -27,32 +29,6 @@ import org.springframework.stereotype.Component;
 import com.vividsolutions.jts.geom.Geometry;
 
 import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataFileRef;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrDataUriRef;
-import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUnitid;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrStructuredItem;
-import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
@@ -72,22 +48,6 @@ import cz.tacr.elza.service.importnodes.vo.DeepCallback;
 import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
 import cz.tacr.elza.service.importnodes.vo.Node;
-import cz.tacr.elza.service.importnodes.vo.descitems.Item;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemCoordinates;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemDecimal;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemEnum;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemFileRef;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemFormattedText;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemInt;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemJsonTable;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemPartyRef;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemRecordRef;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemString;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemStructureRef;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemText;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitdate;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitid;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemUriRef;
 
 /**
  * Obsluha importního procesu zdroje do AS.
@@ -410,7 +370,16 @@ public class ImportProcess {
             ((ArrDataUriRef) data).setValue(((ItemUriRef) item).getValue());
             ((ArrDataUriRef) data).setDescription(((ItemUriRef) item).getDescription());
             ((ArrDataUriRef) data).setArrNode(nodeRepository.getOne(((ItemUriRef) item).getNodeId()));
-        } else {
+        } else if (item instanceof ItemBit) {
+            data = new ArrDataBit();
+            ((ArrDataBit) data).setValue(((ItemBit) item).getValue());
+        } else if (item instanceof ItemString50) {
+            data = new ArrDataString();
+            ((ArrDataString) data).setValue(((ItemString50) item).getValue());
+        } else if (item instanceof ItemString250) {
+            data = new ArrDataString();
+            ((ArrDataString) data).setValue(((ItemString250) item).getValue());
+        }else {
             data = null;
         }
         return data;

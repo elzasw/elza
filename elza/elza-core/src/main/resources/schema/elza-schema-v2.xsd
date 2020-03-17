@@ -247,6 +247,8 @@ Type: Integer</xs:documentation>
 Item is used to represent at least:
 Coordinates serialized in string
 Simple string value
+String 50 value
+String 250 value
 Text  / LongText with unlimited length
 Formatted text
 Item ID</xs:documentation>
@@ -288,6 +290,21 @@ Item ID</xs:documentation>
                 <xs:attribute name="value" use="required" type="xs:string">
                     <xs:annotation>
                         <xs:documentation>ref URI link</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:complexType name="DescriptionItemBit">
+        <xs:annotation>
+            <xs:documentation>Bit- value</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="e:DescriptionItem">
+                <xs:sequence/>
+                <xs:attribute name="value" use="required" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>BIT value</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
             </xs:extension>
@@ -513,6 +530,11 @@ Each file has name and its content - binary data.</xs:documentation>
                 <xs:element name="dn" type="e:DescriptionItemUriRef" minOccurs="1" maxOccurs="1">
                     <xs:annotation>
                         <xs:documentation>Uri ref link</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="db" type="e:DescriptionItemBit" minOccurs="1" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Bit value</xs:documentation>
                     </xs:annotation>
                 </xs:element>
 				<xs:element name="dt" type="e:DescriptionItemUnitDate" minOccurs="1" maxOccurs="1">
@@ -982,6 +1004,11 @@ This is ID of the created party</xs:documentation>
                 <xs:element name="dn" type="e:DescriptionItemUriRef" minOccurs="1" maxOccurs="1">
                     <xs:annotation>
                         <xs:documentation>Uri ref link</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="db" type="e:DescriptionItemBit" minOccurs="1" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Bit value</xs:documentation>
                     </xs:annotation>
                 </xs:element>
 				<xs:element name="dt" type="e:DescriptionItemUnitDate" minOccurs="1" maxOccurs="1">

@@ -5,7 +5,75 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <changeSet id="20200226142900" author="gotzy">
-        <dropTable tableName="public.par_interpi_mapping"/>
+        <dropTable tableName="par_interpi_mapping"/>
+    </changeSet>
+
+    <changeSet id="20200313160600" author="gotzy">
+        <createTable tableName="arr_data_bit">
+            <column name="data_id" type="int">
+                <constraints primaryKey="true"
+                             foreignKeyName="fk_arr_data_bit"
+                             referencedTableName="arr_data"
+                             referencedColumnNames="data_id"/>
+            </column>
+            <column name="value" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <insert tableName="rul_data_type">
+            <column name="data_type_id" value="19"/>
+            <column name="code" value="BIT"/>
+            <column name="name" value="Boolean hodnota"/>
+            <column name="description" value="Boolean hodnota"/>
+            <column name="regexp_use" value="false"/>
+            <column name="text_length_limit_use" value="false"/>
+            <column name="storage_table" value="arr_data_bit"/>
+        </insert>
+
+        <update tableName="db_hibernate_sequences">
+            <column name="next_val" value="20"/>
+            <where>sequence_name = 'rul_data_type|data_type_id'</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="20200316213300" author="gotzy">
+        <addColumn tableName="rul_data_type">
+            <column name="text_length_limit" type="INTEGER" />
+        </addColumn>
+
+        <insert tableName="rul_data_type">
+            <column name="data_type_id" value="20"/>
+            <column name="code" value="STRING_50"/>
+            <column name="name" value="String do 50 znaků"/>
+            <column name="description" value="Textový popis"/>
+            <column name="regexp_use" value="false"/>
+            <column name="text_length_limit_use" value="true"/>
+            <column name="storage_table" value="arr_data_string"/>
+            <column name="text_length_limit" value="50"/>
+        </insert>
+
+        <update tableName="db_hibernate_sequences">
+            <column name="next_val" value="21"/>
+            <where>sequence_name = 'rul_data_type|data_type_id'</where>
+        </update>
+
+        <insert tableName="rul_data_type">
+            <column name="data_type_id" value="21"/>
+            <column name="code" value="STRING_250"/>
+            <column name="name" value="String do 250 znaků"/>
+            <column name="description" value="Textový popis"/>
+            <column name="regexp_use" value="false"/>
+            <column name="text_length_limit_use" value="true"/>
+            <column name="storage_table" value="arr_data_string"/>
+            <column name="text_length_limit" value="250"/>
+        </insert>
+
+        <update tableName="db_hibernate_sequences">
+            <column name="next_val" value="22"/>
+            <where>sequence_name = 'rul_data_type|data_type_id'</where>
+        </update>
+
     </changeSet>
 
 </databaseChangeLog>

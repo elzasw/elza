@@ -14,10 +14,12 @@ public class UriRefConvertor implements ItemDataConvertor {
     public DescriptionItem convert(ArrData data, ObjectFactory objectFactory) {
         Validate.isTrue(data.getClass()== ArrDataUriRef.class, "Invalid data type, dataId:", data.getDataId());
 
-        ArrDataUriRef uriRef = (ArrDataUriRef) data;
-        DescriptionItemUriRef item = objectFactory.createDescriptionItemUriRef();
+        //TODO : zpracovat případné kontroly podmínek
 
-        //TODO : predelat item.setNodeid(uriRef.getNodeId().toString());
+        DescriptionItemUriRef item = objectFactory.createDescriptionItemUriRef();
+        item.setValue(((ArrDataUriRef) data).getValue());
+
+
         return item;
 
     }

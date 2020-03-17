@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,26 +11,6 @@ import org.springframework.stereotype.Service;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDate;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataFileRef;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUnitid;
-import cz.tacr.elza.domain.ArrDataUriRef;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.CoordinatesTitleValue;
 import cz.tacr.elza.domain.vo.JsonTableTitleValue;
@@ -145,6 +126,8 @@ public class DescriptionItemServiceInternal {
             return new UnitdateTitleValue(UnitDateConvertor.convertToString(unitdateData),
                     unitdateData.getCalendarTypeId());
         case STRING:
+        case STRING_50:
+        case STRING_250:
             ArrDataString strData = (ArrDataString) data;
             return new TitleValue(strData.getValue());
         case TEXT:
@@ -173,8 +156,11 @@ public class DescriptionItemServiceInternal {
             ArrDataDate dataDate = (ArrDataDate) data;
             return new TitleValue(DateTimeFormatter.ISO_LOCAL_DATE.format(dataDate.getValue()));
         case URI_REF:
-             ArrDataUriRef uriRef = (ArrDataUriRef) data;
-             return new TitleValue(uriRef.getValue());
+            ArrDataUriRef uriRef = (ArrDataUriRef) data;
+            return new TitleValue(uriRef.getValue());
+        case BIT:
+            ArrDataBit bit = (ArrDataBit) data;
+            return new TitleValue(Boolean.toString(bit.isValue()));
         default:
             throw new SystemException("Failed to create title, uknown data type: " + dataType, BaseCode.SYSTEM_ERROR);
         }

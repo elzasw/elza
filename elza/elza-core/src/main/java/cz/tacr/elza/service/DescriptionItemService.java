@@ -1315,6 +1315,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             case "INT":
                 return ArrDataInteger.class;
             case "STRING":
+            case "STRING_50":
+            case "STRING_250":
                 return ArrDataString.class;
             case "TEXT":
             case "FORMATTED_TEXT":
@@ -1337,6 +1339,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 return ArrDataStructureRef.class;
             case "URI_REF":
                 return ArrDataUriRef.class;
+            case "BIT":
+                return ArrDataBit.class;
             case "ENUM":
                 return ArrDataNull.class;
             default:
@@ -1427,6 +1431,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     data = dataText;
                     break;
                 case "STRING":
+                case "STRING_50":
+                case "STRING_250":
                     ArrDataString itemString = new ArrDataString();
                     itemString.setValue(text);
                     data = itemString;
@@ -1438,7 +1444,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     break;
                 case "UNITID":
                     ArrDataUnitid itemUnitid = new ArrDataUnitid();
-                itemUnitid.setUnitId(text);
+                    itemUnitid.setUnitId(text);
                     data = itemUnitid;
                     break;
                 case "UNITDATE":
@@ -1450,6 +1456,16 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     ApAccessPoint record = apAccessPointRepository.getOneCheckExist(Integer.valueOf(text));
                     itemRecordRef.setRecord(record);
                     data = itemRecordRef;
+                    break;
+                case "BIT":
+                    ArrDataBit itemBit = new ArrDataBit();
+                    itemBit.setValue(Boolean.valueOf(text));
+                    data = itemBit;
+                    break;
+                case "URI-REF":
+                    ArrDataUriRef itemUriRef = new ArrDataUriRef();
+                    itemUriRef.setValue(text);
+                    data = itemUriRef;
                     break;
                 default:
                     throw new SystemException("Neplatný typ atributu " + descItemType.getDataType().getCode(), BaseCode.INVALID_STATE);

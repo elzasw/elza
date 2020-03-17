@@ -21,4 +21,6 @@ public interface ArrDescItemIndexData {
     Long getNormalizedTo();
 
     Date getValueDate();
+
+    Boolean isValue();
 }

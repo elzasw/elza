@@ -178,7 +178,7 @@ public class PersistentSortBulkAction extends BulkAction {
                 // hodnota je v mapě
                 // zjistíme, zda neexistuje lepší
                 int result = this.valueComparator.compare(currentValue, arrDescItem);
-                // podle způsobu řazení zjistíme jestli je nová hodnota 
+                // podle způsobu řazení zjistíme jestli je nová hodnota
                 // lepší než ta co už máme(pro typy atributů s více hodnotami)
                 if (runConfig.isAsc() && result < 0) {
                     nodeValues.put(arrDescItem.getNodeId(), arrDescItem);
@@ -200,6 +200,9 @@ public class PersistentSortBulkAction extends BulkAction {
     private Comparator<ArrDescItem> getValueComparator(DataType dataType) {
         switch (dataType) {
         case STRING:
+        case STRING_50:
+        case STRING_250:
+        case URI_REF:
         case TEXT:
         case FORMATTED_TEXT:
             return (o1, o2) -> {
@@ -210,15 +213,17 @@ public class PersistentSortBulkAction extends BulkAction {
                 return result;
             };
         case INT:
-            return (arg0, arg1) -> 
+            return (arg0, arg1) ->
                 arg0.getValueInt().compareTo(arg1.getValueInt());
         case DECIMAL:
-            return (arg0, arg1) -> 
+            return (arg0, arg1) ->
                 arg0.getValueDouble().compareTo(arg1.getValueDouble());
         case UNITDATE:
             return (arg0, arg1) -> arg0.getNormalizedFrom().compareTo(arg1.getNormalizedFrom());
         case DATE:
             return (arg0, arg1) -> arg0.getValueDate().compareTo(arg1.getValueDate());
+        case BIT:
+            return (arg0, arg1) -> arg0.isValue().compareTo(arg1.isValue());
         default:
             throw new SystemException("Hromadná akce " + getName() + " nepodporuje datový typ:", BaseCode.SYSTEM_ERROR)
                     .set("dataTypeCode", dataType.getCode());

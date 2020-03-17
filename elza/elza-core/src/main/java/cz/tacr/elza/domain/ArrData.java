@@ -167,6 +167,12 @@ public abstract class ArrData implements NodeCacheSerializable {
         return null;
     }
 
+    @JsonIgnore
+    @Transient
+    public Boolean getValueBoolean() {
+        return null;
+    }
+
     /**
      * Compare values
      *
@@ -241,10 +247,10 @@ public abstract class ArrData implements NodeCacheSerializable {
 
     /**
      * Validate data state
-     * 
+     *
      * Function check if object contains minimum required
      * information to be save in DB.
-     * 
+     *
      * Method throws RuntimeException if problem is found.
      */
     public void validate() {
