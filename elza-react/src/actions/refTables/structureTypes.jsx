@@ -7,21 +7,21 @@ export function structureTypesDataReceive(versionId, data) {
     return {
         type: types.REF_STRUCTURE_TYPES_RECEIVE,
         versionId,
-        data
+        data,
     };
 }
 
 export function structureTypesFetching(versionId) {
     return {
         type: types.REF_STRUCTURE_TYPES_FETCHING,
-        versionId
+        versionId,
     };
 }
 
 export function structureTypesDirty(versionId) {
     return {
         type: types.REF_STRUCTURE_TYPES_DIRTY,
-        versionId
+        versionId,
     };
 }
 
@@ -38,7 +38,7 @@ export function structureTypesFetchIfNeeded(versionId) {
             dispatch(structureTypesFetching(versionId));
             dispatch(structureTypesRequest(versionId));
         }
-    }
+    };
 }
 
 export function structureTypesRequest(versionId) {
@@ -46,5 +46,5 @@ export function structureTypesRequest(versionId) {
         WebApi.findRulStructureTypes(versionId).then(data => {
             dispatch(structureTypesDataReceive(versionId, data));
         });
-    }
+    };
 }

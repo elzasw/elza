@@ -7,7 +7,7 @@ const initialState = {
     fetched: false,
     fetching: false,
     currentDataKey: '',
-    fundTree: fundTree(undefined, { type: '' }),
+    fundTree: fundTree(undefined, {type: ''}),
 };
 
 export default function fundDetail(state = initialState, action = {}) {
@@ -20,7 +20,7 @@ export default function fundDetail(state = initialState, action = {}) {
 
     switch (action.type) {
         case types.STORE_SAVE:
-            const { id } = state;
+            const {id} = state;
             return {
                 id,
                 fundTree: fundTree(state.fundTree, action),
@@ -76,7 +76,7 @@ export default function fundDetail(state = initialState, action = {}) {
                     id: action.id,
                     currentDataKey: '',
                     fetched: false,
-                    fundTree: fundTree(undefined, { type: '' }),
+                    fundTree: fundTree(undefined, {type: ''}),
                 };
             } else {
                 return state;
@@ -98,4 +98,3 @@ export default function fundDetail(state = initialState, action = {}) {
             return state;
     }
 }
-

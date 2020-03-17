@@ -28,8 +28,7 @@ export function fundNodesPolicyFetchIfNeeded(fundVersionId) {
 export function fundNodesPolicyFetch(fundVersionId) {
     return dispatch => {
         dispatch(fundNodesPolicyRequest(fundVersionId));
-        return WebApi.getFundPolicy(fundVersionId)
-                     .then(json => dispatch(fundNodesPolicyReceive(fundVersionId, json)));
+        return WebApi.getFundPolicy(fundVersionId).then(json => dispatch(fundNodesPolicyReceive(fundVersionId, json)));
     };
 }
 

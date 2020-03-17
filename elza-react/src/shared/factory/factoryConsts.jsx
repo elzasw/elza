@@ -1,4 +1,3 @@
-
 /**
  * Konstanta property pro detekci třídy.
  */

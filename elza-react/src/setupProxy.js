@@ -1,7 +1,5 @@
 const proxy = require('http-proxy-middleware');
 
-
-
 const HOST = process.env.ENDPOINT || 'http://localhost:8080';
 
 module.exports = function(app) {
@@ -10,16 +8,16 @@ module.exports = function(app) {
         proxy({
             target: HOST,
             ws: true,
-            changeOrigin: true
-        })
+            changeOrigin: true,
+        }),
     );
     app.use(
         '/login',
         proxy({
             target: HOST,
             ws: true,
-            changeOrigin: true
-        })
+            changeOrigin: true,
+        }),
     );
     app.use(
         '^/stomp',
@@ -28,6 +26,6 @@ module.exports = function(app) {
             ws: true,
             changeOrigin: true,
             proxy: true,
-        })
+        }),
     );
 };

@@ -6,7 +6,7 @@ const initialState = {
     isDirty: true,
     errors: [],
     showAll: false,
-    count: 0
+    count: 0,
 };
 
 export default function versionValidation(state = initialState, action) {
@@ -14,12 +14,12 @@ export default function versionValidation(state = initialState, action) {
         case types.CHANGE_CONFORMITY_INFO:
             return {
                 ...state,
-                isDirty: true
+                isDirty: true,
             };
         case types.FUND_VERSION_VALIDATION_LOAD:
             return {
                 ...state,
-                isFetching: true
+                isFetching: true,
             };
         case types.FUND_VERSION_VALIDATION_RECEIVED:
             return {
@@ -27,10 +27,9 @@ export default function versionValidation(state = initialState, action) {
                 ...action.data,
                 isFetching: false,
                 isDirty: false,
-                isErrorListDirty: action.isErrorListDirty
+                isErrorListDirty: action.isErrorListDirty,
             };
         default:
-            return state
+            return state;
     }
 }
-

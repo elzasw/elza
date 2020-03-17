@@ -7,40 +7,49 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {Modal} from 'react-bootstrap';
 import i18n from '../../components/i18n';
 
-const AsyncWaitingDialog = connect()(class extends React.Component {
-    constructor(props) {
-        super(props);
+const AsyncWaitingDialog = connect()(
+    class extends React.Component {
+        constructor(props) {
+            super(props);
 
-        const {dispatch, callAsync, resultCallback, errorCallback} = props;
+            const {dispatch, callAsync, resultCallback, errorCallback} = props;
 
-        callAsync
-            .then((...data) => {
-                dispatch(modalDialogHide());
-                resultCallback && resultCallback(...data);
-            })
-            .catch((...error) => {
-                dispatch(modalDialogHide());
-                console.error(error);
-                errorCallback && errorCallback(...error);
-            });
-    }
-
-    render() {
-        const {title, message} = this.props;
-
-        let tit;
-        if (title) {
-            tit = typeof title === "string" ? title : React.createElement(title);
+            callAsync
+                .then((...data) => {
+                    dispatch(modalDialogHide());
+                    resultCallback && resultCallback(...data);
+                })
+                .catch((...error) => {
+                    dispatch(modalDialogHide());
+                    console.error(error);
+                    errorCallback && errorCallback(...error);
+                });
         }
-        const msg = typeof message === "string" ? message : (typeof message === "object" ? message : React.createElement(message));
-        return <div>
-            <Modal.Body>
-                {tit && <h2>{tit}</h2>}
-                {msg}
-            </Modal.Body>
-        </div>
-    }
-});
+
+        render() {
+            const {title, message} = this.props;
+
+            let tit;
+            if (title) {
+                tit = typeof title === 'string' ? title : React.createElement(title);
+            }
+            const msg =
+                typeof message === 'string'
+                    ? message
+                    : typeof message === 'object'
+                    ? message
+                    : React.createElement(message);
+            return (
+                <div>
+                    <Modal.Body>
+                        {tit && <h2>{tit}</h2>}
+                        {msg}
+                    </Modal.Body>
+                </div>
+            );
+        }
+    },
+);
 
 /**
  * Zobrazení dialogu pro asynchronní operace, např. čekání na data nebo čekání na tisk apod.
@@ -52,25 +61,38 @@ const AsyncWaitingDialog = connect()(class extends React.Component {
  * @return {function(*, *)}
  */
 export function showAsyncWaiting(title, message, callAsync, resultCallback, errorCallback = null) {
-    const messageText = message || i18n("global.data.loading");
+    const messageText = message || i18n('global.data.loading');
     return (dispatch, getState) => {
-        dispatch(modalDialogShow(this, null, <AsyncWaitingDialog title={title} message={messageText} callAsync={callAsync} resultCallback={resultCallback} errorCallback={errorCallback} />, "", null));
-    }
+        dispatch(
+            modalDialogShow(
+                this,
+                null,
+                <AsyncWaitingDialog
+                    title={title}
+                    message={messageText}
+                    callAsync={callAsync}
+                    resultCallback={resultCallback}
+                    errorCallback={errorCallback}
+                />,
+                '',
+                null,
+            ),
+        );
+    };
 }
 
-export function modalDialogShow(component, title, content, dialogClassName='', onClose=null) {
+export function modalDialogShow(component, title, content, dialogClassName = '', onClose = null) {
     return {
         type: types.GLOBAL_MODAL_DIALOG_SHOW,
         component,
         title,
         content,
         dialogClassName,
-        onClose
-    }
+        onClose,
+    };
 }
 export function modalDialogHide() {
     return {
         type: types.GLOBAL_MODAL_DIALOG_HIDE,
-    }
+    };
 }
-

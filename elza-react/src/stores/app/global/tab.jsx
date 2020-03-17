@@ -1,7 +1,7 @@
 import * as types from 'actions/constants/ActionTypes.js';
 
 const initialState = {
-    values: {}
+    values: {},
 };
 
 /**
@@ -18,7 +18,7 @@ export default function tab(state = initialState, action = {}) {
         case types.TAB_SELECT:
             const {area, value} = action;
             if (!area) {
-                console.warn("tab: area is null");
+                console.warn('tab: area is null');
                 return state;
             }
 
@@ -26,10 +26,10 @@ export default function tab(state = initialState, action = {}) {
                 ...state,
                 values: {
                     ...state.values,
-                    [area]: value
+                    [area]: value,
                 },
             };
         default:
-            return state
+            return state;
     }
 }

@@ -1,3 +1,3 @@
 export default function notEmpty(value) {
-    return value != null && value !== "";
+    return value != null && value !== '';
 }

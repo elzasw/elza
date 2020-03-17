@@ -70,8 +70,17 @@ class AddRegistryForm extends AbstractReactComponent {
         this.prepareState(this.props);
     }
 
-    prepareState = (props) => {
-        const {fields: {typeId}, registryList: {filter: {registryTypeId}}, registryRegionRecordTypes, refTables: {recordTypes: {typeIdMap}}} = props;
+    prepareState = props => {
+        const {
+            fields: {typeId},
+            registryList: {
+                filter: {registryTypeId},
+            },
+            registryRegionRecordTypes,
+            refTables: {
+                recordTypes: {typeIdMap},
+            },
+        } = props;
 
         // Pokud není nastaven typ rejstříku, pokusíme se ho nastavit
         if (!typeId || typeId.value === '') {
@@ -94,19 +103,21 @@ class AddRegistryForm extends AbstractReactComponent {
             return items[index]['addRecord'];
         } else {
             let neededValue = null;
-            items.forEach(
-                (val) => {
-                    if (neededValue === null && val['children']) {
-                        neededValue = this.isValueUseable(val['children'], value);
-                    }
-                },
-            );
+            items.forEach(val => {
+                if (neededValue === null && val['children']) {
+                    neededValue = this.isValueUseable(val['children'], value);
+                }
+            });
             return neededValue;
         }
     }
 
     nextStep = () => {
-        const {values, touchAll, fields: {id, structuredObj}} = this.props;
+        const {
+            values,
+            touchAll,
+            fields: {id, structuredObj},
+        } = this.props;
         const errors = AddRegistryForm.validate(values, this.props);
         if (Object.keys(errors).length > 0) {
             touchAll();
@@ -116,7 +127,14 @@ class AddRegistryForm extends AbstractReactComponent {
             return;
         }
         this.setState({working: true});
-        WebApi.createStructuredAccessPoint(values.name, values.complement, values.languageCode, values.description, values.typeId, values.scopeId).then((data) => {
+        WebApi.createStructuredAccessPoint(
+            values.name,
+            values.complement,
+            values.languageCode,
+            values.description,
+            values.typeId,
+            values.scopeId,
+        ).then(data => {
             id.onChange(data.id);
             structuredObj.onChange(data);
             this.setState({step: 2, working: false, data});
@@ -125,7 +143,6 @@ class AddRegistryForm extends AbstractReactComponent {
 
     add = () => {
         const {nameItemForm} = this.props;
-
 
         const formData = nameItemForm.formData;
         const itemTypes = [];
@@ -138,7 +155,8 @@ class AddRegistryForm extends AbstractReactComponent {
         });
 
         nameItemForm.refTypesMap.forEach(refType => {
-            if (infoTypesMap.has(refType.id)) {    // ještě ji na formuláři nemáme
+            if (infoTypesMap.has(refType.id)) {
+                // ještě ji na formuláři nemáme
                 const infoType = infoTypesMap.get(refType.id);
                 // v nestriktním modu přidáváme všechny jinak jen možné
                 if (!strictMode || infoType.type !== 'IMPOSSIBLE') {
@@ -157,18 +175,25 @@ class AddRegistryForm extends AbstractReactComponent {
             },
         ];
 
-        const submit = (data) => {
+        const submit = data => {
             this.props.dispatch(modalDialogHide());
             this.props.dispatch(accessPointFormActions.fundSubNodeFormDescItemTypeAdd(data.descItemTypeId.id));
         };
 
         // Modální dialog
-        this.props.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), <AddDescItemTypeForm
-            descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('subNodeForm.descItemType.title.add'),
+                <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit} />,
+            ),
+        );
     };
 
     onBack = () => {
-        const {fields: {id, structuredObj}} = this.props;
+        const {
+            fields: {id, structuredObj},
+        } = this.props;
         if (this.state.step === 2) {
             WebApi.deleteAccessPoint(this.state.data.id).then(() => {
                 this.setState({step: 1});
@@ -187,10 +212,21 @@ class AddRegistryForm extends AbstractReactComponent {
     };
 
     render() {
-        const {fields: {name, description, complement, languageCode, typeId, scopeId, structured}, handleSubmit, versionId, refTables: {scopesData}, submitting, registryRegionRecordTypes} = this.props;
+        const {
+            fields: {name, description, complement, languageCode, typeId, scopeId, structured},
+            handleSubmit,
+            versionId,
+            refTables: {scopesData},
+            submitting,
+            registryRegionRecordTypes,
+        } = this.props;
 
         const okSubmitForm = submitReduxFormWithProp.bind(this, AddRegistryForm.validate, 'store');
-        const okAndDetailSubmitForm = submitReduxFormWithProp.bind(this, AddRegistryForm.validate, 'storeAndViewDetail');
+        const okAndDetailSubmitForm = submitReduxFormWithProp.bind(
+            this,
+            AddRegistryForm.validate,
+            'storeAndViewDetail',
+        );
         const items = registryRegionRecordTypes.item ? registryRegionRecordTypes.item : [];
 
         let scopeIdValue = scopeId.value;
@@ -208,56 +244,101 @@ class AddRegistryForm extends AbstractReactComponent {
         return (
             <div key={this.props.key}>
                 <Form onSubmit={handleSubmit(okSubmitForm)}>
-                    {this.state.step === 1 && <Modal.Body>
-                        <Scope disabled={this.state.disabled} versionId={versionId}
-                               label={i18n('registry.scopeClass')} {...scopeId}
-                               value={scopeIdValue} {...decorateFormField(scopeId)}/>
-                        <Autocomplete
-                            label={i18n('registry.add.type')}
-                            items={items}
-                            tree
-                            alwaysExpanded
-                            allowSelectItem={(item) => item.addRecord}
-                            {...typeId}
-                            {...decorateFormField(typeId)}
-                            onChange={item => {
-                                typeId.onChange(item ? item.id : null);
-                                structured.onChange(item && item.ruleSystemId != null);
-                            }}
-                            onBlur={item => {
-                                typeId.onBlur(item ? item.id : null);
-                                structured.onBlur(item && item.ruleSystemId != null);
-                            }}
-                            value={value}
-                            disabled={this.state.disabled}
-                        />
-                        {!isStructured &&
-                        <FormInput type="text" label={i18n('registry.name')} {...name} {...decorateFormField(name)}/>}
-                        {!isStructured && <FormInput type="text"
-                                                     label={i18n('accesspoint.complement')} {...complement} {...decorateFormField(complement)}/>}
-                        <LanguageCodeField
-                            label={i18n('accesspoint.languageCode')} {...languageCode} {...decorateFormField(languageCode)} />
-                        {!isStructured && <FormInput as="textarea"
-                                                     label={i18n('accesspoint.description')} {...description} {...decorateFormField(description)} />}
-                    </Modal.Body>}
-                    {this.state.step === 2 && <Modal.Body>
-                        <NoFocusButton onClick={this.add}><Icon
-                            glyph="fa-plus-circle"/>{i18n('subNodeForm.section.item')}</NoFocusButton>
-                        <ApItemNameForm
-                            parent={{id: this.state.data.names[0].objectId, accessPointId: this.state.data.id}}/>
-                    </Modal.Body>}
+                    {this.state.step === 1 && (
+                        <Modal.Body>
+                            <Scope
+                                disabled={this.state.disabled}
+                                versionId={versionId}
+                                label={i18n('registry.scopeClass')}
+                                {...scopeId}
+                                value={scopeIdValue}
+                                {...decorateFormField(scopeId)}
+                            />
+                            <Autocomplete
+                                label={i18n('registry.add.type')}
+                                items={items}
+                                tree
+                                alwaysExpanded
+                                allowSelectItem={item => item.addRecord}
+                                {...typeId}
+                                {...decorateFormField(typeId)}
+                                onChange={item => {
+                                    typeId.onChange(item ? item.id : null);
+                                    structured.onChange(item && item.ruleSystemId != null);
+                                }}
+                                onBlur={item => {
+                                    typeId.onBlur(item ? item.id : null);
+                                    structured.onBlur(item && item.ruleSystemId != null);
+                                }}
+                                value={value}
+                                disabled={this.state.disabled}
+                            />
+                            {!isStructured && (
+                                <FormInput
+                                    type="text"
+                                    label={i18n('registry.name')}
+                                    {...name}
+                                    {...decorateFormField(name)}
+                                />
+                            )}
+                            {!isStructured && (
+                                <FormInput
+                                    type="text"
+                                    label={i18n('accesspoint.complement')}
+                                    {...complement}
+                                    {...decorateFormField(complement)}
+                                />
+                            )}
+                            <LanguageCodeField
+                                label={i18n('accesspoint.languageCode')}
+                                {...languageCode}
+                                {...decorateFormField(languageCode)}
+                            />
+                            {!isStructured && (
+                                <FormInput
+                                    as="textarea"
+                                    label={i18n('accesspoint.description')}
+                                    {...description}
+                                    {...decorateFormField(description)}
+                                />
+                            )}
+                        </Modal.Body>
+                    )}
+                    {this.state.step === 2 && (
+                        <Modal.Body>
+                            <NoFocusButton onClick={this.add}>
+                                <Icon glyph="fa-plus-circle" />
+                                {i18n('subNodeForm.section.item')}
+                            </NoFocusButton>
+                            <ApItemNameForm
+                                parent={{id: this.state.data.names[0].objectId, accessPointId: this.state.data.id}}
+                            />
+                        </Modal.Body>
+                    )}
                     <Modal.Footer>
-                        {(!structured.value || this.state.step === 2) && this.props.showSubmitTypes &&
-                        <Button onClick={handleSubmit(okAndDetailSubmitForm)}
-                                disabled={submitting}>{i18n('global.action.storeAndViewDetail')}</Button>}
-                        {(!structured.value || this.state.step === 2) &&
-                        <Button type="submit" onClick={handleSubmit(okSubmitForm)}
-                                disabled={submitting}>{i18n('global.action.store')}</Button>}
-                        {structured.value && this.state.step === 1 && <Button type="button" onClick={this.nextStep}
-                                                                              disabled={this.state.working}>{i18n('global.action.next')}</Button>}
-                        {this.state.step === 2 &&
-                        <Button variant="link" onClick={this.onBack}>{i18n('global.action.back')}</Button>}
-                        <Button variant="link" onClick={this.onClose}>{i18n('global.action.cancel')}</Button>
+                        {(!structured.value || this.state.step === 2) && this.props.showSubmitTypes && (
+                            <Button onClick={handleSubmit(okAndDetailSubmitForm)} disabled={submitting}>
+                                {i18n('global.action.storeAndViewDetail')}
+                            </Button>
+                        )}
+                        {(!structured.value || this.state.step === 2) && (
+                            <Button type="submit" onClick={handleSubmit(okSubmitForm)} disabled={submitting}>
+                                {i18n('global.action.store')}
+                            </Button>
+                        )}
+                        {structured.value && this.state.step === 1 && (
+                            <Button type="button" onClick={this.nextStep} disabled={this.state.working}>
+                                {i18n('global.action.next')}
+                            </Button>
+                        )}
+                        {this.state.step === 2 && (
+                            <Button variant="link" onClick={this.onBack}>
+                                {i18n('global.action.back')}
+                            </Button>
+                        )}
+                        <Button variant="link" onClick={this.onClose}>
+                            {i18n('global.action.cancel')}
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </div>
@@ -265,10 +346,22 @@ class AddRegistryForm extends AbstractReactComponent {
     }
 }
 
-export default reduxForm({
+export default reduxForm(
+    {
         form: 'addRegistryForm',
-        fields: ['id', 'name', 'complement', 'languageCode', 'description', 'typeId', 'scopeId', 'structured', 'structuredObj'],
-    }, state => ({
+        fields: [
+            'id',
+            'name',
+            'complement',
+            'languageCode',
+            'description',
+            'typeId',
+            'scopeId',
+            'structured',
+            'structuredObj',
+        ],
+    },
+    state => ({
         nameItemForm: state.ap.nameItemForm,
         initialValues: state.form.addRegistryForm.initialValues,
         refTables: state.refTables,

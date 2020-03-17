@@ -10,7 +10,6 @@ import {AbstractReactComponent, Icon} from 'components/shared';
  */
 
 const Tags = class Tags extends AbstractReactComponent {
-
     render() {
         const {items, onRemove, renderItem} = this.props;
 
@@ -18,15 +17,16 @@ const Tags = class Tags extends AbstractReactComponent {
             <div className="selected-data-container">
                 {items.map((item, index) => (
                     <div className="selected-data" key={index}>
-                        <div className="data-label">
-                            {renderItem({item})}
-                        </div>
-                        <Button onClick={() => {
-                            onRemove(item, index);
-                        }}>
-                            <Icon glyph="fa-times"/>
+                        <div className="data-label">{renderItem({item})}</div>
+                        <Button
+                            onClick={() => {
+                                onRemove(item, index);
+                            }}
+                        >
+                            <Icon glyph="fa-times" />
                         </Button>
-                    </div>))}
+                    </div>
+                ))}
             </div>
         );
     }
@@ -37,12 +37,8 @@ Tags.propTypes = {
     renderItem: PropTypes.func,
 };
 Tags.defaultProps = {
-    renderItem: (item) => {
-        return (
-            <div>
-                {item.name}
-            </div>
-        );
+    renderItem: item => {
+        return <div>{item.name}</div>;
     },
 };
 

@@ -34,12 +34,14 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
     static ALL_ID = 'ALL_ID';
 
     buildPermission = (currObj, permission) => {
-        let obj = currObj || { groupIds: {} };
+        let obj = currObj || {groupIds: {}};
 
-        if (permission.inherited) {   // je zděděné ze skupiny
+        if (permission.inherited) {
+            // je zděděné ze skupiny
             obj.groupIds[permission.groupId] = true;
             obj.checked = obj.checked || false;
-        } else {    // je přímo přiřazen
+        } else {
+            // je přímo přiřazen
             obj.id = permission.id;
             obj.checked = true;
         }
@@ -48,7 +50,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        const { userId, groupId } = this.props;
+        const {userId, groupId} = this.props;
         if (userId) {
             this.props.dispatch(adminPermissions.fetchUser(userId));
         } else {
@@ -77,20 +79,20 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
                 }
             });
 
-            this.setState({ permission });
+            this.setState({permission});
         }
     }
 
     changePermission = (e, permCode) => {
-        const { onAddPermission, onDeletePermission } = this.props;
+        const {onAddPermission, onDeletePermission} = this.props;
         const value = e.target.checked;
-        const { permission } = this.state;
+        const {permission} = this.state;
 
         const newPermission = {
             ...permission,
         };
 
-        const obj = newPermission[permCode] || { groupIds: {} };
+        const obj = newPermission[permCode] || {groupIds: {}};
 
         const newObj = {
             ...obj,
@@ -107,37 +109,43 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
         if (value) {
             onAddPermission([usrPermission]).then(data => {
                 newObj.id = data[0].id;
-                this.setState({ permission: newPermission });
+                this.setState({permission: newPermission});
             });
         } else {
             onDeletePermission(usrPermission).then(data => {
                 newObj.id = null;
-                this.setState({ permission: newPermission });
+                this.setState({permission: newPermission});
             });
         }
     };
 
     render() {
-        const { permission } = this.state;
-        const { onAddPermission, onDeletePermission, entityPermissions } = this.props;
+        const {permission} = this.state;
+        const {onAddPermission, onDeletePermission, entityPermissions} = this.props;
 
-        return <AdminRightsContainer className="permissions-panel">
-            {permission && <PermissionCheckboxsForm
-                permCodes={AdvancedPermissionPanel.permCodes}
-                onChangePermission={this.changePermission}
-                labelPrefix="admin.perms.tabs.advanced.perm."
-                permission={permission}
-                groups={entityPermissions.data.groups}
-            />}
-            {entityPermissions.fetched && <div className="controlled-entities-container">
-                <ControlledEntitiesPanel
-                    className="controlled-entities"
-                    permissions={entityPermissions.data.permissions}
-                    onAddPermission={onAddPermission}
-                    onDeletePermission={onDeletePermission}
-                />
-            </div>}
-        </AdminRightsContainer>;
+        return (
+            <AdminRightsContainer className="permissions-panel">
+                {permission && (
+                    <PermissionCheckboxsForm
+                        permCodes={AdvancedPermissionPanel.permCodes}
+                        onChangePermission={this.changePermission}
+                        labelPrefix="admin.perms.tabs.advanced.perm."
+                        permission={permission}
+                        groups={entityPermissions.data.groups}
+                    />
+                )}
+                {entityPermissions.fetched && (
+                    <div className="controlled-entities-container">
+                        <ControlledEntitiesPanel
+                            className="controlled-entities"
+                            permissions={entityPermissions.data.permissions}
+                            onAddPermission={onAddPermission}
+                            onDeletePermission={onDeletePermission}
+                        />
+                    </div>
+                )}
+            </AdminRightsContainer>
+        );
     }
 }
 
@@ -146,6 +154,5 @@ function mapStateToProps(state) {
         entityPermissions: storeFromArea(state, adminPermissions.ENTITY_PERMISSIONS),
     };
 }
-
 
 export default connect(mapStateToProps)(AdvancedPermissionPanel);

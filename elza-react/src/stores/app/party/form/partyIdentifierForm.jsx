@@ -6,15 +6,15 @@ export default function partyIdentifierForm(state, action) {
             if (action.form == 'partyIdentifierForm') {
                 return {
                     ...state,
-                    initialValues: action.data
-                }
+                    initialValues: action.data,
+                };
             } else {
                 return state;
             }
-        case "redux-form/CHANGE":
+        case 'redux-form/CHANGE':
             switch (action.field) {
                 default:
-                  return state;
+                    return state;
             }
         default:
             return state;

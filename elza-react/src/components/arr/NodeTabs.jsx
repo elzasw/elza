@@ -67,9 +67,18 @@ class NodeTabs extends AbstractReactComponent {
 
     render() {
         const {
-                  fund, nodes, activeIndex, versionId, rulDataTypes, showRegisterJp,
-                  calendarTypes, descItemTypes, fundId, closed, displayAccordion,
-              } = this.props;
+            fund,
+            nodes,
+            activeIndex,
+            versionId,
+            rulDataTypes,
+            showRegisterJp,
+            calendarTypes,
+            descItemTypes,
+            fundId,
+            closed,
+            displayAccordion,
+        } = this.props;
 
         if (nodes.length == 0) {
             return <div></div>;
@@ -81,7 +90,11 @@ class NodeTabs extends AbstractReactComponent {
                 id: node.id,
                 index: i,
                 key: node.id + '_' + i,
-                title: <span title={name} className="node-tab-title">{name}</span>,
+                title: (
+                    <span title={name} className="node-tab-title">
+                        {name}
+                    </span>
+                ),
                 desc: <span className="node-tab-desc">{createReferenceMarkString(node)}</span>,
             };
         });
@@ -90,30 +103,33 @@ class NodeTabs extends AbstractReactComponent {
         var activeTab = tabs[activeIndex];
 
         return (
-            <Tabs.Container ref='tabs' className={`node-tabs-container ${tabs.length <= 1 ? 'node-no--tabs' : ''}`}>
-                {tabs.length > 1 &&
-                <Tabs.Tabs
-                    closable
-                    items={tabs} activeItem={activeTab}
-                    onSelect={this.handleTabSelect}
-                    onClose={item => this.props.dispatch(fundCloseNodeTab(versionId, item.id, item.key, item.index))}
-                />
-                }
-                <Tabs.Content>
-                    {activeNode &&
-                    <NodePanel
-                        versionId={versionId}
-                        fund={fund}
-                        closed={closed}
-                        fundId={fundId}
-                        node={activeNode}
-                        rulDataTypes={rulDataTypes}
-                        calendarTypes={calendarTypes}
-                        descItemTypes={descItemTypes}
-                        showRegisterJp={showRegisterJp}
-                        displayAccordion={displayAccordion}
+            <Tabs.Container ref="tabs" className={`node-tabs-container ${tabs.length <= 1 ? 'node-no--tabs' : ''}`}>
+                {tabs.length > 1 && (
+                    <Tabs.Tabs
+                        closable
+                        items={tabs}
+                        activeItem={activeTab}
+                        onSelect={this.handleTabSelect}
+                        onClose={item =>
+                            this.props.dispatch(fundCloseNodeTab(versionId, item.id, item.key, item.index))
+                        }
                     />
-                    }
+                )}
+                <Tabs.Content>
+                    {activeNode && (
+                        <NodePanel
+                            versionId={versionId}
+                            fund={fund}
+                            closed={closed}
+                            fundId={fundId}
+                            node={activeNode}
+                            rulDataTypes={rulDataTypes}
+                            calendarTypes={calendarTypes}
+                            descItemTypes={descItemTypes}
+                            showRegisterJp={showRegisterJp}
+                            displayAccordion={displayAccordion}
+                        />
+                    )}
                 </Tabs.Content>
             </Tabs.Container>
         );

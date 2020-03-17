@@ -39,19 +39,63 @@ export function isFundDataGridAction(action) {
     }
 }
 
-export function fundBulkModifications(versionId, descItemTypeId, specsIds, operationType, findText, replaceText, replaceSpecId, nodes, selectionType) {
-    console.log('#####fundBulkModifications', versionId, descItemTypeId, specsIds, operationType, findText, replaceText, replaceSpecId, nodes, selectionType);
+export function fundBulkModifications(
+    versionId,
+    descItemTypeId,
+    specsIds,
+    operationType,
+    findText,
+    replaceText,
+    replaceSpecId,
+    nodes,
+    selectionType,
+) {
+    console.log(
+        '#####fundBulkModifications',
+        versionId,
+        descItemTypeId,
+        specsIds,
+        operationType,
+        findText,
+        replaceText,
+        replaceSpecId,
+        nodes,
+        selectionType,
+    );
 
     return (dispatch, getState) => {
         switch (operationType) {
             case 'findAndReplace':
-                return WebApi.replaceDataValues(versionId, descItemTypeId, specsIds, findText, replaceText, nodes, selectionType);
+                return WebApi.replaceDataValues(
+                    versionId,
+                    descItemTypeId,
+                    specsIds,
+                    findText,
+                    replaceText,
+                    nodes,
+                    selectionType,
+                );
             case 'replace':
-                return WebApi.placeDataValues(versionId, descItemTypeId, specsIds, replaceText, replaceSpecId, nodes, selectionType);
+                return WebApi.placeDataValues(
+                    versionId,
+                    descItemTypeId,
+                    specsIds,
+                    replaceText,
+                    replaceSpecId,
+                    nodes,
+                    selectionType,
+                );
             case 'delete':
                 return WebApi.deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType);
             case 'setSpecification':
-                return WebApi.setSpecification(versionId, descItemTypeId, specsIds, replaceSpecId, nodes, selectionType);
+                return WebApi.setSpecification(
+                    versionId,
+                    descItemTypeId,
+                    specsIds,
+                    replaceSpecId,
+                    nodes,
+                    selectionType,
+                );
             default:
                 console.warn('#####fundBulkModifications - operation not implemented', operationType);
                 return null;
@@ -161,14 +205,18 @@ function _fundDataGridKey(state) {
     str += '-pg' + state.pageSize;
     str += '-pi' + state.pageIndex;
     str += '-vc';
-    Object.keys(state.visibleColumns).sort().forEach(k => {
-        str += '-' + k;
-    });
+    Object.keys(state.visibleColumns)
+        .sort()
+        .forEach(k => {
+            str += '-' + k;
+        });
     str += '-fi';
-    Object.keys(state.filter).sort().forEach(k => {
-        str += '-' + k;
-        str += JSON.stringify(state.filter[k]);
-    });
+    Object.keys(state.filter)
+        .sort()
+        .forEach(k => {
+            str += '-' + k;
+            str += JSON.stringify(state.filter[k]);
+        });
     return str;
 }
 
@@ -222,7 +270,8 @@ export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize) {
             return;
         }
 
-        if (!fundDataGrid.fetchedFilter || fundDataGrid.isFetchingFilter) {  // již musí být načtený filtr
+        if (!fundDataGrid.fetchedFilter || fundDataGrid.isFetchingFilter) {
+            // již musí být načtený filtr
             return;
         }
 
@@ -230,25 +279,30 @@ export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize) {
         if (fundDataGrid.currentDataKey !== dataKey) {
             dispatch(_dataRequest(versionId, dataKey));
 
-            WebApi.getFilteredNodes(versionId, pageIndex, pageSize, Object.keys(fundDataGrid.visibleColumns)).then(nodes => {
-                const newState = getState();
-                const newFund = objectById(newState.arrRegion.funds, versionId, 'versionId');
-                if (newFund !== null) {
-                    const newFundDataGrid = newFund.fundDataGrid;
-                    const newDataKey = _fundDataGridKey(newFundDataGrid);
+            WebApi.getFilteredNodes(versionId, pageIndex, pageSize, Object.keys(fundDataGrid.visibleColumns)).then(
+                nodes => {
+                    const newState = getState();
+                    const newFund = objectById(newState.arrRegion.funds, versionId, 'versionId');
+                    if (newFund !== null) {
+                        const newFundDataGrid = newFund.fundDataGrid;
+                        const newDataKey = _fundDataGridKey(newFundDataGrid);
 
-                    if (newDataKey === dataKey) {   // ještě je pořád v tom stavu, pro jaký se načítala data
-                        var items = nodes.map(node => {
-                            const { valuesMap, ...nodeRest } = node;
-                            return {
-                                id: nodeRest.node.id, ...nodeRest, ...node.valuesMap,
-                                referenceMark: node.referenceMark,
-                            };
-                        });
-                        dispatch(_dataReceive(versionId, items));
+                        if (newDataKey === dataKey) {
+                            // ještě je pořád v tom stavu, pro jaký se načítala data
+                            var items = nodes.map(node => {
+                                const {valuesMap, ...nodeRest} = node;
+                                return {
+                                    id: nodeRest.node.id,
+                                    ...nodeRest,
+                                    ...node.valuesMap,
+                                    referenceMark: node.referenceMark,
+                                };
+                            });
+                            dispatch(_dataReceive(versionId, items));
+                        }
                     }
-                }
-            });
+                },
+            );
         }
     };
 }
@@ -336,14 +390,14 @@ export function fundDataGridFilter(versionId, filter) {
 }
 
 export function createFilterStructure(filter) {
-    const callFilter = { columnFilters: { filters: {} } };
+    const callFilter = {columnFilters: {filters: {}}};
 
     // Ladění objektu filtru pro server
     Object.keys(filter).forEach(key => {
         if (key === COL_REFERENCE_MARK) {
             callFilter.nodeId = filter[COL_REFERENCE_MARK].nodeId;
         } else {
-            callFilter.columnFilters.filters[key] = { ...filter[key] };
+            callFilter.columnFilters.filters[key] = {...filter[key]};
             const filterData = callFilter.columnFilters.filters[key];
 
             // Typy selected a unselected na velká písmena
@@ -375,10 +429,9 @@ function _fundDataGridFilter(versionId, filter, resetViewState = true) {
         dispatch(_filterRequest(versionId));
         const callFilter = createFilterStructure(filter);
 
-        WebApi.filterNodes(versionId, callFilter)
-              .then(json => {
-                  dispatch(_filterReceive(versionId, json, resetViewState));
-              });
+        WebApi.filterNodes(versionId, callFilter).then(json => {
+            dispatch(_filterReceive(versionId, json, resetViewState));
+        });
     };
 }
 

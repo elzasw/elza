@@ -26,7 +26,7 @@ const getValue = (field, state, dest, exportInitialValues) => {
                 getValue(rest, item, dest[key][index], exportInitialValues);
             });
         } else {
-            dest[key] = array.map(item => exportInitialValues ? item.initial : item.value);
+            dest[key] = array.map(item => (exportInitialValues ? item.initial : item.value));
         }
     } else if (dotIndex > 0) {
         // subobject field
@@ -63,11 +63,14 @@ const mergeStateForField = (field, localState, serverState) => {
         const serverArray = serverState[key];
 
         // Necháme z lokálního pole jen ty, které nemají id
-        if (key !== 'creators') { /// Hotfix - TODO @stanekpa - ignorace merge
+        if (key !== 'creators') {
+            /// Hotfix - TODO @stanekpa - ignorace merge
             localArray.forEach(item => {
                 if (!item._merged) {
-                    if (item.id.value) {    // existující položka v local, zatím ignorujeme, v budoucnu můžeme její aktuální změny promítnout do server
-                    } else {    // nová položka v local
+                    if (item.id.value) {
+                        // existující položka v local, zatím ignorujeme, v budoucnu můžeme její aktuální změny promítnout do server
+                    } else {
+                        // nová položka v local
                         if (!item.sendToServer) {
                             item._merged = true;
                             serverArray.push(item);
@@ -103,7 +106,8 @@ const mergeStateForField = (field, localState, serverState) => {
         if (!localState[field]) {
             console.log(localState, field);
         }
-        if (localState[field] && localState[field].touched) {    // hodnota byla lokálně upravena, pokud initial je stejná jako server initial, vezmeme naší lokální aktuálně upravovanou
+        if (localState[field] && localState[field].touched) {
+            // hodnota byla lokálně upravena, pokud initial je stejná jako server initial, vezmeme naší lokální aktuálně upravovanou
             if (valuesEquals(localState[field].initial, serverState[field].initial)) {
                 serverState[field].value = localState[field].value;
             }
@@ -154,10 +158,10 @@ const setAttribute = (field, state, dest, commonAttrs, fieldAttrs) => {
         }
         setAttribute(rest, (state && state[key]) || {...commonAttrs}, dest[key], commonAttrs, fieldAttrs);
     } else {
-        dest[field] = state[field] && ({
+        dest[field] = state[field] && {
             ...state[field],
             ...fieldAttrs,
-        });
+        };
     }
 };
 
@@ -167,10 +171,13 @@ const getValues = (fields, state, exportInitialValues = false) =>
         return accumulator;
     }, {});
 const setAttributes = (fields, state, commonAttrs, fieldAttrs) =>
-    fields.reduce((accumulator, field) => {
-        setAttribute(field, state, accumulator, commonAttrs, fieldAttrs);
-        return accumulator;
-    }, {...commonAttrs});
+    fields.reduce(
+        (accumulator, field) => {
+            setAttribute(field, state, accumulator, commonAttrs, fieldAttrs);
+            return accumulator;
+        },
+        {...commonAttrs},
+    );
 const mergeState = (fields, localState, serverState) => {
     fields.forEach(field => {
         mergeStateForField(field, localState, serverState);

@@ -1,20 +1,20 @@
 import PropTypes from 'prop-types';
 import * as React from 'react';
-import { CSSProperties } from 'react';
-import { Col, Dropdown, DropdownButton, FormControl, Row } from 'react-bootstrap';
-import { connect } from 'react-redux';
+import {CSSProperties} from 'react';
+import {Col, Dropdown, DropdownButton, FormControl, Row} from 'react-bootstrap';
+import {connect} from 'react-redux';
 import * as issuesActions from '../../actions/arr/issues';
-import { downloadFile } from '../../actions/global/download';
-import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
+import {downloadFile} from '../../actions/global/download';
+import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
 import * as issueStatesActions from '../../actions/refTables/issueStates';
 import * as issueTypesActions from '../../actions/refTables/issueTypes';
 import * as perms from '../../actions/user/Permission';
-import { UrlFactory, WebApi } from '../../actions/WebApi';
-import { Button } from '../../components/ui';
+import {UrlFactory, WebApi} from '../../actions/WebApi';
+import {Button} from '../../components/ui';
 import indexById from '../../shared/utils/indexById';
 import objectById from '../../shared/utils/objectById';
 import storeFromArea from '../../shared/utils/storeFromArea';
-import { IssueStateVO, IssueVO } from '../../types';
+import {IssueStateVO, IssueVO} from '../../types';
 import IssueForm from '../form/IssueForm';
 import i18n from '../i18n';
 import Icon from '../shared/icon/Icon';
@@ -24,13 +24,16 @@ import IssueLists from './IssueLists';
 
 import './LecturingTop.scss';
 
-const basicOptionMap = (i) => <option key={i.id} value={i.id}>{i.name}</option>;
+const basicOptionMap = i => (
+    <option key={i.id} value={i.id}>
+        {i.name}
+    </option>
+);
 
 /**
  * Horní část lektoringu, zajištující seznam protokolů, seznam připomínek a nastavení
  */
 class LecturingTop extends React.Component {
-
     props: any;
 
     state: any = {
@@ -74,13 +77,14 @@ class LecturingTop extends React.Component {
         }
     }
 
-    filter = (filterPart) => {
+    filter = filterPart => {
         this.props.dispatch(issuesActions.list.filter({...this.props.issueList.filter, ...filterPart}));
     };
 
     settings = () => {
-        this.props.dispatch(modalDialogShow(this, i18n('arr.issues.settings.title'), <IssueLists
-            fundId={this.props.fund.id}/>));
+        this.props.dispatch(
+            modalDialogShow(this, i18n('arr.issues.settings.title'), <IssueLists fundId={this.props.fund.id} />),
+        );
     };
 
     download = () => {
@@ -88,27 +92,47 @@ class LecturingTop extends React.Component {
     };
 
     newArr = () => {
-        this.props.dispatch(modalDialogShow(this, i18n('arr.issues.add.arr.title'), <IssueForm
-            onSubmit={(data) => WebApi.addIssue({
-                ...data,
-                issueListId: this.state.issueListId,
-                nodeId: null,
-            })} onSubmitSuccess={this.afterAdd}/>));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.issues.add.arr.title'),
+                <IssueForm
+                    onSubmit={data =>
+                        WebApi.addIssue({
+                            ...data,
+                            issueListId: this.state.issueListId,
+                            nodeId: null,
+                        })
+                    }
+                    onSubmitSuccess={this.afterAdd}
+                />,
+            ),
+        );
     };
 
     newNode = () => {
         if (!this.props.node || !this.props.node.selectedSubNodeId) {
             return;
         }
-        this.props.dispatch(modalDialogShow(this, i18n('arr.issues.add.node.title'), <IssueForm
-            onSubmit={(data) => WebApi.addIssue({
-                ...data,
-                issueListId: this.state.issueListId,
-                nodeId: this.props.node.selectedSubNodeId,
-            })} onSubmitSuccess={this.afterAdd}/>));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.issues.add.node.title'),
+                <IssueForm
+                    onSubmit={data =>
+                        WebApi.addIssue({
+                            ...data,
+                            issueListId: this.state.issueListId,
+                            nodeId: this.props.node.selectedSubNodeId,
+                        })
+                    }
+                    onSubmitSuccess={this.afterAdd}
+                />,
+            ),
+        );
     };
 
-    afterAdd = (data) => {
+    afterAdd = data => {
         const {dispatch} = this.props;
         dispatch(issuesActions.list.invalidate(data.issueListId));
         dispatch(issuesActions.detail.invalidate(data.id));
@@ -144,102 +168,164 @@ class LecturingTop extends React.Component {
 
         const hasAdmin = userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL);
 
-        const canWrite = !!issueListId && (
-            hasAdmin || (
-                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
-                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
-                userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(issueListId) !== -1
-            )
-        );
+        const canWrite =
+            !!issueListId &&
+            (hasAdmin ||
+                (userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
+                    userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
+                    userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(issueListId) !== -1));
 
         const config = fund.activeVersion.config;
 
-        return <div className="lecturing-top">
-            <div className="actions-container">
-                <div className="actions">
-                    <DropdownButton disabled={!canWrite} variant="default" id='dropdown-add-comment'
-                                    title={(<Icon glyph='fa-plus-circle'/> as any as string)}>
-                        <Dropdown.Item eventKey="1" onClick={this.newArr}>{i18n('arr.issues.add.arr')}</Dropdown.Item>
-                        <Dropdown.Item eventKey="2" disabled={!this.props.node || !this.props.node.selectedSubNodeId}
-                                       onClick={this.newNode}>{i18n('arr.issues.add.node')}</Dropdown.Item>
-                    </DropdownButton>
-                    {hasAdmin && <Button className="pull-right" onClick={this.settings}><Icon
-                        glyph='fa-cogs'/></Button>}
-                    <Button variant={'action' as any} className="pull-right" disabled={!issueListId}
-                            onClick={this.download}><Icon glyph='fa-download'/></Button>
+        return (
+            <div className="lecturing-top">
+                <div className="actions-container">
+                    <div className="actions">
+                        <DropdownButton
+                            disabled={!canWrite}
+                            variant="default"
+                            id="dropdown-add-comment"
+                            title={((<Icon glyph="fa-plus-circle" />) as any) as string}
+                        >
+                            <Dropdown.Item eventKey="1" onClick={this.newArr}>
+                                {i18n('arr.issues.add.arr')}
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                                eventKey="2"
+                                disabled={!this.props.node || !this.props.node.selectedSubNodeId}
+                                onClick={this.newNode}
+                            >
+                                {i18n('arr.issues.add.node')}
+                            </Dropdown.Item>
+                        </DropdownButton>
+                        {hasAdmin && (
+                            <Button className="pull-right" onClick={this.settings}>
+                                <Icon glyph="fa-cogs" />
+                            </Button>
+                        )}
+                        <Button
+                            variant={'action' as any}
+                            className="pull-right"
+                            disabled={!issueListId}
+                            onClick={this.download}
+                        >
+                            <Icon glyph="fa-download" />
+                        </Button>
+                    </div>
+                </div>
+                <FormControl
+                    as={'select'}
+                    name={'protocol'}
+                    onChange={({target: {value}}: any) => this.selectIssueList(value, fund.id)}
+                    value={issueListId}
+                >
+                    {issueProtocols.fetched && issueProtocols.count === 0 && <option value={''} />}
+                    {issueProtocols.fetched && issueProtocols.rows.map(basicOptionMap)}
+                </FormControl>
+                <Row>
+                    <Col xs={12} sm={6}>
+                        <FormControl
+                            as={'select'}
+                            name={'state'}
+                            disabled={!issueListId}
+                            onChange={({target: {value}}: any) => this.filter({state: value})}
+                            value={issueList.filter.state}
+                        >
+                            <option value={''}>{i18n('global.all')}</option>
+                            {issueStates.fetched && issueStates.data.map(basicOptionMap)}
+                        </FormControl>
+                    </Col>
+                    <Col xs={12} sm={6}>
+                        <FormControl
+                            as={'select'}
+                            name={'type'}
+                            disabled={!issueListId}
+                            onChange={({target: {value}}: any) => this.filter({type: value})}
+                            value={issueList.filter.type}
+                        >
+                            <option value={''}>{i18n('global.all')}</option>
+                            {issueTypes.fetched && issueTypes.data.map(basicOptionMap)}
+                        </FormControl>
+                    </Col>
+                </Row>
+
+                <div className="list-container">
+                    <ListBox
+                        ref="listBox"
+                        activeIndex={activeIndex}
+                        onChangeSelection={this.selectIssue}
+                        items={issueList.rows}
+                        renderItemContent={({
+                            item: {description, issueStateId, issueTypeId, number, id, referenceMark},
+                            active,
+                        }: {
+                            item: IssueVO;
+                            active: boolean;
+                        }) => {
+                            const state: IssueStateVO = objectById(issueStates.data, issueStateId);
+                            const type = objectById(issueTypes.data, issueTypeId);
+                            const style: CSSProperties = {};
+                            if (config.colors && config.colors[type.code]) {
+                                style.background = config.colors[type.code];
+                            }
+                            let icon = null;
+                            if (config.icons && config.icons[state.code]) {
+                                icon = config.icons[state.code];
+                            }
+                            return (
+                                <TooltipTrigger
+                                    className={'flex item' + (active ? ' active' : '')}
+                                    content={
+                                        <span>
+                                            <div>
+                                                #{number} ({state.name})
+                                            </div>
+                                            <div>{description}</div>
+                                        </span>
+                                    }
+                                >
+                                    <div className={'info'}>
+                                        <div className="flex">
+                                            <span className="circle" style={!state.finalState ? style : undefined}>
+                                                {state.finalState && icon && <Icon glyph={icon} />}
+                                            </span>
+                                            <span className={'description'}>
+                                                #{number} - {description}
+                                            </span>
+                                        </div>
+                                        <div className="reference-mark">{referenceMark && referenceMark.join(' ')}</div>
+                                    </div>
+                                    {canWrite && (
+                                        <div className="actions">
+                                            <DropdownButton
+                                                pullRight
+                                                variant={'action' as any}
+                                                id="issue-type"
+                                                title={((<Icon glyph="fa-ellipsis-h" />) as any) as string}
+                                            >
+                                                {issueTypes.data.map(i => (
+                                                    <Dropdown.Item
+                                                        key={'issue-type-' + i.id}
+                                                        disabled={i.id === issueTypeId}
+                                                        onClick={this.updateIssueType.bind(this, id, i.id)}
+                                                    >
+                                                        {i18n('arr.issues.type.change', i.name)}
+                                                    </Dropdown.Item>
+                                                ))}
+                                            </DropdownButton>
+                                        </div>
+                                    )}
+                                </TooltipTrigger>
+                            );
+                        }}
+                    />
                 </div>
             </div>
-            <FormControl as={'select'} name={'protocol'}
-                         onChange={({target: {value}}: any) => this.selectIssueList(value, fund.id)}
-                         value={issueListId}>
-                {issueProtocols.fetched && issueProtocols.count === 0 && <option value={''}/>}
-                {issueProtocols.fetched && issueProtocols.rows.map(basicOptionMap)}
-            </FormControl>
-            <Row>
-                <Col xs={12} sm={6}>
-                    <FormControl as={'select'} name={'state'} disabled={!issueListId}
-                                 onChange={({target: {value}}: any) => this.filter({state: value})}
-                                 value={issueList.filter.state}>
-                        <option value={''}>{i18n('global.all')}</option>
-                        {issueStates.fetched && issueStates.data.map(basicOptionMap)}
-                    </FormControl>
-                </Col>
-                <Col xs={12} sm={6}>
-                    <FormControl as={'select'} name={'type'} disabled={!issueListId}
-                                 onChange={({target: {value}}: any) => this.filter({type: value})}
-                                 value={issueList.filter.type}>
-                        <option value={''}>{i18n('global.all')}</option>
-                        {issueTypes.fetched && issueTypes.data.map(basicOptionMap)}
-                    </FormControl>
-                </Col>
-            </Row>
-
-            <div className='list-container'>
-                <ListBox
-                    ref="listBox"
-                    activeIndex={activeIndex}
-                    onChangeSelection={this.selectIssue}
-                    items={issueList.rows}
-                    renderItemContent={({item: {description, issueStateId, issueTypeId, number, id, referenceMark}, active}: {item: IssueVO, active: boolean}) => {
-                        const state: IssueStateVO = objectById(issueStates.data, issueStateId);
-                        const type = objectById(issueTypes.data, issueTypeId);
-                        const style: CSSProperties = {};
-                        if (config.colors && config.colors[type.code]) {
-                            style.background = config.colors[type.code];
-                        }
-                        let icon = null;
-                        if (config.icons && config.icons[state.code]) {
-                            icon = config.icons[state.code];
-                        }
-                        return <TooltipTrigger className={'flex item' + (active ? ' active' : '')} content={<span><div>#{number} ({state.name})</div><div>{description}</div></span>}>
-                            <div className={'info'}>
-                                <div className="flex">
-                                    <span className="circle" style={!state.finalState ? style : undefined}>
-                                    {state.finalState && icon && <Icon glyph={icon}/>}
-                                    </span>
-                                    <span className={'description'}>#{number} - {description}</span>
-                                </div>
-                                <div className="reference-mark">
-                                    {referenceMark && referenceMark.join(' ')}
-                                </div>
-                            </div>
-                            {canWrite && <div className="actions">
-                                <DropdownButton pullRight variant={'action' as any} id='issue-type'
-                                                title={<Icon glyph='fa-ellipsis-h'/> as any as string}>
-                                    {issueTypes.data.map(i => <Dropdown.Item key={'issue-type-' + i.id}
-                                                                             disabled={i.id === issueTypeId}
-                                                                             onClick={this.updateIssueType.bind(this, id, i.id)}>{i18n('arr.issues.type.change', i.name)}</Dropdown.Item>)}
-                                </DropdownButton>
-                            </div>}
-                        </TooltipTrigger>;
-                    }}
-                />
-            </div>
-        </div>;
+        );
     }
 }
 
-export default connect((state: any) => {
+export default (connect((state: any) => {
     return {
         issueTypes: state.refTables.issueTypes,
         issueStates: state.refTables.issueStates,
@@ -248,4 +334,4 @@ export default connect((state: any) => {
         issueDetail: storeFromArea(state, issuesActions.AREA_DETAIL),
         userDetail: state.userDetail,
     };
-})(LecturingTop as any) as any as React.SFC<{fund: object}>;
+})(LecturingTop as any) as any) as React.SFC<{fund: object}>;

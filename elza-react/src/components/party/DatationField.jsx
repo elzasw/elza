@@ -16,23 +16,26 @@ class DatationField extends AbstractReactComponent {
     };
 
     state = {
-        allowedText: this.props.fields.textDate && this.props.fields.textDate.value != null && this.props.fields.textDate.value != '',
-        allowedNote: this.props.fields.textDate && this.props.fields.note.value != null && this.props.fields.note.value != '',
+        allowedText:
+            this.props.fields.textDate &&
+            this.props.fields.textDate.value != null &&
+            this.props.fields.textDate.value != '',
+        allowedNote:
+            this.props.fields.textDate && this.props.fields.note.value != null && this.props.fields.note.value != '',
         initialized: false,
         calendars: [],
     };
 
-    static validate = (value) => {
+    static validate = value => {
         const a = UnitDateConvertor.convertToUnitDate(value);
         // console.log('@@ 1', a, ' @@');
         return a;
     };
 
-    static reduxValidate = (val) => {
+    static reduxValidate = val => {
         let errors = null;
         if (val && val.value) {
-            let datation,
-                err;
+            let datation, err;
             try {
                 datation = DatationField.validate(val.value);
             } catch (e) {
@@ -68,14 +71,22 @@ class DatationField extends AbstractReactComponent {
     }
 
     loadCalendarsAndPokeData = (props = this.props) => {
-        if (props.calendarTypes && props.calendarTypes.fetched && !this.state.initialized && props.calendarTypes.items) {
+        if (
+            props.calendarTypes &&
+            props.calendarTypes.fetched &&
+            !this.state.initialized &&
+            props.calendarTypes.items
+        ) {
             if (props.fields.calendarTypeId.value == null || props.fields.calendarTypeId.value === '') {
                 props.fields.calendarTypeId.onChange(props.calendarTypes.items[0].id);
             }
             this.setState({
                 initialized: true,
-                calendars: props.calendarTypes.items.map(i => <option value={i.id}
-                                                                      key={i.id}>{i.name.charAt(0)}</option>),
+                calendars: props.calendarTypes.items.map(i => (
+                    <option value={i.id} key={i.id}>
+                        {i.name.charAt(0)}
+                    </option>
+                )),
             });
         }
     };
@@ -87,33 +98,39 @@ class DatationField extends AbstractReactComponent {
         const tooltipText = i18n('^dataType.unitdate.format');
         const tooltip = tooltipText ? <div dangerouslySetInnerHTML={{__html: tooltipText}}></div> : null;
 
-        return <div className="datation-field">
-            <div className="header">
-                <label>{label}</label>
-                <Button variant="action" className={allowedText ? '' : 'disabledColor'}
-                        onClick={() => this.setState({allowedText: !allowedText})}><Icon glyph="fa-font"/></Button>
-                <Button variant="action" className={allowedNote ? '' : 'disabledColor'}
-                        onClick={() => this.setState({allowedNote: !allowedNote})}><Icon
-                    glyph="fa-sticky-note-o"/></Button>
+        return (
+            <div className="datation-field">
+                <div className="header">
+                    <label>{label}</label>
+                    <Button
+                        variant="action"
+                        className={allowedText ? '' : 'disabledColor'}
+                        onClick={() => this.setState({allowedText: !allowedText})}
+                    >
+                        <Icon glyph="fa-font" />
+                    </Button>
+                    <Button
+                        variant="action"
+                        className={allowedNote ? '' : 'disabledColor'}
+                        onClick={() => this.setState({allowedNote: !allowedNote})}
+                    >
+                        <Icon glyph="fa-sticky-note-o" />
+                    </Button>
+                </div>
+                <div className="datation">
+                    <FormInput as="select" {...fields.calendarTypeId}>
+                        {calendars}
+                    </FormInput>
+                    <TooltipTrigger content={tooltip} holdOnHover placement="vertical">
+                        <FormInput type="text" {...fields.value} />
+                    </TooltipTrigger>
+                </div>
+                {allowedText && <FormInput type="text" {...fields.textDate} label={labelTextual} />}
+                {allowedNote && <FormInput as="textarea" {...fields.note} label={labelNote} />}
             </div>
-            <div className="datation">
-                <FormInput as="select" {...fields.calendarTypeId}>
-                    {calendars}
-                </FormInput>
-                <TooltipTrigger
-                    content={tooltip}
-                    holdOnHover
-                    placement="vertical"
-                >
-                    <FormInput type="text" {...fields.value} />
-                </TooltipTrigger>
-            </div>
-            {allowedText && <FormInput type="text" {...fields.textDate} label={labelTextual}/>}
-            {allowedNote && <FormInput as="textarea" {...fields.note} label={labelNote}/>}
-        </div>;
+        );
     }
 }
-
 
 class Exception {
     message = null;
@@ -125,17 +142,15 @@ class Exception {
     }
 }
 
-const makeString = (object) => object == null ? '' : '' + object;
+const makeString = object => (object == null ? '' : '' + object);
 
-const makeXChar = (s, width, char) => (s.length >= width) ? s : (new Array(width).join(char) + s).slice(-width);
+const makeXChar = (s, width, char) => (s.length >= width ? s : (new Array(width).join(char) + s).slice(-width));
 
-const make2Digit = (input) => makeXChar(input, 2, '0');
+const make2Digit = input => makeXChar(input, 2, '0');
 
-const make4Digit = (input) => makeXChar(input, 4, '0');
-
+const make4Digit = input => makeXChar(input, 4, '0');
 
 class DT {
-
     static FORMATS = {
         _DT: '_DT', // CLASS format - input is this class
         DATE: 'd.M.u',
@@ -165,9 +180,7 @@ class DT {
             case DT.FORMATS.YEAR_MONTH: {
                 const hasMonth = format == DT.FORMATS.YEAR_MONTH;
 
-                let data,
-                    month,
-                    year;
+                let data, month, year;
                 if (hasMonth) {
                     data = input.split('.');
                     if (data.length != 2) {
@@ -202,9 +215,7 @@ class DT {
             case DT.FORMATS.DATE_TIME2: {
                 const hasSeconds = format == DT.FORMATS.DATE_TIME;
                 const hasTime = hasSeconds || format == DT.FORMATS.DATE_TIME2;
-                let data,
-                    date,
-                    time;
+                let data, date, time;
                 if (hasTime) {
                     data = input.split(' ');
                     if (data.length != 2) {
@@ -231,15 +242,23 @@ class DT {
                 }
                 validationArray.push(year, month, day);
 
-                let hours,
-                    minutes,
-                    secs;
+                let hours, minutes, secs;
                 if (hasTime) {
                     hours = parseInt(time[0]);
                     minutes = parseInt(time[1]);
                     secs = parseInt(time[2]);
 
-                    if (isNaN(hours) || isNaN(minutes) || isNaN(secs) || hours > 23 || hours < 0 || minutes > 59 || minutes < 0 || secs > 59 || secs < 0) {
+                    if (
+                        isNaN(hours) ||
+                        isNaN(minutes) ||
+                        isNaN(secs) ||
+                        hours > 23 ||
+                        hours < 0 ||
+                        minutes > 59 ||
+                        minutes < 0 ||
+                        secs > 59 ||
+                        secs < 0
+                    ) {
                         throw new Exception('Invalid input.');
                     }
                     validationArray.push(hours, minutes, secs);
@@ -270,11 +289,19 @@ class DT {
         DT.validateDate(this.jsDate, validationArray);
     }
 
-    static getDateArray = (i) => [i.getFullYear(), i.getMonth() + 1, i.getDate(), i.getHours(), i.getMinutes(), i.getSeconds(), i.getMilliseconds()];
+    static getDateArray = i => [
+        i.getFullYear(),
+        i.getMonth() + 1,
+        i.getDate(),
+        i.getHours(),
+        i.getMinutes(),
+        i.getSeconds(),
+        i.getMilliseconds(),
+    ];
 
     static validateDate = (date, arr) => {
         const dateArr = DT.getDateArray(date);
-        const assertTrue = (arg) => {
+        const assertTrue = arg => {
             if (!arg) {
                 throw new Exception('Invalid input.');
             }
@@ -286,11 +313,11 @@ class DT {
         }
     };
 
-    static parse = (string) => {
+    static parse = string => {
         return new DT(makeString(string).replace('T', ' '), DT.FORMATS.DATE_TIME);
     };
 
-    format = (format) => {
+    format = format => {
         switch (format) {
             case DT.FORMATS.YEAR:
                 return this.getYear();
@@ -299,41 +326,63 @@ class DT {
             case DT.FORMATS.DATE:
                 return this.getDay() + '.' + this.getMonth() + '.' + this.getYear();
             case DT.FORMATS.DATE_TIME2:
-                return this.getDay() + '.' + this.getMonth() + '.' + this.getYear() + ' ' + this.getHours() + ':' + this.getMinutes();
+                return (
+                    this.getDay() +
+                    '.' +
+                    this.getMonth() +
+                    '.' +
+                    this.getYear() +
+                    ' ' +
+                    this.getHours() +
+                    ':' +
+                    this.getMinutes()
+                );
             case DT.FORMATS.DATE_TIME:
-                return this.getDay() + '.' + this.getMonth() + '.' + this.getYear() + ' ' + this.getHours() + ':' + this.getMinutes() + ':' + this.getSeconds();
+                return (
+                    this.getDay() +
+                    '.' +
+                    this.getMonth() +
+                    '.' +
+                    this.getYear() +
+                    ' ' +
+                    this.getHours() +
+                    ':' +
+                    this.getMinutes() +
+                    ':' +
+                    this.getSeconds()
+                );
             default:
                 break;
         }
     };
 
-    isEqual = (anotherMyTime) => this.jsDate.getTime() === anotherMyTime.jsDate.getTime();
-    isBefore = (anotherMyTime) => this.jsDate < anotherMyTime.jsDate;
-    isAfter = (anotherMyTime) => this.jsDate > anotherMyTime.jsDate;
+    isEqual = anotherMyTime => this.jsDate.getTime() === anotherMyTime.jsDate.getTime();
+    isBefore = anotherMyTime => this.jsDate < anotherMyTime.jsDate;
+    isAfter = anotherMyTime => this.jsDate > anotherMyTime.jsDate;
 
-    plusMilliseconds = (i) => this.jsDate.setMilliseconds(this.jsDate.getMilliseconds() + i);
-    plusSeconds = (i) => this.jsDate.setSeconds(this.jsDate.getSeconds() + i);
-    plusMinutes = (i) => this.jsDate.setMinutes(this.jsDate.getMinutes() + i);
-    plusHours = (i) => this.jsDate.setHours(this.jsDate.getHours() + i);
-    plusDays = (i) => this.jsDate.setDate(this.jsDate.getDate() + i);
-    plusMonths = (i) => this.jsDate.setMonth(this.jsDate.getMonth() + i);
-    plusYears = (i) => this.jsDate.setFullYear(this.jsDate.getFullYear() + i);
+    plusMilliseconds = i => this.jsDate.setMilliseconds(this.jsDate.getMilliseconds() + i);
+    plusSeconds = i => this.jsDate.setSeconds(this.jsDate.getSeconds() + i);
+    plusMinutes = i => this.jsDate.setMinutes(this.jsDate.getMinutes() + i);
+    plusHours = i => this.jsDate.setHours(this.jsDate.getHours() + i);
+    plusDays = i => this.jsDate.setDate(this.jsDate.getDate() + i);
+    plusMonths = i => this.jsDate.setMonth(this.jsDate.getMonth() + i);
+    plusYears = i => this.jsDate.setFullYear(this.jsDate.getFullYear() + i);
 
-    minusMilliseconds = (i) => this.jsDate.setMilliseconds(this.jsDate.getMilliseconds() - i);
-    minusSeconds = (i) => this.jsDate.setSeconds(this.jsDate.getSeconds() - i);
-    minusMinutes = (i) => this.jsDate.setMinutes(this.jsDate.getMinutes() - i);
-    minusHours = (i) => this.jsDate.setHours(this.jsDate.getHours() - i);
-    minusDays = (i) => this.jsDate.setDate(this.jsDate.getDate() - i);
-    minusMonths = (i) => this.jsDate.setMonth(this.jsDate.getMonth() - i);
-    minusYears = (i) => this.jsDate.setFullYear(this.jsDate.getFullYear() - i);
+    minusMilliseconds = i => this.jsDate.setMilliseconds(this.jsDate.getMilliseconds() - i);
+    minusSeconds = i => this.jsDate.setSeconds(this.jsDate.getSeconds() - i);
+    minusMinutes = i => this.jsDate.setMinutes(this.jsDate.getMinutes() - i);
+    minusHours = i => this.jsDate.setHours(this.jsDate.getHours() - i);
+    minusDays = i => this.jsDate.setDate(this.jsDate.getDate() - i);
+    minusMonths = i => this.jsDate.setMonth(this.jsDate.getMonth() - i);
+    minusYears = i => this.jsDate.setFullYear(this.jsDate.getFullYear() - i);
 
-    setMilliseconds = (i) => this.jsDate.setMilliseconds(i);
-    setSeconds = (i) => this.jsDate.setSeconds(i);
-    setMinutes = (i) => this.jsDate.setMinutes(i);
-    setHours = (i) => this.jsDate.setHours(i);
-    setDay = (i) => this.jsDate.setDate(i);
-    setMonth = (i) => this.jsDate.setMonth(i - 1);
-    setYear = (i) => this.jsDate.setFullYear(i);
+    setMilliseconds = i => this.jsDate.setMilliseconds(i);
+    setSeconds = i => this.jsDate.setSeconds(i);
+    setMinutes = i => this.jsDate.setMinutes(i);
+    setHours = i => this.jsDate.setHours(i);
+    setDay = i => this.jsDate.setDate(i);
+    setMonth = i => this.jsDate.setMonth(i - 1);
+    setYear = i => this.jsDate.setFullYear(i);
 
     getMilliseconds = () => this.jsDate.getMilliseconds();
     getSeconds = () => this.jsDate.getSeconds();
@@ -345,7 +394,7 @@ class DT {
 
     toISO8601 = () => this.jsDate.toISOString().substr(0, 19);
 
-    setDateArray = (arr) => {
+    setDateArray = arr => {
         if (!arr || !arr.length || arr.length < 1) {
             throw new Exception('Invalid array input.');
         }
@@ -367,7 +416,7 @@ class UnitDate {
     valueTo;
     valueToEstimate;
 
-    formatAppend = (format) => {
+    formatAppend = format => {
         if (this.format == null) {
             this.format = '';
         }
@@ -376,7 +425,6 @@ class UnitDate {
 }
 
 class UnitDateConvertor {
-
     /**
      * Výraz pro detekci stolení
      */
@@ -422,8 +470,7 @@ class UnitDateConvertor {
      */
     static ESTIMATE_INTERVAL_DELIMITER = '/';
 
-    static convertToUnitDate = (input) => {
-
+    static convertToUnitDate = input => {
         let unitdate = new UnitDate();
 
         unitdate.format = '';
@@ -447,7 +494,6 @@ class UnitDateConvertor {
                 if (from != null && to != null && from.isAfter(to)) {
                     throw new Exception(i18n('global.validation.datation.invalidInterval'));
                 }
-
             } else {
                 const token = UnitDateConvertor.parseToken(normalizedInput, unitdate);
                 unitdate.valueFrom = token.dateFrom;
@@ -469,11 +515,12 @@ class UnitDateConvertor {
                     throw new Exception(i18n('global.validation.datation.invalidISODateLength'));
                 }
             }
-
         } catch (e) {
             unitdate.format = '';
             console.log(e);
-            throw new Exception(e && e.message && e.hasUserMessage ? e.message : i18n('global.validation.datation.invalid'));
+            throw new Exception(
+                e && e.message && e.hasUserMessage ? e.message : i18n('global.validation.datation.invalid'),
+            );
         }
 
         return unitdate;
@@ -486,7 +533,10 @@ class UnitDateConvertor {
      * @return {string} normalizovaný text
      */
     static normalizeInput(input) {
-        return input.replace('(', '[').replace(')', ']').trim();
+        return input
+            .replace('(', '[')
+            .replace(')', ']')
+            .trim();
     }
 
     static makeString(object) {
@@ -498,12 +548,10 @@ class UnitDateConvertor {
         return UnitDateConvertor.makeString(string).length === 0;
     }
 
-
     /**
      * Provede konverzi formátu do textové podoby.
      */
     static convertToString(unitdate) {
-
         let format = unitdate.format;
 
         if (UnitDateConvertor.isInterval(format)) {
@@ -523,7 +571,6 @@ class UnitDateConvertor {
      * @return {string} výsledný řetězec
      */
     static convertInterval(format, unitdate) {
-
         const data = format.split(UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER);
 
         let ret;
@@ -577,7 +624,6 @@ class UnitDateConvertor {
      * @return {string} výsledný řetězec
      */
     static convertToken(format, unitdate, first, allow) {
-
         if (format === '') {
             return format;
         }
@@ -716,12 +762,12 @@ class UnitDateConvertor {
         if (first) {
             if (unitdate.valueFrom != null) {
                 const date = DT.parse(unitdate.valueFrom);
-                return format.replace(UnitDateConvertor.CENTURY, (date.getYear() / 100 + 1) + '. st.');
+                return format.replace(UnitDateConvertor.CENTURY, date.getYear() / 100 + 1 + '. st.');
             }
         } else {
             if (unitdate.valueTo != null) {
                 const date = DT.parse(unitdate.valueTo);
-                return format.replace(UnitDateConvertor.CENTURY, (date.getYear() / 100) + '. st.');
+                return format.replace(UnitDateConvertor.CENTURY, date.getYear() / 100 + '. st.');
             }
         }
         return format;
@@ -734,7 +780,6 @@ class UnitDateConvertor {
      * @param unitdate doplňovaný objekt
      */
     static parseInterval(input, unitdate) {
-
         let data;
         if (input.indexOf(UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER) !== -1) {
             data = input.split(UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER);
@@ -743,7 +788,6 @@ class UnitDateConvertor {
         } else {
             data = null;
         }
-
 
         if (data.length != 2) {
             throw new Exception('Neplatný interval: ' + input);
@@ -795,14 +839,16 @@ class UnitDateConvertor {
      * @return {Token} výsledný token
      */
     static parseExpression(expression, unitdate) {
-
         if (expression.match(UnitDateConvertor.EXP_CENTURY)) {
             return UnitDateConvertor.parseCentury(expression, unitdate);
         } else if (expression.match(UnitDateConvertor.EXP_YEAR)) {
             return UnitDateConvertor.parseYear(expression, unitdate);
         } else if (UnitDateConvertor.tryParseDate(DT.FORMATS.YEAR_MONTH, expression)) {
             return UnitDateConvertor.parseYearMonth(expression, unitdate);
-        } else if (UnitDateConvertor.tryParseDate(DT.FORMATS.DATE_TIME, expression) || UnitDateConvertor.tryParseDate(DT.FORMATS.DATE_TIME2, expression)) {
+        } else if (
+            UnitDateConvertor.tryParseDate(DT.FORMATS.DATE_TIME, expression) ||
+            UnitDateConvertor.tryParseDate(DT.FORMATS.DATE_TIME2, expression)
+        ) {
             return UnitDateConvertor.parseDateTime(expression, unitdate);
         } else if (UnitDateConvertor.tryParseDate(DT.FORMATS.DATE, expression)) {
             return UnitDateConvertor.parseDate(expression, unitdate);
@@ -925,7 +971,6 @@ class UnitDateConvertor {
         unitdate.formatAppend(UnitDateConvertor.CENTURY);
         const token = new Token();
         try {
-
             const matcher = centuryString.match(UnitDateConvertor.EXP_CENTURY);
 
             let c;
@@ -940,7 +985,6 @@ class UnitDateConvertor {
             token.dateTo = new DT();
             token.dateTo.setDateArray([c * 100, 12, 31, 23, 59, 59]);
             token.estimate = true;
-
         } catch (e) {
             console.error(e);
             throw e;
@@ -971,9 +1015,11 @@ class UnitDateConvertor {
      * @return {boolean} - jedná se o interval
      */
     static isInterval(input) {
-        return input.indexOf(UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER) !== -1 || input.indexOf(UnitDateConvertor.ESTIMATE_INTERVAL_DELIMITER) !== -1;
+        return (
+            input.indexOf(UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER) !== -1 ||
+            input.indexOf(UnitDateConvertor.ESTIMATE_INTERVAL_DELIMITER) !== -1
+        );
     }
-
 }
 
 /**

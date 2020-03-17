@@ -5,7 +5,6 @@ import {getScrollbarWidth} from 'components/Utils.jsx';
 import classNames from 'classnames';
 import './FloatingMenu.scss';
 
-
 import $ from 'jquery';
 
 export default class FloatingMenu extends React.PureComponent {
@@ -21,9 +20,8 @@ export default class FloatingMenu extends React.PureComponent {
 
     static defaultProps = {
         shouldUpdate: true,
-        closeMenu: () => {
-        },
-        coordinates: { x: 0, y: 0 },
+        closeMenu: () => {},
+        coordinates: {x: 0, y: 0},
     };
 
     constructor(props) {
@@ -46,8 +44,8 @@ export default class FloatingMenu extends React.PureComponent {
         }
     };
 
-    handleDocumentClick = (e) => {
-        const { closeMenu } = this.props;
+    handleDocumentClick = e => {
+        const {closeMenu} = this.props;
         // element relative to which the menu is placed
         const origin = ReactDOM.findDOMNode(this.props.target);
         // the menu element
@@ -74,7 +72,7 @@ export default class FloatingMenu extends React.PureComponent {
      * @param {object} origin
      * @return {object}
      */
-    getElementRelativeScreenConstraints = (originRect) => {
+    getElementRelativeScreenConstraints = originRect => {
         const screen = $(document);
         const originOffset = this.getRectScreenOffset(originRect);
         var maxHeight = originOffset.bottom < originOffset.top ? originOffset.top : originOffset.bottom;
@@ -96,7 +94,7 @@ export default class FloatingMenu extends React.PureComponent {
      * @return {object}
      */
     getConstrainedElementSize = (element, constraints) => {
-        const { maxWidth, maxHeight, minWidth, minHeight } = constraints;
+        const {maxWidth, maxHeight, minWidth, minHeight} = constraints;
         let scrollbarWidth = getScrollbarWidth();
         let height = element.getBoundingClientRect().height;
         let width = element.getBoundingClientRect().width;
@@ -133,7 +131,7 @@ export default class FloatingMenu extends React.PureComponent {
      * @param {object} nodeRect
      * @return {object}
      */
-    getRectScreenOffset = (nodeRect) => {
+    getRectScreenOffset = nodeRect => {
         const screen = $(document);
         return {
             top: nodeRect.top,
@@ -147,8 +145,8 @@ export default class FloatingMenu extends React.PureComponent {
      * Nastaví automatickou velikost elementu
      * @param {object} element
      */
-    resetElementSize = (element) => {
-        $(element).css({ height: 'auto', width: 'auto' });
+    resetElementSize = element => {
+        $(element).css({height: 'auto', width: 'auto'});
     };
 
     /**
@@ -160,12 +158,13 @@ export default class FloatingMenu extends React.PureComponent {
         const originOffset = this.getRectScreenOffset(rect);
         var placement = {};
 
-        if (size.width > (originOffset.right + rect.width)) {
+        if (size.width > originOffset.right + rect.width) {
             placement.right = 0;
         } else {
             placement.left = originOffset.left + 'px';
         }
-        if (originOffset.bottom < originOffset.top) { // nevejde se dolu, dáme ho nahoru
+        if (originOffset.bottom < originOffset.top) {
+            // nevejde se dolu, dáme ho nahoru
             placement.bottom = originOffset.bottom + rect.height + 'px';
         } else {
             placement.top = rect.bottom + 'px';
@@ -185,7 +184,7 @@ export default class FloatingMenu extends React.PureComponent {
     };
 
     setMenuPositions() {
-        const { coordinates, focusable } = this.props;
+        const {coordinates, focusable} = this.props;
         const targetNode = ReactDOM.findDOMNode(this.props.target);
         const containerNode = ReactDOM.findDOMNode(this.menu);
         let originRect = this.getRectFromCoordinates(coordinates.x, coordinates.y);
@@ -214,17 +213,22 @@ export default class FloatingMenu extends React.PureComponent {
     }
 
     render() {
-        const { children, onMouseDown, onMouseUp } = this.props;
+        const {children, onMouseDown, onMouseUp} = this.props;
 
         let cls = classNames({
             'floating-menu': true,
-            'active': true,
+            active: true,
         });
 
         return (
-            <div ref={(ref) => {
-                this.menu = ref;
-            }} className={cls} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
+            <div
+                ref={ref => {
+                    this.menu = ref;
+                }}
+                className={cls}
+                onMouseDown={onMouseDown}
+                onMouseUp={onMouseUp}
+            >
                 {children}
             </div>
         );

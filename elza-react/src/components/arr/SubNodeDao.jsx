@@ -31,28 +31,41 @@ class SubNodeDao extends AbstractReactComponent {
         let daoResults = [];
 
         if (dao.url) {
-            daoResults.push(<div className="link"><a target="_blank" rel="noopener noreferrer"
-                                                     href={dao.url}>{dao.label} - {dao.fileCount} {i18n(filesLabel)}</a>
-            </div>);
+            daoResults.push(
+                <div className="link">
+                    <a target="_blank" rel="noopener noreferrer" href={dao.url}>
+                        {dao.label} - {dao.fileCount} {i18n(filesLabel)}
+                    </a>
+                </div>,
+            );
         } else {
-            daoResults.push(<div className="link">{dao.label} - {dao.fileCount} {i18n(filesLabel)}</div>);
+            daoResults.push(
+                <div className="link">
+                    {dao.label} - {dao.fileCount} {i18n(filesLabel)}
+                </div>,
+            );
         }
 
         let actions = [];
-        actions.push(<Button onClick={() => {
-            this.handleShowDetailOne(dao);
-        }} title={i18n('subNodeDao.dao.action.showDetailOne')}><Icon glyph='fa-eye'/></Button>);
+        actions.push(
+            <Button
+                onClick={() => {
+                    this.handleShowDetailOne(dao);
+                }}
+                title={i18n('subNodeDao.dao.action.showDetailOne')}
+            >
+                <Icon glyph="fa-eye" />
+            </Button>,
+        );
         daoResults.push(<div className="actions">{actions}</div>);
 
-        return <div className='links'>{daoResults}</div>;
+        return <div className="links">{daoResults}</div>;
     };
 
     renderForm = () => {
         const {daos} = this.props;
 
-        return <div className="dao-form">
-            {daos.data.map(this.renderDao)}
-        </div>;
+        return <div className="dao-form">{daos.data.map(this.renderDao)}</div>;
     };
 
     handleShowDetailAll = () => {
@@ -62,27 +75,20 @@ class SubNodeDao extends AbstractReactComponent {
             modalDialogShow(
                 this,
                 i18n('subNodeDao.dao.title.node'),
-                <NodeDaosForm
-                    readMode={readMode}
-                    nodeId={selectedSubNodeId}
-                />,
+                <NodeDaosForm readMode={readMode} nodeId={selectedSubNodeId} />,
                 'dialog-lg node-dao-dialog',
             ),
         );
     };
 
-    handleShowDetailOne = (dao) => {
+    handleShowDetailOne = dao => {
         const {fund, selectedSubNodeId, readMode} = this.props;
 
         this.props.dispatch(
             modalDialogShow(
                 this,
                 i18n('subNodeDao.dao.title.node'),
-                <NodeDaosForm
-                    readMode={readMode}
-                    nodeId={selectedSubNodeId}
-                    daoId={dao.id}
-                />,
+                <NodeDaosForm readMode={readMode} nodeId={selectedSubNodeId} daoId={dao.id} />,
                 'dialog-lg node-dao-dialog',
             ),
         );
@@ -91,13 +97,19 @@ class SubNodeDao extends AbstractReactComponent {
     render() {
         const {daos} = this.props;
 
-        return daos.data.length > 0 && <div className='node-dao'>
-            <div className='node-dao-title'>{i18n('subNodeDao.title')}</div>
-            <div className="actions"><Button onClick={this.handleShowDetailAll}
-                                             title={i18n('subNodeDao.dao.action.showDetailAll')}><Icon glyph='fa-eye'/></Button>
-            </div>
-            {daos.isFetching ? <HorizontalLoader/> : this.renderForm()}
-        </div>;
+        return (
+            daos.data.length > 0 && (
+                <div className="node-dao">
+                    <div className="node-dao-title">{i18n('subNodeDao.title')}</div>
+                    <div className="actions">
+                        <Button onClick={this.handleShowDetailAll} title={i18n('subNodeDao.dao.action.showDetailAll')}>
+                            <Icon glyph="fa-eye" />
+                        </Button>
+                    </div>
+                    {daos.isFetching ? <HorizontalLoader /> : this.renderForm()}
+                </div>
+            )
+        );
     }
 }
 

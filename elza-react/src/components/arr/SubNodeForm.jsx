@@ -88,17 +88,19 @@ class SubNodeForm extends AbstractReactComponent {
         if (this.state !== nextState) {
             return true;
         } else {
-            return !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, SUB_NODE_FORM_CMP)
-                || !objectEqualsDiff(this.props.descItemCopyFromPrevEnabled, nextProps.descItemCopyFromPrevEnabled)
-                || !objectEqualsDiff(this.props.nodeSetting, nextProps.nodeSetting)
-                || !objectEqualsDiff(this.props.readMode, nextProps.readMode);
+            return (
+                !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, SUB_NODE_FORM_CMP) ||
+                !objectEqualsDiff(this.props.descItemCopyFromPrevEnabled, nextProps.descItemCopyFromPrevEnabled) ||
+                !objectEqualsDiff(this.props.nodeSetting, nextProps.nodeSetting) ||
+                !objectEqualsDiff(this.props.readMode, nextProps.readMode)
+            );
         }
     }
 
     componentDidMount() {
         this.trySetFocus(this.props);
 
-        const { subNodeForm } = this.props;
+        const {subNodeForm} = this.props;
         const unusedItemTypeIds = subNodeForm.unusedItemTypeIds;
         this.setState({
             unusedItemTypeIds: unusedItemTypeIds,
@@ -128,11 +130,12 @@ class SubNodeForm extends AbstractReactComponent {
     }
 
     trySetFocus(props) {
-        const { focus } = props;
+        const {focus} = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, FOCUS_KEYS.ARR, 2, 'subNodeForm')) {
-                if (focus.item) {   // položka
+                if (focus.item) {
+                    // položka
                     this.setState({}, () => {
                         const ref = this.refs['descItemType' + focus.item.descItemTypeId];
                         if (ref) {
@@ -141,7 +144,8 @@ class SubNodeForm extends AbstractReactComponent {
                         }
                         focusWasSet();
                     });
-                } else {    // obecně formulář
+                } else {
+                    // obecně formulář
                     this.setState({}, () => {
                         const el = ReactDOM.findDOMNode(this.refs.nodeForm);
                         if (el) {
@@ -154,8 +158,7 @@ class SubNodeForm extends AbstractReactComponent {
         }
     }
 
-    handleShortcuts(action) {
-    }
+    handleShortcuts(action) {}
 
     /**
      * Renderování skupiny atributů.
@@ -165,11 +168,12 @@ class SubNodeForm extends AbstractReactComponent {
      * @return {Object} view
      */
     renderDescItemGroup(descItemGroup, descItemGroupIndex, nodeSetting) {
-        const { singleDescItemTypeEdit, singleDescItemTypeId } = this.props;
+        const {singleDescItemTypeEdit, singleDescItemTypeId} = this.props;
 
         const descItemTypes = [];
         descItemGroup.descItemTypes.forEach((descItemType, descItemTypeIndex) => {
-            const render = !singleDescItemTypeEdit || (singleDescItemTypeEdit && singleDescItemTypeId === descItemType.id);
+            const render =
+                !singleDescItemTypeEdit || (singleDescItemTypeEdit && singleDescItemTypeId === descItemType.id);
 
             if (render) {
                 const i = this.renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting);
@@ -187,13 +191,10 @@ class SubNodeForm extends AbstractReactComponent {
 
         return (
             <div key={'type-' + descItemGroup.code + '-' + descItemGroupIndex} className={cls}>
-                <div className='desc-item-types'>
-                    {descItemTypes}
-                </div>
+                <div className="desc-item-types">{descItemTypes}</div>
             </div>
         );
     }
-
 
     /**
      * Odebrání hodnoty atributu.
@@ -211,32 +212,46 @@ class SubNodeForm extends AbstractReactComponent {
         // Focus na následující hodnotu, pokud existuje, jinak na předchozí hodnotu, pokud existuje, jinak obecně na descItemType (reálně se nastaví na první hodnotu daného atributu)
         // Focus musíme zjišťovat před DISPATCH formActions.fundSubNodeFormValueDelete, jinak bychom neměli ve formData správná data, protože ty nejsou immutable!
         let setFocusFunc;
-        const { subNodeForm: { formData } } = this.props;
+        const {
+            subNodeForm: {formData},
+        } = this.props;
         const descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex];
-        if (descItemIndex + 1 < descItemType.descItems.length) {    // následující hodnota
+        if (descItemIndex + 1 < descItemType.descItems.length) {
+            // následující hodnota
             let focusDescItem = descItemType.descItems[descItemIndex + 1];
-            setFocusFunc = () => setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
-                descItemTypeId: descItemType.id,
-                descItemObjectId: focusDescItem.descItemObjectId,
-                descItemIndex: descItemIndex,
-            });
-        } else if (descItemIndex > 0) { // předchozí hodnota
+            setFocusFunc = () =>
+                setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
+                    descItemTypeId: descItemType.id,
+                    descItemObjectId: focusDescItem.descItemObjectId,
+                    descItemIndex: descItemIndex,
+                });
+        } else if (descItemIndex > 0) {
+            // předchozí hodnota
             let focusDescItem = descItemType.descItems[descItemIndex - 1];
-            setFocusFunc = () => setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
-                descItemTypeId: descItemType.id,
-                descItemObjectId: focusDescItem.descItemObjectId,
-                descItemIndex: descItemIndex - 1,
-            });
-        } else {    // obecně descItemType
-            setFocusFunc = () => setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
-                descItemTypeId: descItemType.id,
-                descItemObjectId: null,
-                descItemIndex: null,
-            });
+            setFocusFunc = () =>
+                setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
+                    descItemTypeId: descItemType.id,
+                    descItemObjectId: focusDescItem.descItemObjectId,
+                    descItemIndex: descItemIndex - 1,
+                });
+        } else {
+            // obecně descItemType
+            setFocusFunc = () =>
+                setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
+                    descItemTypeId: descItemType.id,
+                    descItemObjectId: null,
+                    descItemIndex: null,
+                });
         }
 
         // Smazání hodnoty
-        this.props.dispatch(this.props.formActions.fundSubNodeFormValueDelete(this.props.versionId, this.props.routingKey, valueLocation));
+        this.props.dispatch(
+            this.props.formActions.fundSubNodeFormValueDelete(
+                this.props.versionId,
+                this.props.routingKey,
+                valueLocation,
+            ),
+        );
 
         // Nyní pošleme focus
         this.props.dispatch(setFocusFunc());
@@ -248,13 +263,20 @@ class SubNodeForm extends AbstractReactComponent {
             descItemTypeIndex,
         };
 
-        const { subNodeForm: { formData }, versionId, routingKey } = this.props;
+        const {
+            subNodeForm: {formData},
+            versionId,
+            routingKey,
+        } = this.props;
         const descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex];
 
-        const msgI18n = descItemType.calSt === 1 ? 'subNodeForm.calculate-auto.confirm' : 'subNodeForm.calculate-user.confirm';
+        const msgI18n =
+            descItemType.calSt === 1 ? 'subNodeForm.calculate-auto.confirm' : 'subNodeForm.calculate-user.confirm';
 
         if (window.confirm(i18n(msgI18n))) {
-            this.props.dispatch(this.props.formActions.switchOutputCalculating(versionId, descItemType.id, routingKey, valueLocation));
+            this.props.dispatch(
+                this.props.formActions.switchOutputCalculating(versionId, descItemType.id, routingKey, valueLocation),
+            );
         }
     }
 
@@ -272,35 +294,48 @@ class SubNodeForm extends AbstractReactComponent {
         // Focus na následující prvek, pokud existuje, jinak na předchozí, pokud existuje, jinak na accordion
         // Focus musíme zjišťovat před DISPATCH formActions.fundSubNodeFormDescItemTypeDelete, jinak bychom neměli ve formData správná data, protože ty nejsou immutable!
         let setFocusFunc;
-        const { subNodeForm: { formData } } = this.props;
+        const {
+            subNodeForm: {formData},
+        } = this.props;
         const descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex];
         const types = this.getFlatDescItemTypes(true);
         const index = indexById(types, descItemType.id);
         if (index + 1 < types.length) {
             let focusDescItemType = types[index + 1];
-            setFocusFunc = () => setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
-                descItemTypeId: focusDescItemType.id,
-                descItemObjectId: null,
-            });
+            setFocusFunc = () =>
+                setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
+                    descItemTypeId: focusDescItemType.id,
+                    descItemObjectId: null,
+                });
         } else if (index > 0) {
             let focusDescItemType = types[index - 1];
-            setFocusFunc = () => setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
-                descItemTypeId: focusDescItemType.id,
-                descItemObjectId: null,
-            });
-        } else {    // nemůžeme žádný prvek najít, focus dostane accordion
+            setFocusFunc = () =>
+                setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
+                    descItemTypeId: focusDescItemType.id,
+                    descItemObjectId: null,
+                });
+        } else {
+            // nemůžeme žádný prvek najít, focus dostane accordion
             setFocusFunc = () => setFocus(FOCUS_KEYS.ARR, 2, 'accordion');
         }
 
         // Smazání hodnoty
-        this.props.dispatch(this.props.formActions.fundSubNodeFormDescItemTypeDelete(this.props.versionId, this.props.routingKey, valueLocation));
+        this.props.dispatch(
+            this.props.formActions.fundSubNodeFormDescItemTypeDelete(
+                this.props.versionId,
+                this.props.routingKey,
+                valueLocation,
+            ),
+        );
 
         // Nyní pošleme focus
         this.props.dispatch(setFocusFunc());
     }
 
     getFlatDescItemTypes(onlyNotLocked) {
-        const { subNodeForm: { formData } } = this.props;
+        const {
+            subNodeForm: {formData},
+        } = this.props;
 
         let nodeSetting;
         if (onlyNotLocked) {
@@ -336,7 +371,9 @@ class SubNodeForm extends AbstractReactComponent {
         };
 
         // Focus na novou hodnotu
-        const { subNodeForm: { formData } } = this.props;
+        const {
+            subNodeForm: {formData},
+        } = this.props;
         const descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex];
         const index = descItemType.descItems.length;
 
@@ -345,14 +382,17 @@ class SubNodeForm extends AbstractReactComponent {
             return;
         }
 
-        const setFocusFunc = () => setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
-            descItemTypeId: descItemType.id,
-            descItemObjectId: null,
-            descItemIndex: index,
-        });
+        const setFocusFunc = () =>
+            setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
+                descItemTypeId: descItemType.id,
+                descItemObjectId: null,
+                descItemIndex: index,
+            });
 
         // Přidání hodnoty
-        this.props.dispatch(this.props.formActions.fundSubNodeFormValueAdd(this.props.versionId, this.props.routingKey, valueLocation));
+        this.props.dispatch(
+            this.props.formActions.fundSubNodeFormValueAdd(this.props.versionId, this.props.routingKey, valueLocation),
+        );
 
         // Nyní pošleme focus
         this.props.dispatch(setFocusFunc());
@@ -364,7 +404,14 @@ class SubNodeForm extends AbstractReactComponent {
      * @param file {File} soubor
      */
     handleCoordinatesUpload(descItemTypeId, file) {
-        this.props.dispatch(this.props.formActions.fundSubNodeFormValueUploadCoordinates(this.props.versionId, this.props.routingKey, descItemTypeId, file));
+        this.props.dispatch(
+            this.props.formActions.fundSubNodeFormValueUploadCoordinates(
+                this.props.versionId,
+                this.props.routingKey,
+                descItemTypeId,
+                file,
+            ),
+        );
     }
 
     /**
@@ -373,7 +420,14 @@ class SubNodeForm extends AbstractReactComponent {
      * @param file {File} soubor
      */
     handleJsonTableUpload(descItemTypeId, file) {
-        this.props.dispatch(this.props.formActions.fundSubNodeFormValueUploadCsv(this.props.versionId, this.props.routingKey, descItemTypeId, file));
+        this.props.dispatch(
+            this.props.formActions.fundSubNodeFormValueUploadCsv(
+                this.props.versionId,
+                this.props.routingKey,
+                descItemTypeId,
+                file,
+            ),
+        );
     }
 
     /**
@@ -384,7 +438,7 @@ class SubNodeForm extends AbstractReactComponent {
      * @param descItemIndex {Integer} index honodty atributu v seznamu
      */
     handleCreateRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
-        const { versionId } = this.props;
+        const {versionId} = this.props;
         const valueLocation = {
             descItemGroupIndex,
             descItemTypeIndex,
@@ -401,23 +455,32 @@ class SubNodeForm extends AbstractReactComponent {
      * @param submitType {String} typ submitu
      */
     handleCreatedRecord(valueLocation, data, submitType) {
-        const { versionId, routingKey, subNodeForm } = this.props;
+        const {versionId, routingKey, subNodeForm} = this.props;
 
         // Uložení hodnoty
-        this.props.dispatch(this.props.formActions.fundSubNodeFormValueChange(versionId, routingKey, valueLocation, data, true));
+        this.props.dispatch(
+            this.props.formActions.fundSubNodeFormValueChange(versionId, routingKey, valueLocation, data, true),
+        );
 
         // Akce po vytvoření
-        if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
+        if (submitType === 'storeAndViewDetail') {
+            // přesměrování na detail
             this.props.dispatch(registryDetailFetchIfNeeded(data.id));
             this.props.dispatch(routerNavigate('registry'));
-        } else {    // nastavení focus zpět na prvek
+        } else {
+            // nastavení focus zpět na prvek
             const formData = subNodeForm.formData;
-            const descItemType = formData.descItemGroups[valueLocation.descItemGroupIndex].descItemTypes[valueLocation.descItemTypeIndex];
-            this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
-                descItemTypeId: descItemType.id,
-                descItemObjectId: null,
-                descItemIndex: valueLocation.descItemIndex,
-            }));
+            const descItemType =
+                formData.descItemGroups[valueLocation.descItemGroupIndex].descItemTypes[
+                    valueLocation.descItemTypeIndex
+                ];
+            this.props.dispatch(
+                setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
+                    descItemTypeId: descItemType.id,
+                    descItemObjectId: null,
+                    descItemIndex: valueLocation.descItemIndex,
+                }),
+            );
         }
     }
 
@@ -430,7 +493,7 @@ class SubNodeForm extends AbstractReactComponent {
      * @param recordId {Integer} identifikátor rejstříku
      */
     handleDetailRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex, recordId) {
-        const { singleDescItemTypeEdit } = this.props;
+        const {singleDescItemTypeEdit} = this.props;
         singleDescItemTypeEdit && this.props.dispatch(modalDialogHide());
         this.props.dispatch(registryDetailFetchIfNeeded(recordId));
         this.props.dispatch(routerNavigate('registry'));
@@ -443,10 +506,12 @@ class SubNodeForm extends AbstractReactComponent {
      * @param data          obal
      */
     handleCreatedPacket(valueLocation, data) {
-        const { versionId, routingKey } = this.props;
+        const {versionId, routingKey} = this.props;
 
         // Uložení hodnoty
-        this.props.dispatch(this.props.formActions.fundSubNodeFormValueChange(versionId, routingKey, valueLocation, data, true));
+        this.props.dispatch(
+            this.props.formActions.fundSubNodeFormValueChange(versionId, routingKey, valueLocation, data, true),
+        );
     }
 
     /**
@@ -458,7 +523,7 @@ class SubNodeForm extends AbstractReactComponent {
      * @param partyTypeId {Integer} identifikátor typu osoby
      */
     handleCreateParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyTypeId) {
-        const { versionId } = this.props;
+        const {versionId} = this.props;
         const valueLocation = {
             descItemGroupIndex,
             descItemTypeIndex,
@@ -481,8 +546,13 @@ class SubNodeForm extends AbstractReactComponent {
             descItemIndex,
         };
 
-        this.props.dispatch(modalDialogShow(this, i18n('dms.file.title.add'), <AddFileForm
-            onSubmitForm={this.handleCreateFileFormSubmit.bind(this, valueLocation)}/>));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('dms.file.title.add'),
+                <AddFileForm onSubmitForm={this.handleCreateFileFormSubmit.bind(this, valueLocation)} />,
+            ),
+        );
     }
 
     /**
@@ -492,7 +562,7 @@ class SubNodeForm extends AbstractReactComponent {
      * @param data          soubor
      */
     handleCreateFileFormSubmit(valueLocation, data) {
-        const { fundId } = this.props;
+        const {fundId} = this.props;
         return this.props.dispatch(fundFilesCreate(fundId, data, this.handleCreatedFile.bind(this, valueLocation)));
     }
 
@@ -503,10 +573,12 @@ class SubNodeForm extends AbstractReactComponent {
      * @param data          soubor
      */
     handleCreatedFile(valueLocation, data) {
-        const { versionId, routingKey } = this.props;
+        const {versionId, routingKey} = this.props;
 
         // Uložení hodnoty
-        this.props.dispatch(this.props.formActions.fundSubNodeFormValueChange(versionId, routingKey, valueLocation, data, true));
+        this.props.dispatch(
+            this.props.formActions.fundSubNodeFormValueChange(versionId, routingKey, valueLocation, data, true),
+        );
     }
 
     /**
@@ -515,7 +587,7 @@ class SubNodeForm extends AbstractReactComponent {
      * @param value
      */
     enableIfDisabled(type, value) {
-        const { fundId, userDetail } = this.props;
+        const {fundId, userDetail} = this.props;
         let settings = getOneSettings(userDetail.settings, type, 'FUND', fundId);
         let data = settings.value ? JSON.parse(settings.value) : null;
         const enabled = data !== null ? data[value] : true;
@@ -535,7 +607,6 @@ class SubNodeForm extends AbstractReactComponent {
         }
     }
 
-
     /**
      * Zobrazení souborů FA.
      *
@@ -553,25 +624,33 @@ class SubNodeForm extends AbstractReactComponent {
         this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 3, null, null));
     }
 
-
     handleCreatedParty(valueLocation, data, submitType) {
-        const { versionId, routingKey, fund, subNodeForm } = this.props;
+        const {versionId, routingKey, fund, subNodeForm} = this.props;
 
         // Uložení hodnoty
-        this.props.dispatch(this.props.formActions.fundSubNodeFormValueChange(versionId, routingKey, valueLocation, data, true));
+        this.props.dispatch(
+            this.props.formActions.fundSubNodeFormValueChange(versionId, routingKey, valueLocation, data, true),
+        );
 
         // Akce po vytvoření
-        if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
+        if (submitType === 'storeAndViewDetail') {
+            // přesměrování na detail
             this.props.dispatch(partyDetailFetchIfNeeded(data.id, fund));
             this.props.dispatch(routerNavigate('party'));
-        } else {    // nastavení focus zpět na prvek
+        } else {
+            // nastavení focus zpět na prvek
             const formData = subNodeForm.formData;
-            const descItemType = formData.descItemGroups[valueLocation.descItemGroupIndex].descItemTypes[valueLocation.descItemTypeIndex];
-            this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
-                descItemTypeId: descItemType.id,
-                descItemObjectId: null,
-                descItemIndex: valueLocation.descItemIndex,
-            }));
+            const descItemType =
+                formData.descItemGroups[valueLocation.descItemGroupIndex].descItemTypes[
+                    valueLocation.descItemTypeIndex
+                ];
+            this.props.dispatch(
+                setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
+                    descItemTypeId: descItemType.id,
+                    descItemObjectId: null,
+                    descItemIndex: valueLocation.descItemIndex,
+                }),
+            );
         }
     }
 
@@ -584,7 +663,7 @@ class SubNodeForm extends AbstractReactComponent {
      * @param partyId {Integer} identifikátor osoby
      */
     handleDetailParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyId) {
-        const { fund, singleDescItemTypeEdit } = this.props;
+        const {fund, singleDescItemTypeEdit} = this.props;
         singleDescItemTypeEdit && this.props.dispatch(modalDialogHide());
         this.props.dispatch(partyDetailFetchIfNeeded(partyId, fund));
         this.props.dispatch(routerNavigate('party'));
@@ -603,7 +682,9 @@ class SubNodeForm extends AbstractReactComponent {
             descItemIndex,
         };
 
-        this.props.dispatch(this.props.formActions.fundSubNodeFormValueBlur(this.props.versionId, this.props.routingKey, valueLocation));
+        this.props.dispatch(
+            this.props.formActions.fundSubNodeFormValueBlur(this.props.versionId, this.props.routingKey, valueLocation),
+        );
     }
 
     /**
@@ -619,7 +700,13 @@ class SubNodeForm extends AbstractReactComponent {
             descItemIndex,
         };
 
-        this.props.dispatch(this.props.formActions.fundSubNodeFormValueFocus(this.props.versionId, this.props.routingKey, valueLocation));
+        this.props.dispatch(
+            this.props.formActions.fundSubNodeFormValueFocus(
+                this.props.versionId,
+                this.props.routingKey,
+                valueLocation,
+            ),
+        );
     }
 
     /**
@@ -637,10 +724,26 @@ class SubNodeForm extends AbstractReactComponent {
         };
 
         // Updates the value in form data.
-        this.props.dispatch(this.props.formActions.fundSubNodeFormValueChange(this.props.versionId, this.props.routingKey, valueLocation, value, false));
+        this.props.dispatch(
+            this.props.formActions.fundSubNodeFormValueChange(
+                this.props.versionId,
+                this.props.routingKey,
+                valueLocation,
+                value,
+                false,
+            ),
+        );
         // Updates the error value in descItem.
         // Only when error exists
-        error && this.props.dispatch(this.props.formActions._fundSubNodeFormValueValidateResult(this.props.versionId, this.props.routingKey, valueLocation, error));
+        error &&
+            this.props.dispatch(
+                this.props.formActions._fundSubNodeFormValueValidateResult(
+                    this.props.versionId,
+                    this.props.routingKey,
+                    valueLocation,
+                    error,
+                ),
+            );
     }
 
     /**
@@ -658,7 +761,14 @@ class SubNodeForm extends AbstractReactComponent {
             descItemIndex,
         };
 
-        this.props.dispatch(this.props.formActions.fundSubNodeFormValueChangePosition(this.props.versionId, this.props.routingKey, valueLocation, newDescItemIndex));
+        this.props.dispatch(
+            this.props.formActions.fundSubNodeFormValueChangePosition(
+                this.props.versionId,
+                this.props.routingKey,
+                valueLocation,
+                newDescItemIndex,
+            ),
+        );
     }
 
     /**
@@ -675,7 +785,14 @@ class SubNodeForm extends AbstractReactComponent {
             descItemIndex,
         };
 
-        this.props.dispatch(this.props.formActions.fundSubNodeFormValueChangeSpec(this.props.versionId, this.props.routingKey, valueLocation, value));
+        this.props.dispatch(
+            this.props.formActions.fundSubNodeFormValueChangeSpec(
+                this.props.versionId,
+                this.props.routingKey,
+                valueLocation,
+                value,
+            ),
+        );
     }
 
     isDescItemLocked(nodeSetting, descItemTypeId) {
@@ -692,13 +809,13 @@ class SubNodeForm extends AbstractReactComponent {
     }
 
     handleCoordinatesDownload(objectId) {
-        const { versionId } = this.props;
+        const {versionId} = this.props;
 
         this.props.dispatch(downloadFile(UrlFactory.exportArrCoordinate(objectId, versionId)));
     }
 
     handleJsonTableDownload(objectId) {
-        const { versionId, typePrefix } = this.props;
+        const {versionId, typePrefix} = this.props;
         this.props.dispatch(downloadFile(UrlFactory.exportItemCsvExport(objectId, versionId, typePrefix)));
     }
 
@@ -740,9 +857,22 @@ class SubNodeForm extends AbstractReactComponent {
      */
     renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting) {
         const {
-                  fundId, subNodeForm, descItemCopyFromPrevEnabled, singleDescItemTypeEdit, structureTypes, calendarTypes, closed,
-                  showNodeAddons, conformityInfo, versionId, readMode, userDetail, arrRegion, typePrefix, arrPerm,
-              } = this.props;
+            fundId,
+            subNodeForm,
+            descItemCopyFromPrevEnabled,
+            singleDescItemTypeEdit,
+            structureTypes,
+            calendarTypes,
+            closed,
+            showNodeAddons,
+            conformityInfo,
+            versionId,
+            readMode,
+            userDetail,
+            arrRegion,
+            typePrefix,
+            arrPerm,
+        } = this.props;
 
         const refType = subNodeForm.refTypesMap[descItemType.id];
         const infoType = subNodeForm.infoTypesMap[descItemType.id];
@@ -787,54 +917,64 @@ class SubNodeForm extends AbstractReactComponent {
             }
         });
 
-        return <DescItemType key={descItemType.id}
-                             typePrefix={typePrefix}
-                             ref={'descItemType' + descItemType.id}
-                             descItemType={descItemType}
-                             singleDescItemTypeEdit={singleDescItemTypeEdit}
-                             refType={refType}
-                             infoType={infoType}
-                             rulDataType={rulDataType}
-                             calendarTypes={calendarTypes}
-                             structureTypes={structureTypes}
-                             onCreateParty={this.handleCreateParty.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                             onDetailParty={this.handleDetailParty.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                             onCreateRecord={this.handleCreateRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                             onDetailRecord={this.handleDetailRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                             onCreateFile={this.handleCreateFile.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                             onFundFiles={this.handleFundFiles.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                             onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                             onCoordinatesUpload={this.handleCoordinatesUpload.bind(this, descItemType.id)}
-                             onJsonTableUpload={this.handleJsonTableUpload.bind(this, descItemType.id)}
-                             onDescItemRemove={this.handleDescItemRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                             onCoordinatesDownload={this.handleCoordinatesDownload.bind(this)}
-                             onJsonTableDownload={this.handleJsonTableDownload.bind(this)}
-                             onChange={this.handleChange.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                             onChangePosition={this.handleChangePosition.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                             onChangeSpec={this.handleChangeSpec.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                             onBlur={this.handleBlur.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                             onFocus={this.handleFocus.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                             onDescItemTypeRemove={this.handleDescItemTypeRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                             onSwitchCalculating={this.handleSwitchCalculating.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                             onDescItemTypeLock={this.handleDescItemTypeLock.bind(this, descItemType.id)}
-                             onDescItemTypeCopy={this.handleDescItemTypeCopy.bind(this, descItemType.id)}
-                             onDescItemTypeCopyFromPrev={this.handleDescItemTypeCopyFromPrev.bind(this, descItemGroupIndex, descItemTypeIndex, descItemType.id)}
-                             showNodeAddons={showNodeAddons}
-                             locked={singleDescItemTypeEdit ? false : locked}
-                             closed={closed}
-                             copy={copy}
-                             conformityInfo={conformityInfo}
-                             descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
-                             versionId={versionId}
-                             fundId={fundId}
-                             readMode={readMode}
-                             arrPerm={arrPerm || (subNodeForm.data && subNodeForm.data.arrPerm)}
-                             strictMode={strictMode}
-                             notIdentified={notIdentified}
-                             onDescItemNotIdentified={(descItemIndex, descItem) => this.handleDescItemNotIdentified(descItemGroupIndex, descItemTypeIndex, descItemIndex, descItem)}
-                             customActions={this.props.customActions && this.props.customActions(rulDataType.code, infoType)}
-                             descItemFactory={this.props.descItemFactory}
-        />;
+        return (
+            <DescItemType
+                key={descItemType.id}
+                typePrefix={typePrefix}
+                ref={'descItemType' + descItemType.id}
+                descItemType={descItemType}
+                singleDescItemTypeEdit={singleDescItemTypeEdit}
+                refType={refType}
+                infoType={infoType}
+                rulDataType={rulDataType}
+                calendarTypes={calendarTypes}
+                structureTypes={structureTypes}
+                onCreateParty={this.handleCreateParty.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onDetailParty={this.handleDetailParty.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onCreateRecord={this.handleCreateRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onDetailRecord={this.handleDetailRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onCreateFile={this.handleCreateFile.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onFundFiles={this.handleFundFiles.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onCoordinatesUpload={this.handleCoordinatesUpload.bind(this, descItemType.id)}
+                onJsonTableUpload={this.handleJsonTableUpload.bind(this, descItemType.id)}
+                onDescItemRemove={this.handleDescItemRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onCoordinatesDownload={this.handleCoordinatesDownload.bind(this)}
+                onJsonTableDownload={this.handleJsonTableDownload.bind(this)}
+                onChange={this.handleChange.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onChangePosition={this.handleChangePosition.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onChangeSpec={this.handleChangeSpec.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onBlur={this.handleBlur.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onFocus={this.handleFocus.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onDescItemTypeRemove={this.handleDescItemTypeRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onSwitchCalculating={this.handleSwitchCalculating.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onDescItemTypeLock={this.handleDescItemTypeLock.bind(this, descItemType.id)}
+                onDescItemTypeCopy={this.handleDescItemTypeCopy.bind(this, descItemType.id)}
+                onDescItemTypeCopyFromPrev={this.handleDescItemTypeCopyFromPrev.bind(
+                    this,
+                    descItemGroupIndex,
+                    descItemTypeIndex,
+                    descItemType.id,
+                )}
+                showNodeAddons={showNodeAddons}
+                locked={singleDescItemTypeEdit ? false : locked}
+                closed={closed}
+                copy={copy}
+                conformityInfo={conformityInfo}
+                descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
+                versionId={versionId}
+                fundId={fundId}
+                readMode={readMode}
+                arrPerm={arrPerm || (subNodeForm.data && subNodeForm.data.arrPerm)}
+                strictMode={strictMode}
+                notIdentified={notIdentified}
+                onDescItemNotIdentified={(descItemIndex, descItem) =>
+                    this.handleDescItemNotIdentified(descItemGroupIndex, descItemTypeIndex, descItemIndex, descItem)
+                }
+                customActions={this.props.customActions && this.props.customActions(rulDataType.code, infoType)}
+                descItemFactory={this.props.descItemFactory}
+            />
+        );
     }
 
     handleDescItemNotIdentified = (descItemGroupIndex, descItemTypeIndex, descItemIndex, descItem) => {
@@ -843,56 +983,70 @@ class SubNodeForm extends AbstractReactComponent {
             descItemTypeIndex,
             descItemIndex,
         };
-        this.props.dispatch(this.props.formActions.fundSubNodeFormValueNotIdentified(this.props.versionId, this.props.routingKey, valueLocation, descItem));
+        this.props.dispatch(
+            this.props.formActions.fundSubNodeFormValueNotIdentified(
+                this.props.versionId,
+                this.props.routingKey,
+                valueLocation,
+                descItem,
+            ),
+        );
     };
 
     handleAddUnusedItem = (itemTypeId, index) => {
-        const { formActions, versionId } = this.props;
-        const { unusedItemTypeIds } = this.state;
+        const {formActions, versionId} = this.props;
+        const {unusedItemTypeIds} = this.state;
 
         this.props.dispatch(formActions.addCalculatedDescItem(versionId, itemTypeId, true)).then(() => {
             this.setState({
-                unusedItemTypeIds: [
-                    ...unusedItemTypeIds.slice(0, index),
-                    ...unusedItemTypeIds.slice(index + 1),
-                ],
+                unusedItemTypeIds: [...unusedItemTypeIds.slice(0, index), ...unusedItemTypeIds.slice(index + 1)],
             });
         });
     };
 
     render() {
-        const { nodeSetting, subNodeForm, closed, readMode } = this.props;
-        const { unusedItemTypeIds } = this.state;
+        const {nodeSetting, subNodeForm, closed, readMode} = this.props;
+        const {unusedItemTypeIds} = this.state;
         const formData = subNodeForm.formData;
 
         console.info('{SubNodeForm}');
 
-        let unusedGeneratedItems;    // nepoužité vygenerované PP
+        let unusedGeneratedItems; // nepoužité vygenerované PP
         if (unusedItemTypeIds && unusedItemTypeIds.length > 0) {
-            unusedGeneratedItems = <Accordion>
-                <Card eventKey="1">
-                    <Card.Header>i18n("arr.output.title.unusedGeneratedItems", unusedItemTypeIds.length)</Card.Header>
-                    <Accordion.Collapse eventKey={'1'}>
-                        <Card.Body>
-                            {unusedItemTypeIds.map((itemTypeId, index) => {
-                                const refType = subNodeForm.refTypesMap[itemTypeId];
-                                if (!readMode && !closed) {
-                                    return <Button
-                                        className="add-link btn btn-link"
-                                        variant="link"
-                                        key={itemTypeId}
-                                        onClick={() => this.handleAddUnusedItem(itemTypeId, index)}
-                                    >
-                                        <Icon glyph="fa-plus"/> {refType.name}
-                                    </Button>;
-                                } else {
-                                    return <span className="space" key={itemTypeId}>{refType.name} </span>;
-                                }
-                            })}
-                        </Card.Body>
-                    </Accordion.Collapse>
-                </Card>
-            </Accordion>;
+            unusedGeneratedItems = (
+                <Accordion>
+                    <Card eventKey="1">
+                        <Card.Header>
+                            i18n("arr.output.title.unusedGeneratedItems", unusedItemTypeIds.length)
+                        </Card.Header>
+                        <Accordion.Collapse eventKey={'1'}>
+                            <Card.Body>
+                                {unusedItemTypeIds.map((itemTypeId, index) => {
+                                    const refType = subNodeForm.refTypesMap[itemTypeId];
+                                    if (!readMode && !closed) {
+                                        return (
+                                            <Button
+                                                className="add-link btn btn-link"
+                                                variant="link"
+                                                key={itemTypeId}
+                                                onClick={() => this.handleAddUnusedItem(itemTypeId, index)}
+                                            >
+                                                <Icon glyph="fa-plus" /> {refType.name}
+                                            </Button>
+                                        );
+                                    } else {
+                                        return (
+                                            <span className="space" key={itemTypeId}>
+                                                {refType.name}{' '}
+                                            </span>
+                                        );
+                                    }
+                                })}
+                            </Card.Body>
+                        </Accordion.Collapse>
+                    </Card>
+                </Accordion>
+            );
         }
 
         const descItemGroups = [];
@@ -904,9 +1058,9 @@ class SubNodeForm extends AbstractReactComponent {
         });
 
         return (
-            <div className='node-form'>
+            <div className="node-form">
                 {unusedGeneratedItems}
-                <div ref='nodeForm' className='desc-item-groups'>
+                <div ref="nodeForm" className="desc-item-groups">
                     {descItemGroups}
                 </div>
             </div>
@@ -914,8 +1068,8 @@ class SubNodeForm extends AbstractReactComponent {
     }
 }
 
-export default connect((state) => {
-    const { userDetail, arrRegion } = state;
+export default connect(state => {
+    const {userDetail, arrRegion} = state;
 
     return {
         userDetail,

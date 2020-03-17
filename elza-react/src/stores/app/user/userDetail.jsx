@@ -9,34 +9,35 @@ function hasRight(right) {
                 return true;
             }
             break;
-        case 'object': {
-            let perm = this.permissionsMap[right.type];
-            if (perm) {
-                switch (right.type) {
-                    case perms.FUND_RD:
-                    case perms.FUND_ARR:
-                    case perms.FUND_OUTPUT_WR:
-                    case perms.FUND_VER_WR:
-                    case perms.FUND_EXPORT:
-                    case perms.FUND_BA:
-                    case perms.FUND_CL_VER_WR:
-                        if (perm.fundIdsMap[right.fundId]) {
+        case 'object':
+            {
+                let perm = this.permissionsMap[right.type];
+                if (perm) {
+                    switch (right.type) {
+                        case perms.FUND_RD:
+                        case perms.FUND_ARR:
+                        case perms.FUND_OUTPUT_WR:
+                        case perms.FUND_VER_WR:
+                        case perms.FUND_EXPORT:
+                        case perms.FUND_BA:
+                        case perms.FUND_CL_VER_WR:
+                            if (perm.fundIdsMap[right.fundId]) {
+                                return true;
+                            }
+                            break;
+                        case perms.AP_SCOPE_RD:
+                        case perms.AP_SCOPE_WR:
+                        case perms.AP_CONFIRM:
+                        case perms.AP_EDIT_CONFIRMED:
+                            if (perm.scopeIdsMap[right.scopeId]) {
+                                return true;
+                            }
+                            break;
+                        default:
                             return true;
-                        }
-                        break;
-                    case perms.AP_SCOPE_RD:
-                    case perms.AP_SCOPE_WR:
-                    case perms.AP_CONFIRM:
-                    case perms.AP_EDIT_CONFIRMED:
-                        if (perm.scopeIdsMap[right.scopeId]) {
-                            return true;
-                        }
-                        break;
-                    default:
-                        return true;
+                    }
                 }
             }
-        }
             break;
         default:
             return false;
@@ -45,33 +46,27 @@ function hasRight(right) {
     return false;
 }
 
-function hasRdPage(fundId = null) {     //Zjistí zda má uživatel oprávnění číst archivní soubor
-    return hasOne.bind(this)(
-        perms.FUND_ADMIN,
-        perms.FUND_RD_ALL, { type: perms.FUND_RD, fundId },
-        perms.FUND_ARR_ALL, { type: perms.FUND_ARR, fundId },
-    );
+function hasRdPage(fundId = null) {
+    //Zjistí zda má uživatel oprávnění číst archivní soubor
+    return hasOne.bind(this)(perms.FUND_ADMIN, perms.FUND_RD_ALL, {type: perms.FUND_RD, fundId}, perms.FUND_ARR_ALL, {
+        type: perms.FUND_ARR,
+        fundId,
+    });
 }
 
-function hasArrPage(fundId = null) {    //Zjistí zda má uživatel oprávnění pořádat archivní soubor
-    return hasOne.bind(this)(
-        perms.FUND_ADMIN,
-        perms.FUND_ARR_ALL, { type: perms.FUND_ARR, fundId },
-    );
+function hasArrPage(fundId = null) {
+    //Zjistí zda má uživatel oprávnění pořádat archivní soubor
+    return hasOne.bind(this)(perms.FUND_ADMIN, perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId});
 }
 
-function hasArrOutputPage(fundId = null) {  //Zjistí zda má uživatel oprávnění vytvářet výstupy
-    return hasOne.bind(this)(
-        perms.FUND_ADMIN,
-        perms.FUND_OUTPUT_WR_ALL, { type: perms.FUND_OUTPUT_WR, fundId },
-    );
+function hasArrOutputPage(fundId = null) {
+    //Zjistí zda má uživatel oprávnění vytvářet výstupy
+    return hasOne.bind(this)(perms.FUND_ADMIN, perms.FUND_OUTPUT_WR_ALL, {type: perms.FUND_OUTPUT_WR, fundId});
 }
 
-function hasFundActionPage(fundId = null) { //Zjistí zda má uživatel oprávnění spouštět funkce
-    return hasOne.bind(this)(
-        perms.FUND_ADMIN,
-        perms.FUND_BA_ALL, { type: perms.FUND_BA, fundId },
-    );
+function hasFundActionPage(fundId = null) {
+    //Zjistí zda má uživatel oprávnění spouštět funkce
+    return hasOne.bind(this)(perms.FUND_ADMIN, perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId});
 }
 
 function isAdmin() {
@@ -97,7 +92,6 @@ function hasOne(...rights) {
 
     return false;
 }
-
 
 function hasAll(...rights) {
     if (this.permissionsMap[perms.ADMIN]) {
@@ -146,7 +140,7 @@ function userDetailInt(state, action) {
                 ...action.storageData.userDetail,
             };
         case types.USER_DETAIL_CLEAR:
-            return { ...initialState };
+            return {...initialState};
         case types.USER_DETAIL_REQUEST: {
             return {
                 ...state,
@@ -175,7 +169,6 @@ function userDetailInt(state, action) {
                 });
             }
 
-
             return {
                 ...state,
                 ...userDetail,
@@ -185,7 +178,6 @@ function userDetailInt(state, action) {
             };
         }
         case types.USER_DETAIL_RESPONSE_SETTINGS: {
-
             var settings = action.settings;
 
             return {
@@ -197,4 +189,3 @@ function userDetailInt(state, action) {
             return state;
     }
 }
-

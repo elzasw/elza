@@ -1,5 +1,5 @@
-import { WebApi } from '../../actions/index.jsx';
-import { ItemFormActions } from './ItemFormActions';
+import {WebApi} from '../../actions/index.jsx';
+import {ItemFormActions} from './ItemFormActions';
 
 interface BaseAction {
     area: string;
@@ -7,8 +7,7 @@ interface BaseAction {
 }
 
 export class ApNameFormActions extends ItemFormActions {
-
-    static AREA = "AP_NAME";
+    static AREA = 'AP_NAME';
 
     constructor() {
         super(ApNameFormActions.AREA);
@@ -20,12 +19,15 @@ export class ApNameFormActions extends ItemFormActions {
         // není podpora kešování
         const state = getState();
         const {parent} = this._getItemFormStore(state);
-        return WebApi.getAccessPointName(parent.accessPointId, parent.id).then(data => ({...data.form, parent: {id: data.objectId, accessPointId: data.accessPointId}}));
+        return WebApi.getAccessPointName(parent.accessPointId, parent.id).then(data => ({
+            ...data.form,
+            parent: {id: data.objectId, accessPointId: data.accessPointId},
+        }));
     }
 
     // @Override
     _getItemFormStore(state) {
-        return state.ap.nameItemForm
+        return state.ap.nameItemForm;
     }
 
     // @Override
@@ -35,17 +37,17 @@ export class ApNameFormActions extends ItemFormActions {
 
     // @Override
     _callCreateDescItem(parent, descItemTypeId, item) {
-        return WebApi.changeNameItems(parent.accessPointId, parent.id, [{updateOp: "CREATE", item}])
+        return WebApi.changeNameItems(parent.accessPointId, parent.id, [{updateOp: 'CREATE', item}]);
     }
 
     // @Override
     _callUpdateDescItem(parent, item) {
-        return WebApi.changeNameItems(parent.accessPointId, parent.id, [{updateOp: "UPDATE", item}]);
+        return WebApi.changeNameItems(parent.accessPointId, parent.id, [{updateOp: 'UPDATE', item}]);
     }
 
     // @Override
     _callDeleteDescItem(parent, item) {
-        return WebApi.changeNameItems(parent.accessPointId, parent.id, [{updateOp: "DELETE", item}]);
+        return WebApi.changeNameItems(parent.accessPointId, parent.id, [{updateOp: 'DELETE', item}]);
     }
 
     // @Override

@@ -12,23 +12,23 @@ export default class ListPager extends React.Component {
         prev: PropTypes.func.isRequired,
         next: PropTypes.func.isRequired,
         maxSize: PropTypes.number.isRequired,
-        totalCount: PropTypes.number.isRequired
+        totalCount: PropTypes.number.isRequired,
     };
 
     static defaultProps = {
         from: 0,
         maxSize: 0,
-        totalCount: 0
+        totalCount: 0,
     };
 
     getMax = () => {
         const {from, maxSize, totalCount} = this.props;
         let to = from + maxSize;
         return Math.min(to, totalCount);
-    }
+    };
 
     render() {
-        const { prev, next, from, totalCount } = this.props;
+        const {prev, next, from, totalCount} = this.props;
         let to = this.getMax();
 
         return (

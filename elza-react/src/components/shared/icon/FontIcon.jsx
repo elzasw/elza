@@ -18,8 +18,8 @@ class Icon extends AbstractReactComponent {
         const {glyph, className, ...otherProps} = this.props;
         const cls = {
             icon: true,
-            ez: glyph.indexOf("ez-") === 0,
-            fa: glyph.indexOf("fa-") === 0,
+            ez: glyph.indexOf('ez-') === 0,
+            fa: glyph.indexOf('fa-') === 0,
         };
 
         return <span className={classNames(cls, glyph, className)} {...otherProps} />;

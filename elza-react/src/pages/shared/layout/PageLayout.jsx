@@ -11,12 +11,11 @@ import './PageLayout.scss';
  * Standardní layout stránky, který ribbon, obsahuje levý panel, prostřední panel a pravý panel, které jsou odděleny splitterem.
  */
 class PageLayout extends React.Component {
-
     state = {
-        ribbonOpened: true
+        ribbonOpened: true,
     };
 
-    handleRibbonShowHide = (opened) => {
+    handleRibbonShowHide = opened => {
         this.setState({ribbonOpened: opened});
     };
 
@@ -31,30 +30,31 @@ class PageLayout extends React.Component {
 
         return (
             <div className={cls}>
-                <div className='app-header'>
-                    <ToggleContent className="ribbon-toggle-container" opened={ribbonOpened} onShowHide={this.handleRibbonShowHide}>
+                <div className="app-header">
+                    <ToggleContent
+                        className="ribbon-toggle-container"
+                        opened={ribbonOpened}
+                        onShowHide={this.handleRibbonShowHide}
+                    >
                         {ribbon}
                     </ToggleContent>
                 </div>
-                <div className='status-header'>
-                    {status}
-                </div>
-                <div className='app-content'>
-
+                <div className="status-header">{status}</div>
+                <div className="app-content">
                     <Splitter
                         leftSize={splitter.leftWidth}
                         rightSize={splitter.rightWidth}
-                        onChange={({leftSize, rightSize}) => {this.props.dispatch(splitterResize(leftSize, rightSize))}}
+                        onChange={({leftSize, rightSize}) => {
+                            this.props.dispatch(splitterResize(leftSize, rightSize));
+                        }}
                         left={leftPanel}
                         center={centerPanel}
                         right={rightPanel}
                     />
                 </div>
             </div>
-        )
+        );
     }
 }
 
 export default connect()(PageLayout);
-
-

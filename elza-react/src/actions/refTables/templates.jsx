@@ -10,12 +10,16 @@ import * as types from 'actions/constants/ActionTypes.js';
  */
 export function templatesFetchIfNeeded(code = null) {
     return (dispatch, getState) => {
-        const {refTables:{templates: {items}}} = getState();
+        const {
+            refTables: {
+                templates: {items},
+            },
+        } = getState();
         const templates = items[code];
         if (!templates || ((!templates.fetched || templates.dirty) && !templates.isFetching)) {
             return dispatch(templatesFetch(code));
         }
-    }
+    };
 }
 
 /**
@@ -23,10 +27,9 @@ export function templatesFetchIfNeeded(code = null) {
  */
 export function templatesFetch(code = null) {
     return dispatch => {
-        dispatch(templatesRequest(code))
-        return WebApi.getTemplates(code)
-            .then(json => dispatch(templatesReceive(json, code)));
-    }
+        dispatch(templatesRequest(code));
+        return WebApi.getTemplates(code).then(json => dispatch(templatesReceive(json, code)));
+    };
 }
 
 /**
@@ -39,8 +42,8 @@ export function templatesReceive(json, code = null) {
         type: types.REF_TEMPLATES_RECEIVE,
         items: json,
         receivedAt: Date.now(),
-        code
-    }
+        code,
+    };
 }
 
 /**
@@ -49,6 +52,6 @@ export function templatesReceive(json, code = null) {
 export function templatesRequest(code = null) {
     return {
         type: types.REF_TEMPLATES_REQUEST,
-        code
-    }
+        code,
+    };
 }

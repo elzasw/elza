@@ -7,7 +7,6 @@ import AbstractReactComponent from '../../AbstractReactComponent';
  * state je upravován z venku pomocí ref
  */
 class Pane extends AbstractReactComponent {
-
     state = {};
 
     render() {
@@ -19,7 +18,7 @@ class Pane extends AbstractReactComponent {
             <div className={this.props.className} style={style}>
                 {this.props.children}
             </div>
-        )
+        );
     }
 }
 

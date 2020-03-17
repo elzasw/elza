@@ -9,10 +9,11 @@ export default function subNodeFormCache(state = subNodeFormCacheInitialState, a
     let dataCache;
     switch (action.type) {
         case types.CHANGE_NODES:
-            dataCache = { ...state.dataCache };
+            dataCache = {...state.dataCache};
             let found = false;
             action.nodeIds.forEach(nodeId => {
-                if (dataCache[nodeId]) {    // má ji nakešovanou, odebereme ji, protože je neplatná
+                if (dataCache[nodeId]) {
+                    // má ji nakešovanou, odebereme ji, protože je neplatná
                     delete dataCache[nodeId];
                     found = true;
                 }
@@ -31,7 +32,7 @@ export default function subNodeFormCache(state = subNodeFormCacheInitialState, a
                 isFetching: true,
             };
         case types.FUND_SUB_NODE_FORM_CACHE_RESPONSE:
-            dataCache = { ...state.dataCache };
+            dataCache = {...state.dataCache};
 
             Object.keys(action.formsMap).forEach(nodeId => {
                 dataCache[nodeId] = action.formsMap[nodeId];

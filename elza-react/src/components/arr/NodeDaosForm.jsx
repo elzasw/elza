@@ -21,7 +21,7 @@ class NodeDaosForm extends AbstractReactComponent {
     static propTypes = {
         fund: PropTypes.object.isRequired,
         nodeId: PropTypes.number.isRequired,
-        daoId: PropTypes.number,  // pokud má být vybrán konkrétní DAO na detail
+        daoId: PropTypes.number, // pokud má být vybrán konkrétní DAO na detail
         readMode: PropTypes.bool.isRequired,
     };
 
@@ -50,9 +50,14 @@ class NodeDaosForm extends AbstractReactComponent {
                     />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="link" onClick={() => {
-                        this.props.dispatch(modalDialogHide());
-                    }}>{i18n('global.action.close')}</Button>
+                    <Button
+                        variant="link"
+                        onClick={() => {
+                            this.props.dispatch(modalDialogHide());
+                        }}
+                    >
+                        {i18n('global.action.close')}
+                    </Button>
                 </Modal.Footer>
             </Form>
         );

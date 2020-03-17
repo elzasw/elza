@@ -1,6 +1,3 @@
 import {Item} from './Item';
 
-export class ItemStructure extends Item {
-
-
-}
+export class ItemStructure extends Item {}

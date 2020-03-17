@@ -7,17 +7,14 @@ import {connect} from 'react-redux';
 const ScopeField = class ScopeField extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods(
-            "handleChange",
-            "focus");
+        this.bindMethods('handleChange', 'focus');
     }
 
     focus() {
-        this.refs.autocomplete.focus()
+        this.refs.autocomplete.focus();
     }
 
-    componentDidMount() {
-    }
+    componentDidMount() {}
 
     /**
      * Zajistíme vrácení onChange pouze objekt nebo null
@@ -41,9 +38,9 @@ const ScopeField = class ScopeField extends AbstractReactComponent {
                 onChange={this.handleChange}
                 {...otherProps}
             />
-        )
+        );
     }
-}
+};
 
 ScopeField.propTypes = {
     value: PropTypes.object,
@@ -52,10 +49,9 @@ ScopeField.propTypes = {
     inline: PropTypes.bool,
     touched: PropTypes.bool,
     error: PropTypes.string,
-}
+};
 
 function mapStateToProps(state) {
-    return {
-    }
+    return {};
 }
 export default connect(mapStateToProps)(ScopeField);

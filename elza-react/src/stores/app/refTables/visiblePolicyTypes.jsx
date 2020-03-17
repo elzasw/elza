@@ -3,9 +3,14 @@ import {default as genericRefTable, genericRefTableState} from './genericRefTabl
 
 const initialState = {
     ...genericRefTableState,
-    items: {}
+    items: {},
 };
 
 export default function visiblePolicyTypes(state = initialState, action = {}) {
-    return genericRefTable(types.REF_VISIBLE_POLICY_TYPES_REQUEST, types.REF_VISIBLE_POLICY_TYPES_RECEIVE, state, action)
+    return genericRefTable(
+        types.REF_VISIBLE_POLICY_TYPES_REQUEST,
+        types.REF_VISIBLE_POLICY_TYPES_RECEIVE,
+        state,
+        action,
+    );
 }

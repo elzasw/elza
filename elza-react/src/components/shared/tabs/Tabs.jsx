@@ -46,7 +46,11 @@ export const Container = class TabsContainer extends React.Component {
             }
         }
         if (!tabs) {
-            console.error('First child of TabsContainer must be Tabs component!', 'Existing children', this.props.children);
+            console.error(
+                'First child of TabsContainer must be Tabs component!',
+                'Existing children',
+                this.props.children,
+            );
             return;
         }
 
@@ -83,13 +87,14 @@ export const Container = class TabsContainer extends React.Component {
         }
     };
 
-    render() {                          // metoda pro renderovani obsahu komponenty
-        let cls = 'tabs-container';     // třída komponenty
+    render() {
+        // metoda pro renderovani obsahu komponenty
+        let cls = 'tabs-container'; // třída komponenty
         if (this.props.className) {
             cls += ' ' + this.props.className;
         }
         return (
-            <Shortcuts className={cls} name='Tabs' handler={this.handleShortcuts} stopPropagation={false}>
+            <Shortcuts className={cls} name="Tabs" handler={this.handleShortcuts} stopPropagation={false}>
                 {this.props.children}
             </Shortcuts>
         );
@@ -102,9 +107,8 @@ export const Container = class TabsContainer extends React.Component {
  *  $param obj children         datový obsah komponenty
  **/
 export const Content = class TabContent extends React.Component {
-
     render() {
-        let cls = 'tab-content';        // třída komponenty
+        let cls = 'tab-content'; // třída komponenty
         if (this.props.className) {
             cls += ' ' + this.props.className;
         }
@@ -125,24 +129,23 @@ export const Content = class TabContent extends React.Component {
  *  $param obj children                 // vnitřní části komponenty (přepínací panel, data zobrazovaná pod záložkami)
  **/
 export const Tabs = class Tabs extends React.Component {
-
     /**
      *  Zavření vybrané záložky
      *  @ param obj item        objekt záložky
      *  @ param event e         událost kliknutí na ikonu zavření záložky
      **/
     handleTabClose = (item, e) => {
-        this.props.onClose(item);       // zavření záložky
+        this.props.onClose(item); // zavření záložky
 
-        e.preventDefault();             // zastavení původní akce vyvolané událostí
-        e.stopPropagation();            // zastavení dalších akcí vázaných na tuto událost
+        e.preventDefault(); // zastavení původní akce vyvolané událostí
+        e.stopPropagation(); // zastavení dalších akcí vázaných na tuto událost
     };
 
     /**
      *  Zobrazení obsahu vybrané záložky
      *  @ param int itemID      lokální identidikátor záložky
      **/
-    handleTabSelect = (itemKey) => {
+    handleTabSelect = itemKey => {
         let item = this.props.items.one(i => {
             let key = typeof i.key !== 'undefined' ? i.key : i.id;
             if (key === itemKey) {
@@ -151,7 +154,7 @@ export const Tabs = class Tabs extends React.Component {
                 return null;
             }
         });
-        this.props.onSelect(item);              // zobrazení vybrané položky
+        this.props.onSelect(item); // zobrazení vybrané položky
     };
 
     /**
@@ -162,9 +165,11 @@ export const Tabs = class Tabs extends React.Component {
             let closeTitle = i18n('tabs.action.closeTab');
             let closeAction;
             if (this.props.closable) {
-                closeAction = <NoFocusButton title={closeTitle} onClick={this.handleTabClose.bind(this, item)}>
-                    <Icon glyph="fa-times"/>
-                </NoFocusButton>;
+                closeAction = (
+                    <NoFocusButton title={closeTitle} onClick={this.handleTabClose.bind(this, item)}>
+                        <Icon glyph="fa-times" />
+                    </NoFocusButton>
+                );
             }
 
             // popisek ikony zavírající záložku
@@ -181,11 +186,11 @@ export const Tabs = class Tabs extends React.Component {
             );
         });
 
-
         // vrácení html komponenty záložek
         let activeKey = null;
         if (this.props.activeItem) {
-            activeKey = typeof this.props.activeItem.key !== 'undefined' ? this.props.activeItem.key : this.props.activeItem.id;
+            activeKey =
+                typeof this.props.activeItem.key !== 'undefined' ? this.props.activeItem.key : this.props.activeItem.id;
         }
         return (
             <Nav

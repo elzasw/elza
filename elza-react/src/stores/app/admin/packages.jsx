@@ -13,34 +13,32 @@ const initialState = {
     isFetching: false,
     fetched: false,
     dirty: false,
-    items : []
-}
+    items: [],
+};
 
 export default function packages(state = initialState, action = {}) {
     switch (action.type) {
-
         case types.ADMIN_PACKAGES_REQUEST:
             return Object.assign({}, state, {
-                isFetching: true
-            })
+                isFetching: true,
+            });
 
         case types.ADMIN_PACKAGES_RECEIVE:
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,
                 dirty: false,
-                items: action.items
-            })
+                items: action.items,
+            });
 
         case types.ADMIN_PACKAGES_DELETE_RECEIVE:
         case types.ADMIN_PACKAGES_IMPORT_RECEIVE:
         case types.CHANGE_PACKAGE:
             return Object.assign({}, state, {
-                dirty: true
-            })
+                dirty: true,
+            });
 
         default:
-            return state
+            return state;
     }
 }
-

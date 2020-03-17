@@ -10,31 +10,31 @@ const initialState = {
     fetchedFilter: false,
     isFetchingData: false,
     fetchedData: false,
-    rowsDirty: false,   // zda jsou data tabulky již neaktuální - počet řádek na serveru již nemusí odpovídat řádkům na klientovi - např. byla přidána nová JP
-    filterDirty: false,  // pokud nastala od poskledního přefiltrování nějaká změna v hodnotách PP - výsledek filtru již nemusí odpovídat tomu, co se zobrazuje
-    pageSize: 25,   // aktuální velikost stránky
-    pageIndex: 0,   // aktuální stránka
+    rowsDirty: false, // zda jsou data tabulky již neaktuální - počet řádek na serveru již nemusí odpovídat řádkům na klientovi - např. byla přidána nová JP
+    filterDirty: false, // pokud nastala od poskledního přefiltrování nějaká změna v hodnotách PP - výsledek filtru již nemusí odpovídat tomu, co se zobrazuje
+    pageSize: 25, // aktuální velikost stránky
+    pageIndex: 0, // aktuální stránka
     items: [],
     itemsCount: 0,
     filter: {}, // mapa id desc item type na filter data
-    visibleColumns: {},   // seznam mapa id na boolean viditelných sloupečků   // "4", "5", "8", "9", "11", "14", "17", "38", "42", "44", "50", "53"
-    columnsOrder: [],   // seznam id desc item type - pořadí zobrazování sloupečků
-    columnInfos: {},    // mapa id desc item type na informace o sloupečku, např. jeho šířce atp.
+    visibleColumns: {}, // seznam mapa id na boolean viditelných sloupečků   // "4", "5", "8", "9", "11", "14", "17", "38", "42", "44", "50", "53"
+    columnsOrder: [], // seznam id desc item type - pořadí zobrazování sloupečků
+    columnInfos: {}, // mapa id desc item type na informace o sloupečku, např. jeho šířce atp.
     selectedIds: [],
     selectedRowIndexes: [],
     currentDataKey: '',
     subNodeForm: subNodeForm(),
-    nodeId: null,   // id node právě editovaného řádku
-    parentNodeId: null,   // id parent node právě editovaného řádku
-    descItemTypeId: null,   // id atributu právě editovaného řádku
+    nodeId: null, // id node právě editovaného řádku
+    parentNodeId: null, // id parent node právě editovaného řádku
+    descItemTypeId: null, // id atributu právě editovaného řádku
     searchText: '',
     searchExtended: false,
     luceneQuery: false,
-    data: { type: 'FORM' },
+    data: {type: 'FORM'},
     showFilterResult: false,
     searchedItems: [], // výsledky hledání dat
-    searchedCurrentIndex: 0,    // index aktuálně vybrané položky ve výsledcích hledání
-    cellFocus: { row: 0, col: 0 },
+    searchedCurrentIndex: 0, // index aktuálně vybrané položky ve výsledcích hledání
+    cellFocus: {row: 0, col: 0},
 };
 // new Array("4", "5", "8", "9", "11", "14", "17", "38", "42", "44", "50", "53").forEach(a => {
 //     initialState.visibleColumns[a] = true
@@ -51,7 +51,8 @@ function changeSearchedIndex(state, newIndex) {
         var pageIndex = state.pageIndex;
         var selectedIds = state.selectedIds;
 
-        if (info.index < state.pageIndex * state.pageSize || info.index >= (state.pageIndex + 1) * state.pageSize) { // je mimo aktuálně zobrazovanou stránku
+        if (info.index < state.pageIndex * state.pageSize || info.index >= (state.pageIndex + 1) * state.pageSize) {
+            // je mimo aktuálně zobrazovanou stránku
             pageIndex = Math.floor(info.index / state.pageSize);
             selectedIds = [];
         }
@@ -64,7 +65,7 @@ function changeSearchedIndex(state, newIndex) {
             pageIndex: pageIndex,
             searchedCurrentIndex: newIndex,
             selectedRowIndexes: [row],
-            cellFocus: { row, col: state.cellFocus.col },
+            cellFocus: {row, col: state.cellFocus.col},
         };
     }
 }
@@ -94,11 +95,11 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 subNodeForm: subNodeForm(),
                 searchedItems: [],
                 searchedCurrentIndex: 0,
-                cellFocus: { row: 0, col: 0 },
-                data: { type: 'FORM' },
+                cellFocus: {row: 0, col: 0},
+                data: {type: 'FORM'},
             };
         case types.STORE_SAVE: {
-            const { pageSize, initialised, pageIndex, filter, visibleColumns, columnsOrder, columnInfos } = state;
+            const {pageSize, initialised, pageIndex, filter, visibleColumns, columnsOrder, columnInfos} = state;
 
             return {
                 initialised,
@@ -115,9 +116,11 @@ export default function fundDataGrid(state = initialState, action = {}) {
             let columnInfos = {};
 
             // Pokud visible column již jsou, nechají se, jinak se inicializují z akce, kde jsou implcitní nastavené v pravidlech
-            if (state.visibleColumns && Object.keys(state.visibleColumns) > 0) {    // je definovaný
+            if (state.visibleColumns && Object.keys(state.visibleColumns) > 0) {
+                // je definovaný
                 visibleColumns = state.visibleColumns;
-            } else {    // není definováno, vezmeme z nastavení v pravidlech
+            } else {
+                // není definováno, vezmeme z nastavení v pravidlech
                 visibleColumns = {};
                 action.initData.visibleColumns.forEach(id => {
                     visibleColumns[id] = true;
@@ -125,9 +128,11 @@ export default function fundDataGrid(state = initialState, action = {}) {
             }
 
             // Pokud je informace o sloupcích již jsou, nechají se, jinak se inicializují z akce, kde jsou nastavené v pravidlech
-            if (state.columnInfos && Object.keys(state.columnInfos) > 0) {    // je definovaný
+            if (state.columnInfos && Object.keys(state.columnInfos) > 0) {
+                // je definovaný
                 columnInfos = state.columnInfos;
-            } else {    // není definováno, vezmeme z nastavení v pravidlech
+            } else {
+                // není definováno, vezmeme z nastavení v pravidlech
                 columnInfos = action.initData.columnInfos || {};
             }
 
@@ -153,7 +158,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
         case types.FUND_FUND_DATA_GRID_CHANGE_CELL_FOCUS:
             return {
                 ...state,
-                cellFocus: { row: action.row, col: action.col },
+                cellFocus: {row: action.row, col: action.col},
             };
         case types.FUND_FUND_DATA_GRID_FULLTEXT_NEXT_ITEM:
             return changeSearchedIndex(state, state.searchedCurrentIndex + 1);
@@ -210,17 +215,17 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 pageIndex: 0,
                 selectedIds: isBiggerPage ? state.selectedIds : [],
                 selectedRowIndexes: isBiggerPage ? state.selectedRowIndexes : [],
-                cellFocus: { row: 0, col: 0 },
+                cellFocus: {row: 0, col: 0},
             };
         case types.FUND_FUND_DATA_GRID_COLUMNS_SETTINGS:
             return {
                 ...state,
                 visibleColumns: action.visibleColumns,
                 columnsOrder: action.columnsOrder,
-                cellFocus: { row: 0, col: 0 },
+                cellFocus: {row: 0, col: 0},
             };
         case types.FUND_FUND_DATA_GRID_COLUMN_SIZE:
-            let columnInfos = { ...state.columnInfos };
+            let columnInfos = {...state.columnInfos};
             const info = columnInfos[action.columnId] || {};
             info.width = action.width;
             columnInfos[action.columnId] = info;
@@ -238,12 +243,13 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 ...state,
                 pageIndex: action.pageIndex,
                 selectedIds: [],
-                cellFocus: { row: 0, col: 0 },
+                cellFocus: {row: 0, col: 0},
             };
         case types.FUND_FUND_DATA_GRID_FILTER_CHANGE:
-            let filter = { ...state.filter };
+            let filter = {...state.filter};
 
-            if (action.descItemTypeId !== null) {   // null je pro případ, kdy jen chceme aktualizovat data
+            if (action.descItemTypeId !== null) {
+                // null je pro případ, kdy jen chceme aktualizovat data
                 if (action.filter) {
                     filter[action.descItemTypeId] = action.filter;
                 } else {
@@ -255,7 +261,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 ...state,
                 filter: filter,
                 fetchedFilter: false,
-                cellFocus: { row: 0, col: 0 },
+                cellFocus: {row: 0, col: 0},
             };
         case types.FUND_FUND_DATA_GRID_FILTER_REQUEST:
             return {
@@ -270,21 +276,24 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 cellFocus: state.cellFocus,
             };
 
-            if (action.resetViewState) {    // reset stránkování označení atp.
+            if (action.resetViewState) {
+                // reset stránkování označení atp.
                 viewInfo.pageIndex = 0;
                 viewInfo.selectedIds = [];
                 viewInfo.selectedRowIndexes = [0];
-                viewInfo.cellFocus = { row: 0, col: 0 };
+                viewInfo.cellFocus = {row: 0, col: 0};
             } else {
                 // Pokud je aktuální zobrazení stránky mimo záznamy, zobrazíme poslední stránku
                 if (viewInfo.pageIndex * state.pageSize >= action.itemsCount) {
-                    viewInfo.pageIndex = Math.floor(action.itemsCount / state.pageSize) - (action.itemsCount % state.pageSize > 0 ? 0 : 1);
+                    viewInfo.pageIndex =
+                        Math.floor(action.itemsCount / state.pageSize) -
+                        (action.itemsCount % state.pageSize > 0 ? 0 : 1);
                 }
 
                 // Cell focus - pokud je mimo řádek, nastavíme na poslední řádek na stránce
-                const restRows = action.itemsCount - (viewInfo.pageIndex * state.pageSize);
+                const restRows = action.itemsCount - viewInfo.pageIndex * state.pageSize;
                 if (viewInfo.cellFocus.row >= restRows) {
-                    viewInfo.cellFocus = { row: restRows - 1, col: viewInfo.cellFocus.col };
+                    viewInfo.cellFocus = {row: restRows - 1, col: viewInfo.cellFocus.col};
                 }
             }
 
@@ -315,7 +324,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
         case types.CHANGE_NODES:
             return {
                 ...state,
-                filterDirty: true,  // filtr po změně nějakého PP již nemusí odpovídat
+                filterDirty: true, // filtr po změně nějakého PP již nemusí odpovídat
                 currentDataKey: '',
                 subNodeForm: subNodeForm(state.subNodeForm, action),
             };

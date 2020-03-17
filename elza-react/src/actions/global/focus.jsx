@@ -13,7 +13,7 @@ var _setFocus = false;
  * Prvek nastavil focus, metoda pro informaci, že ho nastavil.
  */
 export function focusWasSet() {
-    _setFocus = false
+    _setFocus = false;
 }
 
 /**
@@ -58,7 +58,7 @@ export function isFocusExactFor(focusState, region, area, component, item) {
  * Test, zda se může focus nastavit.
  */
 export function canSetFocus() {
-    return _setFocus
+    return _setFocus;
 }
 
 /**
@@ -75,6 +75,6 @@ export function setFocus(region, area, component = null, item = null) {
         region,
         area,
         component,
-        item
-    }
+        item,
+    };
 }

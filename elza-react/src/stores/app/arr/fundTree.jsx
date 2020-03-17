@@ -17,7 +17,7 @@ const initialState = {
     isFetching: false,
     fetched: false,
     dirty: false,
-    fetchingIncludeIds: {},   // jaké id aktuálně fetchuje - id na true
+    fetchingIncludeIds: {}, // jaké id aktuálně fetchuje - id na true
     nodes: [],
     lastSelectedId: null,
     multipleSelection: false,
@@ -43,22 +43,21 @@ function removeChildren(nodes, collapsedNode, selectedIdsMap) {
 
     while (++index < max) {
         let node = nodes[index];
-        if (node.depth > collapsedNode.depth) { // potomek, odebereme
+        if (node.depth > collapsedNode.depth) {
+            // potomek, odebereme
             // ale až na konci
             if (selectedIdsMap[node.id]) {
                 containsSelectedIds.push(node.id);
             }
-        } else {    // už není potomek, končíme procházení
+        } else {
+            // už není potomek, končíme procházení
             break;
         }
     }
 
     return {
         containsSelectedIds: containsSelectedIds,
-        nodes: [
-            ...nodes.slice(0, start + 1),
-            ...nodes.slice(index),
-        ],
+        nodes: [...nodes.slice(0, start + 1), ...nodes.slice(index)],
     };
 }
 
@@ -83,7 +82,8 @@ export default function fundTree(state = initialState, action = {}) {
             let selectedIds = state.selectedIds;
             let selectedId = state.selectedId;
 
-            if (state.multipleSelection && !action.multipleSelection) { // pokud je označeno více položek, musíme je odznačit
+            if (state.multipleSelection && !action.multipleSelection) {
+                // pokud je označeno více položek, musíme je odznačit
                 selectedId = null;
                 selectedIds = {};
             } else if (!state.multipleSelection && action.multipleSelection) {
@@ -93,7 +93,8 @@ export default function fundTree(state = initialState, action = {}) {
                 }
             } else if (state.multipleSelection && action.multipleSelection) {
                 if (Object.keys(selectedIds).length > 1) {
-                    if (!state.multipleSelectionOneLevel && action.multipleSelectionOneLevel) { // pokud aktuální označení nevyhovuje, zrušíme ho
+                    if (!state.multipleSelectionOneLevel && action.multipleSelectionOneLevel) {
+                        // pokud aktuální označení nevyhovuje, zrušíme ho
                         const keys = Object.keys(state.selectedIds);
                         let sameLevel = true;
                         const testLevel = state.nodes[indexById(state.nodes, keys[0])].depth;
@@ -123,7 +124,6 @@ export default function fundTree(state = initialState, action = {}) {
             return {...state, dirty: true};
 
         case types.CHANGE_DELETE_LEVEL: {
-
             let refresh = false;
 
             if (action.nodeId == state.selectedId || action.parentNodeId == state.selectedId) {
@@ -152,7 +152,17 @@ export default function fundTree(state = initialState, action = {}) {
             }
             return {...state, dirty: true};
         case types.STORE_SAVE:
-            const {selectedId, selectedIds, focusId, expandedIds, searchedIds, filterText, filterCurrentIndex, multipleSelection, multipleSelectionOneLevel} = state;
+            const {
+                selectedId,
+                selectedIds,
+                focusId,
+                expandedIds,
+                searchedIds,
+                filterText,
+                filterCurrentIndex,
+                multipleSelection,
+                multipleSelectionOneLevel,
+            } = state;
             return {
                 selectedId,
                 selectedIds,
@@ -178,7 +188,8 @@ export default function fundTree(state = initialState, action = {}) {
                 luceneQuery: false,
             };
         case types.FUND_FUND_TREE_FULLTEXT_RESULT:
-            if (state.filterText == action.filterText) {    // jen pokud výsledek odpovídá aktuálnímu stavu v hledací komponentě
+            if (state.filterText == action.filterText) {
+                // jen pokud výsledek odpovídá aktuálnímu stavu v hledací komponentě
                 const searchedIds = [];
                 const searchedParents = {};
                 action.searchedData.forEach(i => {
@@ -215,12 +226,15 @@ export default function fundTree(state = initialState, action = {}) {
                 newState.selectedIds = {...state.selectedIds};
 
                 if (action.ctrl) {
-                    if (newState.selectedIds[action.nodeId]) { // byl vybrán a je držen ctrl, odznačíme ho
+                    if (newState.selectedIds[action.nodeId]) {
+                        // byl vybrán a je držen ctrl, odznačíme ho
                         delete newState.selectedIds[action.nodeId];
-                    } else {    // přidáme na výběr
+                    } else {
+                        // přidáme na výběr
                         if (state.multipleSelectionOneLevel) {
                             const keys = Object.keys(newState.selectedIds);
-                            if (keys.length > 0) {  // kontrolujeme stejný level - depth
+                            if (keys.length > 0) {
+                                // kontrolujeme stejný level - depth
                                 const indexSelected = indexById(newState.nodes, keys[0]);
                                 const indexNewSelection = indexById(newState.nodes, action.nodeId);
                                 if (newState.nodes[indexSelected].depth === newState.nodes[indexNewSelection].depth) {
@@ -244,7 +258,11 @@ export default function fundTree(state = initialState, action = {}) {
                         if (state.multipleSelectionOneLevel) {
                             const depth = newState.nodes[indexSelected].depth;
                             if (depth === newState.nodes[indexNewSelection].depth) {
-                                for (let a = Math.min(indexSelected, indexNewSelection); a <= Math.max(indexSelected, indexNewSelection); a++) {
+                                for (
+                                    let a = Math.min(indexSelected, indexNewSelection);
+                                    a <= Math.max(indexSelected, indexNewSelection);
+                                    a++
+                                ) {
                                     if (state.nodes[a].depth === depth) {
                                         newState.selectedIds[state.nodes[a].id] = true;
                                     }
@@ -253,7 +271,11 @@ export default function fundTree(state = initialState, action = {}) {
                                 newState.lastSelectedId = state.lastSelectedId;
                             }
                         } else {
-                            for (let a = Math.min(indexSelected, indexNewSelection); a <= Math.max(indexSelected, indexNewSelection); a++) {
+                            for (
+                                let a = Math.min(indexSelected, indexNewSelection);
+                                a <= Math.max(indexSelected, indexNewSelection);
+                                a++
+                            ) {
                                 newState.selectedIds[state.nodes[a].id] = true;
                             }
                         }
@@ -262,14 +284,18 @@ export default function fundTree(state = initialState, action = {}) {
                         newState.selectedIds[action.nodeId] = true;
                         newState.lastSelectedId = action.nodeId;
                     }
-                } else {    // odznačíme vše a vybereme předaný
+                } else {
+                    // odznačíme vše a vybereme předaný
                     newState.selectedIds = {};
                     newState.selectedIds[action.nodeId] = true;
                     newState.lastSelectedId = action.nodeId;
                 }
                 return newState;
             } else {
-                if (state.selectedId !== action.nodeId || (action.newFilterCurrentIndex != null && state.filterCurrentIndex !== action.newFilterCurrentIndex)) {
+                if (
+                    state.selectedId !== action.nodeId ||
+                    (action.newFilterCurrentIndex != null && state.filterCurrentIndex !== action.newFilterCurrentIndex)
+                ) {
                     let newCurrentIndex = state.filterCurrentIndex;
                     if (action.newFilterCurrentIndex != null) {
                         newCurrentIndex = action.newFilterCurrentIndex;
@@ -286,7 +312,10 @@ export default function fundTree(state = initialState, action = {}) {
                 }
             }
         case types.FUND_FUND_SELECT_SUBNODE:
-            if (state.selectedId !== action.subNodeId || (action.newFilterCurrentIndex !== null && state.filterCurrentIndex !== action.newFilterCurrentIndex)) {
+            if (
+                state.selectedId !== action.subNodeId ||
+                (action.newFilterCurrentIndex !== null && state.filterCurrentIndex !== action.newFilterCurrentIndex)
+            ) {
                 let newCurrentIndex = state.filterCurrentIndex;
                 if (action.newFilterCurrentIndex != null) {
                     newCurrentIndex = action.newFilterCurrentIndex;
@@ -340,9 +369,7 @@ export default function fundTree(state = initialState, action = {}) {
                 fetched: true,
                 ensureItemVisible: false,
                 expandedIds: initialState.expandedIds,
-                nodes: [
-                    state.nodes[0],
-                ],
+                nodes: [state.nodes[0]],
                 selectedId: initialState.selectedId,
                 selectedIds: initialState.selectedIds,
             });
@@ -364,7 +391,8 @@ export default function fundTree(state = initialState, action = {}) {
             let newSelectedId;
             let newSelectedIds;
             if (state.multipleSelection) {
-                if (removeInfo.containsSelectedIds.length > 0) { // některá id jsou v seznamu zabalených
+                if (removeInfo.containsSelectedIds.length > 0) {
+                    // některá id jsou v seznamu zabalených
                     newSelectedIds = {...state.selectedIds};
                     removeInfo.containsSelectedIds.forEach(id => {
                         delete newSelectedIds[id];
@@ -373,7 +401,8 @@ export default function fundTree(state = initialState, action = {}) {
                     newSelectedIds = state.selectedIds;
                 }
             } else {
-                if (removeInfo.containsSelectedIds.length > 0) { // dané id je v seznamu zabalených
+                if (removeInfo.containsSelectedIds.length > 0) {
+                    // dané id je v seznamu zabalených
                     newSelectedId = null;
                 } else {
                     newSelectedId = state.selectedId;
@@ -402,7 +431,8 @@ export default function fundTree(state = initialState, action = {}) {
             });
         case types.FUND_FUND_TREE_RECEIVE:
             if (action.nodeId !== null && typeof action.nodeId !== 'undefined') {
-                if (state.expandedIds[action.nodeId]) { // ještě je stále rozbalený
+                if (state.expandedIds[action.nodeId]) {
+                    // ještě je stále rozbalený
                     index = indexById(state.nodes, action.nodeId);
                     if (index != null) {
                         var node = state.nodes[index];
@@ -412,7 +442,8 @@ export default function fundTree(state = initialState, action = {}) {
                         ensureItemVisible = false;
                         oneSelectedId = getOneSelectedIdIfExists(state);
                         if (oneSelectedId !== null) {
-                            if (indexById(action.nodes, oneSelectedId) !== null) {    // je označená položka z těch, co se právě načetly
+                            if (indexById(action.nodes, oneSelectedId) !== null) {
+                                // je označená položka z těch, co se právě načetly
                                 ensureItemVisible = true;
                             }
                         }
@@ -421,11 +452,7 @@ export default function fundTree(state = initialState, action = {}) {
                             ensureItemVisible: ensureItemVisible,
                             isFetching: false,
                             fetched: true,
-                            nodes: [
-                                ...nodes.slice(0, index + 1),
-                                ...action.nodes,
-                                ...nodes.slice(index + 1),
-                            ],
+                            nodes: [...nodes.slice(0, index + 1), ...action.nodes, ...nodes.slice(index + 1)],
                             fetchingIncludeIds: {},
                             lastUpdated: action.receivedAt,
                         });
@@ -446,7 +473,8 @@ export default function fundTree(state = initialState, action = {}) {
                 ensureItemVisible = false;
                 oneSelectedId = getOneSelectedIdIfExists(state);
                 if (oneSelectedId !== null) {
-                    if (indexById(action.nodes, oneSelectedId) !== null) {    // je označená položka z těch, co se právě načetly
+                    if (indexById(action.nodes, oneSelectedId) !== null) {
+                        // je označená položka z těch, co se právě načetly
                         ensureItemVisible = true;
                     }
                 }

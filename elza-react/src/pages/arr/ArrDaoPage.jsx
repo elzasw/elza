@@ -27,17 +27,16 @@ import {WebApi} from 'actions/index.jsx';
 class ArrDaoPage extends ArrParentPage {
     constructor(props) {
         super(props, 'dao-page');
-
     }
 
     state = {
         selectedTab: 0,
         selectedUnassignedPackage: null,
         selectedPackage: null,
-        selectedDaoLeft: null,  // vybrané dao v levé části
-        selectedDaoLeftFileId: null,  // vybrané dao v levé části
-        selectedDaoRight: null,  // vybrané dao v pravé části
-        selectedDaoRightFileId: null,  // vybrané dao v pravé části
+        selectedDaoLeft: null, // vybrané dao v levé části
+        selectedDaoLeftFileId: null, // vybrané dao v levé části
+        selectedDaoRight: null, // vybrané dao v pravé části
+        selectedDaoRightFileId: null, // vybrané dao v pravé části
     };
 
     static propTypes = {
@@ -52,11 +51,9 @@ class ArrDaoPage extends ArrParentPage {
         ruleSet: PropTypes.object.isRequired,
     };
 
-    componentDidMount() {
-    }
+    componentDidMount() {}
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-    }
+    UNSAFE_componentWillReceiveProps(nextProps) {}
 
     getDestNode() {
         const fund = this.getActiveFund(this.props);
@@ -74,7 +71,8 @@ class ArrDaoPage extends ArrParentPage {
         const {selectedDaoLeft} = this.state;
 
         let parentNode = getParentNode(node, fund.fundTreeDaosRight.nodes);
-        if (parentNode == null) {   // root
+        if (parentNode == null) {
+            // root
             parentNode = createFundRoot(fund);
         }
 
@@ -85,17 +83,12 @@ class ArrDaoPage extends ArrParentPage {
             });
 
             // Výběr node ve stromu
-            this.props.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_DAOS_RIGHT, fund.versionId, node.id, false, false, null, true));
+            this.props.dispatch(
+                fundTreeSelectNode(types.FUND_TREE_AREA_DAOS_RIGHT, fund.versionId, node.id, false, false, null, true),
+            );
         };
 
-        this.props.dispatch(addNodeForm(
-            'CHILD',
-            node,
-            parentNode,
-            fund.versionId,
-            afterCreateCallback,
-            ['CHILD'],
-        ));
+        this.props.dispatch(addNodeForm('CHILD', node, parentNode, fund.versionId, afterCreateCallback, ['CHILD']));
         console.log('handleCreateUnder');
     };
 
@@ -108,7 +101,7 @@ class ArrDaoPage extends ArrParentPage {
         });
     };
 
-    handleTabSelect = (item) => {
+    handleTabSelect = item => {
         this.setState({
             selectedTab: item.id,
             selectedDaoLeft: null,
@@ -128,17 +121,30 @@ class ArrDaoPage extends ArrParentPage {
 
         let altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>;
+            altSection = (
+                <RibbonGroup key="alt" className="small">
+                    {altActions}
+                </RibbonGroup>
+            );
         }
 
         let itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>;
+            itemSection = (
+                <RibbonGroup key="item" className="small">
+                    {itemActions}
+                </RibbonGroup>
+            );
         }
 
         return (
-            <Ribbon arr subMenu fundId={activeFund ? activeFund.id : null} altSection={altSection}
-                    itemSection={itemSection}/>
+            <Ribbon
+                arr
+                subMenu
+                fundId={activeFund ? activeFund.id : null}
+                altSection={altSection}
+                itemSection={itemSection}
+            />
         );
     };
 
@@ -160,62 +166,70 @@ class ArrDaoPage extends ArrParentPage {
         const {selectedIndex} = this.state;
         const fund = this.getActiveFund(this.props);
 
-        return <div className="packages-container" key={'daoPackages-' + unassigned}>
-            <ArrDaoPackages
-                activeIndex={selectedIndex}
-                unassigned={unassigned}
-                onSelect={(item, index) => this.handleSelectPackage(item, unassigned, index)}
-            />
-            {/*selectedPackage && */<ArrDaos
-                type="PACKAGE"
-                unassigned={unassigned}
-                fund={fund}
-                readMode={readMode}
-                selectedDaoId={this.state.selectedDaoLeft ? this.state.selectedDaoLeft.id : null}
-                selectedDaoFileId={this.state.selectedDaoLeftFileId ? this.state.selectedDaoLeftFileId : null}
-                daoPackageId={selectedPackage ? selectedPackage.id : null}
-                onSelect={(item, daoFileId) => {
-                    this.setState({selectedDaoLeft: item, selectedDaoLeftFileId: daoFileId});
-                }}
-            />}
-        </div>;
+        return (
+            <div className="packages-container" key={'daoPackages-' + unassigned}>
+                <ArrDaoPackages
+                    activeIndex={selectedIndex}
+                    unassigned={unassigned}
+                    onSelect={(item, index) => this.handleSelectPackage(item, unassigned, index)}
+                />
+                {
+                    /*selectedPackage && */ <ArrDaos
+                        type="PACKAGE"
+                        unassigned={unassigned}
+                        fund={fund}
+                        readMode={readMode}
+                        selectedDaoId={this.state.selectedDaoLeft ? this.state.selectedDaoLeft.id : null}
+                        selectedDaoFileId={this.state.selectedDaoLeftFileId ? this.state.selectedDaoLeftFileId : null}
+                        daoPackageId={selectedPackage ? selectedPackage.id : null}
+                        onSelect={(item, daoFileId) => {
+                            this.setState({selectedDaoLeft: item, selectedDaoLeftFileId: daoFileId});
+                        }}
+                    />
+                }
+            </div>
+        );
     };
 
-    renderUnassignedPackages = (readMode) => {
+    renderUnassignedPackages = readMode => {
         const {selectedUnassignedPackage} = this.state;
 
         return this._renderPackages(true, selectedUnassignedPackage, readMode);
     };
 
-    renderPackages = (readMode) => {
+    renderPackages = readMode => {
         const {selectedPackage} = this.state;
 
         return this._renderPackages(false, selectedPackage, readMode);
     };
 
-    renderLeftTree = (readMode) => {
+    renderLeftTree = readMode => {
         const fund = this.getActiveFund(this.props);
 
-        return <div className="tree-left-container">
-            <FundTreeDaos
-                fund={fund}
-                versionId={fund.versionId}
-                area={types.FUND_TREE_AREA_DAOS_LEFT}
-                {...fund.fundTreeDaosLeft}
-            />
-            {/*fund.fundTreeDaosLeft.selectedId !== null &&*/ <ArrDaos
-                type="NODE"
-                unassigned={false}
-                selectedDaoId={this.state.selectedDaoLeft ? this.state.selectedDaoLeft.id : null}
-                selectedDaoFileId={this.state.selectedDaoLeftFileId ? this.state.selectedDaoLeftFileId : null}
-                fund={fund}
-                readMode={readMode}
-                nodeId={fund.fundTreeDaosLeft.selectedId ? fund.fundTreeDaosLeft.selectedId : null}
-                onSelect={(item, daoFileId) => {
-                    this.setState({selectedDaoLeft: item, selectedDaoLeftFileId: daoFileId});
-                }}
-            />}
-        </div>;
+        return (
+            <div className="tree-left-container">
+                <FundTreeDaos
+                    fund={fund}
+                    versionId={fund.versionId}
+                    area={types.FUND_TREE_AREA_DAOS_LEFT}
+                    {...fund.fundTreeDaosLeft}
+                />
+                {
+                    /*fund.fundTreeDaosLeft.selectedId !== null &&*/ <ArrDaos
+                        type="NODE"
+                        unassigned={false}
+                        selectedDaoId={this.state.selectedDaoLeft ? this.state.selectedDaoLeft.id : null}
+                        selectedDaoFileId={this.state.selectedDaoLeftFileId ? this.state.selectedDaoLeftFileId : null}
+                        fund={fund}
+                        readMode={readMode}
+                        nodeId={fund.fundTreeDaosLeft.selectedId ? fund.fundTreeDaosLeft.selectedId : null}
+                        onSelect={(item, daoFileId) => {
+                            this.setState({selectedDaoLeft: item, selectedDaoLeftFileId: daoFileId});
+                        }}
+                    />
+                }
+            </div>
+        );
     };
 
     renderCenterPanel = (readMode, closed) => {
@@ -267,19 +281,19 @@ class ArrDaoPage extends ArrParentPage {
 
         return (
             <div className="daos-content-container">
-                <div key={1} className='left-container'>
-                    <Tabs.Container ref='tabs' className='daos-tabs-container'>
-                        <Tabs.Tabs items={tabs} activeItem={{id: selectedTab}} onSelect={this.handleTabSelect}/>
-                        <Tabs.Content>
-                            {content}
-                        </Tabs.Content>
+                <div key={1} className="left-container">
+                    <Tabs.Container ref="tabs" className="daos-tabs-container">
+                        <Tabs.Tabs items={tabs} activeItem={{id: selectedTab}} onSelect={this.handleTabSelect} />
+                        <Tabs.Content>{content}</Tabs.Content>
                     </Tabs.Container>
                 </div>
-                <div key={2} className='actions-container'>
-                    <Button onClick={this.handleLink} disabled={!canLink}><Icon glyph="fa-thumb-tack"/>
+                <div key={2} className="actions-container">
+                    <Button onClick={this.handleLink} disabled={!canLink}>
+                        <Icon glyph="fa-thumb-tack" />
                         <div>{i18n('arr.daos.link')}</div>
                     </Button>
-                    <Button onClick={this.handleCreateUnderAndLink} disabled={!canLink}><Icon glyph="ez-move-under"/>
+                    <Button onClick={this.handleCreateUnderAndLink} disabled={!canLink}>
+                        <Icon glyph="ez-move-under" />
                         <div>{i18n('arr.daos.createUnderAndLink')}</div>
                     </Button>
                 </div>
@@ -291,18 +305,22 @@ class ArrDaoPage extends ArrParentPage {
                             area={types.FUND_TREE_AREA_DAOS_RIGHT}
                             {...fund.fundTreeDaosRight}
                         />
-                        {/*fund.fundTreeDaosRight.selectedId !== null &&*/ <ArrDaos
-                            type="NODE_ASSIGN"
-                            unassigned={false}
-                            fund={fund}
-                            selectedDaoId={this.state.selectedDaoRight ? this.state.selectedDaoRight.id : null}
-                            selectedDaoFileId={this.state.selectedDaoRightFileId ? this.state.selectedDaoRightFileId : null}
-                            readMode={readMode}
-                            onSelect={(item, daoFileId) => {
-                                this.setState({selectedDaoRight: item, selectedDaoRightFileId: daoFileId});
-                            }}
-                            nodeId={fund.fundTreeDaosRight.selectedId ? fund.fundTreeDaosRight.selectedId : null}
-                        />}
+                        {
+                            /*fund.fundTreeDaosRight.selectedId !== null &&*/ <ArrDaos
+                                type="NODE_ASSIGN"
+                                unassigned={false}
+                                fund={fund}
+                                selectedDaoId={this.state.selectedDaoRight ? this.state.selectedDaoRight.id : null}
+                                selectedDaoFileId={
+                                    this.state.selectedDaoRightFileId ? this.state.selectedDaoRightFileId : null
+                                }
+                                readMode={readMode}
+                                onSelect={(item, daoFileId) => {
+                                    this.setState({selectedDaoRight: item, selectedDaoRightFileId: daoFileId});
+                                }}
+                                nodeId={fund.fundTreeDaosRight.selectedId ? fund.fundTreeDaosRight.selectedId : null}
+                            />
+                        }
                     </div>
                 </div>
             </div>

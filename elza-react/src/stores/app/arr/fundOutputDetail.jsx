@@ -8,7 +8,7 @@ const initialState = {
     fetched: false,
     fetching: false,
     currentDataKey: '',
-    subNodeForm: subNodeForm()
+    subNodeForm: subNodeForm(),
 };
 
 export default function fundOutputDetail(state = initialState, action = {}) {
@@ -21,93 +21,92 @@ export default function fundOutputDetail(state = initialState, action = {}) {
     }
 
     switch (action.type) {
-        case types.STORE_SAVE:{
+        case types.STORE_SAVE: {
             const {id} = state;
             return {
-                id
-            }
+                id,
+            };
         }
-        case types.STORE_LOAD:{
+        case types.STORE_LOAD: {
             return {
                 ...state,
                 fetched: false,
                 fetching: false,
                 currentDataKey: '',
-                subNodeForm: subNodeForm()
-            }
+                subNodeForm: subNodeForm(),
+            };
         }
-        case types.OUTPUT_STATE_CHANGE:{
+        case types.OUTPUT_STATE_CHANGE: {
             if (state.fetched && action.outputId) {
                 return {
                     ...state,
                     currentDataKey: '',
-                    state: action.state
-                }
+                    state: action.state,
+                };
             }
-            return state
+            return state;
         }
         case types.OUTPUT_CHANGES:
-        case types.OUTPUT_CHANGES_DETAIL:{
+        case types.OUTPUT_CHANGES_DETAIL: {
             if (action.outputIds.indexOf(state.id) !== -1) {
                 return {
                     ...state,
                     subNodeForm: subNodeForm(state.subNodeForm, action),
-                    currentDataKey: ''
-                }
+                    currentDataKey: '',
+                };
             }
-            return state
+            return state;
         }
-        case types.FUND_FUND_CHANGE_READ_MODE:{
+        case types.FUND_FUND_CHANGE_READ_MODE: {
             return {
                 ...state,
                 subNodeForm: subNodeForm(state.subNodeForm, action),
-            }
+            };
         }
-        case types.FUND_OUTPUT_SELECT_OUTPUT:{
+        case types.FUND_OUTPUT_SELECT_OUTPUT: {
             if (state.id !== action.id) {
                 return {
                     ...state,
                     id: action.id,
                     currentDataKey: '',
                     fetched: false,
-                    subNodeForm: subNodeForm()
-                }
+                    subNodeForm: subNodeForm(),
+                };
             }
-            return state
+            return state;
         }
-        case types.FUND_OUTPUT_DETAIL_REQUEST:{
+        case types.FUND_OUTPUT_DETAIL_REQUEST: {
             return {
                 ...state,
                 fetching: true,
-                currentDataKey: action.dataKey
-            }
+                currentDataKey: action.dataKey,
+            };
         }
-        case types.FUND_OUTPUT_DETAIL_RECEIVE:{
+        case types.FUND_OUTPUT_DETAIL_RECEIVE: {
             return {
                 ...state,
                 ...action.data,
                 fetching: false,
-                fetched: true
-            }
+                fetched: true,
+            };
         }
         case types.CHANGE_OUTPUTS:
             if (action.getOutputIds && action.getOutputIds.indexOf(state.id) >= 0) {
                 return {
                     ...state,
                     subNodeForm: subNodeForm(state.subNodeForm, action),
-                }
+                };
             } else {
                 return state;
             }
         case types.OUTPUT_INCREASE_VERSION:
             return {
                 ...state,
-                subNodeForm: subNodeForm(state.subNodeForm, action)
-            }
+                subNodeForm: subNodeForm(state.subNodeForm, action),
+            };
         case types.FUND_OUTPUT_DETAIL_CLEAR:
             return initialState;
         default:
-            return state
+            return state;
     }
 }
-

@@ -10,7 +10,6 @@ import './PartyListItem.scss';
  * Komponenta item listu osob
  */
 class PartyListItem extends AbstractReactComponent {
-
     static propTypes = {
         onClick: PropTypes.func,
         partyType: PropTypes.object.isRequired,
@@ -20,7 +19,7 @@ class PartyListItem extends AbstractReactComponent {
         partyNames: PropTypes.array,
     };
 
-    static partyIconByPartyTypeCode = (code) => {
+    static partyIconByPartyTypeCode = code => {
         switch (code) {
             case PARTY_TYPE_CODES.PERSON:
                 return 'fa-user';
@@ -59,13 +58,42 @@ class PartyListItem extends AbstractReactComponent {
         return datation;
     };
 
-
     render() {
-        const { id, relationTypesForClass, partyType, relations, accessPoint, accessPoint: { invalid }, partyNames, className, ...otherProps } = this.props;
+        const {
+            id,
+            relationTypesForClass,
+            partyType,
+            relations,
+            accessPoint,
+            accessPoint: {invalid},
+            partyNames,
+            className,
+            ...otherProps
+        } = this.props;
 
         let icon = PartyListItem.partyIconByPartyTypeCode(partyType.code);
-        const birth = relations == null || relationTypesForClass === false ? '' : this.getDatationRelationString(relations.filter(i => (relationTypesForClass[RELATION_CLASS_CODES.BIRTH].indexOf(i.relationTypeId) !== -1) && ((i.from && i.from.value) || (i.to && i.to.value))), '*');
-        const extinction = relations == null || relationTypesForClass === false ? '' : this.getDatationRelationString(relations.filter(i => (relationTypesForClass[RELATION_CLASS_CODES.EXTINCTION].indexOf(i.relationTypeId) !== -1) && ((i.from && i.from.value) || (i.to && i.to.value))), '†');
+        const birth =
+            relations == null || relationTypesForClass === false
+                ? ''
+                : this.getDatationRelationString(
+                      relations.filter(
+                          i =>
+                              relationTypesForClass[RELATION_CLASS_CODES.BIRTH].indexOf(i.relationTypeId) !== -1 &&
+                              ((i.from && i.from.value) || (i.to && i.to.value)),
+                      ),
+                      '*',
+                  );
+        const extinction =
+            relations == null || relationTypesForClass === false
+                ? ''
+                : this.getDatationRelationString(
+                      relations.filter(
+                          i =>
+                              relationTypesForClass[RELATION_CLASS_CODES.EXTINCTION].indexOf(i.relationTypeId) !== -1 &&
+                              ((i.from && i.from.value) || (i.to && i.to.value)),
+                      ),
+                      '†',
+                  );
         let datation = null;
         if (birth !== '' && extinction !== '') {
             datation = birth + ', ' + extinction;
@@ -87,23 +115,32 @@ class PartyListItem extends AbstractReactComponent {
             }
         }
 
-        return <div className={classNames('party-list-item', className, {
-            invalid,
-        })} {...otherProps}>
-            <div>
-                <Icon glyph={icon}/>
-                <span className="name">{preferredName && preferredName.displayName}</span>
+        return (
+            <div
+                className={classNames('party-list-item', className, {
+                    invalid,
+                })}
+                {...otherProps}
+            >
+                <div>
+                    <Icon glyph={icon} />
+                    <span className="name">{preferredName && preferredName.displayName}</span>
+                </div>
+                <div>
+                    <span className="date">{datation}</span>
+                    {accessPoint.externalId && accessPoint.externalSystem && accessPoint.externalSystem.name && (
+                        <span className="description">
+                            {accessPoint.externalSystem.name + ':' + accessPoint.externalId}
+                        </span>
+                    )}
+                    {accessPoint.externalId && (!accessPoint.externalSystem || !accessPoint.externalSystem.name) && (
+                        <span className="description">{'UNKNOWN:' + accessPoint.externalId}</span>
+                    )}
+                    {!accessPoint.externalId && <span className="description">{id}</span>}
+                </div>
             </div>
-            <div>
-                <span className="date">{datation}</span>
-                {accessPoint.externalId && accessPoint.externalSystem && accessPoint.externalSystem.name &&
-                <span className="description">{accessPoint.externalSystem.name + ':' + accessPoint.externalId}</span>}
-                {accessPoint.externalId && (!accessPoint.externalSystem || !accessPoint.externalSystem.name) &&
-                <span className="description">{'UNKNOWN:' + accessPoint.externalId}</span>}
-                {!accessPoint.externalId && <span className="description">{id}</span>}
-            </div>
-        </div>;
-    };
+        );
+    }
 }
 
 export default PartyListItem;

@@ -10,14 +10,14 @@ import {DEFAULT_LIST_SIZE} from '../../constants.tsx';
 export const DEFAULT_FUND_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
 
 function _fundRegionDataKey(fundRegion) {
-    return fundRegion.filterText + '_'
+    return fundRegion.filterText + '_';
 }
 
 function _fundDetailDataKey(fundDetail) {
     if (fundDetail.id !== null) {
-        return fundDetail.id + '_'
+        return fundDetail.id + '_';
     } else {
-        return ''
+        return '';
     }
 }
 
@@ -28,14 +28,14 @@ export function fundsSelectFund(id) {
     return {
         type: types.FUNDS_SELECT_FUND,
         id,
-    }
+    };
 }
 
 export function fundsSearch(filterText) {
     return {
         type: types.FUNDS_SEARCH,
         filterText,
-    }
+    };
 }
 
 /**
@@ -44,22 +44,21 @@ export function fundsSearch(filterText) {
 export function fundsFundDetailFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
-        const fundDetail = state.fundRegion.fundDetail
-        const dataKey = _fundDetailDataKey(fundDetail)
+        const fundDetail = state.fundRegion.fundDetail;
+        const dataKey = _fundDetailDataKey(fundDetail);
 
         if (fundDetail.currentDataKey !== dataKey) {
-            dispatch(fundsFundDetailRequest(dataKey))
-            WebApi.getFundDetail(fundDetail.id)
-                .then(json => {
-                    var newState = getState();
-                    const newFundDetail = newState.fundRegion.fundDetail;
-                    const newDataKey = _fundDetailDataKey(newFundDetail)
-                    if (newDataKey === dataKey) {
-                        dispatch(fundsFundDetailReceive(json))
-                    }
-                })
+            dispatch(fundsFundDetailRequest(dataKey));
+            WebApi.getFundDetail(fundDetail.id).then(json => {
+                var newState = getState();
+                const newFundDetail = newState.fundRegion.fundDetail;
+                const newDataKey = _fundDetailDataKey(newFundDetail);
+                if (newDataKey === dataKey) {
+                    dispatch(fundsFundDetailReceive(json));
+                }
+            });
         }
-    }
+    };
 }
 
 /**
@@ -68,51 +67,50 @@ export function fundsFundDetailFetchIfNeeded() {
 export function fundsFetchIfNeeded(from = 0, size = DEFAULT_FUND_LIST_MAX_SIZE) {
     return (dispatch, getState) => {
         var state = getState();
-        const { fundRegion } = state;
-        const { filter } = fundRegion;
+        const {fundRegion} = state;
+        const {filter} = fundRegion;
         const dataKey = _fundRegionDataKey(fundRegion);
 
         if (fundRegion.currentDataKey !== dataKey) {
-            dispatch(fundsRequest(dataKey))
-            WebApi.findFunds(fundRegion.filterText, size, filter.from)
-                .then(json => {
-                    var newState = getState();
-                    const newFundRegion = newState.fundRegion;
-                    const newDataKey = _fundRegionDataKey(newFundRegion)
-                    if (newDataKey === dataKey) {
-                        dispatch(fundsReceive(json))
-                    }
-                })
+            dispatch(fundsRequest(dataKey));
+            WebApi.findFunds(fundRegion.filterText, size, filter.from).then(json => {
+                var newState = getState();
+                const newFundRegion = newState.fundRegion;
+                const newDataKey = _fundRegionDataKey(newFundRegion);
+                if (newDataKey === dataKey) {
+                    dispatch(fundsReceive(json));
+                }
+            });
         }
-    }
+    };
 }
 
 function fundsRequest(dataKey) {
     return {
         type: types.FUNDS_REQUEST,
         dataKey,
-    }
+    };
 }
 
 function fundsReceive(data) {
     return {
         type: types.FUNDS_RECEIVE,
         data,
-    }
+    };
 }
 
 function fundsFundDetailRequest(dataKey) {
     return {
         type: types.FUNDS_FUND_DETAIL_REQUEST,
         dataKey,
-    }
+    };
 }
 
 function fundsFundDetailReceive(data) {
     return {
         type: types.FUNDS_FUND_DETAIL_RECEIVE,
         data,
-    }
+    };
 }
 
 /**
@@ -124,5 +122,5 @@ export function fundsFilter(filter) {
     return {
         type: types.FUNDS_FILTER,
         filter,
-    }
+    };
 }

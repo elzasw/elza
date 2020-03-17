@@ -6,7 +6,7 @@ import {FOCUS_KEYS} from '../../constants.tsx';
 export function storeRestoreFromStorage() {
     return (dispatch, getState) => {
         // Načtení z local storage
-        if (typeof (Storage) !== 'undefined') {
+        if (typeof Storage !== 'undefined') {
             let localStorageData = localStorage.getItem('ELZA-STORE-STATE');
             if (localStorageData) {
                 localStorageData = JSON.parse(localStorageData);
@@ -38,7 +38,6 @@ export function storeRestoreFromStorage() {
     };
 }
 
-
 export function storeStateDataInit(storageData) {
     return {
         type: types.STORE_STATE_DATA_INIT,
@@ -58,7 +57,7 @@ export function storeLoadData(type, data, switchView = true) {
         switch (type) {
             case 'APP':
             case 'PARTY_REGION':
-                dispatch(storeLoad({ store: 'app', ...data }));
+                dispatch(storeLoad({store: 'app', ...data}));
                 if (switchView) {
                     if (data.partyDetail) {
                         dispatch(routerNavigate('/party'));
@@ -67,32 +66,32 @@ export function storeLoadData(type, data, switchView = true) {
                 }
                 break;
             case 'REGISTRY_REGION':
-                dispatch(storeLoad({ store: 'app', ...data }));
+                dispatch(storeLoad({store: 'app', ...data}));
                 if (switchView) {
                     dispatch(routerNavigate('/registry'));
                     dispatch(setFocus(FOCUS_KEYS.REGISTRY, 1, 'list'));
                 }
                 break;
             case 'ARR_REGION':
-                dispatch(storeLoad({ arrRegion: data }));
+                dispatch(storeLoad({arrRegion: data}));
                 if (switchView) {
                     dispatch(routerNavigate('/arr'));
                 }
                 break;
             case 'ADMIN_REGION':
-                dispatch(storeLoad({ adminRegion: data }));
+                dispatch(storeLoad({adminRegion: data}));
                 if (switchView) {
                     dispatch(routerNavigate('/admin'));
                 }
                 break;
             case 'FUND_REGION':
-                dispatch(storeLoad({ fundRegion: data }));
+                dispatch(storeLoad({fundRegion: data}));
                 if (switchView) {
                     dispatch(routerNavigate('/fund'));
                 }
                 break;
             case 'ARR_REGION_FUND':
-                dispatch(storeLoad({ arrRegionFund: data }));
+                dispatch(storeLoad({arrRegionFund: data}));
                 if (switchView) {
                     dispatch(routerNavigate('/arr'));
                     dispatch(setFocus(FOCUS_KEYS.ARR, 1, 'tree'));

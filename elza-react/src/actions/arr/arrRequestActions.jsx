@@ -11,10 +11,10 @@ import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {storeFromArea} from 'shared/utils';
 
-const AREA_PREPARED_REQUESTS = "preparedRequestList";
-const AREA_REQUEST_LIST_SUFFIX = ".requestList";
-const AREA_REQUEST_IN_QUEUE_LIST = "requestInQueueList";
-const AREA_REQUEST_DETAIL_SUFFIX = ".requestDetail";
+const AREA_PREPARED_REQUESTS = 'preparedRequestList';
+const AREA_REQUEST_LIST_SUFFIX = '.requestList';
+const AREA_REQUEST_IN_QUEUE_LIST = 'requestInQueueList';
+const AREA_REQUEST_DETAIL_SUFFIX = '.requestDetail';
 
 /**
  * Načtení seznamu NEODESLANÝCH požadavků.
@@ -23,15 +23,15 @@ const AREA_REQUEST_DETAIL_SUFFIX = ".requestDetail";
  * @return {function(*, *)}
  */
 export function fetchPreparedListIfNeeded(versionId, type) {
-    return SimpleListActions.fetchIfNeeded(AREA_PREPARED_REQUESTS, { versionId, type }, (parent, filter) => {
-        return WebApi.findRequests(versionId, parent.type, "OPEN")
+    return SimpleListActions.fetchIfNeeded(AREA_PREPARED_REQUESTS, {versionId, type}, (parent, filter) => {
+        return WebApi.findRequests(versionId, parent.type, 'OPEN')
             .then(json => ({rows: json, count: 0}))
             .then(data => {
-                if (parent.type === "DAO") {
+                if (parent.type === 'DAO') {
                     return {
                         count: 0,
-                        rows: data.rows.filter(i => i.type === filter.daoType)
-                    }
+                        rows: data.rows.filter(i => i.type === filter.daoType),
+                    };
                 } else {
                     return data;
                 }
@@ -65,8 +65,8 @@ export function preparedListInvalidate() {
  */
 export function sendRequest(versionId, requestId) {
     return (dispatch, getState) => {
-        return WebApi.sendArrRequest(versionId, requestId)
-    }
+        return WebApi.sendArrRequest(versionId, requestId);
+    };
 }
 
 /**
@@ -77,8 +77,8 @@ export function sendRequest(versionId, requestId) {
  */
 export function deleteRequest(versionId, requestId) {
     return (dispatch, getState) => {
-        return WebApi.deleteArrRequest(versionId, requestId)
-    }
+        return WebApi.deleteArrRequest(versionId, requestId);
+    };
 }
 
 /**
@@ -86,18 +86,29 @@ export function deleteRequest(versionId, requestId) {
  * @param versionId verze AS
  */
 export function fetchListIfNeeded(versionId) {
-    return SimpleListActions.fetchIfNeeded("fund[" + versionId + "]" + AREA_REQUEST_LIST_SUFFIX, versionId, (parent, filter) => {
-        let type;
-        let subType = null;
-        if (filter.type === 'DESTRUCTION' || filter.type === 'TRANSFER') {
-            type = 'DAO';
-            subType = filter.type;
-        } else {
-            type = filter.type;
-        }
-        return WebApi.findRequests(versionId, type, null, filter.description, filter.fromDate, filter.toDate, subType)
-            .then(json => ({rows: json, count: 0}));
-    });
+    return SimpleListActions.fetchIfNeeded(
+        'fund[' + versionId + ']' + AREA_REQUEST_LIST_SUFFIX,
+        versionId,
+        (parent, filter) => {
+            let type;
+            let subType = null;
+            if (filter.type === 'DESTRUCTION' || filter.type === 'TRANSFER') {
+                type = 'DAO';
+                subType = filter.type;
+            } else {
+                type = filter.type;
+            }
+            return WebApi.findRequests(
+                versionId,
+                type,
+                null,
+                filter.description,
+                filter.fromDate,
+                filter.toDate,
+                subType,
+            ).then(json => ({rows: json, count: 0}));
+        },
+    );
 }
 
 /**
@@ -106,7 +117,7 @@ export function fetchListIfNeeded(versionId) {
  * @param filter
  */
 export function filterList(versionId, filter) {
-    return SimpleListActions.filter("fund[" + versionId + "]" + AREA_REQUEST_LIST_SUFFIX, filter);
+    return SimpleListActions.filter('fund[' + versionId + ']' + AREA_REQUEST_LIST_SUFFIX, filter);
 }
 
 /**
@@ -118,25 +129,25 @@ export function filterList(versionId, filter) {
 export function changeRequests(versionId, reqId, nodeIds) {
     return (dispatch, getState) => {
         // Seznam požadavků
-        dispatch(SimpleListActions.invalidate("fund[" + versionId + "]" + AREA_REQUEST_LIST_SUFFIX, null));
+        dispatch(SimpleListActions.invalidate('fund[' + versionId + ']' + AREA_REQUEST_LIST_SUFFIX, null));
 
         // Seznam otevřených požadavků pro přidání na pořádání
         dispatch(SimpleListActions.invalidate(AREA_PREPARED_REQUESTS, null));
 
         // Detail požadavku
-        const detailArea = "fund[" + versionId + "]" + AREA_REQUEST_DETAIL_SUFFIX;
+        const detailArea = 'fund[' + versionId + ']' + AREA_REQUEST_DETAIL_SUFFIX;
         const requestDetail = storeFromArea(getState(), detailArea);
         if (requestDetail.id === reqId) {
             dispatch(DetailActions.invalidate(detailArea, null));
         }
-    }
+    };
 }
 
 /**
  * Invalidace požadavků.
  */
 export function listInvalidate(versionId) {
-    return SimpleListActions.invalidate("fund[" + versionId + "]" + AREA_REQUEST_LIST_SUFFIX, null);
+    return SimpleListActions.invalidate('fund[' + versionId + ']' + AREA_REQUEST_LIST_SUFFIX, null);
 }
 
 /**
@@ -144,8 +155,7 @@ export function listInvalidate(versionId) {
  */
 export function fetchInQueueListIfNeeded() {
     return SimpleListActions.fetchIfNeeded(AREA_REQUEST_IN_QUEUE_LIST, null, (parent, filter) => {
-        return WebApi.getRequestsInQueue()
-            .then(json => ({rows: json, count: 0}));
+        return WebApi.getRequestsInQueue().then(json => ({rows: json, count: 0}));
     });
 }
 
@@ -162,7 +172,7 @@ export function queueListInvalidate() {
  * @param id id požadavku
  */
 export function fetchDetailIfNeeded(versionId, id) {
-    return DetailActions.fetchIfNeeded("fund[" + versionId + "]" + AREA_REQUEST_DETAIL_SUFFIX, id, (id) => {
+    return DetailActions.fetchIfNeeded('fund[' + versionId + ']' + AREA_REQUEST_DETAIL_SUFFIX, id, id => {
         return WebApi.getArrRequest(versionId, id);
     });
 }
@@ -173,7 +183,7 @@ export function fetchDetailIfNeeded(versionId, id) {
  * @param id id požadavku
  */
 export function selectDetail(versionId, id) {
-    return DetailActions.select("fund[" + versionId + "]" + AREA_REQUEST_DETAIL_SUFFIX, id);
+    return DetailActions.select('fund[' + versionId + ']' + AREA_REQUEST_DETAIL_SUFFIX, id);
 }
 
 /**
@@ -184,7 +194,7 @@ export function selectDetail(versionId, id) {
  */
 export function detailUnselect(versionId, id) {
     return (dispatch, getState) => {
-        const area = "fund[" + versionId + "]" + AREA_REQUEST_DETAIL_SUFFIX;
+        const area = 'fund[' + versionId + ']' + AREA_REQUEST_DETAIL_SUFFIX;
         const detailStore = storeFromArea(getState(), area);
         if (detailStore.id === id) {
             dispatch(DetailActions.select(area, null));
@@ -199,7 +209,7 @@ export function detailUnselect(versionId, id) {
  * @return {*}
  */
 export function detailInvalidate(versionId, id) {
-    return DetailActions.invalidate("fund[" + versionId + "]" + AREA_REQUEST_DETAIL_SUFFIX, id)
+    return DetailActions.invalidate('fund[' + versionId + ']' + AREA_REQUEST_DETAIL_SUFFIX, id);
 }
 
 /**
@@ -212,7 +222,7 @@ export function detailInvalidate(versionId, id) {
 export function requestEdit(versionId, id, data) {
     return (dispatch, getState) => {
         savingApiWrapper(dispatch, WebApi.updateArrRequest(versionId, id, data));
-    }
+    };
 }
 
 /**
@@ -223,12 +233,18 @@ export function requestEdit(versionId, id, data) {
  */
 export function addNodes(versionId, request, nodeIds, digitizationFrontdeskId) {
     return (dispatch, getState) => {
-        WebApi.arrDigitizationRequestAddNodes(versionId, request.id, false, request.description, nodeIds, digitizationFrontdeskId)
-            .then((json) => {
-                dispatch(addToastrSuccess(i18n("arr.request.title.nodesAdded")));
-                dispatch(modalDialogHide());
-            });
-    }
+        WebApi.arrDigitizationRequestAddNodes(
+            versionId,
+            request.id,
+            false,
+            request.description,
+            nodeIds,
+            digitizationFrontdeskId,
+        ).then(json => {
+            dispatch(addToastrSuccess(i18n('arr.request.title.nodesAdded')));
+            dispatch(modalDialogHide());
+        });
+    };
 }
 
 /**
@@ -239,6 +255,6 @@ export function addNodes(versionId, request, nodeIds, digitizationFrontdeskId) {
  */
 export function removeNode(versionId, request, nodeId) {
     return (dispatch, getState) => {
-        WebApi.arrRequestRemoveNodes(versionId, request.id, [nodeId])
-    }
+        WebApi.arrRequestRemoveNodes(versionId, request.id, [nodeId]);
+    };
 }

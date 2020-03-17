@@ -13,7 +13,6 @@ import DescItemFactory from 'components/arr/nodeForm/DescItemFactory.jsx';
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
 class OutputSubNodeForm extends AbstractReactComponent {
-
     static propTypes = {
         versionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
@@ -33,7 +32,18 @@ class OutputSubNodeForm extends AbstractReactComponent {
     };
 
     render() {
-        const { versionId, focus, closed, fundId, rulDataTypes, calendarTypes, structureTypes, descItemTypes, subNodeForm, readMode } = this.props;
+        const {
+            versionId,
+            focus,
+            closed,
+            fundId,
+            rulDataTypes,
+            calendarTypes,
+            structureTypes,
+            descItemTypes,
+            subNodeForm,
+            readMode,
+        } = this.props;
 
         return (
             <div className="output-item-form-container">
@@ -50,17 +60,14 @@ class OutputSubNodeForm extends AbstractReactComponent {
                     descItemTypes={descItemTypes}
                     subNodeForm={subNodeForm}
                     closed={closed}
-                    conformityInfo={{ missings: [], errors: [] }}
+                    conformityInfo={{missings: [], errors: []}}
                     descItemCopyFromPrevEnabled={false}
                     focus={focus}
                     singleDescItemTypeId={null}
                     singleDescItemTypeEdit={false}
-                    onDescItemTypeCopyFromPrev={() => {
-                    }}
-                    onDescItemTypeLock={() => {
-                    }}
-                    onDescItemTypeCopy={() => {
-                    }}
+                    onDescItemTypeCopyFromPrev={() => {}}
+                    onDescItemTypeLock={() => {}}
+                    onDescItemTypeCopy={() => {}}
                     formActions={outputFormActions}
                     showNodeAddons={false}
                     readMode={closed || readMode}
@@ -72,7 +79,7 @@ class OutputSubNodeForm extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const { arrRegion, focus, refTables } = state;
+    const {arrRegion, focus, refTables} = state;
     let fund = null;
     let structureTypes = null;
     if (arrRegion.activeIndex != null) {

@@ -35,7 +35,6 @@ export function submitReduxForm(validate, values, dispatch) {
     return submitForm.bind(this)(validate, values);
 }
 
-
 /**
  * Default form options
  */
@@ -133,15 +132,19 @@ export function submitForm(validate, values, props, onSubmit, dispatch, options 
                 formFinished(dispatch, options);
                 resolve(values);
             }
-            if (typeof submit == 'object') { // if the onSubmit function returns promise object
-                submit.then((result) => {
-                    formFinished(dispatch, options);
-                    resolve(result);
-                }).catch(e => { // if an error happens during the submit promise
-                    console.error(e);
-                    formRejected(dispatch, options, e);
-                    reject(); // rejected without parameters to prevent accidental mapping of error object keys to form fields
-                });
+            if (typeof submit == 'object') {
+                // if the onSubmit function returns promise object
+                submit
+                    .then(result => {
+                        formFinished(dispatch, options);
+                        resolve(result);
+                    })
+                    .catch(e => {
+                        // if an error happens during the submit promise
+                        console.error(e);
+                        formRejected(dispatch, options, e);
+                        reject(); // rejected without parameters to prevent accidental mapping of error object keys to form fields
+                    });
             }
             return submit;
         }

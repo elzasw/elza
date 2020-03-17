@@ -36,7 +36,6 @@ import {FOCUS_KEYS} from '../../constants.tsx';
 import {requestScopesIfNeeded} from '../../actions/refTables/scopesData';
 
 class RegistryList extends AbstractReactComponent {
-
     static propTypes = {
         maxSize: PropTypes.number,
     };
@@ -69,8 +68,10 @@ class RegistryList extends AbstractReactComponent {
         const {focus} = props;
 
         if (canSetFocus() && focus) {
-            if (isFocusFor(focus, null, 1)) {   // focus po ztrátě
-                if (this.refs.registryList) {   // ještě nemusí existovat
+            if (isFocusFor(focus, null, 1)) {
+                // focus po ztrátě
+                if (this.refs.registryList) {
+                    // ještě nemusí existovat
                     this.setState({}, () => {
                         this.refs.registryList.focus();
                         focusWasSet();
@@ -85,46 +86,56 @@ class RegistryList extends AbstractReactComponent {
         }
     };
 
-    handleFilterType = (e) => {
+    handleFilterType = e => {
         const val = e.target.value;
-        this.props.dispatch(registryListFilter({
-            ...this.props.registryList.filter,
-            from: 0,
-            type: val === -1 ? null : val,
-        }));
+        this.props.dispatch(
+            registryListFilter({
+                ...this.props.registryList.filter,
+                from: 0,
+                type: val === -1 ? null : val,
+            }),
+        );
     };
 
-    handleFilterText = (filterText) => {
-        this.props.dispatch(registryListFilter({
-            ...this.props.registryList.filter,
-            from: 0,
-            text: filterText && filterText.length === 0 ? null : filterText,
-        }));
+    handleFilterText = filterText => {
+        this.props.dispatch(
+            registryListFilter({
+                ...this.props.registryList.filter,
+                from: 0,
+                text: filterText && filterText.length === 0 ? null : filterText,
+            }),
+        );
     };
 
-    handleFilterRegistryType = (item) => {
-        this.props.dispatch(registryListFilter({
-            ...this.props.registryList.filter,
-            from: 0,
-            itemSpecId: null,
-            registryTypeId: item ? item.id : null,
-        }));
+    handleFilterRegistryType = item => {
+        this.props.dispatch(
+            registryListFilter({
+                ...this.props.registryList.filter,
+                from: 0,
+                itemSpecId: null,
+                registryTypeId: item ? item.id : null,
+            }),
+        );
     };
 
-    handleFilterRegistryScope = (item) => {
-        this.props.dispatch(registryListFilter({
-            ...this.props.registryList.filter,
-            from: 0,
-            scopeId: item ? item.id : null,
-        }));
+    handleFilterRegistryScope = item => {
+        this.props.dispatch(
+            registryListFilter({
+                ...this.props.registryList.filter,
+                from: 0,
+                scopeId: item ? item.id : null,
+            }),
+        );
     };
 
-    handleFilterRegistryState = (item) => {
-        this.props.dispatch(registryListFilter({
-            ...this.props.registryList.filter,
-            from: 0,
-            state: item ? item.id : null,
-        }));
+    handleFilterRegistryState = item => {
+        this.props.dispatch(
+            registryListFilter({
+                ...this.props.registryList.filter,
+                from: 0,
+                state: item ? item.id : null,
+            }),
+        );
     };
 
     handleFilterPrev = () => {
@@ -151,27 +162,29 @@ class RegistryList extends AbstractReactComponent {
         this.props.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, text: null}));
     };
 
-    handleRegistryDetail = (item) => {
+    handleRegistryDetail = item => {
         this.props.dispatch(registryDetailFetchIfNeeded(item.id));
     };
 
-    handleRegistryNavigation = (recordIdForOpen) => {
+    handleRegistryNavigation = recordIdForOpen => {
         this.props.dispatch(registrySetFolder(recordIdForOpen));
     };
 
-    handleRegistryTypesSelectNavigation = (id) => {
+    handleRegistryTypesSelectNavigation = id => {
         this.handleFilterRegistryType({id});
     };
 
-    renderListItem = (props) => {
+    renderListItem = props => {
         const {item} = props;
         const {eidTypes, apTypeIdMap} = this.props;
-        return <RegistryListItem
-            {...item}
-            onClick={this.handleRegistryDetail.bind(this, item)}
-            eidTypes={eidTypes}
-            apTypeIdMap={apTypeIdMap}
-        />;
+        return (
+            <RegistryListItem
+                {...item}
+                onClick={this.handleRegistryDetail.bind(this, item)}
+                eidTypes={eidTypes}
+                apTypeIdMap={apTypeIdMap}
+            />
+        );
     };
 
     /**
@@ -179,14 +192,14 @@ class RegistryList extends AbstractReactComponent {
      * @return {array} pole akcí
      */
     getRegistryTypeActions = () => {
-        const {registryList: {filter}} = this.props;
+        const {
+            registryList: {filter},
+        } = this.props;
         const actions = [];
         if (filter.registryTypeId !== null && typeof filter.registryTypeId !== 'undefined') {
             actions.push(
-                <div
-                    onClick={() => this.filterRegistryTypeClear()}
-                    className={'btn btn-default detail'}>
-                    <Icon glyph={'fa-times'}/>
+                <div onClick={() => this.filterRegistryTypeClear()} className={'btn btn-default detail'}>
+                    <Icon glyph={'fa-times'} />
                 </div>,
             );
         }
@@ -195,10 +208,12 @@ class RegistryList extends AbstractReactComponent {
 
     filterScopes(scopes) {
         const {userDetail} = this.props;
-        return scopes.filter((scope) => userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
-            type: perms.AP_SCOPE_RD,
-            scopeId: scope.id,
-        }));
+        return scopes.filter(scope =>
+            userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
+                type: perms.AP_SCOPE_RD,
+                scopeId: scope.id,
+            }),
+        );
     }
 
     getScopesWithAll(scopes) {
@@ -211,16 +226,19 @@ class RegistryList extends AbstractReactComponent {
 
     getStateWithAll() {
         const defaultValue = {name: i18n('party.apState')};
-        return [defaultValue, ...StateApproval.values.map(item => {
-            return {
-                id: item,
-                name: StateApproval.getCaption(item),
-            };
-        })];
+        return [
+            defaultValue,
+            ...StateApproval.values.map(item => {
+                return {
+                    id: item,
+                    name: StateApproval.getCaption(item),
+                };
+            }),
+        ];
     }
 
     getScopeById(scopeId, scopes) {
-        return scopeId && scopes && scopes.length > 0 && scopes[0].scopes.find(scope => (scope.id === scopeId)).name;
+        return scopeId && scopes && scopes.length > 0 && scopes[0].scopes.find(scope => scope.id === scopeId).name;
     }
 
     /**
@@ -230,7 +248,6 @@ class RegistryList extends AbstractReactComponent {
 
     render() {
         const {registryDetail, registryList, maxSize, registryTypes, scopes, eidTypes} = this.props;
-
 
         let activeIndex = null;
         if (registryList.fetched && registryDetail.id !== null) {
@@ -243,15 +260,17 @@ class RegistryList extends AbstractReactComponent {
 
         if (isFetched && eidTypes !== null) {
             if (registryList.rows.length > 0) {
-                list = <ListBox
-                    ref='registryList'
-                    items={registryList.filteredRows}
-                    activeIndex={activeIndex}
-                    renderItemContent={this.renderListItem}
-                    onFocus={this.handleRegistryDetail}
-                />;
+                list = (
+                    <ListBox
+                        ref="registryList"
+                        items={registryList.filteredRows}
+                        activeIndex={activeIndex}
+                        renderItemContent={this.renderListItem}
+                        onFocus={this.handleRegistryDetail}
+                    />
+                );
             } else {
-                list = <div className='search-norecord'>{i18n('registry.list.noRecord')}</div>;
+                list = <div className="search-norecord">{i18n('registry.list.noRecord')}</div>;
             }
         }
 
@@ -260,60 +279,86 @@ class RegistryList extends AbstractReactComponent {
         let apTypesWithAll = [...registryTypes];
         apTypesWithAll.unshift({name: this.registryTypeDefaultValue});
 
-        return <div className="registry-list">
-            <div className="filter">
-                <Autocomplete
-                    inputProps={{placeholder: this.getScopeById(filter.scopeId, scopes) || i18n('party.recordScope')}}
-                    items={this.getScopesWithAll(scopes)}
-                    onChange={this.handleFilterRegistryScope}
-                    value={this.getScopeById(filter.scopeId, scopes)}
-                />
-                <Autocomplete
-                    inputProps={{placeholder: filter.state ? StateApproval.getCaption(filter.state) : i18n('party.apState')}}
-                    items={this.getStateWithAll()}
-                    onChange={this.handleFilterRegistryState}
-                    value={filter.state}
-                />
-                <Autocomplete
-                    inputProps={{placeholder: !filter.registryTypeId ? this.registryTypeDefaultValue : ''}}
-                    items={apTypesWithAll}
-                    disabled={!registryTypes || registryList.filter.parents.length || registryList.filter.itemSpecId || registryList.filter.itemTypeId ? true : false}
-                    tree
-                    alwaysExpanded
-                    allowSelectItem={(item) => true}
-                    value={!filter.registryTypeId ? this.registryTypeDefaultValue : getTreeItemById(filter.registryTypeId, registryTypes)}
-                    onChange={this.handleFilterRegistryType}
-                    actions={this.getRegistryTypeActions()}
-                />
-                <SearchWithGoto
-                    onFulltextSearch={this.handleFilterText}
-                    onClear={this.handleFilterTextClear}
-                    placeholder={i18n('search.input.search')}
-                    filterText={registryList.filter.text}
-                    showFilterResult={true}
-                    type="INFO"
-                    itemsCount={registryList.filteredRows ? registryList.filteredRows.length : 0}
-                    allItemsCount={registryList.count}
-                />
+        return (
+            <div className="registry-list">
+                <div className="filter">
+                    <Autocomplete
+                        inputProps={{
+                            placeholder: this.getScopeById(filter.scopeId, scopes) || i18n('party.recordScope'),
+                        }}
+                        items={this.getScopesWithAll(scopes)}
+                        onChange={this.handleFilterRegistryScope}
+                        value={this.getScopeById(filter.scopeId, scopes)}
+                    />
+                    <Autocomplete
+                        inputProps={{
+                            placeholder: filter.state ? StateApproval.getCaption(filter.state) : i18n('party.apState'),
+                        }}
+                        items={this.getStateWithAll()}
+                        onChange={this.handleFilterRegistryState}
+                        value={filter.state}
+                    />
+                    <Autocomplete
+                        inputProps={{placeholder: !filter.registryTypeId ? this.registryTypeDefaultValue : ''}}
+                        items={apTypesWithAll}
+                        disabled={
+                            !registryTypes ||
+                            registryList.filter.parents.length ||
+                            registryList.filter.itemSpecId ||
+                            registryList.filter.itemTypeId
+                                ? true
+                                : false
+                        }
+                        tree
+                        alwaysExpanded
+                        allowSelectItem={item => true}
+                        value={
+                            !filter.registryTypeId
+                                ? this.registryTypeDefaultValue
+                                : getTreeItemById(filter.registryTypeId, registryTypes)
+                        }
+                        onChange={this.handleFilterRegistryType}
+                        actions={this.getRegistryTypeActions()}
+                    />
+                    <SearchWithGoto
+                        onFulltextSearch={this.handleFilterText}
+                        onClear={this.handleFilterTextClear}
+                        placeholder={i18n('search.input.search')}
+                        filterText={registryList.filter.text}
+                        showFilterResult={true}
+                        type="INFO"
+                        itemsCount={registryList.filteredRows ? registryList.filteredRows.length : 0}
+                        allItemsCount={registryList.count}
+                    />
+                </div>
+                <StoreHorizontalLoader store={registryList} />
+                {list}
+                {isFetched && registryList.filteredRows.length > maxSize && (
+                    <span className="items-count">
+                        {i18n('party.list.itemsVisibleCountFrom', registryList.filteredRows.length, registryList.count)}
+                    </span>
+                )}
+                {registryList.count > maxSize && (
+                    <ListPager
+                        prev={this.handleFilterPrev}
+                        next={this.handleFilterNext}
+                        from={this.props.registryList.filter.from}
+                        maxSize={maxSize}
+                        totalCount={this.props.registryList.count}
+                    />
+                )}
             </div>
-            <StoreHorizontalLoader store={registryList}/>
-            {list}
-            {isFetched && registryList.filteredRows.length > maxSize && <span
-                className="items-count">{i18n('party.list.itemsVisibleCountFrom', registryList.filteredRows.length, registryList.count)}</span>}
-            {registryList.count > maxSize &&
-            <ListPager
-                prev={this.handleFilterPrev}
-                next={this.handleFilterNext}
-                from={this.props.registryList.filter.from}
-                maxSize={maxSize}
-                totalCount={this.props.registryList.count}
-            />}
-        </div>;
+        );
     }
 }
 
-export default connect((state) => {
-    const {app: {registryList, registryDetail}, userDetail, focus, refTables: {recordTypes, scopesData, eidTypes}} = state;
+export default connect(state => {
+    const {
+        app: {registryList, registryDetail},
+        userDetail,
+        focus,
+        refTables: {recordTypes, scopesData, eidTypes},
+    } = state;
     return {
         focus,
         registryDetail,

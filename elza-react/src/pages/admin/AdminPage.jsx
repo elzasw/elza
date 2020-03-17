@@ -15,15 +15,13 @@ import * as perms from 'actions/user/Permission.jsx';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {getIndexStateFetchIfNeeded, reindex} from 'actions/admin/fulltext.jsx';
 
-
 import './AdminPage.scss';
 import AbstractReactComponent from '../../components/AbstractReactComponent';
 import Ribbon from '../../components/page/Ribbon';
 import PageLayout from '../shared/layout/PageLayout';
 
 class AdminPage extends AbstractReactComponent {
-
-    UNSAFE_componentWillReceiveProps = (nextProps) => {
+    UNSAFE_componentWillReceiveProps = nextProps => {
         this.fetchData(nextProps);
     };
 
@@ -31,7 +29,7 @@ class AdminPage extends AbstractReactComponent {
         this.fetchData(this.props);
     };
 
-    fetchData = (props) => {
+    fetchData = props => {
         const {fetched, userDetail} = props;
 
         if (userDetail.hasOne(perms.ADMIN)) {
@@ -42,15 +40,12 @@ class AdminPage extends AbstractReactComponent {
     };
 
     renderReindexing = () => {
-        return (
-            <div>{i18n('admin.fulltext.message.reindexing')}</div>
-        );
+        return <div>{i18n('admin.fulltext.message.reindexing')}</div>;
     };
 
     startReindexing = () => {
         this.props.dispatch(reindex());
     };
-
 
     handleDeveloperMode = () => {
         this.props.dispatch(developerSet(!this.props.developer.enabled));
@@ -71,45 +66,79 @@ class AdminPage extends AbstractReactComponent {
     };
 
     buildRibbon() {
-        const {userDetail, fulltext: {indexing}} = this.props;
+        const {
+            userDetail,
+            fulltext: {indexing},
+        } = this.props;
 
         const altActions = [];
 
         if (userDetail.hasOne(perms.FUND_ARR_ALL, perms.FUND_ARR, perms.FUND_RD_ALL, perms.FUND_RD)) {
             altActions.push(
-                <Button active={this.props.developer.enabled} key="developerMode"
-                        onClick={this.handleDeveloperMode} variant={'default'}><Icon glyph="fa-cogs"/>
-                    <div><span className="btnText">{i18n('ribbon.action.admin.developer')}</span></div>
+                <Button
+                    active={this.props.developer.enabled}
+                    key="developerMode"
+                    onClick={this.handleDeveloperMode}
+                    variant={'default'}
+                >
+                    <Icon glyph="fa-cogs" />
+                    <div>
+                        <span className="btnText">{i18n('ribbon.action.admin.developer')}</span>
+                    </div>
                 </Button>,
             );
         }
 
         altActions.push(
-            <Button key="reindex" onClick={this.startReindexing} disabled={indexing}
-                    title={i18n('ribbon.action.admin.reindex.title')} variant={'default'}><Icon glyph="fa-search"/>
-                <div><span
-                    className="btnText">{indexing ? i18n('admin.fulltext.message.reindexing') : i18n('ribbon.action.admin.reindex')}</span>
+            <Button
+                key="reindex"
+                onClick={this.startReindexing}
+                disabled={indexing}
+                title={i18n('ribbon.action.admin.reindex.title')}
+                variant={'default'}
+            >
+                <Icon glyph="fa-search" />
+                <div>
+                    <span className="btnText">
+                        {indexing ? i18n('admin.fulltext.message.reindexing') : i18n('ribbon.action.admin.reindex')}
+                    </span>
                 </div>
             </Button>,
         );
         altActions.push(
-            <Button key="resetLocalStorage" onClick={this.handleResetLocalStorage}
-                    title={i18n('ribbon.action.admin.resetLocalStorage.title')} variant={'default'}><Icon
-                glyph="fa-times"/>
-                <div><span className="btnText">{i18n('ribbon.action.admin.resetLocalStorage')}</span></div>
+            <Button
+                key="resetLocalStorage"
+                onClick={this.handleResetLocalStorage}
+                title={i18n('ribbon.action.admin.resetLocalStorage.title')}
+                variant={'default'}
+            >
+                <Icon glyph="fa-times" />
+                <div>
+                    <span className="btnText">{i18n('ribbon.action.admin.resetLocalStorage')}</span>
+                </div>
             </Button>,
         );
         altActions.push(
-            <Button key="resetServerCache" onClick={this.handleResetServerCache}
-                    title={i18n('ribbon.action.admin.resetServerCache.title')} variant={'default'}><Icon
-                glyph="fa-times"/>
-                <div><span className="btnText">{i18n('ribbon.action.admin.resetServerCache')}</span></div>
+            <Button
+                key="resetServerCache"
+                onClick={this.handleResetServerCache}
+                title={i18n('ribbon.action.admin.resetServerCache.title')}
+                variant={'default'}
+            >
+                <Icon glyph="fa-times" />
+                <div>
+                    <span className="btnText">{i18n('ribbon.action.admin.resetServerCache')}</span>
+                </div>
             </Button>,
         );
 
         let altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>;
+            altSection = (
+                <RibbonGroup key="alt" className="small">
+                    {altActions}
+                </RibbonGroup>
+            );
         }
 
         return <Ribbon admin altSection={altSection} {...this.props} />;
@@ -118,21 +147,26 @@ class AdminPage extends AbstractReactComponent {
     render() {
         const {splitter} = this.props;
 
-        const centerPanel = <div>
-            Administrace - HOME
-        </div>;
+        const centerPanel = <div>Administrace - HOME</div>;
 
-        return <PageLayout
-            splitter={splitter}
-            className='admin-packages-page'
-            ribbon={this.buildRibbon()}
-            centerPanel={centerPanel}
-        />;
+        return (
+            <PageLayout
+                splitter={splitter}
+                className="admin-packages-page"
+                ribbon={this.buildRibbon()}
+                centerPanel={centerPanel}
+            />
+        );
     }
 }
 
 function mapStateToProps(state) {
-    const {splitter, developer, userDetail, adminRegion: {fulltext}} = state;
+    const {
+        splitter,
+        developer,
+        userDetail,
+        adminRegion: {fulltext},
+    } = state;
 
     return {
         splitter,
@@ -143,4 +177,3 @@ function mapStateToProps(state) {
 }
 
 export default connect(mapStateToProps)(AdminPage);
-

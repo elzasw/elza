@@ -102,7 +102,7 @@
  */
 
 function processStore2(store, action) {
-    return store.reducer(store, action)
+    return store.reducer(store, action);
 }
 
 export default class StoreUtils {
@@ -114,7 +114,7 @@ export default class StoreUtils {
         return {
             ...state,
             [name]: processStore2(state[name], action),
-        }
+        };
     }
 
     static processConcreteStore(store, action) {
@@ -137,7 +137,7 @@ export default class StoreUtils {
                 if (x[p] === y[p]) continue;
                 // if they have the same strict value or identity then they are equal
 
-                if (typeof( x[p] ) !== "object") {
+                if (typeof x[p] !== 'object') {
                     return false;
                 }
                 // Numbers, Strings, Functions, Booleans must be strictly equal
@@ -148,7 +148,7 @@ export default class StoreUtils {
             }
             return true;
         } else {
-            return StoreUtils.stateEquals(x, y)
+            return StoreUtils.stateEquals(x, y);
         }
     }
 
@@ -163,11 +163,11 @@ export default class StoreUtils {
             if (x[p] === y[p]) continue;
             // if they have the same strict value or identity then they are equal
 
-            if (typeof( x[p] ) !== "object") return false;
+            if (typeof x[p] !== 'object') return false;
             // Numbers, Strings, Functions, Booleans must be strictly equal
 
             if (x[p] !== y[p]) {
-//console.log(p)
+                //console.log(p)
                 return false;
             }
         }
@@ -212,11 +212,13 @@ export default class StoreUtils {
 
         // recursive object equality check
         let p = Object.keys(x);
-        return Object.keys(y).every(function (i) {
+        return (
+            Object.keys(y).every(function(i) {
                 return p.indexOf(i) !== -1;
             }) &&
-            p.every(function (i) {
+            p.every(function(i) {
                 return StoreUtils.objectEquals(x[i], y[i]);
-            });
+            })
+        );
     }
-};
+}

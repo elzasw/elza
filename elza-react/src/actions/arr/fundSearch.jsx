@@ -14,79 +14,81 @@ export function isFundSearchAction(action) {
         case types.FUND_SEARCH_FUND_RECEIVE:
             return true;
         default:
-            return false
+            return false;
     }
 }
 
 export function fundSearchFetchIfNeeded() {
     return (dispatch, getState) => {
-        const {arrRegion: {fundSearch}} = getState();
+        const {
+            arrRegion: {fundSearch},
+        } = getState();
         const {currentDataKey, isFetching, fulltext, funds} = fundSearch;
 
-        if ((fulltext != currentDataKey && !isFetching)) {
+        if (fulltext != currentDataKey && !isFetching) {
             dispatch(fundSearchFulltextRequest(fulltext));
             WebApi.fundFulltext(fulltext).then(result => {
                 dispatch(fundSearchFulltextReceive(result));
             });
         }
 
-        funds.forEach(fund => {
+        funds.forEach(fund => {
             if (fund.expanded && !fund.isFetching && !fund.fetched) {
                 dispatch(fundSearchFundRequest(fund));
                 WebApi.fundFulltextNodes(fund.id).then(result => {
                     dispatch(fundSearchFundReceive(fund, result));
                 });
             }
-        })
-    }
+        });
+    };
 }
 
 export function fundSearchFulltextChange(fulltext) {
     return {
         type: types.FUND_SEARCH_FULLTEXT_CHANGE,
-        fulltext
-    }
+        fulltext,
+    };
 }
 
 export function fundSearchFulltextClear() {
     return {
         type: types.FUND_SEARCH_FULLTEXT_CHANGE,
-        fulltext: ''
-    }
+        fulltext: '',
+    };
 }
 
 function fundSearchFulltextRequest(fulltext) {
     return {
         type: types.FUND_SEARCH_FULLTEXT_REQUEST,
-        fulltext
-    }
+        fulltext,
+    };
 }
 
 function fundSearchFulltextReceive(funds) {
     return {
         type: types.FUND_SEARCH_FULLTEXT_RECEIVE,
-        funds
-    }
+        funds,
+    };
 }
 
 function fundSearchFundRequest(fund) {
     return {
         type: types.FUND_SEARCH_FUND_REQUEST,
-        fund
-    }
+        fund,
+    };
 }
 
 function fundSearchFundReceive(fund, nodes) {
     return {
         type: types.FUND_SEARCH_FUND_RECEIVE,
         fund,
-        nodes
-    }
+        nodes,
+    };
 }
 
 export function fundSearchExpandFund(fund) {
     return {
         type: types.FUND_SEARCH_EXPAND_FUND,
-        fund
-    }
+        fund,
+    };
 }

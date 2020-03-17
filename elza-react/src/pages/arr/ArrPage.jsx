@@ -51,9 +51,7 @@ import {nodeWithIssueByFundVersion} from '../../actions/arr/issues';
 import IssueForm from '../../components/form/IssueForm';
 import ConfirmForm from '../../components/shared/form/ConfirmForm';
 
-
 class ArrPage extends ArrParentPage {
-
     static TAB_KEY = 'arr-as';
 
     static contextTypes = {shortcuts: PropTypes.object};
@@ -83,11 +81,25 @@ class ArrPage extends ArrParentPage {
 
     constructor(props) {
         super(props, 'fa-page');
-        this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
-            'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
-            'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicies', 'handleSetVisiblePolicy',
-            'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect', 'handleSelectErrorNode',
-            'handleErrorPrevious', 'handleErrorNext', 'trySetFocus', 'handleOpenFundActionForm',
+        this.bindMethods(
+            'getActiveInfo',
+            'buildRibbon',
+            'handleRegisterJp',
+            'handleSelectVisiblePoliciesNode',
+            'handleShowVisiblePolicies',
+            'handleShortcuts',
+            'renderFundErrors',
+            'renderFundVisiblePolicies',
+            'handleSetVisiblePolicy',
+            'renderPanel',
+            'renderDeveloperDescItems',
+            'handleShowHideSpecs',
+            'handleTabSelect',
+            'handleSelectErrorNode',
+            'handleErrorPrevious',
+            'handleErrorNext',
+            'trySetFocus',
+            'handleOpenFundActionForm',
             'handleChangeFundSettingsSubmit',
             'handleSetExtendedView',
             'renderLecturingPanel',
@@ -122,15 +134,22 @@ class ArrPage extends ArrParentPage {
                 if (!node) {
                     return;
                 }
-                if (node.selectedSubNodeId !== null &&
-                    node.subNodeForm.data !== null && !node.developerScenarios.isFetching &&
+                if (
+                    node.selectedSubNodeId !== null &&
+                    node.subNodeForm.data !== null &&
+                    !node.developerScenarios.isFetching &&
                     node.developerScenarios.isDirty
                 ) {
-                    this.props.dispatch(developerNodeScenariosRequest({
-                        id: node.selectedSubNodeId,
-                        key: node.routingKey,
-                        version: node.subNodeForm.data.parent.version,
-                    }, activeFund.versionId));
+                    this.props.dispatch(
+                        developerNodeScenariosRequest(
+                            {
+                                id: node.selectedSubNodeId,
+                                key: node.routingKey,
+                                version: node.subNodeForm.data.parent.version,
+                            },
+                            activeFund.versionId,
+                        ),
+                    );
                 }
             }
 
@@ -154,7 +173,15 @@ class ArrPage extends ArrParentPage {
         }
         if (!this.props.issueDetail.fetched && nextProps.issueDetail.fetched) {
             if (nextProps.issueDetail.data.nodeId) {
-                this.props.dispatch(fundSelectSubNodeByNodeId(activeFund.versionId, nextProps.issueDetail.data.nodeId, false, null, true));
+                this.props.dispatch(
+                    fundSelectSubNodeByNodeId(
+                        activeFund.versionId,
+                        nextProps.issueDetail.data.nodeId,
+                        false,
+                        null,
+                        true,
+                    ),
+                );
             }
         }
 
@@ -162,7 +189,7 @@ class ArrPage extends ArrParentPage {
         this.trySetFocus(nextProps);
     }
 
-    wrappedFocus = (ref) => {
+    wrappedFocus = ref => {
         if (this.refs[ref]) {
             this.setState({}, () => {
                 if (this.refs[ref].getWrappedInstance().focus()) {
@@ -171,7 +198,7 @@ class ArrPage extends ArrParentPage {
             });
         }
     };
-    refFocus = (ref) => {
+    refFocus = ref => {
         if (this.refs[ref]) {
             this.setState({}, () => {
                 ReactDOM.findDOMNode(this.refs[ref]).focus();
@@ -185,9 +212,11 @@ class ArrPage extends ArrParentPage {
         if (this.state.tabs !== null && canSetFocus()) {
             if (isFocusFor(focus, FOCUS_KEYS.ARR, 3)) {
                 let selectedTab = this.state.tabs[selectedTabKey];
-                if (!selectedTab.focus && !selectedTab.ref) { //Pokud tab nemá zadánu funkci pro focus ani ref
+                if (!selectedTab.focus && !selectedTab.ref) {
+                    //Pokud tab nemá zadánu funkci pro focus ani ref
                     focusWasSet();
-                } else if (!selectedTab.focus) { //Pokud tab nemá zadánu funkci pro focus
+                } else if (!selectedTab.focus) {
+                    //Pokud tab nemá zadánu funkci pro focus
                     this.refFocus(selectedTab.ref);
                 } else {
                     selectedTab.focus();
@@ -264,11 +293,13 @@ class ArrPage extends ArrParentPage {
         for (let tab in tabs) {
             const tabCondition = typeof tabs[tab].condition === 'undefined' || tabs[tab].condition; //Pokud podmínka není definována nebo je splněna
             const tabSettings = ignoreSettings || settingsValues === null || settingsValues[tabs[tab].id]; //Pokud se má nastavení ignorovat, neexistuje nebo je záložka zapnuta
-            const showTabCondition = typeof tabs[tab].showCondition === 'undefined' || tabs[tab].showCondition || ignoreSettings; //Pokud podmínka pro zobrazení není definována, je splněna, nebo se má ignorovat nastavení
+            const showTabCondition =
+                typeof tabs[tab].showCondition === 'undefined' || tabs[tab].showCondition || ignoreSettings; //Pokud podmínka pro zobrazení není definována, je splněna, nebo se má ignorovat nastavení
 
             if (tabSettings && tabCondition) {
                 if (showTabCondition) {
-                    tabs[tab].checked = settingsValues && settingsValues[tab] !== undefined ? settingsValues[tab] : true;
+                    tabs[tab].checked =
+                        settingsValues && settingsValues[tab] !== undefined ? settingsValues[tab] : true;
                     items.push(tabs[tab]);
                     selectedTab = this.selectIfNull(selectedTab, tabs[tab].id);
                 }
@@ -318,7 +349,8 @@ class ArrPage extends ArrParentPage {
                     {
                         name: i18n('arr.fund.settings.panel.treeColorCoding'),
                         key: 'treeColorCoding',
-                        checked: dataCenter && dataCenter.treeColorCoding !== undefined ? dataCenter.treeColorCoding : true,
+                        checked:
+                            dataCenter && dataCenter.treeColorCoding !== undefined ? dataCenter.treeColorCoding : true,
                     },
                     {
                         name: i18n('arr.fund.settings.panel.acordeon'),
@@ -334,7 +366,7 @@ class ArrPage extends ArrParentPage {
             },
         };
 
-        const form = <FundSettingsForm initialValues={init} onSubmitForm={this.handleChangeFundSettingsSubmit}/>;
+        const form = <FundSettingsForm initialValues={init} onSubmitForm={this.handleChangeFundSettingsSubmit} />;
         this.props.dispatch(modalDialogShow(this, i18n('arr.fund.settings.title'), form));
     }
 
@@ -349,16 +381,21 @@ class ArrPage extends ArrParentPage {
         const init = {
             templates: data,
         };
-        const form = <FundTemplateSettingsForm initialValues={init} onSubmitForm={(formData) => {
-            formData.templates.sort((a, b) => {
-                return a.name.localeCompare(b.name);
-            });
-            fundTemplates.value = JSON.stringify(formData.templates);
-            settings = setSettings(settings, fundTemplates.id, fundTemplates);
-            return this.props.dispatch(userDetailsSaveSettings(settings)).then(() => {
-                this.props.dispatch(modalDialogHide());
-            });
-        }}/>;
+        const form = (
+            <FundTemplateSettingsForm
+                initialValues={init}
+                onSubmitForm={formData => {
+                    formData.templates.sort((a, b) => {
+                        return a.name.localeCompare(b.name);
+                    });
+                    fundTemplates.value = JSON.stringify(formData.templates);
+                    settings = setSettings(settings, fundTemplates.id, fundTemplates);
+                    return this.props.dispatch(userDetailsSaveSettings(settings)).then(() => {
+                        this.props.dispatch(modalDialogHide());
+                    });
+                }}
+            />
+        );
         this.props.dispatch(modalDialogShow(this, i18n('arr.fund.template.title'), form));
     };
 
@@ -394,7 +431,7 @@ class ArrPage extends ArrParentPage {
         strictMode.value = data.strictMode.value === '' ? null : data.strictMode.value;
         settings = setSettings(settings, strictMode.id, strictMode);
 
-        return this.props.dispatch(userDetailsSaveSettings(settings)).then((response) => {
+        return this.props.dispatch(userDetailsSaveSettings(settings)).then(response => {
             // invalidates node info after the settings have been saved,
             // to load new node info data (mainly for reloading node parents).
             this.props.dispatch(fundNodeInfoInvalidate(fundVersionId, node.id, node.routingKey));
@@ -407,11 +444,9 @@ class ArrPage extends ArrParentPage {
      * @param locked
      */
     handleShowFundHistory = (versionId, locked) => {
-        const form = <ArrHistoryForm
-            versionId={versionId}
-            locked={locked}
-            onDeleteChanges={this.handleDeleteChanges}
-        />;
+        const form = (
+            <ArrHistoryForm versionId={versionId} locked={locked} onDeleteChanges={this.handleDeleteChanges} />
+        );
         this.props.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, 'dialog-lg'));
     };
 
@@ -420,53 +455,60 @@ class ArrPage extends ArrParentPage {
      *
      * @param versionId verze AS
      */
-    handleShowSyncDaosByFund = (versionId) => {
-        const confirmForm = <ConfirmForm
-            confirmMessage={i18n('arr.daos.fund.sync.confirm-message')}
-            submittingMessage={i18n('arr.daos.fund.sync.submitting-message')}
-            submitTitle={i18n('global.action.run')}
-            onSubmit={() => {
-                return WebApi.syncDaosByFund(versionId);
-            }}
-            onSubmitSuccess={() => {
-                this.props.dispatch(modalDialogHide());
-            }}
-        />;
+    handleShowSyncDaosByFund = versionId => {
+        const confirmForm = (
+            <ConfirmForm
+                confirmMessage={i18n('arr.daos.fund.sync.confirm-message')}
+                submittingMessage={i18n('arr.daos.fund.sync.submitting-message')}
+                submitTitle={i18n('global.action.run')}
+                onSubmit={() => {
+                    return WebApi.syncDaosByFund(versionId);
+                }}
+                onSubmitSuccess={() => {
+                    this.props.dispatch(modalDialogHide());
+                }}
+            />
+        );
         this.props.dispatch(modalDialogShow(this, i18n('arr.daos.fund.sync.title'), confirmForm));
     };
 
     handleDeleteChanges = (nodeId, fromChangeId, toChangeId) => {
         const activeFund = this.getActiveFund(this.props);
         const versionId = activeFund.versionId;
-        WebApi.revertChanges(versionId, nodeId, fromChangeId, toChangeId)
-              .then(() => {
-                  this.props.dispatch(modalDialogHide());
-              });
+        WebApi.revertChanges(versionId, nodeId, fromChangeId, toChangeId).then(() => {
+            this.props.dispatch(modalDialogHide());
+        });
     };
 
     /**
      * Vyvolání dialogu s vyhledáním na všemi AS.
      */
     handleFundsSearchForm = () => {
-        this.props.dispatch(modalDialogShow(
-            this,
-            i18n('arr.fund.title.search'),
-            <SearchFundsForm/>,
-        ));
+        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.title.search'), <SearchFundsForm />));
     };
 
     createIssueFund = () => {
         const {issueProtocol, dispatch} = this.props;
 
-        dispatch(modalDialogShow(this, i18n('arr.issues.add.arr.title'), <IssueForm
-            onSubmit={(data) => WebApi.addIssue({
-                ...data,
-                issueListId: issueProtocol.id,
-            })} onSubmitSuccess={(data) => {
-            dispatch(issuesActions.list.invalidate(data.issueListId));
-            dispatch(issuesActions.detail.invalidate(data.id));
-            dispatch(modalDialogHide());
-        }}/>));
+        dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.issues.add.arr.title'),
+                <IssueForm
+                    onSubmit={data =>
+                        WebApi.addIssue({
+                            ...data,
+                            issueListId: issueProtocol.id,
+                        })
+                    }
+                    onSubmitSuccess={data => {
+                        dispatch(issuesActions.list.invalidate(data.issueListId));
+                        dispatch(issuesActions.detail.invalidate(data.id));
+                        dispatch(modalDialogHide());
+                    }}
+                />,
+            ),
+        );
     };
 
     createIssueNode = () => {
@@ -478,16 +520,26 @@ class ArrPage extends ArrParentPage {
             node = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
         }
 
-        dispatch(modalDialogShow(this, i18n('arr.issues.add.node.title'), <IssueForm
-            onSubmit={(data) => WebApi.addIssue({
-                ...data,
-                issueListId: issueProtocol.id,
-                nodeId: node.selectedSubNodeId,
-            })} onSubmitSuccess={(data) => {
-            dispatch(issuesActions.list.invalidate(data.issueListId));
-            dispatch(issuesActions.detail.invalidate(data.id));
-            dispatch(modalDialogHide());
-        }}/>));
+        dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.issues.add.node.title'),
+                <IssueForm
+                    onSubmit={data =>
+                        WebApi.addIssue({
+                            ...data,
+                            issueListId: issueProtocol.id,
+                            nodeId: node.selectedSubNodeId,
+                        })
+                    }
+                    onSubmitSuccess={data => {
+                        dispatch(issuesActions.list.invalidate(data.issueListId));
+                        dispatch(issuesActions.detail.invalidate(data.id));
+                        dispatch(modalDialogHide());
+                    }}
+                />,
+            ),
+        );
     };
 
     handleIssuePrevious = () => {
@@ -498,7 +550,7 @@ class ArrPage extends ArrParentPage {
         this.handleIssue(1);
     };
 
-    handleIssue = (direction) => {
+    handleIssue = direction => {
         const {dispatch, arrRegion} = this.props;
         const indexFund = arrRegion.activeIndex;
         if (indexFund !== null) {
@@ -530,25 +582,37 @@ class ArrPage extends ArrParentPage {
 
             altActions.push(
                 <Button key="fund-settings" onClick={this.handleChangeFundSettings.bind(this)} variant={'default'}>
-                    <Icon glyph="fa-wrench"/>
+                    <Icon glyph="fa-wrench" />
                     <span className="btnText">{i18n('ribbon.action.arr.fund.settings.ui')}</span>
-                </Button>);
+                </Button>,
+            );
 
             altActions.push(
                 <Button key="fund-templates" onClick={this.handleChangeFundTemplateSettings} variant={'default'}>
-                    <Icon glyph="fa-wrench"/>
+                    <Icon glyph="fa-wrench" />
                     <span className="btnText">{i18n('ribbon.action.arr.fund.settings.template')}</span>
-                </Button>);
+                </Button>,
+            );
 
             // Zobrazení historie změn
-            if (userDetail.hasOne(perms.FUND_ADMIN, {
-                type: perms.FUND_VER_WR,
-                fundId: activeFund.id,
-            }, perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})) {
+            if (
+                userDetail.hasOne(
+                    perms.FUND_ADMIN,
+                    {
+                        type: perms.FUND_VER_WR,
+                        fundId: activeFund.id,
+                    },
+                    perms.FUND_ARR_ALL,
+                    {type: perms.FUND_ARR, fundId: activeFund.id},
+                )
+            ) {
                 altActions.push(
-                    <Button onClick={() => this.handleShowFundHistory(activeFund.versionId, readMode)}
-                            key="show-fund-history" variant={'default'}>
-                        <Icon glyph="fa-clock-o"/>
+                    <Button
+                        onClick={() => this.handleShowFundHistory(activeFund.versionId, readMode)}
+                        key="show-fund-history"
+                        variant={'default'}
+                    >
+                        <Icon glyph="fa-clock-o" />
                         <div>
                             <span className="btnText">{i18n('ribbon.action.showFundHistory')}</span>
                         </div>
@@ -556,14 +620,24 @@ class ArrPage extends ArrParentPage {
                 );
             }
 
-            if (userDetail.hasOne(perms.FUND_ADMIN, {
-                type: perms.FUND_VER_WR,
-                fundId: activeFund.id,
-            }, perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id})) {
+            if (
+                userDetail.hasOne(
+                    perms.FUND_ADMIN,
+                    {
+                        type: perms.FUND_VER_WR,
+                        fundId: activeFund.id,
+                    },
+                    perms.FUND_ARR_ALL,
+                    {type: perms.FUND_ARR, fundId: activeFund.id},
+                )
+            ) {
                 altActions.push(
-                    <Button onClick={() => this.handleShowSyncDaosByFund(activeFund.versionId)}
-                            key="show-sync-daos-by-fund" variant={'default'}>
-                        <Icon glyph="fa-camera"/>
+                    <Button
+                        onClick={() => this.handleShowSyncDaosByFund(activeFund.versionId)}
+                        key="show-sync-daos-by-fund"
+                        variant={'default'}
+                    >
+                        <Icon glyph="fa-camera" />
                         <div>
                             <span className="btnText">{i18n('ribbon.action.syncDaosByFund')}</span>
                         </div>
@@ -579,25 +653,44 @@ class ArrPage extends ArrParentPage {
                 if (activeNode.selectedSubNodeId !== null) {
                     subNodeId = activeNode.selectedSubNodeId;
                     itemActions.push(
-                        <Button key="next-error"
-                                onClick={this.handleErrorPrevious.bind(this, activeFund.versionId, activeNode.selectedSubNodeId)}
-                                variant={'default'}>
-                            <Icon glyph="fa-arrow-left"/>
+                        <Button
+                            key="next-error"
+                            onClick={this.handleErrorPrevious.bind(
+                                this,
+                                activeFund.versionId,
+                                activeNode.selectedSubNodeId,
+                            )}
+                            variant={'default'}
+                        >
+                            <Icon glyph="fa-arrow-left" />
                             <span className="btnText">{i18n('ribbon.action.arr.validation.error.previous')}</span>
                         </Button>,
-                        <Button key="previous-error"
-                                onClick={this.handleErrorNext.bind(this, activeFund.versionId, activeNode.selectedSubNodeId)}
-                                variant={'default'}>
-                            <Icon glyph="fa-arrow-right"/>
+                        <Button
+                            key="previous-error"
+                            onClick={this.handleErrorNext.bind(
+                                this,
+                                activeFund.versionId,
+                                activeNode.selectedSubNodeId,
+                            )}
+                            variant={'default'}
+                        >
+                            <Icon glyph="fa-arrow-right" />
                             <span className="btnText">{i18n('ribbon.action.arr.validation.error.next')}</span>
                         </Button>,
                     );
                     if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: activeFund.id})) {
                         itemActions.push(
-                            <Button disabled={readMode} key="prepareFundAction"
-                                    onClick={this.handleOpenFundActionForm.bind(this, activeFund.versionId, activeInfo.activeSubNode)}
-                                    variant={'default'}>
-                                <Icon glyph="fa-calculator"/>
+                            <Button
+                                disabled={readMode}
+                                key="prepareFundAction"
+                                onClick={this.handleOpenFundActionForm.bind(
+                                    this,
+                                    activeFund.versionId,
+                                    activeInfo.activeSubNode,
+                                )}
+                                variant={'default'}
+                            >
+                                <Icon glyph="fa-calculator" />
                                 <span className="btnText">{i18n('ribbon.action.arr.fund.newFundAction')}</span>
                             </Button>,
                         );
@@ -607,16 +700,17 @@ class ArrPage extends ArrParentPage {
 
             const {issueProtocol} = this.props;
 
-            const isProtocolLoaded = !issueProtocol.isFetching && issueProtocol.data && activeFund.id === issueProtocol.data.fundId;
+            const isProtocolLoaded =
+                !issueProtocol.isFetching && issueProtocol.data && activeFund.id === issueProtocol.data.fundId;
 
             const haveProtocolPermissionToWrite =
-                      isProtocolLoaded && (
-                          userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL) || (
-                              userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
-                              userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
-                              userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(issueProtocol.data.id) !== -1
-                          )
-                      );
+                isProtocolLoaded &&
+                (userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL) ||
+                    (userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
+                        userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
+                        userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(
+                            issueProtocol.data.id,
+                        ) !== -1));
             // const haveProtocolPermissionToRead =
             //     haveProtocolPermissionToWrite || (isProtocolLoaded &&
             //     userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD] &&
@@ -629,49 +723,79 @@ class ArrPage extends ArrParentPage {
                     subNodeId = activeNode.selectedSubNodeId;
                     itemActions.push(
                         <Button key="next-issue" onClick={this.handleIssuePrevious}>
-                            <Icon glyph="fa-arrow-left"/>
+                            <Icon glyph="fa-arrow-left" />
                             <span className="btnText">{i18n('ribbon.action.arr.issue.previous')}</span>
                         </Button>,
                         <Button key="previous-issue" onClick={this.handleIssueNext}>
-                            <Icon glyph="fa-arrow-right"/>
+                            <Icon glyph="fa-arrow-right" />
                             <span className="btnText">{i18n('ribbon.action.arr.issue.next')}</span>
-                        </Button>);
+                        </Button>,
+                    );
                 }
             }
 
             itemActions.push(
-                <DropdownButton variant="default" disabled={!haveProtocolPermissionToWrite} title={<span>
-                <Icon glyph="fa-commenting"/>
-                <span className="btnText">{i18n('ribbon.action.arr.issue.add')}</span>
-            </span>} key="add-issue" id="add-issue">
-                    <Dropdown.Item eventKey="1"
-                                   onClick={this.createIssueFund}>{i18n('arr.issues.add.arr')}</Dropdown.Item>
-                    <Dropdown.Item eventKey="2" disabled={subNodeId === null}
-                                   onClick={subNodeId !== null ? this.createIssueNode : null}>{i18n('arr.issues.add.node')}</Dropdown.Item>
+                <DropdownButton
+                    variant="default"
+                    disabled={!haveProtocolPermissionToWrite}
+                    title={
+                        <span>
+                            <Icon glyph="fa-commenting" />
+                            <span className="btnText">{i18n('ribbon.action.arr.issue.add')}</span>
+                        </span>
+                    }
+                    key="add-issue"
+                    id="add-issue"
+                >
+                    <Dropdown.Item eventKey="1" onClick={this.createIssueFund}>
+                        {i18n('arr.issues.add.arr')}
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                        eventKey="2"
+                        disabled={subNodeId === null}
+                        onClick={subNodeId !== null ? this.createIssueNode : null}
+                    >
+                        {i18n('arr.issues.add.node')}
+                    </Dropdown.Item>
                 </DropdownButton>,
             );
-
         }
         let altSection;
 
         altActions.push(
-            <Button key="search-fa" onClick={this.handleFundsSearchForm}><Icon glyph="fa-search"/>
-                <div><span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span></div>
+            <Button key="search-fa" onClick={this.handleFundsSearchForm}>
+                <Icon glyph="fa-search" />
+                <div>
+                    <span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span>
+                </div>
             </Button>,
         );
 
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>;
+            altSection = (
+                <RibbonGroup key="alt" className="small">
+                    {altActions}
+                </RibbonGroup>
+            );
         }
 
         let itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>;
+            itemSection = (
+                <RibbonGroup key="item" className="small">
+                    {itemActions}
+                </RibbonGroup>
+            );
         }
 
         return (
-            <Ribbon arr subMenu fundId={activeInfo.activeFund ? activeInfo.activeFund.id : null} altSection={altSection}
-                    itemSection={itemSection}/>
+            <Ribbon
+                arr
+                subMenu
+                fundId={activeInfo.activeFund ? activeInfo.activeFund.id : null}
+                altSection={altSection}
+                itemSection={itemSection}
+            />
         );
     }
 
@@ -745,10 +869,14 @@ class ArrPage extends ArrParentPage {
         if (!node) {
             return;
         }
-        const form = <NodeSettingsForm nodeId={node.selectedSubNodeId} fundVersionId={activeFund.versionId}
-                                       onSubmitForm={this.handleSetVisiblePolicy}
-                                       onSubmitSuccess={() => this.props.dispatch(modalDialogHide())}
-        />;
+        const form = (
+            <NodeSettingsForm
+                nodeId={node.selectedSubNodeId}
+                fundVersionId={activeFund.versionId}
+                onSubmitForm={this.handleSetVisiblePolicy}
+                onSubmitSuccess={() => this.props.dispatch(modalDialogHide())}
+            />
+        );
         this.props.dispatch(modalDialogShow(this, i18n('visiblePolicy.form.title'), form));
     }
 
@@ -762,8 +890,9 @@ class ArrPage extends ArrParentPage {
             });
         }
 
-        const nodeExtensionsIds = Object.values(nodeExtensions).filter(i => i.checked).map(i => i.id);
-
+        const nodeExtensionsIds = Object.values(nodeExtensions)
+            .filter(i => i.checked)
+            .map(i => i.id);
 
         return WebApi.setVisiblePolicy(node.selectedSubNodeId, versionId, mapIds, false, nodeExtensionsIds).then(() => {
             dispatch(setVisiblePolicyReceive(node.selectedSubNodeId, versionId));
@@ -778,7 +907,7 @@ class ArrPage extends ArrParentPage {
         const nodesPolicy = activeFund.fundNodesPolicy;
 
         if (!nodesPolicy.fetched) {
-            return <Loading/>;
+            return <Loading />;
         }
         let activeNode = null;
         if (activeFund.nodes.activeIndex != null) {
@@ -791,12 +920,13 @@ class ArrPage extends ArrParentPage {
 
         return (
             <div className="visiblePolicies-container">
-                <ListBox2 className="visiblePolicies-listbox"
-                          ref="fundVisiblePolicies"
-                          items={nodesPolicy.items}
-                          selectedItem={activeNode !== null ? activeNode.selectedSubNodeId : null}
-                          renderItemContent={this.renderPolicyItem}
-                          onSelect={this.handleSelectVisiblePoliciesNode.bind(this, activeFund)}
+                <ListBox2
+                    className="visiblePolicies-listbox"
+                    ref="fundVisiblePolicies"
+                    items={nodesPolicy.items}
+                    selectedItem={activeNode !== null ? activeNode.selectedSubNodeId : null}
+                    renderItemContent={this.renderPolicyItem}
+                    onSelect={this.handleSelectVisiblePoliciesNode.bind(this, activeFund)}
                     /*onDoubleClick={this.handleShowVisiblePolicies.bind(this, activeFund)}*/
                 />
             </div>
@@ -806,9 +936,7 @@ class ArrPage extends ArrParentPage {
     renderDeveloperDescItems(activeFund, node) {
         const rows = [];
         if (!node) {
-            return <div className='developer-panel'>
-                Je potřeba vybrat jednotku popisu.
-            </div>;
+            return <div className="developer-panel">Je potřeba vybrat jednotku popisu.</div>;
         } else if (node.subNodeForm.fetched) {
             node.subNodeForm.infoGroups.forEach(group => {
                 const types = [];
@@ -824,14 +952,25 @@ class ArrPage extends ArrParentPage {
 
                                 return (
                                     <div key={'spec' + spec.id} className={'desc-item-spec ' + infoSpec.type}>
-                                        <h3 title={spec.name}>{spec.shortcut} <small>[{spec.code}]</small></h3>
-                                        <div key='1' className='desc'>{spec.description}</div>
-                                        <div key='2' className='attrs'>
-                                            <div key='1'><label>type:</label>{infoSpec.type}</div>
-                                            <div key='2'>
-                                                <label>repeatable:</label>{spec.repeatable ? i18n('global.title.yes') : i18n('global.title.no')}
+                                        <h3 title={spec.name}>
+                                            {spec.shortcut} <small>[{spec.code}]</small>
+                                        </h3>
+                                        <div key="1" className="desc">
+                                            {spec.description}
+                                        </div>
+                                        <div key="2" className="attrs">
+                                            <div key="1">
+                                                <label>type:</label>
+                                                {infoSpec.type}
                                             </div>
-                                            <div key='3'><label>viewOrder:</label>{spec.viewOrder}</div>
+                                            <div key="2">
+                                                <label>repeatable:</label>
+                                                {spec.repeatable ? i18n('global.title.yes') : i18n('global.title.no')}
+                                            </div>
+                                            <div key="3">
+                                                <label>viewOrder:</label>
+                                                {spec.viewOrder}
+                                            </div>
                                         </div>
                                     </div>
                                 );
@@ -844,26 +983,54 @@ class ArrPage extends ArrParentPage {
 
                     types.push(
                         <div key={'type' + refType.id} className={'desc-item-type ' + infoType.type}>
-                            <h2 title={refType.name}>{refType.shortcut} <small>[{refType.code}]</small></h2>
-                            <div key='1' className='desc'>{refType.description}</div>
-                            <div key='2' className='attrs'>
-                                <div key='1'><label>type:</label>{infoType.type}</div>
-                                <div key='2'>
-                                    <label>repeatable:</label>{infoType.rep === 1 ? i18n('global.title.yes') : i18n('global.title.no')}
+                            <h2 title={refType.name}>
+                                {refType.shortcut} <small>[{refType.code}]</small>
+                            </h2>
+                            <div key="1" className="desc">
+                                {refType.description}
+                            </div>
+                            <div key="2" className="attrs">
+                                <div key="1">
+                                    <label>type:</label>
+                                    {infoType.type}
                                 </div>
-                                <div key='3'><label>dataType:</label>{refType.dataType.code}</div>
-                                <div key='4'><label>width:</label>{infoType.width}</div>
-                                <div key='5'><label>viewOrder:</label>{refType.viewOrder}</div>
-                                <div key='6'>
-                                    <label>isValueUnique:</label>{refType.isValueUnique ? i18n('global.title.yes') : i18n('global.title.no')}
+                                <div key="2">
+                                    <label>repeatable:</label>
+                                    {infoType.rep === 1 ? i18n('global.title.yes') : i18n('global.title.no')}
                                 </div>
-                                <div key='7'>
-                                    <label>canBeOrdered:</label>{refType.canBeOrdered ? i18n('global.title.yes') : i18n('global.title.no')}
+                                <div key="3">
+                                    <label>dataType:</label>
+                                    {refType.dataType.code}
+                                </div>
+                                <div key="4">
+                                    <label>width:</label>
+                                    {infoType.width}
+                                </div>
+                                <div key="5">
+                                    <label>viewOrder:</label>
+                                    {refType.viewOrder}
+                                </div>
+                                <div key="6">
+                                    <label>isValueUnique:</label>
+                                    {refType.isValueUnique ? i18n('global.title.yes') : i18n('global.title.no')}
+                                </div>
+                                <div key="7">
+                                    <label>canBeOrdered:</label>
+                                    {refType.canBeOrdered ? i18n('global.title.yes') : i18n('global.title.no')}
                                 </div>
                             </div>
-                            {refType.useSpecification &&
-                            <Button onClick={this.handleShowHideSpecs.bind(this, refType.id)}>specifikace <Icon
-                                glyph={this.state.developerExpandedSpecsIds[refType.id] ? 'fa-angle-up' : 'fa-angle-down'}/></Button>}
+                            {refType.useSpecification && (
+                                <Button onClick={this.handleShowHideSpecs.bind(this, refType.id)}>
+                                    specifikace{' '}
+                                    <Icon
+                                        glyph={
+                                            this.state.developerExpandedSpecsIds[refType.id]
+                                                ? 'fa-angle-up'
+                                                : 'fa-angle-down'
+                                        }
+                                    />
+                                </Button>
+                            )}
                             {specs}
                         </div>,
                     );
@@ -871,34 +1038,36 @@ class ArrPage extends ArrParentPage {
 
                 rows.push(
                     <div key={'group' + group.code}>
-                        <h1 key='1'>{group.code}</h1>
-                        <div key='2'>{types}</div>
+                        <h1 key="1">{group.code}</h1>
+                        <div key="2">{types}</div>
                     </div>,
                 );
             });
         }
 
-        return <div className='developer-panel'>
-            <div className='desc-items-container'>{rows}</div>
-        </div>;
+        return (
+            <div className="developer-panel">
+                <div className="desc-items-container">{rows}</div>
+            </div>
+        );
     }
 
     renderDeveloperScenarios(activeFund, node) {
         if (!node) {
-            return <div className='developer-panel'>
-                Je potřeba vybrat jednotku popisu.
-            </div>;
+            return <div className="developer-panel">Je potřeba vybrat jednotku popisu.</div>;
         }
         if (node.developerScenarios.isFetching) {
-            return <Loading/>;
+            return <Loading />;
         }
 
         let isRootNode = isFundRootId(node.id);
 
         const rows = [];
         for (let key in node.developerScenarios.data) {
-            if (!node.developerScenarios.data.hasOwnProperty(key)
-                || (isRootNode && (key === 'after' || key === 'before'))) {
+            if (
+                !node.developerScenarios.data.hasOwnProperty(key) ||
+                (isRootNode && (key === 'after' || key === 'before'))
+            ) {
                 continue;
             }
 
@@ -907,7 +1076,7 @@ class ArrPage extends ArrParentPage {
             let types = obj.map(data => (
                 <div className="desc-item-type">
                     <h2>{data.name}</h2>
-                    {data.groups.map(group => (
+                    {data.groups.map(group =>
                         group.types.map(type => {
                             if (node.subNodeForm.infoTypesMap === null || node.subNodeForm.refTypesMap === null) {
                                 return null;
@@ -917,24 +1086,23 @@ class ArrPage extends ArrParentPage {
                             return type.descItems.map(item => {
                                 let infoType = infoTypes.specs[indexById(infoTypes.specs, item.descItemSpecId)];
                                 let refType = refTypes.descItemSpecsMap[item.descItemSpecId];
-                                return <div>
-                                    <h4 title={refTypes.name}>
-                                        {refTypes.shortcut}
-                                        <small>[{refTypes.code}]</small>
-                                    </h4>
+                                return (
                                     <div>
-                                        <label>value:</label>
-                                        <span title={refType.name}>{refType.shortcut}</span> |
-                                        <small>{infoType.rep}</small>
-                                        |
-                                        <small>[{refType.code}]</small>
+                                        <h4 title={refTypes.name}>
+                                            {refTypes.shortcut}
+                                            <small>[{refTypes.code}]</small>
+                                        </h4>
+                                        <div>
+                                            <label>value:</label>
+                                            <span title={refType.name}>{refType.shortcut}</span> |
+                                            <small>{infoType.rep}</small>|<small>[{refType.code}]</small>
+                                        </div>
                                     </div>
-                                </div>;
+                                );
                             });
-                        })
-                    ))}
+                        }),
+                    )}
                 </div>
-
             ));
 
             /** key = after, before, child */
@@ -945,26 +1113,30 @@ class ArrPage extends ArrParentPage {
                 </div>,
             );
         }
-        return <div className='developer-panel'>
-            <div className='desc-items-container'>{rows}</div>
-        </div>;
+        return (
+            <div className="developer-panel">
+                <div className="desc-items-container">{rows}</div>
+            </div>
+        );
     }
 
     renderLecturingPanel(activeFund, node) {
-        return <div className='issues-panel'>
-            <HorizontalSplitter
-                top={<LecturingTop fund={activeFund} node={node}/>}
-                bottom={<LecturingBottom fund={activeFund}/>}
-            />
-        </div>;
+        return (
+            <div className="issues-panel">
+                <HorizontalSplitter
+                    top={<LecturingTop fund={activeFund} node={node} />}
+                    bottom={<LecturingBottom fund={activeFund} />}
+                />
+            </div>
+        );
     }
 
     handleTabSelect(item) {
         this.props.dispatch(selectTab(ArrPage.TAB_KEY, item.id));
-        if (item.update) {  //Pokud má záložka definovánu funkci update(), pak se tato funkce zavolá.
+        if (item.update) {
+            //Pokud má záložka definovánu funkci update(), pak se tato funkce zavolá.
             item.update();
         }
-
     }
 
     /**
@@ -988,7 +1160,7 @@ class ArrPage extends ArrParentPage {
      *
      *   @param props {Object}
      */
-    registerTabs = (props) => {
+    registerTabs = props => {
         const {developer, arrRegion, userDetail, structureTypes} = props;
         const activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
         let node;
@@ -1012,8 +1184,16 @@ class ArrPage extends ArrParentPage {
                     key: tabKey,
                     name: i.name,
                     ref: tabKey,
-                    render: () => <ArrStructurePanel {...i} key={tabKey} ref={tabKey} readMode={readMode}
-                                                     fundId={activeFund.id} fundVersionId={activeFund.versionId}/>,
+                    render: () => (
+                        <ArrStructurePanel
+                            {...i}
+                            key={tabKey}
+                            ref={tabKey}
+                            readMode={readMode}
+                            fundId={activeFund.id}
+                            fundVersionId={activeFund.versionId}
+                        />
+                    ),
                     focus: () => this.wrappedFocus(tabKey),
                 };
             });
@@ -1033,7 +1213,7 @@ class ArrPage extends ArrParentPage {
          */
         const tabs = {
             ...structureTabs,
-            'files': {
+            files: {
                 id: 'files',
                 key: 'files',
                 name: i18n('arr.panel.title.files'),
@@ -1042,14 +1222,14 @@ class ArrPage extends ArrParentPage {
                 focus: () => this.wrappedFocus('fundFiles'),
                 condition: userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id}),
             },
-            'discrepancies': {
+            discrepancies: {
                 id: 'discrepancies',
                 key: 'discrepancies',
                 ref: 'fundErrors',
                 name: i18n('arr.panel.title.discrepancies'),
                 render: () => this.renderFundErrors(activeFund),
             },
-            'visiblePolicies': {
+            visiblePolicies: {
                 id: 'visiblePolicies',
                 key: 'visiblePolicies',
                 ref: 'fundVisiblePolicies',
@@ -1057,7 +1237,7 @@ class ArrPage extends ArrParentPage {
                 render: () => this.renderFundVisiblePolicies(activeFund),
                 update: () => this.props.dispatch(fundNodesPolicyFetchIfNeeded(activeFund.versionId)),
             },
-            'descItems': {
+            descItems: {
                 id: 'descItems',
                 key: 'descItems',
                 name: i18n('developer.title.descItems'),
@@ -1065,7 +1245,7 @@ class ArrPage extends ArrParentPage {
                 condition: developer.enabled,
                 showCondition: !!node,
             },
-            'scenarios': {
+            scenarios: {
                 id: 'scenarios',
                 key: 'scenarios',
                 name: i18n('developer.title.scenarios'),
@@ -1073,17 +1253,15 @@ class ArrPage extends ArrParentPage {
                 condition: developer.enabled,
                 showCondition: !!node,
             },
-            'lecturing': {
+            lecturing: {
                 id: 'lecturing',
                 key: 'lecturing',
                 name: i18n('arr.panel.title.lecturing'),
                 render: () => this.renderLecturingPanel(activeFund, node),
-
             },
         };
         this.setState({tabs});
     };
-
 
     renderPanel() {
         const {arrRegion, userDetail, selectedTabKey} = this.props;
@@ -1105,7 +1283,8 @@ class ArrPage extends ArrParentPage {
         // takže získáme nový selected tab key aby nám to fungovalo
         selectedTab = tabs.selectedTab;
 
-        if (!selectedTab || (centerSettingsValues && centerSettingsValues.rightPanel === false)) { //pokud neexistuje žádná vybratelná záložka nebo je vypnutý pravý panel
+        if (!selectedTab || (centerSettingsValues && centerSettingsValues.rightPanel === false)) {
+            //pokud neexistuje žádná vybratelná záložka nebo je vypnutý pravý panel
             return false;
         }
 
@@ -1113,25 +1292,22 @@ class ArrPage extends ArrParentPage {
 
         return (
             <Tabs.Container>
-                <Tabs.Tabs items={tabs.items}
-                           activeItem={{id: selectedTab}}
-                           onSelect={this.handleTabSelect}
-                />
-                <Tabs.Content>
-                    {tabContent}
-                </Tabs.Content>
+                <Tabs.Tabs items={tabs.items} activeItem={{id: selectedTab}} onSelect={this.handleTabSelect} />
+                <Tabs.Content>{tabContent}</Tabs.Content>
             </Tabs.Container>
         );
     }
 
     renderFundFiles(activeFund, readMode) {
-        return <FundFiles
-            ref="fundFiles"
-            versionId={activeFund.versionId}
-            fundId={activeFund.id}
-            fundFiles={activeFund.fundFiles}
-            readMode={readMode}
-        />;
+        return (
+            <FundFiles
+                ref="fundFiles"
+                versionId={activeFund.versionId}
+                fundId={activeFund.id}
+                fundFiles={activeFund.fundFiles}
+                readMode={readMode}
+            />
+        );
     }
 
     handleSetExtendedView(showExtendedView) {
@@ -1146,7 +1322,8 @@ class ArrPage extends ArrParentPage {
         const centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
         const centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
 
-        if (arrRegion.extendedView) {   // extended view - jiné větší zobrazení stromu, renderuje se zde
+        if (arrRegion.extendedView) {
+            // extended view - jiné větší zobrazení stromu, renderuje se zde
             const colorCoded = !(centerSettingsValues && centerSettingsValues.treeColorCoding === false);
 
             return (
@@ -1157,22 +1334,30 @@ class ArrPage extends ArrParentPage {
                     cutLongLabels={false}
                     versionId={activeFund.versionId}
                     {...activeFund.fundTree}
-                    actionAddons={<Button onClick={() => {
-                        this.handleSetExtendedView(false);
-                    }} className='extended-view-toggle'><Icon glyph='fa-compress'/></Button>}
+                    actionAddons={
+                        <Button
+                            onClick={() => {
+                                this.handleSetExtendedView(false);
+                            }}
+                            className="extended-view-toggle"
+                        >
+                            <Icon glyph="fa-compress" />
+                        </Button>
+                    }
                     colorCoded={colorCoded}
                 />
             );
         } else if (activeFund.nodes.activeIndex === null) {
             return (
-                <div className='arr-output-detail-container'>
+                <div className="arr-output-detail-container">
                     <div className="unselected-msg">
                         <div className="title">{i18n('arr.node.noSelection.title')}</div>
                         <div className="msg-text">{i18n('arr.node.noSelection.message')}</div>
                     </div>
                 </div>
             );
-        } else {    // standardní zobrazení pořádání - záložky node
+        } else {
+            // standardní zobrazení pořádání - záložky node
             const accordion = centerSettingsValues && centerSettingsValues.acordeon === true;
 
             return (
@@ -1200,9 +1385,11 @@ class ArrPage extends ArrParentPage {
         const centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
         let colorCoded = !(centerSettingsValues && centerSettingsValues.treeColorCoding === false);
 
-        if (arrRegion.extendedView) {   // extended view - jiné větší zobrazení stromu, ale renderuje se v center panelu, tento bude prázdný
+        if (arrRegion.extendedView) {
+            // extended view - jiné větší zobrazení stromu, ale renderuje se v center panelu, tento bude prázdný
             return null;
-        } else {    // standardní zobrazení pořádání, strom AS
+        } else {
+            // standardní zobrazení pořádání, strom AS
             return (
                 <FundTreeMain
                     className="fund-tree-container"
@@ -1210,11 +1397,18 @@ class ArrPage extends ArrParentPage {
                     cutLongLabels={true}
                     versionId={activeFund.versionId}
                     {...activeFund.fundTree}
-                    ref='tree'
+                    ref="tree"
                     focus={focus}
-                    actionAddons={<Button onClick={() => {
-                        this.handleSetExtendedView(true);
-                    }} className='extended-view-toggle'><Icon glyph='fa-arrows-alt'/></Button>}
+                    actionAddons={
+                        <Button
+                            onClick={() => {
+                                this.handleSetExtendedView(true);
+                            }}
+                            className="extended-view-toggle"
+                        >
+                            <Icon glyph="fa-arrows-alt" />
+                        </Button>
+                    }
                     colorCoded={colorCoded}
                     readMode={readMode}
                 />

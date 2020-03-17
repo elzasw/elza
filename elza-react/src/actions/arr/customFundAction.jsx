@@ -31,7 +31,9 @@ export function customFundActionSelectVersion(version, fundId) {
 
 export function customFundActionFetchListIfNeeded(fundId) {
     return (dispatch, getState) => {
-        const { arrRegion: { customFund } } = getState();
+        const {
+            arrRegion: {customFund},
+        } = getState();
 
         if (customFund.id !== fundId || customFund.versionId === null) {
             return WebApi.getFundDetail(fundId).then(fund => {

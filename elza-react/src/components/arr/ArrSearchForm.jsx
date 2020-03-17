@@ -25,7 +25,6 @@ const CONTAINS = 'CONTAINS';
 class ArrSearchForm extends AbstractReactComponent {
     static propTypes = {};
 
-
     static validate(values, props) {
         const errors = {};
 
@@ -39,7 +38,7 @@ class ArrSearchForm extends AbstractReactComponent {
         });
 
         let deleteCondition = true;
-        errors.condition.forEach((item) => {
+        errors.condition.forEach(item => {
             if (item != null) {
                 deleteCondition = false;
             }
@@ -61,8 +60,9 @@ class ArrSearchForm extends AbstractReactComponent {
     }
 
     renderFormItem = (condition, index) => {
-
-        const { refTables: { calendarTypes } } = this.props;
+        const {
+            refTables: {calendarTypes},
+        } = this.props;
 
         switch (condition.type.value) {
             case TYPE_TEXT: {
@@ -70,94 +70,141 @@ class ArrSearchForm extends AbstractReactComponent {
             }
 
             case TYPE_UNITDATE: {
-                return <div className="unitdate">
-                    <div className="field">
-                        <FormInput as="select" {...condition.condition}>
-                            <option value={GE} key={GE}>{i18n('search.extended.form.unitdate.type.ge')}</option>
-                            <option value={LE} key={LE}>{i18n('search.extended.form.unitdate.type.le')}</option>
-                            <option value={CONTAINS}
-                                    key={CONTAINS}>{i18n('search.extended.form.unitdate.type.contains')}</option>
-                        </FormInput>
+                return (
+                    <div className="unitdate">
+                        <div className="field">
+                            <FormInput as="select" {...condition.condition}>
+                                <option value={GE} key={GE}>
+                                    {i18n('search.extended.form.unitdate.type.ge')}
+                                </option>
+                                <option value={LE} key={LE}>
+                                    {i18n('search.extended.form.unitdate.type.le')}
+                                </option>
+                                <option value={CONTAINS} key={CONTAINS}>
+                                    {i18n('search.extended.form.unitdate.type.contains')}
+                                </option>
+                            </FormInput>
+                        </div>
+                        <div className="field">
+                            <FormInput as="select" {...condition.calendarTypeId}>
+                                {calendarTypes &&
+                                    calendarTypes.fetched &&
+                                    calendarTypes.items.map((calendar, index) => {
+                                        return (
+                                            <option value={calendar.id} key={calendar.id}>
+                                                {i18n('search.extended.form.unitdate.calendar.' + calendar.code)}
+                                            </option>
+                                        );
+                                    })}
+                            </FormInput>
+                        </div>
+                        <div className="text">
+                            <FormInput type="text" {...condition.value} />
+                        </div>
                     </div>
-                    <div className="field">
-                        <FormInput as="select" {...condition.calendarTypeId}>
-                            {calendarTypes && calendarTypes.fetched && calendarTypes.items.map((calendar, index) => {
-                                return <option value={calendar.id}
-                                               key={calendar.id}>{i18n('search.extended.form.unitdate.calendar.' + calendar.code)}</option>;
-                            })}
-                        </FormInput>
-                    </div>
-                    <div className="text">
-                        <FormInput type="text" {...condition.value} />
-                    </div>
-                </div>;
+                );
             }
             default:
                 return null;
         }
     };
 
-    submitReduxForm = (values, dispatch) => submitForm(ArrSearchForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
+    submitReduxForm = (values, dispatch) =>
+        submitForm(ArrSearchForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
-
         const {
-                  fields: {
-                      type,
-                      text,
-                      condition,
-                  },
-                  handleSubmit, submitting, onClose,
-              } = this.props;
+            fields: {type, text, condition},
+            handleSubmit,
+            submitting,
+            onClose,
+        } = this.props;
 
-        const formForm = <div className="arr-search-form-container">
-            <Button className="action-button" onClick={() => condition.addField({ type: TYPE_TEXT })}><Icon
-                glyph="fa-plus"/> {i18n('search.extended.form.text')}</Button>
-            <Button className="action-button"
-                    onClick={() => condition.addField({ type: TYPE_UNITDATE, calendarTypeId: 1, condition: GE })}><Icon
-                glyph="fa-plus"/> {i18n('search.extended.form.unitdate')}</Button>
+        const formForm = (
+            <div className="arr-search-form-container">
+                <Button className="action-button" onClick={() => condition.addField({type: TYPE_TEXT})}>
+                    <Icon glyph="fa-plus" /> {i18n('search.extended.form.text')}
+                </Button>
+                <Button
+                    className="action-button"
+                    onClick={() => condition.addField({type: TYPE_UNITDATE, calendarTypeId: 1, condition: GE})}
+                >
+                    <Icon glyph="fa-plus" /> {i18n('search.extended.form.unitdate')}
+                </Button>
 
-            <div className="items">
-                {condition.map((conditionRow, index, self) => <div className="condition" key={'condition' + index}>
-                    {this.renderFormItem(conditionRow, index)}
-                    <Button className="delete" variant="action" onClick={() => self.removeField(index)}><Icon
-                        glyph="fa-times"/></Button>
-                </div>)}
+                <div className="items">
+                    {condition.map((conditionRow, index, self) => (
+                        <div className="condition" key={'condition' + index}>
+                            {this.renderFormItem(conditionRow, index)}
+                            <Button className="delete" variant="action" onClick={() => self.removeField(index)}>
+                                <Icon glyph="fa-times" />
+                            </Button>
+                        </div>
+                    ))}
+                </div>
             </div>
-        </div>;
+        );
 
-        const textForm = <div>
-            <FormInput as="textarea" label={i18n('search.extended.input.text')} {...text} />
-        </div>;
+        const textForm = (
+            <div>
+                <FormInput as="textarea" label={i18n('search.extended.input.text')} {...text} />
+            </div>
+        );
 
-        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
-            <Modal.Body>
-                <Row>
-                    <Col xs={4}>
-                        <FormInput type="radio" label={i18n('search.extended.type.form')} {...type} value={FORM_FORM}
-                                   checked={type.value === FORM_FORM} onBlur={() => {
-                        }}/>
-                    </Col>
-                    <Col xs={4}>
-                        <FormInput type="radio" label={i18n('search.extended.type.text')} {...type} value={FORM_TEXT}
-                                   checked={type.value === FORM_TEXT} onBlur={() => {
-                        }}/>
-                    </Col>
-                </Row>
-                {type.value === FORM_FORM && formForm}
-                {type.value === FORM_TEXT && textForm}
-            </Modal.Body>
-            <Modal.Footer>
-                <Button type="submit" disabled={submitting}>{i18n('search.extended.search')}</Button>
-                <Button variant="link" onClick={onClose} disabled={submitting}>{i18n('global.action.cancel')}</Button>
-            </Modal.Footer>
-        </Form>;
+        return (
+            <Form onSubmit={handleSubmit(this.submitReduxForm)}>
+                <Modal.Body>
+                    <Row>
+                        <Col xs={4}>
+                            <FormInput
+                                type="radio"
+                                label={i18n('search.extended.type.form')}
+                                {...type}
+                                value={FORM_FORM}
+                                checked={type.value === FORM_FORM}
+                                onBlur={() => {}}
+                            />
+                        </Col>
+                        <Col xs={4}>
+                            <FormInput
+                                type="radio"
+                                label={i18n('search.extended.type.text')}
+                                {...type}
+                                value={FORM_TEXT}
+                                checked={type.value === FORM_TEXT}
+                                onBlur={() => {}}
+                            />
+                        </Col>
+                    </Row>
+                    {type.value === FORM_FORM && formForm}
+                    {type.value === FORM_TEXT && textForm}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button type="submit" disabled={submitting}>
+                        {i18n('search.extended.search')}
+                    </Button>
+                    <Button variant="link" onClick={onClose} disabled={submitting}>
+                        {i18n('global.action.cancel')}
+                    </Button>
+                </Modal.Footer>
+            </Form>
+        );
     }
 }
 
-export default reduxForm({
-    form: 'searchForm',
-    fields: ['type', 'text', 'condition[].type', 'condition[].condition', 'condition[].calendarTypeId', 'condition[].value'],
-}, state => ({
-    refTables: state.refTables,
-}))(ArrSearchForm);
+export default reduxForm(
+    {
+        form: 'searchForm',
+        fields: [
+            'type',
+            'text',
+            'condition[].type',
+            'condition[].condition',
+            'condition[].calendarTypeId',
+            'condition[].value',
+        ],
+    },
+    state => ({
+        refTables: state.refTables,
+    }),
+)(ArrSearchForm);

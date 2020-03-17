@@ -6,15 +6,15 @@ export default function partyCreatorForm(state, action) {
             if (action.form == 'partyCreatorForm') {
                 return {
                     ...state,
-                    initialValues: action.data
-                }
+                    initialValues: action.data,
+                };
             } else {
                 return state;
             }
-        case "redux-form/CHANGE":
+        case 'redux-form/CHANGE':
             switch (action.field) {
                 default:
-                  return state;
+                    return state;
             }
         default:
             return state;

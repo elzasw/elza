@@ -17,19 +17,16 @@ import Loading from '../../components/shared/loading/Loading';
 import './NodePage.scss';
 
 class NodePage extends AbstractReactComponent {
-
     constructor(props) {
         super(props);
         this.state = {
-            fetching: false
-        }
+            fetching: false,
+        };
     }
 
-    UNSAFE_componentWillReceiveProps(props) {
+    UNSAFE_componentWillReceiveProps(props) {}
 
-    }
-
-    waitForLoadAS = (fce) => {
+    waitForLoadAS = fce => {
         const next = fce();
         if (next) {
             setTimeout(() => {
@@ -40,49 +37,52 @@ class NodePage extends AbstractReactComponent {
 
     componentDidMount() {
         const uuid = this.props.match.params.uuid;
-        console.info("Select JP: " + uuid);
+        console.info('Select JP: ' + uuid);
 
         this.setState({fetching: true});
-        WebApi.selectNode(uuid).then((data) => {
-            const fund = data.fund;
-            this.props.dispatch(fundsSelectFund(fund.id));
-            const fundVersion = fund.versions.find(v => !v.lockDate);
-            this.props.dispatch(routerNavigate('/arr'));
-            const fundObj = getFundFromFundAndVersion(fund, fundVersion);
-            this.props.dispatch(selectFundTab(fundObj));
+        WebApi.selectNode(uuid)
+            .then(data => {
+                const fund = data.fund;
+                this.props.dispatch(fundsSelectFund(fund.id));
+                const fundVersion = fund.versions.find(v => !v.lockDate);
+                this.props.dispatch(routerNavigate('/arr'));
+                const fundObj = getFundFromFundAndVersion(fund, fundVersion);
+                this.props.dispatch(selectFundTab(fundObj));
 
-            this.waitForLoadAS(() => {
-                let arrRegion = this.props.arrRegion;
-                this.props.dispatch((dispatch, getState) => {
-                    arrRegion = getState().arrRegion; // aktuální stav ve store
-                });
+                this.waitForLoadAS(() => {
+                    let arrRegion = this.props.arrRegion;
+                    this.props.dispatch((dispatch, getState) => {
+                        arrRegion = getState().arrRegion; // aktuální stav ve store
+                    });
 
-                const selectFund = arrRegion.funds[arrRegion.activeIndex];
+                    const selectFund = arrRegion.funds[arrRegion.activeIndex];
 
-                if (selectFund.fundTree.fetched) { // čekáme na načtení stromu, potom můžeme vybrat JP
-                    const nodeWithParent = data.nodeWithParent;
-                    const node = nodeWithParent.node;
-                    let parentNode = nodeWithParent.parentNode;
-                    if (parentNode == null) {   // root
-                        parentNode = createFundRoot(selectFund);
+                    if (selectFund.fundTree.fetched) {
+                        // čekáme na načtení stromu, potom můžeme vybrat JP
+                        const nodeWithParent = data.nodeWithParent;
+                        const node = nodeWithParent.node;
+                        let parentNode = nodeWithParent.parentNode;
+                        if (parentNode == null) {
+                            // root
+                            parentNode = createFundRoot(selectFund);
+                        }
+                        this.props.dispatch(fundSelectSubNode(fundVersion.id, node.id, parentNode, false, null, false));
+                        return false;
+                    } else {
+                        return true;
                     }
-                    this.props.dispatch(fundSelectSubNode(fundVersion.id, node.id, parentNode, false, null, false));
-                    return false;
-                } else {
-                    return true;
-                }
+                });
+            })
+            .catch(error => {
+                this.setState({message: error.message});
+            })
+            .finally(() => {
+                this.setState({fetching: false});
             });
-        }).catch((error) => {
-            this.setState({message: error.message});
-        }).finally(() => {
-            this.setState({fetching: false});
-        });
     }
 
     buildRibbon = () => {
-        return (
-            <Ribbon ref='ribbon' {...this.props} />
-        )
+        return <Ribbon ref="ribbon" {...this.props} />;
     };
 
     render() {
@@ -91,14 +91,16 @@ class NodePage extends AbstractReactComponent {
         return (
             <PageLayout
                 splitter={splitter}
-                className='node-page'
+                className="node-page"
                 ribbon={this.buildRibbon()}
-                centerPanel={<div className="content">
-                    {fetching && <Loading/>}
-                    {message && <h2>{message}</h2>}
-                </div>}
+                centerPanel={
+                    <div className="content">
+                        {fetching && <Loading />}
+                        {message && <h2>{message}</h2>}
+                    </div>
+                }
             />
-        )
+        );
     }
 }
 
@@ -110,7 +112,7 @@ function mapStateToProps(state) {
         splitter,
         arrRegion,
         userDetail,
-    }
+    };
 }
 
 export default connect(mapStateToProps)(NodePage);

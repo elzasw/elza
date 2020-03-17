@@ -15,7 +15,6 @@ import './Scope.scss';
  *  <Scope label='Scope'/>
  */
 class Scope extends AbstractReactComponent {
-
     static propTypes = {
         versionId: PropTypes.oneOfType([PropTypes.number, PropTypes.object]),
         value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
@@ -26,7 +25,10 @@ class Scope extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        const { store: { scopes }, versionId } = this.props;
+        const {
+            store: {scopes},
+            versionId,
+        } = this.props;
         this.props.dispatch(requestScopesIfNeeded(versionId));
 
         const index = indexById(scopes, versionId, 'versionId');
@@ -41,7 +43,10 @@ class Scope extends AbstractReactComponent {
     UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(requestScopesIfNeeded(nextProps.versionId));
 
-        const { store: { scopes }, versionId } = nextProps;
+        const {
+            store: {scopes},
+            versionId,
+        } = nextProps;
         const index = indexById(scopes, versionId, 'versionId');
         const oldIndex = indexById(this.props.store.scopes, versionId, 'versionId');
         if (index !== null && index !== oldIndex) {
@@ -54,17 +59,27 @@ class Scope extends AbstractReactComponent {
 
     render() {
         let data = [];
-        const { store: { scopes }, versionId, ...other } = this.props;
+        const {
+            store: {scopes},
+            versionId,
+            ...other
+        } = this.props;
         const index = indexById(scopes, versionId, 'versionId');
         if (index !== null && scopes[index].scopes) {
             data = scopes[index].scopes;
         }
 
-        return <FormInput as='select' options={data} {...other}>
-            <option key="null"/>
-            {data.map(i => <option value={i.id} key={i.id}>{i.name}</option>)}
-        </FormInput>;
+        return (
+            <FormInput as="select" options={data} {...other}>
+                <option key="null" />
+                {data.map(i => (
+                    <option value={i.id} key={i.id}>
+                        {i.name}
+                    </option>
+                ))}
+            </FormInput>
+        );
     }
 }
 
-export default connect((state) => ({ store: state.refTables.scopesData }))(Scope);
+export default connect(state => ({store: state.refTables.scopesData}))(Scope);

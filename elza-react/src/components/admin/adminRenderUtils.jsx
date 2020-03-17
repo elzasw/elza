@@ -1,16 +1,16 @@
 import React from 'react';
 
 export function renderUserOrGroupItem(props) {
-    const { item } = props;
+    const {item} = props;
 
     console.log(props);
 
     if (item) {
         if (item.user) {
-            props.item = { item, ...item.user };
+            props.item = {item, ...item.user};
             return renderUserItem(props);
         } else if (item.group) {
-            props.item = { item, ...item.group };
+            props.item = {item, ...item.group};
             return renderGroupItem(props);
         }
     }
@@ -47,7 +47,7 @@ export function renderUserOrGroupLabel(item) {
 }
 
 export const EntityItem = props => {
-    const { item, getName, highlighted, selected, ...otherProps } = props;
+    const {item, getName, highlighted, selected, ...otherProps} = props;
     let cls = 'item';
     if (highlighted) {
         cls += ' focus';
@@ -67,30 +67,32 @@ export const EntityItem = props => {
     }
 
     return (
-        <div
-            {...otherProps}
-            className={cls}
-        >{name}</div>
+        <div {...otherProps} className={cls}>
+            {name}
+        </div>
     );
 };
 
 export function renderUserItem(props) {
-    return <EntityItem
-        {...props}
-        getName={(item) => {/*console.log("get username",item);*/
-            return getUsername(item);
-        }}
-    />;
+    return (
+        <EntityItem
+            {...props}
+            getName={item => {
+                /*console.log("get username",item);*/
+                return getUsername(item);
+            }}
+        />
+    );
 }
 
 export function renderGroupItem(props) {
-    return <EntityItem {...props}/>;
+    return <EntityItem {...props} />;
 }
 
 export function renderFundItem(props) {
-    return <EntityItem {...props}/>;
+    return <EntityItem {...props} />;
 }
 
 export function renderScopeItem(props) {
-    return <EntityItem {...props}/>;
+    return <EntityItem {...props} />;
 }

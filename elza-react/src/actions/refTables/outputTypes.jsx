@@ -16,12 +16,17 @@ function getDataKey(getState) {
  */
 export function outputTypesFetchIfNeeded() {
     return (dispatch, getState) => {
-        const {refTables:{outputTypes}} = getState();
+        const {
+            refTables: {outputTypes},
+        } = getState();
         const dataKey = getDataKey(getState);
-        if (dataKey !== outputTypes.currentDataKey || ((!outputTypes.fetched || outputTypes.dirty) && !outputTypes.isFetching)) {
+        if (
+            dataKey !== outputTypes.currentDataKey ||
+            ((!outputTypes.fetched || outputTypes.dirty) && !outputTypes.isFetching)
+        ) {
             return dispatch(outputTypesFetch(dataKey));
         }
-    }
+    };
 }
 
 /**
@@ -31,7 +36,7 @@ export function outputTypesFetch(dataKey) {
     return dispatch => {
         dispatch(outputTypesRequest(dataKey));
         return WebApi.getOutputTypes(dataKey).then(data => dispatch(outputTypesReceive(data, dataKey)));
-    }
+    };
 }
 
 /**
@@ -43,8 +48,8 @@ export function outputTypesReceive(items, dataKey) {
     return {
         type: types.REF_OUTPUT_TYPES_RECEIVE,
         items,
-        dataKey
-    }
+        dataKey,
+    };
 }
 
 /**
@@ -53,6 +58,6 @@ export function outputTypesReceive(items, dataKey) {
 export function outputTypesRequest(dataKey) {
     return {
         type: types.REF_OUTPUT_TYPES_REQUEST,
-        dataKey
-    }
+        dataKey,
+    };
 }

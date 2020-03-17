@@ -2,12 +2,12 @@ import {save} from 'stores';
 import {storeStateData} from './store.jsx';
 
 // Globální proměnná pro možnost vypnutí ukládání stavu do local storage
-var _storeSaveEnabled = true
+var _storeSaveEnabled = true;
 
 export function resetLocalStorage() {
     // Uložení do local storage
-    if(typeof(Storage) !== "undefined") {
-        _storeSaveEnabled = false
+    if (typeof Storage !== 'undefined') {
+        _storeSaveEnabled = false;
         localStorage.removeItem('ELZA-STORE-STATE');
         window.location.reload();
     }
@@ -26,18 +26,18 @@ export function storeSave() {
             dispatch(storeStateData(data));
 
             // Uložení do local storage
-            if(typeof(Storage) !== "undefined") {
+            if (typeof Storage !== 'undefined') {
                 var storeNew = getState();
                 const {stateRegion, splitter, userDetail} = storeNew;
 
                 const localStorageData = {
                     stateRegion,
                     splitter,
-                    userDetail: {id: userDetail.id}
+                    userDetail: {id: userDetail.id},
                 };
 
                 _storeSaveEnabled && localStorage.setItem('ELZA-STORE-STATE', JSON.stringify(localStorageData));
             }
         }
-    }
+    };
 }

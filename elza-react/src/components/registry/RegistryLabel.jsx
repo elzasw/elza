@@ -7,7 +7,6 @@ import {AbstractReactComponent, FormInput, Icon, NoFocusButton} from 'components
  * Komponenta pro vytvoření stejných poliček pro editaci záznamu
  */
 class RegistryLabel extends AbstractReactComponent {
-
     state = {
         value: this.props.value,
     };
@@ -26,11 +25,11 @@ class RegistryLabel extends AbstractReactComponent {
         });
     }
 
-    handleKeyUp = (e) => {
+    handleKeyUp = e => {
         e.keyCode === 13 && this.props.onEnter && this.props.onEnter(e);
     };
 
-    handleChange = (e) => {
+    handleChange = e => {
         this.setState({
             value: e.target.value,
         });
@@ -41,24 +40,30 @@ class RegistryLabel extends AbstractReactComponent {
     };
 
     render() {
-        const { label, disabled, onBlur, onDelete } = this.props;
-        return <div className="registry-label">
-            <div className='title' title={label}>{label}</div>
-            <div className="desc-item-value-container">
-                <span>
-                    <FormInput
-                        disabled={disabled}
-                        ref='input'
-                        type='text'
-                        value={this.state.value}
-                        onChange={this.handleChange}
-                        onKeyUp={this.handleKeyUp}
-                        onBlur={onBlur}
-                    />
-                </span>
-                <NoFocusButton disabled={disabled} onClick={onDelete}><Icon glyph='fa-times'/></NoFocusButton>
+        const {label, disabled, onBlur, onDelete} = this.props;
+        return (
+            <div className="registry-label">
+                <div className="title" title={label}>
+                    {label}
+                </div>
+                <div className="desc-item-value-container">
+                    <span>
+                        <FormInput
+                            disabled={disabled}
+                            ref="input"
+                            type="text"
+                            value={this.state.value}
+                            onChange={this.handleChange}
+                            onKeyUp={this.handleKeyUp}
+                            onBlur={onBlur}
+                        />
+                    </span>
+                    <NoFocusButton disabled={disabled} onClick={onDelete}>
+                        <Icon glyph="fa-times" />
+                    </NoFocusButton>
+                </div>
             </div>
-        </div>;
+        );
     }
 }
 

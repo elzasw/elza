@@ -7,7 +7,6 @@ import Resizer from '../resizer/Resizer';
 import './Splitter.scss';
 
 class Splitter extends AbstractReactComponent {
-
     state = {
         active: false,
         resized: false,
@@ -51,10 +50,13 @@ class Splitter extends AbstractReactComponent {
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         if (nextProps.leftSize || nextProps.rightSize) {
-            this.setState({
-                leftSize: nextProps.leftSize || this.state.leftSize,
-                rightSize: nextProps.rightSize || this.state.rightSize,
-            }, this.updateChildPanes);
+            this.setState(
+                {
+                    leftSize: nextProps.leftSize || this.state.leftSize,
+                    rightSize: nextProps.rightSize || this.state.rightSize,
+                },
+                this.updateChildPanes,
+            );
         }
     }
 
@@ -71,7 +73,7 @@ class Splitter extends AbstractReactComponent {
         }
     };
 
-    onMouseDownLeft = (event) => {
+    onMouseDownLeft = event => {
         this.unFocus();
         let position = event.clientX;
         this.setState({
@@ -81,7 +83,7 @@ class Splitter extends AbstractReactComponent {
         });
     };
 
-    onMouseDownRight = (event) => {
+    onMouseDownRight = event => {
         this.unFocus();
         let position = event.clientX;
         this.setState({
@@ -91,10 +93,14 @@ class Splitter extends AbstractReactComponent {
         });
     };
 
-    onMouseMove = (event) => {
+    onMouseMove = event => {
         if (this.state.active) {
             this.unFocus();
-            const ref = this.state.leftDragged ? this.refs.paneLeft : this.state.rightDragged ? this.refs.paneRight : null;
+            const ref = this.state.leftDragged
+                ? this.refs.paneLeft
+                : this.state.rightDragged
+                ? this.refs.paneRight
+                : null;
             if (ref) {
                 const node = ReactDOM.findDOMNode(ref);
                 if (node.getBoundingClientRect) {
@@ -127,7 +133,7 @@ class Splitter extends AbstractReactComponent {
                         };
                     }
                     if (this.props.onChange) {
-                        this.props.onChange({ leftSize: newState.leftSize, rightSize: newState.rightSize });
+                        this.props.onChange({leftSize: newState.leftSize, rightSize: newState.rightSize});
                     }
                     this.setState(newState);
 
@@ -153,30 +159,42 @@ class Splitter extends AbstractReactComponent {
     };
 
     render() {
-        const { props: { left, right, center } } = this;
+        const {
+            props: {left, right, center},
+        } = this;
 
         const parts = [];
 
         if (left) {
-            parts.push(<Pane key='left' ref='paneLeft' className='splitter-left'>{left}</Pane>);
-            parts.push(<Resizer key='resizer-left' ref='resizerLeft' onMouseDown={this.onMouseDownLeft}/>);
+            parts.push(
+                <Pane key="left" ref="paneLeft" className="splitter-left">
+                    {left}
+                </Pane>,
+            );
+            parts.push(<Resizer key="resizer-left" ref="resizerLeft" onMouseDown={this.onMouseDownLeft} />);
         }
 
-        parts.push(<div key='center' className='splitter-center'>{center}</div>);
+        parts.push(
+            <div key="center" className="splitter-center">
+                {center}
+            </div>,
+        );
 
         if (right) {
-            parts.push(<Resizer key='resizer-right' ref='resizerRight' onMouseDown={this.onMouseDownRight}/>);
-            parts.push(<Pane key='right' ref='paneRight' className='splitter-right'>{right}</Pane>);
+            parts.push(<Resizer key="resizer-right" ref="resizerRight" onMouseDown={this.onMouseDownRight} />);
+            parts.push(
+                <Pane key="right" ref="paneRight" className="splitter-right">
+                    {right}
+                </Pane>,
+            );
         }
 
         return (
-            <div ref='container' className='splitter-container'>
+            <div ref="container" className="splitter-container">
                 {parts}
             </div>
         );
     }
 }
 
-
 export default Splitter;
-

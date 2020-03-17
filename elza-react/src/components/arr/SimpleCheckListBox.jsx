@@ -21,9 +21,12 @@ class SimpleCheckListBox extends AbstractReactComponent {
         const props = this.props;
         const {specSearchText} = this.state;
         if (props.items !== nextProps.items) {
-            this.setState({
-                specItems: props.items,
-            }, () => this.callSpecSearch(specSearchText));
+            this.setState(
+                {
+                    specItems: props.items,
+                },
+                () => this.callSpecSearch(specSearchText),
+            );
         }
     }
 
@@ -58,23 +61,23 @@ class SimpleCheckListBox extends AbstractReactComponent {
         if (filtered) {
             resultIds = [];
             let filteredItemIds = {};
-            specItems.forEach(item => filteredItemIds[item.id] = true);
+            specItems.forEach(item => (filteredItemIds[item.id] = true));
 
             let selectedItemIds = {};
             if (prevType === 'selected') {
-                items.forEach((item) => {
+                items.forEach(item => {
                     if (prevIds.indexOf('' + item.id) !== -1 || prevIds.indexOf(item.id) !== -1) {
                         selectedItemIds[item.id] = true;
                     }
                 });
                 if (type === 'selected') {
-                    items.forEach((item) => {
-                        if ((selectedItemIds[item.id] && !filteredItemIds[item.id])) {
+                    items.forEach(item => {
+                        if (selectedItemIds[item.id] && !filteredItemIds[item.id]) {
                             resultIds.push(item.id);
                         }
                     });
                 } else {
-                    items.forEach((item) => {
+                    items.forEach(item => {
                         if (selectedItemIds[item.id] || filteredItemIds[item.id]) {
                             resultIds.push(item.id);
                         }
@@ -82,38 +85,35 @@ class SimpleCheckListBox extends AbstractReactComponent {
                     type = 'selected';
                 }
 
-                ids.forEach((id) => {
+                ids.forEach(id => {
                     resultIds.push(parseInt(id));
                 });
-
             } else {
-
-                items.forEach((item) => {
+                items.forEach(item => {
                     if (prevIds.indexOf('' + item.id) === -1 && prevIds.indexOf(item.id) === -1) {
                         selectedItemIds[item.id] = true;
                     }
                 });
 
                 if (type === 'selected') {
-                    items.forEach((item) => {
+                    items.forEach(item => {
                         if (!selectedItemIds[item.id] || filteredItemIds[item.id]) {
                             resultIds.push(item.id);
                         }
                     });
                     type = 'unselected';
                 } else {
-                    items.forEach((item) => {
+                    items.forEach(item => {
                         if (!selectedItemIds[item.id] && !filteredItemIds[item.id]) {
                             resultIds.push(item.id);
                         }
                     });
                 }
 
-                ids.forEach((id) => {
+                ids.forEach(id => {
                     resultIds.push(parseInt(id));
                 });
             }
-
         } else {
             resultIds = ids;
         }
@@ -121,10 +121,13 @@ class SimpleCheckListBox extends AbstractReactComponent {
         this.props.onChange({type, ids: resultIds});
     };
 
-    handleSpecSearch = (text) => {
-        this.setState({
-            specSearchText: text,
-        }, this.callSpecSearch);
+    handleSpecSearch = text => {
+        this.setState(
+            {
+                specSearchText: text,
+            },
+            this.callSpecSearch,
+        );
     };
 
     getSpecsIdsExt = (items, selectionType, selectedIds) => {
@@ -171,7 +174,7 @@ class SimpleCheckListBox extends AbstractReactComponent {
 
         return (
             <FilterableListBox
-                className='filter-content-container'
+                className="filter-content-container"
                 searchable
                 items={specItems}
                 label={label}
@@ -187,4 +190,3 @@ class SimpleCheckListBox extends AbstractReactComponent {
 }
 
 export default SimpleCheckListBox;
-

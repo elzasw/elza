@@ -33,17 +33,16 @@ export function fetchFundOutputFilesIfNeeded(versionId, outputResultId) {
         if (fundOutputFiles.currentDataKey !== dataKey) {
             dispatch(_dataRequest(versionId, dataKey));
 
-            WebApi.findFundOutputFiles(outputResultId, fundOutputFiles.filterText)
-                  .then(response => {
-                      const newFund = objectById(state.arrRegion.funds, versionId, 'versionId');
-                      if (newFund !== null) {
-                          const newFundOutputFiles = fund.fundOutput.fundOutputFiles;
-                          const newDataKey = _dataKey(outputResultId, newFundOutputFiles);
-                          if (newDataKey === dataKey) {
-                              dispatch(_dataReceive(versionId, response));
-                          }
-                      }
-                  });
+            WebApi.findFundOutputFiles(outputResultId, fundOutputFiles.filterText).then(response => {
+                const newFund = objectById(state.arrRegion.funds, versionId, 'versionId');
+                if (newFund !== null) {
+                    const newFundOutputFiles = fund.fundOutput.fundOutputFiles;
+                    const newDataKey = _dataKey(outputResultId, newFundOutputFiles);
+                    if (newDataKey === dataKey) {
+                        dispatch(_dataReceive(versionId, response));
+                    }
+                }
+            });
         }
     };
 }

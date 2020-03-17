@@ -239,19 +239,23 @@ class RegistryUsageForm extends React.Component {
         return (dispatch, getState) => {
             const {arrRegion} = getState();
             const activeFund = this.getActiveIndex(arrRegion);
-            dispatch(fundTreeFetch(FUND_TREE_AREA_MAIN, fund.versionId, node.propertyId, activeFund.expandedIds)).then(() => {
-                const {arrRegion} = getState();
-                const activeFund = this.getActiveIndex(arrRegion);
+            dispatch(fundTreeFetch(FUND_TREE_AREA_MAIN, fund.versionId, node.propertyId, activeFund.expandedIds)).then(
+                () => {
+                    const {arrRegion} = getState();
+                    const activeFund = this.getActiveIndex(arrRegion);
 
-                const nodeFromTree = activeFund.fundTree.nodes.find(n => n.id === node.propertyId);
+                    const nodeFromTree = activeFund.fundTree.nodes.find(n => n.id === node.propertyId);
 
-                let parentNode = getParentNode(nodeFromTree, activeFund.fundTree.nodes);
+                    let parentNode = getParentNode(nodeFromTree, activeFund.fundTree.nodes);
 
-                if (parentNode === null) {
-                    parentNode = createFundRoot(fund);
-                }
-                dispatch(fundSelectSubNode(fund.versionId, node.id, parentNode, openNewTab, null, ensureItemVisible));
-            });
+                    if (parentNode === null) {
+                        parentNode = createFundRoot(fund);
+                    }
+                    dispatch(
+                        fundSelectSubNode(fund.versionId, node.id, parentNode, openNewTab, null, ensureItemVisible),
+                    );
+                },
+            );
         };
     }
 
@@ -260,50 +264,50 @@ class RegistryUsageForm extends React.Component {
         const {selectedReplacementNode} = this.state;
         return (
             <Modal.Body className="reg-usage-form">
-                <h4>
-                    {detail && detail.record}
-                </h4>
+                <h4>{detail && detail.record}</h4>
                 <label>
                     {i18n('registry.registryUsageCount')} {this.state.usageCount}
                 </label>
-                {fundTreeUsage &&
-                <FundTreeUsage
-                    handleOpenCloseNode={this.handleOpenCloseNode}
-                    className="fund-tree-container-fixed"
-                    cutLongLabels={true}
-                    ref="treeUsage"
-                    showCountStats={true}
-                    onLinkClick={this.handleLinkClick}
-                    {...fundTreeUsage}
-                />}
-                {this.state.usageCount > 0 &&
-                <ToggleContent withText text={this.props.replaceText}>
-                    <Row>
-                        <Col xs={10}>
-                            {this.props.type === 'registry'
-                                ? <RegistryField
-                                    value={this.state.selectedReplacementNode}
-                                    onChange={this.handleChoose}
-                                    onBlur={() => {
-                                    }}
-                                />
-                                : <PartyField
-                                    value={this.state.selectedReplacementNode}
-                                    onChange={this.handleChoose}
-                                    onBlur={() => {
-                                    }}
-                                />}
-                        </Col>
-                        <Col xs={2}>
-                            <Button
-                                onClick={() => onReplace(selectedReplacementNode)}
-                                disabled={!this.canReplace()}
-                            >
-                                {i18n('registry.replace')}
-                            </Button>
-                        </Col>
-                    </Row>
-                </ToggleContent>}
+                {fundTreeUsage && (
+                    <FundTreeUsage
+                        handleOpenCloseNode={this.handleOpenCloseNode}
+                        className="fund-tree-container-fixed"
+                        cutLongLabels={true}
+                        ref="treeUsage"
+                        showCountStats={true}
+                        onLinkClick={this.handleLinkClick}
+                        {...fundTreeUsage}
+                    />
+                )}
+                {this.state.usageCount > 0 && (
+                    <ToggleContent withText text={this.props.replaceText}>
+                        <Row>
+                            <Col xs={10}>
+                                {this.props.type === 'registry' ? (
+                                    <RegistryField
+                                        value={this.state.selectedReplacementNode}
+                                        onChange={this.handleChoose}
+                                        onBlur={() => {}}
+                                    />
+                                ) : (
+                                    <PartyField
+                                        value={this.state.selectedReplacementNode}
+                                        onChange={this.handleChoose}
+                                        onBlur={() => {}}
+                                    />
+                                )}
+                            </Col>
+                            <Col xs={2}>
+                                <Button
+                                    onClick={() => onReplace(selectedReplacementNode)}
+                                    disabled={!this.canReplace()}
+                                >
+                                    {i18n('registry.replace')}
+                                </Button>
+                            </Col>
+                        </Row>
+                    </ToggleContent>
+                )}
             </Modal.Body>
         );
     }
@@ -316,7 +320,7 @@ class RegistryUsageForm extends React.Component {
 }
 
 export default withRouter(
-    connect((state) => {
+    connect(state => {
         const registryList = storeFromArea(state, AREA_REGISTRY_LIST);
         const partyList = storeFromArea(state, AREA_PARTY_LIST);
 

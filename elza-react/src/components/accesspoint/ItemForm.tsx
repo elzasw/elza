@@ -1,35 +1,33 @@
-import { Promise } from 'es6-promise';
+import {Promise} from 'es6-promise';
 import PropTypes from 'prop-types';
 import * as React from 'react';
-import { Accordion, Card } from 'react-bootstrap';
+import {Accordion, Card} from 'react-bootstrap';
 import * as ReactDOM from 'react-dom';
-import { connect } from 'react-redux';
-import { canSetFocus, focusWasSet, isFocusFor, setFocus } from '../../actions/global/focus';
-import { partyAdd, partyDetailFetchIfNeeded } from '../../actions/party/party';
+import {connect} from 'react-redux';
+import {canSetFocus, focusWasSet, isFocusFor, setFocus} from '../../actions/global/focus';
+import {partyAdd, partyDetailFetchIfNeeded} from '../../actions/party/party';
 // import {registryDetailFetchIfNeeded, registryAdd} from '../../actions/registry/registry'
-import { routerNavigate } from '../../actions/router';
-import { i18n, Icon } from '../../components/shared';
-import { Button } from '../../components/ui';
-import { FOCUS_KEYS } from '../../constants';
-import { IItemFormState } from '../../stores/app/accesspoint/itemForm';
-import { Dispatch } from '../../typings/globals';
+import {routerNavigate} from '../../actions/router';
+import {i18n, Icon} from '../../components/shared';
+import {Button} from '../../components/ui';
+import {FOCUS_KEYS} from '../../constants';
+import {IItemFormState} from '../../stores/app/accesspoint/itemForm';
+import {Dispatch} from '../../typings/globals';
 import '../arr/SubNodeForm.scss';
-import { setInputFocus } from '../Utils';
-import { ItemFactoryInterface } from './ItemFactoryInterface';
-import { ItemFormActions } from './ItemFormActions';
+import {setInputFocus} from '../Utils';
+import {ItemFactoryInterface} from './ItemFactoryInterface';
+import {ItemFormActions} from './ItemFormActions';
 import ItemType from './ItemType';
 
 interface ItemFormClassState {
-    readonly unusedItemTypeIds: number[]
+    readonly unusedItemTypeIds: number[];
 }
 
-interface FromState {
-
-}
+interface FromState {}
 
 interface DispatchProps {
     dispatch: Dispatch<FromState>;
-    userDetail: any
+    userDetail: any;
 }
 
 interface Props {
@@ -45,7 +43,7 @@ interface Props {
     focus: any;
     rulDataTypes: any;
     calendarTypes: any;
-    conformityInfo: {missings: any[], errors: any[]};
+    conformityInfo: {missings: any[]; errors: any[]};
     customActions?: (string, any) => React.ReactNode;
 }
 
@@ -64,7 +62,6 @@ import('../../actions/registry/registry').then(imported => {
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
 class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClassState> {
-
     readonly state: ItemFormClassState = {
         unusedItemTypeIds: [],
     };
@@ -122,20 +119,24 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
     }
 
     trySetFocus(props) {
-        const { focus } = props;
+        const {focus} = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, FOCUS_KEYS.ARR, 2, 'subNodeForm')) {
-                if (focus.item) {   // položka
+                if (focus.item) {
+                    // položka
                     this.setState({}, () => {
-                        const ref = this.refs['descItemType' + focus.item.descItemTypeId] as any as ReactWrappedComponent<{}>;
+                        const ref = (this.refs[
+                            'descItemType' + focus.item.descItemTypeId
+                        ] as any) as ReactWrappedComponent<{}>;
                         if (ref) {
                             const descItemType = ref.getWrappedInstance();
                             descItemType.focus(focus.item);
                         }
                         focusWasSet();
                     });
-                } else {    // obecně formulář
+                } else {
+                    // obecně formulář
                     this.setState({}, () => {
                         const el = ReactDOM.findDOMNode(this.refs.nodeForm);
                         if (el) {
@@ -148,9 +149,7 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
         }
     }
 
-    handleShortcuts(action) {
-    }
-
+    handleShortcuts(action) {}
 
     /**
      * Odebrání hodnoty atributu.
@@ -228,7 +227,9 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
         };
 
         // Focus na novou hodnotu
-        const { subNodeForm: { formData } } = this.props;
+        const {
+            subNodeForm: {formData},
+        } = this.props;
         const itemType = formData!!.itemTypes[itemTypeIndex];
         const index = itemType.items.length;
 
@@ -237,11 +238,12 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
             return;
         }
 
-        const setFocusFunc = () => setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
-            descItemTypeId: itemType.id,
-            descItemObjectId: null,
-            itemIndex: index,
-        });
+        const setFocusFunc = () =>
+            setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
+                descItemTypeId: itemType.id,
+                descItemObjectId: null,
+                itemIndex: index,
+            });
 
         // Přidání hodnoty
         this.props.dispatch(this.props.formActions.fundSubNodeFormValueAdd(valueLocation));
@@ -272,23 +274,27 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
      * @param submitType {String} typ submitu
      */
     handleCreatedRecord(valueLocation, data, submitType) {
-        const { subNodeForm } = this.props;
+        const {subNodeForm} = this.props;
 
         // Uložení hodnoty
         this.props.dispatch(this.props.formActions.fundSubNodeFormValueChange(valueLocation, data, true));
 
         // Akce po vytvoření
-        if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
+        if (submitType === 'storeAndViewDetail') {
+            // přesměrování na detail
             // this.props.dispatch(registryDetailFetchIfNeeded(data.id));
             // this.props.dispatch(routerNavigate('registry'));
-        } else {    // nastavení focus zpět na prvek
+        } else {
+            // nastavení focus zpět na prvek
             const formData = subNodeForm.formData;
             const descItemType = formData!!.itemTypes[valueLocation.itemTypeIndex];
-            this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
-                descItemTypeId: descItemType.id,
-                descItemObjectId: null,
-                itemIndex: valueLocation.itemIndex,
-            }));
+            this.props.dispatch(
+                setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
+                    descItemTypeId: descItemType.id,
+                    descItemObjectId: null,
+                    itemIndex: valueLocation.itemIndex,
+                }),
+            );
         }
     }
 
@@ -303,7 +309,6 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
         // this.props.dispatch(registryDetailFetchIfNeeded(recordId));
         // this.props.dispatch(routerNavigate('registry'));
     }
-
 
     /**
      * Vytvoření nové osoby.
@@ -320,25 +325,28 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
         this.props.dispatch(partyAdd(partyTypeId, null, this.handleCreatedParty.bind(this, valueLocation), true));
     }
 
-
     handleCreatedParty(valueLocation, data, submitType) {
-        const { subNodeForm } = this.props;
+        const {subNodeForm} = this.props;
 
         // Uložení hodnoty
         this.props.dispatch(this.props.formActions.fundSubNodeFormValueChange(valueLocation, data, true));
 
         // Akce po vytvoření
-        if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
+        if (submitType === 'storeAndViewDetail') {
+            // přesměrování na detail
             this.props.dispatch(partyDetailFetchIfNeeded(data.id));
             this.props.dispatch(routerNavigate('party'));
-        } else {    // nastavení focus zpět na prvek
+        } else {
+            // nastavení focus zpět na prvek
             const formData = subNodeForm.formData;
             const descItemType = formData!!.itemTypes[valueLocation.itemTypeIndex];
-            this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
-                descItemTypeId: descItemType.id,
-                descItemObjectId: null,
-                itemIndex: valueLocation.itemIndex,
-            }));
+            this.props.dispatch(
+                setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
+                    descItemTypeId: descItemType.id,
+                    descItemObjectId: null,
+                    itemIndex: valueLocation.itemIndex,
+                }),
+            );
         }
     }
 
@@ -432,7 +440,6 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
         this.props.dispatch(this.props.formActions.fundSubNodeFormValueChangeSpec(valueLocation, value));
     }
 
-
     /**
      * Renderování atributu.
      * @param itemType {Object} atribut
@@ -441,8 +448,16 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
      */
     renderDescItemType(itemType, itemTypeIndex) {
         const {
-            subNodeForm, rulDataTypes, structureTypes, calendarTypes, closed,
-            showNodeAddons, conformityInfo, readMode, userDetail, typePrefix,
+            subNodeForm,
+            rulDataTypes,
+            structureTypes,
+            calendarTypes,
+            closed,
+            showNodeAddons,
+            conformityInfo,
+            readMode,
+            userDetail,
+            typePrefix,
         } = this.props;
 
         const refType = subNodeForm!!.refTypesMap!!.get(itemType.id)!!;
@@ -469,46 +484,48 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
             }
         });
 
-        return <ItemType key={itemType.id}
-                         typePrefix={typePrefix}
-            //ref={'descItemType' + itemType.id} TODO React 16 REF
-                         descItemType={itemType}
-                         refType={refType}
-                         infoType={infoType}
-                         rulDataType={rulDataType}
-                         calendarTypes={calendarTypes}
-                         structureTypes={structureTypes}
-                         onCreateParty={this.handleCreateParty.bind(this, itemTypeIndex)}
-                         onDetailParty={this.handleDetailParty.bind(this, itemTypeIndex)}
-                         onCreateRecord={this.handleCreateRecord.bind(this, itemTypeIndex)}
-                         onDetailRecord={this.handleDetailRecord.bind(this, itemTypeIndex)}
-                         onDescItemAdd={this.handleDescItemAdd.bind(this, itemTypeIndex)}
-                         onDescItemRemove={this.handleDescItemRemove.bind(this, itemTypeIndex)}
-                         onChange={this.handleChange.bind(this, itemTypeIndex)}
-                         onChangePosition={this.handleChangePosition.bind(this, itemTypeIndex)}
-                         onChangeSpec={this.handleChangeSpec.bind(this, itemTypeIndex)}
-                         onBlur={this.handleBlur.bind(this, itemTypeIndex)}
-                         onFocus={this.handleFocus.bind(this, itemTypeIndex)}
-                         onDescItemTypeRemove={this.handleDescItemTypeRemove.bind(this, itemTypeIndex)}
-                         onDescItemTypeLock={() => {
-                         }}
-                         onDescItemTypeCopy={() => {
-                         }}
-                         onDescItemTypeCopyFromPrev={() => {
-                         }}
-                         showNodeAddons={showNodeAddons}
-                         locked={locked}
-                         closed={closed}
-                         copy={copy}
-                         conformityInfo={conformityInfo}
-                         descItemCopyFromPrevEnabled={false}
-                         readMode={readMode}
-                         strictMode={strictMode}
-                         notIdentified={notIdentified}
-                         onDescItemNotIdentified={(itemIndex, descItem) => this.handleDescItemNotIdentified(itemTypeIndex, itemIndex, descItem)}
-                         customActions={this.props.customActions && this.props.customActions(rulDataType.code, infoType)}
-                         descItemFactory={this.props.descItemFactory}
-        />;
+        return (
+            <ItemType
+                key={itemType.id}
+                typePrefix={typePrefix}
+                //ref={'descItemType' + itemType.id} TODO React 16 REF
+                descItemType={itemType}
+                refType={refType}
+                infoType={infoType}
+                rulDataType={rulDataType}
+                calendarTypes={calendarTypes}
+                structureTypes={structureTypes}
+                onCreateParty={this.handleCreateParty.bind(this, itemTypeIndex)}
+                onDetailParty={this.handleDetailParty.bind(this, itemTypeIndex)}
+                onCreateRecord={this.handleCreateRecord.bind(this, itemTypeIndex)}
+                onDetailRecord={this.handleDetailRecord.bind(this, itemTypeIndex)}
+                onDescItemAdd={this.handleDescItemAdd.bind(this, itemTypeIndex)}
+                onDescItemRemove={this.handleDescItemRemove.bind(this, itemTypeIndex)}
+                onChange={this.handleChange.bind(this, itemTypeIndex)}
+                onChangePosition={this.handleChangePosition.bind(this, itemTypeIndex)}
+                onChangeSpec={this.handleChangeSpec.bind(this, itemTypeIndex)}
+                onBlur={this.handleBlur.bind(this, itemTypeIndex)}
+                onFocus={this.handleFocus.bind(this, itemTypeIndex)}
+                onDescItemTypeRemove={this.handleDescItemTypeRemove.bind(this, itemTypeIndex)}
+                onDescItemTypeLock={() => {}}
+                onDescItemTypeCopy={() => {}}
+                onDescItemTypeCopyFromPrev={() => {}}
+                showNodeAddons={showNodeAddons}
+                locked={locked}
+                closed={closed}
+                copy={copy}
+                conformityInfo={conformityInfo}
+                descItemCopyFromPrevEnabled={false}
+                readMode={readMode}
+                strictMode={strictMode}
+                notIdentified={notIdentified}
+                onDescItemNotIdentified={(itemIndex, descItem) =>
+                    this.handleDescItemNotIdentified(itemTypeIndex, itemIndex, descItem)
+                }
+                customActions={this.props.customActions && this.props.customActions(rulDataType.code, infoType)}
+                descItemFactory={this.props.descItemFactory}
+            />
+        );
     }
 
     handleDescItemNotIdentified = (itemTypeIndex, itemIndex, descItem) => {
@@ -520,53 +537,59 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
     };
 
     handleAddUnusedItem = (itemTypeId, index) => {
-        const { formActions } = this.props;
-        const { unusedItemTypeIds } = this.state;
+        const {formActions} = this.props;
+        const {unusedItemTypeIds} = this.state;
 
-        const x = this.props.dispatch(formActions.addCalculatedDescItem(itemTypeId, true)) as any as Promise<any>;
+        const x = (this.props.dispatch(formActions.addCalculatedDescItem(itemTypeId, true)) as any) as Promise<any>;
         x.then(() => {
             this.setState({
-                unusedItemTypeIds: [
-                    ...unusedItemTypeIds.slice(0, index),
-                    ...unusedItemTypeIds.slice(index + 1),
-                ],
+                unusedItemTypeIds: [...unusedItemTypeIds.slice(0, index), ...unusedItemTypeIds.slice(index + 1)],
             });
         });
     };
 
     render() {
-        const { subNodeForm, closed, readMode } = this.props;
-        const { unusedItemTypeIds } = this.state;
+        const {subNodeForm, closed, readMode} = this.props;
+        const {unusedItemTypeIds} = this.state;
         const formData = subNodeForm.formData;
 
-        let unusedGeneratedItems;    // nepoužité vygenerované PP
+        let unusedGeneratedItems; // nepoužité vygenerované PP
         if (unusedItemTypeIds && unusedItemTypeIds.length > 0) {
             // Accordion as React.Component;
-            unusedGeneratedItems = <Accordion>
-
-                <Card>
-                    <Card.Header>{i18n('arr.output.title.unusedGeneratedItems', unusedItemTypeIds.length)}</Card.Header>
-                    <Accordion.Collapse eventKey="1">
-                        <Card.Body>
-                            {unusedItemTypeIds.map((itemTypeId, index) => {
-                                const refType = subNodeForm!!.refTypesMap!![itemTypeId];
-                                if (!readMode && !closed) {
-                                    return <Button
-                                        className="add-link btn btn-link"
-                                        variant="link"
-                                        key={itemTypeId}
-                                        onClick={() => this.handleAddUnusedItem(itemTypeId, index)}
-                                    >
-                                        <Icon glyph="fa-plus"/> {refType.name}
-                                    </Button>;
-                                } else {
-                                    return <span className="space" key={itemTypeId}>{refType.name} </span>;
-                                }
-                            })}
-                        </Card.Body>
-                    </Accordion.Collapse>
-                </Card>
-            </Accordion>;
+            unusedGeneratedItems = (
+                <Accordion>
+                    <Card>
+                        <Card.Header>
+                            {i18n('arr.output.title.unusedGeneratedItems', unusedItemTypeIds.length)}
+                        </Card.Header>
+                        <Accordion.Collapse eventKey="1">
+                            <Card.Body>
+                                {unusedItemTypeIds.map((itemTypeId, index) => {
+                                    const refType = subNodeForm!!.refTypesMap!![itemTypeId];
+                                    if (!readMode && !closed) {
+                                        return (
+                                            <Button
+                                                className="add-link btn btn-link"
+                                                variant="link"
+                                                key={itemTypeId}
+                                                onClick={() => this.handleAddUnusedItem(itemTypeId, index)}
+                                            >
+                                                <Icon glyph="fa-plus" /> {refType.name}
+                                            </Button>
+                                        );
+                                    } else {
+                                        return (
+                                            <span className="space" key={itemTypeId}>
+                                                {refType.name}{' '}
+                                            </span>
+                                        );
+                                    }
+                                })}
+                            </Card.Body>
+                        </Accordion.Collapse>
+                    </Card>
+                </Accordion>
+            );
         }
 
         const nodes: React.ReactNode[] = [];
@@ -580,13 +603,11 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
         }
 
         return (
-            <div className='node-form'>
+            <div className="node-form">
                 {unusedGeneratedItems}
-                <div ref='nodeForm' className='desc-item-groups'>
-                    <div className='desc-item-group'>
-                        <div className='desc-item-types'>
-                            {nodes}
-                        </div>
+                <div ref="nodeForm" className="desc-item-groups">
+                    <div className="desc-item-group">
+                        <div className="desc-item-types">{nodes}</div>
                     </div>
                 </div>
             </div>
@@ -594,13 +615,11 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
     }
 }
 
-
-export const ItemForm = connect((state: {userDetail, arrRegion}, props: Props) => {
-    const { userDetail, arrRegion } = state;
+export const ItemForm = connect((state: {userDetail; arrRegion}, props: Props) => {
+    const {userDetail, arrRegion} = state;
 
     return {
         userDetail,
         arrRegion,
     };
 })(ItemFormClass as any);
-

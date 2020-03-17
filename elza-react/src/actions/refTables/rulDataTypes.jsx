@@ -12,10 +12,13 @@ import * as types from 'actions/constants/ActionTypes.js';
 export function refRulDataTypesFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
-        if ((!state.refTables.rulDataTypes.fetched || state.refTables.rulDataTypes.dirty) && !state.refTables.rulDataTypes.isFetching) {
+        if (
+            (!state.refTables.rulDataTypes.fetched || state.refTables.rulDataTypes.dirty) &&
+            !state.refTables.rulDataTypes.isFetching
+        ) {
             return dispatch(refRulDataTypesFetch());
         }
-    }
+    };
 }
 
 /**
@@ -23,10 +26,9 @@ export function refRulDataTypesFetchIfNeeded() {
  */
 export function refRulDataTypesFetch() {
     return dispatch => {
-        dispatch(refRulDataTypesRequest())
-        return WebApi.getRulDataTypes()
-            .then(json => dispatch(refRulDataTypesReceive(json)));
-    }
+        dispatch(refRulDataTypesRequest());
+        return WebApi.getRulDataTypes().then(json => dispatch(refRulDataTypesReceive(json)));
+    };
 }
 
 /**
@@ -37,8 +39,8 @@ export function refRulDataTypesReceive(json) {
     return {
         type: types.REF_RUL_DATA_TYPES_RECEIVE,
         items: json,
-        receivedAt: Date.now()
-    }
+        receivedAt: Date.now(),
+    };
 }
 
 /**
@@ -46,6 +48,6 @@ export function refRulDataTypesReceive(json) {
  */
 export function refRulDataTypesRequest() {
     return {
-        type: types.REF_RUL_DATA_TYPES_REQUEST
-    }
+        type: types.REF_RUL_DATA_TYPES_REQUEST,
+    };
 }

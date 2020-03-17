@@ -15,7 +15,6 @@ import AddDescItemTypeForm from '../arr/nodeForm/AddDescItemTypeForm';
  * <AddRegistryForm onSubmit={this.handleCallAddRegistry} />
  */
 class NewApItemNameFormModal extends AbstractReactComponent {
-
     static propTypes = {
         objectId: PropTypes.number.isRequired,
         accessPointId: PropTypes.number.isRequired,
@@ -24,7 +23,6 @@ class NewApItemNameFormModal extends AbstractReactComponent {
 
     add = () => {
         const {nameItemForm} = this.props;
-
 
         const formData = nameItemForm.formData;
         const itemTypes = [];
@@ -37,7 +35,8 @@ class NewApItemNameFormModal extends AbstractReactComponent {
         });
 
         nameItemForm.refTypesMap.forEach(refType => {
-            if (infoTypesMap.has(refType.id)) {    // ještě ji na formuláři nemáme
+            if (infoTypesMap.has(refType.id)) {
+                // ještě ji na formuláři nemáme
                 const infoType = infoTypesMap.get(refType.id);
                 // v nestriktním modu přidáváme všechny jinak jen možné
                 if (!strictMode || infoType.type !== 'IMPOSSIBLE') {
@@ -56,14 +55,19 @@ class NewApItemNameFormModal extends AbstractReactComponent {
             },
         ];
 
-        const submit = (data) => {
+        const submit = data => {
             //this.props.dispatch(modalDialogHide());
             this.props.dispatch(accessPointFormActions.fundSubNodeFormDescItemTypeAdd(data.descItemTypeId.id));
         };
 
         // Modální dialog
-        this.props.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), <AddDescItemTypeForm
-            descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('subNodeForm.descItemType.title.add'),
+                <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit} />,
+            ),
+        );
     };
 
     onStore = () => {
@@ -87,20 +91,26 @@ class NewApItemNameFormModal extends AbstractReactComponent {
         return (
             <div>
                 <Modal.Body>
-                    <NoFocusButton onClick={this.add}><Icon glyph="fa-plus-circle"/>{i18n('subNodeForm.section.item')}
+                    <NoFocusButton onClick={this.add}>
+                        <Icon glyph="fa-plus-circle" />
+                        {i18n('subNodeForm.section.item')}
                     </NoFocusButton>
-                    <ApItemNameForm parent={{id: objectId, accessPointId}}/>
+                    <ApItemNameForm parent={{id: objectId, accessPointId}} />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="link" onClick={this.onStore}>{i18n('global.action.store')}</Button>
-                    <Button variant="link" onClick={this.onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button variant="link" onClick={this.onStore}>
+                        {i18n('global.action.store')}
+                    </Button>
+                    <Button variant="link" onClick={this.onClose}>
+                        {i18n('global.action.cancel')}
+                    </Button>
                 </Modal.Footer>
             </div>
         );
     }
 }
 
-export default connect((state) => {
+export default connect(state => {
     return {
         nameItemForm: state.ap.nameItemForm,
     };

@@ -15,10 +15,11 @@ class NoFocusButton extends AbstractReactComponent {
             cls += ' ' + className;
         }
 
-
         return (
-            <div className={cls} onClick={!disabled ? onClick : null} {...otherProps}>{this.props.children}</div>
-        )
+            <div className={cls} onClick={!disabled ? onClick : null} {...otherProps}>
+                {this.props.children}
+            </div>
+        );
     }
 }
 

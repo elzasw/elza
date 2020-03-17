@@ -7,7 +7,7 @@ import {renderUserItem} from './adminRenderUtils.jsx';
 class UserField extends AbstractReactComponent {
     static defaultProps = {
         tags: false,
-        excludedGroupId: null
+        excludedGroupId: null,
     };
 
     static propTypes = {
@@ -22,29 +22,25 @@ class UserField extends AbstractReactComponent {
 
     constructor(props) {
         super(props);
-        this.bindMethods(
-            "handleChange",
-            "handleSearchChange",
-            "focus"
-        );
+        this.bindMethods('handleChange', 'handleSearchChange', 'focus');
 
         this.state = {
-            dataList: []
+            dataList: [],
         };
     }
 
     focus() {
-        this.refs.autocomplete.focus()
+        this.refs.autocomplete.focus();
     }
 
     handleSearchChange(text) {
-        text = text === "" ? null : text;
+        text = text === '' ? null : text;
 
         WebApi.findUser(text, true, false, 200, this.props.excludedGroupId).then(json => {
             this.setState({
-                dataList: json.users
-            })
-        })
+                dataList: json.users,
+            });
+        });
     }
 
     render() {
@@ -64,7 +60,7 @@ class UserField extends AbstractReactComponent {
                 {...otherProps}
                 renderItem={renderUserItem}
             />
-        )
+        );
     }
 }
 

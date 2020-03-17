@@ -3,11 +3,11 @@ import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-import { connect } from 'react-redux';
-import { Shortcuts } from 'react-shortcuts';
-import { nodeFormActions } from '../../actions/arr/subNodeForm';
-import { WebApi } from '../../actions/index.jsx';
-import { i18n, Icon, NoFocusButton, TooltipTrigger, Utils } from '../../components/shared';
+import {connect} from 'react-redux';
+import {Shortcuts} from 'react-shortcuts';
+import {nodeFormActions} from '../../actions/arr/subNodeForm';
+import {WebApi} from '../../actions/index.jsx';
+import {i18n, Icon, NoFocusButton, TooltipTrigger, Utils} from '../../components/shared';
 import {
     convertValue,
     DataType,
@@ -17,22 +17,21 @@ import {
     RefTypeExt,
     validate,
 } from '../../stores/app/accesspoint/itemForm';
-import { DataTypeCode } from '../../stores/app/accesspoint/itemFormInterfaces';
-import { indexById } from '../../stores/app/utils';
-import { objectById } from '../../stores/app/utils2';
-import { Dispatch } from '../../typings/globals';
-import { hasDescItemTypeValue } from '../arr/ArrUtils';
+import {DataTypeCode} from '../../stores/app/accesspoint/itemFormInterfaces';
+import {indexById} from '../../stores/app/utils';
+import {objectById} from '../../stores/app/utils2';
+import {Dispatch} from '../../typings/globals';
+import {hasDescItemTypeValue} from '../arr/ArrUtils';
 import '../arr/nodeForm/AbstractDescItem.scss';
 import defaultKeymap from '../arr/nodeForm/DescItemTypeKeymap.jsx';
-import { valuesEquals } from '../Utils';
-import { ItemFactoryInterface } from './ItemFactoryInterface';
+import {valuesEquals} from '../Utils';
+import {ItemFactoryInterface} from './ItemFactoryInterface';
 import DescItemTypeSpec from './ItemTypeSpec.jsx';
 
 const placeholder = document.createElement('div');
 placeholder.className = 'placeholder';
 
-interface FromState {
-}
+interface FromState {}
 
 interface DispatchProps {
     dispatch: Dispatch<FromState>;
@@ -47,7 +46,7 @@ export interface Props {
     infoType: RefTypeExt;
     rulDataType: DataType;
     calendarTypes: any;
-    structureTypes: {data: {id: number, code: string, name: string}[]};
+    structureTypes: {data: {id: number; code: string; name: string}[]};
     onCreateParty: Function;
     onDetailParty: Function;
     onCreateRecord: Function;
@@ -67,7 +66,7 @@ export interface Props {
     locked: boolean;
     closed: boolean;
     copy: boolean;
-    conformityInfo: {missings: any[], errors: any[]};
+    conformityInfo: {missings: any[]; errors: any[]};
     descItemCopyFromPrevEnabled: boolean;
     readMode: boolean;
     strictMode: boolean;
@@ -75,12 +74,11 @@ export interface Props {
     onDescItemNotIdentified: Function;
     customActions?: React.ReactNode;
     descItemFactory: ItemFactoryInterface;
-    hideDelete?: boolean,
-    draggable?: boolean
+    hideDelete?: boolean;
+    draggable?: boolean;
 }
 
-interface ItemFormClassState {
-}
+interface ItemFormClassState {}
 
 /**
  * Atribut - desc item type.
@@ -92,8 +90,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
     static defaultProps = {
         draggable: true,
         hideDelete: false,
-        onCreatePacket: () => {
-        },
+        onCreatePacket: () => {},
     };
     shortcutManager: any;
     containers: {};
@@ -123,7 +120,6 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         this.state = {
             descItemType: {...props.descItemType},
         };
-
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -159,12 +155,14 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
 
         switch (action) {
             case 'addDescItem':
-                if (!locked && !readMode) {   // přidávat hodnoty lze jen pokud není zamčeno
+                if (!locked && !readMode) {
+                    // přidávat hodnoty lze jen pokud není zamčeno
                     onDescItemAdd();
                 }
                 break;
             case 'deleteDescItem':
-                if (!locked && !readMode && infoType.rep === 1) {   // mazat hodnoty lze jen u vícehodnotových atributů a není zamčeno
+                if (!locked && !readMode && infoType.rep === 1) {
+                    // mazat hodnoty lze jen u vícehodnotových atributů a není zamčeno
                     const descItem = descItemType.items[descItemIndex];
                     if (this.getShowDeleteDescItem(descItem)) {
                         onDescItemRemove(descItemIndex);
@@ -180,29 +178,34 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         const refPrefix = refType.useSpecification ? 'spec_' : '';
 
         let ref, descItem;
-        if (typeof item.descItemObjectId !== 'undefined' && item.descItemObjectId !== null) {   // konkrétní hodnota
+        if (typeof item.descItemObjectId !== 'undefined' && item.descItemObjectId !== null) {
+            // konkrétní hodnota
             const indexDesIt = indexById(descItemType.items, item.descItemObjectId, 'descItemObjectId');
             if (indexDesIt === null) {
                 return;
             }
             descItem = descItemType.items[indexDesIt];
             ref = this.refs[refPrefix + descItem.formKey];
-        } else if (typeof item.descItemIndex !== 'undefined' && item.descItemIndex !== null) {   // konkrétní index
+        } else if (typeof item.descItemIndex !== 'undefined' && item.descItemIndex !== null) {
+            // konkrétní index
             descItem = descItemType.items[item.descItemIndex];
             ref = this.refs[refPrefix + descItem.formKey];
-        } else {    // obecně atribut - dáme na první hodnotu
+        } else {
+            // obecně atribut - dáme na první hodnotu
             descItem = descItemType.items[0];
             ref = this.refs[refPrefix + descItem.formKey];
         }
 
         if (ref) {
-            if (refType.useSpecification) { // focus bude na specifikaci
+            if (refType.useSpecification) {
+                // focus bude na specifikaci
                 if (ref.focus) {
                     ref.focus();
                 } else {
                     console.error('Cannot find focus method for desc item', ref);
                 }
-            } else {    // focus bude na vlastní hodnotu atributu
+            } else {
+                // focus bude na vlastní hodnotu atributu
                 descItem = ref.getWrappedInstance();
                 if (descItem.focus) {
                     descItem.focus();
@@ -247,7 +250,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
      */
     validateUnitdate = (value, descItemIndex) => {
         return () => {
-            WebApi.validateUnitdate(value).then((result) => {
+            WebApi.validateUnitdate(value).then(result => {
                 const {refType} = this.props;
                 let newDescItemType = this.state.descItemType;
                 const newDescItem = {...newDescItemType.items[descItemIndex]};
@@ -432,8 +435,11 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         }
 
         const draggerRect = drgs[0].getBoundingClientRect();
-        const clickOnDragger = (e.clientX >= draggerRect.left && e.clientX <= draggerRect.right
-            && e.clientY >= draggerRect.top && e.clientY <= draggerRect.bottom);
+        const clickOnDragger =
+            e.clientX >= draggerRect.left &&
+            e.clientX <= draggerRect.right &&
+            e.clientY >= draggerRect.top &&
+            e.clientY <= draggerRect.bottom;
         if (!clickOnDragger) {
             return this.cancelDragging(e);
         }
@@ -483,7 +489,8 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
     }
 
     removePlaceholder() {
-        placeholder.parentNode === this.dragged.parentNode.parentNode && this.dragged.parentNode.parentNode.removeChild(placeholder);
+        placeholder.parentNode === this.dragged.parentNode.parentNode &&
+            this.dragged.parentNode.parentNode.removeChild(placeholder);
     }
 
     handleDragLeave(e) {
@@ -545,7 +552,6 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
             this.nodePlacement = 'after';
             parent.insertBefore(placeholder, useTarget.nextElementSibling);
         } else {
-
         }
     }
 
@@ -553,7 +559,16 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
      * Renders the value of the descItem
      */
     renderDescItemValue(descItem, descItemIndex, locked) {
-        const {refType, structureTypes, calendarTypes, rulDataType, descItemFactory, readMode, infoType, typePrefix} = this.props;
+        const {
+            refType,
+            structureTypes,
+            calendarTypes,
+            rulDataType,
+            descItemFactory,
+            readMode,
+            infoType,
+            typePrefix,
+        } = this.props;
 
         let specName = null;
         if (descItem.descItemSpecId) {
@@ -574,20 +589,20 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
             [DataTypeCode.PARTY_REF]: {
                 itemName: refType.shortcut,
                 specName: specName,
-                onDetail: (value) => {
+                onDetail: value => {
                     this.handleDetailParty(descItemIndex, value);
                 },
-                onCreateParty: (value) => {
+                onCreateParty: value => {
                     this.handleCreateParty(descItemIndex, value);
                 },
             },
             [DataTypeCode.RECORD_REF]: {
                 itemName: refType.shortcut,
                 specName: specName,
-                onDetail: (value) => {
+                onDetail: value => {
                     this.handleDetailRecord(descItemIndex, value);
                 },
-                onCreateRecord: (value) => {
+                onCreateRecord: value => {
                     this.handleCreateRecord(descItemIndex);
                 },
             },
@@ -660,9 +675,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         const key = descItem.formKey;
 
         if (refType.useSpecification) {
-            parts.push(
-                this.renderDescItemSpec('spec_' + key, descItem, descItemIndex, locked),
-            );
+            parts.push(this.renderDescItemSpec('spec_' + key, descItem, descItemIndex, locked));
             if (rulDataType.code != 'ENUM') {
                 partsCls += ' desc-item-spec-and-value';
             }
@@ -687,21 +700,37 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         }
 
         return (
-            <Shortcuts key={key} name='DescItem' handler={this.handleDescItemShortcuts.bind(this, descItemIndex)}
-                       alwaysFireHandler global>
-                <div key="container" className={cls} {...dragProps} ref={(ref) => {
-                    this.containers[descItemIndex] = ref;
-                }}>
-                    {!readMode && infoType.rep == 1 && draggable &&
-                    <div className='dragger'>
-                        <Icon className="up" glyph="fa-angle-up"/>
-                        <Icon className="down" glyph="fa-angle-down"/>&nbsp;
-                    </div>}
+            <Shortcuts
+                key={key}
+                name="DescItem"
+                handler={this.handleDescItemShortcuts.bind(this, descItemIndex)}
+                alwaysFireHandler
+                global
+            >
+                <div
+                    key="container"
+                    className={cls}
+                    {...dragProps}
+                    ref={ref => {
+                        this.containers[descItemIndex] = ref;
+                    }}
+                >
+                    {!readMode && infoType.rep == 1 && draggable && (
+                        <div className="dragger">
+                            <Icon className="up" glyph="fa-angle-up" />
+                            <Icon className="down" glyph="fa-angle-down" />
+                            &nbsp;
+                        </div>
+                    )}
 
                     <div key="container" className={partsCls}>
                         {parts}
                     </div>
-                    {actions.length > 0 && <div key="actions" className='desc-item-action-container'>{actions}</div>}
+                    {actions.length > 0 && (
+                        <div key="actions" className="desc-item-action-container">
+                            {actions}
+                        </div>
+                    )}
                 </div>
             </Shortcuts>
         );
@@ -721,16 +750,23 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
             return false;
         }
 
-        if (typeof descItem.id !== 'undefined') {   // je na serveru, můžeme smazat
+        if (typeof descItem.id !== 'undefined') {
+            // je na serveru, můžeme smazat
             return true;
         }
 
-        if (descItem.touched) { // změnil pole, ale není v DB, je možné ji smazat
+        if (descItem.touched) {
+            // změnil pole, ale není v DB, je možné ji smazat
             return true;
         }
 
         // Mazat lze jen hodnota, která není povinná z hlediska specifikace
-        if (refType.useSpecification && hasDescItemTypeValue(refType.dataType) && typeof descItem.descItemSpecId !== 'undefined' && descItem.descItemSpecId !== '') {
+        if (
+            refType.useSpecification &&
+            hasDescItemTypeValue(refType.dataType) &&
+            typeof descItem.descItemSpecId !== 'undefined' &&
+            descItem.descItemSpecId !== ''
+        ) {
             const infoSpec = infoType.descItemSpecsMap[descItem.descItemSpecId];
             if (infoSpec.type == 'REQUIRED' || infoSpec.type == 'RECOMMENDED') {
                 return false;
@@ -774,9 +810,19 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
      */
     renderLabel() {
         const {
-            showNodeAddons, descItemCopyFromPrevEnabled,
-            copy, locked, infoType, refType, conformityInfo, closed, readMode, notIdentified,
-            rulDataType, onDescItemNotIdentified, customActions,
+            showNodeAddons,
+            descItemCopyFromPrevEnabled,
+            copy,
+            locked,
+            infoType,
+            refType,
+            conformityInfo,
+            closed,
+            readMode,
+            notIdentified,
+            rulDataType,
+            onDescItemNotIdentified,
+            customActions,
         } = this.props;
         const {descItemType} = this.state;
 
@@ -785,24 +831,42 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         // Sestavení akcí
         if (showNodeAddons && !closed && !readMode) {
             actions.push(
-                <NoFocusButton disabled={!descItemCopyFromPrevEnabled}
-                               title={i18n('subNodeForm.descItemType.copyFromPrev')} key="book"
-                               onClick={this.handleDescItemTypeCopyFromPrev}><Icon
-                    glyph="fa-paste"/></NoFocusButton>,
-                <NoFocusButton title={i18n('subNodeForm.descItemType.copy')} key="copy"
-                               onClick={this.handleDescItemTypeCopy}><Icon className={copy ? 'copy' : 'nocopy'}
-                                                                           glyph="fa-files-o"/></NoFocusButton>,
-                <NoFocusButton title={i18n('subNodeForm.descItemType.lock')} key="lock"
-                               onClick={this.handleDescItemTypeLock}><Icon
-                    className={locked ? 'locked' : 'unlocked'} glyph="fa-lock"/></NoFocusButton>,
+                <NoFocusButton
+                    disabled={!descItemCopyFromPrevEnabled}
+                    title={i18n('subNodeForm.descItemType.copyFromPrev')}
+                    key="book"
+                    onClick={this.handleDescItemTypeCopyFromPrev}
+                >
+                    <Icon glyph="fa-paste" />
+                </NoFocusButton>,
+                <NoFocusButton
+                    title={i18n('subNodeForm.descItemType.copy')}
+                    key="copy"
+                    onClick={this.handleDescItemTypeCopy}
+                >
+                    <Icon className={copy ? 'copy' : 'nocopy'} glyph="fa-files-o" />
+                </NoFocusButton>,
+                <NoFocusButton
+                    title={i18n('subNodeForm.descItemType.lock')}
+                    key="lock"
+                    onClick={this.handleDescItemTypeLock}
+                >
+                    <Icon className={locked ? 'locked' : 'unlocked'} glyph="fa-lock" />
+                </NoFocusButton>,
             );
         }
 
         const showDeleteButton = this.getShowDeleteDescItemType();
         if (showDeleteButton) {
-            actions.push(<NoFocusButton key="delete" onClick={this.props.onDescItemTypeRemove}
-                                        title={i18n('subNodeForm.deleteDescItemType')}><Icon
-                glyph="fa-trash"/></NoFocusButton>);
+            actions.push(
+                <NoFocusButton
+                    key="delete"
+                    onClick={this.props.onDescItemTypeRemove}
+                    title={i18n('subNodeForm.deleteDescItemType')}
+                >
+                    <Icon glyph="fa-trash" />
+                </NoFocusButton>,
+            );
         }
 
         // Zprávy o chybějících položkách
@@ -810,14 +874,13 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         if (missings && missings.length > 0) {
             const messages = missings.map(missing => missing.description);
             const tooltip = <div>{messages}</div>;
-            actions.push(<TooltipTrigger
-                key="state"
-                content={tooltip}
-                holdOnHover
-                placement="auto"
-            >
-                <div className='btn btn-default'><Icon className="messages" glyph="fa-exclamation-triangle"/></div>
-            </TooltipTrigger>);
+            actions.push(
+                <TooltipTrigger key="state" content={tooltip} holdOnHover placement="auto">
+                    <div className="btn btn-default">
+                        <Icon className="messages" glyph="fa-exclamation-triangle" />
+                    </div>
+                </TooltipTrigger>,
+            );
         }
 
         let titleText = descItemType.name;
@@ -834,40 +897,44 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
 
         if (infoType.rep === 1 && !(locked || closed || readMode)) {
             const {onDescItemAdd} = this.props;
-            actions.push(<NoFocusButton key="add" onClick={onDescItemAdd}
-                                        title={i18n('subNodeForm.descItemType.title.add')}>
-                <Icon glyph="fa-plus"/>
-            </NoFocusButton>);
+            actions.push(
+                <NoFocusButton key="add" onClick={onDescItemAdd} title={i18n('subNodeForm.descItemType.title.add')}>
+                    <Icon glyph="fa-plus" />
+                </NoFocusButton>,
+            );
         }
 
         if (!closed && !readMode && !infoType.rep && infoType.ind && rulDataType.code !== 'ENUM') {
-            actions.push(<NoFocusButton key="notIdentified" onClick={() => {
-                if (descItemType.items.length === 1) {
-                    onDescItemNotIdentified(0, descItemType.items[0]);
-                }
-            }}
-                                        title={i18n('subNodeForm.descItemType.title.notIdentified')}><Icon
-                glyph="fa-low-vision" className={notIdentified ? 'notIdentified' : 'identified'}/></NoFocusButton>);
+            actions.push(
+                <NoFocusButton
+                    key="notIdentified"
+                    onClick={() => {
+                        if (descItemType.items.length === 1) {
+                            onDescItemNotIdentified(0, descItemType.items[0]);
+                        }
+                    }}
+                    title={i18n('subNodeForm.descItemType.title.notIdentified')}
+                >
+                    <Icon glyph="fa-low-vision" className={notIdentified ? 'notIdentified' : 'identified'} />
+                </NoFocusButton>,
+            );
         }
 
         // Render
         return (
-            <div key="label" className='desc-item-type-label'>
-                <TooltipTrigger
-                    key="title"
-                    className='title'
-                    content={tooltip}
-                    holdOnHover
-                    placement="vertical"
-                >
+            <div key="label" className="desc-item-type-label">
+                <TooltipTrigger key="title" className="title" content={tooltip} holdOnHover placement="vertical">
                     {refType.shortcut}
                 </TooltipTrigger>
-                <div key="actions" className='actions'>
+                <div key="actions" className="actions">
                     {actions}
                     {customActions}
                 </div>
-                {descItemType.items.filter(i => i.touched).length > 0 &&
-                <span key="edited" className="desc-item-type-edited">{i18n('subNodeForm.descItem.edited')}</span>}
+                {descItemType.items.filter(i => i.touched).length > 0 && (
+                    <span key="edited" className="desc-item-type-edited">
+                        {i18n('subNodeForm.descItem.edited')}
+                    </span>
+                )}
             </div>
         );
     }
@@ -895,8 +962,14 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
 
     render() {
         const {
-            onDescItemRemove, rulDataType, infoType,
-            locked, conformityInfo, closed, readMode, onDescItemNotIdentified,
+            onDescItemRemove,
+            rulDataType,
+            infoType,
+            locked,
+            conformityInfo,
+            closed,
+            readMode,
+            onDescItemNotIdentified,
         } = this.props;
         const {descItemType} = this.state;
 
@@ -906,31 +979,40 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
 
             if (!readMode && infoType.rep === 1 && !(infoType.cal && !infoType.calSt)) {
                 if (rulDataType.code !== 'ENUM' && infoType.ind) {
-                    actions.push(<NoFocusButton key="notIdentified"
-                                                className={descItem.undefined ? 'notIdentified' : 'identified'}
-                                                onClick={() => onDescItemNotIdentified(descItemIndex, descItem)}
-                                                title={i18n('subNodeForm.descItemType.title.notIdentified')}><Icon
-                        glyph="fa-low-vision"/></NoFocusButton>);
+                    actions.push(
+                        <NoFocusButton
+                            key="notIdentified"
+                            className={descItem.undefined ? 'notIdentified' : 'identified'}
+                            onClick={() => onDescItemNotIdentified(descItemIndex, descItem)}
+                            title={i18n('subNodeForm.descItemType.title.notIdentified')}
+                        >
+                            <Icon glyph="fa-low-vision" />
+                        </NoFocusButton>,
+                    );
                 }
-                actions.push(<NoFocusButton disabled={!this.getShowDeleteDescItem(descItem)} key="delete"
-                                            onClick={onDescItemRemove.bind(this, descItemIndex)}
-                                            title={i18n('subNodeForm.deleteDescItem')}><Icon
-                    glyph="fa-times"/></NoFocusButton>);
+                actions.push(
+                    <NoFocusButton
+                        disabled={!this.getShowDeleteDescItem(descItem)}
+                        key="delete"
+                        onClick={onDescItemRemove.bind(this, descItemIndex)}
+                        title={i18n('subNodeForm.deleteDescItem')}
+                    >
+                        <Icon glyph="fa-times" />
+                    </NoFocusButton>,
+                );
             }
 
             const errors = conformityInfo.errors[descItem.descItemObjectId];
             if (errors && errors.length > 0) {
                 const messages = errors.map(error => error.description);
                 const tooltip = <div>{messages}</div>;
-                actions.push(<TooltipTrigger
-                    key="info"
-                    content={tooltip}
-                    holdOnHover
-                    placement="auto"
-                    showDelay={1}
-                >
-                    <div className='btn btn-default'><Icon glyph="fa-exclamation-triangle"/></div>
-                </TooltipTrigger>);
+                actions.push(
+                    <TooltipTrigger key="info" content={tooltip} holdOnHover placement="auto" showDelay={1}>
+                        <div className="btn btn-default">
+                            <Icon glyph="fa-exclamation-triangle" />
+                        </div>
+                    </TooltipTrigger>,
+                );
             }
 
             let canModifyDescItem = !(locked || closed);
@@ -946,11 +1028,20 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         });
 
         return (
-            <Shortcuts name='DescItemType' className={cls} handler={this.handleDescItemTypeShortcuts} global
-                       alwaysFireHandler>
+            <Shortcuts
+                name="DescItemType"
+                className={cls}
+                handler={this.handleDescItemTypeShortcuts}
+                global
+                alwaysFireHandler
+            >
                 {label}
-                <div ref='dragOverContainer' className='desc-item-type-desc-items' onDragOver={this.handleDragOver}
-                     onDragLeave={this.handleDragLeave}>
+                <div
+                    ref="dragOverContainer"
+                    className="desc-item-type-desc-items"
+                    onDragOver={this.handleDragOver}
+                    onDragLeave={this.handleDragLeave}
+                >
                     {items}
                 </div>
             </Shortcuts>

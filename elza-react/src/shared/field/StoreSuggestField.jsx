@@ -14,10 +14,9 @@ import Autocomplete from '../../components/shared/autocomplete/Autocomplete';
  * Field který automatický vytvoří store pod danou AREA a zavolá api a zobrazí autocompleteField
  */
 class StoreSuggestField extends React.Component {
-
     static propTypes = {
         area: PropTypes.string.isRequired,
-        apiCall: PropTypes.func.isRequired
+        apiCall: PropTypes.func.isRequired,
     };
 
     componentDidMount() {
@@ -29,16 +28,10 @@ class StoreSuggestField extends React.Component {
         const {store, ...other} = this.props;
 
         if (!store || !store.fetched || !store.rows) {
-            return <FormControl
-                type="text"
-                disabled={true}
-            />
+            return <FormControl type="text" disabled={true} />;
         }
 
-        return <Autocomplete
-            items={store.rows}
-            {...other}
-        />;
+        return <Autocomplete items={store.rows} {...other} />;
     }
 }
 

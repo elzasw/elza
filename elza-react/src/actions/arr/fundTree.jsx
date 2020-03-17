@@ -31,7 +31,15 @@ export function isFundTreeAction(action) {
 }
 
 // jen vyber polozky, vyuzite jen v presunech JP
-export function fundTreeSelectNode(area, versionId, nodeId, ctrl, shift, newFilterCurrentIndex = null, ensureItemVisible = false) {
+export function fundTreeSelectNode(
+    area,
+    versionId,
+    nodeId,
+    ctrl,
+    shift,
+    newFilterCurrentIndex = null,
+    ensureItemVisible = false,
+) {
     return {
         type: types.FUND_FUND_TREE_SELECT_NODE,
         area,
@@ -116,13 +124,15 @@ export function fundTreeFulltextChange(area, versionId, filterText) {
  */
 function getFundTreeForFund(state, area, versionId) {
     var fundTree;
-    if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {  // fundRegion
+    if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {
+        // fundRegion
         return state.fundRegion.fundDetail.fundTree;
     } else if (area === types.FUND_TREE_AREA_COPY) {
         return state.arrRegion.globalFundTree.fundTreeCopy;
     } else if (area === types.CUSTOM_FUND_TREE_AREA_NODES) {
         return state.arrRegion.customFund.fundTreeNodes;
-    } else {    // arrRegion
+    } else {
+        // arrRegion
         var index = indexById(state.arrRegion.funds, versionId, 'versionId');
         if (index != null) {
             var fund = state.arrRegion.funds[index];
@@ -137,13 +147,15 @@ function getFundTreeForFund(state, area, versionId) {
 
 function getFundForTree(state, area, versionId) {
     var fundTree;
-    if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {  // fundRegion
+    if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {
+        // fundRegion
         return state.fundRegion;
     } else if (area === types.FUND_TREE_AREA_COPY) {
         return state.arrRegion.globalFundTree.fundTreeCopy;
     } else if (area === types.CUSTOM_FUND_TREE_AREA_NODES) {
         return state.arrRegion.customFund.fundTreeNodes;
-    } else {    // arrRegion
+    } else {
+        // arrRegion
         var index = indexById(state.arrRegion.funds, versionId, 'versionId');
         if (index != null) {
             return state.arrRegion.funds[index];
@@ -261,24 +273,43 @@ export function fundTreeFulltextSearch(area, versionId, params, result, luceneQu
                 var searchParentNodeId;
                 // V případě stromu, který má multi select hledáme v celém stromu
                 // V případě stromu, který má single select hledáme POD vybranou položkou
-                if (fundTree.multipleSelection) { // hledáme v celém stromu
+                if (fundTree.multipleSelection) {
+                    // hledáme v celém stromu
                     searchParentNodeId = null;
-                } else {    // hledáme pod vybranou položkou, pokud nějaká je
-                    if (fundTree.selectedId !== null) {   // vybraná položka, hledáme pod ní
+                } else {
+                    // hledáme pod vybranou položkou, pokud nějaká je
+                    if (fundTree.selectedId !== null) {
+                        // vybraná položka, hledáme pod ní
                         searchParentNodeId = fundTree.selectedId;
-                    } else {    // nice není vybráno, hledáme v celém stromě
+                    } else {
+                        // nice není vybráno, hledáme v celém stromě
                         searchParentNodeId = null;
                     }
                 }
 
-                return WebApi.findInFundTree(versionId, searchParentNodeId, fundTree.filterText, 'SUBTREE', params, luceneQuery)
-                             .then(json => {
-                                 dispatch(fundTreeFulltextResult(area, versionId, fundTree.filterText, json, false, result, luceneQuery));
-                                 if (json.length > 0) {
-                                     var newFundTree = getFundTreeForFund(getState(), area, versionId);
-                                     changeCurrentIndex(dispatch, area, getFundForTree(state, area, versionId), versionId, newFundTree, 0);
-                                 }
-                             });
+                return WebApi.findInFundTree(
+                    versionId,
+                    searchParentNodeId,
+                    fundTree.filterText,
+                    'SUBTREE',
+                    params,
+                    luceneQuery,
+                ).then(json => {
+                    dispatch(
+                        fundTreeFulltextResult(area, versionId, fundTree.filterText, json, false, result, luceneQuery),
+                    );
+                    if (json.length > 0) {
+                        var newFundTree = getFundTreeForFund(getState(), area, versionId);
+                        changeCurrentIndex(
+                            dispatch,
+                            area,
+                            getFundForTree(state, area, versionId),
+                            versionId,
+                            newFundTree,
+                            0,
+                        );
+                    }
+                });
             } else {
                 return dispatch(fundTreeFulltextResult(area, versionId, fundTree.filterText, [], true, null, false));
             }
@@ -294,7 +325,15 @@ export function fundTreeFulltextSearch(area, versionId, params, result, luceneQu
  * {Arraz} searchedData seznam nalezených node
  * {boolean} clearFilter jedná se o akci, která má pouze vymazat aktuální filtr?
  */
-export function fundTreeFulltextResult(area, versionId, filterText, searchedData, clearFilter, searchFormData, luceneQuery) {
+export function fundTreeFulltextResult(
+    area,
+    versionId,
+    filterText,
+    searchedData,
+    clearFilter,
+    searchFormData,
+    luceneQuery,
+) {
     return {
         type: types.FUND_FUND_TREE_FULLTEXT_RESULT,
         area,
@@ -317,9 +356,9 @@ export function fundTreeNodeExpand(area, node) {
         var state = getState();
         var fundTree;
         var versionId;
-        let activeFund,
-            activeNode;
-        if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {  // fundRegion
+        let activeFund, activeNode;
+        if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {
+            // fundRegion
             versionId = state.fundRegion.fundDetail.versionId;
             fundTree = state.fundRegion.fundDetail.fundTree;
         } else if (area === types.CUSTOM_FUND_TREE_AREA_NODES) {
@@ -328,7 +367,8 @@ export function fundTreeNodeExpand(area, node) {
         } else if (area === types.FUND_TREE_AREA_COPY) {
             versionId = state.arrRegion.globalFundTree.versionId;
             fundTree = state.arrRegion.globalFundTree.fundTreeCopy;
-        } else {    // arrRegion
+        } else {
+            // arrRegion
             activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
             activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
             versionId = activeFund.versionId;
@@ -347,8 +387,9 @@ export function fundTreeNodeExpand(area, node) {
             console.log("skip fundTree", activeNode, json)*/
             //return dispatch(fundTreeReceive(area, versionId, nodeId, expandedIds, [], json));
         }
-        return WebApi.getFundTree(versionId, nodeId, expandedIds)
-                     .then(json => dispatch(fundTreeReceive(area, versionId, nodeId, expandedIds, [], json)));
+        return WebApi.getFundTree(versionId, nodeId, expandedIds).then(json =>
+            dispatch(fundTreeReceive(area, versionId, nodeId, expandedIds, [], json)),
+        );
     };
 }
 
@@ -419,7 +460,8 @@ export function fundTreeFetchIfNeeded(area, sourceVersionId, expandedIds, select
 
         var fundTree;
         var versionId;
-        if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {  // fundRegion
+        if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {
+            // fundRegion
             versionId = state.fundRegion.fundDetail.versionId;
             fundTree = state.fundRegion.fundDetail.fundTree;
         } else if (area === types.FUND_TREE_AREA_COPY) {
@@ -428,7 +470,8 @@ export function fundTreeFetchIfNeeded(area, sourceVersionId, expandedIds, select
         } else if (area === types.CUSTOM_FUND_TREE_AREA_NODES) {
             versionId = state.arrRegion.customFund.versionId;
             fundTree = state.arrRegion.customFund.fundTreeNodes;
-        } else {    // arrRegion
+        } else {
+            // arrRegion
             var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
             versionId = activeFund.versionId;
             fundTree = getFundTree(activeFund, area);
@@ -483,15 +526,13 @@ export function fundTreeFetchIfNeeded(area, sourceVersionId, expandedIds, select
  * @param {expandedIds} seznam rozbalených uzlů
  */
 export function fundTreeFetch(area, versionId, nodeId, expandedIds, includeIds = []) {
-
     return dispatch => {
         dispatch(fundTreeRequest(area, versionId, nodeId, expandedIds, includeIds));
-        return WebApi.getFundTree(versionId, nodeId, expandedIds, includeIds)
-                     .then(json => {
-                         dispatch(fundTreeReceive(area, versionId, nodeId, expandedIds, includeIds, json));
-                         console.log('fundTree', json);
-                         return json;
-                     });
+        return WebApi.getFundTree(versionId, nodeId, expandedIds, includeIds).then(json => {
+            dispatch(fundTreeReceive(area, versionId, nodeId, expandedIds, includeIds, json));
+            console.log('fundTree', json);
+            return json;
+        });
     };
 }
 

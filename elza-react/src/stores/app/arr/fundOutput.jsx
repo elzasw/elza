@@ -17,31 +17,31 @@ const initialState = {
     outputs: [],
     fundOutputDetail: fundOutputDetail(),
     fundOutputFiles: fundOutputFiles(),
-    fundOutputFunctions: fundOutputFunctions()
+    fundOutputFunctions: fundOutputFunctions(),
 };
 
 export default function fundOutput(state = initialState, action = {}) {
     if (isFundOutputDetail(action) || outputFormActions.isSubNodeFormAction(action)) {
         return {
             ...state,
-            fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action)
-        }
+            fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
+        };
     }
     if (isFundOutputFilesAction(action)) {
         return {
             ...state,
-            fundOutputFiles: fundOutputFiles(state.fundOutputFiles, action)
-        }
+            fundOutputFiles: fundOutputFiles(state.fundOutputFiles, action),
+        };
     }
     if (isFundOutputFunctionsAction(action)) {
         return {
             ...state,
-            fundOutputFunctions: fundOutputFunctions(state.fundOutputFunctions, action)
-        }
+            fundOutputFunctions: fundOutputFunctions(state.fundOutputFunctions, action),
+        };
     }
 
     switch (action.type) {
-        case types.STORE_LOAD:{
+        case types.STORE_LOAD: {
             return {
                 ...state,
                 outputs: [],
@@ -50,26 +50,25 @@ export default function fundOutput(state = initialState, action = {}) {
                 currentDataKey: '',
                 fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
                 fundOutputFiles: fundOutputFiles(state.fundOutputFiles, action),
-                fundOutputFunctions: fundOutputFunctions(state.fundOutputFunctions, action)
-            }
+                fundOutputFunctions: fundOutputFunctions(state.fundOutputFunctions, action),
+            };
         }
-        case types.STORE_SAVE:{
+        case types.STORE_SAVE: {
             return {
                 fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
                 fundOutputFiles: fundOutputFiles(state.fundOutputFiles, action),
                 fundOutputFunctions: fundOutputFunctions(state.fundOutputFunctions, action),
-                filterState: state.filterState
-            }
+                filterState: state.filterState,
+            };
         }
-        case types.FUND_FUND_CHANGE_READ_MODE:{
+        case types.FUND_FUND_CHANGE_READ_MODE: {
             return {
                 ...state,
                 fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
-            }
+            };
         }
         case types.OUTPUT_CHANGES_DETAIL:
         case types.CHANGE_OUTPUTS: {
-
             let outputs = state.outputs;
             let currentDataKey = state.currentDataKey;
             if (action.type === types.OUTPUT_CHANGES_DETAIL) {
@@ -85,71 +84,71 @@ export default function fundOutput(state = initialState, action = {}) {
                 ...state,
                 currentDataKey: currentDataKey,
                 fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
-                fundOutputFunctions: fundOutputFunctions(state.fundOutputFunctions, action)
+                fundOutputFunctions: fundOutputFunctions(state.fundOutputFunctions, action),
             };
-            return consolidateState(state, result)
+            return consolidateState(state, result);
         }
-        case types.OUTPUT_CHANGES:{
-            const result = {
-                ...state,
-                fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action)
-            };
-            const index = indexById(action.outputIds);
-            if (index !== null) {
-                result.currentDataKey = ''
-            }
-            return consolidateState(state, result)
-        }
-        case types.OUTPUT_STATE_CHANGE:{
+        case types.OUTPUT_CHANGES: {
             const result = {
                 ...state,
                 fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
-                fundOutputFiles: fundOutputFiles(state.fundOutputFiles, action)
             };
-            for(const item of state.outputs) {
-                if(item.id == action.outputId) {
+            const index = indexById(action.outputIds);
+            if (index !== null) {
+                result.currentDataKey = '';
+            }
+            return consolidateState(state, result);
+        }
+        case types.OUTPUT_STATE_CHANGE: {
+            const result = {
+                ...state,
+                fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),
+                fundOutputFiles: fundOutputFiles(state.fundOutputFiles, action),
+            };
+            for (const item of state.outputs) {
+                if (item.id == action.outputId) {
                     result.currentDataKey = '';
                     break;
                 }
             }
-            return consolidateState(state, result)
+            return consolidateState(state, result);
         }
-        case types.FUND_OUTPUT_REQUEST:{
+        case types.FUND_OUTPUT_REQUEST: {
             return {
                 ...state,
                 fetching: true,
-                currentDataKey: action.dataKey
-            }
+                currentDataKey: action.dataKey,
+            };
         }
-        case types.FUND_OUTPUT_RECEIVE:{
+        case types.FUND_OUTPUT_RECEIVE: {
             return {
                 ...state,
                 fetching: false,
                 fetched: true,
-                outputs: action.outputs
+                outputs: action.outputs,
             };
         }
-        case types.FUND_OUTPUT_FILTER_STATE:{
+        case types.FUND_OUTPUT_FILTER_STATE: {
             return {
                 ...state,
-                filterState: action.state
+                filterState: action.state,
             };
         }
         case types.CHANGE_FUND_ACTION: {
             return {
                 ...state,
-                fundOutputFunctions: fundOutputFunctions(state.fundOutputFunctions, action)
-            }
+                fundOutputFunctions: fundOutputFunctions(state.fundOutputFunctions, action),
+            };
         }
 
         case types.FUND_INVALID: {
             return {
                 ...state,
-                currentDataKey: ''
-            }
+                currentDataKey: '',
+            };
         }
 
         default:
-            return state
+            return state;
     }
 }

@@ -13,10 +13,9 @@ export function reloadUserDetail(userIds) {
         const state = getState();
         const userDetail = state.userDetail;
         if (userIds.indexOf(userDetail.id) !== -1) {
-            WebApi.getUserDetail()
-                  .then(userDetail => {
-                      dispatch(userDetailChange(userDetail));
-                  });
+            WebApi.getUserDetail().then(userDetail => {
+                dispatch(userDetailChange(userDetail));
+            });
         }
     };
 }
@@ -38,12 +37,11 @@ export function userDetailRequest() {
  * @param hideDialog uzavřít dialog po úspěšném dokončení?
  */
 export function userDetailsSaveSettings(settings) {
-    return (dispatch) => {
+    return dispatch => {
         dispatch(userDetailRequestSettings(settings));
-        return WebApi.setUserSettings(settings)
-                     .then(data => {
-                         dispatch(userDetailResponseSettings(data));
-                     });
+        return WebApi.setUserSettings(settings).then(data => {
+            dispatch(userDetailResponseSettings(data));
+        });
     };
 }
 

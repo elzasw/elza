@@ -1,25 +1,24 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import { reduxForm } from 'redux-form';
-import { Form, FormCheck, FormControl, FormLabel, Modal, OverlayTrigger, Table, Tooltip } from 'react-bootstrap';
-import { Button } from '../ui';
-import { FormInput, HorizontalLoader, Icon } from 'components/shared';
+import {reduxForm} from 'redux-form';
+import {Form, FormCheck, FormControl, FormLabel, Modal, OverlayTrigger, Table, Tooltip} from 'react-bootstrap';
+import {Button} from '../ui';
+import {FormInput, HorizontalLoader, Icon} from 'components/shared';
 import objectById from '../../shared/utils/objectById';
-import { submitForm } from 'components/form/FormUtils.jsx';
-import { WebApi } from 'actions';
-import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog.jsx';
-import { addToastrSuccess } from 'components/shared/toastr/ToastrActions.jsx';
-import { partyDetailFetchIfNeeded } from 'actions/party/party.jsx';
-import { registryDetailFetchIfNeeded } from 'actions/registry/registry.jsx';
-import { routerNavigate } from 'actions/router.jsx';
+import {submitForm} from 'components/form/FormUtils.jsx';
+import {WebApi} from 'actions';
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
+import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx';
+import {registryDetailFetchIfNeeded} from 'actions/registry/registry.jsx';
+import {routerNavigate} from 'actions/router.jsx';
 import Scope from '../../components/shared/scope/Scope';
-import { apExtSystemListFetchIfNeeded } from 'actions/registry/apExtSystemList';
-import { AP_EXT_SYSTEM_TYPE } from '../../constants.tsx';
+import {apExtSystemListFetchIfNeeded} from 'actions/registry/apExtSystemList';
+import {AP_EXT_SYSTEM_TYPE} from '../../constants.tsx';
 import ExtMapperForm from './ExtMapperForm';
 import AbstractReactComponent from '../AbstractReactComponent';
 import i18n from '../i18n';
-
 
 const CONDITION_TYPE = {
     AND: 'AND',
@@ -27,8 +26,8 @@ const CONDITION_TYPE = {
 };
 
 const CONDITIONS = [
-    { val: CONDITION_TYPE.AND, name: i18n('extImport.condition.and') },
-    { val: CONDITION_TYPE.OR, name: i18n('extImport.condition.or') },
+    {val: CONDITION_TYPE.AND, name: i18n('extImport.condition.and')},
+    {val: CONDITION_TYPE.OR, name: i18n('extImport.condition.or')},
 ];
 
 const ATTRIBUTE_TYPE = {
@@ -38,14 +37,14 @@ const ATTRIBUTE_TYPE = {
 };
 
 const ATTRIBUTE_TYPES = [
-    { val: ATTRIBUTE_TYPE.PREFFERED_NAME, name: i18n('extImport.attType.PREFFERED_NAME') },
-    { val: ATTRIBUTE_TYPE.ALL_NAMES, name: i18n('extImport.attType.ALL_NAMES') },
-    { val: ATTRIBUTE_TYPE.ID, name: i18n('extImport.attType.ID') },
+    {val: ATTRIBUTE_TYPE.PREFFERED_NAME, name: i18n('extImport.attType.PREFFERED_NAME')},
+    {val: ATTRIBUTE_TYPE.ALL_NAMES, name: i18n('extImport.attType.ALL_NAMES')},
+    {val: ATTRIBUTE_TYPE.ID, name: i18n('extImport.attType.ID')},
 ];
 
 class ExtImportSearch extends AbstractReactComponent {
     validate = (values, props) => {
-        const { extSystems } = props;
+        const {extSystems} = props;
         let errors = {};
 
         if (!values.systemId) {
@@ -107,26 +106,41 @@ class ExtImportSearch extends AbstractReactComponent {
     }
 
     renderParam = (fields, index, self) => {
-        const { value, attType } = fields;
-        return <div className="flex" style={{ marginBottom: '10px' }} key={index}>
-            <div className="flex-1">
-                <FormInput as="select" {...attType} >
-                    {ATTRIBUTE_TYPES.map((i, x) => <option key={x} value={i.val}>{i.name}</option>)}
-                </FormInput>
+        const {value, attType} = fields;
+        return (
+            <div className="flex" style={{marginBottom: '10px'}} key={index}>
+                <div className="flex-1">
+                    <FormInput as="select" {...attType}>
+                        {ATTRIBUTE_TYPES.map((i, x) => (
+                            <option key={x} value={i.val}>
+                                {i.name}
+                            </option>
+                        ))}
+                    </FormInput>
+                </div>
+                <div className="flex-1">
+                    <FormInput type="text" {...value} />
+                </div>
+                <Button variant="action" onClick={() => self.removeField(index)}>
+                    <Icon glyph="fa-times" />
+                </Button>
             </div>
-            <div className="flex-1">
-                <FormInput type="text" {...value} />
-            </div>
-            <Button variant="action" onClick={() => self.removeField(index)}><Icon glyph="fa-times" /></Button>
-        </div>;
+        );
     };
 
-    submitOptions = { closeOnFinished: false };
+    submitOptions = {closeOnFinished: false};
 
-    submitReduxForm = (values, dispatch) => submitForm(this.validate, values, this.props, this.props.onSubmitForm, dispatch, this.submitOptions);
+    submitReduxForm = (values, dispatch) =>
+        submitForm(this.validate, values, this.props, this.props.onSubmitForm, dispatch, this.submitOptions);
 
     render() {
-        const { fields: { systemId, conditions }, handleSubmit, submitting, error, extSystems } = this.props;
+        const {
+            fields: {systemId, conditions},
+            handleSubmit,
+            submitting,
+            error,
+            extSystems,
+        } = this.props;
 
         if (!extSystems) {
             return <HorizontalLoader />;
@@ -137,52 +151,74 @@ class ExtImportSearch extends AbstractReactComponent {
         }
         //const submit = submitForm.bind(this, this.validate);
 
-        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
-            {error && <p className="text-danger">{error}</p>}
-            <FormInput as="select" label={i18n('extImport.source')} {...systemId}>
-                {extSystems.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
-            </FormInput>
-            {system != null && system && <div>
-                {system.type === AP_EXT_SYSTEM_TYPE.INTERPI ? <div>
-                    <label>Hledané parametry</label>
-                    {conditions.length > 0 && <div className="flex">
-                        <FormLabel className="flex-1">
-                            {i18n('extImport.attType')}
-                        </FormLabel>
-                        <FormLabel className="flex-1">
-                            {i18n('extImport.value')}
-                        </FormLabel>
-                    </div>}
-                    {conditions.map(this.renderParam)}
-                    <Button variant="action" onClick={() => conditions.addField({
-                        condition: CONDITION_TYPE.AND,
-                        value: null,
-                        attType: null,
-                    })}>
-                        <Icon glyph="fa-plus" /></Button>
-                </div> : <div>{i18n('extImport.notImplemented', system.name)}</div>}
-            </div>}
-            <div className="text-right">
-                <Button variant="default" type="submit" disabled={submitting}>{i18n('extImport.search')}</Button>
-            </div>
-        </Form>;
+        return (
+            <Form onSubmit={handleSubmit(this.submitReduxForm)}>
+                {error && <p className="text-danger">{error}</p>}
+                <FormInput as="select" label={i18n('extImport.source')} {...systemId}>
+                    {extSystems.map(i => (
+                        <option key={i.id} value={i.id}>
+                            {i.name}
+                        </option>
+                    ))}
+                </FormInput>
+                {system != null && system && (
+                    <div>
+                        {system.type === AP_EXT_SYSTEM_TYPE.INTERPI ? (
+                            <div>
+                                <label>Hledané parametry</label>
+                                {conditions.length > 0 && (
+                                    <div className="flex">
+                                        <FormLabel className="flex-1">{i18n('extImport.attType')}</FormLabel>
+                                        <FormLabel className="flex-1">{i18n('extImport.value')}</FormLabel>
+                                    </div>
+                                )}
+                                {conditions.map(this.renderParam)}
+                                <Button
+                                    variant="action"
+                                    onClick={() =>
+                                        conditions.addField({
+                                            condition: CONDITION_TYPE.AND,
+                                            value: null,
+                                            attType: null,
+                                        })
+                                    }
+                                >
+                                    <Icon glyph="fa-plus" />
+                                </Button>
+                            </div>
+                        ) : (
+                            <div>{i18n('extImport.notImplemented', system.name)}</div>
+                        )}
+                    </div>
+                )}
+                <div className="text-right">
+                    <Button variant="default" type="submit" disabled={submitting}>
+                        {i18n('extImport.search')}
+                    </Button>
+                </div>
+            </Form>
+        );
     }
 }
 
-const ExtImportSearchComponent = reduxForm({
-    fields: ['systemId', 'conditions[].condition', 'conditions[].value', 'conditions[].attType'],
-    form: 'extImportSearch',
-}, (state, props) => ({
-    extSystems: state.app.apExtSystemList.fetched ? state.app.apExtSystemList.rows : null,
-    initialValues: {
-        conditions: [{
-            condition: CONDITION_TYPE.AND,
-            value: props.firstValue || null,
-            attType: ATTRIBUTE_TYPES[0].val,
-        }],
+const ExtImportSearchComponent = reduxForm(
+    {
+        fields: ['systemId', 'conditions[].condition', 'conditions[].value', 'conditions[].attType'],
+        form: 'extImportSearch',
     },
-}))(ExtImportSearch);
-
+    (state, props) => ({
+        extSystems: state.app.apExtSystemList.fetched ? state.app.apExtSystemList.rows : null,
+        initialValues: {
+            conditions: [
+                {
+                    condition: CONDITION_TYPE.AND,
+                    value: props.firstValue || null,
+                    attType: ATTRIBUTE_TYPES[0].val,
+                },
+            ],
+        },
+    }),
+)(ExtImportSearch);
 
 class ExtImportForm extends AbstractReactComponent {
     state = {
@@ -204,9 +240,9 @@ class ExtImportForm extends AbstractReactComponent {
         versionId: -1,
     };
 
-    submit = (data) => {
-        const { results, systemId } = this.state;
-        const { isParty } = this.props;
+    submit = data => {
+        const {results, systemId} = this.state;
+        const {isParty} = this.props;
         const record = objectById(results, data.interpiRecordId, 'recordId');
 
         let update = false;
@@ -222,8 +258,8 @@ class ExtImportForm extends AbstractReactComponent {
             }
         }
 
-        const importVO = { ...data, scopeId: parseInt(data.scopeId), systemId: parseInt(systemId) };
-        const relationsVO = { scopeId: parseInt(data.scopeId), systemId: parseInt(systemId) };
+        const importVO = {...data, scopeId: parseInt(data.scopeId), systemId: parseInt(systemId)};
+        const relationsVO = {scopeId: parseInt(data.scopeId), systemId: parseInt(systemId)};
 
         const send = (data, update, recordId = null) => {
             const promise = update ? WebApi.importRecordUpdate(recordId, data) : WebApi.importRecord(data);
@@ -247,14 +283,21 @@ class ExtImportForm extends AbstractReactComponent {
             return WebApi.findInterpiRecordRelations(importVO.interpiRecordId, relationsVO).then(mapping => {
                 if (mapping != null && mapping.mappings != null && mapping.mappings.length > 0) {
                     this.props.dispatch(modalDialogHide());
-                    this.props.dispatch(modalDialogShow(this, i18n('extMapperForm.title'), <ExtMapperForm
-                        initialValues={mapping}
-                        record={mapping.externalRecord}
-                        isUpdate={update}
-                        onSubmit={(data) => {
-                            return send({ ...importVO, ...data }, update, recordId);
-                        }
-                        } />, 'dialog-lg'));
+                    this.props.dispatch(
+                        modalDialogShow(
+                            this,
+                            i18n('extMapperForm.title'),
+                            <ExtMapperForm
+                                initialValues={mapping}
+                                record={mapping.externalRecord}
+                                isUpdate={update}
+                                onSubmit={data => {
+                                    return send({...importVO, ...data}, update, recordId);
+                                }}
+                            />,
+                            'dialog-lg',
+                        ),
+                    );
                 } else {
                     // pokud osoba neobsahuje žádné vztahy a je importována jako původce, rovnou se naimportuje
                     return send(importVO, update, recordId);
@@ -266,8 +309,11 @@ class ExtImportForm extends AbstractReactComponent {
     };
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        if (this.props.fields.interpiRecordId.value !== nextProps.fields.interpiRecordId.value && nextProps.fields.interpiRecordId.value) {
-            const { results } = this.state;
+        if (
+            this.props.fields.interpiRecordId.value !== nextProps.fields.interpiRecordId.value &&
+            nextProps.fields.interpiRecordId.value
+        ) {
+            const {results} = this.state;
             const record = objectById(results, nextProps.fields.interpiRecordId.value, 'recordId');
             if (record && record.pairedRecords.length === 1) {
                 this.props.fields.scopeId.onChange(record.pairedRecords[0].scope.id);
@@ -275,21 +321,21 @@ class ExtImportForm extends AbstractReactComponent {
         }
     }
 
-    submitSearch = (data) => {
-        const { isParty, count } = this.props;
+    submitSearch = data => {
+        const {isParty, count} = this.props;
 
         return WebApi.findInterpiRecords({
             ...data,
             isParty,
             count,
             systemId: parseInt(data.systemId),
-        }).then((results) => {
-            this.setState({ searched: true, results, selectedRecordId: null, systemId: parseInt(data.systemId) });
+        }).then(results => {
+            this.setState({searched: true, results, selectedRecordId: null, systemId: parseInt(data.systemId)});
         });
     };
 
-    showDetail = (detailId) => {
-        const { isParty } = this.props;
+    showDetail = detailId => {
+        const {isParty} = this.props;
         if (isParty) {
             this.props.dispatch(partyDetailFetchIfNeeded(detailId));
             this.props.dispatch(modalDialogHide());
@@ -306,13 +352,22 @@ class ExtImportForm extends AbstractReactComponent {
         return errors;
     };
 
-    submitOptions = { closeOnFinished: false };
+    submitOptions = {closeOnFinished: false};
 
-    submitReduxForm = (values, dispatch) => submitForm(this.validate, values, this.props, this.submit, dispatch, this.submitOptions);
+    submitReduxForm = (values, dispatch) =>
+        submitForm(this.validate, values, this.props, this.submit, dispatch, this.submitOptions);
 
     render() {
-        const { searched, results } = this.state;
-        const { autocomplete, onClose, fields: { scopeId, interpiRecordId, originator }, handleSubmit, submitting, versionId, isParty } = this.props;
+        const {searched, results} = this.state;
+        const {
+            autocomplete,
+            onClose,
+            fields: {scopeId, interpiRecordId, originator},
+            handleSubmit,
+            submitting,
+            versionId,
+            isParty,
+        } = this.props;
 
         let record = null;
         if (interpiRecordId.value) {
@@ -339,76 +394,133 @@ class ExtImportForm extends AbstractReactComponent {
         }
         const disabledSubmit = submitting || !scopeId.value || !interpiRecordId.value;
 
-        return <div>
-            <Modal.Body>
-                <ExtImportSearchComponent onSubmitForm={this.submitSearch} />
-                <Form name="extImport" onSubmit={handleSubmit(this.submitReduxForm)}>
-                    {searched && <div>
-                        <hr />
-                        {results && results.length === 0 ? <div>{i18n('extImport.noResults')}</div> : <div>
-                            <div className="flex">
-                                <div className="flex-2">
-                                    <label>{i18n('extImport.results')}</label>
-                                    <div style={{ height: '272px', overflowY: 'auto' }}>
-                                        <Table>
-                                            <thead>
-                                                <tr>
-                                                    <th>{i18n('extImport.id')}</th>
-                                                    <th>{i18n('extImport.record')}</th>
-                                                    <th>{i18n('extImport.alreadyImported')}</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {results.map(i => <tr style={{ cursor: 'pointer' }}
-                                                    className={record && record.recordId == i.recordId ? 'active' : null}
-                                                    onClick={() => interpiRecordId.onChange(i.recordId)}>
-                                                    <td>{i.recordId}</td>
-                                                    <td>{i.name}</td>
-                                                    <td>{i.pairedRecords && i.pairedRecords.length > 0 ? <OverlayTrigger
-                                                        overlay={<Tooltip
-                                                            id='tt'>{i.pairedRecords.map((x, index) => (index != 0 ? ', ' : '') + x.scope.name)}</Tooltip>}
-                                                        placement="top">
-                                                        <Icon glyph="fa-check" />
-                                                    </OverlayTrigger> : null}</td>
-                                                </tr>)}
-                                            </tbody>
-                                        </Table>
-                                    </div>
-                                </div>
-                                <div className="flex-1">
-                                    <label>{i18n('extImport.resultDetail')}</label>
-                                    <div>
-                                        <FormControl as="textarea" rows="10" value={record ? record.detail : ''}
-                                            style={{ height: '272px' }} />
-                                    </div>
-                                </div>
-                            </div>
+        return (
+            <div>
+                <Modal.Body>
+                    <ExtImportSearchComponent onSubmitForm={this.submitSearch} />
+                    <Form name="extImport" onSubmit={handleSubmit(this.submitReduxForm)}>
+                        {searched && (
                             <div>
-                                <div>
-                                    <Scope label={i18n('extImport.scopeId')} {...scopeId} versionId={versionId} />
-                                </div>
-                                {isParty && <div>
-                                    <FormCheck {...originator}>
-                                        {i18n('extImport.originator')}
-                                    </FormCheck>
-                                </div>}
+                                <hr />
+                                {results && results.length === 0 ? (
+                                    <div>{i18n('extImport.noResults')}</div>
+                                ) : (
+                                    <div>
+                                        <div className="flex">
+                                            <div className="flex-2">
+                                                <label>{i18n('extImport.results')}</label>
+                                                <div style={{height: '272px', overflowY: 'auto'}}>
+                                                    <Table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>{i18n('extImport.id')}</th>
+                                                                <th>{i18n('extImport.record')}</th>
+                                                                <th>{i18n('extImport.alreadyImported')}</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {results.map(i => (
+                                                                <tr
+                                                                    style={{cursor: 'pointer'}}
+                                                                    className={
+                                                                        record && record.recordId == i.recordId
+                                                                            ? 'active'
+                                                                            : null
+                                                                    }
+                                                                    onClick={() => interpiRecordId.onChange(i.recordId)}
+                                                                >
+                                                                    <td>{i.recordId}</td>
+                                                                    <td>{i.name}</td>
+                                                                    <td>
+                                                                        {i.pairedRecords &&
+                                                                        i.pairedRecords.length > 0 ? (
+                                                                            <OverlayTrigger
+                                                                                overlay={
+                                                                                    <Tooltip id="tt">
+                                                                                        {i.pairedRecords.map(
+                                                                                            (x, index) =>
+                                                                                                (index != 0
+                                                                                                    ? ', '
+                                                                                                    : '') +
+                                                                                                x.scope.name,
+                                                                                        )}
+                                                                                    </Tooltip>
+                                                                                }
+                                                                                placement="top"
+                                                                            >
+                                                                                <Icon glyph="fa-check" />
+                                                                            </OverlayTrigger>
+                                                                        ) : null}
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </Table>
+                                                </div>
+                                            </div>
+                                            <div className="flex-1">
+                                                <label>{i18n('extImport.resultDetail')}</label>
+                                                <div>
+                                                    <FormControl
+                                                        as="textarea"
+                                                        rows="10"
+                                                        value={record ? record.detail : ''}
+                                                        style={{height: '272px'}}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div>
+                                                <Scope
+                                                    label={i18n('extImport.scopeId')}
+                                                    {...scopeId}
+                                                    versionId={versionId}
+                                                />
+                                            </div>
+                                            {isParty && (
+                                                <div>
+                                                    <FormCheck {...originator}>
+                                                        {i18n('extImport.originator')}
+                                                    </FormCheck>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        </div>}
-                    </div>}
-                    {searched && <Modal.Footer>
-                        {showDetail ? <span>
-                            <Button type="submit" disabled={disabledSubmit}>{i18n('extImport.update')}</Button>
-                            <Button type="button" onClick={() => this.showDetail(detailId)}
-                                disabled={disabledSubmit}>{autocomplete ? i18n('extImport.useActual') : i18n('extImport.showDetail')}</Button>
-                        </span> : <span>
-                                <Button type="submit" disabled={disabledSubmit}>{i18n('global.action.import')}</Button>
-                            </span>}
-                        <Button variant="link" type="button" onClick={onClose}
-                            disabled={submitting}>{i18n('global.action.cancel')}</Button>
-                    </Modal.Footer>}
-                </Form>
-            </Modal.Body>
-        </div>;
+                        )}
+                        {searched && (
+                            <Modal.Footer>
+                                {showDetail ? (
+                                    <span>
+                                        <Button type="submit" disabled={disabledSubmit}>
+                                            {i18n('extImport.update')}
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            onClick={() => this.showDetail(detailId)}
+                                            disabled={disabledSubmit}
+                                        >
+                                            {autocomplete ? i18n('extImport.useActual') : i18n('extImport.showDetail')}
+                                        </Button>
+                                    </span>
+                                ) : (
+                                    <span>
+                                        <Button type="submit" disabled={disabledSubmit}>
+                                            {i18n('global.action.import')}
+                                        </Button>
+                                    </span>
+                                )}
+                                <Button variant="link" type="button" onClick={onClose} disabled={submitting}>
+                                    {i18n('global.action.cancel')}
+                                </Button>
+                            </Modal.Footer>
+                        )}
+                    </Form>
+                </Modal.Body>
+            </div>
+        );
     }
 }
 
@@ -416,4 +528,3 @@ export default reduxForm({
     fields: ['scopeId', 'interpiRecordId', 'originator'],
     form: 'extImportForm',
 })(ExtImportForm);
-

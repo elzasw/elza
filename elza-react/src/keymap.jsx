@@ -2,6 +2,6 @@ import {Utils} from 'components/shared';
 
 const keyModifier = Utils.getKeyModifier();
 
-var keymap = {}
+var keymap = {};
 
 export default keymap;

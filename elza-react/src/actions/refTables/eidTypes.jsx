@@ -11,14 +11,16 @@ export function invalidate() {
 }
 
 export function fetchIfNeeded() {
-    return DetailActions.fetchIfNeeded(REF_EID_TYPES, true, () => WebApi.getEidTypes().then(types => {
-        let result = {
-            reverse: {} // reverzní mapa typů (kódy na identifikátory)
-        };
-        for (let type of types) {
-            result[type.id] = type;
-            result.reverse[type.code] = type.id;
-        }
-        return result;
-    }));
+    return DetailActions.fetchIfNeeded(REF_EID_TYPES, true, () =>
+        WebApi.getEidTypes().then(types => {
+            let result = {
+                reverse: {}, // reverzní mapa typů (kódy na identifikátory)
+            };
+            for (let type of types) {
+                result[type.id] = type;
+                result.reverse[type.code] = type.id;
+            }
+            return result;
+        }),
+    );
 }

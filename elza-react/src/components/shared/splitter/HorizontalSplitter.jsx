@@ -7,13 +7,12 @@ import Resizer from '../resizer/Resizer';
 import './HorizontalSplitter.scss';
 
 class HorizontalSplitter extends AbstractReactComponent {
-
     state = {
         active: false,
         resized: false,
         dragged: false,
         position: null,
-        size: this.props.bottomSize || 200
+        size: this.props.bottomSize || 200,
     };
 
     static propTypes = {
@@ -35,14 +34,14 @@ class HorizontalSplitter extends AbstractReactComponent {
         const bottomRef = this.refs.paneBottom;
         if (bottomRef && this.state.bottomSize) {
             bottomRef.setState({
-                size: this.state.size
+                size: this.state.size,
             });
         }
     };
 
     UNSAFE_componentWillReceiveProps({size}) {
         if (size) {
-            this.setState({size}, this.updateChildPanes)
+            this.setState({size}, this.updateChildPanes);
         }
     }
 
@@ -55,11 +54,11 @@ class HorizontalSplitter extends AbstractReactComponent {
         if (document.selection) {
             document.selection.empty();
         } else {
-            window.getSelection().removeAllRanges()
+            window.getSelection().removeAllRanges();
         }
     };
 
-    onMouseDown = (event) => {
+    onMouseDown = event => {
         this.unFocus();
         let position = event.clientY;
         this.setState({
@@ -69,7 +68,7 @@ class HorizontalSplitter extends AbstractReactComponent {
         });
     };
 
-    onMouseMove = (event) => {
+    onMouseMove = event => {
         if (this.state.active) {
             this.unFocus();
             const ref = this.state.dragged ? this.refs.paneBottom : null;
@@ -88,7 +87,7 @@ class HorizontalSplitter extends AbstractReactComponent {
                     }
                     this.setState({
                         position: current,
-                        resized: true
+                        resized: true,
                     });
 
                     let newState = {};
@@ -96,7 +95,7 @@ class HorizontalSplitter extends AbstractReactComponent {
                     if (this.state.dragged) {
                         newState = {
                             size: newSize,
-                        }
+                        };
                     }
                     if (this.props.onChange) {
                         this.props.onChange({size: newSize});
@@ -104,7 +103,7 @@ class HorizontalSplitter extends AbstractReactComponent {
                     this.setState(newState);
 
                     ref.setState({
-                        size: newSize
+                        size: newSize,
                     });
                 }
             }
@@ -118,24 +117,28 @@ class HorizontalSplitter extends AbstractReactComponent {
             }
             this.setState({
                 active: false,
-                dragged: false
+                dragged: false,
             });
         }
     };
 
     render() {
-        const {props: {top, bottom}} = this;
+        const {
+            props: {top, bottom},
+        } = this;
 
         return (
-            <div ref='container' className='horizontal-splitter-container'>
-                <div key='center' className='splitter-top'>{top}</div>
-                <Resizer key='resizer' ref='resizer' horizontal onMouseDown={this.onMouseDown}/>
-                <HorizontalPane key='right' ref='paneBottom' className='splitter-bottom'>{bottom}</HorizontalPane>
+            <div ref="container" className="horizontal-splitter-container">
+                <div key="center" className="splitter-top">
+                    {top}
+                </div>
+                <Resizer key="resizer" ref="resizer" horizontal onMouseDown={this.onMouseDown} />
+                <HorizontalPane key="right" ref="paneBottom" className="splitter-bottom">
+                    {bottom}
+                </HorizontalPane>
             </div>
-        )
+        );
     }
 }
 
-
 export default HorizontalSplitter;
-

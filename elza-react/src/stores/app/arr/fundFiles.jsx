@@ -5,12 +5,12 @@ const initialState = {
     data: null,
     isFetching: false,
     fetched: false,
-    currentDataKey: ''
+    currentDataKey: '',
 };
 
 export default function fundFiles(state = initialState, action = {}) {
     switch (action.type) {
-        case types.STORE_LOAD:{
+        case types.STORE_LOAD: {
             return {
                 ...state,
                 selectedIds: [],
@@ -18,43 +18,43 @@ export default function fundFiles(state = initialState, action = {}) {
                 isFetching: false,
                 fetched: false,
                 currentDataKey: '',
-            }
+            };
         }
-        case types.STORE_SAVE:{
+        case types.STORE_SAVE: {
             const {filterText} = state;
             return {
-                filterText
-            }
+                filterText,
+            };
         }
-        case types.CHANGE_FILES:{
+        case types.CHANGE_FILES: {
             return {
                 ...state,
-                currentDataKey: ''
-            }
+                currentDataKey: '',
+            };
         }
-        case types.FUND_FILES_REQUEST:{
+        case types.FUND_FILES_REQUEST: {
             return {
                 ...state,
                 isFetching: true,
-                currentDataKey: action.dataKey
-            }
+                currentDataKey: action.dataKey,
+            };
         }
-        case types.FUND_FILES_RECEIVE:{
+        case types.FUND_FILES_RECEIVE: {
             return {
                 ...state,
                 isFetching: false,
                 fetched: true,
-                data: action.data
-            }
+                data: action.data,
+            };
         }
-        case types.FUND_FILES_FILTER:{
+        case types.FUND_FILES_FILTER: {
             return {
                 ...state,
                 filterText: action.filterText,
-                currentDataKey: ''
-            }
+                currentDataKey: '',
+            };
         }
         default:
-            return state
+            return state;
     }
 }

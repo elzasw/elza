@@ -15,11 +15,19 @@ class DescItemJsonTable extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('focus', 'handleEdit', 'handleEditClose',
-            'handleCellChange', 'cellRenderer',
-            'cellRowDeleteRenderer', 'handleAddRow',
-            'handleRemoveRow', 'getStateFromProps',
-            'handleBlur', 'handleDelete');
+        this.bindMethods(
+            'focus',
+            'handleEdit',
+            'handleEditClose',
+            'handleCellChange',
+            'cellRenderer',
+            'cellRowDeleteRenderer',
+            'handleAddRow',
+            'handleRemoveRow',
+            'getStateFromProps',
+            'handleBlur',
+            'handleDelete',
+        );
 
         this.blurEnabled = true;
         this.state = this.getStateFromProps(props);
@@ -59,7 +67,7 @@ class DescItemJsonTable extends AbstractReactComponent {
             {values: {KEY: 'klic2', VALUE: 'value2'}},
             {values: {KEY: 'klic3', VALUE: 'value3'}},
         ];
-        rows = (props.descItem.value && props.descItem.value.rows) ? props.descItem.value.rows : [];
+        rows = props.descItem.value && props.descItem.value.rows ? props.descItem.value.rows : [];
         // rows = [
         //     {values: {KEY: "klic1", VALUE: "value1"}},
         //     {values: {KEY: "klic2", VALUE: "value2"}},
@@ -96,7 +104,8 @@ class DescItemJsonTable extends AbstractReactComponent {
     }
 
     handleDelete(row, rowIndex, col, colIndex) {
-        if (col.actions) {  // u tohoto sloupce není možné nic editovat
+        if (col.actions) {
+            // u tohoto sloupce není možné nic editovat
             return;
         }
 
@@ -111,7 +120,8 @@ class DescItemJsonTable extends AbstractReactComponent {
     }
 
     handleEdit(row, rowIndex, col, colIndex) {
-        if (col.actions) {  // u tohoto sloupce není možné nic editovat
+        if (col.actions) {
+            // u tohoto sloupce není možné nic editovat
             return;
         }
 
@@ -121,31 +131,38 @@ class DescItemJsonTable extends AbstractReactComponent {
 
         const value = row.values[col.colDef.code];
         this.blurEnabled = false;
-        this.props.dispatch(modalDialogShow(this, null,
-            <DescItemJsonTableCellForm
-                position={{x: cellRect.left, y: cellRect.top}}
-                value={value}
-                dataType={col.colDef.dataType}
-                onChange={this.handleCellChange.bind(this, row, rowIndex, col, colIndex)}
-            />,
-            'desc-item-table-cell-edit', this.handleEditClose.bind(this, row, rowIndex, col, colIndex, value)));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                null,
+                <DescItemJsonTableCellForm
+                    position={{x: cellRect.left, y: cellRect.top}}
+                    value={value}
+                    dataType={col.colDef.dataType}
+                    onChange={this.handleCellChange.bind(this, row, rowIndex, col, colIndex)}
+                />,
+                'desc-item-table-cell-edit',
+                this.handleEditClose.bind(this, row, rowIndex, col, colIndex, value),
+            ),
+        );
     }
 
     handleEditClose(row, rowIndex, col, colIndex, prevValue, closeType) {
-        if (closeType === 'DIALOG') {   // zavření dialogu bez potvrzení, vrátíme původní hodnotu
+        if (closeType === 'DIALOG') {
+            // zavření dialogu bez potvrzení, vrátíme původní hodnotu
             this.handleCellChange(row, rowIndex, col, colIndex, prevValue);
         }
-        this.setState({},
-            () => {
-                this.focus();
-                this.blurEnabled = true;
-            },
-        );
+        this.setState({}, () => {
+            this.focus();
+            this.blurEnabled = true;
+        });
     }
 
     cellRenderer(row, rowIndex, col, colIndex, colFocus, cellFocus) {
         return (
-            <div key={colIndex} className='value'>{row.values[col.colDef.code]}</div>
+            <div key={colIndex} className="value">
+                {row.values[col.colDef.code]}
+            </div>
         );
     }
 
@@ -157,10 +174,7 @@ class DescItemJsonTable extends AbstractReactComponent {
 
     handleRemoveRow(row, rowIndex) {
         const {rows} = this.state;
-        var newRows = [
-            ...rows.slice(0, rowIndex),
-            ...rows.slice(rowIndex + 1),
-        ];
+        var newRows = [...rows.slice(0, rowIndex), ...rows.slice(rowIndex + 1)];
 
         this.props.onChange({rows: newRows});
     }
@@ -171,15 +185,20 @@ class DescItemJsonTable extends AbstractReactComponent {
         var actions = [];
 
         if (!locked) {
-            actions.push(<NoFocusButton key="remove" className="remove"
-                                        onClick={this.handleRemoveRow.bind(this, row, rowIndex)}
-                                        title={i18n('subNodeForm.descItem.jsonTable.action.removeRow')}>
-                <Icon glyph="fa-remove"/>
-            </NoFocusButton>);
+            actions.push(
+                <NoFocusButton
+                    key="remove"
+                    className="remove"
+                    onClick={this.handleRemoveRow.bind(this, row, rowIndex)}
+                    title={i18n('subNodeForm.descItem.jsonTable.action.removeRow')}
+                >
+                    <Icon glyph="fa-remove" />
+                </NoFocusButton>,
+            );
         }
 
         return (
-            <div key={colIndex} className='value'>
+            <div key={colIndex} className="value">
                 {actions}
             </div>
         );
@@ -192,44 +211,57 @@ class DescItemJsonTable extends AbstractReactComponent {
         let actions = [];
 
         if (descItem.descItemObjectId != null && !descItem.undefined) {
-            actions.push(<NoFocusButton key="download" onClick={onDownload}
-                                        title={i18n('subNodeForm.descItem.jsonTable.action.download')}><Icon
-                glyph="fa-download"/></NoFocusButton>);
+            actions.push(
+                <NoFocusButton
+                    key="download"
+                    onClick={onDownload}
+                    title={i18n('subNodeForm.descItem.jsonTable.action.download')}
+                >
+                    <Icon glyph="fa-download" />
+                </NoFocusButton>,
+            );
         }
 
         if (!locked && !descItem.undefined) {
-            actions.push(<NoFocusButton key="add" onClick={this.handleAddRow}
-                                        title={i18n('subNodeForm.descItem.jsonTable.action.addRow')}><Icon
-                glyph="fa-plus"/></NoFocusButton>);
+            actions.push(
+                <NoFocusButton
+                    key="add"
+                    onClick={this.handleAddRow}
+                    title={i18n('subNodeForm.descItem.jsonTable.action.addRow')}
+                >
+                    <Icon glyph="fa-plus" />
+                </NoFocusButton>,
+            );
         }
 
         return (
-            <div className='desc-item-value desc-item-value-table'>
+            <div className="desc-item-value desc-item-value-table">
                 <ItemTooltipWrapper tooltipTitle="dataType.jsonTable.format">
-                    {descItem.undefined ? <input
-                        {...decorateValue(this, descItem.hasFocus, descItem.error.value, true)}
-                        ref='focusEl'
-                        type="text"
-                        value={i18n('subNodeForm.descItemType.notIdentified')}
-                    /> : <DataGrid
-                        key="grid"
-                        ref='dataGrid'
-                        rows={rows}
-                        cols={cols}
-                        onFocus={onFocus}
-                        onBlur={this.handleBlur}
-                        selectedIds={[]}
-                        allowRowCheck={false}
-                        staticColumns={true}
-                        onEdit={this.handleEdit}
-                        onDelete={this.handleDelete}
-                        disabled={locked || readMode}
-                    />}
+                    {descItem.undefined ? (
+                        <input
+                            {...decorateValue(this, descItem.hasFocus, descItem.error.value, true)}
+                            ref="focusEl"
+                            type="text"
+                            value={i18n('subNodeForm.descItemType.notIdentified')}
+                        />
+                    ) : (
+                        <DataGrid
+                            key="grid"
+                            ref="dataGrid"
+                            rows={rows}
+                            cols={cols}
+                            onFocus={onFocus}
+                            onBlur={this.handleBlur}
+                            selectedIds={[]}
+                            allowRowCheck={false}
+                            staticColumns={true}
+                            onEdit={this.handleEdit}
+                            onDelete={this.handleDelete}
+                            disabled={locked || readMode}
+                        />
+                    )}
                 </ItemTooltipWrapper>
-                <div
-                    key="actions"
-                    className='desc-item-value-actions'
-                >
+                <div key="actions" className="desc-item-value-actions">
                     {actions}
                 </div>
             </div>

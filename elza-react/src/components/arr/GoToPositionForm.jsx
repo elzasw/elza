@@ -29,21 +29,33 @@ class GoToPositionForm extends AbstractReactComponent {
 
     submitOptions = {finishOnSubmit: true};
 
-    submitReduxForm = (values, dispatch) => submitForm(validate, values, this.props, this.props.onSubmitForm, dispatch, this.submitOptions);
+    submitReduxForm = (values, dispatch) =>
+        submitForm(validate, values, this.props, this.props.onSubmitForm, dispatch, this.submitOptions);
 
     render() {
-        const {fields: {position}, handleSubmit, onClose, maxPosition} = this.props;
+        const {
+            fields: {position},
+            handleSubmit,
+            onClose,
+            maxPosition,
+        } = this.props;
 
         return (
             <div>
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
-                        <FormInput type="text"
-                                   label={i18n('arr.fund.subNodes.findPositionNumber', maxPosition)} {...position} {...decorateFormField(position)} />
+                        <FormInput
+                            type="text"
+                            label={i18n('arr.fund.subNodes.findPositionNumber', maxPosition)}
+                            {...position}
+                            {...decorateFormField(position)}
+                        />
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit">{i18n('global.action.store')}</Button>
-                        <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                        <Button variant="link" onClick={onClose}>
+                            {i18n('global.action.cancel')}
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </div>
@@ -55,4 +67,3 @@ export default reduxForm({
     form: 'goToPosition',
     fields: ['position'],
 })(GoToPositionForm);
-

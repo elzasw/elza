@@ -11,11 +11,13 @@ import * as types from 'actions/constants/ActionTypes.js';
  */
 export function refPartyTypesFetchIfNeeded() {
     return (dispatch, getState) => {
-        const {refTables:{partyTypes}} = getState();
+        const {
+            refTables: {partyTypes},
+        } = getState();
         if ((!partyTypes.fetched || partyTypes.dirty) && !partyTypes.isFetching) {
             return dispatch(refPartyTypesFetch());
         }
-    }
+    };
 }
 
 /**
@@ -23,10 +25,9 @@ export function refPartyTypesFetchIfNeeded() {
  */
 export function refPartyTypesFetch() {
     return dispatch => {
-        dispatch(refPartyTypesRequest())
-        return WebApi.getPartyTypes()
-            .then(json => dispatch(refPartyTypesReceive(json)));
-    }
+        dispatch(refPartyTypesRequest());
+        return WebApi.getPartyTypes().then(json => dispatch(refPartyTypesReceive(json)));
+    };
 }
 
 /**
@@ -37,8 +38,8 @@ export function refPartyTypesReceive(json) {
     return {
         type: types.REF_PARTY_TYPES_RECEIVE,
         items: json,
-        receivedAt: Date.now()
-    }
+        receivedAt: Date.now(),
+    };
 }
 
 /**
@@ -46,6 +47,6 @@ export function refPartyTypesReceive(json) {
  */
 export function refPartyTypesRequest() {
     return {
-        type: types.REF_PARTY_TYPES_REQUEST
-    }
+        type: types.REF_PARTY_TYPES_REQUEST,
+    };
 }

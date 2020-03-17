@@ -67,8 +67,16 @@ export function fundSubNodeInfoFetch(versionId, nodeId, routingKey) {
             node = r.node;
         }
         dispatch(fundSubNodeInfoRequest(versionId, nodeId, routingKey));
-        return WebApi.getNodeData(versionId, nodeId, false, false, true, null, null, node ? null : node.filterText)
-                     .then(json => dispatch(fundSubNodeInfoReceive(versionId, nodeId, routingKey, { nodes: json.children })));
+        return WebApi.getNodeData(
+            versionId,
+            nodeId,
+            false,
+            false,
+            true,
+            null,
+            null,
+            node ? null : node.filterText,
+        ).then(json => dispatch(fundSubNodeInfoReceive(versionId, nodeId, routingKey, {nodes: json.children})));
     };
 }
 

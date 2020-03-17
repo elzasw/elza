@@ -9,34 +9,34 @@ class ControllableDropdownButton extends AbstractReactComponent {
         super(props);
 
         this.state = {
-            open: this.getOpenValue(props, {})
-        }
+            open: this.getOpenValue(props, {}),
+        };
     }
 
     static propsTypes = {
         id: PropTypes.string.isRequired,
         children: PropTypes.array.isRequired,
         onToggle: PropTypes.func,
-        open: PropTypes.bool
+        open: PropTypes.bool,
     };
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         this.setState({
-            open: this.getOpenValue(nextProps, this.state)
-        })
+            open: this.getOpenValue(nextProps, this.state),
+        });
     }
 
     getOpenValue = (props, state) => {
-        let open
+        let open;
         if (typeof props.open !== 'undefined') {
-            open = props.open
+            open = props.open;
         } else if (typeof state.open !== 'undefined') {
-            open = state.open
+            open = state.open;
         } else {
-            open = false
+            open = false;
         }
 
-        return open
+        return open;
     };
 
     focusFirstMenuItem = () => {
@@ -44,23 +44,28 @@ class ControllableDropdownButton extends AbstractReactComponent {
         const child = this.props.children[0];
         let ref;
         if (typeof child.ref !== 'undefined' && child.ref !== null) {
-            ref = child.ref
+            ref = child.ref;
         } else {
-            ref = 'firstDropdown.Item'
+            ref = 'firstDropdown.Item';
         }
         const el = ReactDOM.findDOMNode(this.refs[ref]);
-        el.children[0].focus()
+        el.children[0].focus();
     };
 
-    handleToggle = (isOpen) => {
-        this.setState({
-            open: isOpen
-        }, ()=>{isOpen && this.focusFirstDropdown.Item()});
-        this.props.onToggle && this.props.onToggle(isOpen)
+    handleToggle = isOpen => {
+        this.setState(
+            {
+                open: isOpen,
+            },
+            () => {
+                isOpen && this.focusFirstDropdown.Item();
+            },
+        );
+        this.props.onToggle && this.props.onToggle(isOpen);
     };
 
-    setOpen = (open) => {
-        this.handleToggle(open)
+    setOpen = open => {
+        this.handleToggle(open);
     };
 
     render() {
@@ -70,27 +75,20 @@ class ControllableDropdownButton extends AbstractReactComponent {
             const opts = {};
             if (index === 0) {
                 if (typeof child.ref !== 'undefined' && child.ref !== null) {
-                    opts.ref = child.ref
+                    opts.ref = child.ref;
                 } else {
-                    opts.ref = 'firstDropdown.Item'
+                    opts.ref = 'firstDropdown.Item';
                 }
             }
             return React.cloneElement(child, opts);
         });
 
         return (
-            <DropdownButton
-                id={id}
-                open={this.state.open}
-                {...other}
-                onToggle={this.handleToggle}
-            >
+            <DropdownButton id={id} open={this.state.open} {...other} onToggle={this.handleToggle}>
                 {children}
             </DropdownButton>
         );
-
     }
 }
-
 
 export default ControllableDropdownButton;

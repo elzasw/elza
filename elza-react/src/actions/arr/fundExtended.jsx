@@ -3,7 +3,6 @@
  */
 import * as types from 'actions/constants/ActionTypes.js';
 
-
 /**
  * Zapnutí/vypnutí rozšířeného zobrazení stromu AS.
  * {boolean} enable zapnout nebo vypnout rozšířené zobrazení?
@@ -11,6 +10,6 @@ import * as types from 'actions/constants/ActionTypes.js';
 export function fundExtendedView(enable) {
     return {
         type: types.FUND_EXTENDED_VIEW,
-        enable
-    }
+        enable,
+    };
 }

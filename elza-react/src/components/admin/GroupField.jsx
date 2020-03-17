@@ -8,31 +8,27 @@ import {renderGroupItem} from './adminRenderUtils.jsx';
 const GroupField = class GroupField extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods(
-            "handleChange",
-            "handleSearchChange",
-            "focus");
+        this.bindMethods('handleChange', 'handleSearchChange', 'focus');
 
         this.state = {
-            dataList: []
+            dataList: [],
         };
     }
 
     focus() {
-        this.refs.autocomplete.focus()
+        this.refs.autocomplete.focus();
     }
 
-    componentDidMount() {
-    }
+    componentDidMount() {}
 
     handleSearchChange(text) {
-        text = text == "" ? null : text;
+        text = text == '' ? null : text;
 
         WebApi.findGroup(text).then(json => {
             this.setState({
-                dataList: json.groups
-            })
-        })
+                dataList: json.groups,
+            });
+        });
     }
 
     render() {
@@ -51,9 +47,9 @@ const GroupField = class GroupField extends AbstractReactComponent {
                 {...otherProps}
                 renderItem={renderGroupItem}
             />
-        )
+        );
     }
-}
+};
 
 GroupField.propTypes = {
     value: PropTypes.object,
@@ -61,13 +57,11 @@ GroupField.propTypes = {
     inline: PropTypes.bool,
     touched: PropTypes.bool,
     error: PropTypes.string,
-}
+};
 
-GroupField.defaultProps = {
-}
+GroupField.defaultProps = {};
 
 function mapStateToProps(state) {
-    return {
-    }
+    return {};
 }
 export default connect(mapStateToProps)(GroupField);

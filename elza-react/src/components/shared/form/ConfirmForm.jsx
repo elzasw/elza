@@ -11,18 +11,15 @@ import HorizontalLoader from '../loading/HorizontalLoader';
 import './ConfirmForm.scss';
 
 class ConfirmForm extends AbstractReactComponent {
-
     static propTypes = {};
 
     static defaultProps = {
         locked: false,
     };
 
-    componentDidMount() {
-    }
+    componentDidMount() {}
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-    }
+    UNSAFE_componentWillReceiveProps(nextProps) {}
 
     render() {
         const {onClose, handleSubmit, submitting, confirmMessage, submittingMessage, submitTitle} = this.props;
@@ -30,11 +27,9 @@ class ConfirmForm extends AbstractReactComponent {
         let content;
 
         if (submitting) {
-            content = <HorizontalLoader text={submittingMessage}/>;
+            content = <HorizontalLoader text={submittingMessage} />;
         } else {
-            content = <Modal.Body className="message">
-                {confirmMessage}
-            </Modal.Body>;
+            content = <Modal.Body className="message">{confirmMessage}</Modal.Body>;
         }
 
         return (
@@ -42,9 +37,12 @@ class ConfirmForm extends AbstractReactComponent {
                 <div className="confirm-form-container">
                     {content}
                     <Modal.Footer>
-                        <Button disabled={submitting}
-                                type="submit">{submitTitle ? submitTitle : i18n('global.action.store')}</Button>
-                        <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                        <Button disabled={submitting} type="submit">
+                            {submitTitle ? submitTitle : i18n('global.action.store')}
+                        </Button>
+                        <Button variant="link" onClick={onClose}>
+                            {i18n('global.action.cancel')}
+                        </Button>
                     </Modal.Footer>
                 </div>
             </Form>

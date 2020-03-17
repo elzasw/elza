@@ -45,22 +45,22 @@ export function fundInitState(fundWithVersion) {
         fundOutput: fundOutput(),
         fundDataGrid: fundDataGrid(),
         fundFiles: fundFiles(),
-        fundTree: fundTree(undefined, { type: '' }),
-        fundTreeMovementsLeft: fundTree(undefined, { type: '' }),
-        fundTreeMovementsRight: fundTree(undefined, { type: '' }),
+        fundTree: fundTree(undefined, {type: ''}),
+        fundTreeMovementsLeft: fundTree(undefined, {type: ''}),
+        fundTreeMovementsRight: fundTree(undefined, {type: ''}),
         moving: false,
         fundTreeDaosLeft: fundTree(),
         fundTreeDaosRight: fundTree(),
-        fundTreeNodes: fundTree(undefined, { type: '' }),
-        nodes: nodes(undefined, { type: '' }),
+        fundTreeNodes: fundTree(undefined, {type: ''}),
+        nodes: nodes(undefined, {type: ''}),
         fundNodesPolicy: fundNodesPolicy(),
-        bulkActions: bulkActions(undefined, { type: '' }),
-        versionValidation: versionValidation(undefined, { type: '' }),
+        bulkActions: bulkActions(undefined, {type: ''}),
+        versionValidation: versionValidation(undefined, {type: ''}),
         fundNodesError: {}, // zatím jen pomocný, je řešeno ve state
-        requestList: SimpleListReducer(),   // seznam požadavků na digitalizaci
+        requestList: SimpleListReducer(), // seznam požadavků na digitalizaci
         requestDetail: DetailReducer(), // detail vybraného požadavku na digitalizaci
-        daoPackageList: SimpleListReducer(),   // seznam všech balíčků pro daný AS
-        daoUnassignedPackageList: SimpleListReducer(),   // seznam nepřiřazených balíčků pro daný AS
+        daoPackageList: SimpleListReducer(), // seznam všech balíčků pro daný AS
+        daoUnassignedPackageList: SimpleListReducer(), // seznam nepřiřazených balíčků pro daný AS
         daoPackageDetail: DetailReducer(), // detail vybraného balíčků
         nodeDaoList: SimpleListReducer(), // seznam DAO pro node
         nodeDaoListAssign: SimpleListReducer(), // seznam DAO pro node sloužící pro node, které jsou sekundární, např. pro přiřazení atp.
@@ -69,7 +69,7 @@ export function fundInitState(fundWithVersion) {
         reducer: fund,
     };
 
-    result.fundTreeMovementsLeft = { ...result.fundTreeMovementsLeft };
+    result.fundTreeMovementsLeft = {...result.fundTreeMovementsLeft};
     result.fundTreeMovementsLeft.multipleSelection = true;
     result.fundTreeMovementsLeft.multipleSelectionOneLevel = true;
 
@@ -85,7 +85,6 @@ function initFundTreeNodes(fundTreeNodes) {
         multipleSelectionOneLevel: false,
     };
 }
-
 
 function updateFundTree(state, action) {
     switch (action.area) {
@@ -118,42 +117,42 @@ export function fund(state, action) {
     }
 
     if (isBulkAction(action)) {
-        const result = { ...state, bulkActions: bulkActions(state.bulkActions, action) };
+        const result = {...state, bulkActions: bulkActions(state.bulkActions, action)};
         return consolidateState(state, result);
     }
     if (isFundActionAction(action)) {
-        const result = { ...state, fundAction: fundAction(state.fundAction, action) };
+        const result = {...state, fundAction: fundAction(state.fundAction, action)};
         return consolidateState(state, result);
     }
 
     if (isFundOutput(action)) {
-        const result = { ...state, fundOutput: fundOutput(state.fundOutput, action) };
+        const result = {...state, fundOutput: fundOutput(state.fundOutput, action)};
         return consolidateState(state, result);
     }
 
     if (isStructureNodeForm(action)) {
-        const result = { ...state, structureNodeForm: structureNodeForm(state.structureNodeForm, action) };
+        const result = {...state, structureNodeForm: structureNodeForm(state.structureNodeForm, action)};
         return consolidateState(state, result);
     }
 
     if (isFundFilesAction(action)) {
-        const result = { ...state, fundFiles: fundFiles(state.fundFiles, action) };
+        const result = {...state, fundFiles: fundFiles(state.fundFiles, action)};
         return consolidateState(state, result);
     }
 
     if (isFundTreeAction(action)) {
-        const result = { ...state };
+        const result = {...state};
         updateFundTree(result, action);
         return consolidateState(state, result);
     }
 
     if (isVersionValidation(action)) {
-        const result = { ...state, versionValidation: versionValidation(state.versionValidation, action) };
+        const result = {...state, versionValidation: versionValidation(state.versionValidation, action)};
         return consolidateState(state, result);
     }
 
     if (isFundDataGridAction(action)) {
-        const result = { ...state, fundDataGrid: fundDataGrid(state.fundDataGrid, action) };
+        const result = {...state, fundDataGrid: fundDataGrid(state.fundDataGrid, action)};
         return consolidateState(state, result);
     }
 
@@ -169,28 +168,29 @@ export function fund(state, action) {
                 return consolidateState(state, result);
             }
             case 'DATA_GRID': {
-                const result = { ...state, fundDataGrid: fundDataGrid(state.fundDataGrid, action) };
+                const result = {...state, fundDataGrid: fundDataGrid(state.fundDataGrid, action)};
                 return consolidateState(state, result);
             }
             default:
                 break;
         }
     } else if (outputFormActions.isSubNodeFormAction(action)) {
-        const result = { ...state, fundOutput: fundOutput(state.fundOutput, action) };
+        const result = {...state, fundOutput: fundOutput(state.fundOutput, action)};
         return consolidateState(state, result);
     } else if (structureFormActions.isSubNodeFormAction(action)) {
-        const result = { ...state, structureNodeForm: structureNodeForm(state.structureNodeForm, action) };
+        const result = {...state, structureNodeForm: structureNodeForm(state.structureNodeForm, action)};
         return consolidateState(state, result);
     }
 
-    if (false
-        || nodeFormActions.isSubNodeFormCacheAction(action, 'NODE')
-        || isSubNodeInfoAction(action)
-        || isNodeInfoAction(action)
-        || isNodeAction(action)
-        || isNodesAction(action)
-        || isSubNodeDaosAction(action)
-        || isDeveloperScenariosAction(action)
+    if (
+        false ||
+        nodeFormActions.isSubNodeFormCacheAction(action, 'NODE') ||
+        isSubNodeInfoAction(action) ||
+        isNodeInfoAction(action) ||
+        isNodeAction(action) ||
+        isNodesAction(action) ||
+        isSubNodeDaosAction(action) ||
+        isDeveloperScenariosAction(action)
     ) {
         const result = {
             ...state,
@@ -216,7 +216,7 @@ export function fund(state, action) {
             return {
                 ...state,
                 isFetching: false,
-                closed: true,   // při načtení vždy chceme closed, i když není - aby nemohl editovat, než se načte aktuální stav ze serveru
+                closed: true, // při načtení vždy chceme closed, i když není - aby nemohl editovat, než se načte aktuální stav ze serveru
                 dirty: true,
                 fundTree: fundTree(state.fundTree, action),
                 fundTreeMovementsLeft: fundTree(state.fundTreeMovementsLeft, action),
@@ -230,9 +230,9 @@ export function fund(state, action) {
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
                 fundFiles: fundFiles(state.fundFiles, action),
                 fundNodesPolicy: fundNodesPolicy(state.fundNodesPolicy, action),
-                bulkActions: bulkActions(undefined, { type: '' }),
-                fundAction: fundAction(undefined, { type: '' }),
-                versionValidation: versionValidation(undefined, { type: '' }),
+                bulkActions: bulkActions(undefined, {type: ''}),
+                fundAction: fundAction(undefined, {type: ''}),
+                versionValidation: versionValidation(undefined, {type: ''}),
                 fundNodesError: {},
                 requestList: SimpleListReducer(),
                 requestDetail: DetailReducer(),
@@ -246,7 +246,7 @@ export function fund(state, action) {
                 reducer: fund,
             };
         case types.STORE_SAVE:
-            const { id, versionId, name, lockDate, activeVersion, lastUseTemplateName } = state;
+            const {id, versionId, name, lockDate, activeVersion, lastUseTemplateName} = state;
             return {
                 id,
                 activeVersion,
@@ -329,12 +329,12 @@ export function fund(state, action) {
                 dirty: true,
             };
         case types.GLOBAL_CONTEXT_MENU_HIDE: {
-            const result = { ...state };
+            const result = {...state};
             updateFundTree(result, action);
             return consolidateState(state, result);
         }
         case types.FUND_FUND_SELECT_SUBNODE: {
-            const result = { ...state, nodes: nodes(state.nodes, action) };
+            const result = {...state, nodes: nodes(state.nodes, action)};
             updateFundTree(result, action);
             return consolidateState(state, result);
         }
@@ -396,7 +396,6 @@ export function fund(state, action) {
             return consolidateState(state, result);
         }
         case types.FUND_FUND_APPROVE_VERSION:
-
             if (state.closed === false) {
                 return {
                     ...state,

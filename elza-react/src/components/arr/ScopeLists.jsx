@@ -15,7 +15,6 @@ import ScopeListForm from '../form/ScopeListForm';
 import './ScopeLists.scss';
 
 class ScopeLists extends AbstractReactComponent {
-
     state = {id: null, initialValues: undefined};
 
     componentDidMount() {
@@ -26,13 +25,13 @@ class ScopeLists extends AbstractReactComponent {
         this.fetchData(nextProps);
     }
 
-    fetchData = (props) => {
+    fetchData = props => {
         props.dispatch(scopeActions.scopesListFetchIfNeeded());
     };
 
     select = ([index]) => {
         const item = this.props.scopeList.rows[index];
-        WebApi.getScopeWithConnected(item.id).then((data) => {
+        WebApi.getScopeWithConnected(item.id).then(data => {
             this.setState({id: data.id, initialValues: {...data, language: data.language || ''}});
         });
     };
@@ -42,7 +41,7 @@ class ScopeLists extends AbstractReactComponent {
         this.props.dispatch(scopeActions.scopeListInvalidate());
     };
 
-    delete = (item) => {
+    delete = item => {
         WebApi.deleteScope(item.id).then(() => {
             this.setState({id: null, initialValues: {}});
             this.props.dispatch(scopeActions.scopeListInvalidate());
@@ -59,19 +58,28 @@ class ScopeLists extends AbstractReactComponent {
         this.props.dispatch(scopeActions.scopeListInvalidate());
     };
 
-    renderScope = (value) => {
-        return <div>{value.item.name} <Button variant="action" bsSize="xs" className="pull-right"
-                                              onClick={this.delete.bind(this, value.item)}><Icon
-            glyph="fa-trash"/></Button></div>;
+    renderScope = value => {
+        return (
+            <div>
+                {value.item.name}{' '}
+                <Button
+                    variant="action"
+                    bsSize="xs"
+                    className="pull-right"
+                    onClick={this.delete.bind(this, value.item)}
+                >
+                    <Icon glyph="fa-trash" />
+                </Button>
+            </div>
+        );
     };
 
     render() {
-
         const {onClose, scopeList} = this.props;
         const {id, initialValues} = this.state;
 
         if (!scopeList.fetched) {
-            return <Loading/>;
+            return <Loading />;
         }
 
         const activeIndex = id !== null ? indexById(scopeList.rows, this.state.id) : null;
@@ -82,32 +90,49 @@ class ScopeLists extends AbstractReactComponent {
                 <Modal.Body>
                     <Row className="flex">
                         <Col xs={6} sm={3} className="flex flex-column">
-                            <div className="flex" style={{'alignItems': 'baseline'}}>
+                            <div className="flex" style={{alignItems: 'baseline'}}>
                                 <FormLabel>{i18n('accesspoint.scope.list')}</FormLabel>
                                 <Button variant={'action'} onClick={this.create}>
-                                    <Icon glyph="fa-plus"/>
+                                    <Icon glyph="fa-plus" />
                                 </Button>
                             </div>
-                            {scopeList ? <ListBox className="flex-1" items={scopeList.rows} activeIndex={activeIndex}
-                                                  onChangeSelection={this.select} renderItemContent={this.renderScope}/>
-                                : <Loading/>}
+                            {scopeList ? (
+                                <ListBox
+                                    className="flex-1"
+                                    items={scopeList.rows}
+                                    activeIndex={activeIndex}
+                                    onChangeSelection={this.select}
+                                    renderItemContent={this.renderScope}
+                                />
+                            ) : (
+                                <Loading />
+                            )}
                         </Col>
                         <Col xs={6} sm={9}>
-                            {isLoading ? <Loading/> :
-                                <ScopeListForm id={id} onCreate={this.onCreate} onSave={this.onSave}
-                                               initialValues={initialValues}/>}
+                            {isLoading ? (
+                                <Loading />
+                            ) : (
+                                <ScopeListForm
+                                    id={id}
+                                    onCreate={this.onCreate}
+                                    onSave={this.onSave}
+                                    initialValues={initialValues}
+                                />
+                            )}
                         </Col>
                     </Row>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="link" onClick={onClose}>{i18n('global.action.close')}</Button>
+                    <Button variant="link" onClick={onClose}>
+                        {i18n('global.action.close')}
+                    </Button>
                 </Modal.Footer>
             </div>
         );
     }
 }
 
-export default connect((state) => {
+export default connect(state => {
     return {
         scopeList: storeFromArea(state, scopeActions.AREA_SCOPE_LIST),
     };

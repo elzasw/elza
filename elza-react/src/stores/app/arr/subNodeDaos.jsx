@@ -10,7 +10,6 @@ const initialState = {
 
 export default function subNodeDaos(state = initialState, action = {}) {
     switch (action.type) {
-
         case types.FUND_SUB_NODE_DAOS_REQUEST:
             return {
                 ...state,
@@ -29,11 +28,11 @@ export default function subNodeDaos(state = initialState, action = {}) {
         // ------ WebSocket -----
         case types.CHANGE_DAOS:
             return {
-                ...state, currentDataKey: false,
+                ...state,
+                currentDataKey: false,
             };
 
         default:
             return state;
     }
 }
-

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { DataTypeCode } from '../../stores/app/accesspoint/itemFormInterfaces';
+import {DataTypeCode} from '../../stores/app/accesspoint/itemFormInterfaces';
 import DescItemCoordinates from '../arr/nodeForm/DescItemCoordinates.jsx';
 import DescItemDate from '../arr/nodeForm/DescItemDate.jsx';
 import DescItemDecimal from '../arr/nodeForm/DescItemDecimal.jsx';
@@ -12,16 +12,18 @@ import DescItemString from '../arr/nodeForm/DescItemString.jsx';
 import DescItemText from '../arr/nodeForm/DescItemText.jsx';
 import DescItemUnitdate from '../arr/nodeForm/DescItemUnitdate.jsx';
 import DescItemUnitid from '../arr/nodeForm/DescItemUnitid.jsx';
-import { ItemFactoryInterface } from './ItemFactoryInterface';
+import {ItemFactoryInterface} from './ItemFactoryInterface';
 
-import('../arr/nodeForm/DescItemPartyRef.jsx').then(x => ItemFactory.typeComponentMap[DataTypeCode.PARTY_REF] = x);
-import('../arr/nodeForm/DescItemStructureRef.jsx').then(x => ItemFactory.typeComponentMap[DataTypeCode.STRUCTURED] = x);
+import('../arr/nodeForm/DescItemPartyRef.jsx').then(x => (ItemFactory.typeComponentMap[DataTypeCode.PARTY_REF] = x));
+import('../arr/nodeForm/DescItemStructureRef.jsx').then(
+    x => (ItemFactory.typeComponentMap[DataTypeCode.STRUCTURED] = x),
+);
 
 export class ItemFactory implements ItemFactoryInterface {
     static typeComponentMap: any = {
-        [DataTypeCode.PARTY_REF]: null,//DescItemPartyRef,
+        [DataTypeCode.PARTY_REF]: null, //DescItemPartyRef,
         [DataTypeCode.RECORD_REF]: DescItemRecordRef,
-        [DataTypeCode.STRUCTURED]: null,//DescItemStructureRef,
+        [DataTypeCode.STRUCTURED]: null, //DescItemStructureRef,
         [DataTypeCode.FILE_REF]: DescItemFileRef,
         [DataTypeCode.UNITDATE]: DescItemUnitdate,
         [DataTypeCode.UNITID]: DescItemUnitid,

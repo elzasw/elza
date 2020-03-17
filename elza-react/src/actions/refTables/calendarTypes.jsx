@@ -12,10 +12,13 @@ import * as types from 'actions/constants/ActionTypes.js';
 export function calendarTypesFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
-        if ((!state.refTables.calendarTypes.fetched || state.refTables.calendarTypes.dirty) && !state.refTables.calendarTypes.isFetching) {
+        if (
+            (!state.refTables.calendarTypes.fetched || state.refTables.calendarTypes.dirty) &&
+            !state.refTables.calendarTypes.isFetching
+        ) {
             return dispatch(calendarTypesFetch());
         }
-    }
+    };
 }
 
 /**
@@ -23,10 +26,9 @@ export function calendarTypesFetchIfNeeded() {
  */
 export function calendarTypesFetch() {
     return dispatch => {
-        dispatch(calendarTypesRequest())
-        return WebApi.getCalendarTypes()
-            .then(json => dispatch(calendarTypesReceive(json)));
-    }
+        dispatch(calendarTypesRequest());
+        return WebApi.getCalendarTypes().then(json => dispatch(calendarTypesReceive(json)));
+    };
 }
 
 /**
@@ -37,8 +39,8 @@ export function calendarTypesReceive(json) {
     return {
         type: types.REF_CALENDAR_TYPES_RECEIVE,
         items: json,
-        receivedAt: Date.now()
-    }
+        receivedAt: Date.now(),
+    };
 }
 
 /**
@@ -46,6 +48,6 @@ export function calendarTypesReceive(json) {
  */
 export function calendarTypesRequest() {
     return {
-        type: types.REF_CALENDAR_TYPES_REQUEST
-    }
+        type: types.REF_CALENDAR_TYPES_REQUEST,
+    };
 }

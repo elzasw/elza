@@ -12,10 +12,13 @@ import * as types from 'actions/constants/ActionTypes.js';
 export function refRuleSetFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
-        if ((!state.refTables.ruleSet.fetched || state.refTables.ruleSet.dirty) && !state.refTables.ruleSet.isFetching) {
+        if (
+            (!state.refTables.ruleSet.fetched || state.refTables.ruleSet.dirty) &&
+            !state.refTables.ruleSet.isFetching
+        ) {
             return dispatch(refRuleSetFetch());
         }
-    }
+    };
 }
 
 /**
@@ -23,10 +26,9 @@ export function refRuleSetFetchIfNeeded() {
  */
 export function refRuleSetFetch() {
     return dispatch => {
-        dispatch(refRuleSetRequest())
-        return WebApi.getRuleSets()
-            .then(json => dispatch(refRuleSetReceive(json)));
-    }
+        dispatch(refRuleSetRequest());
+        return WebApi.getRuleSets().then(json => dispatch(refRuleSetReceive(json)));
+    };
 }
 
 /**
@@ -37,8 +39,8 @@ export function refRuleSetReceive(json) {
     return {
         type: types.REF_RULE_SET_RECEIVE,
         items: json,
-        receivedAt: Date.now()
-    }
+        receivedAt: Date.now(),
+    };
 }
 
 /**
@@ -46,6 +48,6 @@ export function refRuleSetReceive(json) {
  */
 export function refRuleSetRequest() {
     return {
-        type: types.REF_RULE_SET_REQUEST
-    }
+        type: types.REF_RULE_SET_REQUEST,
+    };
 }

@@ -12,9 +12,9 @@ import * as types from '../constants/ActionTypes.js';
  */
 export function outputIncreaseNodeVersion(fundVersionId, outputId, outputVersion) {
     return {
-            type: types.OUTPUT_INCREASE_VERSION,
-            versionId: fundVersionId,
-            outputId,
-            outputVersion
-    }
+        type: types.OUTPUT_INCREASE_VERSION,
+        versionId: fundVersionId,
+        outputId,
+        outputVersion,
+    };
 }

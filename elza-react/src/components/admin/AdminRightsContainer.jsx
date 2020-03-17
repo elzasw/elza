@@ -12,19 +12,15 @@ class AdminRightsContainer extends AbstractReactComponent {
     render() {
         const {className, header, left, children} = this.props;
 
-        return <div className={"admin-rights-container " + (className ? " " + className : "")}>
-            {header && <div className="admin-rights-header">
-                {header}
-            </div>}
-            <div className="admin-rights-content">
-                {left && <div className="admin-rights-left">
-                    {left}
-                </div>}
-                <div className="admin-rights-right">
-                    {children}
+        return (
+            <div className={'admin-rights-container ' + (className ? ' ' + className : '')}>
+                {header && <div className="admin-rights-header">{header}</div>}
+                <div className="admin-rights-content">
+                    {left && <div className="admin-rights-left">{left}</div>}
+                    <div className="admin-rights-right">{children}</div>
                 </div>
             </div>
-        </div>;
+        );
     }
 }
 

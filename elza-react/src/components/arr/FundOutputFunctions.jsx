@@ -31,14 +31,13 @@ const OutputState = {
     GENERATING: 'GENERATING',
     FINISHED: 'FINISHED',
     OUTDATED: 'OUTDATED',
-    ERROR: 'ERROR' /// Pomocný stav websocketu
+    ERROR: 'ERROR', /// Pomocný stav websocketu
 };
 
 /**
  * Správa souborů.
  */
 class FundOutputFunctions extends AbstractReactComponent {
-
     state = {};
 
     static propTypes = {
@@ -62,12 +61,12 @@ class FundOutputFunctions extends AbstractReactComponent {
         this.props.dispatch(fundActionFetchConfigIfNeeded(versionId));
     }
 
-    handleStateSearch = (state) => {
+    handleStateSearch = state => {
         const {versionId} = this.props;
         this.props.dispatch(fundOutputFunctionsFilterByState(versionId, state));
     };
 
-    getConfigByCode = (code) => {
+    getConfigByCode = code => {
         const {actionConfig} = this.props;
         const index = indexById(actionConfig, code, 'code');
         if (index !== null) {
@@ -76,45 +75,45 @@ class FundOutputFunctions extends AbstractReactComponent {
         return null;
     };
 
-    handleActionRun = (code) => {
+    handleActionRun = code => {
         const {versionId} = this.props;
         this.props.dispatch(fundOutputActionRun(versionId, code));
     };
 
-    handleActionInterrupt = (id) => {
+    handleActionInterrupt = id => {
         this.props.dispatch(fundOutputActionInterrupt(id));
     };
 
     focus = () => {
-        this.refs.listBox.focus()
+        this.refs.listBox.focus();
     };
 
-    getActionState = (item) => {
+    getActionState = item => {
         const state = actionStateTranslation(item.state);
         let stateString = i18n('arr.output.functions.notStarted');
         const actionDate = item.dateFinished || item.dateStarted || item.datePlanned;
         const formattedDate = dateTimeToString(new Date(actionDate));
 
-        if(state !== null){
-            stateString = state + " (" + formattedDate + ")";
+        if (state !== null) {
+            stateString = state + ' (' + formattedDate + ')';
         }
 
         return stateString;
-    }
+    };
 
-    getItemActions = (item) => {
+    getItemActions = item => {
         const {outputState, readMode} = this.props;
         let actions = [];
 
         if (!readMode && outputState !== OutputState.FINISHED && outputState !== OutputState.OUTDATED) {
             if (!item.state || ACTION_NOT_RUNNING_STATE.indexOf(item.state) !== -1) {
-                actions.push(<Icon glyph="fa-play" onClick={() => this.handleActionRun(item.code)}/>);
+                actions.push(<Icon glyph="fa-play" onClick={() => this.handleActionRun(item.code)} />);
             } else if (ACTION_RUNNING_STATE.indexOf(item.state) !== -1) {
-                actions.push(<Icon glyph="fa-stop" onClick={() => this.handleActionInterrupt(item.id)}/>);
+                actions.push(<Icon glyph="fa-stop" onClick={() => this.handleActionInterrupt(item.id)} />);
             }
         }
         return actions;
-    }
+    };
 
     renderListItem = (props, active, index) => {
         const {item} = props;
@@ -122,67 +121,91 @@ class FundOutputFunctions extends AbstractReactComponent {
         const name = config ? config.name : '';
         const actionState = this.getActionState(item);
 
-        return <div className='item' key={index}>
-            <div className="details">
-                <div className="name" title={name}>{name}</div>
-                <div className="info" title={actionState}>{actionState}</div>
+        return (
+            <div className="item" key={index}>
+                <div className="details">
+                    <div className="name" title={name}>
+                        {name}
+                    </div>
+                    <div className="info" title={actionState}>
+                        {actionState}
+                    </div>
+                </div>
+                <div className="actions">{this.getItemActions(item)}</div>
             </div>
-            <div className="actions">{this.getItemActions(item)}</div>
-        </div>
+        );
     };
 
     render() {
-       const {fundOutputFunctions, actionConfig} = this.props;
+        const {fundOutputFunctions, actionConfig} = this.props;
         if (!actionConfig) {
-            return <HorizontalLoader />
+            return <HorizontalLoader />;
         }
 
-        return <div className='functions-list-container'>
-            <FormInput as="select" onChange={(e) => this.handleStateSearch(e.target.value)} value={fundOutputFunctions.filterRecommended} disabled={!fundOutputFunctions.fetched}>
-                <option value={true} key="recommended-filter">{i18n('arr.output.functions.recommended')}</option>
-                <option value={false} key="no-filter">{i18n('arr.output.functions.all')}</option>
-            </FormInput>
+        return (
+            <div className="functions-list-container">
+                <FormInput
+                    as="select"
+                    onChange={e => this.handleStateSearch(e.target.value)}
+                    value={fundOutputFunctions.filterRecommended}
+                    disabled={!fundOutputFunctions.fetched}
+                >
+                    <option value={true} key="recommended-filter">
+                        {i18n('arr.output.functions.recommended')}
+                    </option>
+                    <option value={false} key="no-filter">
+                        {i18n('arr.output.functions.all')}
+                    </option>
+                </FormInput>
 
-            <StoreHorizontalLoader store={fundOutputFunctions} />
-            {fundOutputFunctions.fetched && <ListBox
-                ref="listBox"
-                className="functions-listbox"
-                items={fundOutputFunctions.data.sort((a,b) => {
-                    const configA = this.getConfigByCode(a.code);
-                    const configB = this.getConfigByCode(b.code);
+                <StoreHorizontalLoader store={fundOutputFunctions} />
+                {fundOutputFunctions.fetched && (
+                    <ListBox
+                        ref="listBox"
+                        className="functions-listbox"
+                        items={fundOutputFunctions.data.sort((a, b) => {
+                            const configA = this.getConfigByCode(a.code);
+                            const configB = this.getConfigByCode(b.code);
 
-                    const nameA = configA.name.toUpperCase();
-                    const nameB = configB.name.toUpperCase();
-                    if (nameA < nameB) {
-                        return -1;
-                    }
-                    if (nameA > nameB) {
-                        return 1;
-                    }
+                            const nameA = configA.name.toUpperCase();
+                            const nameB = configB.name.toUpperCase();
+                            if (nameA < nameB) {
+                                return -1;
+                            }
+                            if (nameA > nameB) {
+                                return 1;
+                            }
 
-                    // names must be equal
-                    return 0;
-                })}
-                renderItemContent={this.renderListItem}
-            />}
-        </div>;
+                            // names must be equal
+                            return 0;
+                        })}
+                        renderItemContent={this.renderListItem}
+                    />
+                )}
+            </div>
+        );
     }
 }
 
 function mapStateToProps(state) {
-    const {arrRegion: {funds, activeIndex}} = state;
+    const {
+        arrRegion: {funds, activeIndex},
+    } = state;
 
     let actionConfig = null;
     if (activeIndex !== null && funds[activeIndex].fundAction) {
-        const {fundAction: {config: {fetched, data}}} = funds[activeIndex];
+        const {
+            fundAction: {
+                config: {fetched, data},
+            },
+        } = funds[activeIndex];
         if (fetched) {
             actionConfig = data;
         }
     }
     return {
-        actionConfig
-    }
+        actionConfig,
+    };
 }
-
 
 export default connect(mapStateToProps)(FundOutputFunctions);

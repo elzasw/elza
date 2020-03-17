@@ -4,19 +4,24 @@ import {FILTER, INVALIDATE, REQUEST, RESET, RESPONSE, SELECT_PARENT} from './Sim
 const simpleFilter = (rows, filter) => rows;
 
 function getDataKey() {
-    return "" + (typeof this.parent === "object" ? JSON.stringify(this.parent) : this.parent)  + "_" + JSON.stringify(this.filter);
+    return (
+        '' +
+        (typeof this.parent === 'object' ? JSON.stringify(this.parent) : this.parent) +
+        '_' +
+        JSON.stringify(this.filter)
+    );
 }
 
 const initialState = {
     sourceRows: [], // zdrojové řádky
     filteredRows: [], // filtrované řádky
     count: 0,
-    rows: [],   // vyfiltrované řádky a případně jinak upravené řádky = určené pro konkrétní zobrazení
+    rows: [], // vyfiltrované řádky a případně jinak upravené řádky = určené pro konkrétní zobrazení
     isFetching: false,
     fetched: false,
     filter: {},
     filterRows: simpleFilter,
-    currentDataKey: "",
+    currentDataKey: '',
     getDataKey,
     reducer: list,
     parent: null,
@@ -26,17 +31,21 @@ export default function list(state = initialState, action = {}, config = null) {
     // Konfigurace
     if (config) {
         state = {...state};
-        if (config.filterRows) {    // metoda pro filtr
-            state.filterRows = config.filterRows
+        if (config.filterRows) {
+            // metoda pro filtr
+            state.filterRows = config.filterRows;
         }
-        if (config.getDataKey) {    // metoda pro datakey
-            state.getDataKey = config.getDataKey
+        if (config.getDataKey) {
+            // metoda pro datakey
+            state.getDataKey = config.getDataKey;
         }
-        if (config.filter) {    // metoda pro filter
-            state.filter = config.filter
+        if (config.filter) {
+            // metoda pro filter
+            state.filter = config.filter;
         }
-        if (config.reducer) {    // metoda pro reducer
-            state.reducer = config.reducer
+        if (config.reducer) {
+            // metoda pro reducer
+            state.reducer = config.reducer;
         }
     }
 
@@ -56,13 +65,13 @@ export default function list(state = initialState, action = {}, config = null) {
                 sourceRows: [],
                 filteredRows: [],
                 rows: [],
-                count: 0
+                count: 0,
             };
         case INVALIDATE: {
             return {
                 ...state,
-                currentDataKey: initialState.currentDataKey
-            }
+                currentDataKey: initialState.currentDataKey,
+            };
         }
         case RESPONSE: {
             let sourceRows = action.rows;
@@ -77,7 +86,7 @@ export default function list(state = initialState, action = {}, config = null) {
                 filteredRows,
                 rows,
                 count: action.count,
-            }
+            };
         }
         case FILTER: {
             let filteredRows = state.filterRows(state.sourceRows, action.filter);
@@ -88,22 +97,22 @@ export default function list(state = initialState, action = {}, config = null) {
                 filter: action.filter,
                 filteredRows,
                 rows,
-            }
+            };
         }
         case types.STORE_SAVE: {
             return {
                 filter: state.filter,
-            }
+            };
         }
         case types.STORE_LOAD: {
             return {
                 ...state,
-                filter: action.filter
-            }
+                filter: action.filter,
+            };
         }
         case RESET:
             return initialState;
         default:
-            return state
+            return state;
     }
 }

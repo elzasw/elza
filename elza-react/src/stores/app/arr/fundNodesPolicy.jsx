@@ -5,13 +5,11 @@ const initialState = {
     dirty: false,
     isFetching: false,
     fetched: false,
-    items: []
-}
+    items: [],
+};
 
 export default function fundNodesPolicy(state = initialState, action = {}) {
-
     switch (action.type) {
-
         case types.FUND_FUND_NODES_POLICY_REQUEST:
             return {
                 ...state,
@@ -24,20 +22,19 @@ export default function fundNodesPolicy(state = initialState, action = {}) {
                 fetched: true,
                 dirty: false,
                 isFetching: false,
-                items: action.items
+                items: action.items,
             };
 
         case types.CHANGE_VISIBLE_POLICY:
             return {
                 ...state,
                 dirty: true,
-            }
+            };
 
         case types.CHANGE_CONFORMITY_INFO:
-
             var update = false;
 
-            for(var i = 0; i < action.nodeIds; i++) {
+            for (var i = 0; i < action.nodeIds; i++) {
                 if (indexById(state.items, action.nodeIds[i]) != null) {
                     update = true;
                     break;
@@ -48,7 +45,7 @@ export default function fundNodesPolicy(state = initialState, action = {}) {
                 return {
                     ...state,
                     dirty: true,
-                }
+                };
             }
 
             return state;

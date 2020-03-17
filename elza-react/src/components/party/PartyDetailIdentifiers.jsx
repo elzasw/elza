@@ -10,7 +10,7 @@ import {MODAL_DIALOG_VARIANT} from '../../constants.tsx';
 import './PartyDetailIdentifiers.scss';
 import PartyIdentifierForm from './PartyIdentifierForm';
 
-const removeUndefined = (obj) => {
+const removeUndefined = obj => {
     for (let key in obj) {
         if (obj.hasOwnProperty(key)) {
             if (obj[key] === undefined || obj[key] === null) {
@@ -20,7 +20,7 @@ const removeUndefined = (obj) => {
     }
     return obj;
 };
-const isNotBlankObject = (obj) => {
+const isNotBlankObject = obj => {
     const newObj = removeUndefined(obj);
     return Object.keys(newObj).length > 0;
 };
@@ -29,14 +29,13 @@ const isNotBlankObject = (obj) => {
  * Identifikátory zadané osoby - pouze u korporací
  */
 class PartyDetailIdentifiers extends AbstractReactComponent {
-
     static propTypes = {
         canEdit: PropTypes.bool.isRequired,
         party: PropTypes.object.isRequired,
         onPartyUpdate: PropTypes.func.isRequired,
     };
 
-    partyGroupIdentifierDelete = (id) => {
+    partyGroupIdentifierDelete = id => {
         const partyGroupIdentifiers = this.props.party.partyGroupIdentifiers;
         const index = indexById(partyGroupIdentifiers, id);
         const party = {
@@ -49,7 +48,7 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
         this.props.onPartyUpdate(party);
     };
 
-    addIdentifier = (identifier) => {
+    addIdentifier = identifier => {
         const party = {
             ...this.props.party,
             partyGroupIdentifiers: [
@@ -83,19 +82,31 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
     };
 
     handlePartyGroupIdentifierAdd = () => {
-        this.props.dispatch(modalDialogShow(this, i18n('party.detail.identifier.new'), <PartyIdentifierForm
-            onSubmitForm={this.addIdentifier}/>, MODAL_DIALOG_VARIANT.LARGE));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('party.detail.identifier.new'),
+                <PartyIdentifierForm onSubmitForm={this.addIdentifier} />,
+                MODAL_DIALOG_VARIANT.LARGE,
+            ),
+        );
     };
 
-
-    handlePartyGroupIdentifierUpdate = (partyGroupIdentifier) => {
-        this.props.dispatch(modalDialogShow(this, i18n('party.detail.identifier.update'), <PartyIdentifierForm
-            initialValues={partyGroupIdentifier}
-            onSubmitForm={this.update.bind(this, partyGroupIdentifier)}/>, MODAL_DIALOG_VARIANT.LARGE));
+    handlePartyGroupIdentifierUpdate = partyGroupIdentifier => {
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('party.detail.identifier.update'),
+                <PartyIdentifierForm
+                    initialValues={partyGroupIdentifier}
+                    onSubmitForm={this.update.bind(this, partyGroupIdentifier)}
+                />,
+                MODAL_DIALOG_VARIANT.LARGE,
+            ),
+        );
     };
 
-
-    handleDelete = (id) => {
+    handleDelete = id => {
         if (window.confirm(i18n('party.detail.identifier.delete'))) {
             this.partyGroupIdentifierDelete(id);
         }
@@ -104,27 +115,44 @@ class PartyDetailIdentifiers extends AbstractReactComponent {
     render() {
         const {party, canEdit} = this.props;
         const hasValues = party.partyGroupIdentifiers.length > 0;
-        return <div className="party-detail-names">
-            <div>
-                <label className="group-label">{i18n('party.detail.partyGroupIdentifiers')}</label>
-                {canEdit &&
-                <Button variant="action" onClick={this.handlePartyGroupIdentifierAdd}><Icon glyph="fa-plus"/></Button>}
+        return (
+            <div className="party-detail-names">
+                <div>
+                    <label className="group-label">{i18n('party.detail.partyGroupIdentifiers')}</label>
+                    {canEdit && (
+                        <Button variant="action" onClick={this.handlePartyGroupIdentifierAdd}>
+                            <Icon glyph="fa-plus" />
+                        </Button>
+                    )}
+                </div>
+                {hasValues && (
+                    <div className="name-group">
+                        {party.partyGroupIdentifiers.map((partyGroupIdentifier, index) => (
+                            <div key={partyGroupIdentifier.id} className="value-group">
+                                <div className="value">{partyGroupIdentifier.identifier}</div>
+                                {canEdit && (
+                                    <div className="actions">
+                                        <Button
+                                            variant="action"
+                                            onClick={() => this.handlePartyGroupIdentifierUpdate(partyGroupIdentifier)}
+                                        >
+                                            <Icon glyph="fa-pencil" />
+                                        </Button>
+                                        <Button
+                                            className="delete"
+                                            variant="action"
+                                            onClick={() => this.partyGroupIdentifierDelete(partyGroupIdentifier.id)}
+                                        >
+                                            <Icon glyph="fa-trash" />
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
-            {hasValues && <div className="name-group">
-                {party.partyGroupIdentifiers.map((partyGroupIdentifier, index) => <div key={partyGroupIdentifier.id}
-                                                                                       className="value-group">
-                    <div className="value">{partyGroupIdentifier.identifier}</div>
-                    {canEdit && <div className="actions">
-                        <Button variant="action"
-                                onClick={() => this.handlePartyGroupIdentifierUpdate(partyGroupIdentifier)}><Icon
-                            glyph="fa-pencil"/></Button>
-                        <Button className="delete" variant="action"
-                                onClick={() => this.partyGroupIdentifierDelete(partyGroupIdentifier.id)}><Icon
-                            glyph="fa-trash"/></Button>
-                    </div>}
-                </div>)}
-            </div>}
-        </div>;
+        );
     }
 }
 

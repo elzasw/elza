@@ -79,17 +79,38 @@ class FundDataGrid extends AbstractReactComponent {
         ruleSet: PropTypes.object.isRequired,
         readMode: PropTypes.bool.isRequired,
         closed: PropTypes.bool.isRequired,
-        fundDataGrid: PropTypes.object.isRequired,    // store
+        fundDataGrid: PropTypes.object.isRequired, // store
     };
 
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleSelectedIdsChange', 'handleColumnResize', 'handleColumnSettings', 'handleChangeColumnsSettings',
-            'handleBulkModifications', 'handleFilterSettings', 'headerColRenderer', 'cellRenderer', 'resizeGrid', 'handleFilterClearAll',
-            'handleFilterUpdateData', 'handleContextMenu', 'handleSelectInNewTab', 'handleSelectInTab', 'handleEdit', 'handleEditClose',
-            'handleFulltextSearch', 'handleFulltextChange', 'handleFulltextPrevItem', 'handleFulltextNextItem', 'handleChangeFocus',
-            'handleToggleExtendedSearch', 'handleChangeRowIndexes', 'fetchData');
+        this.bindMethods(
+            'handleSelectedIdsChange',
+            'handleColumnResize',
+            'handleColumnSettings',
+            'handleChangeColumnsSettings',
+            'handleBulkModifications',
+            'handleFilterSettings',
+            'headerColRenderer',
+            'cellRenderer',
+            'resizeGrid',
+            'handleFilterClearAll',
+            'handleFilterUpdateData',
+            'handleContextMenu',
+            'handleSelectInNewTab',
+            'handleSelectInTab',
+            'handleEdit',
+            'handleEditClose',
+            'handleFulltextSearch',
+            'handleFulltextChange',
+            'handleFulltextPrevItem',
+            'handleFulltextNextItem',
+            'handleChangeFocus',
+            'handleToggleExtendedSearch',
+            'handleChangeRowIndexes',
+            'fetchData',
+        );
 
         var colState = this.getColsStateFromProps(props, {fundDataGrid: {}});
         if (!colState) {
@@ -124,12 +145,15 @@ class FundDataGrid extends AbstractReactComponent {
         if (ruleSet.fetched && descItemTypes.fetched && fund.activeVersion) {
             // Prvotní inicializace zobrazení, pokud ještě grid nebyl zobrazem
             // Určí se seznam viditelných sloupečků a případně i šířka
-            if (Object.keys(fundDataGrid.visibleColumns).length === 0 && Object.keys(fundDataGrid.columnInfos).length === 0) {
+            if (
+                Object.keys(fundDataGrid.visibleColumns).length === 0 &&
+                Object.keys(fundDataGrid.columnInfos).length === 0
+            ) {
                 const initData = {visibleColumns: [], columnInfos: []};
                 const ruleMap = getMapFromList(ruleSet.items);
                 const rule = ruleMap[fund.activeVersion.ruleSetId];
                 if (rule.gridViews) {
-                    const gwMap = {};   // mapa kódu item type na GridView
+                    const gwMap = {}; // mapa kódu item type na GridView
                     rule.gridViews.forEach(gw => {
                         gwMap[gw.code] = gw;
                     });
@@ -186,7 +210,7 @@ class FundDataGrid extends AbstractReactComponent {
             itemValue = '';
         }
 
-        return <div className='cell-value-wrapper'>{itemValue}</div>;
+        return <div className="cell-value-wrapper">{itemValue}</div>;
     }
 
     cellRenderer(row, rowIndex, col, colIndex, cellFocus) {
@@ -202,19 +226,32 @@ class FundDataGrid extends AbstractReactComponent {
                             switch (value.geomType) {
                                 case 'B':
                                     itemValue = value.geomType + ': ' + value.value;
-                                    itemValue = <span><Button disabled>{value.geomType}</Button> {value.value}</span>;
+                                    itemValue = (
+                                        <span>
+                                            <Button disabled>{value.geomType}</Button> {value.value}
+                                        </span>
+                                    );
                                     break;
                                 default:
-                                    itemValue = <span><Button
-                                        disabled>{value.geomType}</Button> {i18n('subNodeForm.countOfCoordinates', value.value)}</span>;
+                                    itemValue = (
+                                        <span>
+                                            <Button disabled>{value.geomType}</Button>{' '}
+                                            {i18n('subNodeForm.countOfCoordinates', value.value)}
+                                        </span>
+                                    );
                                     break;
                             }
                             break;
                         case 'UNITDATE':
-                            itemValue = this.state.calendarTypesMap[value.calendarTypeId].name.charAt(0) + ': ' + value.value;
+                            itemValue =
+                                this.state.calendarTypesMap[value.calendarTypeId].name.charAt(0) + ': ' + value.value;
                             break;
                         case 'JSON_TABLE':
-                            itemValue = i18n('arr.fund.jsonTable.cell.title', col.refType.viewDefinition.length, value.rows);
+                            itemValue = i18n(
+                                'arr.fund.jsonTable.cell.title',
+                                col.refType.viewDefinition.length,
+                                value.rows,
+                            );
                             break;
                         case 'INT':
                             const refType = col.refType;
@@ -242,17 +279,18 @@ class FundDataGrid extends AbstractReactComponent {
                         }
                     }
 
-                    return <div
-                        className='cell-value-wrapper'>{hasDescItemTypeValue(col.dataType) ? spec.name + ': ' + itemValue : spec.name}</div>;
+                    return (
+                        <div className="cell-value-wrapper">
+                            {hasDescItemTypeValue(col.dataType) ? spec.name + ': ' + itemValue : spec.name}
+                        </div>
+                    );
                 } else {
-                    return <div className='cell-value-wrapper'>{itemValue}</div>;
+                    return <div className="cell-value-wrapper">{itemValue}</div>;
                 }
             });
         }
 
-        return (
-            <div className=''>{displayValue}</div>
-        );
+        return <div className="">{displayValue}</div>;
     }
 
     supportBulkModifications(refType, dataType) {
@@ -295,11 +333,20 @@ class FundDataGrid extends AbstractReactComponent {
         return (
             <div className={cls} title={col.refType.name}>
                 <div className="title">{col.refType.shortcut}</div>
-                {showBulkModifications && !readMode &&
-                <Button onClick={this.handleBulkModifications.bind(this, col.refType, col.dataType)}
-                        title={i18n('arr.fund.bulkModifications.action')}><Icon glyph='fa-pencil'/></Button>}
-                <Button onClick={this.handleFilterSettings.bind(this, col.refType, col.dataType)}
-                        title={i18n('arr.fund.filterSettings.action')}><Icon glyph='fa-filter'/></Button>
+                {showBulkModifications && !readMode && (
+                    <Button
+                        onClick={this.handleBulkModifications.bind(this, col.refType, col.dataType)}
+                        title={i18n('arr.fund.bulkModifications.action')}
+                    >
+                        <Icon glyph="fa-pencil" />
+                    </Button>
+                )}
+                <Button
+                    onClick={this.handleFilterSettings.bind(this, col.refType, col.dataType)}
+                    title={i18n('arr.fund.filterSettings.action')}
+                >
+                    <Icon glyph="fa-filter" />
+                </Button>
             </div>
         );
     }
@@ -308,14 +355,21 @@ class FundDataGrid extends AbstractReactComponent {
         const {fundDataGrid, descItemTypes, rulDataTypes} = nextProps;
 
         if (descItemTypes.fetched) {
-            if (props.fundDataGrid.columnsOrder !== fundDataGrid.columnsOrder
-                || props.descItemTypes !== descItemTypes
-                || props.rulDataTypes !== rulDataTypes
-                || props.fundDataGrid.columnInfos !== fundDataGrid.columnInfos
-                || props.fundDataGrid.filter !== fundDataGrid.filter
-                || props.fundDataGrid.visibleColumns !== fundDataGrid.visibleColumns
+            if (
+                props.fundDataGrid.columnsOrder !== fundDataGrid.columnsOrder ||
+                props.descItemTypes !== descItemTypes ||
+                props.rulDataTypes !== rulDataTypes ||
+                props.fundDataGrid.columnInfos !== fundDataGrid.columnInfos ||
+                props.fundDataGrid.filter !== fundDataGrid.filter ||
+                props.fundDataGrid.visibleColumns !== fundDataGrid.visibleColumns
             ) {
-                const cols = this.buildColumns(nextProps.fund, nextProps.ruleSet, fundDataGrid, descItemTypes, rulDataTypes);
+                const cols = this.buildColumns(
+                    nextProps.fund,
+                    nextProps.ruleSet,
+                    fundDataGrid,
+                    descItemTypes,
+                    rulDataTypes,
+                );
                 return {cols: cols};
             }
         }
@@ -332,8 +386,22 @@ class FundDataGrid extends AbstractReactComponent {
         }
 
         var eqProps2 = [
-            'isFetchingFilter', 'fetchedFilter', 'isFetchingData', 'fetchedData', 'pageSize', 'pageIndex', 'closed', 'readMode',
-            'items', 'itemsCount', 'filter', 'visibleColumns', 'initialised', 'columnsOrder', 'columnInfos', 'selectedIds',
+            'isFetchingFilter',
+            'fetchedFilter',
+            'isFetchingData',
+            'fetchedData',
+            'pageSize',
+            'pageIndex',
+            'closed',
+            'readMode',
+            'items',
+            'itemsCount',
+            'filter',
+            'visibleColumns',
+            'initialised',
+            'columnsOrder',
+            'columnInfos',
+            'selectedIds',
         ];
         if (!propsEquals(this.props.fundDataGrid, nextProps.fundDataGrid, eqProps2)) {
             return true;
@@ -379,7 +447,7 @@ class FundDataGrid extends AbstractReactComponent {
         // Vybrané sloupce
         const ruleMap = getMapFromList(ruleSet.items);
         const rule = ruleMap[fund.activeVersion.ruleSetId];
-        const gwMap = {};   // mapa kódu item type na GridView
+        const gwMap = {}; // mapa kódu item type na GridView
         if (rule.gridViews) {
             rule.gridViews.forEach(gw => {
                 gwMap[gw.code] = gw;
@@ -387,15 +455,19 @@ class FundDataGrid extends AbstractReactComponent {
         }
         columnsOrder.forEach(id => {
             const refType = refTypesMap[id];
-            if (fundDataGrid.visibleColumns[id]) {  // je vidět
+            if (fundDataGrid.visibleColumns[id]) {
+                // je vidět
                 const colInfo = fundDataGrid.columnInfos[id];
 
                 let width;
-                if (colInfo) {  // je již definovaná
+                if (colInfo) {
+                    // je již definovaná
                     width = colInfo.width;
-                } else if (gwMap[refType.code] && gwMap[refType.code].width) {  // můžeme použít z pravidel
+                } else if (gwMap[refType.code] && gwMap[refType.code].width) {
+                    // můžeme použít z pravidel
                     width = gwMap[refType.code].width;
-                } else {    // dáme implicitní konstantu, nikde ji nemáme
+                } else {
+                    // dáme implicitní konstantu, nikde ji nemáme
                     width = COL_DEFAULT_WIDTH;
                 }
 
@@ -461,13 +533,17 @@ class FundDataGrid extends AbstractReactComponent {
             };
         });
 
-        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.columnSettings.title'),
-            <DataGridColumnsSettings
-                onSubmitForm={this.handleChangeColumnsSettings}
-                columns={columns}
-                visibleColumns={visibleColumns}
-            />,
-        ));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.fund.columnSettings.title'),
+                <DataGridColumnsSettings
+                    onSubmitForm={this.handleChangeColumnsSettings}
+                    columns={columns}
+                    visibleColumns={visibleColumns}
+                />,
+            ),
+        );
     }
 
     handleFilterSettings(refType, dataType) {
@@ -476,17 +552,22 @@ class FundDataGrid extends AbstractReactComponent {
         const otherFilters = {...fundDataGrid.filter};
         delete otherFilters[refType.id];
 
-        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.filterSettings.title', refType.shortcut),
-            <FundFilterSettings
-                versionId={versionId}
-                refType={refType}
-                dataType={dataType}
-                calendarTypes={calendarTypes}
-                filter={fundDataGrid.filter[refType.id]}
-                filters={otherFilters}
-                onSubmitForm={this.handleChangeFilter.bind(this, versionId, refType)}
-            />, 'fund-filter-settings-dialog',
-        ));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.fund.filterSettings.title', refType.shortcut),
+                <FundFilterSettings
+                    versionId={versionId}
+                    refType={refType}
+                    dataType={dataType}
+                    calendarTypes={calendarTypes}
+                    filter={fundDataGrid.filter[refType.id]}
+                    filters={otherFilters}
+                    onSubmitForm={this.handleChangeFilter.bind(this, versionId, refType)}
+                />,
+                'fund-filter-settings-dialog',
+            ),
+        );
     }
 
     handleChangeFilter(versionId, refType, filter) {
@@ -497,7 +578,7 @@ class FundDataGrid extends AbstractReactComponent {
     handleBulkModifications(refType, dataType) {
         const {versionId, fundDataGrid, calendarTypes} = this.props;
 
-        const submit = (data) => {
+        const submit = data => {
             // Sestavení seznamu node s id a verzí, pro které se má daná operace provést
             let nodes;
             let selectionType;
@@ -557,28 +638,47 @@ class FundDataGrid extends AbstractReactComponent {
             // Získání seznam specifikací
             const refTypeX = {
                 ...refType,
-                descItemSpecs: [{
-                    id: FILTER_NULL_VALUE,
-                    name: i18n('arr.fund.filterSettings.value.empty'),
-                }, ...refType.descItemSpecs],
+                descItemSpecs: [
+                    {
+                        id: FILTER_NULL_VALUE,
+                        name: i18n('arr.fund.filterSettings.value.empty'),
+                    },
+                    ...refType.descItemSpecs,
+                ],
             };
             let specsIds = getSpecsIds(refTypeX, data.specs.type, data.specs.ids);
-            specsIds = specsIds.map(specsId => specsId !== FILTER_NULL_VALUE ? specsId : null);
+            specsIds = specsIds.map(specsId => (specsId !== FILTER_NULL_VALUE ? specsId : null));
             if (selectionType !== 'FUND' || window.confirm(i18n('arr.fund.bulkModifications.warn'))) {
-                return this.props.dispatch(fundBulkModifications(versionId, refType.id, specsIds, data.operationType, data.findText, replaceText, data.replaceSpec, nodes, selectionType));
+                return this.props.dispatch(
+                    fundBulkModifications(
+                        versionId,
+                        refType.id,
+                        specsIds,
+                        data.operationType,
+                        data.findText,
+                        replaceText,
+                        data.replaceSpec,
+                        nodes,
+                        selectionType,
+                    ),
+                );
             }
         };
 
-        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.bulkModifications.title'),
-            <FundBulkModificationsForm
-                refType={refType}
-                dataType={dataType}
-                calendarTypes={calendarTypes}
-                onSubmitForm={submit}
-                allItemsCount={fundDataGrid.items.length}
-                checkedItemsCount={fundDataGrid.selectedIds.length}
-            />,
-        ));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.fund.bulkModifications.title'),
+                <FundBulkModificationsForm
+                    refType={refType}
+                    dataType={dataType}
+                    calendarTypes={calendarTypes}
+                    onSubmitForm={submit}
+                    allItemsCount={fundDataGrid.items.length}
+                    checkedItemsCount={fundDataGrid.selectedIds.length}
+                />,
+            ),
+        );
     }
 
     handleChangeColumnsSettings(columns) {
@@ -601,14 +701,20 @@ class FundDataGrid extends AbstractReactComponent {
 
         var menu = (
             <ul className="dropdown-menu">
+                <Dropdown.Item onClick={this.handleSelectInNewTab.bind(this, row)}>
+                    {i18n('arr.fund.bulkModifications.action.openInNewTab')}
+                </Dropdown.Item>
+                <Dropdown.Item onClick={this.handleSelectInTab.bind(this, row)}>
+                    {i18n('arr.fund.bulkModifications.action.open')}
+                </Dropdown.Item>
                 <Dropdown.Item
-                    onClick={this.handleSelectInNewTab.bind(this, row)}>{i18n('arr.fund.bulkModifications.action.openInNewTab')}</Dropdown.Item>
-                <Dropdown.Item
-                    onClick={this.handleSelectInTab.bind(this, row)}>{i18n('arr.fund.bulkModifications.action.open')}</Dropdown.Item>
-                <Dropdown.Item onClick={() => {
-                    this.props.dispatch(contextMenuHide());
-                    this.handleEdit(row, rowIndex, col, colIndex);
-                }}>{i18n('global.action.update')}</Dropdown.Item>
+                    onClick={() => {
+                        this.props.dispatch(contextMenuHide());
+                        this.handleEdit(row, rowIndex, col, colIndex);
+                    }}
+                >
+                    {i18n('global.action.update')}
+                </Dropdown.Item>
             </ul>
         );
 
@@ -643,15 +749,21 @@ class FundDataGrid extends AbstractReactComponent {
             y = dataGridCompRect.top;
         }
 
-        this.props.dispatch(modalDialogShow(this, null,
-            <FundDataGridCellForm
-                versionId={versionId}
-                fundId={fundId}
-                routingKey='DATA_GRID'
-                closed={closed}
-                position={{x, y}}
-            />,
-            'fund-data-grid-cell-edit', this.handleEditClose));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                null,
+                <FundDataGridCellForm
+                    versionId={versionId}
+                    fundId={fundId}
+                    routingKey="DATA_GRID"
+                    closed={closed}
+                    position={{x, y}}
+                />,
+                'fund-data-grid-cell-edit',
+                this.handleEditClose,
+            ),
+        );
     }
 
     handleEditClose() {
@@ -659,13 +771,10 @@ class FundDataGrid extends AbstractReactComponent {
 
         this.props.dispatch(nodeFormActions.fundSubNodeFormHandleClose(versionId, 'DATA_GRID'));
 
-        this.setState({},
-            () => {
-                ReactDOM.findDOMNode(this.refs.dataGrid).focus();
-            },
-        );
+        this.setState({}, () => {
+            ReactDOM.findDOMNode(this.refs.dataGrid).focus();
+        });
     }
-
 
     /**
      * Otevření uzlu v nové záložce.
@@ -676,7 +785,8 @@ class FundDataGrid extends AbstractReactComponent {
         this.props.dispatch(contextMenuHide());
 
         var parentNode = row.parentNode;
-        if (parentNode == null) {   // root
+        if (parentNode == null) {
+            // root
             parentNode = createFundRoot(fund);
         }
 
@@ -722,7 +832,8 @@ class FundDataGrid extends AbstractReactComponent {
         this.props.dispatch(contextMenuHide());
 
         var parentNode = row.parentNode;
-        if (parentNode == null) {   // root
+        if (parentNode == null) {
+            // root
             parentNode = createFundRoot(fund);
         }
 
@@ -735,15 +846,19 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleExtendedSearch = () => {
-        this.props.dispatch(modalDialogShow(this, i18n('search.extended.title'),
-            <ArrSearchForm
-                onSubmitForm={this.handleExtendedSearchData}
-                initialValues={this.props.fundDataGrid.data}
-            />,
-        ));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('search.extended.title'),
+                <ArrSearchForm
+                    onSubmitForm={this.handleExtendedSearchData}
+                    initialValues={this.props.fundDataGrid.data}
+                />,
+            ),
+        );
     };
 
-    handleExtendedSearchData = (result) => {
+    handleExtendedSearchData = result => {
         const {versionId} = this.props;
 
         let params = [];
@@ -810,30 +925,45 @@ class FundDataGrid extends AbstractReactComponent {
 
         // ---
         return (
-            <div ref='gridContainer' className='fund-datagrid-container-wrap'>
-                <div ref='grid' className='fund-datagrid-container'>
-                    <div className='actions-container'>
-                        <div className="actions-search">
-                            {search}
-                        </div>
+            <div ref="gridContainer" className="fund-datagrid-container-wrap">
+                <div ref="grid" className="fund-datagrid-container">
+                    <div className="actions-container">
+                        <div className="actions-search">{search}</div>
                         <div className="actions-buttons">
-                            <Button className="update"
-                                    disabled={!(fundDataGrid.rowsDirty || fundDataGrid.filterDirty)}
-                                    onClick={this.handleFilterUpdateData}
-                            ><Icon glyph='fa-refresh'/>{i18n('arr.fund.filterSettings.updateData.action')}</Button>
-                            <Button onClick={this.handleFilterClearAll}><Icon
-                                glyph='fa-trash'/>{i18n('arr.fund.filterSettings.clearAll.action')}</Button>
-                            <Button onClick={this.handleColumnSettings}
-                                    title={i18n('arr.fund.columnSettings.action')}><Icon glyph='fa-columns'/></Button>
+                            <Button
+                                className="update"
+                                disabled={!(fundDataGrid.rowsDirty || fundDataGrid.filterDirty)}
+                                onClick={this.handleFilterUpdateData}
+                            >
+                                <Icon glyph="fa-refresh" />
+                                {i18n('arr.fund.filterSettings.updateData.action')}
+                            </Button>
+                            <Button onClick={this.handleFilterClearAll}>
+                                <Icon glyph="fa-trash" />
+                                {i18n('arr.fund.filterSettings.clearAll.action')}
+                            </Button>
+                            <Button onClick={this.handleColumnSettings} title={i18n('arr.fund.columnSettings.action')}>
+                                <Icon glyph="fa-columns" />
+                            </Button>
                         </div>
                     </div>
-                    <StoreHorizontalLoader store={{
-                        isFetching: fundDataGrid.isFetchingData || fundDataGrid.isFetchingFilter || descItemTypes.isFetching || rulDataTypes.isFetching,
-                        fetched: fundDataGrid.fetchedData || fundDataGrid.fetchedFilter || descItemTypes.fetched || rulDataTypes.fetched,
-                    }}/>
-                    <div className='grid-container'>
+                    <StoreHorizontalLoader
+                        store={{
+                            isFetching:
+                                fundDataGrid.isFetchingData ||
+                                fundDataGrid.isFetchingFilter ||
+                                descItemTypes.isFetching ||
+                                rulDataTypes.isFetching,
+                            fetched:
+                                fundDataGrid.fetchedData ||
+                                fundDataGrid.fetchedFilter ||
+                                descItemTypes.fetched ||
+                                rulDataTypes.fetched,
+                        }}
+                    />
+                    <div className="grid-container">
                         <DataGrid
-                            ref='dataGrid'
+                            ref="dataGrid"
                             rows={fundDataGrid.items}
                             cols={cols}
                             focusRow={fundDataGrid.cellFocus.row}

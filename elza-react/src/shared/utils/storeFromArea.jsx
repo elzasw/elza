@@ -63,7 +63,12 @@ export default function storeFromArea(store, area, showErrors = true) {
                 } else {
                     const path = areaItems.slice(a).join('.');
                     if (showErrors) {
-                        console.error(`Store ${path} is not defined in`, st, `Cannot resolve full path 'app.${area}' in root store`, store);
+                        console.error(
+                            `Store ${path} is not defined in`,
+                            st,
+                            `Cannot resolve full path 'app.${area}' in root store`,
+                            store,
+                        );
                     }
                     return null;
                 }
@@ -74,7 +79,12 @@ export default function storeFromArea(store, area, showErrors = true) {
                 } else {
                     const path = areaItems.slice(a).join('.');
                     if (showErrors) {
-                        console.error(`Store ${path} is not defined in`, st, `Cannot resolve full path 'app.${area}' in root store`, store);
+                        console.error(
+                            `Store ${path} is not defined in`,
+                            st,
+                            `Cannot resolve full path 'app.${area}' in root store`,
+                            store,
+                        );
                     }
                     return null;
                 }

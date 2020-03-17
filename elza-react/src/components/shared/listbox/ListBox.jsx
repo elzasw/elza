@@ -8,8 +8,8 @@ import {PropTypes} from 'prop-types';
 import defaultKeymap from './ListBoxKeymap.jsx';
 import './ListBox.scss';
 
-let _ListBox_placeholder = document.createElement("div");
-let _ListBox_placeholder_cls = "placeholder"
+let _ListBox_placeholder = document.createElement('div');
+let _ListBox_placeholder_cls = 'placeholder';
 _ListBox_placeholder.className = _ListBox_placeholder_cls;
 
 const PAGE_SIZE = 10;
@@ -21,35 +21,35 @@ const PAGE_SIZE = 10;
 class ListBox extends AbstractReactComponent {
     state = {
         activeIndexes: null,
-        lastFocus: null
+        lastFocus: null,
     };
 
-    static contextTypes = { shortcuts: PropTypes.object };
-    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
-    UNSAFE_componentWillMount(){
-        Utils.addShortcutManager(this,defaultKeymap);
+    static contextTypes = {shortcuts: PropTypes.object};
+    static childContextTypes = {shortcuts: PropTypes.object.isRequired};
+    UNSAFE_componentWillMount() {
+        Utils.addShortcutManager(this, defaultKeymap);
     }
     getChildContext() {
-        return { shortcuts: this.shortcutManager };
+        return {shortcuts: this.shortcutManager};
     }
 
     constructor(props) {
         super(props);
 
         if (props.multiselect) {
-            var activeIndexes = {}
+            var activeIndexes = {};
             if (typeof props.activeIndexes !== 'undefined' && props.activeIndexes !== null) {
-                props.activeIndexes.forEach(index => activeIndexes[index] = true)
+                props.activeIndexes.forEach(index => (activeIndexes[index] = true));
             }
             this.state = {
                 activeIndexes: activeIndexes,
                 lastFocus: null,
-            }
+            };
         } else {
             this.state = {
                 activeIndex: this.getActiveIndexForUse(props, {}),
                 lastFocus: null,
-            }
+            };
         }
     }
 
@@ -67,175 +67,177 @@ class ListBox extends AbstractReactComponent {
         onChangeOrder: PropTypes.func,
         className: PropTypes.string,
         renderItemContent: PropTypes.func,
-        sortable: PropTypes.bool
+        sortable: PropTypes.bool,
     };
 
     static defaultProps = {
         renderItemContent: ({item, active, index}, onCheckItem) => {
-            return (
-                <div>{item.name}</div>
-            )
+            return <div>{item.name}</div>;
         },
         canSelectItem: (item, index) => {
-            return true
-        }
+            return true;
+        },
     };
 
-    selectorMoveUp = (e)=>{
+    selectorMoveUp = e => {
         this.selectorMoveRelative(-1);
-    }
-    selectorMoveDown = (e)=>{
+    };
+    selectorMoveDown = e => {
         this.selectorMoveRelative(1);
-    }
-    selectorMovePageUp = (e)=>{
-        this.selectorMoveRelative(-1*PAGE_SIZE);
-    }
-    selectorMovePageDown = (e)=>{
+    };
+    selectorMovePageUp = e => {
+        this.selectorMoveRelative(-1 * PAGE_SIZE);
+    };
+    selectorMovePageDown = e => {
         this.selectorMoveRelative(PAGE_SIZE);
-    }
-    selectorMoveTop = (e)=>{
+    };
+    selectorMoveTop = e => {
         this.selectorMoveToIndex(0);
-    }
-    selectorMoveEnd = (e)=>{
-        this.selectorMoveToIndex(this.props.items.length-1);
-    }
-    selectedItemCheck = (e)=>{
+    };
+    selectorMoveEnd = e => {
+        this.selectorMoveToIndex(this.props.items.length - 1);
+    };
+    selectedItemCheck = e => {
         this.selectedItemOperation(this.props.onCheck);
-    }
-    selectedItemDelete = (e)=>{
+    };
+    selectedItemDelete = e => {
         this.selectedItemOperation(this.props.onDelete);
-    }
-    selectItem = (e)=>{
+    };
+    selectItem = e => {
         this.selectedItemOperation(this.props.onSelect);
-    }
+    };
     /**
      * Wrapper for item operations from props. Checks if the operation exists and that an item is selected.
      * @param {function} operation
      */
-    selectedItemOperation = (operation)=>{
+    selectedItemOperation = operation => {
         const {items, multiselect} = this.props;
         if (multiselect) {
             const {activeIndexes} = this.state;
             const selectedIndexes = Object.keys(activeIndexes);
             if (operation && selectedIndexes.length > 0) {
                 const selectedItems = [];
-                for (let a=0; a<selectedIndexes.length; a++) {
+                for (let a = 0; a < selectedIndexes.length; a++) {
                     selectedItems.push(items[selectedIndexes[a]]);
                 }
                 operation(selectedItems, selectedIndexes);
             }
         } else {
             const {activeIndex} = this.state;
-            if(operation && activeIndex !== null){
-                operation(items[activeIndex],activeIndex)
+            if (operation && activeIndex !== null) {
+                operation(items[activeIndex], activeIndex);
             }
         }
-    }
-    selectorMoveRelative = (step) => {
+    };
+    selectorMoveRelative = step => {
         const {lastFocus} = this.state;
-        var newIndex = this.getRelativeSelectableItemIndex(lastFocus, step)
+        var newIndex = this.getRelativeSelectableItemIndex(lastFocus, step);
         this.selectorMoveToIndex(newIndex);
-    }
-    selectorMoveToIndex = (index) => {
+    };
+    selectorMoveToIndex = index => {
         const {items, multiselect} = this.props;
         if (items.length > 0) {
             if (index !== null) {
-                var state = multiselect ? {lastFocus: index, activeIndexes: {[index]: true}} : {lastFocus: index, activeIndex: index};
+                var state = multiselect
+                    ? {lastFocus: index, activeIndexes: {[index]: true}}
+                    : {lastFocus: index, activeIndex: index};
                 this.setState(state, this.ensureItemVisible.bind(this, index));
                 this.props.onFocus && this.props.onFocus(items[index], index);
                 this.props.onChangeSelection && this.props.onChangeSelection([index]);
             }
         }
-    }
+    };
     actionMap = {
-        "MOVE_UP":this.selectorMoveUp,
-        "MOVE_DOWN":this.selectorMoveDown,
-        "MOVE_PAGE_UP":this.selectorMovePageUp,
-        "MOVE_PAGE_DOWN":this.selectorMovePageDown,
-        "MOVE_TOP":this.selectorMoveTop,
-        "MOVE_END":this.selectorMoveEnd,
-        "ITEM_CHECK":this.selectedItemCheck,
-        "ITEM_DELETE":this.selectedItemDelete,
-        "ITEM_SELECT":this.selectItem
-    }
-    handleShortcuts = (action, e)=>{
+        MOVE_UP: this.selectorMoveUp,
+        MOVE_DOWN: this.selectorMoveDown,
+        MOVE_PAGE_UP: this.selectorMovePageUp,
+        MOVE_PAGE_DOWN: this.selectorMovePageDown,
+        MOVE_TOP: this.selectorMoveTop,
+        MOVE_END: this.selectorMoveEnd,
+        ITEM_CHECK: this.selectedItemCheck,
+        ITEM_DELETE: this.selectedItemDelete,
+        ITEM_SELECT: this.selectItem,
+    };
+    handleShortcuts = (action, e) => {
         e.stopPropagation();
         e.preventDefault();
         this.actionMap[action](e);
-    }
+    };
     UNSAFE_componentWillReceiveProps(nextProps) {
         if (nextProps.multiselect) {
             if (typeof nextProps.activeIndexes !== 'undefined') {
-                var activeIndexes = {}
-                nextProps.activeIndexes !== null && nextProps.activeIndexes.forEach(index => activeIndexes[index] = true)
+                var activeIndexes = {};
+                nextProps.activeIndexes !== null &&
+                    nextProps.activeIndexes.forEach(index => (activeIndexes[index] = true));
                 this.setState({
                     activeIndexes: activeIndexes,
-                })
+                });
             }
         } else {
             this.setState({
                 activeIndex: this.getActiveIndexForUse(nextProps, this.state),
                 lastFocus: this.getActiveIndexForUse(nextProps, this.state),
-            })
+            });
         }
     }
 
     handleClick = (index, e) => {
-        const {items, multiselect, canSelectItem} = this.props
-        var {activeIndexes, lastFocus} = this.state
+        const {items, multiselect, canSelectItem} = this.props;
+        var {activeIndexes, lastFocus} = this.state;
 
         if (multiselect) {
             if (e.ctrlKey) {
-                if (activeIndexes[index]) { // je označená, odznačíme ji
-                    activeIndexes = {...activeIndexes}
-                    delete activeIndexes[index]
+                if (activeIndexes[index]) {
+                    // je označená, odznačíme ji
+                    activeIndexes = {...activeIndexes};
+                    delete activeIndexes[index];
                 } else {
                     if (canSelectItem(items[index], index)) {
-                        activeIndexes = {...activeIndexes, [index]: true}
+                        activeIndexes = {...activeIndexes, [index]: true};
                     }
                 }
             } else if (e.shiftKey) {
-                this.unFocus()
+                this.unFocus();
 
-                const from = Math.min(index, lastFocus)
-                const to = Math.max(index, lastFocus)
-                activeIndexes = {...activeIndexes}
-                for (var a=from; a<=to; a++) {
+                const from = Math.min(index, lastFocus);
+                const to = Math.max(index, lastFocus);
+                activeIndexes = {...activeIndexes};
+                for (var a = from; a <= to; a++) {
                     if (canSelectItem(items[a], a)) {
-                        activeIndexes[a] = true
+                        activeIndexes[a] = true;
                     }
                 }
             } else {
                 if (canSelectItem(items[index], index)) {
-                    activeIndexes = {[index]: true}
+                    activeIndexes = {[index]: true};
                 }
             }
             this.setState({
                 activeIndexes: activeIndexes,
                 lastFocus: index,
-            })
-            this.props.onChangeSelection && this.props.onChangeSelection(Object.keys(activeIndexes))
+            });
+            this.props.onChangeSelection && this.props.onChangeSelection(Object.keys(activeIndexes));
         } else {
             if (canSelectItem(items[index], index)) {
                 this.setState({
                     activeIndex: index,
                     lastFocus: index,
-                })
-                this.props.onFocus && this.props.onFocus(items[index], index)
+                });
+                this.props.onFocus && this.props.onFocus(items[index], index);
                 if (this.state.activeIndex !== index) {
-                    this.props.onChangeSelection && this.props.onChangeSelection([index])
+                    this.props.onChangeSelection && this.props.onChangeSelection([index]);
                 }
             }
         }
-    }
+    };
 
     unFocus = () => {
         if (document.selection) {
             document.selection.empty();
         } else {
-            window.getSelection().removeAllRanges()
+            window.getSelection().removeAllRanges();
         }
-    }
+    };
 
     dragStart = (index, e) => {
         const {items, multiselect, canSelectItem} = this.props;
@@ -243,30 +245,30 @@ class ListBox extends AbstractReactComponent {
         this.dragged = e.currentTarget;
         e.dataTransfer.effectAllowed = 'move';
         // Firefox requires dataTransfer data to be set
-        e.dataTransfer.setData("text/html", e.currentTarget);
+        e.dataTransfer.setData('text/html', e.currentTarget);
 
         var canSelect = canSelectItem(items[index], index);
-    }
+    };
 
-    dragEnd = (e) => {
-        this.dragged.style.display = "block";
+    dragEnd = e => {
+        this.dragged.style.display = 'block';
         this.dragged.parentNode.removeChild(_ListBox_placeholder);
         // Update data
         var data = this.state.data;
         var from = Number(this.dragged.dataset.id);
         var to = Number(this.over.dataset.id);
-        if(from < to) to--;
-        if(this.nodePlacement == "after") to++;
+        if (from < to) to--;
+        if (this.nodePlacement == 'after') to++;
 
         if (from !== to) {
-            this.props.onChangeOrder(from, to)
+            this.props.onChangeOrder(from, to);
         }
-    }
+    };
 
-    dragOver = (e) => {
+    dragOver = e => {
         e.preventDefault();
-        this.dragged.style.display = "none";
-        if(e.target.className == _ListBox_placeholder_cls) return;
+        this.dragged.style.display = 'none';
+        if (e.target.className == _ListBox_placeholder_cls) return;
         this.over = e.target;
         // Inside the dragOver method
         var relY = e.clientY - this.over.offsetTop;
@@ -279,7 +281,7 @@ class ListBox extends AbstractReactComponent {
         while (realTarget !== null) {
             if (typeof realTarget.dataset.id !== 'undefined') {
                 found = true;
-                break
+                break;
             }
             if (realTarget == container) {
                 realTarget = container.lastChild;
@@ -289,11 +291,11 @@ class ListBox extends AbstractReactComponent {
                 found = true;
                 break;
             }
-            realTarget = realTarget.parentNode
+            realTarget = realTarget.parentNode;
         }
 
         if (!found) {
-            return
+            return;
         }
 
         this.over = realTarget;
@@ -304,19 +306,18 @@ class ListBox extends AbstractReactComponent {
         var height2 = (overRect.bottom - overRect.top) / 2;
 
         if (e.clientY < overRect.top + height2) {
-            this.nodePlacement = "before"
+            this.nodePlacement = 'before';
             parent.insertBefore(_ListBox_placeholder, realTarget);
         } else if (e.clientY >= overRect.top + height2) {
-            this.nodePlacement = "after";
+            this.nodePlacement = 'after';
             parent.insertBefore(_ListBox_placeholder, realTarget.nextElementSibling);
         } else {
-
         }
-    }
+    };
     getRelativeSelectableItemIndex = (index, step) => {
         const {items, canSelectItem} = this.props;
         var isDecrementing = step < 0;
-        if(index || index === 0){
+        if (index || index === 0) {
             while (step) {
                 var i = index + step;
                 while (i >= 0 && i < items.length) {
@@ -331,52 +332,54 @@ class ListBox extends AbstractReactComponent {
         } else {
             return 0;
         }
-    }
+    };
 
     getActiveIndexForUse(props, state) {
-        var index
+        var index;
 
         if (typeof props.activeIndex !== 'undefined') {
-            index = props.activeIndex
+            index = props.activeIndex;
         } else if (typeof state.activeIndex !== 'undefined') {
-            index = state.activeIndex
+            index = state.activeIndex;
         } else {
-            index = null
+            index = null;
         }
 
         if (index < 0 || index >= props.items.length) {
-            index = null
+            index = null;
         }
-        return index
+        return index;
     }
 
-    ensureItemVisible = (index) => {
-        var itemNode = ReactDOM.findDOMNode(this.refs['item-' + index])
+    ensureItemVisible = index => {
+        var itemNode = ReactDOM.findDOMNode(this.refs['item-' + index]);
         if (itemNode !== null) {
-            var containerNode = ReactDOM.findDOMNode(this.refs.container)
-            scrollIntoView(itemNode, containerNode, { onlyScrollIfNeeded: true, alignWithTop:false })
+            var containerNode = ReactDOM.findDOMNode(this.refs.container);
+            scrollIntoView(itemNode, containerNode, {onlyScrollIfNeeded: true, alignWithTop: false});
         }
     };
 
-    handleDoubleClick = (e) => {
-        const {onDoubleClick} = this.props
+    handleDoubleClick = e => {
+        const {onDoubleClick} = this.props;
 
         if (onDoubleClick) {
             this.unFocus();
-            onDoubleClick(e)
+            onDoubleClick(e);
         }
-    }
+    };
 
     unFocus = () => {
         if (document.selection) {
             document.selection.empty();
         } else {
-            window.getSelection().removeAllRanges()
+            window.getSelection().removeAllRanges();
         }
     };
 
     focus = () => {
-        this.setState({}, () => {ReactDOM.findDOMNode(this.refs.wrapper).focus()})
+        this.setState({}, () => {
+            ReactDOM.findDOMNode(this.refs.wrapper).focus();
+        });
     };
 
     handleCheckItem = (e, item, index) => {
@@ -395,9 +398,11 @@ class ListBox extends AbstractReactComponent {
             isItemActive = activeIndex;
         }
 
-        if (isItemActive) { // je jedna z označených
+        if (isItemActive) {
+            // je jedna z označených
             this.selectedItemOperation(this.props.onCheck);
-        } else {    // je mimo
+        } else {
+            // je mimo
             this.handleClick(index, e);
             this.setState({}, () => {
                 this.selectedItemOperation(this.props.onCheck);
@@ -409,20 +414,20 @@ class ListBox extends AbstractReactComponent {
         const {className, items, renderItemContent, multiselect} = this.props;
         const {activeIndex, activeIndexes} = this.state;
 
-        var cls = "listbox-container";
-        var wrapperClass = "listbox-wrapper"
-        if (className){
-             wrapperClass += " " + className
+        var cls = 'listbox-container';
+        var wrapperClass = 'listbox-wrapper';
+        if (className) {
+            wrapperClass += ' ' + className;
         }
         var rows = items.map((item, index) => {
-            const active = multiselect ? (activeIndexes[index]) : (index === activeIndex)
-            var draggableProps = {}
+            const active = multiselect ? activeIndexes[index] : index === activeIndex;
+            var draggableProps = {};
             if (this.props.sortable) {
                 draggableProps = {
                     draggable: true,
                     onDragEnd: this.dragEnd,
                     onDragStart: this.dragStart.bind(this, index),
-                }
+                };
             }
             return (
                 <div
@@ -434,14 +439,20 @@ class ListBox extends AbstractReactComponent {
                     onDoubleClick={this.handleDoubleClick}
                     {...draggableProps}
                 >
-                    {renderItemContent({item, active, index}, (e) => this.handleCheckItem(e, item, index))}
+                    {renderItemContent({item, active, index}, e => this.handleCheckItem(e, item, index))}
                 </div>
-            )
-        })
+            );
+        });
 
         return (
-            <Shortcuts ref="wrapper" name="ListBox" handler={this.handleShortcuts} tabIndex={0} className={wrapperClass}>
-                <div className={cls} ref='container' onDragOver={this.dragOver}>
+            <Shortcuts
+                ref="wrapper"
+                name="ListBox"
+                handler={this.handleShortcuts}
+                tabIndex={0}
+                className={wrapperClass}
+            >
+                <div className={cls} ref="container" onDragOver={this.dragOver}>
                     {rows}
                 </div>
             </Shortcuts>

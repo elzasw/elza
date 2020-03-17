@@ -60,9 +60,10 @@ class ArrRequestPage extends ArrParentPage {
 
         if (canSetFocus()) {
             if (isFocusFor(focus, FOCUS_KEYS.FUND_REQUEST, 1)) {
-                this.refs.fundOutputList && this.setState({}, () => {
-                    ReactDOM.findDOMNode(this.refs.fundOutputList).focus();
-                });
+                this.refs.fundOutputList &&
+                    this.setState({}, () => {
+                        ReactDOM.findDOMNode(this.refs.fundOutputList).focus();
+                    });
                 focusWasSet();
             }
         }
@@ -101,18 +102,31 @@ class ArrRequestPage extends ArrParentPage {
             if (!readMode && !closed) {
                 if (detailSelected && !closed) {
                     itemActions.push(
-                        <Button key="send" onClick={() => {
-                            this.handleSend(requestDetail.id);
-                        }} disabled={!detailLoaded || requestDetail.data.state !== 'OPEN'}><Icon
-                            glyph="fa-youtube-play"/>
-                            <div><span className="btnText">{i18n('ribbon.action.arr.fund.request.send')}</span></div>
+                        <Button
+                            key="send"
+                            onClick={() => {
+                                this.handleSend(requestDetail.id);
+                            }}
+                            disabled={!detailLoaded || requestDetail.data.state !== 'OPEN'}
+                        >
+                            <Icon glyph="fa-youtube-play" />
+                            <div>
+                                <span className="btnText">{i18n('ribbon.action.arr.fund.request.send')}</span>
+                            </div>
                         </Button>,
                     );
                     itemActions.push(
-                        <Button key="delete" onClick={() => {
-                            this.handleDelete(requestDetail.id);
-                        }} disabled={!detailLoaded || requestDetail.data.state !== 'OPEN'}><Icon glyph="fa-trash"/>
-                            <div><span className="btnText">{i18n('ribbon.action.arr.fund.request.delete')}</span></div>
+                        <Button
+                            key="delete"
+                            onClick={() => {
+                                this.handleDelete(requestDetail.id);
+                            }}
+                            disabled={!detailLoaded || requestDetail.data.state !== 'OPEN'}
+                        >
+                            <Icon glyph="fa-trash" />
+                            <div>
+                                <span className="btnText">{i18n('ribbon.action.arr.fund.request.delete')}</span>
+                            </div>
                         </Button>,
                     );
                 }
@@ -121,37 +135,43 @@ class ArrRequestPage extends ArrParentPage {
 
         var altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup key="alt" className="small">{altActions}</RibbonGroup>;
+            altSection = (
+                <RibbonGroup key="alt" className="small">
+                    {altActions}
+                </RibbonGroup>
+            );
         }
 
         var itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup key="item" className="small">{itemActions}</RibbonGroup>;
+            itemSection = (
+                <RibbonGroup key="item" className="small">
+                    {itemActions}
+                </RibbonGroup>
+            );
         }
 
-        return (
-            <Ribbon arr subMenu fundId={fund ? fund.id : null} altSection={altSection} itemSection={itemSection}/>
-        );
+        return <Ribbon arr subMenu fundId={fund ? fund.id : null} altSection={altSection} itemSection={itemSection} />;
     }
 
-    handleSelect = (item) => {
+    handleSelect = item => {
         const fund = this.getActiveFund(this.props);
         this.props.dispatch(arrRequestActions.selectDetail(fund.versionId, item.id));
     };
 
-    handleSend = (id) => {
+    handleSend = id => {
         const fund = this.getActiveFund(this.props);
         this.props.dispatch(arrRequestActions.sendRequest(fund.versionId, id));
     };
 
-    handleDelete = (id) => {
+    handleDelete = id => {
         const fund = this.getActiveFund(this.props);
         if (window.confirm(i18n('ribbon.action.arr.fund.request.delete.confirm'))) {
             this.props.dispatch(arrRequestActions.deleteRequest(fund.versionId, id));
         }
     };
 
-    renderListItem = (props) => {
+    renderListItem = props => {
         const {item} = props;
         const {userDetail} = this.props;
 
@@ -159,16 +179,19 @@ class ArrRequestPage extends ArrParentPage {
 
         return (
             <div className={classNames(cls)}>
-                <div className='name'>{createDigitizationName(item, userDetail)}</div>
-                <div
-                    className='state'>{i18n('arr.request.title.state')}: {i18n('arr.request.title.state.' + item.state)}</div>
+                <div className="name">{createDigitizationName(item, userDetail)}</div>
+                <div className="state">
+                    {i18n('arr.request.title.state')}: {i18n('arr.request.title.state.' + item.state)}
+                </div>
             </div>
         );
     };
 
-    handleFilterType = (e) => {
+    handleFilterType = e => {
         const fund = this.getActiveFund(this.props);
-        const {requestList: {filter}} = fund;
+        const {
+            requestList: {filter},
+        } = fund;
 
         const val = e.target.value;
         const newFilter = {
@@ -179,9 +202,11 @@ class ArrRequestPage extends ArrParentPage {
         this.props.dispatch(arrRequestActions.filterList(fund.versionId, newFilter));
     };
 
-    handleFilterText = (filterText) => {
+    handleFilterText = filterText => {
         const fund = this.getActiveFund(this.props);
-        const {requestList: {filter}} = fund;
+        const {
+            requestList: {filter},
+        } = fund;
 
         const newFilter = {
             ...filter,
@@ -207,14 +232,22 @@ class ArrRequestPage extends ArrParentPage {
         return (
             <div className="fund-request-list-container">
                 <div className="filter">
-                    <FormInput as="select" className="type" onChange={this.handleFilterType}
-                               value={requestList.filter.type}>
+                    <FormInput
+                        as="select"
+                        className="type"
+                        onChange={this.handleFilterType}
+                        value={requestList.filter.type}
+                    >
                         <option value={''}>{i18n('global.all')}</option>
-                        <option value="DIGITIZATION"
-                                key="DIGITIZATION">{i18n('arr.request.title.type.' + DIGITIZATION)}</option>
-                        <option value="DESTRUCTION"
-                                key="DESTRUCTION">{i18n('arr.request.title.type.dao.DESTRUCTION')}</option>
-                        <option value="TRANSFER" key="TRANSFER">{i18n('arr.request.title.type.dao.TRANSFER')}</option>
+                        <option value="DIGITIZATION" key="DIGITIZATION">
+                            {i18n('arr.request.title.type.' + DIGITIZATION)}
+                        </option>
+                        <option value="DESTRUCTION" key="DESTRUCTION">
+                            {i18n('arr.request.title.type.dao.DESTRUCTION')}
+                        </option>
+                        <option value="TRANSFER" key="TRANSFER">
+                            {i18n('arr.request.title.type.dao.TRANSFER')}
+                        </option>
                         {/*<option value="DAO_LINK" key="DAO_LINK">{i18n("arr.request.title.type." + DAO_LINK)}</option>*/}
                     </FormInput>
                     <SearchWithGoto
@@ -228,16 +261,18 @@ class ArrRequestPage extends ArrParentPage {
                         allItemsCount={requestList.count}
                     />
                 </div>
-                <StoreHorizontalLoader store={requestList}/>
-                {requestList.fetched && <ListBox
-                    className='fund-request-listbox'
-                    ref='fundDigitizationRequestList'
-                    items={requestList.rows}
-                    activeIndex={activeIndex}
-                    renderItemContent={this.renderListItem}
-                    onFocus={this.handleSelect}
-                    onSelect={this.handleSelect}
-                />}
+                <StoreHorizontalLoader store={requestList} />
+                {requestList.fetched && (
+                    <ListBox
+                        className="fund-request-listbox"
+                        ref="fundDigitizationRequestList"
+                        items={requestList.rows}
+                        activeIndex={activeIndex}
+                        renderItemContent={this.renderListItem}
+                        onFocus={this.handleSelect}
+                        onSelect={this.handleSelect}
+                    />
+                )}
             </div>
         );
     }
@@ -246,13 +281,7 @@ class ArrRequestPage extends ArrParentPage {
         const fund = this.getActiveFund(this.props);
         const {requestDetail} = fund;
 
-        return (
-            <ArrRequestDetail
-                versionId={fund.versionId}
-                fund={fund}
-                requestDetail={requestDetail}
-            />
-        );
+        return <ArrRequestDetail versionId={fund.versionId} fund={fund} requestDetail={requestDetail} />;
     }
 
     hasPageShowRights(userDetail, activeFund) {

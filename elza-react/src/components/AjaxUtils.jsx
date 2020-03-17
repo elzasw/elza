@@ -23,7 +23,7 @@ const serverContextPath = window.serverContextPath;
 const _logCalls = true;
 const _logErrors = true;
 const _logResults = true;
-const _logDuration = false;    // moznost logovani delky volani
+const _logDuration = false; // moznost logovani delky volani
 
 let _callIndex = 0;
 let _store = null;
@@ -36,11 +36,11 @@ function requestCounter(method, url, data) {
     if (_logCalls || _logResults) {
         let callIndex = _callIndex++;
         let indexStr = callIndex;
-        if (callIndex < 10) indexStr = "0" + indexStr;
-        if (callIndex < 100) indexStr = "0" + indexStr;
-        if (callIndex < 1000) indexStr = "0" + indexStr;
-        if (callIndex < 10000) indexStr = "0" + indexStr;
-        callStr = "(" + indexStr + ") " + method + " " + url;
+        if (callIndex < 10) indexStr = '0' + indexStr;
+        if (callIndex < 100) indexStr = '0' + indexStr;
+        if (callIndex < 1000) indexStr = '0' + indexStr;
+        if (callIndex < 10000) indexStr = '0' + indexStr;
+        callStr = '(' + indexStr + ') ' + method + ' ' + url;
     }
     return callStr;
 }
@@ -54,29 +54,31 @@ function requestCounter(method, url, data) {
  */
 function resolveException(status, statusText, data) {
     let result;
-    if (status == 422) { // pro validaci
+    if (status == 422) {
+        // pro validaci
         result = {
             type: 'validation',
             validation: true,
-            data: data
+            data: data,
         };
     } else if (status == 400) {
         result = {
             createToaster: true,
-            type: "BaseCode",
-            code: "BAD_REQUEST",
-            level: "danger",
+            type: 'BaseCode',
+            code: 'BAD_REQUEST',
+            level: 'danger',
             message: i18n('global.exception.bad.request.tech'),
             status: status,
-            statusText: statusText
+            statusText: statusText,
         };
     } else if (status == 401) {
         result = {
             type: 'unauthorized',
             unauthorized: true,
-            data: data
+            data: data,
         };
-    } else if (data){ // other errors containing data
+    } else if (data) {
+        // other errors containing data
         result = {
             createToaster: true,
             type: data.type,
@@ -86,16 +88,17 @@ function resolveException(status, statusText, data) {
             message: data.message,
             stackTrace: data.stackTrace,
             status: status,
-            statusText: statusText
+            statusText: statusText,
         };
-    } else { // other unknown errors
+    } else {
+        // other unknown errors
         result = {
             type: 'unknown',
         };
     }
 
     if (result.createToaster) {
-        console.log("___", _store);
+        console.log('___', _store);
         _store.dispatch(createException(result));
     }
 
@@ -114,7 +117,6 @@ function resolveException(status, statusText, data) {
  * @returns {Promise} - Výsledek volání
  */
 function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError = false) {
-
     url = updateQueryStringParameters(url, params);
 
     return new Promise((resolve, reject) => {
@@ -122,11 +124,11 @@ function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError
 
         let tStart;
         if (_logDuration) {
-            tStart = new Date().getTime()
+            tStart = new Date().getTime();
         }
 
         if (_logCalls) {
-            console.info("->", callStr);
+            console.info('->', callStr);
         }
 
         $.ajax({
@@ -135,39 +137,37 @@ function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError
             processData: false,
             contentType: contentType,
             data: data,
-            success: function (data,    // data ze serveru
-                               status,  // status - 'success'
-                               xhr) {   // xhr - responseText, responseJSON, status a statusText
+            success: function(
+                data, // data ze serveru
+                status, // status - 'success'
+                xhr,
+            ) {
+                // xhr - responseText, responseJSON, status a statusText
                 if (_logResults) {
                     const lenStr = '(' + lenToBytesStr(roughSizeOfObject(data)) + ')';
                     if (_logDuration) {
-                        const t = new Date().getTime() - tStart
-                        console.info("<-", callStr, lenStr, data, t + ' ms');
+                        const t = new Date().getTime() - tStart;
+                        console.info('<-', callStr, lenStr, data, t + ' ms');
                     } else {
-                        console.info("<-", callStr, lenStr, data);
+                        console.info('<-', callStr, lenStr, data);
                     }
                 }
                 resolve(data);
             },
-            error: function (xhr,
-                             status,
-                             err) {
+            error: function(xhr, status, err) {
                 if (_logErrors) {
                     if (ignoreError) {
-                        console.warn("<-", callStr, "[" + xhr.status + "-" + status + "]", xhr);
+                        console.warn('<-', callStr, '[' + xhr.status + '-' + status + ']', xhr);
                     } else {
-                        console.error("<-", callStr, "[" + xhr.status + "-" + status + "]", xhr);
+                        console.error('<-', callStr, '[' + xhr.status + '-' + status + ']', xhr);
                     }
                 }
 
                 let result = resolveException(xhr.status, xhr.statusText, xhr.responseJSON);
                 reject(result);
-
-            }
+            },
         });
-
     });
-
 }
 
 /**
@@ -180,19 +180,18 @@ function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError
  * @returns {Promise} - Výsledek volání
  */
 function ajaxCall(url, params, method, data) {
-
     url = updateQueryStringParameters(url, params);
 
     return new Promise((resolve, reject) => {
         const callStr = requestCounter(method, url, data);
 
-        let tStart
+        let tStart;
         if (_logDuration) {
-            tStart = new Date().getTime()
+            tStart = new Date().getTime();
         }
 
         if (_logCalls) {
-            console.info("->", callStr, data);
+            console.info('->', callStr, data);
         }
 
         $.ajax({
@@ -201,36 +200,37 @@ function ajaxCall(url, params, method, data) {
             async: true,
             cache: false,
             headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
             },
             data: data ? JSON.stringify(data) : null,
-            success: function (data,    // data ze serveru
-                               status,  // status - 'success'
-                               xhr) {   // xhr - responseText, responseJSON, status a statusText
-                 if (_logResults) {
-                     const len = JSON.stringify(data).length;
-                     const lenStr = '(' + lenToBytesStr(len) + ')';
+            success: function(
+                data, // data ze serveru
+                status, // status - 'success'
+                xhr,
+            ) {
+                // xhr - responseText, responseJSON, status a statusText
+                if (_logResults) {
+                    const len = JSON.stringify(data).length;
+                    const lenStr = '(' + lenToBytesStr(len) + ')';
 
-                     if (_logDuration) {
-                         const t = new Date().getTime() - tStart;
-                         console.info("<-", callStr, lenStr, data, t + ' ms');
-                     } else {
-                         console.info("<-", callStr, lenStr, data);
-                     }
-                 }
+                    if (_logDuration) {
+                        const t = new Date().getTime() - tStart;
+                        console.info('<-', callStr, lenStr, data, t + ' ms');
+                    } else {
+                        console.info('<-', callStr, lenStr, data);
+                    }
+                }
                 resolve(data);
             },
-            error: function (xhr,
-                             status,
-                             err) {
+            error: function(xhr, status, err) {
                 if (_logErrors) {
-                    console.error("<-", callStr, "[" + xhr.status + "-" + status + "]", xhr);
+                    console.error('<-', callStr, '[' + xhr.status + '-' + status + ']', xhr);
                 }
 
                 let result = resolveException(xhr.status, xhr.statusText, xhr.responseJSON);
                 reject(result);
-            }
+            },
         });
     });
 }
@@ -244,7 +244,7 @@ function ajaxCall(url, params, method, data) {
  */
 function updateQueryStringParameters(uri, params) {
     if (params) {
-        for(let key in params) {
+        for (let key in params) {
             if (params.hasOwnProperty(key)) {
                 const value = params[key];
                 uri = updateQueryStringParameter(uri, key, value);
@@ -268,12 +268,12 @@ function updateQueryStringParameter(uri, key, value) {
 
     const upValue = encodeURIComponent(value);
 
-    const re = new RegExp("([?&])" + key + "=.*?(&|$)", "i");
-    const separator = uri.indexOf('?') !== -1 ? "&" : "?";
+    const re = new RegExp('([?&])' + key + '=.*?(&|$)', 'i');
+    const separator = uri.indexOf('?') !== -1 ? '&' : '?';
     if (uri.match(re)) {
-        return uri.replace(re, '$1' + key + "=" + upValue + '$2');
+        return uri.replace(re, '$1' + key + '=' + upValue + '$2');
     } else {
-        return uri + separator + key + "=" + upValue;
+        return uri + separator + key + '=' + upValue;
     }
 }
 
@@ -284,7 +284,7 @@ function updateQueryStringParameter(uri, key, value) {
  * @param {Object} params - Object query parametrů -> klíč: hodnota
  * @returns {Promise} - Výsledek volání
  */
-const ajaxGet = (url, params = null) => ajaxCall(url, params, "GET", null);
+const ajaxGet = (url, params = null) => ajaxCall(url, params, 'GET', null);
 
 /**
  * Odeslání POST dotazu na server.
@@ -294,7 +294,7 @@ const ajaxGet = (url, params = null) => ajaxCall(url, params, "GET", null);
  * @param {Object} data - Odesílaná data
  * @returns {Promise} - Výsledek volání
  */
-const ajaxPost = (url, params = null, data = null) => ajaxCall(url, params, "POST", data);
+const ajaxPost = (url, params = null, data = null) => ajaxCall(url, params, 'POST', data);
 
 /**
  * Odeslání PUT dotazu na server.
@@ -304,7 +304,7 @@ const ajaxPost = (url, params = null, data = null) => ajaxCall(url, params, "POS
  * @param {Object} data - Odesílaná data
  * @returns {Promise} - Výsledek volání
  */
-const ajaxPut = (url, params = null, data = null) => ajaxCall(url, params, "PUT", data);
+const ajaxPut = (url, params = null, data = null) => ajaxCall(url, params, 'PUT', data);
 
 /**
  * Odeslání DELETE dotazu na server.
@@ -314,7 +314,7 @@ const ajaxPut = (url, params = null, data = null) => ajaxCall(url, params, "PUT"
  * @param {Object} data - Odesílaná data
  * @returns {Promise} - Výsledek volání
  */
-const ajaxDelete = (url, params = null, data = null) => ajaxCall(url, params, "DELETE", data);
+const ajaxDelete = (url, params = null, data = null) => ajaxCall(url, params, 'DELETE', data);
 
 export default {
     ajaxGet,
@@ -323,5 +323,5 @@ export default {
     ajaxDelete,
     ajaxCall,
     ajaxCallRaw,
-    setStore
-}
+    setStore,
+};

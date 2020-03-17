@@ -19,7 +19,6 @@ import TagsField from '../TagsField';
  * Formulář přidání nebo uzavření AS.
  */
 class FundForm extends AbstractReactComponent {
-
     /**
      * Validace formuláře.
      */
@@ -71,11 +70,12 @@ class FundForm extends AbstractReactComponent {
      */
     isBulkActionRunning = () => {
         let result = false;
-        this.props.bulkActions && this.props.bulkActions.states.forEach((item) => {
-            if (item.state !== 'ERROR' && item.state !== 'FINISH') {
-                result = true;
-            }
-        });
+        this.props.bulkActions &&
+            this.props.bulkActions.states.forEach(item => {
+                if (item.state !== 'ERROR' && item.state !== 'FINISH') {
+                    result = true;
+                }
+            });
         return result;
     };
 
@@ -99,107 +99,162 @@ class FundForm extends AbstractReactComponent {
         return null;
     }
 
-    submitReduxForm = (values, dispatch) => submitForm(FundForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
+    submitReduxForm = (values, dispatch) =>
+        submitForm(FundForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
-        const {fields: {fundAdmins, name, ruleSetId, apScopes, institutionId, internalCode, dateRange}, handleSubmit, onClose, create, update, approve, ruleSet, refTables, submitting} = this.props;
+        const {
+            fields: {fundAdmins, name, ruleSetId, apScopes, institutionId, internalCode, dateRange},
+            handleSubmit,
+            onClose,
+            create,
+            update,
+            approve,
+            ruleSet,
+            refTables,
+            submitting,
+        } = this.props;
         let approveButton;
         if (approve) {
             if (this.isBulkActionRunning()) {
-                approveButton =
-                    <span className="text-danger">{i18n('arr.fund.approveVersion.runningBulkAction')}</span>;
+                approveButton = (
+                    <span className="text-danger">{i18n('arr.fund.approveVersion.runningBulkAction')}</span>
+                );
             } else {
-                approveButton =
-                    <Button type="submit" disabled={submitting}>{i18n('arr.fund.approveVersion.approve')}</Button>;
+                approveButton = (
+                    <Button type="submit" disabled={submitting}>
+                        {i18n('arr.fund.approveVersion.approve')}
+                    </Button>
+                );
             }
         }
         const ruleSets = refTables.ruleSet.items;
         const institutions = refTables.institutions.items;
 
-        return <Form onSubmit={handleSubmit(this.submitReduxForm)}>
-            <Modal.Body>
-                {(create || update) &&
-                <FormInput type="text" label={i18n('arr.fund.name')} {...name} {...decorateFormField(name)} />}
+        return (
+            <Form onSubmit={handleSubmit(this.submitReduxForm)}>
+                <Modal.Body>
+                    {(create || update) && (
+                        <FormInput type="text" label={i18n('arr.fund.name')} {...name} {...decorateFormField(name)} />
+                    )}
 
-                {(create || update) &&
-                <FormInput type="text"
-                           label={i18n('arr.fund.internalCode')} {...internalCode} {...decorateFormField(internalCode)} />}
+                    {(create || update) && (
+                        <FormInput
+                            type="text"
+                            label={i18n('arr.fund.internalCode')}
+                            {...internalCode}
+                            {...decorateFormField(internalCode)}
+                        />
+                    )}
 
-                {(create || update) &&
-                <FormInput as="select"
-                           label={i18n('arr.fund.institution')} {...institutionId} {...decorateFormField(institutionId)}>
-                    <option key='-institutionId'/>
-                    {institutions.map(i => {
-                        return <option value={i.id}>{i.name}</option>;
-                    })}
-                </FormInput>}
+                    {(create || update) && (
+                        <FormInput
+                            as="select"
+                            label={i18n('arr.fund.institution')}
+                            {...institutionId}
+                            {...decorateFormField(institutionId)}
+                        >
+                            <option key="-institutionId" />
+                            {institutions.map(i => {
+                                return <option value={i.id}>{i.name}</option>;
+                            })}
+                        </FormInput>
+                    )}
 
-                {(create || ruleSet) &&
-                <FormInput as="select"
-                           label={i18n('arr.fund.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
-                    <option key='-ruleSetId'/>
-                    {ruleSets.map(i => {
-                        return <option value={i.id}>{i.name}</option>;
-                    })}
-                </FormInput>}
+                    {(create || ruleSet) && (
+                        <FormInput
+                            as="select"
+                            label={i18n('arr.fund.ruleSet')}
+                            {...ruleSetId}
+                            {...decorateFormField(ruleSetId)}
+                        >
+                            <option key="-ruleSetId" />
+                            {ruleSets.map(i => {
+                                return <option value={i.id}>{i.name}</option>;
+                            })}
+                        </FormInput>
+                    )}
 
-                {approve &&
-                <FormInput as="textarea"
-                           label={i18n('arr.fund.dateRange')} {...dateRange} {...decorateFormField(dateRange)} />}
+                    {approve && (
+                        <FormInput
+                            as="textarea"
+                            label={i18n('arr.fund.dateRange')}
+                            {...dateRange}
+                            {...decorateFormField(dateRange)}
+                        />
+                    )}
 
-                {update && <Autocomplete
-                    tags
-                    label={i18n('arr.fund.regScope')}
-                    items={this.props.scopeList}
-                    getItemId={(item) => item ? item.id : null}
-                    getItemName={(item) => item ? item.name : ''}
-                    onChange={
-                        (value) => {
-                            if (!value || value.name.trim() == '') {
-                                return;
-                            }
-                            let index = this.findIndexInFields(this.props.fields.apScopes, value.name, 'name');
-                            if (index === null) {
-                                this.props.fields.apScopes.addField(value);
-                            } else {
-                                this.props.fields.apScopes.removeField(index);
-                            }
-                        }
-                    }
-                    value={this.state.autocompleteValue}
-                />}
-                {update && <div className="selected-data-container">
-                    {apScopes.map((scope, scopeIndex) => (
-                        <div className="selected-data" key={scopeIndex}>
-                            <span>{scope.name.value}</span><Button onClick={() => {
-                            apScopes.removeField(scopeIndex);
-                        }}>
-                            <Icon glyph="fa-times"/>
+                    {update && (
+                        <Autocomplete
+                            tags
+                            label={i18n('arr.fund.regScope')}
+                            items={this.props.scopeList}
+                            getItemId={item => (item ? item.id : null)}
+                            getItemName={item => (item ? item.name : '')}
+                            onChange={value => {
+                                if (!value || value.name.trim() == '') {
+                                    return;
+                                }
+                                let index = this.findIndexInFields(this.props.fields.apScopes, value.name, 'name');
+                                if (index === null) {
+                                    this.props.fields.apScopes.addField(value);
+                                } else {
+                                    this.props.fields.apScopes.removeField(index);
+                                }
+                            }}
+                            value={this.state.autocompleteValue}
+                        />
+                    )}
+                    {update && (
+                        <div className="selected-data-container">
+                            {apScopes.map((scope, scopeIndex) => (
+                                <div className="selected-data" key={scopeIndex}>
+                                    <span>{scope.name.value}</span>
+                                    <Button
+                                        onClick={() => {
+                                            apScopes.removeField(scopeIndex);
+                                        }}
+                                    >
+                                        <Icon glyph="fa-times" />
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {create && (
+                        <FormInput
+                            as={TagsField}
+                            label={i18n('arr.fund.fundAdmins')}
+                            {...fundAdmins}
+                            {...decorateFormField(fundAdmins)}
+                            renderTagItem={renderUserOrGroupLabel}
+                            fieldComponent={UserAndGroupField}
+                            fieldComponentProps={{
+                                findUserApi: WebApi.findUserWithFundCreate,
+                                findGroupApi: WebApi.findGroupWithFundCreate,
+                            }}
+                        />
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    {create && (
+                        <Button type="submit" disabled={submitting}>
+                            {i18n('global.action.create')}
                         </Button>
-                        </div>))}
-                </div>}
-
-                {create && <FormInput
-                    as={TagsField}
-                    label={i18n('arr.fund.fundAdmins')}
-                    {...fundAdmins}
-                    {...decorateFormField(fundAdmins)}
-                    renderTagItem={renderUserOrGroupLabel}
-                    fieldComponent={UserAndGroupField}
-                    fieldComponentProps={{
-                        findUserApi: WebApi.findUserWithFundCreate,
-                        findGroupApi: WebApi.findGroupWithFundCreate,
-                    }}
-                />}
-            </Modal.Body>
-            <Modal.Footer>
-                {create && <Button type="submit" disabled={submitting}>{i18n('global.action.create')}</Button>}
-                {approve && approveButton}
-                {(update || ruleSet) &&
-                <Button type="submit" disabled={submitting}>{i18n('global.action.update')}</Button>}
-                <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
-            </Modal.Footer>
-        </Form>;
+                    )}
+                    {approve && approveButton}
+                    {(update || ruleSet) && (
+                        <Button type="submit" disabled={submitting}>
+                            {i18n('global.action.update')}
+                        </Button>
+                    )}
+                    <Button variant="link" onClick={onClose}>
+                        {i18n('global.action.cancel')}
+                    </Button>
+                </Modal.Footer>
+            </Form>
+        );
     }
 }
 
@@ -210,17 +265,33 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(reduxForm({
-        form: 'fundForm',
-        fields: ['name', 'ruleSetId', 'institutionId', 'internalCode', 'dateRange', 'apScopes[].id', 'apScopes[].name', 'fundAdmins'],
-    }, state => ({
-        initialValues: state.form.fundForm.initialValues,
-        refTables: state.refTables,
-        bulkActions: state.arrRegion.activeIndex !== null ? state.arrRegion.funds[state.arrRegion.activeIndex].bulkActions : undefined,
-        versionValidation: state.arrRegion.activeIndex !== null ? state.arrRegion.funds[state.arrRegion.activeIndex].versionValidation : undefined,
-    }),
-    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'fundForm', data})},
-)(FundForm));
-
-
-
+export default connect(mapStateToProps)(
+    reduxForm(
+        {
+            form: 'fundForm',
+            fields: [
+                'name',
+                'ruleSetId',
+                'institutionId',
+                'internalCode',
+                'dateRange',
+                'apScopes[].id',
+                'apScopes[].name',
+                'fundAdmins',
+            ],
+        },
+        state => ({
+            initialValues: state.form.fundForm.initialValues,
+            refTables: state.refTables,
+            bulkActions:
+                state.arrRegion.activeIndex !== null
+                    ? state.arrRegion.funds[state.arrRegion.activeIndex].bulkActions
+                    : undefined,
+            versionValidation:
+                state.arrRegion.activeIndex !== null
+                    ? state.arrRegion.funds[state.arrRegion.activeIndex].versionValidation
+                    : undefined,
+        }),
+        {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'fundForm', data})},
+    )(FundForm),
+);

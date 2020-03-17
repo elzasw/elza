@@ -7,7 +7,6 @@ import {setInputFocus} from 'components/Utils.jsx';
  * Obal modálního dialogu
  */
 class ModalDialogWrapper extends React.Component {
-
     hide = false;
 
     componentDidMount() {
@@ -28,8 +27,8 @@ class ModalDialogWrapper extends React.Component {
     /**
      * Zajistí aby se callback na zavření dialogu zavolal vždy jen jednou! Bootstrap bug.
      */
-    onHide = (e) => {
-        const { onHide } = this.props;
+    onHide = e => {
+        const {onHide} = this.props;
         if (!this.hide) {
             onHide && onHide(e);
             this.hide = true;
@@ -37,15 +36,17 @@ class ModalDialogWrapper extends React.Component {
     };
 
     render() {
-        const { title, className, children } = this.props;
+        const {title, className, children} = this.props;
 
         const renderHeader = title !== null;
 
         return (
-            <Modal backdrop='static' className={className} ref='modal' show={true} onHide={this.onHide}>
-                {renderHeader && <Modal.Header closeButton onHide={this.onHide}>
-                    <Modal.Title>{title}</Modal.Title>
-                </Modal.Header>}
+            <Modal backdrop="static" className={className} ref="modal" show={true} onHide={this.onHide}>
+                {renderHeader && (
+                    <Modal.Header closeButton onHide={this.onHide}>
+                        <Modal.Title>{title}</Modal.Title>
+                    </Modal.Header>
+                )}
 
                 <div ref="modalBody" className="modal-body-container">
                     {children}

@@ -5,7 +5,6 @@ import {i18n} from 'components/shared';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {indexById, objectById, storeFromArea} from 'shared/utils';
 
-
 import {DEFAULT_LIST_SIZE, PARTY_TYPE_CODES} from '../../constants.tsx';
 
 import {SimpleListActions} from 'shared/list';
@@ -15,12 +14,11 @@ import AddPartyForm from '../../components/party/AddPartyForm';
 export const AREA_PARTY_LIST = 'partyList';
 export const AREA_PARTY_DETAIL = 'partyDetail';
 
-
 export const DEFAULT_PARTY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
 
 export const RELATION_CLASS_TYPE_REPEATABILITY = {
-    UNIQUE: "UNIQUE",
-    MULTIPLE: "MULTIPLE",
+    UNIQUE: 'UNIQUE',
+    MULTIPLE: 'MULTIPLE',
 };
 
 export const USE_UNITDATE_ENUM = {
@@ -29,7 +27,6 @@ export const USE_UNITDATE_ENUM = {
     INTERVAL: 'INTERVAL',
 };
 
-
 /**
  * Načtení seznamu osob dle filtru
  *
@@ -37,8 +34,26 @@ export const USE_UNITDATE_ENUM = {
  * @param from {number} od kolikáté položky se má posílat seznam - stránkování
  * @param size {number} počet položek v seznamu - velikost jedné stránky
  */
-export function partyListFetchIfNeeded(versionId = null, from = 0, size = DEFAULT_PARTY_LIST_MAX_SIZE, scopeId = null, state = null) {
-    return SimpleListActions.fetchIfNeeded(AREA_PARTY_LIST, versionId, (parent, filter) => WebApi.findParty(filter.text, versionId, filter.type, filter.itemSpecId, filter.from, size, filter.scopeId, filter.excludeInvalid, filter.state))
+export function partyListFetchIfNeeded(
+    versionId = null,
+    from = 0,
+    size = DEFAULT_PARTY_LIST_MAX_SIZE,
+    scopeId = null,
+    state = null,
+) {
+    return SimpleListActions.fetchIfNeeded(AREA_PARTY_LIST, versionId, (parent, filter) =>
+        WebApi.findParty(
+            filter.text,
+            versionId,
+            filter.type,
+            filter.itemSpecId,
+            filter.from,
+            size,
+            filter.scopeId,
+            filter.excludeInvalid,
+            filter.state,
+        ),
+    );
 }
 
 /**
@@ -59,14 +74,16 @@ export function partyListInvalidate() {
 
 export function partyDetailFetchIfNeeded(id) {
     return (dispatch, getState) => {
-        return dispatch(DetailActions.fetchIfNeeded(AREA_PARTY_DETAIL, id, () => {
-            return WebApi.getParty(id).catch(()=>dispatch(partyDetailClear()));
-        }));
-    }
+        return dispatch(
+            DetailActions.fetchIfNeeded(AREA_PARTY_DETAIL, id, () => {
+                return WebApi.getParty(id).catch(() => dispatch(partyDetailClear()));
+            }),
+        );
+    };
 }
 
 export function partyDetailInvalidate() {
-    return DetailActions.invalidate(AREA_PARTY_DETAIL, null)
+    return DetailActions.invalidate(AREA_PARTY_DETAIL, null);
 }
 
 export function partyDetailClear() {
@@ -84,21 +101,19 @@ export function partyUpdate(obj) {
             }
 
             if (list.filteredRows && indexById(list.filteredRows, obj.id) !== null) {
-                dispatch(partyListInvalidate())
+                dispatch(partyListInvalidate());
             }
         });
-    }
+    };
 }
-
 
 export function partyCreate(party) {
     return dispatch => {
-        return savingApiWrapper(dispatch, WebApi.createParty(party))
-            .then(newParty => {
-                dispatch(modalDialogHide());
-                dispatch(partyDetailFetchIfNeeded(newParty.id));
-            });
-    }
+        return savingApiWrapper(dispatch, WebApi.createParty(party)).then(newParty => {
+            dispatch(modalDialogHide());
+            dispatch(partyDetailFetchIfNeeded(newParty.id));
+        });
+    };
 }
 
 export function partyDelete(id) {
@@ -112,10 +127,10 @@ export function partyDelete(id) {
             }
 
             if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
-                dispatch(partyListInvalidate())
+                dispatch(partyListInvalidate());
             }
-        })
-    }
+        });
+    };
 }
 /* MCV-45365
 export function setValidParty(id) {
@@ -141,9 +156,11 @@ export function relationCreate(relation) {
         return savingApiWrapper(dispatch, WebApi.createRelation(relation))
             .then(() => {
                 dispatch(partyDetailInvalidate());
-                const {app:{partyList}} = getState();
+                const {
+                    app: {partyList},
+                } = getState();
                 if (partyList.filteredRows && indexById(partyList.filteredRows, relation.partyId) !== null) {
-                    dispatch(partyListInvalidate())
+                    dispatch(partyListInvalidate());
                 }
             })
             .catch(error => {
@@ -161,29 +178,31 @@ export function relationDelete(relationId) {
             dispatch(partyDetailInvalidate());
 
             if (list.filteredRows && indexById(list.filteredRows, detail.id) !== null) {
-                dispatch(partyListInvalidate())
+                dispatch(partyListInvalidate());
             }
         });
-    }
+    };
 }
 
 export function relationUpdate(relation) {
     return (dispatch, getState) => {
-        return savingApiWrapper(dispatch, WebApi.updateRelation(relation))
-            .then(() => {
-                dispatch(partyDetailInvalidate());
-                const {app:{partyList}} = getState();
-                if (partyList.filteredRows && indexById(partyList.filteredRows, relation.partyId) !== null) {
-                    dispatch(partyListInvalidate())
-                }
-            });
+        return savingApiWrapper(dispatch, WebApi.updateRelation(relation)).then(() => {
+            dispatch(partyDetailInvalidate());
+            const {
+                app: {partyList},
+            } = getState();
+            if (partyList.filteredRows && indexById(partyList.filteredRows, relation.partyId) !== null) {
+                dispatch(partyListInvalidate());
+            }
+        });
     };
 }
 
-
 export function partyAdd(partyTypeId, versionId, callback, showSubmitTypes = false) {
     return (dispatch, getState) => {
-        const {refTables: {partyTypes}} = getState();
+        const {
+            refTables: {partyTypes},
+        } = getState();
         const partyType = objectById(partyTypes.items, partyTypeId);
 
         let label;
@@ -193,16 +212,19 @@ export function partyAdd(partyTypeId, versionId, callback, showSubmitTypes = fal
             label = i18n('party.addParty');
         }
 
-        dispatch(modalDialogShow(
-            this,
-            label,
-            <AddPartyForm
-                partyType={partyType}
-                showSubmitTypes={showSubmitTypes}
-                versionId={versionId}
-                onSubmitForm={partyAddSubmit.bind(null, callback, dispatch)} />
-        ));
-    }
+        dispatch(
+            modalDialogShow(
+                this,
+                label,
+                <AddPartyForm
+                    partyType={partyType}
+                    showSubmitTypes={showSubmitTypes}
+                    versionId={versionId}
+                    onSubmitForm={partyAddSubmit.bind(null, callback, dispatch)}
+                />,
+            ),
+        );
+    };
 }
 
 export const PARTY_CLASS_BY_TYPE = {
@@ -219,26 +241,25 @@ function partyAddSubmit(callback, dispatch, submitType, data) {
         '@class': PARTY_CLASS_BY_TYPE[data.partyType.code],
         ...other,
         accessPoint: {
-            '@class': "cz.tacr.elza.controller.vo.ApAccessPointVO",
-            ...other.accessPoint
+            '@class': 'cz.tacr.elza.controller.vo.ApAccessPointVO',
+            ...other.accessPoint,
         },
-        partyNames : [
+        partyNames: [
             {
                 ...newName,
                 prefferedName: true,
-            }
-        ]
+            },
+        ],
     };
     const promise = savingApiWrapper(dispatch, WebApi.createParty(party));
-    promise.then((json) => {
+    promise.then(json => {
         callback && callback(json, submitType);
     });
     return promise;
 }
 
-
-const removeUndefined = (obj) => {
-    for (let key in obj ) {
+const removeUndefined = obj => {
+    for (let key in obj) {
         if (obj.hasOwnProperty(key)) {
             if (obj[key] === undefined || obj[key] === null) {
                 delete obj[key];
@@ -248,14 +269,13 @@ const removeUndefined = (obj) => {
     return obj;
 };
 
-export const normalizeNameObject = (obj) => {
+export const normalizeNameObject = obj => {
     if (!obj) {
         return null;
     }
 
     obj.validFrom = normalizeDatation(obj.validFrom);
     obj.validTo = normalizeDatation(obj.validTo);
-
 
     ['mainPart', 'otherPart', 'degreeBefore', 'degreeAfter'].each(i => {
         if (obj[i]) {
@@ -269,7 +289,7 @@ export const normalizeNameObject = (obj) => {
     return obj;
 };
 
-export const normalizeDatation = (obj) => {
+export const normalizeDatation = obj => {
     if (!obj) {
         return null;
     }
@@ -277,8 +297,12 @@ export const normalizeDatation = (obj) => {
     if (obj.value != null && obj.value.trim().length === 0) {
         obj.value = null;
     }
-    if ((obj.value !== null && obj.value !== undefined) || (obj.textDate !== null && obj.textDate !== undefined) || (obj.note !== null && obj.note !== undefined)) {
-        return obj
+    if (
+        (obj.value !== null && obj.value !== undefined) ||
+        (obj.textDate !== null && obj.textDate !== undefined) ||
+        (obj.note !== null && obj.note !== undefined)
+    ) {
+        return obj;
     }
     return null;
 };

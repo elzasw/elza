@@ -19,7 +19,12 @@ const IS_FETCHING = 'isFetching'; // pokud se data načítají
 const DIRTY = 'dirty'; // zneplatněná data
 
 export const SUB_NODE_FORM_CMP = buildIgnoreMap(endWith(FORM_KEY), endWith(UID));
-export const NODE_SUB_NODE_FORM_CMP = buildIgnoreMap(startWith(IS_FETCHING), startWith(DIRTY), endWith(FORM_KEY), endWith(UID));
+export const NODE_SUB_NODE_FORM_CMP = buildIgnoreMap(
+    startWith(IS_FETCHING),
+    startWith(DIRTY),
+    endWith(FORM_KEY),
+    endWith(UID),
+);
 
 function getLoc(state, valueLocation) {
     const formData = state.formData;
@@ -46,7 +51,7 @@ const initialState = {
     fetchingId: null,
     fetched: false,
     dirty: false,
-    needClean: false,   // pokud je true, přenačtou se data a vymaže se aktuální editace - obdoba jako nové zobrazení formuláře
+    needClean: false, // pokud je true, přenačtou se data a vymaže se aktuální editace - obdoba jako nové zobrazení formuláře
     versionId: null,
     nodeId: null,
     data: null,
@@ -142,36 +147,36 @@ export function validate(descItem, refType, valueServerError) {
         }
     }
 
-    error.hasError = (error.spec || error.value || error.calendarType) ? true : false;
+    error.hasError = error.spec || error.value || error.calendarType ? true : false;
 
     return error;
 }
 
 /*
-* Converts the value to specified type through the dataTypeMap
-*/
+ * Converts the value to specified type through the dataTypeMap
+ */
 export function convertValue(value, descItem, type) {
     //  Data type to value conversion functions map
     const dataTypeMap = {
-        PARTY_REF: (value) => {
+        PARTY_REF: value => {
             return {
                 value: value.id,
                 party: value,
             };
         },
-        FILE_REF: (value) => {
+        FILE_REF: value => {
             return {
                 value: value.id,
                 file: value,
             };
         },
-        STRUCTURED: (value) => {
+        STRUCTURED: value => {
             return {
                 value: value.id,
                 structureData: value,
             };
         },
-        RECORD_REF: (value) => {
+        RECORD_REF: value => {
             return {
                 value: value.id,
                 record: value,
@@ -186,7 +191,7 @@ export function convertValue(value, descItem, type) {
                 calendarTypeId: value.calendarTypeId,
             };
         },
-        DEFAULT: (value) => {
+        DEFAULT: value => {
             return {value};
         },
     };
@@ -205,8 +210,7 @@ export function convertValue(value, descItem, type) {
  * @param itemTypeId přidávaný typ
  */
 function addItemType(state, itemTypeId) {
-    let addGroup,
-        addItemType;
+    let addGroup, addItemType;
     state.infoGroups.forEach(group => {
         group.types.forEach(type => {
             if (type.id == itemTypeId) {
@@ -225,12 +229,15 @@ function addItemType(state, itemTypeId) {
     let descItemGroup;
     if (grpIndex !== null) {
         descItemGroup = state.formData.descItemGroups[grpIndex];
-    } else {   // skupina není, je nutné ji nejdříve přidat a následně seřadit skupiny podle pořadí
+    } else {
+        // skupina není, je nutné ji nejdříve přidat a následně seřadit skupiny podle pořadí
         descItemGroup = {code: addGroup.code, name: addGroup.name, descItemTypes: []};
         state.formData.descItemGroups.push(descItemGroup);
 
         // Seřazení
-        state.formData.descItemGroups.sort((a, b) => state.infoGroupsMap[a.code].position - state.infoGroupsMap[b.code].position);
+        state.formData.descItemGroups.sort(
+            (a, b) => state.infoGroupsMap[a.code].position - state.infoGroupsMap[b.code].position,
+        );
     }
 
     // Přidání prvku do skupiny a seřazení prvků podle position
@@ -269,7 +276,8 @@ export default function subNodeForm(state = initialState, action = {}) {
 
     switch (action.type) {
         case types.FUND_FUND_CHANGE_READ_MODE:
-            if (action.readMode) {  // změna na read mode - musíme vyresetovat všechny změny ve formuláři
+            if (action.readMode) {
+                // změna na read mode - musíme vyresetovat všechny změny ve formuláři
                 return {
                     ...state,
                     needClean: true,
@@ -327,9 +335,14 @@ export default function subNodeForm(state = initialState, action = {}) {
                     clearTimeout(loc.descItem.validateTimer);
                 }
                 // FIXME @randak tohle je blbě
-                var fc = () => action.dispatch(
-                    action.formActions.fundSubNodeFormValueValidate(action.versionId, action.routingKey, action.valueLocation),
-                );
+                var fc = () =>
+                    action.dispatch(
+                        action.formActions.fundSubNodeFormValueValidate(
+                            action.versionId,
+                            action.routingKey,
+                            action.valueLocation,
+                        ),
+                    );
                 loc.descItem.validateTimer = setTimeout(fc, 250);
             }
             loc.descItem.error = validate(loc.descItem, refType);
@@ -416,7 +429,12 @@ export default function subNodeForm(state = initialState, action = {}) {
             };
         }
         case types.FUND_NODE_INCREASE_VERSION:
-            if (state.data === null || state.data.parent.id !== action.nodeId || state.data.parent.version !== action.nodeVersionId) { // není pro nás nebo již bylo zavoláno
+            if (
+                state.data === null ||
+                state.data.parent.id !== action.nodeId ||
+                state.data.parent.version !== action.nodeVersionId
+            ) {
+                // není pro nás nebo již bylo zavoláno
                 return state;
             }
 
@@ -431,7 +449,11 @@ export default function subNodeForm(state = initialState, action = {}) {
                 },
             };
         case types.OUTPUT_INCREASE_VERSION:
-            if (state.data === null || state.data.parent.id !== action.outputId || state.data.parent.version != action.outputVersion) {
+            if (
+                state.data === null ||
+                state.data.parent.id !== action.outputId ||
+                state.data.parent.version != action.outputVersion
+            ) {
                 console.error('Received unexpected increase output version', state, action);
                 return state;
             }
@@ -463,7 +485,9 @@ export default function subNodeForm(state = initialState, action = {}) {
                     });
                     break;
                 case 'UPDATE':
-                    loc.descItem.descItemObjectId = action.descItemResult.item ? action.descItemResult.item.descItemObjectId : null;
+                    loc.descItem.descItemObjectId = action.descItemResult.item
+                        ? action.descItemResult.item.descItemObjectId
+                        : null;
                     loc.descItem.prevValue = action.descItemResult.item ? action.descItemResult.item.value : null;
                     if (action.descItemResult.item && loc.descItemType.useSpecification) {
                         loc.descItem.prevDescItemSpecId = action.descItemResult.item.descItemSpecId;
@@ -533,7 +557,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                         const itemType = descItemGroup.descItemTypes[index];
                         itemsMerge = itemType.descItems;
                         if (itemType.rep) {
-                            items.forEach((item => {
+                            items.forEach(item => {
                                 const {value, ...newItem} = item; // odebrání hodnoty
                                 itemsMerge.push(newItem);
                                 if (!value) {
@@ -542,22 +566,24 @@ export default function subNodeForm(state = initialState, action = {}) {
                                     }
                                     state.addItemTypeIds.push(itemType.id);
                                 }
-                            }));
+                            });
                         }
                     }
-
-                } else {   // skupina není, je nutné ji nejdříve přidat a následně seřadit skupiny podle pořadí
+                } else {
+                    // skupina není, je nutné ji nejdříve přidat a následně seřadit skupiny podle pořadí
                     descItemGroup = {code: group.code, name: group.name, descItemTypes: []};
 
-                    items.forEach((item => {
+                    items.forEach(item => {
                         const {value, ...newItem} = item; // odebrání hodnoty
                         itemsMerge.push(newItem);
-                    }));
+                    });
 
                     state.formData.descItemGroups.push(descItemGroup);
 
                     // Seřazení
-                    state.formData.descItemGroups.sort((a, b) => state.infoGroupsMap[a.code].position - state.infoGroupsMap[b.code].position);
+                    state.formData.descItemGroups.sort(
+                        (a, b) => state.infoGroupsMap[a.code].position - state.infoGroupsMap[b.code].position,
+                    );
                 }
 
                 // Přidání prvku do skupiny a seřazení prvků podle position
@@ -567,7 +593,8 @@ export default function subNodeForm(state = initialState, action = {}) {
                         if (!state.addItemTypeIds) {
                             state.addItemTypeIds = [];
                         }
-                        items.forEach((item) => { // musím přidat tolikrát, kolikrát je to v šabloně
+                        items.forEach(item => {
+                            // musím přidat tolikrát, kolikrát je to v šabloně
                             const {value, ...newItem} = item;
                             if (!value) {
                                 state.addItemTypeIds.push(itemType.id);
@@ -587,7 +614,6 @@ export default function subNodeForm(state = initialState, action = {}) {
                     return state.refTypesMap[a.id].viewOrder - state.refTypesMap[b.id].viewOrder;
                     //return a.viewOrder - b.viewOrder
                 });
-
             });
 
             state.formData = {...state.formData};
@@ -604,20 +630,23 @@ export default function subNodeForm(state = initialState, action = {}) {
             addItemType(state, action.descItemTypeId);
             return {...state};
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
-            if (action.onlyDescItems) { // jen desc items, nic víc
+            if (action.onlyDescItems) {
+                // jen desc items, nic víc
                 loc.descItemType.descItems = [];
             } else {
                 var infoType = state.infoTypesMap[loc.descItemType.id];
                 var refType = state.refTypesMap[loc.descItemType.id];
 
                 // Odebereme pouze pokud je pole jiné než: REQUIRED nebo RECOMMENDED
-                if (infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED') { // ponecháme, pouze odebereme hodnoty
+                if (infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED') {
+                    // ponecháme, pouze odebereme hodnoty
                     // Hodnoty odebereme
                     loc.descItemType.descItems = [];
 
                     // Upravení a opravení seznamu hodnot, případně přidání prázdných
                     consolidateDescItems(loc.descItemType, infoType, refType, true);
-                } else { // kompletně odebereme
+                } else {
+                    // kompletně odebereme
                     loc.descItemGroup.descItemTypes = [
                         ...loc.descItemGroup.descItemTypes.slice(0, action.valueLocation.descItemTypeIndex),
                         ...loc.descItemGroup.descItemTypes.slice(action.valueLocation.descItemTypeIndex + 1),
@@ -749,4 +778,3 @@ export default function subNodeForm(state = initialState, action = {}) {
             return state;
     }
 }
-

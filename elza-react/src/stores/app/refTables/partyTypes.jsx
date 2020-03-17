@@ -5,18 +5,18 @@ const initialState = {
     isFetching: false,
     fetched: false,
     dirty: false,
-    items: []
+    items: [],
 };
 
 export default function partyTypes(state = initialState, action = {}) {
     switch (action.type) {
-        case types.REF_PARTY_TYPES_REQUEST:{
+        case types.REF_PARTY_TYPES_REQUEST: {
             return {
                 ...state,
-                isFetching: true
-            }
+                isFetching: true,
+            };
         }
-        case types.REF_PARTY_TYPES_RECEIVE:{
+        case types.REF_PARTY_TYPES_RECEIVE: {
             const relationType = [...action.items.map(i => i.relationTypes)];
 
             return {
@@ -27,14 +27,27 @@ export default function partyTypes(state = initialState, action = {}) {
                 items: action.items,
                 lastUpdated: action.receivedAt,
                 relationTypesForClass: {
-                    [RELATION_CLASS_CODES.BIRTH]: relationType.filter(i => i && i.relationClassType && i.relationClassType.code === RELATION_CLASS_CODES.BIRTH).map(i => i.id).filter((i, index, self) => index === self.indexOf(i)),
-                    [RELATION_CLASS_CODES.EXTINCTION]: relationType.filter(i => i && i.relationClassType && i.relationClassType.code === RELATION_CLASS_CODES.EXTINCTION).map(i => i.id).filter((i, index, self) => index === self.indexOf(i))
+                    [RELATION_CLASS_CODES.BIRTH]: relationType
+                        .filter(
+                            i => i && i.relationClassType && i.relationClassType.code === RELATION_CLASS_CODES.BIRTH,
+                        )
+                        .map(i => i.id)
+                        .filter((i, index, self) => index === self.indexOf(i)),
+                    [RELATION_CLASS_CODES.EXTINCTION]: relationType
+                        .filter(
+                            i =>
+                                i &&
+                                i.relationClassType &&
+                                i.relationClassType.code === RELATION_CLASS_CODES.EXTINCTION,
+                        )
+                        .map(i => i.id)
+                        .filter((i, index, self) => index === self.indexOf(i)),
                 },
-            }
+            };
         }
         case types.CHANGE_PACKAGE:
             return initialState;
         default:
-            return state
+            return state;
     }
 }

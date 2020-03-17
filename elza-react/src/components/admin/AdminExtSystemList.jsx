@@ -14,13 +14,11 @@ import {
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
 import {storeFromArea} from 'shared/utils';
 
-
 import './AdminExtSystemList.scss';
 import AdminExtSystemListItem from './AdminExtSystemListItem';
 import {FOCUS_KEYS} from '../../constants.tsx';
 
 class AdminExtSystemList extends AbstractReactComponent {
-
     state = {
         initialized: false,
     };
@@ -40,17 +38,22 @@ class AdminExtSystemList extends AbstractReactComponent {
     };
 
     trySetFocus = (props = this.props) => {
-        const { focus } = props;
+        const {focus} = props;
 
         if (canSetFocus() && focus) {
-            if (isFocusFor(focus, null, 1)) {   // focus po ztrátě
-                if (this.refs.extSystemList) {   // ještě nemusí existovat
+            if (isFocusFor(focus, null, 1)) {
+                // focus po ztrátě
+                if (this.refs.extSystemList) {
+                    // ještě nemusí existovat
                     this.setState({}, () => {
                         this.refs.extSystemList.focus();
                         focusWasSet();
                     });
                 }
-            } else if (isFocusFor(focus, FOCUS_KEYS.ADMIN_EXT_SYSTEM, 1) || isFocusFor(focus, FOCUS_KEYS.ADMIN_EXT_SYSTEM, 1, 'list')) {
+            } else if (
+                isFocusFor(focus, FOCUS_KEYS.ADMIN_EXT_SYSTEM, 1) ||
+                isFocusFor(focus, FOCUS_KEYS.ADMIN_EXT_SYSTEM, 1, 'list')
+            ) {
                 this.setState({}, () => {
                     this.refs.extSystemList.focus();
                     focusWasSet();
@@ -63,13 +66,13 @@ class AdminExtSystemList extends AbstractReactComponent {
         this.props.dispatch(extSystemDetailFetchIfNeeded(item.id));
     };
 
-    renderListItem = (props) => {
-        const { item } = props;
+    renderListItem = props => {
+        const {item} = props;
         return <AdminExtSystemListItem {...item} />;
     };
 
     render() {
-        const { extSystemDetail, extSystemList } = this.props;
+        const {extSystemDetail, extSystemList} = this.props;
 
         let activeIndex = null;
         if (extSystemList.fetched && extSystemDetail.id !== null) {
@@ -79,33 +82,39 @@ class AdminExtSystemList extends AbstractReactComponent {
         let list;
         if (extSystemList.fetched) {
             if (extSystemList.rows.length > 0) {
-                list = <ListBox
-                    ref='extSystemList'
-                    items={extSystemList.rows}
-                    activeIndex={activeIndex}
-                    renderItemContent={this.renderListItem}
-                    onFocus={this.handleItemDetail}
-                    onSelect={this.handleItemDetail}
-                />;
+                list = (
+                    <ListBox
+                        ref="extSystemList"
+                        items={extSystemList.rows}
+                        activeIndex={activeIndex}
+                        renderItemContent={this.renderListItem}
+                        onFocus={this.handleItemDetail}
+                        onSelect={this.handleItemDetail}
+                    />
+                );
             } else {
-                list = <ul>
-                    <li className="noResult">{i18n('search.action.noResult')}</li>
-                </ul>;
+                list = (
+                    <ul>
+                        <li className="noResult">{i18n('search.action.noResult')}</li>
+                    </ul>
+                );
             }
 
             // Wrap
             list = <div className="list">{list}</div>;
         }
 
-        return <div className="ext-system-list">
-            <StoreHorizontalLoader store={extSystemList}/>
-            {list}
-        </div>;
+        return (
+            <div className="ext-system-list">
+                <StoreHorizontalLoader store={extSystemList} />
+                {list}
+            </div>
+        );
     }
 }
 
-export default connect((state) => {
-    const { focus } = state;
+export default connect(state => {
+    const {focus} = state;
     const extSystemList = storeFromArea(state, AREA_EXT_SYSTEM_LIST);
     const extSystemDetail = storeFromArea(state, AREA_EXT_SYSTEM_DETAIL);
     return {

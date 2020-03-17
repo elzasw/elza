@@ -5,7 +5,7 @@ const initialState = {
     area: null,
     component: null,
     item: null,
-}
+};
 
 export default function focus(state = initialState, action) {
     switch (action.type) {
@@ -16,8 +16,8 @@ export default function focus(state = initialState, action) {
                 area: action.area,
                 component: action.component,
                 item: action.item,
-            }
+            };
         default:
-            return state
+            return state;
     }
 }

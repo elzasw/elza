@@ -17,7 +17,6 @@ import objectById from '../../../shared/utils/objectById';
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
 class StructureSubNodeForm extends AbstractReactComponent {
-
     static propTypes = {
         versionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
@@ -30,11 +29,11 @@ class StructureSubNodeForm extends AbstractReactComponent {
         subNodeForm: PropTypes.object,
         focus: PropTypes.object,
         readMode: PropTypes.bool,
-        descItemFactory: PropTypes.object.isRequired
+        descItemFactory: PropTypes.object.isRequired,
     };
 
     static defaultProps = {
-        readMode: false
+        readMode: false,
     };
 
     initFocus = () => {
@@ -60,38 +59,71 @@ class StructureSubNodeForm extends AbstractReactComponent {
         const descItemTypes = this.descItemTypeItems();
 
         // Modální dialog
-        this.props.dispatch(modalDialogShow(
-            this,
-            i18n('subNodeForm.descItemType.title.add'),
-            <AddDescItemTypeForm
-                descItemTypes={descItemTypes}
-                onSubmitForm={(data) => this.props.dispatch(structureFormActions.fundSubNodeFormDescItemTypeAdd(versionId, null, data.descItemTypeId.id))}
-            />
-        ));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('subNodeForm.descItemType.title.add'),
+                <AddDescItemTypeForm
+                    descItemTypes={descItemTypes}
+                    onSubmitForm={data =>
+                        this.props.dispatch(
+                            structureFormActions.fundSubNodeFormDescItemTypeAdd(
+                                versionId,
+                                null,
+                                data.descItemTypeId.id,
+                            ),
+                        )
+                    }
+                />,
+            ),
+        );
     };
 
     descItemTypeItems = () => {
         const {fund, subNodeForm, userDetail} = this.props;
 
-        let {activeVersion:{strictMode}} = fund;
+        let {
+            activeVersion: {strictMode},
+        } = fund;
 
         const userStrictMode = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fund.id);
         if (userStrictMode && userStrictMode.value !== null) {
             strictMode = userStrictMode.value === 'true';
         }
-        return getDescItemsAddTree(subNodeForm.formData.descItemGroups, subNodeForm.infoTypesMap, subNodeForm.refTypesMap, subNodeForm.infoGroups, strictMode);
+        return getDescItemsAddTree(
+            subNodeForm.formData.descItemGroups,
+            subNodeForm.infoTypesMap,
+            subNodeForm.refTypesMap,
+            subNodeForm.infoGroups,
+            strictMode,
+        );
     };
 
     render() {
-        const {versionId, focus, fundId, rulDataTypes, calendarTypes, structureTypes, descItemTypes, subNodeForm, readMode} = this.props;
+        const {
+            versionId,
+            focus,
+            fundId,
+            rulDataTypes,
+            calendarTypes,
+            structureTypes,
+            descItemTypes,
+            subNodeForm,
+            readMode,
+        } = this.props;
 
         if (!subNodeForm || !subNodeForm.fetched) {
-            return <Loading />
+            return <Loading />;
         }
 
         return (
             <div className="structure-item-form-container">
-                {this.descItemTypeItems().length > 0 && !readMode && <NoFocusButton onClick={this.handleAddDescItemType}><Icon glyph="fa-plus-circle"/>{i18n('subNodeForm.section.item')}</NoFocusButton>}
+                {this.descItemTypeItems().length > 0 && !readMode && (
+                    <NoFocusButton onClick={this.handleAddDescItemType}>
+                        <Icon glyph="fa-plus-circle" />
+                        {i18n('subNodeForm.section.item')}
+                    </NoFocusButton>
+                )}
                 <SubNodeForm
                     ref="subNodeForm"
                     typePrefix="structure"
@@ -116,11 +148,11 @@ class StructureSubNodeForm extends AbstractReactComponent {
                     formActions={structureFormActions}
                     showNodeAddons={false}
                     readMode={readMode}
-                  customActions={this.props.customActions}
-                  descItemFactory={this.props.descItemFactory}
+                    customActions={this.props.customActions}
+                    descItemFactory={this.props.descItemFactory}
                 />
             </div>
-        )
+        );
     }
 }
 
@@ -130,7 +162,7 @@ function mapStateToProps(state) {
     let structureTypes = null;
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];
-        structureTypes = objectById(refTables.structureTypes.data, fund.versionId, "versionId");
+        structureTypes = objectById(refTables.structureTypes.data, fund.versionId, 'versionId');
     }
 
     return {
@@ -142,7 +174,7 @@ function mapStateToProps(state) {
         rulDataTypes: refTables.rulDataTypes,
         calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,
-    }
+    };
 }
 
 export default connect(mapStateToProps)(StructureSubNodeForm);

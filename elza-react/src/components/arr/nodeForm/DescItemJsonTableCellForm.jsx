@@ -58,7 +58,7 @@ class DescItemJsonTableCellForm extends AbstractReactComponent {
         onClose();
     };
     actionMap = {
-        'FORM_CLOSE': this.handleFormClose,
+        FORM_CLOSE: this.handleFormClose,
     };
 
     handleShortcuts(action, e) {
@@ -95,13 +95,13 @@ class DescItemJsonTableCellForm extends AbstractReactComponent {
         const {value} = this.state;
 
         return (
-            <Shortcuts name="DescItemJsonTableCellForm" handler={(action, e) => this.handleShortcuts(action, e)}
-                       className={'cell-edit-container ' + (className ? className : '')} stopPropagation={false}>
-                <FormInput
-                    type="text"
-                    value={value}
-                    onChange={this.handleChange}
-                />
+            <Shortcuts
+                name="DescItemJsonTableCellForm"
+                handler={(action, e) => this.handleShortcuts(action, e)}
+                className={'cell-edit-container ' + (className ? className : '')}
+                stopPropagation={false}
+            >
+                <FormInput type="text" value={value} onChange={this.handleChange} />
             </Shortcuts>
         );
     }

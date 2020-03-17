@@ -19,18 +19,17 @@ import {FUND_ARR_NODE} from '../../actions/user/Permission';
  */
 class PermissionCheckboxsForm extends AbstractReactComponent {
     static propTypes = {
-        permCodes: PropTypes.array.isRequired,    // seznam kódů oprávnění
-        onChangePermission: PropTypes.func.isRequired,    // callback při změně
-        onAddNodePermission: PropTypes.func.isRequired,    // callback při přidání oprávnění na JP
-        onRemoveNodePermission: PropTypes.func.isRequired,    // callback při přidání oprávnění na JP
-        labelPrefix: PropTypes.string.isRequired,    // i18n prefix pro názvy položek
-        permission: PropTypes.object.isRequired,    // oprávnění, které se edituje
-        permissionAll: PropTypes.object,    // oprávnění pro all položky, pokud exisutje (a needituje se právě ono, tedy je naplněno pouze pokud permission !== permissionAll a vůbec permissionAll může existovat)
-        permissionAllTitle: PropTypes.string,    // odkaz do resource textů jak se jmenuje zdroj all persmission
-        groups: PropTypes.array,    // seznam přiřazených skupin
+        permCodes: PropTypes.array.isRequired, // seznam kódů oprávnění
+        onChangePermission: PropTypes.func.isRequired, // callback při změně
+        onAddNodePermission: PropTypes.func.isRequired, // callback při přidání oprávnění na JP
+        onRemoveNodePermission: PropTypes.func.isRequired, // callback při přidání oprávnění na JP
+        labelPrefix: PropTypes.string.isRequired, // i18n prefix pro názvy položek
+        permission: PropTypes.object.isRequired, // oprávnění, které se edituje
+        permissionAll: PropTypes.object, // oprávnění pro all položky, pokud exisutje (a needituje se právě ono, tedy je naplněno pouze pokud permission !== permissionAll a vůbec permissionAll může existovat)
+        permissionAllTitle: PropTypes.string, // odkaz do resource textů jak se jmenuje zdroj all persmission
+        groups: PropTypes.array, // seznam přiřazených skupin
         fundId: PropTypes.number,
     };
-
 
     constructor(props) {
         super(props);
@@ -49,7 +48,7 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
         }
     }
 
-    fetch = (props) => {
+    fetch = props => {
         if (props.fundId) {
             let nodes = [];
             const fundArrData = props.permission[FUND_ARR_NODE];
@@ -62,99 +61,113 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
 
             if (nodes && nodes.length > 0) {
                 WebApi.findNodeByIds(props.fundId, nodes).then(nodes => {
-                    this.setState({ nodes });
+                    this.setState({nodes});
                 });
             } else {
-                this.setState({ nodes: [] });
+                this.setState({nodes: []});
             }
         }
     };
 
     renderNodes = () => {
-        return <FundNodesList
-            nodes={this.state.nodes}
-            addInLabel
-            addLabel={'admin.perms.tabs.funds.perm.FUND_ARR_NODE.add'}
-            onDeleteNode={this.handleRemoveNode}
-            onAddNode={this.handleAddNodes}
-            fundId={this.props.fundId}
-        />;
+        return (
+            <FundNodesList
+                nodes={this.state.nodes}
+                addInLabel
+                addLabel={'admin.perms.tabs.funds.perm.FUND_ARR_NODE.add'}
+                onDeleteNode={this.handleRemoveNode}
+                onAddNode={this.handleAddNodes}
+                fundId={this.props.fundId}
+            />
+        );
     };
 
-    handleRemoveNode = (node) => {
+    handleRemoveNode = node => {
         if (window.confirm(i18n('arr.fund.nodes.deleteNode'))) {
             this.props.onRemoveNodePermission(this.props.fundId, node);
         }
     };
 
     handleAddNodes = () => {
-        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.nodes.title.select'),
-            <FundNodesSelectForm
-                fundId={this.props.fundId}
-                onSubmitForm={(ids, nodes) => {
-                    this.props.onAddNodePermission(this.props.fundId, nodes);
-                }}
-            />));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.fund.nodes.title.select'),
+                <FundNodesSelectForm
+                    fundId={this.props.fundId}
+                    onSubmitForm={(ids, nodes) => {
+                        this.props.onAddNodePermission(this.props.fundId, nodes);
+                    }}
+                />,
+            ),
+        );
     };
 
     render() {
-        const { permissionAllTitle, groups, permission, labelPrefix, onChangePermission, permCodes } = this.props;
+        const {permissionAllTitle, groups, permission, labelPrefix, onChangePermission, permCodes} = this.props;
         const groupMap = groups ? getMapFromList(groups) : {};
 
-        return <div className="permission-checkbox-form">
-            <div className="items-left">
-                {permCodes.map(permCode => {
-                    const obj = permission[permCode] || { groupIds: {} };
-                    let checked = false;
-                    if (obj && obj.checked) {
-                        checked = true;
-                    }
+        return (
+            <div className="permission-checkbox-form">
+                <div className="items-left">
+                    {permCodes.map(permCode => {
+                        const obj = permission[permCode] || {groupIds: {}};
+                        let checked = false;
+                        if (obj && obj.checked) {
+                            checked = true;
+                        }
 
-                    // Odkomentovat jen pokud bychom chtěli zobrazovat "dědění" z položky "všechny ..."
-                    // let allChecked = (permissionAll && permissionAll[permCode]) ? permissionAll[permCode].checked : false;
-                    let allChecked = false;
+                        // Odkomentovat jen pokud bychom chtěli zobrazovat "dědění" z položky "všechny ..."
+                        // let allChecked = (permissionAll && permissionAll[permCode]) ? permissionAll[permCode].checked : false;
+                        let allChecked = false;
 
-                    let infoIcon;
-                    let infoMessage;
-                    if (Object.keys(obj.groupIds).length > 0 || checked || allChecked) {
-                        const groupNames = Object.keys(obj.groupIds).map(id => groupMap[id] ? groupMap[id].name : '');
-                        infoIcon = <Icon style={{ color: 'green' }} glyph="fa-check"/>;
+                        let infoIcon;
+                        let infoMessage;
+                        if (Object.keys(obj.groupIds).length > 0 || checked || allChecked) {
+                            const groupNames = Object.keys(obj.groupIds).map(id =>
+                                groupMap[id] ? groupMap[id].name : '',
+                            );
+                            infoIcon = <Icon style={{color: 'green'}} glyph="fa-check" />;
 
-                        infoMessage = <div className="permission-checkbox-form-tooltip">
-                            <div>{i18n('permission.activePermission.title')}</div>
-                            <br/>
-                            <div>{i18n('permission.source.title')}:</div>
-                            <ul>
-                                {groupNames.map(x => <li>{x}</li>)}
-                                {allChecked && <li>{i18n(permissionAllTitle)}</li>}
-                                {checked && <li>{i18n('permission.explicit.title')}</li>}
-                            </ul>
-                        </div>;
-                    } else {
-                        infoIcon = <Icon style={{ visibility: 'hidden' }} glyph="fa-check"/>;
-                    }
+                            infoMessage = (
+                                <div className="permission-checkbox-form-tooltip">
+                                    <div>{i18n('permission.activePermission.title')}</div>
+                                    <br />
+                                    <div>{i18n('permission.source.title')}:</div>
+                                    <ul>
+                                        {groupNames.map(x => (
+                                            <li>{x}</li>
+                                        ))}
+                                        {allChecked && <li>{i18n(permissionAllTitle)}</li>}
+                                        {checked && <li>{i18n('permission.explicit.title')}</li>}
+                                    </ul>
+                                </div>
+                            );
+                        } else {
+                            infoIcon = <Icon style={{visibility: 'hidden'}} glyph="fa-check" />;
+                        }
 
-                    if (infoMessage) {
-                        infoIcon = <TooltipTrigger
-                            key="info"
-                            content={infoMessage}
-                            placement="left"
-                            showDelay={1}
-                        >
-                            {infoIcon}
-                        </TooltipTrigger>;
-                    }
+                        if (infoMessage) {
+                            infoIcon = (
+                                <TooltipTrigger key="info" content={infoMessage} placement="left" showDelay={1}>
+                                    {infoIcon}
+                                </TooltipTrigger>
+                            );
+                        }
 
-
-                    return <div className="item-row">
-                        {infoIcon}
-                        <FormCheck inline checked={checked}
-                                   onChange={e => onChangePermission(e, permCode)}>{i18n(`${labelPrefix}${permCode}`)}</FormCheck>
-                    </div>;
-                })}
+                        return (
+                            <div className="item-row">
+                                {infoIcon}
+                                <FormCheck inline checked={checked} onChange={e => onChangePermission(e, permCode)}>
+                                    {i18n(`${labelPrefix}${permCode}`)}
+                                </FormCheck>
+                            </div>
+                        );
+                    })}
+                </div>
+                {this.props.fundId && <div className="items-right">{this.renderNodes()}</div>}
             </div>
-            {this.props.fundId && <div className="items-right">{this.renderNodes()}</div>}
-        </div>;
+        );
     }
 }
 

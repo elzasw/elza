@@ -29,19 +29,16 @@ var MIN_INTEGER = -Math.pow(2, 31);
 var MAX_INTEGER = Math.pow(2, 31) - 1;
 
 export function validateInt(number) {
-    if ((number % 1) !== 0)
-        return i18n('validate.validateInt.notInt');
-    if (number < MIN_INTEGER || number > MAX_INTEGER)
-        return i18n('validate.validateInt.outOfRange');
+    if (number % 1 !== 0) return i18n('validate.validateInt.notInt');
+    if (number < MIN_INTEGER || number > MAX_INTEGER) return i18n('validate.validateInt.outOfRange');
     return null;
-};
+}
 
 export function validateDuration(duration) {
     const number = fromDuration(duration);
-    if (number < 0 || number > MAX_INTEGER)
-        return i18n('validate.validateDuration.outOfRange');
+    if (number < 0 || number > MAX_INTEGER) return i18n('validate.validateDuration.outOfRange');
     return null;
-};
+}
 
 /**
  * Validace souřadnice typu bod.
@@ -51,18 +48,26 @@ export function validateCoordinatePoint(value) {
     if (value.indexOf('POINT') === 0) {
         let left = value.indexOf('(') + 1;
         let right = value.indexOf(')');
-        if ((right - left) === 0) {
+        if (right - left === 0) {
             return i18n('subNodeForm.validate.value.notEmpty');
         }
         let data = value.substr(left, value.indexOf(')') - left).split(' ');
-        if (value === '' || value === ' ' || data.length !== 2 || data[0] == null || data[0] === '' || data[1] == null || data[1] === '') {
+        if (
+            value === '' ||
+            value === ' ' ||
+            data.length !== 2 ||
+            data[0] == null ||
+            data[0] === '' ||
+            data[1] == null ||
+            data[1] === ''
+        ) {
             return i18n('subNodeForm.errorPointCoordinates');
         } else {
             return null;
         }
     }
     return null;
-};
+}
 
 /**
  * Validace zda je číslo desetinným číslem kladným i záporným v intervalu desetinného čísla JAVA
@@ -70,10 +75,13 @@ export function validateCoordinatePoint(value) {
  **/
 export function validateDouble(doubleNumber) {
     const stringNumber = '' + doubleNumber;
-    if (stringNumber.replace(',', '').length > 18 || (stringNumber.indexOf(',') !== -1 && stringNumber.substr(stringNumber.indexOf(',') + 1).length > 6))
+    if (
+        stringNumber.replace(',', '').length > 18 ||
+        (stringNumber.indexOf(',') !== -1 && stringNumber.substr(stringNumber.indexOf(',') + 1).length > 6)
+    )
         return i18n('validate.validateDouble.outOfRange');
     return null;
-};
+}
 
 /**
  * Validace zda je datace ve správném formátu
@@ -99,7 +107,7 @@ export function validateDouble(doubleNumber) {
  * @param number int
  **/
 export function normalizeInt(number) {
-    var pole = ('' + number);
+    var pole = '' + number;
     var output = '';
     for (var i = 0, len = pole.length; i < len; i++) {
         if ((i === 0 && pole[i] === '-') || pole[i] === '0' || parseInt(pole[i])) {
@@ -115,7 +123,7 @@ export function normalizeInt(number) {
  * @returns {string}
  */
 export function normalizeDuration(duration) {
-    const pole = ('' + duration);
+    const pole = '' + duration;
     let allow = '';
     let k = 0;
     for (let i = 0, len = pole.length; i < len; i++) {
@@ -137,7 +145,7 @@ export function normalizeDuration(duration) {
  * @returns {string}
  */
 export function fromDuration(duration) {
-    const pole = ('' + duration);
+    const pole = '' + duration;
     let allow = '';
     for (let i = 0, len = pole.length; i < len; i++) {
         if (parseInt(pole[i]) || pole[i] === '0' || pole[i] === ':') {
@@ -163,8 +171,8 @@ export function fromDuration(duration) {
 export function toDuration(number) {
     number = Number(number);
     let h = Math.floor(number / 3600);
-    let m = Math.floor(number % 3600 / 60);
-    let s = Math.floor(number % 3600 % 60);
+    let m = Math.floor((number % 3600) / 60);
+    let s = Math.floor((number % 3600) % 60);
     return pad2(h) + ':' + pad2(m) + ':' + pad2(s);
 }
 
@@ -205,8 +213,8 @@ export function pad2(number) {
  */
 export function formatDate(date) {
     let month = date.getMonth() + 1,
-        day   = date.getDate(),
-        year  = date.getFullYear();
+        day = date.getDate(),
+        year = date.getFullYear();
     return [year, pad2(month), pad2(day)].join('-');
 }
 
@@ -219,13 +227,17 @@ export function normalizeDouble(number) {
     var output = '';
     var existComa = false;
     for (var i = 0, len = pole.length; i < len; i++) {
-        if ((i === 0 && pole[i] === '-') || parseInt(pole[i]) || pole[i] === '0' || ((pole[i] == ',' || pole[i] == '.') && !existComa && (existComa = true))) {
+        if (
+            (i === 0 && pole[i] === '-') ||
+            parseInt(pole[i]) ||
+            pole[i] === '0' ||
+            ((pole[i] == ',' || pole[i] == '.') && !existComa && (existComa = true))
+        ) {
             output += pole[i] == '.' ? ',' : pole[i];
         }
     }
     return output;
 }
-
 
 /**
  * Částečná normalizace - vrací čísla s '.' nikoliv ','
@@ -237,7 +249,12 @@ export function normalizeDoubleWithDot(number) {
     var output = '';
     var existComa = false;
     for (var i = 0, len = pole.length; i < len; i++) {
-        if ((i === 0 && pole[i] === '-') || parseInt(pole[i]) || pole[i] === '0' || ((pole[i] == ',' || pole[i] == '.') && !existComa && (existComa = true))) {
+        if (
+            (i === 0 && pole[i] === '-') ||
+            parseInt(pole[i]) ||
+            pole[i] === '0' ||
+            ((pole[i] == ',' || pole[i] == '.') && !existComa && (existComa = true))
+        ) {
             output += pole[i];
         }
     }
@@ -260,7 +277,6 @@ export function normalizeString(text, allowedLength = 255) {
  * test validačních a normalizačních funkcí
  **/
 function testValidations() {
-
     const FORMAT_EACH = 5;
     const FORMAT_GROUP = 3;
     const FORMAT_LINE = 1;
@@ -297,7 +313,7 @@ function testValidations() {
 
     /** Rychlostní test */
     var performanceTest = (testValues, test, oldTest = null, times, format = FORMAT_RETURN) => {
-        let testFunction = (item) => {
+        let testFunction = item => {
             var i;
             if (!oldTest) {
                 let start = performance.now();
@@ -352,7 +368,12 @@ function testValidations() {
         });
 
         results.forEach((item, index) => {
-            console.debug(testValues[index], 'new: ' + item[0] / times, 'old:' + item[1] / times, 'compare:' + (item[0] / times - item[1] / times));
+            console.debug(
+                testValues[index],
+                'new: ' + item[0] / times,
+                'old:' + item[1] / times,
+                'compare:' + (item[0] / times - item[1] / times),
+            );
         });
     };
 

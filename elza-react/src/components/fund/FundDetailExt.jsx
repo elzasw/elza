@@ -23,11 +23,9 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
         this.bindMethods('handleShowInArr');
     }
 
-    componentDidMount() {
-    }
+    componentDidMount() {}
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-    }
+    UNSAFE_componentWillReceiveProps(nextProps) {}
 
     handleShowInArr(version) {
         // Přepnutí na stránku pořádání
@@ -39,15 +37,15 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
         this.props.dispatch(selectFundTab(fundObj));
     }
 
-    handleDownload = (id) => {
+    handleDownload = id => {
         this.props.dispatch(downloadFile(UrlFactory.downloadOutputResult(id)));
     };
 
     render() {
-        const { fundDetail } = this.props;
+        const {fundDetail} = this.props;
 
         if (fundDetail.id === null) {
-            return <div className='fund-detail-container'></div>;
+            return <div className="fund-detail-container"></div>;
         }
 
         const validOutputs = fundDetail.validNamedOutputs.map((arrOutput, index) => {
@@ -76,8 +74,12 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
                     <div className="versions-container">
                         {output.outputs.map(output => (
                             <div className="version">
-                                <div
-                                    className="version-label">{i18n('arr.fund.outputDefinition.version', dateToString(new Date(output.deleteDate)))}</div>
+                                <div className="version-label">
+                                    {i18n(
+                                        'arr.fund.outputDefinition.version',
+                                        dateToString(new Date(output.deleteDate)),
+                                    )}
+                                </div>
                                 <Button
                                     onClick={() => {
                                         this.handleDownload(output.outputResultId);
@@ -94,33 +96,40 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
         });
 
         return (
-            <div className='fund-detail-ext-container'>
-                {validOutputs.length > 0 && <div className="outputs-container">
-                    <h1>{i18n('arr.fund.outputDefinition.active')}</h1>
-                    {validOutputs}
-                </div>}
-                {histOutputs.length > 0 && <div className="outputs-container">
-                    <h1>{i18n('arr.fund.outputDefinition.hist')}</h1>
-                    {histOutputs}
-                </div>}
+            <div className="fund-detail-ext-container">
+                {validOutputs.length > 0 && (
+                    <div className="outputs-container">
+                        <h1>{i18n('arr.fund.outputDefinition.active')}</h1>
+                        {validOutputs}
+                    </div>
+                )}
+                {histOutputs.length > 0 && (
+                    <div className="outputs-container">
+                        <h1>{i18n('arr.fund.outputDefinition.hist')}</h1>
+                        {histOutputs}
+                    </div>
+                )}
                 <div className="versions-container">
                     <h1>{i18n('arr.fund.version.list')}</h1>
                     {fundDetail.versions.map((ver, index) => {
                         if (ver.lockDate) {
                             return (
-                                <div className='fund-version' key={'fund-version-' + index}>
-                                    <div
-                                        className="version-label">{i18n('arr.fund.version', dateToString(new Date(ver.lockDate)))}</div>
-                                    <Button onClick={this.handleShowInArr.bind(this, ver)}
-                                            variant='link'>{i18n('arr.fund.action.showInArr')}</Button>
+                                <div className="fund-version" key={'fund-version-' + index}>
+                                    <div className="version-label">
+                                        {i18n('arr.fund.version', dateToString(new Date(ver.lockDate)))}
+                                    </div>
+                                    <Button onClick={this.handleShowInArr.bind(this, ver)} variant="link">
+                                        {i18n('arr.fund.action.showInArr')}
+                                    </Button>
                                 </div>
                             );
                         } else {
                             return (
-                                <div className='fund-version' key={'fund-version-' + index}>
+                                <div className="fund-version" key={'fund-version-' + index}>
                                     <div className="version-label">{i18n('arr.fund.currentVersion')}</div>
-                                    <Button onClick={this.handleShowInArr.bind(this, ver)}
-                                            variant='link'>{i18n('arr.fund.action.openInArr')}</Button>
+                                    <Button onClick={this.handleShowInArr.bind(this, ver)} variant="link">
+                                        {i18n('arr.fund.action.openInArr')}
+                                    </Button>
                                 </div>
                             );
                         }

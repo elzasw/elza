@@ -8,7 +8,6 @@ import '../arr/nodeForm/DescItemTypeSpec.scss';
  * Komponenta pro zobrazení specifikace pro daný atribut.
  */
 class ItemTypeSpec extends AbstractReactComponent {
-
     constructor(props) {
         super(props);
 
@@ -18,13 +17,14 @@ class ItemTypeSpec extends AbstractReactComponent {
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         // Při změně hodnoty inicializujeme filtr položek na aktuálne vybranou položku
-        if (this.props.descItem.specId !== nextProps.specId) {  // při externí změně aktualizujeme seznam položek
+        if (this.props.descItem.specId !== nextProps.specId) {
+            // při externí změně aktualizujeme seznam položek
             this.setState(this.getStateFromProps(nextProps));
         }
     }
 
     getStateFromProps = (props = this.props) => {
-        const { refType, infoType, strictMode } = props;
+        const {refType, infoType, strictMode} = props;
 
         const specItemsInfo = this.getSpecItems(refType, infoType, '', strictMode); // filr je vždy vypnutý, nově se filtruje v autocomplete;
         return {
@@ -47,20 +47,33 @@ class ItemTypeSpec extends AbstractReactComponent {
         const lowerFilterText = filterText ? filterText.toLocaleLowerCase() : filterText;
 
         // Položky
-        if (refType.itemSpecsTree && refType.itemSpecsTree.length > 0) {    // stromová reprezentace
+        if (refType.itemSpecsTree && refType.itemSpecsTree.length > 0) {
+            // stromová reprezentace
             items = [];
-            const treeNodeIndex = { index: 0 };
+            const treeNodeIndex = {index: 0};
             refType.itemSpecsTree.forEach(node => {
-                const newNode = this.getSpecTreeNode(node, refType, infoType, lowerFilterText, treeNodeIndex, strictMode);
+                const newNode = this.getSpecTreeNode(
+                    node,
+                    refType,
+                    infoType,
+                    lowerFilterText,
+                    treeNodeIndex,
+                    strictMode,
+                );
                 if (newNode) {
                     items.push(newNode);
                 }
             });
-        } else {    // plochý seznam
+        } else {
+            // plochý seznam
             items = [];
             infoType.specs.forEach(spec => {
                 const refSpec = refType.descItemSpecsMap.get(spec.id);
-                if (!lowerFilterText || (lowerFilterText && refSpec.name.toLocaleLowerCase().indexOf(lowerFilterText) >= 0)) { // vypnutý filtr nebo položka vyhovuje filtru
+                if (
+                    !lowerFilterText ||
+                    (lowerFilterText && refSpec.name.toLocaleLowerCase().indexOf(lowerFilterText) >= 0)
+                ) {
+                    // vypnutý filtr nebo položka vyhovuje filtru
                     const infoSpec = infoType.descItemSpecsMap.get(spec.id);
                     if (!strictMode || (strictMode && infoSpec.type !== 'IMPOSSIBLE')) {
                         items.push({
@@ -74,10 +87,15 @@ class ItemTypeSpec extends AbstractReactComponent {
         }
 
         // Oblíbené položky
-        if (infoType.favoriteSpecIds && infoType.favoriteSpecIds.length > 0) {  // má oblíbené položky
+        if (infoType.favoriteSpecIds && infoType.favoriteSpecIds.length > 0) {
+            // má oblíbené položky
             infoType.favoriteSpecIds.forEach(specId => {
                 const refSpec = refType.descItemSpecsMap.get(specId);
-                if (!lowerFilterText || (lowerFilterText && refSpec.name.toLocaleLowerCase().indexOf(lowerFilterText) >= 0)) { // vypnutý filtr nebo položka vyhovuje filtru
+                if (
+                    !lowerFilterText ||
+                    (lowerFilterText && refSpec.name.toLocaleLowerCase().indexOf(lowerFilterText) >= 0)
+                ) {
+                    // vypnutý filtr nebo položka vyhovuje filtru
                     const infoSpec = infoType.descItemSpecsMap.get(specId);
                     if (!strictMode || (strictMode && infoSpec.type !== 'IMPOSSIBLE')) {
                         favoriteItems.push(specId);
@@ -106,7 +124,7 @@ class ItemTypeSpec extends AbstractReactComponent {
         switch (node.type) {
             case 'GROUP': {
                 const newNode = {
-                    id: 'g-' + (treeNodeIndex.index++),
+                    id: 'g-' + treeNodeIndex.index++,
                     name: node.name,
                     node: true,
                     expanded: !!lowerFilterText,
@@ -115,11 +133,19 @@ class ItemTypeSpec extends AbstractReactComponent {
 
                 // Přidání potomků
                 node.children.forEach(child => {
-                    const newChild = this.getSpecTreeNode(child, refType, infoType, lowerFilterText, treeNodeIndex, strictMode);
+                    const newChild = this.getSpecTreeNode(
+                        child,
+                        refType,
+                        infoType,
+                        lowerFilterText,
+                        treeNodeIndex,
+                        strictMode,
+                    );
                     newChild && newNode.children.push(newChild);
                 });
 
-                if (newNode.children.length === 0) {   // nemá potomky, vůbec ho nechceme ve stromu
+                if (newNode.children.length === 0) {
+                    // nemá potomky, vůbec ho nechceme ve stromu
                     return null;
                 }
 
@@ -127,11 +153,16 @@ class ItemTypeSpec extends AbstractReactComponent {
             }
             case 'ITEM': {
                 const infoSpec = infoType.descItemSpecsMap.get(node.specId);
-                if (infoSpec) { // jen když je pro daný formulář povolena
+                if (infoSpec) {
+                    // jen když je pro daný formulář povolena
                     const refSpec = refType.descItemSpecsMap.get(node.specId);
 
                     // Filtr
-                    if (!lowerFilterText || (lowerFilterText && refSpec.name.toLocaleLowerCase().indexOf(lowerFilterText) >= 0)) { // vypnutý filtr nebo položka vyhovuje filtru
+                    if (
+                        !lowerFilterText ||
+                        (lowerFilterText && refSpec.name.toLocaleLowerCase().indexOf(lowerFilterText) >= 0)
+                    ) {
+                        // vypnutý filtr nebo položka vyhovuje filtru
                         if (!strictMode || (strictMode && infoSpec.type !== 'IMPOSSIBLE')) {
                             return {
                                 ...refSpec,
@@ -164,15 +195,14 @@ class ItemTypeSpec extends AbstractReactComponent {
         if (descItem.specId !== null && descItem.specId !== '') {
             const info = infoType.descItemSpecsMap.get(descItem.specId);
             const ref = refType.descItemSpecsMap.get(descItem.specId);
-            value = { ...ref, ...info };
-
+            value = {...ref, ...info};
         }
         return value;
     };
 
     render() {
-        const { onChange, onBlur, onFocus, descItem, locked, infoType, refType, readMode } = this.props;
-        const { favoriteItems, items } = this.state;
+        const {onChange, onBlur, onFocus, descItem, locked, infoType, refType, readMode} = this.props;
+        const {favoriteItems, items} = this.state;
 
         if (readMode) {
             let nameVal;
@@ -182,7 +212,9 @@ class ItemTypeSpec extends AbstractReactComponent {
                 nameVal = refType.descItemSpecsMap.get(descItem.specId).name;
             }
             return (
-                <span key="spec" className="desc-item-spec-label">{nameVal}</span>
+                <span key="spec" className="desc-item-spec-label">
+                    {nameVal}
+                </span>
             );
         }
 
@@ -206,38 +238,42 @@ class ItemTypeSpec extends AbstractReactComponent {
 
         // Doplňující vlastnosti v případě rozdílných typů - strom nebo list
         let autocompleteAdditionalProps;
-        if (refType.itemSpecsTree && refType.itemSpecsTree.length > 0) {    // tree
+        if (refType.itemSpecsTree && refType.itemSpecsTree.length > 0) {
+            // tree
             autocompleteAdditionalProps = {
                 tree: true,
-                allowSelectItem: (item) => !item.node && !item.label,
-                allowFocusItem: (item) => !item.group && !item.label,
+                allowSelectItem: item => !item.node && !item.label,
+                allowFocusItem: item => !item.group && !item.label,
             };
-        } else {    // list
+        } else {
+            // list
             autocompleteAdditionalProps = {
-                allowSelectItem: (item) => !item.group && !item.label,
-                allowFocusItem: (item) => !item.group && !item.label,
+                allowSelectItem: item => !item.group && !item.label,
+                allowFocusItem: item => !item.group && !item.label,
             };
         }
 
         // ---
 
-        return <Autocomplete
-            key="spec"
-            ref="autocomplete"
-            {...descItemSpecProps}
-            className={cls}
-            value={value}
-            title={descItem.error.spec}
-            items={items}
-            favoriteItems={favoriteItems}
-            itemsTitleItem={{ label: true, className: 'spec-group', name: i18n('subNodeForm.descItemType.spec.all') }}
-            favoriteItemsTitleItem={{
-                label: true,
-                className: 'spec-group',
-                name: i18n('subNodeForm.descItemType.spec.favorite'),
-            }}
-            {...autocompleteAdditionalProps}
-        />;
+        return (
+            <Autocomplete
+                key="spec"
+                ref="autocomplete"
+                {...descItemSpecProps}
+                className={cls}
+                value={value}
+                title={descItem.error.spec}
+                items={items}
+                favoriteItems={favoriteItems}
+                itemsTitleItem={{label: true, className: 'spec-group', name: i18n('subNodeForm.descItemType.spec.all')}}
+                favoriteItemsTitleItem={{
+                    label: true,
+                    className: 'spec-group',
+                    name: i18n('subNodeForm.descItemType.spec.favorite'),
+                }}
+                {...autocompleteAdditionalProps}
+            />
+        );
     }
 }
 

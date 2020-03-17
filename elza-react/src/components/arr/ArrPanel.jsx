@@ -20,11 +20,14 @@ class ArrPanel extends AbstractReactComponent {
     };
 
     render() {
-        return <div key='arr-panel' className='arr-panel'>
-            <Button className="reset-button" title={i18n('arr.panel.reset')} onClick={this.handleReset}><Icon
-                glyph="fa-times"/></Button>
-            <span className="title">{i18n('arr.panel.title', this.props.name)}</span>
-        </div>;
+        return (
+            <div key="arr-panel" className="arr-panel">
+                <Button className="reset-button" title={i18n('arr.panel.reset')} onClick={this.handleReset}>
+                    <Icon glyph="fa-times" />
+                </Button>
+                <span className="title">{i18n('arr.panel.title', this.props.name)}</span>
+            </div>
+        );
     }
 }
 

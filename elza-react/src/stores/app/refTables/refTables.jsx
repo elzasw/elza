@@ -35,134 +35,132 @@ const initialState = {
     groups: DetailReducer(),
     eidTypes: DetailReducer(),
     issueStates: DetailReducer(),
-    issueTypes: DetailReducer()
+    issueTypes: DetailReducer(),
 };
 
 export default function refTables(state = initialState, action = {}) {
-    if (action.area && typeof action.area  === "string" && action.area.indexOf("refTables.") === 0) {
-        let useArea = action.area.substring("refTables.".length);
+    if (action.area && typeof action.area === 'string' && action.area.indexOf('refTables.') === 0) {
+        let useArea = action.area.substring('refTables.'.length);
         const actionNew = {...action, area: useArea};
         return processAreaStores(state, actionNew);
     }
     switch (action.type) {
         case types.REF_TEMPLATES_REQUEST:
-        case types.REF_TEMPLATES_RECEIVE:{
+        case types.REF_TEMPLATES_RECEIVE: {
             return {
                 ...state,
-                templates: templates(state.templates, action)
-            }
+                templates: templates(state.templates, action),
+            };
         }
         case types.REF_RULE_SET_REQUEST:
-        case types.REF_RULE_SET_RECEIVE:{
+        case types.REF_RULE_SET_RECEIVE: {
             return {
                 ...state,
-                ruleSet: ruleSet(state.ruleSet, action)
-            }
+                ruleSet: ruleSet(state.ruleSet, action),
+            };
         }
         case types.REF_INSTITUTIONS_REQUEST:
         case types.REF_INSTITUTIONS_RECEIVE:
-        case types.CHANGE_INSTITUTION:{
+        case types.CHANGE_INSTITUTION: {
             return {
                 ...state,
-                institutions: institutions(state.institutions, action)
-            }
+                institutions: institutions(state.institutions, action),
+            };
         }
         case types.REF_PARTY_NAME_FORM_TYPES_REQUEST:
-        case types.REF_PARTY_NAME_FORM_TYPES_RECEIVE:{
+        case types.REF_PARTY_NAME_FORM_TYPES_RECEIVE: {
             return {
                 ...state,
-                partyNameFormTypes: partyNameFormTypes(state.partyNameFormTypes, action)
-            }
+                partyNameFormTypes: partyNameFormTypes(state.partyNameFormTypes, action),
+            };
         }
         case types.REF_PARTY_TYPES_REQUEST:
-        case types.REF_PARTY_TYPES_RECEIVE:{
+        case types.REF_PARTY_TYPES_RECEIVE: {
             return {
                 ...state,
-                partyTypes: partyTypes(state.partyTypes, action)
-            }
+                partyTypes: partyTypes(state.partyTypes, action),
+            };
         }
         case types.REF_RECORD_TYPES_REQUEST:
-        case types.REF_RECORD_TYPES_RECEIVE:{
+        case types.REF_RECORD_TYPES_RECEIVE: {
             return {
                 ...state,
-                recordTypes: recordTypes(state.recordTypes, action)
-            }
+                recordTypes: recordTypes(state.recordTypes, action),
+            };
         }
         case types.REF_RUL_DATA_TYPES_REQUEST:
-        case types.REF_RUL_DATA_TYPES_RECEIVE:{
+        case types.REF_RUL_DATA_TYPES_RECEIVE: {
             return {
                 ...state,
-                rulDataTypes: rulDataTypes(state.rulDataTypes, action)
-            }
+                rulDataTypes: rulDataTypes(state.rulDataTypes, action),
+            };
         }
         case types.REF_CALENDAR_TYPES_REQUEST:
-        case types.REF_CALENDAR_TYPES_RECEIVE:{
+        case types.REF_CALENDAR_TYPES_RECEIVE: {
             return {
                 ...state,
-                calendarTypes: calendarTypes(state.calendarTypes, action)
-            }
+                calendarTypes: calendarTypes(state.calendarTypes, action),
+            };
         }
         case types.REF_SCOPES_TYPES_DIRTY:
         case types.REF_SCOPES_TYPES_FETCHING:
         case types.REF_SCOPES_TYPES_REQUEST:
-        case types.REF_SCOPES_TYPES_RECEIVE:{
+        case types.REF_SCOPES_TYPES_RECEIVE: {
             return {
                 ...state,
-                scopesData: scopesData(state.scopesData, action)
-            }
+                scopesData: scopesData(state.scopesData, action),
+            };
         }
         case types.REF_STRUCTURE_TYPES_DIRTY:
         case types.REF_STRUCTURE_TYPES_FETCHING:
-        case types.REF_STRUCTURE_TYPES_RECEIVE:{
+        case types.REF_STRUCTURE_TYPES_RECEIVE: {
             return {
                 ...state,
-                structureTypes: structureTypes(state.structureTypes, action)
-            }
+                structureTypes: structureTypes(state.structureTypes, action),
+            };
         }
         case types.REF_DESC_ITEM_TYPES_REQUEST:
-        case types.REF_DESC_ITEM_TYPES_RECEIVE:{
+        case types.REF_DESC_ITEM_TYPES_RECEIVE: {
             return {
                 ...state,
-                descItemTypes: descItemTypes(state.descItemTypes, action)
-            }
+                descItemTypes: descItemTypes(state.descItemTypes, action),
+            };
         }
         case types.REF_VISIBLE_POLICY_TYPES_REQUEST:
-        case types.REF_VISIBLE_POLICY_TYPES_RECEIVE:{
+        case types.REF_VISIBLE_POLICY_TYPES_RECEIVE: {
             return {
                 ...state,
-                visiblePolicyTypes: visiblePolicyTypes(state.visiblePolicyTypes, action)
-            }
+                visiblePolicyTypes: visiblePolicyTypes(state.visiblePolicyTypes, action),
+            };
         }
         case types.REF_OUTPUT_TYPES_REQUEST:
-        case types.REF_OUTPUT_TYPES_RECEIVE:{
+        case types.REF_OUTPUT_TYPES_RECEIVE: {
             return {
                 ...state,
-                outputTypes: outputTypes(state.outputTypes, action)
-            }
+                outputTypes: outputTypes(state.outputTypes, action),
+            };
         }
 
         case types.REF_EXTERNAL_SYSTEMS_INVALID:
         case types.REF_EXTERNAL_SYSTEMS_REQUEST:
-        case types.REF_EXTERNAL_SYSTEMS_RECEIVE:{
+        case types.REF_EXTERNAL_SYSTEMS_RECEIVE: {
             return {
                 ...state,
-                externalSystems: externalSystems(state.externalSystems, action)
-            }
+                externalSystems: externalSystems(state.externalSystems, action),
+            };
         }
 
-        case types.CHANGE_PACKAGE:{
+        case types.CHANGE_PACKAGE: {
             return {
                 ...state,
                 ruleSet: ruleSet(state.ruleSet, action),
                 descItemTypes: descItemTypes(state.descItemTypes, action),
                 outputTypes: outputTypes(state.outputTypes, action),
                 templates: templates(state.templates, action),
-                partyTypes: partyTypes(state.partyTypes, action)
-            }
+                partyTypes: partyTypes(state.partyTypes, action),
+            };
         }
         default:
-            return state
+            return state;
     }
 }
-
-

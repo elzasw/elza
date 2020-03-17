@@ -36,7 +36,6 @@ import editRegistryForm from './app/registry/form/editRegistryForm.jsx';
 
 import addUserForm from './app/admin/addUserForm.jsx';
 
-
 const rootReducer = combineReducers({
     ap,
     app,
@@ -71,14 +70,14 @@ const rootReducer = combineReducers({
         editRegistryForm: editRegistryForm,
         searchForm,
         addUserForm,
-    }),/*.normalize({
+    }) /*.normalize({
         templateSettingsForm: {
             'evenPageOffsetX': normalizeInt,
             'evenPageOffsetY': normalizeInt,
             'oddPageOffsetX': normalizeInt,
             'oddPageOffsetY': normalizeInt,
         }
-    })*/
+    })*/,
 });
 
 export default rootReducer;

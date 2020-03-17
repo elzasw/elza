@@ -5,19 +5,19 @@ const initialState = {
     fetched: false,
     dirty: false,
     items: [],
-    currentDataKey: null
+    currentDataKey: null,
 };
 
 export default function outputTypes(state = initialState, action = {}) {
     switch (action.type) {
-        case types.REF_OUTPUT_TYPES_REQUEST:{
+        case types.REF_OUTPUT_TYPES_REQUEST: {
             return {
                 ...state,
                 currentDataKey: action.dataKey,
-                isFetching: true
-            }
+                isFetching: true,
+            };
         }
-        case types.REF_OUTPUT_TYPES_RECEIVE:{
+        case types.REF_OUTPUT_TYPES_RECEIVE: {
             if (action.dataKey !== state.currentDataKey) {
                 return state;
             }
@@ -27,13 +27,13 @@ export default function outputTypes(state = initialState, action = {}) {
                 fetched: true,
                 dirty: false,
                 items: action.items,
-                lastUpdated: Date.now()
-            }
+                lastUpdated: Date.now(),
+            };
         }
-        case types.CHANGE_PACKAGE:{
+        case types.CHANGE_PACKAGE: {
             return {
-                dirty: true
-            }
+                dirty: true,
+            };
         }
         default:
             return state;

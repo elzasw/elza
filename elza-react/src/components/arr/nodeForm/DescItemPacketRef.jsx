@@ -23,7 +23,8 @@ class DescItemPacketRef extends AbstractReactComponent {
             'handleSearchChange',
             'renderPacket',
             'handleFundPackets',
-            'handleCreatePacket');
+            'handleCreatePacket',
+        );
 
         this.state = {packets: [], active: false};
     }
@@ -45,12 +46,11 @@ class DescItemPacketRef extends AbstractReactComponent {
 
     handleSearchChange(text) {
         const {fundId} = this.props;
-        WebApi.getPackets(fundId, text, 1000)
-              .then(json => {
-                  this.setState({
-                      packets: json,
-                  });
-              });
+        WebApi.getPackets(fundId, text, 1000).then(json => {
+            this.setState({
+                packets: json,
+            });
+        });
     }
 
     focus() {
@@ -142,28 +142,43 @@ class DescItemPacketRef extends AbstractReactComponent {
         const {refTables} = this.props;
         return (
             <div className="create-packet">
-                <Button onClick={this.handleCreatePacket}><Icon
-                    glyph='fa-plus'/>{i18n('arr.fund.packets.action.add.single')}</Button>
+                <Button onClick={this.handleCreatePacket}>
+                    <Icon glyph="fa-plus" />
+                    {i18n('arr.fund.packets.action.add.single')}
+                </Button>
                 <Button onClick={this.handleFundPackets}>{i18n('arr.panel.title.packets')}</Button>
             </div>
         );
     }
 
     render() {
-        const {descItem, onChange, onBlur, locked, packetTypes, packets, singleDescItemTypeEdit, readMode, cal} = this.props;
+        const {
+            descItem,
+            onChange,
+            onBlur,
+            locked,
+            packetTypes,
+            packets,
+            singleDescItemTypeEdit,
+            readMode,
+            cal,
+        } = this.props;
         let packet = descItem.packet ? descItem.packet : null;
         if (readMode || descItem.undefined) {
             let calValue = cal && packet == null ? i18n('subNodeForm.descItemType.calculable') : '';
             return (
-                <DescItemLabel value={packet ? this.pf.format(packet) : calValue} cal={cal}
-                               notIdentified={descItem.undefined}/>
+                <DescItemLabel
+                    value={packet ? this.pf.format(packet) : calValue}
+                    cal={cal}
+                    notIdentified={descItem.undefined}
+                />
             );
         }
 
         const footer = this.renderFooter();
 
         return (
-            <div className='desc-item-value desc-item-value-parts'>
+            <div className="desc-item-value desc-item-value-parts">
                 {/**<select
                  {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
                  ref='focusEl'
@@ -177,9 +192,17 @@ class DescItemPacketRef extends AbstractReactComponent {
                  </select>*/}
 
                 <ItemTooltipWrapper
-                    tooltipTitle="dataType.packetRef.format" {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked || descItem.undefined, ['autocomplete-packet'])}>
+                    tooltipTitle="dataType.packetRef.format"
+                    {...decorateAutocompleteValue(
+                        this,
+                        descItem.hasFocus,
+                        descItem.error.value,
+                        locked || descItem.undefined,
+                        ['autocomplete-packet'],
+                    )}
+                >
                     <Autocomplete
-                        ref='focusEl'
+                        ref="focusEl"
                         customFilter
                         onFocus={this.handleFocus}
                         onBlur={this.handleBlur}
@@ -189,7 +212,7 @@ class DescItemPacketRef extends AbstractReactComponent {
                         onSearchChange={this.handleSearchChange}
                         onChange={onChange}
                         renderItem={this.renderPacket}
-                        getItemName={(item) => this.getPacketName(item)}
+                        getItemName={item => this.getPacketName(item)}
                         footer={footer}
                     />
                 </ItemTooltipWrapper>

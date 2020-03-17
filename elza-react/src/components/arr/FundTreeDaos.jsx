@@ -25,8 +25,15 @@ class FundTreeDaos extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleNodeClick', 'handleContextMenu', 'handleCollapse', 'handleFulltextChange', 'handleFulltextSearch',
-            'handleFulltextPrevItem', 'handleFulltextNextItem');
+        this.bindMethods(
+            'handleNodeClick',
+            'handleContextMenu',
+            'handleCollapse',
+            'handleFulltextChange',
+            'handleFulltextSearch',
+            'handleFulltextPrevItem',
+            'handleFulltextNextItem',
+        );
     }
 
     componentDidMount() {
@@ -68,10 +75,7 @@ class FundTreeDaos extends AbstractReactComponent {
         e.preventDefault();
         e.stopPropagation();
 
-        var menu = (
-            <ul className="dropdown-menu">
-            </ul>
-        );
+        var menu = <ul className="dropdown-menu"></ul>;
 
         this.props.dispatch(fundTreeFocusNode(this.props.area, this.props.versionId, node));
         this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y: e.clientY}));
@@ -83,7 +87,9 @@ class FundTreeDaos extends AbstractReactComponent {
      * @param e {Object} event
      */
     handleNodeClick(node, ensureItemVisible, e) {
-        this.props.dispatch(fundTreeSelectNode(this.props.area, this.props.versionId, node.id, false, false, null, ensureItemVisible));
+        this.props.dispatch(
+            fundTreeSelectNode(this.props.area, this.props.versionId, node.id, false, false, null, ensureItemVisible),
+        );
     }
 
     /**
@@ -99,7 +105,9 @@ class FundTreeDaos extends AbstractReactComponent {
                 {...this.props}
                 cutLongLabels={true}
                 onOpenCloseNode={(node, expand) => {
-                    expand ? this.props.dispatch(fundTreeNodeExpand(this.props.area, node)) : this.props.dispatch(fundTreeNodeCollapse(this.props.area, this.props.versionId, node));
+                    expand
+                        ? this.props.dispatch(fundTreeNodeExpand(this.props.area, node))
+                        : this.props.dispatch(fundTreeNodeCollapse(this.props.area, this.props.versionId, node));
                 }}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
@@ -114,4 +122,3 @@ class FundTreeDaos extends AbstractReactComponent {
 }
 
 export default connect()(FundTreeDaos);
-

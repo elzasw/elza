@@ -6,8 +6,8 @@ export default function editRegistryForm(state, action) {
             if (action.form === 'editRegistryForm') {
                 return {
                     ...state,
-                    initialValues: action.data
-                }
+                    initialValues: action.data,
+                };
             } else {
                 return state;
             }
@@ -15,4 +15,3 @@ export default function editRegistryForm(state, action) {
             return state;
     }
 }
-

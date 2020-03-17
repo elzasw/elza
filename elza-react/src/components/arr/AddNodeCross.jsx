@@ -35,23 +35,39 @@ const AddNodeCross = class AddNodeCross extends AbstractReactComponent {
         const notRoot = !isFundRootId(this.props.node.id);
         return (
             <div className="hid">
-                {notRoot &&
-                    [<div key="addBefore" className="but top" onClick={this.handleAddNode.bind(this,'BEFORE')}>
-                        <div className="ico"><span className="fa fa-arrow-up"></span></div><div className="lbl">{i18n('arr.fund.addNode.before')}</div></div>,
-                    <div key="addAfter" className="but bottom" onClick={this.handleAddNode.bind(this,'AFTER')}>
-                        <div className="ico"><span className="fa fa-arrow-down"></span></div><div className="lbl">{i18n('arr.fund.addNode.after')}</div></div>,
-                    <div key="addAtEnd" className="but bottom2" onClick={this.handleAddNode.bind(this,'ATEND')}>
-                        <div className="ico"><span className="fa fa-arrow-down"></span></div><div className="lbl">{i18n('arr.fund.addNode.atEnd')}</div></div>]
-                }
-                <div key="addChild" className="but right" onClick={this.handleAddNode.bind(this,'CHILD')}>
-                    <div className="ico"><span className="fa fa-level-up fa-rotate-90"></span></div><div className="lbl">{i18n('arr.fund.addNode.child')}</div></div>
+                {notRoot && [
+                    <div key="addBefore" className="but top" onClick={this.handleAddNode.bind(this, 'BEFORE')}>
+                        <div className="ico">
+                            <span className="fa fa-arrow-up"></span>
+                        </div>
+                        <div className="lbl">{i18n('arr.fund.addNode.before')}</div>
+                    </div>,
+                    <div key="addAfter" className="but bottom" onClick={this.handleAddNode.bind(this, 'AFTER')}>
+                        <div className="ico">
+                            <span className="fa fa-arrow-down"></span>
+                        </div>
+                        <div className="lbl">{i18n('arr.fund.addNode.after')}</div>
+                    </div>,
+                    <div key="addAtEnd" className="but bottom2" onClick={this.handleAddNode.bind(this, 'ATEND')}>
+                        <div className="ico">
+                            <span className="fa fa-arrow-down"></span>
+                        </div>
+                        <div className="lbl">{i18n('arr.fund.addNode.atEnd')}</div>
+                    </div>,
+                ]}
+                <div key="addChild" className="but right" onClick={this.handleAddNode.bind(this, 'CHILD')}>
+                    <div className="ico">
+                        <span className="fa fa-level-up fa-rotate-90"></span>
+                    </div>
+                    <div className="lbl">{i18n('arr.fund.addNode.child')}</div>
+                </div>
             </div>
-        )
+        );
     }
 
     render() {
-        const { userDetail, fundId, closed, arrPerm} = this.props;
-        let formActions
+        const {userDetail, fundId, closed, arrPerm} = this.props;
+        let formActions;
 
         var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
         var settingsValues = settings.value != 'false';
@@ -68,7 +84,9 @@ const AddNodeCross = class AddNodeCross extends AbstractReactComponent {
         return (
             <div className="con2">
                 <div className="cont">
-                    <div className={active ? "but center blue-but":"but center"}><span className="ico fa fa-plus"></span></div>
+                    <div className={active ? 'but center blue-but' : 'but center'}>
+                        <span className="ico fa fa-plus"></span>
+                    </div>
                     {formActions}
                 </div>
             </div>
@@ -79,6 +97,6 @@ const AddNodeCross = class AddNodeCross extends AbstractReactComponent {
 AddNodeCross.propTypes = {
     node: PropTypes.any.isRequired,
     userDetail: PropTypes.object.isRequired,
-    selectedSubNodeIndex: PropTypes.number.isRequired
+    selectedSubNodeIndex: PropTypes.number.isRequired,
 };
 export default connect()(AddNodeCross);

@@ -25,8 +25,15 @@ class FundTreeMovementsRight extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleNodeClick', 'handleContextMenu', 'handleCollapse', 'handleFulltextChange', 'handleFulltextSearch',
-            'handleFulltextPrevItem', 'handleFulltextNextItem');
+        this.bindMethods(
+            'handleNodeClick',
+            'handleContextMenu',
+            'handleCollapse',
+            'handleFulltextChange',
+            'handleFulltextSearch',
+            'handleFulltextPrevItem',
+            'handleFulltextNextItem',
+        );
     }
 
     componentDidMount() {
@@ -68,10 +75,7 @@ class FundTreeMovementsRight extends AbstractReactComponent {
         e.preventDefault();
         e.stopPropagation();
 
-        var menu = (
-            <ul className="dropdown-menu">
-            </ul>
-        );
+        var menu = <ul className="dropdown-menu"></ul>;
 
         this.props.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, this.props.versionId, node));
         this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y: e.clientY}));
@@ -83,14 +87,26 @@ class FundTreeMovementsRight extends AbstractReactComponent {
      * @param e {Object} event
      */
     handleNodeClick(node, ensureItemVisible, e) {
-        this.props.dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, this.props.versionId, node.id, false, false, null, ensureItemVisible));
+        this.props.dispatch(
+            fundTreeSelectNode(
+                types.FUND_TREE_AREA_MOVEMENTS_RIGHT,
+                this.props.versionId,
+                node.id,
+                false,
+                false,
+                null,
+                ensureItemVisible,
+            ),
+        );
     }
 
     /**
      * Zabalení stromu
      */
     handleCollapse() {
-        this.props.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, this.props.versionId, this.props.fund));
+        this.props.dispatch(
+            fundTreeCollapse(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, this.props.versionId, this.props.fund),
+        );
     }
 
     render() {
@@ -99,7 +115,11 @@ class FundTreeMovementsRight extends AbstractReactComponent {
                 {...this.props}
                 cutLongLabels={true}
                 onOpenCloseNode={(node, expand) => {
-                    expand ? this.props.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, node)) : this.props.dispatch(fundTreeNodeCollapse(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, this.props.versionId, node));
+                    expand
+                        ? this.props.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, node))
+                        : this.props.dispatch(
+                              fundTreeNodeCollapse(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, this.props.versionId, node),
+                          );
                 }}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
@@ -114,4 +134,3 @@ class FundTreeMovementsRight extends AbstractReactComponent {
 }
 
 export default connect()(FundTreeMovementsRight);
-

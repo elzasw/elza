@@ -1,6 +1,6 @@
-import { WebApi } from '../../actions/index.jsx';
-import { storeFromArea } from '../../shared/utils';
-import { ItemFormActions } from './ItemFormActions';
+import {WebApi} from '../../actions/index.jsx';
+import {storeFromArea} from '../../shared/utils';
+import {ItemFormActions} from './ItemFormActions';
 
 interface BaseAction {
     area: string;
@@ -8,8 +8,7 @@ interface BaseAction {
 }
 
 export class AccessPointFormActions extends ItemFormActions {
-
-    static AREA = "ACCESS_POINT";
+    static AREA = 'ACCESS_POINT';
 
     constructor() {
         super(AccessPointFormActions.AREA);
@@ -25,27 +24,27 @@ export class AccessPointFormActions extends ItemFormActions {
 
     // @Override
     _getItemFormStore(state) {
-        return state.ap.form
+        return state.ap.form;
     }
 
     // @Override
     _getParentObjStore(state) {
-        return storeFromArea(state, "registryList");
+        return storeFromArea(state, 'registryList');
     }
 
     // @Override
     _callCreateDescItem(parent, descItemTypeId, item) {
-        return WebApi.changeAccessPointItems(parent.id, [{updateOp: "CREATE", item}])
+        return WebApi.changeAccessPointItems(parent.id, [{updateOp: 'CREATE', item}]);
     }
 
     // @Override
     _callUpdateDescItem(parent, item) {
-        return WebApi.changeAccessPointItems(parent.id, [{updateOp: "UPDATE", item}]);
+        return WebApi.changeAccessPointItems(parent.id, [{updateOp: 'UPDATE', item}]);
     }
 
     // @Override
     _callDeleteDescItem(parent, item) {
-        return WebApi.changeAccessPointItems(parent.id, [{updateOp: "DELETE", item}]);
+        return WebApi.changeAccessPointItems(parent.id, [{updateOp: 'DELETE', item}]);
     }
 
     // @Override

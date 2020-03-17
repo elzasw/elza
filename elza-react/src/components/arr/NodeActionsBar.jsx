@@ -48,13 +48,17 @@ class NodeActionsBar extends AbstractReactComponent {
     handleFindPosition() {
         const {node} = this.props;
 
-        if (!this.isFilterUsed()) { // Pokud je aktivní filtr je goto zakázáno
+        if (!this.isFilterUsed()) {
+            // Pokud je aktivní filtr je goto zakázáno
             let count = 0;
             if (node.nodeCount) {
                 count = node.nodeCount;
             }
-            this.props.dispatch(modalDialogShow(this, i18n('arr.fund.subNodes.findPosition'),
-                <GoToPositionForm onSubmitForm={this.handleFindPositionSubmit} maxPosition={count}/>,
+            this.props.dispatch(
+                modalDialogShow(
+                    this,
+                    i18n('arr.fund.subNodes.findPosition'),
+                    <GoToPositionForm onSubmitForm={this.handleFindPositionSubmit} maxPosition={count} />,
                 ),
             );
         }
@@ -71,81 +75,98 @@ class NodeActionsBar extends AbstractReactComponent {
     }
 
     render() {
-        const {simplified, node, selectedSubNodeIndex, versionId, userDetail, fundId, closed, onSwitchNode, arrPerm} = this.props;
-        var gotoTitle = this.isFilterUsed() ? i18n('arr.fund.subNodes.findPosition.filterActive') : i18n('arr.fund.subNodes.findPosition');
+        const {
+            simplified,
+            node,
+            selectedSubNodeIndex,
+            versionId,
+            userDetail,
+            fundId,
+            closed,
+            onSwitchNode,
+            arrPerm,
+        } = this.props;
+        var gotoTitle = this.isFilterUsed()
+            ? i18n('arr.fund.subNodes.findPosition.filterActive')
+            : i18n('arr.fund.subNodes.findPosition');
 
         let text = node.nodeCount;
         if (node.selectedSubNodeId && node.nodeIndex !== null) {
-            text = (node.nodeIndex + 1) + ' / ' + text;
+            text = node.nodeIndex + 1 + ' / ' + text;
         }
 
-        const onNextAction = (e) => {
+        const onNextAction = e => {
             if (simplified) onSwitchNode('nextItem', e);
             else this.props.dispatch(fundSubNodesNextPage(versionId, node.id, node.routingKey));
         };
 
-        const onPrevAction = (e) => {
+        const onPrevAction = e => {
             if (simplified) onSwitchNode('prevItem', e);
             else this.props.dispatch(fundSubNodesPrevPage(versionId, node.id, node.routingKey));
         };
 
         return (
-            <div key='actions' className='node-actions-bar'>
-                <div key='actions' className='actions'>
-                    <AddNodeCross node={node} selectedSubNodeIndex={selectedSubNodeIndex} versionId={versionId}
-                                  userDetail={userDetail} fundId={fundId} arrPerm={arrPerm} closed={closed}/>
+            <div key="actions" className="node-actions-bar">
+                <div key="actions" className="actions">
+                    <AddNodeCross
+                        node={node}
+                        selectedSubNodeIndex={selectedSubNodeIndex}
+                        versionId={versionId}
+                        userDetail={userDetail}
+                        fundId={fundId}
+                        arrPerm={arrPerm}
+                        closed={closed}
+                    />
                     <div className="button-wrap">
                         <div className="left-side">
-                            {!simplified &&
-                            <Search
-                                tabIndex={-1}
-                                ref='search'
-                                className='search-input'
-                                placeholder={i18n('search.input.filter')}
-                                value={node.filterText}
-                                onClear={() => {
-                                    this.props.dispatch(fundNodeSubNodeFulltextSearch(''));
-                                }}
-                                onSearch={(value) => {
-                                    this.props.dispatch(fundNodeSubNodeFulltextSearch(value));
-                                }}
-                                filter
-                            />
-                            }
+                            {!simplified && (
+                                <Search
+                                    tabIndex={-1}
+                                    ref="search"
+                                    className="search-input"
+                                    placeholder={i18n('search.input.filter')}
+                                    value={node.filterText}
+                                    onClear={() => {
+                                        this.props.dispatch(fundNodeSubNodeFulltextSearch(''));
+                                    }}
+                                    onSearch={value => {
+                                        this.props.dispatch(fundNodeSubNodeFulltextSearch(value));
+                                    }}
+                                    filter
+                                />
+                            )}
                         </div>
                         <div className="right-side">
-                            <div>
-                                {text}
-                            </div>
+                            <div>{text}</div>
                             <div
-                                className='btn btn-default'
+                                className="btn btn-default"
                                 onClick={this.handleFindPosition}
                                 disabled={this.isFilterUsed()}
                                 title={gotoTitle}
                             >
-                                <Icon glyph="fa-hand-o-down"/>
+                                <Icon glyph="fa-hand-o-down" />
                             </div>
                             <div
-                                className='btn btn-default'
+                                className="btn btn-default"
                                 disabled={!simplified && node.viewStartIndex === 0}
-                                onClick={(e) => onPrevAction(e)}
+                                onClick={e => onPrevAction(e)}
                                 title={i18n(
                                     `arr.fund.subNodes.prev${simplified ? '' : 'Page'}`,
                                     simplified ? node.pageSize : null,
                                 )}
                             >
-                                <Icon glyph={simplified ? 'fa-caret-left' : 'fa-backward'}/>
+                                <Icon glyph={simplified ? 'fa-caret-left' : 'fa-backward'} />
                             </div>
                             <div
-                                className='btn btn-default'
+                                className="btn btn-default"
                                 disabled={!simplified && node.viewStartIndex + node.pageSize >= node.nodeCount}
-                                onClick={(e) => onNextAction(e)}
+                                onClick={e => onNextAction(e)}
                                 title={i18n(
                                     `arr.fund.subNodes.next${simplified ? '' : 'Page'}`,
                                     simplified ? node.pageSize : null,
                                 )}
                             >
-                                <Icon glyph={simplified ? 'fa-caret-right' : 'fa-forward'}/>
+                                <Icon glyph={simplified ? 'fa-caret-right' : 'fa-forward'} />
                             </div>
                         </div>
                     </div>

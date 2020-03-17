@@ -38,7 +38,6 @@ function structureNodeFormReceive(versionId, data) {
     };
 }
 
-
 function _getArea(getState, versionId) {
     const state = getState();
     const index = indexById(state.arrRegion.funds, versionId, 'versionId');
@@ -60,20 +59,18 @@ export function structureNodeFormFetchIfNeeded(versionId, id) {
             return;
         }
 
-
         if (storeArea.currentDataKey !== id) {
             dispatch(structureNodeFormRequest(versionId, id));
-            WebApi.getStructureData(versionId, id)
-                  .then(json => {
-                      const newStoreArea = _getArea(getState, versionId);
-                      if (newStoreArea === null) {
-                          return;
-                      }
+            WebApi.getStructureData(versionId, id).then(json => {
+                const newStoreArea = _getArea(getState, versionId);
+                if (newStoreArea === null) {
+                    return;
+                }
 
-                      if (json.id === id) {
-                          dispatch(structureNodeFormReceive(versionId, json));
-                      }
-                  });
+                if (json.id === id) {
+                    dispatch(structureNodeFormReceive(versionId, json));
+                }
+            });
         }
     };
 }

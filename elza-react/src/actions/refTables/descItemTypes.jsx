@@ -7,10 +7,13 @@ import * as types from 'actions/constants/ActionTypes.js';
 export function descItemTypesFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
-        if ((!state.refTables.descItemTypes.fetched || state.refTables.descItemTypes.dirty) && !state.refTables.descItemTypes.isFetching) {
+        if (
+            (!state.refTables.descItemTypes.fetched || state.refTables.descItemTypes.dirty) &&
+            !state.refTables.descItemTypes.isFetching
+        ) {
             return dispatch(descItemTypesFetch());
         }
-    }
+    };
 }
 
 /**
@@ -18,10 +21,9 @@ export function descItemTypesFetchIfNeeded() {
  */
 export function descItemTypesFetch() {
     return dispatch => {
-        dispatch(descItemTypesRequest())
-        return WebApi.getDescItemTypes()
-            .then(json => dispatch(descItemTypesReceive(json)));
-    }
+        dispatch(descItemTypesRequest());
+        return WebApi.getDescItemTypes().then(json => dispatch(descItemTypesReceive(json)));
+    };
 }
 
 /**
@@ -32,8 +34,8 @@ export function descItemTypesReceive(json) {
     return {
         type: types.REF_DESC_ITEM_TYPES_RECEIVE,
         items: json,
-        receivedAt: Date.now()
-    }
+        receivedAt: Date.now(),
+    };
 }
 
 /**
@@ -41,6 +43,6 @@ export function descItemTypesReceive(json) {
  */
 export function descItemTypesRequest() {
     return {
-        type: types.REF_DESC_ITEM_TYPES_REQUEST
-    }
+        type: types.REF_DESC_ITEM_TYPES_REQUEST,
+    };
 }

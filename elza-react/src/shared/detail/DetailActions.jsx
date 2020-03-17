@@ -18,7 +18,7 @@ export function invalidate(area, data) {
         type: INVALIDATE,
         area,
         data,
-    }
+    };
 }
 
 /**
@@ -34,32 +34,34 @@ export function fetchIfNeeded(area, id, getData, force = false) {
 
         // Pokud ve store není potřebné id, dáme ho tam, aby se nám správně spočetl data key
         if (store.id !== id) {
-            dispatch(select(area, id))
+            dispatch(select(area, id));
             store = storeFromArea(getState(), area);
         }
 
         const dataKey = store.getDataKey.bind(store)();
-        if (force || store.currentDataKey !== dataKey || (!store.isFetching && !store.fetched)) { // pokus se data key neschoduje, provedeme fetch
-            dispatch(request(area, dataKey))
+        if (force || store.currentDataKey !== dataKey || (!store.isFetching && !store.fetched)) {
+            // pokus se data key neschoduje, provedeme fetch
+            dispatch(request(area, dataKey));
 
-            if (id !== null) {  // pokud chceme reálně načíst objekt, provedeme fetch přes getData
-                return getData(id)
-                    .then(json => {
-                        const newStore = storeFromArea(getState(), area);
-                        const newDataKey = newStore.getDataKey.bind(newStore)()
-                        if (newDataKey === dataKey) {   // jen pokud příchozí objekt odpovídá dtům, které chceme ve store
-                            dispatch(response(area, json))
-                        }
-                        return Promise.resolve(json);
-                    })  // TODO [stanekpa] - řešit catch a vrácení datakey!
+            if (id !== null) {
+                // pokud chceme reálně načíst objekt, provedeme fetch přes getData
+                return getData(id).then(json => {
+                    const newStore = storeFromArea(getState(), area);
+                    const newDataKey = newStore.getDataKey.bind(newStore)();
+                    if (newDataKey === dataKey) {
+                        // jen pokud příchozí objekt odpovídá dtům, které chceme ve store
+                        dispatch(response(area, json));
+                    }
+                    return Promise.resolve(json);
+                }); // TODO [stanekpa] - řešit catch a vrácení datakey!
             } else {
                 // Response s prázdným objektem
-                dispatch(response(area, null))
-                return Promise.resolve(null)
+                dispatch(response(area, null));
+                return Promise.resolve(null);
             }
         }
         return Promise.resolve(store.data);
-    }
+    };
 }
 
 /**
@@ -80,7 +82,6 @@ export function is(action) {
     }
 }
 
-
 /**
  * Úprava hodnoty ve store - vykonána uživatelem/programem
  * @param area oblast
@@ -94,7 +95,7 @@ export function updateValue(area, id, data) {
         area,
         id,
         data,
-    }
+    };
 }
 
 /**
@@ -108,7 +109,7 @@ export function select(area, id) {
         type: SELECT,
         area,
         id,
-    }
+    };
 }
 
 /**
@@ -122,7 +123,7 @@ function request(area, dataKey) {
         type: REQUEST,
         area,
         dataKey,
-    }
+    };
 }
 
 /**
@@ -136,9 +137,8 @@ function response(area, data) {
         type: RESPONSE,
         area,
         data,
-    }
+    };
 }
-
 
 /**
  * Reset store.
@@ -148,6 +148,6 @@ function response(area, data) {
 export function reset(area) {
     return {
         type: RESET,
-        area
-    }
+        area,
+    };
 }

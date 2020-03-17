@@ -19,12 +19,11 @@ export function isNodeAction(action) {
         case types.FUND_FUND_SUBNODES_NEXT_PAGE:
         case types.FUND_FUND_SUBNODES_PREV_PAGE:
         case types.FUND_FUND_SUBNODES_FULLTEXT_SEARCH:
-            return true
+            return true;
         default:
-            return false
+            return false;
     }
 }
-
 
 /**
  * Vybrání podřízené JP pod záložkou JP (vybrání JP pro formulář).
@@ -33,7 +32,15 @@ export function isNodeAction(action) {
  * @param {Object} subNodeParentNode nadřazený JP pro vybíranou JP, předáváno kvůli případnému otevření nové záložky, pokud neexistuje
  * @param {boolean} openNewTab má se otevřít nová záložka? Pokud je false, bude použita existující  aktuálně vybraná, pokud žádná neexistuje, bude nová vytvořena
  */
-export function fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false, subNodeIndex) {
+export function fundSelectSubNodeInt(
+    versionId,
+    subNodeId,
+    subNodeParentNode,
+    openNewTab = false,
+    newFilterCurrentIndex = null,
+    ensureItemVisible = false,
+    subNodeIndex,
+) {
     return {
         type: types.FUND_FUND_SELECT_SUBNODE,
         area: types.FUND_TREE_AREA_MAIN,
@@ -43,8 +50,8 @@ export function fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, op
         openNewTab,
         newFilterCurrentIndex,
         ensureItemVisible,
-        subNodeIndex
-    }
+        subNodeIndex,
+    };
 }
 
 /**
@@ -58,7 +65,15 @@ export function fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, op
  * @param {boolean} ensureItemVisible true, pokud má být daná položka vidět - má se odscrolovat
  * @param subNodeIndex
  */
-export function fundSelectSubNode(versionId, subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false, subNodeIndex = null) {
+export function fundSelectSubNode(
+    versionId,
+    subNodeId,
+    subNodeParentNode,
+    openNewTab = false,
+    newFilterCurrentIndex = null,
+    ensureItemVisible = false,
+    subNodeIndex = null,
+) {
     return (dispatch, getState) => {
         dispatch(fundExtendedView(false));
 
@@ -73,7 +88,7 @@ export function fundSelectSubNode(versionId, subNodeId, subNodeParentNode, openN
         let index = indexById(nodes, subNodeId);
         // pokud není ve stromu, tak se zkusí i akordeon - při přidání položky
         // je někdy dříve v akordeonu než-li ve stromu
-        if(index===null) {
+        if (index === null) {
             const fund = state.arrRegion.funds[state.arrRegion.activeIndex];
             nodes = fund.nodes.nodes[fund.nodes.activeIndex].childNodes;
             index = indexById(nodes, subNodeId);
@@ -92,12 +107,35 @@ export function fundSelectSubNode(versionId, subNodeId, subNodeParentNode, openN
             subNodeIndex = index - i - 1;
         }
 
-        dispatch(fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible, subNodeIndex));
-        dispatch(developerNodeScenariosDirty(subNodeId, subNodeParentNode.routingKey, state.arrRegion.funds[state.arrRegion.activeIndex].versionId));
-    }
+        dispatch(
+            fundSelectSubNodeInt(
+                versionId,
+                subNodeId,
+                subNodeParentNode,
+                openNewTab,
+                newFilterCurrentIndex,
+                ensureItemVisible,
+                subNodeIndex,
+            ),
+        );
+        dispatch(
+            developerNodeScenariosDirty(
+                subNodeId,
+                subNodeParentNode.routingKey,
+                state.arrRegion.funds[state.arrRegion.activeIndex].versionId,
+            ),
+        );
+    };
 }
 
-export function fundSelectSubNodeByNodeId(versionId, nodeId, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false, subNodeIndex = null) {
+export function fundSelectSubNodeByNodeId(
+    versionId,
+    nodeId,
+    openNewTab = false,
+    newFilterCurrentIndex = null,
+    ensureItemVisible = false,
+    subNodeIndex = null,
+) {
     return (dispatch, getState) => {
         const {arrRegion} = getState();
         const activeFund = arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : null;
@@ -117,10 +155,19 @@ export function fundSelectSubNodeByNodeId(versionId, nodeId, openNewTab=false, n
         if (parentNode === null) {
             parentNode = createFundRoot(activeFund);
         }
-        dispatch(fundSelectSubNode(versionId, nodeId, parentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible, subNodeIndex))
-    }
+        dispatch(
+            fundSelectSubNode(
+                versionId,
+                nodeId,
+                parentNode,
+                openNewTab,
+                newFilterCurrentIndex,
+                ensureItemVisible,
+                subNodeIndex,
+            ),
+        );
+    };
 }
-
 
 /**
  * Fetch dat pro otevřené záložky NODE, pokud je potřeba.
@@ -129,30 +176,30 @@ export function fundSelectSubNodeByNodeId(versionId, nodeId, openNewTab=false, n
 export function nodesFetchIfNeeded(versionId) {
     return (dispatch, getState) => {
         var state = getState();
-        var index = indexById(state.arrRegion.funds, versionId, "versionId");
+        var index = indexById(state.arrRegion.funds, versionId, 'versionId');
         if (index !== null) {
-            var fund = state.arrRegion.funds[index]
+            var fund = state.arrRegion.funds[index];
             var nodeIds = [];
             fund.nodes.nodes.forEach(node => {
                 if (node.dirty && !node.isFetching) {
-                    if (isFundRootId(node.id)) {  // virtuální představující AS, je nutné aktualizovat z AS
+                    if (isFundRootId(node.id)) {
+                        // virtuální představující AS, je nutné aktualizovat z AS
                         // bude se aktualizovat až s načtením a obnovením AS
                     } else {
                         nodeIds.push(node.id);
                     }
                 }
-            })
+            });
 
             if (nodeIds.length > 0) {
                 dispatch(nodesRequest(versionId, nodeIds));
 
-                WebApi.getNodes(versionId, nodeIds)
-                    .then(json => {
-                        dispatch(nodesReceive(versionId, json));
-                    })
+                WebApi.getNodes(versionId, nodeIds).then(json => {
+                    dispatch(nodesReceive(versionId, json));
+                });
             }
         }
-    }
+    };
 }
 
 /**
@@ -161,16 +208,16 @@ export function nodesFetchIfNeeded(versionId) {
  * {Array} nodeIds seznam id node, pro které byla data vyžádána
  */
 export function nodesRequest(versionId, nodeIds) {
-    var nodeMap = {}
+    var nodeMap = {};
     nodeIds.forEach(id => {
-        nodeMap[id] = true
-    })
+        nodeMap[id] = true;
+    });
 
     return {
         type: types.FUND_NODES_REQUEST,
         versionId,
-        nodeMap
-    }
+        nodeMap,
+    };
 }
 
 /**
@@ -179,17 +226,17 @@ export function nodesRequest(versionId, nodeIds) {
  * {Array} nodes seznam node
  */
 export function nodesReceive(versionId, nodes) {
-    var nodeMap = {}
+    var nodeMap = {};
     nodes.forEach(node => {
-        nodeMap[node.id] = node
-    })
+        nodeMap[node.id] = node;
+    });
 
     return {
         type: types.FUND_NODES_RECEIVE,
         versionId,
         nodes,
-        nodeMap
-    }
+        nodeMap,
+    };
 }
 
 /**
@@ -205,8 +252,8 @@ export function fundNodeSubNodeFulltextResult(versionId, nodeId, routingKey, nod
         versionId,
         nodeId,
         routingKey,
-        nodeIds
-    }
+        nodeIds,
+    };
 }
 
 /**
@@ -224,7 +271,7 @@ export function fundNodeSubNodeFulltextSearch(filterText) {
             versionId: activeFund.versionId,
             nodeId: activeNode.id,
             routingKey: activeNode.routingKey,
-            filterText
+            filterText,
         });
 
         let nodeId;
@@ -234,7 +281,6 @@ export function fundNodeSubNodeFulltextSearch(filterText) {
             nodeId = activeNode.id;
         }
 
-
         // activeFund.versionId, nodeId, false, false, false, 0, activeNode.pageSize, filterText !== '' ? filterText : null, true)
         const nodeParam = {parentNodeId: nodeId, nodeIndex: 0};
         const resultParam = {
@@ -243,20 +289,28 @@ export function fundNodeSubNodeFulltextSearch(filterText) {
             children: false,
             siblingsFrom: 0,
             siblingsMaxCount: activeNode.pageSize,
-            siblingsFilter: filterText !== '' ? filterText : null
+            siblingsFilter: filterText !== '' ? filterText : null,
         };
-        return WebApi.getNodeData(activeFund.versionId, nodeParam, resultParam).then((json) => {
-            dispatch(fundNodeInfoReceive(activeFund.versionId, nodeId, activeNode.routingKey, {
-                childNodes: json.siblings ? json.siblings : null,
-                nodeCount: json.nodeCount,
-                nodeIndex: json.nodeIndex,
-            }, true));
+        return WebApi.getNodeData(activeFund.versionId, nodeParam, resultParam).then(json => {
+            dispatch(
+                fundNodeInfoReceive(
+                    activeFund.versionId,
+                    nodeId,
+                    activeNode.routingKey,
+                    {
+                        childNodes: json.siblings ? json.siblings : null,
+                        nodeCount: json.nodeCount,
+                        nodeIndex: json.nodeIndex,
+                    },
+                    true,
+                ),
+            );
             if (json.siblings && json.siblings.length > 0) {
                 const node = json.siblings[0];
                 dispatch(fundSelectSubNode(activeFund.versionId, node.id, activeNode));
             }
         });
-    }
+    };
 }
 
 /**
@@ -267,26 +321,26 @@ export function fundNodeSubNodeFulltextSearch(filterText) {
  */
 export function increaseNodeVersion(versionId, nodeId, nodeVersionId) {
     return {
-            type: types.FUND_NODE_INCREASE_VERSION,
-            versionId,
-            nodeId,
-            nodeVersionId
-    }
+        type: types.FUND_NODE_INCREASE_VERSION,
+        versionId,
+        nodeId,
+        nodeVersionId,
+    };
 }
 /**
  * Provedení umělého navýšení verze pro více uzlů najednou
  * @param versionId verze AS
  * @param nodeArray pole objektů uzlů (pro zvýšení verze musí obsahovat id a version)
  */
-export function increaseMultipleNodesVersions(versionId,nodeArray){
-    return (dispatch) => {
-        for(var node in nodeArray){
+export function increaseMultipleNodesVersions(versionId, nodeArray) {
+    return dispatch => {
+        for (var node in nodeArray) {
             node = nodeArray[node];
-            if(node.id && node.version){
-                dispatch(increaseNodeVersion(versionId,node.id,node.version));
+            if (node.id && node.version) {
+                dispatch(increaseNodeVersion(versionId, node.id, node.version));
             }
         }
-    }
+    };
 }
 /**
  * Přidání uzlu před, za na konec a pod.
@@ -300,24 +354,37 @@ export function increaseMultipleNodesVersions(versionId,nodeArray){
  * @param afterCreateCallback callback, který je volán po úspěšném založení, předpis: function (versionId, node, parentNode), node je nově založený node a parentNode je jeho aktualizovaný nadřazený node
  * @param emptyItemTypeIds seznam identifikátorů typů atributu, které budou přidány na detail JP po založení
  */
-export function addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes = null, scenarioName = null, createItems = null, afterCreateCallback = null, emptyItemTypeIds = null) {
+export function addNode(
+    indexNode,
+    parentNode,
+    versionId,
+    direction,
+    descItemCopyTypes = null,
+    scenarioName = null,
+    createItems = null,
+    afterCreateCallback = null,
+    emptyItemTypeIds = null,
+) {
     return (dispatch, getState) => {
         parentNode = {
             id: parentNode.id,
             lastUpdate: parentNode.lastUpdate,
-            version: parentNode.version
+            version: parentNode.version,
         };
         indexNode = {
             id: indexNode.id,
             lastUpdate: indexNode.lastUpdate,
-            version: indexNode.version
+            version: indexNode.version,
         };
 
         // Umělé zvednutí id verze node na klientovi na očekávané po operaci
         dispatch(increaseNodeVersion(versionId, parentNode.id, parentNode.version));
 
         // Reálné provedení operace
-        return savingApiWrapper(dispatch, WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName, createItems)).then((json) => {
+        return savingApiWrapper(
+            dispatch,
+            WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName, createItems),
+        ).then(json => {
             dispatch(fundNodeChangeAdd(versionId, json.node, indexNode, json.parentNode, direction));
             afterCreateCallback && afterCreateCallback(versionId, json.node, json.parentNode);
 
@@ -328,17 +395,15 @@ export function addNode(indexNode, parentNode, versionId, direction, descItemCop
             if (emptyItemTypeIds) {
                 dispatch({
                     type: types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPES_ADD_TEMPLATE,
-                    area: "NODE",
+                    area: 'NODE',
                     versionId,
                     routingKey: activeNode.routingKey,
-                    itemTypeIds: emptyItemTypeIds
+                    itemTypeIds: emptyItemTypeIds,
                 });
             }
         });
-    }
+    };
 }
-
-
 
 /**
  * Akce smazání uzlu.
@@ -349,27 +414,27 @@ export function addNode(indexNode, parentNode, versionId, direction, descItemCop
  *     předpis: function (versionId, node, parentNode), node je smazaný node a parentNode je jeho aktualizovaný nadřazený node
  */
 export function deleteNode(node, parentNode, versionId, afterDeleteCallback) {
-    return (dispatch) => {
+    return dispatch => {
         parentNode = {
             id: parentNode.id,
             lastUpdate: parentNode.lastUpdate,
-            version: parentNode.version
+            version: parentNode.version,
         };
         node = {
             id: node.id,
             lastUpdate: node.lastUpdate,
-            version: node.version
+            version: node.version,
         };
 
         // Umělé zvednutí id verze node na klientovi na očekávané po operaci
         dispatch(increaseNodeVersion(versionId, parentNode.id, parentNode.version));
 
         // Reálné provedení operace
-        return WebApi.deleteNode(node, parentNode, versionId).then((json) => {
+        return WebApi.deleteNode(node, parentNode, versionId).then(json => {
             afterDeleteCallback && afterDeleteCallback(versionId, json.node, json.parentNode);
             dispatch(fundNodeChangeDelete(versionId, json.node, json.parentNode));
         });
-    }
+    };
 }
 
 /**
@@ -388,8 +453,8 @@ function fundNodeChangeAdd(versionId, newNode, indexNode, parentNode, direction)
         direction,
         action: 'ADD',
         type: types.FUND_NODE_CHANGE,
-        versionId
-    }
+        versionId,
+    };
 }
 
 /**
@@ -404,8 +469,8 @@ function fundNodeChangeDelete(versionId, node, parentNode) {
         parentNode,
         action: 'DELETE',
         type: types.FUND_NODE_CHANGE,
-        versionId
-    }
+        versionId,
+    };
 }
 
 /**
@@ -417,7 +482,7 @@ function fundNodeChangeDelete(versionId, node, parentNode) {
  * @param dispatch   dispatch
  * @param fceIndex   funkce pro výpočet indexu pro načtení
  */
-const fundNodeSelect = function (getState, versionId, routingKey, dispatch, fceIndex) {
+const fundNodeSelect = function(getState, versionId, routingKey, dispatch, fceIndex) {
     const r = findByRoutingKeyInGlobalState(getState(), versionId, routingKey);
     if (r) {
         const node = r.node;
@@ -431,12 +496,20 @@ const fundNodeSelect = function (getState, versionId, routingKey, dispatch, fceI
             index = index < 0 ? 0 : index;
             const nodeParam = {nodeId};
             const resultParam = {siblingsFrom: index, siblingsMaxCount: node.pageSize, siblingsFilter: node.filterText};
-            WebApi.getNodeData(versionId, nodeParam, resultParam).then((json) => {
-                dispatch(fundNodeInfoReceive(versionId, nodeId, routingKey, {
-                    childNodes: json.siblings ? json.siblings : null,
-                    nodeCount: json.nodeCount,
-                    nodeIndex: json.nodeIndex,
-                }, true));
+            WebApi.getNodeData(versionId, nodeParam, resultParam).then(json => {
+                dispatch(
+                    fundNodeInfoReceive(
+                        versionId,
+                        nodeId,
+                        routingKey,
+                        {
+                            childNodes: json.siblings ? json.siblings : null,
+                            nodeCount: json.nodeCount,
+                            nodeIndex: json.nodeIndex,
+                        },
+                        true,
+                    ),
+                );
             });
         }
     }
@@ -458,7 +531,7 @@ export function fundSubNodesNext(versionId, nodeId, routingKey) {
             nodeId,
             routingKey,
         });
-    }
+    };
 }
 
 /**
@@ -477,7 +550,7 @@ export function fundSubNodesPrev(versionId, nodeId, routingKey) {
             nodeId,
             routingKey,
         });
-    }
+    };
 }
 
 /**
@@ -517,12 +590,15 @@ export function fundSubNodesNextPage(versionId, nodeId, routingKey) {
                 const newNode = rnew.node;
                 const newIndex = index + node.pageSize;
                 const count = newNode.nodeCount;
-                const subNodeId = newIndex < count ? nodes[subNodeIndex + newIndex].id : newNode.childNodes[newNode.childNodes.length - 1].id;
+                const subNodeId =
+                    newIndex < count
+                        ? nodes[subNodeIndex + newIndex].id
+                        : newNode.childNodes[newNode.childNodes.length - 1].id;
                 const subNodeParentNode = newNode;
                 dispatch(fundSelectSubNode(newActiveFund.versionId, subNodeId, subNodeParentNode, false, null, true));
             }
         }
-    }
+    };
 }
 
 /**
@@ -537,7 +613,7 @@ export function _fundSubNodesNextPage(versionId, nodeId, routingKey) {
         versionId,
         nodeId,
         routingKey,
-    }
+    };
 }
 
 /**
@@ -579,7 +655,7 @@ export function fundSubNodesPrevPage(versionId, nodeId, routingKey) {
             const subNodeParentNode = newNode;
             dispatch(fundSelectSubNode(newActiveFund.versionId, subNodeId, subNodeParentNode, false, null, true));
         }
-    }
+    };
 }
 
 /**
@@ -594,5 +670,5 @@ function _fundSubNodesPrevPage(versionId, nodeId, routingKey) {
         versionId,
         nodeId,
         routingKey,
-    }
+    };
 }

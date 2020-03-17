@@ -8,7 +8,6 @@ import {structureNodeFormSelectId} from '../../../actions/arr/structureNodeForm'
 import PropTypes from 'prop-types';
 
 class AddStructureDataForm extends AbstractReactComponent {
-
     static propTypes = {
         multiple: PropTypes.bool,
         fundVersionId: PropTypes.number.isRequired,
@@ -27,7 +26,10 @@ class AddStructureDataForm extends AbstractReactComponent {
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        const {fundVersionId, structureData: {id}} = nextProps;
+        const {
+            fundVersionId,
+            structureData: {id},
+        } = nextProps;
         if (id !== this.props.structureData.id) {
             this.props.dispatch(structureNodeFormSelectId(fundVersionId, id));
         }
@@ -35,56 +37,82 @@ class AddStructureDataForm extends AbstractReactComponent {
 
     customRender = (code, infoType) => {
         if (code === 'INT') {
-            const {fields: {incrementedTypeIds}} = this.props;
+            const {
+                fields: {incrementedTypeIds},
+            } = this.props;
             const index = incrementedTypeIds.value.indexOf(infoType.id);
             const checked = index !== -1;
 
-
-            return <FormCheck key="increment" checked={checked} onChange={() => {
-                if (checked) {
-                    incrementedTypeIds.onChange([
-                        ...incrementedTypeIds.value.slice(0, index),
-                        ...incrementedTypeIds.value.slice(index + 1),
-                    ]);
-                } else {
-                    incrementedTypeIds.onChange([
-                        ...incrementedTypeIds.value,
-                        infoType.id,
-                    ]);
-                }
-
-            }}>
-                {i18n('arr.structure.modal.increment')}
-            </FormCheck>;
+            return (
+                <FormCheck
+                    key="increment"
+                    checked={checked}
+                    onChange={() => {
+                        if (checked) {
+                            incrementedTypeIds.onChange([
+                                ...incrementedTypeIds.value.slice(0, index),
+                                ...incrementedTypeIds.value.slice(index + 1),
+                            ]);
+                        } else {
+                            incrementedTypeIds.onChange([...incrementedTypeIds.value, infoType.id]);
+                        }
+                    }}
+                >
+                    {i18n('arr.structure.modal.increment')}
+                </FormCheck>
+            );
         }
         return null;
     };
 
     render() {
-        const {fields: {count, incrementedTypeIds}, error, handleSubmit, onClose, submitting, structureData, fundVersionId, fundId, multiple} = this.props;
+        const {
+            fields: {count, incrementedTypeIds},
+            error,
+            handleSubmit,
+            onClose,
+            submitting,
+            structureData,
+            fundVersionId,
+            fundId,
+            multiple,
+        } = this.props;
 
-        return <Form onSubmit={handleSubmit}>
-            <Modal.Body>
-                {error && <p>{error}</p>}
-                <StructureSubNodeForm versionId={fundVersionId}
-                                      fundId={fundId}
-                                      selectedSubNodeId={structureData.id}
-                                      customActions={multiple && this.customRender} // pokud form je mnohonásobný renderujeme doplňkově inkrementaci
-                    // Pyta: Jak toto funguje, neni to tu nadbytecne?
-                                      x={incrementedTypeIds} // Zdůvodu renderování formu aby při změně nastal render
-                                      descItemFactory={this.props.descItemFactory}
-                />
-                {multiple && <FormInput name="count" min="2" type="number"
-                                        label={i18n('arr.structure.modal.addMultiple.count')} {...count} />}
-            </Modal.Body>
-            <Modal.Footer>
-                <Button type="submit" disabled={submitting}>{i18n('global.action.add')}</Button>
-                <Button variant="link" disabled={submitting} onClick={onClose}>{i18n('global.action.cancel')}</Button>
-            </Modal.Footer>
-        </Form>;
+        return (
+            <Form onSubmit={handleSubmit}>
+                <Modal.Body>
+                    {error && <p>{error}</p>}
+                    <StructureSubNodeForm
+                        versionId={fundVersionId}
+                        fundId={fundId}
+                        selectedSubNodeId={structureData.id}
+                        customActions={multiple && this.customRender} // pokud form je mnohonásobný renderujeme doplňkově inkrementaci
+                        // Pyta: Jak toto funguje, neni to tu nadbytecne?
+                        x={incrementedTypeIds} // Zdůvodu renderování formu aby při změně nastal render
+                        descItemFactory={this.props.descItemFactory}
+                    />
+                    {multiple && (
+                        <FormInput
+                            name="count"
+                            min="2"
+                            type="number"
+                            label={i18n('arr.structure.modal.addMultiple.count')}
+                            {...count}
+                        />
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button type="submit" disabled={submitting}>
+                        {i18n('global.action.add')}
+                    </Button>
+                    <Button variant="link" disabled={submitting} onClick={onClose}>
+                        {i18n('global.action.cancel')}
+                    </Button>
+                </Modal.Footer>
+            </Form>
+        );
     }
 }
-
 
 export default reduxForm({
     form: 'AddStructureData',

@@ -7,10 +7,15 @@ import ExceptionDetail from './ExceptionDetail';
 import i18n from '../../i18n';
 
 class Exception extends AbstractReactComponent {
-
-
     openDetail = () => {
-        this.props.dispatch(modalDialogShow(this, this.props.title, <ExceptionDetail data={this.props.data} />, "dialog-lg top max-height"));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                this.props.title,
+                <ExceptionDetail data={this.props.data} />,
+                'dialog-lg top max-height',
+            ),
+        );
     };
 
     renderDetail = () => {
@@ -25,7 +30,7 @@ class Exception extends AbstractReactComponent {
         const {textRenderer, data} = this.props;
 
         if (textRenderer) {
-            return textRenderer(data.properties ? data.properties : {}, data.message ? data.message : "");
+            return textRenderer(data.properties ? data.properties : {}, data.message ? data.message : '');
         }
     };
 
@@ -35,7 +40,7 @@ class Exception extends AbstractReactComponent {
                 {this.renderText()}
                 {this.renderDetail()}
             </div>
-        )
+        );
     }
 }
 

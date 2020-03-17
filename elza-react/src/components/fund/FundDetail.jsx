@@ -24,8 +24,7 @@ class FundDetail extends AbstractReactComponent {
         this.props.dispatch(refRuleSetFetchIfNeeded());
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-    }
+    UNSAFE_componentWillReceiveProps(nextProps) {}
 
     handleShowInArr(version) {
         // Přepnutí na stránku pořádání
@@ -37,19 +36,26 @@ class FundDetail extends AbstractReactComponent {
         this.props.dispatch(selectFundTab(fundObj));
     }
 
-
     render() {
-        const { fundDetail, fundCount, refTables: { institutions, ruleSet } } = this.props;
+        const {
+            fundDetail,
+            fundCount,
+            refTables: {institutions, ruleSet},
+        } = this.props;
 
         if (fundDetail.id === null) {
-            return <div className='fund-detail-container'>
-                <div className="unselected-msg">
-                    <div
-                        className="title">{fundCount > 0 ? i18n('fund.noSelection.title') : i18n('fund.emptyList.title')}</div>
-                    <div
-                        className="msg-text">{fundCount > 0 ? i18n('fund.noSelection.message') : i18n('fund.emptyList.message')}</div>
+            return (
+                <div className="fund-detail-container">
+                    <div className="unselected-msg">
+                        <div className="title">
+                            {fundCount > 0 ? i18n('fund.noSelection.title') : i18n('fund.emptyList.title')}
+                        </div>
+                        <div className="msg-text">
+                            {fundCount > 0 ? i18n('fund.noSelection.message') : i18n('fund.emptyList.message')}
+                        </div>
+                    </div>
                 </div>
-            </div>;
+            );
         }
 
         let content;
@@ -62,8 +68,8 @@ class FundDetail extends AbstractReactComponent {
             const rule = ruleIndex !== null ? ruleSet.items[ruleIndex].name : '';
             const ver = fundDetail.versions[activeVersionIndex];
             content = (
-                <div className='fund-detail-container'>
-                    <div className='fund-detail-info'>
+                <div className="fund-detail-container">
+                    <div className="fund-detail-info">
                         <h1>{fundDetail.name}</h1>
                         <div>
                             <label>{i18n('arr.fund.detail.internalCode')}:</label>
@@ -79,23 +85,26 @@ class FundDetail extends AbstractReactComponent {
                             <span>{rule}</span>
                         </div>
                         <Button
-                            className='fund-detail-button'
+                            className="fund-detail-button"
                             variant="outline-secondary"
                             onClick={this.handleShowInArr.bind(this, ver)}
                         >
-                            <Icon glyph="fa-folder-open"/>&nbsp;{i18n('arr.fund.action.openInArr')}
+                            <Icon glyph="fa-folder-open" />
+                            &nbsp;{i18n('arr.fund.action.openInArr')}
                         </Button>
                     </div>
                 </div>
             );
         }
 
-        return <div>
-            <StoreHorizontalLoader store={fundDetail}/>
-            {content}
-        </div>;
+        return (
+            <div>
+                <StoreHorizontalLoader store={fundDetail} />
+                {content}
+            </div>
+        );
     }
-};
+}
 
 FundDetail.propTypes = {
     fundDetail: PropTypes.object.isRequired,
@@ -109,4 +118,3 @@ function mapStateToProps(state) {
 }
 
 export default connect(mapStateToProps)(FundDetail);
-

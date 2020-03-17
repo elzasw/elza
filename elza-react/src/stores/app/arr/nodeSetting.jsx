@@ -11,9 +11,7 @@ export default function nodeSetting(state = initialState, action) {
     let typeIndex;
 
     switch (action.type) {
-
         case types.NODE_DESC_ITEM_TYPE_LOCK:
-
             nodeIndex = indexById(state.nodes, action.nodeId);
 
             if (nodeIndex !== null) {
@@ -22,10 +20,7 @@ export default function nodeSetting(state = initialState, action) {
                     nodes: [
                         ...state.nodes.slice(0, nodeIndex),
                         Object.assign({}, state.nodes[nodeIndex], {
-                            descItemTypeLockIds: [
-                                ...state.nodes[nodeIndex].descItemTypeLockIds,
-                                action.descItemTypeId,
-                            ],
+                            descItemTypeLockIds: [...state.nodes[nodeIndex].descItemTypeLockIds, action.descItemTypeId],
                         }),
                         ...state.nodes.slice(nodeIndex + 1),
                     ],
@@ -86,13 +81,12 @@ export default function nodeSetting(state = initialState, action) {
                     ...state,
                     nodes: [
                         ...state.nodes.slice(0, nodeIndex),
-                        Object.assign({}, state.nodes[nodeIndex], { copyAll: !state.nodes[nodeIndex].copyAll }),
+                        Object.assign({}, state.nodes[nodeIndex], {copyAll: !state.nodes[nodeIndex].copyAll}),
                         ...state.nodes.slice(nodeIndex + 1),
                     ],
                 };
             }
             return state;
-
 
         case types.NODE_DESC_ITEM_TYPE_COPY:
             nodeIndex = indexById(state.nodes, action.nodeId);
@@ -103,10 +97,7 @@ export default function nodeSetting(state = initialState, action) {
                     nodes: [
                         ...state.nodes.slice(0, nodeIndex),
                         Object.assign({}, state.nodes[nodeIndex], {
-                            descItemTypeCopyIds: [
-                                ...state.nodes[nodeIndex].descItemTypeCopyIds,
-                                action.descItemTypeId,
-                            ],
+                            descItemTypeCopyIds: [...state.nodes[nodeIndex].descItemTypeCopyIds, action.descItemTypeId],
                         }),
                         ...state.nodes.slice(nodeIndex + 1),
                     ],
@@ -150,4 +141,3 @@ export default function nodeSetting(state = initialState, action) {
             return state;
     }
 }
-

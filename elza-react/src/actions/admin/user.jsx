@@ -11,10 +11,9 @@ import i18n from '../../components/i18n';
 
 export function joinGroups(userId, groupIds) {
     return (dispatch, getState) => {
-        WebApi.joinGroup(groupIds, [userId])
-              .then(() => {
-                  dispatch(modalDialogHide());
-              });
+        WebApi.joinGroup(groupIds, [userId]).then(() => {
+            dispatch(modalDialogHide());
+        });
     };
 }
 
@@ -89,15 +88,14 @@ export function usersUserDetailFetchIfNeeded(force = false) {
 
         if (force || userDetail.currentDataKey !== dataKey) {
             dispatch(usersUserDetailRequest(dataKey));
-            WebApi.getUser(userDetail.id)
-                  .then(json => {
-                      var newState = getState();
-                      const newUserDetail = newState.adminRegion.user.userDetail;
-                      const newDataKey = _userDetailDataKey(newUserDetail);
-                      if (newDataKey === dataKey) {
-                          dispatch(usersUserDetailReceive(json));
-                      }
-                  });
+            WebApi.getUser(userDetail.id).then(json => {
+                var newState = getState();
+                const newUserDetail = newState.adminRegion.user.userDetail;
+                const newDataKey = _userDetailDataKey(newUserDetail);
+                if (newDataKey === dataKey) {
+                    dispatch(usersUserDetailReceive(json));
+                }
+            });
         }
     };
 }
@@ -115,17 +113,16 @@ export function usersFetchIfNeeded() {
             dispatch(usersRequest(dataKey));
 
             var active = true;
-            var disabled = (user.filterState.type === 'all');
+            var disabled = user.filterState.type === 'all';
 
-            WebApi.findUser(user.filterText, active, disabled)
-                  .then(json => {
-                      var newState = getState();
-                      const newUser = newState.adminRegion.user;
-                      const newDataKey = _userDataKey(newUser);
-                      if (newDataKey === dataKey) {
-                          dispatch(usersReceive(json));
-                      }
-                  });
+            WebApi.findUser(user.filterText, active, disabled).then(json => {
+                var newState = getState();
+                const newUser = newState.adminRegion.user;
+                const newDataKey = _userDataKey(newUser);
+                if (newDataKey === dataKey) {
+                    dispatch(usersReceive(json));
+                }
+            });
         }
     };
 }
@@ -164,7 +161,6 @@ function usersUserDetailReceive(data) {
     };
 }
 
-
 export function userCreate(username, valuesMap, partyId) {
     return (dispatch, getState) => {
         return savingApiWrapper(dispatch, WebApi.createUser(username, valuesMap, partyId)).then(response => {
@@ -175,7 +171,7 @@ export function userCreate(username, valuesMap, partyId) {
 }
 
 export function userUpdate(id, username, valuesMap) {
-    return (dispatch) => {
+    return dispatch => {
         return savingApiWrapper(dispatch, WebApi.updateUser(id, username, valuesMap)).then(response => {
             dispatch(addToastrSuccess(i18n('admin.user.update.success')));
             dispatch(usersSelectUser(response.id));

@@ -13,10 +13,10 @@ import Tags from 'components/form/Tags.jsx';
  */
 const SelectItemsForm = class extends AbstractReactComponent {
     static propTypes = {
-        renderItem: PropTypes.func.isRequired,    // render položky v tag input, přepis: (item, isHighlighted = false, isSelected = false) => {}
-        fieldComponent: PropTypes.func.isRequired,    // reference na komponentu fieldu pro input - dohledání položky, např. GroupField
-        fieldComponentProps: PropTypes.object,    // props pro fieldComponent
-        onSubmitForm: PropTypes.func.isRequired,    // callback se seznamem vybraných položek - pro přídání, předpis: (items : array) => {}
+        renderItem: PropTypes.func.isRequired, // render položky v tag input, přepis: (item, isHighlighted = false, isSelected = false) => {}
+        fieldComponent: PropTypes.func.isRequired, // reference na komponentu fieldu pro input - dohledání položky, např. GroupField
+        fieldComponentProps: PropTypes.object, // props pro fieldComponent
+        onSubmitForm: PropTypes.func.isRequired, // callback se seznamem vybraných položek - pro přídání, předpis: (items : array) => {}
     };
 
     constructor(props) {
@@ -27,8 +27,7 @@ const SelectItemsForm = class extends AbstractReactComponent {
         };
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-    }
+    UNSAFE_componentWillReceiveProps(nextProps) {}
 
     handleRemoveItem = (item, itemIndex) => {
         const {items} = this.state;
@@ -36,15 +35,12 @@ const SelectItemsForm = class extends AbstractReactComponent {
         const index = indexById(items, item.id);
         if (index !== null) {
             this.setState({
-                items: [
-                    ...items.slice(0, index),
-                    ...items.slice(index + 1),
-                ],
+                items: [...items.slice(0, index), ...items.slice(index + 1)],
             });
         }
     };
 
-    handleChange = (item) => {
+    handleChange = item => {
         console.log('select items form', item);
         if (item) {
             const {items} = this.state;
@@ -73,14 +69,20 @@ const SelectItemsForm = class extends AbstractReactComponent {
                 <Modal.Body>
                     <div>
                         {itemField}
-                        <Tags items={items} renderItem={renderItem} onRemove={this.handleRemoveItem}/>
+                        <Tags items={items} renderItem={renderItem} onRemove={this.handleRemoveItem} />
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={() => {
-                        onSubmitForm(items);
-                    }}>{i18n('global.action.add')}</Button>
-                    <Button variant="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button
+                        onClick={() => {
+                            onSubmitForm(items);
+                        }}
+                    >
+                        {i18n('global.action.add')}
+                    </Button>
+                    <Button variant="link" onClick={onClose}>
+                        {i18n('global.action.cancel')}
+                    </Button>
                 </Modal.Footer>
             </div>
         );
@@ -88,6 +90,3 @@ const SelectItemsForm = class extends AbstractReactComponent {
 };
 
 export default SelectItemsForm;
-
-
-

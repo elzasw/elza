@@ -15,9 +15,9 @@ export default class LongText extends React.Component {
         // Maximální počet znaků pro zobrazení, pokud bude mít text více, bude zkrácen. Implicitně 164.
         max: PropTypes.number,
     };
-    state = { expanded: false };
+    state = {expanded: false};
 
-    handleShowMore = () => this.setState({ expanded: true });
+    handleShowMore = () => this.setState({expanded: true});
 
     render() {
         let text = this.props.text;
@@ -26,14 +26,24 @@ export default class LongText extends React.Component {
         if (!this.state.expanded) {
             const max = this.props.max || 164;
             if (text.length > max) {
-                text = text.substring(0, max-3) + "...";
-                more = <span> (<Button variant="link" onClick={this.handleShowMore}>{i18n('global.action.show.more')}</Button>)</span>
+                text = text.substring(0, max - 3) + '...';
+                more = (
+                    <span>
+                        {' '}
+                        (
+                        <Button variant="link" onClick={this.handleShowMore}>
+                            {i18n('global.action.show.more')}
+                        </Button>
+                        )
+                    </span>
+                );
             }
         }
 
         return (
             <span>
-                {text}{more}
+                {text}
+                {more}
             </span>
         );
     }

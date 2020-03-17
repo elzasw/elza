@@ -25,9 +25,7 @@ import * as groups from '../../actions/refTables/groups';
  */
 
 export default class ArrParentPage extends AbstractReactComponent {
-
     static defaultKeymap = defaultKeymap;
-
 
     static propTypes = {
         splitter: PropTypes.object.isRequired,
@@ -51,12 +49,12 @@ export default class ArrParentPage extends AbstractReactComponent {
         this.state = {};
     }
 
-    handleShortcuts(action,e) {
-        console.log("#handleShortcuts ArrParentPage", '[' + action + ']', this);
+    handleShortcuts(action, e) {
+        console.log('#handleShortcuts ArrParentPage', '[' + action + ']', this);
         e.preventDefault();
         switch (action) {
             case 'back':
-                this.props.dispatch(routerNavigate("/~arr"));
+                this.props.dispatch(routerNavigate('/~arr'));
                 break;
             case 'arr':
                 this.props.dispatch(routerNavigate('/arr'));
@@ -78,7 +76,7 @@ export default class ArrParentPage extends AbstractReactComponent {
                 this.props.dispatch(routerNavigate('/arr/actions'));
                 this.props.dispatch(setFocus(FOCUS_KEYS.FUND_ACTION, 1));
                 break;
-            case "TOGGLE_READ_MODE":
+            case 'TOGGLE_READ_MODE':
                 this.toggleReadMode();
                 break;
             default:
@@ -109,7 +107,9 @@ export default class ArrParentPage extends AbstractReactComponent {
     }
 
     requestFundTreeData(activeFund) {
-        this.props.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_MAIN, activeFund.versionId, activeFund.fundTree.expandedIds));
+        this.props.dispatch(
+            fundTreeFetchIfNeeded(types.FUND_TREE_AREA_MAIN, activeFund.versionId, activeFund.fundTree.expandedIds),
+        );
     }
 
     toggleReadMode() {
@@ -117,7 +117,7 @@ export default class ArrParentPage extends AbstractReactComponent {
         var settings = userDetail.settings;
         var activeFund = this.getActiveFund(this.props);
         var item = {...getOneSettings(settings, 'FUND_READ_MODE', 'FUND', activeFund.id)};
-        item.value = item.value === null || item.value === "true" ? false : true;
+        item.value = item.value === null || item.value === 'true' ? false : true;
         settings = setSettings(settings, item.id, item);
         this.props.dispatch(fundChangeReadMode(activeFund.versionId, item.value));
         this.props.dispatch(userDetailsSaveSettings(settings));
@@ -131,8 +131,7 @@ export default class ArrParentPage extends AbstractReactComponent {
      * Sestavení Ribbonu. Pro překrytí.
      * @return {Object} view
      */
-    buildRibbon(readMode, closed) {
-    }
+    buildRibbon(readMode, closed) {}
 
     renderLeftPanel(readMode, closed) {
         return null;
@@ -148,7 +147,7 @@ export default class ArrParentPage extends AbstractReactComponent {
 
     // Nutne prekryt, activeFund muze but null, pokud se vrati true, stranka bude zobrazena, jinak se zobrazi, ze na ni nema pravo
     hasPageShowRights(userDetail, activeFund) {
-        console.error("Method hasPageShowRights must be overriden!");
+        console.error('Method hasPageShowRights must be overriden!');
     }
 
     render() {
@@ -162,35 +161,40 @@ export default class ArrParentPage extends AbstractReactComponent {
         let readMode = false;
         let closed = false;
 
-        if (this.hasPageShowRights(userDetail, activeFund)) {   // má právo na tuto stránku
+        if (this.hasPageShowRights(userDetail, activeFund)) {
+            // má právo na tuto stránku
             var centerPanel;
             if (activeFund) {
-
                 var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', activeFund.id);
                 var settingsValues = settings.value != 'false';
                 readMode = settingsValues;
                 closed = activeFund.lockDate != null;
 
-                statusHeader = <ArrFundPanel />
+                statusHeader = <ArrFundPanel />;
 
                 centerPanel = this.renderCenterPanel(readMode, closed);
                 leftPanel = this.renderLeftPanel(readMode, closed);
                 rightPanel = this.renderRightPanel(readMode, closed);
             } else {
-                centerPanel = (
-                    <div className="fund-noselect">{i18n('arr.fund.noselect')}</div>
-                )
+                centerPanel = <div className="fund-noselect">{i18n('arr.fund.noselect')}</div>;
             }
         } else {
-            centerPanel = <div>{i18n('global.insufficient.right')}</div>
+            centerPanel = <div>{i18n('global.insufficient.right')}</div>;
         }
 
         return (
-            <Shortcuts name='ArrParent' handler={this.handleShortcuts} global className="main-shortcuts2" stopPropagation={false} alwaysFireHandler>
+            <Shortcuts
+                name="ArrParent"
+                handler={this.handleShortcuts}
+                global
+                className="main-shortcuts2"
+                stopPropagation={false}
+                alwaysFireHandler
+            >
                 <PageLayout
                     splitter={splitter}
-                    _className='fa-page'
-                    className={this.layoutClassName ? ("arr-abstract-page " + this.layoutClassName) : "arr-abstract-page"}
+                    _className="fa-page"
+                    className={this.layoutClassName ? 'arr-abstract-page ' + this.layoutClassName : 'arr-abstract-page'}
                     ribbon={this.buildRibbon(readMode, closed)}
                     centerPanel={centerPanel}
                     leftPanel={leftPanel}
@@ -198,6 +202,6 @@ export default class ArrParentPage extends AbstractReactComponent {
                     status={statusHeader}
                 />
             </Shortcuts>
-        )
+        );
     }
 }

@@ -62,21 +62,23 @@ class FundDetail extends AbstractReactComponent {
         this.fetchData(nextProps);
     }
 
-    fetchData = (props) => {
+    fetchData = props => {
         const {fund} = props;
         if (fund.id !== FundsPermissionPanel.ALL_ID) {
             props.dispatch(fundActions.fundFetchIfNeeded(fund.id));
         } else {
             if (!fund.data || fund.data.id !== FundsPermissionPanel.ALL_ID) {
-                props.dispatch(fundActions.setFund({
-                    id: FundsPermissionPanel.ALL_ID,
-                    name: i18n('admin.perms.tabs.funds.items.fundAll'),
-                }));
+                props.dispatch(
+                    fundActions.setFund({
+                        id: FundsPermissionPanel.ALL_ID,
+                        name: i18n('admin.perms.tabs.funds.items.fundAll'),
+                    }),
+                );
             }
         }
     };
 
-    handleTabSelect = (item) => {
+    handleTabSelect = item => {
         this.setState({selectedTabItem: item});
     };
 
@@ -87,21 +89,25 @@ class FundDetail extends AbstractReactComponent {
 
         switch (selectedTabItem.id) {
             case FundDetail.TAB_USERS:
-                return <FundUsersPanel
-                    fundId={fund.id}
-                    onSelectItem={(item, index) => {
-                        this.selectedUser = {index, id: item.id};
-                    }}
-                    selectedPermission={this.selectedUser}
-                />;
+                return (
+                    <FundUsersPanel
+                        fundId={fund.id}
+                        onSelectItem={(item, index) => {
+                            this.selectedUser = {index, id: item.id};
+                        }}
+                        selectedPermission={this.selectedUser}
+                    />
+                );
             case FundDetail.TAB_GROUPS:
-                return <FundGroupsPanel
-                    fundId={fund.id}
-                    onSelectItem={(item, index) => {
-                        this.selectedGroup = {index, id: item.id};
-                    }}
-                    selectedPermission={this.selectedGroup}
-                />;
+                return (
+                    <FundGroupsPanel
+                        fundId={fund.id}
+                        onSelectItem={(item, index) => {
+                            this.selectedGroup = {index, id: item.id};
+                        }}
+                        selectedPermission={this.selectedGroup}
+                    />
+                );
             default:
                 return null;
         }
@@ -112,32 +118,35 @@ class FundDetail extends AbstractReactComponent {
         const {selectedTabItem} = this.state;
 
         if (!fund.fetched || fund.isFetching) {
-            return <HorizontalLoader/>;
+            return <HorizontalLoader />;
         }
 
-        return <AdminRightsContainer
-            className="detail-container"
-            header={<DetailHeader
-                icon={<Icon glyph="fa-group"/>}
-                title={fund.data.name}
-                flagLeft={i18n('admin.fund.title')}
-                subtitle={fund.data.internalCode}
-            />}
-        >
-            <div className="permissions-container">
-                <Tabs.Container>
-                    <Tabs.Tabs items={FundDetail.tabItems}
-                               activeItem={selectedTabItem}
-                               onSelect={this.handleTabSelect}
+        return (
+            <AdminRightsContainer
+                className="detail-container"
+                header={
+                    <DetailHeader
+                        icon={<Icon glyph="fa-group" />}
+                        title={fund.data.name}
+                        flagLeft={i18n('admin.fund.title')}
+                        subtitle={fund.data.internalCode}
                     />
-                    <Tabs.Content>
-                        {this.renderTabContent()}
-                    </Tabs.Content>
-                </Tabs.Container>
-            </div>
-        </AdminRightsContainer>;
+                }
+            >
+                <div className="permissions-container">
+                    <Tabs.Container>
+                        <Tabs.Tabs
+                            items={FundDetail.tabItems}
+                            activeItem={selectedTabItem}
+                            onSelect={this.handleTabSelect}
+                        />
+                        <Tabs.Content>{this.renderTabContent()}</Tabs.Content>
+                    </Tabs.Container>
+                </div>
+            </AdminRightsContainer>
+        );
     }
-};
+}
 
 function mapStateToProps(state) {
     return {

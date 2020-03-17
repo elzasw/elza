@@ -49,7 +49,7 @@ class SearchFundsForm extends AbstractReactComponent {
      *
      * @param fulltext hledaný výraz
      */
-    handleSearch = (fulltext) => {
+    handleSearch = fulltext => {
         this.props.dispatch(fundSearchActions.fundSearchFulltextChange(fulltext));
     };
 
@@ -63,14 +63,14 @@ class SearchFundsForm extends AbstractReactComponent {
     /**
      * Zobrazení seznamu výskytů hledaného výrazu v AS
      */
-    handleFundClick = (fund) => {
+    handleFundClick = fund => {
         this.props.dispatch(fundSearchActions.fundSearchExpandFund(fund));
     };
 
     /**
      * Přejít na detail uzlu
      */
-    handleNodeClick = (item) => {
+    handleNodeClick = item => {
         const itemFund = this.props.fundSearch.funds.find(fund => fund.nodes.some(nd => nd.id === item.id));
 
         // Přepnutí na stránku pořádání a zavření dialogu
@@ -87,7 +87,7 @@ class SearchFundsForm extends AbstractReactComponent {
      * @param node {Object} uzel
      */
     navigateToNode = (fund, node) => {
-        const { arrRegion } = this.props;
+        const {arrRegion} = this.props;
         const activeFund = this.getActiveIndex(arrRegion);
 
         if (fund.id !== activeFund.id) {
@@ -110,8 +110,8 @@ class SearchFundsForm extends AbstractReactComponent {
      */
     fundSelectSubNode = (fund, node, openNewTab, force) => {
         return (dispatch, getState) => {
-            const { fulltext } = this.props.fundSearch;
-            const { arrRegion } = getState();
+            const {fulltext} = this.props.fundSearch;
+            const {arrRegion} = getState();
             const activeFund = this.getActiveIndex(arrRegion);
 
             let activeNode;
@@ -125,8 +125,10 @@ class SearchFundsForm extends AbstractReactComponent {
             }
 
             if (force) {
-                dispatch(fundTreeFetch(types.FUND_TREE_AREA_MAIN, fund.versionId, node.id, activeFund.fundTree.expandedIds)).then(() => {
-                    const { arrRegion } = getState();
+                dispatch(
+                    fundTreeFetch(types.FUND_TREE_AREA_MAIN, fund.versionId, node.id, activeFund.fundTree.expandedIds),
+                ).then(() => {
+                    const {arrRegion} = getState();
                     const activeFund = this.getActiveIndex(arrRegion);
 
                     let activeNode;
@@ -149,10 +151,30 @@ class SearchFundsForm extends AbstractReactComponent {
             dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MAIN, fund.versionId, fulltext));
 
             const searchedData = this.getSearchedData(fund.id);
-            const activeNodeIndex = searchedData.findIndex((data) => data.nodeId === node.id);
+            const activeNodeIndex = searchedData.findIndex(data => data.nodeId === node.id);
 
-            dispatch(fundTreeFulltextResult(types.FUND_TREE_AREA_MAIN, fund.versionId, fulltext, searchedData, false, { type: 'FORM' }, null));
-            dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_MAIN, fund.versionId, node.id, parentNode, false, activeNodeIndex, true));
+            dispatch(
+                fundTreeFulltextResult(
+                    types.FUND_TREE_AREA_MAIN,
+                    fund.versionId,
+                    fulltext,
+                    searchedData,
+                    false,
+                    {type: 'FORM'},
+                    null,
+                ),
+            );
+            dispatch(
+                fundTreeSelectNode(
+                    types.FUND_TREE_AREA_MAIN,
+                    fund.versionId,
+                    node.id,
+                    parentNode,
+                    false,
+                    activeNodeIndex,
+                    true,
+                ),
+            );
         };
     };
 
@@ -161,13 +183,13 @@ class SearchFundsForm extends AbstractReactComponent {
     }
 
     getSearchedData(fundId) {
-        const { arrRegion, fundSearch } = this.props;
+        const {arrRegion, fundSearch} = this.props;
 
         const activeFund = this.getActiveIndex(arrRegion);
         const nodes = fundSearch.funds.find(fund => fund.id === fundId).nodes;
 
         let searchedData = [];
-        nodes.forEach((node) => {
+        nodes.forEach(node => {
             let parentNode = getParentNode(node, activeFund.nodes.nodes);
             if (parentNode === null) {
                 parentNode = createFundRoot(activeFund);
@@ -187,8 +209,8 @@ class SearchFundsForm extends AbstractReactComponent {
      * @param fund {Object} AS
      * @return {Object} view
      */
-    renderFund = (fund) => {
-        const { expanded } = fund;
+    renderFund = fund => {
+        const {expanded} = fund;
         const expColCls = 'exp-col ' + (expanded ? 'fa fa-minus-square-o' : 'fa fa-plus-square-o');
 
         let cls = classNames({
@@ -203,18 +225,18 @@ class SearchFundsForm extends AbstractReactComponent {
             name = name.substring(0, FUND_NAME_MAX_CHARS - 3) + '...';
         }
 
-        return <div key={fund.id} className="fund">
-            <div className={cls}>
-                <span className={expColCls} onClick={() => this.handleFundClick(fund)}/>
-                <Icon className="item-icon" glyph="fa-database"/>
-                <div title={fund.name} className="item-label">{name} {fund.count && `(${fund.count})`}</div>
+        return (
+            <div key={fund.id} className="fund">
+                <div className={cls}>
+                    <span className={expColCls} onClick={() => this.handleFundClick(fund)} />
+                    <Icon className="item-icon" glyph="fa-database" />
+                    <div title={fund.name} className="item-label">
+                        {name} {fund.count && `(${fund.count})`}
+                    </div>
+                </div>
+                {expanded && fund.nodes && <div className="nodes">{fund.nodes.map(node => this.renderNode(node))}</div>}
             </div>
-            {expanded && fund.nodes &&
-            <div className="nodes">
-                {fund.nodes.map((node) => this.renderNode(node))}
-            </div>
-            }
-        </div>;
+        );
     };
 
     /**
@@ -223,19 +245,23 @@ class SearchFundsForm extends AbstractReactComponent {
      * @param node objekt JP
      * @returns {*}
      */
-    renderNode = (node) => {
+    renderNode = node => {
         const levels = createReferenceMark(node, null);
         const iconProps = getNodeIcon(true, node.icon);
-        return <div key={node.id} className="node">
-            <div className="levels">{levels}</div>
-            <Icon className="item-icon" {...iconProps} />
-            <div title={node.name} className="item-label">{node.name}</div>
-            <span className="detail-col fa fa-sign-out" onClick={() => this.handleNodeClick(node)}/>
-        </div>;
+        return (
+            <div key={node.id} className="node">
+                <div className="levels">{levels}</div>
+                <Icon className="item-icon" {...iconProps} />
+                <div title={node.name} className="item-label">
+                    {node.name}
+                </div>
+                <span className="detail-col fa fa-sign-out" onClick={() => this.handleNodeClick(node)} />
+            </div>
+        );
     };
 
     render() {
-        const { fundSearch } = this.props;
+        const {fundSearch} = this.props;
         const isFulltext = fundSearch.fulltext.length > 0;
         const totalCount = this.getTotalCount(fundSearch.funds);
 
@@ -247,29 +273,24 @@ class SearchFundsForm extends AbstractReactComponent {
                     placeholder={i18n('search.input.search')}
                     value={fundSearch.fulltext}
                 />
-                {fundSearch.isFetching && <HorizontalLoader hover showText={false} key="loader"/>}
+                {fundSearch.isFetching && <HorizontalLoader hover showText={false} key="loader" />}
                 {isFulltext && i18n('arr.fund.search.result.count', totalCount)}
                 <div className={`fund-search ${isFulltext && totalCount > 0 ? 'result' : 'no-fulltext'}`}>
-                    {isFulltext
-                        ? this.renderResult()
-                        : i18n('arr.fund.search.noFulltext',
-                        )}
+                    {isFulltext ? this.renderResult() : i18n('arr.fund.search.noFulltext')}
                 </div>
             </Modal.Body>
         );
     }
 
     renderResult = () => {
-        const { fundSearch } = this.props;
+        const {fundSearch} = this.props;
 
         const result = [];
 
         if (fundSearch.fetched) {
             result.push(
                 <div key="result" className="result-list">
-                    {fundSearch.funds.length > 0 &&
-                    fundSearch.funds.map(fund => this.renderFund(fund))
-                    }
+                    {fundSearch.funds.length > 0 && fundSearch.funds.map(fund => this.renderFund(fund))}
                 </div>,
             );
         }
@@ -277,15 +298,15 @@ class SearchFundsForm extends AbstractReactComponent {
         return result;
     };
 
-    getTotalCount = (funds) => {
+    getTotalCount = funds => {
         let count = 0;
-        funds.forEach(fund => count += fund.count);
+        funds.forEach(fund => (count += fund.count));
         return count;
     };
 }
 
 function mapStateToProps(state) {
-    const { fundSearch } = state.arrRegion;
+    const {fundSearch} = state.arrRegion;
 
     return {
         fundSearch,
