@@ -50,35 +50,47 @@ class RegistryDetail extends AbstractReactComponent {
     static contextTypes = {shortcuts: PropTypes.object};
     static childContextTypes = {shortcuts: PropTypes.object.isRequired};
 
-    UNSAFE_componentWillMount() {
-        Utils.addShortcutManager(this, defaultKeymap);
-    }
-
-    getChildContext() {
-        return {shortcuts: this.shortcutManager};
-    }
-
     state = {
         activeIndexes: {NAMES: true, DESCRIPTION: true},
     };
+
+    UNSAFE_componentWillMount() {
+        Utils.addShortcutManager(this, defaultKeymap);
+    }
 
     componentDidMount() {
         this.trySetFocus();
         this.fetchIfNeeded();
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-        this.fetchIfNeeded(nextProps);
-        this.trySetFocus(nextProps);
-        const {
-            registryDetail: {id, fetched, data},
-        } = nextProps;
-        if ((id !== this.props.registryDetail.id && fetched) || (!this.props.registryDetail.fetched && fetched)) {
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        this.trySetFocus();
+        this.fetchIfNeeded();
+
+        const {registryDetail: {id, fetched, data}} = this.props;
+        if ((id !== prevProps.registryDetail.id && fetched) || (!prevProps.registryDetail.fetched && fetched)) {
             if (data) {
                 this.setState({});
             }
         }
     }
+
+    getChildContext() {
+        return {shortcuts: this.shortcutManager};
+    }
+
+    // UNSAFE_componentWillReceiveProps(nextProps) {
+    //     this.fetchIfNeeded(nextProps);
+    //     this.trySetFocus(nextProps);
+    //     const {
+    //         registryDetail: {id, fetched, data},
+    //     } = nextProps;
+    //     if ((id !== this.props.registryDetail.id && fetched) || (!this.props.registryDetail.fetched && fetched)) {
+    //         if (data) {
+    //             this.setState({});
+    //         }
+    //     }
+    // }
 
     fetchIfNeeded = (props = this.props) => {
         const {
@@ -140,9 +152,7 @@ class RegistryDetail extends AbstractReactComponent {
     };
 
     handleRecordUpdate = () => {
-        const {
-            registryDetail: {data},
-        } = this.props;
+        const {registryDetail: {data}} = this.props;
         this.props.dispatch(
             modalDialogShow(
                 this,
@@ -158,10 +168,7 @@ class RegistryDetail extends AbstractReactComponent {
     };
 
     handleRecordUpdateCall = value => {
-        const {
-            registryDetail: {data},
-        } = this.props;
-
+        const {registryDetail: {data}} = this.props;
         return this.props.dispatch(
             registryUpdate(data.id, value.typeId, () => {
                 // Nastavení focus
@@ -171,11 +178,7 @@ class RegistryDetail extends AbstractReactComponent {
     };
 
     canEdit() {
-        const {
-            userDetail,
-            registryDetail: {data, fetched},
-            apTypeIdMap,
-        } = this.props;
+        const {userDetail, registryDetail: {data, fetched}, apTypeIdMap} = this.props;
 
         // Pokud je načteno && není osoba
         if (!fetched || data.partyId) {
@@ -194,18 +197,6 @@ class RegistryDetail extends AbstractReactComponent {
             scopeId: data ? data.scopeId : null,
         });
     }
-
-    getRecordId = data => {
-        if (data.externalId) {
-            if (data.externalSystem && data.externalSystem.name) {
-                return data.externalSystem.name + ':' + data.externalId;
-            } else {
-                return 'UNKNOWN:' + data.externalId;
-            }
-        } else {
-            return data.id;
-        }
-    };
 
     getApId = ap => {
         const {eidTypes} = this.props;
@@ -525,7 +516,7 @@ class RegistryDetail extends AbstractReactComponent {
             );
         }
 
-        if (!fetched || (id && !data) || eidTypes == null) {
+        if (isFetching || !fetched || (id && !data) || eidTypes == null) {
             return <StoreHorizontalLoader store={registryDetail} />;
         }
 

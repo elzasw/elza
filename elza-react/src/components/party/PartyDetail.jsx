@@ -1,4 +1,5 @@
 import React from 'react';
+import {isEqual} from 'lodash';
 import {reduxForm} from 'redux-form';
 import PartyListItem from './PartyListItem';
 import PartyDetailIdentifiers from './PartyDetailIdentifiers';
@@ -14,7 +15,7 @@ import {
     Icon,
     StoreHorizontalLoader,
     Utils,
-} from 'components/shared';
+} from '../../components/shared';
 import {Form} from 'react-bootstrap';
 import {Button} from '../ui';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx';
@@ -35,6 +36,7 @@ import './PartyDetail.scss';
 import {requestScopesIfNeeded} from '../../actions/refTables/scopesData';
 import {addToastrWarning} from '../shared/toastr/ToastrActions';
 import * as StateApproval from '../enum/StateApproval';
+import {connect} from 'react-redux';
 
 const SETTINGS_PARTY_PIN = 'PARTY_PIN';
 
@@ -66,14 +68,6 @@ class PartyDetail extends AbstractReactComponent {
     static contextTypes = {shortcuts: PropTypes.object};
     static childContextTypes = {shortcuts: PropTypes.object.isRequired};
 
-    UNSAFE_componentWillMount() {
-        Utils.addShortcutManager(this, defaultKeymap);
-    }
-
-    getChildContext() {
-        return {shortcuts: this.shortcutManager};
-    }
-
     state = {
         activeIndexes: {},
         visibilitySettings: {},
@@ -92,6 +86,36 @@ class PartyDetail extends AbstractReactComponent {
         'organization',
         'creators[]',
     ];
+
+    UNSAFE_componentWillMount() {
+        Utils.addShortcutManager(this, defaultKeymap);
+    }
+
+    componentDidMount() {
+
+
+        this.trySetFocus();
+        this.fetchIfNeeded().then(data => {
+            if (data && data.accessPoint && data.accessPoint.invalid) {
+                this.props.dispatch(addToastrWarning(i18n('party.invalid.warning')));
+            }
+        });
+
+        this.updateStateFromProps();
+        this.props.initForm(this.handlePartyUpdate);
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        this.fetchIfNeeded(this.props);
+        this.trySetFocus(this.props);
+
+        if (!isEqual(this.props, prevProps))
+            this.updateStateFromProps();
+    }
+
+    getChildContext() {
+        return {shortcuts: this.shortcutManager};
+    }
 
     static requireFields = (...names) => data =>
         names.reduce((errors, name) => {
@@ -120,24 +144,6 @@ class PartyDetail extends AbstractReactComponent {
         return errors;
     };
 
-    componentDidMount() {
-        this.trySetFocus();
-        this.fetchIfNeeded().then(data => {
-            if (data && data.accessPoint && data.accessPoint.invalid) {
-                this.props.dispatch(addToastrWarning(i18n('party.invalid.warning')));
-            }
-        });
-
-        this.updateStateFromProps();
-        this.props.initForm(this.handlePartyUpdate);
-    }
-
-    UNSAFE_componentWillReceiveProps(nextProps) {
-        this.fetchIfNeeded(nextProps);
-        this.trySetFocus(nextProps);
-        this.updateStateFromProps(nextProps);
-    }
-
     updateStateFromProps(props = this.props, state = this.state) {
         let tmpActiveIndexes;
         if (props.partyDetail.id === this.props.partyDetail.id) {
@@ -146,9 +152,9 @@ class PartyDetail extends AbstractReactComponent {
             tmpActiveIndexes = {};
         }
 
-        let activeIndexes = tmpActiveIndexes,
+        let activeIndexes           = tmpActiveIndexes,
             visibilitySettingsValue = {},
-            mergeIndex = {};
+            mergeIndex              = {};
 
         if (props.userDetail && props.userDetail.settings) {
             const {settings} = props.userDetail;
@@ -183,8 +189,8 @@ class PartyDetail extends AbstractReactComponent {
     fetchIfNeeded = (props = this.props) => {
         return new Promise((resolve, reject) => {
             const {
-                partyDetail: {id},
-            } = props;
+                      partyDetail: {id},
+                  } = props;
             this.props.dispatch(refPartyTypesFetchIfNeeded()); // nacteni typu osob (osoba, rod, událost, ...)
             this.props.dispatch(calendarTypesFetchIfNeeded()); // načtení typů kalendářů (gregoriánský, juliánský, ...)
             this.props.dispatch(refRecordTypesFetchIfNeeded());
@@ -210,10 +216,6 @@ class PartyDetail extends AbstractReactComponent {
                 });
             }
         }
-    };
-
-    handleShortcuts = action => {
-        // Not defined shortcuts
     };
 
     handleToggleActive = identificator => {
@@ -295,6 +297,7 @@ class PartyDetail extends AbstractReactComponent {
 
     render() {
         const {userDetail, partyDetail, fields, recordTypes, scopes} = this.props;
+
         const {sourceInformation, creators} = fields;
         const party = partyDetail.data;
         const {activeIndexes, visibilitySettingsValue} = this.state;
@@ -310,8 +313,8 @@ class PartyDetail extends AbstractReactComponent {
 
         let content;
         if (partyDetail.fetched && partyDetail.data) {
-            var type = partyDetail.data.partyType.code;
-            var icon = PartyListItem.partyIconByPartyTypeCode(type);
+            const type = partyDetail.data.partyType.code;
+            const icon = PartyListItem.partyIconByPartyTypeCode(type);
 
             let canEdit = userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
                 type: perms.AP_SCOPE_WR,
@@ -324,15 +327,15 @@ class PartyDetail extends AbstractReactComponent {
 
             const partyType = this.getPartyType();
 
-            let parts = partyType && partyType.partyGroups ? partyType.partyGroups : [];
+            const parts = partyType && partyType.partyGroups ? partyType.partyGroups || [] : [];
 
             let relationClassTypes =
-                partyType && partyType.relationTypes
-                    ? getMapFromList(
-                          partyType.relationTypes.map(i => i.relationClassType),
-                          'code',
-                      )
-                    : [];
+                    partyType && partyType.relationTypes
+                        ? [getMapFromList(
+                        partyType.relationTypes.map(i => i.relationClassType),
+                        'code',
+                        )]
+                        : [];
 
             const events = {onPin: this.handlePinToggle, onSelect: this.handleToggleActive};
 
@@ -345,7 +348,7 @@ class PartyDetail extends AbstractReactComponent {
                 <div tabIndex={0} ref="partyDetail" className="party-detail">
                     <div className={headerCls}>
                         <div className="header-icon">
-                            <Icon glyph={icon} />
+                            <Icon glyph={icon}/>
                         </div>
                         <div className="header-content">
                             <div>
@@ -383,7 +386,7 @@ class PartyDetail extends AbstractReactComponent {
                         </div>
                     </div>
                     <Form className="party-body">
-                        {parts.map((i, index) => {
+                        {parts && parts.map((i, index) => {
                             const TYPE = i.type.toUpperCase();
                             if (TYPE === UI_PARTY_GROUP_TYPE.IDENT) {
                                 const key = UI_PARTY_GROUP_TYPE.IDENT;
@@ -434,11 +437,11 @@ class PartyDetail extends AbstractReactComponent {
                                                 {i18n('party.detail.creators')}
                                                 {canEdit && (
                                                     <Button variant="action" onClick={() => creators.addField({})}>
-                                                        <Icon glyph="fa-plus" />
+                                                        <Icon glyph="fa-plus"/>
                                                     </Button>
                                                 )}
                                             </label>
-                                            {creators.map((creator, index) => (
+                                            {creators && creators.map((creator, index) => (
                                                 <div key={index + '-' + creator.id} className="value-group">
                                                     <div className="desc-item-value desc-item-value-parts">
                                                         <PartyField
@@ -458,7 +461,7 @@ class PartyDetail extends AbstractReactComponent {
                                                                     }
                                                                 }}
                                                             >
-                                                                <Icon glyph="fa-trash" />
+                                                                <Icon glyph="fa-trash"/>
                                                             </Button>
                                                         )}
                                                     </div>
@@ -494,7 +497,7 @@ class PartyDetail extends AbstractReactComponent {
                                                     !(
                                                         (DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXT ||
                                                             DEFINITION_TYPE ===
-                                                                UI_PARTY_GROUP_DEFINITION_TYPE.TEXTAREA) &&
+                                                            UI_PARTY_GROUP_DEFINITION_TYPE.TEXTAREA) &&
                                                         FIELDS_BY_PARTY_TYPE_CODE[partyType.code].indexOf(
                                                             item.definition,
                                                         ) === -1
@@ -516,18 +519,18 @@ class PartyDetail extends AbstractReactComponent {
                                                         DEFINITION_TYPE === UI_PARTY_GROUP_DEFINITION_TYPE.TEXTAREA
                                                     ) {
                                                         const {
-                                                            initialValue,
-                                                            autofill,
-                                                            onUpdate,
-                                                            valid,
-                                                            invalid,
-                                                            dirty,
-                                                            pristine,
-                                                            active,
-                                                            visited,
-                                                            autofilled,
-                                                            ...textAreaProps
-                                                        } = inputProps;
+                                                                  initialValue,
+                                                                  autofill,
+                                                                  onUpdate,
+                                                                  valid,
+                                                                  invalid,
+                                                                  dirty,
+                                                                  pristine,
+                                                                  active,
+                                                                  visited,
+                                                                  autofilled,
+                                                                  ...textAreaProps
+                                                              } = inputProps;
                                                         element = (
                                                             <FormInput
                                                                 {...textAreaProps}
@@ -620,27 +623,28 @@ class PartyDetail extends AbstractReactComponent {
 
         return (
             <Shortcuts name="PartyDetail" handler={this.handleShortcuts} className="party-detail-wrapper">
-                <StoreHorizontalLoader store={partyDetail} />
+                <StoreHorizontalLoader store={partyDetail}/>
                 {content}
             </Shortcuts>
         );
     }
 }
 
-export default reduxForm(
-    {
-        form: 'partyDetail',
-        fields: PartyDetail.fields,
-        validate: PartyDetail.validate,
-    },
+PartyDetail = reduxForm({
+    form: 'partyDetail',
+    fields: PartyDetail.fields,
+    validate: PartyDetail.validate,
+})(PartyDetail);
+
+PartyDetail = connect(
     state => {
         const {
-            app: {partyDetail},
-            userDetail,
-            refTables: {partyTypes, recordTypes},
-            focus,
-            refTables,
-        } = state;
+                  app: {partyDetail},
+                  userDetail,
+                  refTables: {partyTypes, recordTypes},
+                  focus,
+                  refTables,
+              } = state;
         return {
             partyDetail,
             userDetail,
@@ -653,3 +657,5 @@ export default reduxForm(
     },
     {initForm: onSave => initForm('partyDetail', PartyDetail.validate, onSave)},
 )(PartyDetail);
+
+export default PartyDetail;

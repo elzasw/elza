@@ -1,7 +1,7 @@
-import {hasDescItemTypeValue} from '../../../components/arr/ArrUtils';
-import {toDuration} from '../../../components/validate';
-import {DisplayType} from '../../../constants';
-import {getMapFromList, indexById} from '../utils2';
+import { hasDescItemTypeValue } from '../../../components/arr/ArrUtils';
+import { toDuration } from '../../../components/validate';
+import { DisplayType } from '../../../constants';
+import { getMapFromList, indexById } from '../utils2';
 import {
     ApItemExt,
     ApItemVO,
@@ -13,7 +13,7 @@ import {
     RefType,
     RefTypeExt,
 } from './itemForm';
-import {DataTypeCode} from './itemFormInterfaces';
+import { DataTypeCode } from './itemFormInterfaces';
 
 export enum ItemAvailability {
     REQUIRED = 'REQUIRED',
@@ -950,15 +950,16 @@ function merge(state: IItemFormState) {
 
     // Mapa db id descItemType na descItemType
     const dbItemTypesMap = new Map<number, ItemTypeExt>();
-    data.itemTypes.forEach(type => {
-        if (idTypeToItemsMap.has(type.id) || type.type > 1) {
-            const xtype = {
-                ...type,
-                items: ((idTypeToItemsMap.get(type.id) as any) as ApItemExt<any>[]) || [],
-            };
-            dbItemTypesMap.set(type.id, xtype);
-        }
-    });
+    data.items &&
+        data.itemTypes.forEach(type => {
+            if (idTypeToItemsMap.has(type.id) || type.type > 1) {
+                const xtype = {
+                    ...type,
+                    items: ((idTypeToItemsMap.get(type.id) as any) as ApItemExt<any>[]) || [],
+                };
+                dbItemTypesMap.set(type.id, xtype);
+            }
+        });
 
     // Procházíme všechny skupiny, které mohou být na formuláři - nikoli hodnoty z db, ty pouze připojujeme
     // Všechny procházíme z toho důvodu, že některé mohou být vynuceny na zobrazení - forceVisible a klient je musí zobrazit
@@ -1030,55 +1031,57 @@ export function updateFormData(
         // Info skupiny - ty, které jsou jako celek definované pro konkrétní JP - obsahují všechny atributy včetně např. typu - POSSIBLE atp.
         // Změna číselného typu na řetězec
         // Přidání do info skupin position
-        newState.infoTypes = Object.values(data.itemTypes).map(it => {
-            const itemType = refTypesMap.get(it.id)!!;
-            const itemSpecs = itemType.descItemSpecsMap;
+        newState.infoTypes = !data.itemTypes
+            ? []
+            : Object.values(data.itemTypes).map(it => {
+                const itemType = refTypesMap.get(it.id)!!;
+                const itemSpecs = itemType.descItemSpecsMap;
 
-            const dataItemType = ((dataItemTypeMap.get(itemType.id) || {}) as any) as ItemTypeLiteVO;
-            const dataItemSpecs = dataItemType.specs || [];
+                const dataItemType = ((dataItemTypeMap.get(itemType.id) || {}) as any) as ItemTypeLiteVO;
+                const dataItemSpecs = dataItemType.specs || [];
 
-            const finalItemSpecs = Array.from(itemSpecs.values()).map(spec => {
-                const specIndex = indexById(dataItemSpecs, spec.id);
-                if (specIndex == null) {
-                    return {
-                        id: spec.id,
-                        type: ItemAvailability.IMPOSSIBLE,
-                        rep: 0,
-                    };
-                } else {
-                    const dataSpec = dataItemSpecs[specIndex];
-                    return {
-                        ...dataSpec,
-                        type: ItemAvailabilityNumToEnumMap[dataSpec.type],
-                    };
-                }
+                const finalItemSpecs = Array.from(itemSpecs.values()).map(spec => {
+                    const specIndex = indexById(dataItemSpecs, spec.id);
+                    if (specIndex == null) {
+                        return {
+                            id: spec.id,
+                            type: ItemAvailability.IMPOSSIBLE,
+                            rep: 0,
+                        };
+                    } else {
+                        const dataSpec = dataItemSpecs[specIndex];
+                        return {
+                            ...dataSpec,
+                            type: ItemAvailabilityNumToEnumMap[dataSpec.type],
+                        };
+                    }
+                });
+
+                const finalItemType = ({
+                    ...dataItemType,
+                    type: ((dataItemType.type
+                        ? ItemAvailabilityNumToEnumMap[dataItemType.type]
+                        : ItemAvailability.IMPOSSIBLE) as any) as ItemAvailability,
+                    specs: finalItemSpecs,
+                    descItemSpecsMap: getMapFromList(finalItemSpecs),
+                } as any) as RefTypeExt;
+
+                const resultItemType: RefTypeExt = {
+                    cal: 0,
+                    calSt: 0,
+                    descItemSpecsMap: {},
+                    favoriteSpecIds: [],
+                    id: itemType.id,
+                    ind: 0,
+                    rep: 0,
+                    specs: [],
+                    type: ItemAvailability.IMPOSSIBLE,
+                    width: 1,
+                    ...finalItemType,
+                };
+                newState.infoTypesMap.set(resultItemType.id, resultItemType);
+                return resultItemType;
             });
-
-            const finalItemType = ({
-                ...dataItemType,
-                type: ((dataItemType.type
-                    ? ItemAvailabilityNumToEnumMap[dataItemType.type]
-                    : ItemAvailability.IMPOSSIBLE) as any) as ItemAvailability,
-                specs: finalItemSpecs,
-                descItemSpecsMap: getMapFromList(finalItemSpecs),
-            } as any) as RefTypeExt;
-
-            const resultItemType: RefTypeExt = {
-                cal: 0,
-                calSt: 0,
-                descItemSpecsMap: {},
-                favoriteSpecIds: [],
-                id: itemType.id,
-                ind: 0,
-                rep: 0,
-                specs: [],
-                type: ItemAvailability.IMPOSSIBLE,
-                width: 1,
-                ...finalItemType,
-            };
-            newState.infoTypesMap.set(resultItemType.id, resultItemType);
-            return resultItemType;
-        });
 
         // Mapa id descItemType na descItemType - existujících dat ze serveru
         //const dbItemTypesMap = getDbItemTypesMap(data)
