@@ -2,6 +2,7 @@ import React from 'react';
 import {AbstractReactComponent, i18n} from 'components/shared';
 import classNames from 'classnames';
 import './DescItemLabel.scss';
+import {Button} from '../../ui';
 
 class DescItemLabel extends AbstractReactComponent {
     render() {
@@ -17,11 +18,11 @@ class DescItemLabel extends AbstractReactComponent {
 
         let renderItem;
         if (onClick == null) {
-            renderItem = <div dangerouslySetInnerHTML={{__html: updatedValue}}></div>;
+            renderItem = <div dangerouslySetInnerHTML={{__html: updatedValue}}/>;
         } else {
             // eslint-disable-next-line jsx-a11y/anchor-is-valid
             renderItem = (
-                <a style={{cursor: 'pointer'}} onClick={onClick} dangerouslySetInnerHTML={{__html: updatedValue}}></a>
+                <Button variant="link" style={{cursor: 'pointer'}} onClick={onClick} dangerouslySetInnerHTML={{__html: updatedValue}}/>
             );
         }
 

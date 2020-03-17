@@ -171,10 +171,11 @@ class Layout extends AbstractReactComponent {
                                     <Route component={ArrPage} />
                                 </Switch>
                             </Route>
-                            <Route
-                                path="/registry"
-                                render={() => <RegistryPage onShowUsage={this.handleRegistryShowUsage} />}
-                            />
+
+                            <Route path="/registry">
+                                <RegistryPage onShowUsage={this.handleRegistryShowUsage} />
+                            </Route>
+
                             <Route path="/party" render={() => <PartyPage onShowUsage={this.handlePartyShowUsage} />} />
                             <Route path="/admin">
                                 <Switch>

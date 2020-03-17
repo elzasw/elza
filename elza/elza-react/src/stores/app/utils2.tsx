@@ -1,5 +1,9 @@
 export function getMapFromList<T>(list: T[], attrName: any = 'id'): Map<any, T> {
     const map = new Map<any, T>();
+
+    if (!list)
+        return map;
+
     list.forEach(x => {
         map.set(x[attrName], x);
     });
