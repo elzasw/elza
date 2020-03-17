@@ -299,7 +299,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                         </NoFocusButton>
                     </div>}
                     <div className='section'>
-                        <DropdownButton variant="default" title={<Icon glyph="fa-ellipsis-h"/>} noCaret
+                        <DropdownButton variant="default" title={<Icon glyph="fa-ellipsis-h"/>}
                                         id="arr-structure-panel-add">
                             <Dropdown.Item eventKey="1"
                                            onClick={this.handleCreateTemplate}>{i18n('subNodeForm.section.createTemplate')}</Dropdown.Item>

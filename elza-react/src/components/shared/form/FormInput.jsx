@@ -12,7 +12,7 @@ class FormInput extends AbstractReactComponent {
     static propTypes = {
         label: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
         error: PropTypes.string,
-        touched: PropTypes.bool.isRequired,
+        // touched: PropTypes.bool.isRequired,
         feedback: PropTypes.bool,
         placeholder: PropTypes.bool,
         staticInput: PropTypes.bool,  // má se renderovat jako FormControl.Static?
@@ -21,7 +21,7 @@ class FormInput extends AbstractReactComponent {
     render() {
         const {children, type, label, error, touched, value, inline, feedback, ...otherProps} = this.props;
 
-        const hasError = touched && error;
+        const hasError = error;
         let inlineProps = {};
         if (inline) {
             error && (inlineProps.title = error);

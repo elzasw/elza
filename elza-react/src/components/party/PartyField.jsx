@@ -114,7 +114,7 @@ class PartyField extends AbstractReactComponent {
 
         return hasCount || buttons ? <div>
             {buttons && <div className="create-party">
-                <DropdownButton noCaret title={<div><Icon glyph='fa-download'/><span
+                <DropdownButton title={<div><Icon glyph='fa-download'/><span
                     className="create-party-label">{i18n('party.addParty')}</span></div>} id="party-field">
                     {refTables.partyTypes.items.map(type => <Dropdown.Item key={'party' + type.id}
                                                                            onClick={() => this.handleCreateParty(type.id)}

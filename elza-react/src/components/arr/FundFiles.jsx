@@ -160,7 +160,7 @@ class FundFiles extends AbstractReactComponent {
 
             {!readMode && fundFiles.fetched && <div className="actions-container">
                 <div className="actions">
-                    <DropdownButton variant="default" id='dropdown-add-file' noCaret
+                    <DropdownButton variant="default" id='dropdown-add-file'
                                     title={<Icon glyph='fa-plus-circle'/>}>
                         <Dropdown.Item onClick={this.handleCreateFromFile}>
                             {i18n('arr.fund.files.action.add.fromFile')}

@@ -184,7 +184,7 @@ class LecturingBottom extends React.Component {
                         />
                     </div>
                     <div className="text-right">
-                        <DropdownButton dropup pullRight noCaret title={i18n('arr.issues.state.change')}
+                        <DropdownButton dropup pullRight title={i18n('arr.issues.state.change')}
                                         variant={'action' as any} id="comment-state"
                                         disabled={!this.state.text || textFieldDisabled}>
                             {issueStates.data.filter(i => i.id !== data.issueStateId).map(i => <Dropdown.Item key={i.id}
