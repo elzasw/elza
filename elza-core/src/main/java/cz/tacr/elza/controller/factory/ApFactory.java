@@ -458,6 +458,15 @@ public class ApFactory {
             case URI_REF:
                 item = new ApItemUriRefVO(apItem);
                 break;
+            case BIT:
+                item = new ApItemBitVO(apItem);
+                break;
+            case STRING_50:
+                item = new ApItemString50VO(apItem);
+                break;
+            case STRING_250:
+                item = new ApItemString250VO(apItem);
+                break;
             default:
                 throw new NotImplementedException("Není implementováno: " + dataType.getCode());
         }

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.ap.item.*;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -18,11 +19,6 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.eventbus.Subscribe;
 
-import cz.tacr.elza.controller.vo.ap.item.ApItemFormattedTextVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemTextVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
-import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.DataType;
@@ -186,6 +182,14 @@ public class AccessPointMigrationService {
             case STRING:
                 item = new ApItemStringVO();
                 ((ApItemStringVO) item).setValue(si.getValue());
+                break;
+            case STRING_50:
+                item = new ApItemString50VO();
+                ((ApItemString50VO) item).setValue(si.getValue());
+                break;
+            case STRING_250:
+                item = new ApItemString250VO();
+                ((ApItemString250VO) item).setValue(si.getValue());
                 break;
             case TEXT:
                 item = new ApItemTextVO();

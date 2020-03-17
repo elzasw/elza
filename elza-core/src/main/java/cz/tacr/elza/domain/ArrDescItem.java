@@ -67,6 +67,7 @@ public class ArrDescItem extends ArrItem {
 	public static final String INTGER_ATT = "valueInt";
 	public static final String DECIMAL_ATT = "valueDecimal";
 	public static final String DATE_ATT = "valueDate";
+	public static final String BOOLEAN_ATT = "valueBoolean";
 	public static final String NORMALIZED_FROM_ATT = "normalizedFrom";
 	public static final String NORMALIZED_TO_ATT = "normalizedTo";
 
@@ -154,6 +155,12 @@ public class ArrDescItem extends ArrItem {
     @NumericField
     public Date getValueDate() {
         return indexData.getValueDate();
+    }
+
+    @JsonIgnore
+    @Field(name = BOOLEAN_ATT, store = Store.YES)
+    public Boolean isValue() {
+        return indexData.isValue();
     }
 
 	@JsonIgnore
@@ -245,6 +252,9 @@ public class ArrDescItem extends ArrItem {
         public Date getValueDate() {
             return (data == null) ? null : data.getDate();
         }
+
+        @Override
+        public Boolean isValue() { return (data == null) ? null : data.getValueBoolean();}
     }
 
     @Override

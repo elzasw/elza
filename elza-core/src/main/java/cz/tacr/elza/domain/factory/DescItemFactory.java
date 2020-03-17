@@ -105,6 +105,9 @@ public class DescItemFactory implements InitializingBean {
     private DataDateRepository dataDateRepository;
 
     @Autowired
+    private DataBitRepository dataBitRepository;
+
+    @Autowired
     private ItemService itemService;
 
     @Autowired
@@ -134,6 +137,9 @@ public class DescItemFactory implements InitializingBean {
         defineMapJsonTable();
         defineMapUriRef();
         defineMapDate();
+        defineMapBit();
+        defineMapString50();
+        defineMapString250();
 
         facade = factory.getMapperFacade();
 
@@ -516,6 +522,110 @@ public class DescItemFactory implements InitializingBean {
     }
 
     /**
+     * Nadefinování pravidel pro převod formátu String50.
+     */
+    private void defineMapString50() {
+        factory.classMap(ArrItemString50.class, ArrDataString.class).customize(
+                new CustomMapper<ArrItemString50, ArrDataString>() {
+
+                    @Override
+                    public void mapAtoB(final ArrItemString50 arrItemString50,
+                                        final ArrDataString arrDataString50,
+                                        final MappingContext context) {
+                        arrDataString50.setValue(arrItemString50.getValue());
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrDataString arrDataString50,
+                                        final ArrItemString50 arrItemString50,
+                                        final MappingContext context) {
+                        String formattedValue = formatString50(context, arrDataString50.getValue());
+                        arrItemString50.setValue(formattedValue);
+                    }
+                }).register();
+
+        factory.classMap(ArrDataString.class, ArrDataString.class)
+                .customize(new CustomMapper<ArrDataString, ArrDataString>() {
+                    @Override
+                    public void mapAtoB(final ArrDataString arrDataString,
+                                        final ArrDataString arrDataStringNew,
+                                        final MappingContext context) {
+                        arrDataStringNew.setDataType(arrDataString.getDataType());
+                        arrDataStringNew.setValue(arrDataString.getValue());
+                    }
+                }).register();
+    }
+
+    /**
+     * Nadefinování pravidel pro převod formátu String250.
+     */
+    private void defineMapString250() {
+        factory.classMap(ArrItemString250.class, ArrDataString.class).customize(
+                new CustomMapper<ArrItemString250, ArrDataString>() {
+
+                    @Override
+                    public void mapAtoB(final ArrItemString250 arrItemString250,
+                                        final ArrDataString arrDataString,
+                                        final MappingContext context) {
+                        arrDataString.setValue(arrItemString250.getValue());
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrDataString arrDataString,
+                                        final ArrItemString250 arrItemString250,
+                                        final MappingContext context) {
+                        String formattedValue = formatString250(context, arrDataString.getValue());
+                        arrItemString250.setValue(formattedValue);
+                    }
+                }).register();
+
+        factory.classMap(ArrDataString.class, ArrDataString.class)
+                .customize(new CustomMapper<ArrDataString, ArrDataString>() {
+                    @Override
+                    public void mapAtoB(final ArrDataString arrDataString,
+                                        final ArrDataString arrDataStringNew,
+                                        final MappingContext context) {
+                        arrDataStringNew.setDataType(arrDataString.getDataType());
+                        arrDataStringNew.setValue(arrDataString.getValue());
+                    }
+                }).register();
+    }
+
+    /**
+     * Nadefinování pravidel pro převod formátu Bit.
+     */
+    private void defineMapBit() {
+        factory.classMap(ArrItemBit.class, ArrDataBit.class).customize(
+                new CustomMapper<ArrItemBit, ArrDataBit>() {
+
+                    @Override
+                    public void mapAtoB(final ArrItemBit arrItemBit,
+                                        final ArrDataBit arrDataBit,
+                                        final MappingContext context) {
+                        arrDataBit.setValue(arrItemBit.isValue());
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrDataBit arrDataBit,
+                                        final ArrItemBit arrItemBit,
+                                        final MappingContext context) {
+                        arrItemBit.setValue(arrDataBit.isValue());
+                    }
+                }).register();
+
+        factory.classMap(ArrDataBit.class, ArrDataBit.class)
+                .customize(new CustomMapper<ArrDataBit, ArrDataBit>() {
+                    @Override
+                    public void mapAtoB(final ArrDataBit arrDataBit,
+                                        final ArrDataBit arrDataBitNew,
+                                        final MappingContext context) {
+                        arrDataBitNew.setDataType(arrDataBit.getDataType());
+                        arrDataBitNew.setValue(arrDataBit.isValue());
+                    }
+                }).register();
+    }
+
+    /**
      * Nadefinování pravidel pro převod formátu Date.
      */
     private void defineMapDate() {
@@ -848,6 +958,7 @@ public class DescItemFactory implements InitializingBean {
         mapRepository.put(ArrDataJsonTable.class, dataJsonTableRepository);
         mapRepository.put(ArrDataDate.class, dataDateRepository);
         mapRepository.put(ArrDataUriRef.class, dataUriRefRepository);
+        mapRepository.put(ArrDataBit.class, dataBitRepository);
     }
 
     /**
@@ -969,6 +1080,8 @@ public class DescItemFactory implements InitializingBean {
 			dataNew = facade.map(srcData, ArrDataJsonTable.class);
 		} else if (srcData instanceof ArrDataUriRef) {
 		    dataNew = facade.map(srcData, ArrDataUriRef.class);
+        } else if (srcData instanceof ArrDataBit) {
+            dataNew = facade.map(srcData, ArrDataBit.class);
         } else {
 			throw new NotImplementedException(
 			        "Nebyl namapován datový typ: " + srcData.getClass().getName());
@@ -1043,6 +1156,44 @@ public class DescItemFactory implements InitializingBean {
                         && ArrangementController.FORMAT_ATTRIBUTE_SHORT.equals(format)) {
                     valueRet = stringValue.substring(0, 250);
                 }
+            }
+        }
+        return valueRet;
+    }
+
+    /**
+     * Formátuje výstupní hodnotu dat pokud je to vyžadováno (existuje podmínka v kontextu.
+     *
+     * @param context kontext
+     * @param value   hodnota pro naformátování
+     * @return upravená hodnota
+     */
+    private String formatString50(final MappingContext context, final String value) {
+        String valueRet = value;
+        if (context != null) {
+            String format = (String) context.getProperty(PROPERTY_FORMAT);
+            String stringValue = value;
+            if (stringValue != null && stringValue.length() > 50) {
+                    valueRet = stringValue.substring(0, 50);
+            }
+        }
+        return valueRet;
+    }
+
+    /**
+     * Formátuje výstupní hodnotu dat pokud je to vyžadováno (existuje podmínka v kontextu.
+     *
+     * @param context kontext
+     * @param value   hodnota pro naformátování
+     * @return upravená hodnota
+     */
+    private String formatString250(final MappingContext context, final String value) {
+        String valueRet = value;
+        if (context != null) {
+            String format = (String) context.getProperty(PROPERTY_FORMAT);
+            String stringValue = value;
+            if (stringValue != null && stringValue.length() > 250) {
+                valueRet = stringValue.substring(0, 250);
             }
         }
         return valueRet;

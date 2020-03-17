@@ -41,6 +41,7 @@ import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrDataBit;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
@@ -293,7 +294,9 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 dataClassType.equals(ArrDataCoordinates.class) ||
                 dataClassType.equals(ArrDataDecimal.class) ||
                 dataClassType.equals(ArrDataDate.class) ||
-                dataClassType.equals(ArrDataInteger.class)) {
+                dataClassType.equals(ArrDataInteger.class) ||
+                dataClassType.equals(ArrDataUriRef.class)  ||
+                dataClassType.equals(ArrDataBit.class)){
             return new AbstractDescItemDataTypeHelper() {
 
                 @Override
@@ -304,18 +307,6 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get("value");
-                }
-            };
-        } else if(dataClassType.equals(ArrDataUriRef.class)) {
-            return new AbstractDescItemDataTypeHelper() {
-                @Override
-                protected void init() {
-                    targetJoin = dataRoot;
-                }
-
-                @Override
-                public Path<String> getValueStringSelection(CriteriaBuilder criteriaBuilder) {
-                    return targetJoin.get("link");
                 }
             };
         } else if (dataClassType.equals(ArrDataUnitid.class)) {

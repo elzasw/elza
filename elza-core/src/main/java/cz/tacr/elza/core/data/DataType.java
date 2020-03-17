@@ -27,7 +27,12 @@ public enum DataType {
     JSON_TABLE(ArrDataJsonTable.class, Integer.MAX_VALUE),
     DATE(ArrDataDate.class),
     APFRAG_REF(ArrDataApFragRef.class),
-    URI_REF(ArrDataUriRef.class);
+    URI_REF(ArrDataUriRef.class),
+    BIT(ArrDataBit.class),
+    STRING_50(ArrDataString.class,50),
+    STRING_250(ArrDataString.class, 250);
+
+
 
     private static Map<Integer, DataType> entityIdMap;
 

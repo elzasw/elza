@@ -25,6 +25,8 @@ class DescItemIndexData implements ArrDescItemIndexData {
 
     private final Date date;
 
+    private final Boolean valueBoolean;
+
     public DescItemIndexData(Integer fundId, String fulltext, ArrData data) {
         this.fundId = fundId;
         this.fulltext = fulltext;
@@ -34,12 +36,14 @@ class DescItemIndexData implements ArrDescItemIndexData {
             this.normalizedFrom = data.getNormalizedFrom();
             this.normalizedTo = data.getNormalizedTo();
             this.date = data.getDate();
+            this.valueBoolean = data.getValueBoolean();
         } else {
             this.valueInt = null;
             this.valueDouble = null;
             this.normalizedFrom = null;
             this.normalizedTo = null;
             this.date = null;
+            this.valueBoolean = null;
         }
     }
 
@@ -76,5 +80,10 @@ class DescItemIndexData implements ArrDescItemIndexData {
     @Override
     public Date getValueDate() {
         return date;
+    }
+
+    @Override
+    public Boolean isValue() {
+        return null;
     }
 }

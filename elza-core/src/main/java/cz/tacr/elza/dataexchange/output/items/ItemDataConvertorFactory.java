@@ -61,9 +61,13 @@ public class ItemDataConvertorFactory {
 
     public UriRefConvertor createUriRefConvertor() { return new UriRefConvertor(); }
 
+    private ItemDataConvertor createBitConvertor() { return new BitValueConvertor(); }
+
     public final Map<DataType, ItemDataConvertor> createAll() {
         Map<DataType, ItemDataConvertor> map = new EnumMap<>(DataType.class);
         map.put(DataType.STRING, createStringValueConvertor());
+        map.put(DataType.STRING_50, createStringValueConvertor());
+        map.put(DataType.STRING_250, createStringValueConvertor());
         map.put(DataType.TEXT, createTextValueConvertor());
         map.put(DataType.COORDINATES, createGeLocationConvertor());
         map.put(DataType.FORMATTED_TEXT, createTextValueConvertor());
@@ -78,6 +82,7 @@ public class ItemDataConvertorFactory {
         map.put(DataType.JSON_TABLE, createJsonTableConvertor());
         map.put(DataType.FILE_REF, createFileRefConvertor());
         map.put(DataType.URI_REF, createUriRefConvertor());
+        map.put(DataType.BIT, createBitConvertor());
         return map;
     }
 }
