@@ -13,7 +13,9 @@
     "test": "rescripts test",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "flow": "flow; test $? -eq 0 -o $? -eq 2"
+    "flow": "flow; test $? -eq 0 -o $? -eq 2",
+    "format": "prettier --write src/**/*.ts --write src/**/*.tsx --write src/**/*.js --write src/**/*.jsx && git add .",
+    "format:zsh": "prettier --write 'src/**/*.ts' --write 'src/**/*.tsx' --write 'src/**/*.js' --write 'src/**/*.jsx' && git add ."
   },
   "author": "",
   "license": "",
