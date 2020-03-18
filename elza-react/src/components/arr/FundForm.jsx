@@ -1,13 +1,13 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux';
-import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, Autocomplete, FormInput, i18n, Icon} from 'components/shared';
+import {reduxForm, Field} from 'redux-form';
+import {AbstractReactComponent, Autocomplete, FormInput, i18n, Icon} from '../shared';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
-import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx';
-import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx';
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
+import {refRuleSetFetchIfNeeded} from '../../actions/refTables/ruleSet.jsx';
+import {refInstitutionsFetchIfNeeded} from '../../actions/refTables/institutions.jsx';
+import {decorateFormField, submitForm} from '../form/FormUtils.jsx';
 
 import './FundForm.scss';
 import UserAndGroupField from '../admin/UserAndGroupField';
@@ -104,7 +104,6 @@ class FundForm extends AbstractReactComponent {
 
     render() {
         const {
-            fields: {fundAdmins, name, ruleSetId, apScopes, institutionId, internalCode, dateRange},
             handleSubmit,
             onClose,
             create,
@@ -112,6 +111,7 @@ class FundForm extends AbstractReactComponent {
             approve,
             ruleSet,
             refTables,
+            pristine,
             submitting,
         } = this.props;
         let approveButton;
@@ -135,117 +135,122 @@ class FundForm extends AbstractReactComponent {
             <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                 <Modal.Body>
                     {(create || update) && (
-                        <FormInput type="text" label={i18n('arr.fund.name')} {...name} {...decorateFormField(name)} />
-                    )}
-
-                    {(create || update) && (
-                        <FormInput
+                        <Field
+                            name="name"
                             type="text"
-                            label={i18n('arr.fund.internalCode')}
-                            {...internalCode}
-                            {...decorateFormField(internalCode)}
+                            component={FormInput}
+                            label={i18n('arr.fund.name')}
                         />
                     )}
 
                     {(create || update) && (
-                        <FormInput
-                            as="select"
+                        <Field
+                            name="internalCode"
+                            type="text"
+                            component={FormInput}
+                            label={i18n('arr.fund.internalCode')}
+                        />
+                    )}
+
+                    {(create || update) && (
+                        <Field
+                            name="institutionId"
+                            type="select"
+                            component={FormInput}
                             label={i18n('arr.fund.institution')}
-                            {...institutionId}
-                            {...decorateFormField(institutionId)}
                         >
                             <option key="-institutionId" />
                             {institutions.map(i => {
                                 return <option value={i.id}>{i.name}</option>;
                             })}
-                        </FormInput>
+                        </Field>
                     )}
 
                     {(create || ruleSet) && (
-                        <FormInput
-                            as="select"
+                        <Field
+                            name="ruleSetId"
+                            type="select"
+                            component={FormInput}
                             label={i18n('arr.fund.ruleSet')}
-                            {...ruleSetId}
-                            {...decorateFormField(ruleSetId)}
                         >
                             <option key="-ruleSetId" />
                             {ruleSets.map(i => {
                                 return <option value={i.id}>{i.name}</option>;
                             })}
-                        </FormInput>
+                        </Field>
                     )}
 
                     {approve && (
-                        <FormInput
-                            as="textarea"
+                        <Field
+                            name="dateRange"
+                            type="textarea"
+                            component={FormInput}
                             label={i18n('arr.fund.dateRange')}
-                            {...dateRange}
-                            {...decorateFormField(dateRange)}
                         />
                     )}
 
-                    {update && (
-                        <Autocomplete
-                            tags
-                            label={i18n('arr.fund.regScope')}
-                            items={this.props.scopeList}
-                            getItemId={item => (item ? item.id : null)}
-                            getItemName={item => (item ? item.name : '')}
-                            onChange={value => {
-                                if (!value || value.name.trim() == '') {
-                                    return;
-                                }
-                                let index = this.findIndexInFields(this.props.fields.apScopes, value.name, 'name');
-                                if (index === null) {
-                                    this.props.fields.apScopes.addField(value);
-                                } else {
-                                    this.props.fields.apScopes.removeField(index);
-                                }
-                            }}
-                            value={this.state.autocompleteValue}
-                        />
-                    )}
-                    {update && (
-                        <div className="selected-data-container">
-                            {apScopes.map((scope, scopeIndex) => (
-                                <div className="selected-data" key={scopeIndex}>
-                                    <span>{scope.name.value}</span>
-                                    <Button
-                                        onClick={() => {
-                                            apScopes.removeField(scopeIndex);
-                                        }}
-                                    >
-                                        <Icon glyph="fa-times" />
-                                    </Button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                    {/*{update && (*/}
+                    {/*    <Autocomplete*/}
+                    {/*        tags*/}
+                    {/*        label={i18n('arr.fund.regScope')}*/}
+                    {/*        items={this.props.scopeList}*/}
+                    {/*        getItemId={item => (item ? item.id : null)}*/}
+                    {/*        getItemName={item => (item ? item.name : '')}*/}
+                    {/*        onChange={value => {*/}
+                    {/*            if (!value || value.name.trim() == '') {*/}
+                    {/*                return;*/}
+                    {/*            }*/}
+                    {/*            let index = this.findIndexInFields(this.props.fields.apScopes, value.name, 'name');*/}
+                    {/*            if (index === null) {*/}
+                    {/*                this.props.fields.apScopes.addField(value);*/}
+                    {/*            } else {*/}
+                    {/*                this.props.fields.apScopes.removeField(index);*/}
+                    {/*            }*/}
+                    {/*        }}*/}
+                    {/*        value={this.state.autocompleteValue}*/}
+                    {/*    />*/}
+                    {/*)}*/}
+                    {/*{update && (*/}
+                    {/*    <div className="selected-data-container">*/}
+                    {/*        {apScopes.map((scope, scopeIndex) => (*/}
+                    {/*            <div className="selected-data" key={scopeIndex}>*/}
+                    {/*                <span>{scope.name.value}</span>*/}
+                    {/*                <Button*/}
+                    {/*                    onClick={() => {*/}
+                    {/*                        apScopes.removeField(scopeIndex);*/}
+                    {/*                    }}*/}
+                    {/*                >*/}
+                    {/*                    <Icon glyph="fa-times" />*/}
+                    {/*                </Button>*/}
+                    {/*            </div>*/}
+                    {/*        ))}*/}
+                    {/*    </div>*/}
+                    {/*)}*/}
 
-                    {create && (
-                        <FormInput
-                            as={TagsField}
-                            label={i18n('arr.fund.fundAdmins')}
-                            {...fundAdmins}
-                            {...decorateFormField(fundAdmins)}
-                            renderTagItem={renderUserOrGroupLabel}
-                            fieldComponent={UserAndGroupField}
-                            fieldComponentProps={{
-                                findUserApi: WebApi.findUserWithFundCreate,
-                                findGroupApi: WebApi.findGroupWithFundCreate,
-                            }}
-                        />
-                    )}
+                    {/*{create && (*/}
+                    {/*    <FormInput*/}
+                    {/*        as={TagsField}*/}
+                    {/*        label={i18n('arr.fund.fundAdmins')}*/}
+                    {/*        {...fundAdmins}*/}
+                    {/*        {...decorateFormField(fundAdmins)}*/}
+                    {/*        renderTagItem={renderUserOrGroupLabel}*/}
+                    {/*        fieldComponent={UserAndGroupField}*/}
+                    {/*        fieldComponentProps={{*/}
+                    {/*            findUserApi: WebApi.findUserWithFundCreate,*/}
+                    {/*            findGroupApi: WebApi.findGroupWithFundCreate,*/}
+                    {/*        }}*/}
+                    {/*    />*/}
+                    {/*)}*/}
                 </Modal.Body>
                 <Modal.Footer>
                     {create && (
-                        <Button type="submit" disabled={submitting}>
+                        <Button type="submit" variant="outline-secondary" disabled={submitting}>
                             {i18n('global.action.create')}
                         </Button>
                     )}
                     {approve && approveButton}
                     {(update || ruleSet) && (
-                        <Button type="submit" disabled={submitting}>
+                        <Button type="submit" disabled={pristine || submitting}>
                             {i18n('global.action.update')}
                         </Button>
                     )}
@@ -258,32 +263,18 @@ class FundForm extends AbstractReactComponent {
     }
 }
 
-function mapStateToProps(state) {
-    const {userDetail} = state;
-    return {
-        userDetail,
-    };
-}
+const load = data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'fundForm', data});
 
 FundForm = reduxForm({
     form: 'fundForm',
-    fields: [
-        'name',
-        'ruleSetId',
-        'institutionId',
-        'internalCode',
-        'dateRange',
-        'apScopes[].id',
-        'apScopes[].name',
-        'fundAdmins',
-    ],
-});
+    validate: FundForm.validate
+})(FundForm);
 
 FundForm = connect(
     state => {
         return ({
             userDetail: state.userDetail,
-            initialValues: state.form.fundForm.initialValues,
+            initialValues: state.form.fundForm ? state.form.fundForm.initialValues : {},
             refTables: state.refTables,
             bulkActions:
                 state.arrRegion.activeIndex !== null
@@ -295,7 +286,7 @@ FundForm = connect(
                     : undefined,
         })
     },
-    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'fundForm', data})}
+    {load}
 )(FundForm);
 
 export default FundForm;

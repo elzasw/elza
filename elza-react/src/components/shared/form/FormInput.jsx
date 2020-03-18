@@ -1,27 +1,20 @@
-import PropTypes from 'prop-types';
 import React from 'react';
-import {Form, FormCheck, FormControl, FormGroup, FormLabel} from 'react-bootstrap';
+import {Form} from 'react-bootstrap';
 import AbstractReactComponent from '../../AbstractReactComponent';
 
 class FormInput extends AbstractReactComponent {
-    static defaultProps = {
-        inline: false,
-        feedback: false,
-    };
-
-    static propTypes = {
-        label: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
-        error: PropTypes.string,
-        // touched: PropTypes.bool.isRequired,
-        feedback: PropTypes.bool,
-        placeholder: PropTypes.bool,
-        staticInput: PropTypes.bool, // má se renderovat jako FormControl.Static?
-    };
-
     render() {
-        const {children, type, label, error, touched, value, inline, feedback, ...otherProps} = this.props;
+        let {error, touched, ...rest} = this.props;
+        const {meta, children, type, label, value, inline, feedback, ...otherProps} = rest;
 
-        const hasError = error;
+        if (meta) {
+            error = meta.error;
+            touched = meta.touched;
+        }
+
+        console.log(label, "::", error, touched);
+
+        const hasError = !!(touched && error);
         let inlineProps = {};
         if (inline) {
             error && (inlineProps.title = error);
@@ -30,42 +23,65 @@ class FormInput extends AbstractReactComponent {
         switch (type) {
             case 'static':
                 return (
-                    <FormGroup validationState={hasError ? 'error' : null}>
-                        {label && <FormLabel>{label}</FormLabel>}
-                        <FormControl.Static ref="input" value={value} {...otherProps} {...inlineProps}>
+                    <Form.Group>
+                        {label && <Form.Label>{label}</Form.Label>}
+                        <Form.Control.Static
+                            ref="input"
+                            value={value} {...otherProps} {...inlineProps}
+                            isInvalid={hasError}
+                        >
                             {children}
-                        </FormControl.Static>
+                        </Form.Control.Static>
                         {!inline && hasError && <Form.Control.Feedback>{error}</Form.Control.Feedback>}
-                    </FormGroup>
+                    </Form.Group>
                 );
             case 'radio':
                 return (
                     <div>
-                        <FormCheck
+                        <Form.Check
                             type="radio"
                             ref="input"
                             label={label}
                             value={value}
+                            isInvalid={hasError}
                             {...otherProps}
                             {...inlineProps}
                         />
                         {!inline && hasError && <Form.Control.Feedback>{error}</Form.Control.Feedback>}
                     </div>
                 );
+            case 'select':
+                return (
+                    <Form.Group>
+                        {label && <Form.Label>{label}</Form.Label>}
+                        <Form.Control
+                            ref="input"
+                            as="select"
+                            value={value}
+                            isInvalid={hasError}
+                            {...otherProps}
+                            {...inlineProps}
+                        >
+                            {children}
+                        </Form.Control>
+                        {!inline && hasError && <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>}
+                    </Form.Group>
+                );
             default:
                 return (
-                    <FormGroup validationState={hasError ? 'error' : null}>
-                        {label && <FormLabel>{label}</FormLabel>}
-                        <FormControl
+                    <Form.Group>
+                        {label && <Form.Label>{label}</Form.Label>}
+                        <Form.Control
                             ref="input"
                             value={value}
                             children={children}
                             type={type}
+                            isInvalid={hasError}
                             {...otherProps}
                             {...inlineProps}
                         />
-                        {!inline && hasError && <Form.Control.Feedback>{error}</Form.Control.Feedback>}
-                    </FormGroup>
+                        {!inline && hasError && <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>}
+                    </Form.Group>
                 );
         }
     }
