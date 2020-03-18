@@ -587,12 +587,32 @@ public class PackageService {
         logger.info("Stoping services before package update");
 
         // zastavit indexovani
+        stopAsyncTasks();
+
+        // odebrání používaných groovy scritpů
+        cacheService.resetCache(CacheInvalidateEvent.Type.GROOVY);
+    }
+
+    public void startAsyncTasks() {
+
+        logger.debug("Starting async threads...");
+
+        structObjValueService.startGenerator();
+
+        // spustit indexovani
+        indexWorkProcessor.resumeIndexing();
+
+        logger.info("All async threads started.");
+    }
+
+    public void stopAsyncTasks() {
+        logger.debug("Stopping async threads...");
+        // zastavit indexovani
         indexWorkProcessor.suspendIndexing();
 
         structObjValueService.stopGenerator();
 
-        // odebrání používaných groovy scritpů
-        cacheService.resetCache(CacheInvalidateEvent.Type.GROOVY);
+        logger.info("All async threads stopped.");
     }
 
     private void postImportPackage(PackageContext pkgCtx) {
@@ -615,12 +635,9 @@ public class PackageService {
 
             structObjValueService.addToValidateByTypes(revalidateStructureTypes);
 
-            structObjValueService.startGenerator();
 
         } finally {
-
-            // spustit indexovani
-            indexWorkProcessor.resumeIndexing();
+            startAsyncTasks();
         }
 
         logger.info("Services were restarted after package update");
