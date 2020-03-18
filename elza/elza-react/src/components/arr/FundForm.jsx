@@ -265,22 +265,25 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(
-    reduxForm(
-        {
-            form: 'fundForm',
-            fields: [
-                'name',
-                'ruleSetId',
-                'institutionId',
-                'internalCode',
-                'dateRange',
-                'apScopes[].id',
-                'apScopes[].name',
-                'fundAdmins',
-            ],
-        },
-        state => ({
+FundForm = reduxForm({
+    form: 'fundForm',
+    fields: [
+        'name',
+        'ruleSetId',
+        'institutionId',
+        'internalCode',
+        'dateRange',
+        'apScopes[].id',
+        'apScopes[].name',
+        'fundAdmins',
+    ],
+});
+
+FundForm = connect(
+    state => {
+        console.log(state);
+        return ({
+            userDetail: state.userDetail,
             initialValues: state.form.fundForm.initialValues,
             refTables: state.refTables,
             bulkActions:
@@ -291,7 +294,9 @@ export default connect(mapStateToProps)(
                 state.arrRegion.activeIndex !== null
                     ? state.arrRegion.funds[state.arrRegion.activeIndex].versionValidation
                     : undefined,
-        }),
-        {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'fundForm', data})},
-    )(FundForm),
-);
+        })
+        
+    },
+)(FundForm);
+
+export default FundForm;
