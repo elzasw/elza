@@ -281,7 +281,6 @@ FundForm = reduxForm({
 
 FundForm = connect(
     state => {
-        console.log(state);
         return ({
             userDetail: state.userDetail,
             initialValues: state.form.fundForm.initialValues,
@@ -295,8 +294,8 @@ FundForm = connect(
                     ? state.arrRegion.funds[state.arrRegion.activeIndex].versionValidation
                     : undefined,
         })
-        
     },
+    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'fundForm', data})}
 )(FundForm);
 
 export default FundForm;
