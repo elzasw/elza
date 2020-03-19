@@ -89,6 +89,7 @@
                     <!-- Kopirovani react prelozenych trid do scripts/react -->
                     <plugin>
                         <artifactId>maven-resources-plugin</artifactId>
+                        <version>3.1.0</version>
                         <executions>
                             <execution>
                                 <id>copy-react-resources</id>
