@@ -280,6 +280,10 @@ public class DeleteFundHistoryAction {
         nodeConformityErrorRepository.deleteByNodeConformityNodeFund(fund);
         nodeConformityInfoRepository.deleteByNodeFund(fund);
         nodeConformityRepository.deleteByNodeFund(fund);
+
+        faBulkActionNodeRepository.deleteByFund(fund);
+        faBulkActionRepository.deleteByFund(fund);
+
         fundVersionRepository.deleteByFund(fund);
 
         // create new version

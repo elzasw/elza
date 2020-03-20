@@ -1,7 +1,8 @@
 package cz.tacr.elza.repository;
 
-import java.util.List;
-
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
+import cz.tacr.elza.domain.ArrFund;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -9,9 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrBulkActionRun.State;
-import cz.tacr.elza.domain.ArrFund;
+import java.util.List;
 
 
 @Repository
@@ -53,6 +52,10 @@ public interface BulkActionRunRepository extends JpaRepository<ArrBulkActionRun,
     int updateFromStateToState(@Param("fromState") final State fromState, @Param("toState") final State toState);
 
     List<ArrBulkActionRun> findByState(@Param(value = "state") final State state);
-
+    
     void deleteByFundVersionFund(ArrFund fund);
+
+    @Modifying
+    @Query("DELETE FROM arr_bulk_action_run ba WHERE ba.fundVersion IN (SELECT fv FROM arr_fund_version fv WHERE fv.fund = ?1)")
+    void deleteByFund(ArrFund fund);
 }
