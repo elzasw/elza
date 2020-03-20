@@ -4,7 +4,7 @@ import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {AbstractReactComponent} from 'components/shared';
 import {reduxForm} from 'redux-form';
-import FormInput from '../shared/form/FormInput';
+import FormInput from 'components/shared/form/FormInput';
 import i18n from '../i18n';
 import * as issueTypesActions from '../../actions/refTables/issueTypes';
 

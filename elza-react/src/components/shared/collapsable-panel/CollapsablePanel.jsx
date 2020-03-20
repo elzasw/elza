@@ -54,7 +54,7 @@ class CollapsablePanel extends AbstractReactComponent {
                 className={isOpen ? 'open' : null}
             >
                 <Card>
-                    <Card.Header>
+                    <Accordion.Toggle as={Card.Header} eventKey="0">
                         <Shortcuts
                             name="CollapsablePanel"
                             handler={(action, e) => this.handleShortcuts(action, e)}
@@ -70,7 +70,7 @@ class CollapsablePanel extends AbstractReactComponent {
                                 </NoFocusButton>
                             )}
                         </Shortcuts>
-                    </Card.Header>
+                    </Accordion.Toggle>
                     <Accordion.Collapse eventKey={true}>
                         <Card.Body>{children}</Card.Body>
                     </Accordion.Collapse>

@@ -10,7 +10,7 @@ import indexById from '../../shared/utils/indexById';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import IssueListForm from '../form/IssueListForm';
 import i18n from '../i18n';
-import FormInput from '../shared/form/FormInput';
+import FormInput from 'components/shared/form/FormInput';
 import ListBox from '../shared/listbox/ListBox';
 import Loading from '../shared/loading/Loading';
 

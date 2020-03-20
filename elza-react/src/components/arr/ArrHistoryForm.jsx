@@ -4,7 +4,7 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import {AbstractReactComponent, FormInput, i18n, LazyListBox} from 'components/shared';
-import {FormGroup, Modal} from 'react-bootstrap';
+import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {WebApi} from 'actions/index.jsx';
 import {dateToString, getScrollbarWidth, timeToString} from 'components/Utils.jsx';
@@ -13,6 +13,7 @@ import {dateTimeToZonedUTC} from 'components/Utils';
 import FundNodesSelectForm from './FundNodesSelectForm';
 
 import './ArrHistoryForm.scss';
+import {ErrorBoundary} from 'components/ErrorBoundary';
 
 class ArrHistoryForm extends AbstractReactComponent {
     static propTypes = {};
@@ -37,9 +38,11 @@ class ArrHistoryForm extends AbstractReactComponent {
         };
     }
 
-    componentDidMount() {}
+    componentDidMount() {
+    }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {}
+    UNSAFE_componentWillReceiveProps(nextProps) {
+    }
 
     renderItemContent = item => {
         if (item === null) {
@@ -114,31 +117,31 @@ class ArrHistoryForm extends AbstractReactComponent {
         });
 
         return WebApi.findChanges(versionId, this.getNodeId(), fromIndex, toIndex - fromIndex, changeId)
-            .then(json => {
-                if (json.totalCount > 0 && changeId === null) {
-                    // pokud nemáme uložen první changeId, uložíme si ho do state
-                    this.setState({
-                        changeId: json.changes[0].changeId,
-                    });
-                }
+                     .then(json => {
+                         if (json.totalCount > 0 && changeId === null) {
+                             // pokud nemáme uložen první changeId, uložíme si ho do state
+                             this.setState({
+                                 changeId: json.changes[0].changeId,
+                             });
+                         }
 
-                const lbData = {
-                    items: json.changes,
-                    count: json.totalCount,
-                    outdated: json.outdated,
-                };
+                         const lbData = {
+                             items: json.changes,
+                             count: json.totalCount,
+                             outdated: json.outdated,
+                         };
 
-                this.setState({
-                    fetching: false,
-                });
+                         this.setState({
+                             fetching: false,
+                         });
 
-                return lbData;
-            })
-            .catch(e => {
-                this.setState({
-                    fetching: false,
-                });
-            });
+                         return lbData;
+                     })
+                     .catch(e => {
+                         this.setState({
+                             fetching: false,
+                         });
+                     });
     };
 
     handleSelect = (item, index) => {
@@ -187,6 +190,7 @@ class ArrHistoryForm extends AbstractReactComponent {
         }
 
         return (
+            <ErrorBoundary>
             <FormInput
                 className="selected-item-info-container"
                 type="static"
@@ -197,6 +201,7 @@ class ArrHistoryForm extends AbstractReactComponent {
                     {i18n('arr.history.action.deleteFrom.show')}
                 </Button>
             </FormInput>
+            </ErrorBoundary>
         );
     };
 
@@ -299,15 +304,15 @@ class ArrHistoryForm extends AbstractReactComponent {
 
     render() {
         const {
-            goToDateValue,
-            goToDate,
-            selectedItem,
-            node,
-            showHistoryForNode,
-            selectedIndex,
-            activeIndex,
-            fetching,
-        } = this.state;
+                  goToDateValue,
+                  goToDate,
+                  selectedItem,
+                  node,
+                  showHistoryForNode,
+                  selectedIndex,
+                  activeIndex,
+                  fetching,
+              } = this.state;
         const {onClose, locked} = this.props;
 
         let content;
@@ -335,9 +340,10 @@ class ArrHistoryForm extends AbstractReactComponent {
         }
 
         return (
+            <ErrorBoundary>
             <div className="arr-history-form-container">
                 <Modal.Body>
-                    <FormGroup>
+                    <Form.Group>
                         <FormInput
                             disabled={fetching}
                             type="radio"
@@ -353,8 +359,12 @@ class ArrHistoryForm extends AbstractReactComponent {
                                 onClick={() => this.onChangeRadio(true)}
                                 label={i18n('arr.history.title.nodeChanges')}
                             />
-                            <FormInput className="selected-node-info-container" type="static" label={false}>
-                                <input type="text" value={node ? node.name : ''} disabled />
+                            <FormInput
+                                className="selected-node-info-container"
+                                type="static"
+                                label={false}
+                            >
+                                <input type="text" value={node ? node.name : ''} disabled/>
                                 <Button disabled={!showHistoryForNode || fetching} onClick={this.handleChooseNode}>
                                     {i18n('global.action.choose')}
                                 </Button>
@@ -372,7 +382,7 @@ class ArrHistoryForm extends AbstractReactComponent {
                                 {i18n('arr.history.action.goToDate')}
                             </Button>
                         </div>
-                    </FormGroup>
+                    </Form.Group>
                     <div className="changes-listbox-container">
                         <div className="header-container">
                             <div className="col col1">{i18n('arr.history.title.change.date')}</div>
@@ -402,6 +412,7 @@ class ArrHistoryForm extends AbstractReactComponent {
                     </Button>
                 </Modal.Footer>
             </div>
+            </ErrorBoundary>
         );
     }
 }

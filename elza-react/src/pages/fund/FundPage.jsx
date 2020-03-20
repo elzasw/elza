@@ -93,7 +93,7 @@ class FundPage extends AbstractReactComponent {
                 i18n('arr.fund.title.add'),
                 <FundForm
                     create
-                    initData={initData}
+                    initialValues={initData}
                     onSubmitForm={data => {
                         return this.props.dispatch(createFund(data));
                     }}
@@ -141,7 +141,7 @@ class FundPage extends AbstractReactComponent {
                 i18n('arr.fund.title.approve'),
                 <FundForm
                     approve
-                    initData={data}
+                    initialValues={data}
                     onSubmitForm={data => {
                         return this.props.dispatch(approveFund(fundDetail.versionId, data.dateRange));
                     }}
@@ -166,7 +166,7 @@ class FundPage extends AbstractReactComponent {
                 i18n('arr.fund.title.ruleSet'),
                 <FundForm
                     ruleSet
-                    initData={initData}
+                    initialValues={initData}
                     onSubmitForm={data =>
                         this.handleCallEditFundVersion({
                             ...data,
@@ -184,7 +184,6 @@ class FundPage extends AbstractReactComponent {
         const {fundRegion} = this.props;
         const fundDetail = fundRegion.fundDetail;
 
-        const that = this;
         Utils.barrier(WebApi.getScopes(fundDetail.versionId), WebApi.getAllScopes())
             .then(data => {
                 return {
@@ -200,15 +199,15 @@ class FundPage extends AbstractReactComponent {
                     ruleSetId: fundDetail.activeVersion.ruleSetId,
                     apScopes: json.scopes,
                 };
-                that.dispatch(
+                this.props.dispatch(
                     modalDialogShow(
-                        that,
+                        this,
                         i18n('arr.fund.title.update'),
                         <FundForm
                             update
-                            initData={data}
+                            initialValues={data}
                             scopeList={json.scopeList}
-                            onSubmitForm={that.handleCallEditFundVersion}
+                            onSubmitForm={this.handleCallEditFundVersion}
                         />,
                     ),
                 );
