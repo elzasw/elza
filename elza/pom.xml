@@ -360,6 +360,40 @@
         </pluginManagement>
     </build>
     <profiles>
+        <!-- Use this profile to build distribution of the application -->
+        <profile>
+            <id>dist</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <version>2.5.3</version>
+                        <configuration>
+                            <autoVersionSubmodules>true</autoVersionSubmodules>
+                            <arguments>"-Dinnosetup.path=${innosetup.path}" "-Dsigntool.enabled=${signtool.enabled}" "-Dsigntool.path=${signtool.path}" "-Dsigntool.params=${signtool.params}" "-Djre.path=${jre.path}" "-Dtomcat.path=${tomcat.path}"</arguments>
+                        </configuration>
+                    </plugin>
+                    <!-- By default no subproject is deployed If you want 
+                        to deploy some project you have to override skip to false -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <!-- Disable source distribution/deployment by default -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <configuration>
+                            <skipSource>true</skipSource>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <!-- Use this profile to build release version of the application -->
         <profile>
             <id>release</id>
@@ -597,4 +631,15 @@
         </repository>
     </repositories>
 
+    <scm>
+        <connection>scm:git:ssh://frnk.lightcomp.cz/opt/git/elza.git</connection>
+        <developerConnection>scm:git:ssh://frnk.lightcomp.cz/opt/git/elza.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+    <distributionManagement>
+        <repository>
+            <id>LightCompReleaseRepository</id>
+            <url>https://www.lightcomp.cz/releases/repository/elza-release</url>
+        </repository>
+    </distributionManagement>
 </project>
