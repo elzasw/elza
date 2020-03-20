@@ -8,7 +8,7 @@ import React from 'react';
 import {reduxForm} from 'redux-form';
 import {Form, FormCheck} from 'react-bootstrap';
 import AbstractReactComponent from '../AbstractReactComponent';
-import FormInput from '../shared/form/FormInput';
+import FormInput from 'components/shared/form/FormInput';
 import i18n from '../i18n';
 import {Autocomplete} from '../shared';
 import {connect} from 'react-redux';

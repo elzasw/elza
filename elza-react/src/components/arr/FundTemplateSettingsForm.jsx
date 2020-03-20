@@ -5,7 +5,7 @@ import {AbstractReactComponent, i18n, Icon} from 'components/shared';
 import {Accordion, Card, Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {indexById} from 'stores/app/utils.jsx';
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
+import {decorateFormField, submitForm} from 'components/form/FormUtils';
 
 import './FundSettingsForm.scss';
 import NoFocusButton from '../shared/button/NoFocusButton';

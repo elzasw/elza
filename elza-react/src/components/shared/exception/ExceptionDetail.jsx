@@ -2,7 +2,7 @@ import React from 'react';
 import {Modal} from 'react-bootstrap';
 import {Button} from '../../ui';
 import AbstractReactComponent from '../../AbstractReactComponent';
-import FormInput from '../form/FormInput';
+import FormInput from 'components/shared/form/FormInput';
 import i18n from '../../i18n';
 
 class ExceptionDetail extends AbstractReactComponent {

@@ -74,7 +74,7 @@ class HomePage extends AbstractReactComponent {
                 i18n('arr.fund.title.add'),
                 <FundForm
                     create
-                    initData={initData}
+                    initialValues={initData}
                     onSubmitForm={data => {
                         return this.props.dispatch(createFund(data));
                     }}
