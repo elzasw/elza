@@ -18,6 +18,7 @@
         <module>elza-war</module>
         <module>dao-test-bench-war</module>
         <module>elza-install</module>
+        <module>distribution</module>
     </modules>
 
 </project>
