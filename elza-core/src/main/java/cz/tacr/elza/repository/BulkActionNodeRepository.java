@@ -29,4 +29,8 @@ public interface BulkActionNodeRepository extends JpaRepository<ArrBulkActionNod
     void deleteByNodeFund(ArrFund fund);
 
     void deleteByNodeIdIn(Collection<Integer> nodeIds);
+
+    @Modifying
+    @Query("DELETE FROM arr_bulk_action_node an WHERE an.bulkActionRun IN (select ba from arr_bulk_action_run ba JOIN ba.fundVersion fv WHERE fv.fund = ?1)")
+    void deleteByFund(ArrFund fund);
 }
