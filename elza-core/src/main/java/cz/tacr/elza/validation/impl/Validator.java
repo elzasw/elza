@@ -116,7 +116,7 @@ public class Validator {
                 missingSpecs.remove(specItemsEntry.getKey());
 
                 postValidateRepeatable(BooleanUtils.isNotFalse(specItemsEntry.getKey().getRepeatable()),
-                        specItemsEntry.getValue(), specItemsEntry.getKey().getItemType());
+                        specItemsEntry.getValue(), specItemsEntry.getKey());
             }
 
             //required specifikace
@@ -156,6 +156,21 @@ public class Validator {
 					"Atribut " + type.getName() + " není opakovatelný.", type.getPolicyTypeCode());
 		}
 	}
+
+    /**
+     * Provede validaci opakovatelnosti hodnoty atributu.
+     *
+     * @param repeatable   true -> opakovatelný atribut
+     * @param descItems    seznam hodnot daného typu nebo specifikace
+     * @param spec         spec
+     */
+    private void postValidateRepeatable(final boolean repeatable, final Collection<ArrDescItem> descItems,
+                                        final RulItemSpec spec) {
+        if (!repeatable && CollectionUtils.size(descItems) > 1) {
+            validationResults.createError(descItems.iterator().next(),
+                    "Atribut " + spec.getName() + " není opakovatelný.", spec.getPolicyTypeCode());
+        }
+    }
 
 	/**
 	 * Append set of required types

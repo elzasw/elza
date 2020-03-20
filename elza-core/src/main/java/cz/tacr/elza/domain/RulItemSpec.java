@@ -1,18 +1,6 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.*;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -23,6 +11,8 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
+
+import java.util.List;
 
 
 /**
@@ -35,8 +25,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
  */
 @Entity(name = "rul_item_spec")
 @Table(uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"code"}),
-        @UniqueConstraint(columnNames = {"viewOrder"})})
+        @UniqueConstraint(columnNames = {"code"})})
 @Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class RulItemSpec {
@@ -47,14 +36,6 @@ public class RulItemSpec {
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer itemSpecId;
-
-    @Column(updatable = false, insertable = false)
-    private Integer itemTypeId;
-
-    @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemType.class)
-    @JoinColumn(name = "itemTypeId", nullable = false)
-    private RulItemType itemType;
 
     @Column(length = 50, nullable = false)
     private String code;
@@ -70,15 +51,15 @@ public class RulItemSpec {
     @org.hibernate.annotations.Type(type = "org.hibernate.type.TextType")
     private String description;
 
-    @Column(nullable = false)
-    private Integer viewOrder;
-
 	@Column(length = StringLength.LENGTH_1000)
 	private String category;
 
 	@ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
 	@JoinColumn(name = "packageId", nullable = false)
 	private RulPackage rulPackage;
+
+    @OneToMany(mappedBy = "itemSpec", fetch = FetchType.LAZY)
+    private List<RulItemTypeSpecAssign> itemTypeSpecAssigns;
 
 	// Consider to move transient fields to RulItemSpecExt
     @Transient
@@ -90,6 +71,9 @@ public class RulItemSpec {
     @Transient
     private String policyTypeCode;
 
+    @Transient
+    private Integer viewOrder;
+
 	/**
 	 * Default constructor
 	 */
@@ -99,18 +83,15 @@ public class RulItemSpec {
 
 	/**
 	 * Copy constructor
-	 * 
+	 *
 	 * @param src
 	 */
 	public RulItemSpec(RulItemSpec src) {
 		itemSpecId = src.itemSpecId;
-		itemTypeId = src.itemTypeId;
-		itemType = src.itemType;
 		code = src.code;
 		name = src.name;
 		shortcut = src.shortcut;
 		description = src.description;
-		viewOrder = src.viewOrder;
 		type = src.type;
 		repeatable = src.repeatable;
 		policyTypeCode = src.policyTypeCode;
@@ -124,19 +105,6 @@ public class RulItemSpec {
 
     public void setItemSpecId(final Integer itemSpecId) {
         this.itemSpecId = itemSpecId;
-    }
-
-    public Integer getItemTypeId() {
-        return itemTypeId;
-    }
-
-    public RulItemType getItemType() {
-        return itemType;
-    }
-
-    public void setItemType(final RulItemType itemType) {
-        this.itemType = itemType;
-        this.itemTypeId = itemType != null ? itemType.getItemTypeId() : null;
     }
 
     public String getCode() {
@@ -169,20 +137,6 @@ public class RulItemSpec {
 
     public void setDescription(final String description) {
         this.description = description;
-    }
-
-    /**
-     * @return pořadí zobrazení.
-     */
-    public Integer getViewOrder() {
-        return viewOrder;
-    }
-
-    /**
-     * @param viewOrder pořadí zobrazení.
-     */
-    public void setViewOrder(final Integer viewOrder) {
-        this.viewOrder = viewOrder;
     }
 
     /**
@@ -257,6 +211,22 @@ public class RulItemSpec {
      */
     public void setPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
+    }
+
+    public List<RulItemTypeSpecAssign> getItemTypeSpecAssigns() {
+        return itemTypeSpecAssigns;
+    }
+
+    public void setItemTypeSpecAssigns(final List<RulItemTypeSpecAssign> itemTypeSpecAssigns) {
+        this.itemTypeSpecAssigns = itemTypeSpecAssigns;
+    }
+
+    public Integer getViewOrder() {
+        return viewOrder;
+    }
+
+    public void setViewOrder(Integer viewOrder) {
+        this.viewOrder = viewOrder;
     }
 
     @Override

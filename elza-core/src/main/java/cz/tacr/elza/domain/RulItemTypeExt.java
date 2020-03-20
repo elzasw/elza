@@ -20,11 +20,8 @@ public class RulItemTypeExt extends RulItemType {
 		if (specs != null) {
 			for (RulItemSpec specSrc : specs) {
 				RulItemSpecExt spec = new RulItemSpecExt(specSrc);
-				// set this type as parent
-				spec.setItemType(this);
 				spec.setType(RulItemSpec.Type.IMPOSSIBLE);
 				spec.setRepeatable(true);
-
 				rulItemSpecList.add(spec);
 			}
 

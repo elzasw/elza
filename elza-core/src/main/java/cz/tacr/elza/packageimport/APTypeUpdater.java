@@ -95,7 +95,6 @@ public class APTypeUpdater {
      * @param rulPackage    balíček
      * @param apTypeXml     vztah typů tříd - VO
      * @param apType        vztah typů tříd - DO
-     * @param parPartyTypes seznam typů osob
      */
     private void convertToApType(final RulPackage rulPackage,
                                  final APTypeXml apTypeXml,
@@ -168,7 +167,6 @@ public class APTypeUpdater {
     /**
      * Zpracování vztahy typu třídy.
      *
-     * @param registerTypes vztahy typů tříd
      * @param rulPackage    balíček
      * @param parPartyTypes seznam typů osob
      */

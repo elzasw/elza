@@ -16,12 +16,12 @@ import cz.tacr.elza.domain.vo.DataValidationResult.ValidationResultType;
 
 /**
  * Object for validation results
- * 
+ *
  * @author Petr Pytelka
  *
  */
 public class DataValidationResults {
-	
+
 	/**
 	 * List of results
 	 */
@@ -70,7 +70,7 @@ public class DataValidationResults {
         result.setMessage(errorMsg);
         result.setDescItemId(item.getItemId());
         result.setPolicyTypeCode(policyTypeCode);
-        
+
         results.add(result);
         return result;
     }
@@ -89,7 +89,7 @@ public class DataValidationResults {
         result.setDescItemId(descItemId);
         result.setMessage(errorMsg);
         result.setPolicyTypeCode(policyTypeCode);
-        
+
         results.add(result);
         return result;
     }
@@ -105,7 +105,7 @@ public class DataValidationResults {
                                                       @Nullable final RulItemSpec spec,
                                                       final String policyTypeCode) {
 
-        RulItemType inType = spec == null ? type : spec.getItemType();
+        RulItemType inType = spec == null ? type : null;
 
         if (!requiredTypes.contains(inType)) {
             requiredTypes.add(inType);
@@ -131,7 +131,7 @@ public class DataValidationResults {
             result.setMessage("Prvek " + type.getName() + " se specifikací " + spec.getName()
                     + " musí být vyplněn.");
         }
-        
+
         results.add(result);
         return result;
     }
@@ -147,5 +147,5 @@ public class DataValidationResults {
         results.add(result);
 
         return result;
-    }	
+    }
 }

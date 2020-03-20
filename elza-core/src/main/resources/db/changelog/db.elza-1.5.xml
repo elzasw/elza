@@ -76,4 +76,51 @@
 
     </changeSet>
 
+    <changeSet id="20200318104100" author="gotzy">
+        <createTable tableName="rul_item_type_spec_assign">
+            <column name="item_type_spec_assign_id" type="INTEGER">
+                <constraints primaryKey="true" primaryKeyName="PK_rul_item_type_spec_assign"/>
+            </column>
+            <column name="item_type_id" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="item_spec_id" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="item_spec_view_order" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex indexName="IXFK_rul_item_type_spec_assign_rul_item_spec" tableName="rul_item_type_spec_assign">
+            <column name="item_spec_id"/>
+        </createIndex>
+
+        <createIndex indexName="IXFK_rul_item_type_spec_assign_rul_item_type" tableName="rul_item_type_spec_assign">
+            <column name="item_type_id"/>
+        </createIndex>
+
+        <addForeignKeyConstraint baseColumnNames="item_spec_id" baseTableName="rul_item_type_spec_assign"
+                                 constraintName="FK_rul_item_type_spec_assign_rul_item_spec_02" deferrable="false"
+                                 initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="item_spec_id" referencedTableName="rul_item_spec"/>
+
+        <addForeignKeyConstraint baseColumnNames="item_type_id" baseTableName="rul_item_type_spec_assign"
+                                 constraintName="FK_rul_item_type_spec_assign_rul_item_type_02" deferrable="false"
+                                 initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="item_type_id" referencedTableName="rul_item_type"/>
+    </changeSet>
+
+    <changeSet id="20200318104200" author="gotzy">
+        <sql>INSERT INTO public.rul_item_type_spec_assign(
+            item_type_spec_assign_id, item_type_id, item_spec_id, item_spec_view_order)
+            SELECT item_spec_id, item_type_id, item_spec_id, view_order FROM rul_item_spec ORDER BY item_spec_id
+        </sql>
+    </changeSet>
+
+    <changeSet id="20200319092000" author="gotzy">
+        <dropColumn tableName="rul_item_spec" columnName="item_type_id"/>
+        <dropColumn tableName="rul_item_spec" columnName="view_order"/>
+    </changeSet>
+
 </databaseChangeLog>

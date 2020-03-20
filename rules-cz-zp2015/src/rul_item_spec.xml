@@ -1,574 +1,686 @@
 <item-specs>
-    <item-spec code="ZP2015_ARRANGEMENT_MAN" item-type="ZP2015_ARRANGEMENT_TYPE">
+    <item-spec code="ZP2015_ARRANGEMENT_MAN">
         <name>Manipulační seznam</name>
         <description>Manipulační seznam</description>
         <shortcut>Manipulační seznam</shortcut>
+        <item-type-assign code="ZP2015_ARRANGEMENT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_ARRANGEMENT_INV" item-type="ZP2015_ARRANGEMENT_TYPE">
+    <item-spec code="ZP2015_ARRANGEMENT_INV">
         <name>Inventář</name>
         <description>Inventář</description>
         <shortcut>Inventář</shortcut>
+        <item-type-assign code="ZP2015_ARRANGEMENT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_ARRANGEMENT_KAT" item-type="ZP2015_ARRANGEMENT_TYPE">
+    <item-spec code="ZP2015_ARRANGEMENT_KAT">
         <name>Katalog</name>
         <description>Katalog</description>
         <shortcut>Katalog</shortcut>
+        <item-type-assign code="ZP2015_ARRANGEMENT_TYPE"/>
     </item-spec>
     <!-- Typ pořádání pro starší pomůcky -->
-    <item-spec code="ZP2015_ARRANGEMENT_OTHER" item-type="ZP2015_ARRANGEMENT_TYPE">
+    <item-spec code="ZP2015_ARRANGEMENT_OTHER">
         <name>Starší pomůcka</name>
         <description>Starší pomůcka</description>
         <shortcut>Starší pomůcka</shortcut>
+        <item-type-assign code="ZP2015_ARRANGEMENT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_LEVEL_ROOT" item-type="ZP2015_LEVEL_TYPE">
+    <item-spec code="ZP2015_LEVEL_ROOT">
         <name>Soubor</name>
         <description>Soubor</description>
         <shortcut>Soubor</shortcut>
+        <item-type-assign code="ZP2015_LEVEL_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_LEVEL_SECTION" item-type="ZP2015_LEVEL_TYPE">
+    <item-spec code="ZP2015_LEVEL_SECTION">
         <name>Dílčí list</name>
         <description>Dílčí list</description>
         <shortcut>Dílčí list</shortcut>
+        <item-type-assign code="ZP2015_LEVEL_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_LEVEL_SERIES" item-type="ZP2015_LEVEL_TYPE">
+    <item-spec code="ZP2015_LEVEL_SERIES">
         <name>Série</name>
         <description>Série</description>
         <shortcut>Série</shortcut>
+        <item-type-assign code="ZP2015_LEVEL_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_LEVEL_FOLDER" item-type="ZP2015_LEVEL_TYPE">
+    <item-spec code="ZP2015_LEVEL_FOLDER">
         <name>Složka</name>
         <description>Složka</description>
         <shortcut>Složka</shortcut>
+        <item-type-assign code="ZP2015_LEVEL_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_LEVEL_ITEM" item-type="ZP2015_LEVEL_TYPE">
+    <item-spec code="ZP2015_LEVEL_ITEM">
         <name>Jednotlivost</name>
         <description>Jednotlivost</description>
         <shortcut>Jednotlivost</shortcut>
+        <item-type-assign code="ZP2015_LEVEL_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_LEVEL_PART" item-type="ZP2015_LEVEL_TYPE">
+    <item-spec code="ZP2015_LEVEL_PART">
         <name>Část jednotlivosti</name>
         <description>Část jednotlivosti</description>
         <shortcut>Část</shortcut>
+        <item-type-assign code="ZP2015_LEVEL_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_FOLDER_LOGICAL" item-type="ZP2015_FOLDER_TYPE">
+    <item-spec code="ZP2015_FOLDER_LOGICAL">
         <name>Logická</name>
         <description>Logická složka</description>
         <shortcut>Logická</shortcut>
+        <item-type-assign code="ZP2015_FOLDER_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_FOLDER_UNITS" item-type="ZP2015_FOLDER_TYPE">
+    <item-spec code="ZP2015_FOLDER_UNITS">
         <name>Množstevní EJ</name>
         <description>Množstevní evidenční jednotka</description>
         <shortcut>Množstevní EJ</shortcut>
+        <item-type-assign code="ZP2015_FOLDER_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_FOLDER_SINGLE_TYPE" item-type="ZP2015_FOLDER_TYPE">
+    <item-spec code="ZP2015_FOLDER_SINGLE_TYPE">
         <name>S typem EJ</name>
         <description>Více evidenčních jednotek stejného typu</description>
         <shortcut>Typ EJ</shortcut>
+        <item-type-assign code="ZP2015_FOLDER_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_LIO" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_LIO">
         <name>Listina do roku 1850</name>
         <description>Listina do roku 1850</description>
         <shortcut>lio</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_LIP" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_LIP">
         <name>Listina po roce 1850</name>
         <description>Listina po roce 1850</description>
         <shortcut>lip</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_UKN" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_UKN">
         <name>Úřední kniha</name>
         <description>Úřední kniha</description>
         <shortcut>ukn</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_RKP" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_RKP">
         <name>Rukopis</name>
         <description>Rukopis</description>
         <shortcut>rkp</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_HDB" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_HDB">
         <name>Hudebnina</name>
         <description>Hudebnina</description>
         <shortcut>hdb</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_PPR" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_PPR">
         <name>Podací protokol</name>
         <description>Podací protokol</description>
         <shortcut>ppr</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_IND" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_IND">
         <name>Index</name>
         <description>Index</description>
         <shortcut>ind</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYP_ELE" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYP_ELE">
         <name>Elench</name>
         <description>Elench</description>
         <shortcut>ele</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_REP" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_REP">
         <name>Repertář</name>
         <description>Repertář</description>
         <shortcut>rep</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_KTT" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_KTT">
         <name>Kartotéka</name>
         <description>Kartotéka</description>
         <shortcut>ktt</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_PEC" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_PEC">
         <name>Pečetidlo</name>
         <description>Pečetidlo</description>
         <shortcut>pec</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_RAZ" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_RAZ">
         <name>Razítko</name>
         <description>Razítko</description>
         <shortcut>raz</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_OTD" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_OTD">
         <name>Samostatná pečeť, odlitek pečeti, otisk typáře</name>
         <description>Samostatná pečeť, odlitek pečeti, otisk typáře</description>
         <shortcut>otd</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_OTC" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_OTC">
         <name>Kopie otisku</name>
         <description>Kopie otisku</description>
         <shortcut>otc</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_MAP" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_MAP">
         <name>Mapa</name>
         <description>Mapa</description>
         <shortcut>map</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_ATL" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_ATL">
         <name>Atlas</name>
         <description>Atlas</description>
         <shortcut>atl</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_TVY" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_TVY">
         <name>Technický výkres</name>
         <description>Technický výkres</description>
         <shortcut>tvy</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_GLI" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_GLI">
         <name>Grafický list</name>
         <description>Grafický list</description>
         <shortcut>gli</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_KRE" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_KRE">
         <name>Kresba</name>
         <description>Kresba</description>
         <shortcut>kre</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_FSN" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_FSN">
         <name>Fotografie na papírové podložce</name>
         <description>Fotografie na papírové podložce</description>
         <shortcut>fsn</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_FSD" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_FSD">
         <name>Fotografická deska</name>
         <description>Fotografická deska</description>
         <shortcut>fsd</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_LFI" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_LFI">
         <name>Listový film</name>
         <description>Listový film</description>
         <shortcut>lfi</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_SFI" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_SFI">
         <name>Svitkový film</name>
         <description>Svitkový film</description>
         <shortcut>sfi</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_KIN" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_KIN">
         <name>Kinofilm</name>
         <description>Kinofilm</description>
         <shortcut>kin</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_MF" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_MF">
         <name>Mikrofilm</name>
         <description>Mikrofilm</description>
         <shortcut>mf</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_MFS" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_MFS">
         <name>Mikrofiš</name>
         <description>Mikrofiš</description>
         <shortcut>mfis</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_FAL" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_FAL">
         <name>Fotoalbum</name>
         <description>Fotoalbum</description>
         <shortcut>fal</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_DFO" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_DFO">
         <name>Digitální fotografie</name>
         <description>Digitální fotografie</description>
         <shortcut>dfo</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_KZA" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_KZA">
         <name>Kinematografický záznam (dílo) v analogové i digitální podobě</name>
         <description>Kinematografický záznam (dílo) v analogové i digitální podobě</description>
         <shortcut>kza</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_ZZA" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_ZZA">
         <name>Zvukový záznam (dílo) v analogové i digitální podobě</name>
         <description>Zvukový záznam (dílo) v analogové i digitální podobě</description>
         <shortcut>zza</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_TIO" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_TIO">
         <name>Tisk do roku 1800</name>
         <description>Tisk do roku 1800</description>
         <shortcut>tio</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_TIP" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_TIP">
         <name>Tisk po roce 1800</name>
         <description>Tisk po roce 1800</description>
         <shortcut>tip</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_POH" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_POH">
         <name>Pohlednice</name>
         <description>Pohlednice</description>
         <shortcut>poh</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_PKT" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_PKT">
         <name>Plakát</name>
         <description>Plakát</description>
         <shortcut>pkt</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_CPA" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_CPA">
         <name>Cenný papír</name>
         <description>Cenný papír</description>
         <shortcut>cpa</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_STO" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_STO">
         <name>Štoček</name>
         <description>Štoček</description>
         <shortcut>sto</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_PNP" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_PNP">
         <name>Předmět numizmatické povahy</name>
         <description>Předmět numizmatické povahy</description>
         <shortcut>pnp</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_PFP" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_PFP">
         <name>Předmět faleristické povahy</name>
         <description>Předmět faleristické povahy</description>
         <shortcut>pfp</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_JIN" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_JIN">
         <name>Jiná</name>
         <description>Jiná</description>
         <shortcut>jin</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_OTHER" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_OTHER">
         <name>Neevidovaná jednotlivost</name>
         <description>Neevidovaná jednotlivost</description>
         <shortcut>njn</shortcut>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_KTT_BOX" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_KTT_BOX">
         <name>Kartotéční zásuvka</name>
         <description>Kartotéční zásuvka</description>
         <shortcut>zásuvka</shortcut>
         <view-order>55</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_KTT_ITEM" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_KTT_ITEM">
         <name>Kartotéční lístek</name>
         <description>Kartotéční lístek</description>
         <shortcut>lístek</shortcut>
         <view-order>56</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_TYPE_PART" item-type="ZP2015_UNIT_TYPE">
+    <item-spec code="ZP2015_UNIT_TYPE_PART">
         <name>Část jednotlivosti</name>
         <description>Část jednotlivosti</description>
         <shortcut>část</shortcut>
         <view-order>57</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
 
     <!-- Specifikace pro složky v manip.seznamu -->
-    <item-spec code="ZP2015_EXTRA_UNITS_LIO" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_LIO">
         <name>Listiny do roku 1850</name>
         <description>Listiny do roku 1850</description>
         <shortcut>lio</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_LIP" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_LIP">
         <name>Listiny po roce 1850</name>
         <description>Listiny po roce 1850</description>
         <shortcut>lip</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_UKN" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_UKN">
         <name>Úřední knihy</name>
         <description>Úřední knihy</description>
         <shortcut>ukn</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_RKP" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_RKP">
         <name>Rukopisy</name>
         <description>Rukopisy</description>
         <shortcut>rkp</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_PPR" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_PPR">
         <name>Podací protokoly</name>
         <description>Podací protokoly</description>
         <shortcut>ppr</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_IND" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_IND">
         <name>Indexy</name>
         <description>Indexy</description>
         <shortcut>ind</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_ELE" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_ELE">
         <name>Elenchy</name>
         <description>Elenchy</description>
         <shortcut>ele</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_REP" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_REP">
         <name>Repertáře</name>
         <description>Repertáře</description>
         <shortcut>rep</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_KTT" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_KTT">
         <name>Kartotéky</name>
         <description>Kartotéky</description>
         <shortcut>ktt</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_PEC" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_PEC">
         <name>Pečetidla</name>
         <description>Pečetidla</description>
         <shortcut>pec</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_RAZ" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_RAZ">
         <name>Razítka</name>
         <description>Razítka</description>
         <shortcut>raz</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_OTD" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_OTD">
         <name>Samostatné pečetě, odlitky pečetí a otisky typářů</name>
         <description>Samostatné pečetě, odlitky pečetí a otisky typářů</description>
         <shortcut>otd</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_MAP" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_MAP">
         <name>Mapy</name>
         <description>Mapy</description>
         <shortcut>map</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_ATL" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_ATL">
         <name>Atlasy</name>
         <description>Atlasy</description>
         <shortcut>atl</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_TVY" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_TVY">
         <name>Technické výkresy</name>
         <description>Technické výkresy</description>
         <shortcut>tvy</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_GLI" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_GLI">
         <name>Grafické listy</name>
         <description>Grafické listy</description>
         <shortcut>gli</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_KRE" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_KRE">
         <name>Kresby</name>
         <description>Kresby</description>
         <shortcut>kre</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_FSN" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_FSN">
         <name>Fotografie na papírové podložce</name>
         <description>Fotografie na papírové podložce</description>
         <shortcut>fsn</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_FSD" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_FSD">
         <name>Fotografické desky</name>
         <description>Fotografické desky</description>
         <shortcut>fsd</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_LFI" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_LFI">
         <name>Listové filmy</name>
         <description>Listové filmy</description>
         <shortcut>lfi</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_SFI" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_SFI">
         <name>Svitkové filmy</name>
         <description>Svitkové filmy</description>
         <shortcut>sfi</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_KIN" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_KIN">
         <name>Kinofilmy</name>
         <description>Kinofilmy</description>
         <shortcut>kin</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_MF" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_MF">
         <name>Mikrofilmy</name>
         <description>Mikrofilmy</description>
         <shortcut>mf</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_MFS" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_MFS">
         <name>Mikrofiše</name>
         <description>Mikrofiše</description>
         <shortcut>mfis</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_FAL" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_FAL">
         <name>Fotoalba</name>
         <description>Fotoalba</description>
         <shortcut>fal</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_DFO" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_DFO">
         <name>Digitální fotografie</name>
         <description>Digitální fotografie</description>
         <shortcut>dfo</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_KZA" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_KZA">
         <name>Kinematografické záznamy (díla) v analogové i digitální podobě</name>
         <description>Kinematografické záznamy (díla) v analogové i digitální podobě</description>
         <shortcut>kza</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_ZZA" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_ZZA">
         <name>Zvukové záznamy (díla) v analogové i digitální podobě</name>
         <description>Zvukové záznamy (díla) v analogové i digitální podobě</description>
         <shortcut>zza</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_TIO" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_TIO">
         <name>Tisky do roku 1800</name>
         <description>Tisky do roku 1800</description>
         <shortcut>tio</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_TIP" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_TIP">
         <name>Tisky po roce 1800</name>
         <description>Tisky po roce 1800</description>
         <shortcut>tip</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_POH" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_POH">
         <name>Pohlednice</name>
         <description>Pohlednice</description>
         <shortcut>poh</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_PKT" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_PKT">
         <name>Plakáty</name>
         <description>Plakáty</description>
         <shortcut>pkt</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_CPA" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_CPA">
         <name>Cenné papíry</name>
         <description>Cenné papíry</description>
         <shortcut>cpa</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_STO" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_STO">
         <name>Štočky</name>
         <description>Štočky</description>
         <shortcut>sto</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_PNP" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_PNP">
         <name>Předměty numizmatické povahy</name>
         <description>Předměty numizmatické povahy</description>
         <shortcut>pnp</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_PFP" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_PFP">
         <name>Předměty faleristické povahy</name>
         <description>Předměty faleristické povahy</description>
         <shortcut>pfp</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_EXTRA_UNITS_JIN" item-type="ZP2015_EXTRA_UNITS">
+    <item-spec code="ZP2015_EXTRA_UNITS_JIN">
         <name>Jiné</name>
         <description>Jiné</description>
         <shortcut>jin</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_SIG_ORIG" item-type="ZP2015_OTHER_ID">
+    <item-spec code="ZP2015_OTHERID_SIG_ORIG">
         <name>Signatura přidělená původcem</name>
         <description>Signatura přidělená původcem</description>
         <shortcut>sign. pův.</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_SIG" item-type="ZP2015_OTHER_ID">
+    <item-spec code="ZP2015_OTHERID_SIG">
         <name>Signatura přidělená při zpracování archiválie</name>
         <description>Signatura přidělená při zpracování archiválie</description>
         <shortcut>sign.</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_STORAGE_ID" item-type="ZP2015_OTHER_ID">
+    <item-spec code="ZP2015_OTHERID_STORAGE_ID">
         <name>Ukládací znak</name>
         <description>Ukládací znak</description>
         <shortcut>ukl. znak</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_CJ" item-type="ZP2015_OTHER_ID">
+    <item-spec code="ZP2015_OTHERID_CJ">
         <name>Číslo jednací</name>
         <description>Číslo jednací</description>
         <shortcut>č. j.</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_DOCID" item-type="ZP2015_OTHER_ID">
+    <item-spec code="ZP2015_OTHERID_DOCID">
         <name>Značka spisu</name>
         <description>Značka spisu</description>
         <shortcut>zn. sp.</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_FORMAL_DOCID" item-type="ZP2015_OTHER_ID">
+    <item-spec code="ZP2015_OTHERID_FORMAL_DOCID">
         <name>Číslo vložky úřední knihy</name>
         <description>Číslo vložky úřední knihy</description>
         <shortcut>č. vl.</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_ADDID" item-type="ZP2015_OTHER_ID">
+    <item-spec code="ZP2015_OTHERID_ADDID">
         <name>Přírůstkové číslo</name>
         <description>Přírůstkové číslo</description>
         <shortcut>č. př.</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_OLDID" item-type="ZP2015_OTHER_ID">
+    <item-spec code="ZP2015_OTHERID_OLDID">
         <name>Neplatné inventární číslo (ze zrušené pomůcky)</name>
         <description>Neplatné inventární číslo (ze zrušené pomůcky)</description>
         <shortcut>nepl. inv. č.</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_OLDSIG" item-type="ZP2015_OTHER_ID">
+    <item-spec code="ZP2015_OTHERID_OLDSIG">
         <name>Signatura přidělená při předchozím zpracování</name>
         <description>Signatura přidělená při předchozím zpracování</description>
         <shortcut>nepl. sign.</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_OLDSIG2" item-type="ZP2015_OTHER_ID">
+    <item-spec code="ZP2015_OTHERID_OLDSIG2">
         <name>Spisový znak</name>
         <description>Spisový znak</description>
         <shortcut>sp. znak</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_INVALID_REFNO" item-type="ZP2015_OTHER_ID">
+    <item-spec code="ZP2015_OTHERID_INVALID_REFNO">
         <name>Neplatné referenční označení</name>
         <description>Neplatné referenční označení</description>
         <shortcut>nepl. ref. ozn.</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_PRINTID" item-type="ZP2015_OTHER_ID">
+    <item-spec code="ZP2015_OTHERID_PRINTID">
         <name>Pořadové číslo pro tisk</name>
         <description>Pořadové číslo pro tisk</description>
         <shortcut>poř. č.</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_PICID" item-type="ZP2015_OTHER_ID">
+    <item-spec code="ZP2015_OTHERID_PICID">
         <name>Nakladatelské číslo</name>
         <description>Nakladatelské číslo</description>
         <shortcut>nakl. č.</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_NEGID" item-type="ZP2015_OTHER_ID">
+    <item-spec code="ZP2015_OTHERID_NEGID">
         <name>Číslo negativu</name>
         <description>Číslo negativu</description>
         <shortcut>č. neg.</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_CDID" item-type="ZP2015_OTHER_ID">
+    <item-spec code="ZP2015_OTHERID_CDID">
         <name>Číslo produkce CD</name>
         <description>Číslo produkce CD</description>
         <shortcut>č. prod.</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_ISBN" item-type="ZP2015_OTHER_ID">
+    <item-spec code="ZP2015_OTHERID_ISBN">
         <name>Kód ISBN</name>
         <description>Kód ISBN</description>
         <shortcut>ISBN</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_ISSN" item-type="ZP2015_OTHER_ID">
+    <item-spec code="ZP2015_OTHERID_ISSN">
         <name>Kód ISSN</name>
         <description>Kód ISSN</description>
         <shortcut>ISSN</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_ISMN" item-type="ZP2015_OTHER_ID">
+    <item-spec code="ZP2015_OTHERID_ISMN">
         <name>Kód ISMN</name>
         <description>Kód ISMN</description>
         <shortcut>ISMN</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_1" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_1">
         <name>blíže neurčený indoevropský jazyk</name>
         <description>indoevropské - blíže neurčené</description>
         <shortcut>blíže neurčený (indoevropský)</shortcut>
         <categories>
             <category>indoevropské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_2" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_2">
         <name>blíže neurčený baltský jazyk</name>
         <description>indoevropské - baltské - blíže neurčené</description>
         <shortcut>blíže neurčený (baltský)</shortcut>
@@ -576,8 +688,9 @@
             <category>indoevropské</category>
             <category>baltské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_3" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_3">
         <name>litevština</name>
         <description>indoevropské - baltské - litevština</description>
         <shortcut>litevština</shortcut>
@@ -585,8 +698,9 @@
             <category>indoevropské</category>
             <category>baltské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_4" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_4">
         <name>lotyština</name>
         <description>indoevropské - baltské - lotyština</description>
         <shortcut>lotyština</shortcut>
@@ -594,8 +708,9 @@
             <category>indoevropské</category>
             <category>baltské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_5" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_5">
         <name>blíže neurčený germánský jazyk</name>
         <description>indoevropské - germánské - blíže neurčené</description>
         <shortcut>blíže neurčený (germánský)</shortcut>
@@ -603,8 +718,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_6" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_6">
         <name>afrikánština</name>
         <description>indoevropské - germánské - afrikánština</description>
         <shortcut>afrikánština</shortcut>
@@ -612,8 +728,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_7" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_7">
         <name>alsaština</name>
         <description>indoevropské - germánské - alsaština</description>
         <shortcut>alsaština</shortcut>
@@ -621,8 +738,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_8" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_8">
         <name>angličtina</name>
         <description>indoevropské - germánské - angličtina</description>
         <shortcut>angličtina</shortcut>
@@ -630,8 +748,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_9" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_9">
         <name>dánština</name>
         <description>indoevropské - germánské - dánština</description>
         <shortcut>dánština</shortcut>
@@ -639,8 +758,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_10" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_10">
         <name>dolnoněmčina</name>
         <description>indoevropské - germánské - dolnoněmčina</description>
         <shortcut>dolnoněmčina</shortcut>
@@ -648,8 +768,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_11" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_11">
         <name>faerština</name>
         <description>indoevropské - germánské - faerština</description>
         <shortcut>faerština</shortcut>
@@ -657,8 +778,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_12" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_12">
         <name>fríština</name>
         <description>indoevropské - germánské - fríština</description>
         <shortcut>fríština</shortcut>
@@ -666,8 +788,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_13" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_13">
         <name>holandština (nizozemština)</name>
         <description>indoevropské - germánské - holandština (nizozemština)</description>
         <shortcut>holandština (nizozemština)</shortcut>
@@ -675,8 +798,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_14" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_14">
         <name>islandština</name>
         <description>indoevropské - germánské - islandština</description>
         <shortcut>islandština</shortcut>
@@ -684,8 +808,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_15" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_15">
         <name>jidiš</name>
         <description>indoevropské - germánské - jidiš</description>
         <shortcut>jidiš</shortcut>
@@ -693,8 +818,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_16" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_16">
         <name>judendeutsch</name>
         <description>indoevropské - germánské - judendeutsch</description>
         <shortcut>judendeutsch</shortcut>
@@ -702,8 +828,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_17" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_17">
         <name>lucemburština</name>
         <description>indoevropské - germánské - lucemburština</description>
         <shortcut>lucemburština</shortcut>
@@ -711,8 +838,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_18" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_18">
         <name>němčina</name>
         <description>indoevropské - germánské - němčina</description>
         <shortcut>němčina</shortcut>
@@ -720,8 +848,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_19" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_19">
         <name>norština</name>
         <description>indoevropské - germánské - norština</description>
         <shortcut>norština</shortcut>
@@ -729,8 +858,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_20" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_20">
         <name>švédština</name>
         <description>indoevropské - germánské - švédština</description>
         <shortcut>švédština</shortcut>
@@ -738,8 +868,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_21" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_21">
         <name>blíže neurčený keltský jazyk</name>
         <description>indoevropské - keltské - blíže neurčené</description>
         <shortcut>blíže neurčený (keltský)</shortcut>
@@ -747,8 +878,9 @@
             <category>indoevropské</category>
             <category>keltské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_22" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_22">
         <name>bretonština</name>
         <description>indoevropské - keltské - bretonština</description>
         <shortcut>bretonština</shortcut>
@@ -756,8 +888,9 @@
             <category>indoevropské</category>
             <category>keltské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_23" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_23">
         <name>irština</name>
         <description>indoevropské - keltské - irština</description>
         <shortcut>irština</shortcut>
@@ -765,8 +898,9 @@
             <category>indoevropské</category>
             <category>keltské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_24" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_24">
         <name>skotská gaelština</name>
         <description>indoevropské - keltské - skotská gaelština</description>
         <shortcut>skotská gaelština</shortcut>
@@ -774,8 +908,9 @@
             <category>indoevropské</category>
             <category>keltské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_25" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_25">
         <name>velština</name>
         <description>indoevropské - keltské - velština</description>
         <shortcut>velština</shortcut>
@@ -783,8 +918,9 @@
             <category>indoevropské</category>
             <category>keltské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_26" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_26">
         <name>blíže neurčený románský jazyk</name>
         <description>indoevropské - románské - blíže neurčené</description>
         <shortcut>blíže neurčený (románský)</shortcut>
@@ -792,8 +928,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_27" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_27">
         <name>francouzština</name>
         <description>indoevropské - románské - francouzština</description>
         <shortcut>francouzština</shortcut>
@@ -801,8 +938,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_28" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_28">
         <name>galicijština</name>
         <description>indoevropské - románské - galicijština</description>
         <shortcut>galicijština</shortcut>
@@ -810,8 +948,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_29" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_29">
         <name>italština</name>
         <description>indoevropské - románské - italština</description>
         <shortcut>italština</shortcut>
@@ -819,8 +958,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_30" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_30">
         <name>katalánština</name>
         <description>indoevropské - románské - katalánština</description>
         <shortcut>katalánština</shortcut>
@@ -828,8 +968,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_31" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_31">
         <name>korsičtina</name>
         <description>indoevropské - románské - korsičtina</description>
         <shortcut>korsičtina</shortcut>
@@ -837,8 +978,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_32" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_32">
         <name>latina</name>
         <description>indoevropské - románské - latina</description>
         <shortcut>latina</shortcut>
@@ -846,8 +988,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_33" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_33">
         <name>moldavština</name>
         <description>indoevropské - románské - moldavština</description>
         <shortcut>moldavština</shortcut>
@@ -855,8 +998,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_34" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_34">
         <name>okcitánština</name>
         <description>indoevropské - románské - okcitánština</description>
         <shortcut>okcitánština</shortcut>
@@ -864,8 +1008,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_35" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_35">
         <name>portugalština</name>
         <description>indoevropské - románské - portugalština</description>
         <shortcut>portugalština</shortcut>
@@ -873,8 +1018,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_36" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_36">
         <name>rétorománština</name>
         <description>indoevropské - románské - rétorománština</description>
         <shortcut>rétorománština</shortcut>
@@ -882,8 +1028,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_37" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_37">
         <name>rumunština</name>
         <description>indoevropské - románské - rumunština</description>
         <shortcut>rumunština</shortcut>
@@ -891,8 +1038,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_38" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_38">
         <name>španělština</name>
         <description>indoevropské - románské - španělština</description>
         <shortcut>španělština</shortcut>
@@ -900,8 +1048,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_39" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_39">
         <name>blíže neurčený slovanský jazyk</name>
         <description>indoevropské - slovanské - blíže neurčené</description>
         <shortcut>blíže neurčený (slovanský)</shortcut>
@@ -909,8 +1058,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_40" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_40">
         <name>běloruština</name>
         <description>indoevropské - slovanské - běloruština</description>
         <shortcut>běloruština</shortcut>
@@ -918,8 +1068,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_41" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_41">
         <name>bosenština</name>
         <description>indoevropské - slovanské - bosenština</description>
         <shortcut>bosenština</shortcut>
@@ -927,8 +1078,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_42" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_42">
         <name>bulharština</name>
         <description>indoevropské - slovanské - bulharština</description>
         <shortcut>bulharština</shortcut>
@@ -936,8 +1088,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_43" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_43">
         <name>čeština</name>
         <description>indoevropské - slovanské - čeština</description>
         <shortcut>čeština</shortcut>
@@ -945,8 +1098,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_44" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_44">
         <name>chorvatština</name>
         <description>indoevropské - slovanské - chorvatština</description>
         <shortcut>chorvatština</shortcut>
@@ -954,8 +1108,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_45" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_45">
         <name>kašubština</name>
         <description>indoevropské - slovanské - kašubština</description>
         <shortcut>kašubština</shortcut>
@@ -963,8 +1118,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_46" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_46">
         <name>lužická srbština dolní (dolnolužičtina)</name>
         <description>indoevropské - slovanské - lužická srbština dolní (dolnolužičtina)</description>
         <shortcut>lužická srbština dolní (dolnolužičtina)</shortcut>
@@ -972,8 +1128,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_47" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_47">
         <name>lužická srbština horní (hornolužičtina)</name>
         <description>indoevropské - slovanské - lužická srbština horní (hornolužičtina)</description>
         <shortcut>lužická srbština horní (hornolužičtina)</shortcut>
@@ -981,8 +1138,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_48" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_48">
         <name>makedonština</name>
         <description>indoevropské - slovanské - makedonština</description>
         <shortcut>makedonština</shortcut>
@@ -990,8 +1148,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_49" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_49">
         <name>polština</name>
         <description>indoevropské - slovanské - polština</description>
         <shortcut>polština</shortcut>
@@ -999,8 +1158,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_50" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_50">
         <name>rusínština</name>
         <description>indoevropské - slovanské - rusínština</description>
         <shortcut>rusínština</shortcut>
@@ -1008,8 +1168,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_51" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_51">
         <name>ruština</name>
         <description>indoevropské - slovanské - ruština</description>
         <shortcut>ruština</shortcut>
@@ -1017,8 +1178,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_52" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_52">
         <name>slovenština</name>
         <description>indoevropské - slovanské - slovenština</description>
         <shortcut>slovenština</shortcut>
@@ -1026,8 +1188,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_53" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_53">
         <name>slovinština</name>
         <description>indoevropské - slovanské - slovinština</description>
         <shortcut>slovinština</shortcut>
@@ -1035,8 +1198,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_54" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_54">
         <name>srbochorvatština</name>
         <description>indoevropské - slovanské - srbochorvatština</description>
         <shortcut>srbochorvatština</shortcut>
@@ -1044,8 +1208,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_55" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_55">
         <name>srbština</name>
         <description>indoevropské - slovanské - srbština</description>
         <shortcut>srbština</shortcut>
@@ -1053,8 +1218,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_56" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_56">
         <name>staroslověnština, církevní slovanština</name>
         <description>indoevropské - slovanské - staroslověnština, církevní slovanština</description>
         <shortcut>staroslověnština, církevní slovanština</shortcut>
@@ -1062,8 +1228,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_57" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_57">
         <name>ukrajinština</name>
         <description>indoevropské - slovanské - ukrajinština</description>
         <shortcut>ukrajinština</shortcut>
@@ -1071,8 +1238,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_58" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_58">
         <name>blíže neurčený indoevropský jazyk</name>
         <description>indoevropské - ostatní - blíže neurčené</description>
         <shortcut>blíže neurčený (indoevropský)</shortcut>
@@ -1080,8 +1248,9 @@
             <category>indoevropské</category>
             <category>ostatní</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_59" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_59">
         <name>albánština</name>
         <description>indoevropské - ostatní - albánština</description>
         <shortcut>albánština</shortcut>
@@ -1089,8 +1258,9 @@
             <category>indoevropské</category>
             <category>ostatní</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_60" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_60">
         <name>arménština</name>
         <description>indoevropské - ostatní - arménština</description>
         <shortcut>arménština</shortcut>
@@ -1098,8 +1268,9 @@
             <category>indoevropské</category>
             <category>ostatní</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_61" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_61">
         <name>řečtina</name>
         <description>indoevropské - ostatní - řečtina</description>
         <shortcut>řečtina</shortcut>
@@ -1107,64 +1278,72 @@
             <category>indoevropské</category>
             <category>ostatní</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_62" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_62">
         <name>blíže neurčený uralský jazyk</name>
         <description>uralské - blíže neurčené</description>
         <shortcut>blíže neurčený (uralský)</shortcut>
         <categories>
             <category>uralské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_63" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_63">
         <name>estonština</name>
         <description>uralské - estonština</description>
         <shortcut>estonština</shortcut>
         <categories>
             <category>uralské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_64" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_64">
         <name>finština</name>
         <description>uralské - finština</description>
         <shortcut>finština</shortcut>
         <categories>
             <category>uralské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_65" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_65">
         <name>maďarština</name>
         <description>uralské - maďarština</description>
         <shortcut>maďarština</shortcut>
         <categories>
             <category>uralské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_66" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_66">
         <name>livština</name>
         <description>uralské - livština</description>
         <shortcut>livština</shortcut>
         <categories>
             <category>uralské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_67" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_67">
         <name>baskičtina</name>
         <description>izolované - baskičtina</description>
         <shortcut>baskičtina</shortcut>
         <categories>
             <category>izolované</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_68" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_68">
         <name>blíže neurčený afroasijský jazyk</name>
         <description>afroasijské - blíže neurčené</description>
         <shortcut>blíže neurčený (afroasijský)</shortcut>
         <categories>
             <category>afroasijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_69" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_69">
         <name>blíže neurčený semitský jazyk</name>
         <description>afroasijské - semitské - blíže neurčené</description>
         <shortcut>blíže neurčený (semitský)</shortcut>
@@ -1172,8 +1351,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_70" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_70">
         <name>(novo)hebrejština</name>
         <description>afroasijské - semitské - (novo)hebrejština</description>
         <shortcut>(novo)hebrejština</shortcut>
@@ -1181,8 +1361,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_71" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_71">
         <name>amharština</name>
         <description>afroasijské - semitské - amharština</description>
         <shortcut>amharština</shortcut>
@@ -1190,8 +1371,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_72" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_72">
         <name>arabština</name>
         <description>afroasijské - semitské - arabština</description>
         <shortcut>arabština</shortcut>
@@ -1199,8 +1381,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_73" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_73">
         <name>aramejština</name>
         <description>afroasijské - semitské - aramejština</description>
         <shortcut>aramejština</shortcut>
@@ -1208,8 +1391,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_74" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_74">
         <name>hauština</name>
         <description>afroasijské - semitské - hauština</description>
         <shortcut>hauština</shortcut>
@@ -1217,8 +1401,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_75" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_75">
         <name>maltština</name>
         <description>afroasijské - semitské - maltština</description>
         <shortcut>maltština</shortcut>
@@ -1226,8 +1411,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_76" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_76">
         <name>stará hebrejština</name>
         <description>afroasijské - semitské - stará hebrejština</description>
         <shortcut>stará hebrejština</shortcut>
@@ -1235,8 +1421,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_77" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_77">
         <name>akkadština</name>
         <description>afroasijské - semitské - akkadština</description>
         <shortcut>akkadština</shortcut>
@@ -1244,8 +1431,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_78" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_78">
         <name>assyrština</name>
         <description>afroasijské - semitské - assyrština</description>
         <shortcut>assyrština</shortcut>
@@ -1253,8 +1441,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_79" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_79">
         <name>babylonština</name>
         <description>afroasijské - semitské - babylonština</description>
         <shortcut>babylonština</shortcut>
@@ -1262,8 +1451,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_80" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_80">
         <name>chetitština</name>
         <description>afroasijské - semitské - chetitština</description>
         <shortcut>chetitština</shortcut>
@@ -1271,8 +1461,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_81" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_81">
         <name>sumerština</name>
         <description>afroasijské - semitské - sumerština</description>
         <shortcut>sumerština</shortcut>
@@ -1280,64 +1471,72 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_82" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_82">
         <name>egyptština</name>
         <description>afroasijské - egyptština</description>
         <shortcut>egyptština</shortcut>
         <categories>
             <category>afroasijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_83" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_83">
         <name>koptština</name>
         <description>afroasijské - koptština</description>
         <shortcut>koptština</shortcut>
         <categories>
             <category>afroasijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_84" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_84">
         <name>blíže neurčený nigerokonžský jazyk</name>
         <description>nigerokonžské - blíže neurčené</description>
         <shortcut>blíže neurčený (nigerokonžský)</shortcut>
         <categories>
             <category>nigerokonžské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_85" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_85">
         <name>svahilština</name>
         <description>nigerokonžské - svahilština</description>
         <shortcut>svahilština</shortcut>
         <categories>
             <category>nigerokonžské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_86" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_86">
         <name>blíže neurčený altajský jazyk</name>
         <description>altajské - blíže neurčené</description>
         <shortcut>blíže neurčený (altajský)</shortcut>
         <categories>
             <category>altajské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_87" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_87">
         <name>japonština</name>
         <description>altajské - japonština</description>
         <shortcut>japonština</shortcut>
         <categories>
             <category>altajské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_88" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_88">
         <name>korejština</name>
         <description>altajské - korejština</description>
         <shortcut>korejština</shortcut>
         <categories>
             <category>altajské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_89" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_89">
         <name>blíže neurčený mongolský jazyk</name>
         <description>altajské - mongolské - blíže neurčené</description>
         <shortcut>blíže neurčený (mongolský)</shortcut>
@@ -1345,8 +1544,9 @@
             <category>altajské</category>
             <category>mongolské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_90" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_90">
         <name>mongolština</name>
         <description>altajské - mongolské - mongolština</description>
         <shortcut>mongolština</shortcut>
@@ -1354,8 +1554,9 @@
             <category>altajské</category>
             <category>mongolské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_91" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_91">
         <name>blíže neurčený turkický jazyk</name>
         <description>altajské - turkické - blíže neurčené</description>
         <shortcut>blíže neurčený (turkický)</shortcut>
@@ -1363,8 +1564,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_92" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_92">
         <name>azerbajdžánština</name>
         <description>altajské - turkické - azerbajdžánština</description>
         <shortcut>azerbajdžánština</shortcut>
@@ -1372,8 +1574,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_93" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_93">
         <name>baškirština</name>
         <description>altajské - turkické - baškirština</description>
         <shortcut>baškirština</shortcut>
@@ -1381,8 +1584,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_94" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_94">
         <name>gagauzština</name>
         <description>altajské - turkické - gagauzština</description>
         <shortcut>gagauzština</shortcut>
@@ -1390,8 +1594,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_95" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_95">
         <name>hazarština</name>
         <description>altajské - turkické - hazarština</description>
         <shortcut>hazarština</shortcut>
@@ -1399,8 +1604,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_96" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_96">
         <name>kyrgyzština</name>
         <description>altajské - turkické - kyrgyzština</description>
         <shortcut>kyrgyzština</shortcut>
@@ -1408,8 +1614,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_97" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_97">
         <name>krymská tatarština</name>
         <description>altajské - turkické - krymská tatarština</description>
         <shortcut>krymská tatarština</shortcut>
@@ -1417,8 +1624,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_98" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_98">
         <name>tatarština</name>
         <description>altajské - turkické - tatarština</description>
         <shortcut>tatarština</shortcut>
@@ -1426,8 +1634,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_99" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_99">
         <name>turečtina</name>
         <description>altajské - turkické - turečtina</description>
         <shortcut>turečtina</shortcut>
@@ -1435,8 +1644,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_100" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_100">
         <name>turkménština</name>
         <description>altajské - turkické - turkménština</description>
         <shortcut>turkménština</shortcut>
@@ -1444,8 +1654,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_101" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_101">
         <name>ujgurština</name>
         <description>altajské - turkické - ujgurština</description>
         <shortcut>ujgurština</shortcut>
@@ -1453,8 +1664,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_102" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_102">
         <name>uzbečtina</name>
         <description>altajské - turkické - uzbečtina</description>
         <shortcut>uzbečtina</shortcut>
@@ -1462,16 +1674,18 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_103" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_103">
         <name>blíže neurčený austroasijský jazyk</name>
         <description>austroasijské - blíže neurčené</description>
         <shortcut>blíže neurčený (austroasijský)</shortcut>
         <categories>
             <category>austroasijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_104" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_104">
         <name>santalština</name>
         <description>austroasijské - mundské - santalština</description>
         <shortcut>santalština</shortcut>
@@ -1479,88 +1693,99 @@
             <category>austroasijské</category>
             <category>mundské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_105" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_105">
         <name>khmérština</name>
         <description>austroasijské - khmérština</description>
         <shortcut>khmérština</shortcut>
         <categories>
             <category>austroasijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_106" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_106">
         <name>vietnamština</name>
         <description>austroasijské - vietnamština</description>
         <shortcut>vietnamština</shortcut>
         <categories>
             <category>austroasijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_107" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_107">
         <name>blíže neurčený austronéský jazyk</name>
         <description>austronéské - blíže neurčené</description>
         <shortcut>blíže neurčený (austronéský)</shortcut>
         <categories>
             <category>austronéské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_108" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_108">
         <name>indonéština</name>
         <description>austronéské - indonéština</description>
         <shortcut>indonéština</shortcut>
         <categories>
             <category>austronéské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_109" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_109">
         <name>malajština</name>
         <description>austronéské - malajština</description>
         <shortcut>malajština</shortcut>
         <categories>
             <category>austronéské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_110" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_110">
         <name>blíže neurčený drávidský jazyk</name>
         <description>drávidské - blíže neurčené</description>
         <shortcut>blíže neurčený (drávidský)</shortcut>
         <categories>
             <category>drávidské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_111" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_111">
         <name>kannadština (též kannarština)</name>
         <description>drávidské - kannadština (též kannarština)</description>
         <shortcut>kannadština (kannarština)</shortcut>
         <categories>
             <category>drávidské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_112" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_112">
         <name>malajalámština</name>
         <description>drávidské - malajalámština</description>
         <shortcut>malajalámština</shortcut>
         <categories>
             <category>drávidské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_113" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_113">
         <name>tamilština</name>
         <description>drávidské - tamilština</description>
         <shortcut>tamilština</shortcut>
         <categories>
             <category>drávidské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_114" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_114">
         <name>telugština</name>
         <description>drávidské - telugština</description>
         <shortcut>telugština</shortcut>
         <categories>
             <category>drávidské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_115" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_115">
         <name>blíže neurčený indoárijský jazyk</name>
         <description>indoevropské - indoárijské - blíže neurčené</description>
         <shortcut>blíže neurčený (indoárijský)</shortcut>
@@ -1568,8 +1793,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_116" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_116">
         <name>asámština</name>
         <description>indoevropské - indoárijské - asámština</description>
         <shortcut>asámština</shortcut>
@@ -1577,8 +1803,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_117" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_117">
         <name>bengálština</name>
         <description>indoevropské - indoárijské - bengálština</description>
         <shortcut>bengálština</shortcut>
@@ -1586,8 +1813,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_118" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_118">
         <name>Bihárštiina (maithilština)</name>
         <description>indoevropské - indoárijské - Bihárštiina (maithilština)</description>
         <shortcut>Bihárštiina (maithilština)</shortcut>
@@ -1595,8 +1823,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_119" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_119">
         <name>dógrí</name>
         <description>indoevropské - indoárijské - dógrí</description>
         <shortcut>dógrí</shortcut>
@@ -1604,8 +1833,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_120" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_120">
         <name>gudžarátština</name>
         <description>indoevropské - indoárijské - gudžarátština</description>
         <shortcut>gudžarátština</shortcut>
@@ -1613,8 +1843,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_121" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_121">
         <name>hindština</name>
         <description>indoevropské - indoárijské - hindština</description>
         <shortcut>hindština</shortcut>
@@ -1622,8 +1853,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_122" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_122">
         <name>kašmírština</name>
         <description>indoevropské - indoárijské - kašmírština</description>
         <shortcut>kašmírština</shortcut>
@@ -1631,8 +1863,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_123" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_123">
         <name>konkánština</name>
         <description>indoevropské - indoárijské - konkánština</description>
         <shortcut>konkánština</shortcut>
@@ -1640,8 +1873,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_124" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_124">
         <name>maráthština</name>
         <description>indoevropské - indoárijské - maráthština</description>
         <shortcut>maráthština</shortcut>
@@ -1649,8 +1883,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_125" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_125">
         <name>pahárské jazyky (nepálština)</name>
         <description>indoevropské - indoárijské - pahárské jazyky (nepálština)</description>
         <shortcut>pahárské jazyky (nepálština)</shortcut>
@@ -1658,8 +1893,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_126" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_126">
         <name>pandžábština</name>
         <description>indoevropské - indoárijské - pandžábština</description>
         <shortcut>pandžábština</shortcut>
@@ -1667,8 +1903,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_127" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_127">
         <name>romština</name>
         <description>indoevropské - indoárijské - romština</description>
         <shortcut>romština</shortcut>
@@ -1676,8 +1913,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_128" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_128">
         <name>sanskrt</name>
         <description>indoevropské - indoárijské - sanskrt</description>
         <shortcut>sanskrt</shortcut>
@@ -1685,8 +1923,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_129" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_129">
         <name>sindština</name>
         <description>indoevropské - indoárijské - sindština</description>
         <shortcut>sindština</shortcut>
@@ -1694,8 +1933,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_130" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_130">
         <name>sinhálština</name>
         <description>indoevropské - indoárijské - sinhálština</description>
         <shortcut>sinhálština</shortcut>
@@ -1703,8 +1943,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_131" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_131">
         <name>urdština</name>
         <description>indoevropské - indoárijské - urdština</description>
         <shortcut>urdština</shortcut>
@@ -1712,8 +1953,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_132" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_132">
         <name>urijština</name>
         <description>indoevropské - indoárijské - urijština</description>
         <shortcut>urijština</shortcut>
@@ -1721,8 +1963,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_133" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_133">
         <name>blíže neurčený indoíránský jazyk</name>
         <description>indoevropské - indoíránské - blíže neurčené</description>
         <shortcut>blíže neurčený (indoíránský)</shortcut>
@@ -1730,8 +1973,9 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_134" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_134">
         <name>(novo)perština</name>
         <description>indoevropské - indoíránské - (novo)perština</description>
         <shortcut>(novo)perština</shortcut>
@@ -1739,8 +1983,9 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_135" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_135">
         <name>kurdština</name>
         <description>indoevropské - indoíránské - kurdština</description>
         <shortcut>kurdština</shortcut>
@@ -1748,8 +1993,9 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_136" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_136">
         <name>paštština</name>
         <description>indoevropské - indoíránské - paštština</description>
         <shortcut>paštština</shortcut>
@@ -1757,8 +2003,9 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_137" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_137">
         <name>stará perština</name>
         <description>indoevropské - indoíránské - stará perština</description>
         <shortcut>stará perština</shortcut>
@@ -1766,8 +2013,9 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_138" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_138">
         <name>střední perština</name>
         <description>indoevropské - indoíránské - střední perština</description>
         <shortcut>střední perština</shortcut>
@@ -1775,8 +2023,9 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_139" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_139">
         <name>tádžičtina</name>
         <description>indoevropské - indoíránské - tádžičtina</description>
         <shortcut>tádžičtina</shortcut>
@@ -1784,120 +2033,135 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_140" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_140">
         <name>blíže neurčený kartvelský jazyk</name>
         <description>kartvelské - blíže neurčené</description>
         <shortcut>blíže neurčený (kartvelský)</shortcut>
         <categories>
             <category>kartvelské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_141" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_141">
         <name>gruzínština</name>
         <description>kartvelské - gruzínština</description>
         <shortcut>gruzínština</shortcut>
         <categories>
             <category>kartvelské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_142" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_142">
         <name>blíže neurčený severokavkazský jazyk</name>
         <description>severokavkazské - blíže neurčené</description>
         <shortcut>blíže neurčený (severokavkazský)</shortcut>
         <categories>
             <category>severokavkazské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_143" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_143">
         <name>abcházština</name>
         <description>severokavkazské - abcházština</description>
         <shortcut>abcházština</shortcut>
         <categories>
             <category>severokavkazské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_144" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_144">
         <name>blíže neurčený tajsko-kadajský jazyk</name>
         <description>tajsko-kadajské - blíže neurčené</description>
         <shortcut>blíže neurčený (tajsko-kadajský)</shortcut>
         <categories>
             <category>tajsko-kadajské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_145" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_145">
         <name>laoština</name>
         <description>tajsko-kadajské - laoština</description>
         <shortcut>laoština</shortcut>
         <categories>
             <category>tajsko-kadajské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_146" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_146">
         <name>thajština</name>
         <description>tajsko-kadajské - thajština</description>
         <shortcut>thajština</shortcut>
         <categories>
             <category>tajsko-kadajské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_147" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_147">
         <name>blíže neurčený tibetskočínský jazyk</name>
         <description>tibetskočínské - blíže neurčené</description>
         <shortcut>blíže neurčený (tibetskočínský)</shortcut>
         <categories>
             <category>tibetskočínské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_148" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_148">
         <name>barmština</name>
         <description>tibetskočínské - barmština</description>
         <shortcut>barmština</shortcut>
         <categories>
             <category>tibetskočínské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_149" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_149">
         <name>bodo</name>
         <description>tibetskočínské - bodo</description>
         <shortcut>bodo</shortcut>
         <categories>
             <category>tibetskočínské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_150" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_150">
         <name>bhútánština</name>
         <description>tibetskočínské - bhútánština</description>
         <shortcut>bhútánština</shortcut>
         <categories>
             <category>tibetskočínské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_151" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_151">
         <name>manípurština</name>
         <description>tibetskočínské - manípurština</description>
         <shortcut>manípurština</shortcut>
         <categories>
             <category>tibetskočínské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_152" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_152">
         <name>čínština</name>
         <description>tibetskočínské - čínština</description>
         <shortcut>čínština</shortcut>
         <categories>
             <category>tibetskočínské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_153" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_153">
         <name>tibetština</name>
         <description>tibetskočínské - tibetština</description>
         <shortcut>tibetština</shortcut>
         <categories>
             <category>tibetskočínské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_154" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_154">
         <name>blíže neurčený aleutský jazyk</name>
         <description>eskymácko - aleutské - blíže neurčené</description>
         <shortcut>blíže neurčený (aleutský)</shortcut>
@@ -1905,8 +2169,9 @@
             <category>eskymácko</category>
             <category>aleutské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_155" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_155">
         <name>grónština</name>
         <description>eskymácko - aleutské - grónština</description>
         <shortcut>grónština</shortcut>
@@ -1914,93 +2179,105 @@
             <category>eskymácko</category>
             <category>aleutské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_156" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_156">
         <name>blíže neurčený indiánský jazyk</name>
         <description>indiánské - blíže neurčené</description>
         <shortcut>blíže neurčený (indiánský)</shortcut>
         <categories>
             <category>indiánské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_157" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_157">
         <name>blíže neurčený</name>
         <description>blíže neurčený</description>
         <shortcut>blíže neurčený</shortcut>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_158" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_158">
         <name>blíže neurčený izolovaný jazyk</name>
         <description>izolované - blíže neurčené</description>
         <shortcut>blíže neurčený (izolovaný)</shortcut>
         <categories>
             <category>izolované</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_159" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_159">
         <name>blíže neurčený kreolský jazyk</name>
         <description>kreolské - blíže neurčené</description>
         <shortcut>blíže neurčený (kreolský)</shortcut>
         <categories>
             <category>kreolské</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_160" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_160">
         <name>blíže neurčený umělý jazyk</name>
         <description>umělé - blíže neurčené</description>
         <shortcut>blíže neurčený (umělý)</shortcut>
         <categories>
             <category>umělé</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_161" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_161">
         <name>esperanto</name>
         <description>umělé - esperanto</description>
         <shortcut>esperanto</shortcut>
         <categories>
             <category>umělé</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_162" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_162">
         <name>ido</name>
         <description>umělé - ido</description>
         <shortcut>ido</shortcut>
         <categories>
             <category>umělé</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_163" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_163">
         <name>interlingua</name>
         <description>umělé - interlingua</description>
         <shortcut>interlingua</shortcut>
         <categories>
             <category>umělé</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_164" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_164">
         <name>interlingue</name>
         <description>umělé - interlingue</description>
         <shortcut>interlingue</shortcut>
         <categories>
             <category>umělé</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_165" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_165">
         <name>volapük</name>
         <description>umělé - volapük</description>
         <shortcut>volapük</shortcut>
         <categories>
             <category>umělé</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_LANGUAGE_166" item-type="ZP2015_LANGUAGE">
+    <item-spec code="ZP2015_LANGUAGE_166">
         <name>slovio</name>
         <description>umělé - slovio</description>
         <shortcut>slovio</shortcut>
         <categories>
             <category>umělé</category>
         </categories>
+        <item-type-assign code="ZP2015_LANGUAGE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_1" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_1">
         <name>autoři</name>
         <description>autoři</description>
         <shortcut></shortcut>
@@ -2008,8 +2285,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_2" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_2">
         <name>autoři dialogů</name>
         <description>autoři dialogů</description>
         <shortcut></shortcut>
@@ -2017,8 +2295,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_4" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_4">
         <name>autoři fotografií</name>
         <description>autoři fotografií</description>
         <shortcut></shortcut>
@@ -2026,8 +2305,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_5" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_5">
         <name>autoři hudební složky</name>
         <description>autoři hudební složky</description>
         <shortcut></shortcut>
@@ -2035,8 +2315,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_10" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_10">
         <name>autoři textové složky</name>
         <description>autoři textové složky</description>
         <shortcut></shortcut>
@@ -2044,8 +2325,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_6" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_6">
         <name>autoři hudby</name>
         <description>autoři hudby</description>
         <shortcut></shortcut>
@@ -2053,8 +2335,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_7" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_7">
         <name>autoři choreografií</name>
         <description>autoři choreografií</description>
         <shortcut></shortcut>
@@ -2062,8 +2345,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_8" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_8">
         <name>autoři komentářů</name>
         <description>autoři komentářů</description>
         <shortcut></shortcut>
@@ -2071,8 +2355,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_9" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_9">
         <name>autoři námětů</name>
         <description>autoři námětů</description>
         <shortcut></shortcut>
@@ -2080,8 +2365,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_11" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_11">
         <name>autoři textů</name>
         <description>autoři textů</description>
         <shortcut></shortcut>
@@ -2089,8 +2375,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_3" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_3">
         <name>autoři doprovodných textů</name>
         <description>autoři doprovodných textů</description>
         <shortcut></shortcut>
@@ -2098,8 +2385,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_12" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_12">
         <name>autoři triků a speciálních efektů</name>
         <description>autoři triků a speciálních efektů</description>
         <shortcut></shortcut>
@@ -2107,8 +2395,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_13" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_13">
         <name>autoři výtvarné a obrazové stránky</name>
         <description>autoři výtvarné a obrazové stránky</description>
         <shortcut></shortcut>
@@ -2116,8 +2405,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_14" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_14">
         <name>autoři výtvarné stránky</name>
         <description>autoři výtvarné stránky</description>
         <shortcut></shortcut>
@@ -2125,8 +2415,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_15" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_15">
         <name>vydavatelé</name>
         <description>vydavatelé</description>
         <shortcut></shortcut>
@@ -2134,8 +2425,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_16" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_16">
         <name>vydavatelé / nakladatelé</name>
         <description>vydavatelé / nakladatelé</description>
         <shortcut></shortcut>
@@ -2143,8 +2435,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_17" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_17">
         <name>pečetitelé</name>
         <description>pečetitelé</description>
         <shortcut></shortcut>
@@ -2152,8 +2445,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_18" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_18">
         <name>produkční společnosti/producenti</name>
         <description>produkční společnosti/producenti</description>
         <shortcut></shortcut>
@@ -2161,8 +2455,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_19" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_19">
         <name>objednatelé / příjemci</name>
         <description>objednatelé / příjemci</description>
         <shortcut></shortcut>
@@ -2170,8 +2465,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_20" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_20">
         <name>distributoři</name>
         <description>distributoři</description>
         <shortcut></shortcut>
@@ -2179,8 +2475,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_21" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_21">
         <name>příjemci</name>
         <description>příjemci</description>
         <shortcut></shortcut>
@@ -2188,8 +2485,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_22" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_22">
         <name>žadatelé</name>
         <description>žadatelé</description>
         <shortcut></shortcut>
@@ -2197,8 +2495,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_23" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_23">
         <name>držitelé</name>
         <description>držitelé</description>
         <shortcut></shortcut>
@@ -2206,8 +2505,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_24" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_24">
         <name>odesilatelé</name>
         <description>odesilatelé</description>
         <shortcut></shortcut>
@@ -2215,8 +2515,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_25" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_25">
         <name>schvalovatelé</name>
         <description>schvalovatelé</description>
         <shortcut></shortcut>
@@ -2224,8 +2525,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_26" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_26">
         <name>stavitelé</name>
         <description>stavitelé</description>
         <shortcut></shortcut>
@@ -2233,32 +2535,36 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_27" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_27">
         <name>režiséři</name>
         <description>režiséři</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_28" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_28">
         <name>scénáristé</name>
         <description>scénáristé</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_29" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_29">
         <name>kameramani</name>
         <description>kameramani</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_30" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_30">
         <name>interpreti hudby</name>
         <description>interpreti hudby</description>
         <shortcut></shortcut>
@@ -2266,8 +2572,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_31" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_31">
         <name>fotografové</name>
         <description>fotografové</description>
         <shortcut></shortcut>
@@ -2275,16 +2582,18 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_32" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_32">
         <name>redaktoři</name>
         <description>redaktoři</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_33" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_33">
         <name>kartografové</name>
         <description>kartografové</description>
         <shortcut></shortcut>
@@ -2292,32 +2601,36 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_34" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_34">
         <name>editoři</name>
         <description>editoři</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_35" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_35">
         <name>editoři / redaktoři</name>
         <description>editoři / redaktoři</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_36" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_36">
         <name>kresliči</name>
         <description>kresliči</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_37" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_37">
         <name>majitelé typářů</name>
         <description>majitelé typářů</description>
         <shortcut></shortcut>
@@ -2325,8 +2638,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_38" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_38">
         <name>tvůrci technického zpracování</name>
         <description>tvůrci technického zpracování</description>
         <shortcut></shortcut>
@@ -2334,8 +2648,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_39" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_39">
         <name>tvůrci výtvarné stránky</name>
         <description>tvůrci výtvarné stránky</description>
         <shortcut></shortcut>
@@ -2343,16 +2658,18 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_40" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_40">
         <name>dramaturgové</name>
         <description>dramaturgové</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_41" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_41">
         <name>střih</name>
         <description>střih</description>
         <shortcut></shortcut>
@@ -2360,8 +2677,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_42" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_42">
         <name>zvuk</name>
         <description>zvuk</description>
         <shortcut></shortcut>
@@ -2369,8 +2687,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_43" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_43">
         <name>účinkující</name>
         <description>účinkující</description>
         <shortcut></shortcut>
@@ -2378,8 +2697,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_44" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_44">
         <name>překladatelé</name>
         <description>překladatelé</description>
         <shortcut></shortcut>
@@ -2387,40 +2707,45 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_45" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_45">
         <name>lektoři</name>
         <description>lektoři</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_46" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_46">
         <name>svědci</name>
         <description>svědci</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_47" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_47">
         <name>ručitelé (rukojmě)</name>
         <description>ručitelé (rukojmě)</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_48" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_48">
         <name>písaři</name>
         <description>písaři</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_49" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_49">
         <name>zpracovatelé nosičů záznamů</name>
         <description>zpracovatelé nosičů záznamů</description>
         <shortcut></shortcut>
@@ -2428,8 +2753,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_50" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_50">
         <name>výrobci nosičů záznamů</name>
         <description>výrobci nosičů záznamů</description>
         <shortcut></shortcut>
@@ -2437,16 +2763,18 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_51" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_51">
         <name>tiskárny</name>
         <description>tiskárny</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_52" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_52">
         <name>tiskárny/tiskaři</name>
         <description>tiskárny/tiskaři</description>
         <shortcut></shortcut>
@@ -2454,8 +2782,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_53" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_53">
         <name>výrobci</name>
         <description>výrobci</description>
         <shortcut></shortcut>
@@ -2463,8 +2792,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_54" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_54">
         <name>výrobci typářů</name>
         <description>výrobci typářů</description>
         <shortcut></shortcut>
@@ -2472,8 +2802,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_55" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_55">
         <name>výrobci odlitků otisků / otisků typářů</name>
         <description>výrobci odlitků otisků / otisků typářů</description>
         <shortcut></shortcut>
@@ -2481,72 +2812,81 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_56" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_56">
         <name>místa vzniku záznamů</name>
         <description>místa vzniku záznamů</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_57" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_57">
         <name>místa vydavatelů</name>
         <description>místa vydavatelů</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_58" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_58">
         <name>místa vydání</name>
         <description>místa vydání</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_59" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_59">
         <name>místa vydání dokumentů</name>
         <description>místa vydání dokumentů</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_60" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_60">
         <name>místa výroby jednotek popisu</name>
         <description>místa výroby jednotek popisu</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_61" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_61">
         <name>místa vzniku jednotek popisu</name>
         <description>místa vzniku jednotek popisu</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_62" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_62">
         <name>místa vzniku předloh popisovaných kopií</name>
         <description>místa vzniku předloh popisovaných kopií</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_63" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_63">
         <name>typová označení a názvy výrobků a typových staveb</name>
         <description>typová označení a názvy výrobků a typových staveb</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="ARTWORK"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_64" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_64">
         <name>entity zachycené jednotkami popisu</name>
         <description>entity zachycené jednotkami popisu</description>
         <shortcut></shortcut>
@@ -2557,8 +2897,9 @@
             <item-aptype register-type="EVENT"/>
             <item-aptype register-type="ARTWORK"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="ZP2015_ENTITY_ROLE_65" item-type="ZP2015_ENTITY_ROLE">
+    <item-spec code="ZP2015_ENTITY_ROLE_65">
         <name>ostatní entity zachycené jednotkami popisu</name>
         <description>ostatní entity zachycené jednotkami popisu</description>
         <shortcut></shortcut>
@@ -2569,373 +2910,442 @@
             <item-aptype register-type="EVENT"/>
             <item-aptype register-type="ARTWORK"/>
         </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <!-- Nezjištěné hodnoty -->
-    <item-spec code="ZP2015_UNKNOWN_AUTHOR" item-type="ZP2015_NOT_FOUND">
+    <item-spec code="ZP2015_UNKNOWN_AUTHOR">
         <name>autor</name>
         <description>neznámý autor</description>
         <shortcut></shortcut>
+        <item-type-assign code="ZP2015_NOT_FOUND"/>
     </item-spec>
     <!-- jiné typy datace -->
-    <item-spec code="ZP2015_DATE_OF_CONTENT" item-type="ZP2015_DATE_OTHER">
+    <item-spec code="ZP2015_DATE_OF_CONTENT">
         <name>Datace obsahu</name>
         <description>Datace obsahu jednotky popisu</description>
         <shortcut>obsah</shortcut>
+        <item-type-assign code="ZP2015_DATE_OTHER"/>
     </item-spec>
-    <item-spec code="ZP2015_DATE_DECLARED" item-type="ZP2015_DATE_OTHER">
+    <item-spec code="ZP2015_DATE_DECLARED">
         <name>Datace deklarovaná</name>
         <description>Datace, k níž se jednotka popisu hlásí</description>
         <shortcut>deklarovaná</shortcut>
+        <item-type-assign code="ZP2015_DATE_OTHER"/>
     </item-spec>
-    <item-spec code="ZP2015_DATE_ORIG" item-type="ZP2015_DATE_OTHER">
+    <item-spec code="ZP2015_DATE_ORIG">
         <name>Datace vzniku předlohy</name>
         <description>Datace vzniku předlohy, pokud je popisována kopie, která nenahrazuje předlohu</description>
         <shortcut>vznik předlohy</shortcut>
+        <item-type-assign code="ZP2015_DATE_OTHER"/>
     </item-spec>
-    <item-spec code="ZP2015_DATE_OF_COPY" item-type="ZP2015_DATE_OTHER">
+    <item-spec code="ZP2015_DATE_OF_COPY">
         <name>Datace vzniku kopie</name>
         <description>Datace vzniku kopie, která nahrazuje zničenou archiválii</description>
         <shortcut>vznik kopie</shortcut>
+        <item-type-assign code="ZP2015_DATE_OTHER"/>
     </item-spec>
-    <item-spec code="ZP2015_DATE_SEALING" item-type="ZP2015_DATE_OTHER">
+    <item-spec code="ZP2015_DATE_SEALING">
         <name>Datace zpečetění</name>
         <description>Datace zpečetění jednotky popisu</description>
         <shortcut>zpečetění</shortcut>
+        <item-type-assign code="ZP2015_DATE_OTHER"/>
     </item-spec>
-    <item-spec code="ZP2015_DATE_ACT_PUBLISHING" item-type="ZP2015_DATE_OTHER">
+    <item-spec code="ZP2015_DATE_ACT_PUBLISHING">
         <name>Datace vydání listiny</name>
         <description>Datace vydání listiny</description>
         <shortcut>vydání listiny</shortcut>
+        <item-type-assign code="ZP2015_DATE_OTHER"/>
     </item-spec>
-    <item-spec code="ZP2015_DATE_INSERT" item-type="ZP2015_DATE_OTHER">
+    <item-spec code="ZP2015_DATE_INSERT">
         <name>Datace insertu/transeptu</name>
         <description>Datace insertu/transeptu</description>
         <shortcut>insert/transept</shortcut>
+        <item-type-assign code="ZP2015_DATE_OTHER"/>
     </item-spec>
-    <item-spec code="ZP2015_DATE_MOLD_CREATION" item-type="ZP2015_DATE_OTHER">
+    <item-spec code="ZP2015_DATE_MOLD_CREATION">
         <name>Datace vzniku matrice</name>
         <description>Datace vzniku matrice, z níž byla jednotka popisu zhotovena</description>
         <shortcut>vznik matrice</shortcut>
+        <item-type-assign code="ZP2015_DATE_OTHER"/>
     </item-spec>
-    <item-spec code="ZP2015_DATE_USAGE" item-type="ZP2015_DATE_OTHER">
+    <item-spec code="ZP2015_DATE_USAGE">
         <name>Datace užívání typáře</name>
         <description>Doba užívání typáře</description>
         <shortcut>užívání typáře</shortcut>
+        <item-type-assign code="ZP2015_DATE_OTHER"/>
     </item-spec>
-    <item-spec code="ZP2015_DATE_PUBLISHING" item-type="ZP2015_DATE_OTHER">
+    <item-spec code="ZP2015_DATE_PUBLISHING">
         <name>Datace vydání dokumentu</name>
         <description>Datace vydání dokumentu, k němuž byl popisovaný otisk připojen</description>
         <shortcut>vydání dokumentu</shortcut>
+        <item-type-assign code="ZP2015_DATE_OTHER"/>
     </item-spec>
-    <item-spec code="ZP2015_DATE_MAP_UPDATE" item-type="ZP2015_DATE_OTHER">
+    <item-spec code="ZP2015_DATE_MAP_UPDATE">
         <name>Datace reambulace mapy</name>
         <description>Datace reambulace (aktualizace) mapy</description>
         <shortcut>reambulace mapy</shortcut>
+        <item-type-assign code="ZP2015_DATE_OTHER"/>
     </item-spec>
-    <item-spec code="ZP2015_DATE_CAPTURING" item-type="ZP2015_DATE_OTHER">
+    <item-spec code="ZP2015_DATE_CAPTURING">
         <name>Datace pořízení obrazového záznamu</name>
         <description>Datace pořízení obrazového záznamu</description>
         <shortcut>pořízení obrazového záznamu</shortcut>
+        <item-type-assign code="ZP2015_DATE_OTHER"/>
     </item-spec>
-    <item-spec code="ZP2015_DATE_RECORDING" item-type="ZP2015_DATE_OTHER">
+    <item-spec code="ZP2015_DATE_RECORDING">
         <name>Datace pořízení filmového / zvukového záznamu</name>
         <description>Datace pořízení filmového / zvukového záznamu</description>
         <shortcut>pořízení filmového / zvukového záznamu</shortcut>
+        <item-type-assign code="ZP2015_DATE_OTHER"/>
     </item-spec>
-    <item-spec code="ZP2015_PACKET_TYPE_SAMOST" item-type="ZP2015_PACKET_TYPE">
+    <item-spec code="ZP2015_PACKET_TYPE_SAMOST">
         <name>Samostatně</name>
         <description>Samostatně</description>
         <shortcut>sam</shortcut>
+        <item-type-assign code="ZP2015_PACKET_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_PACKET_TYPE_KAR" item-type="ZP2015_PACKET_TYPE">
+    <item-spec code="ZP2015_PACKET_TYPE_KAR">
         <name>Karton</name>
         <description>Karton</description>
         <shortcut>kar</shortcut>
+        <item-type-assign code="ZP2015_PACKET_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_PACKET_TYPE_FAS" item-type="ZP2015_PACKET_TYPE">
+    <item-spec code="ZP2015_PACKET_TYPE_FAS">
         <name>Fascikl</name>
         <description>Fascikl</description>
         <shortcut>fas</shortcut>
+        <item-type-assign code="ZP2015_PACKET_TYPE"/>
     </item-spec>
 
     <!-- typ vystpupu -->
-    <item-spec code="ZP2015_OUTPUT_MAN" item-type="ZP2015_OUTPUT_TYPE">
+    <item-spec code="ZP2015_OUTPUT_MAN">
         <name>Manipulační seznam</name>
         <description>Manipulační seznam</description>
         <shortcut>Manipulační seznam</shortcut>
         <view-order>1</view-order>
+        <item-type-assign code="ZP2015_OUTPUT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_OUTPUT_INV" item-type="ZP2015_OUTPUT_TYPE">
+    <item-spec code="ZP2015_OUTPUT_INV">
         <name>Inventář</name>
         <description>Inventář</description>
         <shortcut>Inventář</shortcut>
         <view-order>2</view-order>
+        <item-type-assign code="ZP2015_OUTPUT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_OUTPUT_KAT" item-type="ZP2015_OUTPUT_TYPE">
+    <item-spec code="ZP2015_OUTPUT_KAT">
         <name>Katalog</name>
         <description>Katalog</description>
         <shortcut>Katalog</shortcut>
         <view-order>3</view-order>
+        <item-type-assign code="ZP2015_OUTPUT_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_OUTPUT_PROV_INV" item-type="ZP2015_OUTPUT_TYPE">
+    <item-spec code="ZP2015_OUTPUT_PROV_INV">
         <name>Provizorní inventární seznam</name>
         <description>Provizorní inventární seznam</description>
         <shortcut>Provizorní inv. seznam</shortcut>
         <view-order>4</view-order>
+        <item-type-assign code="ZP2015_OUTPUT_TYPE"/>
     </item-spec>
 
     <!-- Zneplatněný záznam -->
-    <item-spec code="ZP2015_INV_NOT_FOUND" item-type="ZP2015_INVALID_RECORD">
+    <item-spec code="ZP2015_INV_NOT_FOUND">
         <name>Nedohledáno</name>
         <description>Položka nebyla ve fodnu nalezena</description>
         <shortcut>Nedohledáno</shortcut>
         <view-order>1</view-order>
+        <item-type-assign code="ZP2015_INVALID_RECORD"/>
     </item-spec>
-    <item-spec code="ZP2015_INV_DESTROYED" item-type="ZP2015_INVALID_RECORD">
+    <item-spec code="ZP2015_INV_DESTROYED">
         <name>Zničeno</name>
         <description>Položka byla zničena</description>
         <shortcut>Zničeno</shortcut>
         <view-order>2</view-order>
+        <item-type-assign code="ZP2015_INVALID_RECORD"/>
     </item-spec>
-    <item-spec code="ZP2015_INV_MOVED" item-type="ZP2015_INVALID_RECORD">
+    <item-spec code="ZP2015_INV_MOVED">
         <name>Delimitováno</name>
         <description>Položka byla delimitována</description>
         <shortcut>Delimitováno</shortcut>
         <view-order>3</view-order>
+        <item-type-assign code="ZP2015_INVALID_RECORD"/>
     </item-spec>
 
     <!-- Souvislost s jinou EJ -->
-    <item-spec code="ZP2015_CR_PREV_RECORD" item-type="ZP2015_CONNECTED_RECORD">
+    <item-spec code="ZP2015_CR_PREV_RECORD">
         <name>Součást předchozí EJ</name>
         <description>Souvislost s předchozí EJ</description>
         <shortcut>Předchozí</shortcut>
         <view-order>1</view-order>
+        <item-type-assign code="ZP2015_CONNECTED_RECORD"/>
     </item-spec>
 
     <!-- Rozměry - jednotky  -->
-    <item-spec code="ZP2015_SIZE_MM" item-type="ZP2015_SIZE_UNITS">
+    <item-spec code="ZP2015_SIZE_MM">
         <name>mm</name>
         <description>mm</description>
         <shortcut>mm</shortcut>
         <view-order>1</view-order>
+        <item-type-assign code="ZP2015_SIZE_UNITS"/>
     </item-spec>
 
     <!-- Hmotnost -->
-    <item-spec code="ZP2015_WEIGHT_G" item-type="ZP2015_WEIGHT">
+    <item-spec code="ZP2015_WEIGHT_G">
         <name>g</name>
         <description>g</description>
         <shortcut>g</shortcut>
         <view-order>1</view-order>
+        <item-type-assign code="ZP2015_WEIGHT"/>
     </item-spec>
 
     <!-- Množství -->
-    <item-spec code="ZP2015_AMOUNT_B" item-type="ZP2015_AMOUNT">
+    <item-spec code="ZP2015_AMOUNT_B">
         <name>byte</name>
         <description>byte</description>
         <shortcut>b</shortcut>
         <view-order>1</view-order>
+        <item-type-assign code="ZP2015_AMOUNT"/>
     </item-spec>
-    <item-spec code="ZP2015_AMOUNT_PIECES" item-type="ZP2015_AMOUNT">
+    <item-spec code="ZP2015_AMOUNT_PIECES">
         <name>kusy</name>
         <description>kusy</description>
         <shortcut>kusy</shortcut>
         <view-order>1</view-order>
+        <item-type-assign code="ZP2015_AMOUNT"/>
     </item-spec>
 
     <!-- Počet EJ -->
-    <item-spec code="ZP2015_UNIT_COUNT_KAR" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_KAR">
         <name>Karton</name>
         <description>Karton</description>
         <shortcut>kar</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_FAS" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_FAS">
         <name>Fascikl</name>
         <description>Fascikl</description>
         <shortcut>fas</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_LIO" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_LIO">
         <name>Listiny do roku 1850</name>
         <description>Listiny do roku 1850</description>
         <shortcut>lio</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_LIP" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_LIP">
         <name>Listiny po roce 1850</name>
         <description>Listiny po roce 1850</description>
         <shortcut>lip</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_UKN" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_UKN">
         <name>Úřední knihy</name>
         <description>Úřední knihy</description>
         <shortcut>ukn</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_RKP" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_RKP">
         <name>Rukopisy</name>
         <description>Rukopisy</description>
         <shortcut>rkp</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_PPR" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_PPR">
         <name>Podací protokoly</name>
         <description>Podací protokoly</description>
         <shortcut>ppr</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_IND" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_IND">
         <name>Indexy</name>
         <description>Indexy</description>
         <shortcut>ind</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_ELE" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_ELE">
         <name>Elenchy</name>
         <description>Elenchy</description>
         <shortcut>ele</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_REP" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_REP">
         <name>Repertáře</name>
         <description>Repertáře</description>
         <shortcut>rep</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_KTT" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_KTT">
         <name>Kartotéky</name>
         <description>Kartotéky</description>
         <shortcut>ktt</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_PEC" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_PEC">
         <name>Pečetidla</name>
         <description>Pečetidla</description>
         <shortcut>pec</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_RAZ" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_RAZ">
         <name>Razítka</name>
         <description>Razítka</description>
         <shortcut>raz</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_OTD" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_OTD">
         <name>Samostatné pečetě, odlitky pečetí a otisky typářů</name>
         <description>Samostatné pečetě, odlitky pečetí a otisky typářů</description>
         <shortcut>otd</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_MAP" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_MAP">
         <name>Mapy</name>
         <description>Mapy</description>
         <shortcut>map</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_ATL" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_ATL">
         <name>Atlasy</name>
         <description>Atlasy</description>
         <shortcut>atl</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_TVY" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_TVY">
         <name>Technické výkresy</name>
         <description>Technické výkresy</description>
         <shortcut>tvy</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_GLI" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_GLI">
         <name>Grafické listy</name>
         <description>Grafické listy</description>
         <shortcut>gli</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_KRE" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_KRE">
         <name>Kresby</name>
         <description>Kresby</description>
         <shortcut>kre</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_FSN" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_FSN">
         <name>Fotografie na papírové podložce</name>
         <description>Fotografie na papírové podložce</description>
         <shortcut>fsn</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_FSD" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_FSD">
         <name>Fotografické desky</name>
         <description>Fotografické desky</description>
         <shortcut>fsd</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_LFI" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_LFI">
         <name>Listové filmy</name>
         <description>Listové filmy</description>
         <shortcut>lfi</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_SFI" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_SFI">
         <name>Svitkové filmy</name>
         <description>Svitkové filmy</description>
         <shortcut>sfi</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_KIN" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_KIN">
         <name>Kinofilmy</name>
         <description>Kinofilmy</description>
         <shortcut>kin</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_MF" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_MF">
         <name>Mikrofilmy</name>
         <description>Mikrofilmy</description>
         <shortcut>mf</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_MFS" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_MFS">
         <name>Mikrofiše</name>
         <description>Mikrofiše</description>
         <shortcut>mfis</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_FAL" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_FAL">
         <name>Fotoalba</name>
         <description>Fotoalba</description>
         <shortcut>fal</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_DFO" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_DFO">
         <name>Digitální fotografie</name>
         <description>Digitální fotografie</description>
         <shortcut>dfo</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_KZA" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_KZA">
         <name>Kinematografické záznamy (díla) v analogové i digitální podobě</name>
         <description>Kinematografické záznamy (díla) v analogové i digitální podobě</description>
         <shortcut>kza</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_ZZA" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_ZZA">
         <name>Zvukové záznamy (díla) v analogové i digitální podobě</name>
         <description>Zvukové záznamy (díla) v analogové i digitální podobě</description>
         <shortcut>zza</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_TIO" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_TIO">
         <name>Tisky do roku 1800</name>
         <description>Tisky do roku 1800</description>
         <shortcut>tio</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_TIP" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_TIP">
         <name>Tisky po roce 1800</name>
         <description>Tisky po roce 1800</description>
         <shortcut>tip</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_POH" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_POH">
         <name>Pohlednice</name>
         <description>Pohlednice</description>
         <shortcut>poh</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_PKT" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_PKT">
         <name>Plakáty</name>
         <description>Plakáty</description>
         <shortcut>pkt</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_CPA" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_CPA">
         <name>Cenné papíry</name>
         <description>Cenné papíry</description>
         <shortcut>cpa</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_STO" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_STO">
         <name>Štočky</name>
         <description>Štočky</description>
         <shortcut>sto</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_PNP" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_PNP">
         <name>Předměty numizmatické povahy</name>
         <description>Předměty numizmatické povahy</description>
         <shortcut>pnp</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_PFP" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_PFP">
         <name>Předměty faleristické povahy</name>
         <description>Předměty faleristické povahy</description>
         <shortcut>pfp</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <item-spec code="ZP2015_UNIT_COUNT_JIN" item-type="ZP2015_UNIT_COUNT_ITEM">
+    <item-spec code="ZP2015_UNIT_COUNT_JIN">
         <name>Jiné</name>
         <description>Jiné</description>
         <shortcut>jin</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
 </item-specs>

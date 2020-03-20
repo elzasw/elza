@@ -1,138 +1,164 @@
 <item-specs>
-    <item-spec code="SRD_LEVEL_ROOT" item-type="SRD_LEVEL_TYPE">
+    <item-spec code="SRD_LEVEL_ROOT">
         <name>Soubor</name>
         <description>Soubor</description>
         <shortcut>Soubor</shortcut>
+        <item-type-assign code="SRD_LEVEL_TYPE"/>
     </item-spec>
-    <item-spec code="SRD_LEVEL_SECTION" item-type="SRD_LEVEL_TYPE">
+    <item-spec code="SRD_LEVEL_SECTION">
         <name>Dílčí list</name>
         <description>Dílčí list</description>
         <shortcut>Dílčí list</shortcut>
+        <item-type-assign code="SRD_LEVEL_TYPE"/>
     </item-spec>
-    <item-spec code="SRD_LEVEL_SERIES" item-type="SRD_LEVEL_TYPE">
+    <item-spec code="SRD_LEVEL_SERIES">
         <name>Série</name>
         <description>Série</description>
         <shortcut>Série</shortcut>
+        <item-type-assign code="SRD_LEVEL_TYPE"/>
     </item-spec>
-    <item-spec code="SRD_LEVEL_FOLDER" item-type="SRD_LEVEL_TYPE">
+    <item-spec code="SRD_LEVEL_FOLDER">
         <name>Složka</name>
         <description>Složka</description>
         <shortcut>Složka</shortcut>
+        <item-type-assign code="SRD_LEVEL_TYPE"/>
     </item-spec>
-    <item-spec code="SRD_LEVEL_ITEM" item-type="SRD_LEVEL_TYPE">
+    <item-spec code="SRD_LEVEL_ITEM">
         <name>Jednotlivost</name>
         <description>Jednotlivost</description>
         <shortcut>Jednotlivost</shortcut>
+        <item-type-assign code="SRD_LEVEL_TYPE"/>
     </item-spec>
-    <item-spec code="SRD_LEVEL_PART" item-type="SRD_LEVEL_TYPE">
+    <item-spec code="SRD_LEVEL_PART">
         <name>Část jednotlivosti</name>
         <description>Část jednotlivosti</description>
         <shortcut>Část</shortcut>
+        <item-type-assign code="SRD_LEVEL_TYPE"/>
     </item-spec>
-    <item-spec code="SRD_FOLDER_LOGICAL" item-type="SRD_FOLDER_TYPE">
+    <item-spec code="SRD_FOLDER_LOGICAL">
         <name>Logická</name>
         <description>Logická složka</description>
         <shortcut>Logická</shortcut>
+        <item-type-assign code="SRD_FOLDER_TYPE"/>
     </item-spec>
-    <item-spec code="SRD_FOLDER_UNITS" item-type="SRD_FOLDER_TYPE">
+    <item-spec code="SRD_FOLDER_UNITS">
         <name>Množstevní EJ</name>
         <description>Množstevní evidenční jednotka</description>
         <shortcut>Množstevní EJ</shortcut>
+        <item-type-assign code="SRD_FOLDER_TYPE"/>
     </item-spec>
-    <item-spec code="SRD_FOLDER_SINGLE_TYPE" item-type="SRD_FOLDER_TYPE">
+    <item-spec code="SRD_FOLDER_SINGLE_TYPE">
         <name>S typem EJ</name>
         <description>Více evidenčních jednotek stejného typu</description>
         <shortcut>Typ EJ</shortcut>
+        <item-type-assign code="SRD_FOLDER_TYPE"/>
     </item-spec>
-    <item-spec code="SRD_UNIT_TYPE_LIO" item-type="SRD_UNIT_TYPE">
+    <item-spec code="SRD_UNIT_TYPE_LIO">
         <name>Listiny do roku 1850</name>
         <description>Listiny do roku 1850</description>
         <shortcut>lio</shortcut>
+        <item-type-assign code="SRD_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="SRD_UNIT_TYPE_LIP" item-type="SRD_UNIT_TYPE">
+    <item-spec code="SRD_UNIT_TYPE_LIP">
         <name>Listiny po roce 1850</name>
         <description>Listiny po roce 1850</description>
         <shortcut>lip</shortcut>
+        <item-type-assign code="SRD_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="SRD_UNIT_TYPE_UKN" item-type="SRD_UNIT_TYPE">
+    <item-spec code="SRD_UNIT_TYPE_UKN">
         <name>Úřední knihy</name>
         <description>Úřední knihy</description>
         <shortcut>ukn</shortcut>
+        <item-type-assign code="SRD_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="SRD_UNIT_TYPE_RKP" item-type="SRD_UNIT_TYPE">
+    <item-spec code="SRD_UNIT_TYPE_RKP">
         <name>Rukopisy</name>
         <description>Rukopisy</description>
         <shortcut>rkp</shortcut>
+        <item-type-assign code="SRD_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="SRD_UNIT_TYPE_PPR" item-type="SRD_UNIT_TYPE">
+    <item-spec code="SRD_UNIT_TYPE_PPR">
         <name>Podací protokoly</name>
         <description>Podací protokoly</description>
         <shortcut>ppr</shortcut>
+        <item-type-assign code="SRD_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="SRD_UNIT_TYPE_KTT" item-type="SRD_UNIT_TYPE">
+    <item-spec code="SRD_UNIT_TYPE_KTT">
         <name>Kartotéky</name>
         <description>Kartotéky</description>
         <shortcut>ktt</shortcut>
+        <item-type-assign code="SRD_UNIT_TYPE"/>
     </item-spec>
-    <item-spec code="SRD_EXTRA_UNITS_LIO" item-type="SRD_EXTRA_UNITS">
+    <item-spec code="SRD_EXTRA_UNITS_LIO">
         <name>Listiny do roku 1850</name>
         <description>Listiny do roku 1850</description>
         <shortcut>lio</shortcut>
+        <item-type-assign code="SRD_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="SRD_EXTRA_UNITS_LIP" item-type="SRD_EXTRA_UNITS">
+    <item-spec code="SRD_EXTRA_UNITS_LIP">
         <name>Listiny po roce 1850</name>
         <description>Listiny po roce 1850</description>
         <shortcut>lip</shortcut>
+        <item-type-assign code="SRD_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="SRD_EXTRA_UNITS_UKN" item-type="SRD_EXTRA_UNITS">
+    <item-spec code="SRD_EXTRA_UNITS_UKN">
         <name>Úřední knihy</name>
         <description>Úřední knihy</description>
         <shortcut>ukn</shortcut>
+        <item-type-assign code="SRD_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="SRD_EXTRA_UNITS_RKP" item-type="SRD_EXTRA_UNITS">
+    <item-spec code="SRD_EXTRA_UNITS_RKP">
         <name>Rukopisy</name>
         <description>Rukopisy</description>
         <shortcut>rkp</shortcut>
+        <item-type-assign code="SRD_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="SRD_EXTRA_UNITS_KTT" item-type="SRD_EXTRA_UNITS">
+    <item-spec code="SRD_EXTRA_UNITS_KTT">
         <name>Kartotéky</name>
         <description>Kartotéky</description>
         <shortcut>ktt</shortcut>
+        <item-type-assign code="SRD_EXTRA_UNITS"/>
     </item-spec>
-    <item-spec code="SRD_OTHERID_SIG_ORIG" item-type="SRD_OTHER_ID">
+    <item-spec code="SRD_OTHERID_SIG_ORIG">
         <name>Signatura přidělená původcem</name>
         <description>Signatura přidělená původcem</description>
         <shortcut>sign.pův.</shortcut>
+        <item-type-assign code="SRD_OTHER_ID"/>
     </item-spec>
-    <item-spec code="SRD_OTHERID_SIG" item-type="SRD_OTHER_ID">
+    <item-spec code="SRD_OTHERID_SIG">
         <name>Signatura přidělená při zpracování archiválie</name>
         <description>Signatura přidělená při zpracování archiválie</description>
         <shortcut>sign.</shortcut>
+        <item-type-assign code="SRD_OTHER_ID"/>
     </item-spec>
-    <item-spec code="SRD_OTHERID_STORAGE_ID" item-type="SRD_OTHER_ID">
+    <item-spec code="SRD_OTHERID_STORAGE_ID">
         <name>Ukládací znak</name>
         <description>Ukládací znak</description>
         <shortcut>ukl.znak</shortcut>
+        <item-type-assign code="SRD_OTHER_ID"/>
     </item-spec>
-    <item-spec code="SRD_OTHERID_CJ" item-type="SRD_OTHER_ID">
+    <item-spec code="SRD_OTHERID_CJ">
         <name>Číslo jednací</name>
         <description>Číslo jednací</description>
         <shortcut>č.j.</shortcut>
+        <item-type-assign code="SRD_OTHER_ID"/>
     </item-spec>
-    <item-spec code="SRD_OTHERID_INVALID_REFNO" item-type="SRD_OTHER_ID">
+    <item-spec code="SRD_OTHERID_INVALID_REFNO">
         <name>Neplatné referenční označení</name>
         <description>Neplatné referenční označení</description>
         <shortcut>nepl. ref. ozn.</shortcut>
+        <item-type-assign code="SRD_OTHER_ID"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_1" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_1">
         <name>indoevropské - blíže neurčené</name>
         <description>indoevropské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
             <category>indoevropské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_2" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_2">
         <name>indoevropské - baltské - blíže neurčené</name>
         <description>indoevropské - baltské - blíže neurčené</description>
         <shortcut></shortcut>
@@ -140,8 +166,9 @@
             <category>indoevropské</category>
             <category>baltské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_3" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_3">
         <name>indoevropské - baltské - litevština</name>
         <description>indoevropské - baltské - litevština</description>
         <shortcut>litevština</shortcut>
@@ -149,8 +176,9 @@
             <category>indoevropské</category>
             <category>baltské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_4" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_4">
         <name>indoevropské - baltské - lotyština</name>
         <description>indoevropské - baltské - lotyština</description>
         <shortcut>lotyština</shortcut>
@@ -158,8 +186,9 @@
             <category>indoevropské</category>
             <category>baltské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_5" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_5">
         <name>indoevropské - germánské - blíže neurčené</name>
         <description>indoevropské - germánské - blíže neurčené</description>
         <shortcut></shortcut>
@@ -167,8 +196,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_6" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_6">
         <name>indoevropské - germánské - afrikánština</name>
         <description>indoevropské - germánské - afrikánština</description>
         <shortcut>afrikánština</shortcut>
@@ -176,8 +206,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_7" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_7">
         <name>indoevropské - germánské - alsaština</name>
         <description>indoevropské - germánské - alsaština</description>
         <shortcut>alsaština</shortcut>
@@ -185,8 +216,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_8" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_8">
         <name>indoevropské - germánské - angličtina</name>
         <description>indoevropské - germánské - angličtina</description>
         <shortcut>angličtina</shortcut>
@@ -194,8 +226,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_9" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_9">
         <name>indoevropské - germánské - dánština</name>
         <description>indoevropské - germánské - dánština</description>
         <shortcut>dánština</shortcut>
@@ -203,8 +236,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_10" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_10">
         <name>indoevropské - germánské - dolnoněmčina</name>
         <description>indoevropské - germánské - dolnoněmčina</description>
         <shortcut>dolnoněmčina</shortcut>
@@ -212,8 +246,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_11" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_11">
         <name>indoevropské - germánské - faerština</name>
         <description>indoevropské - germánské - faerština</description>
         <shortcut>faerština</shortcut>
@@ -221,8 +256,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_12" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_12">
         <name>indoevropské - germánské - fríština</name>
         <description>indoevropské - germánské - fríština</description>
         <shortcut>fríština</shortcut>
@@ -230,8 +266,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_13" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_13">
         <name>indoevropské - germánské - holandština (nizozemština)</name>
         <description>indoevropské - germánské - holandština (nizozemština)</description>
         <shortcut>holandština (nizozemština)</shortcut>
@@ -239,8 +276,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_14" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_14">
         <name>indoevropské - germánské - islandština</name>
         <description>indoevropské - germánské - islandština</description>
         <shortcut>islandština</shortcut>
@@ -248,8 +286,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_15" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_15">
         <name>indoevropské - germánské - jidiš</name>
         <description>indoevropské - germánské - jidiš</description>
         <shortcut>jidiš</shortcut>
@@ -257,8 +296,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_16" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_16">
         <name>indoevropské - germánské - judendeutsch</name>
         <description>indoevropské - germánské - judendeutsch</description>
         <shortcut>judendeutsch</shortcut>
@@ -266,8 +306,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_17" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_17">
         <name>indoevropské - germánské - lucemburština</name>
         <description>indoevropské - germánské - lucemburština</description>
         <shortcut>lucemburština</shortcut>
@@ -275,8 +316,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_18" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_18">
         <name>indoevropské - germánské - němčina</name>
         <description>indoevropské - germánské - němčina</description>
         <shortcut>němčina</shortcut>
@@ -284,8 +326,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_19" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_19">
         <name>indoevropské - germánské - norština</name>
         <description>indoevropské - germánské - norština</description>
         <shortcut>norština</shortcut>
@@ -293,8 +336,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_20" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_20">
         <name>indoevropské - germánské - švédština</name>
         <description>indoevropské - germánské - švédština</description>
         <shortcut>švédština</shortcut>
@@ -302,8 +346,9 @@
             <category>indoevropské</category>
             <category>germánské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_21" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_21">
         <name>indoevropské - keltské - blíže neurčené</name>
         <description>indoevropské - keltské - blíže neurčené</description>
         <shortcut></shortcut>
@@ -311,8 +356,9 @@
             <category>indoevropské</category>
             <category>keltské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_22" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_22">
         <name>indoevropské - keltské - bretonština</name>
         <description>indoevropské - keltské - bretonština</description>
         <shortcut>bretonština</shortcut>
@@ -320,8 +366,9 @@
             <category>indoevropské</category>
             <category>keltské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_23" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_23">
         <name>indoevropské - keltské - irština</name>
         <description>indoevropské - keltské - irština</description>
         <shortcut>irština</shortcut>
@@ -329,8 +376,9 @@
             <category>indoevropské</category>
             <category>keltské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_24" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_24">
         <name>indoevropské - keltské - skotská gaelština</name>
         <description>indoevropské - keltské - skotská gaelština</description>
         <shortcut>skotská gaelština</shortcut>
@@ -338,8 +386,9 @@
             <category>indoevropské</category>
             <category>keltské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_25" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_25">
         <name>indoevropské - keltské - velština</name>
         <description>indoevropské - keltské - velština</description>
         <shortcut>velština</shortcut>
@@ -347,8 +396,9 @@
             <category>indoevropské</category>
             <category>keltské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_26" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_26">
         <name>indoevropské - románské - blíže neurčené</name>
         <description>indoevropské - románské - blíže neurčené</description>
         <shortcut></shortcut>
@@ -356,8 +406,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_27" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_27">
         <name>indoevropské - románské - francouzština</name>
         <description>indoevropské - románské - francouzština</description>
         <shortcut>francouzština</shortcut>
@@ -365,8 +416,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_28" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_28">
         <name>indoevropské - románské - galicijština</name>
         <description>indoevropské - románské - galicijština</description>
         <shortcut>galicijština</shortcut>
@@ -374,8 +426,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_29" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_29">
         <name>indoevropské - románské - italština</name>
         <description>indoevropské - románské - italština</description>
         <shortcut>italština</shortcut>
@@ -383,8 +436,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_30" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_30">
         <name>indoevropské - románské - katalánština</name>
         <description>indoevropské - románské - katalánština</description>
         <shortcut>katalánština</shortcut>
@@ -392,8 +446,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_31" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_31">
         <name>indoevropské - románské - korsičtina</name>
         <description>indoevropské - románské - korsičtina</description>
         <shortcut>korsičtina</shortcut>
@@ -401,8 +456,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_32" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_32">
         <name>indoevropské - románské - latina</name>
         <description>indoevropské - románské - latina</description>
         <shortcut>latina</shortcut>
@@ -410,8 +466,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_33" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_33">
         <name>indoevropské - románské - moldavština</name>
         <description>indoevropské - románské - moldavština</description>
         <shortcut>moldavština</shortcut>
@@ -419,8 +476,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_34" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_34">
         <name>indoevropské - románské - okcitánština</name>
         <description>indoevropské - románské - okcitánština</description>
         <shortcut>okcitánština</shortcut>
@@ -428,8 +486,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_35" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_35">
         <name>indoevropské - románské - portugalština</name>
         <description>indoevropské - románské - portugalština</description>
         <shortcut>portugalština</shortcut>
@@ -437,8 +496,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_36" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_36">
         <name>indoevropské - románské - rétorománština</name>
         <description>indoevropské - románské - rétorománština</description>
         <shortcut>rétorománština</shortcut>
@@ -446,8 +506,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_37" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_37">
         <name>indoevropské - románské - rumunština</name>
         <description>indoevropské - románské - rumunština</description>
         <shortcut>rumunština</shortcut>
@@ -455,8 +516,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_38" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_38">
         <name>indoevropské - románské - španělština</name>
         <description>indoevropské - románské - španělština</description>
         <shortcut>španělština</shortcut>
@@ -464,8 +526,9 @@
             <category>indoevropské</category>
             <category>románské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_39" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_39">
         <name>indoevropské - slovanské - blíže neurčené</name>
         <description>indoevropské - slovanské - blíže neurčené</description>
         <shortcut></shortcut>
@@ -473,8 +536,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_40" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_40">
         <name>indoevropské - slovanské - běloruština</name>
         <description>indoevropské - slovanské - běloruština</description>
         <shortcut>běloruština</shortcut>
@@ -482,8 +546,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_41" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_41">
         <name>indoevropské - slovanské - bosenština</name>
         <description>indoevropské - slovanské - bosenština</description>
         <shortcut>bosenština</shortcut>
@@ -491,8 +556,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_42" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_42">
         <name>indoevropské - slovanské - bulharština</name>
         <description>indoevropské - slovanské - bulharština</description>
         <shortcut>bulharština</shortcut>
@@ -500,8 +566,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_43" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_43">
         <name>indoevropské - slovanské - čeština</name>
         <description>indoevropské - slovanské - čeština</description>
         <shortcut>čeština</shortcut>
@@ -509,8 +576,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_44" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_44">
         <name>indoevropské - slovanské - chorvatština</name>
         <description>indoevropské - slovanské - chorvatština</description>
         <shortcut>chorvatština</shortcut>
@@ -518,8 +586,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_45" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_45">
         <name>indoevropské - slovanské - kašubština</name>
         <description>indoevropské - slovanské - kašubština</description>
         <shortcut>kašubština</shortcut>
@@ -527,8 +596,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_46" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_46">
         <name>indoevropské - slovanské - lužická srbština dolní (dolnolužičtina)</name>
         <description>indoevropské - slovanské - lužická srbština dolní (dolnolužičtina)</description>
         <shortcut>lužická srbština dolní (dolnolužičtina)</shortcut>
@@ -536,8 +606,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_47" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_47">
         <name>indoevropské - slovanské - lužická srbština horní (hornolužičtina)</name>
         <description>indoevropské - slovanské - lužická srbština horní (hornolužičtina)</description>
         <shortcut>lužická srbština horní (hornolužičtina)</shortcut>
@@ -545,8 +616,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_48" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_48">
         <name>indoevropské - slovanské - makedonština</name>
         <description>indoevropské - slovanské - makedonština</description>
         <shortcut>makedonština</shortcut>
@@ -554,8 +626,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_49" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_49">
         <name>indoevropské - slovanské - polština</name>
         <description>indoevropské - slovanské - polština</description>
         <shortcut>polština</shortcut>
@@ -563,8 +636,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_50" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_50">
         <name>indoevropské - slovanské - rusínština</name>
         <description>indoevropské - slovanské - rusínština</description>
         <shortcut>rusínština</shortcut>
@@ -572,8 +646,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_51" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_51">
         <name>indoevropské - slovanské - ruština</name>
         <description>indoevropské - slovanské - ruština</description>
         <shortcut>ruština</shortcut>
@@ -581,8 +656,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_52" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_52">
         <name>indoevropské - slovanské - slovenština</name>
         <description>indoevropské - slovanské - slovenština</description>
         <shortcut>slovenština</shortcut>
@@ -590,8 +666,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_53" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_53">
         <name>indoevropské - slovanské - slovinština</name>
         <description>indoevropské - slovanské - slovinština</description>
         <shortcut>slovinština</shortcut>
@@ -599,8 +676,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_54" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_54">
         <name>indoevropské - slovanské - srbochorvatština</name>
         <description>indoevropské - slovanské - srbochorvatština</description>
         <shortcut>srbochorvatština</shortcut>
@@ -608,8 +686,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_55" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_55">
         <name>indoevropské - slovanské - srbština</name>
         <description>indoevropské - slovanské - srbština</description>
         <shortcut>srbština</shortcut>
@@ -617,8 +696,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_56" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_56">
         <name>indoevropské - slovanské - staroslověnština, církevní slovanština</name>
         <description>indoevropské - slovanské - staroslověnština, církevní slovanština</description>
         <shortcut>staroslověnština, církevní slovanština</shortcut>
@@ -626,8 +706,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_57" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_57">
         <name>indoevropské - slovanské - ukrajinština</name>
         <description>indoevropské - slovanské - ukrajinština</description>
         <shortcut>ukrajinština</shortcut>
@@ -635,8 +716,9 @@
             <category>indoevropské</category>
             <category>slovanské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_58" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_58">
         <name>indoevropské - ostatní - blíže neurčené</name>
         <description>indoevropské - ostatní - blíže neurčené</description>
         <shortcut></shortcut>
@@ -644,8 +726,9 @@
             <category>indoevropské</category>
             <category>ostatní</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_59" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_59">
         <name>indoevropské - ostatní - albánština</name>
         <description>indoevropské - ostatní - albánština</description>
         <shortcut>albánština</shortcut>
@@ -653,8 +736,9 @@
             <category>indoevropské</category>
             <category>ostatní</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_60" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_60">
         <name>indoevropské - ostatní - arménština</name>
         <description>indoevropské - ostatní - arménština</description>
         <shortcut>arménština</shortcut>
@@ -662,8 +746,9 @@
             <category>indoevropské</category>
             <category>ostatní</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_61" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_61">
         <name>indoevropské - ostatní - řečtina</name>
         <description>indoevropské - ostatní - řečtina</description>
         <shortcut>řečtina</shortcut>
@@ -671,61 +756,69 @@
             <category>indoevropské</category>
             <category>ostatní</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_62" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_62">
         <name>uralské - blíže neurčené</name>
         <description>uralské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
             <category>uralské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_63" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_63">
         <name>uralské - estonština</name>
         <description>uralské - estonština</description>
         <shortcut>estonština</shortcut>
         <categories>
             <category>uralské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_64" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_64">
         <name>uralské - finština</name>
         <description>uralské - finština</description>
         <shortcut>finština</shortcut>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_65" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_65">
         <name>uralské - maďarština</name>
         <description>uralské - maďarština</description>
         <shortcut>maďarština</shortcut>
         <categories>
             <category>uralské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_66" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_66">
         <name>uralské - livština</name>
         <description>uralské - livština</description>
         <shortcut>livština</shortcut>
         <categories>
             <category>uralské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_67" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_67">
         <name>izolované - baskičtina</name>
         <description>izolované - baskičtina</description>
         <shortcut>baskičtina</shortcut>
         <categories>
             <category>izolované</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_68" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_68">
         <name>afroasijské - blíže neurčené</name>
         <description>afroasijské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
             <category>afroasijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_69" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_69">
         <name>afroasijské - semitské - blíže neurčené</name>
         <description>afroasijské - semitské - blíže neurčené</description>
         <shortcut></shortcut>
@@ -733,8 +826,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_70" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_70">
         <name>afroasijské - semitské - (novo)hebrejština</name>
         <description>afroasijské - semitské - (novo)hebrejština</description>
         <shortcut>(novo)hebrejština</shortcut>
@@ -742,8 +836,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_71" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_71">
         <name>afroasijské - semitské - amharština</name>
         <description>afroasijské - semitské - amharština</description>
         <shortcut>amharština</shortcut>
@@ -751,8 +846,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_72" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_72">
         <name>afroasijské - semitské - arabština</name>
         <description>afroasijské - semitské - arabština</description>
         <shortcut>arabština</shortcut>
@@ -760,8 +856,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_73" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_73">
         <name>afroasijské - semitské - aramejština</name>
         <description>afroasijské - semitské - aramejština</description>
         <shortcut>aramejština</shortcut>
@@ -769,8 +866,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_74" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_74">
         <name>afroasijské - semitské - hauština</name>
         <description>afroasijské - semitské - hauština</description>
         <shortcut>hauština</shortcut>
@@ -778,8 +876,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_75" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_75">
         <name>afroasijské - semitské - maltština</name>
         <description>afroasijské - semitské - maltština</description>
         <shortcut>maltština</shortcut>
@@ -787,8 +886,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_76" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_76">
         <name>afroasijské - semitské - stará hebrejština</name>
         <description>afroasijské - semitské - stará hebrejština</description>
         <shortcut>stará hebrejština</shortcut>
@@ -796,8 +896,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_77" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_77">
         <name>afroasijské - semitské - akkadština</name>
         <description>afroasijské - semitské - akkadština</description>
         <shortcut>akkadština</shortcut>
@@ -805,8 +906,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_78" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_78">
         <name>afroasijské - semitské - assyrština</name>
         <description>afroasijské - semitské - assyrština</description>
         <shortcut>assyrština</shortcut>
@@ -814,8 +916,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_79" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_79">
         <name>afroasijské - semitské - babylonština</name>
         <description>afroasijské - semitské - babylonština</description>
         <shortcut>babylonština</shortcut>
@@ -823,8 +926,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_80" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_80">
         <name>afroasijské - semitské - chetitština</name>
         <description>afroasijské - semitské - chetitština</description>
         <shortcut>chetitština</shortcut>
@@ -832,8 +936,9 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_81" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_81">
         <name>afroasijské - semitské - sumerština</name>
         <description>afroasijské - semitské - sumerština</description>
         <shortcut>sumerština</shortcut>
@@ -841,64 +946,72 @@
             <category>afroasijské</category>
             <category>semitské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_82" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_82">
         <name>afroasijské - egyptština</name>
         <description>afroasijské - egyptština</description>
         <shortcut>egyptština</shortcut>
         <categories>
             <category>afroasijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_83" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_83">
         <name>afroasijské - koptština</name>
         <description>afroasijské - koptština</description>
         <shortcut>koptština</shortcut>
         <categories>
             <category>afroasijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_84" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_84">
         <name>nigerokonžské - blíže neurčené</name>
         <description>nigerokonžské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
             <category>nigerokonžské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_85" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_85">
         <name>nigerokonžské - svahilština</name>
         <description>nigerokonžské - svahilština</description>
         <shortcut>svahilština</shortcut>
         <categories>
             <category>nigerokonžské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_86" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_86">
         <name>altajské - blíže neurčené</name>
         <description>altajské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
             <category>altajské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_87" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_87">
         <name>altajské - japonština</name>
         <description>altajské - japonština</description>
         <shortcut>japonština</shortcut>
         <categories>
             <category>altajské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_88" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_88">
         <name>altajské - korejština</name>
         <description>altajské - korejština</description>
         <shortcut>korejština</shortcut>
         <categories>
             <category>altajské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_89" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_89">
         <name>altajské - mongolské - blíže neurčené</name>
         <description>altajské - mongolské - blíže neurčené</description>
         <shortcut></shortcut>
@@ -906,8 +1019,9 @@
             <category>altajské</category>
             <category>mongolské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_90" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_90">
         <name>altajské - mongolské - mongolština</name>
         <description>altajské - mongolské - mongolština</description>
         <shortcut>mongolština</shortcut>
@@ -915,8 +1029,9 @@
             <category>altajské</category>
             <category>mongolské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_91" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_91">
         <name>altajské - turkické - blíže neurčené</name>
         <description>altajské - turkické - blíže neurčené</description>
         <shortcut></shortcut>
@@ -924,8 +1039,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_92" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_92">
         <name>altajské - turkické - azerbajdžánština</name>
         <description>altajské - turkické - azerbajdžánština</description>
         <shortcut>azerbajdžánština</shortcut>
@@ -933,8 +1049,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_93" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_93">
         <name>altajské - turkické - baškirština</name>
         <description>altajské - turkické - baškirština</description>
         <shortcut>baškirština</shortcut>
@@ -942,8 +1059,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_94" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_94">
         <name>altajské - turkické - gagauzština</name>
         <description>altajské - turkické - gagauzština</description>
         <shortcut>gagauzština</shortcut>
@@ -951,8 +1069,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_95" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_95">
         <name>altajské - turkické - hazarština</name>
         <description>altajské - turkické - hazarština</description>
         <shortcut>hazarština</shortcut>
@@ -960,8 +1079,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_96" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_96">
         <name>altajské - turkické - kyrgyzština</name>
         <description>altajské - turkické - kyrgyzština</description>
         <shortcut>kyrgyzština</shortcut>
@@ -969,8 +1089,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_97" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_97">
         <name>altajské - turkické - krymská tatarština</name>
         <description>altajské - turkické - krymská tatarština</description>
         <shortcut>krymská tatarština</shortcut>
@@ -978,8 +1099,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_98" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_98">
         <name>altajské - turkické - tatarština</name>
         <description>altajské - turkické - tatarština</description>
         <shortcut>tatarština</shortcut>
@@ -987,8 +1109,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_99" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_99">
         <name>altajské - turkické - turečtina</name>
         <description>altajské - turkické - turečtina</description>
         <shortcut>turečtina</shortcut>
@@ -996,8 +1119,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_100" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_100">
         <name>altajské - turkické - turkménština</name>
         <description>altajské - turkické - turkménština</description>
         <shortcut>turkménština</shortcut>
@@ -1005,8 +1129,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_101" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_101">
         <name>altajské - turkické - ujgurština</name>
         <description>altajské - turkické - ujgurština</description>
         <shortcut>ujgurština</shortcut>
@@ -1014,8 +1139,9 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_102" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_102">
         <name>altajské - turkické - uzbečtina</name>
         <description>altajské - turkické - uzbečtina</description>
         <shortcut>uzbečtina</shortcut>
@@ -1023,16 +1149,18 @@
             <category>altajské</category>
             <category>turkické</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_103" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_103">
         <name>austroasijské - blíže neurčené</name>
         <description>austroasijské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
             <category>austroasijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_104" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_104">
         <name>austroasijské - mundské - santalština</name>
         <description>austroasijské - mundské - santalština</description>
         <shortcut>santalština</shortcut>
@@ -1040,88 +1168,99 @@
             <category>austroasijské</category>
             <category>mundské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_105" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_105">
         <name>austroasijské - khmérština</name>
         <description>austroasijské - khmérština</description>
         <shortcut>khmérština</shortcut>
         <categories>
             <category>austroasijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_106" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_106">
         <name>austroasijské - vietnamština</name>
         <description>austroasijské - vietnamština</description>
         <shortcut>vietnamština</shortcut>
         <categories>
             <category>austroasijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_107" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_107">
         <name>austronéské - blíže neurčené</name>
         <description>austronéské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
             <category>austronéské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_108" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_108">
         <name>austronéské - indonéština</name>
         <description>austronéské - indonéština</description>
         <shortcut>indonéština</shortcut>
         <categories>
             <category>austronéské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_109" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_109">
         <name>austronéské - malajština</name>
         <description>austronéské - malajština</description>
         <shortcut>malajština</shortcut>
         <categories>
             <category>austronéské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_110" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_110">
         <name>drávidské - blíže neurčené</name>
         <description>drávidské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
             <category>drávidské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_111" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_111">
         <name>drávidské - kannadština (též kannarština)</name>
         <description>drávidské - kannadština (též kannarština)</description>
         <shortcut>kannadština (též kannarština)</shortcut>
         <categories>
             <category>drávidské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_112" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_112">
         <name>drávidské - malajalámština</name>
         <description>drávidské - malajalámština</description>
         <shortcut>malajalámština</shortcut>
         <categories>
             <category>drávidské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_113" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_113">
         <name>drávidské - tamilština</name>
         <description>drávidské - tamilština</description>
         <shortcut>tamilština</shortcut>
         <categories>
             <category>drávidské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_114" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_114">
         <name>drávidské - telugština</name>
         <description>drávidské - telugština</description>
         <shortcut>telugština</shortcut>
         <categories>
             <category>drávidské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_115" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_115">
         <name>indoevropské - indoárijské - blíže neurčené</name>
         <description>indoevropské - indoárijské - blíže neurčené</description>
         <shortcut></shortcut>
@@ -1129,8 +1268,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_116" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_116">
         <name>indoevropské - indoárijské - asámština</name>
         <description>indoevropské - indoárijské - asámština</description>
         <shortcut>asámština</shortcut>
@@ -1138,8 +1278,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_117" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_117">
         <name>indoevropské - indoárijské - bengálština</name>
         <description>indoevropské - indoárijské - bengálština</description>
         <shortcut>bengálština</shortcut>
@@ -1147,8 +1288,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_118" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_118">
         <name>indoevropské - indoárijské - Bihárštiina (maithilština)</name>
         <description>indoevropské - indoárijské - Bihárštiina (maithilština)</description>
         <shortcut>Bihárštiina (maithilština)</shortcut>
@@ -1156,8 +1298,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_119" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_119">
         <name>indoevropské - indoárijské - dógrí</name>
         <description>indoevropské - indoárijské - dógrí</description>
         <shortcut>dógrí</shortcut>
@@ -1165,8 +1308,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_120" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_120">
         <name>indoevropské - indoárijské - gudžarátština</name>
         <description>indoevropské - indoárijské - gudžarátština</description>
         <shortcut>gudžarátština</shortcut>
@@ -1174,8 +1318,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_121" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_121">
         <name>indoevropské - indoárijské - hindština</name>
         <description>indoevropské - indoárijské - hindština</description>
         <shortcut>hindština</shortcut>
@@ -1183,8 +1328,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_122" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_122">
         <name>indoevropské - indoárijské - kašmírština</name>
         <description>indoevropské - indoárijské - kašmírština</description>
         <shortcut>kašmírština</shortcut>
@@ -1192,8 +1338,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_123" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_123">
         <name>indoevropské - indoárijské - konkánština</name>
         <description>indoevropské - indoárijské - konkánština</description>
         <shortcut>konkánština</shortcut>
@@ -1201,8 +1348,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_124" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_124">
         <name>indoevropské - indoárijské - maráthština</name>
         <description>indoevropské - indoárijské - maráthština</description>
         <shortcut>maráthština</shortcut>
@@ -1210,8 +1358,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_125" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_125">
         <name>indoevropské - indoárijské - pahárské jazyky (nepálština)</name>
         <description>indoevropské - indoárijské - pahárské jazyky (nepálština)</description>
         <shortcut>pahárské jazyky (nepálština)</shortcut>
@@ -1219,8 +1368,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_126" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_126">
         <name>indoevropské - indoárijské - pandžábština</name>
         <description>indoevropské - indoárijské - pandžábština</description>
         <shortcut>pandžábština</shortcut>
@@ -1228,8 +1378,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_127" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_127">
         <name>indoevropské - indoárijské - romština</name>
         <description>indoevropské - indoárijské - romština</description>
         <shortcut>romština</shortcut>
@@ -1237,8 +1388,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_128" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_128">
         <name>indoevropské - indoárijské - sanskrt</name>
         <description>indoevropské - indoárijské - sanskrt</description>
         <shortcut>sanskrt</shortcut>
@@ -1246,8 +1398,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_129" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_129">
         <name>indoevropské - indoárijské - sindština</name>
         <description>indoevropské - indoárijské - sindština</description>
         <shortcut>sindština</shortcut>
@@ -1255,8 +1408,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_130" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_130">
         <name>indoevropské - indoárijské - sinhálština</name>
         <description>indoevropské - indoárijské - sinhálština</description>
         <shortcut>sinhálština</shortcut>
@@ -1264,8 +1418,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_131" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_131">
         <name>indoevropské - indoárijské - urdština</name>
         <description>indoevropské - indoárijské - urdština</description>
         <shortcut>urdština</shortcut>
@@ -1273,8 +1428,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_132" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_132">
         <name>indoevropské - indoárijské - urijština</name>
         <description>indoevropské - indoárijské - urijština</description>
         <shortcut>urijština</shortcut>
@@ -1282,8 +1438,9 @@
             <category>indoevropské</category>
             <category>indoárijské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_133" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_133">
         <name>indoevropské - indoíránské - blíže neurčené</name>
         <description>indoevropské - indoíránské - blíže neurčené</description>
         <shortcut></shortcut>
@@ -1291,8 +1448,9 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_134" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_134">
         <name>indoevropské - indoíránské - (novo)perština</name>
         <description>indoevropské - indoíránské - (novo)perština</description>
         <shortcut>(novo)perština</shortcut>
@@ -1300,8 +1458,9 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_135" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_135">
         <name>indoevropské - indoíránské - kurdština</name>
         <description>indoevropské - indoíránské - kurdština</description>
         <shortcut>kurdština</shortcut>
@@ -1309,8 +1468,9 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_136" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_136">
         <name>indoevropské - indoíránské - paštština</name>
         <description>indoevropské - indoíránské - paštština</description>
         <shortcut>paštština</shortcut>
@@ -1318,8 +1478,9 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_137" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_137">
         <name>indoevropské - indoíránské - stará perština</name>
         <description>indoevropské - indoíránské - stará perština</description>
         <shortcut>stará perština</shortcut>
@@ -1327,8 +1488,9 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_138" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_138">
         <name>indoevropské - indoíránské - střední perština</name>
         <description>indoevropské - indoíránské - střední perština</description>
         <shortcut>střední perština</shortcut>
@@ -1336,8 +1498,9 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_139" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_139">
         <name>indoevropské - indoíránské - tádžičtina</name>
         <description>indoevropské - indoíránské - tádžičtina</description>
         <shortcut>tádžičtina</shortcut>
@@ -1345,120 +1508,135 @@
             <category>indoevropské</category>
             <category>indoíránské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_140" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_140">
         <name>kartvelské - blíže neurčené</name>
         <description>kartvelské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
             <category>kartvelské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_141" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_141">
         <name>kartvelské - gruzínština</name>
         <description>kartvelské - gruzínština</description>
         <shortcut>gruzínština</shortcut>
         <categories>
             <category>kartvelské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_142" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_142">
         <name>severokavkazské - blíže neurčené</name>
         <description>severokavkazské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
             <category>severokavkazské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_143" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_143">
         <name>severokavkazské - abcházština</name>
         <description>severokavkazské - abcházština</description>
         <shortcut>abcházština</shortcut>
         <categories>
             <category>severokavkazské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_144" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_144">
         <name>tajsko-kadajské - blíže neurčené</name>
         <description>tajsko-kadajské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
             <category>tajsko-kadajské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_145" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_145">
         <name>tajsko-kadajské - laoština</name>
         <description>tajsko-kadajské - laoština</description>
         <shortcut>laoština</shortcut>
         <categories>
             <category>tajsko-kadajské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_146" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_146">
         <name>tajsko-kadajské - thajština</name>
         <description>tajsko-kadajské - thajština</description>
         <shortcut>thajština</shortcut>
         <categories>
             <category>tajsko-kadajské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_147" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_147">
         <name>tibetskočínské - blíže neurčené</name>
         <description>tibetskočínské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
             <category>tibetskočínské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_148" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_148">
         <name>tibetskočínské - barmština</name>
         <description>tibetskočínské - barmština</description>
         <shortcut>barmština</shortcut>
         <categories>
             <category>tibetskočínské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_149" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_149">
         <name>tibetskočínské - bodo</name>
         <description>tibetskočínské - bodo</description>
         <shortcut>bodo</shortcut>
         <categories>
             <category>tibetskočínské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_150" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_150">
         <name>tibetskočínské - bhútánština</name>
         <description>tibetskočínské - bhútánština</description>
         <shortcut>bhútánština</shortcut>
         <categories>
             <category>tibetskočínské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_151" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_151">
         <name>tibetskočínské - manípurština</name>
         <description>tibetskočínské - manípurština</description>
         <shortcut>manípurština</shortcut>
         <categories>
             <category>tibetskočínské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_152" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_152">
         <name>tibetskočínské - čínština</name>
         <description>tibetskočínské - čínština</description>
         <shortcut>čínština</shortcut>
         <categories>
             <category>tibetskočínské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_153" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_153">
         <name>tibetskočínské - tibetština</name>
         <description>tibetskočínské - tibetština</description>
         <shortcut>tibetština</shortcut>
         <categories>
             <category>tibetskočínské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_154" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_154">
         <name>eskymácko - aleutské - blíže neurčené</name>
         <description>eskymácko - aleutské - blíže neurčené</description>
         <shortcut></shortcut>
@@ -1466,8 +1644,9 @@
             <category>eskymácko</category>
             <category>aleutské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_155" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_155">
         <name>eskymácko - aleutské - grónština</name>
         <description>eskymácko - aleutské - grónština</description>
         <shortcut>grónština</shortcut>
@@ -1475,93 +1654,105 @@
             <category>eskymácko</category>
             <category>aleutské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_156" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_156">
         <name>indiánské - blíže neurčené</name>
         <description>indiánské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
             <category>indiánské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_157" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_157">
         <name>blíže neurčený</name>
         <description>blíže neurčený</description>
         <shortcut></shortcut>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_158" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_158">
         <name>izolované - blíže neurčené</name>
         <description>izolované - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
             <category>izolované</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_159" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_159">
         <name>kreolské - blíže neurčené</name>
         <description>kreolské - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
             <category>kreolské</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_160" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_160">
         <name>umělé - blíže neurčené</name>
         <description>umělé - blíže neurčené</description>
         <shortcut></shortcut>
         <categories>
             <category>umělé</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_161" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_161">
         <name>umělé - esperanto</name>
         <description>umělé - esperanto</description>
         <shortcut>esperanto</shortcut>
         <categories>
             <category>umělé</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_162" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_162">
         <name>umělé - ido</name>
         <description>umělé - ido</description>
         <shortcut>ido</shortcut>
         <categories>
             <category>umělé</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_163" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_163">
         <name>umělé - interlingua</name>
         <description>umělé - interlingua</description>
         <shortcut>interlingua</shortcut>
         <categories>
             <category>umělé</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_164" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_164">
         <name>umělé - interlingue</name>
         <description>umělé - interlingue</description>
         <shortcut>interlingue</shortcut>
         <categories>
             <category>umělé</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_165" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_165">
         <name>umělé - volapük</name>
         <description>umělé - volapük</description>
         <shortcut>volapük</shortcut>
         <categories>
             <category>umělé</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_LANGUAGE_166" item-type="SRD_LANGUAGE">
+    <item-spec code="SRD_LANGUAGE_166">
         <name>umělé - slovio</name>
         <description>umělé - slovio</description>
         <shortcut>slovio</shortcut>
         <categories>
             <category>umělé</category>
         </categories>
+        <item-type-assign code="SRD_LANGUAGE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_1" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_1">
         <name>autoři</name>
         <description>autoři</description>
         <shortcut></shortcut>
@@ -1569,8 +1760,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_2" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_2">
         <name>autoři dialogů</name>
         <description>autoři dialogů</description>
         <shortcut></shortcut>
@@ -1578,8 +1770,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_3" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_3">
         <name>autoři doprovodných textů</name>
         <description>autoři doprovodných textů</description>
         <shortcut></shortcut>
@@ -1587,8 +1780,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_4" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_4">
         <name>autoři fotografií</name>
         <description>autoři fotografií</description>
         <shortcut></shortcut>
@@ -1596,8 +1790,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_5" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_5">
         <name>autoři hudební složky</name>
         <description>autoři hudební složky</description>
         <shortcut></shortcut>
@@ -1605,8 +1800,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_6" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_6">
         <name>autoři hudby</name>
         <description>autoři hudby</description>
         <shortcut></shortcut>
@@ -1614,8 +1810,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_7" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_7">
         <name>autoři choreografií</name>
         <description>autoři choreografií</description>
         <shortcut></shortcut>
@@ -1623,8 +1820,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_8" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_8">
         <name>autoři komentářů</name>
         <description>autoři komentářů</description>
         <shortcut></shortcut>
@@ -1632,8 +1830,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_9" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_9">
         <name>autoři námětů</name>
         <description>autoři námětů</description>
         <shortcut></shortcut>
@@ -1641,8 +1840,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_10" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_10">
         <name>autoři textové složky</name>
         <description>autoři textové složky</description>
         <shortcut></shortcut>
@@ -1650,8 +1850,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_11" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_11">
         <name>autoři textů</name>
         <description>autoři textů</description>
         <shortcut></shortcut>
@@ -1659,8 +1860,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_12" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_12">
         <name>autoři triků a speciálních efektů</name>
         <description>autoři triků a speciálních efektů</description>
         <shortcut></shortcut>
@@ -1668,8 +1870,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_13" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_13">
         <name>autoři výtvarné a obrazové stránky</name>
         <description>autoři výtvarné a obrazové stránky</description>
         <shortcut></shortcut>
@@ -1677,8 +1880,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_14" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_14">
         <name>autoři výtvarné stránky</name>
         <description>autoři výtvarné stránky</description>
         <shortcut></shortcut>
@@ -1686,8 +1890,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_15" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_15">
         <name>vydavatelé</name>
         <description>vydavatelé</description>
         <shortcut></shortcut>
@@ -1695,8 +1900,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_16" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_16">
         <name>vydavatelé / nakladatelé</name>
         <description>vydavatelé / nakladatelé</description>
         <shortcut></shortcut>
@@ -1704,8 +1910,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_17" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_17">
         <name>pečetitelé</name>
         <description>pečetitelé</description>
         <shortcut></shortcut>
@@ -1713,8 +1920,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_18" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_18">
         <name>produkční společnosti/producenti</name>
         <description>produkční společnosti/producenti</description>
         <shortcut></shortcut>
@@ -1722,8 +1930,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_19" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_19">
         <name>objednatelé / příjemci</name>
         <description>objednatelé / příjemci</description>
         <shortcut></shortcut>
@@ -1731,8 +1940,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_20" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_20">
         <name>distributoři</name>
         <description>distributoři</description>
         <shortcut></shortcut>
@@ -1740,8 +1950,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_21" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_21">
         <name>příjemci</name>
         <description>příjemci</description>
         <shortcut></shortcut>
@@ -1749,8 +1960,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_22" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_22">
         <name>žadatelé</name>
         <description>žadatelé</description>
         <shortcut></shortcut>
@@ -1758,8 +1970,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_23" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_23">
         <name>držitelé</name>
         <description>držitelé</description>
         <shortcut></shortcut>
@@ -1767,8 +1980,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_24" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_24">
         <name>odesilatelé</name>
         <description>odesilatelé</description>
         <shortcut></shortcut>
@@ -1776,8 +1990,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_25" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_25">
         <name>schvalovatelé</name>
         <description>schvalovatelé</description>
         <shortcut></shortcut>
@@ -1785,8 +2000,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_26" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_26">
         <name>stavitelé</name>
         <description>stavitelé</description>
         <shortcut></shortcut>
@@ -1794,32 +2010,36 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_27" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_27">
         <name>režiséři</name>
         <description>režiséři</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_28" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_28">
         <name>scénáristé</name>
         <description>scénáristé</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_29" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_29">
         <name>kameramani</name>
         <description>kameramani</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_30" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_30">
         <name>interpreti hudby</name>
         <description>interpreti hudby</description>
         <shortcut></shortcut>
@@ -1827,8 +2047,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_31" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_31">
         <name>fotografové</name>
         <description>fotografové</description>
         <shortcut></shortcut>
@@ -1836,16 +2057,18 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_32" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_32">
         <name>redaktoři</name>
         <description>redaktoři</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_33" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_33">
         <name>kartografové</name>
         <description>kartografové</description>
         <shortcut></shortcut>
@@ -1853,32 +2076,36 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_34" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_34">
         <name>editoři</name>
         <description>editoři</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_35" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_35">
         <name>editoři / redaktoři</name>
         <description>editoři / redaktoři</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_36" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_36">
         <name>kresliči</name>
         <description>kresliči</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_37" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_37">
         <name>majitelé typářů</name>
         <description>majitelé typářů</description>
         <shortcut></shortcut>
@@ -1886,8 +2113,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_38" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_38">
         <name>tvůrci technického zpracování</name>
         <description>tvůrci technického zpracování</description>
         <shortcut></shortcut>
@@ -1895,8 +2123,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_39" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_39">
         <name>tvůrci výtvarné stránky</name>
         <description>tvůrci výtvarné stránky</description>
         <shortcut></shortcut>
@@ -1904,16 +2133,18 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_40" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_40">
         <name>dramaturgové</name>
         <description>dramaturgové</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_41" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_41">
         <name>střih</name>
         <description>střih</description>
         <shortcut></shortcut>
@@ -1921,8 +2152,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_42" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_42">
         <name>zvuk</name>
         <description>zvuk</description>
         <shortcut></shortcut>
@@ -1930,8 +2162,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_43" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_43">
         <name>účinkující</name>
         <description>účinkující</description>
         <shortcut></shortcut>
@@ -1939,8 +2172,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_44" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_44">
         <name>překladatelé</name>
         <description>překladatelé</description>
         <shortcut></shortcut>
@@ -1948,40 +2182,45 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_45" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_45">
         <name>lektoři</name>
         <description>lektoři</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_46" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_46">
         <name>svědci</name>
         <description>svědci</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_47" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_47">
         <name>ručitelé (rukojmě)</name>
         <description>ručitelé (rukojmě)</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_48" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_48">
         <name>písaři</name>
         <description>písaři</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_49" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_49">
         <name>zpracovatelé nosičů záznamů</name>
         <description>zpracovatelé nosičů záznamů</description>
         <shortcut></shortcut>
@@ -1989,8 +2228,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_50" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_50">
         <name>výrobci nosičů záznamů</name>
         <description>výrobci nosičů záznamů</description>
         <shortcut></shortcut>
@@ -1998,16 +2238,18 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_51" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_51">
         <name>tiskárny</name>
         <description>tiskárny</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_52" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_52">
         <name>tiskárny/tiskaři</name>
         <description>tiskárny/tiskaři</description>
         <shortcut></shortcut>
@@ -2015,8 +2257,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_53" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_53">
         <name>výrobci</name>
         <description>výrobci</description>
         <shortcut></shortcut>
@@ -2024,8 +2267,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_54" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_54">
         <name>výrobci typářů</name>
         <description>výrobci typářů</description>
         <shortcut></shortcut>
@@ -2033,8 +2277,9 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_55" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_55">
         <name>výrobci odlitků otisků / otisků typářů</name>
         <description>výrobci odlitků otisků / otisků typářů</description>
         <shortcut></shortcut>
@@ -2042,72 +2287,81 @@
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_56" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_56">
         <name>místa vzniku záznamů</name>
         <description>místa vzniku záznamů</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_57" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_57">
         <name>místa vydavatelů</name>
         <description>místa vydavatelů</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_58" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_58">
         <name>místa vydání</name>
         <description>místa vydání</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_59" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_59">
         <name>místa vydání dokumentů</name>
         <description>místa vydání dokumentů</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_60" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_60">
         <name>místa výroby jednotek popisu</name>
         <description>místa výroby jednotek popisu</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_61" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_61">
         <name>místa vzniku jednotek popisu</name>
         <description>místa vzniku jednotek popisu</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_62" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_62">
         <name>místa vzniku předloh popisovaných kopií</name>
         <description>místa vzniku předloh popisovaných kopií</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_63" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_63">
         <name>typová označení a názvy výrobků a typových staveb</name>
         <description>typová označení a názvy výrobků a typových staveb</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="ARTWORK"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_64" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_64">
         <name>entity zachycené jednotkami popisu</name>
         <description>entity zachycené jednotkami popisu</description>
         <shortcut></shortcut>
@@ -2118,8 +2372,9 @@
             <item-aptype register-type="EVENT"/>
             <item-aptype register-type="ARTWORK"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ENTITY_ROLE_65" item-type="SRD_ENTITY_ROLE">
+    <item-spec code="SRD_ENTITY_ROLE_65">
         <name>ostatní entity zachycené jednotkami popisu</name>
         <description>ostatní entity zachycené jednotkami popisu</description>
         <shortcut></shortcut>
@@ -2130,47 +2385,56 @@
             <item-aptype register-type="EVENT"/>
             <item-aptype register-type="ARTWORK"/>
         </item-aptypes>
+        <item-type-assign code="SRD_ENTITY_ROLE"/>
     </item-spec>
-    <item-spec code="SRD_ARRANGEMENT_MAN" item-type="SRD_ARRANGEMENT_TYPE">
+    <item-spec code="SRD_ARRANGEMENT_MAN">
         <name>Manipulační seznam</name>
         <description>Manipulační seznam</description>
         <shortcut>Manipulační seznam</shortcut>
+        <item-type-assign code="SRD_ARRANGEMENT_TYPE"/>
     </item-spec>
-    <item-spec code="SRD_ARRANGEMENT_INV" item-type="SRD_ARRANGEMENT_TYPE">
+    <item-spec code="SRD_ARRANGEMENT_INV">
         <name>Inventář</name>
         <description>Inventář</description>
         <shortcut>Inventář</shortcut>
+        <item-type-assign code="SRD_ARRANGEMENT_TYPE"/>
     </item-spec>
-    <item-spec code="SRD_ARRANGEMENT_KAT" item-type="SRD_ARRANGEMENT_TYPE">
+    <item-spec code="SRD_ARRANGEMENT_KAT">
         <name>Katalog</name>
         <description>Katalog</description>
         <shortcut>Katalog</shortcut>
+        <item-type-assign code="SRD_ARRANGEMENT_TYPE"/>
     </item-spec>
-    <item-spec code="SRD_ARRANGEMENT_OTHER" item-type="SRD_ARRANGEMENT_TYPE">
+    <item-spec code="SRD_ARRANGEMENT_OTHER">
         <name>Starší pomůcka</name>
         <description>Starší pomůcka</description>
         <shortcut>Starší pomůcka</shortcut>
+        <item-type-assign code="SRD_ARRANGEMENT_TYPE"/>
     </item-spec>
-	<item-spec code="SRD_PACKET_TYPE_BOX" item-type="SRD_PACKET_TYPE">
+    <item-spec code="SRD_PACKET_TYPE_BOX">
         <name>Karton</name>
         <description>Karton</description>
         <shortcut></shortcut>
+        <item-type-assign code="SRD_PACKET_TYPE"/>
     </item-spec>
-    <item-spec code="SRD_PACKET_TYPE_FASCICLE" item-type="SRD_PACKET_TYPE">
+    <item-spec code="SRD_PACKET_TYPE_FASCICLE">
         <name>Fascikl</name>
         <description>Fascikl</description>
         <shortcut></shortcut>
+        <item-type-assign code="SRD_PACKET_TYPE"/>
     </item-spec>
-    <item-spec code="VZTAH_TYP_PRIMATOR" item-type="VZTAH_TYP">
+    <item-spec code="VZTAH_TYP_PRIMATOR">
         <name>Primátor</name>
         <description>Primátor</description>
         <shortcut>Prim.</shortcut>
         <view-order>1</view-order>
+        <item-type-assign code="VZTAH_TYP"/>
     </item-spec>
-    <item-spec code="VZTAH_TYP_TAJEMNIK" item-type="VZTAH_TYP">
+    <item-spec code="VZTAH_TYP_TAJEMNIK">
         <name>Tajemník magistrátu</name>
         <description>Tajemník magistrátu</description>
         <shortcut>Taj. mag.</shortcut>
         <view-order>2</view-order>
+        <item-type-assign code="VZTAH_TYP"/>
     </item-spec>
 </item-specs>

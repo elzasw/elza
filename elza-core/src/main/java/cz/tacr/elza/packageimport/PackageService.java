@@ -31,6 +31,7 @@ import javax.validation.constraints.NotNull;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -165,49 +166,6 @@ import cz.tacr.elza.packageimport.xml.StructureType;
 import cz.tacr.elza.packageimport.xml.StructureTypes;
 import cz.tacr.elza.packageimport.xml.TemplateXml;
 import cz.tacr.elza.packageimport.xml.Templates;
-import cz.tacr.elza.repository.ActionRecommendedRepository;
-import cz.tacr.elza.repository.ActionRepository;
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApExternalIdTypeRepository;
-import cz.tacr.elza.repository.ApRuleRepository;
-import cz.tacr.elza.repository.ApRuleSystemRepository;
-import cz.tacr.elza.repository.ApStateRepository;
-import cz.tacr.elza.repository.ApTypeRepository;
-import cz.tacr.elza.repository.ArrangementExtensionRepository;
-import cz.tacr.elza.repository.ArrangementRuleRepository;
-import cz.tacr.elza.repository.ComplementTypeRepository;
-import cz.tacr.elza.repository.ComponentRepository;
-import cz.tacr.elza.repository.ExtensionRuleRepository;
-import cz.tacr.elza.repository.ItemAptypeRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeActionRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.OutputRepository;
-import cz.tacr.elza.repository.OutputResultRepository;
-import cz.tacr.elza.repository.OutputTypeRepository;
-import cz.tacr.elza.repository.PackageDependencyRepository;
-import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.repository.Packaging;
-import cz.tacr.elza.repository.PartyNameFormTypeRepository;
-import cz.tacr.elza.repository.PartyRelationClassTypeRepository;
-import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
-import cz.tacr.elza.repository.PartyTypeRelationRepository;
-import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.PolicyTypeRepository;
-import cz.tacr.elza.repository.RegistryRoleRepository;
-import cz.tacr.elza.repository.RelationRoleTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
-import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.repository.SettingsRepository;
-import cz.tacr.elza.repository.StructureDefinitionRepository;
-import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
-import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
-import cz.tacr.elza.repository.StructuredTypeRepository;
-import cz.tacr.elza.repository.TemplateRepository;
-import cz.tacr.elza.repository.UIPartyGroupRepository;
-import cz.tacr.elza.repository.WfIssueStateRepository;
-import cz.tacr.elza.repository.WfIssueTypeRepository;
 import cz.tacr.elza.search.IndexWorkProcessor;
 import cz.tacr.elza.service.CacheService;
 import cz.tacr.elza.service.SettingsService;
@@ -368,6 +326,9 @@ public class PackageService {
 
     @Autowired
     private ItemSpecRepository itemSpecRepository;
+
+    @Autowired
+    private ItemTypeSpecAssignRepository itemTypeSpecAssignRepository;
 
     @Autowired
     private ItemAptypeRepository itemAptypeRepository;
@@ -2059,7 +2020,7 @@ public class PackageService {
     /**
      * Zpracování řídících pravidel archivního popisu, které definují dané rozšíření.
      *
-     * @param extensionRules           importované řídící pravidla
+     * @param ruc       importované řídící pravidla
      * @param rulArrangementExtensions definice rozšíření
      */
     private List<RulExtensionRule> processExtensionRules(
@@ -2567,8 +2528,8 @@ public class PackageService {
     /**
      * Zpracování importovaného balíčku.
      *
-     * @param packageInfo VO importovaného balíčku
-     * @param mapEntry
+     * @param puc PackageContext
+
      */
     private void processRulPackage(PackageContext puc) {
 
@@ -2712,6 +2673,7 @@ public class PackageService {
         packageDependencyRepository.deleteByRulPackage(rulPackage);
 
         List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
+        itemTypeSpecAssignRepository.deleteByItemSpecIn(rulDescItemSpecs);
         for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
             itemAptypeRepository.deleteByItemSpec(rulDescItemSpec);
         }
@@ -2723,10 +2685,11 @@ public class PackageService {
         List<RulStructureDefinition> structureDefinitions = structureDefinitionRepository.findByRulPackage(rulPackage);
         List<RulAction> actions = packageActionsRepository.findByRulPackage(rulPackage);
         List<RulOutputType> outputTypes = outputTypeRepository.findByRulPackage(rulPackage);
+        List<RulItemType> rulDescItemTypes = itemTypeRepository.findByRulPackage(rulPackage);
 
         packageActionsRepository.findByRulPackage(rulPackage).forEach(this::deleteActionLink);
 
-        List<RulItemType> rulDescItemTypes = itemTypeRepository.findByRulPackage(rulPackage);
+
         for (RulItemType rulDescItemType : rulDescItemTypes) {
             itemAptypeRepository.deleteByItemType(rulDescItemType);
         }
