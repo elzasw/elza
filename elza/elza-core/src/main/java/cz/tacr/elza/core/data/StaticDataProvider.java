@@ -1,46 +1,14 @@
 package cz.tacr.elza.core.data;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.domain.ApExternalIdType;
-import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParRegistryRole;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.ParRelationTypeRoleType;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulStructureDefinition;
-import cz.tacr.elza.domain.RulStructuredType;
-import cz.tacr.elza.domain.SysLanguage;
-import cz.tacr.elza.repository.ApExternalIdTypeRepository;
-import cz.tacr.elza.repository.ApTypeRepository;
-import cz.tacr.elza.repository.ComplementTypeRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.repository.PartyNameFormTypeRepository;
-import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
-import cz.tacr.elza.repository.RegistryRoleRepository;
-import cz.tacr.elza.repository.RelationTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
-import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.repository.StructureDefinitionRepository;
-import cz.tacr.elza.repository.StructuredTypeRepository;
-import cz.tacr.elza.repository.SysLanguageRepository;
 
 public class StaticDataProvider {
 
@@ -57,7 +25,7 @@ public class StaticDataProvider {
     private List<StructType> structuredTypes;
 
     private List<ItemType> itemTypes;
-    
+
     private List<RulRuleSet> ruleSets;
 
     private List<RulItemSpec> itemSpecs;
@@ -109,7 +77,7 @@ public class StaticDataProvider {
     private Map<Integer, SysLanguage> sysLanguageIdMap;
 
     private Map<String, SysLanguage> sysLanguageCodeMap;
-    
+
     private Map<Integer, ApTypeRoles> apTypeRolesIdMap;
 
     StaticDataProvider() {
@@ -146,7 +114,7 @@ public class StaticDataProvider {
     public List<RulRuleSet> getRuleSets() {
         return ruleSets;
     }
-    
+
     public RulPackage getPackageById(Integer id) {
         Validate.notNull(id);
         return packageIdMap.get(id);
@@ -220,7 +188,7 @@ public class StaticDataProvider {
         Validate.notEmpty(code);
         return sysLanguageCodeMap.get(code);
     }
-    
+
     public List<StructType> getStructuredTypes() {
         return structuredTypes;
     }
@@ -245,7 +213,7 @@ public class StaticDataProvider {
     }
 
     /**
-     * 
+     *
      * @param code
      * @return Return null if item type does not exists
      */
@@ -278,7 +246,7 @@ public class StaticDataProvider {
         Validate.notNull(id);
         return apTypeRolesIdMap.get(id);
     }
-    
+
     /* initialization methods */
 
     /**
@@ -288,7 +256,7 @@ public class StaticDataProvider {
     void init(StaticDataService service) {
         initRuleSets(service.ruleSetRepository);
         initStructuredTypes(service.structuredTypeRepository, service.structureDefinitionRepository);
-        initItemTypes( service.itemTypeRepository, service.itemSpecRepository);
+        initItemTypes( service.itemTypeRepository, service.itemSpecRepository, service.itemTypeSpecAssignRepository);
         initPackages(service.packageRepository);
         initPartyNameFormTypes(service.partyNameFormTypeRepository);
         initComplementTypes(service.complementTypeRepository, service.partyTypeComplementTypeRepository);
@@ -307,7 +275,7 @@ public class StaticDataProvider {
         this.ruleSetCodeMap = createLookup(ruleSets, RulRuleSet::getCode);
     }
 
-    private void initItemTypes(ItemTypeRepository itemTypeRepository, ItemSpecRepository itemSpecRepository) {
+    private void initItemTypes(ItemTypeRepository itemTypeRepository, ItemSpecRepository itemSpecRepository, ItemTypeSpecAssignRepository itemTypeSpecAssignRepository) {
         List<RulItemType> itemTypes = itemTypeRepository.findAll();
 
         this.itemTypes = new ArrayList<>();
@@ -330,21 +298,24 @@ public class StaticDataProvider {
             this.itemTypes.add(rsit);
             itemTypeIdMap.put(it.getItemTypeId(), rsit);
         }
-        
+
         // get all specifications
         List<RulItemSpec> itemSpecs = itemSpecRepository.findAll();
-        for(RulItemSpec its: itemSpecs) {
-            ItemType rsit = itemTypeIdMap.get(its.getItemTypeId());
-            addItemSpec(its, rsit);
+        List<RulItemTypeSpecAssign> itemTypeSpecAssigns = itemTypeSpecAssignRepository.findAll();
+
+        for(RulItemTypeSpecAssign itsa : itemTypeSpecAssigns) {
+            ItemType rsit = itemTypeIdMap.get(itsa.getItemType().getItemTypeId());
+            itsa.getItemSpec().setViewOrder(itsa.getViewOrder());
+            addItemSpec(itsa.getItemSpec(), rsit);
         }
-        
+
         // seal up item types
         this.itemTypes.forEach(ItemType::sealUp);
-        
+
         this.itemTypeCodeMap = StaticDataProvider.createLookup(itemTypeIdMap.values(), ItemType::getCode);
         this.itemSpecCodeMap = StaticDataProvider.createLookup(itemSpecIdMap.values(), RulItemSpec::getCode);
     }
-    
+
     /**
      * Add specification to lookup collections
      * @param is
@@ -352,14 +323,14 @@ public class StaticDataProvider {
      */
     private void addItemSpec(RulItemSpec is, ItemType rsit) {
         Validate.isTrue(rsit.hasSpecifications(), "Type does not allow specifications, typeCode: %s", rsit.getCode());
-        
+
         // prepare real object
         is = HibernateUtils.unproxy(is);
 
         rsit.addItemSpec(is);
         // add to the lookups
         this.itemSpecs.add(is);
-        itemSpecIdMap.put(is.getItemSpecId(), is);        
+        itemSpecIdMap.put(is.getItemSpecId(), is);
     }
 
     private void initStructuredTypes(StructuredTypeRepository structuredTypeRepository,
@@ -523,19 +494,19 @@ public class StaticDataProvider {
 
     private void initApTypeRoles(RegistryRoleRepository registryRoleRepository) {
         List<ParRegistryRole> roles = registryRoleRepository.findAll();
-        
+
         this.apTypeRolesIdMap = new HashMap<>();
-        
+
         for (ParRegistryRole role : roles) {
             ApType type = role.getApType();
             ApTypeRoles typeRoles = apTypeRolesIdMap.get(type.getApTypeId());
-            if (typeRoles == null) {    
+            if (typeRoles == null) {
                 typeRoles = new ApTypeRoles(type);
                 apTypeRolesIdMap.put(type.getApTypeId(), typeRoles);
             }
             typeRoles.addRole(role);
         }
-        
+
         apTypeRolesIdMap.values().forEach(ApTypeRoles::sealUp);
     }
 

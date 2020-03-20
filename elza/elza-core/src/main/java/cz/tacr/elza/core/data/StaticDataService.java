@@ -8,6 +8,7 @@ import javax.transaction.Synchronization;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.repository.*;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -15,24 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.repository.ApExternalIdTypeRepository;
-import cz.tacr.elza.repository.ApTypeRepository;
-import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.ComplementTypeRepository;
-import cz.tacr.elza.repository.DataTypeRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.repository.PartyNameFormTypeRepository;
-import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
-import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.RegistryRoleRepository;
-import cz.tacr.elza.repository.RelationTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
-import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.repository.StructureDefinitionRepository;
-import cz.tacr.elza.repository.StructuredTypeRepository;
-import cz.tacr.elza.repository.SysLanguageRepository;
 
 /**
  * Service for static data
@@ -60,12 +43,14 @@ public class StaticDataService {
     private final EntityManager em;
 
     /* repository with package visibility for initialization */
-    
+
     final RuleSetRepository ruleSetRepository;
 
     final ItemTypeRepository itemTypeRepository;
 
     final ItemSpecRepository itemSpecRepository;
+
+    final ItemTypeSpecAssignRepository itemTypeSpecAssignRepository;
 
     final StructuredTypeRepository structuredTypeRepository;
 
@@ -90,7 +75,7 @@ public class StaticDataService {
     final RelationTypeRepository relationTypeRepository;
 
     final RelationTypeRoleTypeRepository relationTypeRoleTypeRepository;
-    
+
     final ApExternalIdTypeRepository apEidTypeRepository;
 
     final SysLanguageRepository sysLanguageRepository;
@@ -102,6 +87,7 @@ public class StaticDataService {
                              final RuleSetRepository ruleSetRepository,
                              final ItemTypeRepository itemTypeRepository,
                              final ItemSpecRepository itemSpecRepository,
+                             final ItemTypeSpecAssignRepository itemTypeSpecAssignRepository,
                              final DataTypeRepository dataTypeRepository,
                              final CalendarTypeRepository calendarTypeRepository,
                              final PartyTypeRepository partyTypeRepository,
@@ -121,6 +107,7 @@ public class StaticDataService {
         this.ruleSetRepository = ruleSetRepository;
         this.itemTypeRepository = itemTypeRepository;
         this.itemSpecRepository = itemSpecRepository;
+        this.itemTypeSpecAssignRepository = itemTypeSpecAssignRepository;
         this.dataTypeRepository = dataTypeRepository;
         this.calendarTypeRepository = calendarTypeRepository;
         this.partyTypeRepository = partyTypeRepository;

@@ -17,6 +17,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.packageimport.xml.*;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -31,39 +34,12 @@ import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.datetime.MultiFormatParser;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.RulItemAptype;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulPackageDependency;
-import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.PackageCode;
-import cz.tacr.elza.packageimport.xml.Category;
-import cz.tacr.elza.packageimport.xml.Column;
-import cz.tacr.elza.packageimport.xml.DisplayType;
-import cz.tacr.elza.packageimport.xml.ItemAptype;
-import cz.tacr.elza.packageimport.xml.ItemSpec;
-import cz.tacr.elza.packageimport.xml.ItemSpecs;
-import cz.tacr.elza.packageimport.xml.ItemType;
-import cz.tacr.elza.packageimport.xml.ItemTypes;
-import cz.tacr.elza.repository.ApItemRepository;
-import cz.tacr.elza.repository.ApTypeRepository;
-import cz.tacr.elza.repository.CachedNodeRepository;
-import cz.tacr.elza.repository.DataDateRepository;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.DataStringRepository.OnlyValues;
-import cz.tacr.elza.repository.ItemAptypeRepository;
-import cz.tacr.elza.repository.ItemRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.PackageDependencyRepository;
-import cz.tacr.elza.repository.PackageRepository;
 
 import static cz.tacr.elza.packageimport.PackageService.ITEM_TYPE_XML;
 import static java.util.stream.Collectors.toMap;
@@ -93,6 +69,9 @@ public class ItemTypeUpdater {
 
     @Autowired
     private ItemSpecRepository itemSpecRepository;
+
+    @Autowired
+    private ItemTypeSpecAssignRepository itemTypeSpecAssignRepository;
 
     @Autowired
     private ItemAptypeRepository itemAptypeRepository;
@@ -178,13 +157,11 @@ public class ItemTypeUpdater {
 
         Map<String, RulItemSpec> rulItemSpecNew = new LinkedHashMap<>();
 
-        // item type code -> local view order
-        Map<String, Integer> viewOrderMap = new HashMap<>();
-
         if (itemSpecs != null && CollectionUtils.isNotEmpty(itemSpecs.getItemSpecs())) {
 
             Set<String> rulItemSpecCodes = new HashSet<>();
             List<RulItemSpec> rulItemSpecsSave = new ArrayList<>();
+            Map<String, Integer> viewOrderMap = new HashMap<>();
 
             for (ItemSpec itemSpec : itemSpecs.getItemSpecs()) {
 
@@ -201,19 +178,16 @@ public class ItemTypeUpdater {
                     rulItemSpec = new RulItemSpec();
                 }
 
-                convertRulItemSpec(rulPackage, itemSpec, rulItemSpec, rulItemTypesCache);
-
-                Integer nextViewOrder = viewOrderMap.computeIfAbsent(rulItemSpec.getItemType().getCode(), next -> 1);
-                rulItemSpec.setViewOrder(nextViewOrder);
-                viewOrderMap.put(rulItemSpec.getItemType().getCode(), ++nextViewOrder);
+                convertRulItemSpec(rulPackage, itemSpec, rulItemSpec);
 
                 rulItemSpecCodes.add(itemSpecCode);
                 rulItemSpecsSave.add(rulItemSpec);
-            }
-
-            // try to save updated items
-            for (RulItemSpec rulItemSpec : itemSpecRepository.save(rulItemSpecsSave)) {
-                rulItemSpecNew.put(rulItemSpec.getCode(), rulItemSpec);
+                if(rulItemSpec.getItemTypeSpecAssigns() != null) {
+                    rulItemSpec.setItemTypeSpecAssigns(null);
+                }
+                RulItemSpec rulItemSpecSaved = itemSpecRepository.save(rulItemSpec);
+                rulItemSpecNew.put(rulItemSpec.getCode(), rulItemSpecSaved);
+                processItemTypeAssignAdd(itemSpec.getItemTypeAssigns(), rulItemSpecSaved, rulItemTypesCache,viewOrderMap);
             }
 
             processItemAptypesByItemSpecs(itemSpecs.getItemSpecs(), rulItemSpecNew, apTypeCache);
@@ -225,6 +199,51 @@ public class ItemTypeUpdater {
                 itemAptypeRepository.deleteByItemSpec(rulItemSpec);
             }
             itemSpecRepository.delete(rulItemSpecOrig.values());
+        }
+    }
+
+    private void processItemTypeAssignAdd(final List<ItemTypeAssign> itemTypeAssigns, final RulItemSpec rulItemSpec, Map<String, RulItemType> rulItemTypesCache, Map<String, Integer> viewOrderMap) {
+        List<RulItemTypeSpecAssign> itemTypeSpecAssigns = new ArrayList<>();
+
+        if(!CollectionUtils.isEmpty(itemTypeAssigns)) {
+            String codeSpec = rulItemSpec.getCode();
+            for(int i = 0; i < itemTypeAssigns.size(); i++) {
+                ItemTypeAssign itemTypeAssign = itemTypeAssigns.get(i);
+                String code = itemTypeAssign.getCode();
+
+                if(StringUtils.isBlank(code)) {
+                    throw new SystemException("Specifikace " + codeSpec + " odkazuje na typ bez kódu", BaseCode.PROPERTY_NOT_EXIST)
+                            .set("index", i);
+                }
+
+                RulItemType rulItemType = rulItemTypesCache.get(itemTypeAssign.getCode());
+
+                if(rulItemType == null) {
+                    throw new SystemException("Specifikace " + codeSpec + " odkazuje na typ, který neexistuje", PackageCode.CODE_NOT_FOUND)
+                            .set("index", i)
+                            .set("codeSpec", codeSpec)
+                            .set("code", code);
+                } else if (!rulItemType.getUseSpecification()) {
+                    throw new SystemException("Specifikace " + codeSpec + " odkazuje na typ, který nemá povolené specifikace", BaseCode.PROPERTY_IS_INVALID)
+                            .set("index", i)
+                            .set("codeSpec", codeSpec)
+                            .set("code", code);
+                }
+
+                Integer nextViewOrder = viewOrderMap.computeIfAbsent(itemTypeAssign.getCode(), next -> 1);
+                rulItemSpec.setViewOrder(nextViewOrder);
+                RulItemTypeSpecAssign rulItemTypeSpecAssignNew = new RulItemTypeSpecAssign(rulItemType, rulItemSpec, nextViewOrder);
+                viewOrderMap.put(itemTypeAssign.getCode(), ++nextViewOrder);
+
+
+                logger.debug("Zakládám vazbu specifikace {} na typ {}", rulItemSpec.getCode(), rulItemType.getCode());
+                itemTypeSpecAssigns.add(rulItemTypeSpecAssignNew);
+            }
+
+            if(CollectionUtils.isNotEmpty(itemTypeSpecAssigns)) {
+                itemTypeSpecAssigns = itemTypeSpecAssignRepository.save(itemTypeSpecAssigns);
+            }
+            rulItemSpec.setItemTypeSpecAssigns(itemTypeSpecAssigns);
         }
     }
 
@@ -315,11 +334,12 @@ public class ItemTypeUpdater {
 
     /**
      * Seřazení specifikací podle balíčků.
+     * TODO: gotzy - jak řadit, jestli vůbec řadit? Není itemType ani viewOrder
      */
     private void postSpecsOrder() {
 
         // potřeba seřadit podle typu, balíčku a "lokálnímu" ražení
-        Sort sort = new Sort(
+       /* Sort sort = new Sort(
                 new Sort.Order(Sort.Direction.ASC, "itemType"),
                 new Sort.Order(Sort.Direction.ASC, "rulPackage"),
                 new Sort.Order(Sort.Direction.ASC, "viewOrder")
@@ -348,7 +368,7 @@ public class ItemTypeUpdater {
             }
         }
 
-        itemSpecRepository.save(itemSpecList);
+        itemSpecRepository.save(itemSpecList);*/
     }
 
     /**
@@ -401,7 +421,7 @@ public class ItemTypeUpdater {
         // provedla se změna pro použití specifikace?
         if (!dbItemType.getUseSpecification().equals(itemType.getUseSpecification())) {
 
-            // je nutné zkontrolovat, jestli neexistuje nějaký záznam                
+            // je nutné zkontrolovat, jestli neexistuje nějaký záznam
             long countDescItems = countUsage(dbItemType);
             if (countDescItems > 0L) {
                 throw new SystemException("Nelze změnit použití specifikace u typu " + dbItemType.getCode()
@@ -612,28 +632,16 @@ public class ItemTypeUpdater {
      * @param rulPackage balíček
      * @param itemSpec VO specifikace
      * @param rulItemSpec DAO specifikace
-     * @param rulItemTypes seznam typů atributů
      */
     private void convertRulItemSpec(final RulPackage rulPackage,
                                     final ItemSpec itemSpec,
-                                    final RulItemSpec rulItemSpec,
-                                    final Map<String, RulItemType> rulItemTypesMap) {
+                                    final RulItemSpec rulItemSpec) {
 
         rulItemSpec.setName(itemSpec.getName());
         rulItemSpec.setCode(itemSpec.getCode());
         rulItemSpec.setDescription(itemSpec.getDescription());
         rulItemSpec.setShortcut(itemSpec.getShortcut());
         rulItemSpec.setPackage(rulPackage);
-
-        RulItemType rulItemType = rulItemTypesMap.get(itemSpec.getItemType());
-
-        if (rulItemType == null) {
-            throw new BusinessException("Typ s kódem " + itemSpec.getItemType() + " nenalezen",
-                    PackageCode.CODE_NOT_FOUND)
-                    .set("code", itemSpec.getItemType()).set("file", ITEM_TYPE_XML);
-        }
-
-        rulItemSpec.setItemType(rulItemType);
 
         if (CollectionUtils.isNotEmpty(itemSpec.getCategories())) {
             List<String> categories = itemSpec.getCategories().stream().map(Category::getValue).collect(Collectors.toList());
@@ -647,7 +655,7 @@ public class ItemTypeUpdater {
      * Zpracování napojení specifikací na ap.
      *
      * @param itemSpecs seznam importovaných specifikací
-     * @param rulItemSpecs seznam specifikací atributů (nový v DB)
+     * @param rulItemSpecsCache seznam specifikací atributů (nový v DB)
      */
     private void processItemAptypesByItemSpecs(List<ItemSpec> itemSpecs,
                                                @Nonnull Map<String, RulItemSpec> rulItemSpecsCache,
@@ -660,7 +668,7 @@ public class ItemTypeUpdater {
         Map<Integer, RulItemAptype> rulItemAptypesOrig = new HashMap<>();
 
         for (ItemSpec itemSpec : itemSpecs) {
-        
+
         Map<String, ItemSpec> itemSpecLookup = itemSpecs.stream().collect(Collectors.toMap(ItemSpec::getCode, Function.identity()));
         Validate.isTrue(itemSpecLookup.size()==itemSpecs.size(), "List of specification contains duplicated code");
 
@@ -696,7 +704,7 @@ public class ItemTypeUpdater {
      * Zpracování napojení typů na ap.
      *
      * @param itemTypes seznam importovaných typů
-     * @param rulItemTypes seznam typů atributů (nový v DB)
+     * @param rulItemTypesCache seznam typů atributů (nový v DB)
      */
     private void processItemAptypesByItemTypes(List<ItemType> itemTypes,
                                                @Nonnull Map<String, RulItemType> rulItemTypesCache,
@@ -802,6 +810,9 @@ public class ItemTypeUpdater {
             Integer maxValue = itemTypeHighest.getViewOrder();
             maxViewOrderPos = maxValue != null ? maxValue.intValue() : 0;
         }
+        logger.info("Odebírám všechny vazby specifikace na typ");
+        itemTypeSpecAssignRepository.deleteAll();
+
     }
 
     /**
