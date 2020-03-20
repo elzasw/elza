@@ -10,7 +10,7 @@ import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTyp
 import {getTreeItemById} from './registryUtils';
 import Scope from '../shared/scope/Scope';
 import * as StateApproval from '../enum/StateApproval';
-import FormInput from '../shared/form/FormInput';
+import FormInput from 'components/shared/form/FormInput';
 
 class ApStateChangeForm extends AbstractReactComponent {
     static validate = (values, props) => {

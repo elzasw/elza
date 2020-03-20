@@ -4,7 +4,7 @@ import {connect} from 'react-redux';
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
 import {indexById} from 'stores/app/utils.jsx';
 import AbstractReactComponent from '../../AbstractReactComponent';
-import FormInput from '../form/FormInput';
+import FormInput from 'components/shared/form/FormInput';
 
 import './Scope.scss';
 

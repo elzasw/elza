@@ -242,7 +242,7 @@ class RegistryDetail extends AbstractReactComponent {
     };
 
     getScopeLabel = (scopeId, scopes) => {
-        return scopeId && scopes[0].scopes.find(scope => scope.id === scopeId).name.toUpperCase();
+        return scopeId && scopes[0].scopes?.find(scope => scope.id === scopeId).name.toUpperCase();
     };
 
     handleToggleActive = identificator => {

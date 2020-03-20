@@ -4,7 +4,7 @@ import {Col, Form, Row} from 'react-bootstrap';
 import {Button} from '../ui';
 import {AbstractReactComponent, Icon} from 'components/shared';
 import UserField from '../admin/UserField';
-import FormInput from '../shared/form/FormInput';
+import FormInput from 'components/shared/form/FormInput';
 import i18n from '../i18n';
 import ListBox from '../shared/listbox/ListBox';
 import {reduxForm} from 'redux-form';

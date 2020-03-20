@@ -8,7 +8,7 @@ import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx';
 import {WebApi} from 'actions/index.jsx';
 import {importForm} from 'actions/global/global.jsx';
 import AbstractReactComponent from '../AbstractReactComponent';
-import FormInput from '../shared/form/FormInput';
+import FormInput from 'components/shared/form/FormInput';
 import Autocomplete from '../shared/autocomplete/Autocomplete';
 import i18n from '../i18n';
 import Icon from '../shared/icon/Icon';
