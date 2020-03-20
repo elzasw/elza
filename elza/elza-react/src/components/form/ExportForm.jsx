@@ -10,7 +10,7 @@ import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
 import {WebApi} from 'actions/index.jsx';
 import AbstractReactComponent from '../AbstractReactComponent';
 import HorizontalLoader from '../shared/loading/HorizontalLoader';
-import FormInput from '../shared/form/FormInput';
+import FormInput from 'components/shared/form/FormInput';
 import i18n from '../i18n';
 
 class ExportForm extends AbstractReactComponent {

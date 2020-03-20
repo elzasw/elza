@@ -1,3 +1,4 @@
+import { SubmissionError } from 'redux-form'
 /**
  * Utility pro formuláře s inplace editací.
  */
@@ -125,7 +126,7 @@ export function submitForm(validate, values, props, onSubmit, dispatch, options 
         var errors = validate(values, props);
         if (Object.keys(errors).length > 0) {
             formRejected(dispatch, options);
-            reject(errors);
+            reject(new SubmissionError(errors));
         } else {
             var submit = onSubmit(values);
             if (formSubmitted(dispatch, options)) {

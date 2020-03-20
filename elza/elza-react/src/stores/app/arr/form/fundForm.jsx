@@ -1,6 +1,9 @@
 import * as types from 'actions/constants/ActionTypes.js';
 
-export default function fundForm(state, action) {
+const defaultState = {
+    initialValues: {}
+};
+export default function fundForm(state = defaultState, action) {
     switch (action.type) {
         case types.GLOBAL_INIT_FORM_DATA:
             if (action.form === 'fundForm') {

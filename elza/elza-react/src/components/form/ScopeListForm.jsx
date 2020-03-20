@@ -3,7 +3,7 @@ import * as React from 'react';
 import {Col, Form, Row} from 'react-bootstrap';
 import {Button} from '../ui';
 import {AbstractReactComponent, Icon} from 'components/shared';
-import FormInput from '../shared/form/FormInput';
+import FormInput from 'components/shared/form/FormInput';
 import i18n from '../i18n';
 import ListBox from '../shared/listbox/ListBox';
 import {reduxForm} from 'redux-form';
@@ -151,7 +151,7 @@ class ScopeListForm extends AbstractReactComponent {
             disabled: id == null,
         };
 
-        if (!scopeList.fetched || !languageList.fetched) {
+        if (!scopeList || !scopeList.fetched || !languageList.fetched) {
             return <HorizontalLoader />;
         }
 
