@@ -3,14 +3,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.1.RELEASE</version>
+        <groupId>com.simpligility.maven</groupId>
+        <artifactId>progressive-organization-pom</artifactId>
+        <version>2.5.0</version>
     </parent>
 
     <groupId>cz.tacr.elza</groupId>
     <artifactId>elza</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>1.3.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>ELZA</name>
     <url>http://elza.tacr.cz</url>
@@ -25,15 +25,14 @@
              has to be configured separately because of JaCoCo -->
         <argLine>-Dfile.encoding=UTF-8</argLine>
 
-        <cxf.version>3.3.7</cxf.version>
-        <!--<hibernate.version>5.4.17.Final</hibernate.version>-->
-        <hibernate.search.orm.version>5.11.5.Final</hibernate.search.orm.version>
-        <hibernate.lucene.version>5.5.5</hibernate.lucene.version>  <!-- nelze zvednout na 6.6.0, protože hibernate.search.orm.version nemá ani
+        <cxf.version>3.2.11</cxf.version>
+        <hibernate.version>5.2.17.Final</hibernate.version>
+        <hibernate.search.orm.version>5.7.1.Final</hibernate.search.orm.version>
+        <hibernate.lucene.version>5.5.4</hibernate.lucene.version>  <!-- nelze zvednout na 6.6.0, protože hibernate.search.orm.version nemá ani
             v 5.8.0.Beta3 závislost na 6.6.0, ale jen 5.5.4. Mezi verzí 5.5.4 a 6.6.0
             byla odebrána vnitřní třída Index ve třídě org.apache.lucene.document.Field. -->
-        <spring.boot.version>2.3.1.RELEASE</spring.boot.version>
-
-        <geotools.version>23.1</geotools.version>
+        <spring.boot.version>1.5.3.RELEASE</spring.boot.version>
+        <spring.security.version>4.2.3.RELEASE</spring.security.version>
 
         <surefire.version>2.22.0</surefire.version>
         <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
@@ -43,7 +42,6 @@
     </properties>
 
     <modules>
-        <module>elza-react</module>
         <module>distrib</module>
         <module>elza-ws-api</module>
         <module>elza-core</module>
@@ -57,19 +55,23 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- JAX-WS  -->
+            <!-- liquibase -->
             <dependency>
-                <groupId>com.sun.xml.ws</groupId>
-                <artifactId>jaxws-ri-bom-ext</artifactId>
-                <version>${javax-jaxws.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
+                <groupId>org.liquibase</groupId>
+                <artifactId>liquibase-core</artifactId>
+                <version>3.5.3</version>
             </dependency>
-            <!-- Jackson -->
+            <dependency>
+                <groupId>com.mattbertolini</groupId>
+                <artifactId>liquibase-slf4j</artifactId>
+                <version>2.0.0</version>
+            </dependency>
+            <!-- END - liquibase -->
+
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
-                <version>${jackson-bom.version}</version>
+                <version>2.9.5</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -84,53 +86,33 @@
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-config</artifactId>
-                <version>${spring-security.version}</version>
+                <version>${spring.security.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-messaging</artifactId>
-                <version>${spring-security.version}</version>
+                <version>${spring.security.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-core</artifactId>
-                <version>${spring-security.version}</version>
+                <version>${spring.security.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-web</artifactId>
-                <version>${spring-security.version}</version>
+                <version>${spring.security.version}</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
             <dependency>
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
-                <version>1.26</version>
+                <version>1.18</version>
             </dependency>
             <dependency>
                 <groupId>com.google.code.findbugs</groupId>
                 <artifactId>jsr305</artifactId>
                 <version>3.0.1</version>
-            </dependency>
-            <dependency>
-                <groupId>com.squareup.okhttp3</groupId>
-                <artifactId>okhttp</artifactId>
-                <version>3.14.3</version>
-            </dependency>
-            <dependency>
-                <groupId>com.squareup.okhttp3</groupId>
-                <artifactId>logging-interceptor</artifactId>
-                <version>3.14.3</version>
-            </dependency>
-            <dependency>
-                <groupId>org.threeten</groupId>
-                <artifactId>threetenbp</artifactId>
-                <version>1.4.0</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gsonfire</groupId>
-                <artifactId>gson-fire</artifactId>
-                <version>1.8.3</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
             <dependency>
@@ -141,7 +123,7 @@
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
-                <version>42.2.14</version>
+                <version>42.2.2</version>
             </dependency>
             <dependency>
                 <groupId>net.sourceforge.jtds</groupId>
@@ -149,23 +131,11 @@
                 <version>1.3.1</version>
                 <scope>runtime</scope>
             </dependency>
-
             <dependency>
                 <groupId>org.geotools</groupId>
                 <artifactId>gt-geojson</artifactId>
-                <version>${geotools.version}</version>
+                <version>14.0</version>
             </dependency>
-            <dependency>
-                <groupId>org.geotools.xsd</groupId>
-                <artifactId>gt-xsd-core</artifactId>
-                <version>${geotools.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.geotools.xsd</groupId>
-                <artifactId>gt-xsd-kml</artifactId>
-                <version>${geotools.version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>commons-lang</groupId>
                 <artifactId>commons-lang</artifactId>
@@ -190,35 +160,6 @@
                 <groupId>org.apache.pdfbox</groupId>
                 <artifactId>pdfbox</artifactId>
                 <version>2.0.2</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus</groupId>
-                <artifactId>groovy</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>org.javassist</groupId>
-                <artifactId>javassist</artifactId>
-                <version>3.26.0-GA</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ow2.asm</groupId>
-                <artifactId>asm</artifactId>
-                <version>7.2</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.xml.soap</groupId>
-                <artifactId>javax.xml.soap-api</artifactId>
-                <version>1.4.0</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.xml.ws</groupId>
-                <artifactId>jaxws-api</artifactId>
-                <version>2.3.1</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.jws</groupId>
-                <artifactId>javax.jws-api</artifactId>
-                <version>1.1</version>
             </dependency>
 
             <!-- Hibernate -->
@@ -265,14 +206,25 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>com.vividsolutions</groupId>
+                <artifactId>jts</artifactId>
+                <version>1.12</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>xercesImpl</artifactId>
+                        <groupId>xerces</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy</artifactId>
-                <version>2.5.12</version>
+                <version>2.4.3</version>
 		    </dependency>
 			<dependency>
 				<groupId>net.sf.jasperreports</groupId>
 				<artifactId>jasperreports</artifactId>
-				<version>6.13.0</version>
+				<version>6.10.0</version>
 				<exclusions>
 					<exclusion>
 						<artifactId>lucene-core</artifactId>
@@ -302,10 +254,6 @@
 						<groupId>javax.xml.stream</groupId>
 						<artifactId>stax-api</artifactId>
 					</exclusion>
-					<exclusion>
-						<groupId>stax</groupId>
-						<artifactId>stax</artifactId>
-					</exclusion>
 				</exclusions>
 			</dependency>
 			<dependency>
@@ -316,7 +264,7 @@
             <dependency>
                 <groupId>org.freemarker</groupId>
                 <artifactId>freemarker</artifactId>
-                <version>2.3.30</version>
+                <version>2.3.28</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
@@ -375,23 +323,8 @@
                 <artifactId>cxf-rt-transports-local</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.openapitools</groupId>
-                <artifactId>jackson-databind-nullable</artifactId>
-                <version>0.2.0</version>
-            </dependency>
-            <dependency>
-                <groupId>io.swagger</groupId>
-                <artifactId>swagger-annotations</artifactId>
-                <version>1.5.21</version>
-            </dependency>
-            <dependency>
-                <groupId>io.swagger.core.v3</groupId>
-                <artifactId>swagger-annotations</artifactId>
-                <version>2.0.8</version>
-            </dependency>
-            <!-- END - CXF -->
         </dependencies>
+        <!-- END - CXF -->
     </dependencyManagement>
 
     <build>
@@ -412,12 +345,12 @@
                 <plugin>
                 	<groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.1.2</version>
+                    <version>3.1.2</version>                
                 </plugin>
                 <plugin>
                 	<groupId>org.apache.maven.shared</groupId>
                 	<artifactId>maven-filtering</artifactId>
-                	<version>3.1.1</version>
+                	<version>3.1.1</version>                
                 </plugin>
                 <plugin>
 					<artifactId>maven-resources-plugin</artifactId>
@@ -427,7 +360,7 @@
 					<artifactId>maven-antrun-plugin</artifactId>
 					<groupId>org.apache.maven.plugins</groupId>
 					<version>1.8</version>
-				</plugin>
+				</plugin>                
             </plugins>
         </pluginManagement>
     </build>
@@ -496,9 +429,9 @@
                         <configuration>
                             <show>public</show>
                             <quiet>true</quiet>
-                            <additionalOptions>
+                            <additionalparam>
                                 -Xdoclint:none
-                            </additionalOptions>
+                            </additionalparam>
                             <failOnError>false</failOnError>
                         </configuration>
                     </plugin>
@@ -676,18 +609,14 @@
     </profiles>
 
     <repositories>
-        <!--<repository>
+        <repository>
             <id>OSGEO GeoTools repo</id>
             <url>http://download.osgeo.org/webdav/geotools</url>
-        </repository>-->
+        </repository>
         <repository>
             <id>Hibernate Spatial repo</id>
             <url>http://nexus.e-is.pro/nexus/content/groups/public/</url>
             <!-- Dočasné nové repo hibernate spatial -->
-        </repository>
-        <repository>
-            <id>OSGeo</id>
-            <url>https://repo.osgeo.org/repository/release/</url>
         </repository>
         <repository>
             <id>Geo solutions</id>
@@ -697,10 +626,10 @@
             <id>jboss</id>
             <url>https://repository.jboss.org/nexus/content/groups/public/</url>
         </repository>
-        <!--<repository>
+        <repository>
             <id>central</id>
             <url>http://central.maven.org/maven2/</url>
-        </repository>-->
+        </repository>
         <repository>
             <id>jaspersoft-third-party-ce</id>
             <url>http://jaspersoft.jfrog.io/jaspersoft/third-party-ce-artifacts/</url>
@@ -710,7 +639,7 @@
     <scm>
         <connection>scm:git:ssh://frnk.lightcomp.cz/opt/git/elza.git</connection>
         <developerConnection>scm:git:ssh://frnk.lightcomp.cz/opt/git/elza.git</developerConnection>
-        <tag>elza-1.3.0</tag>
+        <tag>HEAD</tag>
     </scm>
     <distributionManagement>
         <repository>
