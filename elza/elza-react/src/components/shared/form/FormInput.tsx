@@ -39,7 +39,7 @@ export const FormInput: React.FC<PropsWithChildren<IFormInputProps>> = memo((pro
             );
         case 'radio':
             return (
-                <div>
+                <Form.Group>
                     <Form.Check
                         type="radio"
                         label={label}
@@ -49,7 +49,20 @@ export const FormInput: React.FC<PropsWithChildren<IFormInputProps>> = memo((pro
                         {...inlineProps}
                     />
                     {!inline && hasError && <Form.Control.Feedback>{error}</Form.Control.Feedback>}
-                </div>
+                </Form.Group>
+            );
+        case 'checkbox':
+            return (
+                <Form.Group>
+                    <Form.Check
+                        label={label}
+                        value={value}
+                        isInvalid={hasError}
+                        {...otherProps}
+                        {...inlineProps}
+                    />
+                    {!inline && hasError && <Form.Control.Feedback>{error}</Form.Control.Feedback>}
+                </Form.Group>
             );
         case 'select':
             return (

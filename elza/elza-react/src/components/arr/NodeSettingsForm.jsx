@@ -1,21 +1,22 @@
 import React from 'react';
-import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n} from 'components/shared';
-import {Col, Form, FormCheck, Modal, Nav, NavItem, Row} from 'react-bootstrap';
+import {Field, FieldArray, formValueSelector, reduxForm} from 'redux-form';
+import {AbstractReactComponent, FormInputField, i18n} from 'components/shared';
+import {Col, Form, Modal, Nav, Row} from 'react-bootstrap';
 import {Button} from '../ui';
-import {objectById} from 'stores/app/utils.jsx';
 import {visiblePolicyFetchIfNeeded} from 'actions/arr/visiblePolicy.jsx';
-import {FormInput, Loading} from '../shared/index';
+import {Loading} from '../shared/index';
 import getMapFromList from '../../shared/utils/getMapFromList';
 
 import './NodeSettingsForm.scss';
+import {connect} from 'react-redux';
+import {CheckboxArrayField} from 'components/arr/nodeForm/CheckboxArrayField';
 
 const VIEW_KEYS = {
     RULES: 'RULES',
     EXTENSIONS: 'EXTENSIONS',
 };
 
-const VIEW_POLICY_STATE = {
+export const VIEW_POLICY_STATE = {
     PARENT: 'PARENT',
     NODE: 'NODE',
 };
@@ -46,25 +47,26 @@ class NodeSettingsForm extends AbstractReactComponent {
         const {activeView} = this.state;
 
         const {
-            fields: {records, rules, nodeExtensions},
-            handleSubmit,
-            onClose,
-            submitting,
-            visiblePolicy,
-            visiblePolicyTypes,
-            arrRegion,
-        } = this.props;
+                  rulesValue,
+                  handleSubmit,
+                  onClose,
+                  pristine,
+                  submitting,
+                  visiblePolicy,
+                  visiblePolicyTypes,
+                  arrRegion,
+              } = this.props;
         if (!visiblePolicy.fetched) {
             return (
                 <Modal.Body>
-                    <Loading />
+                    <Loading/>
                 </Modal.Body>
             );
         }
 
         const {
-            otherData: {parentExtensions, availableExtensions},
-        } = visiblePolicy;
+                  otherData: {parentExtensions, availableExtensions},
+              } = visiblePolicy;
 
         const availableExtensionsMap = getMapFromList(availableExtensions, 'id');
 
@@ -89,50 +91,67 @@ class NodeSettingsForm extends AbstractReactComponent {
             }
         }
 
+        console.log(":::", visiblePolicyTypeItems);
+
         return (
             <Form className="node-settings-form" onSubmit={handleSubmit}>
                 <Modal.Body>
                     <Row>
                         <Col sm={3} className="menu">
-                            <Nav variant="pills" stacked activeKey={activeView} onSelect={this.changeView}>
-                                <NavItem eventKey={VIEW_KEYS.RULES}>{i18n('visiblePolicy.rules')}</NavItem>
-                                <NavItem eventKey={VIEW_KEYS.EXTENSIONS}>{i18n('visiblePolicy.extensions')}</NavItem>
+                            <Nav variant="pills" activeKey={activeView} onSelect={this.changeView}>
+                                <Nav.Item>
+                                    <Nav.Link eventKey={VIEW_KEYS.RULES}>
+                                        {i18n('visiblePolicy.rules')}
+                                    </Nav.Link>
+                                </Nav.Item>
+                                <Nav.Item>
+                                    <Nav.Link eventKey={VIEW_KEYS.EXTENSIONS}>
+                                        {i18n('visiblePolicy.extensions')}
+                                    </Nav.Link>
+                                </Nav.Item>
                             </Nav>
                         </Col>
                         <Col sm={9} className="view">
                             {activeView === VIEW_KEYS.RULES && (
                                 <Row key={VIEW_KEYS.RULES}>
                                     <Col xs={12}>
-                                        <FormInput
+                                        <Field
+                                            name="rules"
                                             type="radio"
-                                            {...rules}
-                                            checked={rules.value === VIEW_POLICY_STATE.PARENT}
-                                            value={VIEW_POLICY_STATE.PARENT}
+                                            component={FormInputField}
                                             label={i18n('visiblePolicy.rules.parent')}
+                                            value={VIEW_POLICY_STATE.PARENT}
                                         />
-                                        <FormInput
+                                        <Field
+                                            name="rules"
                                             type="radio"
-                                            {...rules}
-                                            checked={rules.value === VIEW_POLICY_STATE.NODE}
-                                            value={VIEW_POLICY_STATE.NODE}
+                                            component={FormInputField}
                                             label={i18n('visiblePolicy.rules.node')}
+                                            value={VIEW_POLICY_STATE.NODE}
                                         />
+
                                         <div className="listbox-wrapper">
                                             <div className="listbox-container">
-                                                {records.map((val, index) => {
-                                                    const {checked, name, onFocus, onChange, onBlur} = val.checked;
-                                                    const wantedProps = {checked, name, onFocus, onChange, onBlur};
-                                                    return (
-                                                        <FormCheck
-                                                            {...wantedProps}
-                                                            disabled={rules.value !== 'NODE'}
-                                                            key={index}
-                                                            value={true}
-                                                        >
-                                                            {visiblePolicyTypeItems[val.id.initialValue].name}
-                                                        </FormCheck>
-                                                    );
-                                                })}
+                                                <FieldArray
+                                                    name="records"
+                                                    component={CheckboxArrayField}
+                                                    items={visiblePolicyTypeItems}
+                                                    disabled={rulesValue !== 'NODE'}
+                                                />
+                                                {/*{records.map((val, index) => {*/}
+                                                {/*    const {checked, name, onFocus, onChange, onBlur} = val.checked;*/}
+                                                {/*    const wantedProps = {checked, name, onFocus, onChange, onBlur};*/}
+                                                {/*    return (*/}
+                                                {/*        <FormCheck*/}
+                                                {/*            {...wantedProps}*/}
+                                                {/*            disabled={rules.value !== 'NODE'}*/}
+                                                {/*            key={index}*/}
+                                                {/*            value={true}*/}
+                                                {/*        >*/}
+                                                {/*            {visiblePolicyTypeItems[val.id.initialValue].name}*/}
+                                                {/*        </FormCheck>*/}
+                                                {/*    );*/}
+                                                {/*})}*/}
                                             </div>
                                         </div>
                                     </Col>
@@ -146,8 +165,8 @@ class NodeSettingsForm extends AbstractReactComponent {
                                             <div className="listbox-container">
                                                 {parentExtensions && parentExtensions.length > 0
                                                     ? parentExtensions.map((i, index) => (
-                                                          <div key={index}>{i.name}</div>
-                                                      ))
+                                                        <div key={index}>{i.name}</div>
+                                                    ))
                                                     : 'Nejsou aktivní žádná rozšíření'}
                                             </div>
                                         </div>
@@ -156,34 +175,39 @@ class NodeSettingsForm extends AbstractReactComponent {
                                         <h4>{i18n('visiblePolicy.rules.node')}</h4>
                                         <div className="listbox-wrapper">
                                             <div className="listbox-container">
-                                                {nodeExtensions && nodeExtensions.length > 0
-                                                    ? nodeExtensions.map((val, index) => {
-                                                          const {
-                                                              checked,
-                                                              name,
-                                                              onFocus,
-                                                              onChange,
-                                                              onBlur,
-                                                          } = val.checked;
-                                                          const wantedProps = {
-                                                              checked,
-                                                              name,
-                                                              onFocus,
-                                                              onChange,
-                                                              onBlur,
-                                                          };
-                                                          return (
-                                                              <FormCheck {...wantedProps} key={index} value={true}>
-                                                                  {availableExtensionsMap[val.id.initialValue]
-                                                                      ? availableExtensionsMap[val.id.initialValue].name
-                                                                      : objectById(
-                                                                            visiblePolicy.otherData.nodeExtensions,
-                                                                            val.id.initialValue,
-                                                                        ).name}
-                                                              </FormCheck>
-                                                          );
-                                                      })
-                                                    : 'Nejsou dostupná žádná rozšíření'}
+                                                <FieldArray
+                                                    name="nodeExtensions"
+                                                    component={CheckboxArrayField}
+                                                    items={availableExtensionsMap}
+                                                />
+                                                {/*    {nodeExtensions && nodeExtensions.length > 0*/}
+                                                {/*        ? nodeExtensions.map((val, index) => {*/}
+                                                {/*              const {*/}
+                                                {/*                  checked,*/}
+                                                {/*                  name,*/}
+                                                {/*                  onFocus,*/}
+                                                {/*                  onChange,*/}
+                                                {/*                  onBlur,*/}
+                                                {/*              } = val.checked;*/}
+                                                {/*              const wantedProps = {*/}
+                                                {/*                  checked,*/}
+                                                {/*                  name,*/}
+                                                {/*                  onFocus,*/}
+                                                {/*                  onChange,*/}
+                                                {/*                  onBlur,*/}
+                                                {/*              };*/}
+                                                {/*              return (*/}
+                                                {/*                  <FormCheck {...wantedProps} key={index} value={true}>*/}
+                                                {/*                      {availableExtensionsMap[val.id.initialValue]*/}
+                                                {/*                          ? availableExtensionsMap[val.id.initialValue].name*/}
+                                                {/*                          : objectById(*/}
+                                                {/*                                visiblePolicy.otherData.nodeExtensions,*/}
+                                                {/*                                val.id.initialValue,*/}
+                                                {/*                            ).name}*/}
+                                                {/*                  </FormCheck>*/}
+                                                {/*              );*/}
+                                                {/*          })*/}
+                                                {/*        : 'Nejsou dostupná žádná rozšíření'}*/}
                                             </div>
                                         </div>
                                     </Col>
@@ -193,7 +217,7 @@ class NodeSettingsForm extends AbstractReactComponent {
                     </Row>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" disabled={submitting}>
+                    <Button type="submit" variant="outline-secondary" disabled={pristine || submitting}>
                         {i18n('visiblePolicy.action.save')}
                     </Button>
                     <Button variant="link" disabled={submitting} onClick={onClose}>
@@ -205,38 +229,18 @@ class NodeSettingsForm extends AbstractReactComponent {
     }
 }
 
-export default reduxForm(
-    {
-        form: 'nodeSettingsForm',
-        fields: ['rules', 'records[].id', 'records[].checked', 'nodeExtensions[].id', 'nodeExtensions[].checked'],
-    },
-    state => {
-        const {visiblePolicy} = state.arrRegion;
-        const allExtensions = [];
-        let rules = null;
-        if (visiblePolicy.otherData !== null) {
-            const {nodeExtensions, availableExtensions, nodePolicyTypeIdsMap} = visiblePolicy.otherData;
-            const nodeExtensionsMap = getMapFromList(nodeExtensions, 'code');
-            availableExtensions.forEach(i => {
-                const checked = nodeExtensionsMap.hasOwnProperty(i.code);
-                allExtensions.push({...i, checked});
-                if (checked) {
-                    delete nodeExtensionsMap[i.code];
-                }
-            });
-            allExtensions.concat(Object.values(nodeExtensionsMap).map(i => ({...i, checked: true})));
-            rules = Object.values(nodePolicyTypeIdsMap).length > 0 ? VIEW_POLICY_STATE.NODE : VIEW_POLICY_STATE.PARENT;
-        }
+const selector = formValueSelector('nodeSettingsForm');
 
-        return {
-            initialValues: {
-                rules,
-                records: visiblePolicy.data,
-                nodeExtensions: allExtensions,
-            },
-            visiblePolicy: visiblePolicy,
-            visiblePolicyTypes: state.refTables.visiblePolicyTypes,
-            arrRegion: state.arrRegion,
-        };
-    },
-)(NodeSettingsForm);
+const mapState = (state) => {
+    return {
+        visiblePolicy: state.arrRegion.visiblePolicy,
+        visiblePolicyTypes: state.refTables.visiblePolicyTypes,
+        rulesValue: selector(state, 'rules'),
+        arrRegion: state.arrRegion,
+    };
+};
+const connector = connect(mapState);
+
+export default reduxForm({
+    form: 'nodeSettingsForm',
+})(connector(NodeSettingsForm));

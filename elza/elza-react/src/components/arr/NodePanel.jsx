@@ -19,7 +19,6 @@ import {fundSelectSubNode, fundSubNodesNext, fundSubNodesPrev} from 'actions/arr
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx';
 import {indexById} from 'stores/app/utils.jsx';
 import {createDigitizationName, createFundRoot, getDescItemsAddTree} from './ArrUtils.jsx';
-import {propsEquals} from 'components/Utils.jsx';
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
 import {createReferenceMarkString, getGlyph, getOneSettings} from 'components/arr/ArrUtils.jsx';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
@@ -36,9 +35,10 @@ import {PropTypes} from 'prop-types';
 import defaultKeymap from './NodePanelKeymap.jsx';
 
 import './NodePanel.scss';
-import NodeSettingsForm from './NodeSettingsForm';
+import NodeSettingsForm, {VIEW_POLICY_STATE} from './NodeSettingsForm';
 import {FOCUS_KEYS} from '../../constants.tsx';
 import ConfirmForm from '../shared/form/ConfirmForm';
+import getMapFromList from 'shared/utils/getMapFromList';
 // Konstance kolik se má maximálně zobrazit v seznamu parents a children záznamů
 const PARENT_CHILD_MAX_LENGTH = 250;
 
@@ -217,7 +217,7 @@ class NodePanel extends AbstractReactComponent {
                     focusWasSet();
                 });
             }
-            // Jen pokud není třeba focus na něco nižšího, např. prvek formuláře atp
+                // Jen pokud není třeba focus na něco nižšího, např. prvek formuláře atp
             // Voláno jen pokud formulář úspěšně focus nenastavil - např. pokud jsou všechna pole formuláře zamčena
             else if (isFocusExactFor(focus, FOCUS_KEYS.ARR, 2)) {
                 this.setState({}, () => {
@@ -384,9 +384,17 @@ class NodePanel extends AbstractReactComponent {
     };
 
     handleVisiblePolicy() {
-        const {node, versionId} = this.props;
+        const {rules, records, nodeExtensions, node, versionId} = this.props;
+        const initialValues = {
+            rules,
+            records,
+            nodeExtensions,
+        };
+
+        console.log(":::initialValues", initialValues);
         const form = (
             <NodeSettingsForm
+                initialValues={initialValues}
                 nodeId={node.selectedSubNodeId}
                 fundVersionId={versionId}
                 onSubmit={this.handleSetVisiblePolicy}
@@ -407,8 +415,8 @@ class NodePanel extends AbstractReactComponent {
         }
 
         const nodeExtensionsIds = Object.values(nodeExtensions)
-            .filter(i => i.checked)
-            .map(i => i.id);
+                                        .filter(i => i.checked)
+                                        .map(i => i.id);
 
         return WebApi.setVisiblePolicy(node.selectedSubNodeId, versionId, mapIds, false, nodeExtensionsIds).then(() => {
             dispatch(setVisiblePolicyReceive(node.selectedSubNodeId, versionId));
@@ -420,11 +428,11 @@ class NodePanel extends AbstractReactComponent {
      */
     handleAddDescItemType() {
         const {
-            node: {subNodeForm, selectedSubNodeId, routingKey},
-            versionId,
-            fund,
-            userDetail,
-        } = this.props;
+                  node: {subNodeForm, selectedSubNodeId, routingKey},
+                  versionId,
+                  fund,
+                  userDetail,
+              } = this.props;
         let strictMode = fund.activeVersion.strictMode;
 
         let userStrictMode = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fund.id);
@@ -467,7 +475,7 @@ class NodePanel extends AbstractReactComponent {
         };
 
         // Modální dialog
-        const form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit} />;
+        const form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>;
         this.props.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
     }
 
@@ -550,7 +558,7 @@ class NodePanel extends AbstractReactComponent {
         var subNodeId = node.id;
         var subNodeParentNode = this.getSiblingNodes()[
             indexById(this.getSiblingNodes(), this.props.node.selectedSubNodeId)
-        ];
+            ];
         this.props.dispatch(fundSelectSubNode(this.props.versionId, subNodeId, subNodeParentNode, false, null, true));
     }
 
@@ -578,7 +586,7 @@ class NodePanel extends AbstractReactComponent {
         } else {
             children = (
                 <div key="children" className="children">
-                    <HorizontalLoader text={i18n('global.data.loading.node.children')} />
+                    <HorizontalLoader text={i18n('global.data.loading.node.children')}/>
                 </div>
             );
         }
@@ -624,7 +632,7 @@ class NodePanel extends AbstractReactComponent {
      */
     renderRowItem(onClick, props) {
         const {item} = props;
-        var icon = item.icon ? <Icon className="node-icon" glyph={getGlyph(item.icon)} /> : '';
+        var icon = item.icon ? <Icon className="node-icon" glyph={getGlyph(item.icon)}/> : '';
         var refmark = createReferenceMarkString(item);
         var levels = '';
         if (refmark != '') levels = <span className="reference-mark">{refmark}</span>;
@@ -760,21 +768,21 @@ class NodePanel extends AbstractReactComponent {
             }
 
             if (item.nodeConformity.state === 'OK') {
-                icon = <Icon glyph="fa-check" />;
+                icon = <Icon glyph="fa-check"/>;
                 tooltip = <div>{i18n('arr.node.status.ok') + description}</div>;
             } else {
                 if (
                     (missings == null || missingsHide == missings.length) &&
                     (errors == null || errorsHide == errors.length)
                 ) {
-                    icon = <Icon glyph="fa-check-circle" />;
+                    icon = <Icon glyph="fa-check-circle"/>;
                     tooltip = (
                         <div>
                             {i18n('arr.node.status.okx')} {description} {messages}
                         </div>
                     );
                 } else {
-                    icon = <Icon glyph="fa-exclamation-circle" />;
+                    icon = <Icon glyph="fa-exclamation-circle"/>;
                     tooltip = (
                         <div>
                             {i18n('arr.node.status.err')} {description} {messages}
@@ -783,7 +791,7 @@ class NodePanel extends AbstractReactComponent {
                 }
             }
         } else {
-            icon = <Icon glyph="fa-exclamation-triangle" />;
+            icon = <Icon glyph="fa-exclamation-triangle"/>;
             tooltip = <div>{i18n('arr.node.status.undefined')}</div>;
         }
 
@@ -823,7 +831,7 @@ class NodePanel extends AbstractReactComponent {
                 showDelay={50}
                 hideDelay={0}
             >
-                <Icon glyph="fa-commenting" />
+                <Icon glyph="fa-commenting"/>
             </TooltipTrigger>
         );
     }
@@ -843,7 +851,7 @@ class NodePanel extends AbstractReactComponent {
             if (!node.selectedSubNodeId) {
                 console.warn('Není vybraná JP!', node);
             } else {
-                rows.push(<HorizontalLoader key="loading" text={i18n('global.data.loading.node')} />);
+                rows.push(<HorizontalLoader key="loading" text={i18n('global.data.loading.node')}/>);
             }
         } else {
             if (node.viewStartIndex > 0 && displayAccordion) {
@@ -852,7 +860,7 @@ class NodePanel extends AbstractReactComponent {
                         key="prev"
                         onClick={() => this.props.dispatch(fundSubNodesPrev(versionId, node.id, node.routingKey))}
                     >
-                        <Icon glyph="fa-chevron-left" />
+                        <Icon glyph="fa-chevron-left"/>
                         {i18n('arr.fund.prev')}
                     </Button>,
                 );
@@ -877,7 +885,7 @@ class NodePanel extends AbstractReactComponent {
                     });
                     digitizationInfo = (
                         <div className="digitizationInfo" title={title}>
-                            <Icon glyph="fa-shopping-basket" />
+                            <Icon glyph="fa-shopping-basket"/>
                         </div>
                     );
                 }
@@ -980,7 +988,7 @@ class NodePanel extends AbstractReactComponent {
                         key="next"
                         onClick={() => this.props.dispatch(fundSubNodesNext(versionId, node.id, node.routingKey))}
                     >
-                        <Icon glyph="fa-chevron-right" />
+                        <Icon glyph="fa-chevron-right"/>
                         {i18n('arr.fund.next')}
                     </Button>,
                 );
@@ -1021,16 +1029,16 @@ class NodePanel extends AbstractReactComponent {
 
     render() {
         const {
-            calendarTypes,
-            versionId,
-            rulDataTypes,
-            node,
-            fundId,
-            userDetail,
-            fund,
-            closed,
-            descItemTypes,
-        } = this.props;
+                  calendarTypes,
+                  versionId,
+                  rulDataTypes,
+                  node,
+                  fundId,
+                  userDetail,
+                  fund,
+                  closed,
+                  descItemTypes,
+              } = this.props;
 
         const settings = this.getSettingsFromProps();
         const readMode = settings.readMode;
@@ -1082,7 +1090,7 @@ class NodePanel extends AbstractReactComponent {
                 />
             );
         } else {
-            form = <HorizontalLoader text={i18n('global.data.loading.form')} />;
+            form = <HorizontalLoader text={i18n('global.data.loading.form')}/>;
         }
 
         const daos = (
@@ -1181,11 +1189,30 @@ class NodePanel extends AbstractReactComponent {
     }
 }
 
-function mapStateToProps(state) {
+function mapState(state) {
     const {focus, userDetail} = state;
+    const {visiblePolicy} = state.arrRegion;
+    const allExtensions = [];
+    let rules = null;
+    if (visiblePolicy.otherData !== null) {
+        const {nodeExtensions, availableExtensions, nodePolicyTypeIdsMap} = visiblePolicy.otherData;
+        const nodeExtensionsMap = getMapFromList(nodeExtensions, 'code');
+        availableExtensions.forEach(i => {
+            const checked = nodeExtensionsMap.hasOwnProperty(i.code);
+            allExtensions.push({...i, checked});
+            if (checked) {
+                delete nodeExtensionsMap[i.code];
+            }
+        });
+        allExtensions.concat(Object.values(nodeExtensionsMap).map(i => ({...i, checked: true})));
+        rules = Object.values(nodePolicyTypeIdsMap).length > 0 ? VIEW_POLICY_STATE.NODE : VIEW_POLICY_STATE.PARENT;
+    }
     return {
         focus,
         userDetail,
+        rules,
+        records: visiblePolicy.data,
+        nodeExtensions: allExtensions,
     };
 }
 
@@ -1202,4 +1229,4 @@ NodePanel.propTypes = {
     userDetail: PropTypes.object.isRequired,
 };
 
-export default connect(mapStateToProps)(NodePanel);
+export default connect(mapState)(NodePanel);
