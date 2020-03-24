@@ -41,7 +41,7 @@ class FundDetail extends AbstractReactComponent {
         super(props);
 
         this.state = {
-            selectedTabItem: FundDetail.tabItems[FundDetail.TAB_USERS],
+            selectedTabItem: FundDetail.TAB_USERS,
         };
     }
 
@@ -79,15 +79,17 @@ class FundDetail extends AbstractReactComponent {
     };
 
     handleTabSelect = item => {
-        this.setState({selectedTabItem: item});
+        this.setState({selectedTabItem: Number(item)});
     };
 
     renderTabContent = () => {
         const {fund} = this.props;
         const {selectedTabItem} = this.state;
-        console.log('selected items', this.selectedUser, this.selectedGroup);
 
-        switch (selectedTabItem.id) {
+        console.log(':::selected items', this.selectedUser, this.selectedGroup);
+        console.log(':::this.state', this.state);
+
+        switch (selectedTabItem) {
             case FundDetail.TAB_USERS:
                 return (
                     <FundUsersPanel
@@ -101,7 +103,7 @@ class FundDetail extends AbstractReactComponent {
             case FundDetail.TAB_GROUPS:
                 return (
                     <FundGroupsPanel
-                        fundId={fund.id}
+                        fundId={fund?.id}
                         onSelectItem={(item, index) => {
                             this.selectedGroup = {index, id: item.id};
                         }}
@@ -118,7 +120,7 @@ class FundDetail extends AbstractReactComponent {
         const {selectedTabItem} = this.state;
 
         if (!fund.fetched || fund.isFetching) {
-            return <HorizontalLoader />;
+            return <HorizontalLoader/>;
         }
 
         return (
@@ -126,7 +128,7 @@ class FundDetail extends AbstractReactComponent {
                 className="detail-container"
                 header={
                     <DetailHeader
-                        icon={<Icon glyph="fa-group" />}
+                        icon={<Icon glyph="fa-group"/>}
                         title={fund.data.name}
                         flagLeft={i18n('admin.fund.title')}
                         subtitle={fund.data.internalCode}
@@ -136,6 +138,7 @@ class FundDetail extends AbstractReactComponent {
                 <div className="permissions-container">
                     <Tabs.Container>
                         <Tabs.Tabs
+                            asTabs
                             items={FundDetail.tabItems}
                             activeItem={selectedTabItem}
                             onSelect={this.handleTabSelect}

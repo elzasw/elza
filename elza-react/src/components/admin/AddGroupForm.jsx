@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import {Field, reduxForm} from 'redux-form';
+import {AbstractReactComponent, FormInputField, i18n} from 'components/shared';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {submitForm} from 'components/form/FormUtils.jsx';
@@ -10,9 +10,7 @@ import {submitForm} from 'components/form/FormUtils.jsx';
  * Formulář přidání nebo uzavření AS.
  */
 class AddGroupForm extends AbstractReactComponent {
-    /**
-     * Validace formuláře.
-     */
+
     static validate = (values, props) => {
         const errors = {};
 
@@ -32,23 +30,34 @@ class AddGroupForm extends AbstractReactComponent {
         submitForm(AddGroupForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
-        const {
-            fields: {name, code, description},
-            create,
-            handleSubmit,
-            onClose,
-            submitting,
-        } = this.props;
+        const {create, handleSubmit, onClose, submitting} = this.props;
 
         return (
             <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                 <Modal.Body>
-                    <FormInput label={i18n('admin.group.title.name')} type="text" {...name} />
-                    <FormInput label={i18n('admin.group.title.code')} type="text" {...code} disabled={!create} />
-                    <FormInput as="textarea" label={i18n('admin.group.title.description')} {...description} />
+                    <Field
+                        name="name"
+                        type="text"
+                        component={FormInputField}
+                        label={i18n('admin.group.title.name')}
+                    />
+                    <Field
+                        name="code"
+                        type="text"
+                        component={FormInputField}
+                        label={i18n('admin.group.title.code')}
+                        disabled={!create}
+                    />
+                    <Field
+                        name="description"
+                        type="textarea"
+                        component={FormInputField}
+                        label={i18n('admin.group.title.description')}
+                        disabled={!create}
+                    />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" disabled={submitting}>
+                    <Button type="submit" variant="outline-secondary" disabled={submitting}>
                         {i18n(create ? 'global.action.create' : 'global.action.update')}
                     </Button>
                     <Button variant="link" onClick={onClose}>
@@ -60,14 +69,6 @@ class AddGroupForm extends AbstractReactComponent {
     }
 }
 
-export default reduxForm(
-    {
-        form: 'addGroupForm',
-        fields: ['name', 'code', 'description'],
-    },
-    (state, props) => {
-        return {
-            initialValues: props.initData,
-        };
-    },
-)(AddGroupForm);
+export default reduxForm({
+    form: 'addGroupForm',
+})(AddGroupForm);

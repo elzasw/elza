@@ -3,9 +3,11 @@
 .node-settings-form {
     .modal-body {
         padding: 0 15px 0 0;
+
         .menu {
             padding-right: 0;
         }
+
         .view {
             padding: 0 15px;
             border-left: 1px solid $node-panel-border;
@@ -21,8 +23,18 @@
     }
 
     .nav-pills {
-        & > li > a {
-            padding: 3px 5px;
+        & .nav-item {
+            width: 100%;
+
+            a {
+                color: $color-link;
+                padding: 3px 5px;
+
+                &.active {
+                    color: white;
+                    background: $color-link;
+                }
+            }
         }
     }
 }
