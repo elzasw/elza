@@ -50,7 +50,7 @@ public class ApFactory {
 
     private final ApFragmentRepository fragmentRepository;
 
-    private final ApBodyItemRepository bodyItemRepository;
+    private final ApAccessPointItemRepository accessPointItemRepository;
 
     private final RuleService ruleService;
 
@@ -71,7 +71,7 @@ public class ApFactory {
                      final ApFragmentItemRepository fragmentItemRepository,
                      final ApNameItemRepository nameItemRepository,
                      final ApFragmentRepository fragmentRepository,
-                     final ApBodyItemRepository bodyItemRepository,
+                     final ApAccessPointItemRepository accessPointItemRepository,
                      final RuleService ruleService,
                      final RuleFactory ruleFactory,
                      final PartyRepository partyRepository,
@@ -86,7 +86,7 @@ public class ApFactory {
         this.fragmentItemRepository = fragmentItemRepository;
         this.nameItemRepository = nameItemRepository;
         this.fragmentRepository = fragmentRepository;
-        this.bodyItemRepository = bodyItemRepository;
+        this.accessPointItemRepository = accessPointItemRepository;
         this.ruleService = ruleService;
         this.ruleFactory = ruleFactory;
         this.partyRepository = partyRepository;
@@ -304,12 +304,12 @@ public class ApFactory {
     }
 
     private ApFormVO createFormVO(ApAccessPoint accessPoint, ApType apType) {
-        List<ApItem> bodyItems = new ArrayList<>(bodyItemRepository.findValidItemsByAccessPoint(accessPoint));
-        List<RulItemTypeExt> rulItemTypes = ruleService.getApItemTypesInternal(apType, bodyItems, ApRule.RuleType.BODY_ITEMS);
+        List<ApItem> apItems = new ArrayList<>(accessPointItemRepository.findValidItemsByAccessPoint(accessPoint));
+        List<RulItemTypeExt> rulItemTypes = ruleService.getApItemTypesInternal(apType, apItems, ApRule.RuleType.BODY_ITEMS);
 
         ApFormVO form = new ApFormVO();
         form.setItemTypes(createItemTypesVO(rulItemTypes));
-        form.setItems(createItemsVO(bodyItems));
+        form.setItems(createItemsVO(apItems));
         return form;
     }
 

@@ -123,4 +123,30 @@
         <dropColumn tableName="rul_item_spec" columnName="view_order"/>
     </changeSet>
 
+    <changeSet id="20200320120000" author="fantis">
+        <renameTable oldTableName="ap_body_item" newTableName="ap_access_point_item"/>
+    </changeSet>
+
+    <changeSet id="20200320130000" author="fantis">
+        <addColumn tableName="ap_fragment">
+            <column name="ap_fragment_parent_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_ap_fragment_parent_fragment"
+                             referencedTableName="ap_fragment"
+                             referencedColumnNames="fragment_id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20200320140000" author="fantis">
+        <addColumn tableName="ap_access_point">
+            <column name="preferred_name_item_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_ap_access_point_access_point_item"
+                             referencedTableName="ap_access_point_item"
+                             referencedColumnNames="item_id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
