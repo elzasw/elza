@@ -40,6 +40,10 @@ public class ApFragment {
     @JoinColumn(name = "fragmentTypeId", nullable = false)
     private RulStructuredType fragmentType;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApFragment.class)
+    @JoinColumn(name = "ap_fragment_parent_id")
+    private ApFragment parentFragment;
+
     public Integer getFragmentId() {
         return fragmentId;
     }
@@ -80,4 +84,11 @@ public class ApFragment {
         this.fragmentType = fragmentType;
     }
 
+    public ApFragment getParentFragment() {
+        return parentFragment;
+    }
+
+    public void setParentFragment(ApFragment parentFragment) {
+        this.parentFragment = parentFragment;
+    }
 }

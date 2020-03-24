@@ -44,7 +44,7 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApBodyItem;
+import cz.tacr.elza.domain.ApAccessPointItem;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApDescription;
 import cz.tacr.elza.domain.ApExternalId;
@@ -84,7 +84,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
 import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApBodyItemRepository;
+import cz.tacr.elza.repository.ApAccessPointItemRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
@@ -208,7 +208,7 @@ public class AccessPointService {
     private ApNameItemRepository nameItemRepository;
 
     @Autowired
-    private ApBodyItemRepository bodyItemRepository;
+    private ApAccessPointItemRepository accessPointItemRepository;
 
     @Autowired
     private AccessPointItemService apItemService;
@@ -1017,9 +1017,9 @@ public class AccessPointService {
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_MIGRATE);
 
-        List<ApBodyItem> itemsDbAp = bodyItemRepository.findValidItemsByAccessPoint(accessPoint);
+        List<ApAccessPointItem> itemsDbAp = accessPointItemRepository.findValidItemsByAccessPoint(accessPoint);
         apItemService.changeItems(apItems, new ArrayList<>(itemsDbAp), change, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
-                -> createBodyItem(accessPoint, it, is, c, objectId, position));
+                -> createApItem(accessPoint, it, is, c, objectId, position));
 
         List<ApNameItem> itemsDbNames = apNames.isEmpty() ? Collections.emptyList() : nameItemRepository.findValidItemsByNames(apNames);
         Map<Integer, List<ApNameItem>> nameApNameItemMap = itemsDbNames.stream().collect(groupingBy(ApNameItem::getNameId));
@@ -1083,7 +1083,7 @@ public class AccessPointService {
         apDataService.validationNotDeleted(apState);
 
         ApAccessPoint accessPoint = apState.getAccessPoint();
-        List<ApBodyItem> itemsDb = bodyItemRepository.findValidItemsByAccessPoint(accessPoint);
+        List<ApAccessPointItem> itemsDb = accessPointItemRepository.findValidItemsByAccessPoint(accessPoint);
 
         ApChange change;
         if (accessPoint.getState() == ApStateEnum.TEMP) {
@@ -1092,7 +1092,7 @@ public class AccessPointService {
             change = apDataService.createChange(ApChange.Type.AP_UPDATE);
         }
         List<ApItem> itemsCreated = apItemService.changeItems(items, new ArrayList<>(itemsDb), change, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
-                -> createBodyItem(accessPoint, it, is, c, objectId, position));
+                -> createApItem(accessPoint, it, is, c, objectId, position));
 
         //apGeneratorService.generateAndSetResult(accessPoint, change);
         apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
@@ -1121,7 +1121,7 @@ public class AccessPointService {
         } else {
             change = apDataService.createChange(ApChange.Type.AP_UPDATE);
         }
-        apItemService.deleteItemsByType(bodyItemRepository, accessPoint, itemType, change);
+        apItemService.deleteItemsByType(accessPointItemRepository, accessPoint, itemType, change);
 
         //apGeneratorService.generateAndSetResult(accessPoint, change);
         apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
@@ -1369,7 +1369,7 @@ public class AccessPointService {
         name.setDeleteChange(deleteChange);
         apNameRepository.save(name);
     }
-    
+
     /**
      * Vrati preferovane jmeno pristupoveho bodu
      * @param accessPoint
@@ -1820,8 +1820,8 @@ public class AccessPointService {
      * @param position pozice
      * @return vytvořená položka
      */
-    private ApItem createBodyItem(final ApAccessPoint accessPoint, final RulItemType it, final RulItemSpec is, final ApChange c, final int objectId, final int position) {
-        ApBodyItem item = new ApBodyItem();
+    private ApItem createApItem(final ApAccessPoint accessPoint, final RulItemType it, final RulItemSpec is, final ApChange c, final int objectId, final int position) {
+        ApAccessPointItem item = new ApAccessPointItem();
         item.setAccessPoint(accessPoint);
         item.setItemType(it);
         item.setItemSpec(is);

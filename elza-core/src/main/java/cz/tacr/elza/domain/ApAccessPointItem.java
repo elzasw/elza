@@ -3,13 +3,13 @@ package cz.tacr.elza.domain;
 import javax.persistence.*;
 
 /**
- * Prvek popisu hlavní části přístupového bodu.
+ * Prvek popisu části přístupového bodu.
  *
  * @since 17.07.2018
  */
 @Entity
-@Table(name = "ap_body_item")
-public class ApBodyItem extends ApItem {
+@Table(name = "ap_access_point_item")
+public class ApAccessPointItem extends ApItem {
 
     public static final String ACCESS_POINT_ID = "accessPointId";
 
@@ -20,15 +20,15 @@ public class ApBodyItem extends ApItem {
     @Column(name = ACCESS_POINT_ID, nullable = false, updatable = false, insertable = false)
     private Integer accessPointId;
 
-    public ApBodyItem() {
+    public ApAccessPointItem() {
     }
 
     @Override
-    public ApBodyItem copy() {
-        return new ApBodyItem(this);
+    public ApAccessPointItem copy() {
+        return new ApAccessPointItem(this);
     }
 
-    public ApBodyItem(final ApBodyItem other) {
+    public ApAccessPointItem(final ApAccessPointItem other) {
         super(other);
         this.accessPoint = other.accessPoint;
         this.accessPointId = other.accessPointId;

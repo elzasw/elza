@@ -41,6 +41,12 @@ public class ApFragmentVO {
     @Nullable
     private ApFormVO form;
 
+    /**
+     * Identifikátor nadřazeného fragmentu.
+     */
+    @Nullable
+    private Integer fragmentParentId;
+
     public Integer getId() {
         return id;
     }
@@ -90,6 +96,15 @@ public class ApFragmentVO {
         this.form = form;
     }
 
+    @Nullable
+    public Integer getFragmentParentId() {
+        return fragmentParentId;
+    }
+
+    public void setFragmentParentId(@Nullable Integer fragmentParentId) {
+        this.fragmentParentId = fragmentParentId;
+    }
+
     /**
      * Creates value object from AP fragment.
      */
@@ -100,6 +115,7 @@ public class ApFragmentVO {
         vo.setTypeId(src.getFragmentType().getStructuredTypeId());
         vo.setState(ApStateVO.valueOf(src.getState().name()));
         vo.setErrorDescription(src.getErrorDescription());
+        vo.setFragmentParentId(src.getParentFragment() != null ? src.getParentFragment().getFragmentId() : null);
         return vo;
     }
 }
