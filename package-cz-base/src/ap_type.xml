@@ -88,17 +88,22 @@
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="FAMILY" party-type="DYNASTY" parent-ap-type="PERSON">
+    <ap-type code="DYNASTY">
+        <name>rod / rodina</name>
+        <hierarchical>false</hierarchical>
+        <read-only>true</read-only>
+    </ap-type>
+    <ap-type code="FAMILY" party-type="DYNASTY" parent-ap-type="DYNASTY">
         <name>rodina, rod</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="FAMILY_BRANCH" party-type="DYNASTY" parent-ap-type="PERSON">
+    <ap-type code="FAMILY_BRANCH" party-type="DYNASTY" parent-ap-type="DYNASTY">
         <name>větev rodu</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="FICTIVE_DYNASTY" parent-ap-type="PERSON">
+    <ap-type code="FICTIVE_DYNASTY" parent-ap-type="DYNASTY">
         <name>fiktivní rod</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
@@ -202,7 +207,7 @@
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="ARTWORK_" parent-ap-type="ARTWORK">
+    <ap-type code="ARTWORK_GAME" parent-ap-type="ARTWORK">
         <name>názvy společenských, dětských her</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
