@@ -229,6 +229,7 @@ public class ApFactory {
         if (desc != null) {
             vo.setCharacteristics(desc.getDescription());
         }
+        vo.setPreferredNameItem(ap.getPreferredNameItem() != null ? ap.getPreferredNameItem().getItemId() : null);
         return vo;
     }
 
