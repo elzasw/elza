@@ -100,18 +100,18 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
 
     render() {
         const {
-            fields: {templates},
-            handleSubmit,
-            onClose,
-            error,
-        } = this.props;
+                  fields: {templates},
+                  handleSubmit,
+                  onClose,
+                  error,
+              } = this.props;
         const {edit, open} = this.state;
 
         return (
             <Form className="templates-form" onSubmit={handleSubmit(this.submitReduxForm)}>
                 {error && <div className="form-error">{error}</div>}
                 <Modal.Body className="template-items">
-                    {templates.map((val, index) => {
+                    {templates && templates.map((val, index) => {
                         const header = (
                             <div
                                 onClick={e => {
@@ -158,7 +158,7 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
                                                         e.stopPropagation();
                                                     }}
                                                 >
-                                                    <Icon glyph="fa-edit" />
+                                                    <Icon glyph="fa-edit"/>
                                                 </NoFocusButton>
                                                 <NoFocusButton
                                                     className={'btn-action'}
@@ -168,7 +168,7 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
                                                         e.stopPropagation();
                                                     }}
                                                 >
-                                                    <Icon glyph="fa-trash" />
+                                                    <Icon glyph="fa-trash"/>
                                                 </NoFocusButton>
                                             </div>
                                         </div>
@@ -186,10 +186,10 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
                             </Accordion>
                         );
                     })}
-                    {templates.length === 0 && <div>{i18n('arr.fund.template.empty')}</div>}
+                    {(!templates || templates.length === 0) && <div>{i18n('arr.fund.template.empty')}</div>}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit">{i18n('visiblePolicy.action.save')}</Button>
+                    <Button type="submit" variant="outline-secondary">{i18n('visiblePolicy.action.save')}</Button>
                     <Button variant="link" onClick={onClose}>
                         {i18n('global.action.cancel')}
                     </Button>
@@ -199,7 +199,7 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
     }
 }
 
-function mapStateToProps(state) {
+function mapState(state) {
     const {refTables} = state;
     return {
         calendarTypes: refTables.calendarTypes,
@@ -207,9 +207,9 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(
-    reduxForm({
-        form: 'fundTemplateSettingsForm',
-        fields: ['templates[].formData', 'templates[].withValues', 'templates[].name'],
-    })(FundTemplateSettingsForm),
-);
+const connector = connect(mapState);
+
+export default reduxForm({
+    form: 'fundTemplateSettingsForm',
+    fields: ['templates[].formData', 'templates[].withValues', 'templates[].name'],
+})(connector(FundTemplateSettingsForm));
