@@ -1,13 +1,14 @@
 import React from 'react';
 
-import {reduxForm} from 'redux-form';
+import {Field, formValueSelector, reduxForm} from 'redux-form';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {submitForm} from 'components/form/FormUtils.jsx';
-import {AP_EXT_SYSTEM_TYPE} from '../../constants.tsx';
 import i18n from '../i18n';
 import AbstractReactComponent from '../AbstractReactComponent';
-import {FormInput} from '../shared/index';
+import {connect} from 'react-redux';
+import {FormInputField} from 'components/shared';
+import {AP_EXT_SYSTEM_TYPE} from 'constants.tsx';
 
 const EXT_SYSTEM_CLASS = {
     ApExternalSystem: '.ApExternalSystemVO',
@@ -70,80 +71,121 @@ class ExtSystemForm extends AbstractReactComponent {
         submitForm(ExtSystemForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
-        const {
-            fields: {
-                id,
-                type,
-                viewDaoUrl,
-                viewFileUrl,
-                viewThumbnailUrl,
-                sendNotification,
-                code,
-                name,
-                url,
-                username,
-                password,
-                elzaCode,
-            },
-            handleSubmit,
-            submitting,
-        } = this.props;
-        const classJ = this.props.fields['@class'];
-        const isUpdate = !!id.value;
+        const {id, classJ, handleSubmit, pristine, submitting} = this.props;
+        const isUpdate = !!id;
 
         return (
             <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                 <Modal.Body>
-                    <FormInput as="select" label={i18n('admin.extSystem.class')} {...classJ} disabled={id.value}>
-                        <option key={null} />
+                    <Field
+                        name="@class"
+                        type="select"
+                        component={FormInputField}
+                        label={i18n('admin.extSystem.class')}
+
+                        disabled={isUpdate}
+                    >
+                        <option key={null}/>
                         {Object.values(EXT_SYSTEM_CLASS).map((i, index) => (
                             <option key={index} value={i}>
                                 {EXT_SYSTEM_CLASS_LABEL[i]}
                             </option>
                         ))}
-                    </FormInput>
-                    {classJ.value === EXT_SYSTEM_CLASS.ApExternalSystem && (
+                    </Field>
+
+                    {classJ === EXT_SYSTEM_CLASS.ApExternalSystem && (
                         <div>
-                            <FormInput as="select" label={i18n('admin.extSystem.type')} {...type} disabled={id.value}>
-                                <option key={null} />
+                            <Field
+                                name="type"
+                                type="select"
+                                component={FormInputField}
+                                label={i18n('admin.extSystem.type')}
+
+                                disabled={isUpdate}
+                            >
+                                <option key={null}/>
                                 <option value={AP_EXT_SYSTEM_TYPE.INTERPI}>{i18n('admin.extSystem.interpi')}</option>
-                            </FormInput>
+                            </Field>
                         </div>
                     )}
-                    {classJ.value === EXT_SYSTEM_CLASS.ArrDigitalRepository && (
+                    {classJ === EXT_SYSTEM_CLASS.ArrDigitalRepository && (
                         <div>
-                            <FormInput type="text" label={i18n('admin.extSystem.viewDaoUrl')} {...viewDaoUrl} />
-                            <FormInput type="text" label={i18n('admin.extSystem.viewFileUrl')} {...viewFileUrl} />
-                            <FormInput
+                            <Field
+                                name="viewDaoUrl"
                                 type="text"
-                                label={i18n('admin.extSystem.viewThumbnailUrl')}
-                                {...viewThumbnailUrl}
+                                component={FormInputField}
+                                label={i18n('admin.extSystem.viewDaoUrl')}
                             />
-                            <FormInput
-                                as="select"
+                            <Field
+                                name="viewFileUrl"
+                                type="text"
+                                component={FormInputField}
+                                label={i18n('admin.extSystem.viewFileUrl')}
+                            />
+                            <Field
+                                name="viewThumbnailUrl"
+                                type="text"
+                                component={FormInputField}
+                                label={i18n('admin.extSystem.viewThumbnailUrl')}
+                            />
+                            <Field
+                                name="sendNotification"
+                                type="select"
+                                component={FormInputField}
                                 label={i18n('admin.extSystem.sendNotification')}
-                                {...sendNotification}
                             >
-                                <option key={null} />
+                                <option key={null}/>
                                 <option key="true" value={true}>
                                     {i18n('admin.extSystem.sendNotification.true')}
                                 </option>
                                 <option key="false" value={false}>
                                     {i18n('admin.extSystem.sendNotification.false')}
                                 </option>
-                            </FormInput>
+                            </Field>
                         </div>
                     )}
-                    {classJ.value === EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk && <div></div>}
-                    <FormInput type="text" label={i18n('admin.extSystem.code')} {...code} disabled={id.value} />
-                    <FormInput type="text" label={i18n('admin.extSystem.name')} {...name} />
-                    <FormInput type="text" label={i18n('admin.extSystem.url')} {...url} />
-                    <FormInput type="text" label={i18n('admin.extSystem.username')} {...username} />
-                    <FormInput type="text" label={i18n('admin.extSystem.password')} {...password} />
-                    <FormInput type="text" label={i18n('admin.extSystem.elzaCode')} {...elzaCode} />
+                    {classJ === EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk && <div/>}
+                    <Field
+                        name="code"
+                        type="text"
+                        component={FormInputField}
+                        label={i18n('admin.extSystem.code')}
+
+                        disabled={isUpdate}
+                    />
+                    <Field
+                        name="name"
+                        type="text"
+                        component={FormInputField}
+                        label={i18n('admin.extSystem.name')}
+                    />
+                    <Field
+                        name="url"
+                        type="text"
+                        component={FormInputField}
+                        label={i18n('admin.extSystem.url')}
+                    />
+                    <Field
+                        name="username"
+                        type="text"
+                        component={FormInputField}
+                        label={i18n('admin.extSystem.username')}
+                    />
+                    <Field
+                        name="password"
+                        type="text"
+                        component={FormInputField}
+                        label={i18n('admin.extSystem.password')}
+                    />
+                    <Field
+                        name="elzaCode"
+                        type="text"
+                        component={FormInputField}
+                        label={i18n('admin.extSystem.elzaCode')}
+                    />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" variant="default" disabled={submitting}>
+                    <Button type="submit" variant="outline-secondary" disabled={pristine || submitting}>
                         {isUpdate ? i18n('admin.extSystem.submit.edit') : i18n('admin.extSystem.submit.add')}
                     </Button>
                 </Modal.Footer>
@@ -152,7 +194,14 @@ class ExtSystemForm extends AbstractReactComponent {
     }
 }
 
+const selector = formValueSelector('extSystemForm');
+
+const mapState = (state) => ({
+    id: selector(state, 'id'),
+    classJ: selector(state, '@class'),
+});
+const connector = connect(mapState);
+
 export default reduxForm({
-    fields: ExtSystemForm.fields,
     form: 'extSystemForm',
-})(ExtSystemForm);
+})(connector(ExtSystemForm));

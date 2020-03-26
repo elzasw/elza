@@ -146,15 +146,19 @@ export const Tabs = class Tabs extends React.Component {
      *  @ param int itemID      lokální identidikátor záložky
      **/
     handleTabSelect = itemKey => {
-        let item = this.props.items.one(i => {
-            let key = typeof i.key !== 'undefined' ? i.key : i.id;
-            if (key === itemKey) {
-                return i;
-            } else {
-                return null;
-            }
-        });
-        this.props.onSelect(item); // zobrazení vybrané položky
+        if (this.props.asTabs) {
+            this.props.onSelect(itemKey);
+        } else {
+            let item = this.props.items.one(i => {
+                let key = typeof i.key !== 'undefined' ? i.key : i.id;
+                if (key === itemKey) {
+                    return i;
+                } else {
+                    return null;
+                }
+            });
+            this.props.onSelect(item);
+        }
     };
 
     /**
@@ -167,7 +171,7 @@ export const Tabs = class Tabs extends React.Component {
             if (this.props.closable) {
                 closeAction = (
                     <NoFocusButton title={closeTitle} onClick={this.handleTabClose.bind(this, item)}>
-                        <Icon glyph="fa-times" />
+                        <Icon glyph="fa-times"/>
                     </NoFocusButton>
                 );
             }
