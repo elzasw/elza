@@ -294,6 +294,12 @@
                  bez jejiho uvedeni se vytvari WAR bez CXF -->
             <version>3.9</version>
         </dependency>
+        <!-- Pridano kvuli tride ByteArrayDataSource -->
+        <dependency>
+          <groupId>javax.mail</groupId>
+          <artifactId>javax.mail-api</artifactId>
+          <version>1.6.2</version>
+        </dependency>
         <!-- Pridano kvuli tride com.sun.xml.txw2.output.IndentingXMLStreamWriter v exportu
              Asi lepe zvazit jeji nahradu vlastni impl a odstraneni dependency -->
         <dependency>
