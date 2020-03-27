@@ -31,7 +31,6 @@ import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.controller.DEExportController.DEExportParamsVO;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
@@ -107,7 +106,8 @@ public class DEExportService {
      *            export configuration
      */
     @Transactional(isolation = Isolation.SERIALIZABLE, readOnly = true)
-    @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN })
+    //TODO: Opravneni se musi hlidat dle typu exportovanych dat
+    //@AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN })
     public void exportXmlData(OutputStream os, DEExportParams params) {
         exportData(os, new XmlExportBuilder(), params);
     }
