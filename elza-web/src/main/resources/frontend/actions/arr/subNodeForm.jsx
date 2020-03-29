@@ -761,7 +761,11 @@ export class ItemFormActions {
             const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
             if (fundIndex !== null) {
                 const getOutputId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
-                return WebApi.switchOutputCalculating(versionId, getOutputId, itemTypeId, strict);
+                return WebApi.switchOutputCalculating(versionId, getOutputId, itemTypeId, strict).then(data => {
+                    if (!data) {
+                        dispatch(this.fundSubNodeFormDescItemTypeAdd(versionId, 1, itemTypeId));
+                    }
+                });
             }
         }
     }

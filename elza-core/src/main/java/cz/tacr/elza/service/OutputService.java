@@ -947,7 +947,7 @@ public class OutputService {
         }
 
         // check itemTypes
-        if (!outputItemDB.getItemTypeId().equals(outputItem.getItemTypeId())) {
+        if (outputItem.getItemTypeId() != null && !outputItemDB.getItemTypeId().equals(outputItem.getItemTypeId())) {
             throw new BusinessException("Received item has different itemType from item in DB",
                     OutputCode.NOT_PROCESS_IN_STATE)
                     .set("dbItemTypeId", outputItemDB.getItemTypeId())
@@ -1182,6 +1182,11 @@ public class OutputService {
             throw new IllegalStateException("Nebyla nalezena žádná hodnota atributu ke smazání");
         }
 
+        ArrItemSettings outputAndItemType = itemSettingsRepository.findOneByOutputAndItemType(output, itemType.getEntity());
+        if (outputAndItemType != null) {
+            itemSettingsRepository.delete(outputAndItemType);
+        }
+
         List<ArrOutputItem> outputItemsDeleted = new ArrayList<>(outputItems.size());
         outputItemsDeleted.addAll(outputItems.stream()
                 .map(descItem -> deleteOutputItem(descItem, fundVersion, change, false))
@@ -1198,7 +1203,7 @@ public class OutputService {
      * @param itemType typ atributu
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
-    public void switchOutputCalculating(final ArrOutput output,
+    public boolean switchOutputCalculating(final ArrOutput output,
                                         @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                         final RulItemType itemType,
                                         final Boolean strict) {
@@ -1217,7 +1222,7 @@ public class OutputService {
 
         if (itemSettings == null) {
             if (strict) {
-                throw new BusinessException("Nelze přepnout způsob vyplňování, protože neexistuje žádná hodnota generovaná funkcí", OutputCode.CANNOT_SWITCH_CALCULATING).level(Level.WARNING);
+                return false;
             }
 
             itemSettings = new ArrItemSettings();
@@ -1239,24 +1244,21 @@ public class OutputService {
             List<ArrNodeOutput> nodes = nodeOutputRepository.findByOutputAndDeleteChangeIsNull(output);
             boolean changed = false;
             if (nodes.size() > 0) {
-                List<Integer> nodeIds = nodes.stream().map(n -> n.getNodeId()).collect(Collectors.toList());
+                List<Integer> nodeIds = nodes.stream().map(ArrNodeOutput::getNodeId).collect(Collectors.toList());
 
                 // create item connector
-                OutputItemConnector connector = outputServiceInternal.createItemConnector(fundVersion,
-                        output);
+                OutputItemConnector connector = outputServiceInternal.createItemConnector(fundVersion, output);
                 connector.setChangeSupplier(() -> change);
-                // set item type as filter if present
-                if (itemType != null) {
-                    connector.setItemTypeFilter(itemType.getItemTypeId());
-                }
+                connector.setItemTypeFilter(itemType.getItemTypeId());
 
                 changed = storeResults(fundVersion, nodeIds, output, connector);
             }
 
             if (strict && !changed) {
-                throw new BusinessException("Nelze přepnout způsob vyplňování, protože neexistuje žádná hodnota generovaná funkcí", OutputCode.CANNOT_SWITCH_CALCULATING).level(Level.WARNING);
+                return false;
             }
         }
+        return true;
     }
 
     /**
