@@ -21,8 +21,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.dataexchange.output.DEExportParams;
+import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
+import cz.tacr.elza.dataexchange.output.writer.xml.XmlExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlNameConsts;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker;
@@ -99,12 +101,16 @@ public class ExportServiceImpl implements ExportService {
         DEExportParams params = createExportParams(request);
         // prepare converter
         String format = request.getRequiredFormat();
+
+        ExportBuilder exportBuilder;
+
         if (XmlNameConsts.SCHEMA_URI.equals(format)) {
             // native export
+            exportBuilder = new XmlExportBuilder();
         } else
         if (CamUtils.CAM_SCHEMA.equals(format)) {
             // fomat CAM
-            params.setExportBuilder(new CamExportBuilder());
+            exportBuilder = new CamExportBuilder();
         } else {
             throw new ExportRequestException("Unrecognized schema: " + format);
         }
@@ -119,7 +125,7 @@ public class ExportServiceImpl implements ExportService {
         try {
             InputStream in = new PipedInputStream(out);
             
-            ExportWorker eew = appCtx.getBean(ExportWorker.class, out, params, auth);
+            ExportWorker eew = appCtx.getBean(ExportWorker.class, out, exportBuilder, params, auth);
             
             taskExecutor.execute(eew);
 

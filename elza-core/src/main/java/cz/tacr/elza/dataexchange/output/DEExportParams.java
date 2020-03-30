@@ -3,34 +3,17 @@ package cz.tacr.elza.dataexchange.output;
 import java.util.Collection;
 
 import cz.tacr.elza.dataexchange.output.sections.LevelInfoListener;
-import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
-import cz.tacr.elza.dataexchange.output.writer.xml.XmlExportBuilder;
 
 /**
  * Parameters for data-exchange export.
  */
 public class DEExportParams {
 
-    /**
-     * Optional export builder
-     * 
-     * If export builder is not set default is used
-     */
-    protected ExportBuilder exportBuilder = new XmlExportBuilder();
-
     private Collection<Integer> apIds;
 
     private Collection<Integer> partyIds;
 
     private Collection<FundSections> fundsSections;
-
-    public ExportBuilder getExportBuilder() {
-        return exportBuilder;
-    }
-
-    public void setExportBuilder(ExportBuilder exportBuilder) {
-        this.exportBuilder = exportBuilder;
-    }
 
     public Collection<Integer> getApIds() {
         return apIds;

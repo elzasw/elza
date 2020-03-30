@@ -37,6 +37,7 @@ import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
 import cz.tacr.elza.dataexchange.output.context.ExportPhase;
 import cz.tacr.elza.dataexchange.output.context.ExportReader;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
+import cz.tacr.elza.dataexchange.output.writer.xml.XmlExportBuilder;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.AccessDeniedException;
@@ -107,12 +108,11 @@ public class DEExportService {
     @Transactional(isolation = Isolation.SERIALIZABLE, readOnly = true)
     //TODO: Opravneni se musi hlidat dle typu exportovanych dat
     //@AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN })
-    public void exportXmlData(OutputStream os, DEExportParams params) {
-        exportData(os, params);
+    public void exportXmlData(OutputStream os, ExportBuilder builder, DEExportParams params) {
+        exportData(os, builder, params);
     }
 
-    private void exportData(OutputStream os, DEExportParams params) {
-        ExportBuilder builder = params.getExportBuilder();
+    private void exportData(OutputStream os, ExportBuilder builder, DEExportParams params) {
         // create export context
         ExportContext context = new ExportContext(builder, staticDataService.getData(), 1000);
         context.setFundsSections(params.getFundsSections());
@@ -175,10 +175,12 @@ public class DEExportService {
         response.setHeader(HttpHeaders.PRAGMA, "no-cache");
         response.setDateHeader(HttpHeaders.EXPIRES, 0);
 
+        ExportBuilder exportBuilder = new XmlExportBuilder();
+
         // write response
         try (ServletOutputStream os = response.getOutputStream()) {
             response.flushBuffer();
-            exportData(os, params);
+            exportData(os, exportBuilder, params);
             response.flushBuffer();
         }
     }
