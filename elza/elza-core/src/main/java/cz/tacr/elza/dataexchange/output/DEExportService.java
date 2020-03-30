@@ -37,7 +37,6 @@ import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
 import cz.tacr.elza.dataexchange.output.context.ExportPhase;
 import cz.tacr.elza.dataexchange.output.context.ExportReader;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
-import cz.tacr.elza.dataexchange.output.writer.xml.XmlExportBuilder;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.AccessDeniedException;
@@ -109,10 +108,11 @@ public class DEExportService {
     //TODO: Opravneni se musi hlidat dle typu exportovanych dat
     //@AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN })
     public void exportXmlData(OutputStream os, DEExportParams params) {
-        exportData(os, new XmlExportBuilder(), params);
+        exportData(os, params);
     }
 
-    private void exportData(OutputStream os, ExportBuilder builder, DEExportParams params) {
+    private void exportData(OutputStream os, DEExportParams params) {
+        ExportBuilder builder = params.getExportBuilder();
         // create export context
         ExportContext context = new ExportContext(builder, staticDataService.getData(), 1000);
         context.setFundsSections(params.getFundsSections());
@@ -178,7 +178,7 @@ public class DEExportService {
         // write response
         try (ServletOutputStream os = response.getOutputStream()) {
             response.flushBuffer();
-            exportData(os, new XmlExportBuilder(), params);
+            exportData(os, params);
             response.flushBuffer();
         }
     }
