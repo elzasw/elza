@@ -21,6 +21,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.dataexchange.output.DEExportParams;
+import cz.tacr.elza.dataexchange.output.writer.cam.CamExportBuilder;
+import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlNameConsts;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker;
@@ -94,13 +96,18 @@ public class ExportServiceImpl implements ExportService {
     public ExportResponseData exportData(ExportRequest request) throws ExportRequestException {
         ExportResponseData erd = new ExportResponseData();
 
+        DEExportParams params = createExportParams(request);
         // prepare converter
         String format = request.getRequiredFormat();
         if (XmlNameConsts.SCHEMA_URI.equals(format)) {
             // native export
-
+        } else
+        if (CamUtils.CAM_SCHEMA.equals(format)) {
+            // fomat CAM
+            params.setExportBuilder(new CamExportBuilder());
+        } else {
+            throw new ExportRequestException("Unrecognized schema: " + format);
         }
-        DEExportParams params = createExportParams(request);
         
         // prepare sec context
         SecurityContext secCtx = SecurityContextHolder.getContext();
