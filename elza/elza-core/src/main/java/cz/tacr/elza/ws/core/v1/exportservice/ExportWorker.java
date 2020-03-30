@@ -15,6 +15,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.dataexchange.output.DEExportParams;
 import cz.tacr.elza.dataexchange.output.DEExportService;
+import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 
 @Component
 @Scope("prototype")
@@ -34,9 +35,14 @@ public class ExportWorker implements Runnable {
 
     final private Authentication authentication;
 
-    ExportWorker(final OutputStream output, final DEExportParams params,
+    final protected ExportBuilder exportBuilder;
+
+    ExportWorker(final OutputStream output,
+                 final ExportBuilder exportBuilder,
+                 final DEExportParams params,
                        final Authentication auth) {
         this.output = output;
+        this.exportBuilder = exportBuilder;
         this.exportParams = params;
         this.authentication = auth;
     }
@@ -62,7 +68,7 @@ public class ExportWorker implements Runnable {
         SecurityContextHolder.setContext(ctx);
 
         try {
-            deExportService.exportXmlData(output, exportParams);
+            deExportService.exportXmlData(output, exportBuilder, exportParams);
         } finally {
             try {
                 output.close();
