@@ -5,7 +5,6 @@ import {Accordion, Card} from 'react-bootstrap';
 import * as ReactDOM from 'react-dom';
 import {connect} from 'react-redux';
 import {canSetFocus, focusWasSet, isFocusFor, setFocus} from '../../actions/global/focus';
-import {partyAdd, partyDetailFetchIfNeeded} from '../../actions/party/party';
 // import {registryDetailFetchIfNeeded, registryAdd} from '../../actions/registry/registry'
 import {routerNavigate} from '../../actions/router';
 import {i18n, Icon} from '../../components/shared';
@@ -311,58 +310,6 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
     }
 
     /**
-     * Vytvoření nové osoby.
-     *
-     * @param itemTypeIndex {number} index atributu v seznamu
-     * @param itemIndex {number} index honodty atributu v seznamu
-     * @param partyTypeId {number} identifikátor typu osoby
-     */
-    handleCreateParty(itemTypeIndex, itemIndex, partyTypeId) {
-        const valueLocation = {
-            itemTypeIndex,
-            itemIndex,
-        };
-        this.props.dispatch(partyAdd(partyTypeId, null, this.handleCreatedParty.bind(this, valueLocation), true));
-    }
-
-    handleCreatedParty(valueLocation, data, submitType) {
-        const {subNodeForm} = this.props;
-
-        // Uložení hodnoty
-        this.props.dispatch(this.props.formActions.fundSubNodeFormValueChange(valueLocation, data, true));
-
-        // Akce po vytvoření
-        if (submitType === 'storeAndViewDetail') {
-            // přesměrování na detail
-            this.props.dispatch(partyDetailFetchIfNeeded(data.id));
-            this.props.dispatch(routerNavigate('party'));
-        } else {
-            // nastavení focus zpět na prvek
-            const formData = subNodeForm.formData;
-            const descItemType = formData!!.itemTypes[valueLocation.itemTypeIndex];
-            this.props.dispatch(
-                setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
-                    descItemTypeId: descItemType.id,
-                    descItemObjectId: null,
-                    itemIndex: valueLocation.itemIndex,
-                }),
-            );
-        }
-    }
-
-    /**
-     * Zobrazení detailu osoby.
-     *
-     * @param itemTypeIndex {number} index atributu v seznamu
-     * @param itemIndex {number} index honodty atributu v seznamu
-     * @param partyId {number} identifikátor osoby
-     */
-    handleDetailParty(itemTypeIndex, itemIndex, partyId) {
-        this.props.dispatch(partyDetailFetchIfNeeded(partyId));
-        this.props.dispatch(routerNavigate('party'));
-    }
-
-    /**
      * Opuštění hodnoty atributu.
      * @param itemTypeIndex {number} index atributu v seznamu
      * @param itemIndex {number} index honodty atributu v seznamu
@@ -495,8 +442,6 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
                 rulDataType={rulDataType}
                 calendarTypes={calendarTypes}
                 structureTypes={structureTypes}
-                onCreateParty={this.handleCreateParty.bind(this, itemTypeIndex)}
-                onDetailParty={this.handleDetailParty.bind(this, itemTypeIndex)}
                 onCreateRecord={this.handleCreateRecord.bind(this, itemTypeIndex)}
                 onDetailRecord={this.handleDetailRecord.bind(this, itemTypeIndex)}
                 onDescItemAdd={this.handleDescItemAdd.bind(this, itemTypeIndex)}

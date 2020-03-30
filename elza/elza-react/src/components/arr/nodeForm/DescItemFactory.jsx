@@ -8,14 +8,13 @@ import DescItemCoordinates from './DescItemCoordinates.jsx';
 import DescItemUnitdate from './DescItemUnitdate.jsx';
 import DescItemStructureRef from './DescItemStructureRef.jsx';
 import DescItemFileRef from './DescItemFileRef.jsx';
-import DescItemPartyRef from './DescItemPartyRef.jsx';
 import DescItemRecordRef from './DescItemRecordRef.jsx';
 import DescItemJsonTable from './DescItemJsonTable.jsx';
 import DescItemDate from './DescItemDate.jsx';
+import {DataTypeCode} from 'stores/app/accesspoint/itemFormInterfaces';
 
 export default class DescItemFactory {
     static typeComponentMap = {
-        PARTY_REF: DescItemPartyRef,
         RECORD_REF: DescItemRecordRef,
         STRUCTURED: DescItemStructureRef,
         FILE_REF: DescItemFileRef,
@@ -34,7 +33,13 @@ export default class DescItemFactory {
     static createDescItem = (type, props) => {
         const DescItem = DescItemFactory.typeComponentMap[type];
         if (!DescItem) {
-            throw new Error(`Unknown desc item data type code: ${type}`);
+            if (type === DataTypeCode.PARTY_REF) {
+                alert('PARTY_REF');
+                console.warn('%c ::party ', 'background: black; color: yellow;');
+                return null;
+            } else {
+                throw new Error(`Unknown desc item data type code: ${type}`);
+            }
         }
         return <DescItem {...props} />;
     };

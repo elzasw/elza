@@ -6,7 +6,6 @@ export const CLS = '@class';
 export const CLS_ITEM_UNIT_DATE = '.ArrItemUnitdateVO';
 export const CLS_ITEM_RECORD_REF = '.ArrItemRecordRefVO';
 export const CLS_ITEM_FILE_REF = '.ArrItemFileRefVO';
-export const CLS_ITEM_PARTY_REF = '.ArrItemPartyRefVO';
 export const CLS_ITEM_COORDINATES = '.ArrItemCoordinatesVO';
 export const CLS_ITEM_DECIMAL = '.ArrItemDecimalVO';
 export const CLS_ITEM_ENUM = '.ArrItemEnumVO';

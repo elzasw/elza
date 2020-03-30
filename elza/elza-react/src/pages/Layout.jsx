@@ -33,7 +33,6 @@ import {
     FundPage,
     HomePage,
     NodePage,
-    PartyPage,
     RegistryPage,
 } from 'pages';
 
@@ -79,10 +78,6 @@ class Layout extends AbstractReactComponent {
             case 'arr':
                 this.props.dispatch(routerNavigate('/arr'));
                 this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 1, 'tree'));
-                break;
-            case 'party':
-                this.props.dispatch(routerNavigate('/party'));
-                this.props.dispatch(setFocus(FOCUS_KEYS.PARTY, 1, 'tree'));
                 break;
             case 'registry':
                 this.props.dispatch(routerNavigate('/registry'));
@@ -176,7 +171,6 @@ class Layout extends AbstractReactComponent {
                                 <RegistryPage onShowUsage={this.handleRegistryShowUsage} />
                             </Route>
 
-                            <Route path="/party" render={() => <PartyPage onShowUsage={this.handlePartyShowUsage} />} />
                             <Route path="/admin">
                                 <Switch>
                                     <Route path="/admin/user" component={AdminUserPage} />

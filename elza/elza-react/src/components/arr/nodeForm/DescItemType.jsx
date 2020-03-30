@@ -605,17 +605,6 @@ class DescItemType extends AbstractReactComponent {
         }
 
         const additionalProps = {
-            PARTY_REF: {
-                itemName: refType.shortcut,
-                specName: specName,
-                singleDescItemTypeEdit: singleDescItemTypeEdit,
-                onDetail: value => {
-                    this.handleDetailParty(descItemIndex, value);
-                },
-                onCreateParty: value => {
-                    this.handleCreateParty(descItemIndex, value);
-                },
-            },
             RECORD_REF: {
                 itemName: refType.shortcut,
                 specName: specName,

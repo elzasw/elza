@@ -15,7 +15,6 @@ import {
     registryDetailFetchIfNeeded,
     registryListFilter,
 } from 'actions/registry/registry.jsx';
-import {AREA_PARTY_LIST, partyDetailClear, partyListFilter} from 'actions/party/party.jsx';
 import classNames from 'classnames';
 import {objectById, storeFromArea} from 'shared/utils';
 import {MODAL_DIALOG_VARIANT} from '../../../constants.tsx';
@@ -53,7 +52,6 @@ class DescItemRecordRef extends AbstractReactComponent {
             hasSpecification,
             descItem,
             registryList,
-            partyList,
             fundName,
             nodeName,
             itemName,
@@ -61,16 +59,16 @@ class DescItemRecordRef extends AbstractReactComponent {
         } = this.props;
         const oldFilter = {...registryList.filter};
         const open = (hasParty = false) => {
-            if (hasParty) {
-                this.props.dispatch(
-                    partyListFilter({
-                        ...partyList.filter,
-                        text: filterText,
-                        itemSpecId: hasSpecification ? descItem.descItemSpecId : null,
-                    }),
-                );
-                this.props.dispatch(partyDetailClear());
-            }
+            // if (hasParty) {
+            //     this.props.dispatch(
+            //         partyListFilter({
+            //             ...partyList.filter,
+            //             text: filterText,
+            //             itemSpecId: hasSpecification ? descItem.descItemSpecId : null,
+            //         }),
+            //     );
+            //     this.props.dispatch(partyDetailClear());
+            // }
             console.warn(this.props.itemTypeId);
             this.props.dispatch(
                 registryListFilter({
@@ -92,16 +90,16 @@ class DescItemRecordRef extends AbstractReactComponent {
                         hasParty={hasParty}
                         onSelect={data => {
                             onSelect(data);
-                            if (hasParty) {
-                                this.props.dispatch(
-                                    partyListFilter({
-                                        text: null,
-                                        type: null,
-                                        itemSpecId: null,
-                                    }),
-                                );
-                                this.props.dispatch(partyDetailClear());
-                            }
+                            // if (hasParty) {
+                            //     this.props.dispatch(
+                            //         partyListFilter({
+                            //             text: null,
+                            //             type: null,
+                            //             itemSpecId: null,
+                            //         }),
+                            //     );
+                            //     this.props.dispatch(partyDetailClear());
+                            // }
                             this.props.dispatch(registryListFilter({...oldFilter}));
                             this.props.dispatch(registryDetailClear());
                         }}
@@ -205,10 +203,8 @@ export default connect((state, props) => {
     }
 
     const registryList = storeFromArea(state, AREA_REGISTRY_LIST);
-    const partyList = storeFromArea(state, AREA_PARTY_LIST);
     return {
         registryList,
-        partyList,
         fundName,
         nodeName,
     };

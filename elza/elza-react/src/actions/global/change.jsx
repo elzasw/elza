@@ -7,7 +7,6 @@ import {addToastrDanger, addToastrInfo, addToastrSuccess} from 'components/share
 import {fundOutputSelectOutput} from 'actions/arr/fundOutput.jsx';
 import {routerNavigate} from 'actions/router.jsx';
 import {indexById} from 'stores/app/utils.jsx';
-import {partyDetailClear, partyDetailInvalidate, partyListInvalidate} from 'actions/party/party.jsx';
 import {
     AREA_EXT_SYSTEM_DETAIL,
     AREA_EXT_SYSTEM_LIST,
@@ -139,44 +138,6 @@ export function changeFundAction(versionId, id) {
         type: types.CHANGE_FUND_ACTION,
         versionId,
         id,
-    };
-}
-
-export function changeParty(partyId) {
-    return (dispatch, getState) => {
-        const {
-            app: {partyList, partyDetail},
-        } = getState();
-        if (partyList.filteredRows && indexById(partyList.filteredRows, partyId) !== null) {
-            dispatch(partyListInvalidate());
-        }
-        if (partyDetail.id === partyId) {
-            dispatch(partyDetailInvalidate());
-        }
-    };
-}
-
-export function changePartyCreate(partyIds) {
-    return (dispatch, getState) => {
-        dispatch(partyListInvalidate());
-        dispatch({
-            type: types.PARTY_CREATED,
-            partyIds: partyIds,
-        });
-    };
-}
-
-export function changePartyDelete(partyId) {
-    return (dispatch, getState) => {
-        const {
-            app: {partyList, partyDetail},
-        } = getState();
-        if (partyList.filteredRows && indexById(partyList.filteredRows, partyId) !== null) {
-            dispatch(partyListInvalidate());
-        }
-        if (partyDetail.id === partyId) {
-            dispatch(partyDetailClear());
-        }
     };
 }
 

@@ -422,7 +422,6 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             case 'INT':
             case 'DATE':
             case 'DECIMAL':
-            case 'PARTY_REF':
             case 'STRUCTURED':
             case 'JSON_TABLE':
             case 'ENUM':
@@ -563,7 +562,6 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                         {values: 2, code: 'NOT_INTERVAL', name: i18n('arr.fund.filterSettings.condition.notInterval')},
                     ];
                     break;
-                case 'PARTY_REF':
                 case 'RECORD_REF':
                     renderFields = renderTextFields;
                     validateField = (code, valuesCount, value, index) => {
