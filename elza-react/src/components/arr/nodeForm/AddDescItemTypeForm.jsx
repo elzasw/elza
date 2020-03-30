@@ -1,11 +1,12 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, Autocomplete, i18n, Icon} from 'components/shared';
+import {FieldArray, reduxForm} from 'redux-form';
+import {AbstractReactComponent, i18n, Icon} from 'components/shared';
 import {Form, FormGroup, FormLabel, Modal} from 'react-bootstrap';
 import {Button} from '../../ui';
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
+import {submitForm} from 'components/form/FormUtils.jsx';
 import './AddDescItemTypeForm.scss';
+import {ItemTypeField} from 'components/arr/nodeForm/ItemTypeField';
 
 /**
  * Formulář přidání nové desc item type.
@@ -108,21 +109,17 @@ class AddDescItemTypeForm extends AbstractReactComponent {
                         })}
                     </div>
                     <div className="autocomplete-desc-item-type">
-                        <Autocomplete
-                            tree
-                            alwaysExpanded
-                            label={i18n('subNodeForm.descItemType.all')}
-                            {...descItemTypeId}
-                            {...decorateFormField(descItemTypeId)}
-                            items={descItemTypes}
-                            getItemRenderClass={item => (item.groupItem ? null : ' type-' + item.type.toLowerCase())}
-                            allowSelectItem={item => !item.groupItem}
-                            onBlurValidation={false}
+                        <FieldArray
+                            name="descItemTypeId"
+                            component={ItemTypeField}
+                            label={i18n('arr.fund.dateRange')}
+                            descItemTypes={descItemTypes}
                         />
+
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" disabled={submitting}>
+                    <Button type="submit" variant="outline-secondary" disabled={submitting}>
                         {i18n('global.action.add')}
                     </Button>
                     <Button variant="link" onClick={onClose}>
@@ -136,5 +133,4 @@ class AddDescItemTypeForm extends AbstractReactComponent {
 
 export default reduxForm({
     form: 'addDescItemTypeForm',
-    fields: ['descItemTypeId'],
 })(AddDescItemTypeForm);

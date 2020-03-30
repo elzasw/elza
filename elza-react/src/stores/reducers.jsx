@@ -27,10 +27,6 @@ import router from './app/router.jsx';
 import status from './app/status.jsx';
 import app from './app/app.jsx';
 
-import addPartyForm from './app/party/form/addPartyForm.jsx';
-import partyNameForm from './app/party/form/partyNameForm.jsx';
-import relationForm from './app/party/form/relationForm.jsx';
-
 import addRegistryForm from './app/registry/form/addRegistryForm.jsx';
 import editRegistryForm from './app/registry/form/editRegistryForm.jsx';
 
@@ -60,12 +56,7 @@ const rootReducer = combineReducers({
     form: formReducer.plugin({
         fundForm,
         outputEditForm: inlineForm,
-        partyDetail: inlineForm,
-        partyForm: inlineForm,
         permissionsEditForm: inlineForm,
-        addPartyForm,
-        partyNameForm,
-        relationForm,
         addRegistryForm,
         editRegistryForm,
         searchForm,

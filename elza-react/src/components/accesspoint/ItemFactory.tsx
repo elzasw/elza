@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {DataTypeCode} from '../../stores/app/accesspoint/itemFormInterfaces';
+import { DataTypeCode } from '../../stores/app/accesspoint/itemFormInterfaces';
 import DescItemCoordinates from '../arr/nodeForm/DescItemCoordinates.jsx';
 import DescItemDate from '../arr/nodeForm/DescItemDate.jsx';
 import DescItemDecimal from '../arr/nodeForm/DescItemDecimal.jsx';
@@ -12,16 +12,14 @@ import DescItemString from '../arr/nodeForm/DescItemString.jsx';
 import DescItemText from '../arr/nodeForm/DescItemText.jsx';
 import DescItemUnitdate from '../arr/nodeForm/DescItemUnitdate.jsx';
 import DescItemUnitid from '../arr/nodeForm/DescItemUnitid.jsx';
-import {ItemFactoryInterface} from './ItemFactoryInterface';
+import { ItemFactoryInterface } from './ItemFactoryInterface';
 
-import('../arr/nodeForm/DescItemPartyRef.jsx').then(x => (ItemFactory.typeComponentMap[DataTypeCode.PARTY_REF] = x));
 import('../arr/nodeForm/DescItemStructureRef.jsx').then(
     x => (ItemFactory.typeComponentMap[DataTypeCode.STRUCTURED] = x),
 );
 
 export class ItemFactory implements ItemFactoryInterface {
     static typeComponentMap: any = {
-        [DataTypeCode.PARTY_REF]: null, //DescItemPartyRef,
         [DataTypeCode.RECORD_REF]: DescItemRecordRef,
         [DataTypeCode.STRUCTURED]: null, //DescItemStructureRef,
         [DataTypeCode.FILE_REF]: DescItemFileRef,
@@ -41,7 +39,12 @@ export class ItemFactory implements ItemFactoryInterface {
     static createItem(type: DataTypeCode, props) {
         const componentClass = ItemFactory.typeComponentMap[type];
         if (!componentClass) {
-            throw new Error(`Unknown desc item data type code: ${type}`);
+            if (type === DataTypeCode.PARTY_REF) {
+                console.warn('%c ::party ', 'background: black; color: yellow;');
+                return null;
+            } else {
+                throw new Error(`Unknown desc item data type code: ${type}`);
+            }
         }
         return React.createElement(componentClass, props);
     }

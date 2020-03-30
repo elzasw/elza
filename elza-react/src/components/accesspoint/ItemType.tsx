@@ -47,8 +47,6 @@ export interface Props {
     rulDataType: DataType;
     calendarTypes: any;
     structureTypes: {data: {id: number; code: string; name: string}[]};
-    onCreateParty: Function;
-    onDetailParty: Function;
     onCreateRecord: Function;
     onDetailRecord: Function;
     onDescItemAdd: Function;
@@ -335,26 +333,6 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
     }
 
     /**
-     * Vytvoření nové osoby.
-     *
-     * @param descItemIndex {number} index hodnoty atributu v seznamu
-     * @param partyTypeId {number} identifikátor typu osoby
-     */
-    handleCreateParty(descItemIndex, partyTypeId) {
-        this.props.onCreateParty(descItemIndex, partyTypeId);
-    }
-
-    /**
-     * Zobrazení detailu osoby
-     *
-     * @param descItemIndex {number} index hodnoty atributu v seznamu
-     * @param partyId {number} identifikátor osoby
-     */
-    handleDetailParty(descItemIndex, partyId) {
-        this.props.onDetailParty(descItemIndex, partyId);
-    }
-
-    /**
      * Změna hodnoty specifikace atributu.
      * @param descItemIndex {number} index hodnoty atributu v seznamu
      * @param eventOrValue {Object} event nebo hodnota od prvku
@@ -586,16 +564,6 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
         }
 
         const additionalProps = {
-            [DataTypeCode.PARTY_REF]: {
-                itemName: refType.shortcut,
-                specName: specName,
-                onDetail: value => {
-                    this.handleDetailParty(descItemIndex, value);
-                },
-                onCreateParty: value => {
-                    this.handleCreateParty(descItemIndex, value);
-                },
-            },
             [DataTypeCode.RECORD_REF]: {
                 itemName: refType.shortcut,
                 specName: specName,

@@ -26,9 +26,6 @@ import {
     changeNodes,
     changeOutputs,
     changePackage,
-    changeParty,
-    changePartyCreate,
-    changePartyDelete,
     changeRegistry,
     changeRequest,
     changeRequestItemQueue,
@@ -212,9 +209,6 @@ let eventMap = {
     INDEXING_FINISHED: indexingFinished,
     PACKAGE: packageEvent,
     INSTITUTION_CHANGE: institutionChange,
-    PARTY_DELETE: partyDelete,
-    PARTIES_CREATE: partyCreate,
-    PARTY_UPDATE: partyUpdate,
     EXTERNAL_SYSTEM_CREATE: extSystemCreate,
     EXTERNAL_SYSTEM_UPDATE: extSystemUpdate,
     EXTERNAL_SYSTEM_DELETE: extSystemDelete,
@@ -496,18 +490,6 @@ function processVisualizeEJ(value) {
 function getFund() {
     let state = store.getState();
     return state.arrRegion.activeIndex != null ? state.arrRegion.funds[state.arrRegion.activeIndex] : null;
-}
-
-function partyUpdate(value) {
-    store.dispatch(changeParty(value.ids[0]));
-}
-
-function partyCreate(value) {
-    store.dispatch(changePartyCreate(value.ids));
-}
-
-function partyDelete(value) {
-    store.dispatch(changePartyDelete(value.ids[0]));
 }
 
 /**

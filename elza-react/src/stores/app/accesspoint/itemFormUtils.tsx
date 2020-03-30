@@ -1137,8 +1137,6 @@ export function getItemClass(dataType) {
             return '.ApItemCoordinatesVO';
         case DataTypeCode.DECIMAL:
             return '.ApItemDecimalVO';
-        case DataTypeCode.PARTY_REF:
-            return '.ApItemPartyRefVO';
         case DataTypeCode.FILE_REF:
             return '.ApItemFileRefVO';
         case DataTypeCode.RECORD_REF:

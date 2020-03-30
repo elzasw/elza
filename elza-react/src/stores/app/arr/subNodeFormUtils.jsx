@@ -1256,8 +1256,6 @@ export function getItemClass(dataType) {
             return '.ArrItemCoordinatesVO';
         case 'DECIMAL':
             return '.ArrItemDecimalVO';
-        case 'PARTY_REF':
-            return '.ArrItemPartyRefVO';
         case 'FILE_REF':
             return '.ArrItemFileRefVO';
         case 'RECORD_REF':

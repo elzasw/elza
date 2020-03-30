@@ -278,12 +278,6 @@ class Ribbon extends AbstractReactComponent {
                             <span className="btnText">{i18n('ribbon.action.registry')}</span>
                         </Button>
                     </LinkContainer>
-                    <LinkContainer key="ribbon-btn-party" to="/party">
-                        <Button variant={'default'}>
-                            <Icon glyph="fa-users" />
-                            <span className="btnText">{i18n('ribbon.action.party')}</span>
-                        </Button>
-                    </LinkContainer>
                     {userDetail.hasOne(
                         perms.ADMIN,
                         perms.USR_PERM,
