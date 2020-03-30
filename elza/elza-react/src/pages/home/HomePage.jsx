@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 
 import {connect} from 'react-redux';
 import {LinkContainer} from 'react-router-bootstrap';
-import {FundForm, i18n, Icon, PartyListItem, Ribbon} from 'components/index.jsx';
+import {FundForm, i18n, Icon, Ribbon} from 'components/index.jsx';
 import {AbstractReactComponent, RibbonGroup, Utils} from 'components/shared';
 import {Button} from '../../components/ui';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx';
@@ -121,9 +121,6 @@ class HomePage extends AbstractReactComponent {
     renderHistoryItem = (name, desc, type, data, keyIndex) => {
         let glyph;
         switch (type) {
-            case 'PARTY_REGION':
-                glyph = PartyListItem.partyIconByPartyTypeCode(data.partyDetail.data.partyType.code);
-                break;
             case 'REGISTRY_REGION':
                 glyph = 'fa-th-list';
                 break;
@@ -177,14 +174,6 @@ class HomePage extends AbstractReactComponent {
     renderHistory = () => {
         const {stateRegion} = this.props;
         //eslint-disable-next-line array-callback-return
-        const partyItems = stateRegion.partyDetailFront.map((x, index) => {
-            if (x.data) {
-                const name = x.data.name;
-                const desc = x.data.partyType.name;
-                return this.renderHistoryItem(name, desc, 'PARTY_REGION', {partyDetail: x}, index);
-            }
-        });
-        //eslint-disable-next-line array-callback-return
         const registryItems = stateRegion.registryRegionFront.map((x, index) => {
             if (x.data) {
                 const name = x.data.record;
@@ -214,17 +203,8 @@ class HomePage extends AbstractReactComponent {
                 ),
             );
         }
-        if (partyItems.length === 0) {
-            partyItems.push(
-                this.renderMessage(
-                    i18n('home.recent.party.emptyList.title'),
-                    i18n('home.recent.party.emptyList.message'),
-                ),
-            );
-        }
 
         arrItems.push(this.renderLink('/fund', i18n('home.recent.fund.goTo')));
-        partyItems.push(this.renderLink('/party', i18n('home.recent.party.goTo')));
         registryItems.push(this.renderLink('/registry', i18n('home.recent.registry.goTo')));
 
         return (
@@ -232,8 +212,6 @@ class HomePage extends AbstractReactComponent {
                 <div className="button-container">
                     <h4>{i18n('home.recent.fund.title')}</h4>
                     <div className="section">{arrItems}</div>
-                    <h4>{i18n('home.recent.party.title')}</h4>
-                    <div className="section">{partyItems}</div>
                     <h4>{i18n('home.recent.registry.title')}</h4>
                     <div className="section">{registryItems}</div>
                 </div>

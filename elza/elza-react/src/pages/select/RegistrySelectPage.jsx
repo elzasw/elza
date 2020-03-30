@@ -6,12 +6,10 @@ import classNames from 'classnames';
 
 import {i18n, Icon, RibbonGroup, RibbonSplit} from 'components/shared';
 import {Button} from '../../components/ui';
-import {AREA_PARTY_DETAIL} from 'actions/party/party.jsx';
 import {AREA_REGISTRY_DETAIL} from 'actions/registry/registry.jsx';
 import {storeFromArea} from 'shared/utils';
 import SelectPage from './SelectPage.jsx';
 import RegistryPage from '../registry/RegistryPage.jsx';
-import PartyPage from '../party/PartyPage.jsx';
 
 const OPEN_PAGE = {
     PARTY: 'party',
@@ -45,13 +43,11 @@ class RegistrySelectPage extends SelectPage {
      * @override
      */
     handleConfirm = () => {
-        const {registryDetail, partyDetail, onSelect} = this.props;
+        const {registryDetail, onSelect} = this.props;
         switch (this.state.openPage) {
             case OPEN_PAGE.PARTY:
-                if (!partyDetail.fetched || partyDetail.isFetching || !partyDetail.id) {
-                    return;
-                }
-                onSelect(partyDetail.data.accessPoint);
+                alert('Open page Party');
+                console.warn('%c ::party ', 'background: black; color: yellow;');
                 break;
             case OPEN_PAGE.REGISTRY:
                 if (!registryDetail.fetched || registryDetail.isFetching || !registryDetail.id) {
@@ -70,7 +66,7 @@ class RegistrySelectPage extends SelectPage {
         const {hasParty} = this.props;
 
         const parts = super.buildRibbonParts();
-        parts.primarySection.push(<RibbonSplit key={'ribbon-spliter-pages'} />);
+        parts.primarySection.push(<RibbonSplit key={'ribbon-spliter-pages'}/>);
         const items = [];
         items.push(
             <Button
@@ -78,7 +74,7 @@ class RegistrySelectPage extends SelectPage {
                 className={classNames({active: openPage === OPEN_PAGE.REGISTRY})}
                 onClick={this.handlePageChange.bind(this, OPEN_PAGE.REGISTRY)}
             >
-                <Icon glyph="fa-th-list" />
+                <Icon glyph="fa-th-list"/>
                 <div>
                     <span className="btnText">{i18n('ribbon.action.registry')}</span>
                 </div>
@@ -92,7 +88,7 @@ class RegistrySelectPage extends SelectPage {
                     className={classNames({active: openPage === OPEN_PAGE.PARTY})}
                     onClick={this.handlePageChange.bind(this, OPEN_PAGE.PARTY)}
                 >
-                    <Icon glyph="fa-users" />
+                    <Icon glyph="fa-users"/>
                     <div>
                         <span className="btnText">{i18n('ribbon.action.party')}</span>
                     </div>
@@ -125,8 +121,6 @@ class RegistrySelectPage extends SelectPage {
         switch (openPage) {
             case OPEN_PAGE.REGISTRY:
                 return <RegistryPage {...props} />;
-            case OPEN_PAGE.PARTY:
-                return <PartyPage {...props} />;
             default:
                 break;
         }
@@ -135,9 +129,7 @@ class RegistrySelectPage extends SelectPage {
 
 export default connect(state => {
     const registryDetail = storeFromArea(state, AREA_REGISTRY_DETAIL);
-    const partyDetail = storeFromArea(state, AREA_PARTY_DETAIL);
     return {
         registryDetail,
-        partyDetail,
     };
 })(RegistrySelectPage);

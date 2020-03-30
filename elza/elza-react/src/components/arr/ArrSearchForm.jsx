@@ -20,7 +20,7 @@ const LE = 'LE';
 const CONTAINS = 'CONTAINS';
 
 /**
- * Formulář zobrazení hostorie.
+ * Formulář zobrazení historie.
  */
 class ArrSearchForm extends AbstractReactComponent {
     static propTypes = {};
@@ -31,7 +31,7 @@ class ArrSearchForm extends AbstractReactComponent {
         errors.condition = [];
         values.condition.forEach((item, index) => {
             if (item.type === TYPE_UNITDATE) {
-                errors.condition.push(DatationField.reduxValidate(item));
+                errors.condition.push(DatationField.reduxValidate(item)); // FIXME ?: Removing Party
             } else {
                 errors.condition.push(null);
             }

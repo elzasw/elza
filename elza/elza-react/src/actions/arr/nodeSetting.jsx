@@ -48,7 +48,7 @@ export function toggleCopyAllDescItemType(nodeId, descItemTypeId) {
  */
 export function unlockAllDescItemType(nodeId) {
     return {
-        //type: types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL,
+        type: types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL,
         nodeId: nodeId,
     };
 }
@@ -59,7 +59,7 @@ export function unlockAllDescItemType(nodeId) {
  */
 export function unlockDescItemType(nodeId, descItemTypeId) {
     return {
-        //type: types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL,
+        type: types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL,
         nodeId: nodeId,
     };
 }

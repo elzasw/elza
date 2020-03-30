@@ -10,12 +10,10 @@ import './UsageForm.scss';
 import RegistryField from '../registry/RegistryField';
 import * as types from 'actions/constants/ActionTypes.js';
 import ToggleContent from '../shared/toggle-content/ToggleContent';
-import {AREA_PARTY_LIST, partyDetailFetchIfNeeded} from '../../actions/party/party';
 import {AREA_REGISTRY_LIST} from '../../actions/registry/registry';
 import {modalDialogHide} from '../../actions/global/modalDialog';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import i18n from '../i18n';
-import PartyField from '../party/PartyField';
 import * as perms from '../../actions/user/Permission';
 import {createFundRoot, getParentNode} from '../arr/ArrUtils';
 import {fundSelectSubNode} from '../../actions/arr/node';
@@ -31,8 +29,6 @@ class RegistryUsageForm extends React.Component {
     };
 
     rootFundIdfOffset = 0.1;
-    rootPartyIdOffset = 0.2;
-    nodePartyIdOffset = 0.3;
     manyItemsIdOffset = 0.4;
     manyItemsLabel = i18n('registry.usage.tooMany');
     expandFundThreshold = 500;
@@ -56,7 +52,6 @@ class RegistryUsageForm extends React.Component {
                     usageFundTreeReceive(
                         [
                             ...this.formatDataForTree(data.funds, 'fund'),
-                            ...this.formatDataForTree(data.parties, 'party'),
                         ],
                         this.getDefaultExpandedIds(data),
                     ),
@@ -93,7 +88,7 @@ class RegistryUsageForm extends React.Component {
         const processedFunds = [];
         items.forEach(item => {
             processedFunds.push({
-                id: item.id + (type === 'fund' ? this.rootFundIdfOffset : this.rootPartyIdOffset), //proti překrytí id, míchání dvou druhů dat do jedné komponenty
+                id: item.id + this.rootFundIdfOffset, //proti překrytí id, míchání dvou druhů dat do jedné komponenty
                 propertyId: item.id, //původní id
                 type,
                 icon: type === 'fund' ? 'fa-database' : 'fa-users',
@@ -104,7 +99,7 @@ class RegistryUsageForm extends React.Component {
                     type === 'fund'
                         ? item.nodes && this.countOccurencesInAS(item.nodes)
                         : this.countOccurencesForNode(item),
-                link: type === 'party',
+                link: type === 'party', // FIXME ?: Removing Party
             });
             if (item.nodes) {
                 if (item.nodes.length < this.expandFundThreshold) {
@@ -114,7 +109,7 @@ class RegistryUsageForm extends React.Component {
                             type,
                             depth: 2,
                             icon: 'fa-fw',
-                            id: item.type === 'party' ? node.id + this.nodePartyIdOffset : node.id, //proti překrytí id, míchání dvou druhů dat do jedné komponenty
+                            id: node.id, //proti překrytí id, míchání dvou druhů dat do jedné komponenty
                             propertyId: node.id, //původní id
                             parent: item.id + this.rootFundIdfOffset,
                             origParent: item.id,
@@ -139,8 +134,7 @@ class RegistryUsageForm extends React.Component {
         const {fundTreeUsage} = this.props;
 
         const nodes = [
-            ...this.formatDataForTree(this.state.data.funds, 'fund'),
-            ...this.formatDataForTree(this.state.data.parties, 'party'),
+            ...this.formatDataForTree(this.state.data.funds, 'fund')
         ];
 
         const expandedNodes = nodes.filter(nodeItem => {
@@ -149,8 +143,7 @@ class RegistryUsageForm extends React.Component {
                 nodeItem.parent === node.id ||
                 fundTreeUsage.expandedIds[nodeItem.id] === true ||
                 fundTreeUsage.expandedIds[nodeItem.parent] === true ||
-                nodeItem.hasChildren ||
-                nodeItem.type === 'party'
+                nodeItem.hasChildren
             ) {
                 return true;
             }
@@ -196,10 +189,6 @@ class RegistryUsageForm extends React.Component {
         const {userDetail, detail} = this.props;
         const {selectedReplacementNode} = this.state;
 
-        if (detail.type === 'party' && detail.partyId) {
-            return false;
-        }
-
         if (selectedReplacementNode && detail.id !== selectedReplacementNode.id) {
             return userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
                 type: perms.AP_SCOPE_WR,
@@ -214,9 +203,6 @@ class RegistryUsageForm extends React.Component {
         if (node.type === 'fund') {
             this.props.history.push('/arr');
             this.handleShowInArr(node);
-        } else if (node.type === 'party') {
-            this.props.history.push('/party');
-            this.props.dispatch(partyDetailFetchIfNeeded(node.propertyId));
         }
     };
 
@@ -283,19 +269,13 @@ class RegistryUsageForm extends React.Component {
                     <ToggleContent withText text={this.props.replaceText}>
                         <Row>
                             <Col xs={10}>
-                                {this.props.type === 'registry' ? (
-                                    <RegistryField
-                                        value={this.state.selectedReplacementNode}
-                                        onChange={this.handleChoose}
-                                        onBlur={() => {}}
-                                    />
-                                ) : (
-                                    <PartyField
-                                        value={this.state.selectedReplacementNode}
-                                        onChange={this.handleChoose}
-                                        onBlur={() => {}}
-                                    />
-                                )}
+                                {this.props.type === 'registry' &&
+                                <RegistryField
+                                    value={this.state.selectedReplacementNode}
+                                    onChange={this.handleChoose}
+                                    onBlur={() => {
+                                    }}
+                                />}
                             </Col>
                             <Col xs={2}>
                                 <Button
@@ -322,12 +302,10 @@ class RegistryUsageForm extends React.Component {
 export default withRouter(
     connect(state => {
         const registryList = storeFromArea(state, AREA_REGISTRY_LIST);
-        const partyList = storeFromArea(state, AREA_PARTY_LIST);
 
         return {
             fundTreeUsage: state.arrRegion.globalFundTree.fundTreeUsage,
             registryList,
-            partyList,
             userDetail: state.userDetail,
         };
     })(RegistryUsageForm),

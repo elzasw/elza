@@ -513,7 +513,6 @@ export function hasDescItemTypeValue(dataType) {
         case 'DATE':
         case 'COORDINATES':
         case 'DECIMAL':
-        case 'PARTY_REF':
         case 'RECORD_REF':
         case 'STRUCTURED':
         case 'JSON_TABLE':

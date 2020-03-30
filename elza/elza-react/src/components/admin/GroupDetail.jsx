@@ -97,7 +97,7 @@ class GroupDetail extends AbstractReactComponent {
     };
 
     handleTabSelect = item => {
-        this.setState({selectedTabItem: item});
+        this.setState({selectedTabItem: {id: Number(item)}});
     };
 
     renderTabContent = () => {
@@ -197,6 +197,7 @@ class GroupDetail extends AbstractReactComponent {
                             <h4>{i18n('admin.group.title.permissions')}</h4>
                             <Tabs.Container>
                                 <Tabs.Tabs
+                                    asTabs
                                     items={GroupDetail.tabItems}
                                     activeItem={selectedTabItem}
                                     onSelect={this.handleTabSelect}

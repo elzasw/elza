@@ -6,8 +6,11 @@
     height: 100%;
 
     .actions {
-        & > .dropdown > .btn {
+        & > .dropdown {
+            display: inline-block;
+            > .btn {
                 padding: 0 2px;
+            }
         }
         & > .btn {
             padding: 2px;

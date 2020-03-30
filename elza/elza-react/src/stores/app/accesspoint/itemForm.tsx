@@ -219,7 +219,6 @@ export function validate(item: ApItemVO<any>, refType: RefType, valueServerError
 
     // Hodnota
     switch (refType.dataType.code) {
-        case DataTypeCode.PARTY_REF:
         case DataTypeCode.RECORD_REF:
         case DataTypeCode.APFRAG_REF:
             if (!item.value || typeof item.value !== 'number') {
@@ -303,12 +302,6 @@ export function validate(item: ApItemVO<any>, refType: RefType, valueServerError
 export function convertValue(value, descItem, type) {
     //  Data type to value conversion functions map
     const dataTypeMap = {
-        PARTY_REF: value => {
-            return {
-                value: value.id,
-                party: value,
-            };
-        },
         FILE_REF: value => {
             return {
                 value: value.id,
