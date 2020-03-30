@@ -6,11 +6,10 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 import {Field, formValueSelector, reduxForm} from 'redux-form';
-import {AbstractReactComponent, FormInput, FormInputField, i18n} from 'components/shared';
-import {Col, Form, FormCheck, Modal, Row} from 'react-bootstrap';
+import {AbstractReactComponent, FormInputField, i18n} from 'components/shared';
+import {Col, Form, Modal, Row} from 'react-bootstrap';
 import {Button} from '../ui';
 import {submitForm} from 'components/form/FormUtils.jsx';
-import PartyField from '../party/PartyField';
 import './AddUserForm.scss';
 import {storeFromArea} from 'shared/utils';
 import {AREA_EXT_SYSTEM_DETAIL} from 'actions/admin/extSystem';
@@ -22,7 +21,6 @@ class AddUserForm extends AbstractReactComponent {
     };
 
     static propTypes = {
-        onCreateParty: PropTypes.func,
         create: PropTypes.bool,
     };
 
@@ -42,10 +40,6 @@ class AddUserForm extends AbstractReactComponent {
         const errors = {};
 
         let fields = ['username'];
-
-        if (props.create) {
-            fields.push('party');
-        }
 
         for (let field of fields) {
             if (!values[field]) {
@@ -72,16 +66,6 @@ class AddUserForm extends AbstractReactComponent {
         return errors;
     }
 
-    handlePartyCreate = partyTypeId => {
-        const {onCreateParty} = this.props;
-
-        onCreateParty && onCreateParty(partyTypeId, this.handlePartyReceive);
-    };
-
-    handlePartyReceive = newParty => {
-        this.props.fields.party.onChange(newParty);
-    };
-
     transformData = data => {
         const {passwordAgain, shibbolethCheckbox, password, shibboleth, passwordCheckbox, ...other} = data;
 
@@ -106,29 +90,15 @@ class AddUserForm extends AbstractReactComponent {
 
     render() {
         const {
-            fields: {username, password, passwordAgain, passwordCheckbox, shibbolethCheckbox, party, shibboleth},
-            create,
-            handleSubmit,
-            onClose,
-            submitting,
-        } = this.props;
+                  create,
+                  handleSubmit,
+                  onClose,
+                  submitting,
+              } = this.props;
         const {setPassword, setShibboleth} = this.state;
         return (
             <Form className="add-user-form" onSubmit={handleSubmit(this.submitReduxForm)}>
                 <Modal.Body>
-                    {/*{create && (*/}
-                    {/*    <Row>*/}
-                    {/*        <Col xs={12}>*/}
-                    {/*            <PartyField*/}
-                    {/*                disabled={submitting}*/}
-                    {/*                label={i18n('admin.user.add.party')}*/}
-                    {/*                {...party}*/}
-                    {/*                onCreate={this.handlePartyCreate}*/}
-                    {/*                detail={false}*/}
-                    {/*            />*/}
-                    {/*        </Col>*/}
-                    {/*    </Row>*/}
-                    {/*)}*/}
                     <Row>
                         <Col xs={12}>
                             <Field
@@ -236,6 +206,7 @@ class AddUserForm extends AbstractReactComponent {
 }
 
 const selector = formValueSelector('addUserForm');
+
 function mapState(state) {
     const {splitter} = state;
     const extSystemDetail = storeFromArea(state, AREA_EXT_SYSTEM_DETAIL);
@@ -247,6 +218,7 @@ function mapState(state) {
         extSystemDetail,
     };
 }
+
 const connector = connect(mapState);
 export default reduxForm({
     form: 'addUserForm',

@@ -45,7 +45,20 @@
                 }
 
                 > .btn {
-                    margin-right: 8px;
+                    padding: 2px;
+                    border: none;
+                    margin: 0;
+                    background: transparent;
+                    height: 2em;
+                    font-size: 0.9em;
+
+                    &:hover {
+                        background: $node-form-actions-hover;
+                    }
+
+                    .icon {
+                        margin: 0 0.2em;
+                    }
                 }
 
                 .node-form-standard-actions {

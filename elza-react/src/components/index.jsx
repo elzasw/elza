@@ -69,21 +69,6 @@ export {default as FundTreeMovementsRight} from 'components/arr/FundTreeMovement
 export {default as FundTreeDaos} from 'components/arr/FundTreeDaos';
 export {default as AddNodeCross} from 'components/arr/AddNodeCross';
 
-export {default as PartyList} from 'components/party/PartyList';
-export {default as PartyListItem} from 'components/party/PartyListItem';
-export {default as PartyDetail} from 'components/party/PartyDetail';
-export {default as PartyDetailNames} from 'components/party/PartyDetailNames';
-export {default as PartyDetailIdentifiers} from 'components/party/PartyDetailIdentifiers';
-export {default as AddPartyForm} from 'components/party/AddPartyForm';
-export {default as PartyNameForm} from 'components/party/PartyNameForm';
-export {default as PartyIdentifierForm} from 'components/party/PartyIdentifierForm';
-export {default as RelationForm} from 'components/party/RelationForm';
-export {default as RelationClassForm} from 'components/party/RelationClassForm';
-export {default as PartyField} from 'components/party/PartyField';
-export {default as PartyDetailRelations} from 'components/party/PartyDetailRelations';
-export {default as PartyDetailRelationClass} from 'components/party/PartyDetailRelationClass';
-export {default as DatationField} from 'components/party/DatationField';
-
 export {default as AdminPackagesList} from 'components/admin/AdminPackagesList';
 export {default as AdminExtSystemList} from 'components/admin/AdminExtSystemList';
 export {default as AdminExtSystemListItem} from 'components/admin/AdminExtSystemListItem';

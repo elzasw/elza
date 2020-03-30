@@ -16,7 +16,6 @@ import {Button} from '../ui';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx';
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
-import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx';
 import {
     registryDetailFetchIfNeeded,
     registryDetailInvalidate,
@@ -126,12 +125,6 @@ class RegistryDetail extends AbstractReactComponent {
     };
 
     handleGoToParty = () => {
-        this.props.dispatch(partyDetailFetchIfNeeded(this.props.registryDetail.data.partyId));
-        if (!this.props.goToPartyPerson) {
-            this.props.dispatch(routerNavigate('party'));
-        } else {
-            this.props.goToPartyPerson();
-        }
     };
 
     handleShortcuts = action => {

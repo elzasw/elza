@@ -2,7 +2,6 @@ import * as types from 'actions/constants/ActionTypes.js';
 import {_WebApi, WebApi} from 'actions/index.jsx';
 import {userDetailChange, userDetailRequest} from 'actions/user/userDetail.jsx';
 import {routerNavigate} from 'actions/router.jsx';
-import {partyDetailClear, partyDetailInvalidate, partyListInvalidate} from 'actions/party/party.jsx';
 
 /**
  * Checks if user is logged on server by requesting userDetail.
@@ -74,9 +73,6 @@ function saveLoggedUser(userDetail, reset) {
     return (dispatch, getState) => {
         if (reset) {
             dispatch(routerNavigate('/'));
-            dispatch(partyListInvalidate());
-            dispatch(partyDetailInvalidate());
-            dispatch(partyDetailClear());
         }
         dispatch(userDetailChange(userDetail));
     };

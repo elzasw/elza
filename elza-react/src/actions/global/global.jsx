@@ -5,7 +5,6 @@ import {WebApi} from 'actions/index.jsx';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {i18n, Utils} from 'components/shared';
 import {registryListInvalidate} from 'actions/registry/registry.jsx';
-import {partyListInvalidate} from 'actions/party/party.jsx';
 
 export const ObjectInfo = class ObjectInfo {
     constructor() {
@@ -46,8 +45,7 @@ export function importForm(data, messageType) {
                     case 'Record':
                         dispatch(registryListInvalidate);
                         break;
-                    case 'Party':
-                        dispatch(partyListInvalidate);
+                    case 'Party': // FIXME ?: Removing Party
                         dispatch(registryListInvalidate);
                         break;
                     default:

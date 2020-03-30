@@ -10,7 +10,6 @@ import {submitForm} from 'components/form/FormUtils.jsx';
 import {WebApi} from 'actions';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
-import {partyDetailFetchIfNeeded} from 'actions/party/party.jsx';
 import {registryDetailFetchIfNeeded} from 'actions/registry/registry.jsx';
 import {routerNavigate} from 'actions/router.jsx';
 import Scope from '../../components/shared/scope/Scope';
@@ -337,7 +336,7 @@ class ExtImportForm extends AbstractReactComponent {
     showDetail = detailId => {
         const {isParty} = this.props;
         if (isParty) {
-            this.props.dispatch(partyDetailFetchIfNeeded(detailId));
+            // FIXME ?: Removing Party
             this.props.dispatch(modalDialogHide());
             this.props.dispatch(routerNavigate('party'));
         } else {

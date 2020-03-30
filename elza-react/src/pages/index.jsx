@@ -16,14 +16,12 @@ export {default as ArrOutputPage} from 'pages/arr/ArrOutputPage.jsx';
 export {default as ArrRequestPage} from 'pages/arr/ArrRequestPage.jsx';
 
 export {default as RegistryPage} from 'pages/registry/RegistryPage.jsx';
-export {default as PartyPage} from 'pages/party/PartyPage.jsx';
 export {default as HomePage} from 'pages/home/HomePage.jsx';
 export {default as FundPage} from 'pages/fund/FundPage.jsx';
 
 export {default as NodePage} from 'pages/node/NodePage.jsx';
 
 export {default as RegistrySelectPage} from 'pages/select/RegistrySelectPage';
-export {default as PartySelectPage} from 'pages/select/PartySelectPage';
 export {default as SelectPage} from 'pages/select/SelectPage';
 
 export {default as PageLayout} from 'pages/shared/layout/PageLayout.jsx';

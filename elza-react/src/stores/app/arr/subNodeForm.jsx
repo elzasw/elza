@@ -76,7 +76,6 @@ export function validate(descItem, refType, valueServerError) {
 
     // Hodnota
     switch (refType.dataType.code) {
-        case 'PARTY_REF':
         case 'RECORD_REF':
             if (!descItem.value || typeof descItem.value !== 'number') {
                 error.value = i18n('subNodeForm.validate.value.notEmpty');
@@ -158,12 +157,6 @@ export function validate(descItem, refType, valueServerError) {
 export function convertValue(value, descItem, type) {
     //  Data type to value conversion functions map
     const dataTypeMap = {
-        PARTY_REF: value => {
-            return {
-                value: value.id,
-                party: value,
-            };
-        },
         FILE_REF: value => {
             return {
                 value: value.id,

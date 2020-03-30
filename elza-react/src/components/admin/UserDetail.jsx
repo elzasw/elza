@@ -102,13 +102,13 @@ class UserDetail extends AbstractReactComponent {
     };
 
     handleTabSelect = item => {
-        this.setState({selectedTabItem: item});
+        this.setState({selectedTabItem: {id: Number(item)}});
     };
 
     renderTabContent = () => {
         const {userDetail} = this.props;
         const {selectedTabItem} = this.state;
-
+        console.log('selectedTabItem', selectedTabItem);
         switch (selectedTabItem.id) {
             case UserDetail.TAB_FUNDS:
                 return (
@@ -172,12 +172,12 @@ class UserDetail extends AbstractReactComponent {
 
         return (
             <div className="detail-container">
-                <StoreHorizontalLoader store={userDetail} />
+                <StoreHorizontalLoader store={userDetail}/>
                 {userDetail.fetched && (
                     <AdminRightsContainer
                         header={
                             <DetailHeader
-                                icon={<Icon glyph="fa-user" />}
+                                icon={<Icon glyph="fa-user"/>}
                                 title={userDetail.party.accessPoint.record}
                                 rowFlagColor={userDetail.active ? 'success' : 'warning'}
                                 flagLeft={
@@ -208,6 +208,7 @@ class UserDetail extends AbstractReactComponent {
                                     items={UserDetail.tabItems}
                                     activeItem={selectedTabItem}
                                     onSelect={this.handleTabSelect}
+                                    asTabs
                                 />
                                 <Tabs.Content>{this.renderTabContent()}</Tabs.Content>
                             </Tabs.Container>
