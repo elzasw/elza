@@ -18,24 +18,16 @@ import "./DescItemLink.scss";
 
 const DescItemString_MAX_LENGTH = 1000;
 
-type ComponentProps = IDescItemBaseProps & {
-
-};
-
-export type Props = ComponentProps & ConnectedProps & DispatchProp;
-
 /**
  * Input prvek pro desc item - typ STRING.
  */
 class DescItemString extends AbstractReactComponent {
 
-    props: Props;
-
     focus = () => {
         this.refs.focusEl.focus()
     };
 
-    handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    handleChange = (e) => {
         const newValue = normalizeString(e.target.value, DescItemString_MAX_LENGTH);
 
         if (newValue !== this.props.descItem.value) {
@@ -45,7 +37,7 @@ class DescItemString extends AbstractReactComponent {
             });
         }
     };
-    handleDesc = (e: ChangeEvent<HTMLInputElement>) => {
+    handleDesc = (e) => {
         const newValue = normalizeString(e.target.value, DescItemString_MAX_LENGTH);
 
         if (newValue !== this.props.descItem.description) {
@@ -142,4 +134,4 @@ class DescItemString extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, {withRef: true})(DescItemString);
+export default connect(null, null, null)(DescItemString);
