@@ -64,8 +64,8 @@ salience 100
 no-loop
 when
     $itemType : RulItemTypeExt(code in ("ZP2015_ARRANGEMENT_TYPE", "ZP2015_LEVEL_TYPE", "ZP2015_FOLDER_TYPE",
-        "ZP2015_UNIT_TYPE", "ZP2015_UNIT_COUNT", "ZP2015_UNIT_ID", "ZP2015_SERIAL_NUMBER", "ZP2015_TITLE",
-        "ZP2015_STORAGE_ID", 
+        "ZP2015_UNIT_TYPE", "ZP2015_UNIT_SUBTYPE", "ZP2015_UNIT_COUNT", "ZP2015_UNIT_ID", 
+        "ZP2015_SERIAL_NUMBER", "ZP2015_TITLE", "ZP2015_STORAGE_ID", 
         "ZP2015_FORMAL_TITLE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_BULK",
         "ZP2015_UNIT_DATE_TEXT", "ZP2015_UNIT_HIST", "ZP2015_UNIT_ARR", "ZP2015_UNIT_CONTENT",
         "ZP2015_UNIT_SOURCE", "ZP2015_FUTURE_UNITS", "ZP2015_UNIT_ACCESS", "ZP2015_UNIT_INFO_RIGHTS",
@@ -613,8 +613,6 @@ when
         "ZP2015_UNIT_TYPE_UKN", 
         // Rukopisy 
         "ZP2015_UNIT_TYPE_RKP",
-        // Hudebniny
-        "ZP2015_UNIT_TYPE_HDB",
         // Podací protokoly
         "ZP2015_UNIT_TYPE_PPR",
         // Indexy
@@ -701,8 +699,6 @@ when
     code in (
     // Rukopis
     "ZP2015_UNIT_TYPE_RKP",
-    // Hudebnina
-    "ZP2015_UNIT_TYPE_HDB",
     // Razítko
     "ZP2015_UNIT_TYPE_RAZ",
     // Samostatná pečeť, odlitek pečeti, otisk typáře
@@ -781,8 +777,6 @@ when
         "ZP2015_UNIT_TYPE_UKN", 
         // Rukopisy 
         "ZP2015_UNIT_TYPE_RKP",
-        // Hudebniny
-        "ZP2015_UNIT_TYPE_HDB",
         // Podací protokoly
         "ZP2015_UNIT_TYPE_PPR",
         // Indexy
@@ -1016,6 +1010,80 @@ then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
 
+// Podtypy jednotek popisu
+rule "Podtypy jednotek popisu - jednotlivost a část jednotlivosti"
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    $itemType : RulItemTypeExt(code in
+    ( 
+      "ZP2015_UNIT_SUBTYPE"
+     ) )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+rule "Podtypy jednotek popisu - množstevní složka"
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    $itemType : RulItemTypeExt(code in
+    ( 
+      "ZP2015_UNIT_SUBTYPE"
+     ) )
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode in ("ZP2015_FOLDER_UNITS") ) from $activeLevel.descItems
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+rule "Podtypy jednotek popisu - pro UKN"
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_UKN") ) from $activeLevel.descItems
+    $itemType : RulItemTypeExt(code=="ZP2015_UNIT_SUBTYPE")
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_UNIT_SUBTYPE_MTR")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Podtypy jednotek popisu - pro RKP"
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_RKP") ) from $activeLevel.descItems
+    $itemType : RulItemTypeExt(code=="ZP2015_UNIT_SUBTYPE")
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_UNIT_SUBTYPE_HDB")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Podtypy jednotek popisu - pro ZP2015_UNIT_TYPE_PFP"
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PFP") ) from $activeLevel.descItems
+    $itemType : RulItemTypeExt(code=="ZP2015_UNIT_SUBTYPE")
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_UNIT_SUBTYPE_STV")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Podtypy jednotek popisu - pro ZP2015_UNIT_TYPE_OTHER"
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_OTHER") ) from $activeLevel.descItems
+    $itemType : RulItemTypeExt(code=="ZP2015_UNIT_SUBTYPE")
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_UNIT_SUBTYPE_PA", 
+    									"ZP2015_UNIT_SUBTYPE_STVR", "ZP2015_UNIT_SUBTYPE_JMF", 
+    									"ZP2015_UNIT_SUBTYPE_LST")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
 // Povolení všech jiných označení
 rule "Povolení všech jiných označení (ZP2015_OTHER_ID)"
 no-loop
@@ -1099,12 +1167,15 @@ then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
 
-// Povolení všech specifikací jiné datace označení
-rule "Povolení všech jiných datací (ZP2015_DATE_OTHER)"
+// Povolení specifikací jiné datace označení
+rule "Povolení vybraných jiných datací (ZP2015_DATE_OTHER)"
 no-loop
 when
     $itemType : RulItemTypeExt(code == "ZP2015_DATE_OTHER")
-    $itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_DATE_OF_CONTENT",
+    "ZP2015_DATE_DECLARED", "ZP2015_DATE_ORIG", "ZP2015_DATE_OF_COPY", "ZP2015_DATE_SEALING",
+    "ZP2015_DATE_ACT_PUBLISHING", "ZP2015_DATE_INSERT", "ZP2015_DATE_MOLD_CREATION",
+    "ZP2015_DATE_PUBLISHING", "ZP2015_DATE_CAPTURING")) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
@@ -1664,6 +1735,36 @@ then
 end
 
 //----------------------------------------------
+// UKN - Matriky
+//----------------------------------------------
+rule "Možné prvky pro Matriky"
+no-loop
+when $activeLevel: ActiveLevel( $items: descItems )
+    DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_MTR") ) from $items
+    $itemType: RulItemTypeExt( code in (
+        "ZP2015_RECORD_TYPE", "ZP2015_GEO_REF", "ZP2015_DATE_OTHER"
+       ) )    
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
+    $itemType.setRepeatable(true);
+end
+
+rule "Možné specifikace pro Matriky"
+no-loop
+when $activeLevel: ActiveLevel( $items: descItems )
+    $descItem : DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_MTR") ) from $items
+    $itemType: RulItemTypeExt( code in (
+        "ZP2015_RECORD_TYPE"
+       ) )    
+    $itemSpec: RulItemSpecExt( code in (
+     	"ZP2015_RECORD_TYPE_BORN", "ZP2015_RECORD_TYPE_DIED", "ZP2015_RECORD_TYPE_MARRIED",
+     	"ZP2015_RECORD_TYPE_INDEX_BORN", "ZP2015_RECORD_TYPE_INDEX_DIED", "ZP2015_RECORD_TYPE_INDEX_MARRIED") 
+     	) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+//----------------------------------------------
 // Rukopisy
 //----------------------------------------------
 
@@ -1685,6 +1786,7 @@ rule "Možné role entit pro Rukopisy"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_RKP") ) from $ownItems
+    not DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_HDB") ) from $ownItems
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
         // autoři
@@ -1786,6 +1888,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_RKP") ) from $ownItems
+    not DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_HDB") ) from $ownItems
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_PART") ) from $ownItems
     // Rodic je INV
     $level: Level( $items: descItems )
@@ -1808,6 +1911,7 @@ no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_RKP") ) from $ownItems
+    not DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_HDB") ) from $ownItems
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $ownItems
     // Rodic je INV
     $level: Level( $items: descItems )
@@ -1836,21 +1940,10 @@ end
 // Hudebniny
 //----------------------------------------------
 
-rule "Možné prvky pro Hudebniny (vždy)"
-no-loop
-when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
-    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_HDB") ) from $ownItems 
-    $itemType: RulItemTypeExt( code in (
-        // ZP5.2.2 Název autorského díla
-        "ZP2015_ITEM_TITLE_REF") )
-then
-    $itemType.setType(RulItemType.Type.POSSIBLE);
-end
-
 rule "Možné role entit pro Hudebniny"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
-    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_HDB") ) from $ownItems
+    $descItem : DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_HDB") ) from $ownItems
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
         // vydavatelé / nakladatelé
@@ -1878,68 +1971,11 @@ then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
-rule "Povinnost prvku pro Hudebniny v inv (jednotlivost)"
-no-loop
-salience -100
-when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
-    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_HDB") ) from $ownItems
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $ownItems
-    // Rodic je INV nebo KAT
-    $level: Level( $items: descItems )
-    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
-    // nastaveni prvku
-    $itemType: RulItemTypeExt( code in (
-        // ZP5.2.2 Název autorského díla
-        "ZP2015_ITEM_TITLE_REF",    
-        "ZP2015_ENTITY_ROLE" 
-    ) )
-then
-    $itemType.setType(RulItemType.Type.REQUIRED);
-end
-
-rule "Povinnost prvku pro Hudebniny v inv (část jednotlivosti)"
-no-loop
-salience -100
-when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
-    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_HDB") ) from $ownItems
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_PART") ) from $ownItems
-    // Rodic je INV nebo KAT
-    $level: Level( $items: descItems )
-    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
-    // nastaveni prvku
-    $itemType: RulItemTypeExt( code in (
-        // ZP5.2.2 Název autorského díla
-        "ZP2015_ITEM_TITLE_REF",    
-        "ZP2015_ENTITY_ROLE" 
-    ) )
-then
-    $itemType.setType(RulItemType.Type.RECOMMENDED);
-end
-
-rule "Povinnost prvku pro Hudebniny v kat"
-no-loop
-salience -100
-when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
-    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_HDB") ) from $ownItems
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $ownItems
-    // Rodic je INV nebo KAT
-    $level: Level( $items: descItems )
-    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
-    // nastaveni prvku
-    $itemType: RulItemTypeExt( code in (
-        // ZP5.2.2 Název autorského díla
-        "ZP2015_ITEM_TITLE_REF",    
-        "ZP2015_ENTITY_ROLE" 
-    ) )
-then
-    $itemType.setType(RulItemType.Type.REQUIRED);
-end
-
 rule "Povinné role entit pro Hudebniny v INV (jednotlivost)"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
-    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_HDB") ) from $ownItems
+    $descItem : DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_HDB") ) from $ownItems
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $ownItems
     // Rodic je INV
     $level: Level( $items: descItems )
@@ -1966,7 +2002,7 @@ rule "Povinné role entit pro Hudebniny v INV (část jednotlivosti)"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
-    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_HDB") ) from $ownItems
+    $descItem : DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_HDB") ) from $ownItems
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_PART") ) from $ownItems
     // Rodic je INV
     $level: Level( $items: descItems )
@@ -1994,7 +2030,7 @@ rule "Povinné role entit pro Hudebniny v KAT"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
-    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_HDB") ) from $ownItems
+    $descItem : DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_HDB") ) from $ownItems
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $ownItems
     // Rodic je KAT
     $level: Level( $items: descItems )
@@ -2055,6 +2091,15 @@ then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
 
+rule "Povolení vybraných jiných datací (ZP2015_DATE_OTHER) pro typáře"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PFP") ) from $ownItems
+    $itemType : RulItemTypeExt(code == "ZP2015_DATE_OTHER")
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_DATE_USAGE")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
 
 // Možné role entit pro typáře
 rule "Možné role entit pro typáře"
@@ -2502,6 +2547,16 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ORIENTATION") )
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+rule "Povolení vybraných jiných datací (ZP2015_DATE_OTHER) pro mapy"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_MAP", "ZP2015_UNIT_TYPE_ATL") ) from $ownItems
+    $itemType : RulItemTypeExt(code == "ZP2015_DATE_OTHER")
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_DATE_MAP_UPDATE")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
 rule "Povinnost prvku pro mapy v inv (jednotlivost)"
@@ -3266,6 +3321,16 @@ then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
 
+rule "Povolení vybraných jiných datací (ZP2015_DATE_OTHER) pro Kinematografické filmy"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_KZA") ) from $ownItems
+    $itemType : RulItemTypeExt(code == "ZP2015_DATE_OTHER")
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_DATE_RECORDING")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
 // Odstraneno, viz https://bugzilla.lightcomp.cz/show_bug.cgi?id=4683
 /*
 rule "Doporučené prvky pro Kinematografické filmy v inv (složka)"
@@ -3506,6 +3571,16 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_RECORD_LENGTH") )
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+rule "Povolení vybraných jiných datací (ZP2015_DATE_OTHER) pro Zvukové záznamy"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_ZZA") ) from $ownItems
+    $itemType : RulItemTypeExt(code == "ZP2015_DATE_OTHER")
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_DATE_RECORDING")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
 rule "Povinnost prvku pro Zvukové záznamy v inv"
@@ -4308,6 +4383,18 @@ end
 // Faleristické předměty
 //----------------------------------------------
 
+rule "Povolení vybraných jiných datací (ZP2015_DATE_OTHER) pro předmět faler povahy"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PFP") ) from $ownItems
+    $itemType : RulItemTypeExt(code == "ZP2015_DATE_OTHER")
+    $itemSpec : RulItemSpecExt(code in ("ZP2015_DATE_AWARDING",
+    	"ZP2015_DATE_AWARD_CER", "ZP2015_DATE_WITHDRAWAL")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+
 rule "Povinnost prvku pro Faleristické předměty v INV (jednotlivost)"
 no-loop
 salience -100
@@ -4414,6 +4501,23 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
 then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
 end
+
+//-----------------
+// Státní vyznamenání
+//-----------------
+
+rule "Možné prvky pro podtyp státní vyznamenání"
+salience -100
+no-loop
+when $activeLevel: ActiveLevel( $items: descItems )
+    DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_STV") ) from $items
+    $itemType: RulItemTypeExt( code in (
+        "ZP2015_DATE_OTHER"
+       ) )    
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
 
 //----------------------------------------------
 // Numizmatické předměty
@@ -4681,4 +4785,20 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+//------------------------------
+// Podtyp právní akt
+//------------------------------
+
+rule "Možné prvky pro podtyp právní akt"
+no-loop
+when $activeLevel: ActiveLevel( $items: descItems )
+    DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_PA") ) from $items
+    $itemType: RulItemTypeExt( code in (
+        "ZP2015_LEGALACT_REF"
+       ) )    
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
+    $itemType.setRepeatable(true);
 end

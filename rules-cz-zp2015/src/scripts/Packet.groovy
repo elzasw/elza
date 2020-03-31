@@ -61,20 +61,42 @@ void generate()
     // Postfix
     appendValue(valueBuilder, "ZP2015_PACKET_POSTFIX");
     appendValue(sortValueBuilder, "ZP2015_PACKET_POSTFIX");
-    
+        
     // Prepare complement
-    String complement = toStringValue("ZP2015_PACKET_TYPE");
+    StringBuilder complementBuilder = new StringBuilder();
+    appendValue(complementBuilder, "ZP2015_PACKET_TYPE");
     
     // store result
     result.setValue(valueBuilder.toString().trim());
     result.setSortValue(sortValueBuilder.toString().trim());
-    result.setComplement(complement);
+    result.setComplement(complementBuilder.toString().trim());
 }
 
 String toStringValue(String itemTypeCode) {
     StringBuilder sb = new StringBuilder()
     appendValue(sb, itemTypeCode);
     return sb.toString();
+}
+
+void appendValueWithSpecs(StringBuilder sb, String itemTypeCode, List<String> specs) {    
+    for (ArrStructuredItem item : items) {
+        if (item.getItemType().getCode().equalsIgnoreCase(itemTypeCode)) {
+            RulItemSpec spec = item.getItemSpec();
+            if(specs.contains(spec.getCode())) {
+                if(sb.length()>0) {
+                    sb.append(" ");
+                }
+                sb.append(spec.getName());
+                ArrData data = item.getData();
+                if(data!=null) {
+                    String fullText = data.getFulltextValue();
+                    if(fullText!=null) {
+                        sb.append(fullText);
+                    }
+                }
+            }
+        }
+    }
 }
 
 void appendValue(StringBuilder sb, String itemTypeCode)
