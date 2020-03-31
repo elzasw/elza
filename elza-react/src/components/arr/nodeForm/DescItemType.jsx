@@ -621,6 +621,7 @@ class DescItemType extends AbstractReactComponent {
                 singleDescItemTypeEdit: singleDescItemTypeEdit,
                 structureTypeCode: structureType ? structureType.code : null,
                 structureTypeName: structureType ? structureType.name : null,
+                anonymous: structureType ? structureType.anonymous : null,
             },
             FILE_REF: {
                 onCreateFile: value => {

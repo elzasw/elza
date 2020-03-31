@@ -1,10 +1,8 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -55,11 +53,6 @@ public class UnitCounter {
      * Packet type mapping
      */
     Map<Integer, String> objectMapping = new HashMap<>();
-
-    /**
-     * Již zapracované obaly
-     */
-    private Set<Integer> countedObjects = new HashSet<>();
 
     UnitCounter(UnitCounterConfig counterCfg,
                 final StructuredItemRepository structureItemRepository,
@@ -184,7 +177,7 @@ public class UnitCounter {
                 String value = itemSpecMapping.get(item.getItemSpecId());
                 if (value != null) {
                     if (unitCountAction.isLocal()) {
-                        unitCountAction.createDescItem(level.getNode(), value, count);
+                        unitCountAction.createDescItem(level.getNodeId(), value, count);
                     } else {
                         unitCountAction.addValue(value, count);
                     }
@@ -215,7 +208,7 @@ public class UnitCounter {
             // fetch valid items from packet
             ArrDataStructureRef dataStructObjRef = HibernateUtils.unproxy(item.getData());
             Integer packetId = dataStructObjRef.getStructuredObjectId();
-            if (!countedObjects.contains(packetId)) {
+            if (!unitCountAction.isCountedObject(packetId)) {
                 countStructObj(packetId, level, unitCountAction);
             }
         }
@@ -233,13 +226,17 @@ public class UnitCounter {
                 String value = objectMapping.get(structObjItem.getItemSpecId());
                 if (value != null) {
                     if (unitCountAction.isLocal()) {
-                        unitCountAction.createDescItem(level.getNode(), value, 1);
+                        unitCountAction.createDescItem(level.getNodeId(), value, 1);
                     } else {
                         unitCountAction.addValue(value, 1);
                     }
 
                     // mark as counted
-                    countedObjects.add(packetId);
+                    unitCountAction.addCountedObject(packetId);
+                    // only first mapping is used and then return
+                    // if there are multiple structObjItems matching
+                    // given itemType only first one is counted
+                    return;
                 }
             }
         }

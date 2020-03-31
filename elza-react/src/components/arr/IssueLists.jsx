@@ -16,18 +16,8 @@ import Loading from '../shared/loading/Loading';
 
 import './IssueLists.scss';
 
-type Props = {};
-type P = {
-    fundId: number;
-    dispatch: (x: any) => void;
-    onClose: () => void;
-    issueProtocols: any;
-};
-
 class IssueLists extends AbstractReactComponent {
     state = {id: null, initialValues: undefined};
-
-    props: P;
 
     static propTypes = {
         fundId: PropTypes.number.isRequired,
@@ -37,11 +27,11 @@ class IssueLists extends AbstractReactComponent {
         this.props.dispatch(issuesActions.protocolsConfig.fetchIfNeeded(this.props.fundId, true));
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps: Readonly<P>, nextContext: any): void {
+    UNSAFE_componentWillReceiveProps(nextProps, nextContext) {
         nextProps.dispatch(issuesActions.protocolsConfig.fetchIfNeeded(this.props.fundId));
     }
 
-    componentWillUnmount(): void {
+    componentWillUnmount() {
         this.props.dispatch(issuesActions.protocolsConfig.filter({}));
     }
 
@@ -82,8 +72,8 @@ class IssueLists extends AbstractReactComponent {
         const activeIndex = id !== null ? indexById(issueProtocols.rows, this.state.id) : null;
         const isLoading = id && !initialValues;
 
-        const ModalBody = Modal.Body as any;
-        const ModalFooter = Modal.Footer as any;
+        const ModalBody = Modal.Body;
+        const ModalFooter = Modal.Footer;
 
         return (
             <div className={'issue-list'}>
@@ -101,7 +91,7 @@ class IssueLists extends AbstractReactComponent {
                                 onChangeSelection={this.select}
                             />
                             <div>
-                                <Button variant={'action' as any} onClick={this.create}>
+                                <Button variant={'action'} onClick={this.create}>
                                     <Icon glyph="fa-plus" />
                                 </Button>
                             </div>
@@ -131,10 +121,10 @@ class IssueLists extends AbstractReactComponent {
     }
 }
 
-export default (connect((state: any) => {
+export default (connect((state) => {
     return {
         issueTypes: state.refTables.issueTypes,
         issueList: storeFromArea(state, issuesActions.AREA_LIST),
         issueProtocols: storeFromArea(state, issuesActions.AREA_PROTOCOLS_CONFIG),
     };
-})(IssueLists as any) as any) as React.SFC<{fundId: number}>;
+})(IssueLists));

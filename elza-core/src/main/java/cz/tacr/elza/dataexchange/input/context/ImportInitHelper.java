@@ -3,6 +3,7 @@ package cz.tacr.elza.dataexchange.input.context;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.service.StructObjValueService;
 
@@ -40,24 +41,28 @@ public class ImportInitHelper {
 
     private final AccessPointService accessPointService;
 
+    private final DmsService dmsService;
+
     private final ApStateRepository apStateRepository;
 
-    public ImportInitHelper(GroovyScriptService groovyScriptService,
-                            InstitutionRepository institutionRepository,
-                            InstitutionTypeRepository institutionTypeRepository,
-                            ArrangementService arrangementService,
-                            LevelRepository levelRepository,
-                            ApAccessPointRepository apRepository,
-                            ApNameRepository apNameRepository,
-                            ApDescriptionRepository apDescRepository,
-                            ApExternalIdRepository apEidRepository,
-                            PartyRepository partyRepository,
-                            PartyNameRepository nameRepository,
-                            PartyNameComplementRepository nameComplementRepository,
-                            PartyGroupIdentifierRepository groupIdentifierRepository,
-                            UnitdateRepository unitdateRepository,
-                            StructObjValueService structObjService,
-                            AccessPointService accessPointService, final ApStateRepository apStateRepository) {
+    public ImportInitHelper(final GroovyScriptService groovyScriptService,
+                            final InstitutionRepository institutionRepository,
+                            final InstitutionTypeRepository institutionTypeRepository,
+                            final ArrangementService arrangementService,
+                            final LevelRepository levelRepository,
+                            final ApAccessPointRepository apRepository,
+                            final ApNameRepository apNameRepository,
+                            final ApDescriptionRepository apDescRepository,
+                            final ApExternalIdRepository apEidRepository,
+                            final PartyRepository partyRepository,
+                            final PartyNameRepository nameRepository,
+                            final PartyNameComplementRepository nameComplementRepository,
+                            final PartyGroupIdentifierRepository groupIdentifierRepository,
+                            final UnitdateRepository unitdateRepository,
+                            final StructObjValueService structObjService,
+                            final AccessPointService accessPointService,
+                            final DmsService dmsService,
+                            final ApStateRepository apStateRepository) {
         this.groovyScriptService = groovyScriptService;
         this.institutionRepository = institutionRepository;
         this.institutionTypeRepository = institutionTypeRepository;
@@ -74,7 +79,12 @@ public class ImportInitHelper {
         this.unitdateRepository = unitdateRepository;
         this.structObjService = structObjService;
         this.accessPointService = accessPointService;
+        this.dmsService = dmsService;
         this.apStateRepository = apStateRepository;
+    }
+
+    public DmsService getDmsService() {
+        return dmsService;
     }
 
     public GroovyScriptService getGroovyScriptService() {

@@ -1,5 +1,8 @@
 package cz.tacr.elza.print;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
@@ -17,6 +20,8 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.core.fund.FundTreeProvider;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrChange.Type;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrOutput;
@@ -37,9 +42,6 @@ import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.output.OutputParams;
 import cz.tacr.elza.service.output.generator.OutputGeneratorFactory;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class OutputModelTest extends AbstractServiceTest {
 
@@ -148,7 +150,9 @@ public class OutputModelTest extends AbstractServiceTest {
         output.setFund(fi.getFund());
         output.setOutputType(outputType);
 
-        OutputParams params = new OutputParams(output, null, fi.getFundVersion(),
+        ArrChange change = arrangementService.createChange(Type.GENERATE_OUTPUT);
+        assertNotNull(change);
+        OutputParams params = new OutputParams(output, change, fi.getFundVersion(),
                 Collections.singletonList(level1.getNodeId()),
                 Collections.emptyList(),
                 Paths.get("test"));

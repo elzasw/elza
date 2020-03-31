@@ -56,7 +56,9 @@ public class AuthorizationRequest {
 			this.fundId = fundId;
 		}
 
-		public boolean matches(Collection<UserPermission> perms) {
+        @Override
+        public boolean matches(UserDetail userDetail) {
+            Collection<UserPermission> perms = userDetail.getUserPermission();
 			for (UserPermission up : perms) {
 				if (up.hasFundPermission(perm, fundId)) {
 					return true;
@@ -75,7 +77,10 @@ public class AuthorizationRequest {
             this.scopeId = scopeId;
         }
 
-        public boolean matches(Collection<UserPermission> perms) {
+        @Override
+        public boolean matches(UserDetail userDetail) {
+            Collection<UserPermission> perms = userDetail.getUserPermission();
+
             for (UserPermission up : perms) {
                 if (up.hasScopePermission(perm, scopeId)) {
                     return true;

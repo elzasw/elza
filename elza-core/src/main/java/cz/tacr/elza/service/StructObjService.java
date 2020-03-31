@@ -361,8 +361,7 @@ public class StructObjService {
     }
 
     protected ArrChange getChangeForStructObject(final ArrStructuredObject structObj, final ArrChange.Type type) {
-        return structObj.getState() == State.TEMP ? structObj.getCreateChange()
-                : arrangementService.createChange(type);
+        return arrangementService.createChange(type);
     }
 
     protected Integer getPosition(final Integer positionWant, final RulItemType type, final ArrStructuredObject structObj, final ArrChange change, final int nextPosition) {

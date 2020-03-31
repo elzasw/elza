@@ -1,10 +1,13 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.multiple.ItemGeneratorConfig.CreateItem;
+import cz.tacr.elza.bulkaction.generator.multiple.ItemGeneratorConfig.DeleteItem;
 import cz.tacr.elza.bulkaction.generator.multiple.ItemGeneratorConfig.StructuredObjectConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.ItemGeneratorConfig.StructuredObjectItemConfig;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
@@ -29,6 +33,7 @@ import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ArrStructuredObject.State;
@@ -53,7 +58,77 @@ public class ItemGeneratorAction extends Action {
 
     WhenCondition when;
     
-    private class CreateAction {
+    interface InnerAction {
+        public void apply(LevelWithItems level, TypeLevel typeLevel);
+
+        public default void done() {
+        };
+    }
+
+    private class DeleteAction
+            implements InnerAction {
+
+        final private DeleteItem deleteConfig;
+
+        private ArrFund fund;
+        private ArrFundVersion fundVersion;
+        private ArrChange change;
+
+        private ItemType trgItemType;
+        private StructType structType;
+
+        private Set<ArrStructuredObject> structObjsToDelete = new HashSet<>();
+
+        public DeleteAction(DeleteItem deleteConfig) {
+            this.deleteConfig = deleteConfig;
+        }
+
+        public void init(ArrBulkActionRun bulkActionRun) {
+            fund = bulkActionRun.getFundVersion().getFund();
+            fundVersion = bulkActionRun.getFundVersion();
+            change = bulkActionRun.getChange();
+
+            StaticDataProvider sdp = getStaticDataProvider();
+
+            // read target type info
+            trgItemType = sdp.getItemTypeByCode(deleteConfig.getItemType());
+            if (trgItemType == null) {
+                throw new SystemException("Missing item type", BulkActionCode.INCORRECT_CONFIG)
+                        .set("itemType", deleteConfig.getItemType());
+            }
+            if (trgItemType.getDataType() != DataType.STRUCTURED) {
+                throw new SystemException("Only structured types can be created", BulkActionCode.INCORRECT_CONFIG)
+                        .set("itemType", deleteConfig.getItemType());
+            } else {
+                Integer structTypeId = trgItemType.getEntity().getStructuredTypeId();
+                structType = sdp.getStructuredTypeById(structTypeId);
+                Validate.notNull(structType);
+            }
+        }
+
+        @Override
+        public void apply(LevelWithItems level, TypeLevel typeLevel) {
+            List<ArrDescItem> itemList = level.getDescItems(trgItemType, null);
+            if (CollectionUtils.isNotEmpty(itemList)) {
+                for (ArrDescItem item : itemList) {
+                    ArrDataStructureRef data = HibernateUtils.unproxy(item.getData());
+                    structObjsToDelete.add(data.getStructuredObject());
+                }
+                ArrNode node = itemList.get(0).getNode();
+                descriptionItemService.deleteDescriptionItems(itemList, node, fundVersion, change, false);
+            }
+        }
+
+        @Override
+        public void done() {
+            // vymazani strukt. objektu jejichz prvky popisu byly odstraneny
+            for (ArrStructuredObject so : structObjsToDelete) {
+                structObjService.deleteStructObj(so);
+            }
+        }
+    }
+
+    private class CreateAction implements InnerAction {
         private ArrFund fund;
         private ArrFundVersion fundVersion;
         private ArrChange change;
@@ -65,6 +140,7 @@ public class ItemGeneratorAction extends Action {
         
         private ItemType trgSOPrefixType;
         private ItemType prefixValueSource;
+        private Map<String, String> prefixValueMapping;
         private ItemType trgSOValueType;
         private ItemType countSource;
         private ItemType trgSOStartValueType;
@@ -136,6 +212,7 @@ public class ItemGeneratorAction extends Action {
             if(prefixValueSource==null) {
                 throw new SystemException("Incorrect prefix configuration for structured type", BulkActionCode.INCORRECT_CONFIG);
             }
+            prefixValueMapping = prefixConfig.getValueSpecMapping();
             
             // main part
             StructuredObjectItemConfig mainValueConfig = soc.getMainValue();
@@ -161,6 +238,7 @@ public class ItemGeneratorAction extends Action {
             
         }
 
+        @Override
         public void apply(LevelWithItems level, TypeLevel typeLevel) {
             String prefix = null;
             // read values
@@ -171,7 +249,12 @@ public class ItemGeneratorAction extends Action {
                 // 
                 Integer specId = prefixItem.getItemSpecId();
                 RulItemSpec spec = staticDataService.getData().getItemSpecById(specId);
-                prefix = spec.getShortcut();
+                // check if we have mapping
+                if (prefixValueMapping != null) {
+                    prefix = prefixValueMapping.get(spec.getCode());
+                } else {
+                    prefix = spec.getShortcut();
+                }
 
             }
             // read count
@@ -257,16 +340,14 @@ public class ItemGeneratorAction extends Action {
             ds.setStructuredObject(structObj);
 
             ArrDescItem descItem = new ArrDescItem();
-            descItem.setCreateChange(change);
             descItem.setItemType(trgItemType.getEntity());
-            descItem.setNode(level.getNode());
             descItem.setData(ds);
-            descriptionItemService.createDescriptionItem(descItem, level.getNode(), fundVersion, change);
+            descriptionItemService.createDescriptionItem(descItem, level.getNodeId(), fundVersion, change);
         }
         
     }
     
-    List<CreateAction> actions = new ArrayList<>();
+    List<InnerAction> actions = new ArrayList<>();
 
     @Autowired
     protected StructuredObjectRepository structObjRepository;
@@ -296,6 +377,14 @@ public class ItemGeneratorAction extends Action {
             when = new WhenCondition(whenConfig, sdp);
         }
         
+        if (config.getDelete() != null) {
+            for (DeleteItem deleteConfig : config.getDelete()) {
+                DeleteAction da = new DeleteAction(deleteConfig);
+                da.init(bulkActionRun);
+                actions.add(da);
+            }
+        }
+
         if(config.getCreate()!=null) {
             for(CreateItem createConfig: config.getCreate()) {
                 CreateAction ca = new CreateAction(createConfig);
@@ -330,6 +419,7 @@ public class ItemGeneratorAction extends Action {
 
     @Override
     public ActionResult getResult() {
+        actions.forEach(c -> c.done());
         return null;
     }
 

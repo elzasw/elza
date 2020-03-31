@@ -120,6 +120,10 @@ export function createDescItemFromDb(descItemType, descItem) {
         error: {hasError: false},
     };
 
+    if (descItem.hasOwnProperty("description")) {
+        result.prevDescription = descItem.description;
+    }
+
     initFormKey(descItemType, result);
 
     return result;

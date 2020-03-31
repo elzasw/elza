@@ -4,25 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang3.Validate;
 
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataApFragRef;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDate;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataFileRef;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUnitid;
-import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.DataTypeRepository;
 
@@ -42,7 +26,8 @@ public enum DataType {
     FILE_REF(ArrDataFileRef.class),
     JSON_TABLE(ArrDataJsonTable.class, Integer.MAX_VALUE),
     DATE(ArrDataDate.class),
-    APFRAG_REF(ArrDataApFragRef.class);
+    APFRAG_REF(ArrDataApFragRef.class),
+    URI_REF(ArrDataUriRef.class);
 
     private static Map<Integer, DataType> entityIdMap;
 
@@ -63,7 +48,7 @@ public enum DataType {
 
     /**
      * Check if data class is valid for this type
-     * 
+     *
      * @param dataClass
      * @return
      */
@@ -80,7 +65,7 @@ public enum DataType {
 
     /**
      * Return entity DB id
-     * 
+     *
      * @return
      */
     public int getId() {

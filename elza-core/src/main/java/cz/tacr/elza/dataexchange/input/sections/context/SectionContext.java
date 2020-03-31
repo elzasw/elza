@@ -1,9 +1,12 @@
 package cz.tacr.elza.dataexchange.input.sections.context;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.apache.commons.lang3.Validate;
 
@@ -13,12 +16,14 @@ import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.StructObjValueService;
 
 /**
@@ -29,6 +34,11 @@ public class SectionContext {
     private final Map<String, NodeContext> importIdNodeCtxMap = new HashMap<>();
 
     private final Map<String, StructObjContext> importIdStructObjCtxMap = new HashMap<>();
+
+    /**
+     * Map of imported files
+     */
+    private final Map<String, ArrFile> importIdFileMap = new HashMap<>();
 
     private final NodeStorageDispatcher nodeStorageDispatcher;
 
@@ -48,6 +58,8 @@ public class SectionContext {
 
     private SectionRootAdapter rootAdapter;
 
+    private final DmsService dmsService;
+
     SectionContext(StorageManager storageManager,
                    int batchSize,
                    ArrChange createChange,
@@ -61,6 +73,7 @@ public class SectionContext {
         this.staticData = Validate.notNull(staticData);
         this.arrangementService = initHelper.getArrangementService();
         this.structObjService = initHelper.getStructObjService();
+        this.dmsService = initHelper.getDmsService();
     }
 
     public ArrChange getCreateChange() {
@@ -116,6 +129,13 @@ public class SectionContext {
     }
 
     /**
+     * Notification about finished imported sections
+     */
+    public void filesFinished() {
+        // store all previous entities before node processing
+    }
+
+    /**
      * Create root node for section and stores all remaining packets.
      */
     public NodeContext setRootNode(ArrNode rootNode, String importNodeId) {
@@ -148,6 +168,30 @@ public class SectionContext {
         return ctx;
     }
 
+    public void addFile(String importId, String name,
+                        String fileName,
+                        String mimetype,
+                        Consumer<OutputStream> dataProvider) throws IOException {
+        Validate.notNull(importId);
+        Validate.notNull(name);
+        Validate.notNull(fileName);
+        Validate.notNull(mimetype);
+
+        ArrFile dmsFile = new ArrFile();
+        dmsFile.setName(name);
+        dmsFile.setFileName(fileName);
+        dmsFile.setMimeType(mimetype);
+        dmsFile.setFund(getFund());
+        dmsFile.setFileSize(0);
+        // save file
+        dmsService.createFile(dmsFile, dataProvider);
+
+        Validate.notNull(dmsFile.getFileId());
+
+        Validate.isTrue(importIdFileMap.get(importId) == null, "Duplicated local id, value: %s", importId);
+        importIdFileMap.put(importId, dmsFile);
+    }
+
     /**
      * Store all section nodes and related entities.
      */
@@ -176,5 +220,9 @@ public class SectionContext {
         nodeStorageDispatcher.addNode(nodeWrapper, depth);
         nodeStorageDispatcher.addLevel(levelWrapper, depth);
         return node;
+    }
+
+    public ArrFile getFile(String fid) {
+        return importIdFileMap.get(fid);
     }
 }

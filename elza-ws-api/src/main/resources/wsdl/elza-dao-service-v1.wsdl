@@ -2,50 +2,39 @@
 <wsdl:definitions name="ElzaDaoProvider" targetNamespace="http://elza.tacr.cz/ws/dao-service/v1" xmlns:eat="http://elza.tacr.cz/ws/types/v1" xmlns:tns="http://elza.tacr.cz/ws/dao-service/v1" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
 	<wsdl:import namespace="http://elza.tacr.cz/ws/types/v1" location="elza-api-types-v1.xsd"/>
 	<wsdl:types/>
+	<wsdl:message name="OnDaoLinkedResponse">
+		<wsdl:documentation>Empty response for request-response calls</wsdl:documentation>
+	</wsdl:message>
+	<wsdl:message name="OnDaoUnlinked">
+		<wsdl:part name="onDaoUnlinked" element="eat:onDaoUnlinked"/>
+	</wsdl:message>
+	<wsdl:message name="DaoServiceException">
+		<wsdl:part name="errorDescription" element="eat:errorMessage"/>
+	</wsdl:message>
+	<wsdl:message name="OnDaoLinked">
+		<wsdl:part name="onDaoLinked" element="eat:onDaoLinked"/>
+	</wsdl:message>
+	<wsdl:message name="OnDaoUnlinkedResponse"/>
 	<wsdl:message name="SyncDaos">
 		<wsdl:documentation>Request to synchronize collection of DAOs</wsdl:documentation>
-		<wsdl:part name="daosSyncRequest" type="eat:daosSyncRequest"/>
+		<wsdl:part name="daosSyncRequest" element="eat:daosSyncRequest"/>
+	</wsdl:message>
+	<wsdl:message name="TransferRequest">
+		<wsdl:part name="transferRequest" element="eat:transferRequest"/>
+	</wsdl:message>
+	<wsdl:message name="TransferRequestResponse">
+		<wsdl:part name="requestId" element="eat:transferRequestId"/>
 	</wsdl:message>
 	<wsdl:message name="SyncDaosResponse">
 		<wsdl:documentation>Response on DAO synchronization request</wsdl:documentation>
-		<wsdl:part name="daosSyncResponse" type="eat:daosSyncResponse"/>
-	</wsdl:message>
-	<wsdl:message name="DaoServiceException">
-		<wsdl:part name="errorDescription" type="eat:errorDescription"/>
-	</wsdl:message>
-	<wsdl:message name="DesctructionRequest">
-		<wsdl:part name="destructionRequest" type="eat:destructionRequest"/>
+		<wsdl:part name="daosSyncResponse" element="eat:daosSyncResponse"/>
 	</wsdl:message>
 	<wsdl:message name="DestructionRequestResponse">
-		<wsdl:part name="requestId" type="eat:requestId"/>
+		<wsdl:part name="requestId" element="eat:destructionRequestId"/>
 	</wsdl:message>
-	<wsdl:message name="OnDaoLinked">
-		<wsdl:part name="onDaoLinked" type="eat:onDaoLinked"/>
+	<wsdl:message name="DesctructionRequest">
+		<wsdl:part name="destructionRequest" element="eat:destructionRequest"/>
 	</wsdl:message>
-	<wsdl:message name="OnDaoUnlinked">
-		<wsdl:part name="onDaoUnlinked" type="eat:onDaoUnlinked"/>
-	</wsdl:message>
-	<wsdl:message name="TransferRequest">
-		<wsdl:part name="transferRequest" type="eat:transferRequest"/>
-	</wsdl:message>
-	<wsdl:message name="TransferRequestResponse">
-		<wsdl:part name="requestId" type="eat:requestId"/>
-	</wsdl:message>
-	<wsdl:message name="EmptyResponse">
-		<wsdl:documentation>Empty response for request-response calls</wsdl:documentation>
-	</wsdl:message>
-	<wsdl:portType name="DaoNotifications">
-		<wsdl:operation name="OnDaoLinked">
-			<wsdl:input name="onDaoLinked" message="tns:OnDaoLinked"/>
-			<wsdl:output name="emptyResponse" message="tns:EmptyResponse"/>
-			<wsdl:fault name="daoServiceException" message="tns:DaoServiceException"/>
-		</wsdl:operation>
-		<wsdl:operation name="OnDaoUnlinked">
-			<wsdl:input name="onDaoUnlinked" message="tns:OnDaoUnlinked"/>
-			<wsdl:output name="emptyResponse" message="tns:EmptyResponse"/>
-			<wsdl:fault name="daoServiceException" message="tns:DaoServiceException"/>
-		</wsdl:operation>
-	</wsdl:portType>
 	<wsdl:portType name="DaoRequests">
 		<wsdl:operation name="PostDestructionRequest">
 			<wsdl:input name="destructionRequest" message="tns:DesctructionRequest"/>
@@ -60,6 +49,18 @@
 		<wsdl:operation name="SyncDaos">
 			<wsdl:input name="syncDaos" message="tns:SyncDaos"/>
 			<wsdl:output name="syncDaosResponse" message="tns:SyncDaosResponse"/>
+			<wsdl:fault name="daoServiceException" message="tns:DaoServiceException"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:portType name="DaoNotifications">
+		<wsdl:operation name="OnDaoLinked">
+			<wsdl:input name="onDaoLinked" message="tns:OnDaoLinked"/>
+			<wsdl:output name="onDaoLinkedResponse" message="tns:OnDaoLinkedResponse"/>
+			<wsdl:fault name="daoServiceException" message="tns:DaoServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="OnDaoUnlinked">
+			<wsdl:input name="onDaoUnlinked" message="tns:OnDaoUnlinked"/>
+			<wsdl:output name="onDaoUnlinkedResponse" message="tns:OnDaoUnlinkedResponse"/>
 			<wsdl:fault name="daoServiceException" message="tns:DaoServiceException"/>
 		</wsdl:operation>
 	</wsdl:portType>
@@ -109,7 +110,7 @@
 			<wsdl:input name="onDaoLinked">
 				<soap:body use="literal"/>
 			</wsdl:input>
-			<wsdl:output name="emptyResponse">
+			<wsdl:output name="onDaoLinkedResponse">
 				<soap:body use="literal"/>
 			</wsdl:output>
 			<wsdl:fault name="daoServiceException">
@@ -121,7 +122,7 @@
 			<wsdl:input name="onDaoUnlinked">
 				<soap:body use="literal"/>
 			</wsdl:input>
-			<wsdl:output name="emptyResponse">
+			<wsdl:output name="onDaoUnlinkedResponse">
 				<soap:body use="literal"/>
 			</wsdl:output>
 			<wsdl:fault name="daoServiceException">
@@ -130,11 +131,11 @@
 		</wsdl:operation>
 	</wsdl:binding>
 	<wsdl:service name="DaoProvider">
-		<wsdl:port name="DaoRequests" binding="tns:DaoRequests">
-			<soap:address location="www.elza.tacr.cz/dao-provider/requests"/>
-		</wsdl:port>
 		<wsdl:port name="DaoNotificationsPort" binding="tns:DaoNotificationsBinding">
 			<soap:address location="www.elza.tacr.cz/dao-provider/notifications"/>
+		</wsdl:port>
+		<wsdl:port name="DaoRequests" binding="tns:DaoRequests">
+			<soap:address location="www.elza.tacr.cz/dao-provider/requests"/>
 		</wsdl:port>
 	</wsdl:service>
 </wsdl:definitions>

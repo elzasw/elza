@@ -58,6 +58,7 @@
                 <type code="ZP2015_ZNACKA_FONDU" width="1"/>
                 <type code="ZP2015_FOLDER_TYPE" width="1"/>
                 <type code="ZP2015_UNIT_TYPE" width="1"/>
+                <type code="ZP2015_UNIT_SUBTYPE" width="2"/>
                 <type code="ZP2015_UNIT_COUNT" width="1"/>
                 <type code="ZP2015_STORAGE_ID" width="1"/>
                 <type code="ZP2015_EXTRA_UNITS" width="2"/>
@@ -164,6 +165,10 @@
                 <type code="ZP2015_EDITION" width="0"/>
                 <!-- 5.3-5.6 Role entit (specifikace + hodnota) -->
                 <type code="ZP2015_ENTITY_ROLE" width="0"/>
+                <!-- Matrika -->
+                <type code="ZP2015_RECORD_TYPE" width="1"/>
+                <type code="ZP2015_GEO_REF" width="0"/>
+                <type code="ZP2015_LEGALACT_REF" width="0"/>
             </group>
             <!-- Other items -->
             <group code="08_OTHERS">
@@ -180,11 +185,12 @@
         <ns5:issue-states>
             <ns5:issue-state code="RESOLVED" icon="fa-check"/>
             <ns5:issue-state code="REJECTED" icon="fa-times"/>
+            <ns5:issue-state code="INVALID" icon="fa-minus"/>
         </ns5:issue-states>
         <ns5:issue-types>
             <ns5:issue-type code="IMPORTANT" color="#CF2A28"/>
-            <ns5:issue-type code="RECOMMENDED" color="#FFFF00"/>
-            <ns5:issue-type code="MINOR" color="#FE9900"/>
+            <ns5:issue-type code="RECOMMENDED" color="#FE9900"/>
+            <ns5:issue-type code="MINOR" color="#FFFF00"/>
         </ns5:issue-types>
     </fund-issues>
 

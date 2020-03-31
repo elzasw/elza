@@ -15,4 +15,9 @@
         <start-state>false</start-state>
         <final-state>true</final-state>
     </issue-state>
+    <issue-state code="INVALID">
+        <name>Neplatná</name>
+        <start-state>false</start-state>
+        <final-state>true</final-state>
+    </issue-state>
 </issue-states>

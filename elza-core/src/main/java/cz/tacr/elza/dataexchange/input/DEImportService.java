@@ -58,6 +58,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.StructObjValueService;
@@ -117,11 +118,13 @@ public class DEImportService {
                            AccessPointService accessPointService,
                            AccessPointDataService apDataService,
                            ResourcePathResolver resourcePathResolver,
+                           DmsService dmsService,
                            ApStateRepository apStateRepository) {
         this.initHelper = new ImportInitHelper(groovyScriptService, institutionRepository, institutionTypeRepository,
                 arrangementService, levelRepository, apRepository, apNameRepository, apDescRepository, apEidRepository,
                 partyRepository, nameRepository, nameComplementRepository, groupIdentifierRepository,
-                unitdateRepository, structObjService, accessPointService, apStateRepository);
+                unitdateRepository, structObjService, accessPointService,
+                dmsService, apStateRepository);
         this.em = em;
         this.userService = userService;
         this.staticDataService = staticDataService;

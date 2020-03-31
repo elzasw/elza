@@ -434,4 +434,12 @@
             <item-aptype register-type="PERSON_INDIVIDUAL"/>
         </item-aptypes>
     </item-type>
+    <item-type code="ODKAZ_OBECNY" data-type="URI_REF">
+        <name>Odkaz obecný</name>
+        <shortcut>Odkaz</shortcut>
+        <description><Odkaz></Odkaz></description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
 </item-types>

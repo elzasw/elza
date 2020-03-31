@@ -10,6 +10,7 @@ import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.*;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUriRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -818,7 +819,6 @@ public class ArrangementController {
         Assert.notNull(descItemTypeId, "Nebyl vyplněn identifikátor typu atributu");
         Assert.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
         Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
-
         ArrDescItem descItem = factoryDO.createDescItem(descItemVO, descItemTypeId);
 
         ArrDescItem descItemCreated = descriptionItemService.createDescriptionItem(descItem, nodeId, nodeVersion,
@@ -910,9 +910,9 @@ public class ArrangementController {
     public OutputItemResult deleteOutputItem(@RequestBody final ArrItemVO outputItemVO,
                                              @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                              @PathVariable(value = "outputVersion") final Integer outputVersion) {
-        Assert.notNull(outputItemVO, "Výstup musí být vyplněn");
-        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
-        Assert.notNull(outputVersion, "Verze definice výstupu musí být vyplněna");
+        Validate.notNull(outputItemVO, "Výstup musí být vyplněn");
+        Validate.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+        Validate.notNull(outputVersion, "Verze definice výstupu musí být vyplněna");
 
         ArrOutputItem outputItemDeleted = outputService
                 .deleteOutputItem(outputItemVO.getDescItemObjectId(), outputVersion, fundVersionId);
@@ -986,7 +986,7 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/output/{outputId}/{fundVersionId}/{itemTypeId}/switch", method = RequestMethod.POST)
-    public void switchOutputCalculating(@PathVariable(value = "outputId") final Integer outputId,
+    public boolean switchOutputCalculating(@PathVariable(value = "outputId") final Integer outputId,
                                         @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                         @PathVariable(value = "itemTypeId") final Integer itemTypeId,
                                         @RequestParam(value = "strict", required = false, defaultValue = "false") final Boolean strict) {
@@ -994,7 +994,7 @@ public class ArrangementController {
         ArrOutput output = outputService.getOutput(outputId);
         RulItemType itemType = itemTypeRepository.findOne(itemTypeId);
 
-        outputService.switchOutputCalculating(output, fundVersion, itemType, strict);
+        return outputService.switchOutputCalculating(output, fundVersion, itemType, strict);
     }
 
     /**
@@ -1094,6 +1094,13 @@ public class ArrangementController {
             throw new ObjectNotFoundException("AS s ID=" + fundId + " nebyl nalezen", ArrangementCode.FUND_NOT_FOUND).set("id", fundId);
         }
         return factoryVo.createFundVO(fund, true, userService.getLoggedUserDetail());
+    }
+
+    @RequestMapping(value = "/nodeInfo/{fundVersionId}/{nodeId}", method = RequestMethod.GET)
+    @Transactional
+    public ArrNodeExtendVO getNode(@PathVariable(value = "fundVersionId") final Integer fundVersionId, @PathVariable("nodeId") final Integer nodeId) {
+        ArrNodeExtendVO node = levelTreeCacheService.getSimpleNode(fundVersionId, nodeId);
+        return node;
     }
 
     /**
@@ -1511,7 +1518,6 @@ public class ArrangementController {
 		        .getDescriptionItemTypesForNewLevel(nodeVo.getId(), param.getDirection(),
                         param.getVersionId()), withGroups, ruleCode, fundId);
     }
-
 
     /**
      * Načte seznam uzlů podle jejich id.
