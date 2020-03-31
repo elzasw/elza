@@ -800,7 +800,7 @@ public class AccessPointService {
                             .set("scopeId", replacementState.getScopeId());
                 }
             }
-            descriptionItemService.updateDescriptionItem(im, fundVersions.get(fundId), change, true);
+            descriptionItemService.updateDescriptionItem(im, fundVersions.get(fundId), change);
         });
     }
 
@@ -1368,6 +1368,21 @@ public class AccessPointService {
 
         name.setDeleteChange(deleteChange);
         apNameRepository.save(name);
+    }
+    
+    /**
+     * Vrati preferovane jmeno pristupoveho bodu
+     * @param accessPoint
+     * @return
+     */
+    public ApName getPreferredAccessPointName(final ApAccessPoint accessPoint) {
+    	ApName prefName = apNameRepository.findPreferredNameByAccessPoint(accessPoint);
+        if (prefName == null) {
+        	// ?? Asi by bylo vhodnejsi vyhodit vyjimku
+        	logger.error("AccessPoint without preferred name, apId={}", accessPoint.getAccessPointId());
+            return null;
+        }
+        return prefName;
     }
 
     /**
@@ -2234,26 +2249,6 @@ public class AccessPointService {
         Assert.notNull(apScope, "AP Scope is null");
         Assert.notNull(newStateApproval, "New State Approval is null");
 
-        if (oldStateApproval != null) {
-            if (!newStateApproval.equals(oldStateApproval)) {
-                // změna stavu
-                if (newStateApproval.equals(StateApproval.NEW)) {
-                    throw new BusinessException("Změna stavu přístupového bodu na \"Nový\" z jiného není povolená", BaseCode.INVALID_STATE)
-                            .set("oldStateApproval", oldStateApproval).set("newStateApproval", newStateApproval);
-                }
-                if (oldStateApproval.equals(StateApproval.APPROVED)) {
-                    throw new BusinessException("Změna stavu již schváleného přístupového bodu není povolená", BaseCode.INVALID_STATE)
-                            .set("oldStateApproval", oldStateApproval).set("newStateApproval", newStateApproval);
-                }
-            }
-        } else {
-            if (!newStateApproval.equals(StateApproval.NEW)) {
-                // přístupové body se zakládají ve stavu "Nový"
-                throw new SystemException("Přístupový bod musí být založen ve stavu \"Nový\"", BaseCode.INVALID_STATE)
-                        .set("newStateApproval", newStateApproval);
-            }
-        }
-
         // admin může cokoliv
         if (userService.hasPermission(Permission.ADMIN)) {
             return true;
@@ -2268,13 +2263,10 @@ public class AccessPointService {
         } else {
 
             // "Schvalování přístupových bodů" může:
-            // - změnit stav na "Schválený"
-            // - změnit stav na "K doplnění"
-            if (newStateApproval.equals(StateApproval.APPROVED) || newStateApproval.equals(StateApproval.TO_AMEND)) {
-                if (userService.hasPermission(Permission.AP_CONFIRM_ALL)
-                        || userService.hasPermission(Permission.AP_CONFIRM, apScope.getScopeId())) {
-                    return true;
-                }
+            // - cokoliv
+            if (userService.hasPermission(Permission.AP_CONFIRM_ALL)
+                    || userService.hasPermission(Permission.AP_CONFIRM, apScope.getScopeId())) {
+                return true;
             }
 
             // "Zakládání a změny nových" může:

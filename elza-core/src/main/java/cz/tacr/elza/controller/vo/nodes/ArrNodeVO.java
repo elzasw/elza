@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo.nodes;
 
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
 
 /**
@@ -53,12 +54,16 @@ public class ArrNodeVO {
     /**
      * Create entity from this value object
      * 
+     * @param fund
+     *            Parent fund
+     * 
      * @return
      */
-    public ArrNode createEntity() {
+    public ArrNode createEntity(ArrFund fund) {
         ArrNode node = new ArrNode();
         node.setNodeId(id);
         node.setVersion(version);
+        node.setFund(fund);
         return node;
     }
 

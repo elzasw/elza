@@ -1,15 +1,5 @@
 package cz.tacr.elza.dao.bo;
 
-import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.util.Assert;
-
 import cz.tacr.elza.dao.DCStorageConfig;
 import cz.tacr.elza.dao.bo.resource.DaoConfigResource;
 import cz.tacr.elza.dao.bo.resource.DaoPackageConfig;
@@ -20,6 +10,11 @@ import cz.tacr.elza.ws.types.v1.DaoBatchInfo;
 import cz.tacr.elza.ws.types.v1.DaoLink;
 import cz.tacr.elza.ws.types.v1.DaoPackage;
 import cz.tacr.elza.ws.types.v1.Daoset;
+import org.springframework.util.Assert;
+
+import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.util.*;
 
 public class DaoPackageBo {
 
@@ -97,7 +92,7 @@ public class DaoPackageBo {
 		for (DaoBo dao : getAllDao()) {
 			daoSet.getDao().add(dao.export());
 		}
-		daoPackage.setDaoset(daoSet);
+        daoPackage.setDaoset(daoSet);
 		return daoPackage;
 	}
 

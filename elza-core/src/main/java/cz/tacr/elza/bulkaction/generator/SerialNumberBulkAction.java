@@ -47,7 +47,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 
 	SerialNumberBulkAction(SerialNumberConfig config) {
 		Validate.notNull(config);
-		this.config = config;
+        this.config = config;
 	}
 
     /**
@@ -59,6 +59,8 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 	protected void init(ArrBulkActionRun bulkActionRun) {
 		super.init(bulkActionRun);
 
+        this.multipleItemChangeContext = descriptionItemService.createChangeContext(this.version.getFundVersionId());
+        
 		// prepare item type
 		ItemType itemType = staticDataProvider.getItemTypeByCode(config.getItemType());
 		Validate.notNull(itemType);
@@ -101,7 +103,8 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 		this.generator.generate(descItem);
     }
 
-	protected void done() {
+	@Override
+    protected void done() {
 		SerialNumberResult snr = new SerialNumberResult();
 		snr.setCountChanges(countChanges);
 

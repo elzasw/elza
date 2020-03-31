@@ -514,6 +514,7 @@ export function hasDescItemTypeValue(dataType) {
         case 'COORDINATES':
         case 'DECIMAL':
         case 'RECORD_REF':
+        case 'URI_REF':
         case 'STRUCTURED':
         case 'JSON_TABLE':
         case 'FORMATTED_TEXT':

@@ -4,10 +4,10 @@
 
 import React from 'react';
 import {AbstractReactComponent, i18n} from 'components/shared';
-import {normalizeString} from 'components/validate.jsx';
-import {decorateValue, inputValue} from './DescItemUtils.jsx';
-import DescItemLabel from './DescItemLabel.jsx';
-import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
+import {normalizeString} from 'components/validate';
+import {decorateValue, inputValue} from './DescItemUtils';
+import DescItemLabel from './DescItemLabel';
+import ItemTooltipWrapper from './ItemTooltipWrapper';
 
 const DescItemString_MAX_LENGTH = 1000;
 

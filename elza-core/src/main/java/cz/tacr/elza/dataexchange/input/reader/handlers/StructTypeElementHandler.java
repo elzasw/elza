@@ -16,15 +16,15 @@ public class StructTypeElementHandler extends ContextAwareElementHandler {
     }
 
     @Override
-    protected void handleStart(XMLEventReader eventReader) {
-        StartElement startElement;
+    protected void handleStart(XMLEventReader eventReader, StartElement startElement) {
+        StartElement nextStartElement;
         try {
-             startElement = eventReader.nextEvent().asStartElement();
+            nextStartElement = eventReader.nextEvent().asStartElement();
         } catch (Exception e) {
             throw new DEImportException("Cannot read section start element");
         }
 
-        Attribute stCode = startElement.getAttributeByName(new QName("c"));
+        Attribute stCode = nextStartElement.getAttributeByName(new QName("c"));
         context.getSections().getCurrentSection().setProcessingStructType(stCode.getValue());
     }
 

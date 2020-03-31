@@ -1,0 +1,30 @@
+!MultiAction
+name: Vymazání ukládacích jednotek
+fastAction: true
+actions:
+  - !ItemGenerator
+    excludeWhen:
+      someOf:
+        # Nesmí být nastaven jako připojený záznam
+        - itemType: ZP2015_CONNECTED_RECORD
+    when:
+      someOf:
+        # Složka s počtem EJ
+        - all:
+          - itemType: ZP2015_FOLDER_TYPE
+            itemSpec: ZP2015_FOLDER_SINGLE_TYPE
+          - itemType: ZP2015_UNIT_COUNT
+        # Jednotlivost pod serii nebo logickou slozkou
+        - itemType: ZP2015_LEVEL_TYPE
+          itemSpec: ZP2015_LEVEL_ITEM
+          someOf:
+            # test na serii
+            - parent:
+                itemType: ZP2015_LEVEL_TYPE
+                itemSpec: ZP2015_LEVEL_SERIES
+            # test na logickou slozku
+            - parent:
+                itemType: ZP2015_FOLDER_TYPE
+                itemSpec: ZP2015_FOLDER_LOGICAL
+    delete:
+      - itemType: ZP2015_STORAGE_ID

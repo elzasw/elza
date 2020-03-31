@@ -18,6 +18,7 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.castor.core.util.Assert;
 import org.hibernate.ScrollableResults;
@@ -47,15 +48,6 @@ import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.CachedNodeRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
-import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FundFileRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.StructuredObjectRepository;
 
 /**
  * Service for caching node related entities.
@@ -96,7 +88,7 @@ public class NodeCacheService {
     /*
     @Autowired
     private PartyNameComplementRepository partyNameComplementRepository;
-    
+
     @Autowired
     private PartyNameRepository partyNameRepository;*/
 
@@ -121,6 +113,9 @@ public class NodeCacheService {
     @Autowired
 	private StaticDataService staticDataService;
 
+    @Autowired
+    private DataUriRefRepository dataUriRefRepository;
+
     public NodeCacheService() {
         mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
@@ -134,7 +129,7 @@ public class NodeCacheService {
 
     /**
      * Synchronizace záznamů v databázi.
-     * 
+     *
      * Synchronní metoda volaná z transakce.
      */
     @Transactional(TxType.MANDATORY)
@@ -207,14 +202,17 @@ public class NodeCacheService {
     /**
      * Uložení záznamů.
      *
-     * @param cachedNodes seznam ukládaných objektů
+     * @param cachedNodes
+     *            seznam ukládaných objektů
+     * @param flush
+     *            Priznak, zda se ma provest flush tabulky
      */
     @Transactional
-    public void saveNodes(final Collection<? extends CachedNode> cachedNodes) {
+    public void saveNodes(final Collection<? extends CachedNode> cachedNodes, boolean flush) {
         readLock.lock();
         try {
             logger.debug(">saveNodes(" + cachedNodes + ")");
-            saveNodesInternal(cachedNodes);
+            saveNodesInternal(cachedNodes, flush);
             logger.debug("<saveNodes(" + cachedNodes + ")");
         } finally {
             readLock.unlock();
@@ -225,14 +223,17 @@ public class NodeCacheService {
     /**
      * Uložení záznamu.
      *
-     * @param cachedNode ukládaný objekt
+     * @param cachedNode
+     *            ukládaný objekt
+     * @param flush
+     *            Priznak, zda se ma provest flush tabulky
      */
     @Transactional
-    public void saveNode(final CachedNode cachedNode) {
+    public void saveNode(final CachedNode cachedNode, boolean flush) {
         readLock.lock();
         try {
             logger.debug(">saveNode(" + cachedNode + ")");
-			saveNodesInternal(Collections.singletonList(cachedNode));
+            saveNodesInternal(Collections.singletonList(cachedNode), flush);
             logger.debug("<saveNode(" + cachedNode + ")");
         } finally {
             readLock.unlock();
@@ -470,16 +471,20 @@ public class NodeCacheService {
                 accessPointRepository,
                 fundFileRepository,
                 daoRepository,
-                nodeRepository);
+                nodeRepository,
+                dataUriRefRepository);
         ra.restore(cachedNodes);
     }
 
     /**
      * Uložení záznamů.
      *
-     * @param cachedNodes seznam ukládaných objektů
+     * @param cachedNodes
+     *            seznam ukládaných objektů
+     * @param flush
+     *            Priznak, zda se ma provest flush tabulky
      */
-    private void saveNodesInternal(final Collection<? extends CachedNode> cachedNodes) {
+    private void saveNodesInternal(final Collection<? extends CachedNode> cachedNodes, boolean flush) {
         Map<Integer, CachedNode> cachedNodeMap = new HashMap<>(cachedNodes.size());
         for (CachedNode cachedNode : cachedNodes) {
             cachedNodeMap.put(cachedNode.getNodeId(), cachedNode);
@@ -498,7 +503,9 @@ public class NodeCacheService {
 			record.setData(data);
 			cachedNodeRepository.save(record);
         }
-		cachedNodeRepository.flush();
+        if (flush) {
+            cachedNodeRepository.flush();
+        }
     }
 
     /**
@@ -526,9 +533,17 @@ public class NodeCacheService {
 	private RestoredNode deserialize(final ArrCachedNode cachedNode) {
         try {
 			RestoredNode restoredNode = mapper.readValue(cachedNode.getData(), RestoredNode.class);
+
 			// restore node ref
+            ArrNode node = cachedNode.getNode();
+            List<ArrDaoLink> daoLinks = restoredNode.getDaoLinks();
+            if (daoLinks != null) {
+                daoLinks.forEach(daoLink -> {
+                    daoLink.setNode(node);
+                });
+            }
 			restoredNode.setNodeId(cachedNode.getNodeId());
-			restoredNode.setNode(cachedNode.getNode());
+            restoredNode.setNode(node);
 			return restoredNode;
         } catch (IOException e) {
             throw new SystemException("Nastal problém při deserializaci objektu", e);
@@ -606,4 +621,11 @@ public class NodeCacheService {
 		}
 		cachedNodeRepository.save(records);
 	}
+
+    /**
+     * Flush repository
+     */
+    public void flushChanges() {
+        cachedNodeRepository.flush();
+    }
 }

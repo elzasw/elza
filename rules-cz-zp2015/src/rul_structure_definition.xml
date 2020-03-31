@@ -7,4 +7,8 @@
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>
+    <structure-definition structure-type="ZP2015_PACKET" filename="Packet-parse.groovy">
+        <def-type>PARSE_VALUE</def-type>
+        <priority>100</priority>
+    </structure-definition>
 </structure-definitions>

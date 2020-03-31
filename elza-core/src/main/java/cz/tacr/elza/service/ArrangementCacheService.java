@@ -3,9 +3,11 @@ package cz.tacr.elza.service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -17,6 +19,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.service.arrangement.BatchChangeContext;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
@@ -24,8 +27,7 @@ import cz.tacr.elza.service.cache.RestoredNode;
 /**
  * Serviska pro operace nad JP, která současně propisuje změny do cache.
  *
- * @author Martin Šlapa
- * @since 31.01.2017
+ * 
  */
 @Service
 public class ArrangementCacheService {
@@ -68,7 +70,7 @@ public class ArrangementCacheService {
             ArrDaoLink item = iterator.next();
             if (daoLinkId.equals(item.getDaoLinkId())) {
                 iterator.remove();
-                nodeCacheService.saveNode(cachedNode);
+                nodeCacheService.saveNode(cachedNode, true);
                 return;
             }
         }
@@ -89,7 +91,7 @@ public class ArrangementCacheService {
             cachedNode.setDaoLinks(daoLinks);
         }
         daoLinks.add(daoLink);
-        nodeCacheService.saveNode(cachedNode);
+        nodeCacheService.saveNode(cachedNode, true);
     }
 
     /**
@@ -108,7 +110,7 @@ public class ArrangementCacheService {
         for (RestoredNode cachedNode : cachedNodes) {
             cachedNode.setDaoLinks(nodeDaoLinkMap.get(cachedNode.getNodeId()));
         }
-        nodeCacheService.saveNodes(cachedNodes);
+        nodeCacheService.saveNodes(cachedNodes, true);
     }
 
     /**
@@ -119,31 +121,23 @@ public class ArrangementCacheService {
     public void clearDaoLinks(final Integer nodeId) {
         CachedNode cachedNode = nodeCacheService.getNode(nodeId);
         cachedNode.setDaoLinks(null);
-        nodeCacheService.saveNode(cachedNode);
+        nodeCacheService.saveNode(cachedNode, true);
     }
 
     /**
      * Vytvoření hodnoty atributu u nodu.
      *
-     * @param nodeId   identifikátor JP
-     * @param descItem vytvářený hodnota atributu
+     * @param nodeId
+     *            identifikátor JP
+     * @param descItem
+     *            vytvářený hodnota atributu
+     * @param flush
+     *            priznak na provedeni flush
      */
-    public void createDescItem(final Integer nodeId, final ArrDescItem descItem) {
+    public void createDescItem(final Integer nodeId, final ArrDescItem descItem, BatchChangeContext changeContext) {
         CachedNode cachedNode = nodeCacheService.getNode(nodeId);
 		cachedNode.addDescItem(descItem);
-        nodeCacheService.saveNode(cachedNode);
-    }
-
-    /**
-     * Vytvoření hodnot atributu u nodu.
-     *
-     * @param nodeId   identifikátor JP
-     * @param newDescItems vytvářené hodnoty atributu
-     */
-    public void createDescItems(final Integer nodeId, final Collection<ArrDescItem> newDescItems) {
-        CachedNode cachedNode = nodeCacheService.getNode(nodeId);
-		cachedNode.addDescItems(newDescItems);
-        nodeCacheService.saveNode(cachedNode);
+        nodeCacheService.saveNode(cachedNode, changeContext.getFlushNodeCache());
     }
 
     /**
@@ -152,8 +146,8 @@ public class ArrangementCacheService {
      * @param nodeId           identifikátor JP
      * @param descItemObjectId identifikátor hodnoty atributu
      */
-    public void deleteDescItem(final Integer nodeId, final Integer descItemObjectId) {
-        deleteDescItems(nodeId, Collections.singletonList(descItemObjectId));
+    public void deleteDescItem(final Integer nodeId, final Integer descItemObjectId, BatchChangeContext changeContext) {
+        deleteDescItems(nodeId, Collections.singletonList(descItemObjectId), changeContext);
     }
 
     /**
@@ -162,55 +156,73 @@ public class ArrangementCacheService {
      * @param nodeId            identifikátor JP
      * @param descItemObjectIds identifikátory hodnot atributů
      */
-    public void deleteDescItems(final Integer nodeId, final List<Integer> descItemObjectIds) {
+    public void deleteDescItems(final Integer nodeId, final List<Integer> descItemObjectIds,
+                                BatchChangeContext changeContext) {
+        Set<Integer> objIdsToRemove = new HashSet<>(descItemObjectIds);
+
         CachedNode cachedNode = nodeCacheService.getNode(nodeId);
         List<ArrDescItem> descItems = cachedNode.getDescItems();
         if (descItems == null) {
             throw new ObjectNotFoundException("Seznam je prázdný, nelze z něj odebírat navázané položky z hodnot atributů", BaseCode.ID_NOT_EXIST);
         }
         Iterator<ArrDescItem> iterator = descItems.iterator();
-        List<Integer> descItemObjectIdsToRemove = new ArrayList<>(descItemObjectIds);
         while (iterator.hasNext()) {
             ArrDescItem item = iterator.next();
-            if (descItemObjectIdsToRemove.contains(item.getDescItemObjectId())) {
-                descItemObjectIdsToRemove.remove(item.getDescItemObjectId());
+            if (objIdsToRemove.contains(item.getDescItemObjectId())) {
+                objIdsToRemove.remove(item.getDescItemObjectId());
                 iterator.remove();
-            }
-            if (descItemObjectIdsToRemove.size() == 0) {
-                nodeCacheService.saveNode(cachedNode);
-                return;
+                if (objIdsToRemove.size() == 0) {
+                    break;
+                }
             }
         }
 
-        throw new ObjectNotFoundException("Záznam nebyl nalezen v seznamu objektů uložených v cache",
-                BaseCode.ID_NOT_EXIST)
-                        .set("nodeId", nodeId)
-                        .set("descItemObjectIdsToRemove", descItemObjectIdsToRemove);
+        if (objIdsToRemove.size() > 0) {
+            throw new ObjectNotFoundException("Záznam nebyl nalezen v seznamu objektů uložených v cache",
+                    BaseCode.ID_NOT_EXIST)
+                            .set("nodeId", nodeId)
+                            .set("descItemObjectIdsToRemove", objIdsToRemove);
+        }
+
+        nodeCacheService.saveNode(cachedNode, changeContext.getFlushNodeCache());
     }
 
     /**
      * Změna hodnoty atributu u nodu.
      *
-     * @param nodeId   identifikátor JP
-     * @param descItem změněná hodnota atributu
-     * @param move     jedná se o přesun?
-     *                 true - nebudou se měnit data, pouze se naváže obalovaný objekt
-     *                 false - provede se úplné nahrazení hodnoty atributu
+     * @param nodeId
+     *            identifikátor JP
+     * @param descItem
+     *            změněná hodnota atributu
+     * @param move
+     *            jedná se o přesun?
+     *            true - nebudou se měnit data, pouze se naváže obalovaný objekt
+     *            false - provede se úplné nahrazení hodnoty atributu
+     * @param flush
+     *            priznak pro flush zmen
      */
-    public void changeDescItem(final Integer nodeId, final ArrDescItem descItem, final boolean move) {
-        changeDescItems(nodeId, Collections.singletonList(descItem), move);
+    public void changeDescItem(final Integer nodeId, final ArrDescItem descItem,
+                               final boolean move, BatchChangeContext changeContext) {
+        changeDescItems(nodeId, Collections.singletonList(descItem), move, changeContext);
     }
 
     /**
      * Změna hodnoty atributu u nodu.
      *
-     * @param nodeId       identifikátor JP
-     * @param descItemList měněné hodnoty atributů
-     * @param move         jedná se o přesun?
-     *                     true - nebudou se měnit data, pouze se naváže obalovaný objekt
-     *                     false - provede se úplné nahrazení hodnoty atributu
+     * @param nodeId
+     *            identifikátor JP
+     * @param descItemList
+     *            měněné hodnoty atributů
+     * @param move
+     *            jedná se o přesun?
+     *            true - nebudou se měnit data, pouze se naváže obalovaný objekt
+     *            false - provede se úplné nahrazení hodnoty atributu
+     * @param flush
+     *            priznak pro flush zmen
      */
-    public void changeDescItems(final Integer nodeId, final Collection<ArrDescItem> descItemList, final boolean move) {
+    public void changeDescItems(final Integer nodeId, final Collection<ArrDescItem> descItemList,
+                                final boolean move,
+                                BatchChangeContext changeContext) {
         CachedNode cachedNode = nodeCacheService.getNode(nodeId);
         List<ArrDescItem> descItems = cachedNode.getDescItems();
         if (descItems == null) {
@@ -233,7 +245,7 @@ public class ArrangementCacheService {
             }
             descItems.set(index, descItem);
         }
-        nodeCacheService.saveNode(cachedNode);
+        nodeCacheService.saveNode(cachedNode, changeContext.getFlushNodeCache());
     }
 
     /**
@@ -250,7 +262,7 @@ public class ArrangementCacheService {
             cachedNode.setNodeExtensions(nodeExtensions);
         }
         nodeExtensions.add(nodeExtension);
-        nodeCacheService.saveNode(cachedNode);
+        nodeCacheService.saveNode(cachedNode, true);
     }
 
     /**
@@ -270,7 +282,7 @@ public class ArrangementCacheService {
             ArrNodeExtension item = iterator.next();
             if (nodeExtensionId.equals(item.getNodeExtensionId())) {
                 iterator.remove();
-                nodeCacheService.saveNode(cachedNode);
+                nodeCacheService.saveNode(cachedNode, true);
                 return;
             }
         }

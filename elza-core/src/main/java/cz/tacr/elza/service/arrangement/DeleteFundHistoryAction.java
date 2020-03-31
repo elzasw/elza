@@ -60,6 +60,8 @@ public class DeleteFundHistoryAction {
     private FundVersionRepository fundVersionRepository;
     @Autowired
     private FundRepository fundRepository;
+    @Autowired
+    private DataUriRefRepository dataUriRefRepository;
 
     @Autowired
     private StructuredObjectRepository structureDataRepository;
@@ -257,6 +259,9 @@ public class DeleteFundHistoryAction {
         if (!unusedNodeIdsByFund.isEmpty()) {
             dropNodeInfo(unusedNodeIdsByFund);
             changeRepository.deleteByPrimaryNodeIds(unusedNodeIdsByFund);
+
+            dataUriRefRepository.updateByNodesIdIn(unusedNodeIdsByFund);
+
             nodeRepository.deleteByNodeIdIn(unusedNodeIdsByFund);
         }
         em.flush();
@@ -275,6 +280,10 @@ public class DeleteFundHistoryAction {
         nodeConformityErrorRepository.deleteByNodeConformityNodeFund(fund);
         nodeConformityInfoRepository.deleteByNodeFund(fund);
         nodeConformityRepository.deleteByNodeFund(fund);
+
+        faBulkActionNodeRepository.deleteByFund(fund);
+        faBulkActionRepository.deleteByFund(fund);
+
         fundVersionRepository.deleteByFund(fund);
 
         // create new version

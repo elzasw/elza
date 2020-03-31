@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.nodes.*;
 import cz.tacr.elza.domain.UsrAuthentication;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -62,11 +63,6 @@ import cz.tacr.elza.controller.vo.ap.item.ApItemUnitidVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.NodeData;
-import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDecimalVO;
@@ -81,6 +77,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUriRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
@@ -228,6 +225,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String UNSET_NOT_IDENTIFIED_OUTPUTITEM = ARRANGEMENT_CONTROLLER_URL + "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/notUndefined/unset";
     protected static final String COPY_LEVELS_VALIDATE = ARRANGEMENT_CONTROLLER_URL + "/levels/copy/validate";
     protected static final String COPY_LEVELS = ARRANGEMENT_CONTROLLER_URL + "/levels/copy";
+    protected static final String NODE_INFO = ARRANGEMENT_CONTROLLER_URL + "/nodeInfo/{fundVersionId}/{nodeId}";
 
     // Party
     protected static final String CREATE_RELATIONS = PARTY_CONTROLLER_URL + "/relation";
@@ -505,7 +503,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 throw new IllegalStateException("Nedefinovaný stav " + method + ".");
         }
 
-        if(status.value()!=response.statusCode()) {
+        if (status.value() != response.statusCode()) {
             // Log request if status code failed
             requestSpecification.log().all();
 
@@ -540,7 +538,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return msg.toString();
     }
 
-	/**
+    /**
      * Multipart request
      *
      * @param params
@@ -584,8 +582,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Získání seznamu pravidel.
      *
-     * @return seznam pravidel
      * @param versionId verze AP
+     * @return seznam pravidel
      */
     protected List<RulOutputTypeVO> getOutputTypes(final Integer versionId) {
         Response response = get(spec -> spec.pathParam("versionId", versionId), OUTPUT_TYPES);
@@ -605,7 +603,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vytvoření archivní pomůcky.
      *
-     * @param createFund             parametry pro založení
+     * @param createFund parametry pro založení
      * @return ap
      */
     protected ArrFundVO createFund(final CreateFundVO createFund) {
@@ -638,7 +636,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Úprava archivní pomůcky.
      *
-     * @param fund ap k úpravě
+     * @param fund      ap k úpravě
      * @param ruleSetId id pravidel otevřené verze
      * @return ap
      */
@@ -664,7 +662,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Uzavření verze archivní pomůcky.
      *
-     * @param versionId         identifikátor verze archivní pomůcky
+     * @param versionId identifikátor verze archivní pomůcky
      * @param dateRange identifikátor výstupu
      * @return nová verze ap
      */
@@ -697,6 +695,18 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return response.getBody().as(ArrFundVO.class);
     }
 
+    /**
+     * Vrátí node + fund
+     *
+     * @param fundVersionId
+     * @param nodeId
+     * @return
+     */
+    protected ArrNodeExtendVO getNodeInfo(final Integer fundVersionId, final Integer nodeId) {
+        Response response = get(spec -> spec.pathParameter("fundVersionId", fundVersionId).pathParameter("nodeId", nodeId), NODE_INFO);
+        return response.getBody().as(ArrNodeExtendVO.class);
+    }
+
 
     /**
      * Přidání nového uzlu.
@@ -723,10 +733,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Přidání nového uzlu.
      *
-     * @param direction         směr přidání
-     * @param fundVersion verze archivní pomůcky
-     * @param staticNode        uzel vůči kterému přidávám
-     * @param parentStaticNode  rodič uzlu vůči kterému přidávám
+     * @param direction        směr přidání
+     * @param fundVersion      verze archivní pomůcky
+     * @param staticNode       uzel vůči kterému přidávám
+     * @param parentStaticNode rodič uzlu vůči kterému přidávám
      * @return vytvořený uzel
      */
     protected ArrangementController.NodeWithParent addLevel(final FundLevelService.AddLevelDirection direction,
@@ -761,7 +771,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Přesun uzlu - před.
      *
-     * @param fundVersion   verze archivní pomůcky
+     * @param fundVersion         verze archivní pomůcky
      * @param staticNode          uzel vůči kterému přesouvám
      * @param staticNodeParent    rodič uzlu vůči kterému přesouvám
      * @param transportNodes      přesouvaný uzly
@@ -789,7 +799,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Přesun uzlu - za.
      *
-     * @param fundVersion   verze archivní pomůcky
+     * @param fundVersion         verze archivní pomůcky
      * @param staticNode          uzel vůči kterému přesouvám
      * @param staticNodeParent    rodič uzlu vůči kterému přesouvám
      * @param transportNodes      přesouvaný uzly
@@ -817,7 +827,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Přesun uzlu - pod.
      *
-     * @param fundVersion   verze archivní pomůcky
+     * @param fundVersion         verze archivní pomůcky
      * @param staticNode          uzel vůči kterému přesouvám
      * @param staticNodeParent    rodič uzlu vůči kterému přesouvám
      * @param transportNodes      přesouvaný uzly
@@ -836,7 +846,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vytvoření parametrů pro přesun.
      *
-     * @param fundVersion   verze archivní pomůcky
+     * @param fundVersion         verze archivní pomůcky
      * @param staticNode          uzel vůči kterému přesouvám
      * @param staticNodeParent    rodič uzlu vůči kterému přesouvám
      * @param transportNodes      přesouvaný uzly
@@ -859,18 +869,19 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     /**
      * Smazání archivního souboru.
+     *
      * @param fundId id souboru
      */
-    protected void deleteFund(final Integer fundId){
+    protected void deleteFund(final Integer fundId) {
         delete(spec -> spec.pathParameters("fundId", fundId), DELETE_FUND);
     }
 
     /**
      * Smazání uzlu.
      *
-     * @param fundVersion verze archivní pomůcky
-     * @param staticNode        uzel který mažu
-     * @param staticNodeParent  rodič uzlu který mažu
+     * @param fundVersion      verze archivní pomůcky
+     * @param staticNode       uzel který mažu
+     * @param staticNodeParent rodič uzlu který mažu
      * @return smazaný uzel s rodičem
      */
     protected ArrangementController.NodeWithParent deleteLevel(final ArrFundVersionVO fundVersion,
@@ -968,10 +979,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vytvoření hodnoty atributu.
      *
-     * @param descItem          hodnota atributu
-     * @param fundVersion verze archivní pomůcky
-     * @param node              uzel
-     * @param descItemType      typ atributu
+     * @param descItem     hodnota atributu
+     * @param fundVersion  verze archivní pomůcky
+     * @param node         uzel
+     * @param descItemType typ atributu
      * @return vytvořená hodnota atributu
      */
     protected ArrangementController.DescItemResult createDescItem(final ArrItemVO descItem,
@@ -985,11 +996,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vytvoření hodnoty atributu.
      *
-     * @param descItem            hodnota atributu
-     * @param fundVersionId identifikátor verze AP
-     * @param descItemTypeId      identifikátor typu hodnoty atributu
-     * @param nodeId              identfikátor uzlu
-     * @param nodeVersion         verze uzlu
+     * @param descItem       hodnota atributu
+     * @param fundVersionId  identifikátor verze AP
+     * @param descItemTypeId identifikátor typu hodnoty atributu
+     * @param nodeId         identfikátor uzlu
+     * @param nodeVersion    verze uzlu
      * @return vytvořená hodnota atributu
      */
     protected ArrangementController.DescItemResult createDescItem(final ArrItemVO descItem,
@@ -1007,10 +1018,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     protected ArrangementController.OutputItemResult createOutputItem(final ArrItemVO outputItemVO,
-                                                                   final Integer fundVersionId,
-                                                                   final Integer itemTypeId,
-                                                                   final Integer outputId,
-                                                                   final Integer outputVersion) {
+                                                                      final Integer fundVersionId,
+                                                                      final Integer itemTypeId,
+                                                                      final Integer outputId,
+                                                                      final Integer outputVersion) {
         Response response = put(spec -> spec
                 .body(outputItemVO)
                 .pathParameter("fundVersionId", fundVersionId)
@@ -1047,10 +1058,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
             final Integer descItemObjectId) {
 
         Response response = get(spec ->
-                spec
-                .pathParameter("fundVersionId", fundVersionId)
-                .param("descItemObjectId", descItemObjectId)
-                ,DESC_ITEM_CSV_EXPORT);
+                        spec
+                                .pathParameter("fundVersionId", fundVersionId)
+                                .param("descItemObjectId", descItemObjectId)
+                , DESC_ITEM_CSV_EXPORT);
 
         return response.getBody().asInputStream();
     }
@@ -1068,10 +1079,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
         params.put("descItemTypeId", descItemTypeId);
 
         Response response = multipart(spec ->
-                spec
-                        .pathParameter("fundVersionId", fundVersionId)
-                        .multiPart("file", importFile)
-                        .params(params)
+                        spec
+                                .pathParameter("fundVersionId", fundVersionId)
+                                .multiPart("file", importFile)
+                                .params(params)
                 , DESC_ITEM_CSV_IMPORT
         );
         return response.getBody().as(ArrangementController.DescItemResult.class);
@@ -1080,10 +1091,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Upravení hodnoty atributu.
      *
-     * @param descItem          hodnota atributu
-     * @param fundVersion       verze archivní pomůcky
-     * @param node              uzel
-     * @param createNewVersion  vytvořit novou verzi?
+     * @param descItem         hodnota atributu
+     * @param fundVersion      verze archivní pomůcky
+     * @param node             uzel
+     * @param createNewVersion vytvořit novou verzi?
      * @return upravená hodnota atributu
      */
     protected ArrangementController.DescItemResult updateDescItem(final ArrItemVO descItem,
@@ -1096,11 +1107,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Upravení hodnoty atributu.
      *
-     * @param descItem            hodnota atributu
-     * @param fundVersionId       identifikátor verze AP
-     * @param node                identifikátor uzlu
-     * @param nodeVersion         verze uzlu
-     * @param createNewVersion    vytvořit novou verzi?
+     * @param descItem         hodnota atributu
+     * @param fundVersionId    identifikátor verze AP
+     * @param nodeId           identifikátor uzlu
+     * @param nodeVersion      verze uzlu
+     * @param createNewVersion vytvořit novou verzi?
      * @return upravená hodnota atributu
      */
     protected ArrangementController.DescItemResult updateDescItem(final ArrItemVO descItem,
@@ -1120,9 +1131,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Smazání hodnoty atributu.
      *
-     * @param descItem          hodnota atributu
+     * @param descItem    hodnota atributu
      * @param fundVersion verze archivní pomůcky
-     * @param node              uzel
+     * @param node        uzel
      * @return smazaná hodnota atributu
      */
     protected ArrangementController.DescItemResult deleteDescItem(final ArrItemVO descItem,
@@ -1134,10 +1145,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Smazání hodnoty atributu.
      *
-     * @param descItem            hodnota atributu
-     * @param fundVersionId       identifikátor verze AP
-     * @param nodeId              identifikátor uzlu
-     * @param nodeVersion         verze uzlu
+     * @param descItem      hodnota atributu
+     * @param fundVersionId identifikátor verze AP
+     * @param nodeId        identifikátor uzlu
+     * @param nodeVersion   verze uzlu
      * @return smazaná hodnota atributu
      */
     protected ArrangementController.DescItemResult deleteDescItem(final ArrItemVO descItem,
@@ -1249,7 +1260,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
             case "STRUCTURED": {
                 descItem = new ArrItemStructureVO();
-            ((ArrItemStructureVO) descItem).setValue(((ArrStructureDataVO) value).getId());
+                ((ArrItemStructureVO) descItem).setValue(((ArrStructureDataVO) value).getId());
                 break;
             }
 
@@ -1265,6 +1276,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
             case "JSON_TABLE": {
                 descItem = new ArrItemJsonTableVO();
                 ((ArrItemJsonTableVO) descItem).setValue(((ElzaTable) value));
+                break;
+            }
+
+            case "URI_REF": {
+                descItem = new ArrItemUriRefVO();
+                ((ArrItemUriRefVO) descItem).setValue(((String) value));
                 break;
             }
 
@@ -1309,10 +1326,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vytvoření objektu pro hodnotu atributu.
      *
-     * @param typeCode         kód typu atributu
-     * @param specCode         kód specifikace atributu
-     * @param value            hodnota
-     * @param position         pozice
+     * @param typeCode kód typu atributu
+     * @param specCode kód specifikace atributu
+     * @param value    hodnota
+     * @param position pozice
      * @param objectId identifikátor hodnoty atributu
      * @return vytvořený object hodnoty atributu
      */
@@ -1324,13 +1341,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
         Assert.assertNotNull("Musí být vyplněn kód typu atributu", typeCode);
 
         RulDescItemTypeExtVO type = findDescItemTypeByCode(typeCode);
-        Assert.assertNotNull( "Typ atributu neexistuje -> CODE: " + typeCode, type);
+        Assert.assertNotNull("Typ atributu neexistuje -> CODE: " + typeCode, type);
 
         RulDescItemSpecVO spec = null;
 
         if (specCode != null) {
             spec = findDescItemSpecByCode(specCode, type);
-            Assert.assertNotNull( "Specifikace atributu neexistuje -> CODE: " + specCode, spec);
+            Assert.assertNotNull("Specifikace atributu neexistuje -> CODE: " + specCode, spec);
         }
 
         DataType dataType = DataType.fromId(type.getDataTypeId());
@@ -1439,7 +1456,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vyhledání datového typu atributu.
      *
-     * @param dataTypeId    identifikátor datového typu atributu
+     * @param dataTypeId identifikátor datového typu atributu
      * @return datový typ atributu
      */
     protected RulDataTypeVO findDataType(final Integer dataTypeId) {
@@ -1457,8 +1474,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vyhledání specifikace atributu podle kódu.
      *
-     * @param code  kód specifikace
-     * @param type  typ atributu
+     * @param code kód specifikace
+     * @param type typ atributu
      * @return specifikace atributu
      */
     protected RulDescItemSpecExtVO findDescItemSpecByCode(final String code, final RulDescItemTypeExtVO type) {
@@ -1473,7 +1490,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Provede načtení stromu uzlů. Uzly mohou být rozbaleny.
      *
-     * @param fundVersion     verze AP
+     * @param fundVersion verze AP
      * @param node        uzel
      * @param searchValue hledaný text
      * @param depth       hloubka vyhledávání
@@ -1582,7 +1599,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Validuje verzi archivní pomůcky a vrátí list chyb.
      * Pokud je počet chyb 0 pak předpokládáme že stav AP = OK
      *
-     * @param versionId         verze, která se má validovat
+     * @param versionId verze, která se má validovat
      * @return Objekt s listem (prvních 20) chyb
      */
     public List<ArrangementController.VersionValidationItem> validateVersion(final Integer versionId) {
@@ -1596,7 +1613,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Validuje verzi archivní pomůcky a vrátí počet chyb
      * Pokud je počet chyb 0 pak předpokládáme že stav AP = OK
      *
-     * @param versionId         verze, která se má validovat
+     * @param versionId verze, která se má validovat
      */
     protected void validateVersionCount(final Integer versionId) {
         get(spec -> spec.pathParameter("versionId", versionId), VALIDATE_VERSION_COUNT);
@@ -1633,16 +1650,16 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected ArrangementController.DescFormDataNewVO getNodeFormData(final Integer nodeId,
                                                                       final Integer versionId) {
         return get(spec -> spec
-                .pathParameter("nodeId", nodeId)
-                .pathParameter("versionId", versionId),
+                        .pathParameter("nodeId", nodeId)
+                        .pathParameter("versionId", versionId),
                 NODE_FORM_DATA).getBody().as(ArrangementController.DescFormDataNewVO.class);
     }
 
     /**
      * Získání dat pro formulář.
      *
-     * @param outputId identfikátor outputu
-     * @param versionId          id verze stromu
+     * @param outputId  identfikátor outputu
+     * @param versionId id verze stromu
      * @return formulář
      */
     protected ArrangementController.OutputFormDataNewVO getOutputFormData(final Integer outputId,
@@ -1655,14 +1672,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     /**
      * Získání dat pro formuláře.
+     *
      * @param nodeIds   identfikátory JP
      * @param versionId id verze stromu
      * @return formuláře
      */
     protected ArrangementController.NodeFormsDataVO getNodeFormsData(final Integer versionId, final Integer... nodeIds) {
         return get(spec -> spec
-                .queryParameter("nodeIds", nodeIds)
-                .pathParameter("versionId", versionId),
+                        .queryParameter("nodeIds", nodeIds)
+                        .pathParameter("versionId", versionId),
                 NODE_FORMS_DATA).getBody().as(ArrangementController.NodeFormsDataVO.class);
     }
 
@@ -1675,8 +1693,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return formuláře
      */
     protected ArrangementController.NodeFormsDataVO getNodeWithAroundFormsData(final Integer versionId,
-                                                      final Integer nodeId,
-                                                      final Integer around) {
+                                                                               final Integer nodeId,
+                                                                               final Integer around) {
         return get(spec -> spec
                         .pathParameter("nodeId", nodeId)
                         .pathParameter("around", around)
@@ -1707,35 +1725,35 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Smazání hodnot atributu podle typu.
      *
-     * @param fundVersionId   identfikátor verze AP
-     * @param nodeId                identfikátor JP
-     * @param nodeVersion           verze JP
-     * @param descItemTypeId        identfikátor typu hodnoty atributu
+     * @param fundVersionId  identfikátor verze AP
+     * @param nodeId         identfikátor JP
+     * @param nodeVersion    verze JP
+     * @param descItemTypeId identfikátor typu hodnoty atributu
      */
     protected ArrangementController.DescItemResult deleteDescItemsByType(final Integer fundVersionId,
-                                                final Integer nodeId,
-                                                final Integer nodeVersion,
-                                                final Integer descItemTypeId) {
+                                                                         final Integer nodeId,
+                                                                         final Integer nodeVersion,
+                                                                         final Integer descItemTypeId) {
         return delete(spec -> spec
                         .pathParameter("fundVersionId", fundVersionId)
                         .pathParameter("nodeId", nodeId)
                         .pathParameter("nodeVersion", nodeVersion)
                         .pathParameter("descItemTypeId", descItemTypeId),
-                        DELETE_DESC_ITEM_BY_TYPE).getBody().as(ArrangementController.DescItemResult.class);
+                DELETE_DESC_ITEM_BY_TYPE).getBody().as(ArrangementController.DescItemResult.class);
     }
 
     /**
      * Smazání hodnot atributu podle typu.
      *
-     * @param fundVersionId   identfikátor verze AP
-     * @param outputId                identfikátor výstupu
-     * @param outputVersion           verze výstupu
-     * @param itemTypeId        identfikátor typu hodnoty atributu
+     * @param fundVersionId identfikátor verze AP
+     * @param outputId      identfikátor výstupu
+     * @param outputVersion verze výstupu
+     * @param itemTypeId    identfikátor typu hodnoty atributu
      */
     protected ArrangementController.OutputItemResult deleteOutputItemsByType(final Integer fundVersionId,
-                                                                         final Integer outputId,
-                                                                         final Integer outputVersion,
-                                                                         final Integer itemTypeId) {
+                                                                             final Integer outputId,
+                                                                             final Integer outputVersion,
+                                                                             final Integer itemTypeId) {
         return delete(spec -> spec
                         .pathParameter("fundVersionId", fundVersionId)
                         .pathParameter("outputId", outputId)
@@ -1777,6 +1795,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     /**
      * Vyhledání typu atributu podle kódu
+     *
      * @param code kód typu
      * @return typ atributu
      */
@@ -1829,7 +1848,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Provázání tříd.
      *
-     * @param id ID třídy ke které se bude navazovat
+     * @param id  ID třídy ke které se bude navazovat
      * @param id2 ID navazované třídy
      */
     protected void connectScope(final int id, final int id2) {
@@ -1839,7 +1858,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Zrušení provázání tříd.
      *
-     * @param id ID třídy na které se bude rušit provázání
+     * @param id  ID třídy na které se bude rušit provázání
      * @param id2 ID navázané třídy
      */
     protected void disconnectScope(final int id, final int id2) {
@@ -1921,7 +1940,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Nahrazení rejstříkového hesla.
      *
-     * @param replacedId id rejstříkového hesla které nahrazujeme
+     * @param replacedId    id rejstříkového hesla které nahrazujeme
      * @param replacementId id rejstříkového hesla kterým nahrazujeme
      */
     protected Response replaceRecord(final Integer replacedId, final Integer replacementId) {
@@ -1940,10 +1959,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return List nalezených záznamů
      */
     protected List<ApAccessPointVO> findRecord(final String search,
-                                          final Integer from, final Integer count,
-                                          final Integer apTypeId,
-                                          final Integer parentRecordId,
-                                          final Integer versionId) {
+                                               final Integer from, final Integer count,
+                                               final Integer apTypeId,
+                                               final Integer parentRecordId,
+                                               final Integer versionId) {
         HashMap<String, Object> params = new HashMap<>();
 
         if (search != null) {
@@ -2197,9 +2216,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return list rejstříkových hesel
      */
     protected List<ApAccessPointVO> findRecordForRelation(final String search,
-                                                     final Integer from, final Integer count,
-                                                     final Integer roleTypeId,
-                                                     final Integer partyId) {
+                                                          final Integer from, final Integer count,
+                                                          final Integer roleTypeId,
+                                                          final Integer partyId) {
         HashMap<String, Object> params = new HashMap<>();
 
         if (search != null) {
@@ -2229,10 +2248,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     /**
      * Nahrazení textu v hodnotách textových atributů.
-     * @param versionId id verze stromu
-     * @param descItemTypeId typ atributu
-     * @param searchText hledaný text v atributu
-     * @param replaceText text, který nahradí hledaný text v celém textu
+     *
+     * @param versionId       id verze stromu
+     * @param descItemTypeId  typ atributu
+     * @param searchText      hledaný text v atributu
+     * @param replaceText     text, který nahradí hledaný text v celém textu
      * @param replaceDataBody seznam uzlů, ve kterých hledáme
      */
     protected void replaceDataValues(final Integer versionId,
@@ -2252,9 +2272,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     /**
      * Nahrazení textu v hodnotách textových atributů.
-     * @param versionId id verze stromu
-     * @param descItemTypeId typ atributu
-     * @param text hledaný text v atributu
+     *
+     * @param versionId       id verze stromu
+     * @param descItemTypeId  typ atributu
+     * @param text            hledaný text v atributu
      * @param replaceDataBody seznam uzlů, ve kterých hledáme
      */
     protected void placeDataValues(final Integer versionId,
@@ -2289,12 +2310,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Provede filtraci uzlů podle filtru a uloží filtrované id do session.
      *
      * @param versionId id verze
-     * @param filters filtry
-     *
+     * @param filters   filtry
      * @return počet všech záznamů splňujících filtry
      */
     protected void filterNodes(final Integer versionId,
-                                  final Filters filters) {
+                               final Filters filters) {
         put(spec -> spec
                 .pathParameter("versionId", versionId)
                 .body(filters), FILTER_NODES);
@@ -2312,8 +2332,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected List<FilterNode> getFilteredNodes(final Integer versionId,
                                                 final Integer page,
                                                 final Integer pageSize,
-                                                final Set<Integer> descItemTypeIds)
-             {
+                                                final Set<Integer> descItemTypeIds) {
         return Arrays.asList(put(spec -> spec
                 .pathParameter("versionId", versionId)
                 .queryParameter("page", page)
@@ -2325,8 +2344,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Ve filtrovaném seznamu najde uzly podle fulltextu. Vrací seřazený seznam uzlů podle jejich indexu v seznamu
      * všech filtrovaných uzlů.
      *
-     * @param versionId id verze stromu
-     * @param fulltext  fulltext
+     * @param versionId   id verze stromu
+     * @param fulltext    fulltext
      * @param luceneQuery v hodnotě fulltext je lucene query (např: +specification:*čís* -fulltextValue:ddd), false - normální fulltext
      * @return seznam uzlů a jejich indexu v seznamu filtrovaných uzlů, seřazené podle indexu
      */
@@ -2356,9 +2375,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                         final Integer nodeId,
                                                                         final Integer direction) {
         return get(spec -> spec
-                .pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("nodeId", nodeId)
-                .pathParameter("direction", direction)
+                        .pathParameter("fundVersionId", fundVersionId)
+                        .pathParameter("nodeId", nodeId)
+                        .pathParameter("direction", direction)
                 , VALIDATION_ERROR).as(ArrangementController.ValidationItems.class);
     }
 
@@ -2386,7 +2405,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected UsrUserVO changePassword(final Integer userId,
                                        final UserController.ChangePassword params) {
         return put(spec -> spec.body(params)
-		        .pathParameter("userId", userId), CHANGE_PASSWORD).as(UsrUserVO.class);
+                .pathParameter("userId", userId), CHANGE_PASSWORD).as(UsrUserVO.class);
     }
 
     /**
@@ -2396,7 +2415,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return uživatel
      */
     protected UsrUserVO changePassword(final UserController.ChangePassword params) {
-		return put(spec -> spec.body(params), CHANGE_PASSWORD_USER).as(UsrUserVO.class);
+        return put(spec -> spec.body(params), CHANGE_PASSWORD_USER).as(UsrUserVO.class);
     }
 
 
@@ -2436,8 +2455,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
-     *
-     *
      * @param user   uživatel
      * @param active je aktivní?
      * @return uživatel
@@ -2491,8 +2508,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return seznam s celkovým počtem
      */
     protected FilteredResultVO<UsrGroupVO> findGroup(final String search,
-                                         final Integer from,
-                                         final Integer count) {
+                                                     final Integer from,
+                                                     final Integer count) {
         return get(spec -> spec.queryParam("search", search)
                 .queryParam("from", from)
                 .queryParam("count", count), FIND_GROUP).as(FilteredResultVO.class);
@@ -2505,26 +2522,26 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param params  parametry změny skupiny
      */
     protected UsrGroupVO changeGroup(final Integer groupId,
-                                  final GroupController.ChangeGroup params) {
+                                     final GroupController.ChangeGroup params) {
         return put(spec -> spec.body(params).pathParameter("groupId", groupId), CHANGE_GROUP).as(UsrGroupVO.class);
     }
 
     /**
-    * Načte seznam uživatelů.
-    *
-    * @param search   hledaný řetězec
-    * @param from     počáteční záznam
-    * @param count    počet vrácených záznamů
-    * @param active   mají se vracet aktivní osoby?
-    * @param disabled mají se vracet zakázané osoby?
-    * @return seznam s celkovým počtem
-    */
+     * Načte seznam uživatelů.
+     *
+     * @param search   hledaný řetězec
+     * @param from     počáteční záznam
+     * @param count    počet vrácených záznamů
+     * @param active   mají se vracet aktivní osoby?
+     * @param disabled mají se vracet zakázané osoby?
+     * @return seznam s celkovým počtem
+     */
     protected FilteredResultVO<UsrUserVO> findUser(@Nullable final String search,
-                                                    final Boolean active,
-                                                    final Boolean disabled,
-                                                    final Integer from,
-                                                    final Integer count,
-                                                    final Integer excludedGroupId) {
+                                                   final Boolean active,
+                                                   final Boolean disabled,
+                                                   final Integer from,
+                                                   final Integer count,
+                                                   final Integer excludedGroupId) {
         return get(spec -> spec.queryParam("active", active)
                 .queryParam("search", search)
                 .queryParam("from", from)
@@ -2560,7 +2577,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param userIds  identifikátor přidávaných uživatelů
      */
     protected void joinGroup(final Set<Integer> groupIds,
-                          final Set<Integer> userIds) {
+                             final Set<Integer> userIds) {
         UserController.IdsParam param = new UserController.IdsParam(groupIds, userIds);
         post(spec -> spec.body(param), JOIN_GROUP);
     }
@@ -2572,7 +2589,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param userId  identifikátor odebíraného uživatele
      */
     protected void leaveGroup(final Integer groupId,
-                           final Integer userId) {
+                              final Integer userId) {
         post(spec -> spec.pathParameter("groupId", groupId).pathParameter("userId", userId), LEAVE_GROUP);
     }
 
@@ -2589,7 +2606,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Odebrání oprávnění uživatele.
      *
-     * @param userId      identifikátor uživatele
+     * @param userId     identifikátor uživatele
      * @param permission seznam oprávnění
      */
     protected void deleteUserPermission(final Integer userId, final UsrPermissionVO permission) {
@@ -2599,7 +2616,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Odebrání oprávnění uživatele typu AS all.
      *
-     * @param userId      identifikátor uživatele
+     * @param userId identifikátor uživatele
      */
     protected void deleteUserFundAllPermission(final Integer userId) {
         post(spec -> spec.pathParameter("userId", userId), DELETE_USER_FUND_ALL_PERMISSION);
@@ -2608,8 +2625,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Odebrání oprávnění uživatele na daný AS.
      *
-     * @param userId      identifikátor uživatele
-     * @param fundId      identifikátor AS
+     * @param userId identifikátor uživatele
+     * @param fundId identifikátor AS
      */
     protected void deleteUserFundPermission(final Integer userId, final Integer fundId) {
         post(spec -> spec.pathParameter("userId", userId).pathParameter("fundId", fundId), DELETE_USER_FUND_PERMISSION);
@@ -2618,7 +2635,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Přidání oprávnění skupiny.
      *
-     * @param groupId      identifikátor skupiny
+     * @param groupId     identifikátor skupiny
      * @param permissions seznam oprávnění
      */
     protected void addGroupPermission(final Integer groupId, final List<UsrPermissionVO> permissions) {
@@ -2628,7 +2645,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Odebrání oprávnění skupiny.
      *
-     * @param groupId      identifikátor skupiny
+     * @param groupId    identifikátor skupiny
      * @param permission seznam oprávnění
      */
     protected void deleteGroupPermission(final Integer groupId, final UsrPermissionVO permission) {
@@ -2638,7 +2655,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Odebrání oprávnění skupiny typu AS all.
      *
-     * @param groupId      identifikátor skupiny
+     * @param groupId identifikátor skupiny
      */
     protected void deleteGroupFundAllPermission(final Integer groupId) {
         post(spec -> spec.pathParameter("groupId", groupId), DELETE_GROUP_FUND_ALL_PERMISSION);
@@ -2647,8 +2664,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Odebrání oprávnění skupiny na daný AS.
      *
-     * @param groupId      identifikátor skupiny
-     * @param fundId      identifikátor AS
+     * @param groupId identifikátor skupiny
+     * @param fundId  identifikátor AS
      */
     protected void deleteGroupFundPermission(final Integer groupId, final Integer fundId) {
         post(spec -> spec.pathParameter("groupId", groupId).pathParameter("fundId", fundId), DELETE_GROUP_FUND_PERMISSION);
@@ -2690,7 +2707,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Načtení seznamu outputů - objekt outputu s vazbou na objekt named output.
      *
      * @param fundVersionId identfikátor verze AS
-     * @return  seznam outputů
+     * @return seznam outputů
      */
     protected List<ArrOutputVO> getOutputs(final Integer fundVersionId) {
         return Arrays.asList(get(spec -> spec
@@ -2862,8 +2879,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Získání nastavení oprávnění pro uzly.
      *
-     * @param nodeId         identifikátor node ke kterému hledám oprávnění
-     * @param fundVersionId  identifikátor verze AS
+     * @param nodeId        identifikátor node ke kterému hledám oprávnění
+     * @param fundVersionId identifikátor verze AS
      * @return mapa uzlů map typů a jejich zobrazení
      */
     protected RuleController.VisiblePolicyTypes getVisiblePolicy(final Integer nodeId,
@@ -2874,6 +2891,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     /**
      * Načtení souboru na základě cesty, např. coordinates/all.kml odkazuje do test resources.
+     *
      * @param resourcePath cesta
      * @return soubor
      */
@@ -2937,10 +2955,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                         final Integer changeId,
                                         final Integer nodeId) {
         return get(spec -> spec.pathParam("fundVersionId", fundVersionId)
-                        .queryParameter("maxSize", maxSize)
-                        .queryParameter("offset", offset)
-                        .queryParameter("changeId", changeId)
-                        .queryParameter("nodeId", nodeId), FIND_CHANGE).as(ChangesResult.class);
+                .queryParameter("maxSize", maxSize)
+                .queryParameter("offset", offset)
+                .queryParameter("changeId", changeId)
+                .queryParameter("nodeId", nodeId), FIND_CHANGE).as(ChangesResult.class);
     }
 
     /**
@@ -2960,10 +2978,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                               final Integer nodeId) {
         String strDate = fromDate.format(FORMATTER);
         return get(spec -> spec.pathParam("fundVersionId", fundVersionId)
-                        .queryParameter("maxSize", maxSize)
-                        .queryParameter("fromDate", strDate)
-                        .queryParameter("changeId", changeId)
-                        .queryParameter("nodeId", nodeId), FIND_CHANGE_BY_DATE).as(ChangesResult.class);
+                .queryParameter("maxSize", maxSize)
+                .queryParameter("fromDate", strDate)
+                .queryParameter("changeId", changeId)
+                .queryParameter("nodeId", nodeId), FIND_CHANGE_BY_DATE).as(ChangesResult.class);
     }
 
     /**
@@ -2979,9 +2997,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
                               final Integer toChangeId,
                               final Integer nodeId) {
         get(spec -> spec.pathParam("fundVersionId", fundVersionId)
-                        .queryParameter("fromChangeId", fromChangeId)
-                        .queryParameter("toChangeId", toChangeId)
-                        .queryParameter("nodeId", nodeId), REVERT_CHANGES);
+                .queryParameter("fromChangeId", fromChangeId)
+                .queryParameter("toChangeId", toChangeId)
+                .queryParameter("nodeId", nodeId), REVERT_CHANGES);
     }
 
     /**
@@ -3022,11 +3040,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return odstraněný atribut
      */
     protected ArrangementController.DescItemResult unsetNotIdentifiedDescItem(final Integer fundVersionId,
-                                                                               final Integer nodeId,
-                                                                               final Integer nodeVersion,
-                                                                               final Integer descItemTypeId,
-                                                                               final Integer descItemSpecId,
-                                                                               final Integer descItemObjectId) {
+                                                                              final Integer nodeId,
+                                                                              final Integer nodeVersion,
+                                                                              final Integer descItemTypeId,
+                                                                              final Integer descItemSpecId,
+                                                                              final Integer descItemObjectId) {
         return put(spec -> spec.pathParameter("fundVersionId", fundVersionId)
                         .pathParameter("nodeId", nodeId)
                         .pathParameter("nodeVersion", nodeVersion)
@@ -3039,21 +3057,21 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Nastavení atributu na "Nezjištěno".
      *
-     * @param fundVersionId    id archivního souboru
-     * @param fundVersionId           id archivního souboru
-     * @param outputId      identifikátor výstupu
-     * @param outputVersion verze výstupu
-     * @param outputItemTypeId        dentfikátor typu hodnoty atributu
-     * @param outputItemSpecId        identfikátor specifikace hodnoty atributu
-     * @param outputItemObjectId      identifikátor existující hodnoty atributu
+     * @param fundVersionId      id archivního souboru
+     * @param fundVersionId      id archivního souboru
+     * @param outputId           identifikátor výstupu
+     * @param outputVersion      verze výstupu
+     * @param outputItemTypeId   dentfikátor typu hodnoty atributu
+     * @param outputItemSpecId   identfikátor specifikace hodnoty atributu
+     * @param outputItemObjectId identifikátor existující hodnoty atributu
      * @return upravená hodnota atributu nastavená na nezjištěno
      */
     protected ArrangementController.OutputItemResult setNotIdentifiedOutputItem(final Integer fundVersionId,
-                                                                            final Integer outputId,
-                                                                            final Integer outputVersion,
-                                                                            final Integer outputItemTypeId,
-                                                                            final Integer outputItemSpecId,
-                                                                            final Integer outputItemObjectId) {
+                                                                                final Integer outputId,
+                                                                                final Integer outputVersion,
+                                                                                final Integer outputItemTypeId,
+                                                                                final Integer outputItemSpecId,
+                                                                                final Integer outputItemObjectId) {
         return put(spec -> spec.pathParameter("fundVersionId", fundVersionId)
                         .pathParameter("outputId", outputId)
                         .pathParameter("outputVersion", outputVersion)
@@ -3066,12 +3084,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Zrušení nastavení atributu na "Nezjištěno".
      *
-     * @param fundVersionId           id archivního souboru
-     * @param outputId      identifikátor výstupu
-     * @param outputVersion verze výstupu
-     * @param outputItemTypeId        dentfikátor typu hodnoty atributu
-     * @param outputItemSpecId        identfikátor specifikace hodnoty atributu
-     * @param outputItemObjectId      identifikátor existující hodnoty atributu
+     * @param fundVersionId      id archivního souboru
+     * @param outputId           identifikátor výstupu
+     * @param outputVersion      verze výstupu
+     * @param outputItemTypeId   dentfikátor typu hodnoty atributu
+     * @param outputItemSpecId   identfikátor specifikace hodnoty atributu
+     * @param outputItemObjectId identifikátor existující hodnoty atributu
      * @return odstraněný atribut
      */
     protected ArrangementController.OutputItemResult unsetNotIdentifiedOutputItem(final Integer fundVersionId,
@@ -3099,7 +3117,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     protected void setOutputSettings(Integer outputId, OutputSettingsVO settings) {
         put(spec -> spec.pathParameter("outputId", outputId)
-                .body(settings),
+                        .body(settings),
                 UPDATE_OUTPUT_SETTINGS);
     }
 
@@ -3314,7 +3332,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return nalezená entita
      */
     protected ArrStructureDataVO getStructureData(final Integer fundVersionId,
-                                               final Integer structureDataId) {
+                                                  final Integer structureDataId) {
         return get(spec -> spec.pathParameter("fundVersionId", fundVersionId)
                 .pathParameter("structureDataId", structureDataId), GET_STRUCTURE_DATA)
                 .as(ArrStructureDataVO.class);
@@ -3328,11 +3346,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param structureDataIds identifikátory hodnoty strukturovaného datového typu
      */
     protected void setAssignableStructureData(final Integer fundVersionId,
-                                           final boolean assignable,
-                                           List<Integer> structureDataIds) {
+                                              final boolean assignable,
+                                              List<Integer> structureDataIds) {
         post(spec -> spec.pathParameter("fundVersionId", fundVersionId)
-                        .pathParameter("assignable", assignable)
-                        .body(structureDataIds), SET_ASSIGNABLE_STRUCTURE_DATA_LIST);
+                .pathParameter("assignable", assignable)
+                .body(structureDataIds), SET_ASSIGNABLE_STRUCTURE_DATA_LIST);
     }
 
     /**
@@ -3422,7 +3440,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param items         položky ke změně
      */
     protected void changeAccessPointItems(final Integer accessPointId,
-                                                     final List<ApUpdateItemVO> items) {
+                                          final List<ApUpdateItemVO> items) {
         put(spec -> spec.pathParameter("accessPointId", accessPointId)
                 .body(items), CHANGE_ACCESS_POINT_ITEMS);
     }
@@ -3608,7 +3626,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Vyhledá protokoly k danému archivní souboru - řazeno nejprve otevřené a pak uzavřené
      *
      * @param fundId identifikátor AS
-     * @param open filtr pro stav (otevřený/uzavřený)
+     * @param open   filtr pro stav (otevřený/uzavřený)
      * @return seznam protokolů
      */
     public List<WfIssueListVO> findIssueListByFund(Integer fundId, Boolean open) {
@@ -3624,9 +3642,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vyhledá připomínky k danému protokolu - řazeno vzestupně podle čísla připomínky
      *
-     * @param issueListId identifikátor protokolu
+     * @param issueListId  identifikátor protokolu
      * @param issueStateId identifikátor stavu připomínky, dle kterého filtrujeme
-     * @param issueTypeId identifikátor druhu připomínky, dle kterého filtrujeme
+     * @param issueTypeId  identifikátor druhu připomínky, dle kterého filtrujeme
      */
     protected List<WfIssueVO> findIssueByIssueList(Integer issueListId, Integer issueStateId, Integer issueTypeId) {
         return Arrays.asList(get(spec -> {

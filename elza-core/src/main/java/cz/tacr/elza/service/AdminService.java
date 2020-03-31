@@ -7,9 +7,6 @@ import java.util.concurrent.Future;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hibernate.search.MassIndexer;
 import org.hibernate.search.jpa.FullTextEntityManager;
@@ -18,7 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.search.IndexerProgressMonitor;
 
@@ -74,8 +74,10 @@ public class AdminService {
         return false;
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
-    public List<TreeNodeVO> findNodeByIds(final ArrFundVersion fundVersion, final List<Integer> nodeIds) {
+    @AuthMethod(permission = { UsrPermission.Permission.ADMIN, UsrPermission.Permission.FUND_ARR_ALL,
+            UsrPermission.Permission.FUND_ARR })
+    public List<TreeNodeVO> findNodeByIds(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                          final List<Integer> nodeIds) {
         if (CollectionUtils.isEmpty(nodeIds)) {
             return Collections.emptyList();
         }

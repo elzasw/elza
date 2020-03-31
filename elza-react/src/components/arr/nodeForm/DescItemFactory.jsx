@@ -1,17 +1,18 @@
 import React from 'react';
-import DescItemString from './DescItemString.jsx';
-import DescItemUnitid from './DescItemUnitid.jsx';
-import DescItemText from './DescItemText.jsx';
-import DescItemInt from './DescItemInt.jsx';
-import DescItemDecimal from './DescItemDecimal.jsx';
-import DescItemCoordinates from './DescItemCoordinates.jsx';
-import DescItemUnitdate from './DescItemUnitdate.jsx';
-import DescItemStructureRef from './DescItemStructureRef.jsx';
-import DescItemFileRef from './DescItemFileRef.jsx';
-import DescItemRecordRef from './DescItemRecordRef.jsx';
-import DescItemJsonTable from './DescItemJsonTable.jsx';
-import DescItemDate from './DescItemDate.jsx';
+import DescItemString from './DescItemString';
+import DescItemUnitid from './DescItemUnitid';
+import DescItemText from './DescItemText';
+import DescItemInt from './DescItemInt';
+import DescItemDecimal from './DescItemDecimal';
+import DescItemCoordinates from './DescItemCoordinates';
+import DescItemUnitdate from './DescItemUnitdate';
+import DescItemStructureRef from './DescItemStructureRef';
+import DescItemFileRef from './DescItemFileRef';
+import DescItemRecordRef from './DescItemRecordRef';
+import DescItemJsonTable from './DescItemJsonTable';
+import DescItemDate from './DescItemDate';
 import {DataTypeCode} from 'stores/app/accesspoint/itemFormInterfaces';
+import DescItemLink from './DescItemLink';
 
 export default class DescItemFactory {
     static typeComponentMap = {
@@ -28,6 +29,7 @@ export default class DescItemFactory {
         INT: DescItemInt,
         COORDINATES: DescItemCoordinates,
         DATE: DescItemDate,
+        URI_REF: DescItemLink
     };
 
     static createDescItem = (type, props) => {

@@ -59,4 +59,8 @@ public class ItemJsonTable extends AbstractItem {
     protected ElzaTable getValue() {
         return value;
     }
+
+    public ElzaTable getTable() {
+        return value;
+    }
 }

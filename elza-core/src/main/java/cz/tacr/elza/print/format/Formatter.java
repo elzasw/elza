@@ -31,6 +31,10 @@ public class Formatter {
 		return this;
 	}
 
+    protected FormatContext createFormatCtx() {
+        return new FormatContext();
+    }
+
 	/**
 	 * Add value without any other info
 	 * @param itemType Item type
@@ -205,7 +209,7 @@ public class Formatter {
 	 * @return Return string
 	 */
 	public String format(List<Item> items) {
-		FormatContext ctx = new FormatContext();
+        FormatContext ctx = createFormatCtx();
 
 		for (FormatAction action : actions) {
 			action.format(ctx, items);
@@ -214,4 +218,15 @@ public class Formatter {
 		return ctx.getResult();
 	}
 
+    /**
+     * Replace unsupported characters
+     * 
+     * @param value
+     * @return
+     */
+    public String format(String value) {
+        FormatContext ctx = createFormatCtx();
+        ctx.appendValue(value);
+        return ctx.getResult();
+    }
 }

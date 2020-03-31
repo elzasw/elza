@@ -1,6 +1,7 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
 import java.util.List;
+import java.util.Map;
 
 public class ItemGeneratorConfig
     implements ActionConfig
@@ -9,7 +10,8 @@ public class ItemGeneratorConfig
     public static class StructuredObjectItemConfig {
         String itemType;
         String valueFrom;
-        
+        Map<String, String> valueSpecMapping;
+
         /**
          * Prvek popisu pro uvedení počáteční hodnoty
          * Uplatní se v případě počtu většího než 1
@@ -39,6 +41,14 @@ public class ItemGeneratorConfig
         public void setStartItemType(String startItemType) {
             this.startItemType = startItemType;
         }        
+
+        public Map<String, String> getValueSpecMapping() {
+            return valueSpecMapping;
+        }
+
+        public void setValueSpecMapping(Map<String, String> valueSpecMapping) {
+            this.valueSpecMapping = valueSpecMapping;
+        }
     }
 
     public static class StructuredObjectConfig {
@@ -74,10 +84,24 @@ public class ItemGeneratorConfig
         public void setStructuredObject(StructuredObjectConfig structuredObject) {
             this.structuredObject = structuredObject;
         }
-        
-        
     }
     
+    /**
+     * Delete item with given type and also connected object
+     * 
+     */
+    public static class DeleteItem {
+        String itemType;
+
+        public String getItemType() {
+            return itemType;
+        }
+
+        public void setItemType(String itemType) {
+            this.itemType = itemType;
+        }
+    }
+
     /**
      * Exclude condition
      */
@@ -85,6 +109,8 @@ public class ItemGeneratorConfig
 
     WhenConditionConfig when;
     
+    List<DeleteItem> delete;
+
     List<CreateItem> create;
 
     public WhenConditionConfig getExcludeWhen() {
@@ -101,6 +127,14 @@ public class ItemGeneratorConfig
 
     public void setWhen(WhenConditionConfig when) {
         this.when = when;
+    }
+
+    public List<DeleteItem> getDelete() {
+        return delete;
+    }
+
+    public void setDelete(List<DeleteItem> deleteItemList) {
+        this.delete = deleteItemList;
     }
 
     public List<CreateItem> getCreate() {
