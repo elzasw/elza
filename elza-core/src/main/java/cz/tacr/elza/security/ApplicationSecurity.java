@@ -1,31 +1,29 @@
 package cz.tacr.elza.security;
 
-import cz.tacr.elza.domain.UsrAuthentication;
-import cz.tacr.elza.service.LevelTreeCacheService;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.LockedException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
-import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.security.ssoheader.SsoHeaderAuthenticationFilter;
+import cz.tacr.elza.security.ssoheader.SsoHeaderAuthenticationProvider;
+import cz.tacr.elza.security.ssoheader.SsoHeaderProperties;
 import cz.tacr.elza.service.UserService;
 
 /**
@@ -34,13 +32,14 @@ import cz.tacr.elza.service.UserService;
  * @author Martin Šlapa
  * @since 11.04.2016
  */
-@Component
-//@EnableWebMvcSecurity
+@Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
 public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
 
+    private static final Logger log = LoggerFactory.getLogger(ApplicationSecurity.class);
+	
     @Autowired
     private UserService userService;
 
@@ -55,9 +54,10 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private ApiLogoutSuccessHandler apiLogoutSuccessHandler;
-
-    private static final Logger logger = LoggerFactory.getLogger(ApplicationSecurity.class);
-
+    
+    @Autowired
+    private Optional<SsoHeaderProperties> optionalSsoHeaderProperties;
+    
     private SessionRegistry sessionRegistry = null;
 
     @Bean
@@ -70,49 +70,10 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(final AuthenticationManagerBuilder builder) throws Exception {
-        builder.authenticationProvider(new AuthenticationProvider() {
-            @Override
-            public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
-                String username = authentication.getName();
-                String password = authentication.getCredentials().toString();
-
-                String encodePassword = userService.encodePassword(username, password);
-
-                UsrUser user = userService.findByUsername(username);
-
-                if (user != null) {
-                    UsrAuthentication usrAuthentication = userService.findAuthentication(user, UsrAuthentication.AuthType.PASSWORD);
-                    if (usrAuthentication == null) {
-                        throw new UsernameNotFoundException("Pro uživatele není povolen tento typ přihlášení");
-                    }
-
-                    if (!usrAuthentication.getValue().equalsIgnoreCase(encodePassword)) {
-                        throw new UsernameNotFoundException("Neplatné uživatelské jméno nebo heslo");
-                    }
-
-                    if (!user.getActive()) {
-                        throw new LockedException("User is not active");
-                    }
-                } else {
-                    // TODO: smazat po vytvoření správy uživatelů
-                    logger.warn(username + ":" + encodePassword);
-                    throw new UsernameNotFoundException("Neplatné uživatelské jméno nebo heslo");
-                }
-
-                UserDetail userDetail = userService.createUserDetail(user);
-
-                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username,
-                        encodePassword, null);
-                auth.setDetails(userDetail);
-                return auth;
-            }
-
-            @Override
-            public boolean supports(final Class<?> authentication) {
-                return authentication.equals(UsernamePasswordAuthenticationToken.class);
-            }
-        });
-
+        builder.authenticationProvider(new PasswordAutheticationProvider(userService));
+        if (optionalSsoHeaderProperties.isPresent()) {
+        	builder.authenticationProvider(new SsoHeaderAuthenticationProvider(userService));
+        }
     }
 
     @Bean
@@ -120,6 +81,12 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
         return new ServletListenerRegistrationBean<>(new HttpSessionEventPublisher());
     }
 
+    @Bean("applicationAuthenticationManager")
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+    	return super.authenticationManagerBean();
+    }
+    
     @Override
     protected void configure(final HttpSecurity http) throws Exception {
         http.headers().frameOptions().sameOrigin();
@@ -129,7 +96,7 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers("/services").permitAll()
                 .antMatchers("/services/**").authenticated()
-                .and().httpBasic().authenticationEntryPoint(authenticationEntryPoint);;
+                .and().httpBasic().authenticationEntryPoint(authenticationEntryPoint);
         http.csrf().disable();
         http.sessionManagement()
                 .maximumSessions(10)
@@ -140,6 +107,18 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
                 .logout().permitAll().logoutSuccessHandler(apiLogoutSuccessHandler);
         http.formLogin().successHandler(authenticationSuccessHandler);
         http.formLogin().failureHandler(authenticationFailureHandler);
+        
+        configureSsoHeaderFilter(http);
     }
 
+	private void configureSsoHeaderFilter(HttpSecurity http) throws Exception {
+		if (optionalSsoHeaderProperties.isPresent()) {
+			SsoHeaderAuthenticationFilter filter = new SsoHeaderAuthenticationFilter(optionalSsoHeaderProperties.get());
+			filter.setAuthenticationManager(authenticationManagerBean());
+			filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
+			filter.setAuthenticationFailureHandler(authenticationFailureHandler);
+			http.addFilterBefore(filter, AbstractPreAuthenticatedProcessingFilter.class);
+			log.info("SSO header authentication filter was configured");
+		}
+	}
 }
