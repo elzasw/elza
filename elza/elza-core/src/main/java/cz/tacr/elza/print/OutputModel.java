@@ -1,5 +1,6 @@
 package cz.tacr.elza.print;
 
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -34,32 +36,6 @@ import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.core.fund.FundTree;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.core.fund.TreeNode;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrStructuredItem;
-import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.ParDynasty;
-import cz.tacr.elza.domain.ParEvent;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyGroup;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPerson;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationClassType;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.item.Item;
@@ -128,6 +104,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final Map<Integer, Party> partyIdMap = new HashMap<>();
 
+    private final Map<Integer, Node> nodeIdMap = new HashMap<>();
+
     private final Map<Integer, RelationType> relationTypeIdMap = new HashMap<>();
 
     private final Map<Integer, RelationToType> relationRoleTypeIdMap = new HashMap<>();
@@ -175,6 +153,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     private List<Integer> startNodes = new ArrayList<>();
 
     private StructuredItemRepository structItemRepos;
+
+    private OffsetDateTime changeDateTime;
 
     public OutputModel(final StaticDataService staticDataService,
                        final ElzaLocale elzaLocale,
@@ -229,6 +209,11 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     @Override
     public String getTypeCode() {
         return typeCode;
+    }
+
+    @Override
+    public OffsetDateTime getChangeDateTime() {
+        return changeDateTime;
     }
 
     @Override
@@ -399,6 +384,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     public void init(OutputParams params) {
         Validate.isTrue(TransactionSynchronizationManager.isActualTransactionActive());
         Validate.isTrue(!isInitialized());
+        Validate.notNull(params);
+        Validate.notNull(params.getChange());
 
         logger.info("Output model initialization started, outputId:{}", params.getOutputId());
 
@@ -413,6 +400,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.internalCode = output.getInternalCode();
         this.typeCode = outputType.getCode();
         this.type = outputType.getName();
+        this.changeDateTime = params.getChange().getChangeDate();
 
         // init node id tree
         NodeId rootNodeId = createNodeIdTree(params.getOutputNodeIds(), params.getFundVersionId());
@@ -543,6 +531,18 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         apIdMap.put(ap.getAccessPointId(), record);
 
         return record;
+    }
+
+    @Override
+    public Node getNode(ArrNode arrNode) {
+        Node node = nodeIdMap.get(arrNode.getNodeId());
+
+        if (node != null) {
+            return node;
+        }
+
+        //TODO implement
+        return null;
     }
 
     private RecordType getAPType(Integer apTypeId) {

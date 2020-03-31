@@ -214,7 +214,7 @@ public class WsClient {
 
     public static Dao createDao(Item item) {
         Dao dao = new Dao();
-        dao.setIdentifier(item.getID().toString());
+        dao.setIdentifier(item.getHandle());
         dao.setLabel(item.getName());
         return dao;
     }

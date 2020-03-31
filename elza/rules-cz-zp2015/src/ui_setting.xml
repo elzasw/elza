@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<settings xmlns:ns2="fund-views" xmlns:ns3="type-groups" xmlns:ns4="allow-structure-types" xmlns:ns5="fund-issues">
+<settings xmlns:ns2="fund-views" xmlns:ns3="type-groups" xmlns:ns4="allow-structure-types" 
+          xmlns:ns5="fund-issues" xmlns:ns6="grid-view" xmlns:ns7="structure-type-settings">
     <favorite-item-specs code="ZP2015_LANGUAGE">
         <!-- čeština -->
         <favorite-item>ZP2015_LANGUAGE_43</favorite-item>
@@ -11,26 +12,47 @@
 
     <!-- Výchozí prvky pro tabulkové zobrazení -->
     <grid-view>
-        <item-type code="ZP2015_UNIT_ID">
+        <!-- Referenční označení (pořadové číslo) -->
+        <ns6:item-type code="ZP2015_UNIT_ID">
             <show-default>true</show-default>
-            <width>200</width>
-        </item-type>
-        <item-type code="ZP2015_SERIAL_NUMBER">
+            <width>100</width>
+        </ns6:item-type>
+        <!-- Jiná označení - Pořadové číslo -->
+        <ns6:item-type code="ZP2015_SERIAL_NUMBER">
             <show-default>true</show-default>
-            <width>210</width>
-        </item-type>
-        <item-type code="ZP2015_LEVEL_TYPE">
+            <width>50</width>
+        </ns6:item-type>
+        <ns6:item-type code="ZP2015_LEVEL_TYPE">
             <show-default>true</show-default>
-        </item-type>
-        <item-type code="ZP2015_TITLE">
+            <width>100</width>
+        </ns6:item-type>
+        <ns6:item-type code="ZP2015_TITLE">
             <show-default>true</show-default>
-        </item-type>
-        <item-type code="ZP2015_FOLDER_TYPE">
+            <width>250</width>
+        </ns6:item-type>
+        <ns6:item-type code="ZP2015_UNIT_DATE">
             <show-default>true</show-default>
-        </item-type>
-        <item-type code="ZP2015_UNIT_TYPE">
+            <width>100</width>
+        </ns6:item-type>
+        <ns6:item-type code="ZP2015_FOLDER_TYPE">
             <show-default>true</show-default>
-        </item-type>
+            <width>100</width>
+        </ns6:item-type>
+        <ns6:item-type code="ZP2015_UNIT_TYPE">
+            <show-default>true</show-default>
+            <width>150</width>
+        </ns6:item-type>
+        <ns6:item-type code="ZP2015_STORAGE_ID">
+            <show-default>true</show-default>
+            <width>100</width>
+        </ns6:item-type>
+        <!-- Pořadí uložení -->
+        <ns6:item-type code="ZP2015_ITEM_ORDER">
+            <show-default>true</show-default>
+            <width>100</width>
+        </ns6:item-type>
     </grid-view>
-
+    <structure-type-settings code="STRUCT_TYPE_ZP2015_PACKET">
+      <ns7:property code="prefixSeparator"> </ns7:property>
+    </structure-type-settings>
 </settings>

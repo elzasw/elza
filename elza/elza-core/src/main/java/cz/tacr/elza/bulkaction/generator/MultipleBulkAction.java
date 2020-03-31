@@ -2,10 +2,12 @@ package cz.tacr.elza.bulkaction.generator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -15,12 +17,14 @@ import cz.tacr.elza.bulkaction.generator.multiple.Action;
 import cz.tacr.elza.bulkaction.generator.multiple.ActionConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.TypeLevel;
 import cz.tacr.elza.bulkaction.generator.result.Result;
+import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
@@ -38,6 +42,9 @@ public class MultipleBulkAction extends BulkAction {
 
     @Autowired
     private NodeCacheService nodeCacheService;
+
+    @Autowired
+    private LevelTreeCacheService levelTreeCacheService;
 
     /**
      * Identifikátor hromadné akce
@@ -114,14 +121,17 @@ public class MultipleBulkAction extends BulkAction {
 
             LevelWithItems parentLevel = null;
             for(ArrLevel level: levels) {
-                LevelWithItems levelWithItems = prepareLevelWithItems(level, parentLevel);
+                TreeNode tn = new TreeNode(level.getNodeId(), level.getPosition());
+                LevelWithItems levelWithItems = prepareLevelWithItems(tn, parentLevel);
 
                 nodesWithItems.put(level.getNode(), levelWithItems);
                 parentLevel = levelWithItems;
             }
             // add starting node
             ArrLevel startingLevel = levelRepository.findByNodeAndDeleteChangeIsNull(startingNode);
-            LevelWithItems startingLevelWithItems = prepareLevelWithItems(startingLevel, parentLevel);
+            TreeNode tn = new TreeNode(startingLevel.getNodeId(), startingLevel.getPosition());
+
+            LevelWithItems startingLevelWithItems = prepareLevelWithItems(tn, parentLevel);
             nodesWithItems.put(startingLevel.getNode(), startingLevelWithItems);
 
             nodeStartingLevels.put(startingNode, startingLevelWithItems);
@@ -137,7 +147,6 @@ public class MultipleBulkAction extends BulkAction {
 
             LevelWithItems levelWithItems = entry.getValue();
 
-			//apply(node, levelWithItems.descItems, TypeLevel.PARENT, levelWithItems.getParent());
 			apply(levelWithItems, TypeLevel.PARENT);
         }
 
@@ -147,13 +156,16 @@ public class MultipleBulkAction extends BulkAction {
             LevelWithItems levelWithItems = nodeStartingLevels.get(node);
 			Validate.notNull(levelWithItems);
 
-            generate(levelWithItems);
+            // read whole subtree
+            Map<Integer, TreeNode> treeNodeMap = levelTreeCacheService.createTreeNodeMap(null, node.getNodeId());
+
+            generate(levelWithItems, treeNodeMap);
         }
 
         // Collect results
         Result result = new Result();
         for (Action action : actions) {
-            result.getResults().add(action.getResult());
+            result.addResults(action.getResult());
         }
 
         bulkActionRun.setResult(result);
@@ -161,43 +173,53 @@ public class MultipleBulkAction extends BulkAction {
 
     /**
      * Load all description items for level and prepare bounding object
-     * @param level Level to be loaded
-     * @param parentLevels Parent level to be set
+     * 
+     * @param treeNode
+     *            Level to be loaded
+     * @param parentLevels
+     *            Parent level to be set
      * @return Return loaded level
      */
-    private LevelWithItems prepareLevelWithItems(final ArrLevel level, final LevelWithItems parentLevels) {
+    private LevelWithItems prepareLevelWithItems(final TreeNode treeNode, final LevelWithItems parentLevels) {
     	// we can load data from cache because we are running action on the recent node
-    	CachedNode cachedNode = nodeCacheService.getNode(level.getNodeId());
+        CachedNode cachedNode = nodeCacheService.getNode(treeNode.getId());
     	List<ArrDescItem> items = cachedNode.getDescItems();
-        return new LevelWithItems(level, parentLevels, items);
+        return new LevelWithItems(treeNode, parentLevels, items);
     }
 
 
     /**
      * Rekurzivní metody pro procházení JP ve stromu.
+     * 
+     * @param treeNodeMap
      *
      * @param node
-     * @param parentLevel procházený uzel
-     * @param parentNodeDescItems data předků
+     * @param parentLevel
+     *            procházený uzel
+     * @param parentNodeDescItems
+     *            data předků
      */
-    void generate(final LevelWithItems levelWithItems) {
+    void generate(final LevelWithItems levelWithItems, Map<Integer, TreeNode> treeNodeMap) {
         if (bulkActionRun.isInterrupted()) {
             bulkActionRun.setState(ArrBulkActionRun.State.INTERRUPTED);
             throw new BusinessException("Hromadná akce " + toString() + " byla přerušena.", ArrangementCode.BULK_ACTION_INTERRUPTED).set("code", bulkActionRun.getBulkActionCode());
         }
 
         // apply on current node
-        ArrLevel level = levelWithItems.getLevel();
-
-		//apply(node, levelWithItems.descItems, TypeLevel.CHILD, parentLevel);
 		apply(levelWithItems, TypeLevel.CHILD);
 
         // apply on child nodes in batch
-        List<ArrLevel> childLevels = getChildren(level);
+        TreeNode treeNode = treeNodeMap.get(levelWithItems.getNodeId());
+        LinkedList<TreeNode> childNodes = treeNode.getChilds();
+        //List<ArrLevel> childLevels = getChildren(level);
 
-        BatchNodeProcessor bnp = new BatchNodeProcessor(this, BATCH_CHILD_NODE_SIZE, actions, levelWithItems, nodeCacheService);
-        for (ArrLevel childLevel : childLevels) {
-        	bnp.addItem(childLevel);
+        BatchNodeProcessor bnp = new BatchNodeProcessor(this, BATCH_CHILD_NODE_SIZE, actions, levelWithItems,
+                nodeCacheService,
+                treeNodeMap);
+        if (CollectionUtils.isNotEmpty(childNodes)) {
+            for (TreeNode childNode : childNodes) {
+                bnp.addItem(childNode);
+            }
         }
         bnp.processAll();
     }
@@ -210,7 +232,6 @@ public class MultipleBulkAction extends BulkAction {
      * @param typeLevel             typ uzlu
      * @param parentNodeDescItems   data předků
      */
-    //private void apply(final ArrNode node, final List<ArrDescItem> items, final TypeLevel typeLevel, final LevelWithItems parentLevelWithItems) {
     private void apply(LevelWithItems level, TypeLevel typeLevel) {
 		try {
 			for (Action action : actions) {

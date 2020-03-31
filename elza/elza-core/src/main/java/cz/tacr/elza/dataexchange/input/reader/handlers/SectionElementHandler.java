@@ -2,11 +2,9 @@ package cz.tacr.elza.dataexchange.input.reader.handlers;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 
-import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.context.ImportPhase;
 import cz.tacr.elza.dataexchange.input.reader.XmlElementReader;
@@ -24,13 +22,13 @@ public class SectionElementHandler extends ContextAwareElementHandler {
     }
 
     @Override
-    public void handleStart(XMLEventReader eventReader) {
-        StartElement startElement;
+    public void handleStart(XMLEventReader eventReader, StartElement startElement) {
+        /*StartElement startElement;
         try {
             startElement = eventReader.peek().asStartElement();
         } catch (XMLStreamException e) {
             throw new DEImportException("Cannot read section start element");
-        }
+        }*/
 
 		installSectionHandlers();
 
@@ -46,6 +44,8 @@ public class SectionElementHandler extends ContextAwareElementHandler {
         reader.addElementHandler("/edx/fs/s/sts", new StructTypesHandler(context));
 		reader.addElementHandler("/edx/fs/s/sts/st", new StructTypeElementHandler(context));
 		reader.addElementHandler("/edx/fs/s/sts/st/sos/so", new StructObjectElementHandler(context));
+        reader.addElementHandler("/edx/fs/s/fs", new FilesHandler(context));
+        reader.addElementHandler("/edx/fs/s/fs/f", new FileHandler(context));
 
 		SectionLevelElementHandler levelHandler;
 		if (ignoreRootNodes) {

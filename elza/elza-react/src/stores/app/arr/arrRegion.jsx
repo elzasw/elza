@@ -135,8 +135,7 @@ export default function arrRegion(state = initialState, action) {
         isFundChangeAction(action) ||
         isFundFilesAction(action) ||
         isFundActionAction(action) ||
-        isFundOutput(action) ||
-        isStructureNodeForm(action)
+        isFundOutput(action)
     ) {
         const index = indexById(state.funds, action.versionId, 'versionId');
         if (index !== null) {

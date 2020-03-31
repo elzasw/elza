@@ -125,6 +125,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/getVersions', null, {ids: versionIds});
     }
 
+    getNode(fundVersionId, nodeId) {
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/nodeInfo/' + fundVersionId + '/' + nodeId);
+    }
+
     getNodes(versionId, nodeIds) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/nodes', null, {versionId: versionId, ids: nodeIds});
     }
@@ -503,6 +507,26 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/output/' + outputId + '/settings', null, {
             ...outputSettings,
         });
+    }
+
+    /**
+     * Přidání omezujícího rejstříku k výstupu
+     *
+     * @param outputId identifikátor výstupu
+     * @param scopeId identifikátor rejstříku
+     */
+    addRestrictedScope(outputId, scopeId) {
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/output/' + outputId + "/restrict/" + scopeId, null, null);
+    }
+
+    /**
+     * Odebrání omezujícího rejstříku z výstupu
+     *
+     * @param outputId identifikátor výstupu
+     * @param scopeId identifikátor rejstříku
+     */
+    deleteRestrictedScope(outputId, scopeId) {
+        return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/output/' + outputId + "/restrict/" + scopeId, null, null);
     }
 
     addNode(node, parentNode, versionId, direction, descItemCopyTypes, scenarioName, createItems) {

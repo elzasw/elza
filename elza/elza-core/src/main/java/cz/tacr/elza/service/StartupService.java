@@ -6,6 +6,8 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,17 +20,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.common.db.DatabaseType;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApFulltextProviderImpl;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.repository.ApNameRepository;
-import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.search.DbQueueProcessor;
 import cz.tacr.elza.search.IndexWorkProcessor;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -67,8 +58,6 @@ public class StartupService implements SmartLifecycle {
 
     private final EntityManager em;
 
-    private final ApNameRepository apNameRepository;
-
     private final AccessPointService accessPointService;
 
     private final AccessPointGeneratorService accessPointGeneratorService;
@@ -89,7 +78,6 @@ public class StartupService implements SmartLifecycle {
                           final StaticDataService staticDataService,
                           final BulkActionConfigManager bulkActionConfigManager,
                           final EntityManager em,
-                          final ApNameRepository apNameRepository,
                           final AccessPointService accessPointService,
                           final AccessPointGeneratorService accessPointGeneratorService,
                           final NodeConformityErrorRepository nodeConformityErrorRepository,
@@ -106,7 +94,6 @@ public class StartupService implements SmartLifecycle {
         this.nodeCacheService = nodeCacheService;
         this.staticDataService = staticDataService;
         this.bulkActionConfigManager = bulkActionConfigManager;
-        this.apNameRepository = apNameRepository;
         this.em = em;
         this.accessPointService = accessPointService;
         this.accessPointGeneratorService = accessPointGeneratorService;
@@ -127,9 +114,10 @@ public class StartupService implements SmartLifecycle {
         long startTime = System.currentTimeMillis();
         logger.info("Elza startup service ...");
 
-        ApFulltextProviderImpl fulltextProvider = new ApFulltextProviderImpl(apNameRepository);
+        ApFulltextProviderImpl fulltextProvider = new ApFulltextProviderImpl(accessPointService);
         ArrDataRecordRef.setFulltextProvider(fulltextProvider);
         ArrDataPartyRef.setFulltextProvider(fulltextProvider);
+        ArrDataUriRef.setFulltextProvider(fulltextProvider);
         startInTransaction();
 
         running = true;

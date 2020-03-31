@@ -59,4 +59,5 @@
     <package-action filename="GENEROVANI_PORADI_ULOZENI.yaml" />
     <!-- Generování ukládacích jednotek -->
     <package-action filename="GENEROVANI_UKL_JEDNOTEK.yaml" />
+    <package-action filename="MAZANI_UKL_JEDNOTEK.yaml" />
 </package-actions>

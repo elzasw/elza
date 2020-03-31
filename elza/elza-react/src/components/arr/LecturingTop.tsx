@@ -20,7 +20,7 @@ import i18n from '../i18n';
 import Icon from '../shared/icon/Icon';
 import ListBox from '../shared/listbox/ListBox';
 import TooltipTrigger from '../shared/tooltip/TooltipTrigger';
-import IssueLists from './IssueLists';
+import IssueLists from 'components/arr/IssueLists';
 
 import './LecturingTop.scss';
 

@@ -12,6 +12,7 @@ import {validateCoordinatePoint, validateDouble, validateDuration, validateInt} 
 import {valuesEquals} from 'components/Utils.jsx';
 import {DisplayType} from '../../../constants.tsx';
 import {buildIgnoreMap, endWith, startWith} from '../../../components/Utils';
+import {cloneDeep} from 'lodash-es';
 
 const FORM_KEY = 'formKey'; // klíč verze formuláře
 const UID = '_uid'; // virtuální identifikátor hodnoty atributu (jedná se buď o objectId a nebo virtuální klíč v případě, že ještě hodnota atributu nebyla uložena na serveru)
@@ -76,6 +77,11 @@ export function validate(descItem, refType, valueServerError) {
 
     // Hodnota
     switch (refType.dataType.code) {
+        case 'URI_REF':
+            if (!descItem.value) {
+                error.value = i18n('subNodeForm.validate.value.notEmpty');
+            }
+            break;
         case 'RECORD_REF':
             if (!descItem.value || typeof descItem.value !== 'number') {
                 error.value = i18n('subNodeForm.validate.value.notEmpty');
@@ -157,6 +163,13 @@ export function validate(descItem, refType, valueServerError) {
 export function convertValue(value, descItem, type) {
     //  Data type to value conversion functions map
     const dataTypeMap = {
+        URI_REF: (value, descItem) => {
+            return {
+                touched: descItem.value !== value.value || descItem.description !== value.description,
+                value: value.value,
+                description: value.description
+            }
+        },
         FILE_REF: value => {
             return {
                 value: value.id,
@@ -467,7 +480,8 @@ export default function subNodeForm(state = initialState, action = {}) {
             if (state.data.parent.id !== node.id) {
                 return state;
             }
-            const newState = {...state};
+            const newState = cloneDeep(state);
+            loc = getLoc(newState, action.valueLocation);
             newState.data.parent = node;
 
             switch (action.operationType) {
@@ -488,6 +502,9 @@ export default function subNodeForm(state = initialState, action = {}) {
                     if (action.descItemResult.item && action.descItemResult.item.calendarTypeId) {
                         loc.descItem.prevCalendarTypeId = action.descItemResult.item.calendarTypeId;
                     }
+                    if (action.descItemResult.item && action.descItemResult.item.description) {
+                        loc.descItem.prevDescription = action.descItemResult.item.description;
+                    }
                     loc.descItem.touched = false;
                     break;
                 case 'CREATE':
@@ -503,6 +520,9 @@ export default function subNodeForm(state = initialState, action = {}) {
                     if (action.descItemResult.item.calendarTypeId) {
                         loc.descItem.prevCalendarTypeId = action.descItemResult.item.calendarTypeId;
                     }
+                    if (action.descItemResult.item.description) {
+                        loc.descItem.prevDescription = action.descItemResult.item.description;
+                    }
                     loc.descItem.touched = false;
                     // Aktualizace position - pokud by create byl na první hodnotě a za ní již nějaké uživatel uložil, musí se vše aktualizovat
                     loc.descItemType.descItems.forEach((descItem, index) => {
@@ -516,8 +536,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                     break;
             }
 
-            newState.formData = {...state.formData};
-            return {...state};
+            return newState;
 
         case types.FUND_SUB_NODE_FORM_TEMPLATE_USE: {
             const groups = action.groups;
@@ -629,6 +648,17 @@ export default function subNodeForm(state = initialState, action = {}) {
             } else {
                 var infoType = state.infoTypesMap[loc.descItemType.id];
                 var refType = state.refTypesMap[loc.descItemType.id];
+
+                state = {
+                    ...state,
+                    infoTypesMap: {
+                        ...state.infoTypesMap,
+                        [loc.descItemType.id]: {
+                            ...infoType,
+                            calSt: 0
+                        }
+                    }
+                };
 
                 // Odebereme pouze pokud je pole jiné než: REQUIRED nebo RECOMMENDED
                 if (infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED') {

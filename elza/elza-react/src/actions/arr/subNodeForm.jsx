@@ -649,6 +649,10 @@ export class ItemFormActions {
                 if (!valuesEquals(descItem.calendarTypeId, descItem.prevCalendarTypeId)) {
                     needUpdate = true;
                 }
+                // Nelze použít valuesEquals (prázdný string není !== undefined)
+                if (descItem.description !== descItem.prevDescription) {
+                    needUpdate = true;
+                }
 
                 return needUpdate;
             } else {
@@ -813,7 +817,11 @@ export class ItemFormActions {
             const fundIndex = indexById(state.arrRegion.funds, versionId, 'versionId');
             if (fundIndex !== null) {
                 const getOutputId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
-                return WebApi.switchOutputCalculating(versionId, getOutputId, itemTypeId, strict);
+                return WebApi.switchOutputCalculating(versionId, getOutputId, itemTypeId, strict).then(data => {
+                    if (!data) {
+                        dispatch(this.fundSubNodeFormDescItemTypeAdd(versionId, 1, itemTypeId));
+                    }
+                });
             }
         };
     }
@@ -1418,9 +1426,9 @@ class StructureFormActions extends ItemFormActions {
 
     // @Override
     _getItemFormStore(state, versionId, routingKey) {
-        const fundIndex = indexById(state.arrRegion.funds, versionId, 'versionId');
-        if (fundIndex !== null) {
-            return state.arrRegion.funds[fundIndex].structureNodeForm.subNodeForm;
+        const subStore = state.structures.stores[routingKey];
+        if (!!subStore) {
+            return subStore.subNodeForm;
         } else {
             return null;
         }
@@ -1428,10 +1436,9 @@ class StructureFormActions extends ItemFormActions {
 
     // @Override
     _getParentObjStore(state, versionId, routingKey) {
-        const fundIndex = indexById(state.arrRegion.funds, versionId, 'versionId');
-        if (fundIndex !== null) {
-            const fund = state.arrRegion.funds[fundIndex];
-            return fund.structureNodeForm;
+        const subStore = state.structures.stores[routingKey];
+        if (!!subStore) {
+            return subStore;
         } else {
             return null;
         }

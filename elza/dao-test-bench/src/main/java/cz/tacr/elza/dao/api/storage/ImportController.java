@@ -53,7 +53,7 @@ public class ImportController {
 	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@RequestMapping(value = "/{packageIdentifiers}/system/{systemIdentifier}", method = RequestMethod.POST)
-	public void transRequestRevoked(@PathVariable String systemIdentifier, @PathVariable String[] packageIdentifiers)
+    public void importPckgs(@PathVariable String systemIdentifier, @PathVariable String[] packageIdentifiers)
 			throws CoreServiceException {
 		DaoImport daoImport = resourceService.getDaoImport(packageIdentifiers);
 		DaoService service = CoreServiceProvider.getDaoCoreService(systemIdentifier);
