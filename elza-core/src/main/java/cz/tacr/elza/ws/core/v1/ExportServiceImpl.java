@@ -1,5 +1,6 @@
 package cz.tacr.elza.ws.core.v1;
 
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
@@ -20,6 +21,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.common.io.FilterInputStreamWithException;
 import cz.tacr.elza.dataexchange.output.DEExportParams;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamExportBuilder;
@@ -28,6 +30,7 @@ import cz.tacr.elza.dataexchange.output.writer.xml.XmlExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlNameConsts;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker;
+import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker.ErrorHandler;
 import cz.tacr.elza.ws.types.v1.ExportRequest;
 import cz.tacr.elza.ws.types.v1.ExportResponseData;
 import cz.tacr.elza.ws.types.v1.IdentifierList;
@@ -118,18 +121,24 @@ public class ExportServiceImpl implements ExportService {
         // prepare sec context
         SecurityContext secCtx = SecurityContextHolder.getContext();
         Authentication auth = secCtx.getAuthentication();
-
+        
         // Create piped output stream, wrap it in a final array so that the
         // OutputStream doesn't need to be finalized before sending to new Thread.
         PipedOutputStream out = new PipedOutputStream();
+                        
         try {
             InputStream in = new PipedInputStream(out);
+            final FilterInputStreamWithException fis = new FilterInputStreamWithException(in);
             
-            ExportWorker eew = appCtx.getBean(ExportWorker.class, out, exportBuilder, params, auth);
-            
+            ErrorHandler asyncErrorHandler = (e) -> {
+            	fis.setException(e);
+            };            
+
+            ExportWorker eew = appCtx.getBean(ExportWorker.class, out, exportBuilder, params, auth, asyncErrorHandler);
+    
             taskExecutor.execute(eew);
 
-            DataSource ds = new ByteArrayDataSource(in, "application/octet-stream");
+            DataSource ds = new ByteArrayDataSource(fis, "application/octet-stream");
             DataHandler dataHandler = new DataHandler(ds);
             erd.setBinData(dataHandler);
         } catch (IOException e) {
