@@ -1,20 +1,44 @@
 package cz.tacr.elza.controller.factory;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import cz.tacr.elza.common.FactoryUtils;
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.controller.vo.WfCommentVO;
+import cz.tacr.elza.controller.vo.WfConfigVO;
+import cz.tacr.elza.controller.vo.WfIssueListVO;
+import cz.tacr.elza.controller.vo.WfIssueStateVO;
+import cz.tacr.elza.controller.vo.WfIssueTypeVO;
+import cz.tacr.elza.controller.vo.WfIssueVO;
+import cz.tacr.elza.controller.vo.WfSimpleIssueVO;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.WfComment;
+import cz.tacr.elza.domain.WfIssue;
+import cz.tacr.elza.domain.WfIssueList;
+import cz.tacr.elza.domain.WfIssueState;
+import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.IssueDataService;
 import cz.tacr.elza.service.IssueService;
 import cz.tacr.elza.service.vo.WfConfig;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -111,28 +135,30 @@ public class WfFactory {
         List<WfIssueVO> issueVOS = new ArrayList<>();
         for (WfIssue issue : issues) {
 
-            Integer nodeId;
-            String[] referenceMark;
-            if (issue.getNode() != null) {
-                nodeId = issue.getNode().getNodeId();
-                TreeNodeVO treeNodeVO = nodeReferenceMarkMap.get(nodeId);
-                referenceMark = treeNodeVO != null ? treeNodeVO.getReferenceMark() : null;
-            } else {
-                nodeId = null;
-                referenceMark = null;
-            }
-
             WfIssueVO issueVO = new WfIssueVO();
             issueVO.setId(issue.getIssueId());
             issueVO.setIssueListId(issue.getIssueList().getIssueListId());
             issueVO.setNumber(issue.getNumber());
-            issueVO.setNodeId(nodeId);
-            issueVO.setReferenceMark(referenceMark);
+            issueVO.setDescription(issue.getDescription());
+
+            // TODO: Improve reading of type and state            
+
             issueVO.setIssueTypeId(issue.getIssueType().getIssueTypeId());
             issueVO.setIssueStateId(issue.getIssueState().getIssueStateId());
-            issueVO.setDescription(issue.getDescription());
             issueVO.setUserCreate(usersMap.get(issue.getUserCreate().getUserId()));
             issueVO.setTimeCreated(issue.getTimeCreated());
+
+            Integer nodeId = issue.getNodeId();
+            if (nodeId != null) {
+                issueVO.setNodeId(nodeId);
+                TreeNodeVO treeNodeVO = nodeReferenceMarkMap.get(nodeId);
+                if (treeNodeVO != null) {
+                    issueVO.setReferenceMark(treeNodeVO.getReferenceMark());
+                } else {
+                    // level does not exists -> was deleted
+                    issueVO.setLevelDeleted(true);
+                }
+            }
 
             issueVOS.add(issueVO);
         }

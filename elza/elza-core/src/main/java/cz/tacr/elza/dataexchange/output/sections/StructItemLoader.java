@@ -8,6 +8,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
@@ -16,7 +18,7 @@ import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 
-public class StructItemLoader extends AbstractEntityLoader<ArrStructuredItem> {
+public class StructItemLoader extends AbstractEntityLoader<ArrStructuredItem, ArrStructuredItem> {
 
     Join<ArrStructuredItem, RulItemType> joinItemType;
     Join<ArrStructuredItem, RulItemSpec> joinItemSpec;
@@ -26,17 +28,23 @@ public class StructItemLoader extends AbstractEntityLoader<ArrStructuredItem> {
     }
 
     @Override
-    protected void buildExtendedQuery(Root<?> root, CriteriaBuilder cb) {
+    protected void buildExtendedQuery(Root<? extends ArrStructuredItem> root, CriteriaBuilder cb) {
         root.fetch(ArrStructuredItem.FIELD_DATA);
         joinItemType = root.join(ArrItem.FIELD_ITEM_TYPE);
         joinItemSpec = root.join(ArrItem.FIELD_ITEM_SPEC, JoinType.LEFT);
     }
 
-    private List<Order> createQueryOrderBy(CriteriaBuilder cb) {
+    @Override
+    protected Predicate createQueryCondition(Path<? extends ArrStructuredItem> root, CriteriaBuilder cb) {
+        return root.get(ArrItem.FIELD_DELETE_CHANGE_ID).isNull();
+    }
+
+    @Override
+    protected List<Order> createQueryOrderBy(Root<? extends ArrStructuredItem> root, CriteriaBuilder cb) {
         List<Order> orderList = new ArrayList<>();
         orderList.add(cb.asc(joinItemType.get(RulItemType.FIELD_VIEW_ORDER)));
         orderList.add(cb.asc(joinItemType.get(RulItemSpec.FIELD_VIEW_ORDER)));
-        orderList.add(cb.asc(joinItemType.get(ArrItem.FIELD_POSITION)));
+        orderList.add(cb.asc(root.get(ArrItem.FIELD_POSITION)));
         return orderList;
     }
 }

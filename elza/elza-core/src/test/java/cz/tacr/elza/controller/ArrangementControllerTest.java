@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.nodes.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
@@ -54,10 +55,6 @@ import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
@@ -109,8 +106,13 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // vytvoření uzlů
         List<ArrNodeVO> nodes = createLevels(fundVersion);
 
+        // získání informací o ulzu + fundu
+        nodeInfo(nodes, fundVersion);
+
         // přesunutí && smazání uzlů
         moveAndDeleteLevels(nodes, fundVersion);
+
+
 
         // atributy
         attributeValues(fundVersion);
@@ -632,7 +634,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
 
-        type = findDescItemTypeByCode("SRD_POSITION");
+        type = findDescItemTypeByCode("SRD_POSITION"); //TODO : co to je
         descItem = buildDescItem(type.getCode(), null, "POINT (14 49)", 1, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
@@ -765,6 +767,20 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // přesun posledního za první
         moveLevelAfter(fundVersion, newNodes4.get(2), rootNode, Arrays.asList(newNodes4.get(0)), rootNode);
+    }
+
+    /**
+     * Získání informací o nodu a fundu
+     */
+
+    private void nodeInfo(List<ArrNodeVO> nodes, ArrFundVersionVO fundVersionVO ) {
+        assertNotNull(nodes);
+        assertNotNull(fundVersionVO);
+        assertTrue(nodes.size() > 0);
+        ArrNodeExtendVO nodeExtendVO = getNodeInfo(fundVersionVO.getId(), nodes.get(0).getId());
+        assertNotNull(nodeExtendVO.getUuid());
+        assertNotNull(nodeExtendVO.getName());
+        assertNotNull(nodeExtendVO.getFundName());
     }
 
     /**

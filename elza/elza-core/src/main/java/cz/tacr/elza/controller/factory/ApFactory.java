@@ -5,7 +5,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.ap.item.*;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
@@ -17,37 +20,11 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ap.ApFormVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.ApStateVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemAPFragmentRefVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemCoordinatesVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemDateVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemDecimalVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemEnumVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemFormattedTextVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemIntVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemJsonTableVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemPartyRefVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemTextVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemUnitdateVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemUnitidVO;
-import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApBodyItemRepository;
-import cz.tacr.elza.repository.ApDescriptionRepository;
-import cz.tacr.elza.repository.ApExternalIdRepository;
-import cz.tacr.elza.repository.ApFragmentItemRepository;
-import cz.tacr.elza.repository.ApFragmentRepository;
-import cz.tacr.elza.repository.ApNameItemRepository;
-import cz.tacr.elza.repository.ApNameRepository;
-import cz.tacr.elza.repository.ApStateRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.RuleService;
 
 @Service
@@ -208,7 +185,6 @@ public class ApFactory {
             result.setState(state.getStateApproval());
             results.add(result);
         }
-
         return results;
     }
 
@@ -428,7 +404,6 @@ public class ApFactory {
                 }
             }
         }
-
     }
 
     private ApItemVO createItem(final ApItem apItem) {
@@ -479,6 +454,9 @@ public class ApFactory {
                 break;
             case APFRAG_REF:
                 item = new ApItemAPFragmentRefVO(apItem);
+                break;
+            case URI_REF:
+                item = new ApItemUriRefVO(apItem);
                 break;
             default:
                 throw new NotImplementedException("Není implementováno: " + dataType.getCode());

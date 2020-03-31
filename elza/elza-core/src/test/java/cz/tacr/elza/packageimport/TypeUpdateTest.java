@@ -135,9 +135,10 @@ public class TypeUpdateTest extends AbstractServiceTest {
                 .getData()
                 .getDataId()));
         Assert.assertNotNull(ddc);
-        Assert.assertTrue(ddc.size() == 1);
+        Assert.assertEquals("Neplatný počet položek", 1, ddc.size());
         OnlyValues dd = ddc.iterator().next();
-        Assert.assertTrue(dd.getValue().equals(LocalDate.of(2018, 10, 13)));
+        // zde může nastat někdy problém s kompatibilitou JAVA/Locale z metody cz.tacr.elza.packageimport.ItemTypeUpdater.changeString2Date
+        Assert.assertEquals("Neplatný očekávaný datum", LocalDate.of(2018, 10, 13), dd.getValue());
     }
 
     private ItemType createItemTypeFor(String itemTypeCode, List<ItemSpec> itemSpecList) {

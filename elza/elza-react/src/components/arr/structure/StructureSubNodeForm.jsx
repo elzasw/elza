@@ -41,20 +41,20 @@ class StructureSubNodeForm extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        const {versionId} = this.props;
-        this.props.dispatch(structureFormActions.fundSubNodeFormFetchIfNeeded(versionId, null, true));
+        const {versionId, id} = this.props;
+        this.props.dispatch(structureFormActions.fundSubNodeFormFetchIfNeeded(versionId, id, true));
     }
 
     UNSAFE_componentWillReceiveProps() {
-        const {versionId} = this.props;
-        this.props.dispatch(structureFormActions.fundSubNodeFormFetchIfNeeded(versionId, null));
+        const {versionId, id} = this.props;
+        this.props.dispatch(structureFormActions.fundSubNodeFormFetchIfNeeded(versionId, id));
     }
 
     /**
      * Zobrazení dialogu pro přidání atributu.
      */
     handleAddDescItemType = () => {
-        const {versionId} = this.props;
+        const {versionId, id} = this.props;
 
         const descItemTypes = this.descItemTypeItems();
 
@@ -69,7 +69,7 @@ class StructureSubNodeForm extends AbstractReactComponent {
                         this.props.dispatch(
                             structureFormActions.fundSubNodeFormDescItemTypeAdd(
                                 versionId,
-                                null,
+                                id,
                                 data.descItemTypeId.id,
                             ),
                         )
@@ -110,6 +110,7 @@ class StructureSubNodeForm extends AbstractReactComponent {
             descItemTypes,
             subNodeForm,
             readMode,
+            id
         } = this.props;
 
         if (!subNodeForm || !subNodeForm.fetched) {
@@ -129,7 +130,7 @@ class StructureSubNodeForm extends AbstractReactComponent {
                     typePrefix="structure"
                     versionId={versionId}
                     fundId={fundId}
-                    routingKey={null}
+                    routingKey={id}
                     nodeSetting={null}
                     rulDataTypes={rulDataTypes}
                     calendarTypes={calendarTypes}
@@ -156,8 +157,8 @@ class StructureSubNodeForm extends AbstractReactComponent {
     }
 }
 
-function mapStateToProps(state) {
-    const {arrRegion, focus, refTables, userDetail} = state;
+function mapStateToProps(state, props) {
+    const {arrRegion, focus, refTables, userDetail, structures} = state;
     let fund = null;
     let structureTypes = null;
     if (arrRegion.activeIndex != null) {
@@ -168,7 +169,7 @@ function mapStateToProps(state) {
     return {
         userDetail,
         fund,
-        subNodeForm: fund ? fund.structureNodeForm.subNodeForm : null,
+        subNodeForm: structures.stores.hasOwnProperty(props.id) ? structures.stores[props.id].subNodeForm : null,
         focus,
         structureTypes,
         rulDataTypes: refTables.rulDataTypes,

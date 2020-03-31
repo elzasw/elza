@@ -55,6 +55,12 @@ public class ItemDataConvertorFactory {
         return new StructObjRefConvertor();
     }
 
+    public FileRefConvertor createFileRefConvertor() {
+        return new FileRefConvertor();
+    }
+
+    public UriRefConvertor createUriRefConvertor() { return new UriRefConvertor(); }
+
     public final Map<DataType, ItemDataConvertor> createAll() {
         Map<DataType, ItemDataConvertor> map = new EnumMap<>(DataType.class);
         map.put(DataType.STRING, createStringValueConvertor());
@@ -70,6 +76,8 @@ public class ItemDataConvertorFactory {
         map.put(DataType.PARTY_REF, createPartyRefConvertor());
         map.put(DataType.STRUCTURED, createStructObjectRefConvertor());
         map.put(DataType.JSON_TABLE, createJsonTableConvertor());
+        map.put(DataType.FILE_REF, createFileRefConvertor());
+        map.put(DataType.URI_REF, createUriRefConvertor());
         return map;
     }
 }

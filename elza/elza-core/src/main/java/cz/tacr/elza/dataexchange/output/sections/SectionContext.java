@@ -8,6 +8,7 @@ import javax.persistence.EntityManager;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
@@ -22,6 +23,8 @@ public class SectionContext {
 
     private final Set<Integer> processedNodeIds = new HashSet<>();
 
+    private final Set<Integer> processedFileIds = new HashSet<>();
+
     private final ExportContext context;
 
     private final StaticDataProvider staticData;
@@ -29,6 +32,8 @@ public class SectionContext {
     private final LevelInfoLoader levelInfoLoader;
 
     private final StructObjectInfoLoader structObjLoader;
+
+    private final DmsFileLoader dmsFileLoader;
 
     private final ArrFundVersion fundVersion;
 
@@ -48,11 +53,13 @@ public class SectionContext {
                    boolean multipleSections,
                    LevelInfoListener levelInfoListener,
                    NodeCacheService nodeCacheService,
-                   EntityManager em) {
+                   EntityManager em,
+                   ResourcePathResolver resourceResolver) {
         this.context = Validate.notNull(context);
         this.staticData = context.getStaticData();
         this.levelInfoLoader = new LevelInfoLoader(context.getBatchSize(), nodeCacheService);
         this.structObjLoader = new StructObjectInfoLoader(em, context.getBatchSize(), this.staticData);
+        this.dmsFileLoader = new DmsFileLoader(em, context.getBatchSize(), resourceResolver);
         this.fundVersion = Validate.notNull(fundVersion);
         this.multipleSections = multipleSections;
         this.levelInfoListener = levelInfoListener;
@@ -98,6 +105,17 @@ public class SectionContext {
         structObjLoader.addRequest(structObjId, structObjDispatcher);
     }
 
+    public void addDmsFile(Integer fileId) {
+        Validate.notNull(fileId);
+
+        if (!processedFileIds.add(fileId)) {
+            return; // object already processed
+        }
+
+        DmsFileDispatcher dmsFileDispatcher = new DmsFileDispatcher(getOutputStream());
+        dmsFileLoader.addRequest(fileId, dmsFileDispatcher);
+    }
+
     /* internal methods */
 
     void addLevel(ArrLevel level) {
@@ -119,6 +137,7 @@ public class SectionContext {
     void processed() {
         levelInfoLoader.flush();
         structObjLoader.flush();
+        dmsFileLoader.flush();
         if (outputStream != null) {
             outputStream.processed();
         }

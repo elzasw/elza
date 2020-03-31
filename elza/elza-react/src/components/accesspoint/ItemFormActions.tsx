@@ -432,6 +432,10 @@ export abstract class ItemFormActions {
                 if (!valuesEquals(descItem.calendarTypeId, descItem.prevCalendarTypeId)) {
                     needUpdate = true;
                 }
+                // Nelze použít valuesEquals (prázdný string není !== undefined)
+								if (descItem.description !== descItem.prevDescription) {
+									needUpdate = true;
+								}
 
                 return needUpdate;
             } else {

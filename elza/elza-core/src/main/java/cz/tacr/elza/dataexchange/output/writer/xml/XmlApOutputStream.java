@@ -19,6 +19,7 @@ import cz.tacr.elza.dataexchange.output.writer.xml.nodes.FileNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode.ChildNodeType;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApDescription;
 import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApState;
@@ -28,6 +29,7 @@ import cz.tacr.elza.schema.v2.AccessPointEntry;
 import cz.tacr.elza.schema.v2.AccessPointName;
 import cz.tacr.elza.schema.v2.AccessPointNames;
 import cz.tacr.elza.schema.v2.ExternalId;
+import liquibase.util.StringUtils;
 
 /**
  * XML output stream for access points export.
@@ -49,8 +51,15 @@ public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStr
 
         AccessPoint element = new AccessPoint();
         element.setApe(createEntry(apInfo.getApState(), apInfo.getExternalIds()));
-        element.setChr(apInfo.getDesc().getDescription());
         element.setNms(createNames(apInfo.getNames()));
+
+        ApDescription desc = apInfo.getDesc();
+        if (desc != null) {
+            String description = desc.getDescription();
+            if (StringUtils.isNotEmpty(description)) {
+                element.setChr(description);
+            }
+        }
 
         try {
             writeAP(element);

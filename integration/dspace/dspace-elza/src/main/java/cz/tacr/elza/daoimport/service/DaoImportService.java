@@ -151,8 +151,8 @@ public class DaoImportService {
                 protocol.write(ExceptionUtils.getStackTrace(e));
                 protocol.close();
 
-                Path errorDir = Paths.get(config.getMainDir(), ERROR_DIR, batchDir.getFileName().toString());
-                Files.move(batchDir, errorDir);
+                Path errorDir = Paths.get(config.getMainDir(), ERROR_DIR);
+                moveBatchDir(batchDir, errorDir);
             } finally {
                 if (emptyBatch) {
                     protocol.close();
@@ -161,6 +161,15 @@ public class DaoImportService {
         }
 
         return batches;
+    }
+
+    private void moveBatchDir(Path batchDir, Path targetDir) throws IOException {
+        int i = 1;
+        Path errorDir = Paths.get(targetDir.toString(), batchDir.getFileName().toString());
+        while (errorDir.toFile().exists()) {
+            errorDir = Paths.get(targetDir.toString(), batchDir.getFileName().toString() + "-" + i++);
+        }
+        Files.move(batchDir, errorDir);
     }
 
     private ImportConfig getImportConfig() {
@@ -237,8 +246,8 @@ public class DaoImportService {
                 protocol.write("Konec zpracování dávky: " + batchDir.toAbsolutePath());
                 protocol.close();
 
-                Path archiveDir = Paths.get(mainDir, ARCHIVE_DIR, batchDir.getFileName().toString());
-                Files.move(batchDir, archiveDir);
+                Path archiveDir = Paths.get(mainDir, ARCHIVE_DIR);
+                moveBatchDir(batchDir, archiveDir);
             } catch (Exception e) {
                 context.abort();
 
@@ -247,8 +256,8 @@ public class DaoImportService {
                 protocol.write(ExceptionUtils.getStackTrace(e));
                 protocol.close();
 
-                Path errorDir = Paths.get(mainDir, ERROR_DIR, batchDir.getFileName().toString());
-                Files.move(batchDir, errorDir);
+                Path errorDir = Paths.get(mainDir, ERROR_DIR);
+                moveBatchDir(batchDir, errorDir);
             }
         }
     }

@@ -11,4 +11,43 @@
         <addNotNullConstraint tableName="rul_structured_type" columnDataType="boolean" columnName="anonymous" defaultNullValue="false" />
     </changeSet>
 
+    <changeSet id="20200227122100" author="gotzy">
+
+        <createTable tableName="arr_data_uri_ref">
+            <column name="data_id" type="int">
+                <constraints primaryKey="true"
+                             foreignKeyName="fk_arr_data_uri_ref_data"
+                             referencedTableName="arr_data"
+                             referencedColumnNames="data_id"/>
+            </column>
+            <column name="schema" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="nvarchar(2000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="nvarchar(2000)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="node_id" type="int">
+                <constraints foreignKeyName="fk_arr_node_id" referencedTableName="arr_node" referencedColumnNames="node_id" nullable="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="rul_data_type">
+            <column name="data_type_id" value="18"/>
+            <column name="code" value="URI_REF"/>
+            <column name="name" value="Obecný URI odkaz"/>
+            <column name="description" value="Obecný URI odkaz, který lze použít jako URL odkaz, ale i jako odkaz na jinou JP"/>
+            <column name="regexp_use" value="false"/>
+            <column name="text_length_limit_use" value="false"/>
+            <column name="storage_table" value="arr_data_uri_ref"/>
+        </insert>
+
+        <update tableName="db_hibernate_sequences">
+            <column name="next_val" value="19"/>
+            <where>sequence_name = 'rul_data_type|data_type_id'</where>
+        </update>
+    </changeSet>
+
 </databaseChangeLog>

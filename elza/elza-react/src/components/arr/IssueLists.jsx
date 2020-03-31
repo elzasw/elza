@@ -24,7 +24,7 @@ type P = {
     issueProtocols: any;
 };
 
-class IssueLists extends AbstractReactComponent {
+class IssueLists extends AbstractReactComponent<P, {}> {
     state = {id: null, initialValues: undefined};
 
     props: P;

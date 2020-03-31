@@ -21,7 +21,7 @@ import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.service.UserService;
 
-public class ApInfoLoader extends AbstractEntityLoader<ApInfo> {
+public class ApInfoLoader extends AbstractEntityLoader<ApInfo, ApState> {
 
     private final Set<Integer> checkedScopeIds = new HashSet<>();
 
@@ -56,12 +56,12 @@ public class ApInfoLoader extends AbstractEntityLoader<ApInfo> {
     }
 
     @Override
-    protected void buildExtendedQuery(Root<?> baseEntity, CriteriaBuilder cb) {
+    protected void buildExtendedQuery(Root<? extends ApState> baseEntity, CriteriaBuilder cb) {
         baseEntity.fetch(ApState.FIELD_ACCESS_POINT);
     }
 
     @Override
-    protected Predicate createQueryCondition(Path<?> root, CriteriaBuilder cb) {
+    protected Predicate createQueryCondition(Path<? extends ApState> root, CriteriaBuilder cb) {
         return root.get(ApState.FIELD_DELETE_CHANGE_ID).isNull();
     }
 

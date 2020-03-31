@@ -24,6 +24,8 @@ import cz.tacr.elza.api.interfaces.IWfIssueList;
 @Entity(name = "wf_issue")
 public class WfIssue implements IArrFund, IWfIssueList {
 
+    public static final String FIELD_NODE_ID = "nodeId";
+
     // --- fields ---
 
     /**
@@ -51,8 +53,11 @@ public class WfIssue implements IArrFund, IWfIssueList {
      * Uzel
      */
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class, optional = true)
-    @JoinColumn(name = "node_id", nullable = true)
+    @JoinColumn(name = FIELD_NODE_ID, nullable = true)
     private ArrNode node;
+
+    @Column(name = FIELD_NODE_ID, nullable = true, updatable = false, insertable = false)
+    protected Integer nodeId;
 
     /**
      * Druh připomínky
@@ -121,6 +126,15 @@ public class WfIssue implements IArrFund, IWfIssueList {
 
     public void setNode(ArrNode node) {
         this.node = node;
+        this.nodeId = (node != null) ? node.getNodeId() : null;
+    }
+
+    public Integer getNodeId() {
+        return nodeId;
+    }
+
+    public void setNodeId(Integer nodeId) {
+        this.nodeId = nodeId;
     }
 
     public WfIssueType getIssueType() {

@@ -11,32 +11,14 @@ import java.util.Stack;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.service.importnodes.vo.descitems.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Objects;
 import com.vividsolutions.jts.geom.Geometry;
 
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataFileRef;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUnitid;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.BusinessException;
@@ -52,22 +34,6 @@ import cz.tacr.elza.service.importnodes.vo.ChangeDeep;
 import cz.tacr.elza.service.importnodes.vo.DeepCallback;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
 import cz.tacr.elza.service.importnodes.vo.Node;
-import cz.tacr.elza.service.importnodes.vo.NodeRegister;
-import cz.tacr.elza.service.importnodes.vo.descitems.Item;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemCoordinates;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemDecimal;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemEnum;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemFileRef;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemFormattedText;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemInt;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemJsonTable;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemPartyRef;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemRecordRef;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemString;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemStructureRef;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemText;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitdate;
-import cz.tacr.elza.service.importnodes.vo.descitems.ItemUnitid;
 
 /**
  * Implementace importu z jiného archivního souboru.
@@ -348,6 +314,8 @@ public class ImportFromFund implements ImportSource {
             result = new ItemStructureRefImpl(item, (ArrDataStructureRef) itemData);
         } else if (itemData instanceof ArrDataCoordinates) {
             result = new ItemCoordinatesRefImpl(item, (ArrDataCoordinates) itemData);
+        } else if (itemData instanceof ArrDataUriRef) {
+            result = new ItemUriRefImpl(item, (ArrDataUriRef) itemData);
         } else {
             result = new ItemImpl(item);
         }
@@ -547,6 +515,41 @@ public class ImportFromFund implements ImportSource {
 
         public Integer getPartyId() {
             return partyId;
+        }
+    }
+
+    private class ItemUriRefImpl extends ItemImpl implements ItemUriRef {
+
+        private final String schema;
+
+        private final String value;
+
+        private final String description;
+
+        private final Integer nodeId;
+
+        public ItemUriRefImpl(final ArrDescItem item, final ArrDataUriRef itemData) {
+            super(item);
+            nodeId = itemData.getNodeId();
+            schema = itemData.getSchema();
+            value = itemData.getValue();
+            description = itemData.getDescription();
+        }
+
+        public String getSchema() {
+            return schema;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public Integer getNodeId() {
+            return nodeId;
         }
     }
 

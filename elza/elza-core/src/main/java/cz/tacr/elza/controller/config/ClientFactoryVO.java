@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.nodes.descitems.*;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
@@ -26,7 +27,6 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -90,23 +90,6 @@ import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDecimalVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFileRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFormattedTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemJsonTableVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPartyRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemRecordRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -115,7 +98,6 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
-import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.DaoService;
@@ -728,6 +710,8 @@ public class ClientFactoryVO {
         ArrItemVO itemVO = null;
         ArrData data = item.getData();
         DataType dataType = DataType.fromId(item.getItemType().getDataTypeId()); //.getCode();
+
+        //TODO : kam dat URi-REF ve switchi?
         switch (dataType) {
         case TEXT:
             return ArrItemTextVO.newInstance(item);
@@ -772,6 +756,9 @@ public class ClientFactoryVO {
                 break;
             case JSON_TABLE:
                 itemVO = new ArrItemJsonTableVO();
+                break;
+            case URI_REF:
+                itemVO = new ArrItemUriRefVO();
                 break;
             default:
                 throw new NotImplementedException(item.getItemType().getDataTypeId().toString());
@@ -1425,7 +1412,9 @@ public class ClientFactoryVO {
 
             StaticDataProvider staticData = staticDataService.getData();
             List<UsrPermissionVO> permissionsVOs = permissions.stream().map(
-                                                                            p -> UsrPermissionVO.newInstance(p, false,
+                                                                            // if has groupId -> it is inheritted
+                                                                            p -> UsrPermissionVO.newInstance(p,
+                                                                                                             p.getGroupId() != null,
                                                                                                              staticData))
                     .collect(Collectors.toList());
 
@@ -1459,7 +1448,8 @@ public class ClientFactoryVO {
 
             StaticDataProvider staticData = staticDataService.getData();
             List<UsrPermissionVO> permissionsVOs = permissions.stream().map(
-                                                                  p -> UsrPermissionVO.newInstance(p, true, staticData))
+                                                                            p -> UsrPermissionVO.newInstance(p, false,
+                                                                                                             staticData))
                     .collect(Collectors.toList());
 
             result.setPermissions(permissionsVOs);

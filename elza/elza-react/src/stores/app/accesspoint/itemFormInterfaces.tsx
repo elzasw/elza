@@ -17,6 +17,7 @@ export enum DataTypeCode {
     DECIMAL = 'DECIMAL',
     DATE = 'DATE',
     APFRAG_REF = 'APFRAG_REF',
+		URI_REF = "URI_REF"
 }
 
 enum ApStateVO {

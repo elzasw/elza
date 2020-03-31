@@ -8,7 +8,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
@@ -36,6 +35,11 @@ public class SettingStructTypeSettings extends Setting {
     @XmlType(name = "property", namespace = NS_STRUCT_TYPE_SETTINGS)
     public static class Property {
 
+        /**
+         * Code of the property
+         * 
+         * e.g. prefixSeparator
+         */
         @XmlAttribute(name = "code", required = true)
         private String code;
 
@@ -61,6 +65,8 @@ public class SettingStructTypeSettings extends Setting {
     
     /**
      * Code of struct type
+     * 
+     * Code includes prefix STRUCT_TYPE_
      */
     @XmlAttribute(name="code")
     @JsonIgnore
@@ -107,7 +113,7 @@ public class SettingStructTypeSettings extends Setting {
         // code has to be valid and exists
         Validate.isTrue(StringUtils.isNotEmpty(code));
         // extend type with code
-        String settType = UISettings.SettingsType.STRUCT_TYPE_.toString() + this.code;
+        String settType = this.code;
         uiSettings.setSettingsType(settType);
         try {
             String value = objectMapper.writeValueAsString(this);

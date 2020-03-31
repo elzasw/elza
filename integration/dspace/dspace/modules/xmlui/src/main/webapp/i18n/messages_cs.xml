@@ -274,6 +274,8 @@
 	<message key="xmlui.ArtifactBrowser.ItemViewer.show_full">Zobrazit celý záznam</message>
 	<message key="xmlui.ArtifactBrowser.ItemViewer.send_item_to_elza">Odeslat digitalizát do ELZA</message>
 	<message key="xmlui.ArtifactBrowser.ItemViewer.view_did_in_elza">Zobrazit jednotku popisu v ELZA</message>
+	<message key="xmlui.administrative.Navigation.context_search_send_to_elza">Odeslat digitalizáty do ELZA</message>
+	<message key="xmlui.administrative.Navigation.context_search_send_to_elza_result">Počet odeslaných digitalizátů do ELZA: {0}</message>
 
 	<message key="xmlui.ArtifactBrowser.ItemViewer.withdrawn">Tento záznam byl vyřazen a není nadále dostupný.</message>
 	
