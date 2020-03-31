@@ -31,7 +31,7 @@ export interface IDescItemProps<T> {
     "undefined": boolean
 }
 
-export interface IDescItemStructure extends IDescItemProps {
+export interface IDescItemStructure extends IDescItemProps<any> {
     structureData: {
         id: number,
         value: string,

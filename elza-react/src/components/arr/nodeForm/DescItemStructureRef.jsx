@@ -23,9 +23,8 @@ import ItemTooltipWrapper from "./ItemTooltipWrapper.jsx";
 
 
 
-class DescItemStructureRef extends AbstractReactComponent<Props, ComponentState> {
-	props: Props;
-	state: ComponentState = { data: [], active: false };
+class DescItemStructureRef extends AbstractReactComponent {
+    state = {data: [], active: false};
 
 	static propTypes = {
 		versionId: PropTypes.number.isRequired,
@@ -33,7 +32,7 @@ class DescItemStructureRef extends AbstractReactComponent<Props, ComponentState>
 		structureTypeCode: PropTypes.string.isRequired,
 	};
 
-	constructor(props: Props) {
+	constructor(props) {
 		super(props);
 		if (props.anonymous && !props.structureNodeForm) {
 			if (props.descItem.value) {
@@ -53,7 +52,7 @@ class DescItemStructureRef extends AbstractReactComponent<Props, ComponentState>
 		}
 	}
 
-	componentWillReceiveProps(nextProps: Props, nextContext) {
+	componentWillReceiveProps(nextProps, nextContext) {
 		if ((nextProps.descItem.value || nextProps.structureId) && nextProps.anonymous && nextProps.structureNodeForm) {
 			const { versionId, structureNodeForm: { id, state, subNodeForm } } = nextProps;
 			if (state === "TEMP" &&
@@ -80,7 +79,7 @@ class DescItemStructureRef extends AbstractReactComponent<Props, ComponentState>
 		}
 	}
 
-	componentWillUnmount(): void {
+	componentWillUnmount() {
 		const { anonymous, versionId, structureNodeForm: { id, state, subNodeForm } } = this.props;
 		if (anonymous &&
 			state === "TEMP" &&
@@ -289,41 +288,4 @@ class DescItemStructureRef extends AbstractReactComponent<Props, ComponentState>
 	}
 }
 
-const ConnectComponent = connect(
-	(state, props: ComponentProps) => {
-		const { structures } = state;
-		const key = props.structureId;
-
-		return {
-			structureNodeForm: key && structures.stores.hasOwnProperty(key) ? structures.stores[key] : null
-		};
-	},
-	null,
-	null,
-	{ withRef: true }
-)(DescItemStructureRef);
-
-class ParentKeyHolder extends React.Component {
-	state = {
-		key: null
-	};
-
-	focus = () => {
-		this.refs.component.wrappedInstance.focus();
-	};
-
-	blur = () => {
-		this.refs.component.wrappedInstance.blur();
-	};
-
-	render() {
-		return <ConnectComponent
-			ref={"component"}
-			{...this.props}
-			structureId={this.props.descItem && this.props.descItem.value ? this.props.descItem.value : this.state.key}
-			changeStrucutreId={(key) => this.setState({ key })}
-		/>;
-	}
-}
-
-export default connect(null, null, null, { withRef: true })(ParentKeyHolder);
+export default connect()(DescItemStructureRef);

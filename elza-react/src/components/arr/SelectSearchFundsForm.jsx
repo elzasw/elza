@@ -21,23 +21,15 @@ import './SearchFundsForm.scss';
 
 const FUND_NAME_MAX_CHARS = 60;
 
-type Props = {
-    onSubmit: ({ fund: any, node: any }) => void
-}
-
-type State = {
-    submitting: boolean
-}
-
 /**
  * Formulář pro vyhledávání nad archivními soubory.
  */
-class SelectSearchFundsForm extends AbstractReactComponent<Props, State> {
+class SelectSearchFundsForm extends AbstractReactComponent {
 
     static propTypes = {
         onSubmit: PropTypes.func.isRequired
     };
-    state: State = {
+    state = {
         submitting: false
     };
 
