@@ -85,6 +85,7 @@
         <description>Rukopis</description>
         <shortcut>rkp</shortcut>
     </item-spec>
+    <!-- Neplatné od verze 160 - nahrazeno podtypem -->
     <item-spec code="ZP2015_UNIT_TYPE_HDB" item-type="ZP2015_UNIT_TYPE">
         <name>Hudebnina</name>
         <description>Hudebnina</description>
@@ -269,20 +270,54 @@
         <name>Kartotéční zásuvka</name>
         <description>Kartotéční zásuvka</description>
         <shortcut>zásuvka</shortcut>
-        <view-order>55</view-order>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_KTT_ITEM" item-type="ZP2015_UNIT_TYPE">
         <name>Kartotéční lístek</name>
         <description>Kartotéční lístek</description>
         <shortcut>lístek</shortcut>
-        <view-order>56</view-order>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_PART" item-type="ZP2015_UNIT_TYPE">
         <name>Část jednotlivosti</name>
         <description>Část jednotlivosti</description>
         <shortcut>část</shortcut>
-        <view-order>57</view-order>
     </item-spec>
+    
+    <!-- Podtyp/Subtype -->
+    <item-spec code="ZP2015_UNIT_SUBTYPE_MTR" item-type="ZP2015_UNIT_SUBTYPE">
+        <name>Matrika</name>
+        <description>Matrika</description>
+        <shortcut>mtr</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_SUBTYPE_HDB" item-type="ZP2015_UNIT_SUBTYPE">
+        <name>Hudebnina</name>
+        <description>Hudebnina</description>
+        <shortcut>hdb</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_SUBTYPE_STV" item-type="ZP2015_UNIT_SUBTYPE">
+        <name>Státní vyznamenání</name>
+        <description>Státní vyznamenání</description>
+        <shortcut>stv</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_SUBTYPE_PA" item-type="ZP2015_UNIT_SUBTYPE">
+        <name>Právní akt</name>
+        <description>Právní akt</description>
+        <shortcut>pa</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_SUBTYPE_STVR" item-type="ZP2015_UNIT_SUBTYPE">
+        <name>Rozhodnutí o udělení / propůjčení státního vyznamenání / ceny</name>
+        <description>Rozhodnutí o udělení / propůjčení státního vyznamenání / ceny</description>
+        <shortcut>stvr</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_SUBTYPE_JMF" item-type="ZP2015_UNIT_SUBTYPE">
+        <name>Jmenování nebo ustanovení do veřejné funkce</name>
+        <description>Jmenování nebo ustanovení do veřejné funkce</description>
+        <shortcut>jmf</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_SUBTYPE_LST" item-type="ZP2015_UNIT_SUBTYPE">
+        <name>List</name>
+        <description>List</description>
+        <shortcut>lst</shortcut>
+    </item-spec>    
 
     <!-- Specifikace pro složky v manip.seznamu -->
     <item-spec code="ZP2015_EXTRA_UNITS_LIO" item-type="ZP2015_EXTRA_UNITS">
@@ -2642,6 +2677,22 @@
         <description>Datace pořízení filmového / zvukového záznamu</description>
         <shortcut>pořízení filmového / zvukového záznamu</shortcut>
     </item-spec>
+    <item-spec code="ZP2015_DATE_AWARDING" item-type="ZP2015_DATE_OTHER">
+        <name>Datace udělení / propůjčení faleristického předmětu</name>
+        <description>Datace udělení / propůjčení faleristického předmětu</description>
+        <shortcut>udělení / propůjčení faleristického předmětu</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_DATE_AWARD_CER" item-type="ZP2015_DATE_OTHER">
+        <name>Datace předání faleristického předmětu</name>
+        <description>Datace předání faleristického předmětu</description>
+        <shortcut>předání faleristického předmětu</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_DATE_WITHDRAWAL" item-type="ZP2015_DATE_OTHER">
+        <name>Datace odnětí / vrácení faleristického předmětu</name>
+        <description>Datace odnětí / vrácení faleristického předmětu</description>
+        <shortcut>odnětí / vrácení faleristického předmětu</shortcut>
+    </item-spec>
+    <!-- Typ ukládací jednotky -->
     <item-spec code="ZP2015_PACKET_TYPE_SAMOST" item-type="ZP2015_PACKET_TYPE">
         <name>Samostatně</name>
         <description>Samostatně</description>
@@ -2656,6 +2707,56 @@
         <name>Fascikl</name>
         <description>Fascikl</description>
         <shortcut>fas</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_SVZ" item-type="ZP2015_PACKET_TYPE">
+        <name>Svazek</name>
+        <description>Svazek</description>
+        <shortcut>svz</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_ETJ" item-type="ZP2015_PACKET_TYPE">
+        <name>Etuje</name>
+        <description>Etuje</description>
+        <shortcut>etj</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_KTZ" item-type="ZP2015_PACKET_TYPE">
+        <name>Kartotéční zásuvka</name>
+        <description>Kartotéční zásuvka</description>
+        <shortcut>ktz</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_TBS" item-type="ZP2015_PACKET_TYPE">
+        <name>Tubus</name>
+        <description>Tubus</description>
+        <shortcut>tbs</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_AKA" item-type="ZP2015_PACKET_TYPE">
+        <name>Audiokazeta</name>
+        <description>Audiokazeta</description>
+        <shortcut>aka</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_KDI" item-type="ZP2015_PACKET_TYPE">
+        <name>Kompaktní disk</name>
+        <description>Kompaktní disk</description>
+        <shortcut>kdi</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_VKA" item-type="ZP2015_PACKET_TYPE">
+        <name>Videokazeta</name>
+        <description>Videokazeta</description>
+        <shortcut>vka</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_DDI" item-type="ZP2015_PACKET_TYPE">
+        <name>Digitální disk</name>
+        <description>Digitální disk</description>
+        <shortcut>ddi</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_BOX" item-type="ZP2015_PACKET_TYPE">
+        <name>Krabička</name>
+        <description>Krabička</description>
+        <shortcut>box</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_OTH" item-type="ZP2015_PACKET_TYPE">
+        <name>Jiné</name>
+        <description>Jiné</description>
+        <shortcut>oth</shortcut>
     </item-spec>
 
     <!-- typ vystpupu -->
@@ -2937,5 +3038,36 @@
         <name>Jiné</name>
         <description>Jiné</description>
         <shortcut>jin</shortcut>
+    </item-spec>
+    <!-- Prvky popisu pro matriku -->
+    <item-spec code="ZP2015_RECORD_TYPE_BORN" item-type="ZP2015_RECORD_TYPE">
+        <name>Záznamy narozených</name>
+        <description>Záznamy narozených</description>
+        <shortcut>nrz</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_RECORD_TYPE_DIED" item-type="ZP2015_RECORD_TYPE">
+        <name>Záznamy zemřelých</name>
+        <description>Záznamy zemřelých</description>
+        <shortcut>zrl</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_RECORD_TYPE_MARRIED" item-type="ZP2015_RECORD_TYPE">
+        <name>Záznamy oddaných</name>
+        <description>Záznamy oddaných</description>
+        <shortcut>odd</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_RECORD_TYPE_INDEX_BORN" item-type="ZP2015_RECORD_TYPE">
+        <name>Rejstřík narozených</name>
+        <description>Rejstřík narozených</description>
+        <shortcut>inrz</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_RECORD_TYPE_INDEX_DIED" item-type="ZP2015_RECORD_TYPE">
+        <name>Rejstřík zemřelých</name>
+        <description>Rejstřík zemřelých</description>
+        <shortcut>izrl</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_RECORD_TYPE_INDEX_MARRIED" item-type="ZP2015_RECORD_TYPE">
+        <name>Rejstřík oddaných</name>
+        <description>Rejstřík oddaných</description>
+        <shortcut>iodd</shortcut>
     </item-spec>
 </item-specs>

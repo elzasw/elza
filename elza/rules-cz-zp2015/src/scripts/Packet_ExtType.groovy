@@ -61,10 +61,13 @@ void generate()
     // Postfix
     appendValue(valueBuilder, "ZP2015_PACKET_POSTFIX");
     appendValue(sortValueBuilder, "ZP2015_PACKET_POSTFIX");
-        
+    
+    // Append types
+    appendValueWithSpecName(valueBuilder, "ZP2015_PACKET_TYPE");
+    appendValueWithSpecName(sortValueBuilder, "ZP2015_PACKET_TYPE");
+    
     // Prepare complement
     StringBuilder complementBuilder = new StringBuilder();
-    appendValue(complementBuilder, "ZP2015_PACKET_TYPE");
     
     // store result
     result.setValue(valueBuilder.toString().trim());
@@ -78,24 +81,22 @@ String toStringValue(String itemTypeCode) {
     return sb.toString();
 }
 
-void appendValueWithSpecs(StringBuilder sb, String itemTypeCode, List<String> specs) {    
+void appendValueWithSpecName(StringBuilder sb, String itemTypeCode) {    
     for (ArrStructuredItem item : items) {
         if (item.getItemType().getCode().equalsIgnoreCase(itemTypeCode)) {
             RulItemSpec spec = item.getItemSpec();
-            if(specs.contains(spec.getCode())) {
-                if(sb.length()>0) {
-                    sb.append(" ");
-                }
-                sb.append(spec.getName());
-                ArrData data = item.getData();
-                if(data!=null) {
-                    String fullText = data.getFulltextValue();
-                    if(fullText!=null) {
-                        sb.append(fullText);
-                    }
-                }
-            }
-        }
+           if(sb.length()>0) {
+               sb.append(" ");
+           }
+           sb.append(spec.getName());
+           ArrData data = item.getData();
+           if(data!=null) {
+               String fullText = data.getFulltextValue();
+               if(fullText!=null) {
+                   sb.append(fullText);
+               }
+           }
+       }
     }
 }
 
