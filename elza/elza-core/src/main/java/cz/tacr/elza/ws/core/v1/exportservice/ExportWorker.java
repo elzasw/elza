@@ -20,6 +20,10 @@ import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 @Component
 @Scope("prototype")
 public class ExportWorker implements Runnable {
+	
+	public interface ErrorHandler {
+		void onError(Exception e);
+	};
 
     private static final Logger logger = LoggerFactory.getLogger(ExportWorker.class);
 
@@ -36,15 +40,19 @@ public class ExportWorker implements Runnable {
     final private Authentication authentication;
 
     final protected ExportBuilder exportBuilder;
+    
+    final protected ErrorHandler errorHandler;
 
     ExportWorker(final OutputStream output,
                  final ExportBuilder exportBuilder,
                  final DEExportParams params,
-                       final Authentication auth) {
+                       final Authentication auth,
+                       final ErrorHandler errorHandler) {
         this.output = output;
         this.exportBuilder = exportBuilder;
         this.exportParams = params;
         this.authentication = auth;
+        this.errorHandler = errorHandler;
     }
 
     @Override
@@ -57,6 +65,12 @@ public class ExportWorker implements Runnable {
             });
         } catch (Exception e) {
             logger.error("EntityExportWorker failed, error: ", e);
+            errorHandler.onError(e);
+        } finally {
+            try {
+                output.close();
+            } catch (Exception e) {
+            }        	
         }
     }
 
@@ -70,11 +84,6 @@ public class ExportWorker implements Runnable {
         try {
             deExportService.exportXmlData(output, exportBuilder, exportParams);
         } finally {
-            try {
-                output.close();
-            } catch (Exception e) {
-            }
-
             SecurityContext emptyContext = SecurityContextHolder.createEmptyContext();
             if (emptyContext.equals(originalSecCtx)) {
                 SecurityContextHolder.clearContext();
