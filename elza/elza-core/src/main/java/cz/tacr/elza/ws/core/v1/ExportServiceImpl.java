@@ -1,17 +1,19 @@
 package cz.tacr.elza.ws.core.v1;
 
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.mail.util.ByteArrayDataSource;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
@@ -21,14 +23,19 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.Lists;
+
 import cz.tacr.elza.common.io.FilterInputStreamWithException;
+import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.dataexchange.output.DEExportParams;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlNameConsts;
+import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker.ErrorHandler;
 import cz.tacr.elza.ws.types.v1.ExportRequest;
@@ -47,6 +54,9 @@ public class ExportServiceImpl implements ExportService {
 
     @Autowired
     ApplicationContext appCtx;
+
+    @Autowired
+    ApAccessPointRepository accessPointRepository;
 
     public ExportServiceImpl() {
 
@@ -74,7 +84,7 @@ public class ExportServiceImpl implements ExportService {
             if (ident.length() == 36) {
                 uuidList.add(ident);
             } else {
-                // convert to id
+                // convert to id to number
                 try {
                     apIds.add(Integer.parseInt(ident));
                 } catch (NumberFormatException nfe) {
@@ -83,18 +93,36 @@ public class ExportServiceImpl implements ExportService {
             }
         }
 
-        // TODO: map uuid to id
-        /*
+        // map uuid to id
         if (CollectionUtils.isNotEmpty(uuidList))
         {
-            getEntitiesById(convertor, uuidList);
-            IdentifierList identsList = request.getIdentifiers();
-            ObjectListIterator<String> oli = new ObjectListIterator<>(1000, request.getIdentifiers().getIdentifier());
+            List<List<String>> lists = Lists.partition(uuidList, HibernateConfiguration.MAX_IN_SIZE);
+            for (List<String> subList : lists) {
+                List<ApAccessPointInfo> infoList = accessPointRepository.findActiveInfoByUuids(subList);
+                // check if al items were found
+                if (infoList.size() != subList.size()) {
+                    checkMissingIds(subList, infoList);
+                }
+                apIds.addAll(infoList.stream().map(ApAccessPointInfo::getAccessPointId).collect(Collectors.toList()));
+            }
         }
-        */
         //List<Integer> rootNodeIds = params.getOutputNodeIds();
 
         params.setApIds(apIds);
+    }
+
+    private void checkMissingIds(List<String> subList, List<ApAccessPointInfo> infoList) throws ExportRequestException {
+        
+        Set<String> foundItems = infoList.stream().map(ApAccessPointInfo::getUuid).collect(Collectors.toSet());
+        
+        List<String> missing = subList.stream().filter(e -> !foundItems.contains(e)).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(missing)) {
+            cz.tacr.elza.ws.types.v1.ErrorDescription ed = new cz.tacr.elza.ws.types.v1.ErrorDescription();
+            ed.setUserMessage("Missing some items");
+            ed.setDetail("Missing items: " + String.join(",", missing));
+
+            throw new ExportRequestException("Missing some items", ed);
+        }
     }
 
     @Override
@@ -104,7 +132,7 @@ public class ExportServiceImpl implements ExportService {
         DEExportParams params = createExportParams(request);
         // prepare converter
         String format = request.getRequiredFormat();
-
+        
         ExportBuilder exportBuilder;
 
         if (XmlNameConsts.SCHEMA_URI.equals(format)) {
