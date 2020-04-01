@@ -1,6 +1,15 @@
 package cz.tacr.elza.service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -11,8 +20,6 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -34,10 +41,22 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 
 import cz.tacr.elza.controller.vo.UserInfoVO;
+import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.Authorization;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.UsrAuthentication;
+import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.UsrGroupUser;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.WfIssueList;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
@@ -47,6 +66,17 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.exception.codes.UserCode;
+import cz.tacr.elza.repository.ApNameRepository;
+import cz.tacr.elza.repository.AuthenticationRepository;
+import cz.tacr.elza.repository.FilteredResult;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.GroupRepository;
+import cz.tacr.elza.repository.GroupUserRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PermissionRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
@@ -380,7 +410,8 @@ public class UserService {
         }
 
         // naleznu všechny oprávnění
-        List<List<Integer>> nodeIdsLists = Lists.partition(new ArrayList<>(nodeIds), 1000);
+        List<List<Integer>> nodeIdsLists = Lists.partition(new ArrayList<>(nodeIds),
+                                                           HibernateConfiguration.MAX_IN_SIZE);
         List<UsrPermission> permissions = new ArrayList<>();
         for (List<Integer> subNodeIds : nodeIdsLists) {
             permissions.addAll(permissionRepository.findByNodeIds(subNodeIds));

@@ -31,6 +31,7 @@ import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.controller.DEExportController.DEExportParamsVO;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
@@ -114,7 +115,8 @@ public class DEExportService {
 
     private void exportData(OutputStream os, ExportBuilder builder, DEExportParams params) {
         // create export context
-        ExportContext context = new ExportContext(builder, staticDataService.getData(), 1000);
+        ExportContext context = new ExportContext(builder, staticDataService.getData(),
+                HibernateConfiguration.MAX_IN_SIZE);
         context.setFundsSections(params.getFundsSections());
         if (params.getApIds() != null) {
             params.getApIds().forEach(context::addApId);

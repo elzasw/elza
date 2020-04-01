@@ -9,13 +9,19 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfigurat
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.autoconfigure.transaction.TransactionManagerCustomizers;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
 import cz.tacr.elza.core.data.StaticDataTransactionInterceptor;
 
 @Configuration
 public class HibernateConfiguration extends HibernateJpaAutoConfiguration {
+
+    /**
+     * Batch size
+     * 
+     * Maximal number of items inside IN clause
+     */
+    final public static int MAX_IN_SIZE = 1000;
 
     public HibernateConfiguration(DataSource dataSource,
                                   JpaProperties jpaProperties,
