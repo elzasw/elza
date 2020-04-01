@@ -1,0 +1,33 @@
+$listbox-height: 300px;
+
+.datagrid-columns-settings-container {
+    .panels-container {
+        display: flex;
+        height: 100%;
+
+        .left, .right {
+            flex-grow: 1;
+            width: 50%;
+            .listbox-wrapper{
+                height: $listbox-height;
+
+                .listbox-item {
+                    padding: 0 5px;
+                }
+            }
+        }
+        .center {
+            width: 40px;
+            height: $listbox-height;
+            display: table;
+
+            .action-buttons {
+                display: table-cell;
+                vertical-align: middle;
+                .btn {
+                    margin: 5px 10px;
+                }
+            }
+        }
+    }
+}

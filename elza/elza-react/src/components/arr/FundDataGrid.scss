@@ -1,0 +1,80 @@
+@import "../../variables.scss";
+@import "./ReferenceMark.scss";
+
+.fund-datagrid-container-wrap {
+    .fund-datagrid-container {
+        .actions-container {
+            display: flex;
+            justify-content: space-between;
+            .actions-buttons, .actions-search {
+                display: flex;
+                > .btn {
+                    border: none;
+                    background: transparent;
+                    margin-left: 5px;
+                    &:hover {
+                        background-color: $button-bg-hover;
+                    }
+                    .icon {
+                        height: 1.35em;
+                        line-height: 1.35em;
+                        width: 1.35em;
+                        vertical-align: middle;
+                    }
+                }
+                @keyframes blink {
+                  0% { background-color: transparent; }
+                  25% { background-color: #FFDCDC; }
+                }
+                .update {
+                  animation: blink 1s linear infinite;
+                }
+                .update:disabled{
+                  animation: none;
+                }
+                .update:hover{
+                  animation:none;
+                }
+            }
+            .actions-search {
+                flex-shrink: 1;
+                flex-grow: 1;
+                .search-container {
+                    width:100%;
+                    max-width: 500px;
+                    min-width: 200px;
+                }
+            }
+            .actions-buttons{
+                flex-shrink: 0;
+            }
+        }
+        .grid-container {
+            .referenceMark {
+                @extend .referenceMark;
+            }
+
+            .filtered {
+                background: $button-bg-hover;
+            }
+
+            .cell-value-wrapper {
+            }
+            .header-container {
+                table {
+                    th {
+                        border-top: none;
+                        border-left: none;
+                    }
+                }
+            }
+            .body-container {
+                table {
+                    td {
+                        border-left: none;
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,15 @@
+@import "../../variables.scss";
+
+.version-state {
+    margin: 5px 0;
+    font-weight: bold;
+    .icon {
+        padding-right: 5px;
+    }
+    .err {
+        color: $color-warn;
+    }
+    .success {
+        color: $color-success;
+    }
+}

@@ -44,77 +44,6 @@
 
     <profiles>
         <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <!-- npm install a prelozeni React-->
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>npm-install</id>
-                                <phase>validate</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <executable>npm</executable>
-                                    <arguments>
-                                        <argument>install</argument>
-                                    </arguments>
-                                    <workingDirectory>src/main/resources/frontend</workingDirectory>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>npm-run-build</id>
-                                <!-- Plugin maven-source-plugin is running phase 'generate-sources' multiple times.
-                                     To run this only one time phase 'generate-resources' is used.
-                                   -->
-                                <phase>generate-resources</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <executable>npm</executable>
-                                    <arguments>
-                                        <argument>run</argument>
-                                        <argument>build</argument>
-                                    </arguments>
-                                    <workingDirectory>src/main/resources/frontend</workingDirectory>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <!-- Kopirovani react prelozenych trid do scripts/react -->
-                    <plugin>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>copy-react-resources</id>
-                                <phase>process-resources</phase>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <configuration>
-                                    <outputDirectory>${project.build.directory}/classes/static/res/js</outputDirectory>
-                                    <resources>
-                                        <resource>
-                                            <filtering>false</filtering>
-                                            <directory>${project.build.directory}/react-dist</directory>
-                                            <includes>
-                                                <include>*.*</include>
-                                            </includes>
-                                        </resource>
-                                    </resources>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
             <id>exec2</id>
             <build>
                 <plugins>
@@ -136,62 +65,6 @@
                 </plugins>
             </build>
         </profile>
-        <profile>
-            <id>frontend-dev</id>
-            <build>
-                <plugins>
-                    <!-- Frontend webpack dev server -->
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <configuration>
-                            <executable>npm</executable>
-                            <arguments>
-                                <argument>run</argument>
-                                <argument>dev</argument>
-                            </arguments>
-                            <workingDirectory>src/main/resources/frontend</workingDirectory>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>exec-npm-run-dev</id>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>npm-install</id>
-            <build>
-                <plugins>
-                    <!-- Frontend webpack dev server -->
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <configuration>
-                            <executable>npm</executable>
-                            <arguments>
-                                <argument>install</argument>
-                                <argument>--no-save</argument>
-                            </arguments>
-                            <workingDirectory>src/main/resources/frontend</workingDirectory>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>exec-npm-run-dev</id>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
     </profiles>
 
     <build>
@@ -199,9 +72,6 @@
             <resource>
                 <filtering>false</filtering>
                 <directory>src/main/resources</directory>
-                <excludes>
-                    <exclude>frontend/**</exclude>
-                </excludes>
             </resource>
         </resources>
         <plugins>

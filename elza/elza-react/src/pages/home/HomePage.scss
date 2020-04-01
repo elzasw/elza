@@ -1,0 +1,138 @@
+@import "../../variables.scss";
+
+.history-list-container {
+    padding: 10px;
+    display:flex;
+    height:100%;
+    overflow:auto;
+
+    h4{
+        font-size: 15px;
+        margin-left: 10px;
+        color:#333;
+        font-weight: bold;
+    }
+    .button-container{
+        .section{
+            margin-bottom:1em;
+            display:block;
+
+            .history-list-item {
+                display: inline-flex;
+                flex-direction: column;
+                height: 13em;
+                width: 13em;
+                align-items: center;
+                justify-content: center;
+                margin: 0.1em 0.2em;
+                padding: 15px;
+                background-color: $homepage-button-bg;
+                border: none;
+                overflow:hidden;
+                vertical-align:middle;
+
+                .history-name {
+                    white-space: normal;
+                    max-height: 3.9em;
+                    line-height: 1.3em;
+                    overflow: hidden;
+                    max-width: 100%;
+                }
+                .icon {
+                    font-size: 2.5em;
+                    margin-bottom: 10px;
+                }
+
+            }
+            .history-button {
+                &:hover{
+                    background-color: $homepage-button-bg-hover;
+                }
+            }
+            .no-history{
+                width:auto;
+                padding: 20px 50px;
+                width: 39.8em;
+                background-color: $homepage-static-bg;
+                color:$homepage-empty-list-msg-col;
+            }
+            .link{
+                width:8em;
+            }
+        }
+    }
+}
+
+.splitter-home {
+    height: 100%;
+    .Resizer {
+        background: #000;
+        opacity: .2;
+        z-index: 1;
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        -moz-background-clip: padding;
+        -webkit-background-clip: padding;
+        background-clip: padding-box;
+    }
+
+    .Resizer:hover {
+        -webkit-transition: all 2s ease;
+        transition: all 2s ease;
+    }
+
+    .Resizer.horizontal {
+        height: 11px;
+        margin: -5px 0;
+        border-top: 5px solid rgba(255, 255, 255, 0);
+        border-bottom: 5px solid rgba(255, 255, 255, 0);
+        cursor: row-resize;
+        width: 100%;
+    }
+
+    .Resizer.horizontal:hover {
+        border-top: 5px solid rgba(0, 0, 0, 0.5);
+        border-bottom: 5px solid rgba(0, 0, 0, 0.5);
+    }
+
+    .Resizer.vertical {
+        width: 11px;
+        margin: 0 -5px;
+        border-left: 5px solid rgba(255, 255, 255, 0);
+        border-right: 5px solid rgba(255, 255, 255, 0);
+        cursor: col-resize;
+        height: 100%;
+    }
+
+    .Resizer.vertical:hover {
+        border-left: 5px solid rgba(0, 0, 0, 0.5);
+        border-right: 5px solid rgba(0, 0, 0, 0.5);
+    }
+}
+
+.autocomplete-registry {
+    .autocomplete-menu-header {
+        .c1 {
+            width: 50px;
+            display: inline-block;
+        }
+        .c2 {
+            width: 200px;
+            display: inline-block;
+        }
+    }
+    .autocomplete-menu {
+        .c1 {
+            width: 50px;
+            display: inline-block;
+        }
+        .c2 {
+            width: 200px;
+            display: inline-block;
+        }
+    }
+    .autocomplete-menu-footer {
+
+    }
+}

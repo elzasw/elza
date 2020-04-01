@@ -1,0 +1,102 @@
+import PropTypes from 'prop-types';
+import React from 'react';
+import {connect} from 'react-redux';
+import {AbstractReactComponent, i18n, Icon, NoFocusButton} from 'components/shared';
+import {Modal} from 'react-bootstrap';
+import {Button} from '../ui';
+import FragmentItemForm from '../accesspoint/FragmentItemForm';
+import {fragmentItemFormActions} from '../accesspoint/FragmentItemFormActions';
+import {modalDialogShow} from '../../actions/global/modalDialog';
+import AddDescItemTypeForm from '../arr/nodeForm/AddDescItemTypeForm';
+
+/**
+ * Formulář přidání nového rejstříkového hesla
+ * <AddRegistryForm onSubmit={this.handleCallAddRegistry} />
+ */
+class FragmentFormModal extends AbstractReactComponent {
+    static propTypes = {
+        fragmentId: PropTypes.number.isRequired,
+        fragmentItemForm: PropTypes.object.isRequired,
+    };
+
+    add = () => {
+        const {fragmentItemForm} = this.props;
+
+        const formData = fragmentItemForm.formData;
+        const itemTypes = [];
+        const strictMode = true;
+
+        let infoTypesMap = new Map(fragmentItemForm.infoTypesMap);
+
+        formData.itemTypes.forEach(descItemType => {
+            infoTypesMap.delete(descItemType.id);
+        });
+
+        fragmentItemForm.refTypesMap.forEach(refType => {
+            if (infoTypesMap.has(refType.id)) {
+                // ještě ji na formuláři nemáme
+                const infoType = infoTypesMap.get(refType.id);
+                // v nestriktním modu přidáváme všechny jinak jen možné
+                if (!strictMode || infoType.type !== 'IMPOSSIBLE') {
+                    // nový item type na základě původního z refTables
+                    itemTypes.push(refType);
+                }
+            }
+        });
+
+        const descItemTypes = [
+            {
+                groupItem: true,
+                id: 'DEFAULT',
+                name: i18n('subNodeForm.descItemGroup.default'),
+                children: itemTypes,
+            },
+        ];
+
+        const submit = data => {
+            this.props.dispatch(fragmentItemFormActions.fundSubNodeFormDescItemTypeAdd(data.descItemTypeId.id));
+        };
+
+        // Modální dialog
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('subNodeForm.descItemType.title.add'),
+                <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit} />,
+            ),
+        );
+    };
+
+    onClose = () => {
+        const {onClose, onSubmit} = this.props;
+        onSubmit && onSubmit();
+        onClose && onClose();
+    };
+
+    render() {
+        const {fragmentId} = this.props;
+
+        return (
+            <div>
+                <Modal.Body>
+                    <NoFocusButton onClick={this.add}>
+                        <Icon glyph="fa-plus-circle" />
+                        {i18n('subNodeForm.section.item')}
+                    </NoFocusButton>
+                    <FragmentItemForm parent={{id: fragmentId}} />
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="link" onClick={this.onClose}>
+                        {i18n('global.action.close')}
+                    </Button>
+                </Modal.Footer>
+            </div>
+        );
+    }
+}
+
+export default connect(state => {
+    return {
+        fragmentItemForm: state.ap.fragmentItemForm,
+    };
+})(FragmentFormModal);

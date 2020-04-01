@@ -1,0 +1,55 @@
+@import "../../../variables.scss";
+
+.autocomplete-desc-item-type {
+
+    $item-padding: 5px;
+
+    .autocomplete-menu-container {
+        width: 568px;
+        .autocomplete-menu-wrapper {
+            width: 100%;
+            .autocomplete-menu {
+                padding-right: 0;
+                width: 100%;
+            }
+        }
+    }
+
+    .item {
+        padding: $item-padding;
+        &.type-impossible {
+            /* Added in AddDescItemTypeForm.jsx:40 */
+            background-color: #eee;
+            color: #888;
+            font-style: italic;
+        }
+        &.type-possible {
+            /* Added in AddDescItemTypeForm.jsx:40 */
+            background-color: transparent;
+        }
+        &.focus {
+            background-color: #afafaf;
+        }
+    }
+
+    .autocomplete-menu-footer {
+
+        .create-party {
+            position: fixed;
+            padding: 5px;
+            .create-party-label {
+                margin-left: 3px;
+            }
+        }
+    }
+
+}
+
+.modal-dialog {
+    .add-link {
+        padding: 0 10px 0 0;
+        .icon {
+            padding-right: 4px;
+        }
+    }
+}

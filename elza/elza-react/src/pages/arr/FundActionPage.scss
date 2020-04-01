@@ -1,0 +1,70 @@
+@import "../../variables.scss";
+
+$header-height: 64px;
+$header-minimized-height: 12px;
+
+.arr-actions-page {
+
+    .fund-noselect {
+        text-align: center;
+        font-size: $font-size-base;
+        padding: 10px;
+    }
+
+    .actions-list-container {
+        padding: 5px;
+
+        background: $fa-file-tree-bg;
+        border-top: none;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+
+        .actions-listbox {
+            background: $fa-file-tree-bg-list;
+            border: 1px solid $fa-file-tree-border;
+            flex-grow: 1;
+            margin: 0;
+            overflow: hidden;
+            overflow-y: auto;
+
+            .listbox-item {
+                padding: 5px;
+
+                .item {
+                    display:flex;
+                    .icon {
+                        text-align:center;
+                        padding:5px;
+                        vertical-align:middle;
+                    }
+                    .name {
+                        font-size: 12px;
+                        //font-size: 0.8em;
+                    }
+                    .link {
+                        float: right;
+                        margin-top: -3px;
+                    }
+                }
+            }
+        }
+    }
+
+    .center-container {
+        .detail {
+            padding: 5px;
+        }
+        height: 100%;
+        clear: both;
+        overflow: hidden;
+        border: 1px solid #DDDDDD;
+        border-top: 0;
+        background: #f8f8f8;
+        .detail {
+            .config {
+                width:100%;
+            }
+        }
+    }
+}

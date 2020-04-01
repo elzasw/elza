@@ -1,0 +1,58 @@
+$arr-history-line-height: 24px; // definuje se i v JS!!!!!
+@import "../../variables.scss";
+
+.ap-state-history-form-container {
+
+    .changes-listbox-container {
+        height: 100%;
+
+        .listbox-wrapper {
+            height: 300px;
+        }
+
+        .listbox-item {
+            height: $arr-history-line-height;
+        }
+
+        .col {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+
+            line-height: $arr-history-line-height;
+
+            &.col1 {
+                width: 120px;
+            }
+            &.col2 {
+                width: 100px;
+            }
+            &.col3 {
+                width: 120px;
+            }
+            &.col4 {
+                width: 120px;
+            }
+            &.col5 {
+                width: 40%;
+            }
+            &.col6 {
+                width: 60%;
+            }
+            &.col7 {
+                width: 120px;
+            }
+
+        }
+
+        .row-container {
+            height: $arr-history-line-height;
+            display: flex;
+        }
+
+        .header-container {
+            display: flex;
+        }
+
+    }
+}

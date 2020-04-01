@@ -1,0 +1,91 @@
+@import "../../variables.scss";
+$movementButtonSize: 8em;
+
+.daos-content-container {
+    height: 100%;
+    padding: 5px 4px;
+    display: flex;
+    width: 100%;
+    border-left: none;
+
+    h2{
+        font-size: 1.5em;
+        text-align: center;
+    }
+
+    .left-container, .right-container {
+        flex-grow: 1;
+        width: 100%;
+    }
+
+    .left-container {
+        .packages-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+        .tree-left-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    .right-container {
+        .tree-right-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    .actions-container {
+        //height: 50%;
+        flex-grow: 0;
+        flex-shrink: 0;
+        padding: 0 10px;
+        text-align: center;
+        display:flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        .arrow{
+            display:flex;
+            align-items: center;
+            flex-shrink: 1;
+            flex-grow: 1;
+            .icon{
+            color:$homepage-button-bg;
+        }
+        }
+        .btn {
+            display:flex;
+            width: $movementButtonSize;
+            height: $movementButtonSize;
+            display: block;
+            margin: 0 auto;
+            position: relative;
+            margin: 5px 0;
+            padding:1.2em;
+            align-items: center;
+            justify-content: center;
+            white-space: pre-wrap;
+            line-height: 1.2em;
+            border:none;
+            background-color: $homepage-button-bg;
+
+            &:hover{
+                background-color: $homepage-button-bg-hover;
+            }
+            .icon{
+                font-size: 2.5em;
+                margin-bottom:0.1em;
+                color:#333;
+            }
+        }
+    }
+ }

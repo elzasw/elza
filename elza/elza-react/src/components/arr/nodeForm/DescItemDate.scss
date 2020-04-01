@@ -1,0 +1,34 @@
+//@import '~react-widgets/lib/scss/react-widgets.scss';
+
+@import "~react-widgets/lib/scss/variables.scss";
+
+@import "~react-widgets/lib/scss/mixins.scss";
+@import "~react-widgets/lib/scss/normalize.scss";
+@import "~react-widgets/lib/scss/icons.scss";
+
+@import "~react-widgets/lib/scss/button.scss";
+@import "~react-widgets/lib/scss/widget.scss";
+//@import "~react-widgets/lib/scss/list.scss";
+//@import "~react-widgets/lib/scss/dropdown-list.scss";
+//@import "~react-widgets/lib/scss/number-picker.scss";
+@import "~react-widgets/lib/scss/calendar.scss";
+//@import "~react-widgets/lib/scss/select-list.scss";
+//@import "~react-widgets/lib/scss/multiselect.scss";
+//@import "~react-widgets/lib/scss/autocomplete.scss";
+
+@import "~react-widgets/lib/scss/popup.scss";
+@import "~react-widgets/lib/scss/state.scss";
+
+
+//$font-size: 16px;
+//$input-height: 20px; // at 16px, this an even 40px
+
+$border-radius: unset;
+$input-height: 22px;
+$input-padding-horizontal: 5px;
+
+.desc-item-value-container {
+    .rw-btn-select {
+        height: auto;
+    }
+}

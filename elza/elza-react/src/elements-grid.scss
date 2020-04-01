@@ -1,0 +1,19 @@
+@import './variables.scss';
+
+.elements-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    .el-0,
+    .el-max,
+    .el-full {
+        width: 100%;
+    }
+
+    @for $i from 1 through 10 {
+        .el-#{$i} {
+            width: ($node-form-item-type-element-width * $i);
+        }
+    }
+}

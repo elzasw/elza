@@ -1,0 +1,41 @@
+@import "../../variables.scss";
+
+.arr-fund-panel {
+    display: flex;
+
+    line-height: 25px;
+    vertical-align: middle;
+
+    font-size: 13px;
+    font-weight: bold;
+    background-color: #EA9999;
+    padding: 4px 4px 4px 10px;
+    border-bottom: 1px solid $fa-file-tree-border;
+
+    &.read-mode {
+        background-color: #B6D7A8;
+    }
+
+    .lock {
+        font-weight: normal;
+        font-size: smaller;
+        margin-left: 5px;
+
+        .lockTitle {
+            margin-right: 5px;
+        }
+    }
+
+    .comments {
+        margin-left: 5px;
+    }
+
+    .action {
+        margin-left: auto;
+        span{
+            font-weight: normal;
+            margin-right: 10px;
+        }
+    }
+
+}

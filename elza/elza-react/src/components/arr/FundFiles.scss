@@ -1,0 +1,100 @@
+@import "../../variables.scss";
+
+.node-form-standard-actions {
+    & > .dropdown > .btn {
+        padding: 0 2px;
+    }
+    & > .btn {
+        padding: 2px;
+    }
+    .btn {
+        border: none;
+        margin: 0;
+        background: transparent;
+        font-size: 1.3em;
+
+        &:hover {
+            background-color: $node-form-actions-hover;
+        }
+
+        .icon {
+            color: #000000;
+            height: 1.35em;
+            width: 1.35em;
+            vertical-align: middle;
+        }
+    }
+}
+
+.fund-files {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  > .actions-container {
+    flex-shrink: 0;
+
+    .actions {
+      white-space: nowrap;
+      width: 100%;
+
+      .node-form-standard-actions {
+          @extend .node-form-standard-actions;
+      };
+    }
+  }
+
+  .filterable-listbox-container {
+    display: flex;
+    flex-direction: column;
+      flex-grow: 1;
+    .search-action-container {
+      flex-shrink: 0;
+    }
+    .list-container {
+      display: flex;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+
+      .listbox-container {
+        flex-grow: 1;
+        overflow: hidden;
+        overflow-y: auto;
+      }
+    }
+  }
+
+  .search-action-container {
+    display: block;
+    > .search-container {
+      display: flex;
+      width: auto;
+      .search-container {
+        width: 100%;
+      }
+
+      > * {
+        margin-right: 6px;
+        &:last-child {
+          margin-right: 0;
+        }
+      }
+    }
+    .actions-container {
+      text-align: right;
+    }
+  }
+
+  .state-filter {
+    .form-group {
+      display: flex;
+      label {
+        font-weight: normal;
+      }
+      select {
+        width: auto;
+      }
+    }
+  }
+}

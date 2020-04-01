@@ -1,0 +1,171 @@
+@import "../../variables.scss";
+
+.dao-container {
+    height: 100%;
+    width: 100%;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+
+    .btn {
+        border: none;
+        margin-bottom: 2px;
+        background: transparent;
+    }
+
+    .btn:hover {
+        background-color: $node-form-actions-hover;
+    }
+
+    .lbl {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding-bottom: 2px;
+        display: flex;
+        flex-direction: row;
+        flex-shrink: 0;
+
+        .lbl-name {
+            &::after {
+                content: ":";
+                padding-right: 3px;
+            }
+        }
+        .lbl-value {
+            text-overflow: ellipsis;
+            overflow-x: hidden;
+        }
+        &.block {
+            flex-direction: column;
+            flex-shrink: 1;
+            .lbl-name {
+                &::after {
+                    content: "";
+                }
+            }
+            .scrollable {
+                border: #dddddd solid 1px;
+                white-space: normal;
+                overflow: auto;
+                padding: 3px;
+            }
+        }
+    }
+
+    .dao-detail {
+        overflow: hidden;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+
+        .dao-jp-panel {
+            white-space: nowrap;
+            background-color: #333333;
+            padding: 5px;
+            color: white;
+            .reference-mark {
+                color: white;
+                font-size: 1em;
+            }
+        }
+
+        .dao-actions {
+            background: $node-form-actions-bg;
+            white-space: nowrap;
+            display: flex;
+            height: 1.8em;
+            line-height: 1.8em;
+            .left {
+                flex-grow: 1;
+            }
+            .right {
+                flex-grow: 0;
+            }
+        }
+
+        .dao-info {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            padding: 5px;
+            overflow: auto;
+        }
+    }
+
+    > span:first-of-type {
+        padding-left: 3px;
+    }
+
+    > .btn {
+        margin-right: 8px;
+    }
+
+    .btn {
+        font-size: 0.9em;
+        &.dropdown-toggle {
+            padding: 0 3px 0 3px;
+            /*margin-left: -8px;*/
+        }
+        .icon {
+            color: #000000;
+            width: 1.35em;
+        }
+        margin-top: 2px;
+    }
+    .btn-group {
+        > .btn:first-of-type {
+            margin-right: 8px;
+        }
+    }
+
+    .dao-file-detail {
+        display: flex;
+        .dao-file-thumbnail {
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+            width: 50%;
+
+            .navigation {
+                display: flex;
+                height: 1.8em;
+                line-height: 1.8em;
+                white-space: nowrap;
+                .title {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    flex-grow: 1;
+                }
+                .arrows {
+                    flex-shrink: 0;
+                }
+            }
+
+            .thumbnail {
+                border: #CCCCCC solid 1px;
+                margin-bottom: 0;
+                &.empty {
+                    height: 100%;
+                    text-align: center;
+                    .empty-img {
+                        padding: 45px;
+                    }
+                }
+            }
+        }
+        .dao-file-info {
+            width: 50%;
+            padding: 5px;
+            .file {
+                font-weight: bold;
+            }
+            .dao-file-info-base {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+    }
+
+}

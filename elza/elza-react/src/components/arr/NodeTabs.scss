@@ -1,0 +1,9 @@
+@import "../../variables.scss";
+
+.node {
+    &-no--tabs {
+        .tab-content {
+            height: 100%;
+        }
+    }
+}

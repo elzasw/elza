@@ -1,0 +1,197 @@
+/**
+ * Styly pro AddNodeCross
+ *
+ * $author Jakub Randák
+ * $since 31.8.2016
+ */
+
+.con2{
+    position: relative;
+    width: 40px;
+    height: 40px;
+    display: inline-block;
+    flex-grow: 0;
+    flex-shrink: 0;
+
+    .cont {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        display: inline-block;
+        z-index:500;
+
+        .but {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            cursor:pointer;
+            position: absolute;
+            color: #eeeeee;
+            font-family: Arial, sans-serif;
+            font-size: 0.9em;
+            text-decoration: none;
+            text-align: center;
+            height: 50%;
+            width: 50%;
+            top: 25%;
+            left: 25%;
+            transition: all 150ms ease-out 300ms;
+            box-sizing: content-box;
+            overflow: hidden;
+
+
+
+            .ico{
+              font-family:"FontAwesome";
+              font-size: 1.8em;
+              text-align: center;
+              line-height: 1em;
+              width: 100%;
+            }
+
+            .lbl{
+                display: inline-block;
+                flex-shrink: 0;
+                flex-grow: 0;
+                width: calc("100% + 10px");
+                margin-left: -5px;
+                text-align: center;
+            }
+        }
+
+        .center {
+            background-color: #ddd;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            box-sizing:border-box;
+            cursor:default;
+            transition: background-color 300ms ease-out;
+            display:flex;
+            align-items:center;
+            justify-content: center;
+
+        }
+
+        .blue-but {
+            background-color: #6fa8dc;
+            transition: background-color 300ms ease-out;
+        }
+
+        .hid {
+
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 200ms ease-out;
+            transition: visibility 0ms ease-out 200ms, opacity 200ms ease-in 200ms;
+
+            .but{
+                border: 2px solid rgba(255, 0, 0, 0);
+            }
+
+            .top {
+                background: linear-gradient(135deg, transparent 0px, #333 0) top left, linear-gradient(225deg, transparent 0px, #333 0) top right, linear-gradient(315deg, transparent 10px, #333 0) bottom right, linear-gradient(45deg, transparent 10px, #333 0) bottom left;
+                background-size: 60% 60%;
+                background-repeat: no-repeat;
+                margin-top:-2px;
+                margin-left:-2px;
+
+            }
+            .top:hover {
+                background: linear-gradient(135deg, transparent 0px, #555 0) top left, linear-gradient(225deg, transparent 0px, #555 0) top right, linear-gradient(315deg, transparent 10px, #555 0) bottom right, linear-gradient(45deg, transparent 10px, #555 0) bottom left;
+                background-size: 60% 60%;
+                background-repeat: no-repeat;
+            }
+            .right {
+                background: linear-gradient(135deg, transparent 9px, #333 0) top left, linear-gradient(225deg, transparent 0px, #333 0) top right, linear-gradient(315deg, transparent 0px, #333 0) bottom right, linear-gradient(45deg, transparent 9px, #333 0) bottom left;
+                background-size: 60% 60%;
+                background-repeat: no-repeat;
+                margin-top:-2px;
+                margin-left:-2px;
+
+            }
+            .right:hover {
+                background: linear-gradient(135deg, transparent 9px, #555 0) top left, linear-gradient(225deg, transparent 0px, #555 0) top right, linear-gradient(315deg, transparent 0px, #555 0) bottom right, linear-gradient(45deg, transparent 9px, #555 0) bottom left;
+                background-size: 60% 60%;
+                background-repeat: no-repeat;
+            }
+            .bottom {
+                background: linear-gradient(135deg, transparent 10px, #333 0) top left, linear-gradient(225deg, transparent 10px, #333 0) top right, linear-gradient(315deg, transparent 0px, #333 0) bottom right, linear-gradient(45deg, transparent 0px, #333 0) bottom left;
+                background-size: 60% 60%;
+                background-repeat: no-repeat;
+                margin-top:-2px;
+                margin-left:-2px;
+            }
+            .bottom:hover {
+                background: linear-gradient(135deg, transparent 10px, #555 0) top left, linear-gradient(225deg, transparent 10px, #555 0) top right, linear-gradient(315deg, transparent 0px, #555 0) bottom right, linear-gradient(45deg, transparent 0px, #555 0) bottom left;
+                background-size: 60% 60%;
+                background-repeat: no-repeat;
+            }
+
+            .bottom2 {
+                background: linear-gradient(135deg, transparent 0px, #333 0) top left, linear-gradient(225deg, transparent 0px, #333 0) top right, linear-gradient(315deg, transparent 0px, #333 0) bottom right, linear-gradient(45deg, transparent 0px, #333 0) bottom left;
+                background-size: 60% 60%;
+                background-repeat: no-repeat;
+                opacity:0;
+                margin-top:-2px;
+                margin-left:-2px;
+            }
+            .bottom2:hover {
+                background: linear-gradient(135deg, transparent 0px, #555 0) top left, linear-gradient(225deg, transparent 0px, #555 0) top right, linear-gradient(315deg, transparent 0px, #555 0) bottom right, linear-gradient(45deg, transparent 0px, #555 0) bottom left;
+                background-size: 60% 60%;
+                background-repeat: no-repeat;
+            }
+
+        }
+
+    }
+
+    .cont:hover {
+
+        .hid {
+            visibility: visible;
+            opacity: 1;
+            transition: visibility 200ms ease-out 0ms, opacity 200ms ease-out 0ms;
+
+            .but {
+            height: 100%;
+            width: 100%;
+            transition: top 150ms ease-out 0ms, left 150ms ease-out 0ms, padding 150ms ease-out 0ms, width 150ms ease-out 0ms, height 150ms ease-out 0ms;
+            -webkit-backface-visibility: hidden;
+            -webkit-transform: translateZ(0) scale(1.0, 1.0);
+            padding:14px 14px;
+            }
+
+            .top {
+                //transition: all 150ms ease-out;
+                top:-100%;
+                margin-top: -32px;
+                left:-14px;
+            }
+
+            .right {
+                //transition: all 150ms ease-out 0ms;
+                left: 100%;
+                margin-left: -0px;
+                top: -14px;
+            }
+
+            .bottom {
+                transition: top 150ms ease-out 0ms, left 150ms ease-out 0ms, padding 150ms ease-out 0ms, width 150ms ease-out 0ms, height 150ms ease-out 50ms;
+                top: 100%;
+                margin-top:0;
+                left: -14px;
+            }
+
+            .bottom2 {
+                transition: top 200ms ease-out 0ms, left 150ms ease-out 0ms, padding 150ms ease-out 0ms, width 150ms ease-out 0ms, height 200ms ease-out 50ms;
+                opacity:1;
+                top: 200%;
+                margin-top:30px;
+                left: -14px;
+            }
+        }
+    }
+}

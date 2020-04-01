@@ -1,0 +1,31 @@
+@import "../../../variables.scss";
+
+.desc-item-type-desc-item-container {
+  display: flex;
+
+  .desc-item-label-value {
+    flex-grow: 1;
+    width: 100%;
+
+    white-space: normal;
+    max-height: 250em;
+    overflow: auto;
+    width: 100%;
+  }
+
+  .desc-item-spec-label {
+    flex-shrink: 0;
+    white-space: nowrap;
+
+    padding-right: 3px;
+
+    &:not(:last-child) {
+      white-space: normal;
+      font-style: italic;
+    }
+
+    &:not(:last-child)::after {
+      content: ":";
+    }
+  }
+}

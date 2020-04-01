@@ -1,0 +1,30 @@
+@import "../../variables.scss";
+
+.arr-output-detail-container {
+    height: 100%;
+    overflow-y: auto;
+    padding: 10px;
+
+    .fund-nodes-container {
+        padding: 5px;
+        background: $fa-file-tree-bg;
+        border: 1px solid $fa-file-tree-border;
+        border-top: none;
+        display: flex;
+        flex-direction: column;
+
+        .item-list-container {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    }
+
+    .desc-items-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    .toggle-container {
+        text-align: right;
+        margin-top: -2rem;
+    }
+}

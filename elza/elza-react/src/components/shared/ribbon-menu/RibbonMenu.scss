@@ -1,0 +1,224 @@
+@import "../../../variables.scss";
+
+
+//---- Size -----
+
+$ribbon-height: 5em;
+$ribbon-font-size: 1em;
+$ribbon-lg-icon-size: 1.7em;
+$ribbon-lg-btn-height: 100%;
+$ribbon-lg-btn-width: auto;
+$ribbon-sm-grp-lines: 3; //mělo by odpovídat počtu tlačítek na sloupec v komponentě RibbonGroup
+$ribbon-sm-btn-height: "calc(100% / #{$ribbon-sm-grp-lines})";
+
+//---- Colors ----
+
+$ribbon-btn-bg: transparent;
+$ribbon-btn-col: inherit;
+$ribbon-btn-hover-bg: #ccc;
+$ribbon-btn-focus-bg: $ribbon-btn-hover-bg;
+$ribbon-btn-active-bg: #bbb;
+
+$ribbon-user-btn-bg: #333;
+$ribbon-user-btn-col: #ddd;
+$ribbon-user-btn-hover-bg: #333;
+
+$ribbon-splitter-col: #ddd;
+
+
+.ribbon-menu.btn-toolbar{
+    background: $ribbon-bg;
+    height: 100%;
+    font-size:$ribbon-font-size;
+    display:flex;
+    margin: 0; //vynuluje margin-left u btn-toolbar, který je react-bootstrap dává defaultně -5px
+
+    .ribbonSmallGroupsContainer {
+        display: flex;
+        height:100%;
+    }
+    .ribbonGroup {
+        display:flex;
+        height:100%;
+        flex-shrink:0;
+        flex-grow:0;
+        .btn {
+            line-height: 1em;
+            border: none;
+            margin: 0 0;
+            background: $ribbon-button-bg;
+            color:$ribbon-btn-col;
+            overflow:hidden;
+            &:hover, &.active:hover, &:focus{
+                background: $ribbon-btn-hover-bg;
+            }
+            &.active {
+                background: $ribbon-btn-active-bg;
+                box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+            }
+        }
+        .dropdown, .btn {
+            &:focus{
+                outline: 1px $focus-border-color solid !important;
+                outline-offset:-1px;
+                z-index:50;
+            }
+        }
+    }
+    .ribbonGroup.large {
+        flex-shrink: 1;
+        .dropdown, .btn{
+            height:$ribbon-lg-btn-height;
+            width: $ribbon-lg-btn-width;
+            max-width: 7em;
+            min-width: 5em;
+            flex-grow: 1;
+            flex-shrink: 1;
+        }
+        .dropdown{
+            .btn{
+                height:100%;
+                width:100%;
+            }
+        }
+        .btn{
+            padding: 0.5em 0.5em;
+            padding-top: 0.6em;
+            white-space: pre-wrap;
+            display:flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            .icon {
+                font-size: $ribbon-lg-icon-size;
+            }
+            .btnText{
+                padding-top: 0.3em;
+                max-width: 100%;
+                line-height: 1.1em;
+            }
+        }
+    }
+
+    .ribbonGroup.small {
+        flex-wrap:nowrap;
+        flex-direction: column;
+        font-size: $ribbon-font-size; //potřeba zadat, jelikož react-bootstrap již zavádí třídu .small, která zmenšuje velikost fontu.
+        .dropdown, .btn {
+            height:$ribbon-sm-btn-height; // 1/3 výšky obalujícího elementu - max 3 tlačítka nad sebou
+            flex-grow: 0;
+            flex-shrink: 0;
+        }
+        .dropdown{
+            .btn{
+                height:100%;
+                width:100%;
+            }
+        }
+        .btn{
+            white-space: nowrap;
+            text-align: left;
+            padding:0 0.4em;
+            div{
+                display:inline;
+            }
+            .btnText{
+                margin:0 0.2em;
+            }
+            .icon {
+                font-size: 1.1em;
+                margin:0 0.2em;
+                width: 1em;
+            }
+        }
+
+        .dropdown-toggle {
+            > span.dropContent {
+                display:inline-block;
+            }
+        }
+    }
+    .ribbonGroup.big-icon{
+        .btn{
+            align-items:center;
+            justify-content: center;
+            padding-top:0;
+            padding-bottom:0;
+            .icon{
+                font-size: 5em;
+            }
+            &.cancel .icon{
+                color: #CD5051;
+            }
+            &.confirm .icon{
+                color: #86BB65;
+            }
+        }
+    }
+    .ribbonSplit{
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        display:inline-block;
+        width: 1px;
+        background-color: $ribbon-splitter-col;
+        flex-shrink:0;
+        flex-grow:0;
+    }
+
+    .right{
+        flex-grow:1;
+        justify-content: flex-end;
+            &.large{
+                .user-menu.dropdown{
+                    height:100%;
+                }
+            }
+            .small{
+                .user-menu.dropdown{
+                    flex-shrink:1;
+                    height:50%;
+                }
+            }
+            .user-menu.dropdown{
+                .dropdown-menu{
+                        min-width: 100%;
+                }
+                .btn{
+                    background: $ribbon-user-btn-bg;
+                    color: $ribbon-user-btn-col;
+                    &:hover, &.active:hover, &:focus{
+                        background: $ribbon-user-btn-hover-bg;
+                    }
+                    .btnText{
+                        margin:0 0.2em;
+                    }
+                    .icon{
+                        margin:0 0.2em;
+                    }
+                }
+            }
+            .save-msg-container{
+                position:relative;
+                height:50%;
+                .save-msg{
+                    white-space: nowrap;
+                    display:inline-block;
+                    position: absolute;
+                    right:2em;
+                    bottom:2%;
+                    color:#888;
+                    text-align: right;
+                    font-size: 1em;
+                    font-style: italic;
+                    .icon{
+                        font-size: 1em;
+                        margin-right:0.2em;
+                    }
+
+                }
+            }
+
+    }
+
+}

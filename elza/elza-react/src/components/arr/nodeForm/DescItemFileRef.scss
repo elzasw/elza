@@ -1,0 +1,18 @@
+@import "../../../variables.scss";
+
+    .autocomplete-file {
+        width:100%;
+        .autocomplete-menu-footer {
+
+            .create-file {
+                position: fixed;
+                padding: 5px;
+                .create-file-label {
+                    margin-left: 3px;
+                }
+            }
+        }
+
+    }
+
+

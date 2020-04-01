@@ -1,0 +1,69 @@
+/**
+ * Styly pro NodeActionsBar
+ *
+ * $author Jakub Randák
+ * $since 31.8.2016
+ */
+
+@import "../../variables.scss";
+
+.node-actions-bar {
+    width: 100%;
+    background: $node-panel-actions-bg;
+    position: relative;
+
+    .actions {
+        white-space: nowrap;
+        display:flex;
+        position: relative;
+
+        .button-wrap{
+            position: relative;
+            width: 100%;
+            display:flex;
+            padding: 0 10px;
+
+            &>div {
+                display:flex;
+                align-items: center;
+                &.left-side{
+                    flex-grow: 1;
+                }
+            }
+            .btn {
+                background: transparent;
+                height: 2em;
+                font-size: 0.9em;
+                border: none;
+                padding: 2px 4px;
+                margin: 0 2px;
+                vertical-align: top;
+                &.dropdown-toggle {
+                    padding: 0 3px 0 3px;
+                    margin-left: -8px;
+                }
+                .icon {
+                    color: $node-form-actions-color;
+                    height: 1.35em;
+                    line-height: 1.35em;
+                    width: 1.35em;
+                }
+                &:hover {
+                    background-color: $node-form-actions-hover;
+                }
+            }
+            .search-input {
+                display: inline-block;
+                position: relative;
+                height: 1.8em;
+                line-height: 1.8em;
+                .btn {
+                    margin: 0;
+                }
+            }
+        }
+    }
+}
+
+
+/* END */
