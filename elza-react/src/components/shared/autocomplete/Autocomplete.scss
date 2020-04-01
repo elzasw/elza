@@ -1,0 +1,91 @@
+@import "../../../variables.scss";
+@import "../../../commons.scss";
+@import "~bootstrap/scss/mixins/box-shadow";
+
+.autocomplete-control-container {
+    width: 100%;
+    display: inline-block;
+
+    .autocomplete-input-container {
+        position: relative;
+        display: flex;
+        padding: 0;
+
+        .input{
+            flex-grow: 1;
+            flex-shrink: 1;
+            height: 100%;
+            width: 0;
+            border-width: 0;
+            padding: 0 5px;
+
+            &:focus{
+                box-shadow: none;
+            }
+        }
+        .actions{
+            display:flex;
+            flex-grow: 0;
+            flex-shrink: 0;
+
+            .btn {
+                border: none;
+                padding: 0;
+                height: 100%;
+                width: 1.8em;
+                line-height: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: transparent;
+
+                &:hover{
+                    background-color:$node-form-actions-hover;
+                }
+
+                &.disabled {
+                    background: transparent;
+                }
+
+                &.detail {
+                    right: 19px;
+                }
+            }
+        }
+        &.active {
+            $color-rgba: rgba(red($input-focus-border-color), green($input-focus-border-color), blue($input-focus-border-color), .6);
+            border-color: $input-focus-border-color;
+            outline: 0;
+            @include box-shadow("inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px #{$color-rgba}");
+        }
+    }
+    .floating-menu {
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        background: white;
+        border: 1px solid #bfbfbf;
+        display:flex;
+        flex-direction: column;
+
+        &.active {
+            $color-rgba: rgba(red($input-focus-border-color), green($input-focus-border-color), blue($input-focus-border-color), .6);
+            border-color: $input-focus-border-color;
+            outline: 0;
+            //.box-shadow("inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px #{$color-rgba}");
+        }
+    }
+    .autocomplete-menu-footer {
+        height: 32px;
+        background-color: $node-form-actions-bg;
+        flex-grow: 0;
+        flex-shrink: 0;
+    }
+
+    .autocomplete-menu-header {
+        height: 32px;
+        background: #cfcfcf;
+        flex-grow: 0;
+        flex-shrink: 0;
+    }
+}
+
+

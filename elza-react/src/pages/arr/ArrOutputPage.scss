@@ -1,0 +1,47 @@
+@import "../../variables.scss";
+
+.arr-output-page {
+    .fund-noselect {
+        text-align: center;
+        font-size: $font-size-base;
+        padding: 10px;
+    }
+}
+
+.fund-output-right-panel-container {
+    //padding: 5px;
+    //background: $fa-file-tree-bg;
+    //border: 1px solid $fa-file-tree-border;
+    border-top: none;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.fund-output-list-container {
+    padding: 5px 4px 5px 4px;
+    background: $fa-file-tree-bg;
+    border-top: none;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .fund-output-listbox {
+        background: $fa-file-tree-bg-list;
+        border: 1px solid $fa-file-tree-border;
+        flex-grow: 1;
+        margin: 5px 0 0 0;
+        overflow: hidden;
+        overflow-y: auto;
+
+        .listbox-item {
+            .item {
+                padding: 5px;
+                font-size: 0.8em;
+                .name {
+                    font-size: 12px;
+                }
+            }
+        }
+    }
+}

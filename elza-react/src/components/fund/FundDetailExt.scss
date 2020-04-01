@@ -1,0 +1,61 @@
+@import "../../variables.scss";
+
+
+.fund-detail-ext-container {
+    overflow: hidden;
+    overflow-y: auto;
+    height: 100%;
+
+    .versions-container,
+    .outputs-container {
+        padding: 8px;
+        margin: 6px;
+        border: 1px solid $tabs-tab-content-border;
+        background: $tabs-tab-active-bg;
+
+        h1 {
+            margin: 4px 0 8px 0;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .fund-version,
+        .output {
+            display: flex;
+
+            &.with-versions {
+                flex-direction: column;
+            }
+
+            .version-label,
+            .output-label {
+                font-size: 14px;
+                flex-grow: 3;
+                flex-shrink: 0;
+                width: 0;
+                overflow: hidden;
+                display: inline-block;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .output-label + button,
+            .version-label + button {
+                width: 80px;
+                flex-shrink: 0;
+            }
+
+            .versions-container {
+                padding-left: 16px;
+                .version {
+                    display: flex;
+
+                    .version-label {
+                        font-size: 12px;
+                        flex-grow: 1;
+                    }
+                }
+            }
+        }
+    }
+}

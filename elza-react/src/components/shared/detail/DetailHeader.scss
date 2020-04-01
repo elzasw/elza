@@ -1,0 +1,83 @@
+@import "../../../variables.scss";
+$default-bg: #333;
+$default-fg: white;
+$active-bg: #86bb65;
+$active-fg: $default-fg;
+$inactive-bg: #bbb;
+$inactive-fg: $default-fg;
+
+.detail-header-container {
+    display: flex;
+    flex-direction: column;
+
+    .detail-header-main {
+        display: flex;
+        border-bottom: 1px #ddd solid;
+
+        .detail-header-icon {
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            padding: 10px;
+            border-right: 1px solid silver;
+            align-items: center;
+            justify-content: center;
+            width:5.5em;
+            min-height: 5.5em;
+
+            .icon {
+                font-size: 3em;
+            }
+        }
+        .detail-header-content {
+            padding: 10px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            .detail-header-title {
+                font-size: 1.5em;
+            }
+            .detail-header-desc {
+
+            }
+        }
+        .detail-header-rowFlag {
+            flex-grow: 1;
+        }
+    }
+
+    .detail-header-bottom {
+        display: flex;
+        padding: 0 10px;
+        width: 100%;
+        padding:5px;
+        padding-left: 10px;
+        background-color: $default-bg;
+        color: $default-fg;
+        line-height: 1.5em;
+        text-transform: uppercase;
+
+        .flag-right {
+            float: right;
+            padding-right: 10px;
+        }
+        &.dh-color-success {
+            color: $active-fg;
+            background-color: $active-bg;
+        }
+        &.dh-color-info {
+            color: theme-color("info");
+            //background-color: $state-info-bg;
+        }
+        &.dh-color-warning {
+            color: $inactive-fg;
+            background-color: $inactive-bg;
+        }
+        &.dh-color-danger {
+            color: theme-color("danger");
+            //background-color: $state-danger-bg;
+        }
+    }
+}

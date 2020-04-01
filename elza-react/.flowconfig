@@ -1,0 +1,14 @@
+[ignore]
+.*/node_modules/fbjs
+.*/node_modules/redux-devtools-filterable-log-monitor/website
+.*/dist/.*
+
+[include]
+./src
+
+[libs]
+decls/
+
+[options]
+suppress_comment= \\(.\\|\n\\)*\\$FlowIssue
+module.name_mapper='^\([^\.].*\)$' -> '<PROJECT_ROOT>/src/\1'

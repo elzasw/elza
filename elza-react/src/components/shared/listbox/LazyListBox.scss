@@ -1,0 +1,35 @@
+@import "../../../variables.scss";
+
+// Toto nutné upravit i v props komponenty!
+$lazy-listbox-height: 24px;
+.lazy-listbox-wrapper{
+  border: 1px solid #DDDDDD;
+  display:block;
+  height:100%;
+  background-color: white;
+
+  .lazy-listbox-container {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    border:none;
+
+    .listbox-item {
+      height: $lazy-listbox-height;
+      cursor: pointer;
+      &:hover {
+        background: $tree-node-label-active-bg
+      }
+      &.active {
+        background: $tree-node-active-bg;
+        &:hover {
+          background: $tree-node-active-hover-bg;
+        }
+      }
+      &.focus {
+        //outline: 1px solid $tree-node-active-bg;
+        background: $tree-node-label-active-bg;
+      }
+    }
+  }
+}

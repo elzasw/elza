@@ -1,0 +1,38 @@
+@import "../../variables.scss";
+
+
+.autocomplete-record {
+
+    .autocomplete-menu-footer {
+
+        .create-record {
+            position: fixed;
+            padding: 5px;
+            .btn {
+                .icon {
+                    padding-right: 3px;
+                }
+            }
+        }
+
+        .items-count {
+            text-align: right;
+            vertical-align: middle;
+            line-height: 27px;
+            padding: 5px;
+        }
+    }
+
+    $record-item-padding: 5px;
+    $max-width-container: 600px;
+    .autocomplete-menu-container .autocomplete-menu-wrapper .autocomplete-menu .item {
+        display:block;
+        &.active {
+            font-weight: bold;
+        }
+        &.focus {
+            background: #afafaf;
+        }
+    }
+
+}

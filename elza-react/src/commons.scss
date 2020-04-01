@@ -1,0 +1,236 @@
+@import "./variables.scss";
+
+.form-control {
+    height: 1.8em;
+    line-height: 1.8em;
+    padding: 0px 5px;
+    flex-shrink: 0;
+}
+
+.main-shortcuts {
+    flex-direction: column;
+    height: 100%;
+    display: flex;
+}
+
+.main-shortcuts2 {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    overflow: hidden;
+}
+
+.btn {
+    height: 1.8em;
+    line-height: 1.8em;
+    padding: 0 5px;
+    font-size: 1em;
+    _outline: none !important;
+}
+
+.btn-xs {
+    height: 1.4em;
+    font-size: 1em;
+    line-height: 1.4em;
+}
+
+.btn-icon {
+    border: 0;
+}
+
+@mixin box-shadow($shadow) {
+    -webkit-box-shadow: $shadow; // iOS <4.3 & Android <4.1
+    box-shadow: $shadow;
+}
+
+$focus-border-color: #66afe9;
+.form-control:focus {
+    $focus-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px lighten($focus-border-color, 10%);
+    @include box-shadow($focus-shadow);
+}
+
+*:focus, *:active:focus, *.active:focus {
+    border-color: darken($focus-border-color, 10%) !important;
+    outline: 0px solid darken($focus-border-color, 10%) !important;
+    outline-offset: -1px;
+    $focus-shadow: inset 0 0px 1px rgba(0, 0, 0, .075), 0 0 6px lighten($focus-border-color, 10%);
+    @include box-shadow($focus-shadow);
+}
+
+.btn:focus, .btn:active:focus, .btn.active:focus, .btn-default:focus, .btn-default:active:focus, .btn-default.active:focus {
+    outline: -1px solid !important;
+    outline-color: darken($focus-border-color, 10%) !important;
+    $focus-shadow: inset 0 0px 1px rgba(0, 0, 0, .075), 0 0 6px lighten($focus-border-color, 10%);
+    @include box-shadow($focus-shadow);
+}
+
+.form-group .glyphicon {
+    display: none;
+}
+
+label {
+    margin-top: 7px;
+    margin-bottom: 2px;
+    font-weight: bold;
+}
+
+.form-inline {
+    .form-group {
+        label {
+            margin-top: 0px;
+            margin-right: 4px;
+        }
+    }
+}
+
+.form-group {
+    .form-control-static {
+        min-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+}
+
+.modal.in .modal-dialog {
+    -webkit-transform: initial;
+    -ms-transform: initial;
+    -o-transform: initial;
+    transform: initial;
+}
+
+
+.text-bold {
+    font-weight: bold;
+}
+
+textarea.form-control {
+    height: 6em;
+    resize: vertical;
+}
+
+.dropDownTree {
+    button.form-control {
+        &.btn {
+            border: 1px solid #ccc;
+
+            &:focus {
+                background-color: white;
+                border-color: #66afe9;
+            }
+
+            &:hover {
+                background-color: white;
+            }
+        }
+    }
+}
+
+.nav-tabs {
+    li {
+        a {
+            border-bottom: none !important;
+
+            &:hover {
+                border: 1px solid #ddd;
+            }
+        }
+    }
+}
+
+input::-ms-clear {
+    display: none;
+}
+
+.flex {
+    display: flex;
+
+    &.flex-column {
+        flex-direction: column;
+    }
+
+    .flex-grow-1 {
+        width: 100%;
+        flex-grow: 1;
+    }
+
+    .flex-1 {
+        flex: 1
+    }
+
+    .flex-2 {
+        flex: 2
+    }
+}
+
+
+.fa-stack-right-bottom {
+    position: relative;
+
+    span:last-of-type {
+        font-size: 0.7em;
+        position: absolute;
+        bottom: 1px;
+        right: -1px;
+    }
+}
+
+.row-layout {
+    display: flex;
+
+    .form-group {
+        flex-grow: 1;
+        margin-right: 10px;
+
+        &:last-child {
+            margin-right: 0;
+        }
+    }
+}
+
+hr {
+    border-top: 1px solid #dddddd;
+
+    &.small {
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+}
+
+/** IE FIXES */
+.ie {
+    .modal {
+        .modal-content {
+            border: none;
+        }
+
+        input:focus {
+            transition: none;
+            box-shadow: none;
+            -webkit-box-shadow: none;
+        }
+    }
+}
+
+.unselected-msg {
+    text-align: center;
+    margin-top: 50px;
+
+    .title {
+        font-weight: bold;
+        font-size: 1.2em;
+        padding-bottom: 5px;
+    }
+}
+
+.dropdown button:after {
+    display: none;
+}
+
+// BS4 kompatibilní styles
+.w-100 {
+    width: 100%
+}
+
+.d-none {
+    display: none !important;
+}

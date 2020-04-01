@@ -1,0 +1,81 @@
+@import "../../variables.scss";
+
+.node-form-standard-actions {
+    .btn {
+        padding: 2px;
+        border: none;
+        margin: 0;
+        background: transparent;
+        height: 2em;
+        font-size: 0.9em;
+        .icon  {
+            color: $node-form-actions-color;
+            height: 1.35em;
+            line-height: 1.35em;
+            width: 1.35em;
+            vertical-align: middle;
+        }
+    }
+    .btn:hover {
+        background-color: $node-form-actions-hover;
+    }
+}
+
+.node-item-form-container {
+    .node-form-actions-container {
+        width: 100%;
+        background: $node-form-actions-bg;
+        height: 1.8em;
+        position: relative;
+
+        .node-form-actions {
+            width: 100%;
+            white-space: nowrap;
+            padding-right: 40px;
+            .section {
+                > span:first-of-type {
+                    padding-left: 3px;
+                }
+
+                display:inline-block;
+                border-right: 1px $node-form-actions-hover solid;
+
+                &:last-of-type {
+                    border-right: none;
+                }
+
+                > .btn {
+                    padding: 2px;
+                    border: none;
+                    margin: 0;
+                    background: transparent;
+                    height: 2em;
+                    font-size: 0.9em;
+
+                    &:hover {
+                        background: $node-form-actions-hover;
+                    }
+
+                    .icon {
+                        margin: 0 0.2em;
+                    }
+                }
+
+                .node-form-standard-actions {
+                    @extend .node-form-standard-actions;
+                }
+                .btn {
+                    &.dropdown-toggle {
+                        padding: 0 3px 0 3px;
+                        /*margin-left: -8px;*/
+                    }
+                }
+                .btn-group {
+                    > .btn:first-of-type {
+                        margin-right: 8px;
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,47 @@
+@import "../../variables.scss";
+
+.registry-list {
+  padding: 5px;
+  background: $fa-file-tree-bg;
+  border: 1px solid $fa-file-tree-border;
+  border-top: none;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .filter {
+    .type {
+      margin-bottom: 5px;
+    }
+  }
+
+  .list {
+    padding: 0;
+    display: flex;
+    background: $fa-file-tree-bg-list;
+    flex-grow: 1;
+    margin: 0;
+    overflow: hidden;
+    overflow-y: auto;
+
+    .listbox-container {
+      flex-grow: 1;
+      border: 1px solid $fa-file-tree-border;
+      overflow: hidden;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+
+      .listbox-item {
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  .items-count {
+    flex: 0 1;
+    vertical-align: middle;
+    padding-top: 3px;
+    text-align: center;
+  }
+}

@@ -1,0 +1,19 @@
+@import "../../variables.scss";
+
+.fund-settings-form {
+
+  display: flex;
+
+  .center-panel {
+    flex-grow: 1;
+  }
+
+  .right-panel {
+    flex-grow: 1;
+  }
+
+  .rules {
+    flex-grow: 1;
+  }
+
+}

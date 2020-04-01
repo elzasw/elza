@@ -1,0 +1,43 @@
+@import "../../variables.scss";
+
+.detail-container {
+    > .admin-rights-container {
+        > .admin-rights-content {
+            padding: 0 10px;
+            margin-bottom: 5px;
+
+            > .admin-rights-left {
+                .list-add-remove-container {
+                    display: flex;
+                    height: 100%;
+                    flex-direction: column;
+
+                    .item-list-container {
+                        flex-grow: 1;
+                        margin-top: 5px;
+                        background-color: #eee;
+                        padding: 10px;
+
+                        .item {
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+.permissions-container{
+    flex-grow: 1;
+    display: flex;
+    padding-left: 15px;
+    flex-direction: column;
+
+    .tabs-container {
+        display: flex;
+        flex-direction: column;
+    }
+}

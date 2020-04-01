@@ -1,0 +1,54 @@
+@import "../../../variables.scss";
+
+$element-height: 24px;
+$element-line-height: 22px;
+
+.pagination-container {
+    flex-shrink: 0;
+    height: $element-height;
+
+    .pagination {
+        margin: 0;
+
+        a {
+            cursor: default;
+            height: $element-height;
+            line-height: $element-line-height;
+            padding: 0px 12px;
+            color: black;
+            font-size: 1.5em;
+            border-top: none;
+
+            &.disabled {
+                cursor: not-allowed;
+            }
+        }
+
+        .input > span {
+            padding: 0;
+            height: $element-height;
+            line-height: $element-height;
+            padding: 0;
+            color: black;
+            border-top: none;
+
+            input {
+                height: 100%;
+                width: 100px;
+                border: none;
+                padding: 0 5px;
+            }
+            select {
+                border: none;
+                height: $element-height;
+                background: transparent;
+            }
+        }
+
+        p {
+            display: inline;
+            line-height: 24px;
+            padding: 5px;
+        }
+    }
+}

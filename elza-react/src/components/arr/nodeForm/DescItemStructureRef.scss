@@ -1,0 +1,40 @@
+@import "../../../variables.scss";
+
+    .autocomplete-structure {
+        width: 100%;
+        .autocomplete-menu-footer {
+
+            .create-structure {
+                padding: 5px;
+                .create-structure-label {
+                    margin-left: 3px;
+                }
+
+                .btn {
+                    .icon {
+                        padding-right: 3px;
+                    }
+                    margin-right: 3px;
+                }
+            }
+        }
+
+        .floating-menu {
+            .item {
+                &-complement {
+                    margin-left: 5px;
+                    color: #aaa;
+                }
+
+                &.focus {
+                    .item-complement {
+                        color: #555;
+                    }
+                }
+            }
+        }
+    }
+
+.desc-item-value > .structure-item-form-container {
+    margin-top: 1.8em;
+}

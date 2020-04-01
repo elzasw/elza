@@ -1,0 +1,185 @@
+@import "../../../variables.scss";
+
+$emptyColWidth: 8000px;
+$noselected-background: #FFFFFF;
+$focus-background: #f9f9f9;
+$selected-index-background: #f0f0f0;
+$selected-background: #EAECF5;
+$selected-both-background: #DEE2F5;
+$header-background: #ececec;
+$header-height: 24px;
+
+.datagrid-container {
+    border: 1px solid #DDDDDD;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+
+    .header-container {
+        flex-shrink: 0;
+        overflow: hidden;
+        //height: $header-height;
+        background: $header-background;
+        border-bottom: 1px solid #DDDDDD;
+        padding-left: 1px;
+
+        table {
+            table-layout:fixed;
+            height: 100%;
+
+            th {
+                border: 1px solid #DDDDDD;
+                border-bottom: none;
+                font-weight: normal;
+
+
+                &.header-fixed {
+                    .cell-container {
+                        background: $header-background;
+                        box-shadow: -1px 0 0 #DDDDDD inset;
+                    }
+                }
+
+                &.th-empty-scroll {
+                    width: $emptyColWidth;
+                }
+
+                .cell-container {
+                    overflow: hidden;
+                    width: 100%;
+                    height: $header-height;
+                    float: left;
+
+                    .value {
+                        height: 100%;
+                    }
+                    .cell {
+                        display: flex;
+                        height: 100%;
+                        padding: 0 3px 0 3px;
+
+                        .title {
+                            flex-grow: 1;
+                            line-height: $header-height;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                        }
+
+                        button {
+                            background: transparent;
+                            border: none;
+                            flex-shrink: 0;
+                            height: 100%;
+                            &:hover {
+                                background: $button-bg-hover;
+                            }
+                        }
+                    }
+                }
+
+                .Resizer {
+                    float: right;
+                    height: $header-height;
+                }
+            }
+        }
+    }
+    .body-container {
+        flex-grow: 1;
+        height: 0;
+        overflow: auto;
+        padding-top: 1px;
+        padding-left: 1px;
+
+        table {
+            table-layout:fixed;
+
+            .col-fixed {
+                position: relative;
+                .cell-container {
+                    position: absolute;
+                    top: 0;
+                    box-shadow: -1px 0 0 #D0D7E5 inset;
+                }
+            }
+
+            tr {
+                &.selected {
+                    background: $selected-background;
+
+                    td.col-fixed {
+                        .cell-container {
+                            background: $selected-background;
+                        }
+                    }
+                }
+                &.selected-index {
+                    background: $selected-index-background;
+
+                    td.col-fixed {
+                        .cell-container {
+                            background: $selected-index-background;
+                        }
+                    }
+                }
+                &.selected.selected-index {
+                    background: $selected-both-background;
+
+                    td.col-fixed {
+                        .cell-container {
+                            background: $selected-both-background;
+                        }
+                    }
+                }
+
+                td {
+                    border: 1px solid #D0D7E5;
+                    cursor: default;
+
+                    &.col-fixed {
+                        .cell-container {
+                            background: $noselected-background;
+                            display: flex;
+                            align-items: center;
+                        }
+                    }
+
+                    &.cell-focus {
+                        outline: 1px solid black;
+                        outline-offset: -2px;
+                    }
+
+                    &.td-empty-scroll {
+                        border: none;
+                    }
+
+                    .cell-container {
+                        overflow: hidden;
+                        width: 100%;
+                        height: 100%;
+                        min-height: 22px;
+                        /*line-height: 22px;*/
+                        padding: 0 3px 0 3px;
+
+                        &.rowCheck > div {
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                            width: 55px;
+                        }
+
+                        .value {
+                            height: 100%;
+                        }
+                    }
+                }
+
+                &:first-child {
+                    td {
+                        border-top: none;
+                    }
+                }
+            }
+        }
+    }
+}

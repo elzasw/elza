@@ -1,0 +1,15 @@
+@import "../../variables.scss";
+
+.ext-system-detail {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding-left: 10px;
+    h4 {
+        font-weight: bold;
+        margin-bottom: 1px;
+    }
+    span {
+        display: block;
+    }
+}
