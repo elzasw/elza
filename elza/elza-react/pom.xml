@@ -5,7 +5,7 @@
     <parent>
         <artifactId>elza</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>1.4.1-SNAPSHOT</version>
+        <version>1.5.1-SNAPSHOT</version>
     </parent>
     <artifactId>elza-react</artifactId>
     <name>ELZA React</name>
