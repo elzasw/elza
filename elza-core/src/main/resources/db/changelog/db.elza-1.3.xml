@@ -171,4 +171,14 @@
             <column name="file_name" type="nvarchar(1000)"/>
         </addColumn>
     </changeSet>
+
+    <changeSet id="20200404013954" author="ppyt">
+        <addColumn tableName="arr_item">
+            <column name="read_only" type="boolean" defaultValue="false"/>
+        </addColumn>
+        <sql>UPDATE arr_item SET read_only=false</sql>
+        <addNotNullConstraint tableName="arr_item" columnName="read_only" columnDataType="boolean"/>
+        <!-- Zneplatneni cache -->
+        <delete tableName="arr_cached_node" />
+    </changeSet>
 </databaseChangeLog>
