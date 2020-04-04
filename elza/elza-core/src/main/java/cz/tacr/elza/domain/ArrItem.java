@@ -44,6 +44,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
     public static final String FIELD_POSITION = "position";
     public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
     public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
+    public static final String FIELD_READ_ONLY = "readOnly";
     public static final String DELETE_CHANGE_ID_MAX = "" + Integer.MAX_VALUE;
 
     @Id
@@ -99,6 +100,9 @@ public abstract class ArrItem implements NodeCacheSerializable {
 
     @Column(name = "dataId", nullable = false, updatable = false, insertable = false)
     private Integer dataId;
+
+    @Column(name = FIELD_READ_ONLY, nullable = false, updatable = false, insertable = false)
+    private Boolean readOnly;
 
 	/**
 	 * Default constructor
@@ -296,6 +300,14 @@ public abstract class ArrItem implements NodeCacheSerializable {
 
     public boolean isUndefined() {
         return data == null;
+    }
+
+    public Boolean getReadOnly() {
+        return readOnly;
+    }
+
+    public void setReadOnly(Boolean readOnly) {
+        this.readOnly = readOnly;
     }
 
     /**
