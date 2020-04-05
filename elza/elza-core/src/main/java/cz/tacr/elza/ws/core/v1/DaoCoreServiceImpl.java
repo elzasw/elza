@@ -54,7 +54,7 @@ import cz.tacr.elza.ws.types.v1.DaoPackage;
 import cz.tacr.elza.ws.types.v1.Daoset;
 import cz.tacr.elza.ws.types.v1.Did;
 import cz.tacr.elza.ws.types.v1.File;
-import cz.tacr.elza.ws.types.v1.Foder;
+import cz.tacr.elza.ws.types.v1.Folder;
 import cz.tacr.elza.ws.types.v1.FolderGroup;
 
 @Component
@@ -285,22 +285,22 @@ public class DaoCoreServiceImpl implements DaoService {
 
                 ArrDao arrDao = daoSyncService.createArrDao(arrDaoPackage, dao);
 
-                if (dao.getFileGroup() != null) {
-                    for (File file : dao.getFileGroup().getFile()) {
+                if (dao.getFiles() != null) {
+                    for (File file : dao.getFiles().getFile()) {
                         daoSyncService.createArrDaoFile(arrDao, file);
                     }
                 }
 
-                FolderGroup fg = dao.getFolderGroup();
+                FolderGroup fg = dao.getFolders();
                 if(fg!=null)
                 {
-                    for (Foder folder : fg.getFoder()) {
+                    for (Folder folder : fg.getFolder()) {
 
                         ArrDaoFileGroup arrDaoFileGroup = daoSyncService.createArrDaoFileGroup(arrDao,
                                                                                                folder);
 
-                        if (folder.getFileGroup() != null) {
-                            for (File file : folder.getFileGroup().getFile()) {
+                        if (folder.getFiles() != null) {
+                            for (File file : folder.getFiles().getFile()) {
                                 daoSyncService.createArrDaoFileGroup(arrDaoFileGroup, file);
                             }
                         }

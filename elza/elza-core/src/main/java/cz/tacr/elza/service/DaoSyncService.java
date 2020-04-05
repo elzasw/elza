@@ -58,7 +58,7 @@ import cz.tacr.elza.ws.types.v1.Daoset;
 import cz.tacr.elza.ws.types.v1.Dids;
 import cz.tacr.elza.ws.types.v1.File;
 import cz.tacr.elza.ws.types.v1.FileGroup;
-import cz.tacr.elza.ws.types.v1.Foder;
+import cz.tacr.elza.ws.types.v1.Folder;
 import cz.tacr.elza.ws.types.v1.FolderGroup;
 import cz.tacr.elza.ws.types.v1.NonexistingDaos;
 import cz.tacr.elza.ws.types.v1.UnitOfMeasure;
@@ -255,11 +255,11 @@ public class DaoSyncService {
                 logger.warn("Neplatné DAO [code=\"" + dao.getIdentifier() + "]");
             }
 
-            updateFiles(dao.getFileGroup());
+            updateFiles(dao.getFiles());
 
-            FolderGroup fg = dao.getFolderGroup();
+            FolderGroup fg = dao.getFolders();
             if (fg != null) {
-                updateRelatedFileGroup(fg.getFoder());
+                updateRelatedFileGroup(fg.getFolder());
             }
         }
     }
@@ -288,7 +288,7 @@ public class DaoSyncService {
         }
     }
 
-    private void updateRelatedFileGroup(List<Foder> relatedFileGroupList) {
+    private void updateRelatedFileGroup(List<Folder> relatedFileGroupList) {
         if (relatedFileGroupList == null) {
             return;
         }
@@ -299,9 +299,9 @@ public class DaoSyncService {
         Map<String, ArrDaoFileGroup> groupCache = daoFileGroupRepository.findByCodes(relatedFileGroupList.stream().map(group -> group.getIdentifier()).collect(toList()))
                 .stream().collect(toMap(group -> group.getCode(), group -> group));
 
-        for (Foder relatedFileGroup : relatedFileGroupList) {
+        for (Folder relatedFileGroup : relatedFileGroupList) {
 
-            updateFiles(relatedFileGroup.getFileGroup());
+            updateFiles(relatedFileGroup.getFiles());
         }
     }
 
@@ -369,7 +369,7 @@ public class DaoSyncService {
         return daoRepository.save(arrDao);
     }
 
-    public ArrDaoFileGroup createArrDaoFileGroup(ArrDao arrDao, Foder relatedFileGroup) {
+    public ArrDaoFileGroup createArrDaoFileGroup(ArrDao arrDao, Folder relatedFileGroup) {
         if (StringUtils.isBlank(relatedFileGroup.getIdentifier())) {
             throw new BusinessException("Nebylo vyplněno povinné pole identifikátoru", DigitizationCode.NOT_FILLED_EXTERNAL_IDENTIRIER)
                     .set("relatedFileGroup.identifier", relatedFileGroup.getIdentifier());

@@ -2,127 +2,216 @@
 <wsdl:definitions name="ElzaCoreService" targetNamespace="http://elza.tacr.cz/ws/core/v1" xmlns:eat="http://elza.tacr.cz/ws/types/v1" xmlns:tns="http://elza.tacr.cz/ws/core/v1" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
 	<wsdl:import namespace="http://elza.tacr.cz/ws/types/v1" location="elza-api-types-v1.xsd"/>
 	<wsdl:types/>
-	<wsdl:message name="Did">
-		<wsdl:documentation>Description of material/level of description</wsdl:documentation>
-		<wsdl:part name="did" type="eat:did"/>
+	<wsdl:message name="DigitizationRequestResultResponse"/>
+	<wsdl:message name="AddPackageResponse">
+		<wsdl:part name="daoPackageIdentifier" element="eat:didIdentifier"/>
 	</wsdl:message>
-	<wsdl:message name="EmptyMessage">
-		<wsdl:documentation>Empty message is used in function without return value to prevent asynchronous processing.</wsdl:documentation>
+	<wsdl:message name="DestructionRequestRevokedMsg">
+		<wsdl:part name="requestRevoked" element="eat:destructionRequestRevoked"/>
+	</wsdl:message>
+	<wsdl:message name="CreateUserMsg">
+		<wsdl:documentation>Message to create new user</wsdl:documentation>
+		<wsdl:part name="createUser" element="eat:createUser"/>
+	</wsdl:message>
+	<wsdl:message name="DigitizationRequestRevokedResponse"/>
+	<wsdl:message name="GetDidResponse">
+		<wsdl:documentation>Description of material/level of description</wsdl:documentation>
+		<wsdl:part name="did" element="eat:did"/>
+	</wsdl:message>
+	<wsdl:message name="CreateUserResponse">
+		<wsdl:documentation>Prázdná odpověď v případě úspěšného založení uživatele.</wsdl:documentation>
+	</wsdl:message>
+	<wsdl:message name="RemoveDaoResponse"/>
+	<wsdl:message name="AddPermissionsResponse"/>
+	<wsdl:message name="DaoLinkResponse"/>
+	<wsdl:message name="TransferRequestRevokedMsg">
+		<wsdl:part name="requestRevoked" element="eat:transferRequestRevoked"/>
+	</wsdl:message>
+	<wsdl:message name="RemoveUserResponse">
+		<wsdl:documentation>Odpověď na odstranění uživatele</wsdl:documentation>
+	</wsdl:message>
+	<wsdl:message name="TransferRequestFinishedResponse"/>
+	<wsdl:message name="DestructionRequestFinishedMsg">
+		<wsdl:part name="requestId" element="eat:destructionRequestId"/>
+	</wsdl:message>
+	<wsdl:message name="AddPermissionsMsg">
+		<wsdl:part name="addPermissions" element="eat:addPermissions"/>
+	</wsdl:message>
+	<wsdl:message name="DestructionRequestFinishedResponse"/>
+	<wsdl:message name="DestructionRequestRevokedResponse"/>
+	<wsdl:message name="TransferRequestRevokedResponse"/>
+	<wsdl:message name="AddPackageMsg">
+		<wsdl:part name="daoPackage" element="eat:daoPackage"/>
+	</wsdl:message>
+	<wsdl:message name="TransferRequestFinishedMsg">
+		<wsdl:part name="requestId" element="eat:transferRequestId"/>
+	</wsdl:message>
+	<wsdl:message name="RemovePermissionsMsg">
+		<wsdl:part name="removePermissions" element="eat:removePermissions"/>
+	</wsdl:message>
+	<wsdl:message name="DaoLinkMsg">
+		<wsdl:part name="daoLink" element="eat:daoLink"/>
 	</wsdl:message>
 	<wsdl:message name="CoreServiceException">
-		<wsdl:part name="errorDescription" type="eat:errorDescription"/>
+		<wsdl:part name="errorDescription" element="eat:errorMessage"/>
 	</wsdl:message>
-	<wsdl:message name="RequestRevoked">
-		<wsdl:part name="requestRevoked" type="eat:requestRevoked"/>
+	<wsdl:message name="RemoveUserMsg">
+		<wsdl:part name="removeUser" element="eat:removeUser"/>
 	</wsdl:message>
-	<wsdl:message name="RequestIdentifier">
-		<wsdl:part name="requestIdentifier" type="eat:identifier"/>
+	<wsdl:message name="RemovePackageResponse"/>
+	<wsdl:message name="DaoImportMsg">
+		<wsdl:part name="daoImport" element="eat:daoImport"/>
 	</wsdl:message>
-	<wsdl:message name="DigitizationRequestResult">
-		<wsdl:part name="digitizationRequestResult" type="eat:digitizationRequestResult"/>
+	<wsdl:message name="DigitizationRequestResultMsg">
+		<wsdl:part name="digitizationRequestResult" element="eat:digitizationRequestResult"/>
 	</wsdl:message>
-	<wsdl:message name="DaoImport">
-		<wsdl:part name="daoImport" type="eat:daoImport"/>
+	<wsdl:message name="GetDidMsg">
+		<wsdl:part name="didIdentifier" element="eat:didIdentifier"/>
 	</wsdl:message>
-	<wsdl:message name="Identifier">
-		<wsdl:part name="PackageIdentifier" type="eat:identifier"/>
+	<wsdl:message name="DigitizationRequestRevokedMsg">
+		<wsdl:part name="requestRevoked" element="eat:destructionRequestRevoked"/>
 	</wsdl:message>
-	<wsdl:message name="DaoPackage">
-		<wsdl:part name="daoPackage" type="eat:daoPackage"/>
+	<wsdl:message name="RemovePackageMsg">
+		<wsdl:part name="daoPackageIdentifier" element="eat:daoPackageIdentifier"/>
 	</wsdl:message>
-	<wsdl:message name="DaoLink">
-		<wsdl:part name="daoLink" type="eat:daoLink"/>
+	<wsdl:message name="RemoveDaoMsg">
+		<wsdl:part name="daoIdentifier" element="eat:daoIdentifier"/>
 	</wsdl:message>
-	<wsdl:portType name="DaoService">
-		<wsdl:operation name="Import">
-			<wsdl:documentation>Import one or more packages. Import will also create corresponding links to described material.</wsdl:documentation>
-			<wsdl:input name="daoImport" message="tns:DaoImport"/>
-			<wsdl:output name="emptyMessage" message="tns:EmptyMessage"/>
+	<wsdl:message name="RemovePermissionsResponse"/>
+	<wsdl:message name="DaoImportResponse"/>
+	<wsdl:message name="ExportRequestMsg">
+		<wsdl:part name="request" element="eat:exportRequest"/>
+	</wsdl:message>
+	<wsdl:message name="ExportRequestResponse">
+		<wsdl:part name="exportedData" type="eat:ExportResponseData"/>
+	</wsdl:message>
+	<wsdl:message name="ExportRequestException">
+		<wsdl:part name="exportFailed" element="eat:exportRequestFailed"/>
+	</wsdl:message>
+	<wsdl:portType name="DaoDigitizationService">
+		<wsdl:documentation>Digitization service has two methods for notification about result of digitization request. For each request exactly one of these methods have to be called.</wsdl:documentation>
+		<wsdl:operation name="DigitizationRequestFinished">
+			<wsdl:documentation>Function for importing result of digitization request.</wsdl:documentation>
+			<wsdl:input name="digitizationRequestResult" message="tns:DigitizationRequestResultMsg"/>
+			<wsdl:output name="digitizationRequestResultResponse" message="tns:DigitizationRequestResultResponse"/>
 			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
+		<wsdl:operation name="DigitizationRequestRevoked">
+			<wsdl:documentation>Function to revoke some digitization request.</wsdl:documentation>
+			<wsdl:input name="requestRevoked" message="tns:DigitizationRequestRevokedMsg"/>
+			<wsdl:output name="requestRevokedResponse" message="tns:DigitizationRequestRevokedResponse"/>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:portType name="DaoRequestsService">
+		<wsdl:operation name="DestructionRequestFinished">
+			<wsdl:input name="destructionRequestFinishedMsg" message="tns:DestructionRequestFinishedMsg"/>
+			<wsdl:output name="destructionRequestFinishedResponse" message="tns:DestructionRequestFinishedResponse"/>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="DestructionRequestRevoked">
+			<wsdl:input name="destructionRequestRevokedMsg" message="tns:DestructionRequestRevokedMsg"/>
+			<wsdl:output name="destructionRequestRevokedResponse" message="tns:DestructionRequestRevokedResponse"/>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="TransferRequestFinished">
+			<wsdl:input name="transferRequestFinishedMsg" message="tns:TransferRequestFinishedMsg"/>
+			<wsdl:output name="transferRequestFinishedResponse" message="tns:TransferRequestFinishedResponse"/>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="TransferRequestRevoked">
+			<wsdl:input name="transferRequestRevokedMsg" message="tns:TransferRequestRevokedMsg"/>
+			<wsdl:output name="transferRequestRevokedResponse" message="tns:TransferRequestRevokedResponse"/>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:portType name="UserService">
+		<wsdl:documentation>Service for managing users</wsdl:documentation>
+		<wsdl:operation name="AddPermissions">
+			<wsdl:input name="addPermissionsMsg" message="tns:AddPermissionsMsg"/>
+			<wsdl:output name="addPermissionsResponse" message="tns:AddPermissionsResponse"/>
+			<wsdl:fault name="addPermissionsException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="CreateUser">
+			<wsdl:documentation>Požadavek na založení uživatele</wsdl:documentation>
+			<wsdl:input name="createUserRequest" message="tns:CreateUserMsg"/>
+			<wsdl:output name="createUserResponse" message="tns:CreateUserResponse">
+				<wsdl:documentation>Prázdná odpověď v případě úspěšného založení</wsdl:documentation>
+			</wsdl:output>
+			<wsdl:fault name="createUserException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="RemovePermissions">
+			<wsdl:input name="removePermissionsMsg" message="tns:RemovePermissionsMsg"/>
+			<wsdl:output name="removePermissionsResponse" message="tns:RemovePermissionsResponse"/>
+			<wsdl:fault name="removePermissionsException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="RemoveUser">
+			<wsdl:documentation>Remove user</wsdl:documentation>
+			<wsdl:input name="removeUserRequest" message="tns:RemoveUserMsg"/>
+			<wsdl:output name="removeUserResponse" message="tns:RemoveUserResponse"/>
+			<wsdl:fault name="removeUserException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:portType name="DaoService">
 		<wsdl:operation name="AddPackage">
-			<wsdl:input name="daoPackage" message="tns:DaoPackage"/>
-			<wsdl:output name="daoAddedPackageIdentifier" message="tns:Identifier">
+			<wsdl:input name="addPackageMsg" message="tns:AddPackageMsg"/>
+			<wsdl:output name="addPackageResponse" message="tns:AddPackageResponse">
 				<wsdl:documentation>Identifier in the target system of added package.</wsdl:documentation>
 			</wsdl:output>
-			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
-		</wsdl:operation>
-		<wsdl:operation name="RemovePackage">
-			<wsdl:documentation>Remove package by internal ID</wsdl:documentation>
-			<wsdl:input name="daoRemovePackageIdentifier" message="tns:Identifier">
-				<wsdl:documentation>ID of package in the system</wsdl:documentation>
-			</wsdl:input>
-			<wsdl:output name="emptyMessageRemovePackage" message="tns:EmptyMessage"/>
-			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
-		</wsdl:operation>
-		<wsdl:operation name="Link">
-			<wsdl:input name="daoLink" message="tns:DaoLink"/>
-			<wsdl:output name="emptyMessageLink" message="tns:EmptyMessage"/>
 			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
 		<wsdl:operation name="GetDid">
 			<wsdl:documentation>Return current description of given did.
 Function will throw error if didIdentifier is not valid.</wsdl:documentation>
-			<wsdl:input name="didIdentifier" message="tns:Identifier"/>
-			<wsdl:output name="did" message="tns:Did">
+			<wsdl:input name="didIdentifier" message="tns:GetDidMsg"/>
+			<wsdl:output name="did" message="tns:GetDidResponse">
 				<wsdl:documentation>Return did for given identifier</wsdl:documentation>
 			</wsdl:output>
 			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
+		<wsdl:operation name="Import">
+			<wsdl:documentation>Import one or more packages. Import will also create corresponding links to described material.</wsdl:documentation>
+			<wsdl:input name="daoImportMsg" message="tns:DaoImportMsg"/>
+			<wsdl:output name="daoImportResponse" message="tns:DaoImportResponse"/>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="Link">
+			<wsdl:input name="daoLinkMsg" message="tns:DaoLinkMsg"/>
+			<wsdl:output name="daoLinkResponse" message="tns:DaoLinkResponse"/>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
 		<wsdl:operation name="RemoveDao">
 			<wsdl:documentation>Remove digital archival object from system. Throw exception if digital archival object does not exists in the system.</wsdl:documentation>
-			<wsdl:input name="daoRemoveIdentifier" message="tns:Identifier">
+			<wsdl:input name="daoIdentifier" message="tns:RemoveDaoMsg">
 				<wsdl:documentation>ELZA internal identifier of given DAO</wsdl:documentation>
 			</wsdl:input>
-			<wsdl:output name="emptyMessageRemoveDao" message="tns:EmptyMessage"/>
+			<wsdl:output name="removeDaoResponse" message="tns:RemoveDaoResponse"/>
+			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+		</wsdl:operation>
+		<wsdl:operation name="RemovePackage">
+			<wsdl:documentation>Remove package by internal ID</wsdl:documentation>
+			<wsdl:input name="removePackageMsg" message="tns:RemovePackageMsg">
+				<wsdl:documentation>ID of package in the system</wsdl:documentation>
+			</wsdl:input>
+			<wsdl:output name="removePackageResponse" message="tns:RemovePackageResponse"/>
 			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
 	</wsdl:portType>
-	<wsdl:portType name="DaoRequestsService">
-		<wsdl:operation name="TransferRequestFinished">
-			<wsdl:input name="requestTransferIdentifier" message="tns:RequestIdentifier"/>
-			<wsdl:output name="emptyMessageTransferFinished" message="tns:EmptyMessage"/>
-			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
-		</wsdl:operation>
-		<wsdl:operation name="TransferRequestRevoked">
-			<wsdl:input name="requestTransferRevoked" message="tns:RequestRevoked"/>
-			<wsdl:output name="emptyMessageTransferRevoked" message="tns:EmptyMessage"/>
-			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
-		</wsdl:operation>
-		<wsdl:operation name="DestructionRequestFinished">
-			<wsdl:input name="requestDestructionIdentifier" message="tns:RequestIdentifier"/>
-			<wsdl:output name="emptyMessageDestructionFinished" message="tns:EmptyMessage"/>
-			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
-		</wsdl:operation>
-		<wsdl:operation name="DestructionRequestRevoked">
-			<wsdl:input name="requestDestructionRevoked" message="tns:RequestRevoked"/>
-			<wsdl:output name="emptyMessageDestructionRevoked" message="tns:EmptyMessage"/>
-			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
-		</wsdl:operation>
-	</wsdl:portType>
-	<wsdl:portType name="DaoDigitizationService">
-		<wsdl:documentation>Digitization service has two methods for notification about result of digitization request. For each request exactly one of these methods have to be called.</wsdl:documentation>
-		<wsdl:operation name="DigitizationRequestRevoked">
-			<wsdl:documentation>Function to revoke some digitization request.</wsdl:documentation>
-			<wsdl:input name="requestDigitizationRevoked" message="tns:RequestRevoked"/>
-			<wsdl:output name="emptyMessageDigitizationRevoked" message="tns:EmptyMessage"/>
-			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
-		</wsdl:operation>
-		<wsdl:operation name="DigitizationRequestFinished">
-			<wsdl:documentation>Function for importing result of digitization request.</wsdl:documentation>
-			<wsdl:input name="digitizationRequestResult" message="tns:DigitizationRequestResult"/>
-			<wsdl:output name="emptyMessageDigitizationFinished" message="tns:EmptyMessage"/>
-			<wsdl:fault name="coreServiceException" message="tns:CoreServiceException"/>
+	<wsdl:portType name="ExportService">
+		<wsdl:operation name="ExportData">
+			<wsdl:input name="exportRequestMsg" message="tns:ExportRequestMsg"/>
+			<wsdl:output name="exportRequestResponse" message="tns:ExportRequestResponse"/>
+			<wsdl:fault name="exportRequestException" message="tns:ExportRequestException"/>
 		</wsdl:operation>
 	</wsdl:portType>
 	<wsdl:binding name="DaoRequestsService" type="tns:DaoRequestsService">
 		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 		<wsdl:operation name="DestructionRequestFinished">
-			<soap:operation soapAction="DestructionRequestFinished" style="document"/>
-			<wsdl:input name="requestDestructionIdentifier">
+			<soap:operation soapAction="http://elza/daoRequests/destructionRequestFinished" style="document"/>
+			<wsdl:input name="destructionRequestFinishedMsg">
 				<soap:body use="literal"/>
 			</wsdl:input>
-			<wsdl:output name="emptyMessageDestructionFinished">
+			<wsdl:output name="destructionRequestFinishedResponse">
 				<soap:body use="literal"/>
 			</wsdl:output>
 			<wsdl:fault name="coreServiceException">
@@ -130,11 +219,11 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="DestructionRequestRevoked">
-			<soap:operation soapAction="DestructionRequestRevoked" style="document"/>
-			<wsdl:input name="requestDestructionRevoked">
+			<soap:operation soapAction="http://elza/daoRequests/destructionRequestRevoked" style="document"/>
+			<wsdl:input name="destructionRequestRevokedMsg">
 				<soap:body use="literal"/>
 			</wsdl:input>
-			<wsdl:output name="emptyMessageDestructionRevoked">
+			<wsdl:output name="destructionRequestRevokedResponse">
 				<soap:body use="literal"/>
 			</wsdl:output>
 			<wsdl:fault name="coreServiceException">
@@ -142,11 +231,11 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="TransferRequestFinished">
-			<soap:operation soapAction="TransferRequestFinished" style="document"/>
-			<wsdl:input name="requestTransferIdentifier">
+			<soap:operation soapAction="http://elza/daoRequests/transferRequestFinished" style="document"/>
+			<wsdl:input name="transferRequestFinishedMsg">
 				<soap:body use="literal"/>
 			</wsdl:input>
-			<wsdl:output name="emptyMessageTransferFinished">
+			<wsdl:output name="transferRequestFinishedResponse">
 				<soap:body use="literal"/>
 			</wsdl:output>
 			<wsdl:fault name="coreServiceException">
@@ -154,38 +243,11 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="TransferRequestRevoked">
-			<soap:operation soapAction="TransferRequestRevoked" style="document"/>
-			<wsdl:input name="requestTransferRevoked">
+			<soap:operation soapAction="http://elza/daoRequests/transferRequestRevoked" style="document"/>
+			<wsdl:input name="transferRequestRevokedMsg">
 				<soap:body use="literal"/>
 			</wsdl:input>
-			<wsdl:output name="emptyMessageTransferRevoked">
-				<soap:body use="literal"/>
-			</wsdl:output>
-			<wsdl:fault name="coreServiceException">
-				<soap:fault name="coreServiceException" use="literal"/>
-			</wsdl:fault>
-		</wsdl:operation>
-	</wsdl:binding>
-	<wsdl:binding name="DaoDigitizationService" type="tns:DaoDigitizationService">
-		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
-		<wsdl:operation name="DigitizationRequestFinished">
-			<soap:operation soapAction="DigitizationRequestFinished" style="document"/>
-			<wsdl:input name="digitizationRequestResult">
-				<soap:body use="literal"/>
-			</wsdl:input>
-			<wsdl:output name="emptyMessageDigitizationFinished">
-				<soap:body use="literal"/>
-			</wsdl:output>
-			<wsdl:fault name="coreServiceException">
-				<soap:fault name="coreServiceException" use="literal"/>
-			</wsdl:fault>
-		</wsdl:operation>
-		<wsdl:operation name="DigitizationRequestRevoked">
-			<soap:operation soapAction="DigitizationRequestRevoked" style="document"/>
-			<wsdl:input name="requestDigitizationRevoked">
-				<soap:body use="literal"/>
-			</wsdl:input>
-			<wsdl:output name="emptyMessageDigitizationRevoked">
+			<wsdl:output name="transferRequestRevokedResponse">
 				<soap:body use="literal"/>
 			</wsdl:output>
 			<wsdl:fault name="coreServiceException">
@@ -195,10 +257,23 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 	</wsdl:binding>
 	<wsdl:binding name="DaoService" type="tns:DaoService">
 		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="AddPackage">
+			<soap:operation soapAction="http://elza/daoService/addPackage" style="document"/>
+			<wsdl:input name="addPackageMsg">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="addPackageResponse">
+				<wsdl:documentation>Identifier in the target system of added package.</wsdl:documentation>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="coreServiceException">
+				<soap:fault name="coreServiceException" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
 		<wsdl:operation name="GetDid">
 			<wsdl:documentation>Return current description of given did.
 Function will throw error if didIdentifier is not valid.</wsdl:documentation>
-			<soap:operation soapAction="GetDid" style="document"/>
+			<soap:operation soapAction="http://elza/daoService/getDid" style="document"/>
 			<wsdl:input name="didIdentifier">
 				<soap:body use="literal"/>
 			</wsdl:input>
@@ -210,40 +285,13 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 				<soap:fault name="coreServiceException" use="literal"/>
 			</wsdl:fault>
 		</wsdl:operation>
-		<wsdl:operation name="RemoveDao">
-			<wsdl:documentation>Remove digital archival object from system. Throw exception if digital archival object does not exists in the system.</wsdl:documentation>
-			<soap:operation soapAction="RemoveDao" style="document"/>
-			<wsdl:input name="daoRemoveIdentifier">
-				<wsdl:documentation>ELZA internal identifier of given DAO</wsdl:documentation>
-				<soap:body use="literal"/>
-			</wsdl:input>
-			<wsdl:output name="emptyMessageRemoveDao">
-				<soap:body use="literal"/>
-			</wsdl:output>
-			<wsdl:fault name="coreServiceException">
-				<soap:fault name="coreServiceException" use="literal"/>
-			</wsdl:fault>
-		</wsdl:operation>
-		<wsdl:operation name="AddPackage">
-			<soap:operation soapAction="AddPackage" style="document"/>
-			<wsdl:input name="daoPackage">
-				<soap:body use="literal"/>
-			</wsdl:input>
-			<wsdl:output name="daoAddedPackageIdentifier">
-				<wsdl:documentation>Identifier in the target system of added package.</wsdl:documentation>
-				<soap:body use="literal"/>
-			</wsdl:output>
-			<wsdl:fault name="coreServiceException">
-				<soap:fault name="coreServiceException" use="literal"/>
-			</wsdl:fault>
-		</wsdl:operation>
 		<wsdl:operation name="Import">
-			<wsdl:documentation>Import one or more packages. Import will also create corresponding links to described material. If this method is used each package need to have specified fundIdentifier for each daoPackage.</wsdl:documentation>
-			<soap:operation soapAction="Import" style="document"/>
-			<wsdl:input name="daoImport">
+			<wsdl:documentation>Import one or more packages. Import will also create corresponding links to described material.</wsdl:documentation>
+			<soap:operation soapAction="http://elza/daoService/import" style="document"/>
+			<wsdl:input name="daoImportMsg">
 				<soap:body use="literal"/>
 			</wsdl:input>
-			<wsdl:output name="emptyMessage">
+			<wsdl:output name="daoImportResponse">
 				<soap:body use="literal"/>
 			</wsdl:output>
 			<wsdl:fault name="coreServiceException">
@@ -251,11 +299,25 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="Link">
-			<soap:operation soapAction="Link" style="document"/>
-			<wsdl:input name="daoLink">
+			<soap:operation soapAction="http://elza/daoService/link" style="document"/>
+			<wsdl:input name="daoLinkMsg">
 				<soap:body use="literal"/>
 			</wsdl:input>
-			<wsdl:output name="emptyMessageLink">
+			<wsdl:output name="daoLinkResponse">
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="coreServiceException">
+				<soap:fault name="coreServiceException" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="RemoveDao">
+			<wsdl:documentation>Remove digital archival object from system. Throw exception if digital archival object does not exists in the system.</wsdl:documentation>
+			<soap:operation soapAction="http://elza/daoService/removeDao" style="document"/>
+			<wsdl:input name="daoIdentifier">
+				<wsdl:documentation>ELZA internal identifier of given DAO</wsdl:documentation>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="removeDaoResponse">
 				<soap:body use="literal"/>
 			</wsdl:output>
 			<wsdl:fault name="coreServiceException">
@@ -263,13 +325,13 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			</wsdl:fault>
 		</wsdl:operation>
 		<wsdl:operation name="RemovePackage">
-			<wsdl:documentation>Remove package</wsdl:documentation>
-			<soap:operation soapAction="RemovePackage" style="document"/>
-			<wsdl:input name="daoRemovePackageIdentifier">
-				<wsdl:documentation>ID of package in given system</wsdl:documentation>
+			<wsdl:documentation>Remove package by internal ID</wsdl:documentation>
+			<soap:operation soapAction="http://elza/daoService/removePackage" style="document"/>
+			<wsdl:input name="removePackageMsg">
+				<wsdl:documentation>ID of package in the system</wsdl:documentation>
 				<soap:body use="literal"/>
 			</wsdl:input>
-			<wsdl:output name="emptyMessageRemovePackage">
+			<wsdl:output name="removePackageResponse">
 				<soap:body use="literal"/>
 			</wsdl:output>
 			<wsdl:fault name="coreServiceException">
@@ -277,15 +339,119 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			</wsdl:fault>
 		</wsdl:operation>
 	</wsdl:binding>
+	<wsdl:binding name="DaoDigitizationService" type="tns:DaoDigitizationService">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="DigitizationRequestFinished">
+			<wsdl:documentation>Function for importing result of digitization request.</wsdl:documentation>
+			<soap:operation soapAction="http://elza/digitizationRequests/finished" style="document"/>
+			<wsdl:input name="digitizationRequestResult">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="digitizationRequestResultResponse">
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="coreServiceException">
+				<soap:fault name="coreServiceException" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="DigitizationRequestRevoked">
+			<wsdl:documentation>Function to revoke some digitization request.</wsdl:documentation>
+			<soap:operation soapAction="http://elza/digitizationRequests/revoked" style="document"/>
+			<wsdl:input name="requestRevoked">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="requestRevokedResponse">
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="coreServiceException">
+				<soap:fault name="coreServiceException" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:binding name="UserService" type="tns:UserService">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="AddPermissions">
+			<soap:operation soapAction="http://elza/users/addPermissions" style="document"/>
+			<wsdl:input name="addPermissionsMsg">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="addPermissionsResponse">
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="addPermissionsException">
+				<soap:fault name="addPermissionsException" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="CreateUser">
+			<wsdl:documentation>Požadavek na založení uživatele</wsdl:documentation>
+			<soap:operation soapAction="http://elza/users/createUser" style="document"/>
+			<wsdl:input name="createUserRequest">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="createUserResponse">
+				<wsdl:documentation>Prázdná odpověď v případě úspěšného založení</wsdl:documentation>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="createUserException">
+				<soap:fault name="createUserException" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="RemovePermissions">
+			<soap:operation soapAction="http://elza/users/removePermissions" style="document"/>
+			<wsdl:input name="removePermissionsMsg">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="removePermissionsResponse">
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="removePermissionsException">
+				<soap:fault name="removePermissionsException" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="RemoveUser">
+			<wsdl:documentation>Remove user</wsdl:documentation>
+			<soap:operation soapAction="http://elza/users/removeUser" style="document"/>
+			<wsdl:input name="removeUserRequest">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="removeUserResponse">
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="removeUserException">
+				<soap:fault name="removeUserException" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:binding name="ExportServiceBinding" type="tns:ExportService">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="ExportData">
+			<soap:operation soapAction="http://elza/exports/export" style="document"/>
+			<wsdl:input name="exportRequestMsg">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="exportRequestResponse">
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="exportRequestException">
+				<soap:fault name="exportRequestException" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
 	<wsdl:service name="CoreService">
-		<wsdl:port name="DaoRequestsService" binding="tns:DaoRequestsService">
-			<soap:address location="http://elza.tacr.cz/ws/core/v1/dao-service/requests"/>
+		<wsdl:port name="UserService" binding="tns:UserService">
+			<soap:address location="http://elza.tacr.cz/ws/core/v1/users"/>
+		</wsdl:port>
+		<wsdl:port name="DaoCoreService" binding="tns:DaoService">
+			<soap:address location="http://elza.tacr.cz/ws/core/v1/dao-service/core"/>
 		</wsdl:port>
 		<wsdl:port name="DaoDigitizationService" binding="tns:DaoDigitizationService">
 			<soap:address location="http://elza.tacr.cz/ws/core/v1/dao-service/digitization"/>
 		</wsdl:port>
-		<wsdl:port name="DaoCoreService" binding="tns:DaoService">
-			<soap:address location="http://elza.tacr.cz/ws/core/v1/dao-service/core"/>
+		<wsdl:port name="DaoRequestsService" binding="tns:DaoRequestsService">
+			<soap:address location="http://elza.tacr.cz/ws/core/v1/dao-service/requests"/>
+		</wsdl:port>
+		<wsdl:port name="ExportService" binding="tns:ExportServiceBinding">
+			<soap:address location="http://elza.tacr.cz/ws/core/v1/export-service"/>
 		</wsdl:port>
 	</wsdl:service>
 </wsdl:definitions>
