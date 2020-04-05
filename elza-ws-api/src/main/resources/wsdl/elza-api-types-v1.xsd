@@ -9,6 +9,11 @@
 			<xs:documentation>Žádost o založení uživatele</xs:documentation>
 		</xs:annotation>
 	</xs:element>
+	<xs:element name="daoAttributes" type="eat:Attributes">
+		<xs:annotation>
+			<xs:documentation>Root element for storing DAO attributes</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="daoIdentifier" type="eat:Identifier"/>
 	<xs:element name="daoImport" type="eat:DaoImport"/>
 	<xs:element name="daoLink" type="eat:DaoLink"/>
@@ -98,6 +103,17 @@
 			<xs:enumeration value="SHA-256"/>
 			<xs:enumeration value="SHA-384"/>
 			<xs:enumeration value="SHA-512"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="DaoType">
+		<xs:annotation>
+			<xs:documentation>Type of digital archival object.
+	- attachment - might be attached to the existing level
+	- level - will create its own level</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="attachment"/>
+			<xs:enumeration value="level"/>
 		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="Description">
@@ -191,6 +207,14 @@ Source: EAD3</xs:documentation>
 		</xs:annotation>
 		<xs:restriction base="xs:string"/>
 	</xs:simpleType>
+	<xs:simpleType name="StringLong">
+		<xs:annotation>
+			<xs:documentation>Long string.
+
+Used to pass unrestricted attribute value.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string"/>
+	</xs:simpleType>
 	<xs:simpleType name="SystemIdentifier">
 		<xs:annotation>
 			<xs:documentation>System identifier, allows other party to identify given system. Identifier is used to identify caller party during method call.</xs:documentation>
@@ -214,6 +238,25 @@ Source: EAD3</xs:documentation>
 			<xs:maxLength value="250"/>
 		</xs:restriction>
 	</xs:simpleType>
+	<xs:complexType name="Attribute">
+		<xs:annotation>
+			<xs:documentation>Single attribute
+
+Attribute is name + value</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="name" type="eat:StringLong" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="value" type="eat:StringLong" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Attributes">
+		<xs:annotation>
+			<xs:documentation>Collection of attributes</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Attribute" type="eat:Attribute" minOccurs="1" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
 	<xs:complexType name="Authorization">
 		<xs:sequence>
 			<xs:element name="authType" type="eat:AuthType" minOccurs="1" maxOccurs="1"/>
@@ -239,9 +282,15 @@ Original source: EAD3
 Note: Some types of DAO does not have to have link to any file.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="FolderGroup" type="eat:FolderGroup" minOccurs="0" maxOccurs="1"/>
-			<xs:element name="FileGroup" type="eat:FileGroup" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="folders" type="eat:FolderGroup" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="files" type="eat:FileGroup" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="attributes" type="eat:Attributes" minOccurs="0" maxOccurs="1"/>
 		</xs:sequence>
+		<xs:attribute name="daoType" use="required" type="eat:DaoType">
+			<xs:annotation>
+				<xs:documentation>Type of DAO</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
 		<xs:attribute name="identifier" use="required" type="eat:Identifier">
 			<xs:annotation>
 				<xs:documentation>Identifier of the digital archival object</xs:documentation>
@@ -408,10 +457,10 @@ At a minimum, destruction may be no more complicated than placing materials in t
 Source: EAD3</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="Abstract" type="eat:Abstract" minOccurs="0" maxOccurs="1"/>
-			<xs:element name="Unitdatestructured" type="eat:Unitdatestructured" minOccurs="0" maxOccurs="1"/>
-			<xs:element name="Unitid" type="eat:Unitid" minOccurs="0" maxOccurs="unbounded"/>
-			<xs:element name="Unittitle" type="eat:Unittitle" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="unitId" type="eat:Unitid" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="unitTitle" type="eat:Unittitle" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="unitDateStructured" type="eat:Unitdatestructured" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="abstract" type="eat:Abstract" minOccurs="0" maxOccurs="1"/>
 		</xs:sequence>
 		<xs:attribute name="identifier" use="optional" type="eat:Identifier">
 			<xs:annotation>
@@ -432,8 +481,8 @@ Source: EAD3</xs:documentation>
 			<xs:documentation>Digitization request.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="Description" type="eat:Description" minOccurs="0" maxOccurs="1"/>
-			<xs:element name="Materials" type="eat:Materials" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="description" type="eat:Description" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="materials" type="eat:Materials" minOccurs="1" maxOccurs="1"/>
 		</xs:sequence>
 		<xs:attribute name="identifier" use="required" type="eat:Identifier">
 			<xs:annotation>
@@ -488,7 +537,7 @@ Source: EAD3</xs:documentation>
 			<xs:documentation>The file element provides access to the content files for the digital object being described.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="Description" type="eat:Description" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="description" type="eat:Description" minOccurs="0" maxOccurs="1"/>
 		</xs:sequence>
 		<xs:attributeGroup ref="eat:FileCoreGroup"/>
 		<xs:attribute name="identifier" use="required" type="eat:Identifier">
@@ -504,16 +553,16 @@ Source: EAD3</xs:documentation>
 			<xs:documentation>Complex Type for File Groups The file group is used to cluster all of the digital files composing a digital archival object in a hierarchical arrangement (fileGrp is recursively defined to enable the creation of the hierarchy). Any file group may contain zero or more file elements.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="File" type="eat:File" minOccurs="1" maxOccurs="unbounded"/>
+			<xs:element name="file" type="eat:File" minOccurs="1" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="Foder">
+	<xs:complexType name="Folder">
 		<xs:annotation>
 			<xs:documentation>Digital archival object might have several related files. Several related files are connected to digital archival object wrapped in this named container.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="FileGroup" type="eat:FileGroup" minOccurs="0" maxOccurs="1"/>
-			<xs:element name="FolderGroup" type="eat:FolderGroup" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="folders" type="eat:FolderGroup" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="files" type="eat:FileGroup" minOccurs="0" maxOccurs="1"/>
 		</xs:sequence>
 		<xs:attribute name="identifier" use="optional" type="eat:Identifier">
 			<xs:annotation>
@@ -531,7 +580,7 @@ Source: EAD3</xs:documentation>
 			<xs:documentation>Group of foders</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="Foder" type="eat:Foder" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="folder" type="eat:Folder" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="FundSection">
@@ -558,7 +607,7 @@ Source: EAD3</xs:documentation>
 			<xs:documentation>Wrapper element for set of archival materials for digitization.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="Did" type="eat:Did" minOccurs="1" maxOccurs="unbounded"/>
+			<xs:element name="did" type="eat:Did" minOccurs="1" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="NonexistingDaos">
@@ -575,7 +624,7 @@ Source: EAD3</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
 			<xs:element name="daoIdentifier" type="eat:Identifier" minOccurs="1" maxOccurs="1"/>
-			<xs:element name="Did" type="eat:Did" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="did" type="eat:Did" minOccurs="1" maxOccurs="1"/>
 			<xs:element name="username" type="eat:Username" minOccurs="0" maxOccurs="1"/>
 		</xs:sequence>
 		<xs:attribute name="systemIdentifier" use="optional" type="eat:SystemIdentifier"/>
@@ -610,7 +659,7 @@ Source: EAD3</xs:documentation>
 			<xs:documentation>List of permissions for given user.</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="Username" type="eat:Username" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="username" type="eat:Username" minOccurs="1" maxOccurs="1"/>
 			<xs:element name="permList" type="eat:PermissionList" minOccurs="0" maxOccurs="1"/>
 		</xs:sequence>
 	</xs:complexType>
@@ -644,7 +693,7 @@ Source: EAD3</xs:documentation>
 			<xs:documentation>A child element of &lt;did&gt; that provides a simple statement of the date(s) covered by the described materials.</xs:documentation>
 		</xs:annotation>
 		<xs:choice>
-			<xs:element name="Datesingle" type="eat:Datesingle" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="dateSingle" type="eat:Datesingle" minOccurs="1" maxOccurs="1"/>
 		</xs:choice>
 		<xs:attribute name="calendar" use="optional" type="eat:Calendar"/>
 		<xs:attribute name="certainty" use="optional" type="eat:Certainity"/>
@@ -674,7 +723,7 @@ Attribute usage:
 	</xs:complexType>
 	<xs:complexType name="User">
 		<xs:sequence>
-			<xs:element name="Username" type="eat:Username" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="username" type="eat:Username" minOccurs="1" maxOccurs="1"/>
 			<xs:element name="personId" type="eat:Identifier" minOccurs="1" maxOccurs="1"/>
 			<xs:element name="authList" type="eat:AuthorizationList" minOccurs="0" maxOccurs="1"/>
 			<xs:element name="permList" type="eat:PermissionList" minOccurs="0" maxOccurs="1"/>
