@@ -1057,12 +1057,13 @@ class DescItemType extends AbstractReactComponent {
                 </TooltipTrigger>);
             }
 
-            let canModifyDescItem = !(locked || closed)
+            let canModifyDescItem = !(locked || closed || descItem.readOnly)
 
             // Pokud nemá právo na pořádání, nelze provádět akci
             if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) && !arrPerm) {
                 canModifyDescItem = false
             }
+
             return this.renderDescItem(descItemType, descItem, descItemIndex, actions, !canModifyDescItem)
         });
 
