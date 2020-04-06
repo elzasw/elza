@@ -10,20 +10,13 @@ module.exports = {
     webpack: (config) => {
         let messagesRaw = fs.readFileSync('../elza-web/src/main/resources/static/res/js/messages_cs.js', {encoding: 'utf-8'});
         eval(messagesRaw);
-        /*const inx = config.entry.findIndex(i => i.includes('src/index'));
-        config.entry.splice(inx, 0, require.resolve('jquery'));
-        //console.log(config.entry);
-        //process.exit(1);
 
-         */
         config.resolve.modules.push(path.resolve(__dirname, 'src'));
         config.resolve.alias = {
             ...(config.resolve.alias || {}),
             'stompjs': path.resolve(__dirname, "node_modules") + '/stompjs/lib/stomp.js',
         };
         config.module.rules[1].use[0].options.baseConfig = require('./package').eslintConfig;
-        //console.log(config.module.rules[2].oneOf[1]);
-        //return;
 
         const styleLoaders = getPaths(
             // Styleloaders are in config.module.rules inside an object only containing the "oneOf" prop
