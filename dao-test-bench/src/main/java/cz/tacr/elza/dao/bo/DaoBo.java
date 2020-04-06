@@ -94,7 +94,7 @@ public class DaoBo {
 		for (DaoFileBo daoFile : getAllDaoFiles()) {
 			fileGroup.getFile().add(daoFile.export());
 		}
-		dao.setFileGroup(fileGroup);
+        dao.setFiles(fileGroup);
 		return dao;
 	}
 
