@@ -33,7 +33,6 @@
     "jquery": "2.1.4",
     "lodash-compat": "3.10.2",
     "moment": "^2.24.0",
-    "node-sass": "^4.13.1",
     "prop-types": "^15.7.2",
     "lodash": "^4.17.15",
     "react": "^16.13.0",
