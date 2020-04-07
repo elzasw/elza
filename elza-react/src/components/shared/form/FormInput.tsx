@@ -17,7 +17,7 @@ interface IFormInputProps {
     staticInput?: boolean
 }
 
-export const FormInput: React.FC<PropsWithChildren<IFormInputProps>> = memo((props) => {
+const FormInput: React.FC<PropsWithChildren<IFormInputProps>> = memo(React.forwardRef((props, ref) => {
 
     const {error, touched, children, type, label, value, inline, feedback, ...otherProps} = props;
 
@@ -30,6 +30,7 @@ export const FormInput: React.FC<PropsWithChildren<IFormInputProps>> = memo((pro
                 <Form.Group>
                     {label && <Form.Label>{label}</Form.Label>}
                     <div
+                        ref={ref}
                         {...otherProps}
                         {...inlineProps}
                     >
@@ -41,6 +42,7 @@ export const FormInput: React.FC<PropsWithChildren<IFormInputProps>> = memo((pro
             return (
                 <Form.Group>
                     <Form.Check
+                        ref={ref}
                         type="radio"
                         label={label}
                         value={value}
@@ -55,6 +57,7 @@ export const FormInput: React.FC<PropsWithChildren<IFormInputProps>> = memo((pro
             return (
                 <Form.Group>
                     <Form.Check
+                        ref={ref}
                         label={label}
                         value={value}
                         isInvalid={hasError}
@@ -69,6 +72,7 @@ export const FormInput: React.FC<PropsWithChildren<IFormInputProps>> = memo((pro
                 <Form.Group>
                     {label && <Form.Label>{label}</Form.Label>}
                     <Form.Control
+                        ref={ref}
                         as="select"
                         value={value}
                         isInvalid={hasError}
@@ -85,6 +89,7 @@ export const FormInput: React.FC<PropsWithChildren<IFormInputProps>> = memo((pro
                 <Form.Group>
                     {label && <Form.Label>{label}</Form.Label>}
                     <Form.Control
+                        ref={ref}
                         value={value}
                         children={children}
                         type={type}
@@ -96,6 +101,6 @@ export const FormInput: React.FC<PropsWithChildren<IFormInputProps>> = memo((pro
                 </Form.Group>
             );
     }
-});
+}));
 
 export default FormInput;
