@@ -1,13 +1,7 @@
 package cz.tacr.elza.service;
 
 import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
@@ -103,7 +97,8 @@ public class OutputServiceInternal {
 
     private final BulkActionRunRepository bulkActionRunRepository;
 
-    private final RevertingChangesService revertingChangesService;
+    //@Autowired
+    //private RevertingChangesService revertingChangesService;
 
     @Autowired
     public OutputServiceInternal(PlatformTransactionManager transactionManager,
@@ -122,8 +117,7 @@ public class OutputServiceInternal {
                                  ItemSettingsRepository itemSettingsRepository,
                                  RuleService ruleService,
                                  ActionRepository actionRepository,
-                                 BulkActionRunRepository bulkActionRunRepository,
-                                 RevertingChangesService revertingChangesService) {
+                                 BulkActionRunRepository bulkActionRunRepository) {
         this.transactionManager = transactionManager;
         this.outputGeneratorFactory = outputGeneratorFactory;
         this.eventNotificationService = eventNotificationService;
@@ -141,7 +135,6 @@ public class OutputServiceInternal {
         this.ruleService = ruleService;
         this.actionRepository = actionRepository;
         this.bulkActionRunRepository = bulkActionRunRepository;
-        this.revertingChangesService = revertingChangesService;
     }
 
     /**
@@ -494,7 +487,7 @@ public class OutputServiceInternal {
         }
 
         if (fromChange != null) {
-            List<Integer> changeIdList = revertingChangesService.findChangesAfter(fundVersion.getFundId(), null, fromChange.getChangeId());
+            List<Integer> changeIdList = new ArrayList<>(); // revertingChangesService.findChangesAfter(fundVersion.getFundId(), null, fromChange.getChangeId());
             HashSet<Integer> changeIdSet = new HashSet<>(changeIdList);
             for (ArrBulkActionRun finishedAction : finishedActions) {
                 changeIdSet.remove(finishedAction.getChange().getChangeId());
