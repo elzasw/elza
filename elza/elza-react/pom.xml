@@ -67,7 +67,7 @@
                                     <resources>
                                         <resource>
                                             <filtering>false</filtering>
-                                            <directory>${basedir}/build/static/</directory>
+                                            <directory>${basedir}/build/static/res/</directory>
                                             <includes>
                                                 <include>css/*.*</include>
                                                 <include>js/*.*</include>

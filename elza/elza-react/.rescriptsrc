@@ -13,7 +13,7 @@ module.exports = {
 
         config.resolve.modules.push(path.resolve(__dirname, 'src'));
         config.resolve.alias = {
-            ...(config.resolve.alias || {}),
+            ...(config.resolve.alias || {}),
             'stompjs': path.resolve(__dirname, "node_modules") + '/stompjs/lib/stomp.js',
         };
         config.module.rules[1].use[0].options.baseConfig = require('./package').eslintConfig;
@@ -30,7 +30,6 @@ module.exports = {
             jQuery: "jquery"
         }), config);
          */
-
 
 
         const isProduction = config.mode === 'production';
@@ -58,21 +57,41 @@ module.exports = {
                     default: false
                 }
             };
-            const toReplace = '[contenthash:8].';
+            const toReplaceHash = '[contenthash:8].';
+            const toReplaceDir = 'static/js';
+            const replacementDir = 'static/res/js';
             const BLANK = '';
-            config.output.filename = config.output.filename.replace(toReplace, BLANK);
-            config.output.chunkFilename = config.output.filename.replace(toReplace, BLANK);
+            config.output.filename = config.output.filename
+                .replace(toReplaceHash, BLANK)
+                .replace(toReplaceDir, replacementDir);
+            config.output.chunkFilename = config.output.filename
+                .replace(toReplaceHash, BLANK)
+                .replace(toReplaceDir, replacementDir);
 
             const edited = editWebpackPlugin(
                 p => {
-                    p.options.filename = p.options.filename.replace(toReplace, BLANK);
-                    p.options.chunkFilename = p.options.chunkFilename.replace(toReplace, BLANK);
-                    p.options.moduleFilename = ({ name }) => `static/css/${name}.css`;
+                    p.options.filename = p.options.filename.replace(toReplaceHash, BLANK);
+                    p.options.chunkFilename = p.options.chunkFilename.replace(toReplaceHash, BLANK);
+                    p.options.moduleFilename = ({name}) => `static/res/css/${name}.css`;
                     return p
                 },
                 'MiniCssExtractPlugin',
                 config,
             );
+
+            edited.module.rules.forEach(rule => {
+                if (rule.oneOf) {
+                    rule.oneOf.forEach(loader => {
+                        if (loader.loader && (loader.loader.indexOf("url-loader") > -1 || loader.loader.indexOf("file-loader") > -1)) {
+                            loader.options = {
+                                ...loader.options,
+                                name: "static/res/media/[name].[hash:8].[ext]"
+                            }
+                        }
+                    })
+                }
+            });
+
             return edited;
         } else {
             return config;
