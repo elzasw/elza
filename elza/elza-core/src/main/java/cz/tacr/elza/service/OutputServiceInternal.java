@@ -103,7 +103,8 @@ public class OutputServiceInternal {
 
     private final BulkActionRunRepository bulkActionRunRepository;
 
-    private final RevertingChangesService revertingChangesService;
+    @Autowired
+    private RevertingChangesService revertingChangesService;
 
     @Autowired
     public OutputServiceInternal(PlatformTransactionManager transactionManager,
@@ -122,8 +123,7 @@ public class OutputServiceInternal {
                                  ItemSettingsRepository itemSettingsRepository,
                                  RuleService ruleService,
                                  ActionRepository actionRepository,
-                                 BulkActionRunRepository bulkActionRunRepository,
-                                 RevertingChangesService revertingChangesService) {
+                                 BulkActionRunRepository bulkActionRunRepository) {
         this.transactionManager = transactionManager;
         this.outputGeneratorFactory = outputGeneratorFactory;
         this.eventNotificationService = eventNotificationService;
@@ -141,7 +141,6 @@ public class OutputServiceInternal {
         this.ruleService = ruleService;
         this.actionRepository = actionRepository;
         this.bulkActionRunRepository = bulkActionRunRepository;
-        this.revertingChangesService = revertingChangesService;
     }
 
     /**
