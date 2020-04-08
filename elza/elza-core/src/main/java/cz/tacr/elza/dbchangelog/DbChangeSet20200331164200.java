@@ -958,7 +958,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
     }
 
     private Integer createArrData(Integer dataTypeId) throws DatabaseException, SQLException {
-        Integer dataId = nextId("arr_data", "data_type_id");
+        Integer dataId = nextId("arr_data", "data_id");
         PreparedStatement ps = conn.prepareStatement("INSERT INTO arr_data(data_id, data_type_id, version) " +
                 "VALUES(?,?,?)");
         int i = 1;
