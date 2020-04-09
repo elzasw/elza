@@ -1,6 +1,5 @@
 package cz.tacr.elza.dbchangelog;
 
-import cz.tacr.elza.asynchactions.UpdateConformityInfoWorker;
 import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.CustomChangeException;
@@ -25,7 +24,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
 
 
     /**
-     * <changeSet id="20200331164201" author="gotzy">
+     * <changeSet id="20200331164200" author="gotzy">
      * <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20200331164200" />
      * </changeSet>
      */
@@ -48,7 +47,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
     private ApChange apChange;
     private Map<String, DbSequence> hibernateSequences;
 
-    private static final Logger logger = LoggerFactory.getLogger(UpdateConformityInfoWorker.class);
+    private static final Logger logger = LoggerFactory.getLogger(DbChangeSet20200331164200.class);
 
     @Override
     public void execute(final Database database) throws CustomChangeException {
@@ -81,14 +80,18 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         //migrace přístupových bodů
         List<ApAccessPoint> accessPointList = getAccessPointsForMigration();
         for (ApAccessPoint accessPoint : accessPointList) {
+            migrateExternalSystem(accessPoint);
             migrateDescription(accessPoint);
             migrateName(accessPoint);
+
         }
 
         //migrace "osob"
         accessPointList = getPersonsForMigration();
         for (ApAccessPoint accessPoint : accessPointList) {
+            migrateExternalSystem(accessPoint);
             migrateParParty(accessPoint);
+
         }
 
         saveHibernateSequences();
@@ -249,9 +252,9 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
 
     private List<ApAccessPoint> getPersonsForMigration() throws DatabaseException, SQLException {
         List<ApAccessPoint> accessPointList = new ArrayList<>();
-        PreparedStatement ps = conn.prepareStatement("SELECT * FROM ap_access_point WHERE access_point_id IN (SELECT access_point_id FROM par_party WHERE access_point_id IS NOT NULL)");
+        PreparedStatement ps = conn.prepareStatement("SELECT * FROM ap_access_point WHERE access_point_id IN (SELECT access_point_id FROM par_party WHERE access_point_id IS NOT NULL) ORDER BY access_point_id");
         ps.execute();
-        try (ResultSet rs = ps.getResultSet();) {
+        try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
                 accessPointList.add(createAccessPoint(rs));
             }
@@ -261,7 +264,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
 
     private List<ApAccessPoint> getAccessPointsForMigration() throws DatabaseException, SQLException {
         List<ApAccessPoint> accessPointList = new ArrayList<>();
-        PreparedStatement ps = conn.prepareStatement("SELECT * FROM ap_access_point WHERE access_point_id NOT IN (SELECT access_point_id FROM par_party WHERE access_point_id IS NOT NULL)");
+        PreparedStatement ps = conn.prepareStatement("SELECT * FROM ap_access_point WHERE access_point_id NOT IN (SELECT access_point_id FROM par_party WHERE access_point_id IS NOT NULL) ORDER BY access_point_id");
         ps.execute();
         try (ResultSet rs = ps.getResultSet();) {
             while (rs.next()) {
@@ -282,16 +285,45 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 rs.getInt(ApAccessPoint.COL_PREFERRED_NAME_ITEM_ID));
     }
 
+    private void migrateExternalSystem(ApAccessPoint accessPoint) throws DatabaseException, SQLException {
+        PreparedStatement ps = conn.prepareStatement("SELECT value FROM ap_external_id WHERE delete_change_id IS NULL AND access_point_id = " + accessPoint.getAccessPointId());
+        ps.execute();
+        try (ResultSet rs = ps.getResultSet()) {
+            while(rs.next()) {
+                String value = rs.getString("value");
+                if (value != null && !value.isEmpty()) {
+                    Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
+                    Integer itemId = createApItem(accessPoint.getAccessPointId(), null, dataId, rulItemTypeMap.get(ItemTypeCode.PT_IDENT.code), null);
+                    Integer fragmentId = createApFragment(dataId, rulStructuredTypeMap.get(StructuredTypeCode.PT_IDENT.code), null);
+
+                    //zpracování typu - nenačítá se z DB, jenom staticky INTERPI
+                    String itemTypeCode = ItemTypeCode.IDN_TYPE.code;
+                    Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
+                    dataId = createArrData(dataTypeId);
+                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), rulItemSpecMap.get("INTERPI"));
+                    storeNullValue(dataId, dataTypeId);
+
+                    //zpracování value
+                    itemTypeCode = ItemTypeCode.IDN_VALUE.code;
+                    dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
+                    dataId = createArrData(dataTypeId);
+                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                    storeStringValue(dataId, dataTypeId, value);
+                }
+            }
+        }
+    }
+
     private void migrateDescription(ApAccessPoint accessPoint) throws DatabaseException, SQLException {
         PreparedStatement ps = conn.prepareStatement("SELECT description FROM ap_description WHERE access_point_id = " + accessPoint.getAccessPointId() + " AND delete_change_id IS NULL");
         ps.execute();
         logger.info("Migrating ap_description");
-        try (ResultSet rs = ps.getResultSet();) {
+        try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
                 Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
                 Integer itemId = createApItem(accessPoint.getAccessPointId(), null, dataId, rulItemTypeMap.get(ItemTypeCode.PT_BODY.code), null);
                 Integer fragmentId = createApFragment(dataId, rulStructuredTypeMap.get(StructuredTypeCode.PT_BODY.code), null);
-                Integer dataTypeId = getRulItemTypeDataTypeId(ItemTypeCode.BRIEF_DESC.code);
+                Integer dataTypeId = getRulItemTypeDataTypeId(ItemTypeCode.IDN_TYPE.code);
                 dataId = createArrData(dataTypeId);
                 itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(ItemTypeCode.BRIEF_DESC.code), null);
                 storeStringValue(dataId, dataTypeId, rs.getString("description"));
@@ -303,7 +335,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         PreparedStatement ps = conn.prepareStatement("SELECT name, complement, preferred_name FROM ap_name WHERE access_point_id = " + accessPoint.getAccessPointId() + " AND delete_change_id IS NULL");
         ps.execute();
         logger.info("Migrating ap_name");
-        try (ResultSet rs = ps.getResultSet();) {
+        try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
                 //vytvoreni fragmentu
                 Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
@@ -328,10 +360,9 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
     }
 
     private void migrateParParty(ApAccessPoint accessPoint) throws DatabaseException, SQLException {
-        PreparedStatement ps = conn.prepareStatement("SELECT party_id, history, source_information, characteristics, code FROM par_party CROSS JOIN par_party_type WHERE par_party.party_type_id = par_party_type.party_type_id AND access_point_id = " + accessPoint.getAccessPointId() );
+        PreparedStatement ps = conn.prepareStatement("SELECT party_id, history, source_information, characteristics, code, preferred_name_id FROM par_party CROSS JOIN par_party_type WHERE par_party.party_type_id = par_party_type.party_type_id AND access_point_id = " + accessPoint.getAccessPointId() );
         ps.execute();
-        logger.info("Migrating par_party");
-        try (ResultSet rs = ps.getResultSet();) {
+        try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
                 logger.info("Migrating par_party : " + rs.getInt("party_id"));
                 //vytvoreni fragmentu
@@ -371,11 +402,14 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                     storeStringValue(dataId, dataTypeId, characteristics);
                 }
 
+                //zjištění id preferovaného jména - pro migrace par_party_name
+                Integer preferredNameId = rs.getInt("preferred_name_id");
+
                 //migrate parties
                 Integer partyId = rs.getInt("party_id");
                 migrateParPartyGroup(accessPoint, partyId);
                 migrateParDynasty(accessPoint, partyId);
-                migrateParPartyName(accessPoint, partyId);
+                migrateParPartyName(accessPoint, partyId,preferredNameId);
                 migrateParPartyGroupIdentifier(accessPoint, partyId);
                 migrateParRelation(accessPoint, partyId);
             }
@@ -386,7 +420,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         PreparedStatement ps = conn.prepareStatement("SELECT scope, founding_norm, scope_norm, organization FROM par_party_group WHERE party_id = " + partyId);
         ps.execute();
 
-        try (ResultSet rs = ps.getResultSet();) {
+        try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
                 //vytvoreni fragmentu
                 Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
@@ -448,7 +482,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         }
     }
 
-    private void migrateParPartyName(ApAccessPoint accessPoint, Integer partyId) throws DatabaseException, SQLException {
+    private void migrateParPartyName(ApAccessPoint accessPoint, Integer partyId, Integer preferredNameId) throws DatabaseException, SQLException {
         PreparedStatement ps = conn.prepareStatement("SELECT party_name_id, valid_from_unitdate_id, valid_to_unitdate_id, " +
                 "code, main_part, other_part, note, degree_before, degree_after " +
                 "FROM par_party_name " +
@@ -456,12 +490,19 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 "WHERE par_party_name.name_form_type_id = par_party_name_form_type.name_form_type_id " +
                 "AND party_id = " + partyId);
         ps.execute();
-        try (ResultSet rs = ps.getResultSet();) {
+        try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
+                Integer partyNameId = rs.getInt("party_name_id");
+
                 //vytvoreni fragmentu
                 Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
                 Integer itemId = createApItem(accessPoint.getAccessPointId(), null, dataId, rulItemTypeMap.get(ItemTypeCode.PT_NAME.code), null);
                 Integer fragmentId = createApFragment(dataId, rulStructuredTypeMap.get(StructuredTypeCode.PT_NAME.code), null);
+
+                //kontrola a zapsání preferovaného jména do přístupového bodu
+                if(partyNameId == preferredNameId) {
+                    updateAccessPoint(accessPoint, accessPoint.COL_PREFERRED_NAME_ITEM_ID, itemId);
+                }
 
                 //zpracování main_part
                 String itemTypeCode = ItemTypeCode.NM_MAIN.code;
@@ -535,7 +576,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                     storeUnitdateValue(dataId, dataTypeId, validToUnitdateId);
                 }
 
-                migrateParPartyNameComplement(accessPoint, rs.getInt("party_name_id"), nmMainDataId, nmMainDataTypeId);
+                migrateParPartyNameComplement(accessPoint, partyNameId, nmMainDataId, nmMainDataTypeId);
             }
         }
     }
@@ -547,7 +588,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 "WHERE par_party_name_complement.complement_type_id = par_complement_type.complement_type_id " +
                 "AND party_name_id = " + partyNameId);
         ps.execute();
-        try (ResultSet rs = ps.getResultSet();) {
+        try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
                 String code = rs.getString("code");
                 if (code.equals("INITIALS") || code.equals("ROMAN_NUM")) {
@@ -660,7 +701,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 "AND par_party.party_type_id = par_party_type.party_type_id " +
                 "AND par_relation.party_id = " + partyId);
         ps.execute();
-        try (ResultSet rs = ps.getResultSet();) {
+        try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
                 if (convertRelEventMap.get(rs.getString("relation_type_code")).equals(StructuredTypeCode.PT_REL.code)) {
                     createPTRelFragment(accessPoint, rs);
@@ -679,7 +720,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 "WHERE par_relation_entity.role_type_id = par_relation_role_type.role_type_id " +
                 "AND relation_id = " + parRelationId);
         ps.execute();
-        try (ResultSet rsEntity = ps.getResultSet();) {
+        try (ResultSet rsEntity = ps.getResultSet()) {
             while (rsEntity.next()) {
                 //zpracování complement
                 Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
@@ -838,7 +879,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 "WHERE par_relation_entity.role_type_id = par_relation_role_type.role_type_id " +
                 "AND relation_id = " + parRelationId);
         ps.execute();
-        try (ResultSet rs = ps.getResultSet();) {
+        try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
                 Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
                 Integer itemId = createApItem(accessPointId, null, dataId, rulItemTypeMap.get(ItemTypeCode.PT_REL.code), null);
@@ -999,7 +1040,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 "AND unitdate_id = " + unitdateId);
         ps.execute();
         String dateNote = null;
-        try (ResultSet rs = ps.getResultSet();) {
+        try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
                 dateNote = rs.getString("note");
 
