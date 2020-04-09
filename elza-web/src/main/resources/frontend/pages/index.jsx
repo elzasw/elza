@@ -20,6 +20,7 @@ export HomePage from 'pages/home/HomePage.jsx';
 export FundPage from 'pages/fund/FundPage.jsx';
 
 export NodePage from 'pages/node/NodePage.jsx';
+export EntityPage from 'pages/entity/EntityPage.jsx';
 
 export RegistrySelectPage from 'pages/select/RegistrySelectPage';
 export PartySelectPage from 'pages/select/PartySelectPage';

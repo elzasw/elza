@@ -81,6 +81,12 @@ public class ElzaWebController {
         return "web";
     }
 
+    @RequestMapping(value = "/entity/**", method = RequestMethod.GET)
+    public String entityPage(final HttpServletRequest request, final Model model) {
+        initDefaults(request, model);
+        return "web";
+    }
+
     @RequestMapping(value = "/registry", method = RequestMethod.GET)
     public String recordPage(final HttpServletRequest request, final Model model) {
         initDefaults(request, model);
