@@ -252,7 +252,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
 
     private List<ApAccessPoint> getPersonsForMigration() throws DatabaseException, SQLException {
         List<ApAccessPoint> accessPointList = new ArrayList<>();
-        PreparedStatement ps = conn.prepareStatement("SELECT * FROM ap_access_point WHERE access_point_id IN (SELECT access_point_id FROM par_party WHERE access_point_id IS NOT NULL)");
+        PreparedStatement ps = conn.prepareStatement("SELECT * FROM ap_access_point WHERE access_point_id IN (SELECT access_point_id FROM par_party WHERE access_point_id IS NOT NULL) ORDER BY access_point_id");
         ps.execute();
         try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
@@ -264,7 +264,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
 
     private List<ApAccessPoint> getAccessPointsForMigration() throws DatabaseException, SQLException {
         List<ApAccessPoint> accessPointList = new ArrayList<>();
-        PreparedStatement ps = conn.prepareStatement("SELECT * FROM ap_access_point WHERE access_point_id NOT IN (SELECT access_point_id FROM par_party WHERE access_point_id IS NOT NULL)");
+        PreparedStatement ps = conn.prepareStatement("SELECT * FROM ap_access_point WHERE access_point_id NOT IN (SELECT access_point_id FROM par_party WHERE access_point_id IS NOT NULL) ORDER BY access_point_id");
         ps.execute();
         try (ResultSet rs = ps.getResultSet();) {
             while (rs.next()) {
