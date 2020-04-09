@@ -1,6 +1,5 @@
 package cz.tacr.elza.dbchangelog;
 
-import cz.tacr.elza.asynchactions.UpdateConformityInfoWorker;
 import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.CustomChangeException;
@@ -25,7 +24,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
 
 
     /**
-     * <changeSet id="20200331164201" author="gotzy">
+     * <changeSet id="20200331164200" author="gotzy">
      * <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20200331164200" />
      * </changeSet>
      */
@@ -48,7 +47,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
     private ApChange apChange;
     private Map<String, DbSequence> hibernateSequences;
 
-    private static final Logger logger = LoggerFactory.getLogger(UpdateConformityInfoWorker.class);
+    private static final Logger logger = LoggerFactory.getLogger(DbChangeSet20200331164200.class);
 
     @Override
     public void execute(final Database database) throws CustomChangeException {
@@ -361,9 +360,8 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
     }
 
     private void migrateParParty(ApAccessPoint accessPoint) throws DatabaseException, SQLException {
-        PreparedStatement ps = conn.prepareStatement("SELECT party_id, history, source_information, characteristics, code FROM par_party CROSS JOIN par_party_type WHERE par_party.party_type_id = par_party_type.party_type_id AND access_point_id = " + accessPoint.getAccessPointId() );
+        PreparedStatement ps = conn.prepareStatement("SELECT party_id, history, source_information, characteristics, code, preferred_name_id FROM par_party CROSS JOIN par_party_type WHERE par_party.party_type_id = par_party_type.party_type_id AND access_point_id = " + accessPoint.getAccessPointId() );
         ps.execute();
-        logger.info("Migrating par_party");
         try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
                 logger.info("Migrating par_party : " + rs.getInt("party_id"));
@@ -404,11 +402,14 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                     storeStringValue(dataId, dataTypeId, characteristics);
                 }
 
+                //zjištění id preferovaného jména - pro migrace par_party_name
+                Integer preferredNameId = rs.getInt("preferred_name_id");
+
                 //migrate parties
                 Integer partyId = rs.getInt("party_id");
                 migrateParPartyGroup(accessPoint, partyId);
                 migrateParDynasty(accessPoint, partyId);
-                migrateParPartyName(accessPoint, partyId);
+                migrateParPartyName(accessPoint, partyId,preferredNameId);
                 migrateParPartyGroupIdentifier(accessPoint, partyId);
                 migrateParRelation(accessPoint, partyId);
             }
@@ -481,7 +482,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         }
     }
 
-    private void migrateParPartyName(ApAccessPoint accessPoint, Integer partyId) throws DatabaseException, SQLException {
+    private void migrateParPartyName(ApAccessPoint accessPoint, Integer partyId, Integer preferredNameId) throws DatabaseException, SQLException {
         PreparedStatement ps = conn.prepareStatement("SELECT party_name_id, valid_from_unitdate_id, valid_to_unitdate_id, " +
                 "code, main_part, other_part, note, degree_before, degree_after " +
                 "FROM par_party_name " +
@@ -491,10 +492,17 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         ps.execute();
         try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
+                Integer partyNameId = rs.getInt("party_name_id");
+
                 //vytvoreni fragmentu
                 Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
                 Integer itemId = createApItem(accessPoint.getAccessPointId(), null, dataId, rulItemTypeMap.get(ItemTypeCode.PT_NAME.code), null);
                 Integer fragmentId = createApFragment(dataId, rulStructuredTypeMap.get(StructuredTypeCode.PT_NAME.code), null);
+
+                //kontrola a zapsání preferovaného jména do přístupového bodu
+                if(partyNameId == preferredNameId) {
+                    updateAccessPoint(accessPoint, accessPoint.COL_PREFERRED_NAME_ITEM_ID, itemId);
+                }
 
                 //zpracování main_part
                 String itemTypeCode = ItemTypeCode.NM_MAIN.code;
@@ -568,7 +576,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                     storeUnitdateValue(dataId, dataTypeId, validToUnitdateId);
                 }
 
-                migrateParPartyNameComplement(accessPoint, rs.getInt("party_name_id"), nmMainDataId, nmMainDataTypeId);
+                migrateParPartyNameComplement(accessPoint, partyNameId, nmMainDataId, nmMainDataTypeId);
             }
         }
     }
