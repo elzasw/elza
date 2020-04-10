@@ -6,21 +6,19 @@
 
 package cz.tacr.elza.ws.core.v1;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoPackage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.exception.BusinessException;
@@ -167,10 +165,10 @@ public class DaoRequestsServiceImpl implements DaoRequestsService {
         if (daoByDaoRequest.size() == 1) {
             ArrDao arrDao = daoByDaoRequest.get(0);
             ArrDaoPackage daoPackage = arrDao.getDaoPackage();
-            daoService.deleteDaoPackageWithCascade(daoPackage.getCode(), daoPackage);
+            daoService.deleteDaoPackageWithCascade(daoPackage);
         } else {
             // Označí všechny DAO z požadavku jako neplatné a ukončí jeho případné linky na JP bez notifikace
-            daoService.deleteDaos(daoByDaoRequest, true);
+            daoService.deleteDaos(arrDaoRequest.getFund(), daoByDaoRequest, true);
         }
     }
 }

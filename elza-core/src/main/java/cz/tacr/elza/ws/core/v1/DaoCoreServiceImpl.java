@@ -346,7 +346,7 @@ public class DaoCoreServiceImpl implements DaoService {
             // původní zneplatnění - nahrazeno skutečným kaskádovým smazáním - výslovně požadováno 10.1. LightCompem
             // final List<ArrDao> arrDaoList = daoService.deleteDaosWithoutLinks(arrDaos);
 
-            daoService.deleteDaoPackageWithCascade(packageIdentifier, arrDaoPackage);
+            daoService.deleteDaoPackageWithCascade(arrDaoPackage);
 
             logger.info("Ending operation removePackage");
         } catch (Exception e) {
@@ -390,8 +390,21 @@ public class DaoCoreServiceImpl implements DaoService {
                 throw new ObjectNotFoundException("Digitalizát s ID=" + daoIdentifier + " nenalezen",
                         DigitizationCode.DAO_NOT_FOUND).set("code", daoIdentifier);
             }
+            
+            ArrDaoPackage daoPackage = arrDao.getDaoPackage();
+            ArrFund fund = daoPackage.getFund();
 
-            daoService.deleteDaosWithoutLinks(Collections.singletonList(arrDao));
+            daoService.deleteDaosWithoutLinks(fund, Collections.singletonList(arrDao));
+
+            /* TODO: Maji se automaticky mazat daoPackage?            
+            // check if whole package can be deleted and delete it
+            List<ArrDao> daos = daoService.findDaosByPackage(fund.getFundId(), daoPackage, null,
+                                                             null,
+                                                             false);
+            if (!daos.stream().anyMatch(dao -> dao.getValid() == true)) {
+                // all are invalid -> remove whole package
+                daoService.deleteDaoPackageWithCascade(daoPackage);
+            }*/
 
             logger.info("Ending operation removeDao");
         } catch (Exception e) {

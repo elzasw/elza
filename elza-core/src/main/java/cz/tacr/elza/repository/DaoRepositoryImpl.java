@@ -1,16 +1,19 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoPackage;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
+import java.util.List;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import java.util.List;
+
+import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
+
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoPackage;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
@@ -54,9 +57,11 @@ public class DaoRepositoryImpl implements DaoRepositoryCustom {
     }
 
     @Override
-    public List<ArrDao> findByFundAndPackagePaginating(ArrFundVersion fundVersion, ArrDaoPackage daoPackage, Integer index, Integer maxResults, boolean unassigned) {
-        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
-        Assert.notNull(daoPackage, "DAO obal musí být vyplněn");
+    public List<ArrDao> findByFundAndPackagePaginating(Integer fundId, ArrDaoPackage daoPackage,
+                                                       Integer index,
+                                                       Integer maxResults, boolean unassigned) {
+        Validate.notNull(fundId, "AS musí být vyplněn");
+        Validate.notNull(daoPackage, "DAO obal musí být vyplněn");
         String hql = "SELECT d FROM arr_dao d "
                 + "  join d.daoPackage p "
                 + "  join p.fund f "
@@ -73,9 +78,12 @@ public class DaoRepositoryImpl implements DaoRepositoryCustom {
         hql += " order by d.label ASC, d.code ASC ";
 
         Query query = entityManager.createQuery(hql);
-        query.setMaxResults(maxResults);
+        if (index != null && maxResults != null) {
+            query.setFirstResult(index);
+            query.setMaxResults(maxResults);
+        }
 
-        query.setParameter("fundId", fundVersion.getFund().getFundId());
+        query.setParameter("fundId", fundId);
         query.setParameter("daoPackage", daoPackage);
 
         //noinspection unchecked
