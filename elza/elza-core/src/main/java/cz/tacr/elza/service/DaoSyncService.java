@@ -31,6 +31,7 @@ import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.UsrPermission;
@@ -162,7 +163,7 @@ public class DaoSyncService {
                 DaosSyncRequest daosSyncRequest = createDaosSyncRequest(fundVersion, list, dids);
                 DaosSyncResponse daosSyncResponse = wsClient.syncDaos(daosSyncRequest, digitalRepository);
 
-                processDaosSyncResponse(daosSyncResponse);
+                processDaosSyncResponse(fundVersion.getFund(), daosSyncResponse);
             }
         }
     }
@@ -213,20 +214,24 @@ public class DaoSyncService {
 
     /**
      * Provede aktualizaci metadat.
+     * 
+     * @param arrFund
+     *            fund
      *
-     * @param daosSyncResponse response z WS {@code syncDaos}
+     * @param daosSyncResponse
+     *            response z WS {@code syncDaos}
      */
-    public void processDaosSyncResponse(DaosSyncResponse daosSyncResponse) {
-        deleteDaos(daosSyncResponse.getNonExistDaos());
+    public void processDaosSyncResponse(ArrFund arrFund, DaosSyncResponse daosSyncResponse) {
+        deleteDaos(arrFund, daosSyncResponse.getNonExistDaos());
         updateDaos(daosSyncResponse.getDaos());
     }
 
-    private void deleteDaos(NonexistingDaos nonexistingDaos) {
+    private void deleteDaos(ArrFund arrFund, NonexistingDaos nonexistingDaos) {
         if (nonexistingDaos != null) {
             List<String> daoCodes = nonexistingDaos.getDaoId();
             if (!daoCodes.isEmpty()) {
                 List<ArrDao> arrDaos = daoRepository.findByCodes(daoCodes);
-                daoService.deleteDaos(arrDaos, false);
+                daoService.deleteDaos(arrFund, arrDaos, false);
             }
         }
     }
