@@ -15,13 +15,8 @@ import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.context.ImportPhase;
 import cz.tacr.elza.dataexchange.input.context.ImportPhaseChangeListener;
-import cz.tacr.elza.dataexchange.input.parties.context.PartiesContext;
-import cz.tacr.elza.dataexchange.input.parties.context.PartyInfo;
 import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.projection.ParInstitutionInfo;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.InstitutionRepository;
 
 /**
@@ -43,37 +38,13 @@ class InstitutionWrapperBuilder implements ImportPhaseChangeListener {
         this.instRepository = instRepository;
     }
 
-    public InstitutionWrapper build(ParInstitution entity, PartyInfo partyInfo) {
-        InstitutionWrapper wrapper = new InstitutionWrapper(entity, partyInfo);
-        // check existing institution
-        InstInfo instInfo = partyIdInstInfoMap.get(partyInfo.getEntityId());
-        if (instInfo != null) {
-            // mark existing institution as imported
-            if (instInfo.isPaired()) {
-                throw new DEImportException(
-                        "Party with more than one institution, partyId=" + partyInfo.getImportId());
-            }
-            entity.setInstitutionId(instInfo.getInstitutionId());
-            wrapper.setSaveMethod(SaveMethod.UPDATE);
-            instInfo.setAsPaired();
-            return wrapper;
-        }
-        // new institution -> check multiple institutions for single party
-        if (!referencedPartyIds.add(partyInfo.getEntityId())) {
-            throw new DEImportException(
-                    "Party with more than one institution, partyId=" + partyInfo.getImportId());
-        }
+    public InstitutionWrapper build(ParInstitution entity) {
+        InstitutionWrapper wrapper = new InstitutionWrapper(entity);
         return wrapper;
     }
 
     @Override
     public boolean onPhaseChange(ImportPhase previousPhase, ImportPhase nextPhase, ImportContext context) {
-        PartiesContext partiesCtx = context.getParties();
-        if (nextPhase == ImportPhase.INSTITUTIONS) {
-            // begin -> find institutions by updated parties
-            partyIdInstInfoMap = findInstitutionsByUpdatedParties(partiesCtx.getAllPartyInfo());
-            return true;
-        }
         if (previousPhase == ImportPhase.INSTITUTIONS) {
             // end -> delete not paired institutions and clean up resources
             deleteNotPairedInstitutions(partyIdInstInfoMap.values());
@@ -82,33 +53,6 @@ class InstitutionWrapperBuilder implements ImportPhaseChangeListener {
             return false;
         }
         return !ImportPhase.INSTITUTIONS.isSubsequent(nextPhase);
-    }
-
-    /**
-     * @return mapping from entity id of party to its current institution
-     */
-    private Map<Integer, InstInfo> findInstitutionsByUpdatedParties(Collection<PartyInfo> partyInfoList) {
-        // prepare id list of updated parties
-        List<Integer> partyIds = new ArrayList<>();
-        for (PartyInfo partyInfo : partyInfoList) {
-            if (partyInfo.getSaveMethod().equals(SaveMethod.UPDATE)) {
-                partyIds.add(partyInfo.getEntityId());
-            }
-        }
-        Map<Integer, InstInfo> partyIdInstInfoMap = new HashMap<>();
-        // find existing institutions by its party id
-        for (List<Integer> partyIdBatch : Iterables.partition(partyIds, batchSize)) {
-            List<ParInstitutionInfo> currInsts = instRepository.findInfoByPartyIdIn(partyIdBatch);
-            for (ParInstitutionInfo currInst : currInsts) {
-                InstInfo instInfo = new InstInfo(currInst.getInstitutionId());
-                if (partyIdInstInfoMap.put(currInst.getPartyId(), instInfo) != null) {
-                    throw new SystemException(
-                            "Current party with more than one institution, existingPartyId:" + currInst.getPartyId(),
-                            BaseCode.DB_INTEGRITY_PROBLEM);
-                }
-            }
-        }
-        return partyIdInstInfoMap;
     }
 
     private void deleteNotPairedInstitutions(Collection<InstInfo> instInfoList) {

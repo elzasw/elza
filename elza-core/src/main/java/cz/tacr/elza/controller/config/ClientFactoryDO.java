@@ -30,10 +30,6 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.FilterTools;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
 import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParRelationEntityVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.PersistentSortConfigVO;
 import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
@@ -57,10 +53,6 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -166,37 +158,6 @@ public class ClientFactoryDO {
     }
 
     /**
-     * Vytvoří objekt osoby z předaného VO.
-     *
-     * @param partyVO VO osoby
-     * @return objekt osoby
-     */
-    public ParParty createParty(final ParPartyVO partyVO, final ApState apState) {
-        if (partyVO == null) {
-            return null;
-        }
-
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ParParty party = mapper.map(partyVO, ParParty.class);
-
-        if (CollectionUtils.isNotEmpty(partyVO.getPartyNames())) {
-            List<ParPartyName> partyNames = new ArrayList<>(partyVO.getPartyNames().size());
-            for (ParPartyNameVO partyName : partyVO.getPartyNames()) {
-                ParPartyName partyNameDo = mapper.map(partyName, ParPartyName.class);
-                if (partyName.isPrefferedName()) {
-                    party.setPreferredName(partyNameDo);
-                }
-                partyNames.add(partyNameDo);
-            }
-            party.setPartyNames(partyNames);
-        }
-
-        party.setAccessPoint(apState.getAccessPoint());
-
-        return party;
-    }
-
-    /**
      * Vytvoření hodnoty atributu.
      *
      * @param descItemVO     VO hodnoty atributu
@@ -278,41 +239,6 @@ public class ClientFactoryDO {
                     .map(si -> createStructureItem(si, entry.getKey()))
                     .collect(Collectors.toList()));
         }
-        return result;
-    }
-
-    /**
-     * Vytvoří DO objektu vztahu.
-     *
-     * @param relationVO VO objekt vztahu
-     * @return DO objekt vztahu
-     */
-    public ParRelation createRelation(final ParRelationVO relationVO) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-
-        ParRelation relation = mapper.map(relationVO, ParRelation.class);
-        return relation;
-    }
-
-    /**
-     * Vytvoří seznam DO relation entities z VO objektů.
-     *
-     * @param relationEntities seznam VO relation entities
-     * @return seznam DO
-     */
-    public List<ParRelationEntity> createRelationEntities(@Nullable final Collection<ParRelationEntityVO> relationEntities) {
-        if (relationEntities == null) {
-            return null;
-        }
-
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-
-        List<ParRelationEntity> result = new ArrayList<>(relationEntities.size());
-
-        for (ParRelationEntityVO relationEntity : relationEntities) {
-            result.add(mapper.map(relationEntity, ParRelationEntity.class));
-        }
-
         return result;
     }
 

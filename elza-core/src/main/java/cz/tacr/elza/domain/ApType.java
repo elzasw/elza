@@ -43,13 +43,6 @@ public class ApType {
     @Column(insertable = false, updatable = false)
     private Integer parentApTypeId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParPartyType.class)
-    @JoinColumn(name = "partyTypeId")
-    private ParPartyType partyType;
-
-    @Column(insertable = false, updatable = false, nullable = true)
-    private Integer partyTypeId;
-
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApRuleSystem.class)
     @JoinColumn(name = "ruleSystemId")
     private ApRuleSystem ruleSystem;
@@ -64,19 +57,17 @@ public class ApType {
 
     /**
      * Copy constructor
-     * 
+     *
      * @param src
      */
     protected ApType(ApType src) {
-        // source maybe lazy hibernate obj -> have to read data with methods 
+        // source maybe lazy hibernate obj -> have to read data with methods
         this.apTypeId = src.getApTypeId();
         this.code = src.getCode();
         this.name = src.getName();
         this.readOnly = src.isReadOnly();
         this.parentApType = src.getParentApType();
         this.parentApTypeId = src.getParentApTypeId();
-        this.partyType = src.getPartyType();
-        this.partyTypeId = src.getPartyTypeId();
         this.ruleSystem = src.getRuleSystem();
         this.rulPackage = src.getRulPackage();
     }
@@ -153,7 +144,7 @@ public class ApType {
      * Příznak, zda může daný typ rejstříku obsahovat hesla nebo se jedná jen o
      * "nadtyp".
      *
-     * @param addRecord
+     * @param readOnly
      */
     public void setReadOnly(final boolean readOnly) {
         this.readOnly = readOnly;
@@ -178,32 +169,6 @@ public class ApType {
 
     public Integer getParentApTypeId() {
         return parentApTypeId;
-    }
-
-    /**
-     * Určení, zda hesla daného typu mohou být "abstraktní" osobou/původcem a jakého
-     * typu.
-     *
-     * @return Určení, zda hesla daného typu mohou být "abstraktní" osobou/původcem
-     *         a jakého typu.
-     */
-    public ParPartyType getPartyType() {
-        return partyType;
-    }
-
-    /**
-     * Určení, zda hesla daného typu mohou být "abstraktní" osobou/původcem a jakého
-     * typu.
-     *
-     * @param partyType
-     */
-    public void setPartyType(final ParPartyType partyType) {
-        this.partyType = partyType;
-        this.partyTypeId = partyType != null ? partyType.getPartyTypeId() : null;
-    }
-
-    public Integer getPartyTypeId() {
-        return partyTypeId;
     }
 
     public ApRuleSystem getRuleSystem() {

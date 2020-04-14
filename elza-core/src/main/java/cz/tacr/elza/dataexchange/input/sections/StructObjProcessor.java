@@ -40,7 +40,7 @@ public class StructObjProcessor implements ItemProcessor {
     public void process(Object item) {
         StructuredObject object = (StructuredObject) item;
         StructObjContext objectCtx = processObject(object);
-        processItems(object.getDdOrDoOrDp(), objectCtx);
+        processItems(object.getDdOrDoOrDn(), objectCtx);
     }
 
     private StructObjContext processObject(StructuredObject item) {

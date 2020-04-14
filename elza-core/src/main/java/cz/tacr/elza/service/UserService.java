@@ -103,7 +103,7 @@ public class UserService {
     private PermissionRepository permissionRepository;
 
     @Autowired
-    private PartyService partyService;
+    private AccessPointService accessPointService;
 
     @Autowired
     private IEventNotificationService eventNotificationService;
@@ -116,9 +116,6 @@ public class UserService {
 
     @Autowired
     private ScopeRepository scopeRepository;
-
-    @Autowired
-    private ApNameRepository apNameRepository;
 
     @Autowired
     private WfIssueListRepository issueListRepository;
@@ -918,17 +915,18 @@ public class UserService {
      *
      * @param username uživatelské jméno
      * @param valuesMap mapa typů autentizace + hodnota
-     * @param partyId  identifikátor osoby
+     * @param accessPointId  identifikátor osoby
      * @return vytvořený uživatel
      */
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public UsrUser createUser(@NotEmpty final String username,
                               @NotNull final Map<UsrAuthentication.AuthType, String> valuesMap,
-                              @NotNull final Integer partyId) {
+                              @NotNull final Integer accessPointId) {
 
-        ParParty party = partyService.getParty(partyId);
-        if (party == null) {
-            throw new BusinessException("Osoba neexistuje", RegistryCode.PARTY_NOT_EXIST);
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+
+        if (accessPoint == null) {
+            throw new BusinessException("Přístupový bod neexistuje", RegistryCode.PARTY_NOT_EXIST);
         }
 
         UsrUser user = findByUsername(username);
@@ -938,7 +936,7 @@ public class UserService {
 
         user = new UsrUser();
         user.setActive(true);
-        user.setParty(party);
+        user.setAccessPoint(accessPoint);
         user.setUsername(username);
 
         user = userRepository.save(user);
@@ -1390,11 +1388,11 @@ public class UserService {
     /**
      * Vyhledá list uživatelů podle osoby.
      *
-     * @param party osoba
+     * @param accessPoint osoba
      * @return list uživatelů
      */
-    public List<UsrUser> findUsersByParty(final ParParty party) {
-        return userRepository.findByParty(party);
+    public List<UsrUser> findUsersByAccessPoint(final ApAccessPoint accessPoint) {
+        return userRepository.findByAccessPoint(accessPoint);
     }
 
     /**
@@ -1651,8 +1649,8 @@ public class UserService {
 			UsrUser user = userRepository.findOneWithDetail(userId);
 			Validate.notNull(user, "Failed to get user: {}", userId);
 
-			ApAccessPoint record = user.getParty().getAccessPoint();
-			preferredName = apNameRepository.findPreferredNameByAccessPoint(record).getName();
+			ApAccessPoint record = user.getAccessPoint();
+			//TODO : smazáno - přiřazení preferovaného jména
 		}
 
 		return UserInfoVO.newInstance(userDetail, preferredName);
@@ -1789,7 +1787,7 @@ public class UserService {
 
     /**
      * Create user detail for security context
-     * 
+     *
      * @param user
      * @return
      */

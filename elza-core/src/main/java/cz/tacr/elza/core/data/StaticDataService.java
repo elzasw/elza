@@ -60,21 +60,9 @@ public class StaticDataService {
 
     final CalendarTypeRepository calendarTypeRepository;
 
-    final PartyTypeRepository partyTypeRepository;
-
     final PackageRepository packageRepository;
 
-    final PartyNameFormTypeRepository partyNameFormTypeRepository;
-
-    final ComplementTypeRepository complementTypeRepository;
-
-    final PartyTypeComplementTypeRepository partyTypeComplementTypeRepository;
-
     final ApTypeRepository apTypeRepository;
-
-    final RelationTypeRepository relationTypeRepository;
-
-    final RelationTypeRoleTypeRepository relationTypeRoleTypeRepository;
 
     final ApExternalIdTypeRepository apEidTypeRepository;
 
@@ -92,16 +80,10 @@ public class StaticDataService {
                              final ItemTypeSpecAssignRepository itemTypeSpecAssignRepository,
                              final DataTypeRepository dataTypeRepository,
                              final CalendarTypeRepository calendarTypeRepository,
-                             final PartyTypeRepository partyTypeRepository,
                              final PackageRepository packageRepository,
                              final StructuredTypeRepository structuredTypeRepository,
                              final StructureDefinitionRepository structureDefinitionRepository,
-                             final PartyNameFormTypeRepository partyNameFormTypeRepository,
-                             final ComplementTypeRepository complementTypeRepository,
-                             final PartyTypeComplementTypeRepository partyTypeComplementTypeRepository,
                              final ApTypeRepository apTypeRepository,
-                             final RelationTypeRepository relationTypeRepository,
-                             final RelationTypeRoleTypeRepository relationTypeRoleTypeRepository,
                              final ApExternalIdTypeRepository apEidTypeRepository,
                              final SysLanguageRepository sysLanguageRepository,
                              final RegistryRoleRepository registryRoleRepository,
@@ -113,16 +95,10 @@ public class StaticDataService {
         this.itemTypeSpecAssignRepository = itemTypeSpecAssignRepository;
         this.dataTypeRepository = dataTypeRepository;
         this.calendarTypeRepository = calendarTypeRepository;
-        this.partyTypeRepository = partyTypeRepository;
         this.packageRepository = packageRepository;
         this.structuredTypeRepository = structuredTypeRepository;
         this.structureDefinitionRepository = structureDefinitionRepository;
-        this.partyNameFormTypeRepository = partyNameFormTypeRepository;
-        this.complementTypeRepository = complementTypeRepository;
-        this.partyTypeComplementTypeRepository = partyTypeComplementTypeRepository;
         this.apTypeRepository = apTypeRepository;
-        this.relationTypeRepository = relationTypeRepository;
-        this.relationTypeRoleTypeRepository = relationTypeRoleTypeRepository;
         this.apEidTypeRepository = apEidTypeRepository;
         this.sysLanguageRepository = sysLanguageRepository;
         this.registryRoleRepository = registryRoleRepository;
@@ -137,7 +113,6 @@ public class StaticDataService {
     public void init() {
         // init type enums and active provider
         DataType.init(dataTypeRepository);
-        PartyType.init(partyTypeRepository);
         CalendarType.init(calendarTypeRepository);
         activeProvider = createProvider();
 

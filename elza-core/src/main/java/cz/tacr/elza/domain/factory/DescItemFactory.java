@@ -66,9 +66,6 @@ public class DescItemFactory implements InitializingBean {
     private DataIntegerRepository dataIntegerRepository;
 
     @Autowired
-    private DataPartyRefRepository dataPartyRefRepository;
-
-    @Autowired
     private DataRecordRefRepository dataRecordRefRepository;
 
     @Autowired
@@ -124,7 +121,6 @@ public class DescItemFactory implements InitializingBean {
         defineMapCoordinates();
         defineMapFormattedText();
         defineMapInt();
-        defineMapPartyRef();
         defineMapRecordRef();
         defineMapString();
         defineMapText();
@@ -340,42 +336,6 @@ public class DescItemFactory implements InitializingBean {
     }
 
     /**
-     * Nadefinování pravidel pro převod formátu PartyRef.
-     */
-    private void defineMapPartyRef() {
-        factory.classMap(ArrItemPartyRef.class, ArrDataPartyRef.class)
-                .customize(new CustomMapper<ArrItemPartyRef, ArrDataPartyRef>() {
-
-                    @Override
-                    public void mapAtoB(final ArrItemPartyRef arrItemPartyRef,
-                                        final ArrDataPartyRef arrDataPartyRef,
-                                        final MappingContext context) {
-                        arrDataPartyRef.setParty(arrItemPartyRef.getParty());
-                    }
-
-                    @Override
-                    public void mapBtoA(final ArrDataPartyRef arrDataPartyRef,
-                                        final ArrItemPartyRef arrItemPartyRef,
-                                        final MappingContext context) {
-                        arrItemPartyRef.setParty(arrDataPartyRef.getParty());
-                    }
-
-                }).register();
-
-        factory.classMap(ArrDataPartyRef.class, ArrDataPartyRef.class)
-                .customize(new CustomMapper<ArrDataPartyRef, ArrDataPartyRef>() {
-                    @Override
-                    public void mapAtoB(final ArrDataPartyRef arrDataPartyRef,
-                                        final ArrDataPartyRef arrDataPartyRefNew,
-                                        final MappingContext context) {
-                        arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
-                        //arrDataPartyRefNew.setItem(arrDataPartyRef.getItem());
-                        arrDataPartyRefNew.setParty(arrDataPartyRef.getParty());
-                    }
-                }).register();
-    }
-
-    /**
      * Nadefinování pravidel pro převod formátu PacketRef.
      */
     private void defineMapStructureRef() {
@@ -419,17 +379,17 @@ public class DescItemFactory implements InitializingBean {
                 .customize(new CustomMapper<ArrItemFileRef, ArrDataFileRef>() {
 
                     @Override
-                    public void mapAtoB(final ArrItemFileRef arrDescItemPartyRef,
-                                        final ArrDataFileRef arrDataPartyRef,
+                    public void mapAtoB(final ArrItemFileRef arrDescItemFileRef,
+                                        final ArrDataFileRef arrDataFileRef,
                                         final MappingContext context) {
-                        arrDataPartyRef.setFile(arrDescItemPartyRef.getFile());
+                        arrDataFileRef.setFile(arrDescItemFileRef.getFile());
                     }
 
                     @Override
-                    public void mapBtoA(final ArrDataFileRef arrDataPartyRef,
-                                        final ArrItemFileRef arrDescItemPartyRef,
+                    public void mapBtoA(final ArrDataFileRef arrDataFileRef,
+                                        final ArrItemFileRef arrDescItemFileRef,
                                         final MappingContext context) {
-                        arrDescItemPartyRef.setFile(arrDataPartyRef.getFile());
+                        arrDescItemFileRef.setFile(arrDataFileRef.getFile());
                     }
 
                 }).register();
@@ -437,12 +397,11 @@ public class DescItemFactory implements InitializingBean {
         factory.classMap(ArrDataFileRef.class, ArrDataFileRef.class)
                 .customize(new CustomMapper<ArrDataFileRef, ArrDataFileRef>() {
                     @Override
-                    public void mapAtoB(final ArrDataFileRef arrDataPartyRef,
+                    public void mapAtoB(final ArrDataFileRef arrDataFileRef,
                                         final ArrDataFileRef arrDataPartyRefNew,
                                         final MappingContext context) {
-                        arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
-                        //arrDataPartyRefNew.setItem(arrDataPartyRef.getItem());
-                        arrDataPartyRefNew.setFile(arrDataPartyRef.getFile());
+                        arrDataPartyRefNew.setDataType(arrDataFileRef.getDataType());
+                        arrDataPartyRefNew.setFile(arrDataFileRef.getFile());
                     }
                 }).register();
     }
@@ -873,7 +832,6 @@ public class DescItemFactory implements InitializingBean {
         mapRepository = new LinkedHashMap<>();
         mapRepository.put(ArrDataCoordinates.class, dataCoordinatesRepository);
         mapRepository.put(ArrDataInteger.class, dataIntegerRepository);
-        mapRepository.put(ArrDataPartyRef.class, dataPartyRefRepository);
         mapRepository.put(ArrDataRecordRef.class, dataRecordRefRepository);
         mapRepository.put(ArrDataString.class, dataStringRepository);
         mapRepository.put(ArrDataText.class, dataTextRepository);
@@ -982,8 +940,6 @@ public class DescItemFactory implements InitializingBean {
 			dataNew = facade.map(srcData, ArrDataCoordinates.class);
 		} else if (srcData instanceof ArrDataInteger) {
 			dataNew = facade.map(srcData, ArrDataInteger.class);
-		} else if (srcData instanceof ArrDataPartyRef) {
-			dataNew = facade.map(srcData, ArrDataPartyRef.class);
 		} else if (srcData instanceof ArrDataRecordRef) {
 			dataNew = facade.map(srcData, ArrDataRecordRef.class);
 		} else if (srcData instanceof ArrDataString) {

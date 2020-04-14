@@ -57,14 +57,6 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
     @Type(type = "org.hibernate.type.TextType")
     private String errorDescription;
 
-    // without getter/setter only for JPA query
-    @OneToMany(mappedBy = "accessPoint")
-    private List<ApName> names;
-
-    // without getter/setter only for JPA query
-    @OneToMany(mappedBy = "accessPoint")
-    private List<ApDescription> descriptions;
-
     @Column
     private LocalDateTime lastUpdate;
 

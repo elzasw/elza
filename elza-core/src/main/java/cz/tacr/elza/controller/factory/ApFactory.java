@@ -33,17 +33,11 @@ public class ApFactory {
 
     private final ApStateRepository stateRepository;
 
-    private final ApNameRepository nameRepository;
-
-    private final ApDescriptionRepository descRepository;
-
     private final ApExternalIdRepository eidRepository;
 
     private final ScopeRepository scopeRepository;
 
     private final StaticDataService staticDataService;
-
-    private final ApNameItemRepository nameItemRepository;
 
     private final ApPartRepository partRepository;
 
@@ -53,29 +47,21 @@ public class ApFactory {
 
     private final RuleFactory ruleFactory;
 
-    private final PartyRepository partyRepository;
-
     private final ClientFactoryVO factoryVO;
 
     @Autowired
     public ApFactory(final ApAccessPointRepository apRepository,
                      final ApStateRepository stateRepository,
-                     final ApNameRepository nameRepository,
-                     final ApDescriptionRepository descRepository,
                      final ApExternalIdRepository eidRepository,
                      final ScopeRepository scopeRepository,
                      final StaticDataService staticDataService,
-                     final ApNameItemRepository nameItemRepository,
                      final ApPartRepository partRepository,
                      final ApItemRepository itemRepository,
                      final RuleService ruleService,
                      final RuleFactory ruleFactory,
-                     final PartyRepository partyRepository,
                      final ClientFactoryVO factoryVO) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
-        this.nameRepository = nameRepository;
-        this.descRepository = descRepository;
         this.eidRepository = eidRepository;
         this.scopeRepository = scopeRepository;
         this.staticDataService = staticDataService;
@@ -84,7 +70,6 @@ public class ApFactory {
         this.itemRepository = itemRepository;
         this.ruleService = ruleService;
         this.ruleFactory = ruleFactory;
-        this.partyRepository = partyRepository;
         this.factoryVO = factoryVO;
     }
 
@@ -93,17 +78,13 @@ public class ApFactory {
      */
     public ApRecordSimple createVOSimple(ApState apState) {
         ApAccessPoint ap = apState.getAccessPoint();
-        ApName prefName = nameRepository.findPreferredNameByAccessPoint(ap);
-        ApDescription desc = descRepository.findByAccessPoint(ap);
         // create VO
         ApRecordSimple vo = new ApRecordSimple();
         vo.setTypeId(apState.getApTypeId());
         vo.setId(ap.getAccessPointId());
-        vo.setRecord(prefName.getFullName());
+        //TODO : chybí metoda pro získání preferovaného jména
+        vo.setRecord(null);
         vo.setScopeName(apState.getScope().getName());
-        if (desc != null) {
-            vo.setCharacteristics(desc.getDescription());
-        }
         return vo;
     }
 
@@ -333,11 +314,6 @@ public class ApFactory {
         return result;
     }
 
-    public ApAccessPointNameVO createVO(ApName name) {
-        StaticDataProvider staticData = staticDataService.getData();
-        return ApAccessPointNameVO.newInstance(name, staticData);
-    }
-
     public ApFragmentVO createVO(final ApPart fragment, final boolean fillForm) {
         ApFragmentVO fragmentVO = createVO(fragment);
         if (fillForm) {
@@ -345,14 +321,6 @@ public class ApFactory {
 //            fragmentVO.setForm(createFormVO(fragment));
         }
         return fragmentVO;
-    }
-
-    public ApAccessPointNameVO createVO(final ApName name, final ApType type, boolean fillForm) {
-        ApAccessPointNameVO nameVO = createVO(name);
-        if (fillForm) {
-            nameVO.setForm(createFormVO(name, type));
-        }
-        return nameVO;
     }
 
     public ApFragmentVO createVO(final ApPart fragment) {
@@ -380,13 +348,8 @@ public class ApFactory {
         return form;
     }
 
-    private ApFormVO createFormVO(ApName name, ApType type) {
-        List<ApItem> nameItems = new ArrayList<>(nameItemRepository.findValidItemsByName(name));
-        List<RulItemTypeExt> rulItemTypes = ruleService.getApItemTypesInternal(type, nameItems, ApRule.RuleType.NAME_ITEMS);
-
+    private ApFormVO createFormVO(ApType type) {
         ApFormVO form = new ApFormVO();
-        form.setItemTypes(createItemTypesVO(rulItemTypes));
-        form.setItems(createItemsVO(nameItems));
         return form;
     }
 
@@ -481,9 +444,6 @@ public class ApFactory {
                 break;
             case COORDINATES:
                 item = new ApItemCoordinatesVO(apItem);
-                break;
-            case PARTY_REF:
-                item = new ApItemPartyRefVO(apItem);
                 break;
             case RECORD_REF:
                 item = new ApItemAccessPointRefVO(apItem);

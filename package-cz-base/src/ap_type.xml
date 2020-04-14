@@ -4,27 +4,27 @@
         <hierarchical>false</hierarchical>
         <read-only>true</read-only>
     </ap-type>
-    <ap-type code="REGION" party-type="GROUP_PARTY" parent-ap-type="PARTY_GROUP">
+    <ap-type code="REGION" parent-ap-type="PARTY_GROUP">
         <name>administrativně vymezená území s vlastní správou</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="PUBLIC_ADMINISTRATION" party-type="GROUP_PARTY" parent-ap-type="PARTY_GROUP">
+    <ap-type code="PUBLIC_ADMINISTRATION" parent-ap-type="PARTY_GROUP">
         <name>orgány, organizační složky a příspěvkové organizace veřejné správy</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="ORGANIZATION" party-type="GROUP_PARTY" parent-ap-type="PARTY_GROUP">
+    <ap-type code="ORGANIZATION" parent-ap-type="PARTY_GROUP">
         <name>sdružení organizací</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="ARMY" party-type="GROUP_PARTY" parent-ap-type="PARTY_GROUP">
+    <ap-type code="ARMY" parent-ap-type="PARTY_GROUP">
         <name>vojenské a bezpečnostní jednotky</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="COMPANY" party-type="GROUP_PARTY" parent-ap-type="PARTY_GROUP">
+    <ap-type code="COMPANY" parent-ap-type="PARTY_GROUP">
         <other-codes>
            <!-- Bug4508 - odstranění "pojmenované částí organizací" -->
            <other-code code="BRANCH" />
@@ -33,32 +33,32 @@
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="POLITICAL_PARTY" party-type="GROUP_PARTY" parent-ap-type="PARTY_GROUP">
+    <ap-type code="POLITICAL_PARTY" parent-ap-type="PARTY_GROUP">
         <name>politické organizace</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="CHURCH" party-type="GROUP_PARTY" parent-ap-type="PARTY_GROUP">
+    <ap-type code="CHURCH" parent-ap-type="PARTY_GROUP">
         <name>náboženské organizace a instituce</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="HEALTH_AND_EDU" party-type="GROUP_PARTY" parent-ap-type="PARTY_GROUP">
+    <ap-type code="HEALTH_AND_EDU" parent-ap-type="PARTY_GROUP">
         <name>kulturní, výchovné, výzkumné a zdravotnické organizace a instituce</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="CHARITY" party-type="GROUP_PARTY" parent-ap-type="PARTY_GROUP">
+    <ap-type code="CHARITY" parent-ap-type="PARTY_GROUP">
         <name>nadace a nadační fondy</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="GUILD" party-type="GROUP_PARTY" parent-ap-type="PARTY_GROUP">
+    <ap-type code="GUILD" parent-ap-type="PARTY_GROUP">
         <name>profesní a zájmové organizace</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="CLUB" party-type="GROUP_PARTY" parent-ap-type="PARTY_GROUP">
+    <ap-type code="CLUB" parent-ap-type="PARTY_GROUP">
         <name>spolky, společenské organizace</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
@@ -68,7 +68,7 @@
         <hierarchical>false</hierarchical>
         <read-only>true</read-only>
     </ap-type>
-    <ap-type code="PERSON_INDIVIDUAL" party-type="PERSON" parent-ap-type="PERSON">
+    <ap-type code="PERSON_INDIVIDUAL" parent-ap-type="PERSON">
         <name>fyzická osoba</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
@@ -93,12 +93,12 @@
         <hierarchical>false</hierarchical>
         <read-only>true</read-only>
     </ap-type>
-    <ap-type code="FAMILY" party-type="DYNASTY" parent-ap-type="DYNASTY">
+    <ap-type code="FAMILY" parent-ap-type="DYNASTY">
         <name>rodina, rod</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="FAMILY_BRANCH" party-type="DYNASTY" parent-ap-type="DYNASTY">
+    <ap-type code="FAMILY_BRANCH" parent-ap-type="DYNASTY">
         <name>větev rodu</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
@@ -158,7 +158,7 @@
         <hierarchical>false</hierarchical>
         <read-only>true</read-only>
     </ap-type>
-    <ap-type code="EVENT_EVENT" party-type="EVENT" parent-ap-type="EVENT">
+    <ap-type code="EVENT_EVENT" parent-ap-type="EVENT">
         <other-codes>
            <!-- Bug4508 - odstranění "ozbrojené střety (bitvy, války, obléhání...)" -->
            <other-code code="EVENT_MILITARY" />
@@ -167,12 +167,12 @@
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="EVENT_TRADITION" party-type="EVENT" parent-ap-type="EVENT">
+    <ap-type code="EVENT_TRADITION" parent-ap-type="EVENT">
         <name>lidové zvyky, významné dny a svátky</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="EVENT_NATURE" party-type="EVENT" parent-ap-type="EVENT">
+    <ap-type code="EVENT_NATURE" parent-ap-type="EVENT">
         <name>dočasné přírodní jevy</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>

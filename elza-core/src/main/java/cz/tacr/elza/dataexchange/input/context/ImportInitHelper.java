@@ -21,21 +21,7 @@ public class ImportInitHelper {
 
     private final ApAccessPointRepository apRepository;
 
-    private final ApNameRepository apNameRepository;
-
-    private final ApDescriptionRepository apDescRepository;
-
     private final ApExternalIdRepository apEidRepository;
-
-    private final PartyRepository partyRepository;
-
-    private final PartyNameRepository nameRepository;
-
-    private final PartyNameComplementRepository nameComplementRepository;
-
-    private final PartyGroupIdentifierRepository groupIdentifierRepository;
-
-    private final UnitdateRepository unitdateRepository;
 
     private final StructObjValueService structObjService;
 
@@ -51,14 +37,7 @@ public class ImportInitHelper {
                             final ArrangementService arrangementService,
                             final LevelRepository levelRepository,
                             final ApAccessPointRepository apRepository,
-                            final ApNameRepository apNameRepository,
-                            final ApDescriptionRepository apDescRepository,
                             final ApExternalIdRepository apEidRepository,
-                            final PartyRepository partyRepository,
-                            final PartyNameRepository nameRepository,
-                            final PartyNameComplementRepository nameComplementRepository,
-                            final PartyGroupIdentifierRepository groupIdentifierRepository,
-                            final UnitdateRepository unitdateRepository,
                             final StructObjValueService structObjService,
                             final AccessPointService accessPointService,
                             final DmsService dmsService,
@@ -69,14 +48,7 @@ public class ImportInitHelper {
         this.arrangementService = arrangementService;
         this.levelRepository = levelRepository;
         this.apRepository = apRepository;
-        this.apNameRepository = apNameRepository;
-        this.apDescRepository = apDescRepository;
         this.apEidRepository = apEidRepository;
-        this.partyRepository = partyRepository;
-        this.nameRepository = nameRepository;
-        this.nameComplementRepository = nameComplementRepository;
-        this.groupIdentifierRepository = groupIdentifierRepository;
-        this.unitdateRepository = unitdateRepository;
         this.structObjService = structObjService;
         this.accessPointService = accessPointService;
         this.dmsService = dmsService;
@@ -111,36 +83,8 @@ public class ImportInitHelper {
         return apRepository;
     }
 
-    public ApNameRepository getApNameRepository() {
-        return apNameRepository;
-    }
-
-    public ApDescriptionRepository getApDescRepository() {
-        return apDescRepository;
-    }
-
     public ApExternalIdRepository getApEidRepository() {
         return apEidRepository;
-    }
-
-    public PartyRepository getPartyRepository() {
-        return partyRepository;
-    }
-
-    public PartyNameRepository getNameRepository() {
-        return nameRepository;
-    }
-
-    public PartyNameComplementRepository getNameComplementRepository() {
-        return nameComplementRepository;
-    }
-
-    public PartyGroupIdentifierRepository getGroupIdentifierRepository() {
-        return groupIdentifierRepository;
-    }
-
-    public UnitdateRepository getUnitdateRepository() {
-        return unitdateRepository;
     }
 
     public StructObjValueService getStructObjService() {

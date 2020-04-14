@@ -11,6 +11,7 @@ import javax.transaction.Transactional.TxType;
 
 import cz.tacr.elza.domain.*;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -76,6 +77,7 @@ public class TypeUpdateTest extends AbstractServiceTest {
     }
 
     // test will migrate values from SRD_STRING2DATE to DATE
+    @Ignore //TODO: smazat po změně importu institucí
     @Test
     @Transactional(TxType.REQUIRES_NEW)
     public void updateTypeTest2() {

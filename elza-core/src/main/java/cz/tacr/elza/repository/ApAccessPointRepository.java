@@ -10,7 +10,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 
 /**
@@ -19,16 +18,6 @@ import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 @Repository
 public interface ApAccessPointRepository
         extends ElzaJpaRepository<ApAccessPoint, Integer>, ApAccessPointRepositoryCustom {
-
-    /**
-     * Najde rejstříková hesla pro dané osoby.
-     *
-     * @param parties
-     *            seznam osob
-     * @return seznam rejstříkových hesel pro osoby
-     */
-    @Query("SELECT p.accessPoint FROM par_party p WHERE p IN (?1)")
-    List<ApAccessPoint> findByParties(Collection<ParParty> parties);
 
     /**
      * Najde heslo podle UUID.
@@ -56,19 +45,14 @@ public interface ApAccessPointRepository
     @Query("DELETE FROM ap_access_point ap WHERE ap.state = 'TEMP'")
     void removeTemp();
 
-    @Query("SELECT DISTINCT ap.accessPointId FROM ap_name n JOIN n.accessPoint ap WHERE ap.state = 'INIT' OR n.state = 'INIT'")
+    @Query("SELECT DISTINCT ap.accessPointId FROM ap_access_point ap WHERE ap.state = 'INIT'")
     Set<Integer> findInitAccessPointIds();
-
-    @Query("SELECT distinct i.itemId" +
-            " FROM arr_item i" +
-            " JOIN arr_data_party_ref pr ON (pr.dataId = i.dataId)" +
-            " WHERE pr.party.accessPoint.accessPointId = ?1")
-    List<Integer> findItemIdByAccessPointIdOverDataPartyRef(Integer accessPointId);
-
 
     @Query("SELECT distinct i.itemId" +
             " FROM arr_item i" +
             " JOIN arr_data_record_ref rr ON (rr.dataId = i.dataId)" +
             " WHERE rr.record.accessPointId = ?1")
     List<Integer> findItemIdByAccessPointIdOverDataRecordRef(Integer accessPointId);
+
+
 }

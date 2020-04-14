@@ -306,8 +306,6 @@ public class ImportFromFund implements ImportSource {
             result = new ItemUnitdateImpl(item, (ArrDataUnitdate) itemData);
         } else if (itemData instanceof ArrDataFileRef) {
             result = new ItemFileRefImpl(item, (ArrDataFileRef) itemData);
-        } else if (itemData instanceof ArrDataPartyRef) {
-            result = new ItemPartyRefImpl(item, (ArrDataPartyRef) itemData);
         } else if (itemData instanceof ArrDataRecordRef) {
             result = new ItemRecordRefImpl(item, (ArrDataRecordRef) itemData);
         } else if (itemData instanceof ArrDataStructureRef) {
@@ -503,20 +501,6 @@ public class ImportFromFund implements ImportSource {
         @Override
         public Integer getStructureDataId() {
             return structureDataId;
-        }
-    }
-
-    private class ItemPartyRefImpl extends ItemImpl implements ItemPartyRef {
-
-        private final Integer partyId;
-
-        public ItemPartyRefImpl(final ArrDescItem item, final ArrDataPartyRef itemData) {
-            super(item);
-            partyId = itemData.getPartyId();
-        }
-
-        public Integer getPartyId() {
-            return partyId;
         }
     }
 

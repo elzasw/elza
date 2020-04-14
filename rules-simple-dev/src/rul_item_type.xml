@@ -144,7 +144,7 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="SRD_ORIGINATOR" data-type="PARTY_REF">
+    <item-type code="SRD_ORIGINATOR" data-type="RECORD_REF">
         <name>Původce</name>
         <shortcut>Původce</shortcut>
         <description>ZP4.3.1 Odkaz na původce</description>

@@ -8,12 +8,9 @@
 	jxb:extensionBindingPrefixes="xjc">
 
 	<jxb:bindings schemaLocation="elza-schema-v2.xsd">
-	
+
 		<jxb:bindings node="//xs:complexType[@name='DescriptionItem']">
 			<inheritance:implements>cz.tacr.elza.dataexchange.common.items.ImportableItem</inheritance:implements>
-		</jxb:bindings>
-		<jxb:bindings node="//xs:complexType[@name='DescriptionItemPartyRef']">
-			<jxb:class implClass="cz.tacr.elza.dataexchange.common.items.DescriptionItemPartyRefImpl"/>
 		</jxb:bindings>
 		<jxb:bindings node="//xs:complexType[@name='DescriptionItemAPRef']">
 			<jxb:class implClass="cz.tacr.elza.dataexchange.common.items.DescriptionItemAPRefImpl"/>
@@ -32,7 +29,7 @@
 		</jxb:bindings>
 		<jxb:bindings node="//xs:complexType[@name='DescriptionItemStructObjectRef']">
 			<jxb:class implClass="cz.tacr.elza.dataexchange.common.items.DescriptionItemStructObjectRefImpl"/>
-		</jxb:bindings> 
+		</jxb:bindings>
 		<jxb:bindings node="//xs:complexType[@name='DescriptionItemDecimal']">
 			<jxb:class implClass="cz.tacr.elza.dataexchange.common.items.DescriptionItemDecimalImpl"/>
 		</jxb:bindings>

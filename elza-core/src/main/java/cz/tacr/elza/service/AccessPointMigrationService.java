@@ -28,8 +28,6 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApDescription;
-import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApRule;
 import cz.tacr.elza.domain.ApRuleSystem;
 import cz.tacr.elza.domain.ApState;
@@ -43,8 +41,6 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApDescriptionRepository;
-import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.ApRuleRepository;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.vo.AccessPointMigrate;
@@ -63,8 +59,6 @@ public class AccessPointMigrationService {
     private final ApRuleRepository ruleRepository;
     private final ResourcePathResolver resourcePathResolver;
     private final ApAccessPointRepository accessPointRepository;
-    private final ApNameRepository apNameRepository;
-    private final ApDescriptionRepository apDescriptionRepository;
     private final AccessPointDataService apDataService;
     private final AccessPointService accessPointService;
     private final StaticDataService staticDataService;
@@ -75,16 +69,12 @@ public class AccessPointMigrationService {
     public AccessPointMigrationService(final ApRuleRepository ruleRepository,
                                        final ResourcePathResolver resourcePathResolver,
                                        final ApAccessPointRepository accessPointRepository,
-                                       final ApNameRepository apNameRepository,
-                                       final ApDescriptionRepository apDescriptionRepository,
                                        final AccessPointDataService apDataService,
                                        final AccessPointService accessPointService,
                                        final StaticDataService staticDataService) {
         this.ruleRepository = ruleRepository;
         this.resourcePathResolver = resourcePathResolver;
         this.accessPointRepository = accessPointRepository;
-        this.apNameRepository = apNameRepository;
-        this.apDescriptionRepository = apDescriptionRepository;
         this.apDataService = apDataService;
         this.accessPointService = accessPointService;
         this.staticDataService = staticDataService;
@@ -110,40 +100,25 @@ public class AccessPointMigrationService {
         ApType apType = apState.getApType();
         ApRuleSystem ruleSystem = apType.getRuleSystem();
 
-        List<ApName> names = apNameRepository.findByAccessPoint(accessPoint);
-        Map<Integer, ApName> nameMap = names.stream().collect(Collectors.toMap(ApName::getNameId, Function.identity()));
-        ApDescription description = apDescriptionRepository.findByAccessPoint(accessPoint);
-
         File groovyFile = findGroovyFile(ruleSystem);
-        AccessPointMigrate result = executeMigrationScript(accessPoint, names, description, groovyFile);
+        AccessPointMigrate result = executeMigrationScript(accessPoint, groovyFile);
 
         List<ApUpdateItemVO> apItems = new ArrayList<>();
         for (SimpleItem item : result.getItems()) {
             apItems.add(createUpdateItemVO(item));
         }
 
-        Map<ApName, List<ApUpdateItemVO>> nameItemsMap = new HashMap<>();
-        for (NameMigrate name : result.getNames()) {
-            ApName apName = nameMap.get(name.getId());
-            List<ApUpdateItemVO> itemsVO = nameItemsMap.computeIfAbsent(apName, k -> new ArrayList<>());
-            for (SimpleItem item : name.getItems()) {
-                itemsVO.add(createUpdateItemVO(item));
-            }
-        }
-
-        accessPointService.migrateApItems(apState, apItems, nameItemsMap);
+        accessPointService.migrateApItems(apState, apItems);
     }
 
     /**
      * Vykonání skriptu pro sestavení strukturovaných položek.
      *
      * @param accessPoint přístupový bod
-     * @param names       jména přístupového bodu
-     * @param description charakteristika přístupového bodu
      * @param groovyFile  migrační souboru
      * @return výsledek migrace
      */
-    protected AccessPointMigrate executeMigrationScript(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint, final List<ApName> names, final ApDescription description, final File groovyFile) {
+    protected AccessPointMigrate executeMigrationScript(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint, final File groovyFile) {
         GroovyScriptService.GroovyScriptFile groovyScriptFile = groovyScriptMap.get(groovyFile);
         if (groovyScriptFile == null) {
             groovyScriptFile = new GroovyScriptService.GroovyScriptFile(groovyFile);
@@ -151,7 +126,7 @@ public class AccessPointMigrationService {
         }
 
         Map<String, Object> input = new HashMap<>();
-        input.put(AP, ModelFactory.createApMigrate(accessPoint, names, description));
+        input.put(AP, ModelFactory.createApMigrate(accessPoint));
 
         return (AccessPointMigrate) groovyScriptFile.evaluate(input);
     }

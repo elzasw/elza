@@ -1,32 +1,15 @@
 package cz.tacr.elza.dataexchange.input.aps.context;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.input.ApChangeHolder;
 import cz.tacr.elza.dataexchange.input.DEImportException;
-import cz.tacr.elza.dataexchange.input.context.ImportContext;
-import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
-import cz.tacr.elza.dataexchange.input.context.ImportPhase;
-import cz.tacr.elza.dataexchange.input.context.ImportPhaseChangeListener;
-import cz.tacr.elza.dataexchange.input.context.ObservableImport;
+import cz.tacr.elza.dataexchange.input.context.*;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApChange;
-import cz.tacr.elza.domain.ApDescription;
-import cz.tacr.elza.domain.ApExternalId;
-import cz.tacr.elza.domain.ApExternalIdType;
-import cz.tacr.elza.domain.ApFulltextProviderImpl;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.SysLanguage;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
+
+import java.util.*;
 
 /**
  * Context for data exchange access points.
@@ -52,10 +35,6 @@ public class AccessPointsContext {
     private final List<AccessPointWrapper> apQueue = new ArrayList<>();
 
     private final List<ApExternalIdWrapper> eidQueue = new ArrayList<>();
-
-    private final List<ApDescriptionWrapper> descQueue = new ArrayList<>();
-
-    private final List<ApNameWrapper> nameQueue = new ArrayList<>();
 
     public AccessPointsContext(StorageManager storageManager, int batchSize, ApScope scope, ApChangeHolder changeHolder,
                                StaticDataProvider staticData, ImportInitHelper initHelper) {
@@ -129,34 +108,12 @@ public class AccessPointsContext {
         }
     }
 
-    public void addDescription(ApDescription entity, AccessPointInfo apInfo) {
-        descQueue.add(new ApDescriptionWrapper(entity, apInfo));
-        apInfo.onEntityQueued();
-        if (descQueue.size() > batchSize) {
-            storeDescriptions(true);
-        }
-    }
-
-    public void addName(ApName entity, AccessPointInfo apInfo) {
-        if (entity.isPreferredName()) {
-            String fulltext = ApFulltextProviderImpl.createFulltext(entity);
-            apInfo.setFulltext(fulltext);
-        }
-        nameQueue.add(new ApNameWrapper(entity, apInfo));
-        apInfo.onEntityQueued();
-        if (nameQueue.size() >= batchSize) {
-            storeNames(true);
-        }
-    }
-
     /**
      * Store all queued entities.
      */
     public void storeAll() {
         storeAccessPoints();
         storeExternalIds(false);
-        storeDescriptions(false);
-        storeNames(false);
     }
 
     public void storeAccessPoints() {
@@ -170,22 +127,6 @@ public class AccessPointsContext {
         }
         storageManager.storeGeneric(eidQueue);
         eidQueue.clear();
-    }
-
-    private void storeDescriptions(boolean storeReferenced) {
-        if (storeReferenced) {
-            storeAccessPoints();
-        }
-        storageManager.storeGeneric(descQueue);
-        descQueue.clear();
-    }
-
-    private void storeNames(boolean storeReferenced) {
-        if (storeReferenced) {
-            storeAccessPoints();
-        }
-        storageManager.storeGeneric(nameQueue);
-        nameQueue.clear();
     }
 
     public int nextNameObjectId() {

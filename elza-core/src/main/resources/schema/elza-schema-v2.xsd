@@ -241,21 +241,6 @@ Type: Integer</xs:documentation>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<xs:complexType name="DescriptionItemPartyRef">
-		<xs:annotation>
-			<xs:documentation>Party reference</xs:documentation>
-		</xs:annotation>
-		<xs:complexContent>
-			<xs:extension base="e:DescriptionItem">
-				<xs:sequence/>
-				<xs:attribute name="paid" use="optional" type="e:Id">
-					<xs:annotation>
-						<xs:documentation>Party ID</xs:documentation>
-					</xs:annotation>
-				</xs:attribute>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
 	<xs:complexType name="DescriptionItemString">
 		<xs:annotation>
 			<xs:documentation>Description item for single String value. This is most generic description item. It can be used to store values of other types.
@@ -589,11 +574,6 @@ Each file has name and its content - binary data.</xs:documentation>
 				<xs:element name="do" type="e:DescriptionItemStructObjectRef" minOccurs="1" maxOccurs="1">
 					<xs:annotation>
 						<xs:documentation>Description item for packet</xs:documentation>
-					</xs:annotation>
-				</xs:element>
-				<xs:element name="dp" type="e:DescriptionItemPartyRef" minOccurs="1" maxOccurs="1">
-					<xs:annotation>
-						<xs:documentation>Party reference</xs:documentation>
 					</xs:annotation>
 				</xs:element>
 				<xs:element name="dt" type="e:DescriptionItemUnitDate" minOccurs="1" maxOccurs="1">
@@ -1055,11 +1035,6 @@ This is ID of the created party</xs:documentation>
 				<xs:element name="do" type="e:DescriptionItemStructObjectRef" minOccurs="1" maxOccurs="1">
 					<xs:annotation>
 						<xs:documentation>Description item for packet</xs:documentation>
-					</xs:annotation>
-				</xs:element>
-				<xs:element name="dp" type="e:DescriptionItemPartyRef" minOccurs="1" maxOccurs="1">
-					<xs:annotation>
-						<xs:documentation>Party reference</xs:documentation>
 					</xs:annotation>
 				</xs:element>
 				<xs:element name="dt" type="e:DescriptionItemUnitDate" minOccurs="1" maxOccurs="1">
