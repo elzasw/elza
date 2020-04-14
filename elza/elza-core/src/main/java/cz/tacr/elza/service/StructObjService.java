@@ -49,10 +49,8 @@ import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.StructObjCode;
 import cz.tacr.elza.packageimport.xml.SettingStructureTypes;
@@ -92,6 +90,7 @@ public class StructObjService {
     private final EventNotificationService notificationService;
     private final SettingsService settingsService;
     private final StaticDataService staticDataService;
+    private final StructObjInternalService structObjInternalService;
 
     @Autowired
     public StructObjService(final StructuredItemRepository structureItemRepository,
@@ -106,7 +105,8 @@ public class StructObjService {
                             final ChangeRepository changeRepository,
                             final EventNotificationService notificationService,
                             final SettingsService settingsService,
-                            final StaticDataService staticDataService) {
+                            final StaticDataService staticDataService,
+                            final StructObjInternalService structObjInternalService) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionRepository = structureExtensionRepository;
         this.structObjRepository = structureDataRepository;
@@ -120,6 +120,7 @@ public class StructObjService {
         this.notificationService = notificationService;
         this.settingsService = settingsService;
         this.staticDataService = staticDataService;
+        this.structObjInternalService = structObjInternalService;
     }
 
     /**
@@ -249,57 +250,7 @@ public class StructObjService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structObj) {
-        if (structObj.getDeleteChange() != null) {
-            throw new BusinessException("Nelze odstranit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
-        }
-
-        if (structObj.getState() == ArrStructuredObject.State.TEMP) {
-
-            // remove temporary object
-            structureItemRepository.deleteByStructuredObject(structObj);
-            dataRepository.deleteByStructuredObject(structObj);
-            ArrChange change = structObjRepository.findTempChangeByStructuredObject(structObj);
-            structObjRepository.delete(structObj);
-            changeRepository.delete(change);
-
-        } else {
-
-            // drop permanent object
-
-            // check usage
-            Integer count = structureItemRepository.countItemsUsingStructObj(structObj);
-            if (count > 0) {
-                throw new BusinessException("Existují návazné entity, položka nelze smazat", ArrangementCode.STRUCTURE_DATA_DELETE_ERROR)
-                        .level(Level.WARNING)
-                        .set("count", count)
-                                .set("id", structObj.getStructuredObjectId());
-            }
-
-            ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_DATA);
-            structObj.setDeleteChange(change);
-
-            structObjRepository.save(structObj);
-
-            // check duplicates for deleted item
-            // find potentially duplicated items
-            List<ArrStructuredObject> potentialDuplicates = structObjRepository
-                    .findValidByStructureTypeAndFund(structObj.getStructuredType(),
-                                                     structObj.getFund(),
-                                                     structObj.getSortValue(),
-                                                     structObj);
-            for (ArrStructuredObject pd : potentialDuplicates) {
-                if (pd.getState().equals(State.ERROR)) {
-                    structObjService.addToValidate(pd);
-                }
-            }
-
-            notificationService.publishEvent(new EventStructureDataChange(structObj.getFundId(),
-                    structObj.getStructuredType().getCode(),
-                    null,
-                    null,
-                    null,
-                    Collections.singletonList(structObj.getStructuredObjectId())));
-        }
+        structObjInternalService.deleteStructObj(structObj);
     }
 
     /**
