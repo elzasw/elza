@@ -1,14 +1,22 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.domain.ArrDaoLink;
+
 /**
  * VO pro klienta.
  *
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- *         Date: 6.1.17
  */
 public class ArrDaoLinkVO {
     private Integer id;
     private TreeNodeVO treeNodeClient;
+
+    public ArrDaoLinkVO() {
+
+    }
+
+    public ArrDaoLinkVO(final ArrDaoLink daoLink) {
+        id = daoLink.getDaoLinkId();
+    }
 
     public Integer getId() {
         return id;
@@ -24,5 +32,10 @@ public class ArrDaoLinkVO {
 
     public void setTreeNodeClient(TreeNodeVO treeNodeClient) {
         this.treeNodeClient = treeNodeClient;
+    }
+
+    public static ArrDaoLinkVO newInstance(ArrDaoLink daoLink) {
+        ArrDaoLinkVO daoLinkVO = new ArrDaoLinkVO(daoLink);
+        return daoLinkVO;
     }
 }

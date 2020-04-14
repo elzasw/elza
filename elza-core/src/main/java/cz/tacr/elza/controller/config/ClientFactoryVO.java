@@ -114,7 +114,6 @@ import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoBatchInfo;
 import cz.tacr.elza.domain.ArrDaoFile;
 import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -2004,14 +2003,13 @@ public class ClientFactoryVO {
      * @return VO
      */
     private ArrDaoFileVO createDaoFile(final ArrDaoFile daoFile) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrDaoFileVO result = mapper.map(daoFile, ArrDaoFileVO.class);
+        ArrDaoFileVO fileVo = ArrDaoFileVO.newInstance(daoFile);
 
         ArrDigitalRepository digitalRepository = daoFile.getDao().getDaoPackage().getDigitalRepository();
-        result.setUrl(daoService.getDaoFileUrl(daoFile, digitalRepository));
-        result.setThumbnailUrl(daoService.getDaoThumbnailUrl(daoFile, digitalRepository));
+        fileVo.setUrl(daoService.getDaoFileUrl(daoFile, digitalRepository));
+        fileVo.setThumbnailUrl(daoService.getDaoThumbnailUrl(daoFile, digitalRepository));
 
-        return result;
+        return fileVo;
     }
 
     /**
@@ -2024,12 +2022,12 @@ public class ClientFactoryVO {
      */
     private ArrDaoVO createDao(final ArrDao arrDao, final boolean detail, final ArrFundVersion version) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrDaoVO vo = mapper.map(arrDao, ArrDaoVO.class);
+
+        ArrDaoVO vo = ArrDaoVO.newInstance(arrDao);
 
         ArrDigitalRepository digitalRepository = arrDao.getDaoPackage().getDigitalRepository();
-
-        vo.setUrl(daoService.getDaoUrl(arrDao, digitalRepository));
-
+        String url = daoService.getDaoUrl(arrDao, digitalRepository);
+        vo.setUrl(url);
 
         final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(arrDao);
         if (CollectionUtils.isNotEmpty(daoLinkList)) {
@@ -2038,10 +2036,7 @@ public class ClientFactoryVO {
             }
             final ArrDaoLink daoLink = daoLinkList.iterator().next();
 
-            ArrDaoLinkVO daoLinkVo = new ArrDaoLinkVO();
-            daoLinkVo.setId(daoLink.getDaoLinkId());
-            final List<TreeNodeVO> nodesByIds = levelTreeCacheService.getNodesByIds(Collections.singletonList(daoLink.getNode().getNodeId()), version.getFundVersionId());
-            daoLinkVo.setTreeNodeClient(nodesByIds.iterator().next());
+            ArrDaoLinkVO daoLinkVo = createDaoLink(daoLink, version);
 
             vo.setDaoLink(daoLinkVo);
         }
@@ -2055,7 +2050,7 @@ public class ClientFactoryVO {
             final List<ArrDaoFileGroup> daoFileGroups = daoFileGroupRepository.findByDaoOrderByCodeAsc(arrDao);
             final List<ArrDaoFileGroupVO> daoFileGroupVOList = new ArrayList<>();
             for (ArrDaoFileGroup daoFileGroup : daoFileGroups) {
-                final ArrDaoFileGroupVO daoFileGroupVO = mapper.map(daoFileGroup, ArrDaoFileGroupVO.class);
+                final ArrDaoFileGroupVO daoFileGroupVO = ArrDaoFileGroupVO.newInstance(daoFileGroup);
                 final List<ArrDaoFile> arrDaoFileList = daoFileRepository.findByDaoAndDaoFileGroup(arrDao, daoFileGroup);
                 final List<ArrDaoFileVO> groupDaoFileVOList = arrDaoFileList.stream().map(this::createDaoFile).collect(Collectors.toList());
                 daoFileGroupVO.setFiles(groupDaoFileVOList);
@@ -2070,6 +2065,18 @@ public class ClientFactoryVO {
         return vo;
     }
 
+    public ArrDaoLinkVO createDaoLink(ArrDaoLink daoLink, ArrFundVersion version) {
+        ArrDaoLinkVO daoLinkVo = ArrDaoLinkVO.newInstance(daoLink);
+
+        final List<TreeNodeVO> nodesByIds = levelTreeCacheService.getNodesByIds(
+                                                                                Collections.singletonList(daoLink
+                                                                                        .getNodeId()),
+                                                                                version.getFundVersionId());
+        daoLinkVo.setTreeNodeClient(nodesByIds.iterator().next());
+
+        return daoLinkVo;
+    }
+
     public ArrayList<ArrDaoPackageVO> createDaoPackageList(final List<ArrDaoPackage> arrDaoList, final Boolean unassigned) {
         ArrayList<ArrDaoPackageVO> result = new ArrayList<>();
 
@@ -2082,15 +2089,7 @@ public class ClientFactoryVO {
     }
 
     private ArrDaoPackageVO createDaoPackage(final Boolean unassigned, final ArrDaoPackage arrDaoPackage) {
-        ArrDaoPackageVO vo = new ArrDaoPackageVO();
-        vo.setId(arrDaoPackage.getDaoPackageId());
-        vo.setCode(arrDaoPackage.getCode());
-
-        final ArrDaoBatchInfo daoBatchInfo = arrDaoPackage.getDaoBatchInfo();
-        if (daoBatchInfo != null) {
-            vo.setBatchInfoCode(daoBatchInfo.getCode());
-            vo.setBatchInfoLabel(daoBatchInfo.getLabel());
-        }
+        ArrDaoPackageVO vo = ArrDaoPackageVO.newInstance(arrDaoPackage);
 
         long daoCount;
         if (unassigned) {

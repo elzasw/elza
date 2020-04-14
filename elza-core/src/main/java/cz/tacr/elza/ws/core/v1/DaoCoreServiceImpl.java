@@ -13,8 +13,9 @@ import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,7 +64,12 @@ import cz.tacr.elza.ws.types.v1.FolderGroup;
         endpointInterface = "cz.tacr.elza.ws.core.v1.DaoService")
 public class DaoCoreServiceImpl implements DaoService {
 
-    private Log logger = LogFactory.getLog(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(DaoCoreServiceImpl.class);
+
+    /**
+     * Name of JSON object containing items and its values
+     */
+    public final static String ITEMS = "ITEMS";
 
     @Autowired
     private DaoPackageRepository daoPackageRepository;
@@ -218,7 +224,7 @@ public class DaoCoreServiceImpl implements DaoService {
     }
 
     private ArrDaoPackage createArrDaoPackage(final DaoPackage daoPackage) {
-        Assert.notNull(daoPackage, "DAO obal musí být vyplněn");
+        Validate.notNull(daoPackage, "DAO obal musí být vyplněn");
 
         ArrFund fund = getArrFund(daoPackage.getFundIdentifier());
         ArrDigitalRepository repository = digitalRepositoryRepository.findOneByCode(daoPackage
