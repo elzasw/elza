@@ -97,8 +97,7 @@ public class OutputServiceInternal {
 
     private final BulkActionRunRepository bulkActionRunRepository;
 
-    //@Autowired
-    //private RevertingChangesService revertingChangesService;
+    private final RevertingChangesService revertingChangesService;
 
     @Autowired
     public OutputServiceInternal(PlatformTransactionManager transactionManager,
@@ -117,7 +116,8 @@ public class OutputServiceInternal {
                                  ItemSettingsRepository itemSettingsRepository,
                                  RuleService ruleService,
                                  ActionRepository actionRepository,
-                                 BulkActionRunRepository bulkActionRunRepository) {
+                                 BulkActionRunRepository bulkActionRunRepository,
+                                 RevertingChangesService revertingChangesService) {
         this.transactionManager = transactionManager;
         this.outputGeneratorFactory = outputGeneratorFactory;
         this.eventNotificationService = eventNotificationService;
@@ -135,6 +135,7 @@ public class OutputServiceInternal {
         this.ruleService = ruleService;
         this.actionRepository = actionRepository;
         this.bulkActionRunRepository = bulkActionRunRepository;
+        this.revertingChangesService = revertingChangesService;
     }
 
     /**
@@ -487,7 +488,7 @@ public class OutputServiceInternal {
         }
 
         if (fromChange != null) {
-            List<Integer> changeIdList = new ArrayList<>(); // revertingChangesService.findChangesAfter(fundVersion.getFundId(), null, fromChange.getChangeId());
+            List<Integer> changeIdList = revertingChangesService.findChangesAfter(fundVersion.getFundId(), null, fromChange.getChangeId());
             HashSet<Integer> changeIdSet = new HashSet<>(changeIdList);
             for (ArrBulkActionRun finishedAction : finishedActions) {
                 changeIdSet.remove(finishedAction.getChange().getChangeId());
