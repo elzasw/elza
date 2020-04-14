@@ -143,7 +143,7 @@ public abstract class AbstractServiceTest extends AbstractTest {
                                                                  "date-range");
         Validate.notNull(fund);
         fi.setFund(fund);
-        
+
         ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fund.getFundId());
         Validate.notNull(fundVersion);
         fi.setOpenVersion(fundVersion);
@@ -153,7 +153,7 @@ public abstract class AbstractServiceTest extends AbstractTest {
 
     /**
      * Create description item
-     * 
+     *
      * @param itemVO
      * @param node
      * @param fundVersionId
@@ -201,7 +201,7 @@ public abstract class AbstractServiceTest extends AbstractTest {
 
     /**
      * Import institutions from XML
-     * 
+     *
      * @return
      */
     protected List<ParInstitution> imporInsts() {

@@ -35,7 +35,6 @@ import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDate;
 import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDataString;
@@ -48,7 +47,6 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.exception.SystemException;
@@ -68,12 +66,12 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
     @Override
     public List<String> findUniqueSpecValuesInVersion(final ArrFundVersion version,
-                                                       final RulItemType itemType,
-                                                       final Class<? extends ArrData> dataTypeClass,
-                                                       @Nullable final Set<RulItemSpec> specs,
-                                                       final boolean withoutSpec,
-                                                       @Nullable final String fulltext,
-                                                       final int max){
+                                                      final RulItemType itemType,
+                                                      final Class<? extends ArrData> dataTypeClass,
+                                                      @Nullable final Set<RulItemSpec> specs,
+                                                      final boolean withoutSpec,
+                                                      @Nullable final String fulltext,
+                                                      final int max) {
 
         SpecificationDataTypeHelper specHelper = new SpecificationDataTypeHelper() {
 
@@ -158,9 +156,9 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
             Predicate createPred = builder.lt(descItem.get(ArrDescItem.FIELD_CREATE_CHANGE_ID), lockChangeId);
             Predicate deletePred = builder.or(
-                                              builder.isNull(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID)),
-                                              builder.gt(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID),
-                                                         lockChangeId));
+                    builder.isNull(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID)),
+                    builder.gt(descItem.get(ArrDescItem.FIELD_DELETE_CHANGE_ID),
+                            lockChangeId));
 
             return builder.and(createPred, deletePred);
         }
@@ -266,8 +264,8 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
      * hodnota.
      */
     private Expression<String> createUniqueValueExpression(final Expression<String> valuePath,
-                                                   final SpecificationDataTypeHelper specHelper,
-                                                   final CriteriaBuilder builder) {
+                                                           final SpecificationDataTypeHelper specHelper,
+                                                           final CriteriaBuilder builder) {
         Expression<String> result;
         if (specHelper.useSpec()) {
             Path<String> specSelection = specHelper.getSpecSelection();
@@ -282,8 +280,9 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
     /**
      * Podle typu atributu vrací informace pro načtení a filtrování konkrétních dat.
-     * @param dataClassType typ třídy ukládající hodnotu atributu
-     * @param dataRoot kořen vehledání (dataClassType)
+     *
+     * @param dataClassType               typ třídy ukládající hodnotu atributu
+     * @param dataRoot                    kořen vehledání (dataClassType)
      * @param specificationDataTypeHelper
      * @return služba pro načtení hodnot konkrétního typu atributu
      */
@@ -296,8 +295,8 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 dataClassType.equals(ArrDataDecimal.class) ||
                 dataClassType.equals(ArrDataDate.class) ||
                 dataClassType.equals(ArrDataInteger.class) ||
-                dataClassType.equals(ArrDataUriRef.class)  ||
-                dataClassType.equals(ArrDataBit.class)){
+                dataClassType.equals(ArrDataUriRef.class) ||
+                dataClassType.equals(ArrDataBit.class)) {
             return new AbstractDescItemDataTypeHelper() {
 
                 @Override
@@ -321,20 +320,6 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get(ArrDataUnitid.FIELD_UNITID);
-                }
-            };
-        } else if (dataClassType.equals(ArrDataPartyRef.class)) {
-            return new AbstractDescItemDataTypeHelper() {
-                @Override
-                protected void init() {
-                    Join<ArrDataPartyRef, ParParty> party = dataRoot.join(ArrDataPartyRef.FIELD_PARTY, JoinType.INNER);
-                    Join<ParParty, ApAccessPoint> record = party.join(ParParty.FIELD_RECORD, JoinType.INNER);
-                    targetJoin = record;
-                }
-
-                @Override
-                public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
-                    return targetJoin.get(ParParty.FIELD_RECORD);
                 }
             };
         } else if (dataClassType.equals(ArrDataRecordRef.class)) {
@@ -381,6 +366,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
         /**
          * Vrací výraz pro získání hodnoty atributu z tabulky.
+         *
          * @return výraz
          */
         public abstract Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder);

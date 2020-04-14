@@ -22,14 +22,4 @@ public interface ScopeRelationRepository extends ElzaJpaRepository<ApScopeRelati
 
     List<ApScopeRelation> findByConnectedScope(ApScope connectedScope);
 
-    @Query("SELECT COUNT(p) FROM par_party p " +
-            "JOIN p.accessPoint apFrom " +
-            "JOIN ap_state stateFrom ON stateFrom.accessPoint = apFrom " +
-            "JOIN p.relations rel " +
-            "JOIN rel.relationEntities relEnt " +
-            "JOIN relEnt.accessPoint apTo " +
-            "JOIN ap_state stateTo ON stateTo.accessPoint = apTo " +
-            "WHERE stateFrom.deleteChange IS NULL AND stateFrom.scope = :scopeFrom AND stateTo.deleteChange IS NULL AND stateTo.scope = :scopeTo")
-    Long countExistsRelations(@Param("scopeFrom") ApScope scopeFrom,
-                              @Param("scopeTo") ApScope scopeTo);
 }

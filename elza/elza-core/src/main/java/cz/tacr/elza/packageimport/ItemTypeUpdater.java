@@ -257,7 +257,7 @@ public class ItemTypeUpdater {
                        @Nonnull final PackageContext puc) {
 
         prepareForUpdate();
-
+        List<ApType> typeList = apTypeRepository.findAll();
         Map<String, ApType> apTypeCache = apTypeRepository.findAll().stream()
                 .collect(toMap(apType -> apType.getCode(), apType -> apType));
 
@@ -403,15 +403,17 @@ public class ItemTypeUpdater {
             long countDescItems = countUsage(dbItemType);
             if (countDescItems > 0L) {
                 switch (newDataType) {
-                case DATE:
-                    changeDataType2Date(currDataType, dbItemType);
-                    break;
-                default:
-                    throw new SystemException("Unsupported data type conversion", BaseCode.DB_INTEGRITY_PROBLEM)
-                            .set("currDataType", currDataType)
-                            .set("newDataType", newDataType)
-                            .set("itemTypeId", dbItemType.getItemTypeId())
-                            .set("itemTypeCode", dbItemType.getCode());
+                    case DATE:
+                        changeDataType2Date(currDataType, dbItemType);
+                        break;
+                    case RECORD_REF: //TODO gotzy : zeptat se
+                        break;
+                    default:
+                        throw new SystemException("Unsupported data type conversion", BaseCode.DB_INTEGRITY_PROBLEM)
+                                .set("currDataType", currDataType)
+                                .set("newDataType", newDataType)
+                                .set("itemTypeId", dbItemType.getItemTypeId())
+                                .set("itemTypeCode", dbItemType.getCode());
                 }
             }
             // type was updated
@@ -432,16 +434,16 @@ public class ItemTypeUpdater {
         Object viewDefinition = dbItemType.getViewDefinition();
         if (viewDefinition != null) {
             switch (currDataType) {
-            case JSON_TABLE: {
-                if (!equalsColumns((List<ElzaColumn>) viewDefinition, itemType.getColumnsDefinition())) {
-                    long countDescItems = countUsage(dbItemType);
-                    if (countDescItems > 0L) {
-                        throw new SystemException("Nelze změnit definici sloupců (datový typ a kód) u typu "
-                                + dbItemType.getCode() + ", protože existují záznamy, které typ využívají");
+                case JSON_TABLE: {
+                    if (!equalsColumns((List<ElzaColumn>) viewDefinition, itemType.getColumnsDefinition())) {
+                        long countDescItems = countUsage(dbItemType);
+                        if (countDescItems > 0L) {
+                            throw new SystemException("Nelze změnit definici sloupců (datový typ a kód) u typu "
+                                    + dbItemType.getCode() + ", protože existují záznamy, které typ využívají");
+                        }
                     }
+                    break;
                 }
-                break;
-            }
             }
         }
 
@@ -462,8 +464,8 @@ public class ItemTypeUpdater {
         }
 
         throw new SystemException("Unsupported conversion from type to DATE", BaseCode.DB_INTEGRITY_PROBLEM)
-                    .set("currDataType", currDataType)
-                    .set("itemTypeId", dbItemType.getItemTypeId())
+                .set("currDataType", currDataType)
+                .set("itemTypeId", dbItemType.getItemTypeId())
                 .set("itemTypeCode", dbItemType.getCode());
     }
 
@@ -539,8 +541,8 @@ public class ItemTypeUpdater {
      * @return next value
      */
     private int getNextViewOrderPos() {
-    	return ++this.maxViewOrderPos;
-	}
+        return ++this.maxViewOrderPos;
+    }
 
     /**
      * Count how many times is type used
@@ -559,9 +561,9 @@ public class ItemTypeUpdater {
     /**
      * Převod VO na DAO typu atributu.
      *
-     * @param itemType VO typu
+     * @param itemType   VO typu
      * @param dbItemType DAO typy
-     * @param puc balíček
+     * @param puc        balíček
      */
     private void convertRulItemType(final ItemType itemType,
                                     final RulItemType dbItemType,
@@ -617,8 +619,8 @@ public class ItemTypeUpdater {
     /**
      * Převod VO na DAO specifikace atributu.
      *
-     * @param rulPackage balíček
-     * @param itemSpec VO specifikace
+     * @param rulPackage  balíček
+     * @param itemSpec    VO specifikace
      * @param rulItemSpec DAO specifikace
      */
     private void convertRulItemSpec(final RulPackage rulPackage,
@@ -642,7 +644,7 @@ public class ItemTypeUpdater {
     /**
      * Zpracování napojení specifikací na ap.
      *
-     * @param itemSpecs seznam importovaných specifikací
+     * @param itemSpecs         seznam importovaných specifikací
      * @param rulItemSpecsCache seznam specifikací atributů (nový v DB)
      */
     private void processItemAptypesByItemSpecs(List<ItemSpec> itemSpecs,
@@ -657,8 +659,8 @@ public class ItemTypeUpdater {
 
         for (ItemSpec itemSpec : itemSpecs) {
 
-        Map<String, ItemSpec> itemSpecLookup = itemSpecs.stream().collect(Collectors.toMap(ItemSpec::getCode, Function.identity()));
-        Validate.isTrue(itemSpecLookup.size()==itemSpecs.size(), "List of specification contains duplicated code");
+            Map<String, ItemSpec> itemSpecLookup = itemSpecs.stream().collect(Collectors.toMap(ItemSpec::getCode, Function.identity()));
+            Validate.isTrue(itemSpecLookup.size() == itemSpecs.size(), "List of specification contains duplicated code");
 
             RulItemSpec rulItemSpec = rulItemSpecsCache.get(itemSpec.getCode());
             Validate.notNull(rulItemSpec, "Cannot find code in itemSpecs, code: {}", itemSpec.getCode());
@@ -691,7 +693,7 @@ public class ItemTypeUpdater {
     /**
      * Zpracování napojení typů na ap.
      *
-     * @param itemTypes seznam importovaných typů
+     * @param itemTypes         seznam importovaných typů
      * @param rulItemTypesCache seznam typů atributů (nový v DB)
      */
     private void processItemAptypesByItemTypes(List<ItemType> itemTypes,
@@ -787,7 +789,7 @@ public class ItemTypeUpdater {
 
     /**
      * Prepare item types to be updated
-     *
+     * <p>
      * Read items from DB
      */
     private void prepareForUpdate() {

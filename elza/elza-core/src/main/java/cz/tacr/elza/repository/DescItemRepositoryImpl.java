@@ -137,12 +137,12 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
         return result;
     }
 
+    //TODO: gotzy upravit vazbu na d.party
     @Override
     public List<ArrDescItem> findDescItemsByNodeIds(final Collection<Integer> nodeIds, final Collection<RulItemType> itemTypes, final Integer changeId) {
         String jpql = "SELECT di FROM arr_item di JOIN FETCH di.node n JOIN FETCH di.itemType dit LEFT JOIN FETCH di.itemSpec dis " +
                 "LEFT JOIN FETCH di.data d " +
                 "LEFT JOIN FETCH d.record drr " +
-                "LEFT JOIN FETCH d.party dpr " +
                 "LEFT JOIN FETCH d.structuredObject dso " +
                 "WHERE ";
         if (changeId == null) {

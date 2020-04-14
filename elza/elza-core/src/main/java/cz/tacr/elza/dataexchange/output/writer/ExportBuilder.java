@@ -15,8 +15,6 @@ public interface ExportBuilder {
 
     ApOutputStream openAccessPointsOutputStream();
 
-    PartiesOutputStream openPartiesOutputStream();
-
     /**
      * Builds export from collected data through output streams.
      */

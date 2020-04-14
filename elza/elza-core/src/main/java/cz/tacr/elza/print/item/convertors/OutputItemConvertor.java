@@ -35,7 +35,6 @@ public class OutputItemConvertor implements ItemConvertor {
                              new CoordinatesItemConvertor(),
                              new EnumItemConvertor(),
                              new RecordRefItemConvertor(),
-                             new PartyRefItemConvertor(),
                              new StructuredObjectRefItemConvertor(),
                              new FileRefItemConvertor(),
                              new JsonTableItemConvertor(),

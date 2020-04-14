@@ -1,6 +1,5 @@
 package cz.tacr.elza.controller.vo.ap;
 
-import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 
 /**
@@ -8,7 +7,6 @@ import cz.tacr.elza.controller.vo.ApAccessPointVO;
  *
  * Používané pro entity:
  *  - {@link ApAccessPointVO}
- *  - {@link ApAccessPointNameVO}
  *  - {@link ApFragmentVO}
  */
 public enum ApStateVO {

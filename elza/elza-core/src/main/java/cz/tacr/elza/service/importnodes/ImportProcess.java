@@ -114,9 +114,6 @@ public class ImportProcess {
     private StructuredItemRepository structItemRepository;
 
     @Autowired
-    private PartyRepository partyRepository;
-
-    @Autowired
     private NodeRepository nodeRepository;
 
     @Autowired
@@ -189,7 +186,8 @@ public class ImportProcess {
 
     /**
      * Inicializace importního procesu.
-     *  @param source           zdroj dat importu
+     *
+     * @param source            zdroj dat importu
      * @param params            parametry importu
      * @param targetFundVersion cílová verze AS
      * @param targetNode        cílový uzel importu
@@ -223,7 +221,7 @@ public class ImportProcess {
         logger.info("Zahájení importu do AS");
 
         Map<String, ArrFile> filesMapper = resolveFileConflict();
-		Map<Integer, ArrStructuredObject> structureDataMapper = prepareStructObjs();
+        Map<Integer, ArrStructuredObject> structureDataMapper = prepareStructObjs();
 
         Stack<DeepData> stack = new Stack<>();
         while (source.hasNext()) {
@@ -294,8 +292,8 @@ public class ImportProcess {
 
         if (nodeIds.size() > 0) {
             nodeCacheService.syncCache();
-			ruleService.conformityInfo(targetFundVersion.getFundVersionId(), nodeIds, NodeTypeOperation.CREATE_NODE,
-			        null, null, null);
+            ruleService.conformityInfo(targetFundVersion.getFundVersionId(), nodeIds, NodeTypeOperation.CREATE_NODE,
+                    null, null, null);
         }
         logger.info("Dokončení importu do AS: " + nodeIds.size() + " uzlů");
 
@@ -305,14 +303,14 @@ public class ImportProcess {
     /**
      * Vytvoření dat z atributu.
      *
-     * @param filesMapper   mapování souborů
+     * @param filesMapper         mapování souborů
      * @param structureDataMapper mapováví strukt.
-     * @param item          zdrojový item
-     * @param descItem      vazební item   @return vytvořená data
+     * @param item                zdrojový item
+     * @param descItem            vazební item   @return vytvořená data
      */
     private ArrData createArrData(final Map<String, ArrFile> filesMapper,
                                   final Map<Integer, ArrStructuredObject> structureDataMapper,
-	        final Item item, final ArrDescItem descItem) {
+                                  final Item item, final ArrDescItem descItem) {
         ArrData data;
         if (item instanceof ItemInt) {
             data = new ArrDataInteger();
@@ -376,13 +374,10 @@ public class ImportProcess {
             Validate.notNull(structureDataNew);
 
             ((ArrDataStructureRef) data).setStructuredObject(structureDataNew);
-        } else if (item instanceof ItemPartyRef) {
-            data = new ArrDataPartyRef();
-            ((ArrDataPartyRef) data).setParty(partyRepository.getOne(((ItemPartyRef) item).getPartyId()));
         } else if (item instanceof ItemRecordRef) {
             data = new ArrDataRecordRef();
             ((ArrDataRecordRef) data).setRecord(apAccessPointRepository.getOne(((ItemRecordRef) item).getRecordId()));
-        } else if (item instanceof  ItemUriRef) {
+        } else if (item instanceof ItemUriRef) {
             data = new ArrDataUriRef();
             ((ArrDataUriRef) data).setSchema(((ItemUriRef) item).getSchema());
             ((ArrDataUriRef) data).setValue(((ItemUriRef) item).getValue());
@@ -446,7 +441,7 @@ public class ImportProcess {
                         case CHILD: {
                             Integer position = levelRepository.findMaxPositionUnderParent(targetNode);
                             stack.push(new DeepData(position == null ? 1 : position + 1, targetNode));
-                                break;
+                            break;
                         }
 
                         case AFTER:
@@ -479,34 +474,34 @@ public class ImportProcess {
      * @return výsledná mapa pro provazování
      */
     private Map<String, ArrFile> resolveFileConflict() {
-		List<ArrFile> sourceFiles = source.getFiles();
+        List<ArrFile> sourceFiles = source.getFiles();
         Map<String, ArrFile> fundFilesMapName = fundFileRepository.findByFund(targetFundVersion.getFund()).stream().collect(Collectors.toMap(ArrFile::getName, Function.identity()));
-		Map<String, ArrFile> result = new HashMap<>();
+        Map<String, ArrFile> result = new HashMap<>();
 
-		for (ArrFile sourceFile : sourceFiles) {
-			String sourceFileName = sourceFile.getName();
-			ArrFile arrFile;
+        for (ArrFile sourceFile : sourceFiles) {
+            String sourceFileName = sourceFile.getName();
+            ArrFile arrFile;
             switch (params.getFileConflictResolve()) {
-            case USE_TARGET:
-            	arrFile = fundFilesMapName.get(sourceFileName);
-            	if(arrFile==null) {
-					// file not exists -> copy new
-					arrFile = copyFileFromSource(sourceFile, fundFilesMapName);
-            	}
-                break;
-            case COPY_AND_RENAME:
-            	arrFile = copyFileFromSource(sourceFile, fundFilesMapName);
-                break;
-			default:
-				throw new SystemException("Neplatné vyřešení konfliktu: " + params.getFileConflictResolve(),
-				        BaseCode.INVALID_STATE);
+                case USE_TARGET:
+                    arrFile = fundFilesMapName.get(sourceFileName);
+                    if (arrFile == null) {
+                        // file not exists -> copy new
+                        arrFile = copyFileFromSource(sourceFile, fundFilesMapName);
+                    }
+                    break;
+                case COPY_AND_RENAME:
+                    arrFile = copyFileFromSource(sourceFile, fundFilesMapName);
+                    break;
+                default:
+                    throw new SystemException("Neplatné vyřešení konfliktu: " + params.getFileConflictResolve(),
+                            BaseCode.INVALID_STATE);
             }
-			// append new file to map
-			fundFilesMapName.put(arrFile.getName(), arrFile);
-			// append new file to result
-			result.put(sourceFileName, arrFile);
+            // append new file to map
+            fundFilesMapName.put(arrFile.getName(), arrFile);
+            // append new file to result
+            result.put(sourceFileName, arrFile);
         }
-		return result;
+        return result;
     }
 
     /**
@@ -514,14 +509,14 @@ public class ImportProcess {
      *
      * @return výsledná mapa pro provazování
      */
-	private Map<Integer, ArrStructuredObject> prepareStructObjs() {
-		// Map PacketId to ArrPacket
-		Map<Integer, ArrStructuredObject> result = new HashMap<>();
+    private Map<Integer, ArrStructuredObject> prepareStructObjs() {
+        // Map PacketId to ArrPacket
+        Map<Integer, ArrStructuredObject> result = new HashMap<>();
 
         List<ArrStructuredObject> sourcePackets = source.getStructuredList();
         for (ArrStructuredObject sourcePacket : sourcePackets) {
             ArrStructuredObject structuredObject = null;
-			// switch
+            // switch
             switch (params.getStructuredConflictResolve()) {
             /*
                This option is not anymore supported, structured object can be only copied
@@ -534,18 +529,18 @@ public class ImportProcess {
             	}
             	break;
             	*/
-            case COPY_AND_RENAME:
-                //String srcPacketKey = sourcePacket.getValue();
-                structuredObject = copyStructObjFromSource(sourcePacket);
-                break;
-            case USE_TARGET:
-			default:
-				throw new SystemException("Neplatné vyřešení konfliktu: " + params.getFileConflictResolve(),
-				        BaseCode.INVALID_STATE);
+                case COPY_AND_RENAME:
+                    //String srcPacketKey = sourcePacket.getValue();
+                    structuredObject = copyStructObjFromSource(sourcePacket);
+                    break;
+                case USE_TARGET:
+                default:
+                    throw new SystemException("Neplatné vyřešení konfliktu: " + params.getFileConflictResolve(),
+                            BaseCode.INVALID_STATE);
             }
             // store result
             result.put(sourcePacket.getStructuredObjectId(), structuredObject);
-		}
+        }
 
         return result;
     }
@@ -553,8 +548,7 @@ public class ImportProcess {
     /**
      * Zkopíruje vybraný obal do AS.
      *
-     * @param sourceObj
-     *            zdrojový objekt
+     * @param sourceObj zdrojový objekt
      */
     private ArrStructuredObject copyStructObjFromSource(ArrStructuredObject sourceObj) {
         // prepare new obj
@@ -648,42 +642,42 @@ public class ImportProcess {
         file.setFileSize(sourceFile.getFileSize());
         file.setMimeType(sourceFile.getMimeType());
         file.setPagesCount(sourceFile.getPagesCount());
-		file.setName(renameConflictName(sourceFile.getName(), currentFiles));
+        file.setName(renameConflictName(sourceFile.getName(), currentFiles));
         file.setFund(targetFundVersion.getFund());
         try {
-			dmsService.createFile(file, dmsService.downloadFile(sourceFile));
+            dmsService.createFile(file, dmsService.downloadFile(sourceFile));
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
-		return file;
+        return file;
     }
 
-	public static final String REG_NAME = "(.*\\()([0-9]+)(\\))";
+    public static final String REG_NAME = "(.*\\()([0-9]+)(\\))";
 
-	private static String includeNumber(final String name, final int i) {
-		if (name.matches(REG_NAME)) {
-			int tmpI = i;
-			Matcher m = Pattern.compile(REG_NAME).matcher(name);
-			if (m.find()) {
-				tmpI = Integer.valueOf(m.group(2)) + 1;
-			}
-			return name.replaceAll(REG_NAME, "$1" + tmpI + "$3");
-		}
-		return name + "(" + i + ")";
-	}
+    private static String includeNumber(final String name, final int i) {
+        if (name.matches(REG_NAME)) {
+            int tmpI = i;
+            Matcher m = Pattern.compile(REG_NAME).matcher(name);
+            if (m.find()) {
+                tmpI = Integer.valueOf(m.group(2)) + 1;
+            }
+            return name.replaceAll(REG_NAME, "$1" + tmpI + "$3");
+        }
+        return name + "(" + i + ")";
+    }
 
-	public static String renameConflictName(final String name, final Map<String, ArrFile> currentFiles) {
-		String tmpName = name;
+    public static String renameConflictName(final String name, final Map<String, ArrFile> currentFiles) {
+        String tmpName = name;
 
-		int i = 0;
-		do {
+        int i = 0;
+        do {
             if (!currentFiles.containsKey(tmpName)) {
                 return tmpName;
-			}
+            }
             i++;
             tmpName = includeNumber(tmpName, i);
         } while (true);
-	}
+    }
 
     /**
      * Pokud je potřeba, provede uložení dat do DB.

@@ -13,8 +13,6 @@ public class Institution {
 
     private final String typeCode;
 
-    private PartyGroup partyGroup;
-
     public Institution(String code, ParInstitutionType institutionType) {
         this.code = code;
         this.type = institutionType.getName();
@@ -31,13 +29,5 @@ public class Institution {
 
     public String getTypeCode() {
         return typeCode;
-    }
-
-    public PartyGroup getPartyGroup() {
-        return partyGroup;
-    }
-
-    public void setPartyGroup(final PartyGroup partyGroup) {
-        this.partyGroup = partyGroup;
     }
 }

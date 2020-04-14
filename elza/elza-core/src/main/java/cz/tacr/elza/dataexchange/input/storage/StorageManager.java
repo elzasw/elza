@@ -10,7 +10,6 @@ import org.hibernate.Session;
 import cz.tacr.elza.dataexchange.input.ApChangeHolder;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointWrapper;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
-import cz.tacr.elza.dataexchange.input.parties.context.PartyWrapper;
 
 /**
  * Storage manager for all imported items. Must be initialized with active
@@ -95,14 +94,6 @@ public class StorageManager implements StoredEntityCallback {
         }
         ApAccessPointStorage storage = new ApAccessPointStorage(session, this, apChangeHolder, initHelper);
         storage.store(apws);
-    }
-
-    public void storeParties(Collection<PartyWrapper> pws) {
-        if (pws.isEmpty()) {
-            return;
-        }
-        ParPartyStorage storage = new ParPartyStorage(session, this, initHelper);
-        storage.store(pws);
     }
 
 	public void clear() {

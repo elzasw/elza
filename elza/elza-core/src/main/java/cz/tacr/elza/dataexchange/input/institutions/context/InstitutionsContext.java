@@ -12,7 +12,6 @@ import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 import cz.tacr.elza.dataexchange.input.context.ImportPhase;
 import cz.tacr.elza.dataexchange.input.context.ImportPhaseChangeListener;
 import cz.tacr.elza.dataexchange.input.context.ObservableImport;
-import cz.tacr.elza.dataexchange.input.parties.context.PartyInfo;
 import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
 import cz.tacr.elza.domain.ParInstitution;
@@ -47,10 +46,8 @@ public class InstitutionsContext {
         return instTypeCodeMap.get(code);
     }
 
-    public void addInstitution(ParInstitution entity, PartyInfo partyInfo) {
-        Validate.isTrue(partyInfo.getSaveMethod() != SaveMethod.IGNORE);
-
-        InstitutionWrapper wrapper = wrapperBuilder.build(entity, partyInfo);
+    public void addInstitution(ParInstitution entity) {
+        InstitutionWrapper wrapper = wrapperBuilder.build(entity);
         instQueue.add(wrapper);
         if (instQueue.size() >= batchSize) {
             store();

@@ -177,14 +177,6 @@ public class ModelFactory {
         return result;
     }
 
-    private static Name createApName(final ApName name, final List<ApItem> items) {
-	    return new Name(name.getNameId(), name.isPreferredName(), createApItems(items), createApLanguage(name.getLanguage()));
-    }
-
-    private static NameMigrate createApNameMigrate(final ApName name) {
-        return new NameMigrate(name.getNameId(), name.isPreferredName(), name.getName(), name.getComplement(), name.getFullName(), createApLanguage(name.getLanguage()));
-    }
-
     private static Language createApLanguage(final SysLanguage language) {
         if (language == null) {
             return null;
@@ -192,23 +184,7 @@ public class ModelFactory {
         return new Language(language.getLanguageId(), language.getName(), language.getCode());
     }
 
-    public static AccessPoint createAp(final ApAccessPoint apAccessPoint,
-                                       final List<ApItem> apItems,
-                                       final List<ApName> apNames,
-                                       final Map<Integer, List<ApItem>> apNameItems) {
-        List<Name> names = new ArrayList<>(apNames.size());
-        for (ApName apName : apNames) {
-            names.add(createApName(apName, apNameItems.get(apName.getNameId())));
-        }
-
-        return new AccessPoint(apAccessPoint.getAccessPointId(), apAccessPoint.getUuid(), createApItems(apItems), names);
-    }
-
-    public static AccessPointMigrate createApMigrate(final ApAccessPoint apAcessPoint, final List<ApName> apNames, final ApDescription apDescription) {
-        List<NameMigrate> names = new ArrayList<>(apNames.size());
-        for (ApName apName : apNames) {
-            names.add(createApNameMigrate(apName));
-        }
-        return new AccessPointMigrate(names, apAcessPoint.getAccessPointId(), apAcessPoint.getUuid(), apDescription.getDescription());
+    public static AccessPointMigrate createApMigrate(final ApAccessPoint apAcessPoint) {
+        return new AccessPointMigrate(null, apAcessPoint.getAccessPointId(), apAcessPoint.getUuid(), null);
     }
 }

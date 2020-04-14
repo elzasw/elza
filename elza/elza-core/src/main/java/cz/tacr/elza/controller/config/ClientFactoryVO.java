@@ -41,143 +41,20 @@ import cz.tacr.elza.config.rules.ViewConfiguration;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.factory.WfFactory;
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.ApExternalSystemVO;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileVO;
-import cz.tacr.elza.controller.vo.ArrDaoLinkRequestVO;
-import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
-import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
-import cz.tacr.elza.controller.vo.ArrDaoRequestVO;
-import cz.tacr.elza.controller.vo.ArrDaoVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
-import cz.tacr.elza.controller.vo.ArrRequestVO;
-import cz.tacr.elza.controller.vo.BulkActionRunVO;
-import cz.tacr.elza.controller.vo.BulkActionVO;
-import cz.tacr.elza.controller.vo.NodeConformityVO;
-import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParRelationEntityVO;
-import cz.tacr.elza.controller.vo.ParRelationTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.RulTemplateVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
-import cz.tacr.elza.controller.vo.SysExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.SysExternalSystemVO;
-import cz.tacr.elza.controller.vo.TreeItemSpecsItem;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.UISettingsVO;
-import cz.tacr.elza.controller.vo.UsrGroupVO;
-import cz.tacr.elza.controller.vo.UsrPermissionVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
-import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.nodes.*;
+import cz.tacr.elza.controller.vo.nodes.descitems.*;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoFileGroup;
-import cz.tacr.elza.domain.ArrDaoLink;
-import cz.tacr.elza.domain.ArrDaoLinkRequest;
-import cz.tacr.elza.domain.ArrDaoPackage;
-import cz.tacr.elza.domain.ArrDaoRequest;
-import cz.tacr.elza.domain.ArrDaoRequestDao;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDigitalRepository;
-import cz.tacr.elza.domain.ArrDigitizationRequest;
-import cz.tacr.elza.domain.ArrDigitizationRequestNode;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.ArrNodeOutput;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.domain.ArrRequestQueueItem;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameComplement;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyTypeRelation;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemSpecExt;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulPolicyType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulStructuredTypeExtension;
-import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.domain.SysExternalSystem;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrAuthentication;
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApNameRepository;
-import cz.tacr.elza.repository.AuthenticationRepository;
-import cz.tacr.elza.repository.BulkActionNodeRepository;
-import cz.tacr.elza.repository.ComplementTypeRepository;
-import cz.tacr.elza.repository.DaoFileGroupRepository;
-import cz.tacr.elza.repository.DaoFileRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
-import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DaoRequestDaoRepository;
-import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.GroupRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputRepository;
-import cz.tacr.elza.repository.PartyNameRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.PermissionRepository;
-import cz.tacr.elza.repository.RelationEntityRepository;
-import cz.tacr.elza.repository.RelationRepository;
-import cz.tacr.elza.repository.RequestQueueItemRepository;
-import cz.tacr.elza.repository.UnitdateRepository;
-import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.LevelTreeCacheService;
@@ -202,19 +79,16 @@ public class ClientFactoryVO {
     private DaoService daoService;
 
     @Autowired
-    private PartyNameRepository partyNameRepository;
-
-    @Autowired
-    private RelationRepository relationRepository;
-
-    @Autowired
-    private RelationEntityRepository relationEntityRepository;
-
-    @Autowired
     private ApAccessPointRepository apAccessPointRepository;
 
     @Autowired
-    private ApNameRepository apNameRepository;
+    private DataApFragRefRepository dataApFragRefRepository;
+
+    @Autowired
+    private ApFragmentItemRepository fragmentItemRepository;
+
+    @Autowired
+    private ApItemRepository apItemRepository;
 
     @Autowired
     private PermissionRepository permissionRepository;
@@ -224,12 +98,6 @@ public class ClientFactoryVO {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private PartyRepository partyRepository;
-
-    @Autowired
-    private UnitdateRepository unitdateRepository;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -251,9 +119,6 @@ public class ClientFactoryVO {
 
     @Autowired
     private BulkActionNodeRepository bulkActionNodeRepository;
-
-    @Autowired
-    private ComplementTypeRepository complementTypeRepository;
 
     @Autowired
     private DigitizationRequestNodeRepository digitizationRequestNodeRepository;
@@ -302,6 +167,8 @@ public class ClientFactoryVO {
 
     @Autowired
     private AuthenticationRepository authenticationRepository;
+
+
 
     /**
      * Vytvoření nastavení.
@@ -361,222 +228,6 @@ public class ClientFactoryVO {
             a.append(b);
             a.append(" ");
         }
-    }
-
-    /**
-     * Vytvoří detailní objekt osoby. Načte všechna navázaná data.
-     *
-     * @param party osoba
-     * @return detail VO osoby
-     */
-    public ParPartyVO createParPartyDetail(final ParParty party) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-
-        ParPartyVO result = mapper.map(party, ParPartyVO.class);
-
-
-        //partyNames
-        result.setPartyNames(createList(partyNameRepository.findByParty(party), ParPartyNameVO.class, this::createParPartyNameDetail));
-
-        List<ParPartyNameVO> collect = result.getPartyNames().stream().filter(ParPartyNameVO::isPrefferedName).collect(Collectors.toList());
-        ParPartyNameVO prefferedName = null;
-        if (collect != null && !collect.isEmpty()) {
-            prefferedName = collect.get(0);
-        }
-
-        result.getPartyNames().sort((a, b) -> {
-            if (a.isPrefferedName()) {
-                return Integer.MIN_VALUE;
-            }
-            if (b.isPrefferedName()) {
-                return Integer.MAX_VALUE;
-            }
-
-            return a.getId().compareTo(b.getId());
-        });
-
-        if (prefferedName != null) {
-            List<ParComplementType> all = complementTypeRepository.findAll();
-            Map<Integer, ParComplementType> map = all.stream().collect(Collectors.toMap(ParComplementType::getComplementTypeId, i -> i));
-
-            StringBuilder nameBuilder = new StringBuilder();
-            nameBuilderHelper(nameBuilder, prefferedName.getDegreeBefore());
-            nameBuilderHelper(nameBuilder, prefferedName.getOtherPart());
-            nameBuilderHelper(nameBuilder, prefferedName.getMainPart());
-
-            String roman = null, geoAddon = null, addon = null;
-
-            if (prefferedName.getPartyNameComplements() != null && !prefferedName.getPartyNameComplements().isEmpty()) {
-                for (ParPartyNameComplementVO b : prefferedName.getPartyNameComplements()) {
-                    ParComplementType type = map.get(b.getComplementTypeId());
-                    if (type != null) {
-                        if (type.getCode().equals("2")) {
-                            addon = b.getComplement();
-                        } else if (type.getCode().equals("3")) {
-                            roman = b.getComplement();
-                        } else if (type.getCode().equals("4")) {
-                            geoAddon = b.getComplement();
-                        }
-                    }
-                }
-            }
-
-            nameBuilderHelper(nameBuilder, roman);
-            nameBuilderHelper(nameBuilder, geoAddon);
-            nameBuilderHelper(nameBuilder, addon);
-
-            if (prefferedName.getDegreeAfter() != null && !prefferedName.getDegreeAfter().isEmpty()) {
-                nameBuilder.deleteCharAt(nameBuilder.length()-1);
-                nameBuilder.append(", ");
-                nameBuilder.append(prefferedName.getDegreeAfter());
-            }
-
-            result.setName(nameBuilder.toString());
-        }
-
-        result.setRelations(createPartyRelations(party));
-        result.setCreators(createPartyList(partyRepository.findCreatorsByParty(party)));
-
-        return result;
-    }
-
-    /**
-     * Vytvoří seznam objektů osob. Pro osoby nejsou načítány všechna detailní data.
-     *
-     * @param parties seznam osob
-     * @return seznam VO osob
-     */
-    public List<ParPartyVO> createPartyList(final List<ParParty> parties) {
-        if (CollectionUtils.isEmpty(parties)) {
-            return Collections.emptyList();
-        }
-
-        //načtení dat do session
-        unitdateRepository.findForFromPartyNameByParties(parties);
-        unitdateRepository.findForToPartyNameByParties(parties);
-        apAccessPointRepository.findByParties(parties);
-
-        List<ParPartyName> allPartyNames = partyNameRepository.findByPartyIn(parties);
-        Map<Integer, List<ParPartyName>> partyNameMap = ElzaTools
-                .createGroupMap(allPartyNames, p -> p.getParty().getPartyId());
-
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        Map<Integer, ParPartyVO> partyMap = new LinkedHashMap<>();
-
-        for (final ParParty party : parties) {
-            ParPartyVO partyVO = mapper.map(party, ParPartyVO.class);
-
-            partyMap.put(partyVO.getId(), partyVO);
-
-
-            List<ParPartyName> partyNames = partyNameMap.get(party.getPartyId());
-            if (partyNames != null) {
-                List<ParPartyNameVO> partyNamesVo = new ArrayList<>(partyNames.size());
-
-                for (ParPartyName partyName : partyNames) {
-                    ParPartyNameVO partyNameVo = mapper.map(partyName, ParPartyNameVO.class);
-                    if (partyName.equals(party.getPreferredName())) {
-                        partyNameVo.setPrefferedName(true);
-                    }
-                    partyNamesVo.add(partyNameVo);
-                }
-                partyVO.setPartyNames(partyNamesVo);
-            }
-        }
-
-        return new ArrayList<>(partyMap.values());
-    }
-
-
-    /**
-     * Vytvoří objekt jména osoby. Jsou načteny i detailní informace.
-     *
-     * @param partyName jméno osoby
-     * @return vo jména osoba
-     */
-    private ParPartyNameVO createParPartyNameDetail(final ParPartyName partyName) {
-
-        if(partyName.getPartyNameComplements() != null){
-            partyName.getPartyNameComplements().sort(new ParPartyNameComplement.ParPartyNameComplementComparator());
-        }
-
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ParPartyNameVO result = mapper.map(partyName, ParPartyNameVO.class);
-
-        if(partyName == partyName.getParty().getPreferredName()){
-            result.setPrefferedName(true);
-        }
-//        List<ParPartyNameComplement> nameComplements = partyNameComplementRepository.findByPartyName(partyName);
-//        result.setPartyNameComplements(createList(nameComplements, ParPartyNameComplementVO.class, null));
-
-        return result;
-    }
-
-    /**
-     * Vytvoří seznam vazeb osoby.
-     *
-     * @param party osoba
-     * @return seznam vazeb osoby
-     */
-    public List<ParRelationVO> createPartyRelations(final ParParty party) {
-        List<ParRelation> relations = relationRepository.findByParty(party);
-        if (CollectionUtils.isEmpty(relations)) {
-            return Collections.emptyList();
-        }
-        relations.sort(new ParRelation.ParRelationComparator());
-
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-
-        Map<Integer, ParRelationVO> relationVOMap = new LinkedHashMap<>();
-        for (final ParRelation relation : relations) {
-            relationVOMap.put(relation.getRelationId(), mapper.map(relation, ParRelationVO.class));
-        }
-
-        List<ParRelationEntity> partyRelations = relationEntityRepository.findByParty(party);
-        List<ParRelationEntityVO> partyRelationsVo = createList(partyRelations, ParRelationEntityVO.class, null);
-
-        for (final ParRelationEntityVO parRelationEntityVO : partyRelationsVo) {
-            relationVOMap.get(parRelationEntityVO.getRelationId()).addRelationEntity(parRelationEntityVO);
-        }
-
-        return new ArrayList<>(relationVOMap.values());
-    }
-
-    /**
-     * Vytvoří VO objekt vztahu z DO.
-     *
-     * @param relation VO objekt vztahu
-     * @return DO objekt vztahu
-     */
-    public ParRelationVO createRelation(final ParRelation relation) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-
-        ParRelationVO relationVO = mapper.map(relation, ParRelationVO.class);
-
-        for (ParRelationEntity relationEntity : relationEntityRepository.findByRelation(relation)) {
-            relationVO.addRelationEntity(mapper.map(relationEntity, ParRelationEntityVO.class));
-        }
-
-        return relationVO;
-    }
-
-    /**
-     * Vytvoří seznam typů formy jména.
-     *
-     * @param types typy formy jména
-     * @return seznam VO typů
-     */
-    public List<ParPartyNameFormTypeVO> createPartyNameFormTypes(final Collection<ParPartyNameFormType> types) {
-        Assert.notNull(types, "Typy forem jmén musí být vyplněny");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-
-        List<ParPartyNameFormTypeVO> result = new LinkedList<>();
-
-        for (final ParPartyNameFormType type : types) {
-            result.add(mapper.map(type, ParPartyNameFormTypeVO.class));
-        }
-
-        return result;
     }
 
     /**
@@ -708,7 +359,6 @@ public class ClientFactoryVO {
      * Vytvoří třídy výstupů archivního souboru.
      *
      * @param outputs seznam DO
-     * @param loadOutputs  mají se do objektu načíst verze? (arr_output)
      * @return seznam VO
      */
     public List<ArrOutputVO> createOutputList(final Collection<ArrOutput> outputs) {
@@ -821,9 +471,6 @@ public class ClientFactoryVO {
                 break;
             case COORDINATES:
                 itemVO = new ArrItemCoordinatesVO();
-                break;
-            case PARTY_REF:
-                itemVO = new ArrItemPartyRefVO();
                 break;
             case DECIMAL:
                 itemVO = new ArrItemDecimalVO();
@@ -1375,9 +1022,10 @@ public class ClientFactoryVO {
         Assert.notNull(institution, "Instituce musí být vyplněny");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ParInstitutionVO institutionVO = mapper.map(institution, ParInstitutionVO.class);
-        institutionVO.setPartyId(institution.getPartyId());
-        ApName prefName = apNameRepository.findPreferredNameByPartyId(institution.getPartyId());
-        institutionVO.setName(prefName.getFullName());
+        institutionVO.setAccessPointId(institution.getAccessPointId());
+        //TODO : gotzy dořešit generování preferovaného jména
+        //ApName prefName = apNameRepository.findPreferredNameByPartyId(institution.getAccessPointId());
+        institutionVO.setName("Preferované jméno");
         return institutionVO;
     }
 
@@ -1546,24 +1194,6 @@ public class ClientFactoryVO {
         }
 
         return result;
-    }
-
-    /**
-     * Vytvoří {@link ParRelationTypeVO}. Pokud je předán {@link ParPartyTypeRelation} a obsahuje jméno,
-     * tak bude nastaveno do výsledného objektu.
-     *
-     * @return VO
-     */
-    public ParRelationTypeVO createParRelationType(final ParRelationType relationType, final ParPartyTypeRelation partyTypeRelation,
-            final Map<Integer, ParRelationTypeVO> relationTypeVoMap) {
-        ParRelationTypeVO parRelationTypeVO = getOrCreateVo(relationType.getRelationTypeId(), relationType, relationTypeVoMap,
-                ParRelationTypeVO.class);
-
-        if (partyTypeRelation != null && StringUtils.isNotBlank(partyTypeRelation.getName())) {
-            parRelationTypeVO = mapperFactory.getMapperFacade().map(relationType,  ParRelationTypeVO.class); // snad to nebude dělat neplechu když budou různá VO se stejným id
-            parRelationTypeVO.setName(partyTypeRelation.getName());
-        }
-        return parRelationTypeVO;
     }
 
     public <T, R> R createSimpleEntity(final T entity, final Class<R> clazz) {

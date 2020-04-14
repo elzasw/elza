@@ -30,9 +30,9 @@ public class UsrUser {
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer userId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParParty.class)
-    @JoinColumn(name = "partyId", nullable = false)
-    private ParParty party;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
+    @JoinColumn(name = "accessPointId", nullable = false)
+    private ApAccessPoint accessPoint;
 
     @Column(length = 250, nullable = false, unique = true)
     private String username;
@@ -45,7 +45,7 @@ public class UsrUser {
 
     /* Konstanty pro vazby a fieldy. */
     public static final String FIELD_USER_ID = "userId";
-    public static final String FIELD_PARTY = "party";
+    public static final String FIELD_ACCESS_POINT = "accessPoint";
     public static final String FIELD_USERNAME = "username";
     public static final String FIELD_DESCRIPTION = "description";
     public static final String FIELD_ACTIVE = "active";
@@ -62,20 +62,6 @@ public class UsrUser {
      */
     public void setUserId(final Integer userId) {
         this.userId = userId;
-    }
-
-    /**
-     * @return vazba na osobu
-     */
-    public ParParty getParty() {
-        return party;
-    }
-
-    /**
-     * @param party vazba na osobu
-     */
-    public void setParty(final ParParty party) {
-        this.party = party;
     }
 
     /**
@@ -118,5 +104,13 @@ public class UsrUser {
      */
     public void setDescription(final String description) {
         this.description = description;
+    }
+
+    public ApAccessPoint getAccessPoint() {
+        return accessPoint;
+    }
+
+    public void setAccessPoint(ApAccessPoint accessPoint) {
+        this.accessPoint = accessPoint;
     }
 }

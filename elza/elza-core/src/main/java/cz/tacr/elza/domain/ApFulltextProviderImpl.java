@@ -6,15 +6,15 @@ import org.slf4j.LoggerFactory;
 import cz.tacr.elza.service.AccessPointService;
 
 public class ApFulltextProviderImpl implements ApFulltextProvider {
-	
+
 	private final AccessPointService apService;
-    
+
     Logger log = LoggerFactory.getLogger(ApFulltextProviderImpl.class);
 
     public ApFulltextProviderImpl(final AccessPointService apService) {
         this.apService = apService;
     }
-    
+
     @Override
     public String getFulltext(ApAccessPoint accessPoint) {
         // Fulltext can be generated only for non deleted accessPoints
@@ -22,15 +22,8 @@ public class ApFulltextProviderImpl implements ApFulltextProvider {
         if (apState.getDeleteChangeId() != null) {
             return null;
         }
-        
-        ApName prefName = apService.getPreferredAccessPointName(accessPoint);
-        if (prefName == null) {
-            return null;
-        }
-        return createFulltext(prefName);
+
+        return null;
     }
-    
-    public static String createFulltext(ApName apName) {
-        return apName.getFullName();
-    }
+
 }

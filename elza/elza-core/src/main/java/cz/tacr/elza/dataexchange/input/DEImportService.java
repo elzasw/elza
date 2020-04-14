@@ -35,14 +35,9 @@ import cz.tacr.elza.dataexchange.input.aps.context.AccessPointsContext;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 import cz.tacr.elza.dataexchange.input.institutions.context.InstitutionsContext;
-import cz.tacr.elza.dataexchange.input.parties.context.PartiesContext;
 import cz.tacr.elza.dataexchange.input.reader.XmlElementReader;
 import cz.tacr.elza.dataexchange.input.reader.handlers.AccessPointElementHandler;
-import cz.tacr.elza.dataexchange.input.reader.handlers.EventElementHandler;
-import cz.tacr.elza.dataexchange.input.reader.handlers.FamilyElementHandler;
 import cz.tacr.elza.dataexchange.input.reader.handlers.InstitutionElementHandler;
-import cz.tacr.elza.dataexchange.input.reader.handlers.PartyGroupElementHandler;
-import cz.tacr.elza.dataexchange.input.reader.handlers.PersonElementHandler;
 import cz.tacr.elza.dataexchange.input.reader.handlers.SectionElementHandler;
 import cz.tacr.elza.dataexchange.input.sections.context.ImportPosition;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext;
@@ -95,14 +90,7 @@ public class DEImportService {
     public DEImportService(EntityManager em,
                            ApAccessPointRepository apRepository,
                            ArrangementService arrangementService,
-                           ApNameRepository apNameRepository,
-                           ApDescriptionRepository apDescRepository,
                            ApExternalIdRepository apEidRepository,
-                           PartyRepository partyRepository,
-                           PartyNameRepository nameRepository,
-                           PartyNameComplementRepository nameComplementRepository,
-                           PartyGroupIdentifierRepository groupIdentifierRepository,
-                           UnitdateRepository unitdateRepository,
                            InstitutionRepository institutionRepository,
                            UserService userService,
                            StaticDataService staticDataService,
@@ -121,9 +109,8 @@ public class DEImportService {
                            DmsService dmsService,
                            ApStateRepository apStateRepository) {
         this.initHelper = new ImportInitHelper(groovyScriptService, institutionRepository, institutionTypeRepository,
-                arrangementService, levelRepository, apRepository, apNameRepository, apDescRepository, apEidRepository,
-                partyRepository, nameRepository, nameComplementRepository, groupIdentifierRepository,
-                unitdateRepository, structObjService, accessPointService,
+                arrangementService, levelRepository, apRepository, apEidRepository,
+                structObjService, accessPointService,
                 dmsService, apStateRepository);
         this.em = em;
         this.userService = userService;
@@ -247,14 +234,12 @@ public class DEImportService {
         // initialize phase contexts
         AccessPointsContext apContext = new AccessPointsContext(storageManager, params.getBatchSize(), importScope,
                 apChangeHolder, staticData, initHelper);
-        PartiesContext partiesContext = new PartiesContext(storageManager, params.getBatchSize(), apContext, staticData,
-                initHelper);
         InstitutionsContext institutionsContext = new InstitutionsContext(storageManager, params.getBatchSize(),
                 initHelper);
         SectionsContext sectionsContext = initSectionsContext(storageManager, params, importScope, staticData);
-        
+
         // initialize context
-        ImportContext context = new ImportContext(session, staticData, apContext, partiesContext, institutionsContext,
+        ImportContext context = new ImportContext(session, staticData, apContext, institutionsContext,
                 sectionsContext, storageManager);
         context.init(params.getImportPhaseChangeListeners());
 
@@ -298,10 +283,6 @@ public class DEImportService {
             throw new SystemException("Failed to prepare import source", e);
         }
         reader.addElementHandler("/edx/aps/ap", new AccessPointElementHandler(context));
-        reader.addElementHandler("/edx/pars/per", new PersonElementHandler(context));
-        reader.addElementHandler("/edx/pars/famy", new FamilyElementHandler(context));
-        reader.addElementHandler("/edx/pars/pg", new PartyGroupElementHandler(context));
-        reader.addElementHandler("/edx/pars/evnt", new EventElementHandler(context));
         reader.addElementHandler("/edx/inss/inst", new InstitutionElementHandler(context));
         reader.addElementHandler("/edx/fs/s", new SectionElementHandler(context, reader, ignoreRootNodes));
         return reader;

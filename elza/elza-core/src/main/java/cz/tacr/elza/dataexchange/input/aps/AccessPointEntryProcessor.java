@@ -124,11 +124,6 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         if (apType.isReadOnly()) {
             throw new DEImportException("AP type is read only, apeId:" + entry.getId());
         }
-        if (partyRelated ? apType.getPartyType() == null : apType.getPartyType() != null) {
-            throw new DEImportException("AP type with defined party type "
-                            + (partyRelated ? "must be used" : "can be used only")
-                            + " for party related AP entry, apeId:" + entry.getId());
-        }
 
         // create AP
         ApAccessPoint accessPoint = new ApAccessPoint();

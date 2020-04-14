@@ -25,18 +25,11 @@ public class RestoreAction {
     final StaticDataProvider sdp;
 
     private Map<Integer, List<ArrDataStructureRef>> restoreStructData;
-    private Map<Integer, List<ArrDataPartyRef>> restorePartyRef;
     private Map<Integer, List<ArrDataRecordRef>> restoreAPRef;
     private Map<Integer, List<ArrDataFileRef>> restoreFileRef;
     private Map<Integer, List<ArrDaoLink>> restoreDaoLinks;
 
     final private StructuredObjectRepository structureDataRepository;
-
-    final private PartyRepository partyRepository;
-
-    /*final private PartyNameComplementRepository partyNameComplementRepository;
-
-    final private PartyNameRepository partyNameRepository;*/
 
     final private ApAccessPointRepository accessPointRepository;
 
@@ -53,9 +46,6 @@ public class RestoreAction {
     public RestoreAction(final StaticDataProvider sdp,
                          final EntityManager em,
                          final StructuredObjectRepository structureDataRepository,
-                         final PartyRepository partyRepository,
-            /*final PartyNameComplementRepository partyNameComplementRepository,
-            final PartyNameRepository partyNameRepository,*/
                          final ApAccessPointRepository accessPointRepository,
                          final FundFileRepository fundFileRepository,
                          final DaoRepository daoRepository,
@@ -64,9 +54,6 @@ public class RestoreAction {
         this.sdp = sdp;
         this.em = em;
         this.structureDataRepository = structureDataRepository;
-        this.partyRepository = partyRepository;
-        /*this.partyNameComplementRepository = partyNameComplementRepository;
-        this.partyNameRepository = partyNameRepository;*/
         this.accessPointRepository = accessPointRepository;
         this.fundFileRepository = fundFileRepository;
         this.daoRepository = daoRepository;
@@ -80,7 +67,6 @@ public class RestoreAction {
         }
 
         prepareStructureData();
-        preparePartyRefs();
         prepareAPRefs();
         prepareFileRefs();
         preapareDaoLinks();
@@ -195,8 +181,6 @@ public class RestoreAction {
                 if (data != null) {
                     if (data instanceof ArrDataStructureRef) {
                         addDataStructRef((ArrDataStructureRef) data);
-                    } else if (data instanceof ArrDataPartyRef) {
-                        addDataPartyRef((ArrDataPartyRef) data);
                     } else if (data instanceof ArrDataRecordRef) {
                         addDataAPRef((ArrDataRecordRef) data);
                     } else if (data instanceof ArrDataFileRef) {
@@ -227,16 +211,6 @@ public class RestoreAction {
         }
         List<ArrDataStructureRef> dataList = restoreStructData.computeIfAbsent(data.getStructuredObjectId(),
                                                                                k -> new ArrayList<>());
-        dataList.add(data);
-    }
-
-    private void addDataPartyRef(ArrDataPartyRef data) {
-        Validate.notNull(data.getPartyId());
-
-        if (restorePartyRef == null) {
-            restorePartyRef = new HashMap<>();
-        }
-        List<ArrDataPartyRef> dataList = restorePartyRef.computeIfAbsent(data.getPartyId(), k -> new ArrayList<>());
         dataList.add(data);
     }
 
@@ -304,84 +278,6 @@ public class RestoreAction {
         // all structured items were restored
         Validate.isTrue(restoreStructData.isEmpty());
         restoreStructData = null;
-    }
-
-    /**
-     * Vyplnění návazných entity {@link ParParty}.
-     *
-     */
-    private void preparePartyRefs() {
-        if (restorePartyRef == null) {
-            return;
-        }
-
-        // Load parties
-        ObjectListIterator<Integer> iterator = new ObjectListIterator<>(restorePartyRef.keySet());
-        int partiesFound = 0;
-        //List<ParPartyName> partyNames = new ArrayList<>();
-        while (iterator.hasNext()) {
-            List<Integer> next = iterator.next();
-            List<ParParty> parties = partyRepository.findAllFetch(next);
-            //partyNames.addAll(partyNameRepository.findByPartyIds(next));
-
-            partiesFound += parties.size();
-            for (ParParty party : parties) {
-
-
-                List<ArrDataPartyRef> dataList = restorePartyRef.get(party.getPartyId());
-                for (ArrDataPartyRef partyRef : dataList) {
-                    partyRef.setParty(party);
-                }
-            }
-        }
-
-        // check if all parties processed
-        Validate.isTrue(partiesFound == restorePartyRef.size(),
-                        "Not all parties were found, foundParties = %d, expectedParties = %d", partiesFound,
-                        restorePartyRef.size());
-        restorePartyRef = null;
-
-        // read complements for prefered name?
-        // not used
-        /*
-        Map<Integer, List<ParPartyName>> partyNamesMap = partyNames.stream().collect(Collectors.groupingBy(s -> s
-                .getParty().getPartyId()));
-
-        for (ParParty party : partiesMapFound.values()) {
-            CollectionUtils.addIgnoreNull(preferredNameIds, party.getPreferredNameId());
-        }
-
-        iterator = new ObjectListIterator<>(preferredNameIds);
-        Map<Integer, List<ParPartyNameComplement>> preferredNameIdComplementsMap = new HashMap<>();
-        while (iterator.hasNext()) {
-            List<ParPartyNameComplement> partyNameComplements = partyNameComplementRepository.findByPartyNameIds(
-                                                                                                                 iterator.next());
-            Map<Integer, List<ParPartyNameComplement>> map = partyNameComplements.stream().collect(Collectors
-                    .groupingBy(s -> s.getPartyName().getPartyNameId()));
-            map.forEach((k, v) -> preferredNameIdComplementsMap.merge(k, v, (v1, v2) -> {
-                Set<ParPartyNameComplement> set = new TreeSet<>(v1);
-                set.addAll(v2);
-                return new ArrayList<>(set);
-            }));
-        }
-
-        for (ParParty party : partiesMapFound.values()) {
-            if (party.getPreferredNameId() != null) {
-                List<ParPartyNameComplement> partyNameComplements = preferredNameIdComplementsMap.get(party
-                        .getPreferredNameId());
-                if (partyNameComplements != null) {
-                    party.getPreferredName().setPartyNameComplements(partyNameComplements);
-                } else {
-                    party.getPreferredName().setPartyNameComplements(Collections.emptyList());
-                }
-            }
-            List<ParPartyName> parPartyNames = partyNamesMap.get(party.getPartyId());
-            if (parPartyNames != null) {
-                party.setPartyNames(parPartyNames);
-            } else {
-                party.setPartyNames(Collections.emptyList());
-            }
-        }*/
     }
 
     /**

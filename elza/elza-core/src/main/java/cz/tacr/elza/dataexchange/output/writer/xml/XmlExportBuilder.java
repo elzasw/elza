@@ -18,7 +18,6 @@ import com.sun.xml.txw2.output.IndentingXMLStreamWriter;
 import cz.tacr.elza.dataexchange.output.sections.SectionContext;
 import cz.tacr.elza.dataexchange.output.writer.ApOutputStream;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
-import cz.tacr.elza.dataexchange.output.writer.PartiesOutputStream;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.InternalNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode;
@@ -47,11 +46,6 @@ public class XmlExportBuilder implements ExportBuilder {
     @Override
     public ApOutputStream openAccessPointsOutputStream() {
         return new XmlApOutputStream(rootNode, tempDirectory);
-    }
-
-    @Override
-    public PartiesOutputStream openPartiesOutputStream() {
-        return new XmlPartiesOutputStream(rootNode, tempDirectory);
     }
 
     @Override

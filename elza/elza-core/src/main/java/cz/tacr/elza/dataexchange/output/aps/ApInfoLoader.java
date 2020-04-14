@@ -17,17 +17,12 @@ import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.service.UserService;
 
 public class ApInfoLoader extends AbstractEntityLoader<ApInfo, ApState> {
 
     private final Set<Integer> checkedScopeIds = new HashSet<>();
-
-    private final NameLoader nameLoader;
-
-    private final DescriptionLoader descriptionLoader;
 
     private final ExternalIdLoader externalIdLoader;
 
@@ -39,8 +34,6 @@ public class ApInfoLoader extends AbstractEntityLoader<ApInfo, ApState> {
 
     public ApInfoLoader(ExportContext context, EntityManager em, UserService userService) {
         super(ApState.class, ApState.FIELD_ACCESS_POINT_ID, em, context.getBatchSize());
-        this.nameLoader = new NameLoader(em, batchSize);
-        this.descriptionLoader = new DescriptionLoader(em, batchSize);
         this.externalIdLoader = new ExternalIdLoader(em, batchSize);
         this.context = context;
         this.userService = userService;
@@ -50,8 +43,6 @@ public class ApInfoLoader extends AbstractEntityLoader<ApInfo, ApState> {
     @Override
     public void flush() {
         super.flush();
-        nameLoader.flush();
-        descriptionLoader.flush();
         externalIdLoader.flush();
     }
 
@@ -84,20 +75,6 @@ public class ApInfoLoader extends AbstractEntityLoader<ApInfo, ApState> {
                 throw Authorization.createAccessDeniedException(Permission.AP_SCOPE_RD);
             }
         }
-
-        // we must ignore party AP (AP type initialized by dispatcher)
-        ParPartyType partyType = apState.getApType().getPartyType();
-        if (partyType != null) {
-            context.addPartyApId(accessPointId);
-            result.setPartyAp(true);
-            return;
-        }
-
-        NameDispatcher nd = new NameDispatcher(result, dispatcher, context.getStaticData());
-        nameLoader.addRequest(accessPointId, nd);
-
-        DescriptionDispatcher dd = new DescriptionDispatcher(result, dispatcher);
-        descriptionLoader.addRequest(accessPointId, dd);
 
         ExternalIdDispatcher eidd = new ExternalIdDispatcher(result, dispatcher, context.getStaticData());
         externalIdLoader.addRequest(accessPointId, eidd);
