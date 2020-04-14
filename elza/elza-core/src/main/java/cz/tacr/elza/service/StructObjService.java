@@ -86,7 +86,6 @@ public class StructObjService {
     private final FundStructureExtensionRepository fundStructureExtensionRepository;
     private final StructObjValueService structObjService;
     private final ItemTypeRepository itemTypeRepository;
-    private final ChangeRepository changeRepository;
     private final EventNotificationService notificationService;
     private final SettingsService settingsService;
     private final StaticDataService staticDataService;
@@ -116,7 +115,6 @@ public class StructObjService {
         this.fundStructureExtensionRepository = fundStructureExtensionRepository;
         this.structObjService = structureDataService;
         this.itemTypeRepository = itemTypeRepository;
-        this.changeRepository = changeRepository;
         this.notificationService = notificationService;
         this.settingsService = settingsService;
         this.staticDataService = staticDataService;
@@ -759,7 +757,7 @@ public class StructObjService {
                                                                  @Nullable final Boolean assignable,
                                                                  final int from,
                                                                  final int count) {
-        return structObjRepository.findStructureData(structureType.getStructuredTypeId(), 
+        return structObjRepository.findStructureData(structureType.getStructuredTypeId(),
                                                      fund.getFundId(), search, assignable, from, count);
     }
 
@@ -1207,7 +1205,7 @@ public class StructObjService {
             }
         }
     }
-    
+
     /**
      * Vyhledání povolených strukturovaných typů ve verzi AS.
      *

@@ -110,7 +110,7 @@ public class RuleService {
 	@Autowired
     private UpdateConformityInfoService updateConformityInfoService;
     @Autowired
-    private ArrangementService arrangementService;
+    private ArrangementInternalService arrangementInternalService;
     @Autowired
     private RulesExecutor rulesExecutor;
     @Autowired
@@ -180,7 +180,7 @@ public class RuleService {
 
         ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
 
-        if (!arrangementService.validLevelInVersion(level, version)) {
+        if (!arrangementInternalService.validLevelInVersion(level, version)) {
             throw new SystemException("Level s id " + faLevelId + " nespadá do verze s id " + fundVersionId);
         }
 
@@ -634,7 +634,7 @@ public class RuleService {
 
         ArrNode node = nodeRepository.findOne(nodeId);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_NODE_EXTENSION, node);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_NODE_EXTENSION, node);
 
         node.setVersion(nodeExtension.getNode().getVersion());
         saveNode(node, change);
@@ -672,7 +672,7 @@ public class RuleService {
 
         ArrNode node = nodeRepository.findOne(nodeId);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_NODE_EXTENSION, node);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.DELETE_NODE_EXTENSION, node);
 
         node.setVersion(nodeExtension.getNode().getVersion());
         saveNode(node, change);
@@ -827,7 +827,7 @@ public class RuleService {
         }
 
         // Změna pod kterou uvidíme nastavení
-        final ArrChange change = arrangementService.createChange(ArrChange.Type.SET_NODE_EXTENSION, node);
+        final ArrChange change = arrangementInternalService.createChange(ArrChange.Type.SET_NODE_EXTENSION, node);
 
         // Uložení node pro zaznamenání change
         saveNode(node, change);
@@ -902,7 +902,7 @@ public class RuleService {
     /**
      * Získání seznamu typů atributů podle strukt. typu a verze AS - internal.
      *
-     * @param structureType  strukturovaný typ
+     * @param structTypeId  id strukturovaného typu
      * @param fundVersion    verze AS
      * @param structureItems seznam položek strukturovaného datového typu
      * @return seznam typu atributů
