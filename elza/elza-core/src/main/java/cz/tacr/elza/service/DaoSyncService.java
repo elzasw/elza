@@ -6,12 +6,18 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -25,6 +31,7 @@ import com.google.common.collect.Lists;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDao.DaoType;
 import cz.tacr.elza.domain.ArrDaoFile;
 import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -37,7 +44,9 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.DigitizationCode;
 import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.repository.DaoFileGroupRepository;
@@ -50,6 +59,7 @@ import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.ws.WsClient;
+import cz.tacr.elza.ws.types.v1.Attributes;
 import cz.tacr.elza.ws.types.v1.ChecksumType;
 import cz.tacr.elza.ws.types.v1.Dao;
 import cz.tacr.elza.ws.types.v1.DaoSyncRequest;
@@ -62,6 +72,7 @@ import cz.tacr.elza.ws.types.v1.FileGroup;
 import cz.tacr.elza.ws.types.v1.Folder;
 import cz.tacr.elza.ws.types.v1.FolderGroup;
 import cz.tacr.elza.ws.types.v1.NonexistingDaos;
+import cz.tacr.elza.ws.types.v1.ObjectFactory;
 import cz.tacr.elza.ws.types.v1.UnitOfMeasure;
 
 /**
@@ -127,6 +138,18 @@ public class DaoSyncService {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    static JAXBContext jaxbAttrsContext;
+
+    private ObjectFactory wsObjectFactory = new ObjectFactory();
+
+    static {
+        try {
+            jaxbAttrsContext = JAXBContext.newInstance(Attributes.class);
+        } catch (JAXBException e) {
+            throw new IllegalStateException("Failed to initialize JAXB Context", e);
+        }
+    }
 
     // --- methods ---
 
@@ -370,6 +393,30 @@ public class DaoSyncService {
         arrDao.setCode(dao.getIdentifier());
         arrDao.setLabel(dao.getLabel());
         arrDao.setValid(true);
+
+        // serialize attributes
+        Attributes attrs = dao.getAttributes();
+        if (attrs != null) {
+
+            JAXBElement<Attributes> elemAttrs = wsObjectFactory.createDaoAttributes(attrs);
+            
+            try (StringWriter sw = new StringWriter()) {
+                Marshaller mar = jaxbAttrsContext.createMarshaller();
+                mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+
+                mar.marshal(elemAttrs, sw);
+
+                arrDao.setAttributes(sw.toString());
+            } catch (IOException | JAXBException e) {
+                logger.error("Failed to serialize attributes to XML: " + e.getMessage());
+                throw new SystemException("Failed to serialize attributes to XML", e,
+                        BaseCode.INVALID_STATE)
+                        .set("dao.identifier", dao.getIdentifier());
+
+            }
+        }
+
+        arrDao.setDaoType(DaoType.valueOf(dao.getDaoType().name()));
         arrDao.setDaoPackage(arrDaoPackage);
         return daoRepository.save(arrDao);
     }

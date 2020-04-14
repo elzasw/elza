@@ -24,6 +24,8 @@ import cz.tacr.elza.ws.core.v1.ExportServiceImpl;
 @ImportResource({"classpath:META-INF/cxf/cxf.xml", "classpath:META-INF/cxf/cxf-servlet.xml"})
 public class WebServiceConfig {
 
+    public final static String DAO_CORE_SERVICE_URL = "/DaoCoreService";
+
     @Autowired
     private DaoDigitizationServiceImpl daoDigitizationService;
 
@@ -62,7 +64,7 @@ public class WebServiceConfig {
     @Bean
     public Endpoint daoCoreServiceEndpoint() {
         EndpointImpl endpoint = new EndpointImpl(bus, daoCoreService);
-        endpoint.publish("/DaoCoreService");
+        endpoint.publish(DAO_CORE_SERVICE_URL);
         return endpoint;
     }
 

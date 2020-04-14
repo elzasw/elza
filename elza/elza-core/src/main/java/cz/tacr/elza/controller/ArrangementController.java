@@ -49,6 +49,7 @@ import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
 import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
 import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
@@ -448,7 +449,7 @@ public class ArrangementController {
                 method = RequestMethod.PUT,
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
-    public void createDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+    public ArrDaoLinkVO createDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                               @PathVariable(value = "daoId") final Integer daoId,
                               @PathVariable(value = "nodeId") final Integer nodeId) {
         Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
@@ -460,6 +461,9 @@ public class ArrangementController {
         final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
 
         final ArrDaoLink daoLink = daoService.createOrFindDaoLink(fundVersion, dao, node);
+
+        ArrDaoLinkVO daoLinkVo = this.factoryVo.createDaoLink(daoLink, fundVersion);
+        return daoLinkVo;
     }
 
     /**

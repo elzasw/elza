@@ -181,4 +181,15 @@
         <!-- Zneplatneni cache -->
         <delete tableName="arr_cached_node" />
     </changeSet>
+
+    <changeSet id="20200412210354" author="ppyt">
+        <addColumn tableName="arr_dao">
+            <column name="dao_type" type="nvarchar(25)" />
+            <column name="attributes" type="text" />
+        </addColumn>
+        <sql>UPDATE arr_dao SET dao_type='ATTACHMENT'</sql>
+        <addNotNullConstraint tableName="arr_dao" columnName="dao_type" columnDataType="nvarchar(25)"/>
+        <!-- Zneplatneni cache -->
+        <delete tableName="arr_cached_node" />
+    </changeSet>
 </databaseChangeLog>
