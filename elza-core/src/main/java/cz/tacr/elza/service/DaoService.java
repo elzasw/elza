@@ -11,11 +11,13 @@ import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -59,13 +61,13 @@ import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
 /**
- * Servisní metory pro  digitalizáty
+ * Servisní metody pro digitalizáty
  *
  */
 @Service
 public class DaoService {
 
-    private Log logger = LogFactory.getLog(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(DaoService.class);
 
     @Autowired
     private RequestQueueService requestQueueService;
@@ -148,42 +150,33 @@ public class DaoService {
      * @param node node
      * @return nalezené nebo vytvořené propojení
      */
+    @Transactional(value = TxType.MANDATORY)
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public ArrDaoLink createOrFindDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final ArrDao dao, final ArrNode node) {
+    public ArrDaoLink createOrFindDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                          final ArrDao dao, final ArrNode node) {
         if (!dao.getValid()) {
             throw new BusinessException("Nelze připojit digitální entitu k JP, protože je nevalidní", ArrangementCode.INVALID_DAO).level(Level.WARNING);
         }
 
-        // kontrola, že ještě neexistuje vazba na zadaný node
-        final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoAndNodeAndDeleteChangeIsNull(dao, node);
+        Set<Integer> nodeIds = new HashSet<>();
 
-        if (CollectionUtils.isEmpty(daoLinkList)) {
-
-            Set<Integer> nodeIds = new HashSet<>();
-
-            // Pokud má DAO jinou platnou vazbu, bude nejprve zneplatněna
-            final List<ArrDaoLink> linkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(dao);
+        // Vyhledání stávajících vazeb
+        final List<ArrDaoLink> linkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(dao);
+        if (!CollectionUtils.isNotEmpty(linkList)) {
+            // odstraneni predchozich pripojeni
             // měla by být jen jedna, ale cyklus ošetří i případnou chybu v datech
             for (ArrDaoLink arrDaoLink : linkList) {
                 nodeIds.add(arrDaoLink.getNodeId());
                 deleteDaoLink(Collections.singletonList(fundVersion), arrDaoLink, true);
             }
-
-            final ArrDaoLink resultDaoLink = createArrDaoLink(fundVersion, dao, node);
-
-            nodeIds.add(node.getNodeId());
-
-            updateNodeCacheDaoLinks(nodeIds);
-
-            return resultDaoLink;
-
-        } else if (daoLinkList.size() == 1) {
-            logger.debug("Nalezeno existující platné propojení mezi DAO(ID=" + dao.getDaoId() + ") a node(ID=" + node.getNodeId() + ").");
-            return daoLinkList.get(0); // vrací jediný prvek
-        } else {
-            // Nalezeno více než jedno platné propojení mezi digitalizátem a uzlem popisu.
-            throw new BusinessException("Propojení DAO(ID=" + dao.getDaoId() + ") a node(ID=" + node.getNodeId() + ") již existuje", ArrangementCode.ALREADY_ADDED);
         }
+
+        final ArrDaoLink resultDaoLink = createArrDaoLink(fundVersion, dao, node);
+
+        nodeIds.add(node.getNodeId());
+        updateNodeCacheDaoLinks(nodeIds);
+
+        return resultDaoLink;
     }
 
     private ArrDaoLink createArrDaoLink(ArrFundVersion fundVersion, ArrDao dao, ArrNode node) {
