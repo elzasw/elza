@@ -2068,11 +2068,9 @@ public class ClientFactoryVO {
     public ArrDaoLinkVO createDaoLink(ArrDaoLink daoLink, ArrFundVersion version) {
         ArrDaoLinkVO daoLinkVo = ArrDaoLinkVO.newInstance(daoLink);
 
-        final List<TreeNodeVO> nodesByIds = levelTreeCacheService.getNodesByIds(
-                                                                                Collections.singletonList(daoLink
-                                                                                        .getNodeId()),
-                                                                                version.getFundVersionId());
-        daoLinkVo.setTreeNodeClient(nodesByIds.iterator().next());
+        TreeNodeVO treeNodeVO = new TreeNodeVO();
+        treeNodeVO.setId(daoLink.getNodeId());
+        daoLinkVo.setTreeNodeClient(treeNodeVO);
 
         return daoLinkVo;
     }

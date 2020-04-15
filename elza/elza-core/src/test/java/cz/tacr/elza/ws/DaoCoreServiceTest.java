@@ -87,7 +87,8 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         DaoPackages daoPackages = objFactory.createDaoPackages();
 
         // prepare dao package
-        DaoPackage daoPackage = createDaoPackage(FUND_CODE, DIGIT_REPO_CODE, PACKAGE_ID1, DaoType.ATTACHMENT,
+        DaoPackage daoPackage = createDaoPackage(FUND_CODE, DIGIT_REPO_CODE, PACKAGE_ID1,
+                                                 DaoType.LEVEL,
                                                  "Testovaci DAO");
         daoPackages.getDaoPackage().add(daoPackage);
         daoImport.setDaoPackages(daoPackages);
