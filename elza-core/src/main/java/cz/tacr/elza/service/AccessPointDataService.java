@@ -175,7 +175,7 @@ public class AccessPointDataService {
      * @return true pokud je
      */
     private boolean isDescribeStructure(final ApAccessPoint accessPoint) {
-        return accessPoint.getRuleSystem() != null;
+        return false;
     }
 
     /**
@@ -187,10 +187,5 @@ public class AccessPointDataService {
         validationNotDeleted(apState);
         validateStructureType(apState.getApType());
         ApAccessPoint accessPoint = apState.getAccessPoint();
-        if (accessPoint.getRuleSystem() != null) {
-            throw new BusinessException("Nelze migrovat přístupový bod", RegistryCode.CANT_MIGRATE_AP)
-                    .set("accessPointId", accessPoint.getAccessPointId())
-                    .set("uuid", accessPoint.getUuid());
-        }
     }
 }

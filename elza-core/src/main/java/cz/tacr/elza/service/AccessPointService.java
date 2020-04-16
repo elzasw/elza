@@ -809,12 +809,12 @@ public class AccessPointService {
         newState.setApType(apType);
         apStateRepository.save(newState);
 
-        accessPoint.setRuleSystem(apType.getRuleSystem());
+       // accessPoint.setRuleSystem(apType.getRuleSystem());
         ApAccessPoint result = saveWithLock(accessPoint);
-        if (result.getRuleSystem() != null) {
+       /* if (result.getRuleSystem() != null) {
             //apGeneratorService.generateAndSetResult(accessPoint, change);
             apGeneratorService.generateAsyncAfterCommit(accessPointId, change.getChangeId());
-        }
+        }*/
 
         publishAccessPointUpdateEvent(result);
         reindexDescItem(result);
@@ -838,11 +838,6 @@ public class AccessPointService {
         ApAccessPoint accessPoint = apState.getAccessPoint();
         apDataService.validationNotDeleted(apState);
 
-        if (accessPoint.getRuleSystem() != null) {
-            throw new BusinessException("Nelze upravovat charakteristiku u strukturovaného přístupového bodu",
-                    BaseCode.INVALID_STATE);
-        }
-
         apDataService.changeDescription(apState, description, null);
         publishAccessPointUpdateEvent(accessPoint);
         return accessPoint;
@@ -858,7 +853,6 @@ public class AccessPointService {
 
         ApRuleSystem ruleSystem = apState.getApType().getRuleSystem();
         ApAccessPoint accessPoint = apState.getAccessPoint();
-        accessPoint.setRuleSystem(ruleSystem);
         accessPoint.setState(ApStateEnum.INIT);
         saveWithLock(accessPoint);
 
@@ -995,16 +989,10 @@ public class AccessPointService {
 
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
-        if (accessPoint.getRuleSystem() != null) {
-            throw new BusinessException("Nelze AP přepnout do řízení pravidly, protože již pravidla má", BaseCode.INVALID_STATE);
-        }
-
         ApType apType = apState.getApType();
         if (apType.getRuleSystem() == null) {
             throw new BusinessException("Typ nemá vazbu na pravidla", BaseCode.INVALID_STATE);
         }
-
-        accessPoint.setRuleSystem(apType.getRuleSystem());
         saveWithLock(accessPoint);
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
@@ -1228,7 +1216,6 @@ public class AccessPointService {
      */
     private ApState createStrucuredAccessPoint(final ApScope scope, final ApType type, final ApChange change) {
         ApAccessPoint accessPoint = createAccessPointEntity(scope, type, change);
-        accessPoint.setRuleSystem(type.getRuleSystem());
         accessPoint.setState(ApStateEnum.TEMP);
         return createAccessPointState(saveWithLock(accessPoint), scope, type, change);
     }
@@ -1497,7 +1484,6 @@ public class AccessPointService {
         apStateRepository.save(newApState);
 
         if (newApType != null) {
-            accessPoint.setRuleSystem(newApType.getRuleSystem());
             saveWithLock(accessPoint);
         }
         apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());

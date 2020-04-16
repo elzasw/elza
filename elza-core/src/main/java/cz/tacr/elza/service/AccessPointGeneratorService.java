@@ -245,7 +245,11 @@ public class AccessPointGeneratorService {
 
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
-        if (accessPoint.getRuleSystem() == null) {
+        logger.warn("Přístupový bod {} nemá vazbu na pravidla a nebude se provádět script", accessPoint.getAccessPointId());
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.ACCESS_POINT_UPDATE, accessPoint.getAccessPointId()));
+
+
+        /*if (accessPoint.getRuleSystem() == null) {
             logger.warn("Přístupový bod {} nemá vazbu na pravidla a nebude se provádět script", accessPoint.getAccessPointId());
             eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.ACCESS_POINT_UPDATE, accessPoint.getAccessPointId()));
             return;
@@ -270,7 +274,7 @@ public class AccessPointGeneratorService {
 
         eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.ACCESS_POINT_UPDATE, accessPoint.getAccessPointId()));
 
-        accessPointService.reindexDescItem(accessPoint);
+        accessPointService.reindexDescItem(accessPoint);*/
     }
 
     private File findGroovyFile(final ApFragment fragment) {
@@ -301,7 +305,7 @@ public class AccessPointGeneratorService {
     }
 
     private File findGroovyFile(final ApAccessPoint accessPoint) {
-        ApRuleSystem ruleSystem = accessPoint.getRuleSystem();
+       /* ApRuleSystem ruleSystem = accessPoint.getRuleSystem();
         ApRule rule = ruleRepository.findByRuleSystemAndRuleType(ruleSystem, ApRule.RuleType.TEXT_GENERATOR);
         if (rule == null) {
             throw new SystemException("Nebyly nalezeny pravidla generování pro přítupový bod", BaseCode.SYSTEM_ERROR);
@@ -309,7 +313,8 @@ public class AccessPointGeneratorService {
         RulComponent component = rule.getComponent();
         return resourcePathResolver.getGroovyDir(ruleSystem.getRulPackage())
                 .resolve(component.getFilename())
-                .toFile();
+                .toFile();*/
+       return null;
     }
 
     //TODO fantis: smazat nebo prepsat na novou strukturu

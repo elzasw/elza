@@ -190,7 +190,7 @@ public class ApFactory {
         vo.setUuid(ap.getUuid());
         vo.setExternalIds(eidsVO);
         vo.setErrorDescription(ap.getErrorDescription());
-        vo.setRuleSystemId(ruleSystem == null ? null : ruleSystem.getRuleSystemId());
+
         vo.setState(ap.getState() == null ? null : ApStateVO.valueOf(ap.getState().name()));
         vo.setName(preferredPart != null ? preferredPart.getValue() : null);
         if (desc != null) {
@@ -374,7 +374,7 @@ public class ApFactory {
 
     private void fillRefEntities(final List<ApItemVO> items) {
         Map<Integer, List<ApItemAccessPointRefVO>> accessPointsMap = new HashMap<>();
-        Map<Integer, List<ApItemPartyRefVO>> partyMap = new HashMap<>();
+        Map<Integer, List<ApItemAPFragmentRefVO>> fragmentMap = new HashMap<>();
 
         for (ApItemVO item : items) {
             if (item instanceof ApItemAccessPointRefVO) {
@@ -383,11 +383,11 @@ public class ApFactory {
                     List<ApItemAccessPointRefVO> list = accessPointsMap.computeIfAbsent(accessPointId, k -> new ArrayList<>());
                     list.add((ApItemAccessPointRefVO) item);
                 }
-            } else if (item instanceof ApItemPartyRefVO) {
-                Integer partyId = ((ApItemPartyRefVO) item).getValue();
-                if (partyId != null) {
-                    List<ApItemPartyRefVO> list = partyMap.computeIfAbsent(partyId, k -> new ArrayList<>());
-                    list.add((ApItemPartyRefVO) item);
+            } else if (item instanceof ApItemAPFragmentRefVO) {
+                Integer fragmentId = ((ApItemAPFragmentRefVO) item).getValue();
+                if (fragmentId != null) {
+                    List<ApItemAPFragmentRefVO> list = fragmentMap.computeIfAbsent(fragmentId, k -> new ArrayList<>());
+                    list.add((ApItemAPFragmentRefVO) item);
                 }
             }
         }
@@ -404,14 +404,14 @@ public class ApFactory {
             }
         }
 
-        Set<Integer> partyIds = partyMap.keySet();
-        if (!partyIds.isEmpty()) {
-            List<ParParty> parties = partyRepository.findAll(partyIds);
-            List<ParPartyVO> partyVOList = factoryVO.createPartyList(parties);
-            for (ParPartyVO partyVO : partyVOList) {
-                List<ApItemPartyRefVO> partyRefVOS = partyMap.get(partyVO.getId());
-                for (ApItemPartyRefVO partyRefVO : partyRefVOS) {
-                    partyRefVO.setParty(partyVO);
+        Set<Integer> fragmentIds = fragmentMap.keySet();
+        if (!fragmentIds.isEmpty()) {
+            List<ApFragment> fragments = fragmentRepository.findAll(fragmentIds);
+            List<ApFragmentVO> fragmentVOList = FactoryUtils.transformList(fragments, this::createVO);
+            for (ApFragmentVO fragmentVO : fragmentVOList) {
+                List<ApItemAPFragmentRefVO> fragmentRefVOS = fragmentMap.get(fragmentVO.getId());
+                for (ApItemAPFragmentRefVO fragmentRefVO : fragmentRefVOS) {
+                    fragmentRefVO.setFragment(fragmentVO);
                 }
             }
         }
