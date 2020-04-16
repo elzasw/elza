@@ -26,6 +26,7 @@ export const FUND_BA = 'FUND_BA';
 export const FUND_BA_ALL = 'FUND_BA_ALL';
 export const FUND_CL_VER_WR = 'FUND_CL_VER_WR';
 export const FUND_CL_VER_WR_ALL = 'FUND_CL_VER_WR_ALL';
+export const INTERPI_MAPPING_WR = 'INTERPI_MAPPING_WR';
 export const USER_CONTROL_ENTITITY = 'USER_CONTROL_ENTITITY';
 export const GROUP_CONTROL_ENTITITY = 'GROUP_CONTROL_ENTITITY';
 export const FUND_ARR_NODE = 'FUND_ARR_NODE';
@@ -59,6 +60,7 @@ export const all = {
     FUND_BA_ALL: {},
     FUND_CL_VER_WR: {fund: true},
     FUND_CL_VER_WR_ALL: {},
+    INTERPI_MAPPING_WR: {},
     USER_CONTROL_ENTITITY: { user: true },
     GROUP_CONTROL_ENTITITY: { group: true },
     FUND_ARR_NODE: { fund: true, node: true },
