@@ -44,10 +44,6 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
     @Column(length = StringLength.LENGTH_36, nullable = false, unique = true)
     private String uuid;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApRuleSystem.class)
-    @JoinColumn(name = RULE_SYSTEM_ID)
-    private ApRuleSystem ruleSystem;
-
     @Enumerated(EnumType.STRING)
     @Column(length = StringLength.LENGTH_ENUM)
     private ApStateEnum state;
@@ -99,14 +95,6 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
      */
     public void setUuid(final String uuid) {
         this.uuid = uuid;
-    }
-
-    public ApRuleSystem getRuleSystem() {
-        return ruleSystem;
-    }
-
-    public void setRuleSystem(final ApRuleSystem ruleSystem) {
-        this.ruleSystem = ruleSystem;
     }
 
     public ApStateEnum getState() {

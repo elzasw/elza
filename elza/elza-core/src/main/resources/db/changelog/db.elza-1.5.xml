@@ -315,4 +315,8 @@
         <dropTable tableName="par_unitdate"/>
     </changeSet>
 
+    <changeSet id="20200416084900" author="gotzy">
+        <dropColumn tableName="ap_access_point" columnName="rule_system_id"/>
+    </changeSet>
+
 </databaseChangeLog>
