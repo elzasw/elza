@@ -37,45 +37,6 @@
         </update>
     </changeSet>
 
-    <changeSet id="20200316213300" author="gotzy">
-        <addColumn tableName="rul_data_type">
-            <column name="text_length_limit" type="INTEGER" />
-        </addColumn>
-
-        <insert tableName="rul_data_type">
-            <column name="data_type_id" value="20"/>
-            <column name="code" value="STRING_50"/>
-            <column name="name" value="String do 50 znaků"/>
-            <column name="description" value="Textový popis"/>
-            <column name="regexp_use" value="false"/>
-            <column name="text_length_limit_use" value="true"/>
-            <column name="storage_table" value="arr_data_string"/>
-            <column name="text_length_limit" value="50"/>
-        </insert>
-
-        <update tableName="db_hibernate_sequences">
-            <column name="next_val" value="21"/>
-            <where>sequence_name = 'rul_data_type|data_type_id'</where>
-        </update>
-
-        <insert tableName="rul_data_type">
-            <column name="data_type_id" value="21"/>
-            <column name="code" value="STRING_250"/>
-            <column name="name" value="String do 250 znaků"/>
-            <column name="description" value="Textový popis"/>
-            <column name="regexp_use" value="false"/>
-            <column name="text_length_limit_use" value="true"/>
-            <column name="storage_table" value="arr_data_string"/>
-            <column name="text_length_limit" value="250"/>
-        </insert>
-
-        <update tableName="db_hibernate_sequences">
-            <column name="next_val" value="22"/>
-            <where>sequence_name = 'rul_data_type|data_type_id'</where>
-        </update>
-
-    </changeSet>
-
     <changeSet id="20200318104100" author="gotzy">
         <createTable tableName="rul_item_type_spec_assign">
             <column name="item_type_spec_assign_id" type="INTEGER">
@@ -160,4 +121,13 @@
         </preConditions>
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20200331164200" />
     </changeSet>
+
+    <changeSet id="20200416150300" author="gotzy">
+        <addColumn tableName="rul_item_type">
+            <column name="string_length_limit" type="int">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

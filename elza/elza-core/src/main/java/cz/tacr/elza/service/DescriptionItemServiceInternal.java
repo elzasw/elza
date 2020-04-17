@@ -126,8 +126,6 @@ public class DescriptionItemServiceInternal {
             return new UnitdateTitleValue(UnitDateConvertor.convertToString(unitdateData),
                     unitdateData.getCalendarTypeId());
         case STRING:
-        case STRING_50:
-        case STRING_250:
             ArrDataString strData = (ArrDataString) data;
             return new TitleValue(strData.getValue());
         case TEXT:

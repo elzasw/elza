@@ -62,6 +62,9 @@ public class ItemType {
     @XmlElement(name = "use-specification", required = true)
     private Boolean useSpecification;
 
+    @XmlElement(name="string-length-limit")
+    private Integer stringLengthLimit;
+
     @XmlElement(name = "column")
     @XmlElementWrapper(name = "columns-definitions")
     private List<Column> columnsDefinition;
@@ -179,6 +182,14 @@ public class ItemType {
         this.itemAptypes = itemAptypes;
     }
 
+    public Integer getStringLengthLimit() {
+        return stringLengthLimit;
+    }
+
+    public void setStringLengthLimit(Integer stringLengthLimit) {
+        this.stringLengthLimit = stringLengthLimit;
+    }
+
     // --- methods ---
 
     /**
@@ -198,6 +209,7 @@ public class ItemType {
         itemType.setDescription(rulDescItemType.getDescription());
         itemType.setIsValueUnique(rulDescItemType.getIsValueUnique());
         itemType.setUseSpecification(rulDescItemType.getUseSpecification());
+        itemType.setStringLengthLimit(rulDescItemType.getStringLengthLimit());
 
         DataType dataType = DataType.fromCode(rulDescItemType.getDataType().getCode());
 

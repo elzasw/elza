@@ -247,8 +247,6 @@ Type: Integer</xs:documentation>
 Item is used to represent at least:
 Coordinates serialized in string
 Simple string value
-String 50 value
-String 250 value
 Text  / LongText with unlimited length
 Formatted text
 Item ID</xs:documentation>

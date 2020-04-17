@@ -136,6 +136,9 @@ public class RulItemType {
     @Column(updatable = false, insertable = false)
     private Integer fragmentTypeId;
 
+    @Column()
+    private Integer stringLengthLimit;
+
     /**
 	 * Default constructor
 	 */
@@ -172,6 +175,7 @@ public class RulItemType {
 		structuredTypeId = src.getStructuredTypeId();
         fragmentType = src.getFragmentType();
         fragmentTypeId = src.getFragmentTypeId();
+        stringLengthLimit = src.getStringLengthLimit();
 	}
 
 	public Integer getItemTypeId() {
@@ -478,6 +482,14 @@ public class RulItemType {
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Problém při parsování JSON", e);
         }
+    }
+
+    public Integer getStringLengthLimit() {
+        return stringLengthLimit;
+    }
+
+    public void setStringLengthLimit(Integer stringLengthLimit) {
+        this.stringLengthLimit = stringLengthLimit;
     }
 
     @Override

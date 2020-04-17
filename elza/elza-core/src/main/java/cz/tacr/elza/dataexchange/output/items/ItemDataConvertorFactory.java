@@ -66,8 +66,6 @@ public class ItemDataConvertorFactory {
     public final Map<DataType, ItemDataConvertor> createAll() {
         Map<DataType, ItemDataConvertor> map = new EnumMap<>(DataType.class);
         map.put(DataType.STRING, createStringValueConvertor());
-        map.put(DataType.STRING_50, createStringValueConvertor());
-        map.put(DataType.STRING_250, createStringValueConvertor());
         map.put(DataType.TEXT, createTextValueConvertor());
         map.put(DataType.COORDINATES, createGeLocationConvertor());
         map.put(DataType.FORMATTED_TEXT, createTextValueConvertor());

@@ -1261,18 +1261,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 break;
             }
 
-            case "STRING_50": {
-                descItem = new ArrItemString50VO();
-                ((ArrItemString50VO) descItem).setValue((String) value);
-                break;
-            }
-
-            case "STRING_250": {
-                descItem = new ArrItemString250VO();
-                ((ArrItemString250VO) descItem).setValue((String) value);
-                break;
-            }
-
             case "DATE": {
                 descItem = new ArrItemDateVO();
                 ((ArrItemDateVO) descItem).setValue((LocalDate) value);
@@ -1352,18 +1340,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
             case STRING: {
                 item = new ApItemStringVO();
                 ((ApItemStringVO) item).setValue((String) value);
-                break;
-            }
-
-            case STRING_50: {
-                item = new ApItemString50VO();
-                ((ApItemString50VO) item).setValue((String) value);
-                break;
-            }
-
-            case STRING_250: {
-                item = new ApItemString250VO();
-                ((ApItemString250VO) item).setValue((String) value);
                 break;
             }
 
