@@ -78,5 +78,11 @@ public enum BaseCode implements ErrorCode {
      * Export failed.<br>
      * Code used by DataExchange export exception.
      */
-    EXPORT_FAILED
+    EXPORT_FAILED,
+
+    /**
+     * Přílišná délka
+     */
+    INVALID_LENGTH
+
 }

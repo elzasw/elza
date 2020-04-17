@@ -300,6 +300,7 @@ public class ArrangementFormService {
 				);
 				*/
 
+
 		ArrDescItem descItem = factoryDo.createDescItem(descItemVO);
 
 		// store updated value

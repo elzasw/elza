@@ -12,6 +12,7 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,21 +21,6 @@ import org.springframework.stereotype.Service;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataFileRef;
-import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrFile;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -226,6 +212,12 @@ public class ItemService {
                         checkRecordRef(recordRef, rulItemType, null);
                     }
                 }
+            }
+        }
+
+        if(itemType.getDataType() == DataType.STRING && itemType.getEntity().getStringLengthLimit() != null) {
+            if(((ArrDataString) descItem.getData()).getValue().length() > itemType.getEntity().getStringLengthLimit()) {
+                throw new BusinessException("Délka řetězce je delší než maximální povolená : " +itemType.getEntity().getStringLengthLimit(), BaseCode.INVALID_LENGTH);
             }
         }
     }

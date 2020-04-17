@@ -200,8 +200,6 @@ public class PersistentSortBulkAction extends BulkAction {
     private Comparator<ArrDescItem> getValueComparator(DataType dataType) {
         switch (dataType) {
         case STRING:
-        case STRING_50:
-        case STRING_250:
         case URI_REF:
         case TEXT:
         case FORMATTED_TEXT:

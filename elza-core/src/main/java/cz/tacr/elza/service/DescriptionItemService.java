@@ -18,6 +18,7 @@ import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.core.data.*;
 import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -38,10 +39,6 @@ import com.google.common.collect.Lists;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.core.data.ItemType;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
@@ -1315,8 +1312,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             case "INT":
                 return ArrDataInteger.class;
             case "STRING":
-            case "STRING_50":
-            case "STRING_250":
                 return ArrDataString.class;
             case "TEXT":
             case "FORMATTED_TEXT":
@@ -1431,8 +1426,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     data = dataText;
                     break;
                 case "STRING":
-                case "STRING_50":
-                case "STRING_250":
                     ArrDataString itemString = new ArrDataString();
                     itemString.setValue(text);
                     data = itemString;

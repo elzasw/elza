@@ -923,8 +923,6 @@ public class StructObjService {
                 data = new ArrDataText((String) value);
                 break;
             case STRING:
-            case STRING_50:
-            case STRING_250:
                 data = new ArrDataString((String) value);
                 break;
             default:

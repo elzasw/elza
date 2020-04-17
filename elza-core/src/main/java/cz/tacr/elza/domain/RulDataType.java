@@ -56,9 +56,6 @@ public class RulDataType {
     @Column(length = 250, nullable = false)
     private String storageTable;
 
-    @Column
-    private Integer textLengthLimit;
-
     public Integer getDataTypeId() {
         return dataTypeId;
     }
@@ -131,15 +128,6 @@ public class RulDataType {
      */
     public void setStorageTable(final String storageTable) {
         this.storageTable = storageTable;
-    }
-
-
-    public Integer getTextLengthLimit() {
-        return textLengthLimit;
-    }
-
-    public void setTextLengthLimit(Integer textLengthLimit) {
-        this.textLengthLimit = textLengthLimit;
     }
 
     @Override
