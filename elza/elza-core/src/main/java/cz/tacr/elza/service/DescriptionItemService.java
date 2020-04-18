@@ -141,7 +141,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     private IndexWorkProcessor indexWorkProcessor;
 
     @Autowired
-    private StructObjService structObjService;
+    private StructObjInternalService structObjInternalService;
 
     private TransactionSynchronizationAdapter indexWorkNotify;
 
@@ -681,7 +681,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         if (structuredType != null) {
             if (structuredType.getAnonymous()) {
                 ArrDataStructureRef data = (ArrDataStructureRef) retDescItem.getData();
-                structObjService.deleteStructObj(data.getStructuredObject());
+                structObjInternalService.deleteStructObj(data.getStructuredObject());
             }
         }
     }
