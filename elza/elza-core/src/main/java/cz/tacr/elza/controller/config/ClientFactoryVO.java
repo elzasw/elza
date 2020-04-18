@@ -763,12 +763,6 @@ public class ClientFactoryVO {
             case BIT:
                 itemVO = new ArrItemBitVO();
                 break;
-            case STRING_50:
-                itemVO = new ArrItemString50VO();
-                break;
-            case STRING_250:
-                itemVO = new ArrItemString250VO();
-                break;
             default:
                 throw new NotImplementedException(item.getItemType().getDataTypeId().toString());
             }

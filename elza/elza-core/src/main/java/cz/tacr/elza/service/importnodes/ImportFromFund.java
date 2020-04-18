@@ -290,10 +290,6 @@ public class ImportFromFund implements ImportSource {
             result = new ItemEnumImpl(item);
         } else if (itemData instanceof ArrDataString) {
             result = new ItemStringImpl(item, (ArrDataString) itemData);
-        } else if (itemData instanceof ArrDataString && item.getItemType().getDataType().getCode().equals("STRING_50")) {
-            result = new ItemString50Impl(item, (ArrDataString) itemData);
-        } else if (itemData instanceof ArrDataString && item.getItemType().getDataType().getCode().equals("STRING_250")) {
-            result = new ItemString250Impl(item, (ArrDataString) itemData);
         } else if (itemData instanceof ArrDataText && item.getItemType().getDataType().getCode().equals("TEXT")) {
             result = new ItemTextImpl(item, (ArrDataText) itemData);
         } else if (itemData instanceof ArrDataText && item.getItemType().getDataType().getCode().equals("FORMATTED_TEXT")) {
@@ -362,36 +358,6 @@ public class ImportFromFund implements ImportSource {
         private final String value;
 
         public ItemStringImpl(final ArrDescItem item, final ArrDataString itemData) {
-            super(item);
-            value = itemData.getValue();
-        }
-
-        @Override
-        public String getValue() {
-            return value;
-        }
-    }
-
-    private class ItemString50Impl extends ItemImpl implements ItemString50 {
-
-        private final String value;
-
-        public ItemString50Impl(final ArrDescItem item, final ArrDataString itemData) {
-            super(item);
-            value = itemData.getValue();
-        }
-
-        @Override
-        public String getValue() {
-            return value;
-        }
-    }
-
-    private class ItemString250Impl extends ItemImpl implements ItemString250 {
-
-        private final String value;
-
-        public ItemString250Impl(final ArrDescItem item, final ArrDataString itemData) {
             super(item);
             value = itemData.getValue();
         }

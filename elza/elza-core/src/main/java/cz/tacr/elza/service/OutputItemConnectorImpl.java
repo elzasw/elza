@@ -102,8 +102,6 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
         }
         switch (rsit.getDataType()) {
             case STRING:
-            case STRING_50:
-            case STRING_250:
                 ArrDataString str = new ArrDataString();
                 str.setDataType(rsit.getDataType().getEntity());
                 str.setValue(value);

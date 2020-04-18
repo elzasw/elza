@@ -1,7 +1,10 @@
 package cz.tacr.elza.service;
 
+import com.google.common.collect.Iterables;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.security.UserDetail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,6 +13,7 @@ import org.springframework.util.Assert;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import java.time.OffsetDateTime;
+import java.util.*;
 
 /**
  * Internal arrangement service.
@@ -23,6 +27,10 @@ public class ArrangementInternalService {
     private UserService userService;
     @Autowired
     private EntityManager em;
+    @Autowired
+    private FundVersionRepository fundVersionRepository;
+    @Autowired
+    private NodeRepository nodeRepository;
 
     /**
      * Vytvoření objektu pro změny s primárním uzlem.
@@ -75,6 +83,37 @@ public class ArrangementInternalService {
                 Integer.MAX_VALUE : level.getDeleteChange().getChangeId();
 
         return level.getCreateChange().getChangeId() < lockChange && levelDeleteChange >= lockChange;
+    }
+
+    /**
+     * Načte neuzavřené verze archivních pomůcek.
+     *
+     * @param fundIds ids archivních pomůcek
+     * @return verze
+     */
+    public List<ArrFundVersion> getOpenVersionsByFundIds(final Collection<Integer> fundIds) {
+        Assert.notNull(fundIds, "Nebyl vyplněn identifikátor AS");
+        if (fundIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return fundVersionRepository.findByFundIdsAndLockChangeIsNull(fundIds);
+    }
+
+    public List<ArrNode> findNodesByStructuredObjectId(Integer structuredObjectId) {
+        return nodeRepository.findNodesByStructuredObjectIds(Collections.singletonList(structuredObjectId));
+    }
+
+    public Map<Integer, ArrNode> findNodesByStructuredObjectIds(Collection<Integer> structuredObjectIds) {
+        if (structuredObjectIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<Integer, ArrNode> result = new HashMap<>(1000);
+        for (List<Integer> idsPart : Iterables.partition(structuredObjectIds, 1000)) {
+            for (ArrNode node : nodeRepository.findNodesByStructuredObjectIds(idsPart)) {
+                result.put(node.getNodeId(), node);
+            }
+        }
+        return result;
     }
 
 }

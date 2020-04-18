@@ -891,13 +891,14 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="IDN_VALUE" data-type="STRING_50">
+    <item-type code="IDN_VALUE" data-type="STRING">
         <name>Hodnota identifikátoru</name>
         <shortcut>Hodnota identifikátoru</shortcut>
         <description>Hodnota identifikátoru</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
+        <string-length-limit>50</string-length-limit>
     </item-type>
     <item-type code="IDN_VERIFIED" data-type="BIT">
         <name>Hodnota ověřena</name>
@@ -907,45 +908,50 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="NM_MAIN" data-type="STRING_250">
+    <item-type code="NM_MAIN" data-type="STRING">
         <name>Hlavní část jména</name>
         <shortcut>Hlavní část jména</shortcut>
         <description>Hlavní část jména</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
+        <string-length-limit>250</string-length-limit>
     </item-type>
-    <item-type code="NM_MINOR" data-type="STRING_250">
+    <item-type code="NM_MINOR" data-type="STRING">
         <name>Vedlejší část jména</name>
         <shortcut>Vedlejší část jména</shortcut>
         <description>Vedlejší část jména</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
+        <string-length-limit>250</string-length-limit>
     </item-type>
-    <item-type code="NM_SUP_GEN" data-type="STRING_50">
+    <item-type code="NM_SUP_GEN" data-type="STRING">
         <name>Obecný doplněk</name>
         <shortcut>Obecný doplněk</shortcut>
         <description>Obecný doplněk</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
+        <string-length-limit>50</string-length-limit>
     </item-type>
-    <item-type code="NM_SUP_GEO" data-type="STRING_250">
+    <item-type code="NM_SUP_GEO" data-type="STRING">
         <name>Geografický doplněk</name>
         <shortcut>Geografický doplněk</shortcut>
         <description>Geografický doplněk</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
+        <string-length-limit>250</string-length-limit>
     </item-type>
-    <item-type code="NM_SUP_CHRO" data-type="STRING_50">
+    <item-type code="NM_SUP_CHRO" data-type="STRING">
         <name>Chronologický doplněk</name>
         <shortcut>Chronologický doplněk</shortcut>
         <description>Chronologický doplněk</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
+        <string-length-limit>50</string-length-limit>
     </item-type>
     <item-type code="NM_ORDER" data-type="INT">
         <name>Pořadí události</name>
@@ -955,13 +961,14 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="NM_AUTH" data-type="STRING_250">
+    <item-type code="NM_AUTH" data-type="STRING">
         <name>Autor/tvůrce</name>
         <shortcut>Autor/tvůrce</shortcut>
         <description>Autor/tvůrce</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
+        <string-length-limit>250</string-length-limit>
     </item-type>
     <item-type code="NM_TYPE" data-type="ENUM">
         <name>Typ formy jména</name>
@@ -995,29 +1002,32 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
-    <item-type code="NM_DEGREE_PRE" data-type="STRING_50">
+    <item-type code="NM_DEGREE_PRE" data-type="STRING">
         <name>Titul před jménem</name>
         <shortcut>Titul před jménem</shortcut>
         <description>Titul před jménem</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
+        <string-length-limit>50</string-length-limit>
     </item-type>
-    <item-type code="NM_DEGREE_POST" data-type="STRING_50">
+    <item-type code="NM_DEGREE_POST" data-type="STRING">
         <name>Titul za jménem</name>
         <shortcut>Titul za jménem</shortcut>
         <description>Titul za jménem</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
+        <string-length-limit>50</string-length-limit>
     </item-type>
-    <item-type code="BRIEF_DESC" data-type="STRING_250">
+    <item-type code="BRIEF_DESC" data-type="STRING">
         <name>Stručná charakteristika</name>
         <shortcut>Stručná charakteristika</shortcut>
         <description>Stručná charakteristika</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
+        <string-length-limit>250</string-length-limit>
     </item-type>
     <item-type code="LANG" data-type="ENUM">
         <name>Jazyk díla</name>

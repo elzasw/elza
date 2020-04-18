@@ -14,8 +14,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.repository.*;
+import cz.tacr.elza.schema.v2.DescriptionItemString;
 import cz.tacr.elza.service.importnodes.vo.descitems.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -122,6 +127,9 @@ public class ImportProcess {
 
     @Autowired
     private FundLevelService arrMoveLevelService;
+
+    @Autowired
+    private StaticDataService staticDataService;
 
     /**
      * Zdroj dat pro import.
@@ -236,6 +244,16 @@ public class ImportProcess {
                     Integer position = descItemPositionMap.merge(item.getTypeCode(), 1, (a, b) -> a + b);
 
                     RulItemType itemType = itemTypeMap.get(item.getTypeCode());
+
+                    StaticDataProvider sdp = staticDataService.getData();
+
+                    if(sdp.getItemTypeByCode(item.getTypeCode()).getDataType() == DataType.STRING && itemType.getStringLengthLimit() != null) {
+                        if(((ItemString) item).getValue().length() > itemType.getStringLengthLimit()) {
+                            throw new BusinessException("Délka řetězce : " + ((ItemString) item).getValue()
+                                    + " je delší než maximální povolená : " +itemType.getStringLengthLimit(), BaseCode.INVALID_LENGTH);
+                        }
+                    }
+
                     descItem.setItemType(itemType);
                     descItem.setItemSpec(item.getSpecCode() == null ? null : itemSpecMap.get(item.getSpecCode()));
                     descItem.setCreateChange(change);
@@ -373,12 +391,6 @@ public class ImportProcess {
         } else if (item instanceof ItemBit) {
             data = new ArrDataBit();
             ((ArrDataBit) data).setValue(((ItemBit) item).getValue());
-        } else if (item instanceof ItemString50) {
-            data = new ArrDataString();
-            ((ArrDataString) data).setValue(((ItemString50) item).getValue());
-        } else if (item instanceof ItemString250) {
-            data = new ArrDataString();
-            ((ArrDataString) data).setValue(((ItemString250) item).getValue());
         }else {
             data = null;
         }
@@ -623,14 +635,10 @@ public class ImportProcess {
 	/**
 	 * Zkopírování souboru ze zdroje do AS.
 	 *
-	 * @param sourceFiles
+	 * @param sourceFile
 	 *            zdrojové soubory [název -> zdrojovýSoubor]
-	 * @param filesMapper
-	 *            převodní mapa [název -> soubor v AS]
-	 * @param fileNameSource
-	 *            název kopírovaného souboru
-	 * @param existsFileNames
-	 *            existující názvy souborů v AS
+	 * @param currentFiles
+	 *            aktuální soubory [název -> soubor v AS]
 	 * @return
 	 */
 	private ArrFile copyFileFromSource(ArrFile sourceFile,
