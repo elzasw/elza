@@ -54,7 +54,6 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.StructObjCode;
 import cz.tacr.elza.packageimport.xml.SettingStructureTypes;
-import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundStructureExtensionRepository;
@@ -82,6 +81,7 @@ public class StructObjService {
     private final StructuredObjectRepository structObjRepository;
     private final StructuredTypeRepository structureTypeRepository;
     private final ArrangementService arrangementService;
+    private final ArrangementInternalService arrangementInternalService;
     private final DataRepository dataRepository;
     private final FundStructureExtensionRepository fundStructureExtensionRepository;
     private final StructObjValueService structObjService;
@@ -97,11 +97,10 @@ public class StructObjService {
                             final StructuredObjectRepository structureDataRepository,
                             final StructuredTypeRepository structureTypeRepository,
                             final ArrangementService arrangementService,
-                            final DataRepository dataRepository,
+                            final ArrangementInternalService arrangementInternalService, final DataRepository dataRepository,
                             final FundStructureExtensionRepository fundStructureExtensionRepository,
                             final StructObjValueService structureDataService,
                             final ItemTypeRepository itemTypeRepository,
-                            final ChangeRepository changeRepository,
                             final EventNotificationService notificationService,
                             final SettingsService settingsService,
                             final StaticDataService staticDataService,
@@ -111,6 +110,7 @@ public class StructObjService {
         this.structObjRepository = structureDataRepository;
         this.structureTypeRepository = structureTypeRepository;
         this.arrangementService = arrangementService;
+        this.arrangementInternalService = arrangementInternalService;
         this.dataRepository = dataRepository;
         this.fundStructureExtensionRepository = fundStructureExtensionRepository;
         this.structObjService = structureDataService;
@@ -1171,7 +1171,7 @@ public class StructObjService {
                 null,
                 null));
 
-        Collection<Integer> nodeIds = arrangementService.findNodesByStructuredObjectIds(structureDataIds).keySet();
+        Collection<Integer> nodeIds = arrangementInternalService.findNodesByStructuredObjectIds(structureDataIds).keySet();
         if (!nodeIds.isEmpty()) {
             notificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundVersion.getFundVersionId(), nodeIds.toArray(new Integer[0])));
         }
