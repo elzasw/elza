@@ -73,7 +73,7 @@
     "@types/react-redux": "^7.1.7",
     "@types/redux-form": "^8.2.1",
     "@types/storybook__react": "^5.2.1",
-    "@types/webpack": "^4.41.5",
+    "@types/webpack": "4.41.5",
     "babel-loader": "^8.0.6",
     "bootstrap": "^4.4.1",
     "circular-dependency-plugin": "5.2.0",
