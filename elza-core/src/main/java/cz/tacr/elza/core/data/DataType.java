@@ -28,11 +28,7 @@ public enum DataType {
     DATE(ArrDataDate.class),
     APFRAG_REF(ArrDataApFragRef.class),
     URI_REF(ArrDataUriRef.class),
-    BIT(ArrDataBit.class),
-    STRING_50(ArrDataString.class,50),
-    STRING_250(ArrDataString.class, 250);
-
-
+    BIT(ArrDataBit.class);
 
     private static Map<Integer, DataType> entityIdMap;
 

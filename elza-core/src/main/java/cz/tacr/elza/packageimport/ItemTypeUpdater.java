@@ -603,6 +603,7 @@ public class ItemTypeUpdater {
         dbItemType.setUseSpecification(itemType.getUseSpecification());
         dbItemType.setStructuredType(rulStructureType);
         dbItemType.setFragmentType(apFragmentType);
+        dbItemType.setStringLengthLimit(itemType.getStringLengthLimit());
 
         if (itemType.getColumnsDefinition() != null) {
             List<ElzaColumn> elzaColumns = new ArrayList<>(itemType.getColumnsDefinition().size());

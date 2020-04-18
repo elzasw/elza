@@ -348,8 +348,6 @@ public class ConfigMapperConfiguration {
                 }
         ).byDefault().register();
         mapperFactory.classMap(ArrItemString.class, ArrItemStringVO.class).byDefault().register();
-        mapperFactory.classMap(ArrItemString50.class, ArrItemString50VO.class).byDefault().register();
-        mapperFactory.classMap(ArrItemString250.class, ArrItemString250VO.class).byDefault().register();
         mapperFactory.classMap(ArrItemBit.class, ArrItemBitVO.class).byDefault().register();
 
         mapperFactory.classMap(ArrNode.class, ArrNodeVO.class).byDefault().field("nodeId", "id").register();
@@ -931,8 +929,6 @@ public class ConfigMapperConfiguration {
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrDataString.class, ArrItemStringVO.class).byDefault().register();
-        mapperFactory.classMap(ArrDataString.class, ArrItemString50VO.class).byDefault().register();
-        mapperFactory.classMap(ArrDataString.class, ArrItemString250VO.class).byDefault().register();
         mapperFactory.classMap(ArrDataUriRef.class, ArrItemUriRefVO.class).customize(
                 new CustomMapper<ArrDataUriRef, ArrItemUriRefVO>() {
                     @Override

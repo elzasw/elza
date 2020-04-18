@@ -21,26 +21,20 @@ public class StringItemConvertor extends AbstractItemConvertor {
 
     private static String getDataValue(DataType dataType, ArrData data) {
         switch (dataType) {
-        case UNITID:
-            ArrDataUnitid unitid = (ArrDataUnitid) data;
-            return unitid.getUnitId();
-        case TEXT:
-            ArrDataText text = (ArrDataText) data;
-            return text.getValue();
-        case STRING:
-            ArrDataString str = (ArrDataString) data;
-            return str.getValue();
-        case FORMATTED_TEXT:
-            ArrDataText ftext = (ArrDataText) data;
-            return ftext.getValue();
-        case STRING_50:
-            ArrDataString str50 = (ArrDataString) data;
-            return str50.getValue();
-        case STRING_250:
-            ArrDataString str250 = (ArrDataString) data;
-            return str250.getValue();
+            case UNITID:
+                ArrDataUnitid unitid = (ArrDataUnitid) data;
+                return unitid.getUnitId();
+            case TEXT:
+                ArrDataText text = (ArrDataText) data;
+                return text.getValue();
+            case STRING:
+                ArrDataString str = (ArrDataString) data;
+                return str.getValue();
+            case FORMATTED_TEXT:
+                ArrDataText ftext = (ArrDataText) data;
+                return ftext.getValue();
             default:
-            return null;
+                return null;
         }
     }
 }

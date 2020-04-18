@@ -2,6 +2,10 @@ package cz.tacr.elza.dataexchange.input.sections;
 
 import java.util.Collection;
 
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.schema.v2.DescriptionItemString;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.core.data.DataType;
@@ -14,11 +18,6 @@ import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
 import cz.tacr.elza.dataexchange.input.sections.context.NodeContext;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionContext;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrDescItemIndexData;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.schema.v2.AccessPointRefs;
 import cz.tacr.elza.schema.v2.DescriptionItem;
 import cz.tacr.elza.schema.v2.Level;
@@ -96,6 +95,14 @@ public class SectionLevelProcessor implements ItemProcessor {
             }
             // create data
             DataType dataType = itemType.getDataType();
+
+            if(itemType.getDataType() == DataType.STRING && itemType.getEntity().getStringLengthLimit() != null) {
+                if(((DescriptionItemString) item).getV().length() > itemType.getEntity().getStringLengthLimit()) {
+                    throw new BusinessException("Délka řetězce : " + ((DescriptionItemString) item).getV()
+                            + " je delší než maximální povolená : " +itemType.getEntity().getStringLengthLimit(), BaseCode.INVALID_LENGTH);
+                }
+            }
+
             ImportableItemData itemData = item.createData(context, dataType);
             ArrData data = itemData.getData();
 

@@ -183,14 +183,6 @@ public class AccessPointMigrationService {
                 item = new ApItemStringVO();
                 ((ApItemStringVO) item).setValue(si.getValue());
                 break;
-            case STRING_50:
-                item = new ApItemString50VO();
-                ((ApItemString50VO) item).setValue(si.getValue());
-                break;
-            case STRING_250:
-                item = new ApItemString250VO();
-                ((ApItemString250VO) item).setValue(si.getValue());
-                break;
             case TEXT:
                 item = new ApItemTextVO();
                 ((ApItemTextVO) item).setValue(si.getValue());

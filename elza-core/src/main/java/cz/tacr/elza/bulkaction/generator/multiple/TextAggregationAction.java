@@ -72,7 +72,7 @@ public class TextAggregationAction extends Action {
 		for (String inputTypeCode : config.getInputTypes()) {
 			ItemType inputType = ruleSystem.getItemTypeByCode(inputTypeCode);
 
-			checkValidDataType(inputType, DataType.TEXT, DataType.STRING, DataType.FORMATTED_TEXT, DataType.STRING_50, DataType.STRING_250);
+			checkValidDataType(inputType, DataType.TEXT, DataType.STRING, DataType.FORMATTED_TEXT);
 
 			inputItemTypes.put(inputType.getItemTypeId(), inputType);
 
@@ -98,12 +98,6 @@ public class TextAggregationAction extends Action {
                 switch(itemType.getDataType())
                 {
 				case STRING:
-                    value = ((ArrDataString) data).getValue();
-                    break;
-                case STRING_50:
-                    value = ((ArrDataString) data).getValue();
-                    break;
-                case STRING_250:
                     value = ((ArrDataString) data).getValue();
                     break;
 				case TEXT:

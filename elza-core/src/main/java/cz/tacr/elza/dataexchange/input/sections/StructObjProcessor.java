@@ -2,6 +2,9 @@ package cz.tacr.elza.dataexchange.input.sections;
 
 import java.util.Collection;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.schema.v2.DescriptionItemString;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.core.data.DataType;
@@ -81,6 +84,14 @@ public class StructObjProcessor implements ItemProcessor {
         }
         // create data
         DataType dataType = rsit.getDataType();
+
+        if(rsit.getDataType() == DataType.STRING && rsit.getEntity().getStringLengthLimit() != null) {
+            if(((DescriptionItemString) item).getV().length() > rsit.getEntity().getStringLengthLimit()) {
+                throw new BusinessException("Délka řetězce : " + ((DescriptionItemString) item).getV()
+                        + " je delší než maximální povolená : " +rsit.getEntity().getStringLengthLimit(), BaseCode.INVALID_LENGTH);
+            }
+        }
+
         ImportableItemData itemData = item.createData(context, dataType);
         ArrData data = itemData.getData();
         // add structured item

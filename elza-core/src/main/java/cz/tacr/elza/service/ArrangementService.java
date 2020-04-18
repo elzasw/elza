@@ -122,15 +122,16 @@ public class ArrangementService {
     private AccessPointService accessPointService;
 
     @Autowired
-    DescriptionItemServiceInternal arrangementInternal;
+    private DescriptionItemServiceInternal arrangementInternal;
+
+    @Autowired
+    private ArrangementInternalService arrangementInternalService;
+
     @Autowired
     private PolicyService policyService;
 
     @Autowired
     private VisiblePolicyRepository visiblePolicyRepository;
-
-    @Autowired
-    private ArrangementCacheService arrangementCacheService;
 
     @Autowired
     private NodeCacheService nodeCacheService;
@@ -633,13 +634,11 @@ public class ArrangementService {
      *
      * @param fundIds ids archivních pomůcek
      * @return verze
+     * @deprecated use cz.tacr.elza.service.ArrangementInternalService#getOpenVersionsByFundIds(java.util.Collection)
      */
+    @Deprecated
     public List<ArrFundVersion> getOpenVersionsByFundIds(final Collection<Integer> fundIds) {
-        Assert.notNull(fundIds, "Nebyl vyplněn identifikátor AS");
-        if (fundIds.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return fundVersionRepository.findByFundIdsAndLockChangeIsNull(fundIds);
+        return arrangementInternalService.getOpenVersionsByFundIds(fundIds);
     }
 
     public ArrLevel deleteLevelCascade(final ArrLevel level, final ArrChange deleteChange) {
@@ -1409,23 +1408,6 @@ public class ArrangementService {
                 recursiveAddNodes(nodeIds, node, nodePolicyTypes, policiesMap, nodeProblemsMap, foundNode);
             }
         }
-    }
-
-    public List<ArrNode> findNodesByStructuredObjectId(Integer structuredObjectId) {
-        return nodeRepository.findNodesByStructuredObjectIds(Collections.singletonList(structuredObjectId));
-    }
-
-    public Map<Integer, ArrNode> findNodesByStructuredObjectIds(Collection<Integer> structuredObjectIds) {
-        if (structuredObjectIds.isEmpty()) {
-            return Collections.emptyMap();
-        }
-        Map<Integer, ArrNode> result = new HashMap<>(1000);
-        for (List<Integer> idsPart : Iterables.partition(structuredObjectIds, 1000)) {
-            for (ArrNode node : nodeRepository.findNodesByStructuredObjectIds(idsPart)) {
-                result.put(node.getNodeId(), node);
-            }
-        }
-        return result;
     }
 
     /**
