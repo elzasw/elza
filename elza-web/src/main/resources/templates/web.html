@@ -45,6 +45,7 @@
            	/*<![CDATA[*/
             var versionNumber = [[${appVersion}]];
                     /*]]>*/
+            var __webpack_public_path__ = 'http://localhost:3000/static/';
         </script>
     </head>
 
@@ -56,6 +57,8 @@
         <section layout:fragment="page-js" th:remove="tag">
             <!--<script th:if="${isDevBuild}" src="http://localhost:8090/webpack-dev-server.js"></script>-->
             <script th:if="${isDevBuild}" type="text/javascript" src="http://localhost:3000/static/js/bundle.js"></script>
+            <script th:if="${isDevBuild}" type="text/javascript" src="http://localhost:3000/static/js/0.chunk.js"></script>
+            <script th:if="${isDevBuild}" type="text/javascript" src="http://localhost:3000/static/js/main.chunk.js"></script>
 
             <script th:if="${!isDevBuild}" type="text/javascript" src="" th:src="@{/res/js/main.js}"></script>
         </section>
