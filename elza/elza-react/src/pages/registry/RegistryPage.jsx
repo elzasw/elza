@@ -50,7 +50,6 @@ class RegistryPage extends AbstractReactComponent {
 
     static propTypes = {
         splitter: PropTypes.object.isRequired,
-        registryRegion: PropTypes.object.isRequired,
         refTables: PropTypes.object.isRequired,
         focus: PropTypes.object.isRequired,
         userDetail: PropTypes.object.isRequired,

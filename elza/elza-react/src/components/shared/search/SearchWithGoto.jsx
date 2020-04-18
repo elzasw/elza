@@ -18,7 +18,7 @@ class SearchWithGoto extends AbstractReactComponent {
         itemsCount: PropTypes.number.isRequired,
         allItemsCount: PropTypes.number,
         textAreaInput: PropTypes.bool,
-        selIndex: PropTypes.number.isRequired,
+        selIndex: PropTypes.number,
         showFilterResult: PropTypes.bool.isRequired,
         onFulltextChange: PropTypes.func,
         onFulltextSearch: PropTypes.func,
@@ -140,12 +140,12 @@ class SearchWithGoto extends AbstractReactComponent {
                     let searchedInfo;
                     if (itemsCount > 0) {
                         searchedInfo = (
-                            <div className="fa-tree-lazy-search-info">
+                            <div key="info" className="fa-tree-lazy-search-info">
                                 ({selIndex + 1} z {itemsCount})
                             </div>
                         );
                     } else {
-                        searchedInfo = <div className="fa-tree-lazy-search-info">({i18n('search.not.found')})</div>;
+                        searchedInfo = <div key="info" className="fa-tree-lazy-search-info">({i18n('search.not.found')})</div>;
                     }
 
                     if (itemsCount > 1) {
@@ -153,12 +153,12 @@ class SearchWithGoto extends AbstractReactComponent {
                         let nextButtonEnabled = selIndex < itemsCount - 1;
 
                         actionAddons.push(
-                            <NoFocusButton disabled={!nextButtonEnabled} className="next" onClick={onFulltextNextItem}>
+                            <NoFocusButton key="next" disabled={!nextButtonEnabled} className="next" onClick={onFulltextNextItem}>
                                 <Icon glyph="fa-chevron-down" />
                             </NoFocusButton>,
                         );
                         actionAddons.push(
-                            <NoFocusButton disabled={!prevButtonEnabled} className="prev" onClick={onFulltextPrevItem}>
+                            <NoFocusButton key="prev" disabled={!prevButtonEnabled} className="prev" onClick={onFulltextPrevItem}>
                                 <Icon glyph="fa-chevron-up" />
                             </NoFocusButton>,
                         );
@@ -186,7 +186,7 @@ class SearchWithGoto extends AbstractReactComponent {
                             searchedText = i18n('search.found.more', itemsCount, allItemsCount);
                         }
                     }
-                    actionAddons.push(<div className="fa-tree-lazy-search-info">{searchedText}</div>);
+                    actionAddons.push(<div key="searched" className="fa-tree-lazy-search-info">{searchedText}</div>);
                 }
                 break;
             default:

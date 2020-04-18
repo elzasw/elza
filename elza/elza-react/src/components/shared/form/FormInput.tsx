@@ -19,7 +19,29 @@ interface IFormInputProps {
 
 const FormInput: React.FC<PropsWithChildren<IFormInputProps>> = memo(React.forwardRef((props, ref) => {
 
-    const {error, touched, children, type, label, value, inline, feedback, ...otherProps} = props;
+    const {
+        error,
+        touched,
+        children,
+        type,
+        label,
+        value,
+        inline,
+        feedback,
+        active,
+        asyncValidating,
+        valid,
+        visited,
+        autofilled,
+        dirty,
+        invalid,
+        pristine,
+        submitting,
+        submitFailed,
+        dispatch,
+        ...otherProps
+    } = props;
+
 
     const hasError = !!(touched && error);
     let inlineProps = {...(inline ? error ? {title: error} : {} : {})};
