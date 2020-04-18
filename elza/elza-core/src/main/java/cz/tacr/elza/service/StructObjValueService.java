@@ -103,7 +103,7 @@ public class StructObjValueService {
     private final EventNotificationService notificationService;
     private final ResourcePathResolver resourcePathResolver;
     private final SobjVrequestRepository sobjVrequestRepository;
-    private final ArrangementService arrangementService;
+    private final ArrangementInternalService arrangementInternalService;
     private final StaticDataService staticDataService;
 
     //private Queue<Integer> queueObjIds = new ConcurrentLinkedQueue<>();
@@ -132,7 +132,7 @@ public class StructObjValueService {
             final EventNotificationService notificationService,
             final ResourcePathResolver resourcePathResolver,
             final SobjVrequestRepository sobjQueueRepository,
-            final ArrangementService arrangementService,
+            final ArrangementInternalService arrangementInternalService,
             final EntityManager em,
             final StaticDataService staticDataService) {
         this.structureItemRepository = structureItemRepository;
@@ -145,7 +145,7 @@ public class StructObjValueService {
         this.notificationService = notificationService;
         this.resourcePathResolver = resourcePathResolver;
         this.sobjVrequestRepository = sobjQueueRepository;
-        this.arrangementService = arrangementService;
+        this.arrangementInternalService = arrangementInternalService;
         this.em = em;
         this.staticDataService = staticDataService;
     }
@@ -508,12 +508,12 @@ public class StructObjValueService {
     private void sendNodeNotifications(List<ArrStructuredObject> structObjList) {
         Set<Integer> structuredObjectIds = structObjList.stream().map(structObj -> structObj.getStructuredObjectId()).collect(Collectors.toSet());
 
-        Map<Integer, List<ArrNode>> nodesByFundId = arrangementService.findNodesByStructuredObjectIds(structuredObjectIds)
+        Map<Integer, List<ArrNode>> nodesByFundId = arrangementInternalService.findNodesByStructuredObjectIds(structuredObjectIds)
                 .values().stream().collect(Collectors.groupingBy(node -> node.getFundId()));
 
         if (!nodesByFundId.isEmpty()) {
 
-            List<ArrFundVersion> fundVersions = arrangementService.getOpenVersionsByFundIds(nodesByFundId.keySet());
+            List<ArrFundVersion> fundVersions = arrangementInternalService.getOpenVersionsByFundIds(nodesByFundId.keySet());
 
             for (ArrFundVersion fundVersion : fundVersions) {
                 List<ArrNode> nodes = nodesByFundId.get(fundVersion.getFundId());
