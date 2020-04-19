@@ -70,7 +70,7 @@ class ImportForm extends AbstractReactComponent {
         });
 
         const data = {
-            xmlFile: values.xmlFile[0],
+            xmlFile: values.xmlFile,
         };
 
         if (values.transformationName) {

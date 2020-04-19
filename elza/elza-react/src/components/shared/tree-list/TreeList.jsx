@@ -50,7 +50,7 @@ class TreeList extends React.Component {
 
     static propTypes = {
         items: PropTypes.object.isRequired,
-        groups: PropTypes.object,
+        groups: PropTypes.array,
         renderItem: PropTypes.func,
         allowSelectItem: PropTypes.func,
         allowFocusItem: PropTypes.func,

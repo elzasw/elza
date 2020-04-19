@@ -687,7 +687,7 @@ export default class Autocomplete extends AbstractReactComponent {
                             aria-autocomplete="both"
                             autoComplete="off"
                             onChange={this.handleChange}
-                            value={inputStrValue}
+                            value={inputStrValue || ''}
                         />
                         <div ref="actions" className="actions">
                             {this.renderActions()}
