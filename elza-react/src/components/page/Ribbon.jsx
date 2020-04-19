@@ -8,7 +8,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux';
 import {IndexLinkContainer, LinkContainer} from 'react-router-bootstrap';
 import {AbstractReactComponent, i18n, Icon, RibbonGroup, RibbonMenu, RibbonSplit} from 'components/shared';
-import {Dropdown} from 'react-bootstrap';
+import {Dropdown, Button as BootstrapButton} from 'react-bootstrap';
 import {Button} from '../ui';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
 import {logout} from 'actions/global/login.jsx';
@@ -34,6 +34,14 @@ class Ribbon extends AbstractReactComponent {
         subMenu: false,
     };
 
+    ribbonDefaultFocusRef = null;
+
+    constructor(props) {
+        super(props);
+        this.ribbonDefaultFocusRef = React.createRef();
+    }
+
+
     state = {};
 
     componentDidMount() {
@@ -50,8 +58,10 @@ class Ribbon extends AbstractReactComponent {
         if (canSetFocus()) {
             if (isFocusFor(focus, null, null, 'ribbon')) {
                 this.setState({}, () => {
-                    ReactDOM.findDOMNode(this.refs.ribbonDefaultFocus).focus();
-                    focusWasSet();
+                    if (this.ribbonDefaultFocusRef.current) {
+                        this.ribbonDefaultFocusRef.current.focus();
+                        focusWasSet();
+                    }
                 });
             }
         }
@@ -161,10 +171,10 @@ class Ribbon extends AbstractReactComponent {
                 // právo na čtení
                 arrParts.push(
                     <IndexLinkContainer key="ribbon-btn-arr-index" to="/arr">
-                        <Button ref="ribbonDefaultFocus" variant={'default'}>
+                        <BootstrapButton ref={this.ribbonDefaultFocusRef} variant={'default'}>
                             <Icon glyph="fa-sitemap" />
                             <span className="btnText">{i18n('ribbon.action.arr.arr')}</span>
-                        </Button>
+                        </BootstrapButton>
                     </IndexLinkContainer>,
                 );
                 arrParts.push(
@@ -261,10 +271,10 @@ class Ribbon extends AbstractReactComponent {
             parts.push(
                 <RibbonGroup key="ribbon-group-main" className="large">
                     <IndexLinkContainer key="ribbon-btn-home" to="/">
-                        <Button ref="ribbonDefaultFocus" variant={'default'}>
+                        <BootstrapButton ref={this.ribbonDefaultFocusRef} variant={'default'}>
                             <Icon glyph="fa-home" />
                             <span className="btnText">{i18n('ribbon.action.home')}</span>
-                        </Button>
+                        </BootstrapButton>
                     </IndexLinkContainer>
                     <LinkContainer key="ribbon-btn-fund" to="/fund">
                         <Button variant={'default'}>
@@ -319,10 +329,10 @@ class Ribbon extends AbstractReactComponent {
 
                         <Dropdown.Menu>
                             {userDetail.authTypes.indexOf('PASSWORD') >= 0 && [
-                                <Dropdown.Item eventKey="1" onClick={this.handlePasswordChangeForm}>
+                                <Dropdown.Item key="pass-change" eventKey="1" onClick={this.handlePasswordChangeForm}>
                                     {i18n('ribbon.action.admin.user.passwordChange')}
                                 </Dropdown.Item>,
-                                <Dropdown.Divider />,
+                                <Dropdown.Divider key="divired" />,
                             ]}
                             <Dropdown.Item eventKey="2" onClick={this.handleLogout}>
                                 {i18n('ribbon.action.logout')}
@@ -353,4 +363,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(Ribbon);
+export default connect(mapStateToProps, null, null, {forwardRef: true})(Ribbon);

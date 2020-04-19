@@ -5,7 +5,7 @@ import DepthIndent from './DepthIndent.jsx';
 import classNames from 'classnames';
 import {propsEquals} from 'components/Utils.jsx';
 
-class ListItem extends React.PureComponent {
+class ListItem extends React.Component {
     static defaultProps = {
         highlighted: false,
         indent: 10,
