@@ -4,7 +4,7 @@ import thunkMiddleware from 'redux-thunk';
 import {createLogger} from 'redux-logger';
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils.jsx';
 import {splitterResize} from 'actions/global/splitter.jsx';
-
+import { composeWithDevTools } from 'redux-devtools-extension';
 import rootReducer from './reducers.jsx';
 import reduxFormUtils from './app/form/reduxFormUtils.jsx';
 /**
@@ -15,8 +15,6 @@ import arrRegion from './app/arr/arrRegion.jsx';
 import fundRegion from './app/fund/fundRegion.jsx';
 import splitter from './app/global/splitter.jsx';
 import adminRegion from './app/admin/adminRegion.jsx';
-
-//import devTools from 'remote-redux-devtools';
 
 // Nastavení úrovně logování
 const _logStoreState = true;
@@ -469,18 +467,14 @@ const inlineFormMiddleware = function(_ref) {
 let createStoreWithMiddleware;
 
 if (typeof window.__DEVTOOLS__ !== 'undefined' && window.__DEVTOOLS__) {
-    const {persistState} = require('redux-devtools');
-    const DevTools = require('../DevTools').default;
-    createStoreWithMiddleware = compose(
+    createStoreWithMiddleware = composeWithDevTools(
         applyMiddleware(
             // enforceImmutableMiddleware,
             thunkMiddleware,
             // promiseMiddleware,
             loggerMiddleware,
             inlineFormMiddleware,
-        ),
-        DevTools.instrument(),
-        persistState(window.location.href.match(/[?&]debug_session=([^&#]+)\b/)),
+        )
     )(createStore);
 } else if (loggerMiddleware) {
     createStoreWithMiddleware = compose(applyMiddleware(thunkMiddleware, loggerMiddleware, inlineFormMiddleware))(
