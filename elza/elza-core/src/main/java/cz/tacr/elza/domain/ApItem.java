@@ -61,6 +61,10 @@ public abstract class ApItem {
     @Column(name = "dataId", updatable = false, insertable = false)
     protected Integer dataId;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApPart.class)
+    @JoinColumn(name = "part_id", nullable = false)
+    protected ApPart part;
+
     public ApItem() {
 
     }
@@ -154,5 +158,13 @@ public abstract class ApItem {
 
     public void setData(final ArrData data) {
         this.data = data;
+    }
+
+    public ApPart getPart() {
+        return part;
+    }
+
+    public void setPart(ApPart part) {
+        this.part = part;
     }
 }

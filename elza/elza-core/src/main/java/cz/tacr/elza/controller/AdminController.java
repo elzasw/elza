@@ -10,7 +10,8 @@ import java.util.List;
 import javax.transaction.Transactional;
 
 import cz.tacr.elza.common.FactoryUtils;
-import cz.tacr.elza.controller.vo.LogVO;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.AsyncTypeEnum;
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -21,9 +22,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.SysExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.SysExternalSystemVO;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.SysExternalSystem;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -57,6 +55,9 @@ public class AdminController {
 
     @Autowired
     private ArrangementService arrangementService;
+
+    @Autowired
+    private AsyncRequestService asyncRequestService;
 
     @Value("${elza.logFile:}")
     private String logFilePath;
@@ -176,6 +177,16 @@ public class AdminController {
                     .setId(fundId);
         }
         return adminService.findNodeByIds(fundVersion, nodeIds);
+    }
+
+    @RequestMapping(value="/asyncRequests", method = RequestMethod.GET)
+    public List<ArrAsyncRequestVO> getAsyncRequestInfo() {
+        return asyncRequestService.dispatcherInfo();
+    }
+
+    @RequestMapping(value= "/asyncRequests/{requestType}", method = RequestMethod.GET)
+    public List<FundStatisticsVO> getAsyncRequestDetail(@PathVariable("requestType") AsyncTypeEnum requestType) {
+        return asyncRequestService.getFundStatistics(requestType);
     }
 
     @RequestMapping(value = "/logs", method = RequestMethod.GET)
