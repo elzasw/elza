@@ -13,7 +13,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Hodnota atributu archivního popisu typu {@link ApFragment}.
+ * Hodnota atributu archivního popisu typu {@link ApPart}.
  */
 @Entity
 @Table(name = "arr_data_apfrag_ref")
@@ -23,9 +23,9 @@ public class ArrDataApFragRef extends ArrData {
     public static final String FRAGMENT = "fragment";
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApFragment.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApPart.class)
     @JoinColumn(name = "fragmentId", nullable = false)
-    private ApFragment fragment;
+    private ApPart fragment;
 
     @Column(name = "fragmentId", updatable = false, insertable = false)
     private Integer fragmentId;
@@ -44,13 +44,13 @@ public class ArrDataApFragRef extends ArrData {
         this.fragmentId = src.fragmentId;
     }
 
-    public ApFragment getFragment() {
+    public ApPart getFragment() {
         return fragment;
     }
 
-    public void setFragment(final ApFragment fragment) {
+    public void setFragment(final ApPart fragment) {
         this.fragment = fragment;
-        this.fragmentId = fragment == null ? null : fragment.getFragmentId();
+        this.fragmentId = fragment == null ? null : fragment.getPartId();
     }
 
     public Integer getFragmentId() {
