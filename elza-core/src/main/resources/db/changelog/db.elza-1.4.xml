@@ -50,4 +50,34 @@
         </update>
     </changeSet>
 
+    <changeSet id="20200309121410" author="gotzy">
+
+        <createTable tableName="arr_async_request">
+            <column name="async_request_id" type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="type" type="nvarchar(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="priority" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fund_version_id" type="int">
+                <constraints foreignKeyName="fk_arr_async_fund_version_id" referencedTableName="arr_fund_version" referencedColumnNames="fund_version_id" nullable="false"/>
+            </column>
+            <column name="node_id" type="int">
+                <constraints foreignKeyName="fk_arr_async_node_id" referencedTableName="arr_node" referencedColumnNames="node_id" nullable="true"/>
+            </column>
+            <column name="output_id" type="int">
+                <constraints foreignKeyName="fk_ar_asyncr_output_id" referencedTableName="arr_output" referencedColumnNames="output_id" nullable="true"/>
+            </column>
+            <column name="bulk_action_id" type="int">
+                <constraints foreignKeyName="fk_arr_async_bulk_action_id" referencedTableName="arr_bulk_action_run" referencedColumnNames="bulk_action_run_id" nullable="true"/>
+            </column>
+            <column name="structured_object_id" type="int">
+                <constraints foreignKeyName="fk_arr_async_structured_object_id" referencedTableName="arr_structured_object" referencedColumnNames="structured_object_id" nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>

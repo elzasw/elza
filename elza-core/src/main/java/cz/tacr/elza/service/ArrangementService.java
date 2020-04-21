@@ -1,10 +1,7 @@
 package cz.tacr.elza.service;
 
 import com.google.common.collect.Iterables;
-
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
-import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
@@ -89,10 +86,6 @@ public class ArrangementService {
     @Autowired
     private UserService userService;
     @Autowired
-    private UpdateConformityInfoService updateConformityInfoService;
-    @Autowired
-    private BulkActionService bulkActionService;
-    @Autowired
     private RuleService ruleService;
     @Autowired
     private ItemRepository itemRepository;
@@ -132,6 +125,9 @@ public class ArrangementService {
 
     @Autowired
     private VisiblePolicyRepository visiblePolicyRepository;
+
+    @Autowired
+    private AsyncRequestService asyncRequestService;
 
     @Autowired
     private NodeCacheService nodeCacheService;
@@ -597,11 +593,11 @@ public class ArrangementService {
             throw new BusinessException("Verze AS s ID=" + fund.getFundId() + " je již uzavřena", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
-        if (bulkActionService.isRunning(version)) {
+        if (asyncRequestService.isFundBulkActionRunning(version)) {
             throw new BusinessException("Nelze uzavřít verzi AS s ID=" + fund.getFundId() + ", protože běží hromadná akce", ArrangementCode.VERSION_CANNOT_CLOSE_ACTION);
         }
 
-        if (updateConformityInfoService.isRunning(version.getFundVersionId())) {
+        if (asyncRequestService.isFundNodeRunning(version)) {
             throw new BusinessException("Nelze uzavřít verzi AS s ID=" + fund.getFundId() + ", protože běží validace", ArrangementCode.VERSION_CANNOT_CLOSE_VALIDATION);
         }
 
@@ -1417,13 +1413,18 @@ public class ArrangementService {
      * Metoda je pouštěna po startu aplikačního serveru.
      */
     @Transactional(value = Transactional.TxType.MANDATORY)
-    public void startNodeValidation() {
+    public void startNodeValidation(boolean onStart) {
         // TransactionTemplate tmpl = new TransactionTemplate(txManager);
         Map<Integer, ArrFundVersion> fundVersionMap = new HashMap<>();
         Map<Integer, List<ArrNode>> fundNodesMap = new HashMap<>();
 
         // zjištění všech uzlů, které nemají validaci
         List<ArrNode> nodes = nodeRepository.findByNodeConformityIsNull();
+
+        //pridani uzlu, u kterých byla validace chybná
+        if(onStart) {
+            nodes.addAll(nodeRepository.findNodesByConformityState(State.ERR));
+        }
 
         // roztřídění podle AF
         for (ArrNode node : nodes) {
@@ -1457,7 +1458,10 @@ public class ArrangementService {
 
             // přidávání nodů je nutné dělat ve vlastní transakci (podle updateInfoForNodesAfterCommit)
             logger.info("Přidání " + entry.getValue().size() + " uzlů do fronty pro zvalidování");
-            updateConformityInfoService.updateInfoForNodesAfterCommit(version.getFundVersionId(), entry.getValue());
+            if(onStart) {
+                asyncRequestService.enqueue(version, entry.getValue(), AsyncTypeEnum.NODE, null);
+            }
+
         }
     }
 
