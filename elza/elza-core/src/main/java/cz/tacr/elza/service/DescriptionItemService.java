@@ -42,6 +42,7 @@ import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
@@ -1285,7 +1286,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             Integer rootNodeId = version.getRootNode().getNodeId();
             Set<Integer> nodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, rootNodeId, ArrangementController.Depth.SUBTREE);
             nodeIds.add(rootNodeId);
-            for (List<ArrNode> partNodes : Lists.partition(nodeRepository.findAll(nodeIds), 1000)) {
+            for (List<ArrNode> partNodes : Lists.partition(nodeRepository.findAll(nodeIds),
+                                                           HibernateConfiguration.MAX_IN_SIZE)) {
                 descItemsToReplaceText.addAll(descItemRepository.findByNodesContainingText(partNodes, descItemType, specifications, findText));
             }
         } else {
