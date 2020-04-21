@@ -1110,7 +1110,7 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/output/{outputId}/{fundVersionId}/{itemTypeId}/switch", method = RequestMethod.POST)
-    public void switchOutputCalculating(@PathVariable(value = "outputId") final Integer outputId,
+    public boolean switchOutputCalculating(@PathVariable(value = "outputId") final Integer outputId,
                                         @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                         @PathVariable(value = "itemTypeId") final Integer itemTypeId,
                                         @RequestParam(value = "strict", required = false, defaultValue = "false") final Boolean strict) {
@@ -1118,7 +1118,7 @@ public class ArrangementController {
         ArrOutput output = outputService.getOutput(outputId);
         RulItemType itemType = itemTypeRepository.findOne(itemTypeId);
 
-        outputService.switchOutputCalculating(output, fundVersion, itemType, strict);
+        return outputService.switchOutputCalculating(output, fundVersion, itemType, strict);
     }
 
     /**
