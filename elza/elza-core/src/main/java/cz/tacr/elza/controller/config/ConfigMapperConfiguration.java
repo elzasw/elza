@@ -581,7 +581,6 @@ public class ConfigMapperConfiguration {
                 .field("itemTypeId", "id")
                 .field("rulItemSpecList", "descItemSpecs")
                 .field("structuredTypeId", "structureTypeId")
-                .field("fragmentTypeId", "fragmentTypeId")
                 .exclude("viewDefinition")
                 .byDefault()
                 .customize(new CustomMapper<RulItemTypeExt, RulDescItemTypeExtVO>() {

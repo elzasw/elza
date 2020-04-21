@@ -212,4 +212,8 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20200421132800" author="fantis">
+        <dropColumn tableName="rul_item_type" columnName="fragment_type_id"/>
+    </changeSet>
+
 </databaseChangeLog>

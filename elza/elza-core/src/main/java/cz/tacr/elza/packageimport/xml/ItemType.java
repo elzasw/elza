@@ -41,9 +41,6 @@ public class ItemType {
     @XmlAttribute(name = "structure-type")
     private String structureType;
 
-    @XmlAttribute(name = "fragment-type")
-    private String fragmentType;
-
     @XmlElement(name = "name", required = true)
     private String name;
 
@@ -100,14 +97,6 @@ public class ItemType {
 
     public void setStructureType(final String structureType) {
         this.structureType = structureType;
-    }
-
-    public String getFragmentType() {
-        return fragmentType;
-    }
-
-    public void setFragmentType(final String fragmentType) {
-        this.fragmentType = fragmentType;
     }
 
     public String getName() {

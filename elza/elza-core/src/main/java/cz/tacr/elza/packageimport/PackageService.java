@@ -85,6 +85,7 @@ import cz.tacr.elza.domain.RulItemTypeAction;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPackageDependency;
+import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructureDefinition;
@@ -132,6 +133,8 @@ import cz.tacr.elza.packageimport.xml.OutputType;
 import cz.tacr.elza.packageimport.xml.OutputTypes;
 import cz.tacr.elza.packageimport.xml.PackageDependency;
 import cz.tacr.elza.packageimport.xml.PackageInfo;
+import cz.tacr.elza.packageimport.xml.PartType;
+import cz.tacr.elza.packageimport.xml.PartTypes;
 import cz.tacr.elza.packageimport.xml.PartyGroup;
 import cz.tacr.elza.packageimport.xml.PartyGroups;
 import cz.tacr.elza.packageimport.xml.PartyNameFormType;
@@ -238,6 +241,11 @@ public class PackageService {
     public static final String STRUCTURE_EXTENSION_DEFINITION_XML = "rul_structure_extension_definition.xml";
     public static final String STRUCTURE_EXTENSION_XML = "rul_structure_extension.xml";
     public static final String STRUCTURE_TYPE_XML = "rul_structure_type.xml";
+
+    /**
+     * Typy částí
+     */
+    public static final String PART_TYPE_XML = "rul_part_type.xml";
 
     /**
      * typy outputů
@@ -463,6 +471,9 @@ public class PackageService {
     private OutputResultRepository outputResultRepository;
 
     @Autowired
+    private PartTypeRepository partTypeRepository;
+
+    @Autowired
     private NodeCacheService nodeCacheService;
 
     @Autowired
@@ -610,6 +621,8 @@ public class PackageService {
 
         List<RulStructuredType> rulStructuredTypes = processStructureTypes(pkgCtx);
         processStructureDefinitions(pkgCtx/*, rulStructuredTypes*/);
+
+        processPartTypes(pkgCtx);
 
         for (RuleUpdateContext ruc : pkgCtx.getRuleUpdateContexts()) {
             processPolicyTypes(ruc);
@@ -1087,6 +1100,43 @@ public class PackageService {
         item.setCode(structureType.getCode());
         item.setName(structureType.getName());
         item.setAnonymous(structureType.getAnonymous());
+    }
+
+    private void processPartTypes(final PackageContext packageContext) {
+        // read from XML
+        PartTypes partTypes = PackageUtils.convertXmlStreamToObject(PartTypes.class,
+                packageContext.getByteStream(PART_TYPE_XML));
+
+        // get current types
+        List<RulPartType> currPartTypes = partTypeRepository.findByRulPackage(packageContext.getPackage());
+        List<RulPartType> newPartTypes = new ArrayList<>();
+
+        if (partTypes != null && !CollectionUtils.isEmpty(partTypes.getPartTypes())) {
+            for (PartType partType : partTypes.getPartTypes()) {
+                // find existing or create new type
+                RulPartType item = currPartTypes.stream().filter(
+                        (r) -> r.getCode().equals(partType.getCode()))
+                        .findFirst()
+                        .orElse(new RulPartType());
+
+                convertRulPartType(packageContext.getPackage(), partType, item);
+                newPartTypes.add(item);
+            }
+        }
+
+        newPartTypes = partTypeRepository.save(newPartTypes);
+
+        List<RulPartType> rulRuleDelete = new ArrayList<>(currPartTypes);
+        rulRuleDelete.removeAll(newPartTypes);
+        partTypeRepository.delete(rulRuleDelete);
+    }
+
+    private void convertRulPartType(final RulPackage rulPackage,
+                                    final PartType partType,
+                                    final RulPartType item) {
+        item.setRulPackage(rulPackage);
+        item.setCode(partType.getCode());
+        item.setName(partType.getName());
     }
 
     /**
