@@ -474,7 +474,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     public ArrDescItem createDescriptionItem(final ArrDescItem descItem,
                                              final ArrNode node,
                                              final ArrFundVersion version,
-	        final ArrChange createChange) {
+                                             final ArrChange createChange) {
 
         SingleItemChangeContext sicc = new SingleItemChangeContext(ruleService, notificationService,
                 version.getFundVersionId(),
@@ -483,6 +483,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         ArrDescItem descItemCreated = createDescriptionItemInBatch(descItem, node, version, createChange, sicc);
 
         // validace uzlu a publikovani zmen
+       // asyncRequestService.enqueue(version,node,AsyncTypeEnum.NODE);
         sicc.validateAndPublish();
 
         return descItemCreated;
@@ -560,8 +561,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      *            verze archivní pomůcky
      * @param change
      *            změna operace
-     * @param flush
-     *            příznak pro flush nodeCache
+     * @param changeContext
+     *
      * @return vytvořená hodnota atributu
      */
     private ArrDescItem createDescriptionItemWithData(final ArrDescItem descItem,
@@ -603,6 +604,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 			descItemNew.setPosition(descItemMove.getPosition() + 1);
 
             descItemRepository.save(descItemNew);
+         //   asyncRequestService.enqueue(fundVersion,descItemMove.getNode(),AsyncTypeEnum.NODE);
 
             descItemNews.add(descItemNew);
         }
@@ -614,7 +616,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         descItem.setCreateChange(change);
         descItemFactory.saveItemVersionWithData(descItem, true);
-
+    //    asyncRequestService.enqueue(fundVersion,descItem.getNode(),AsyncTypeEnum.NODE);
         arrangementCacheService.createDescItem(descItem.getNodeId(), descItem, changeContext);
         return descItem;
     }
@@ -939,7 +941,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 		} else {
             descItemUpdated = updateValue(fundVersion, descItem, changeContext);
         }
-
+      //  asyncRequestService.enqueue(fundVersion, node, AsyncTypeEnum.NODE);
         changeContext.validateAndPublish();
 
         return descItemUpdated;
@@ -1030,6 +1032,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                                                    fundVersion.getFundVersionId(), descItem.getNodeId());
 
         ArrDescItem descItemUpdated = updateValueAsNewVersion(fundVersion, change, descItem, sicc);
+
         sicc.validateAndPublish();
 
         return descItemUpdated;

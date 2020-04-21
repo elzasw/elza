@@ -750,7 +750,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
         addLevelParam.setStaticNode(staticNode);
         addLevelParam.setStaticNodeParent(parentStaticNode);
         addLevelParam.setScenarioName(scenarioName);
-
         ArrangementController.NodeWithParent newLevel = addLevel(addLevelParam);
 
         Assert.assertNotNull(newLevel.getNode());
@@ -989,6 +988,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                   final ArrFundVersionVO fundVersion,
                                                                   final ArrNodeVO node,
                                                                   final RulDescItemTypeVO descItemType) {
+        try{
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return createDescItem(descItem, fundVersion.getId(), descItemType.getId(), node.getId(),
                 node.getVersion());
     }
@@ -1603,7 +1607,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return Objekt s listem (prvních 20) chyb
      */
     public List<ArrangementController.VersionValidationItem> validateVersion(final Integer versionId) {
-        return Arrays.asList(get(spec -> spec
+       return Arrays.asList(get(spec -> spec
                         .pathParameter("versionId", versionId)
                         .pathParameter("showAll", true),
                 VALIDATE_VERSION).getBody().as(ArrangementController.VersionValidationItem[].class));

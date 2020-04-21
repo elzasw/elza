@@ -8,10 +8,12 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -23,20 +25,8 @@ import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.Authorization;
-import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemSettings;
-import cz.tacr.elza.domain.ArrNodeOutput;
-import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
-import cz.tacr.elza.domain.ArrOutputItem;
-import cz.tacr.elza.domain.ArrOutputResult;
-import cz.tacr.elza.domain.RulAction;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
@@ -98,6 +88,10 @@ public class OutputServiceInternal {
     private final BulkActionRunRepository bulkActionRunRepository;
 
     private final RevertingChangesService revertingChangesService;
+
+    @Autowired
+    @Lazy
+    private AsyncRequestService asyncRequestService;
 
     @Autowired
     public OutputServiceInternal(PlatformTransactionManager transactionManager,
@@ -296,25 +290,7 @@ public class OutputServiceInternal {
         // save generating state only when caller transaction is committed
         output.setState(OutputState.GENERATING);
 
-        // create worker
-        OutputGeneratorWorker worker = new OutputGeneratorWorker(outputId, fundVersion.getFundVersionId(), em,
-                outputGeneratorFactory, this, resourcePathResolver, fundLevelServiceInternal, transactionManager, arrangementService);
-
-        // delegate security context
-        Runnable runnable = Authorization.createRunnableWithCurrentSecurity(worker);
-
-        // register after commit action
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCompletion(int status) {
-                if (status == TransactionSynchronization.STATUS_COMMITTED) {
-                    taskExecutor.addTask(runnable);
-                } else {
-                    logger.warn("Request for output is cancelled due to rollback of source transaction, outputId:{}",
-                            worker.getOutputId());
-                }
-            }
-        });
+        asyncRequestService.enqueue(fundVersion, output, AsyncTypeEnum.OUTPUT, null);
 
         return OutputRequestStatus.OK;
     }
