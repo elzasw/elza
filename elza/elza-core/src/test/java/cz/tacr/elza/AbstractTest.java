@@ -5,6 +5,8 @@ import java.net.URL;
 
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.domain.ArrAsyncRequest;
+import cz.tacr.elza.repository.*;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,12 +20,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.other.HelperTestService;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DataTypeRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.StartupService;
 
 
@@ -55,7 +51,6 @@ public abstract class AbstractTest {
     protected NodeRepository nodeRepository;
     @Autowired
     protected HelperTestService helperTestService;
-
     @Autowired
     protected StartupService startupService;
 

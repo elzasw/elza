@@ -1,7 +1,5 @@
 package cz.tacr.elza.service.arrangement;
 
-import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
-import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -34,12 +32,6 @@ public class DeleteFundHistoryAction {
     private static final Logger logger = LoggerFactory.getLogger(DeleteFundHistoryAction.class);
 
     @Autowired
-    private UpdateConformityInfoService updateConformityInfoService;
-    @Autowired
-    private BulkActionService bulkActionService;
-    @Autowired
-    private PolicyService policyService;
-    @Autowired
     private UserService userService;
     @Autowired
     private IEventNotificationService eventNotificationService;
@@ -54,7 +46,7 @@ public class DeleteFundHistoryAction {
     @Autowired
     private BulkActionNodeRepository faBulkActionNodeRepository;
     @Autowired
-    private FundRegisterScopeRepository faRegisterRepository;
+    private AsyncRequestService asyncRequestService;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -64,52 +56,15 @@ public class DeleteFundHistoryAction {
     private DataUriRefRepository dataUriRefRepository;
 
     @Autowired
-    private StructuredObjectRepository structureDataRepository;
-    @Autowired
-    private StructuredItemRepository structureItemRepository;
-    @Autowired
-    private OutputItemRepository outputItemRepository;
-
-    @Autowired
     private DigitizationRequestNodeRepository digitizationRequestNodeRepository;
     @Autowired
     private DaoLinkRepository daoLinkRepository;
 
-    @Autowired
-    private DaoRequestRepository daoRequestRepository;
-
-    @Autowired
-    private DaoLinkRequestRepository daoLinkRequestRepository;
-
-    @Autowired
-    private DaoRequestDaoRepository daoRequestDaoRepository;
-
-    @Autowired
-    private RequestQueueItemRepository requestQueueItemRepository;
-
-    @Autowired
-    private DaoFileRepository daoFileRepository;
-
-    @Autowired
-    private DaoFileGroupRepository daoFileGroupRepository;
-
-    @Autowired
-    private DaoRepository daoRepository;
-
-    @Autowired
-    private DaoPackageRepository daoPackageRepository;
-
     //TODO: Should not be used here, method accessing this repository have to be refactorized
     @Autowired
     private CachedNodeRepository cachedNodeRepository;
-
-    @Autowired
-    private OutputRepository outputRepository;
     @Autowired
     private ChangeRepository changeRepository;
-
-    @Autowired
-    private LockedValueRepository lockedValueRepository;
     @Autowired
     private DescItemRepository descItemRepository;
     @Autowired
@@ -119,18 +74,6 @@ public class DeleteFundHistoryAction {
 
     @Autowired
     private NodeOutputRepository nodeOutputRepository;
-
-    @Autowired
-    private DmsService dmsService;
-
-    @Autowired
-    private OutputResultRepository outputResultRepository;
-
-    @Autowired
-    private OutputFileRepository outputFileRepository;
-
-    @Autowired
-    private ItemSettingsRepository itemSettingsRepository;
 
     @Autowired
     private RevertingChangesService revertingChangesService;
@@ -148,28 +91,6 @@ public class DeleteFundHistoryAction {
 
     @Autowired
     private NodeExtensionRepository nodeExtensionRepository;
-
-    @Autowired
-    private DataStructureRefRepository dataStructureRefRepository;
-
-    @Autowired
-    private FundStructureExtensionRepository fundStructureExtensionRepository;
-
-    @Autowired
-    private DataFileRefRepository dataFileRefRepository;
-
-    @Autowired
-    private WfCommentRepository commentRepository;
-
-    @Autowired
-    private WfIssueListRepository issueListRepository;
-
-    @Autowired
-    private WfIssueRepository issueRepository;
-
-    @Autowired
-    private PermissionRepository permissionRepository;
-
 
     @Autowired
     private NodeConformityRepository nodeConformityRepository;
@@ -214,9 +135,8 @@ public class DeleteFundHistoryAction {
         // terminate all services - for all versions, stejně se budou verze mazat
         List<ArrFundVersion> versions = this.fundVersionRepository.findVersionsByFundIdOrderByCreateDateDesc(fundId);
         for (ArrFundVersion version : versions) {
-            updateConformityInfoService.terminateWorkerInVersionAndWait(version.getFundVersionId());
-
-            bulkActionService.terminateBulkActions(version.getFundVersionId());
+            asyncRequestService.terminateNodeWorkersByFund(version.getFundVersionId());
+            asyncRequestService.terminateBulkActions(version.getFundVersionId());
         }
     }
 

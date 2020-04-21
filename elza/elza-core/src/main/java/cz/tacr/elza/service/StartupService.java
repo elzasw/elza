@@ -168,9 +168,9 @@ public class StartupService implements SmartLifecycle {
         clearOrphanedNodes();
         bulkActionConfigManager.load();
         syncNodeCacheService();
-        arrangementService.startNodeValidation();
         structureDataService.startGenerator();
         indexWorkProcessor.startIndexing();
+        arrangementService.startNodeValidation(true);
         runQueuedRequests();
         runQueuedAccessPoints();
     }
