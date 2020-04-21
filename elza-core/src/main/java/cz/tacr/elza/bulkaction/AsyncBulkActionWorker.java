@@ -92,7 +92,7 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
         // start action - mark it as running
         bulkActionRun.setDateStarted(new Date());
         bulkActionRun.setState(ArrBulkActionRun.State.RUNNING);
-       bulkActionHelperService.updateAction(bulkActionRun);
+        bulkActionHelperService.updateAction(bulkActionRun);
 
         try {
             new TransactionTemplate(transactionManager).execute(status -> {
@@ -163,7 +163,7 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
 
     @Override
     public Long getRunningTime() {
-        if(beginTime != null) {
+        if (beginTime != null) {
             return System.currentTimeMillis() - beginTime;
         } else {
             return null;
