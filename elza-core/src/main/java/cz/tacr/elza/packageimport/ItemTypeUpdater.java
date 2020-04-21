@@ -584,25 +584,12 @@ public class ItemTypeUpdater {
             }
         }
 
-        RulStructuredType apFragmentType = null;
-        if (DataType.APFRAG_REF == DataType.fromCode(itemType.getDataType())) {
-            List<RulStructuredType> findStructureTypes = puc.getStructuredTypes().stream()
-                    .filter((r) -> r.getCode().equals(itemType.getFragmentType()))
-                    .collect(Collectors.toList());
-            if (findStructureTypes.size() > 0) {
-                apFragmentType = findStructureTypes.get(0);
-            } else {
-                throw new SystemException("Kód " + itemType.getFragmentType() + " neexistuje v RulStructureType", BaseCode.ID_NOT_EXIST);
-            }
-        }
-
         dbItemType.setShortcut(itemType.getShortcut());
         dbItemType.setDescription(itemType.getDescription());
         dbItemType.setIsValueUnique(itemType.getIsValueUnique());
         dbItemType.setCanBeOrdered(itemType.getCanBeOrdered());
         dbItemType.setUseSpecification(itemType.getUseSpecification());
         dbItemType.setStructuredType(rulStructureType);
-        dbItemType.setFragmentType(apFragmentType);
         dbItemType.setStringLengthLimit(itemType.getStringLengthLimit());
 
         if (itemType.getColumnsDefinition() != null) {
