@@ -64,11 +64,17 @@ public interface LevelRepository extends JpaRepository<ArrLevel, Integer>, Level
     @Query("SELECT c FROM arr_level c WHERE c.node = ?1 and c.createChange < ?2 and (c.deleteChange is null or c.deleteChange > ?2)")
     ArrLevel findByNodeAndNotNullLockChange(ArrNode node, ArrChange lockChange);
 
+    @Query("SELECT c FROM arr_level c WHERE c.node.nodeId = ?1 and c.createChange < ?2 and (c.deleteChange is null or c.deleteChange > ?2)")
+    ArrLevel findByNodeIdAndNotNullLockChange(Integer nodeId, ArrChange lockChange);
+
     @Query("SELECT l FROM arr_level l WHERE l.node = ?1 order by l.createChange.changeDate asc")
     List<ArrLevel> findByNodeOrderByCreateChangeAsc(ArrNode node);
 
     @Query("SELECT l FROM arr_level l WHERE l.nodeParent = ?1")
     List<ArrLevel> findByParentNode(ArrNode node);
+
+    @Query("SELECT l FROM arr_level l WHERE l.node.nodeId = ?1 AND l.deleteChange is null")
+    ArrLevel findByNodeIdAndDeleteChangeIsNull(Integer nodeId);
 
     @Modifying
     @Query("DELETE FROM arr_level l WHERE l.node IN (SELECT n FROM arr_node n WHERE n.fund = ?1)")

@@ -1,6 +1,17 @@
 package cz.tacr.elza.service.arrangement;
 
-import java.util.List;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.*;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -8,36 +19,11 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
-
-import cz.tacr.elza.repository.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
-import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
-import cz.tacr.elza.bulkaction.BulkActionService;
-import cz.tacr.elza.domain.ArrDigitizationRequest;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.domain.WfIssueList;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.service.DmsService;
-import cz.tacr.elza.service.IEventNotificationService;
-import cz.tacr.elza.service.PolicyService;
-import cz.tacr.elza.service.RevertingChangesService;
-import cz.tacr.elza.service.StructObjValueService;
-import cz.tacr.elza.service.UserService;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.events.EventType;
+import java.util.List;
 
 /**
  * Action to delete fund
- *
+ * <p>
  * Fund deletion is complex task
  * which is handled by this action.
  */
@@ -48,9 +34,7 @@ public class DeleteFundAction {
     private static final Logger logger = LoggerFactory.getLogger(DeleteFundAction.class);
 
     @Autowired
-    private UpdateConformityInfoService updateConformityInfoService;
-    @Autowired
-    private BulkActionService bulkActionService;
+    private AsyncRequestService asyncRequestService;
     @Autowired
     private PolicyService policyService;
     @Autowired
@@ -215,9 +199,8 @@ public class DeleteFundAction {
         // terminate all services - for all versions
         List<ArrFundVersion> versions = this.fundVersionRepository.findVersionsByFundIdOrderByCreateDateDesc(fundId);
         for (ArrFundVersion version : versions) {
-            updateConformityInfoService.terminateWorkerInVersionAndWait(version.getFundVersionId());
-
-            bulkActionService.terminateBulkActions(version.getFundVersionId());
+            asyncRequestService.terminateNodeWorkersByFund(version.getFundVersionId());
+            asyncRequestService.terminateBulkActions(version.getFundVersionId());
         }
 
         structObjValueService.deleteFundRequests(fundId);
@@ -372,7 +355,7 @@ public class DeleteFundAction {
         //em.createNativeQuery("delete from ");
         CriteriaBuilder cmBuilder = em.getCriteriaBuilder();
         CriteriaDelete<ArrDigitizationRequest> deleteDigitRequests = cmBuilder.createCriteriaDelete(
-                                                                                                    ArrDigitizationRequest.class);
+                ArrDigitizationRequest.class);
         // subquery to select request
         Subquery<Integer> deleteDigitReqsSubquery = deleteDigitRequests.subquery(Integer.class);
         Root<ArrRequest> fromDigitReqsSubquery = deleteDigitReqsSubquery.from(ArrRequest.class);
@@ -381,7 +364,7 @@ public class DeleteFundAction {
 
         Root<ArrDigitizationRequest> fromDigitRequests = deleteDigitRequests.from(ArrDigitizationRequest.class);
         deleteDigitRequests.where(cmBuilder.in(fromDigitRequests.get(ArrRequest.FIELD_REQUEST_ID)).value(
-                                                                                                         deleteDigitReqsSubquery));
+                deleteDigitReqsSubquery));
         em.createQuery(deleteDigitRequests).executeUpdate();
 
         // TOOD: rewrite as criteria query
