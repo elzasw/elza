@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.service.AsyncRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -60,6 +61,9 @@ public class BulkActionController {
     private OutputService outputService;
 
     @Autowired
+    private AsyncRequestService asyncRequestService;
+
+    @Autowired
     private ClientFactoryVO factoryVo;
 
     @Autowired
@@ -101,7 +105,7 @@ public class BulkActionController {
 	@Transactional
 	public void interruptBulkAction(final @PathVariable("bulkActionRunId") Integer bulkActionRunId) {
         Assert.notNull(bulkActionRunId, "Identifikátor běhu hromadné akce musí být vyplněn");
-        bulkActionService.interruptBulkAction(bulkActionRunId);
+        asyncRequestService.interruptBulkAction(bulkActionRunId);
     }
 
 

@@ -19,7 +19,7 @@ spring:
         net.sf.ehcache.configurationResourceName: /ehcache.xml
         hibernate:
             format_sql: true
-            
+
             cache:
                 use_second_level_cache: true
                 region.factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
@@ -37,3 +37,13 @@ spring:
 elza:
   workingDir: ./work
   locale: cs
+  asyncActions:
+    node:
+      threadCount: 4
+      requestCount: 100
+    bulk:
+      threadCount: 4
+      requestCount: 100
+    output:
+      threadCount: 4
+      requestCount: 100
