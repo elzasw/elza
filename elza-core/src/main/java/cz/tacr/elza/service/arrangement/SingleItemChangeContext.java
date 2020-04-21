@@ -13,11 +13,11 @@ import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 
 /**
  * Zjednodusseny context
- * 
+ *
  * Vhodny jen pro pridani nebo zmenu jednoho prvku popisu
- * 
+ *
  * Nelze pouzit pro vymazani prvku popisu
- * 
+ *
  */
 public class SingleItemChangeContext implements BatchChangeContext {
 
@@ -59,13 +59,12 @@ public class SingleItemChangeContext implements BatchChangeContext {
         nodeVersion = descItemUpdated.getNode().getVersion();
         descItemObjectId = descItemUpdated.getDescItemObjectId();
     }
-    public void validateAndPublish() {        
-        
+    public void validateAndPublish() {
         // validace uzlu
+        int validationPriority = 10;
         ruleService.conformityInfo(fundVersionId, Collections.singletonList(nodeId),
-                                   NodeTypeOperation.SAVE_DESC_ITEM, createdDescItems, updatedDescItems, null);
-
-        // sockety        
+                                   NodeTypeOperation.SAVE_DESC_ITEM, createdDescItems, updatedDescItems, null, validationPriority);
+                // sockety
         EventChangeDescItem event = new EventChangeDescItem(fundVersionId,
                 descItemObjectId,
                 nodeId, nodeVersion);

@@ -273,6 +273,7 @@ public class IssueControllerTest extends AbstractControllerTest {
             deleteUserFundAllPermission(userVO2.getId());
             deleteUserFundAllPermission(userVO1.getId());
             deleteUserFundAllPermission(adminUserVO.getId());
+            helperTestService.waitForWorkers();
             deleteFund(fund.getId());
         }
     }

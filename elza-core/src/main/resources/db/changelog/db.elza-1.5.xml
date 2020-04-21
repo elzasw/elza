@@ -130,4 +130,86 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20200420202100" author="fantis">
+        <createTable tableName="rul_part_type">
+            <column name="part_type_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="PK_rul_part_type"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_rul_part_type_rul_package"
+                             referencedTableName="rul_package"
+                             referencedColumnNames="package_id"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="nvarchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="20200420203000" author="fantis">
+        <renameTable oldTableName="ap_fragment" newTableName="ap_part"/>
+        <renameColumn tableName="ap_part" oldColumnName="fragment_id" newColumnName="part_id"/>
+        <dropColumn tableName="ap_part" columnName="fragment_type_id"/>
+        <dropColumn tableName="ap_part" columnName="ap_fragment_parent_id"/>
+        <addColumn tableName="ap_part">
+            <column name="part_type_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_part_rul_part_type"
+                             referencedTableName="rul_part_type"
+                             referencedColumnNames="part_type_id"/>
+            </column>
+            <column name="parent_part_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_ap_part_parent_part"
+                             referencedTableName="ap_part"
+                             referencedColumnNames="part_id"/>
+            </column>
+            <column name="access_point_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_part_access_point"
+                             referencedTableName="ap_access_point"
+                             referencedColumnNames="access_point_id"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_part_create_change"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="delete_change_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_ap_part_delete_change"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    
+    <changeSet id="20200420204000" author="fantis">
+        <addColumn tableName="ap_item">
+            <column name="part_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_item_part"
+                             referencedTableName="ap_part"
+                             referencedColumnNames="part_id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20200420205000" author="fantis">
+        <dropColumn tableName="ap_access_point" columnName="preferred_name_item_id"/>
+        <addColumn tableName="ap_access_point">
+            <column name="preferred_part_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_ap_access_point_preferred_part"
+                             referencedTableName="ap_part"
+                             referencedColumnNames="part_id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

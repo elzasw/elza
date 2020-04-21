@@ -39,7 +39,7 @@ import cz.tacr.elza.common.TaskExecutor;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApChange;
-import cz.tacr.elza.domain.ApFragment;
+import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApNameItem;
@@ -50,10 +50,6 @@ import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulStructureDefinition;
-import cz.tacr.elza.domain.RulStructureExtensionDefinition;
-import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.drools.service.ModelFactory;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -61,7 +57,7 @@ import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApAccessPointItemRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApFragmentItemRepository;
-import cz.tacr.elza.repository.ApFragmentRepository;
+import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApNameItemRepository;
 import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.ApRuleRepository;
@@ -91,7 +87,7 @@ public class AccessPointGeneratorService {
     private final ApAccessPointItemRepository accessPointItemRepository;
     private final ApNameRepository apNameRepository;
     private final RuleService ruleService;
-    private final ApFragmentRepository fragmentRepository;
+    private final ApPartRepository partRepository;
     private final AccessPointDataService apDataService;
     private final ApAccessPointRepository apRepository;
     private final AccessPointItemService apItemService;
@@ -116,7 +112,7 @@ public class AccessPointGeneratorService {
                                        final ApAccessPointItemRepository accessPointItemRepository,
                                        final ApNameRepository apNameRepository,
                                        final RuleService ruleService,
-                                       final ApFragmentRepository fragmentRepository,
+                                       final ApPartRepository partRepository,
                                        final AccessPointDataService apDataService,
                                        final ApAccessPointRepository apRepository,
                                        final AccessPointItemService apItemService,
@@ -135,7 +131,7 @@ public class AccessPointGeneratorService {
         this.apNameRepository = apNameRepository;
         this.ruleService = ruleService;
         this.apDataService = apDataService;
-        this.fragmentRepository = fragmentRepository;
+        this.partRepository = partRepository;
         this.apRepository = apRepository;
         this.apItemService = apItemService;
         this.appCtx = appCtx;
@@ -231,19 +227,20 @@ public class AccessPointGeneratorService {
         });
     }
 
-    public void generateAndSetResult(final ApFragment fragment) {
+    public void generateAndSetResult(final ApPart fragment) {
         List<ApItem> fragmentItems = new ArrayList<>(fragmentItemRepository.findValidItemsByFragment(fragment));
         FragmentErrorDescription fragmentErrorDescription = new FragmentErrorDescription();
         ApStateEnum stateOld = fragment.getState();
         ApStateEnum state = ApStateEnum.OK;
 
-        validateFragmentItems(fragmentErrorDescription, fragment, fragmentItems);
+        //TODO fantis: smazat nebo prepsat na novou strukturu
+//        validateFragmentItems(fragmentErrorDescription, fragment, fragmentItems);
 
         String value = null;
         try {
             value = generateValue(fragment, fragmentItems);
         } catch (Exception e) {
-            logger.error("Selhání groovy scriptu (fragmentId: {})", fragment.getFragmentId(), e);
+            logger.error("Selhání groovy scriptu (fragmentId: {})", fragment.getPartId(), e);
             fragmentErrorDescription.setScriptFail(true);
             state = ApStateEnum.ERROR;
         }
@@ -259,12 +256,12 @@ public class AccessPointGeneratorService {
         fragment.setValue(value);
         fragment.setErrorDescription(fragmentErrorDescription.asJsonString());
         fragment.setState(stateOld == ApStateEnum.TEMP ? ApStateEnum.TEMP : state);
-        fragmentRepository.save(fragment);
+        partRepository.save(fragment);
 
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.FRAGMENT_UPDATE, fragment.getFragmentId()));
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.FRAGMENT_UPDATE, fragment.getPartId()));
     }
 
-    private String generateValue(final ApFragment fragment, final List<ApItem> items) {
+    private String generateValue(final ApPart fragment, final List<ApItem> items) {
 
         File groovyFile = findGroovyFile(fragment);
 
@@ -426,31 +423,33 @@ public class AccessPointGeneratorService {
         return (AccessPoint) groovyScriptFile.evaluate(input);
     }
 
-    private File findGroovyFile(final ApFragment fragment) {
-        RulStructuredType structureType = fragment.getFragmentType();
-        List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository
-                .findByStructureTypeAndDefTypeOrderByPriority(structureType, RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE);
-        RulComponent component;
-        RulPackage rulPackage;
-        if (structureExtensionDefinitions.size() > 0) {
-            RulStructureExtensionDefinition structureExtensionDefinition = structureExtensionDefinitions.get(structureExtensionDefinitions.size() - 1);
-            component = structureExtensionDefinition.getComponent();
-            rulPackage = structureExtensionDefinition.getRulPackage();
-        } else {
-            List<RulStructureDefinition> structureDefinitions = structureDefinitionRepository
-                    .findByStructTypeAndDefTypeOrderByPriority(structureType, RulStructureDefinition.DefType.SERIALIZED_VALUE);
-            if (structureDefinitions.size() > 0) {
-                RulStructureDefinition structureDefinition = structureDefinitions.get(structureDefinitions.size() - 1);
-                component = structureDefinition.getComponent();
-                rulPackage = structureDefinition.getRulPackage();
-            } else {
-                throw new SystemException("Strukturovaný typ '" + structureType.getCode() + "' nemá žádný script pro výpočet hodnoty", BaseCode.INVALID_STATE);
-            }
-        }
-
-        return resourcePathResolver.getGroovyDir(rulPackage)
-                .resolve(component.getFilename())
-                .toFile();
+    private File findGroovyFile(final ApPart fragment) {
+        //TODO fantis: prepsat na novy zpusob
+        return null;
+//        RulStructuredType structureType = fragment.getFragmentType();
+//        List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository
+//                .findByStructureTypeAndDefTypeOrderByPriority(structureType, RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE);
+//        RulComponent component;
+//        RulPackage rulPackage;
+//        if (structureExtensionDefinitions.size() > 0) {
+//            RulStructureExtensionDefinition structureExtensionDefinition = structureExtensionDefinitions.get(structureExtensionDefinitions.size() - 1);
+//            component = structureExtensionDefinition.getComponent();
+//            rulPackage = structureExtensionDefinition.getRulPackage();
+//        } else {
+//            List<RulStructureDefinition> structureDefinitions = structureDefinitionRepository
+//                    .findByStructTypeAndDefTypeOrderByPriority(structureType, RulStructureDefinition.DefType.SERIALIZED_VALUE);
+//            if (structureDefinitions.size() > 0) {
+//                RulStructureDefinition structureDefinition = structureDefinitions.get(structureDefinitions.size() - 1);
+//                component = structureDefinition.getComponent();
+//                rulPackage = structureDefinition.getRulPackage();
+//            } else {
+//                throw new SystemException("Strukturovaný typ '" + structureType.getCode() + "' nemá žádný script pro výpočet hodnoty", BaseCode.INVALID_STATE);
+//            }
+//        }
+//
+//        return resourcePathResolver.getGroovyDir(rulPackage)
+//                .resolve(component.getFilename())
+//                .toFile();
     }
 
     private File findGroovyFile(final ApAccessPoint accessPoint) {
@@ -465,12 +464,13 @@ public class AccessPointGeneratorService {
                 .toFile();
     }
 
-    private void validateFragmentItems(final ErrorDescription errorDescription,
-                                       final ApFragment fragment,
+    //TODO fantis: smazat nebo prepsat na novou strukturu
+    /*private void validateFragmentItems(final ErrorDescription errorDescription,
+                                       final ApPart fragment,
                                        final List<ApItem> items) {
         List<RulItemTypeExt> fragmentItemTypes = ruleService.getFragmentItemTypesInternal(fragment.getFragmentType(), items);
         validateItems(errorDescription, items, fragmentItemTypes);
-    }
+    }*/
 
     private void validateNameItems(final ErrorDescription errorDescription,
                                    final ApState apState,

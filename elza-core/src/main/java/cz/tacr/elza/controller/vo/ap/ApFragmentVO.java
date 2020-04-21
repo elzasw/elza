@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller.vo.ap;
 
-import cz.tacr.elza.domain.ApFragment;
+import cz.tacr.elza.domain.ApPart;
 
 import javax.annotation.Nullable;
 
@@ -108,14 +108,14 @@ public class ApFragmentVO {
     /**
      * Creates value object from AP fragment.
      */
-    public static ApFragmentVO newInstance(ApFragment src) {
+    public static ApFragmentVO newInstance(ApPart src) {
         ApFragmentVO vo = new ApFragmentVO();
-        vo.setId(src.getFragmentId());
+        vo.setId(src.getPartId());
         vo.setValue(src.getValue());
-        vo.setTypeId(src.getFragmentType().getStructuredTypeId());
+        vo.setTypeId(src.getPartType().getPartTypeId());
         vo.setState(ApStateVO.valueOf(src.getState().name()));
         vo.setErrorDescription(src.getErrorDescription());
-        vo.setFragmentParentId(src.getParentFragment() != null ? src.getParentFragment().getFragmentId() : null);
+        vo.setFragmentParentId(src.getParentPart() != null ? src.getParentPart().getPartId() : null);
         return vo;
     }
 }

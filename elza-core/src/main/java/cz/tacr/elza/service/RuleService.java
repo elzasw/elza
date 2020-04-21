@@ -1,23 +1,27 @@
 package cz.tacr.elza.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-
+import com.google.common.collect.Lists;
+import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.rules.ItemTypeExtBuilder;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.vo.DataValidationResult;
+import cz.tacr.elza.domain.vo.NodeTypeOperation;
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
+import cz.tacr.elza.drools.RulesExecutor;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.packageimport.xml.SettingGridView;
+import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.validation.ArrDescItemsPostValidator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
@@ -28,71 +32,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import com.google.common.collect.Lists;
-
-import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
-import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.rules.ItemTypeExtBuilder;
-import cz.tacr.elza.core.security.AuthMethod;
-import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.ApItem;
-import cz.tacr.elza.domain.ApRule;
-import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemSettings;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrNodeConformityError;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ArrNodeExtension;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrStructuredItem;
-import cz.tacr.elza.domain.RulArrangementExtension;
-import cz.tacr.elza.domain.RulComponent;
-import cz.tacr.elza.domain.RulExtensionRule;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeAction;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulStructuredType;
-import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.vo.DataValidationResult;
-import cz.tacr.elza.domain.vo.NodeTypeOperation;
-import cz.tacr.elza.domain.vo.RelatedNodeDirection;
-import cz.tacr.elza.drools.RulesExecutor;
-import cz.tacr.elza.exception.LockVersionChangeException;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.packageimport.xml.SettingGridView;
-import cz.tacr.elza.repository.ArrangementExtensionRepository;
-import cz.tacr.elza.repository.ExtensionRuleRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.ItemSettingsRepository;
-import cz.tacr.elza.repository.ItemTypeActionRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
-import cz.tacr.elza.repository.NodeExtensionRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputTypeRepository;
-import cz.tacr.elza.repository.TemplateRepository;
-import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
-import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.validation.ArrDescItemsPostValidator;
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -107,8 +51,6 @@ public class RuleService {
     @Autowired
 	private StaticDataService staticDataService;
 
-	@Autowired
-    private UpdateConformityInfoService updateConformityInfoService;
     @Autowired
     private ArrangementInternalService arrangementInternalService;
     @Autowired
@@ -154,12 +96,28 @@ public class RuleService {
     private ArrangementCacheService arrangementCacheService;
 
     @Autowired
+    private AsyncRequestService asyncRequestService;
+
+    @Autowired
     private ArrangementExtensionRepository arrangementExtensionRepository;
 
     @Autowired
     private ExtensionRuleRepository extensionRuleRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
+
+    public synchronized ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer fundVersionId, final Long asyncRequestId) {
+        ArrLevel level = levelRepository.findOne(faLevelId);
+        if(canUpdateConformity(asyncRequestId, level.getNode().getNodeId())) {
+            return setConformityInfo(faLevelId,fundVersionId);
+        } else {
+            return null;
+        }
+    }
+
+    public boolean canUpdateConformity(final Long asyncRequestId, final Integer nodeId) {
+        return asyncRequestService.canUpdateConformity(asyncRequestId, nodeId);
+    }
 
     /**
      * Provede validaci atributů vybraného uzlu a nastaví jejich validační hodnoty.
@@ -197,7 +155,6 @@ public class RuleService {
         }
 
         validationResults.addAll(validationResultsBasic);
-
         ArrNodeConformityExt result = updateNodeConformityInfo(level, version, validationResults);
 
         entityManager.detach(nodeBeforeValidation);
@@ -205,7 +162,8 @@ public class RuleService {
         Integer nodeVersionAfterValidation = nodeAfterValidation.getVersion();
 
         if (!nodeVersionBeforeValidation.equals(nodeVersionAfterValidation)) {
-            throw new LockVersionChangeException("Behem validace doslo ke zmene verze uzlu " + nodeId);
+            logger.info("Během validace došlo ke změně verze uzlu " + nodeId);
+            //throw new LockVersionChangeException("Behem validace doslo ke zmene verze uzlu " + nodeId);
         }
 
         return result;
@@ -399,6 +357,22 @@ public class RuleService {
         return impactOnConformityInfo;
     }
 
+    public Set<RelatedNodeDirection> conformityInfo(final Integer fundVersionId,
+                                                    final Collection<Integer> nodeIds,
+                                                    final NodeTypeOperation nodeTypeOperation,
+                                                    final List<ArrDescItem> createDescItems,
+                                                    final List<ArrDescItem> updateDescItems,
+                                                    final List<ArrDescItem> deleteDescItems,
+                                                    final Integer validationPriority) {
+
+        Set<RelatedNodeDirection> impactOnConformityInfo = getImpactOnConformityInfo(fundVersionId, nodeTypeOperation,
+                createDescItems, updateDescItems, deleteDescItems);
+
+        deleteConformityInfo(fundVersionId, nodeIds, impactOnConformityInfo, validationPriority);
+
+        return impactOnConformityInfo;
+    }
+
     /**
      * Provede vytvoření stavů uzlů podle pravidel u nové verze AP.
      *
@@ -412,9 +386,9 @@ public class RuleService {
                 .findNodesByDirection(rootNode, fundVersion, RelatedNodeDirection.ALL);
 
         nodes.add(rootNode);
-
+        logger.info("Conformity Info All");
         if (!nodes.isEmpty()) {
-            updateConformityInfoService.updateInfoForNodesAfterCommit(fundVersion.getFundVersionId(), nodes);
+            asyncRequestService.enqueue(fundVersion,nodes, AsyncTypeEnum.NODE, null);
         }
     }
 
@@ -455,6 +429,20 @@ public class RuleService {
     private void deleteConformityInfo(final Integer fundVersionId,
                                       final Collection<Integer> nodeIds,
                                       final Collection<RelatedNodeDirection> deleteDirections) {
+        deleteConformityInfo(fundVersionId,nodeIds,deleteDirections,null);
+    }
+
+    /**
+     * Pro vybrané nody s danou verzí smaže všechny stavy v daných směrech od nodů.
+     *
+     * @param fundVersionId      verze nodů
+     * @param nodeIds          seznam id nodů, od kterých se má prohledávat
+     * @param deleteDirections směry prohledávání (null pokud se mají smazat stavy zadaných nodů .
+     */
+    private void deleteConformityInfo(final Integer fundVersionId,
+                                      final Collection<Integer> nodeIds,
+                                      final Collection<RelatedNodeDirection> deleteDirections,
+                                      final Integer validationPriority) {
         Validate.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         Validate.notEmpty(nodeIds, "Musí být vyplněna alespoň jedna JP");
 
@@ -480,7 +468,7 @@ public class RuleService {
                     .findByNodesAndFundVersion(deleteNodes, version);
 
             deleteConformityInfo(deleteInfos);
-            updateConformityInfoService.updateInfoForNodesAfterCommit(version.getFundVersionId(), deleteNodes);
+            asyncRequestService.enqueue(version,deleteNodes.stream().collect(Collectors.toList()), AsyncTypeEnum.NODE,validationPriority);
         }
     }
 
@@ -561,8 +549,8 @@ public class RuleService {
     public List<SettingGridView.ItemType> getGridView() {
 
         // načtený globální oblíbených
-        List<UISettings> gridViews = settingsService.getGlobalSettings(UISettings.SettingsType.GRID_VIEW.toString(), 
-                                                                       null);        
+        List<UISettings> gridViews = settingsService.getGlobalSettings(UISettings.SettingsType.GRID_VIEW.toString(),
+                                                                       null);
 
         for (UISettings gridView : gridViews) {
             SettingGridView view = SettingGridView.newInstance(gridView);

@@ -5,6 +5,7 @@ import java.net.URL;
 
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.domain.ArrAsyncRequest;
 import cz.tacr.elza.repository.*;
 import org.junit.After;
 import org.junit.Assert;
@@ -52,7 +53,6 @@ public abstract class AbstractTest {
     protected NodeRepository nodeRepository;
     @Autowired
     protected HelperTestService helperTestService;
-
     @Autowired
     protected StartupService startupService;
 

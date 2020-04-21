@@ -95,7 +95,7 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     @Nullable
     private ApFormVO form;
 
-    private Integer preferredNameItem;
+    private Integer preferredPart;
 
     public Integer getId() {
         return id;
@@ -231,11 +231,11 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
         this.ruleSystemId = ruleSystemId;
     }
 
-    public Integer getPreferredNameItem() {
-        return preferredNameItem;
+    public Integer getPreferredPart() {
+        return preferredPart;
     }
 
-    public void setPreferredNameItem(Integer preferredNameItem) {
-        this.preferredNameItem = preferredNameItem;
+    public void setPreferredPart(Integer preferredPart) {
+        this.preferredPart = preferredPart;
     }
 }
