@@ -711,7 +711,6 @@ public class ClientFactoryVO {
         ArrData data = item.getData();
         DataType dataType = DataType.fromId(item.getItemType().getDataTypeId()); //.getCode();
 
-        //TODO : kam dat URi-REF ve switchi?
         switch (dataType) {
             case TEXT:
                 return ArrItemTextVO.newInstance(item);
@@ -759,6 +758,9 @@ public class ClientFactoryVO {
                 break;
             case URI_REF:
                 itemVO = new ArrItemUriRefVO();
+                break;
+            case DATE:
+                itemVO = new ArrItemDateVO();
                 break;
             case BIT:
                 itemVO = new ArrItemBitVO();

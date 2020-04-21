@@ -12,7 +12,7 @@ import java.util.List;
 
 
 /**
- * 
+ *
  * @since 22.7.15
  */
 @Repository
@@ -39,9 +39,12 @@ public interface FundVersionRepository extends ElzaJpaRepository<ArrFundVersion,
     @Query(value = "SELECT v FROM arr_fund_version v JOIN FETCH v.fund f JOIN FETCH f.institution i LEFT JOIN FETCH v.lockChange lc WHERE v.fundVersionId = :fundVersionId")
     ArrFundVersion findByIdWithFetchForExport(@Param(value = "fundVersionId") Integer fundVersionId);
 
+    @Query(value = "SELECT v FROM arr_fund_version v JOIN FETCH v.fund f WHERE v.fundVersionId = :fundVersionId")
+    ArrFundVersion findByIdWithFetchFund(@Param(value = "fundVersionId") Integer fundVersionId);
+
     /**
      * Delete fund versions by fund
-     * 
+     *
      * @param fund
      */
     @Modifying

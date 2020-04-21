@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import java.util.Collection;
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrNodeConformity;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -64,4 +65,7 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
             " where dsr.structuredObject.structuredObjectId in :structuredObjectIds" +
             " and i.deleteChange is null")
     List<ArrNode> findNodesByStructuredObjectIds(@Param(value = "structuredObjectIds") Collection<Integer> structuredObjectIds);
+
+    @Query("SELECT node FROM arr_node node JOIN FETCH arr_node_conformity conf ON conf.node = node AND conf.state = :state")
+    List<ArrNode> findNodesByConformityState(@Param(value= "state") ArrNodeConformity.State state);
 }
