@@ -2,7 +2,7 @@ package cz.tacr.elza.controller.vo.ap.item;
 
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.domain.ApFragment;
+import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataApFragRef;
@@ -58,9 +58,9 @@ public class ApItemAPFragmentRefVO extends ApItemVO {
         }
 
         // try to map fragment
-        ApFragment fragment = null;
+        ApPart fragment = null;
         if (this.value != null) {
-            fragment = em.getReference(ApFragment.class, value);
+            fragment = em.getReference(ApPart.class, value);
         }
         data.setFragment(fragment);
 

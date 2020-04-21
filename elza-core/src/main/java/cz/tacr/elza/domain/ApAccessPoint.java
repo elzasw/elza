@@ -68,9 +68,9 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
     @Column
     private LocalDateTime lastUpdate;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPointItem.class)
-    @JoinColumn(name = "preferred_name_item_id")
-    private ApAccessPointItem preferredNameItem;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApPart.class)
+    @JoinColumn(name = "preferred_part_id")
+    private ApPart preferredPart;
 
     /**
      * ID hesla.
@@ -141,12 +141,12 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
         this.lastUpdate = lastUpdate;
     }
 
-    public ApAccessPointItem getPreferredNameItem() {
-        return preferredNameItem;
+    public ApPart getPreferredPart() {
+        return preferredPart;
     }
 
-    public void setPreferredNameItem(ApAccessPointItem preferredNameItem) {
-        this.preferredNameItem = preferredNameItem;
+    public void setPreferredPart(ApPart preferredPart) {
+        this.preferredPart = preferredPart;
     }
 
     @Override

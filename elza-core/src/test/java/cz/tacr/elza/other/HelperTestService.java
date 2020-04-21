@@ -29,7 +29,7 @@ import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
-import cz.tacr.elza.repository.ApFragmentRepository;
+import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.ApStateRepository;
@@ -198,7 +198,7 @@ public class HelperTestService {
     @Autowired
     private ApItemRepository apItemRepository;
     @Autowired
-    private ApFragmentRepository fragmentRepository;
+    private ApPartRepository partRepository;
     @Autowired
     private ApChangeRepository apChangeRepository;
     @Autowired
@@ -276,7 +276,7 @@ public class HelperTestService {
         partyCreatorRepository.deleteAll();
         partyNameRepository.deleteAll();
         apItemRepository.deleteAll();
-        fragmentRepository.deleteAll();
+        partRepository.deleteAll();
         apNameRepository.deleteAll();
         fundVersionRepository.deleteAll();
         fundRegisterScopeRepository.deleteAll();

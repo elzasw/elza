@@ -11,9 +11,9 @@ public class ApFragmentItem extends ApItem {
 
     public static final String FRAGMENT_ID = "fragmentId";
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApFragment.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApPart.class)
     @JoinColumn(name = FRAGMENT_ID, nullable = false)
-    private ApFragment fragment;
+    private ApPart fragment;
 
     @Column(name = FRAGMENT_ID, nullable = false, updatable = false, insertable = false)
     private Integer fragmentId;
@@ -32,12 +32,12 @@ public class ApFragmentItem extends ApItem {
         this.fragmentId = other.fragmentId;
     }
 
-    public ApFragment getFragment() {
+    public ApPart getFragment() {
         return fragment;
     }
 
-    public void setFragment(final ApFragment fragment) {
+    public void setFragment(final ApPart fragment) {
         this.fragment = fragment;
-        this.fragmentId = fragment == null ? null : fragment.getFragmentId();
+        this.fragmentId = fragment == null ? null : fragment.getPartId();
     }
 }

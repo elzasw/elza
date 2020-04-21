@@ -463,9 +463,9 @@ public class ApController {
     public ApFragmentVO createFragment(@PathVariable final String fragmentTypeCode) {
         Validate.notNull(fragmentTypeCode, "Kód typu fragmentu musí být vyplněn");
 
-        RulStructuredType fragmentType = structObjService.getStructureTypeByCode(fragmentTypeCode);
-        ApFragment fragment = fragmentService.createFragment(fragmentType);
-        return apFactory.createVO(fragment, true);
+        RulPartType partType = structObjService.getPartTypeByCode(fragmentTypeCode);
+        ApPart part = fragmentService.createPart(partType);
+        return apFactory.createVO(part, true);
     }
 
     /**
@@ -481,7 +481,7 @@ public class ApController {
                                             @RequestBody final List<ApUpdateItemVO> items) {
         Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
 
-        ApFragment fragment = fragmentService.getFragment(fragmentId);
+        ApPart fragment = fragmentService.getFragment(fragmentId);
         fragmentService.changeFragmentItems(fragment, items);
         return apFactory.createVO(fragment, true);
     }
@@ -499,7 +499,7 @@ public class ApController {
         Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
         Validate.notNull(itemTypeId, "Identifikátor typu musí být vyplněn");
 
-        ApFragment fragment = fragmentService.getFragment(fragmentId);
+        ApPart fragment = fragmentService.getFragment(fragmentId);
         StaticDataProvider data = staticDataService.getData();
         ItemType type = data.getItemTypeById(itemTypeId);
         fragmentService.deleteFragmentItemsByType(fragment, type.getEntity());
@@ -515,7 +515,7 @@ public class ApController {
     @RequestMapping(value = "/fragment/{fragmentId}/confirm", method = RequestMethod.POST)
     public void confirmFragment(@PathVariable final Integer fragmentId) {
         Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
-        ApFragment fragment = fragmentService.getFragment(fragmentId);
+        ApPart fragment = fragmentService.getFragment(fragmentId);
         fragmentService.confirmFragment(fragment);
     }
 
@@ -528,7 +528,7 @@ public class ApController {
     @RequestMapping(value = "/fragment/{fragmentId}", method = RequestMethod.GET)
     public ApFragmentVO getFragment(@PathVariable final Integer fragmentId) {
         Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
-        ApFragment fragment = fragmentService.getFragment(fragmentId);
+        ApPart fragment = fragmentService.getFragment(fragmentId);
         return apFactory.createVO(fragment, true);
     }
 
@@ -541,7 +541,7 @@ public class ApController {
     @RequestMapping(value = "/fragment/{fragmentId}", method = RequestMethod.DELETE)
     public void deleteFragment(@PathVariable final Integer fragmentId) {
         Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
-        ApFragment fragment = fragmentService.getFragment(fragmentId);
+        ApPart fragment = fragmentService.getFragment(fragmentId);
         fragmentService.deleteFragment(fragment);
     }
 

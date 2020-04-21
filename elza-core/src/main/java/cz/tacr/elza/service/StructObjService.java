@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.castor.core.util.Assert;
@@ -30,38 +32,13 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundStructureExtension;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrStructuredItem;
-import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ArrStructuredObject.State;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulStructuredType;
-import cz.tacr.elza.domain.RulStructuredTypeExtension;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.StructObjCode;
 import cz.tacr.elza.packageimport.xml.SettingStructureTypes;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.FilteredResult;
-import cz.tacr.elza.repository.FundStructureExtensionRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.StructuredItemRepository;
-import cz.tacr.elza.repository.StructuredObjectRepository;
-import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
-import cz.tacr.elza.repository.StructuredTypeRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
@@ -90,6 +67,7 @@ public class StructObjService {
     private final SettingsService settingsService;
     private final StaticDataService staticDataService;
     private final StructObjInternalService structObjInternalService;
+    private final PartTypeRepository partTypeRepository;
 
     @Autowired
     public StructObjService(final StructuredItemRepository structureItemRepository,
@@ -104,7 +82,8 @@ public class StructObjService {
                             final EventNotificationService notificationService,
                             final SettingsService settingsService,
                             final StaticDataService staticDataService,
-                            final StructObjInternalService structObjInternalService) {
+                            final StructObjInternalService structObjInternalService,
+                            final PartTypeRepository partTypeRepository) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionRepository = structureExtensionRepository;
         this.structObjRepository = structureDataRepository;
@@ -119,6 +98,7 @@ public class StructObjService {
         this.settingsService = settingsService;
         this.staticDataService = staticDataService;
         this.structObjInternalService = structObjInternalService;
+        this.partTypeRepository = partTypeRepository;
     }
 
     /**
@@ -612,6 +592,20 @@ public class StructObjService {
             throw new ObjectNotFoundException("Strukturovaný typ neexistuje: " + structureTypeCode, BaseCode.ID_NOT_EXIST).setId(structureTypeCode);
         }
         return structureType;
+    }
+
+    /**
+     * Vrátí typ částí podle kódu.
+     *
+     * @param partTypeCode kód typu části
+     * @return entita
+     */
+    public RulPartType getPartTypeByCode(final String partTypeCode) {
+        RulPartType partType = partTypeRepository.findByCode(partTypeCode);
+        if (partType == null) {
+            throw new ObjectNotFoundException("Typ části neexistuje: " + partTypeCode, BaseCode.ID_NOT_EXIST).setId(partTypeCode);
+        }
+        return partType;
     }
 
     /**
