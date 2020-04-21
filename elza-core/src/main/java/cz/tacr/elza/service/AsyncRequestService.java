@@ -136,6 +136,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Přídání výstupu do fronty na zpracování
+     *
      * @param fundVersion
      * @param output
      * @param type
@@ -152,12 +153,13 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         request.setOutput(output);
         asyncRequestRepository.save(request);
         AsyncRequestVO mapRequest = new AsyncRequestVO(request);
-        addToMap(mapRequest);
+        addToMapAfterCommit(mapRequest);
         beginValidation(type);
     }
 
     /**
      * Přidání hromadné akce do fronty na zpracování
+     *
      * @param fundVersion
      * @param bulkActionRun
      * @param type
@@ -175,12 +177,13 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         request.setBulkAction(bulkActionRun);
         asyncRequestRepository.save(request);
         AsyncRequestVO mapRequest = new AsyncRequestVO(request);
-        addToMap(mapRequest);
+        addToMapAfterCommit(mapRequest);
         beginValidation(type);
     }
 
     /**
      * Přidání Nodů do fronty ke zpracování
+     *
      * @param fundVersion
      * @param nodeList
      * @param type
@@ -199,13 +202,14 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             request.setNode(node);
             asyncRequestRepository.save(request);
             AsyncRequestVO mapRequest = new AsyncRequestVO(request);
-            addToMap(mapRequest);
+            addToMapAfterCommit(mapRequest);
         }
         beginValidation(type);
     }
 
     /**
      * Začátek validace po dokončení předchozí transakce
+     *
      * @param type
      */
     private void beginValidation(AsyncTypeEnum type) {
@@ -220,7 +224,8 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Kontrola, jestli běží validace AS před mazáním celého AS
-      * @param version
+     *
+     * @param version
      * @return
      */
     public synchronized boolean isFundNodeRunning(final ArrFundVersion version) {
@@ -233,6 +238,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Kontrola, jestli běží hromadná akce na AS před mazáním celého AS
+     *
      * @param version
      * @return
      */
@@ -246,6 +252,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Mazání požadavku z DB fronty po vykonání úkolu
+     *
      * @param requestId
      */
     public synchronized void deleteRequestFromRepository(Long requestId) {
@@ -254,6 +261,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Načtení dat z DB při prázdné frontě požadavků ke zpracování, rozděleno podle typu požadavků
+     *
      * @param type
      */
     private void findWorkerData(AsyncTypeEnum type) {
@@ -306,7 +314,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                                 }
                                 List<ArrAsyncRequest> queuedRequests = asyncRequestRepository.findRequestsByPriorityWithLimit(type, new PageRequest(0, MAX_PROCESSED_OUTPUTS));
                                 for (ArrAsyncRequest request : queuedRequests) {
-                                    outputQueue.add(new AsyncRequestVO(request));
+                                    addToMap(new AsyncRequestVO(request));
                                 }
                             }
                         }
@@ -318,70 +326,77 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Přidání požadavku do seznamu pro zpracování
+     *
      * @param request
      */
+
     private synchronized void addToMap(AsyncRequestVO request) {
+        Integer fundVersionId = request.getFundVersionId();
+        switch (request.getType()) {
+            case NODE:
+                if (nodeMap == null) {
+                    nodeMap = new ConcurrentHashMap<>();
+                }
+                if (nodeFundStatistics == null) {
+                    nodeFundStatistics = new ArrayList<>();
+                }
+                if (nodeMap.containsKey(fundVersionId)) {
+                    PriorityQueue<AsyncRequestVO> requests = nodeMap.get(fundVersionId);
+                    requests.add(request);
+                    nodeMap.put(fundVersionId, requests);
+                    addToFundStatistics(AsyncTypeEnum.NODE, fundVersionId, 1);
+                } else {
+                    PriorityQueue<AsyncRequestVO> requests = new PriorityQueue<>(1000, new NodePriorityComparator());
+                    requests.add(request);
+                    nodeMap.put(fundVersionId, requests);
+                    addToFundStatistics(AsyncTypeEnum.NODE, fundVersionId, 1);
+                }
+                waitingNodeRequestMap.put(request.getNodeId(), request.getRequestId());
+                break;
+            case BULK:
+                if (bulkActionMap == null) {
+                    bulkActionMap = new HashMap<>();
+                }
+                if (bulkFundStatistics == null) {
+                    bulkFundStatistics = new ArrayList<>();
+                }
+                if (bulkActionMap.containsKey(fundVersionId)) {
+                    Queue<AsyncRequestVO> requests = bulkActionMap.get(fundVersionId);
+                    requests.add(request);
+                    bulkActionMap.put(fundVersionId, requests);
+                    addToFundStatistics(AsyncTypeEnum.BULK, fundVersionId, 1);
+                } else {
+                    Queue<AsyncRequestVO> requests = new LinkedList<>();
+                    requests.add(request);
+                    bulkActionMap.put(fundVersionId, requests);
+                    addToFundStatistics(AsyncTypeEnum.BULK, fundVersionId, 1);
+                }
+                break;
+            case OUTPUT:
+                if (outputQueue == null) {
+                    outputQueue = new LinkedList<>();
+                }
+                if (outputFundStatistics == null) {
+                    outputFundStatistics = new ArrayList<>();
+                }
+                outputQueue.add(request);
+                addToFundStatistics(AsyncTypeEnum.OUTPUT, fundVersionId, 1);
+                break;
+        }
+    }
+
+    private synchronized void addToMapAfterCommit(AsyncRequestVO request) {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
             public void afterCommit() {
-                Integer fundVersionId = request.getFundVersionId();
-                switch (request.getType()) {
-                    case NODE:
-                        if (nodeMap == null) {
-                            nodeMap = new ConcurrentHashMap<>();
-                        }
-                        if (nodeFundStatistics == null) {
-                            nodeFundStatistics = new ArrayList<>();
-                        }
-                        if (nodeMap.containsKey(fundVersionId)) {
-                            PriorityQueue<AsyncRequestVO> requests = nodeMap.get(fundVersionId);
-                            requests.add(request);
-                            nodeMap.put(fundVersionId, requests);
-                            addToFundStatistics(AsyncTypeEnum.NODE, fundVersionId, 1);
-                        } else {
-                            PriorityQueue<AsyncRequestVO> requests = new PriorityQueue<>(1000, new NodePriorityComparator());
-                            requests.add(request);
-                            nodeMap.put(fundVersionId, requests);
-                            addToFundStatistics(AsyncTypeEnum.NODE, fundVersionId, 1);
-                        }
-                        waitingNodeRequestMap.put(request.getNodeId(), request.getRequestId());
-                        break;
-                    case BULK:
-                        if (bulkActionMap == null) {
-                            bulkActionMap = new HashMap<>();
-                        }
-                        if (bulkFundStatistics == null) {
-                            bulkFundStatistics = new ArrayList<>();
-                        }
-                        if (bulkActionMap.containsKey(fundVersionId)) {
-                            Queue<AsyncRequestVO> requests = bulkActionMap.get(fundVersionId);
-                            requests.add(request);
-                            bulkActionMap.put(fundVersionId, requests);
-                            addToFundStatistics(AsyncTypeEnum.BULK, fundVersionId, 1);
-                        } else {
-                            Queue<AsyncRequestVO> requests = new LinkedList<>();
-                            requests.add(request);
-                            bulkActionMap.put(fundVersionId, requests);
-                            addToFundStatistics(AsyncTypeEnum.BULK, fundVersionId, 1);
-                        }
-                        break;
-                    case OUTPUT:
-                        if (outputQueue == null) {
-                            outputQueue = new LinkedList<>();
-                        }
-                        if (outputFundStatistics == null) {
-                            outputFundStatistics = new ArrayList<>();
-                        }
-                        outputQueue.add(request);
-                        addToFundStatistics(AsyncTypeEnum.OUTPUT, fundVersionId, 1);
-                        break;
-                }
+                addToMap(request);
             }
         });
     }
 
     /**
      * Výběr dalšího workeru, po začátku validace, nebo po skončení předchozího workeru
+     *
      * @param type
      */
     private void selecteNextWorker(AsyncTypeEnum type) {
@@ -400,6 +415,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Příprava workeru pro zpracování NODů
+     *
      * @param type
      */
     private synchronized void prepareNextNodeWorker(AsyncTypeEnum type) {
@@ -435,6 +451,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Kontrola, jestli není vybraný NOD zpracovávaný v jiném workeru
+     *
      * @param asyncRequestsQueue
      * @param fundVersionId
      * @return
@@ -454,6 +471,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Seznam aktuálně zpracovávaných NODů
+     *
      * @return
      */
     private List<Long> getCurrentWorkersNodeIds() {
@@ -468,6 +486,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Příprava hromadné akce ke zpracování
+     *
      * @param type
      */
     private synchronized void prepareNextBulkActionWorker(AsyncTypeEnum type) {
@@ -498,6 +517,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Příprava výstupu ke zpracování
+     *
      * @param type
      */
     private synchronized void prepareNextOutputWorker(AsyncTypeEnum type) {
@@ -524,6 +544,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Spuštění workeru pro zpracování NODu
+     *
      * @param request
      * @param currentFundId
      */
@@ -543,6 +564,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Přidání požadavku do statistiky požadavků pro jednotlivé AS
+     *
      * @param type
      * @param fundVersionId
      * @param requestCount
@@ -601,6 +623,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Vytvoření statistické třídy pro AS, pokud neexistuje
+     *
      * @param fundVersionId
      * @return
      */
@@ -618,6 +641,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Přidání informace o vzniku požadavku do statistiky o zpracování požadavků za poslední hodinu
+     *
      * @param info
      */
     public synchronized void addToLastHourRequests(TimeRequestInfo info) {
@@ -632,6 +656,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * získání počtu běžících workerů pro NODy
+     *
      * @return
      */
     private int getRunningNodeWorkersCount() {
@@ -644,6 +669,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * kontrola, jestli existuje volné vlákno pro zpracování požadavku
+     *
      * @param type
      * @return
      */
@@ -672,6 +698,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * spuštění hromadné akce
+     *
      * @param requestVO
      * @param fundVersionId
      */
@@ -682,6 +709,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Kontrola, jestli je možné validovat
+     *
      * @param asyncRequestId
      * @param nodeId
      * @return
@@ -705,6 +733,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * odebrání hromadné akce ze seznamu pro zpracování při jejím přerušení
+     *
      * @param type
      * @param id
      */
@@ -720,6 +749,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Odebrání ze seznamu bežících workerů pro NODy po jeho ukončení
+     *
      * @param fundVersionId
      * @param requestId
      */
@@ -803,6 +833,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Volání z jednotlivých workerů po jejich skončení, plánování spuštění nových workerů
+     *
      * @param asyncRequestEvent
      */
     @Override
@@ -871,6 +902,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Vytváření statistiky pčekajících požadavků
+     *
      * @param type
      * @return
      */
@@ -900,6 +932,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Statistika pro počet aktuálně běžících vláken
+     *
      * @param type
      * @return
      */
@@ -918,6 +951,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Statistika pro celkový počet vláken
+     *
      * @param type
      * @return
      */
@@ -936,6 +970,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Vrácení detailních statistik podle jednotlivých typů požadavků
+     *
      * @param type
      * @return
      */
@@ -957,6 +992,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Získání běžících workerů
+     *
      * @param type
      * @return
      */
@@ -979,6 +1015,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Přepočítání zpracovaných požadavků za poslední hodinu
+     *
      * @return
      */
     private TypeRequestCount getLastHourRequests() {
@@ -999,6 +1036,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Výpočet aktuálního LOADu
+     *
      * @param type
      * @return
      */
@@ -1027,6 +1065,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     /**
      * Obecné informace o zpracování požadavků
+     *
      * @return
      */
     public List<ArrAsyncRequestVO> dispatcherInfo() {
