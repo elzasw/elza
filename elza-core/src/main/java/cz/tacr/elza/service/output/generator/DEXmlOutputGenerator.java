@@ -11,6 +11,8 @@ import cz.tacr.elza.dataexchange.output.DEExportParams;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
 import cz.tacr.elza.dataexchange.output.DEExportService;
 import cz.tacr.elza.dataexchange.output.sections.RootLevelDecorator;
+import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
+import cz.tacr.elza.dataexchange.output.writer.xml.XmlExportBuilder;
 import cz.tacr.elza.service.DmsService;
 
 public class DEXmlOutputGenerator extends DmsOutputGenerator {
@@ -24,8 +26,9 @@ public class DEXmlOutputGenerator extends DmsOutputGenerator {
 
     @Override
     protected void generate(OutputStream os) throws IOException {
+        ExportBuilder exportBuilder = new XmlExportBuilder();
         DEExportParams exportParams = createExportParams();
-        exportService.exportXmlData(os, exportParams);
+        exportService.exportXmlData(os, exportBuilder, exportParams);
     }
 
     private DEExportParams createExportParams() {

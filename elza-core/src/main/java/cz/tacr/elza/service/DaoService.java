@@ -1,5 +1,7 @@
 package cz.tacr.elza.service;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -9,10 +11,13 @@ import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -30,12 +35,15 @@ import cz.tacr.elza.domain.ArrDaoLinkRequest.Type;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDaoRequestDao;
 import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.DeleteException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
@@ -52,18 +60,14 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
-import static java.util.stream.Collectors.toList;
-
 /**
- * Servisní metory pro  digitalizáty
+ * Servisní metody pro digitalizáty
  *
- * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
- * Date: 12.12.16
  */
 @Service
 public class DaoService {
 
-    private Log logger = LogFactory.getLog(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(DaoService.class);
 
     @Autowired
     private RequestQueueService requestQueueService;
@@ -131,11 +135,12 @@ public class DaoService {
      * @return seznam digitálních entit (DAO)
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
-    public List<ArrDao> findDaosByPackage(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                          final ArrDaoPackage daoPackage, final Integer index, final Integer maxResults, final boolean unassigned) {
-        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
-        Assert.notNull(daoPackage, "DAO obal musí být vyplněn");
-        return daoRepository.findByFundAndPackagePaginating(fundVersion, daoPackage, index, maxResults, unassigned);
+    public List<ArrDao> findDaosByPackage(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId,
+                                          final ArrDaoPackage daoPackage,
+                                          final Integer index, final Integer maxResults, final boolean unassigned) {
+        Validate.notNull(fundId, "Verze AS musí být vyplněna");
+        Validate.notNull(daoPackage, "DAO obal musí být vyplněn");
+        return daoRepository.findByFundAndPackagePaginating(fundId, daoPackage, index, maxResults, unassigned);
     }
 
     /**
@@ -145,42 +150,33 @@ public class DaoService {
      * @param node node
      * @return nalezené nebo vytvořené propojení
      */
+    @Transactional(value = TxType.MANDATORY)
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public ArrDaoLink createOrFindDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final ArrDao dao, final ArrNode node) {
+    public ArrDaoLink createOrFindDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                          final ArrDao dao, final ArrNode node) {
         if (!dao.getValid()) {
             throw new BusinessException("Nelze připojit digitální entitu k JP, protože je nevalidní", ArrangementCode.INVALID_DAO).level(Level.WARNING);
         }
 
-        // kontrola, že ještě neexistuje vazba na zadaný node
-        final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoAndNodeAndDeleteChangeIsNull(dao, node);
+        Set<Integer> nodeIds = new HashSet<>();
 
-        if (CollectionUtils.isEmpty(daoLinkList)) {
-
-            Set<Integer> nodeIds = new HashSet<>();
-
-            // Pokud má DAO jinou platnou vazbu, bude nejprve zneplatněna
-            final List<ArrDaoLink> linkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(dao);
+        // Vyhledání stávajících vazeb
+        final List<ArrDaoLink> linkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(dao);
+        if (!CollectionUtils.isNotEmpty(linkList)) {
+            // odstraneni predchozich pripojeni
             // měla by být jen jedna, ale cyklus ošetří i případnou chybu v datech
             for (ArrDaoLink arrDaoLink : linkList) {
                 nodeIds.add(arrDaoLink.getNodeId());
                 deleteDaoLink(Collections.singletonList(fundVersion), arrDaoLink, true);
             }
-
-            final ArrDaoLink resultDaoLink = createArrDaoLink(fundVersion, dao, node);
-
-            nodeIds.add(node.getNodeId());
-
-            updateNodeCacheDaoLinks(nodeIds);
-
-            return resultDaoLink;
-
-        } else if (daoLinkList.size() == 1) {
-            logger.debug("Nalezeno existující platné propojení mezi DAO(ID=" + dao.getDaoId() + ") a node(ID=" + node.getNodeId() + ").");
-            return daoLinkList.get(0); // vrací jediný prvek
-        } else {
-            // Nalezeno více než jedno platné propojení mezi digitalizátem a uzlem popisu.
-            throw new BusinessException("Propojení DAO(ID=" + dao.getDaoId() + ") a node(ID=" + node.getNodeId() + ") již existuje", ArrangementCode.ALREADY_ADDED);
         }
+
+        final ArrDaoLink resultDaoLink = createArrDaoLink(fundVersion, dao, node);
+
+        nodeIds.add(node.getNodeId());
+        updateNodeCacheDaoLinks(nodeIds);
+
+        return resultDaoLink;
     }
 
     private ArrDaoLink createArrDaoLink(ArrFundVersion fundVersion, ArrDao dao, ArrNode node) {
@@ -279,37 +275,42 @@ public class DaoService {
     }
 
     /**
-     * Zneplatní DAO, pokud není navázané na požadavek ve stavu Příprava, Odesílaný, Odeslaný.
+     * Zneplatní DAO, pokud není navázané na požadavek ve stavu Příprava, Odesílaný,
+     * Odeslaný.
      * Zneplatní všechny nebo nic.
      * Po zneplatnněí DAO zruší jejich návazné linky a pošle notifikace.
+     * 
+     * @param fund
      *
-     * @param arrDaos seznam dao pro zneplatnění
-     * @return seznam zneplatněných ArrDao
+     * @param arrDaos
+     *            seznam dao pro zneplatnění
      */
-    public List<ArrDao> deleteDaosWithoutLinks(final List<ArrDao> arrDaos) {
+    public void deleteDaosWithoutLinks(ArrFund fund, final List<ArrDao> arrDaos) {
         List<ArrDao> result = new ArrayList<>();
 
         // kontrola, že neexistuje DAO navázané na požadavek ve stavu Příprava, Odesílaný, Odeslaný
         final List<ArrDaoLinkRequest> daoLinkRequests = daoLinkRequestRepository.findByDaosAndStates(arrDaos,
                 Arrays.asList(ArrRequest.State.OPEN, ArrRequest.State.QUEUED, ArrRequest.State.SENT));
 
-        if (daoLinkRequests.size() == 0) {
-            result.addAll(deleteDaos(arrDaos, true));
-        } else {
+        if (daoLinkRequests.size() != 0) {
             logger.info("Nelze zneplatnit vybraná dao, počet otevřených požadavků: " + daoLinkRequests.size());
+            throw new DeleteException("Selected DAOs cannot be removed. There are pending requests for these objects",
+                    DigitizationCode.DAO_HAS_REQUEST)
+                            .set("NumRequest", daoLinkRequests.size());
         }
 
-        return result;
+        deleteDaos(fund, arrDaos, true);
     }
 
-    public void deleteDaoPackageWithCascade(String packageIdentifier, ArrDaoPackage arrDaoPackage) {
+    public void deleteDaoPackageWithCascade(ArrDaoPackage arrDaoPackage) {
         // kontrola, že neexistuje DAO navázané na požadavek ve stavu Příprava, Odesílaný, Odeslaný
         final List<ArrDao> arrDaos = daoRepository.findByPackage(arrDaoPackage);
         final List<ArrDaoLinkRequest> daoLinkRequests = daoLinkRequestRepository.findByDaosAndStates(arrDaos,
                 Arrays.asList(ArrRequest.State.OPEN, ArrRequest.State.QUEUED, ArrRequest.State.SENT));
 
         if (daoLinkRequests.size() > 0) {
-            throw new SystemException("Nelze smazat package=" + packageIdentifier + ", počet otevřených požadavků: " + daoLinkRequests.size(), DigitizationCode.DAO_HAS_REQUEST);
+            throw new SystemException("Nelze smazat package=" + arrDaoPackage.getCode()
+                    + ", počet otevřených požadavků: " + daoLinkRequests.size(), DigitizationCode.DAO_HAS_REQUEST);
         }
 
         Set<Integer> nodeIds = new HashSet<>();
@@ -357,16 +358,25 @@ public class DaoService {
 
     /**
      * Zneplatní DAO a zruší jejich návazné linky a pošle notifikace.
+     * 
+     * @param arrFund
      *
-     * @param arrDaos seznam dao pro zneplatnění
-     * @return seznam zneplatněných ArrDao
+     * @param arrDaos
+     *            seznam dao pro zneplatnění
+     * 
+     * @param notify
+     *            priznak pro poslani notifikaci
+     * 
      */
-    public List<ArrDao> deleteDaos(final List<ArrDao> arrDaos, boolean notify) {
+    @AuthMethod(permission = { Permission.FUND_ARR_ALL, Permission.FUND_ARR })
+    public void deleteDaos(@AuthParam(type = AuthParam.Type.FUND) ArrFund arrFund,
+                           final List<ArrDao> arrDaos,
+                           boolean notify) {
         Set<Integer> nodeIds = new HashSet<>();
-        List<ArrDao> result = new ArrayList<>();
+
         for (ArrDao arrDao : arrDaos) {
             arrDao.setValid(false);
-            result.add(daoRepository.save(arrDao));
+            daoRepository.save(arrDao);
 
             // zrušit linky a poslat notifikace
             final List<ArrDaoLink> arrDaoLinkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(arrDao);
@@ -377,7 +387,6 @@ public class DaoService {
             }
         }
         updateNodeCacheDaoLinks(nodeIds);
-        return result;
     }
 
     /**

@@ -1,6 +1,7 @@
 package cz.tacr.elza.dao.bo.resource;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +17,8 @@ public class DaoConfig {
 	private String didIdentifier;
 
 	private String label;
+
+    private Map<String, String> attributes = new HashMap<>();
 
 
 	public List<Map<String, Object>> getFileAttributes() {
@@ -41,4 +44,12 @@ public class DaoConfig {
 	public void setLabel(String label) {
 		this.label = label;
 	}
+
+    public Map<String, String> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
+    }
 }
