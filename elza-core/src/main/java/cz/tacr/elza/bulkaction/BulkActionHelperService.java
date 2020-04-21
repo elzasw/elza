@@ -70,7 +70,7 @@ public class BulkActionHelperService {
      * @param bulkActionRun
      */
     @Transactional(Transactional.TxType.REQUIRED)
-    public void updateAction(ArrBulkActionRun bulkActionRun) {
+    public synchronized void updateAction(ArrBulkActionRun bulkActionRun) {
         storeBulkActionRun(bulkActionRun);
         eventPublishBulkAction(bulkActionRun);
     }

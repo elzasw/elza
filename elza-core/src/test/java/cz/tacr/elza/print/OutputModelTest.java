@@ -99,6 +99,7 @@ public class OutputModelTest extends AbstractServiceTest {
                 .getStructuredType(), State.OK);
         assertNotNull(structObj1);
         // add item
+        helperTestService.waitForWorkers();
         ArrItemEnumVO enumVo = new ArrItemEnumVO();
         enumVo.setPosition(1);
         enumVo.setItemTypeId(pckItemType.getItemTypeId());
@@ -125,6 +126,7 @@ public class OutputModelTest extends AbstractServiceTest {
 
         // Attach objs
         // Insert item1 to level1
+        helperTestService.waitForWorkers();
         ArrItemStructureVO itemSVO = new ArrItemStructureVO();
         ArrStructureDataVO svo1 = ArrStructureDataVO.newInstance(structObj1);
         itemSVO.setValue(structObj1.getStructuredObjectId());
@@ -134,13 +136,14 @@ public class OutputModelTest extends AbstractServiceTest {
         assertNotNull(descItemResult1);
 
         // Insert item2 to level1
+        helperTestService.waitForWorkers();
         ArrItemStructureVO itemSVO2 = new ArrItemStructureVO();
         itemSVO2.setStructureData(svo1);
         itemSVO2.setValue(structObj1.getStructuredObjectId());
         itemSVO2.setItemTypeId(itemType.getItemTypeId());
         ArrDescItem descItemResult2 = createDescItem(itemSVO2, level2.getNode(), fi.getFundVersionId());
         assertNotNull(descItemResult2);
-
+        helperTestService.waitForWorkers();
         OutputModel outputModel = new OutputModel(staticDataService, elzaLocale,
                 fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
                 apDescRepository, apNameRepository, apEidRepository,
@@ -151,6 +154,7 @@ public class OutputModelTest extends AbstractServiceTest {
         output.setOutputType(outputType);
 
         ArrChange change = arrangementService.createChange(Type.GENERATE_OUTPUT);
+        helperTestService.waitForWorkers();
         assertNotNull(change);
         OutputParams params = new OutputParams(output, change, fi.getFundVersion(),
                 Collections.singletonList(level1.getNodeId()),
@@ -167,6 +171,7 @@ public class OutputModelTest extends AbstractServiceTest {
         assertTrue(hasItem);
 
         // Flush any pending operations
+        helperTestService.waitForWorkers();
         em.flush();
 
     }
