@@ -57,6 +57,7 @@ import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.AccessPointMigrationService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;
