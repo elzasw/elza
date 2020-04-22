@@ -83,7 +83,7 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
 			} else {
 				result.append(" AND ");
 			}
-			result.append(" f IN (SELECT pv.fund FROM usr_permission_view pv WHERE userId = :userId)");
+			result.append(" f IN (SELECT pv.fund FROM usr_permission_view pv WHERE user_id = :userId)");
 		}
 
 		return result.toString();

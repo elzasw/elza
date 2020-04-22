@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.domain.ArrDaoBatchInfo;
 import cz.tacr.elza.domain.ArrDaoPackage;
 
 /**
@@ -14,6 +15,19 @@ public class ArrDaoPackageVO {
     private String batchInfoCode;
     private String batchInfoLabel;
     private long daoCount;
+
+    public ArrDaoPackageVO() {
+
+    }
+
+    public ArrDaoPackageVO(final ArrDaoPackage arrDaoPackage, ArrDaoBatchInfo daoBatchInfo) {
+        id = arrDaoPackage.getDaoPackageId();
+        code = arrDaoPackage.getCode();
+        if (daoBatchInfo != null) {
+            batchInfoCode = daoBatchInfo.getCode();
+            batchInfoLabel = daoBatchInfo.getLabel();
+        }
+    }
 
     public Integer getId() {
         return id;
@@ -53,5 +67,12 @@ public class ArrDaoPackageVO {
 
     public void setDaoCount(long daoCount) {
         this.daoCount = daoCount;
+    }
+
+    public static ArrDaoPackageVO newInstance(ArrDaoPackage arrDaoPackage) {
+        final ArrDaoBatchInfo daoBatchInfo = arrDaoPackage.getDaoBatchInfo();
+
+        ArrDaoPackageVO pkgVo = new ArrDaoPackageVO(arrDaoPackage, daoBatchInfo);
+        return pkgVo;
     }
 }
