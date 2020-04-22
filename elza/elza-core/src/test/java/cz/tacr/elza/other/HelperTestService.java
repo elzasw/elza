@@ -13,6 +13,7 @@ import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.ArrAsyncRequestRepository;
 import cz.tacr.elza.repository.AuthenticationRepository;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
