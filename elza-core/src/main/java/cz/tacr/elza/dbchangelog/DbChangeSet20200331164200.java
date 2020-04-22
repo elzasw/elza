@@ -33,16 +33,19 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
     private List<RulDataType> rulDataTypes;
     private List<RulStructuredType> rulStructuredTypes;
     private List<RulItemSpec> rulItemSpecs;
+    private List<RulItemType> rulItemTypesImport;
     private Map<String, Integer> rulDataTypeMap;
     private Map<String, Integer> rulItemTypeMap;
     private Map<String, Integer> rulStructuredTypeMap;
     private Map<String, Integer> rulItemSpecMap;
+    private Map<String, Integer> rulPartTypeMap;
     private Map<String, String> convertItemSpecMap;
     private Map<String, String> convertComplementMap;
     private Map<String, String> convertRelRoleTypeMap;
     private Map<String, String> convertRelEventMap;
     private Map<String, String> convertPersonPartyTypeItemSpec;
     private Map<String, String> convertExtinctionPartyTypeItemSpec;
+    private Map<String, String> convertOtherPartyTypeItemSpec;
     private RulPackage currentPackage;
     private ApChange apChange;
     private Map<String, DbSequence> hibernateSequences;
@@ -51,7 +54,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
 
     @Override
     public void execute(final Database database) throws CustomChangeException {
-        logger.info("Running DB Migration to Fragments");
+        logger.info("Migrace struktur do PARTS");
         conn = (JdbcConnection) database.getConnection();
         try {
             beginApMigration();
@@ -71,26 +74,28 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         createConvertRoleTypeMap();
         createPersonConvertPartyTypeItemSpec();
         createExtinctionConvertPartyTypeItemSpec();
+        createOtherConvertPartyTypeItemSpec();
         getCurrentPackage();
         getRulItemTypes();
         getRulItemSpecs();
         getRulDataTypes();
         getRulStructuredTypes();
+        getRulPartTypes();
 
         //migrace přístupových bodů
         List<ApAccessPoint> accessPointList = getAccessPointsForMigration();
         for (ApAccessPoint accessPoint : accessPointList) {
-            migrateExternalSystem(accessPoint);
-            migrateDescription(accessPoint);
-            migrateName(accessPoint);
+            migrateExternalSystem(accessPoint.getAccessPointId());
+            migrateDescription(accessPoint.getAccessPointId());
+            migrateName(accessPoint.getAccessPointId());
 
         }
 
         //migrace "osob"
         accessPointList = getPersonsForMigration();
         for (ApAccessPoint accessPoint : accessPointList) {
-            migrateExternalSystem(accessPoint);
-            migrateParParty(accessPoint);
+            migrateExternalSystem(accessPoint.getAccessPointId());
+            migrateParParty(accessPoint.getAccessPointId());
 
         }
 
@@ -143,6 +148,43 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
     }
 
     private void getRulItemTypes() throws DatabaseException, SQLException {
+        createRulItemTypesImport();
+        int viewOrder = selectMaxItemTypeViewOrder();
+
+        for (RulItemType itemType : rulItemTypesImport) {
+            Integer itemTypeId = nextId("rul_item_type", "item_type_id");
+            Integer dataTypeId = null;
+            PreparedStatement ps = conn.prepareStatement("SELECT data_type_id FROM rul_data_type WHERE code = " + dbString(itemType.dataTypeCode));
+            ps.execute();
+            try (ResultSet rs = ps.getResultSet();) {
+                while (rs.next()) {
+                    dataTypeId = rs.getInt("data_type_id");
+                }
+            }
+
+            ps = conn.prepareStatement("INSERT INTO rul_item_type(item_type_id, data_type_id, code, name, shortcut, description, " +
+                    "            is_value_unique, can_be_ordered, use_specification, view_order, " +
+                    "            package_id, view_definition, structured_type_id," +
+                    "            string_length_limit)" +
+                    " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,?);");
+            int i = 1;
+            ps.setInt(i++, itemTypeId);
+            ps.setInt(i++, dataTypeId);
+            ps.setString(i++, itemType.code);
+            ps.setString(i++, itemType.code);
+            ps.setString(i++, itemType.code);
+            ps.setString(i++, itemType.code);
+            ps.setBoolean(i++, itemType.isValueUnique);
+            ps.setBoolean(i++, itemType.canBeOrdered);
+            ps.setBoolean(i++, itemType.useSpecification);
+            ps.setInt(i++, viewOrder++);
+            ps.setInt(i++, currentPackage.packageId);
+            ps.setNull(i++, Types.VARCHAR);
+            ps.setNull(i++, Types.INTEGER);
+            ps.setNull(i++, Types.INTEGER);
+            ps.executeUpdate();
+        }
+
         rulItemTypes = new ArrayList<>();
         rulItemTypeMap = new HashMap<>();
         PreparedStatement ps = conn.prepareStatement("SELECT * FROM rul_item_type ORDER BY item_type_id");
@@ -154,6 +196,18 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 rulItemTypeMap.put(rulItemType.getCode(), rulItemType.getItemTypeId());
             }
         }
+    }
+
+    private int selectMaxItemTypeViewOrder() throws DatabaseException, SQLException {
+        int viewOrder = 1;
+        PreparedStatement ps = conn.prepareStatement("SELECT COALESCE(MAX(view_order) +1,1) AS viewOrder FROM rul_item_type");
+        ps.execute();
+        try (ResultSet rs = ps.getResultSet();) {
+            while (rs.next()) {
+                viewOrder = rs.getInt("viewOrder");
+            }
+        }
+        return viewOrder;
     }
 
     private RulItemType createRulItemType(final ResultSet rs) throws DatabaseException, SQLException {
@@ -170,11 +224,27 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         result.setViewOrder(rs.getInt(RulItemType.COL_VIEW_ORDER));
         result.setViewDefinition(rs.getString(RulItemType.COL_VIEW_DEFINITION));
         result.setStructuredTypeId(rs.getInt(RulItemType.COL_STRUCTURED_TYPE_ID));
-        result.setFragmentTypeId(rs.getInt(RulItemType.COL_FRAGMENT_TYPE_ID));
         return result;
     }
 
     private void getRulItemSpecs() throws DatabaseException, SQLException {
+
+        for (ItemSpecCode itemSpecCode : ItemSpecCode.values()) {
+            Integer itemSpecId = nextId("rul_item_spec", "item_spec_id");
+
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO rul_item_spec(item_spec_id, code, name, shortcut, description, package_id, category) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?);");
+            int i = 1;
+            ps.setInt(i++, itemSpecId);
+            ps.setString(i++, itemSpecCode.code);
+            ps.setString(i++, itemSpecCode.code);
+            ps.setString(i++, itemSpecCode.code);
+            ps.setString(i++, itemSpecCode.code);
+            ps.setInt(i++, currentPackage.packageId);
+            ps.setNull(i++, Types.VARCHAR);
+            ps.executeUpdate();
+        }
+
         rulItemSpecs = new ArrayList<>();
         rulItemSpecMap = new HashMap<>();
         PreparedStatement ps = conn.prepareStatement("SELECT * FROM rul_item_spec ORDER BY item_spec_id");
@@ -223,7 +293,6 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         result.setRegexpUse(rs.getBoolean(RulDataType.COL_REGEXP_USE));
         result.setTextLengthLimitUse(rs.getBoolean(RulDataType.COL_TEXT_LENGTH_LIMIT_USE));
         result.setStorageTable(rs.getString(RulDataType.COL_STORAGE_TABLE));
-        result.setTextLengthLimit(rs.getInt(RulDataType.COL_TEXT_LENGTH_LIMIT));
         return result;
     }
 
@@ -237,6 +306,30 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 RulStructuredType structuredType = createStructuredDataType(rs);
                 rulStructuredTypes.add(structuredType);
                 rulStructuredTypeMap.put(structuredType.getCode(), structuredType.getStructuredTypeId());
+            }
+        }
+    }
+
+    private void getRulPartTypes() throws DatabaseException, SQLException {
+        for (RulPartTypeCode rulPartTypeCode : RulPartTypeCode.values()) {
+            Integer itemSpecId = nextId("rul_part_type", "part_type_id");
+
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO rul_part_type(part_type_id, package_id, name, code) " +
+                    "VALUES (?, ?, ?, ?);");
+            int i = 1;
+            ps.setInt(i++, itemSpecId);
+            ps.setInt(i++, currentPackage.packageId);
+            ps.setString(i++, rulPartTypeCode.code);
+            ps.setString(i++, rulPartTypeCode.code);
+            ps.executeUpdate();
+        }
+
+        rulPartTypeMap = new HashMap<>();
+        PreparedStatement ps = conn.prepareStatement("SELECT part_type_id, package_id, name, code FROM rul_part_type WHERE package_id = " + currentPackage.packageId);
+        ps.execute();
+        try (ResultSet rs = ps.getResultSet();) {
+            while (rs.next()) {
+                rulPartTypeMap.put(rs.getString(RulPartType.COL_CODE), rs.getInt(RulPartType.COL_PART_TYPE_ID));
             }
         }
     }
@@ -282,93 +375,91 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 rs.getString(ApAccessPoint.COL_STATE),
                 rs.getInt(ApAccessPoint.COL_VERSION),
                 rs.getTimestamp(ApAccessPoint.COL_LAST_UPDATE),
-                rs.getInt(ApAccessPoint.COL_PREFERRED_NAME_ITEM_ID));
+                rs.getInt(ApAccessPoint.COL_PREFERRED_PART_ID));
     }
 
-    private void migrateExternalSystem(ApAccessPoint accessPoint) throws DatabaseException, SQLException {
-        PreparedStatement ps = conn.prepareStatement("SELECT value FROM ap_external_id WHERE delete_change_id IS NULL AND access_point_id = " + accessPoint.getAccessPointId());
+    private void migrateExternalSystem(Integer accessPointId) throws DatabaseException, SQLException {
+        PreparedStatement ps = conn.prepareStatement("SELECT value FROM ap_external_id WHERE delete_change_id IS NULL AND access_point_id = " + accessPointId);
         ps.execute();
         try (ResultSet rs = ps.getResultSet()) {
-            while(rs.next()) {
+            while (rs.next()) {
                 String value = rs.getString("value");
                 if (value != null && !value.isEmpty()) {
-                    Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
-                    Integer itemId = createApItem(accessPoint.getAccessPointId(), null, dataId, rulItemTypeMap.get(ItemTypeCode.PT_IDENT.code), null);
-                    Integer fragmentId = createApFragment(dataId, rulStructuredTypeMap.get(StructuredTypeCode.PT_IDENT.code), null);
+                    Integer partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_IDENT.code), null);
 
                     //zpracování typu - nenačítá se z DB, jenom staticky INTERPI
                     String itemTypeCode = ItemTypeCode.IDN_TYPE.code;
                     Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), rulItemSpecMap.get("INTERPI"));
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), rulItemSpecMap.get("INTERPI"));
                     storeNullValue(dataId, dataTypeId);
 
                     //zpracování value
                     itemTypeCode = ItemTypeCode.IDN_VALUE.code;
                     dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
                     dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeStringValue(dataId, dataTypeId, value);
                 }
             }
         }
     }
 
-    private void migrateDescription(ApAccessPoint accessPoint) throws DatabaseException, SQLException {
-        PreparedStatement ps = conn.prepareStatement("SELECT description FROM ap_description WHERE access_point_id = " + accessPoint.getAccessPointId() + " AND delete_change_id IS NULL");
+    private void migrateDescription(Integer accessPointId) throws DatabaseException, SQLException {
+        PreparedStatement ps = conn.prepareStatement("SELECT description FROM ap_description WHERE access_point_id = " + accessPointId + " AND delete_change_id IS NULL");
         ps.execute();
-        logger.info("Migrating ap_description");
+        logger.debug("Migrating ap_description");
         try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
-                Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
-                Integer itemId = createApItem(accessPoint.getAccessPointId(), null, dataId, rulItemTypeMap.get(ItemTypeCode.PT_BODY.code), null);
-                Integer fragmentId = createApFragment(dataId, rulStructuredTypeMap.get(StructuredTypeCode.PT_BODY.code), null);
-                Integer dataTypeId = getRulItemTypeDataTypeId(ItemTypeCode.IDN_TYPE.code);
-                dataId = createArrData(dataTypeId);
-                itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(ItemTypeCode.BRIEF_DESC.code), null);
+                Integer partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_BODY.code), null);
+
+                // zpracování description
+                String itemTypeCode = ItemTypeCode.BRIEF_DESC.code;
+                Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
+                Integer dataId = createArrData(dataTypeId);
+                createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                 storeStringValue(dataId, dataTypeId, rs.getString("description"));
             }
         }
     }
 
-    private void migrateName(ApAccessPoint accessPoint) throws DatabaseException, SQLException {
-        PreparedStatement ps = conn.prepareStatement("SELECT name, complement, preferred_name FROM ap_name WHERE access_point_id = " + accessPoint.getAccessPointId() + " AND delete_change_id IS NULL");
+    private void migrateName(Integer accessPointId) throws DatabaseException, SQLException {
+        PreparedStatement ps = conn.prepareStatement("SELECT name, complement, preferred_name FROM ap_name WHERE access_point_id = " + accessPointId + " AND delete_change_id IS NULL");
         ps.execute();
-        logger.info("Migrating ap_name");
+        logger.debug("Migrating ap_name");
         try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
-                //vytvoreni fragmentu
-                Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
-                Integer itemId = createApItem(accessPoint.getAccessPointId(), null, dataId, rulItemTypeMap.get(ItemTypeCode.PT_NAME.code), null);
+                Integer partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_NAME.code), null);
+
                 if (rs.getBoolean("preferred_name")) {
-                    updateAccessPoint(accessPoint, accessPoint.COL_PREFERRED_NAME_ITEM_ID, itemId);
+                    updateAccessPoint(accessPointId, ApAccessPoint.COL_PREFERRED_PART_ID, partId);
                 }
-                Integer fragmentId = createApFragment(dataId, rulStructuredTypeMap.get(StructuredTypeCode.PT_NAME.code), null);
+
                 //zpracování name
-                Integer dataTypeId = getRulItemTypeDataTypeId(ItemTypeCode.NM_MAIN.code);
-                dataId = createArrData(dataTypeId);
-                itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(ItemTypeCode.NM_MAIN.code), null);
+                String itemTypeCode = ItemTypeCode.NM_MAIN.code;
+                Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
+                Integer dataId = createArrData(dataTypeId);
+                createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                 storeStringValue(dataId, dataTypeId, rs.getString("name"));
 
                 //zpracování complement
-                dataTypeId = getRulItemTypeDataTypeId(ItemTypeCode.NM_SUP_GEN.code);
+                itemTypeCode = ItemTypeCode.NM_SUP_GEN.code;
+                dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
                 dataId = createArrData(dataTypeId);
-                itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(ItemTypeCode.NM_SUP_GEN.code), null);
+                createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                 storeStringValue(dataId, dataTypeId, rs.getString("complement"));
             }
         }
     }
 
-    private void migrateParParty(ApAccessPoint accessPoint) throws DatabaseException, SQLException {
-        PreparedStatement ps = conn.prepareStatement("SELECT party_id, history, source_information, characteristics, code, preferred_name_id FROM par_party CROSS JOIN par_party_type WHERE par_party.party_type_id = par_party_type.party_type_id AND access_point_id = " + accessPoint.getAccessPointId() );
+    private void migrateParParty(Integer accessPointId) throws DatabaseException, SQLException {
+        PreparedStatement ps = conn.prepareStatement("SELECT party_id, history, source_information, characteristics, code, preferred_name_id FROM par_party CROSS JOIN par_party_type WHERE par_party.party_type_id = par_party_type.party_type_id AND access_point_id = " + accessPointId);
         ps.execute();
         try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
-                logger.info("Migrating par_party : " + rs.getInt("party_id"));
-                //vytvoreni fragmentu
-                Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
-                Integer itemId = createApItem(accessPoint.getAccessPointId(), null, dataId, rulItemTypeMap.get(ItemTypeCode.PT_BODY.code), null);
-                Integer fragmentId = createApFragment(dataId, rulStructuredTypeMap.get(StructuredTypeCode.PT_BODY.code), null);
+                logger.debug("Migrating par_party : " + rs.getInt("party_id"));
+                Integer partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_BODY.code), null);
+
                 //zpracování history
                 String history = rs.getString("history");
                 if (history != null && !history.isEmpty()) {
@@ -379,26 +470,28 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                         itemTypeCode = ItemTypeCode.HISTORY.code;
                     }
                     Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeStringValue(dataId, dataTypeId, history); //TEXT
                 }
 
                 //zpracování source information
                 String sourceInformation = rs.getString("source_information");
                 if (sourceInformation != null && !sourceInformation.isEmpty()) {
-                    Integer dataTypeId = getRulItemTypeDataTypeId(ItemTypeCode.SOURCE_INFO.code);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(ItemTypeCode.SOURCE_INFO.code), null);
+                    String itemTypeCode = ItemTypeCode.SOURCE_INFO.code;
+                    Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeStringValue(dataId, dataTypeId, sourceInformation); //TEXT
                 }
 
                 //zpracování charakteristiky
                 String characteristics = rs.getString("characteristics");
                 if (characteristics != null && !characteristics.isEmpty()) {
-                    Integer dataTypeId = getRulItemTypeDataTypeId(ItemTypeCode.BRIEF_DESC.code);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(ItemTypeCode.BRIEF_DESC.code), null);
+                    String itemTypeCode = ItemTypeCode.BRIEF_DESC.code;
+                    Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeStringValue(dataId, dataTypeId, characteristics);
                 }
 
@@ -407,82 +500,81 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
 
                 //migrate parties
                 Integer partyId = rs.getInt("party_id");
-                migrateParPartyGroup(accessPoint, partyId);
-                migrateParDynasty(accessPoint, partyId);
-                migrateParPartyName(accessPoint, partyId,preferredNameId);
-                migrateParPartyGroupIdentifier(accessPoint, partyId);
-                migrateParRelation(accessPoint, partyId);
+                migrateParPartyGroup(accessPointId, partyId);
+                migrateParDynasty(accessPointId, partyId);
+                migrateParPartyName(accessPointId, partyId, preferredNameId);
+                migrateParPartyGroupIdentifier(accessPointId, partyId);
+                migrateParRelation(accessPointId, partyId);
             }
         }
     }
 
-    private void migrateParPartyGroup(ApAccessPoint accessPoint, Integer partyId) throws DatabaseException, SQLException {
+    private void migrateParPartyGroup(Integer accessPointId, Integer partyId) throws DatabaseException, SQLException {
         PreparedStatement ps = conn.prepareStatement("SELECT scope, founding_norm, scope_norm, organization FROM par_party_group WHERE party_id = " + partyId);
         ps.execute();
 
         try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
-                //vytvoreni fragmentu
-                Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
-                Integer itemId = createApItem(accessPoint.getAccessPointId(), null, dataId, rulItemTypeMap.get(ItemTypeCode.PT_BODY.code), null);
-                Integer fragmentId = createApFragment(dataId, rulStructuredTypeMap.get(StructuredTypeCode.PT_BODY.code), null);
+                Integer partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_BODY.code), null);
+
                 //zpracování scope
                 String text = rs.getString("scope");
                 if (text != null && !text.isEmpty()) {
-                    Integer dataTypeId = getRulItemTypeDataTypeId(ItemTypeCode.CORP_PURPOSE.code);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(ItemTypeCode.CORP_PURPOSE.code), null);
+                    String itemTypeCode = ItemTypeCode.CORP_PURPOSE.code;
+                    Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeStringValue(dataId, dataTypeId, text); //TEXT
                 }
                 //zpracování founding norm
                 text = rs.getString("founding_norm");
                 if (text != null && !text.isEmpty()) {
-                    Integer dataTypeId = getRulItemTypeDataTypeId(ItemTypeCode.FOUNDING_NORMS.code);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(ItemTypeCode.FOUNDING_NORMS.code), null);
+                    String itemTypeCode = ItemTypeCode.FOUNDING_NORMS.code;
+                    Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeStringValue(dataId, dataTypeId, text); //TEXT
                 }
                 //zpracování scope norm
                 text = rs.getString("scope_norm");
                 if (text != null && !text.isEmpty()) {
-                    Integer dataTypeId = getRulItemTypeDataTypeId(ItemTypeCode.SCOPE_NORMS.code);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(ItemTypeCode.SCOPE_NORMS.code), null);
+                    String itemTypeCode = ItemTypeCode.SCOPE_NORMS.code;
+                    Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeStringValue(dataId, dataTypeId, text); //TEXT
                 }
                 //zpracování organization
                 text = rs.getString("organization");
                 if (text != null && !text.isEmpty()) {
-                    Integer dataTypeId = getRulItemTypeDataTypeId(ItemTypeCode.CORP_STRUCTURE.code);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(ItemTypeCode.CORP_STRUCTURE.code), null);
+                    String itemTypeCode = ItemTypeCode.CORP_STRUCTURE.code;
+                    Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeStringValue(dataId, dataTypeId, text);//TEXT
                 }
             }
         }
     }
 
-    private void migrateParDynasty(ApAccessPoint accessPoint, Integer partyId) throws DatabaseException, SQLException {
+    private void migrateParDynasty(Integer accessPointId, Integer partyId) throws DatabaseException, SQLException {
         PreparedStatement ps = conn.prepareStatement("SELECT party_id, genealogy FROM par_dynasty WHERE party_id = " + partyId);
         ps.execute();
         try (ResultSet rs = ps.getResultSet();) {
             while (rs.next()) {
-                //vytvoreni fragmentu
-                Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
-                Integer itemId = createApItem(accessPoint.getAccessPointId(), null, dataId, rulItemTypeMap.get(ItemTypeCode.PT_BODY.code), null);
-                Integer fragmentId = createApFragment(dataId, rulStructuredTypeMap.get(StructuredTypeCode.PT_BODY.code), null);
+                Integer partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_BODY.code), null);
 
                 //zpracování genealogy
                 String itemTypeCode = ItemTypeCode.GENEALOGY.code;
                 Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                dataId = createArrData(dataTypeId);
-                itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                Integer dataId = createArrData(dataTypeId);
+                createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                 storeStringValue(dataId, dataTypeId, rs.getString("genealogy")); //TEXT
             }
         }
     }
 
-    private void migrateParPartyName(ApAccessPoint accessPoint, Integer partyId, Integer preferredNameId) throws DatabaseException, SQLException {
+    private void migrateParPartyName(Integer accessPointId, Integer partyId, Integer preferredNameId) throws DatabaseException, SQLException {
         PreparedStatement ps = conn.prepareStatement("SELECT party_name_id, valid_from_unitdate_id, valid_to_unitdate_id, " +
                 "code, main_part, other_part, note, degree_before, degree_after " +
                 "FROM par_party_name " +
@@ -494,21 +586,18 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
             while (rs.next()) {
                 Integer partyNameId = rs.getInt("party_name_id");
 
-                //vytvoreni fragmentu
-                Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
-                Integer itemId = createApItem(accessPoint.getAccessPointId(), null, dataId, rulItemTypeMap.get(ItemTypeCode.PT_NAME.code), null);
-                Integer fragmentId = createApFragment(dataId, rulStructuredTypeMap.get(StructuredTypeCode.PT_NAME.code), null);
+                Integer partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_NAME.code), null);
 
                 //kontrola a zapsání preferovaného jména do přístupového bodu
-                if(partyNameId == preferredNameId) {
-                    updateAccessPoint(accessPoint, accessPoint.COL_PREFERRED_NAME_ITEM_ID, itemId);
+                if (partyNameId == preferredNameId) {
+                    updateAccessPoint(accessPointId, ApAccessPoint.COL_PREFERRED_PART_ID, partId);
                 }
 
                 //zpracování main_part
                 String itemTypeCode = ItemTypeCode.NM_MAIN.code;
                 Integer nmMainDataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
                 Integer nmMainDataId = createArrData(nmMainDataTypeId);
-                itemId = createApItem(null, fragmentId, nmMainDataId, rulItemTypeMap.get(itemTypeCode), null);
+                createApItem(partId, nmMainDataId, rulItemTypeMap.get(itemTypeCode), null);
                 storeStringValue(nmMainDataId, nmMainDataTypeId, rs.getString("main_part"));
 
                 //zpracování other_part
@@ -516,8 +605,8 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 if (text != null && !text.isEmpty()) {
                     itemTypeCode = ItemTypeCode.NM_MINOR.code;
                     Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeStringValue(dataId, dataTypeId, text);
                 }
 
@@ -526,8 +615,8 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 if (text != null && !text.isEmpty()) {
                     itemTypeCode = ItemTypeCode.NM_DEGREE_PRE.code;
                     Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeStringValue(dataId, dataTypeId, text);
                 }
 
@@ -536,8 +625,8 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 if (text != null && !text.isEmpty()) {
                     itemTypeCode = ItemTypeCode.NM_DEGREE_POST.code;
                     Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeStringValue(dataId, dataTypeId, text);
                 }
 
@@ -546,15 +635,15 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 if (text != null && !text.isEmpty()) {
                     itemTypeCode = ItemTypeCode.NOTE.code;
                     Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeStringValue(dataId, dataTypeId, text); //TEXT
                 }
                 //zpracování name_form_type_id
                 itemTypeCode = ItemTypeCode.NM_TYPE.code;
                 Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                dataId = createArrData(dataTypeId);
-                itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), rulItemSpecMap.get(convertItemSpecMap.get(rs.getString("code"))));
+                Integer dataId = createArrData(dataTypeId);
+                createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), rulItemSpecMap.get(convertItemSpecMap.get(rs.getString("code"))));
                 storeNullValue(dataId, dataTypeId);
 
                 //zpracování valid_from_unitdate_id
@@ -563,7 +652,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                     itemTypeCode = ItemTypeCode.NM_USED_FROM.code;
                     dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
                     dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeUnitdateValue(dataId, dataTypeId, validFromUnitdateId);
                 }
                 //zpracování valid_to_unitdate_id
@@ -572,16 +661,16 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                     itemTypeCode = ItemTypeCode.NM_USED_TO.code;
                     dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
                     dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeUnitdateValue(dataId, dataTypeId, validToUnitdateId);
                 }
 
-                migrateParPartyNameComplement(accessPoint, partyNameId, nmMainDataId, nmMainDataTypeId);
+                migrateParPartyNameComplement(accessPointId, partyNameId, nmMainDataId, nmMainDataTypeId);
             }
         }
     }
 
-    private void migrateParPartyNameComplement(ApAccessPoint accessPoint, Integer partyNameId, Integer nmMainDataId, Integer nmMainDataTypeId) throws DatabaseException, SQLException {
+    private void migrateParPartyNameComplement(Integer accessPointId, Integer partyNameId, Integer nmMainDataId, Integer nmMainDataTypeId) throws DatabaseException, SQLException {
         PreparedStatement ps = conn.prepareStatement("SELECT code, complement " +
                 "FROM par_party_name_complement " +
                 "CROSS JOIN par_complement_type " +
@@ -593,45 +682,38 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 String code = rs.getString("code");
                 if (code.equals("INITIALS") || code.equals("ROMAN_NUM")) {
                     String arrTableName = getDataStorageTable(nmMainDataTypeId);
-                    ps = conn.prepareStatement("UPDATE " + arrTableName + " SET value = value || ' ' || " + dbString(rs.getString("complement")));
+                    ps = conn.prepareStatement("UPDATE " + arrTableName + " SET value = value || ' ' || " + dbString(rs.getString("complement")) + " WHERE data_id = " + nmMainDataId);
                     ps.executeUpdate();
                 } else {
-
-                    //vytvoreni fragmentu
-                    Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
-                    Integer itemId = createApItem(accessPoint.getAccessPointId(), null, dataId, rulItemTypeMap.get(ItemTypeCode.PT_NAME.code), null);
-                    Integer fragmentId = createApFragment(dataId, rulStructuredTypeMap.get(StructuredTypeCode.PT_NAME.code), null);
+                    Integer partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_NAME.code), null);
 
                     //zpracování complement
                     String itemTypeCode = convertComplementMap.get(code);
                     Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeStringValue(dataId, dataTypeId, rs.getString("complement"));
                 }
             }
         }
     }
 
-    private void migrateParPartyGroupIdentifier(ApAccessPoint accessPoint, Integer partyId) throws DatabaseException, SQLException {
+    private void migrateParPartyGroupIdentifier(Integer accessPointId, Integer partyId) throws DatabaseException, SQLException {
         PreparedStatement ps = conn.prepareStatement("SELECT party_group_identifier_id, to_unitdate_id, from_unitdate_id, " +
                 "party_id, source, note, identifier" +
                 " FROM par_party_group_identifier WHERE party_id = " + partyId);
         ps.execute();
         try (ResultSet rs = ps.getResultSet();) {
             while (rs.next()) {
-                //zpracování complement
-                Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
-                Integer itemId = createApItem(accessPoint.getAccessPointId(), null, dataId, rulItemTypeMap.get(ItemTypeCode.PT_IDENT.code), null);
-                Integer fragmentId = createApFragment(dataId, rulStructuredTypeMap.get(StructuredTypeCode.PT_IDENT.code), null);
+                Integer partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_IDENT.code), null);
 
                 //zpracování to_unitdate_id
                 int validToUnitdateId = rs.getInt("to_unitdate_id");
                 if (validToUnitdateId > 0) {
                     String itemTypeCode = ItemTypeCode.IDN_VALID_TO.code;
                     Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeUnitdateValue(dataId, dataTypeId, validToUnitdateId);
                 }
 
@@ -640,20 +722,20 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 if (validFromUnitdateId > 0) {
                     String itemTypeCode = ItemTypeCode.IDN_VALID_FROM.code;
                     Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeUnitdateValue(dataId, dataTypeId, validFromUnitdateId);
                 }
 
                 //zpracování source
                 String text = rs.getString("source");
                 String noteText = null;
-                if(convertItemSpecMap.containsKey(rs.getString("source"))) {
+                if (convertItemSpecMap.containsKey(rs.getString("source"))) {
                     if (text != null && !text.isEmpty()) {
                         String itemTypeCode = ItemTypeCode.IDN_TYPE.code;
                         Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                        dataId = createArrData(dataTypeId);
-                        itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), rulItemSpecMap.get(convertItemSpecMap.get(rs.getString("source"))));
+                        Integer dataId = createArrData(dataTypeId);
+                        createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), rulItemSpecMap.get(convertItemSpecMap.get(rs.getString("source"))));
                         storeNullValue(dataId, dataTypeId);
                     }
                 } else {
@@ -665,10 +747,10 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 if ((text != null && !text.isEmpty()) || (noteText != null && !noteText.isEmpty())) {
                     String itemTypeCode = ItemTypeCode.NOTE.code;
                     Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
-                    if((noteText != null && !noteText.isEmpty())) {
-                        if(text == null) {
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                    if ((noteText != null && !noteText.isEmpty())) {
+                        if (text == null) {
                             text = "";
                         }
                         text += " Nerozpoznaný identifikátor : " + noteText;
@@ -681,15 +763,15 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 if (text != null && !text.isEmpty()) {
                     String itemTypeCode = ItemTypeCode.IDN_VALUE.code;
                     Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeStringValue(dataId, dataTypeId, text);
                 }
             }
         }
     }
 
-    private void migrateParRelation(ApAccessPoint accessPoint, Integer partyId) throws DatabaseException, SQLException {
+    private void migrateParRelation(Integer accessPointId, Integer partyId) throws DatabaseException, SQLException {
         PreparedStatement ps = conn.prepareStatement("SELECT relation_id, par_relation.party_id, par_relation_type.code AS relation_type_code, from_unitdate_id, to_unitdate_id, " +
                 "note, par_relation.version, source,  par_party_type.code AS party_type_code " +
                 "FROM par_relation " +
@@ -704,15 +786,15 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
                 if (convertRelEventMap.get(rs.getString("relation_type_code")).equals(StructuredTypeCode.PT_REL.code)) {
-                    createPTRelFragment(accessPoint, rs);
+                    createPTRelParts(accessPointId, rs);
                 } else {
-                    createOtherRelFragment(accessPoint, rs);
+                    createOtherRelParts(accessPointId, rs);
                 }
             }
         }
     }
 
-    private void createPTRelFragment(ApAccessPoint accessPoint, ResultSet rs) throws DatabaseException, SQLException {
+    private void createPTRelParts(Integer accessPointId, ResultSet rs) throws DatabaseException, SQLException {
         Integer parRelationId = rs.getInt("relation_id");
         PreparedStatement ps = conn.prepareStatement("SELECT record_id, note, code " +
                 "FROM par_relation_entity " +
@@ -722,11 +804,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         ps.execute();
         try (ResultSet rsEntity = ps.getResultSet()) {
             while (rsEntity.next()) {
-                //zpracování complement
-                Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
-                Integer itemId = createApItem(accessPoint.getAccessPointId(), null, dataId, rulItemTypeMap.get(ItemTypeCode.PT_REL.code),
-                        rulItemSpecMap.get(convertRelRoleTypeMap.get(rsEntity.getString("code"))));
-                Integer fragmentId = createApFragment(dataId, rulStructuredTypeMap.get(StructuredTypeCode.PT_REL.code), null);
+                Integer partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_REL.code), null);
 
                 //zpracování from_unitdate_id
                 int fromUnitdateId = rs.getInt("from_unitdate_id");
@@ -734,8 +812,8 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 if (fromUnitdateId > 0) {
                     String itemTypeCode = ItemTypeCode.REL_BEGIN.code;
                     Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     noteUnitDateFrom = storeUnitdateValue(dataId, dataTypeId, fromUnitdateId);
                 }
 
@@ -745,8 +823,8 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 if (validToUnitdateId > 0) {
                     String itemTypeCode = ItemTypeCode.REL_END.code;
                     Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     noteUnitDateTo = storeUnitdateValue(dataId, dataTypeId, validToUnitdateId);
                 }
 
@@ -757,22 +835,22 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                         || (noteUnitDateFrom != null && !noteUnitDateFrom.isEmpty()) || (noteUnitDateTo != null && !noteUnitDateTo.isEmpty())) {
                     String itemTypeCode = ItemTypeCode.NOTE.code;
                     Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     if (textEntity != null && !textEntity.isEmpty()) {
-                        if(text == null) {
+                        if (text == null) {
                             text = "";
                         }
                         text += " Poznámka z entity :" + textEntity;
                     }
                     if (noteUnitDateFrom != null && !noteUnitDateFrom.isEmpty()) {
-                        if(text == null) {
+                        if (text == null) {
                             text = "";
                         }
                         text += " Poznámka k dataci : " + noteUnitDateFrom;
                     }
                     if (noteUnitDateTo != null && !noteUnitDateTo.isEmpty()) {
-                        if(text == null) {
+                        if (text == null) {
                             text = "";
                         }
                         text += " Poznámka k dataci : " + noteUnitDateFrom;
@@ -783,14 +861,14 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 //zpracování recordId
                 String itemTypeCode = ItemTypeCode.REL_ENTITY.code;
                 Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                dataId = createArrData(dataTypeId);
-                itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                Integer dataId = createArrData(dataTypeId);
+                createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                 storeRecordRefValue(dataId, dataTypeId, rsEntity.getInt("record_id"));
             }
         }
     }
 
-    private void createOtherRelFragment(ApAccessPoint accessPoint, ResultSet rs) throws DatabaseException, SQLException {
+    private void createOtherRelParts(Integer accessPointId, ResultSet rs) throws DatabaseException, SQLException {
         Integer parRelationId = rs.getInt("relation_id");
         String itemSpecCode = null;
         String fromUnitdateTypeCode = null;
@@ -803,17 +881,14 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
             itemSpecCode = convertItemSpecMap.get(rs.getString("relation_type_code"));
         }
 
-        //zpracování complement
-        Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
-        Integer itemId = createApItem(accessPoint.getAccessPointId(), null, dataId, rulItemTypeMap.get(convertRelEventMap.get(rs.getString("relation_type_code"))), rulItemSpecMap.get(itemSpecCode));
-        Integer fragmentId = createApFragment(dataId, rulStructuredTypeMap.get(convertRelEventMap.get(rs.getString("relation_type_code"))), null);
+        Integer partId = createApPart(accessPointId, rulPartTypeMap.get(convertRelEventMap.get(rs.getString("relation_type_code"))), null);
 
-        if (convertRelEventMap.get(rs.getString("relation_type_code")).equals("PT_CRE")) {
+        if (convertRelEventMap.get(rs.getString("relation_type_code")).equals(RulPartTypeCode.PT_CRE.code)) {
             fromUnitdateTypeCode = "CRE_DATE";
-        } else if (convertRelEventMap.get(rs.getString("relation_type_code")).equals("PT_EVENT")) {
+        } else if (convertRelEventMap.get(rs.getString("relation_type_code")).equals(RulPartTypeCode.PT_EVENT.code)) {
             fromUnitdateTypeCode = "EV_BEGIN";
             toUnitdateTypeCode = "EV_END";
-        } else if (convertRelEventMap.get(rs.getString("relation_type_code")).equals("PT_EXT")) {
+        } else if (convertRelEventMap.get(rs.getString("relation_type_code")).equals(RulPartTypeCode.PT_EXT.code)) {
             toUnitdateTypeCode = "EXT_DATE";
         }
         //zpracování from_unitdate_id
@@ -822,8 +897,8 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         if (fromUnitdateId > 0 && fromUnitdateTypeCode != null) {
             String itemTypeCode = fromUnitdateTypeCode;
             Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-            dataId = createArrData(dataTypeId);
-            itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+            Integer dataId = createArrData(dataTypeId);
+            createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
             noteUnitDateFrom = storeUnitdateValue(dataId, dataTypeId, fromUnitdateId);
         }
 
@@ -833,8 +908,8 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         if (validToUnitdateId > 0 && toUnitdateTypeCode != null) {
             String itemTypeCode = toUnitdateTypeCode;
             Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-            dataId = createArrData(dataTypeId);
-            itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+            Integer dataId = createArrData(dataTypeId);
+            createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
             noteUnitDateTo = storeUnitdateValue(dataId, dataTypeId, validToUnitdateId);
         }
 
@@ -843,16 +918,16 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         if ((text != null && !text.isEmpty()) || (noteUnitDateFrom != null && !noteUnitDateFrom.isEmpty()) || (noteUnitDateTo != null && !noteUnitDateTo.isEmpty())) {
             String itemTypeCode = ItemTypeCode.NOTE.code;
             Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-            dataId = createArrData(dataTypeId);
-            itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+            Integer dataId = createArrData(dataTypeId);
+            createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
             if (noteUnitDateFrom != null && !noteUnitDateFrom.isEmpty()) {
-                if(text == null) {
+                if (text == null) {
                     text = "";
                 }
                 text += " Poznámka k dataci : " + noteUnitDateFrom;
             }
             if (noteUnitDateTo != null && !noteUnitDateTo.isEmpty()) {
-                if(text == null) {
+                if (text == null) {
                     text = "";
                 }
                 text += " Poznámka k dataci : " + noteUnitDateFrom;
@@ -865,14 +940,14 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         if (text != null && !text.isEmpty()) {
             String itemTypeCode = ItemTypeCode.SOURCE_INFO.code;
             Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-            dataId = createArrData(dataTypeId);
-            itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+            Integer dataId = createArrData(dataTypeId);
+            createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
             storeStringValue(dataId, dataTypeId, text);
         }
-        createRelationEntities(accessPoint.getAccessPointId(), parRelationId, fragmentId);
+        createRelationEntities(accessPointId, parRelationId, partId);
     }
 
-    private void createRelationEntities(Integer accessPointId, Integer parRelationId, Integer parentFragmentId) throws DatabaseException, SQLException {
+    private void createRelationEntities(Integer accessPointId, Integer parRelationId, Integer parentPartId) throws DatabaseException, SQLException {
         PreparedStatement ps = conn.prepareStatement("SELECT record_id, note, code " +
                 "FROM par_relation_entity " +
                 "CROSS JOIN par_relation_role_type " +
@@ -881,34 +956,33 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         ps.execute();
         try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
-                Integer dataId = createArrData(rulDataTypeMap.get(DataTypeCode.APFRAG_REF.code));
-                Integer itemId = createApItem(accessPointId, null, dataId, rulItemTypeMap.get(ItemTypeCode.PT_REL.code), null);
-                Integer fragmentId = createApFragment(dataId, rulStructuredTypeMap.get(StructuredTypeCode.PT_REL.code), parentFragmentId);
+
+                Integer partId = createApPart(accessPointId, rulPartTypeMap.get((RulPartTypeCode.PT_REL.code)), parentPartId);
 
                 //zpracování note
                 String text = rs.getString("note");
                 if (text != null && !text.isEmpty()) {
                     String itemTypeCode = ItemTypeCode.NOTE.code;
                     Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    dataId = createArrData(dataTypeId);
-                    itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeStringValue(dataId, dataTypeId, text);
                 }
 
                 //zpracování recordId
                 String itemTypeCode = ItemTypeCode.REL_ENTITY.code;
                 Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                dataId = createArrData(dataTypeId);
-                itemId = createApItem(null, fragmentId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                Integer dataId = createArrData(dataTypeId);
+                createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                 storeRecordRefValue(dataId, dataTypeId, rs.getInt("record_id"));
             }
         }
 
     }
 
-    private void updateAccessPoint(ApAccessPoint accessPoint, String column, Integer value) throws DatabaseException, SQLException {
+    private void updateAccessPoint(Integer accessPointId, String column, Integer value) throws DatabaseException, SQLException {
         PreparedStatement ps = conn.prepareStatement("UPDATE ap_access_point SET " + column + " = " + value +
-                " WHERE " + accessPoint.COL_ACCESS_POINT_ID + " = " + accessPoint.getAccessPointId());
+                " WHERE " + ApAccessPoint.COL_ACCESS_POINT_ID + " = " + accessPointId);
         ps.executeUpdate();
     }
 
@@ -930,10 +1004,10 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         return null;
     }
 
-    private Integer createApItem(Integer accessPointId, Integer fragmentId, Integer dataId, Integer itemTypeId, Integer itemSpecId) throws DatabaseException, SQLException {
+    private void createApItem(Integer partId, Integer dataId, Integer itemTypeId, Integer itemSpecId) throws DatabaseException, SQLException {
         Integer itemId = nextId("ap_item", "item_id");
-        PreparedStatement ps = conn.prepareStatement("INSERT INTO ap_item(item_id, data_id, item_type_id, item_spec_id, create_change_id, delete_change_id, object_id, \"position\")" +
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?);");
+        PreparedStatement ps = conn.prepareStatement("INSERT INTO ap_item(item_id, data_id, item_type_id, item_spec_id, create_change_id, delete_change_id, object_id, \"position\" , part_id)" +
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);");
         int i = 1;
         ps.setInt(i++, itemId);
         ps.setInt(i++, dataId);
@@ -947,55 +1021,31 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         ps.setNull(i++, Types.INTEGER);
         ps.setInt(i++, nextId("ap_item", "object_id"));
         ps.setInt(i++, 1);
+        ps.setInt(i++, partId);
         ps.executeUpdate();
-
-        if (accessPointId != null) {
-            ps = conn.prepareStatement("INSERT INTO ap_access_point_item(item_id, access_point_id)" +
-                    " VALUES (?, ?);");
-            i = 1;
-            ps.setInt(i++, itemId);
-            ps.setInt(i++, accessPointId);
-            ps.executeUpdate();
-        }
-
-        if (fragmentId != null) {
-            ps = conn.prepareStatement("INSERT INTO ap_fragment_item(item_id, fragment_id)" +
-                    " VALUES (?, ?);");
-            i = 1;
-            ps.setInt(i++, itemId);
-            ps.setInt(i++, fragmentId);
-            ps.executeUpdate();
-        }
-
-        return itemId;
     }
 
-    private Integer createApFragment(Integer dataId, Integer fragmentTypeId, Integer fragmentParentId) throws DatabaseException, SQLException {
-        Integer fragmentId = nextId("ap_fragment", "fragment_id");
-        PreparedStatement ps = conn.prepareStatement("INSERT INTO ap_fragment(fragment_id, value, error_description, state, fragment_type_id, ap_fragment_parent_id)" +
-                " VALUES (?, ?, ?, ?, ?, ?);");
+    private Integer createApPart(Integer accessPointId, Integer rulPartTypeId, Integer partParentId) throws DatabaseException, SQLException {
+        Integer partId = nextId("ap_part", "part_id");
+        PreparedStatement ps = conn.prepareStatement("INSERT INTO ap_part(part_id, value, error_description, state, part_type_id, parent_part_id, access_point_id, create_change_id, delete_change_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);");
         int i = 1;
-        ps.setInt(i++, fragmentId);
+        ps.setInt(i++, partId);
         ps.setString(i++, "Bude generováno");
         ps.setNull(i++, Types.VARCHAR);
         ps.setString(i++, "OK");
-        ps.setInt(i++, fragmentTypeId);
-        if (fragmentParentId == null) {
+        ps.setInt(i++, rulPartTypeId);
+        if (partParentId == null) {
             ps.setNull(i++, Types.INTEGER);
         } else {
-            ps.setInt(i++, fragmentParentId);
+            ps.setInt(i++, partParentId);
         }
+        ps.setInt(i++, accessPointId);
+        ps.setInt(i++, apChange.changeId);
+        ps.setNull(i++, Types.INTEGER);
         ps.executeUpdate();
 
-        ps = conn.prepareStatement("INSERT INTO arr_data_apfrag_ref(data_id, fragment_id)" +
-                " VALUES (?, ?);");
-        i = 1;
-        ps.setInt(i++, dataId);
-        ps.setInt(i++, fragmentId);
-        ps.executeUpdate();
-
-        return fragmentId;
-
+        return partId;
     }
 
     private Integer createArrData(Integer dataTypeId) throws DatabaseException, SQLException {
@@ -1011,7 +1061,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
     }
 
     private void storeStringValue(Integer dataId, Integer dataTypeId, String value) throws DatabaseException, SQLException {
-        if(value != null) {
+        if (value != null) {
             String table = getDataStorageTable(dataTypeId);
             PreparedStatement ps = conn.prepareStatement("INSERT INTO " + table + "(data_id, value) " +
                     "VALUES(?,?)");
@@ -1070,7 +1120,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                     normalizedTo = Long.MAX_VALUE;
                 }
                 String format = rs.getString("format");
-                if(format != null && normalizedFrom != null && normalizedTo != null) {
+                if (format != null && normalizedFrom != null && normalizedTo != null) {
                     PreparedStatement psu = conn.prepareStatement("INSERT INTO arr_data_unitdate(data_id, calendar_type_id, value_from, value_from_estimated, " +
                             "value_to, value_to_estimated, format, normalized_from, normalized_to) " +
                             " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -1151,10 +1201,11 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         convertItemSpecMap.put("CHURCH", "NT_RELIGIOUS");
         convertItemSpecMap.put("HISTORICAL", "NT_HISTORICAL");
         convertItemSpecMap.put("HISTORICAL2", "NT_FORMER");
-        convertItemSpecMap.put("HISTORICAL4", "");
+        convertItemSpecMap.put("HISTORICAL4", "NT_FORMER");
         convertItemSpecMap.put("HOMONYM", "NT_HOMONYMUM");
         convertItemSpecMap.put("INVERTED", "NT_INVERTED");
         convertItemSpecMap.put("HISTORICAL3", "NT_ONLYKNOWN");
+        convertItemSpecMap.put("ITEM_TITLE_REF", "NT_ORIGINAL");
         convertItemSpecMap.put("INAPPROPRIATE", "NT_INAPPROPRIATE");
         convertItemSpecMap.put("SPECIAL", "NT_TERM");
         convertItemSpecMap.put("PLURAL", "NT_PLURAL");
@@ -1162,18 +1213,21 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         convertItemSpecMap.put("MARRIAGE", "NT_ACCEPTED");
         convertItemSpecMap.put("ORDER", "NT_DIRECT");
         convertItemSpecMap.put("PSEUDONYM", "NT_PSEUDONYM");
+        convertItemSpecMap.put("LEGAL", "NT_NATIV");
         convertItemSpecMap.put("SINGULAR", "NT_SINGULAR");
         convertItemSpecMap.put("USED", "NT_ACTUAL");
         convertItemSpecMap.put("LEGAL", "NT_SECULAR");
         convertItemSpecMap.put("ARTIFICIAL", "NT_ARTIFICIAL");
         convertItemSpecMap.put("LEGAL2", "NT_OFFICIAL");
         convertItemSpecMap.put("NARROW", "NT_NARROWER");
+        convertItemSpecMap.put("ABBRV", "NT_ACRONYM");
+        convertItemSpecMap.put("PREFERED", "NT_OTHERRULES");
         convertItemSpecMap.put("IC", "IC");
         convertItemSpecMap.put("IČ", "IC");
         convertItemSpecMap.put("IČO", "IC");
         convertItemSpecMap.put("ICO", "IC");
         convertItemSpecMap.put("DIČ", "VAT");
-        convertItemSpecMap.put("DIC", "DIC");
+        convertItemSpecMap.put("DIC", "VAT");
         convertItemSpecMap.put("ACTIVE_FROM", "CRC_BEGINSCOPE");
         convertItemSpecMap.put("MEMBERSHIP", "ET_MEMBERSHIP");
         convertItemSpecMap.put("APPRECIATION", "ET_AWARD");
@@ -1266,6 +1320,15 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         convertRelEventMap.put("SAME_IDENTITY", "PT_REL");
     }
 
+    private void createOtherConvertPartyTypeItemSpec() {
+        convertOtherPartyTypeItemSpec = new HashMap<>();
+        convertOtherPartyTypeItemSpec.put("PERSON", "RT_RELATIONS");
+        convertOtherPartyTypeItemSpec.put("PARTY_GROUP", "RT_RELATED");
+        convertOtherPartyTypeItemSpec.put("EVENT", "RT_RELATED");
+        convertOtherPartyTypeItemSpec.put("DYNASTY", "RT_RELATED");
+
+    }
+
     private void createPersonConvertPartyTypeItemSpec() {
         convertPersonPartyTypeItemSpec = new HashMap<>();
         convertPersonPartyTypeItemSpec.put("PERSON", "CRC_BIRTH");
@@ -1290,7 +1353,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         private static String COL_STATE = "state";
         private static String COL_VERSION = "version";
         private static String COL_LAST_UPDATE = "last_update";
-        private static String COL_PREFERRED_NAME_ITEM_ID = "preferred_name_item_id";
+        private static String COL_PREFERRED_PART_ID = "preferred_part_id";
 
         private Integer accessPointId;
         private Integer uuid;
@@ -1299,9 +1362,9 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         private String state;
         private Integer version;
         private Timestamp lastUpdate;
-        private Integer preferredNameItemId;
+        private Integer preferredPartId;
 
-        public ApAccessPoint(Integer accessPointId, Integer uuid, Integer ruleSystemId, String errorDescription, String state, Integer version, Timestamp lastUpdate, Integer preferredNameItemId) {
+        public ApAccessPoint(Integer accessPointId, Integer uuid, Integer ruleSystemId, String errorDescription, String state, Integer version, Timestamp lastUpdate, Integer preferredPartId) {
             this.accessPointId = accessPointId;
             this.uuid = uuid;
             this.ruleSystemId = ruleSystemId;
@@ -1309,7 +1372,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
             this.state = state;
             this.version = version;
             this.lastUpdate = lastUpdate;
-            this.preferredNameItemId = preferredNameItemId;
+            this.preferredPartId = preferredPartId;
         }
 
         public Integer getAccessPointId() {
@@ -1340,8 +1403,8 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
             return lastUpdate;
         }
 
-        public Integer getPreferredNameItemId() {
-            return preferredNameItemId;
+        public Integer getPreferredPartId() {
+            return preferredPartId;
         }
     }
 
@@ -1359,7 +1422,6 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         private static String COL_PACKAGE_ID = "package_id";
         private static String COL_VIEW_DEFINITION = "view_definition";
         private static String COL_STRUCTURED_TYPE_ID = "structured_type_id";
-        private static String COL_FRAGMENT_TYPE_ID = "fragment_type_id";
 
         private Integer itemTypeId;
         private Integer dataTypeId;
@@ -1374,7 +1436,8 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         private Integer packageId;
         private String viewDefinition;
         private Integer structuredTypeId;
-        private Integer fragmentTypeId;
+
+        private String dataTypeCode;
 
         public RulItemType() {
 
@@ -1484,12 +1547,12 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
             this.structuredTypeId = structuredTypeId;
         }
 
-        public Integer getFragmentTypeId() {
-            return fragmentTypeId;
+        public String getDataTypeCode() {
+            return dataTypeCode;
         }
 
-        public void setFragmentTypeId(Integer fragmentTypeId) {
-            this.fragmentTypeId = fragmentTypeId;
+        public void setDataTypeCode(String dataTypeCode) {
+            this.dataTypeCode = dataTypeCode;
         }
     }
 
@@ -1842,6 +1905,12 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         }
     }
 
+    private static class RulPartType {
+        private static String COL_CODE = "code";
+        private static String COL_PART_TYPE_ID = "part_type_id";
+
+    }
+
     private static class RulStructuredType {
         private static String COL_STRUCTURED_TYPE_ID = "structured_type_id";
         private static String COL_PACKAGE_ID = "package_id";
@@ -1886,13 +1955,13 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
 
     private enum ItemTypeCode {
         BRIEF_DESC("BRIEF_DESC"),
-        PT_BODY("PT_BODY"),
-        PT_NAME("PT_NAME"),
-        PT_IDENT("PT_IDENT"),
-        PT_REL("PT_REL"),
-        PT_CRE("PT_CRE"),
-        PT_EVENT("PT_EVENT"),
-        PT_EXT("PT_EXT"),
+        /* PT_BODY("PT_BODY"),
+         PT_NAME("PT_NAME"),
+         PT_IDENT("PT_IDENT"),
+         PT_REL("PT_REL"),
+         PT_CRE("PT_CRE"),
+         PT_EVENT("PT_EVENT"),
+         PT_EXT("PT_EXT"),*/
         NM_MAIN("NM_MAIN"),
         NM_MINOR("NM_MINOR"),
         NM_DEGREE_PRE("NM_DEGREE_PRE"),
@@ -1918,6 +1987,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         REL_END("REL_END"),
         REL_ENTITY("REL_ENTITY");
 
+
         private String code;
 
         ItemTypeCode(String code) {
@@ -1927,6 +1997,275 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         public String getCode() {
             return code;
         }
+    }
+
+    void createRulItemTypesImport() {
+        rulItemTypesImport = new ArrayList<>();
+        RulItemType rit = new RulItemType();
+        rit.setCode("BRIEF_DESC");
+        rit.setDataTypeCode("STRING");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("NM_MAIN");
+        rit.setDataTypeCode("STRING");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("NM_MINOR");
+        rit.setDataTypeCode("STRING");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("NM_DEGREE_PRE");
+        rit.setDataTypeCode("STRING");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("NM_DEGREE_POST");
+        rit.setDataTypeCode("STRING");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("NOTE");
+        rit.setDataTypeCode("TEXT");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("NM_USED_FROM");
+        rit.setDataTypeCode("UNITDATE");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("NM_USED_TO");
+        rit.setDataTypeCode("UNITDATE");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("NM_TYPE");
+        rit.setDataTypeCode("ENUM");
+        rit.setUseSpecification(true);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("NM_SUP_GEN");
+        rit.setDataTypeCode("STRING");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("NM_SUP_GEO");
+        rit.setDataTypeCode("STRING");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("NM_SUP_CHRO");
+        rit.setDataTypeCode("STRING");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("NM_ORDER");
+        rit.setDataTypeCode("INT");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("IDN_VALID_FROM");
+        rit.setDataTypeCode("UNITDATE");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("IDN_VALID_TO");
+        rit.setDataTypeCode("UNITDATE");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("IDN_VALUE");
+        rit.setDataTypeCode("STRING");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("IDN_TYPE");
+        rit.setDataTypeCode("ENUM");
+        rit.setUseSpecification(true);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("HISTORY");
+        rit.setDataTypeCode("TEXT");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("BIOGRAPHY");
+        rit.setDataTypeCode("TEXT");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("GENEALOGY");
+        rit.setDataTypeCode("TEXT");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("DESCRIPTION");
+        rit.setDataTypeCode("TEXT");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("SOURCE_INFO");
+        rit.setDataTypeCode("TEXT");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("CORP_PURPOSE");
+        rit.setDataTypeCode("TEXT");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("FOUNDING_NORMS");
+        rit.setDataTypeCode("TEXT");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("SCOPE_NORMS");
+        rit.setDataTypeCode("TEXT");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("CORP_STRUCTURE");
+        rit.setDataTypeCode("TEXT");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("REL_BEGIN");
+        rit.setDataTypeCode("UNITDATE");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("REL_END");
+        rit.setDataTypeCode("UNITDATE");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("REL_ENTITY");
+        rit.setDataTypeCode("RECORD_REF");
+        rit.setUseSpecification(true);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("CRE_DATE");
+        rit.setDataTypeCode("UNITDATE");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("EV_BEGIN");
+        rit.setDataTypeCode("UNITDATE");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("EV_END");
+        rit.setDataTypeCode("UNITDATE");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("EXT_DATE");
+        rit.setDataTypeCode("UNITDATE");
+        rit.setUseSpecification(false);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+
     }
 
     private enum StructuredTypeCode {
@@ -1949,12 +2288,18 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         }
     }
 
-    private enum DataTypeCode {
-        APFRAG_REF("APFRAG_REF");
+    private enum RulPartTypeCode {
+        PT_BODY("PT_BODY"),
+        PT_IDENT("PT_IDENT"),
+        PT_NAME("PT_NAME"),
+        PT_REL("PT_REL"),
+        PT_CRE("PT_CRE"),
+        PT_EVENT("PT_EVENT"),
+        PT_EXT("PT_EXT");
 
         private String code;
 
-        DataTypeCode(String code) {
+        RulPartTypeCode(String code) {
             this.code = code;
         }
 
@@ -1995,7 +2340,57 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         NT_SIMPLIFIED("NT_SIMPLIFIED"),
         NT_GARBLED("NT_GARBLED"),
         NT_ACRONYM("NT_ACRONYM"),
-        NT_FOLK("NT_FOLK");
+        NT_FOLK("NT_FOLK"),
+        IC("IC"),
+        VAT("VAT"),
+        CRC_BEGINSCOPE("CRC_BEGINSCOPE"),
+        ET_MEMBERSHIP("ET_MEMBERSHIP"),
+        ET_AWARD("ET_AWARD"),
+        ET_STUDY("ET_STUDY"),
+        ET_MARRIAGE("ET_MARRIAGE"),
+        ET_JOB("ET_JOB"),
+        EXC_ENDSCOPE("EXC_ENDSCOPE"),
+        RT_BROTHER("RT_BROTHER"),
+        RT_WHOLE("RT_WHOLE"),
+        RT_ISMEMBER("RT_ISMEMBER"),
+        RT_MEMBERORG("RT_MEMBERORG"),
+        RT_RELATIONS("RT_RELATIONS"),
+        RT_RELATED("RT_RELATED"),
+        RT_OTHERNAME("RT_OTHERNAME"),
+        RT_COLLABORATOR("RT_COLLABORATOR"),
+        RT_LIQUIDATOR("RT_LIQUIDATOR"),
+        RT_HUSBAND("RT_HUSBAND"),
+        RT_WIFE("RT_WIFE"),
+        RT_MOTHER("RT_MOTHER"),
+        RT_PLACE("RT_PLACE"),
+        RT_SENIOR("RT_SENIOR"),
+        RT_SUCCESSOR("RT_SUCCESSOR"),
+        RT_ORGANIZER("RT_ORGANIZER"),
+        RT_FATHER("RT_FATHER"),
+        RT_NAMEDAFTER("RT_NAMEDAFTER"),
+        RT_LASTKMEMBER("RT_LASTKMEMBER"),
+        RT_FIRSTKMEMBER("RT_FIRSTKMEMBER"),
+        RT_PREDECESSOR("RT_PREDECESSOR"),
+        RT_DOCUMENT("RT_DOCUMENT"),
+        RT_SISTER("RT_SISTER"),
+        RT_RESIDENCE("RT_RESIDENCE"),
+        RT_SCHOOLMATE("RT_SCHOOLMATE"),
+        RT_SCHOOL("RT_SCHOOL"),
+        RT_TEACHER("RT_TEACHER"),
+        RT_AWARD("RT_AWARD"),
+        RT_CEREMONY("RT_CEREMONY"),
+        RT_GRANTAUTH("RT_GRANTAUTH"),
+        RT_OWNER("RT_OWNER"),
+        RT_FOUNDER("RT_FOUNDER"),
+        RT_EMPLOYER("RT_EMPLOYER"),
+        CRC_BIRTH("CRC_BIRTH"),
+        CRC_RISE("CRC_RISE"),
+        CRC_ORIGIN("CRC_ORIGIN"),
+        CRC_FIRSTMBIRTH("CRC_FIRSTMBIRTH"),
+        EXC_DEATH("EXC_DEATH"),
+        EXC_EXTINCTION("EXC_EXTINCTION"),
+        EXC_END("EXC_END"),
+        EXC_LASTMDEATH("EXC_LASTMDEATH");
 
         private String code;
 
@@ -2049,7 +2444,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         private ICalendarConverter getCalendarConverter(String type) {
             ICalendarConverter converter;
             switch (type) {
-                case "GREGORIAN" :
+                case "GREGORIAN":
                     converter = gcc;
                     break;
                 case "JULIAN":
@@ -2177,4 +2572,5 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         }
 
     }
+
 }

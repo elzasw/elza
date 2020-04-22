@@ -122,6 +122,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
 
 		while (true) {
             logger.info("Čekání na dokončení asynchronních operací...");
+            helperTestService.waitForWorkers();
 			Thread.sleep(1000);
 
 			BulkActionRunVO stateVo = getBulkActionState(fundVersionId, BULK_ACTION_SERIAL_NUMBER_GENERATOR);
@@ -168,6 +169,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
             counter--;
 
             logger.info("Čekání na dokončení asynchronních operací...");
+            helperTestService.waitForWorkers();
             Thread.sleep(5000);
 
             state = getBulkActionState(fundVersionId, code);
