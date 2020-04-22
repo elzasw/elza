@@ -1,6 +1,7 @@
 package cz.tacr.elza.service;
 
 import com.google.common.collect.Iterables;
+import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -107,8 +108,8 @@ public class ArrangementInternalService {
         if (structuredObjectIds.isEmpty()) {
             return Collections.emptyMap();
         }
-        Map<Integer, ArrNode> result = new HashMap<>(1000);
-        for (List<Integer> idsPart : Iterables.partition(structuredObjectIds, 1000)) {
+        Map<Integer, ArrNode> result = new HashMap<>(HibernateConfiguration.MAX_IN_SIZE);
+        for (List<Integer> idsPart : Iterables.partition(structuredObjectIds, HibernateConfiguration.MAX_IN_SIZE)) {
             for (ArrNode node : nodeRepository.findNodesByStructuredObjectIds(idsPart)) {
                 result.put(node.getNodeId(), node);
             }
