@@ -7,12 +7,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
-import cz.tacr.elza.service.*;
 import org.apache.commons.lang3.Validate;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -31,6 +31,11 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.DescriptionItemService;
+import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.UserService;
 
 public abstract class AbstractServiceTest extends AbstractTest {
@@ -70,6 +75,9 @@ public abstract class AbstractServiceTest extends AbstractTest {
 
     @Autowired
     protected LevelTreeCacheService levelTreeCacheService;
+
+    @Value("${local.server.port}")
+    protected int port;
 
     public class FundInfo {
 
@@ -120,12 +128,18 @@ public abstract class AbstractServiceTest extends AbstractTest {
     }
 
     protected FundInfo createFund(String fundName) {
+        return createFund(fundName, null);
+    }
+
+    protected FundInfo createFund(String fundName, String fundCode) {
         FundInfo fi = new FundInfo();
 
         List<RulRuleSet> rulesets = rulesetRepos.findAll();
         fi.setRulesets(rulesets);
 
-        ArrFund fund = arrangementService.createFundWithScenario(fundName, fi.getFirstRuleset(), null, firstInstitution,
+        ArrFund fund = arrangementService.createFundWithScenario(fundName, fi.getFirstRuleset(),
+                                                                 fundCode,
+                                                                 firstInstitution,
                                                                  "date-range");
         Validate.notNull(fund);
         fi.setFund(fund);

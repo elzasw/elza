@@ -9,6 +9,8 @@ import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
 import cz.tacr.elza.dataexchange.output.context.ExportReader;
 import cz.tacr.elza.dataexchange.output.writer.ApOutputStream;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.UserService;
 
 /**
@@ -56,6 +58,10 @@ public class AccessPointsReader implements ExportReader {
                 @Override
                 protected void onCompleted() {
                     ApInfo apInfo = getApInfo();
+                    if(apInfo==null) {
+                    	throw new SystemException("Entity not found.", BaseCode.ID_NOT_EXIST)
+                    		.set("ID", apId);
+                    }
                     if (!apInfo.isPartyAp()) {
                         os.addAccessPoint(apInfo);
                     }

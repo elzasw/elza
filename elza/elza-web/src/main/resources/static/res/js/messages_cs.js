@@ -941,6 +941,8 @@ var messages = {
     "registry.detail.variantRegistry": "Variantní rejstříková hesla",
     "registry.replaceSuccess": "Rejstříkové heslo bylo úspěšně nahrazeno",
 
+    "registry.entity.notFound": "Archivní entita nenalezena",
+
     "registry.list.itemsVisibleCountFrom": "Zobrazeno {0} z {1}, zpřesněte vyhledávací filtr",
     "registry.list.noRecord": "Zadanému filtru neodpovídají žádná data",
 
