@@ -13,7 +13,6 @@ import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.AuthParam.Type;
