@@ -74,6 +74,7 @@ import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.SysLanguage;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -87,17 +88,18 @@ import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.AccessPointMigrationService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.FragmentService;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.StructObjService;
+import cz.tacr.elza.service.UserService;
 
 
 /**
@@ -146,9 +148,6 @@ public class ApController {
     private ItemSpecRepository itemSpecRepository;
 
     @Autowired
-    private ItemTypeRepository itemTypeRepository;
-
-    @Autowired
     private ItemAptypeRepository itemAptypeRepository;
 
     @Autowired
@@ -165,6 +164,9 @@ public class ApController {
 
     @Autowired
     private StructObjService structObjService;
+
+    @Autowired
+    private UserService userService;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
@@ -620,10 +622,28 @@ public class ApController {
      */
 	@Transactional
     @RequestMapping(value = "/{accessPointId}", method = RequestMethod.GET)
-    public ApAccessPointVO getAccessPoint(@PathVariable final Integer accessPointId) {
+    public ApAccessPointVO getAccessPoint(@PathVariable final String accessPointId) {
         Assert.notNull(accessPointId, "Identifikátor rejstříkového hesla musí být vyplněn");
-        ApAccessPoint ap = accessPointService.getAccessPoint(accessPointId);
+
+        ApAccessPoint ap;
+        if (accessPointId.length() == 36) {
+            ap = accessPointService.getAccessPointByUuid(accessPointId);
+        } else {
+            Integer apId;
+            try {
+                apId = Integer.parseInt(accessPointId);
+            } catch (NumberFormatException nfe) {
+                throw new SystemException("Unrecognized ID format")
+                        .set("ID", accessPointId);
+            }
+            ap = accessPointService.getAccessPointInternal(apId);
+        }
         ApState apState = accessPointService.getState(ap);
+        // check permissions
+        AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.AP_SCOPE_RD_ALL)
+                .or(UsrPermission.Permission.AP_SCOPE_RD, apState.getScopeId());
+        userService.authorizeRequest(authRequest);
+
         ApAccessPointVO vo = getAccessPoint(apState);
         return vo;
     }
@@ -674,7 +694,7 @@ public class ApController {
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
         ApState apState = accessPointService.getState(accessPoint);
         ApAccessPoint editedAccessPoint = accessPointService.changeDescription(apState, accessPointDescription.getDescription());
-        return getAccessPoint(editedAccessPoint.getAccessPointId());
+        return getAccessPoint(editedAccessPoint.getAccessPointId().toString());
     }
 
     /**

@@ -574,7 +574,7 @@ public class FundLevelService {
 
 
         ArrLevel olderSibling = levelRepository.findOlderSibling(newLevel, version.getLockChange());
-        if(olderSibling != null && !descItemCopyTypes.isEmpty()){
+        if (olderSibling != null && descItemCopyTypes != null && !descItemCopyTypes.isEmpty()) {
             List<ArrDescItem> siblingDescItems = descItemRepository
                     .findOpenByNodeAndTypes(olderSibling.getNode(), descItemCopyTypes);
             descriptionItemService.copyDescItemWithDataToNode(newLevel.getNode(),

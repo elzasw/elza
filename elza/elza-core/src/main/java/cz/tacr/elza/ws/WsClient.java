@@ -1,5 +1,18 @@
 package cz.tacr.elza.ws;
 
+import java.util.HashMap;
+
+import javax.annotation.Nullable;
+import javax.xml.bind.helpers.DefaultValidationEventHandler;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.cxf.feature.FastInfosetFeature;
+import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.exception.SystemException;
@@ -15,17 +28,6 @@ import cz.tacr.elza.ws.types.v1.DigitizationRequest;
 import cz.tacr.elza.ws.types.v1.OnDaoLinked;
 import cz.tacr.elza.ws.types.v1.OnDaoUnlinked;
 import cz.tacr.elza.ws.types.v1.TransferRequest;
-import org.apache.commons.lang.StringUtils;
-import org.apache.cxf.feature.FastInfosetFeature;
-import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import javax.xml.bind.helpers.DefaultValidationEventHandler;
-import java.util.HashMap;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
@@ -56,6 +58,7 @@ public class WsClient {
             factory.getFeatures().add(new FastInfosetFeature());
             //factory.setBindingId(SOAPBinding.SOAP12HTTP_MTOM_BINDING);
 
+            // Proc to tu je?
             HashMap<String, Object> properties = new HashMap<>();
             properties.put("jaxb-validation-event-handler", new DefaultValidationEventHandler());
             factory.setProperties(properties);

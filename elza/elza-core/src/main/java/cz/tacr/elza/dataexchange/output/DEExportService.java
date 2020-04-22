@@ -31,7 +31,7 @@ import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.controller.DEExportController.DEExportParamsVO;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
@@ -107,14 +107,16 @@ public class DEExportService {
      *            export configuration
      */
     @Transactional(isolation = Isolation.SERIALIZABLE, readOnly = true)
-    @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN })
-    public void exportXmlData(OutputStream os, DEExportParams params) {
-        exportData(os, new XmlExportBuilder(), params);
+    //TODO: Opravneni se musi hlidat dle typu exportovanych dat
+    //@AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN })
+    public void exportXmlData(OutputStream os, ExportBuilder builder, DEExportParams params) {
+        exportData(os, builder, params);
     }
 
     private void exportData(OutputStream os, ExportBuilder builder, DEExportParams params) {
         // create export context
-        ExportContext context = new ExportContext(builder, staticDataService.getData(), 1000);
+        ExportContext context = new ExportContext(builder, staticDataService.getData(),
+                HibernateConfiguration.MAX_IN_SIZE);
         context.setFundsSections(params.getFundsSections());
         if (params.getApIds() != null) {
             params.getApIds().forEach(context::addApId);
@@ -175,10 +177,12 @@ public class DEExportService {
         response.setHeader(HttpHeaders.PRAGMA, "no-cache");
         response.setDateHeader(HttpHeaders.EXPIRES, 0);
 
+        ExportBuilder exportBuilder = new XmlExportBuilder();
+
         // write response
         try (ServletOutputStream os = response.getOutputStream()) {
             response.flushBuffer();
-            exportData(os, new XmlExportBuilder(), params);
+            exportData(os, exportBuilder, params);
             response.flushBuffer();
         }
     }
