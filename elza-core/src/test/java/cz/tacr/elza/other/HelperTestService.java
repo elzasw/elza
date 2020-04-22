@@ -40,9 +40,20 @@ import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
+import cz.tacr.elza.repository.DaoBatchInfoRepository;
+import cz.tacr.elza.repository.DaoDigitizationRequestNodeRepository;
+import cz.tacr.elza.repository.DaoFileGroupRepository;
+import cz.tacr.elza.repository.DaoFileRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DaoLinkRequestRepository;
+import cz.tacr.elza.repository.DaoPackageRepository;
+import cz.tacr.elza.repository.DaoRepository;
+import cz.tacr.elza.repository.DaoRequestDaoRepository;
+import cz.tacr.elza.repository.DaoRequestRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.DigitizationRequestRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -211,6 +222,28 @@ public class HelperTestService {
     private AuthenticationRepository authenticationRepository;
     @Autowired
     private ApStateRepository apStateRepository;
+    @Autowired
+    private DaoRepository daoRepository;
+    @Autowired
+    private DaoLinkRepository daoLinkRepository;
+    @Autowired
+    private DaoFileRepository daoFileRepository;
+    @Autowired
+    private DaoPackageRepository daoPackageRepository;
+    @Autowired
+    private DaoLinkRequestRepository daoLinkRequestRepository;
+    @Autowired
+    private DaoBatchInfoRepository daoBatchInfoRepository;
+    @Autowired
+    private DaoRequestRepository daoRequestRepository;
+    @Autowired
+    private DaoFileGroupRepository daoFileGroupRepository;
+    @Autowired
+    private DaoRequestDaoRepository daoRequestDaoRepository;
+    @Autowired
+    private DaoDigitizationRequestNodeRepository daoDigitizationRequestNodeRepository;
+    @Autowired
+    private DigitizationRequestRepository digitizationRequestRepository;
 
     @Autowired
     private PackageService packageService;
@@ -248,6 +281,18 @@ public class HelperTestService {
         packageService.stopAsyncTasks();
 
         logger.debug("Cleaning table contents...");
+
+        daoDigitizationRequestNodeRepository.deleteAll();
+        digitizationRequestRepository.deleteAll();
+        daoRequestDaoRepository.deleteAll();
+        daoRequestRepository.deleteAll();
+        daoLinkRequestRepository.deleteAll();
+        daoBatchInfoRepository.deleteAll();
+        daoPackageRepository.deleteAll();
+        daoFileGroupRepository.deleteAll();
+        daoFileRepository.deleteAll();
+        daoLinkRepository.deleteAll();
+        daoRepository.deleteAll();
 
         commentRepository.deleteAll();
         issueRepository.deleteAll();
