@@ -72,6 +72,7 @@ class RegistryPage extends AbstractReactComponent {
 
         return id &&
             data &&
+            apTypeIdMap[data.typeId] &&
             apTypeIdMap[data.typeId].ruleSystemId !== null &&
             data.ruleSystemId === null
     };

@@ -1,5 +1,7 @@
 package cz.tacr.elza.service;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -18,7 +20,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.*;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
@@ -63,8 +68,6 @@ import cz.tacr.elza.ws.types.v1.Materials;
 import cz.tacr.elza.ws.types.v1.OnDaoLinked;
 import cz.tacr.elza.ws.types.v1.OnDaoUnlinked;
 import cz.tacr.elza.ws.types.v1.TransferRequest;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * Servisní třída pro obsluhu a správu požadavků
@@ -548,7 +551,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
                 } else if (ArrDaoRequest.Type.SYNC == arrDaoRequest.getType()) {
                     DaosSyncRequest daosSyncRequest = deserializeData(queueItem.getData(), DaosSyncRequest.class);
                     DaosSyncResponse daosSyncResponse = wsClient.syncDaos(daosSyncRequest, arrDaoRequest.getDigitalRepository());
-                    daoSyncService.processDaosSyncResponse(daosSyncResponse);
+                    daoSyncService.processDaosSyncResponse(arrDaoRequest.getFund(), daosSyncResponse);
                 } else {
                     throw new SystemException("Neplatný typ: " + arrDaoRequest.getType(), BaseCode.SYSTEM_ERROR);
                 }
