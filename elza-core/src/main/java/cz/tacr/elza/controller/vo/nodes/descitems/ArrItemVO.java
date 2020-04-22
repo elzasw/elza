@@ -46,6 +46,11 @@ public abstract class ArrItemVO {
      */
     private Integer descItemSpecId;
 
+    /**
+     * Příznak, zda je hodnota readonly
+     */
+    private Boolean readOnly;
+
     public ArrItemVO() {
 
     }
@@ -57,6 +62,7 @@ public abstract class ArrItemVO {
         this.undefined = (item.getData() == null);
         this.itemTypeId = item.getItemTypeId();
         this.descItemSpecId = item.getItemSpecId();
+        this.readOnly = item.getReadOnly();
     }
 
     public Integer getId() {
@@ -107,16 +113,25 @@ public abstract class ArrItemVO {
         this.undefined = undefined;
     }
 
-	/**
-	 * Fill correspoding ArrDescItem with values from this object
-	 *
-	 * @param descItem
-	 *            target item to be filled
-	 */
+    public Boolean getReadOnly() {
+        return readOnly;
+    }
+
+    public void setReadOnly(Boolean readOnly) {
+        this.readOnly = readOnly;
+    }
+
+    /**
+     * Fill correspoding ArrDescItem with values from this object
+     *
+     * @param descItem
+     *            target item to be filled
+     */
 	public void fill(ArrDescItem descItem) {
 		descItem.setItemId(id);
 		descItem.setDescItemObjectId(descItemObjectId);
 		descItem.setPosition(position);
+        descItem.setReadOnly(readOnly != null ? readOnly : false);
 		//spec id cannot be set explicitly
 		//descItem.setItemSpecId(descItemSpecId);
 	}

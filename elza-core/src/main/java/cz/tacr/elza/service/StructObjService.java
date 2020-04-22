@@ -28,6 +28,7 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
@@ -139,7 +140,7 @@ public class StructObjService {
      * @return hodnota strukt. datového typu -> nalezené položky
      */
     public Map<ArrStructuredObject, List<ArrStructuredItem>> findStructureItems(final List<ArrStructuredObject> structureDataList) {
-        List<List<ArrStructuredObject>> parts = Lists.partition(structureDataList, 1000);
+        List<List<ArrStructuredObject>> parts = Lists.partition(structureDataList, HibernateConfiguration.MAX_IN_SIZE);
         List<ArrStructuredItem> structureItems = new ArrayList<>();
         for (List<ArrStructuredObject> part : parts) {
             structureItems.addAll(structureItemRepository.findByStructuredObjectListAndDeleteChangeIsNullFetchData(part));
@@ -635,7 +636,7 @@ public class StructObjService {
      * @return entity
      */
     public List<ArrStructuredObject> getStructObjByIds(final List<Integer> structureDataIds) {
-        List<List<Integer>> idsParts = Lists.partition(structureDataIds, 1000);
+        List<List<Integer>> idsParts = Lists.partition(structureDataIds, HibernateConfiguration.MAX_IN_SIZE);
         List<ArrStructuredObject> structureDataList = new ArrayList<>();
         for (List<Integer> idsPart : idsParts) {
             structureDataList.addAll(structObjRepository.findByIdsFetch(idsPart));

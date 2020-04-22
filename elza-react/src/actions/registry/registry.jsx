@@ -64,7 +64,7 @@ export const AREA_REGISTRY_DETAIL = 'registryDetail';
 
 export function registryDetailFetchIfNeeded(id) {
     return (dispatch, getState) => {
-        dispatch(
+        return dispatch(
             DetailActions.fetchIfNeeded(AREA_REGISTRY_DETAIL, id, () => {
                 return WebApi.getAccessPoint(id)
                     .then(data => {
@@ -73,7 +73,10 @@ export function registryDetailFetchIfNeeded(id) {
                         }
                         return data;
                     })
-                    .catch(() => dispatch(registryDetailClear()));
+                    .catch((error) => {
+                        dispatch(registryDetailClear());
+                        throw error;
+                    });
             }),
         );
     };

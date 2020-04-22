@@ -283,6 +283,12 @@
                  bez jejiho uvedeni se vytvari WAR bez CXF -->
             <version>3.9</version>
         </dependency>
+        <!-- Pridano kvuli tride ByteArrayDataSource -->
+        <dependency>
+          <groupId>javax.mail</groupId>
+          <artifactId>javax.mail-api</artifactId>
+          <version>1.6.2</version>
+        </dependency>
         <!-- Pridano kvuli tride com.sun.xml.txw2.output.IndentingXMLStreamWriter v exportu
              Asi lepe zvazit jeji nahradu vlastni impl a odstraneni dependency -->
         <dependency>
@@ -309,7 +315,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-transports-http-jetty</artifactId>
+            <artifactId>cxf-rt-transports-http</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
@@ -404,6 +410,7 @@
                 <version>0.14.0</version>
                 <executions>
                     <execution>
+                        <id>generate-elza-schema</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
@@ -422,6 +429,35 @@
                             <bindingIncludes>
                                 <include>elza-schema-v2-bindinds.xml</include>
                             </bindingIncludes>
+                            <plugins>
+                                <plugin>
+                                    <groupId>org.jvnet.jaxb2_commons</groupId>
+                                    <artifactId>jaxb2-basics</artifactId>
+                                    <version>1.11.1</version>
+                                </plugin>
+                            </plugins>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-cam-schema</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <extension>true</extension>
+                            <args>
+                                <arg>-Xinheritance</arg>
+                            </args>
+                            <generateDirectory>${project.build.directory}/generated-sources/cam</generateDirectory>
+                            <schemaDirectory>${project.basedir}/src/main/resources/cam</schemaDirectory>
+                            <schemaIncludes>
+                                <include>cam-2019.xsd</include>
+                            </schemaIncludes>
+<!--                            <bindingDirectory>${project.basedir}/src/main/resources/schema</bindingDirectory>-->
+<!--                            <bindingIncludes>
+                                <include>elza-schema-v2-bindinds.xml</include>
+                            </bindingIncludes>-->
                             <plugins>
                                 <plugin>
                                     <groupId>org.jvnet.jaxb2_commons</groupId>

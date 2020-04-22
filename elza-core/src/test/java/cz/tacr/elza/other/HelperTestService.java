@@ -4,7 +4,76 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.packageimport.PackageService;
-import cz.tacr.elza.repository.*;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApChangeRepository;
+import cz.tacr.elza.repository.ApDescriptionRepository;
+import cz.tacr.elza.repository.ApExternalIdRepository;
+import cz.tacr.elza.repository.ApFragmentRepository;
+import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApNameRepository;
+import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.ArrAsyncRequestRepository;
+import cz.tacr.elza.repository.AuthenticationRepository;
+import cz.tacr.elza.repository.BulkActionNodeRepository;
+import cz.tacr.elza.repository.BulkActionRunRepository;
+import cz.tacr.elza.repository.CachedNodeRepository;
+import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.ComplementTypeRepository;
+import cz.tacr.elza.repository.DaoBatchInfoRepository;
+import cz.tacr.elza.repository.DaoDigitizationRequestNodeRepository;
+import cz.tacr.elza.repository.DaoFileGroupRepository;
+import cz.tacr.elza.repository.DaoFileRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DaoLinkRequestRepository;
+import cz.tacr.elza.repository.DaoPackageRepository;
+import cz.tacr.elza.repository.DaoRepository;
+import cz.tacr.elza.repository.DaoRequestDaoRepository;
+import cz.tacr.elza.repository.DaoRequestRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.DigitizationRequestRepository;
+import cz.tacr.elza.repository.ExternalSystemRepository;
+import cz.tacr.elza.repository.FundRegisterScopeRepository;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.FundStructureExtensionRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.GroupRepository;
+import cz.tacr.elza.repository.GroupUserRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.InstitutionTypeRepository;
+import cz.tacr.elza.repository.ItemAptypeRepository;
+import cz.tacr.elza.repository.ItemRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeExtensionRepository;
+import cz.tacr.elza.repository.NodeOutputRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.PartyCreatorRepository;
+import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
+import cz.tacr.elza.repository.PartyNameComplementRepository;
+import cz.tacr.elza.repository.PartyNameFormTypeRepository;
+import cz.tacr.elza.repository.PartyNameRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
+import cz.tacr.elza.repository.PartyTypeRelationRepository;
+import cz.tacr.elza.repository.PermissionRepository;
+import cz.tacr.elza.repository.RelationEntityRepository;
+import cz.tacr.elza.repository.RelationRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.repository.WfCommentRepository;
+import cz.tacr.elza.repository.WfIssueListRepository;
+import cz.tacr.elza.repository.WfIssueRepository;
 import cz.tacr.elza.service.AsyncRequestService;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -24,6 +93,7 @@ import java.net.URLDecoder;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
 
 /**
  * Helper test service
@@ -153,6 +223,28 @@ public class HelperTestService {
     private ApStateRepository apStateRepository;
     @Autowired
     protected ArrAsyncRequestRepository asyncRequestRepository;
+    @Autowired
+    private DaoRepository daoRepository;
+    @Autowired
+    private DaoLinkRepository daoLinkRepository;
+    @Autowired
+    private DaoFileRepository daoFileRepository;
+    @Autowired
+    private DaoPackageRepository daoPackageRepository;
+    @Autowired
+    private DaoLinkRequestRepository daoLinkRequestRepository;
+    @Autowired
+    private DaoBatchInfoRepository daoBatchInfoRepository;
+    @Autowired
+    private DaoRequestRepository daoRequestRepository;
+    @Autowired
+    private DaoFileGroupRepository daoFileGroupRepository;
+    @Autowired
+    private DaoRequestDaoRepository daoRequestDaoRepository;
+    @Autowired
+    private DaoDigitizationRequestNodeRepository daoDigitizationRequestNodeRepository;
+    @Autowired
+    private DigitizationRequestRepository digitizationRequestRepository;
 
     @Autowired
     private PackageService packageService;
@@ -190,6 +282,18 @@ public class HelperTestService {
         packageService.stopAsyncTasks();
 
         logger.debug("Cleaning table contents...");
+
+        daoDigitizationRequestNodeRepository.deleteAll();
+        digitizationRequestRepository.deleteAll();
+        daoRequestDaoRepository.deleteAll();
+        daoRequestRepository.deleteAll();
+        daoLinkRequestRepository.deleteAll();
+        daoBatchInfoRepository.deleteAll();
+        daoPackageRepository.deleteAll();
+        daoFileGroupRepository.deleteAll();
+        daoFileRepository.deleteAll();
+        daoLinkRepository.deleteAll();
+        daoRepository.deleteAll();
 
         asyncRequestRepository.deleteAll();
         commentRepository.deleteAll();

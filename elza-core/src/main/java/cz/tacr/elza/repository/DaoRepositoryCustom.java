@@ -1,12 +1,13 @@
 package cz.tacr.elza.repository;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * @author <a href="mailto:martin.lebeda@marbes.cz">Martin Lebeda</a>
@@ -35,6 +36,7 @@ public interface DaoRepositoryCustom {
      * @param unassigned  mají-li se získávat pouze balíčky, které obsahují DAO, které nejsou nikam přirazené (unassigned = true), a nebo úplně všechny (unassigned = false)
      * @return seznam digitálních entit (DAO)
      */
-    List<ArrDao> findByFundAndPackagePaginating(ArrFundVersion fundVersion, ArrDaoPackage daoPackage, Integer index, Integer maxResults, boolean unassigned);
+    List<ArrDao> findByFundAndPackagePaginating(Integer fundId, ArrDaoPackage daoPackage, Integer index,
+                                                Integer maxResults, boolean unassigned);
 
 }
