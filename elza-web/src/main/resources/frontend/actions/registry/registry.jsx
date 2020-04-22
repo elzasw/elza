@@ -15,7 +15,6 @@ import {i18n} from 'components/shared';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog.jsx'
 import {addToastrSuccess,addToastrDanger, addToastrWarning} from '../../components/shared/toastr/ToastrActions.jsx'
 
-
 let AddRegistryForm;
 import('../../components/registry/AddRegistryForm').then((a) => {
     AddRegistryForm = a.default;
@@ -55,13 +54,16 @@ export const AREA_REGISTRY_DETAIL = "registryDetail";
 
 export function registryDetailFetchIfNeeded(id) {
     return (dispatch, getState) => {
-        dispatch(DetailActions.fetchIfNeeded(AREA_REGISTRY_DETAIL, id, () => {
+        return dispatch(DetailActions.fetchIfNeeded(AREA_REGISTRY_DETAIL, id, () => {
             return WebApi.getAccessPoint(id).then((data) => {
                 if (data && data.invalid) {
                     dispatch(addToastrWarning(i18n("registry.invalid.warning")));
                 }
                 return data;
-            }).catch(() => dispatch(registryDetailClear()));
+            }).catch((error) => {
+                dispatch(registryDetailClear());
+                throw error;
+            });
         }));
     }
 }

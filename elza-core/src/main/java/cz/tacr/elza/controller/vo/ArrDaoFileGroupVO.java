@@ -1,28 +1,35 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.domain.ArrDaoFileGroup;
-import org.apache.commons.collections4.ListUtils;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.collections4.ListUtils;
+
+import cz.tacr.elza.domain.ArrDaoFileGroup;
+
 /**
  * Value objekt {@link ArrDaoFileGroup}
   *
-  * @author Martin Lebeda
-  * @since 13.12.2016
  */
 public class ArrDaoFileGroupVO {
 
     private Integer id;
-//    private ArrDaoVO dao;
     private String label;
     private String code;
 
     private long fileCount = 0;
     private List<ArrDaoFileVO> fileList = new ArrayList<>();
 
+    public ArrDaoFileGroupVO() {
+    }
+
+
+    public ArrDaoFileGroupVO(ArrDaoFileGroup daoFileGroup) {
+        id = daoFileGroup.getDaoId();
+        label = daoFileGroup.getLabel();
+        code = daoFileGroup.getCode();
+    }
 
     /**
      * Zařazení nového daoFile do seznamu na vo, zároveň nastaví položku fileCount na novou délku seznamu
@@ -74,5 +81,10 @@ public class ArrDaoFileGroupVO {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public static ArrDaoFileGroupVO newInstance(ArrDaoFileGroup daoFileGroup) {
+        ArrDaoFileGroupVO groupVo = new ArrDaoFileGroupVO(daoFileGroup);
+        return groupVo;
     }
 }
