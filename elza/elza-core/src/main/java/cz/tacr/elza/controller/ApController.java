@@ -1,34 +1,5 @@
 package cz.tacr.elza.controller;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
@@ -56,9 +27,9 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApFragment;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
@@ -68,7 +39,7 @@ import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
@@ -94,6 +65,33 @@ import cz.tacr.elza.service.FragmentService;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.UserService;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 /**
