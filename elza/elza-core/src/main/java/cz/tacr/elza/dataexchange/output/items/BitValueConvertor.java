@@ -1,14 +1,11 @@
 package cz.tacr.elza.dataexchange.output.items;
 
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataBit;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.schema.v2.DescriptionItemBit;
-import cz.tacr.elza.schema.v2.DescriptionItemInteger;
-import cz.tacr.elza.schema.v2.ObjectFactory;
 import org.apache.commons.lang.Validate;
 
-import java.math.BigInteger;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataBit;
+import cz.tacr.elza.schema.v2.DescriptionItemBit;
+import cz.tacr.elza.schema.v2.ObjectFactory;
 
 public class BitValueConvertor implements ItemDataConvertor {
 
@@ -18,7 +15,7 @@ public class BitValueConvertor implements ItemDataConvertor {
 
         ArrDataBit boolValue = (ArrDataBit) data;
         DescriptionItemBit item = objectFactory.createDescriptionItemBit();
-        item.setValue(boolValue.isValue());
+        item.setV(boolValue.isValue());
         return item;
     }
 }

@@ -110,18 +110,6 @@
         </addColumn>
     </changeSet>
 
-    <changeSet id="20200408092000" author="gotzy">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <sqlCheck expectedResult="0">SELECT COUNT(access_point_id) FROM ap_access_point</sqlCheck>
-            </not>
-            <not>
-                <sqlCheck expectedResult="0">SELECT COUNT(rule_set_id) FROM rul_rule_set WHERE code = 'ZP2015'</sqlCheck>
-            </not>
-        </preConditions>
-        <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20200331164200" />
-    </changeSet>
-
     <changeSet id="20200416150300" author="gotzy">
         <addColumn tableName="rul_item_type">
             <column name="string_length_limit" type="int">
@@ -188,7 +176,7 @@
             </column>
         </addColumn>
     </changeSet>
-    
+
     <changeSet id="20200420204000" author="fantis">
         <addColumn tableName="ap_item">
             <column name="part_id" type="int">
@@ -214,6 +202,18 @@
 
     <changeSet id="20200421132800" author="fantis">
         <dropColumn tableName="rul_item_type" columnName="fragment_type_id"/>
+    </changeSet>
+
+    <changeSet id="20200421155900" author="gotzy">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sqlCheck expectedResult="0">SELECT COUNT(access_point_id) FROM ap_access_point</sqlCheck>
+            </not>
+            <not>
+                <sqlCheck expectedResult="0">SELECT COUNT(rule_set_id) FROM rul_rule_set WHERE code = 'ZP2015'</sqlCheck>
+            </not>
+        </preConditions>
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20200331164200" />
     </changeSet>
 
 </databaseChangeLog>
