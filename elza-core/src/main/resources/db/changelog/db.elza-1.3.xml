@@ -171,4 +171,25 @@
             <column name="file_name" type="nvarchar(1000)"/>
         </addColumn>
     </changeSet>
+
+    <changeSet id="20200404013954" author="ppyt">
+        <addColumn tableName="arr_item">
+            <column name="read_only" type="boolean" defaultValue="false"/>
+        </addColumn>
+        <sql>UPDATE arr_item SET read_only=false</sql>
+        <addNotNullConstraint tableName="arr_item" columnName="read_only" columnDataType="boolean"/>
+        <!-- Zneplatneni cache -->
+        <delete tableName="arr_cached_node" />
+    </changeSet>
+
+    <changeSet id="20200412210354" author="ppyt">
+        <addColumn tableName="arr_dao">
+            <column name="dao_type" type="nvarchar(25)" />
+            <column name="attributes" type="text" />
+        </addColumn>
+        <sql>UPDATE arr_dao SET dao_type='ATTACHMENT'</sql>
+        <addNotNullConstraint tableName="arr_dao" columnName="dao_type" columnDataType="nvarchar(25)"/>
+        <!-- Zneplatneni cache -->
+        <delete tableName="arr_cached_node" />
+    </changeSet>
 </databaseChangeLog>

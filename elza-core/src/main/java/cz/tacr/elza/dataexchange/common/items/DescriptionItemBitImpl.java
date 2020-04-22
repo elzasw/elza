@@ -5,7 +5,6 @@ import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.domain.ArrDataBit;
 import cz.tacr.elza.schema.v2.DescriptionItemBit;
-import org.hibernate.search.util.configuration.impl.ConfigurationParseHelper;
 
 public class DescriptionItemBitImpl extends DescriptionItemBit {
 
@@ -17,7 +16,7 @@ public class DescriptionItemBitImpl extends DescriptionItemBit {
 
         //TODO: zpracovat případnou hodnotu value
         ArrDataBit data = new ArrDataBit();
-        data.setValue(isValue());
+        data.setValue(isV());
         data.setDataType(dataType.getEntity());
 
         return new ImportableItemData(data);
