@@ -29,9 +29,6 @@ import cz.tacr.elza.controller.factory.RuleFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrChangeVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileVO;
-import cz.tacr.elza.controller.vo.ArrDaoVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
@@ -737,25 +734,6 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(RulStructuredType.class, RulStructureTypeVO.class)
                 .byDefault()
                 .field("structuredTypeId", "id")
-                .register();
-
-        mapperFactory.classMap(ArrDao.class, ArrDaoVO.class)
-                .field("daoId", "id")
-                .byDefault()
-                .register();
-
-        mapperFactory.classMap(ArrDaoFile.class, ArrDaoFileVO.class)
-                .field("daoFileId", "id")
-                .exclude("dao")
-                .byDefault()
-                .register();
-
-        mapperFactory.classMap(ArrDaoFileGroup.class, ArrDaoFileGroupVO.class)
-                .field("daoFileGroupId", "id")
-                .exclude("fileList")
-                .exclude("fileCount")
-                .exclude("dao")
-                .byDefault()
                 .register();
 
         mapperFactory.classMap(ArrDataCoordinates.class, ArrItemCoordinatesVO.class)

@@ -16,6 +16,7 @@ import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.AuthParam.Type;
@@ -1419,8 +1420,8 @@ public class ArrangementService {
         if (structuredObjectIds.isEmpty()) {
             return Collections.emptyMap();
         }
-        Map<Integer, ArrNode> result = new HashMap<>(1000);
-        for (List<Integer> idsPart : Iterables.partition(structuredObjectIds, 1000)) {
+        Map<Integer, ArrNode> result = new HashMap<>(HibernateConfiguration.MAX_IN_SIZE);
+        for (List<Integer> idsPart : Iterables.partition(structuredObjectIds, HibernateConfiguration.MAX_IN_SIZE)) {
             for (ArrNode node : nodeRepository.findNodesByStructuredObjectIds(idsPart)) {
                 result.put(node.getNodeId(), node);
             }

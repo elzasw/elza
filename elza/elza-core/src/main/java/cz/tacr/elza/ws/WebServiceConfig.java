@@ -1,8 +1,12 @@
 package cz.tacr.elza.ws;
 
-import cz.tacr.elza.ws.core.v1.DaoCoreServiceImpl;
-import cz.tacr.elza.ws.core.v1.DaoDigitizationServiceImpl;
-import cz.tacr.elza.ws.core.v1.DaoRequestsServiceImpl;
+import java.util.List;
+
+import javax.annotation.PostConstruct;
+import javax.xml.ws.Binding;
+import javax.xml.ws.Endpoint;
+import javax.xml.ws.handler.Handler;
+
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,13 +14,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
-import javax.annotation.PostConstruct;
-import javax.xml.ws.Endpoint;
+import cz.tacr.elza.ws.core.v1.DaoCoreServiceImpl;
+import cz.tacr.elza.ws.core.v1.DaoDigitizationServiceImpl;
+import cz.tacr.elza.ws.core.v1.DaoRequestsServiceImpl;
+import cz.tacr.elza.ws.core.v1.ExportServiceImpl;
 
 
 @Configuration
 @ImportResource({"classpath:META-INF/cxf/cxf.xml", "classpath:META-INF/cxf/cxf-servlet.xml"})
 public class WebServiceConfig {
+
+    public final static String DAO_CORE_SERVICE_URL = "/DaoCoreService";
 
     @Autowired
     private DaoDigitizationServiceImpl daoDigitizationService;
@@ -26,6 +34,9 @@ public class WebServiceConfig {
 
     @Autowired
     private DaoRequestsServiceImpl daoRequestsService;
+
+    @Autowired
+    private ExportServiceImpl exportService;
 
     @Autowired
     private SpringBus bus;
@@ -53,7 +64,20 @@ public class WebServiceConfig {
     @Bean
     public Endpoint daoCoreServiceEndpoint() {
         EndpointImpl endpoint = new EndpointImpl(bus, daoCoreService);
-        endpoint.publish("/DaoCoreService");
+        endpoint.publish(DAO_CORE_SERVICE_URL);
+        return endpoint;
+    }
+
+    @Bean
+    public Endpoint entitiesServiceEndpoint() {
+        EndpointImpl endpoint = new EndpointImpl(bus, exportService);
+        endpoint.publish("/ExportService");
+
+        Binding binding = endpoint.getBinding();
+        List<Handler> hc = binding.getHandlerChain();
+        hc.add(new CustomSOAPHandler());
+        binding.setHandlerChain(hc);
+
         return endpoint;
     }
 

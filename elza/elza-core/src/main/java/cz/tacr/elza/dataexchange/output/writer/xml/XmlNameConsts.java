@@ -13,7 +13,12 @@ import cz.tacr.elza.schema.v2.Person;
  */
 public class XmlNameConsts {
 
-    public static final QName ROOT = new QName("http://elza.tacr.cz/schema/v2", "edx", "ns2");
+    /**
+     * XML Schema URI
+     */
+    public static final String SCHEMA_URI = "http://elza.tacr.cz/schema/v2";
+
+    public static final QName ROOT = new QName(SCHEMA_URI, "edx", "ns2");
 
     public static final String SECTIONS = "fs";
 

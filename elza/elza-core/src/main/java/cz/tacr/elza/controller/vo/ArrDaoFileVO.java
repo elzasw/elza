@@ -14,8 +14,6 @@ import cz.tacr.elza.domain.ArrDaoFile;
 public class ArrDaoFileVO {
 
     private Integer id;
-//    private ArrDaoVO dao;
-//    private ArrDaoFileGroupVO daoFileGroup;
     private String checksum;
     private ArrDaoFile.ChecksumType checksumType;
     private LocalDateTime created;
@@ -33,6 +31,29 @@ public class ArrDaoFileVO {
     private String thumbnailUrl;
     private String description;
     private String fileName;
+
+    public ArrDaoFileVO() {
+
+    }
+
+    public ArrDaoFileVO(final ArrDaoFile daoFile) {
+        id = daoFile.getDaoFileId();
+        checksum = daoFile.getChecksum();
+        checksumType = daoFile.getChecksumType();
+        created = daoFile.getCreated();
+        mimetype = daoFile.getMimetype();
+        size = daoFile.getSize();
+        imageHeight = daoFile.getImageHeight();
+        imageWidth = daoFile.getImageWidth();
+        sourceXDimesionUnit = daoFile.getSourceXDimesionUnit();
+        sourceXDimesionValue = daoFile.getSourceXDimesionValue();
+        sourceYDimesionUnit = daoFile.getSourceYDimesionUnit();
+        sourceYDimesionValue = daoFile.getSourceYDimesionValue();
+        duration = daoFile.getDuration();
+        code = daoFile.getCode();
+        description = daoFile.getDescription();
+        fileName = daoFile.getFileName();
+    }
 
     public Integer getId() {
         return id;
@@ -176,5 +197,10 @@ public class ArrDaoFileVO {
 
     public void setFileName(final String fileName) {
         this.fileName = fileName;
+    }
+
+    public static ArrDaoFileVO newInstance(ArrDaoFile daoFile) {
+        ArrDaoFileVO daoFileVo = new ArrDaoFileVO(daoFile);
+        return daoFileVo;
     }
 }

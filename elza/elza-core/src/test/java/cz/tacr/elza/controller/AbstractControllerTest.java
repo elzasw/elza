@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller;
 
+import static com.jayway.restassured.RestAssured.given;
+
 import java.io.File;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -48,16 +50,73 @@ import com.jayway.restassured.specification.RequestSpecification;
 
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.controller.ArrangementController.FaFilteredFulltextParam;
+import cz.tacr.elza.controller.vo.AddLevelParam;
+import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
+import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApEidTypeVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
+import cz.tacr.elza.controller.vo.ApTypeVO;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
+import cz.tacr.elza.controller.vo.ArrDaoVO;
+import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrOutputVO;
+import cz.tacr.elza.controller.vo.ArrStructureDataVO;
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
+import cz.tacr.elza.controller.vo.CreateFundVO;
+import cz.tacr.elza.controller.vo.CreateUserVO;
+import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.FulltextFundRequest;
+import cz.tacr.elza.controller.vo.FundListCountResult;
+import cz.tacr.elza.controller.vo.LanguageVO;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.OutputSettingsVO;
+import cz.tacr.elza.controller.vo.PackageVO;
+import cz.tacr.elza.controller.vo.ParInstitutionVO;
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
+import cz.tacr.elza.controller.vo.RulOutputTypeVO;
+import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
+import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.RulStructureTypeVO;
+import cz.tacr.elza.controller.vo.RulTemplateVO;
+import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
+import cz.tacr.elza.controller.vo.SysExternalSystemVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.UserInfoVO;
+import cz.tacr.elza.controller.vo.UsrGroupVO;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.controller.vo.ValidationResult;
+import cz.tacr.elza.controller.vo.WfCommentVO;
+import cz.tacr.elza.controller.vo.WfIssueListVO;
+import cz.tacr.elza.controller.vo.WfIssueStateVO;
+import cz.tacr.elza.controller.vo.WfIssueTypeVO;
+import cz.tacr.elza.controller.vo.WfIssueVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
-
-import static com.jayway.restassured.RestAssured.given;
 
 public abstract class AbstractControllerTest extends AbstractTest {
 
@@ -196,6 +255,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String COPY_LEVELS_VALIDATE = ARRANGEMENT_CONTROLLER_URL + "/levels/copy/validate";
     protected static final String COPY_LEVELS = ARRANGEMENT_CONTROLLER_URL + "/levels/copy";
     protected static final String NODE_INFO = ARRANGEMENT_CONTROLLER_URL + "/nodeInfo/{fundVersionId}/{nodeId}";
+
+    // DAOs
+    protected static final String ARRANGEMENT_DAOS_LINK_CREATE = ARRANGEMENT_CONTROLLER_URL
+            + "/daos/{fundVersionId}/{daoId}/{nodeId}/create";
+    protected static final String ARRANGEMENT_DAOS_LINK_DELETE = ARRANGEMENT_CONTROLLER_URL
+            + "/daolinks/{fundVersionId}/{daoLinkId}";
+    protected static final String FIND_DAOS = ARRANGEMENT_CONTROLLER_URL
+            + "/daos/{fundVersionId}";
 
     // Party
     protected static final String CREATE_RELATIONS = PARTY_CONTROLLER_URL + "/relation";
@@ -2840,6 +2907,50 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .pathParam("fundVersionId", fundVersionId)
                 .pathParam("outputId", outputId)
                 .body(param), UPDATE_NAMED_OUTPUT);
+    }
+
+    /**
+     * Vytvoření propojení na DAO
+     *
+     * @param fundVersionId
+     *            identfikátor verze AS
+     * @param daoId
+     *            identfikátor dao
+     * @param nodeId
+     *            uzel k nemuz je DAO pripojeno
+     */
+    protected ArrDaoLinkVO createDaoLink(final Integer fundVersionId,
+                                 final Integer daoId,
+                                 final Integer nodeId) {
+        Response resp = put(spec -> spec
+                .pathParam("fundVersionId", fundVersionId)
+                .pathParam("daoId", daoId)
+                .pathParam("nodeId", nodeId), ARRANGEMENT_DAOS_LINK_CREATE);
+        return resp.as(ArrDaoLinkVO.class);
+    }
+
+    /**
+     * Vymazani propojení na DAO
+     *
+     * @param fundVersionId
+     *            identfikátor verze AS
+     * @param daoLinkId
+     *            identfikátor propojeni Dao
+     */
+    protected void deleteDaoLink(final Integer fundVersionId,
+                                 final Integer daoLinkId) {
+        delete(spec -> spec
+                .pathParam("fundVersionId", fundVersionId)
+                .pathParam("daoLinkId", daoLinkId), ARRANGEMENT_DAOS_LINK_DELETE);
+    }
+
+    /**
+     * Vyhledání DAOs
+     */
+    protected List<ArrDaoVO> findDaos(final Integer fundVersionId) {
+        Response resp = get(spec -> spec.pathParameter("fundVersionId", fundVersionId),
+                            FIND_DAOS);
+        return Arrays.asList(resp.as(ArrDaoVO[].class));
     }
 
     /**
