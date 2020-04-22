@@ -72,7 +72,7 @@ class RegistryPage extends AbstractReactComponent {
         } = this.props;
         const apTypeIdMap = refTables.recordTypes.typeIdMap;
 
-        return id && data && apTypeIdMap[data.typeId].ruleSystemId !== null && data.ruleSystemId === null;
+        return id && data && apTypeIdMap[data.typeId] && apTypeIdMap[data.typeId].ruleSystemId !== null && data.ruleSystemId === null;
     };
 
     canDeleteRegistry = () => {

@@ -1,5 +1,9 @@
 package cz.tacr.elza.service;
 
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,6 +61,7 @@ import cz.tacr.elza.domain.ApRuleSystem;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApScopeRelation;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrChange;
@@ -106,9 +111,6 @@ import cz.tacr.elza.repository.SysLanguageRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.ImportAccessPoint;
-
-import static cz.tacr.elza.domain.ApState.StateApproval;
-import static java.util.stream.Collectors.*;
 
 
 /**
@@ -1453,6 +1455,21 @@ public class AccessPointService {
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
     public ApAccessPoint getAccessPoint(@AuthParam(type = AuthParam.Type.AP) final Integer accessPointId) {
         return getAccessPointInternal(accessPointId);
+    }
+
+    /**
+     * Získání přístupového bodu dle uuid
+     *
+     * @param uuid
+     *            identifikátor přístupového bodu
+     * @return přístupový bod
+     */
+    public ApAccessPoint getAccessPointByUuid(final String uuid) {
+        ApAccessPoint accessPoint = apAccessPointRepository.findApAccessPointByUuid(uuid);
+        if (accessPoint == null) {
+            throw new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST).setId(uuid);
+        }
+        return accessPoint;
     }
 
     /**

@@ -27,6 +27,7 @@ import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.*;
+import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.exception.DeleteFailedException;
 import cz.tacr.elza.service.importnodes.ImportFromFund;
 import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
@@ -184,6 +185,9 @@ public class ArrangementController {
 	@Autowired
     private StaticDataService staticDataService;
 
+    @Autowired
+    private FundLevelService fundLevelService;
+
     /**
      *  Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
      *
@@ -324,7 +328,8 @@ public class ArrangementController {
             final ArrDaoPackage arrDaoPackage = daoPackageRepository.getOneCheckExist(daoPackageId);
 
 
-            final List<ArrDao> arrDaoList = daoService.findDaosByPackage(fundVersion, arrDaoPackage, index, maxResults,
+            final List<ArrDao> arrDaoList = daoService.findDaosByPackage(fundVersion.getFundId(), arrDaoPackage, index,
+                                                                         maxResults,
                     BooleanUtils.isTrue(unassigned));
 
             final List<ArrDaoVO> daoList = factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
@@ -346,18 +351,34 @@ public class ArrangementController {
                 method = RequestMethod.PUT,
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
-    public void createDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+    public ArrDaoLinkVO createDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                               @PathVariable(value = "daoId") final Integer daoId,
                               @PathVariable(value = "nodeId") final Integer nodeId) {
-        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
-        Assert.notNull(daoId, "Identifikátor DAO musí být vyplněn");
-        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Validate.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+        Validate.notNull(daoId, "Identifikátor DAO musí být vyplněn");
+        Validate.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 
         final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         final ArrDao dao = daoRepository.getOneCheckExist(daoId);
         final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
 
-        final ArrDaoLink daoLink = daoService.createOrFindDaoLink(fundVersion, dao, node);
+        ArrDaoLink daoLink;
+        // specializace dle typu DAO
+        switch (dao.getDaoType()) {
+        case LEVEL:
+            ArrLevel level = fundLevelService.addNewLevel(fundVersion, node, node,
+                                                          AddLevelDirection.CHILD, null, null);
+            daoLink = daoService.createOrFindDaoLink(fundVersion, dao, level.getNode());
+            break;
+        case ATTACHMENT:
+            daoLink = daoService.createOrFindDaoLink(fundVersion, dao, node);
+            break;
+        default:
+            throw new SystemException("Unrecognized dao type");
+        }
+
+        ArrDaoLinkVO daoLinkVo = this.factoryVo.createDaoLink(daoLink, fundVersion);
+        return daoLinkVo;
     }
 
     /**

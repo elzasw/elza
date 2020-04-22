@@ -1,15 +1,19 @@
 package cz.tacr.elza.controller;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.List;
+
+import org.junit.Test;
+
 import com.jayway.restassured.response.Response;
+
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
-import org.junit.Test;
-import org.springframework.util.Assert;
-
-import java.util.List;
 
 
 /**
@@ -29,7 +33,7 @@ public class AdminControllerTest extends AbstractControllerTest {
     public void reindexStatusTest() {
         Response response = get(REINDEX_STATUS);
         Boolean status = response.getBody().as(Boolean.class);
-        Assert.notNull(status);
+        assertNotNull(status);
     }
 
     @Test
@@ -40,20 +44,20 @@ public class AdminControllerTest extends AbstractControllerTest {
     @Test
     public void externalSystems() {
         List<SysExternalSystemVO> externalSystems = getExternalSystems();
-        Assert.isTrue(externalSystems.size() == 0, "Počet externích systémů musí být 0. " + externalSystems);
+        assertTrue(externalSystems.size() == 0);
+
         ArrDigitalRepositoryVO digitalRepositoryVO = new ArrDigitalRepositoryVO();
         digitalRepositoryVO.setCode("TST1");
         digitalRepositoryVO.setName("Test 1");
         digitalRepositoryVO.setSendNotification(true);
-
         SysExternalSystemVO digitalRepositoryCreatedVO = createExternalSystem(digitalRepositoryVO);
-        Assert.notNull(digitalRepositoryCreatedVO.getId());
+        assertNotNull(digitalRepositoryCreatedVO.getId());
 
         ArrDigitizationFrontdeskVO digitizationFrontdeskVO = new ArrDigitizationFrontdeskVO();
         digitizationFrontdeskVO.setCode("TST2");
         digitizationFrontdeskVO.setName("Test 2");
         SysExternalSystemVO digitizationFrontdeskCreatedVO = createExternalSystem(digitizationFrontdeskVO);
-        Assert.notNull(digitizationFrontdeskCreatedVO.getId());
+        assertNotNull(digitizationFrontdeskCreatedVO.getId());
 
         ApExternalSystemVO externalSystemVO = new ApExternalSystemVO();
         externalSystemVO.setCode("TST3");
@@ -61,19 +65,19 @@ public class AdminControllerTest extends AbstractControllerTest {
         externalSystemVO.setType(ApExternalSystemType.DEFAULT);
 
         SysExternalSystemVO externalSystemCreatedVO = createExternalSystem(externalSystemVO);
-        Assert.notNull(externalSystemCreatedVO.getId());
+        assertNotNull(externalSystemCreatedVO.getId());
 
         externalSystems = getExternalSystems();
-        Assert.isTrue(externalSystems.size() == 3,  "Počet externích systémů musí být 3. " + externalSystems);
+        assertTrue(externalSystems.size() == 3);
 
         ((ArrDigitalRepositoryVO) digitalRepositoryCreatedVO).setSendNotification(false);
         SysExternalSystemVO digitalRepositoryUpdatedVO = updateExternalSystem(digitalRepositoryCreatedVO);
-        Assert.isTrue(!((ArrDigitalRepositoryVO) digitalRepositoryUpdatedVO).getSendNotification());
+        assertTrue(!((ArrDigitalRepositoryVO) digitalRepositoryUpdatedVO).getSendNotification());
 
         deleteExternalSystem(externalSystems.get(0));
 
         externalSystems = getExternalSystems();
-        Assert.isTrue(externalSystems.size() == 2,  "Počet externích systémů musí být 2. " + externalSystems);
+        assertTrue(externalSystems.size() == 2);
     }
 
 }

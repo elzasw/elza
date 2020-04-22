@@ -2,7 +2,21 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.factory.ApFactory;
-import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
+import cz.tacr.elza.controller.vo.ApAccessPointDescriptionVO;
+import cz.tacr.elza.controller.vo.ApAccessPointEditVO;
+import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApEidTypeVO;
+import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
+import cz.tacr.elza.controller.vo.ApRecordSimple;
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
+import cz.tacr.elza.controller.vo.ApStateChangeVO;
+import cz.tacr.elza.controller.vo.ApStateHistoryVO;
+import cz.tacr.elza.controller.vo.ApTypeVO;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
@@ -10,15 +24,46 @@ import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApExternalIdType;
+import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.SysLanguage;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.*;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemAptypeRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.PartyTypeRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.service.AccessPointMigrationService;
+import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.FragmentService;
+import cz.tacr.elza.service.PartyService;
+import cz.tacr.elza.service.StructObjService;
+import cz.tacr.elza.service.UserService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -27,11 +72,24 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 
@@ -81,9 +139,6 @@ public class ApController {
     private ItemSpecRepository itemSpecRepository;
 
     @Autowired
-    private ItemTypeRepository itemTypeRepository;
-
-    @Autowired
     private ItemAptypeRepository itemAptypeRepository;
 
     @Autowired
@@ -97,6 +152,9 @@ public class ApController {
 
     @Autowired
     private StructObjService structObjService;
+
+    @Autowired
+    private UserService userService;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
@@ -552,10 +610,28 @@ public class ApController {
      */
 	@Transactional
     @RequestMapping(value = "/{accessPointId}", method = RequestMethod.GET)
-    public ApAccessPointVO getAccessPoint(@PathVariable final Integer accessPointId) {
+    public ApAccessPointVO getAccessPoint(@PathVariable final String accessPointId) {
         Assert.notNull(accessPointId, "Identifikátor rejstříkového hesla musí být vyplněn");
-        ApAccessPoint ap = accessPointService.getAccessPoint(accessPointId);
+
+        ApAccessPoint ap;
+        if (accessPointId.length() == 36) {
+            ap = accessPointService.getAccessPointByUuid(accessPointId);
+        } else {
+            Integer apId;
+            try {
+                apId = Integer.parseInt(accessPointId);
+            } catch (NumberFormatException nfe) {
+                throw new SystemException("Unrecognized ID format")
+                        .set("ID", accessPointId);
+            }
+            ap = accessPointService.getAccessPointInternal(apId);
+        }
         ApState apState = accessPointService.getState(ap);
+        // check permissions
+        AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.AP_SCOPE_RD_ALL)
+                .or(UsrPermission.Permission.AP_SCOPE_RD, apState.getScopeId());
+        userService.authorizeRequest(authRequest);
+
         ApAccessPointVO vo = getAccessPoint(apState);
         return vo;
     }
@@ -606,7 +682,7 @@ public class ApController {
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
         ApState apState = accessPointService.getState(accessPoint);
         ApAccessPoint editedAccessPoint = accessPointService.changeDescription(apState, accessPointDescription.getDescription());
-        return getAccessPoint(editedAccessPoint.getAccessPointId());
+        return getAccessPoint(editedAccessPoint.getAccessPointId().toString());
     }
 
     /**
