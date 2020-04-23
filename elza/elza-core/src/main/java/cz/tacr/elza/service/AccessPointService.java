@@ -55,20 +55,14 @@ import cz.tacr.elza.packageimport.xml.SettingRecord;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
-import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
-import cz.tacr.elza.repository.ApNameItemRepository;
-import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
-import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PartyCreatorRepository;
-import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.ScopeRelationRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
@@ -78,8 +72,6 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.ImportAccessPoint;
 
 import static cz.tacr.elza.domain.ApState.StateApproval;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 
 /**
@@ -1024,18 +1016,6 @@ public class AccessPointService {
             throw new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST).setId(uuid);
         }
         return accessPoint;
-    }
-
-    /**
-     * Získání jména.
-     *
-     * @param objectId identifikátor objektu jména
-     * @return jméno
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
-    public ApName getName(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint accessPoint, final Integer objectId) {
-        Validate.notNull(accessPoint, "Přístupový bod musí být vyplněn");
-        return getName(objectId);
     }
 
     /**

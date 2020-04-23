@@ -35,13 +35,11 @@ public class AccessPointItemService {
                                   final StaticDataService staticDataService,
                                   final ApItemRepository itemRepository,
                                   final DataRepository dataRepository,
-                                  final ApAccessPointItemRepository accessPointItemRepository,
                                   final SequenceService sequenceService) {
         this.em = em;
         this.staticDataService = staticDataService;
         this.itemRepository = itemRepository;
         this.dataRepository = dataRepository;
-        this.accessPointItemRepository = accessPointItemRepository;
         this.sequenceService = sequenceService;
     }
 
@@ -49,8 +47,7 @@ public class AccessPointItemService {
      * Odstranění prvků popisů u dočasných jmen a AP.
      */
     public void removeTempItems() {
-        accessPointItemRepository.removeTempItems();
-        nameItemRepository.removeTempItems();
+
         //TODO fantis
 //        itemRepository.removeTempItems();
     }
@@ -59,7 +56,7 @@ public class AccessPointItemService {
      * Odstranění prvůk popisů u dočasných jmen a AP.
      */
     public void removeTempItems(final ApAccessPoint ap) {
-        nameItemRepository.removeTempItems(ap);
+
         //TODO fantis
 //        itemRepository.removeTempItems(ap);
     }
@@ -225,7 +222,7 @@ public class AccessPointItemService {
     /**
      * @return identifikátor pro nový item AP
      */
-    private int nextItemObjectId() {
+    public int nextItemObjectId() {
         return sequenceService.getNext(OBJECT_ID_SEQUENCE_NAME);
     }
 

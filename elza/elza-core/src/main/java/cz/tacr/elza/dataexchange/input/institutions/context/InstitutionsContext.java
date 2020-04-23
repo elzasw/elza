@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
+import cz.tacr.elza.dataexchange.input.parts.context.PartInfo;
 import org.apache.commons.lang.Validate;
 
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
@@ -46,8 +48,8 @@ public class InstitutionsContext {
         return instTypeCodeMap.get(code);
     }
 
-    public void addInstitution(ParInstitution entity) {
-        InstitutionWrapper wrapper = wrapperBuilder.build(entity);
+    public void addInstitution(ParInstitution entity, AccessPointInfo apInfo) {
+        InstitutionWrapper wrapper = wrapperBuilder.build(entity, apInfo);
         instQueue.add(wrapper);
         if (instQueue.size() >= batchSize) {
             store();

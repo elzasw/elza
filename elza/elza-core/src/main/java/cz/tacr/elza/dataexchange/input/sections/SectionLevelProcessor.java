@@ -77,7 +77,7 @@ public class SectionLevelProcessor implements ItemProcessor {
 
     private void processSubEntities(Level item, NodeContext node) {
         try {
-            processDescItems(item.getDdOrDoOrDn(), node);
+            processDescItems(item.getDdOrDoOrDp(), node);
         } catch (DEImportException e) {
             throw new DEImportException(
                     "Fund level cannot be processed, levelId:" + item.getId() + ", detail:" + e.getMessage(), e);

@@ -51,6 +51,10 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
         firstBatch = false;
     }
 
+    @Override
+    protected void processItemBatch(ArrayList<BatchEntry> entries) {
+    }
+
     private static List<Integer> getNodeIds(List<BatchEntry> entries) {
         List<Integer> nodeIds = new ArrayList<>(entries.size());
         for (BatchEntry entry : entries) {
@@ -77,7 +81,7 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
 
     /**
      * Compare/Order items
-     * 
+     *
      * @param item1
      * @param item2
      * @return

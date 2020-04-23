@@ -18,6 +18,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
+import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.xml.sax.SAXException;
@@ -35,16 +36,10 @@ import cz.tacr.elza.dataexchange.output.parties.PartyInfo;
 import cz.tacr.elza.dataexchange.output.sections.SectionContext;
 import cz.tacr.elza.dataexchange.output.writer.ApOutputStream;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
-import cz.tacr.elza.dataexchange.output.writer.PartiesOutputStream;
+//import cz.tacr.elza.dataexchange.output.writer.PartiesOutputStream;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.domain.ApChange;
-import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameComplement;
-import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.SystemException;
@@ -68,7 +63,7 @@ public class CamExportBuilder implements ExportBuilder {
     private Entities entities;
 
     private ApStream apStream;
-    private PartiesStream partiesStream;
+    //private PartiesStream partiesStream;
 
     protected CamExportBuilder getExportBuilder() {
         return this;
@@ -96,7 +91,7 @@ public class CamExportBuilder implements ExportBuilder {
 
     };
 
-    class PartiesStream implements PartiesOutputStream {
+   /* class PartiesStream implements PartiesOutputStream {
 
         @Override
         public void addParty(PartyInfo partyInfo) {
@@ -115,17 +110,17 @@ public class CamExportBuilder implements ExportBuilder {
             Validate.notNull(expBuilder.partiesStream);
             expBuilder.partiesStream = null;
         }
-    };
+    };*/
 
     private final void initBuilder() {
         this.entities = objectcFactory.createEntities();
         Validate.isTrue(apStream == null);
         this.apStream = null;
-        Validate.isTrue(partiesStream == null);
-        this.partiesStream = null;
+       /* Validate.isTrue(partiesStream == null);
+        this.partiesStream = null;*/
     }
 
-    public void addParty(PartyInfo partyInfo) {
+    /*public void addParty(PartyInfo partyInfo) {
         ApState apState = partyInfo.getApState();
         Entity ent = createEntity(apState);
 
@@ -141,10 +136,10 @@ public class CamExportBuilder implements ExportBuilder {
         }
 
         this.entities.getEnt().add(ent);
-    }
+    }*/
 
-    private void addEntityName(Entity ent, ParPartyName prefName) {
-        
+   /* private void addEntityName(Entity ent, ParPartyName prefName) {
+
         Part part = objectcFactory.createPart();
         part.setPid(UUID.randomUUID().toString());
         part.setT(PartType.PT_NAME);
@@ -154,9 +149,9 @@ public class CamExportBuilder implements ExportBuilder {
         saveName(prefName, part);
 
         ent.getPrts().getP().add(part);
-    }
+    }*/
 
-    private void saveAPName(ApName apName, Part part) {
+    /*private void saveAPName(ApName apName, Part part) {
         CamUtils.addItemString(part, CamItemType.NM_MAIN, apName.getName());
         CamUtils.addItemString(part, CamItemType.NM_SUP_GEN, apName.getComplement());
         SysLanguage sysLang = apName.getLanguage();
@@ -166,9 +161,9 @@ public class CamExportBuilder implements ExportBuilder {
                 CamUtils.addItemEnum(part, CamItemType.NM_LANG, "LNG_" + code);
             }
         }
-    }
+    }*/
 
-    private void saveName(ParPartyName partyName, Part part) {
+    /*private void saveName(ParPartyName partyName, Part part) {
         CamUtils.addItemString(part, CamItemType.NM_MAIN, partyName.getMainPart());
         CamUtils.addItemString(part, CamItemType.NM_MINOR, partyName.getOtherPart());
         CamUtils.addItemString(part, CamItemType.NM_DEGREE_PRE, partyName.getDegreeBefore());
@@ -244,12 +239,12 @@ public class CamExportBuilder implements ExportBuilder {
         CamUtils.addItemString(part, CamItemType.NM_SUP_CHRO, StringUtils.join(sbSupChro, ","));
         CamUtils.addItemString(part, CamItemType.NM_SUP_AUTH, StringUtils.join(sbSupAuth, ","));
         CamUtils.addItemString(part, CamItemType.NM_SUP_GEO, StringUtils.join(sbSupGeo, ","));
-    }
+    }*/
 
     private String partyNameType2NMType(String code) {
         // Problemy:
-        // - jak prevest: "LEGAL2", "PREFERED", "USED"?  
-        
+        // - jak prevest: "LEGAL2", "PREFERED", "USED"?
+
         switch(code) {
         case "LEGAL":
             // <name>úřední / skutečné / světské jméno / jméno za svobodna</name>
@@ -298,7 +293,7 @@ public class CamExportBuilder implements ExportBuilder {
         case "HISTORICAL3":
             // <name>jediný známý tvar jména v daném období</name>
             // -> jediný známý tvar
-            return "NT_ONLYKNOWN";    
+            return "NT_ONLYKNOWN";
         case "ARTIFICIAL":
             // <name>uměle vytvořené označení</name>
             // -> uměle vytvořené
@@ -326,7 +321,7 @@ public class CamExportBuilder implements ExportBuilder {
         case "NARROW":
             // <name>užší termín</name>
             // -> užší termín
-            return "NT_NARROWER";    
+            return "NT_NARROWER";
         case "SPECIAL":
             // <name>odborný termín</name>
             // -> odborný termín
@@ -353,13 +348,13 @@ public class CamExportBuilder implements ExportBuilder {
 
         // Nevyuzite typy pri prevodu:
         /*
-        ekvivalent,NT_EQUIV    
-        překlad,NT_TRANSLATED        
+        ekvivalent,NT_EQUIV
+        překlad,NT_TRANSLATED
         přezdívka/zlidovělá podoba,NT_ALIAS
         zjednodušená podoba,NT_SIMPLIFIED
         zkomolená podoba,NT_GARBLED
         "podoba, s, čestným, názvem",NT_HONOR
-        podle jiných pravidel,NT_OTHERRULES    
+        podle jiných pravidel,NT_OTHERRULES
         rodné,NT_NATIV
         světské,NT_SECULAR
         současná podoba,NT_ACTUAL
@@ -370,14 +365,14 @@ public class CamExportBuilder implements ExportBuilder {
 
     public void addAccessPoint(ApInfo apInfo) {
         Entity ent = createEntity(apInfo.getApState());
-        Collection<ApName> names = apInfo.getNames();
+       /* Collection<ApName> names = apInfo.getNames();
         for (ApName name : names) {
             addAPName(ent, name);
-        }
+        }*/
         this.entities.getEnt().add(ent);
     }
 
-    private void addAPName(Entity ent, ApName apName) {
+   /* private void addAPName(Entity ent, ApName apName) {
         Part part = objectcFactory.createPart();
         part.setPid(UUID.randomUUID().toString());
         part.setT(PartType.PT_NAME);
@@ -387,7 +382,7 @@ public class CamExportBuilder implements ExportBuilder {
         saveAPName(apName, part);
 
         ent.getPrts().getP().add(part);
-    }
+    }*/
 
     private Entity createEntity(ApState apState) {
         Entity ent = new Entity();
@@ -451,7 +446,7 @@ public class CamExportBuilder implements ExportBuilder {
     }
 
     @Override
-    public ApOutputStream openAccessPointsOutputStream() {
+    public ApOutputStream openAccessPointsOutputStream(ExportContext exportContext) {
         Validate.isTrue(apStream == null);
         if (apStream == null) {
             apStream = new ApStream();
@@ -459,19 +454,19 @@ public class CamExportBuilder implements ExportBuilder {
         return apStream;
     }
 
-    @Override
+   /* @Override
     public PartiesOutputStream openPartiesOutputStream() {
         Validate.isTrue(partiesStream == null);
         if (partiesStream == null) {
             partiesStream = new PartiesStream();
         }
         return partiesStream;
-    }
+    }*/
 
     @Override
     public void build(OutputStream os) throws XMLStreamException {
         JAXBElement<Entities> jaxbEnts = objectcFactory.createEnts(this.entities);
-        
+
         try {
             Marshaller marshaller = jaxbContext.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);

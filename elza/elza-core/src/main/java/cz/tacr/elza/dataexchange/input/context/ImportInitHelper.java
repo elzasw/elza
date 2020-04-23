@@ -23,6 +23,10 @@ public class ImportInitHelper {
 
     private final ApExternalIdRepository apEidRepository;
 
+    private final ApPartRepository apPartRepository;
+
+    private final ApItemRepository apItemRepository;
+
     private final StructObjValueService structObjService;
 
     private final AccessPointService accessPointService;
@@ -41,7 +45,9 @@ public class ImportInitHelper {
                             final StructObjValueService structObjService,
                             final AccessPointService accessPointService,
                             final DmsService dmsService,
-                            final ApStateRepository apStateRepository) {
+                            final ApStateRepository apStateRepository,
+                            final ApPartRepository apPartRepository,
+                            final ApItemRepository apItemRepository) {
         this.groovyScriptService = groovyScriptService;
         this.institutionRepository = institutionRepository;
         this.institutionTypeRepository = institutionTypeRepository;
@@ -53,6 +59,8 @@ public class ImportInitHelper {
         this.accessPointService = accessPointService;
         this.dmsService = dmsService;
         this.apStateRepository = apStateRepository;
+        this.apPartRepository = apPartRepository;
+        this.apItemRepository = apItemRepository;
     }
 
     public DmsService getDmsService() {
@@ -97,5 +105,11 @@ public class ImportInitHelper {
 
     public ApStateRepository getApStateRepository() {
         return apStateRepository;
+    }
+
+    public ApPartRepository getApPartRepository() { return apPartRepository; }
+
+    public ApItemRepository getApItemRepository() {
+        return apItemRepository;
     }
 }

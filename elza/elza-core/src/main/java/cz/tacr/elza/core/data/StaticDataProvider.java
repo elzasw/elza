@@ -27,6 +27,8 @@ public class StaticDataProvider {
 
     private List<ApExternalIdType> apEidTypes;
 
+    private List<RulPartType> partTypes;
+
     private List<SysLanguage> sysLanguages;
 
     private Map<Integer, RulPackage> packageIdMap;

@@ -65,7 +65,6 @@ public class ApFactory {
         this.eidRepository = eidRepository;
         this.scopeRepository = scopeRepository;
         this.staticDataService = staticDataService;
-        this.nameItemRepository = nameItemRepository;
         this.partRepository = partRepository;
         this.itemRepository = itemRepository;
         this.ruleService = ruleService;
@@ -406,7 +405,7 @@ public class ApFactory {
 
         Set<Integer> fragmentIds = fragmentMap.keySet();
         if (!fragmentIds.isEmpty()) {
-            List<ApFragment> fragments = fragmentRepository.findAll(fragmentIds);
+            List<ApPart> fragments = partRepository.findAll(fragmentIds);
             List<ApFragmentVO> fragmentVOList = FactoryUtils.transformList(fragments, this::createVO);
             for (ApFragmentVO fragmentVO : fragmentVOList) {
                 List<ApItemAPFragmentRefVO> fragmentRefVOS = fragmentMap.get(fragmentVO.getId());

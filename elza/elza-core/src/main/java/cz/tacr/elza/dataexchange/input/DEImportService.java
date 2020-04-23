@@ -15,7 +15,10 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.xml.stream.XMLStreamException;
 
+import cz.tacr.elza.dataexchange.input.parts.context.PartsContext;
+import cz.tacr.elza.dataexchange.input.reader.handlers.PartElementHandler;
 import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.*;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
@@ -50,14 +53,6 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.service.AccessPointDataService;
-import cz.tacr.elza.service.AccessPointService;
-import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.DmsService;
-import cz.tacr.elza.service.GroovyScriptService;
-import cz.tacr.elza.service.LevelTreeCacheService;
-import cz.tacr.elza.service.StructObjValueService;
-import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
 /**
@@ -84,6 +79,8 @@ public class DEImportService {
 
     private final AccessPointDataService apDataService;
 
+    private final AccessPointItemService apItemService;
+
     private final ResourcePathResolver resourcePathResolver;
 
     @Autowired
@@ -107,11 +104,14 @@ public class DEImportService {
                            AccessPointDataService apDataService,
                            ResourcePathResolver resourcePathResolver,
                            DmsService dmsService,
-                           ApStateRepository apStateRepository) {
+                           ApStateRepository apStateRepository,
+                           ApPartRepository apPartRepository,
+                           AccessPointItemService apItemService,
+                           ApItemRepository apItemRepository) {
         this.initHelper = new ImportInitHelper(groovyScriptService, institutionRepository, institutionTypeRepository,
                 arrangementService, levelRepository, apRepository, apEidRepository,
                 structObjService, accessPointService,
-                dmsService, apStateRepository);
+                dmsService, apStateRepository, apPartRepository, apItemRepository);
         this.em = em;
         this.userService = userService;
         this.staticDataService = staticDataService;
@@ -121,6 +121,7 @@ public class DEImportService {
         this.levelTreeCacheService = levelTreeCacheService;
         this.apDataService = apDataService;
         this.resourcePathResolver = resourcePathResolver;
+        this.apItemService = apItemService;
     }
 
     public List<String> getTransformationNames() throws IOException {
@@ -130,10 +131,10 @@ public class DEImportService {
         }
         try (Stream<Path> files = Files.list(transformDir);) {
             return files
-                .filter(p -> p.endsWith(".xslt"))
-                .map(p -> p.getFileName().toString())
-                .map(n -> n.substring(0, n.length() - 5))
-                .sorted().collect(Collectors.toList());
+                    .filter(p -> p.endsWith(".xslt"))
+                    .map(p -> p.getFileName().toString())
+                    .map(n -> n.substring(0, n.length() - 5))
+                    .sorted().collect(Collectors.toList());
         }
     }
 
@@ -150,7 +151,7 @@ public class DEImportService {
     }
 
     @Transactional(TxType.REQUIRED)
-    @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN })
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN})
     public void importData(InputStream is, DEImportParams params) {
 
         checkScopePermissions(params.getScopeId());
@@ -217,6 +218,7 @@ public class DEImportService {
     private ImportContext initContext(DEImportParams params, Session session) {
         // create AP change holder
         ApChangeHolder apChangeHolder = new ApChangeHolder(apDataService, session);
+        ObjectIdHolder objectIdHolder = new ObjectIdHolder(apItemService, session);
 
         // init storage manager
         StorageManager storageManager = new StorageManager(params.getMemoryScoreLimit(), session, apChangeHolder,
@@ -233,14 +235,15 @@ public class DEImportService {
 
         // initialize phase contexts
         AccessPointsContext apContext = new AccessPointsContext(storageManager, params.getBatchSize(), importScope,
-                apChangeHolder, staticData, initHelper);
+                apChangeHolder, staticData, initHelper, objectIdHolder);
         InstitutionsContext institutionsContext = new InstitutionsContext(storageManager, params.getBatchSize(),
                 initHelper);
         SectionsContext sectionsContext = initSectionsContext(storageManager, params, importScope, staticData);
+        PartsContext partsContext = new PartsContext(storageManager, params.getBatchSize(), apContext, staticData, initHelper, objectIdHolder);
 
         // initialize context
         ImportContext context = new ImportContext(session, staticData, apContext, institutionsContext,
-                sectionsContext, storageManager);
+                sectionsContext, partsContext, storageManager);
         context.init(params.getImportPhaseChangeListeners());
 
         return context;
@@ -283,6 +286,9 @@ public class DEImportService {
             throw new SystemException("Failed to prepare import source", e);
         }
         reader.addElementHandler("/edx/aps/ap", new AccessPointElementHandler(context));
+        reader.addElementHandler("/edx/pars/pg", new PartElementHandler(context));
+        reader.addElementHandler("/edx/pars/per", new PartElementHandler(context));
+        reader.addElementHandler("/edx/pars/evnt", new PartElementHandler(context));
         reader.addElementHandler("/edx/inss/inst", new InstitutionElementHandler(context));
         reader.addElementHandler("/edx/fs/s", new SectionElementHandler(context, reader, ignoreRootNodes));
         return reader;
