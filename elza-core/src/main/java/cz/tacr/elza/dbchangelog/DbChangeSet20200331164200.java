@@ -647,8 +647,8 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 storeNullValue(dataId, dataTypeId);
 
                 //zpracování valid_from_unitdate_id
-                Integer validFromUnitdateId = rs.getInt("valid_from_unitdate_id");
-                if (validFromUnitdateId != null) {
+                int validFromUnitdateId = rs.getInt("valid_from_unitdate_id");
+                if (validFromUnitdateId > 0) {
                     itemTypeCode = ItemTypeCode.NM_USED_FROM.code;
                     dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
                     dataId = createArrData(dataTypeId);
@@ -656,8 +656,8 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                     storeUnitdateValue(dataId, dataTypeId, validFromUnitdateId);
                 }
                 //zpracování valid_to_unitdate_id
-                Integer validToUnitdateId = rs.getInt("valid_to_unitdate_id");
-                if (validToUnitdateId != null) {
+                int validToUnitdateId = rs.getInt("valid_to_unitdate_id");
+                if (validToUnitdateId > 0) {
                     itemTypeCode = ItemTypeCode.NM_USED_TO.code;
                     dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
                     dataId = createArrData(dataTypeId);

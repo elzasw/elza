@@ -15,7 +15,6 @@ import cz.tacr.cam._2019.ItemUnitDate;
 import cz.tacr.cam._2019.Items;
 import cz.tacr.cam._2019.ObjectFactory;
 import cz.tacr.cam._2019.Part;
-import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.exception.SystemException;
 
@@ -67,7 +66,7 @@ public class CamUtils {
         addItemToPart(part, itemInt);
     }
 
-    public static void addItemUnitDate(Part part, CamItemType itemType, ParUnitdate unitDate) {
+    /*public static void addItemUnitDate(Part part, CamItemType itemType, ParUnitdate unitDate) {
         Validate.isTrue(!itemType.isUseSpecification());
         if (unitDate == null) {
             return;
@@ -91,7 +90,7 @@ public class CamUtils {
 
         ItemUnitDate itemUnitDate = new ItemUnitDate();
         itemUnitDate.setT(itemType.name());
-        
+
         itemUnitDate.setF(valueFrom);
         itemUnitDate.setFe(unitDate.getValueFromEstimated());
         itemUnitDate.setTo(valueTo);
@@ -99,11 +98,11 @@ public class CamUtils {
         itemUnitDate.setFmt(camFormat);
 
         addItemToPart(part, itemUnitDate);
-    }
+    }*/
 
     /**
      * convert elze unit date format to CAM format
-     * 
+     *
      * @param format
      * @return
      */

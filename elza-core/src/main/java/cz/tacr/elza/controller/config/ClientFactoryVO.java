@@ -85,9 +85,6 @@ public class ClientFactoryVO {
     private DataApFragRefRepository dataApFragRefRepository;
 
     @Autowired
-    private ApFragmentItemRepository fragmentItemRepository;
-
-    @Autowired
     private ApItemRepository apItemRepository;
 
     @Autowired

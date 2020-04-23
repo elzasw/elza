@@ -29,7 +29,7 @@ public interface InstitutionRepository extends JpaRepository<ParInstitution, Int
 
     //List<ParInstitutionInfo> findInfoByPartyIdIn(Collection<Integer> partyIds);
 
-    //List<ParInstitutionInfo> findInfoByAccessPointIdIn(Collection<Integer> accessPointIds);
+    List<ParInstitutionInfo> findInfoByAccessPointIdIn(Collection<Integer> accessPointIds);
 
     @Query("SELECT i FROM par_institution i " +
             "JOIN FETCH i.accessPoint ap")

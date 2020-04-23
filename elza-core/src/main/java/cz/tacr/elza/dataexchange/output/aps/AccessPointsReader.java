@@ -1,6 +1,8 @@
 package cz.tacr.elza.dataexchange.output.aps;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
@@ -9,6 +11,7 @@ import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
 import cz.tacr.elza.dataexchange.output.context.ExportReader;
 import cz.tacr.elza.dataexchange.output.writer.ApOutputStream;
+import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.UserService;
@@ -41,7 +44,7 @@ public class AccessPointsReader implements ExportReader {
      */
     @Override
     public void read() {
-        ApOutputStream os = context.getBuilder().openAccessPointsOutputStream();
+        ApOutputStream os = context.getBuilder().openAccessPointsOutputStream(context);
         try {
             readAccessPoints(os);
             os.processed();
@@ -63,6 +66,18 @@ public class AccessPointsReader implements ExportReader {
                     		.set("ID", apId);
                     }
                     if (!apInfo.isPartyAp()) {
+                        ItemDispatcher itd = new ItemDispatcher(context.getStaticData()) {
+                            @Override
+                            protected void onCompleted() {
+                                apInfo.setItems(this.getPartItemsMap());
+                            }
+                        };
+                        ItemLoader itemLoader = new ItemLoader(context, em, 1000);
+                        List<ApPart> parts = new ArrayList<>(apInfo.getParts());
+                        for(ApPart part : parts) {
+                            itemLoader.addRequest(part.getPartId(), itd);
+                        }
+                        itemLoader.flushItem();
                         os.addAccessPoint(apInfo);
                     }
                 }

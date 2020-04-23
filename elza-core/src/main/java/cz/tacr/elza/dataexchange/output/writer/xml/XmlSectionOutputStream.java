@@ -82,7 +82,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
             level.setPid(levelInfo.getParentNodeId().toString());
         }
         // convert description items references
-        convertItems(levelInfo.getItems(), level.getDdOrDoOrDn());
+        convertItems(levelInfo.getItems(), level.getDdOrDoOrDp());
 
         try {
             writeLevel(level);
@@ -155,7 +155,8 @@ class XmlSectionOutputStream implements SectionOutputStream {
         structObj.setId(Integer.toString(structObjInfo.getId()));
 
         // convert description items references
-        convertItems(structObjInfo.getItems(), structObj.getDdOrDoOrDn());
+        //TODO: gotzy convertItems(structObjInfo.getItems(), structObj.getDdOrDoOrDn());
+        convertItems(structObjInfo.getItems(), structObj.getDdOrDoOrDp());
 
         try {
             writeStructObject(structObj, structObjInfo.getStructType());

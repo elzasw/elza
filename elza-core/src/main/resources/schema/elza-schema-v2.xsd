@@ -51,7 +51,7 @@
 					<xs:documentation>Characteristics of record</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="nms" type="e:AccessPointNames" minOccurs="1" maxOccurs="1">
+			<xs:element name="nms" type="e:AccessPointNames" minOccurs="0" maxOccurs="1">
 				<xs:annotation>
 					<xs:documentation>Names of accesspoint
 
@@ -236,6 +236,21 @@ Type: decimal</xs:documentation>
 					<xs:annotation>
 						<xs:documentation>Value
 Type: Integer</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="DescriptionItemPartyRef">
+		<xs:annotation>
+			<xs:documentation>Party reference</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="e:DescriptionItem">
+				<xs:sequence/>
+				<xs:attribute name="paid" use="optional" type="e:Id">
+					<xs:annotation>
+						<xs:documentation>Party ID</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 			</xs:extension>
@@ -574,6 +589,11 @@ Each file has name and its content - binary data.</xs:documentation>
 				<xs:element name="do" type="e:DescriptionItemStructObjectRef" minOccurs="1" maxOccurs="1">
 					<xs:annotation>
 						<xs:documentation>Description item for packet</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="dp" type="e:DescriptionItemPartyRef" minOccurs="1" maxOccurs="1">
+					<xs:annotation>
+						<xs:documentation>Party reference</xs:documentation>
 					</xs:annotation>
 				</xs:element>
 				<xs:element name="dt" type="e:DescriptionItemUnitDate" minOccurs="1" maxOccurs="1">
@@ -1035,6 +1055,11 @@ This is ID of the created party</xs:documentation>
 				<xs:element name="do" type="e:DescriptionItemStructObjectRef" minOccurs="1" maxOccurs="1">
 					<xs:annotation>
 						<xs:documentation>Description item for packet</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="dp" type="e:DescriptionItemPartyRef" minOccurs="1" maxOccurs="1">
+					<xs:annotation>
+						<xs:documentation>Party reference</xs:documentation>
 					</xs:annotation>
 				</xs:element>
 				<xs:element name="dt" type="e:DescriptionItemUnitDate" minOccurs="1" maxOccurs="1">

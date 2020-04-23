@@ -18,6 +18,7 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.*;
+import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -463,26 +464,6 @@ public class ApController {
         ApState oldState = accessPointService.getState(accessPoint);
         ApState newState = accessPointService.changeApType(accessPointId, editVo.getTypeId());
         return apFactory.createVO(newState);
-    }
-
-    /**
-     * Změna popisu přístupového bodu.
-     *
-     * @param accessPointId          identifikátor přístupového bodu
-     * @param accessPointDescription popis přístupového bodu
-     * @return aktualizovaný záznam
-     */
-    @Transactional
-    @RequestMapping(value = "/{accessPointId}/description", method = RequestMethod.PUT)
-    public ApAccessPointVO changeDescription(@PathVariable final Integer accessPointId,
-                                             @RequestBody final ApAccessPointDescriptionVO accessPointDescription) {
-        Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
-        Assert.notNull(accessPointDescription, "Přístupový bod musí být vyplněn");
-
-        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        ApState apState = accessPointService.getState(accessPoint);
-        ApAccessPoint editedAccessPoint = accessPointService.changeDescription(apState, accessPointDescription.getDescription());
-        return getAccessPoint(editedAccessPoint.getAccessPointId().toString());
     }
 
     /**

@@ -10,6 +10,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import org.apache.commons.lang3.Validate;
 
 import com.ctc.wstx.api.WstxInputProperties;
@@ -44,8 +45,8 @@ public class XmlExportBuilder implements ExportBuilder {
     }
 
     @Override
-    public ApOutputStream openAccessPointsOutputStream() {
-        return new XmlApOutputStream(rootNode, tempDirectory);
+    public ApOutputStream openAccessPointsOutputStream(ExportContext context) {
+        return new XmlApOutputStream(rootNode, tempDirectory, context);
     }
 
     @Override

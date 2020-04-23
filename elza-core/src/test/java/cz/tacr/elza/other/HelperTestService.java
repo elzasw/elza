@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
+import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulPackage;

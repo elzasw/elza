@@ -1,5 +1,35 @@
 package cz.tacr.elza.service;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -14,27 +44,8 @@ import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.stream.Collectors;
+import cz.tacr.elza.service.vo.AccessPoint;
+import cz.tacr.elza.service.vo.Name;
 
 /**
  * Serviska pro generování.
@@ -74,8 +85,6 @@ public class AccessPointGeneratorService {
     public AccessPointGeneratorService(final ApRuleRepository ruleRepository,
                                        final ResourcePathResolver resourcePathResolver,
                                        final ApItemRepository itemRepository,
-                                       final ApNameItemRepository nameItemRepository,
-                                       final ApNameRepository apNameRepository,
                                        final RuleService ruleService,
                                        final ApPartRepository partRepository,
                                        final AccessPointDataService apDataService,
@@ -91,8 +100,6 @@ public class AccessPointGeneratorService {
         this.ruleRepository = ruleRepository;
         this.resourcePathResolver = resourcePathResolver;
         this.itemRepository = itemRepository;
-        this.nameItemRepository = nameItemRepository;
-        this.apNameRepository = apNameRepository;
         this.ruleService = ruleService;
         this.apDataService = apDataService;
         this.partRepository = partRepository;
@@ -277,31 +284,33 @@ public class AccessPointGeneratorService {
         accessPointService.reindexDescItem(accessPoint);*/
     }
 
-    private File findGroovyFile(final ApFragment fragment) {
-        RulStructuredType structureType = fragment.getFragmentType();
-        List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository
-                .findByStructureTypeAndDefTypeOrderByPriority(structureType, RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE);
-        RulComponent component;
-        RulPackage rulPackage;
-        if (structureExtensionDefinitions.size() > 0) {
-            RulStructureExtensionDefinition structureExtensionDefinition = structureExtensionDefinitions.get(structureExtensionDefinitions.size() - 1);
-            component = structureExtensionDefinition.getComponent();
-            rulPackage = structureExtensionDefinition.getRulPackage();
-        } else {
-            List<RulStructureDefinition> structureDefinitions = structureDefinitionRepository
-                    .findByStructTypeAndDefTypeOrderByPriority(structureType, RulStructureDefinition.DefType.SERIALIZED_VALUE);
-            if (structureDefinitions.size() > 0) {
-                RulStructureDefinition structureDefinition = structureDefinitions.get(structureDefinitions.size() - 1);
-                component = structureDefinition.getComponent();
-                rulPackage = structureDefinition.getRulPackage();
-            } else {
-                throw new SystemException("Strukturovaný typ '" + structureType.getCode() + "' nemá žádný script pro výpočet hodnoty", BaseCode.INVALID_STATE);
-            }
-        }
-
-        return resourcePathResolver.getGroovyDir(rulPackage)
-                .resolve(component.getFilename())
-                .toFile();
+    private File findGroovyFile(final ApPart fragment) {
+        //TODO fantis: prepsat na novy zpusob
+        return null;
+//        RulStructuredType structureType = fragment.getFragmentType();
+//        List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository
+//                .findByStructureTypeAndDefTypeOrderByPriority(structureType, RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE);
+//        RulComponent component;
+//        RulPackage rulPackage;
+//        if (structureExtensionDefinitions.size() > 0) {
+//            RulStructureExtensionDefinition structureExtensionDefinition = structureExtensionDefinitions.get(structureExtensionDefinitions.size() - 1);
+//            component = structureExtensionDefinition.getComponent();
+//            rulPackage = structureExtensionDefinition.getRulPackage();
+//        } else {
+//            List<RulStructureDefinition> structureDefinitions = structureDefinitionRepository
+//                    .findByStructTypeAndDefTypeOrderByPriority(structureType, RulStructureDefinition.DefType.SERIALIZED_VALUE);
+//            if (structureDefinitions.size() > 0) {
+//                RulStructureDefinition structureDefinition = structureDefinitions.get(structureDefinitions.size() - 1);
+//                component = structureDefinition.getComponent();
+//                rulPackage = structureDefinition.getRulPackage();
+//            } else {
+//                throw new SystemException("Strukturovaný typ '" + structureType.getCode() + "' nemá žádný script pro výpočet hodnoty", BaseCode.INVALID_STATE);
+//            }
+//        }
+//
+//        return resourcePathResolver.getGroovyDir(rulPackage)
+//                .resolve(component.getFilename())
+//                .toFile();
     }
 
     private File findGroovyFile(final ApAccessPoint accessPoint) {

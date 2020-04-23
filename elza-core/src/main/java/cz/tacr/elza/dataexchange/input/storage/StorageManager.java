@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import cz.tacr.elza.dataexchange.input.parts.context.ItemWrapper;
+import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
@@ -94,6 +96,23 @@ public class StorageManager implements StoredEntityCallback {
         }
         ApAccessPointStorage storage = new ApAccessPointStorage(session, this, apChangeHolder, initHelper);
         storage.store(apws);
+    }
+
+    public void storeParts(Collection<PartWrapper> pws) {
+        if(pws.isEmpty()) {
+            return;
+        }
+        ApPartStorage storage = new ApPartStorage(session, this, initHelper);
+        storage.store(pws);
+
+    }
+
+    public void storeItems(Collection<ItemWrapper> iws) {
+        if(iws.isEmpty()) {
+            return;
+        }
+        ApItemStorage storage = new ApItemStorage(session, this, initHelper);
+        storage.store(iws);
     }
 
 	public void clear() {
