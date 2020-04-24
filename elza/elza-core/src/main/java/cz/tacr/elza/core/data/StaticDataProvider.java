@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.common.db.HibernateUtils;
@@ -57,6 +58,10 @@ public class StaticDataProvider {
     private Map<Integer, StructType> structuredTypeIdMap = new HashMap<>();
 
     private Map<String, StructType> structuredTypeCodeMap = new HashMap<>();
+
+    private Map<Integer, RulPartType> partTypeIdMap = new HashMap<>();
+
+    private Map<String, RulPartType> partTypeCodeMap = new HashMap<>();
 
     private Map<Integer, ItemType> itemTypeIdMap;
 
@@ -203,6 +208,16 @@ public class StaticDataProvider {
         return structuredTypeCodeMap.get(code);
     }
 
+    public RulPartType getPartTypeById(Integer id) {
+        Validate.notNull(id);
+        return partTypeIdMap.get(id);
+    }
+
+    public RulPartType getPartTypeByCode(String code) {
+        Validate.notEmpty(code);
+        return partTypeCodeMap.get(code);
+    }
+
     public List<ItemType> getItemTypes() {
         return itemTypes;
     }
@@ -265,6 +280,7 @@ public class StaticDataProvider {
         initApEidTypes(service.apEidTypeRepository);
         initSysLanguages(service.sysLanguageRepository);
         initApTypeRoles(service.registryRoleRepository);
+        initPartTypes(service.partTypeRepository);
     }
 
     private void initRuleSets(RuleSetRepository ruleSetRepository) {
@@ -353,6 +369,17 @@ public class StaticDataProvider {
         });
 
         this.structuredTypes = Collections.unmodifiableList(structTypes);
+    }
+
+    private void initPartTypes(PartTypeRepository partTypeRepository) {
+        List<RulPartType> partTypes = partTypeRepository.findAll();
+
+        if (CollectionUtils.isNotEmpty(partTypes)) {
+            for (RulPartType partType : partTypes) {
+                partTypeIdMap.put(partType.getPartTypeId(), partType);
+                partTypeCodeMap.put(partType.getCode(), partType);
+            }
+        }
     }
 
     private void initPackages(PackageRepository packageRepository) {
