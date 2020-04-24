@@ -82,6 +82,8 @@ public class StaticDataService {
 
     final RegistryRoleRepository registryRoleRepository;
 
+    final PartTypeRepository partTypeRepository;
+
     @Autowired
     public StaticDataService(final EntityManager em,
                              final RuleSetRepository ruleSetRepository,
@@ -102,7 +104,8 @@ public class StaticDataService {
                              final RelationTypeRoleTypeRepository relationTypeRoleTypeRepository,
                              final ApExternalIdTypeRepository apEidTypeRepository,
                              final SysLanguageRepository sysLanguageRepository,
-                             final RegistryRoleRepository registryRoleRepository) {
+                             final RegistryRoleRepository registryRoleRepository,
+                             final PartTypeRepository partTypeRepository) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
         this.itemTypeRepository = itemTypeRepository;
@@ -123,6 +126,7 @@ public class StaticDataService {
         this.apEidTypeRepository = apEidTypeRepository;
         this.sysLanguageRepository = sysLanguageRepository;
         this.registryRoleRepository = registryRoleRepository;
+        this.partTypeRepository = partTypeRepository;
     }
 
     /**
