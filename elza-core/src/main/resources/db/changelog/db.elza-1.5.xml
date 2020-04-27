@@ -204,6 +204,11 @@
         <dropColumn tableName="rul_item_type" columnName="fragment_type_id"/>
     </changeSet>
 
+    <changeSet id="20200421140500" author="fantis">
+        <dropTable tableName="ap_fragment_item"/>
+        <dropTable tableName="ap_access_point_item"/>
+    </changeSet>
+
     <changeSet id="20200421155900" author="gotzy">
         <preConditions onFail="MARK_RAN">
             <not>

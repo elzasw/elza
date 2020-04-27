@@ -23,7 +23,6 @@ public class ApNameItem extends ApItem {
     public ApNameItem() {
     }
 
-    @Override
     public ApNameItem copy() {
         return new ApNameItem(this);
     }
