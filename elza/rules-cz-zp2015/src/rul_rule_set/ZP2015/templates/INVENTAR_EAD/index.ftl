@@ -215,7 +215,7 @@
   </#switch>
   <${tagname} level="${level}" <#rt>
     <#if level=="otherlevel">otherlevel="${otherlevel}"</#if> <#t>
-    base="http://archdesc.nacr.cz/dids/${node.uuid}" <#t>
+    base="https://archdesc.nacr.cz/dids/${node.uuid}" <#t>
   ><#lt>
 <@writeNode node />
   <#-- ${node.depth} -->
