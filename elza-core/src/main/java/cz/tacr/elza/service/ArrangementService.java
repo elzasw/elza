@@ -827,7 +827,8 @@ public class ArrangementService {
                 nodeIdList = nodeIdList.subList(0, 20);
             }
             ArrFundVersion fundVersion = getOpenVersionByFundId(fundToNodeList.getFundId());
-            return levelTreeCacheService.getNodesByIds(nodeIdList, fundVersion.getFundVersionId());
+            List<Integer> sortedList = levelTreeCacheService.sortNodesByTreePosition(nodeIdList, fundVersion);
+            return levelTreeCacheService.getNodesByIds(sortedList, fundVersion.getFundVersionId());
         }
         return Collections.emptyList();
     }
