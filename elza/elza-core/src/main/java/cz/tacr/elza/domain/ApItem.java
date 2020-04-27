@@ -13,7 +13,7 @@ import javax.persistence.*;
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "ap_item")
-public abstract class ApItem {
+public class ApItem {
 
     @Id
     @GeneratedValue
@@ -84,7 +84,9 @@ public abstract class ApItem {
         this.dataId = other.dataId;
     }
 
-    public abstract ApItem copy();
+    public ApItem copy() {
+        return new ApItem(this);
+    }
 
     public Integer getItemId() {
         return itemId;
