@@ -8,7 +8,6 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ApAccessPointItemRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApNameItemRepository;
 import cz.tacr.elza.repository.DataRepository;
@@ -31,7 +30,6 @@ public class AccessPointItemService {
     private final ApItemRepository itemRepository;
     private final DataRepository dataRepository;
     private final ApNameItemRepository nameItemRepository;
-    private final ApAccessPointItemRepository accessPointItemRepository;
     private final SequenceService sequenceService;
 
     public AccessPointItemService(final EntityManager em,
@@ -39,14 +37,12 @@ public class AccessPointItemService {
                                   final ApItemRepository itemRepository,
                                   final DataRepository dataRepository,
                                   final ApNameItemRepository nameItemRepository,
-                                  final ApAccessPointItemRepository accessPointItemRepository,
                                   final SequenceService sequenceService) {
         this.em = em;
         this.staticDataService = staticDataService;
         this.itemRepository = itemRepository;
         this.dataRepository = dataRepository;
         this.nameItemRepository = nameItemRepository;
-        this.accessPointItemRepository = accessPointItemRepository;
         this.sequenceService = sequenceService;
     }
 
@@ -55,7 +51,8 @@ public class AccessPointItemService {
      */
     public void removeTempItems() {
         nameItemRepository.removeTempItems();
-        accessPointItemRepository.removeTempItems();
+        //TODO fantis
+//        itemRepository.removeTempItems();
     }
 
     /**
@@ -63,7 +60,8 @@ public class AccessPointItemService {
      */
     public void removeTempItems(final ApAccessPoint ap) {
         nameItemRepository.removeTempItems(ap);
-        accessPointItemRepository.removeTempItems(ap);
+        //TODO fantis
+//        itemRepository.removeTempItems(ap);
     }
 
     @FunctionalInterface

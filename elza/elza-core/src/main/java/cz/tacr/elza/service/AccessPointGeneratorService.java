@@ -54,9 +54,8 @@ import cz.tacr.elza.drools.service.ModelFactory;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApAccessPointItemRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
-import cz.tacr.elza.repository.ApFragmentItemRepository;
+import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApNameItemRepository;
 import cz.tacr.elza.repository.ApNameRepository;
@@ -82,9 +81,8 @@ public class AccessPointGeneratorService {
 
     private final ApRuleRepository ruleRepository;
     private final ResourcePathResolver resourcePathResolver;
-    private final ApFragmentItemRepository fragmentItemRepository;
+    private final ApItemRepository itemRepository;
     private final ApNameItemRepository nameItemRepository;
-    private final ApAccessPointItemRepository accessPointItemRepository;
     private final ApNameRepository apNameRepository;
     private final RuleService ruleService;
     private final ApPartRepository partRepository;
@@ -107,9 +105,8 @@ public class AccessPointGeneratorService {
     @Autowired
     public AccessPointGeneratorService(final ApRuleRepository ruleRepository,
                                        final ResourcePathResolver resourcePathResolver,
-                                       final ApFragmentItemRepository fragmentItemRepository,
+                                       final ApItemRepository itemRepository,
                                        final ApNameItemRepository nameItemRepository,
-                                       final ApAccessPointItemRepository accessPointItemRepository,
                                        final ApNameRepository apNameRepository,
                                        final RuleService ruleService,
                                        final ApPartRepository partRepository,
@@ -125,9 +122,8 @@ public class AccessPointGeneratorService {
                                        final EntityManager em) {
         this.ruleRepository = ruleRepository;
         this.resourcePathResolver = resourcePathResolver;
-        this.fragmentItemRepository = fragmentItemRepository;
+        this.itemRepository = itemRepository;
         this.nameItemRepository = nameItemRepository;
-        this.accessPointItemRepository = accessPointItemRepository;
         this.apNameRepository = apNameRepository;
         this.ruleService = ruleService;
         this.apDataService = apDataService;
@@ -228,7 +224,7 @@ public class AccessPointGeneratorService {
     }
 
     public void generateAndSetResult(final ApPart fragment) {
-        List<ApItem> fragmentItems = new ArrayList<>(fragmentItemRepository.findValidItemsByFragment(fragment));
+        List<ApItem> fragmentItems = new ArrayList<>(itemRepository.findValidItemsByPart(fragment));
         FragmentErrorDescription fragmentErrorDescription = new FragmentErrorDescription();
         ApStateEnum stateOld = fragment.getState();
         ApStateEnum state = ApStateEnum.OK;
@@ -287,7 +283,7 @@ public class AccessPointGeneratorService {
             return;
         }
 
-        List<ApItem> apItems = new ArrayList<>(accessPointItemRepository.findValidItemsByAccessPoint(accessPoint));
+        List<ApItem> apItems = new ArrayList<>(itemRepository.findValidItemsByAccessPoint(accessPoint));
         List<ApName> apNames = apNameRepository.findByAccessPoint(accessPoint);
 
         Map<Integer, ApName> apNameMap = apNames.isEmpty()
