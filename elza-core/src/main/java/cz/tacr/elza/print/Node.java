@@ -28,10 +28,17 @@ public class Node {
     private List<Record> nodeAPs;
 
     /**
+     * UUID of the node
+     */
+    private String uuid;
+
+    /**
      * Konstruktor s povinnými hodnotami
      *
-     * @param nodeId vazba na nodeId
-     * @param nodel vazba na output
+     * @param nodeId
+     *            vazba na nodeId
+     * @param nodel
+     *            vazba na output
      */
     public Node(NodeId nodeId) {
         this.nodeId = nodeId;
@@ -39,6 +46,10 @@ public class Node {
 
     public NodeId getNodeId() {
         return nodeId;
+    }
+
+    public String getUuid() {
+        return uuid;
     }
 
     /**
@@ -201,6 +212,7 @@ public class Node {
      * Init output node from node cache.
      */
     public void load(RestoredNode cachedNode, OutputItemConvertor conv) {
+        uuid = cachedNode.getUuid();
         // set node items
         List<ArrDescItem> descItems = cachedNode.getDescItems();
         if (descItems != null) {

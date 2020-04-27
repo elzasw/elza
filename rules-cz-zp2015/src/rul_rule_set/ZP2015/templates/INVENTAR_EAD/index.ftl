@@ -191,28 +191,32 @@
     <#local tagname="ead:archdesc">
   </#if>
   <#-- Write level type -->
+  <#local level="otherlevel">
   <#switch node.getSingleItem("ZP2015_LEVEL_TYPE").specification.code>
   <#case "ZP2015_LEVEL_ROOT">
-    <${tagname} level="fonds">
+    <#local level="fonds">
     <#break>
   <#case "ZP2015_LEVEL_SECTION">
-    <${tagname} level="subfonds">
+    <#local level="subfonds">
     <#break>
   <#case "ZP2015_LEVEL_SERIES">
-    <${tagname} level="series">
+    <#local level="series">
     <#break>
   <#case "ZP2015_LEVEL_FOLDER">
-    <${tagname} level="subseries">
+    <#local level="subseries">
     <#break>
   <#case "ZP2015_LEVEL_ITEM">
-    <${tagname} level="item">
+    <#local level="item">
     <#break>
   <#case "ZP2015_LEVEL_PART">
+    <#local otherlevel="itempart">    
     <${tagname} level="otherlevel" otherlevel="itempart">
-    <#break>
-  <#default>
-  	<${tagname}>
+    <#break>  	
   </#switch>
+  <${tagname} level="${level}" <#rt>
+    <#if level=="otherlevel">otherlevel="${otherlevel}"</#if> <#t>
+    base="http://archdesc.nacr.cz/dids/${node.uuid}" <#t>
+  ><#lt>
 <@writeNode node />
   <#-- ${node.depth} -->
   <#assign endtags=endtags+["</"+tagname+">"]>
