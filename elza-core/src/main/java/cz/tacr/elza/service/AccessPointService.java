@@ -48,7 +48,6 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApAccessPointItem;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApDescription;
 import cz.tacr.elza.domain.ApExternalId;
@@ -89,7 +88,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
 import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApAccessPointItemRepository;
+import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
@@ -210,7 +209,7 @@ public class AccessPointService {
     private ApNameItemRepository nameItemRepository;
 
     @Autowired
-    private ApAccessPointItemRepository accessPointItemRepository;
+    private ApItemRepository itemRepository;
 
     @Autowired
     private AccessPointItemService apItemService;
@@ -1019,7 +1018,7 @@ public class AccessPointService {
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_MIGRATE);
 
-        List<ApAccessPointItem> itemsDbAp = accessPointItemRepository.findValidItemsByAccessPoint(accessPoint);
+        List<ApItem> itemsDbAp = itemRepository.findValidItemsByAccessPoint(accessPoint);
         apItemService.changeItems(apItems, new ArrayList<>(itemsDbAp), change, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
                 -> createApItem(accessPoint, it, is, c, objectId, position));
 
@@ -1085,7 +1084,7 @@ public class AccessPointService {
         apDataService.validationNotDeleted(apState);
 
         ApAccessPoint accessPoint = apState.getAccessPoint();
-        List<ApAccessPointItem> itemsDb = accessPointItemRepository.findValidItemsByAccessPoint(accessPoint);
+        List<ApItem> itemsDb = itemRepository.findValidItemsByAccessPoint(accessPoint);
 
         ApChange change;
         if (accessPoint.getState() == ApStateEnum.TEMP) {
@@ -1123,7 +1122,8 @@ public class AccessPointService {
         } else {
             change = apDataService.createChange(ApChange.Type.AP_UPDATE);
         }
-        apItemService.deleteItemsByType(accessPointItemRepository, accessPoint, itemType, change);
+        //TODO fantis
+//        apItemService.deleteItemsByType(itemRepository, accessPoint, itemType, change);
 
         //apGeneratorService.generateAndSetResult(accessPoint, change);
         apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
@@ -1838,8 +1838,7 @@ public class AccessPointService {
      * @return vytvořená položka
      */
     private ApItem createApItem(final ApAccessPoint accessPoint, final RulItemType it, final RulItemSpec is, final ApChange c, final int objectId, final int position) {
-        ApAccessPointItem item = new ApAccessPointItem();
-        item.setAccessPoint(accessPoint);
+        ApItem item = new ApItem();
         item.setItemType(it);
         item.setItemSpec(is);
         item.setCreateChange(c);

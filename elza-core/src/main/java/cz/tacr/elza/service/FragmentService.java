@@ -6,7 +6,7 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApChangeRepository;
-import cz.tacr.elza.repository.ApFragmentItemRepository;
+import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
@@ -22,7 +22,7 @@ import java.util.Set;
 public class FragmentService {
 
     private final ApPartRepository partRepository;
-    private final ApFragmentItemRepository fragmentItemRepository;
+    private final ApItemRepository itemRepository;
     private final ApChangeRepository changeRepository;
     private final AccessPointGeneratorService apGeneratorService;
     private final AccessPointItemService apItemService;
@@ -30,13 +30,13 @@ public class FragmentService {
 
     @Autowired
     public FragmentService(final ApPartRepository partRepository,
-                           final ApFragmentItemRepository fragmentItemRepository,
+                           final ApItemRepository itemRepository,
                            final ApChangeRepository changeRepository,
                            final AccessPointGeneratorService apGeneratorService,
                            final AccessPointItemService apItemService,
                            final AccessPointDataService apDataService) {
         this.partRepository = partRepository;
-        this.fragmentItemRepository = fragmentItemRepository;
+        this.itemRepository = itemRepository;
         this.changeRepository = changeRepository;
         this.apGeneratorService = apGeneratorService;
         this.apItemService = apItemService;
@@ -63,17 +63,17 @@ public class FragmentService {
         return fragment;
     }
 
-    public void changeFragmentItems(final ApPart fragment, final List<ApUpdateItemVO> items) {
-        Validate.notNull(fragment, "Fragment musí být vyplněn");
+    public void changeFragmentItems(final ApPart part, final List<ApUpdateItemVO> items) {
+        Validate.notNull(part, "Fragment musí být vyplněn");
         Validate.notEmpty(items, "Musí být alespoň jedna položka ke změně");
 
-        List<ApFragmentItem> itemsDb = fragmentItemRepository.findValidItemsByFragment(fragment);
+        List<ApItem> itemsDb = itemRepository.findValidItemsByPart(part);
 
         ApChange change = apDataService.createChange(ApChange.Type.FRAGMENT_CHANGE);
         apItemService.changeItems(items, new ArrayList<>(itemsDb), change, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
-                -> createFragmentItem(fragment, it, is, c, objectId, position));
+                -> createPartItem(part, it, is, c, objectId, position));
 
-        apGeneratorService.generateAndSetResult(fragment);
+        apGeneratorService.generateAndSetResult(part);
     }
 
     /**
@@ -87,13 +87,14 @@ public class FragmentService {
         Validate.notNull(itemType, "Typ musí být vyplněn");
         ApChange change = apDataService.createChange(ApChange.Type.FRAGMENT_CHANGE);
 
-        apItemService.deleteItemsByType(fragmentItemRepository, fragment, itemType, change);
+        //TODO fantis
+        //apItemService.deleteItemsByType(itemRepository, fragment, itemType, change);
         apGeneratorService.generateAndSetResult(fragment);
     }
 
-    private ApItem createFragmentItem(final ApPart fragment, final RulItemType it, final RulItemSpec is, final ApChange c, final int objectId, final int position) {
-        ApFragmentItem item = new ApFragmentItem();
-        item.setFragment(fragment);
+    private ApItem createPartItem(final ApPart part, final RulItemType it, final RulItemSpec is, final ApChange c, final int objectId, final int position) {
+        ApItem item = new ApItem();
+        item.setPart(part);
         item.setItemType(it);
         item.setItemSpec(is);
         item.setCreateChange(c);
@@ -102,16 +103,16 @@ public class FragmentService {
         return item;
     }
 
-    public void deleteFragment(final ApPart fragment) {
-        if (fragment.getState() == ApStateEnum.TEMP) {
-            List<ApFragmentItem> items = fragmentItemRepository.findValidItemsByFragment(fragment);
+    public void deleteFragment(final ApPart part) {
+        if (part.getState() == ApStateEnum.TEMP) {
+            List<ApItem> items = itemRepository.findValidItemsByPart(part);
             Set<ApChange> changes = new HashSet<>();
-            for (ApFragmentItem item : items) {
+            for (ApItem item : items) {
                 changes.add(item.getCreateChange());
             }
             changeRepository.delete(changes);
-            fragmentItemRepository.delete(items);
-            partRepository.delete(fragment);
+            itemRepository.delete(items);
+            partRepository.delete(part);
         } else {
             throw new NotImplementedException("Mazání platného fragmentu není k dispozici");
             // zde bude potřeba zkontrolovat návazné entity (z ap_fragment_item a arr_data_apfrag_ref)

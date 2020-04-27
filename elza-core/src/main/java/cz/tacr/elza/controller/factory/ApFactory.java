@@ -43,13 +43,11 @@ public class ApFactory {
 
     private final StaticDataService staticDataService;
 
-    private final ApFragmentItemRepository fragmentItemRepository;
-
     private final ApNameItemRepository nameItemRepository;
 
     private final ApPartRepository partRepository;
 
-    private final ApAccessPointItemRepository accessPointItemRepository;
+    private final ApItemRepository itemRepository;
 
     private final RuleService ruleService;
 
@@ -67,10 +65,9 @@ public class ApFactory {
                      final ApExternalIdRepository eidRepository,
                      final ScopeRepository scopeRepository,
                      final StaticDataService staticDataService,
-                     final ApFragmentItemRepository fragmentItemRepository,
                      final ApNameItemRepository nameItemRepository,
                      final ApPartRepository partRepository,
-                     final ApAccessPointItemRepository accessPointItemRepository,
+                     final ApItemRepository itemRepository,
                      final RuleService ruleService,
                      final RuleFactory ruleFactory,
                      final PartyRepository partyRepository,
@@ -82,10 +79,9 @@ public class ApFactory {
         this.eidRepository = eidRepository;
         this.scopeRepository = scopeRepository;
         this.staticDataService = staticDataService;
-        this.fragmentItemRepository = fragmentItemRepository;
         this.nameItemRepository = nameItemRepository;
         this.partRepository = partRepository;
-        this.accessPointItemRepository = accessPointItemRepository;
+        this.itemRepository = itemRepository;
         this.ruleService = ruleService;
         this.ruleFactory = ruleFactory;
         this.partyRepository = partyRepository;
@@ -306,7 +302,7 @@ public class ApFactory {
     }*/
 
     private ApFormVO createFormVO(ApAccessPoint accessPoint, ApType apType) {
-        List<ApItem> apItems = new ArrayList<>(accessPointItemRepository.findValidItemsByAccessPoint(accessPoint));
+        List<ApItem> apItems = new ArrayList<>(itemRepository.findValidItemsByAccessPoint(accessPoint));
         List<RulItemTypeExt> rulItemTypes = ruleService.getApItemTypesInternal(apType, apItems, ApRule.RuleType.BODY_ITEMS);
 
         ApFormVO form = new ApFormVO();
@@ -347,7 +343,6 @@ public class ApFactory {
     private void fillRefEntities(final List<ApItemVO> items) {
         Map<Integer, List<ApItemAccessPointRefVO>> accessPointsMap = new HashMap<>();
         Map<Integer, List<ApItemPartyRefVO>> partyMap = new HashMap<>();
-        Map<Integer, List<ApItemAPFragmentRefVO>> fragmentMap = new HashMap<>();
 
         for (ApItemVO item : items) {
             if (item instanceof ApItemAccessPointRefVO) {
@@ -361,12 +356,6 @@ public class ApFactory {
                 if (partyId != null) {
                     List<ApItemPartyRefVO> list = partyMap.computeIfAbsent(partyId, k -> new ArrayList<>());
                     list.add((ApItemPartyRefVO) item);
-                }
-            } else if (item instanceof ApItemAPFragmentRefVO) {
-                Integer fragmentId = ((ApItemAPFragmentRefVO) item).getValue();
-                if (fragmentId != null) {
-                    List<ApItemAPFragmentRefVO> list = fragmentMap.computeIfAbsent(fragmentId, k -> new ArrayList<>());
-                    list.add((ApItemAPFragmentRefVO) item);
                 }
             }
         }
@@ -391,18 +380,6 @@ public class ApFactory {
                 List<ApItemPartyRefVO> partyRefVOS = partyMap.get(partyVO.getId());
                 for (ApItemPartyRefVO partyRefVO : partyRefVOS) {
                     partyRefVO.setParty(partyVO);
-                }
-            }
-        }
-
-        Set<Integer> fragmentIds = fragmentMap.keySet();
-        if (!fragmentIds.isEmpty()) {
-            List<ApPart> fragments = partRepository.findAll(fragmentIds);
-            List<ApFragmentVO> fragmentVOList = FactoryUtils.transformList(fragments, this::createVO);
-            for (ApFragmentVO fragmentVO : fragmentVOList) {
-                List<ApItemAPFragmentRefVO> fragmentRefVOS = fragmentMap.get(fragmentVO.getId());
-                for (ApItemAPFragmentRefVO fragmentRefVO : fragmentRefVOS) {
-                    fragmentRefVO.setFragment(fragmentVO);
                 }
             }
         }
@@ -453,9 +430,6 @@ public class ApFactory {
                 break;
             case DATE:
                 item = new ApItemDateVO(apItem);
-                break;
-            case APFRAG_REF:
-                item = new ApItemAPFragmentRefVO(apItem);
                 break;
             case URI_REF:
                 item = new ApItemUriRefVO(apItem);
