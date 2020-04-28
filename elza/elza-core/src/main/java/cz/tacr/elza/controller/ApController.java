@@ -7,14 +7,17 @@ import cz.tacr.elza.controller.vo.ApAccessPointDescriptionVO;
 import cz.tacr.elza.controller.vo.ApAccessPointEditVO;
 import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApAttributesInfoVO;
 import cz.tacr.elza.controller.vo.ApEidTypeVO;
 import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
+import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApRecordSimple;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
 import cz.tacr.elza.controller.vo.ApStateChangeVO;
 import cz.tacr.elza.controller.vo.ApStateHistoryVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
+import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
@@ -303,11 +306,8 @@ public class ApController {
         ApScope scope = accessPointService.getScope(scopeId);
         ApType type = accessPointService.getType(typeId);
         SysLanguage language = StringUtils.isEmpty(accessPoint.getLanguageCode()) ? null : accessPointService.getLanguage(accessPoint.getLanguageCode());
-        String name = StringUtils.isEmpty(accessPoint.getName()) ? null : accessPoint.getName();
-        String description = StringUtils.isEmpty(accessPoint.getDescription()) ? null : accessPoint.getDescription();
-        String complement = StringUtils.isEmpty(accessPoint.getComplement()) ? null : accessPoint.getComplement();
 
-        ApState apState = accessPointService.createAccessPoint(scope, type, name, complement, language, description);
+        ApState apState = accessPointService.createAccessPoint(scope, type, language, accessPoint.getPartForm());
         return apFactory.createVO(apState);
     }
 
@@ -1121,5 +1121,85 @@ public class ApController {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
 
         accessPointService.updateApState(accessPoint, stateChange.getState(), stateChange.getComment(), stateChange.getTypeId(), stateChange.getScopeId());
+    }
+
+    /**
+     * Založení nové části přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param apPartFormVO data pro vytvoření části
+     */
+    @Transactional
+    @RequestMapping(value = "{accessPointId}/part", method = RequestMethod.POST)
+    public void createPart(@PathVariable final Integer accessPointId,
+                           @RequestBody final ApPartFormVO apPartFormVO) {
+
+    }
+
+    /**
+     * Úprava části přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param partId identifikátor upravované části
+     * @param apPartFormVO data pro úpravu části
+     */
+    @Transactional
+    @RequestMapping(value = "{accessPointId}/part/{partId}", method = RequestMethod.POST)
+    public void updatePart(@PathVariable final Integer accessPointId,
+                           @PathVariable final Integer partId,
+                           @RequestBody final ApPartFormVO apPartFormVO) {
+
+    }
+
+
+    /**
+     * Smazání části přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param partId identifikátor mazané části
+     */
+    @Transactional
+    @RequestMapping(value = "{accessPointId}/part/{partId}", method = RequestMethod.DELETE)
+    public void deletePart(@PathVariable final Integer accessPointId,
+                           @PathVariable final Integer partId) {
+
+    }
+
+    /**
+     * Nastavení preferovaného jména přístupového bodu.
+     * Možné pouze pro části typu Označení.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param partId identifikátor části, kterou nastavujeme jako preferovanou
+     */
+    @Transactional
+    @RequestMapping(value = "{accessPointId}/part/{partId}/prefer-name", method = RequestMethod.PUT)
+    public void setPreferName(@PathVariable final Integer accessPointId,
+                              @PathVariable final Integer partId) {
+
+    }
+
+    /**
+     * Validace přístupového bodu
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @return validační chyby přístupového bodu
+     */
+    @Transactional
+    @RequestMapping(value = "{accessPointId}/validate", method = RequestMethod.GET)
+    public ApValidationErrorsVO validateAccessPoint(@PathVariable final Integer accessPointId) {
+        return new ApValidationErrorsVO();
+    }
+
+    /**
+     * Zjištění povinných a možných atributů pro zakládání nového přístupového bodu nebo nové části
+     *
+     * @param apAccessPointCreateVO průběžná data pro založení
+     * @return vyhodnocené typy a specifikace atributů, které jsou třeba pro založení přístupového bodu nebo části
+     */
+    @Transactional
+    @RequestMapping(value = "/available/items", method = RequestMethod.POST)
+    public ApAttributesInfoVO getAvailableItems(@RequestBody final ApAccessPointCreateVO apAccessPointCreateVO) {
+        return new ApAttributesInfoVO();
     }
 }

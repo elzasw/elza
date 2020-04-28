@@ -198,10 +198,10 @@ public class ApFactory {
                                     final List<ApExternalId> eids) {
         StaticDataProvider staticData = staticDataService.getData();
         ApAccessPoint ap = apState.getAccessPoint();
-        ApName prefName = names.get(0);
+//        ApName prefName = names.get(0);
         ApRuleSystem ruleSystem = ap.getRuleSystem();
-        Validate.isTrue(prefName.isPreferredName());
-        List<ApAccessPointNameVO> namesVO = FactoryUtils.transformList(names, n -> ApAccessPointNameVO.newInstance(n, staticData));
+//        Validate.isTrue(prefName.isPreferredName());
+//        List<ApAccessPointNameVO> namesVO = FactoryUtils.transformList(names, n -> ApAccessPointNameVO.newInstance(n, staticData));
         // prepare external ids
         List<ApExternalIdVO> eidsVO = FactoryUtils.transformList(eids, ApExternalIdVO::newInstance);
 
@@ -215,12 +215,12 @@ public class ApFactory {
         vo.setStateApproval(apState.getStateApproval());
         vo.setUuid(ap.getUuid());
         vo.setExternalIds(eidsVO);
-        vo.setNames(namesVO);
+//        vo.setNames(namesVO);
         vo.setErrorDescription(ap.getErrorDescription());
         vo.setRuleSystemId(ruleSystem == null ? null : ruleSystem.getRuleSystemId());
         vo.setState(ap.getState() == null ? null : ApStateVO.valueOf(ap.getState().name()));
         // vo.setPartyId(partyId);
-        vo.setRecord(prefName.getFullName());
+//        vo.setRecord(prefName.getFullName());
         if (desc != null) {
             vo.setCharacteristics(desc.getDescription());
         }
