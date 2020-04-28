@@ -4,7 +4,9 @@ import cz.tacr.elza.controller.vo.ap.ApFormVO;
 import cz.tacr.elza.controller.vo.ap.ApStateVO;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApState;
@@ -95,7 +97,15 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     @Nullable
     private ApFormVO form;
 
+    /**
+     * Identifikátor preferované části
+     */
     private Integer preferredPart;
+
+    /**
+     * Seznam částí přístupového bodu
+     */
+    private List<ApPartVO> parts = new ArrayList<>();
 
     public Integer getId() {
         return id;
@@ -237,5 +247,13 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 
     public void setPreferredPart(Integer preferredPart) {
         this.preferredPart = preferredPart;
+    }
+
+    public List<ApPartVO> getParts() {
+        return parts;
+    }
+
+    public void setParts(List<ApPartVO> parts) {
+        this.parts = parts;
     }
 }
