@@ -121,13 +121,14 @@
                 <type code="ZP2015_UNIT_CURRENT_STATUS" width="0"/>
                 <!-- 4.5.1 Identifikace předlohy kopie -->
                 <type code="ZP2015_COPY_SOURCE" width="1"/>
-                <type code="ZP2015_RELATED_UNITS" width="1"/>
+                <!-- 4.5.2 Odkazy na příbuzné dokumenty -->
+                <type code="ZP2015_RELATED_UNITS" width="2"/>
                 <type code="ZP2015_EXISTING_COPY" width="1"/>
                 <!-- 4.7.1 Zpracovatel jednotky popisu -->
                 <type code="ZP2015_ARRANGER" width="2"/>
                 <type code="ZP2015_ARRANGEMENT_INFO" width="0"/>
                 <!-- 4.7.2 Pravidla zpracování jednotky popisu -->
-                <type code="ZP2015_ARRANGE_RULES" width="1"/>
+                <type code="ZP2015_ARRANGE_RULES" width="2"/>
                 <!-- 4.7.3 Datum (data) popisu -->
                 <type code="ZP2015_DESCRIPTION_DATE" width="1"/>
             </group>
