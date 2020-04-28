@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
+import javax.annotation.Nullable;
+
 /**
  * Třída pro založení přístupového bodu.
  *
@@ -18,24 +20,20 @@ public class ApAccessPointCreateVO {
     private Integer scopeId;
 
     /**
-     * Název přístupového bodu - preferované.
-     */
-    private String name;
-
-    /**
-     * Doplněk názvu přístupového bodu - preferované.
-     */
-    private String complement;
-
-    /**
      * Kód jazyka jména přístupového bodu.
      */
     private String languageCode;
 
     /**
-     * Popis přístupového bodu.
+     * Identifikátor přístupového bodu
      */
-    private String description;
+    @Nullable
+    private Integer accessPointId;
+
+    /**
+     * Formulář části
+     */
+    private ApPartFormVO partForm;
 
     public Integer getTypeId() {
         return typeId;
@@ -53,22 +51,6 @@ public class ApAccessPointCreateVO {
         this.scopeId = scopeId;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(final String name) {
-        this.name = name;
-    }
-
-    public String getComplement() {
-        return complement;
-    }
-
-    public void setComplement(final String complement) {
-        this.complement = complement;
-    }
-
     public String getLanguageCode() {
         return languageCode;
     }
@@ -77,11 +59,19 @@ public class ApAccessPointCreateVO {
         this.languageCode = languageCode;
     }
 
-    public String getDescription() {
-        return description;
+    public Integer getAccessPointId() {
+        return accessPointId;
     }
 
-    public void setDescription(final String description) {
-        this.description = description;
+    public void setAccessPointId(Integer accessPointId) {
+        this.accessPointId = accessPointId;
+    }
+
+    public ApPartFormVO getPartForm() {
+        return partForm;
+    }
+
+    public void setPartForm(ApPartFormVO partForm) {
+        this.partForm = partForm;
     }
 }
