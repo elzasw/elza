@@ -24,6 +24,7 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.controller.vo.ApPartFormVO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -56,6 +57,7 @@ import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApName;
 import cz.tacr.elza.domain.ApNameItem;
+import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRuleSystem;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApScopeRelation;
@@ -75,6 +77,7 @@ import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
@@ -225,6 +228,12 @@ public class AccessPointService {
 
     @Autowired
     private ScopeRelationRepository scopeRelationRepository;
+
+    @Autowired
+    private FragmentService fragmentService;
+
+    @Autowired
+    private StructObjService structObjService;
 
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
@@ -815,34 +824,25 @@ public class AccessPointService {
      *
      * @param scope třída přístupového bodu
      * @param type typ přístupového bodu
-     * @param name jméno přístupového bodu
-     * @param complement doplněk přístupového bodu
      * @param language jazyk jména
-     * @param description popis přístupového bodu
+     * @param apPartFormVO preferovaná část přístupového bodu
      * @return založený přístupový bod
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public ApState createAccessPoint(@AuthParam(type = AuthParam.Type.SCOPE) final ApScope scope,
                                      final ApType type,
-                                     final String name,
-                                     @Nullable final String complement,
                                      @Nullable final SysLanguage language,
-                                     @Nullable final String description) {
+                                     final ApPartFormVO apPartFormVO) {
         Assert.notNull(scope, "Třída musí být vyplněna");
         Assert.notNull(type, "Typ musí být vyplněn");
 
-        apDataService.validateNotStructureType(type);
-
         ApChange apChange = apDataService.createChange(ApChange.Type.AP_CREATE);
         ApState apState = createAccessPoint(scope, type, apChange);
-
-        // založení hlavního jména
-        createName(apState, true, name, complement, language, apChange, true);
-
         ApAccessPoint accessPoint = apState.getAccessPoint();
-        if (description != null) {
-            apDataService.createDescription(accessPoint, description, apChange);
-        }
+        RulPartType partType = structObjService.getPartTypeByCode(apPartFormVO.getPartTypeCode());
+
+        ApPart apPart = fragmentService.createPart(partType, accessPoint, apChange, null);
+        accessPoint.setPreferredPart(apPart);
 
         publishAccessPointCreateEvent(accessPoint);
 

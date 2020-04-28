@@ -53,6 +53,22 @@ public class FragmentService {
         return partRepository.save(part);
     }
 
+    public ApPart createPart(final RulPartType partType,
+                             final ApAccessPoint accessPoint,
+                             final ApChange createChange,
+                             final ApPart parentPart) {
+        Validate.notNull(partType, "Typ fragmentu musí být vyplněn");
+
+        ApPart part = new ApPart();
+        part.setPartType(partType);
+        part.setState(ApStateEnum.TEMP);
+        part.setAccessPoint(accessPoint);
+        part.setCreateChange(createChange);
+        part.setParentPart(parentPart);
+
+        return partRepository.save(part);
+    }
+
     public ApPart getFragment(final Integer fragmentId) {
         Validate.notNull(fragmentId);
         ApPart fragment = partRepository.findOne(fragmentId);
