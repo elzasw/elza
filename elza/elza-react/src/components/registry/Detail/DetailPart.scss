@@ -1,0 +1,29 @@
+.detail-part {
+  .detail-part-header {
+    font-size: 14px;
+
+    .detail-part-actions {
+    }
+
+    .detail-part-label {
+      cursor: pointer;
+
+      &:hover {
+        color: #317E9F;
+      }
+    }
+
+    &.detail-part-expanded {
+      font-weight: bold;
+    }
+
+    &.detail-part-preferred {
+      font-weight: bold;
+
+      .detail-part-label-alt {
+        font-weight: normal;
+        font-style: italic;
+      }
+    }
+  }
+}

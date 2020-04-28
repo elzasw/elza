@@ -1,0 +1,12 @@
+//@import "../../styles/global";
+@import "./DetailPart";
+
+.detail-related-part {
+  @extend .detail-part;
+
+  .detail-related-part-icon {
+    //@extend .mr-1;
+      margin-right: 1rem
+    //color: $accent-color;
+  }
+}
