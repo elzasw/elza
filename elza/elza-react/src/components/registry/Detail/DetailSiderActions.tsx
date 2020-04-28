@@ -1,6 +1,7 @@
 import React, {FC} from 'react';
-import {AeDetailHeadGlobalVO, AeDetailHeadLocalVO, AeDetailVO, AeState, AuthRole} from '../../api/generated/model';
+import {AeDetailHeadGlobalVO, AeDetailHeadLocalVO, AeDetailVO, AeState, AuthRole} from '../../../api/generated/model';
 import {connect} from 'react-redux';
+/*
 import {
   faArrowRight,
   faBan,
@@ -12,10 +13,12 @@ import {
   faSave,
   faStar
 } from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import StyledButton from '../StyledButton';
+*/
+// import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+// import StyledButton from '../StyledButton';
 import {ThunkDispatch} from 'redux-thunk';
 import {Action} from 'redux';
+/*
 import {
   handleAmendRequest,
   handleApprove,
@@ -27,11 +30,14 @@ import {
   handleNewRecord,
   handleShowLocal
 } from './DetailSiderActionsImpl';
+*/
 import * as H from 'history';
-import {AsyncClickHandler} from '../AsyncClickHandler';
+// import {AsyncClickHandler} from '../AsyncClickHandler';
 import {RouteComponentProps, withRouter} from 'react-router';
 import {NavLink} from 'react-router-dom';
-import AuthWrapper from '../../shared/rights/AuthWrapper';
+// import AuthWrapper from '../../shared/rights/AuthWrapper';
+import {Button} from 'react-bootstrap';
+import Icon from "../../shared/icon/Icon";
 
 export enum DetailActionsEnum {
   GLOBAL = 'global',
@@ -83,26 +89,24 @@ const DetailSiderActions: FC<ComponentProps> = (
     return true;
   };
 
-  const edit = <StyledButton icon={faEdit} title="Upravit" onClick={() => onEdit(history)}/>;
-  const invalidate = <StyledButton icon={faBan} title="Zneplatnit" onClick={onInvalidate}/>;
+    const edit = <Button onClick={() => onEdit(history)}><Icon glyph="fa-edit" /> Upravit</Button>;
+  const invalidate = <Button onClick={onInvalidate}>
+      <Icon glyph="fa-ban" /> Zneplatnit
+  </Button>;
 
-  const approve = <StyledButton
-    icon={faCheck}
-    title={props.isValid ? "Schválit" : "Nelze shválit, entita není validní"}
+  const approve = <Button
     onClick={onApprove}
     disabled={!props.isValid || approveDisabled()}
-  />;
+  ><Icon glyph={"fa-check"} />{props.isValid ? "Schválit" : "Nelze shválit, entita není validní"}</Button>;
 
-  const showLocal = <AsyncClickHandler onClick={() => onShowLocalAction()}>
-    <StyledButton
-      iconElement={<div className="fa-stack" style={{ fontSize: '10px' }}>
-        <FontAwesomeIcon icon={faEye} fixedWidth className="fa-stack-2x"/>
-        <FontAwesomeIcon icon={faPen} fixedWidth className="fa-stack-1x"
-                         style={{ marginLeft: '18px', marginTop: '11px' }}/>
-      </div>}
-      title="Zobrazit rozpracovanou revizi archivní entity"
-    />
-  </AsyncClickHandler>;
+  const showLocal = <Button onClick={() => onShowLocalAction()}>
+    <div className="fa-stack" style={{ fontSize: '10px' }}>
+        <Icon glyph={"fa-eye"} fixedWidth className="fa-stack-2x"/>
+        <Icon glyph={"fa-pen"} fixedWidth className="fa-stack-1x"
+              style={{ marginLeft: '18px', marginTop: '11px' }}/>
+    </div>
+    Zobrazit rozpracovanou revizi archivní entity
+</Button>;
 
   const canShowNewRecord = (): boolean => {
     if (detail && detail.head) {
@@ -118,33 +122,44 @@ const DetailSiderActions: FC<ComponentProps> = (
       const globalId = (detail.head as AeDetailHeadLocalVO).globalId;
       if (!!globalId) {
         showGlobal = <NavLink to={globalDetailUrlPrefix + globalId}>
-          <StyledButton icon={faEye} title={'Zobrazit poslední platnou revizi archivní entity'}/>
+            <Button>
+                <Icon glyph={"fa-eye"} /> Zobrazit poslední platnou revizi archivní entity
+            </Button>
         </NavLink>;
       } else {
-        showGlobal = <StyledButton disabled={true} icon={faEye} title="Entita je nově zakládaná, ještě nezapsaná do CAM."/>;
+        showGlobal = <Button disabled={true}>
+            <Icon glyph={"fa-eye"} /> Entita je nově zakládaná, ještě nezapsaná do CAM
+          </Button>
       }
     }
   }
 
   let newRecord;
   if (canShowNewRecord()) {
-    newRecord = <StyledButton
-      icon={faSave}
-      title={props.isValid ? "Založit záznam do jádra CAM" : "Nelze založit záznam do jádra, entita není validní"}
+    newRecord = <Button
       onClick={onNewRecord}
       disabled={!props.isValid}
-    />;
+    >
+        <Icon glyph={"fa-save"} /> {props.isValid ? "Založit záznam do jádra CAM" : "Nelze založit záznam do jádra, entita není validní"}
+    </Button>;
   }
 
-  const approveRequest = <StyledButton title="Ke schválení" onClick={onApproveRequest}
-                                       iconElement={<div className="fa-stack" style={{ fontSize: '10px' }}>
-                                         <FontAwesomeIcon icon={faCheck} fixedWidth className="fa-stack-2x"/>
-                                         <FontAwesomeIcon icon={faArrowRight} fixedWidth className="fa-stack-1x"
-                                                          style={{ marginLeft: '-6px', marginTop: '13px' }}/>
-                                       </div>}/>;
-  const cancelEdit = <StyledButton icon={faBan} title="Zrušit úpravu" onClick={onCancelEdit}/>;
-  const amendRequest = <StyledButton icon={faReply} title="K doplnění" onClick={onAmendRequest} disabled={amendRequestDisabled()}/>;
-  const changeAeType = <StyledButton icon={faStar} title="Změnit třídu" onClick={onChangeAeType}/>;
+  const approveRequest = <Button onClick={onApproveRequest}>
+      <div className="fa-stack" style={{ fontSize: '10px' }}>
+          <Icon glyph={"fa-check"} fixedWidth className="fa-stack-2x"/>
+          <Icon glyph={"fa-arrow-right"} fixedWidth className="fa-stack-1x"
+                           style={{ marginLeft: '-6px', marginTop: '13px' }}/>
+      </div> Ke schválení
+  </Button>;
+  const cancelEdit = <Button onClick={onCancelEdit}>
+      <Icon glyph={"fa-ban"} /> Zrušit úpravu
+  </Button>;
+  const amendRequest = <Button onClick={onAmendRequest} disabled={amendRequestDisabled()}>
+      <Icon glyph={"fa-reply"} /> K doplnění
+  </Button>;
+  const changeAeType = <Button onClick={onChangeAeType}>
+      <Icon glyph={"fa-star"} /> Změnit třídu
+  </Button>;
 
   const userIsOwner = (): boolean => {
     const user = (detail.head as AeDetailHeadLocalVO).ownerUser;
@@ -154,7 +169,8 @@ const DetailSiderActions: FC<ComponentProps> = (
   const isInvalid = detail.head.aeState === AeState.RLCSINVALID;
   const isSavedInGlobal = detail.head.aeState === AeState.RLCSSAVED;
   const isToApprove = detail.head.aeState === AeState.RLCSTOAPPROVE;
-
+  return <div></div>;
+/*
   return <>
     {type === DetailActionsEnum.GLOBAL && <>
       <AuthWrapper requiredRole={AuthRole.CAM2}>{edit}</AuthWrapper>
@@ -180,6 +196,8 @@ const DetailSiderActions: FC<ComponentProps> = (
     </>}
 
   </>;
+
+ */
 };
 
 const mapStateToProps = ({ app, codelist }: any) => ({
@@ -195,35 +213,35 @@ const mapDispatchToProps = (
 
   return {
     onCancelEdit: () => {
-      handleCancelEdit(dispatch, ownProps.type, detail.head);
+      // handleCancelEdit(dispatch, ownProps.type, detail.head);
     },
     onChangeAeType: () => {
-      handleChangeAeType(dispatch, ownProps.type, detail.head);
+      // handleChangeAeType(dispatch, ownProps.type, detail.head);
     },
     onEdit: (history: H.History) => {
-      handleEdit(dispatch, ownProps.type, detail.head, history);
+      // handleEdit(dispatch, ownProps.type, detail.head, history);
     },
     onShowLocalAction: () => {
       if (ownProps.editDetailUrlPrefix && ownProps.approveDetailUrlPrefix) {
-        return handleShowLocal(dispatch, ownProps.type, detail.head, ownProps.editDetailUrlPrefix, ownProps.approveDetailUrlPrefix);
+        // return handleShowLocal(dispatch, ownProps.type, detail.head, ownProps.editDetailUrlPrefix, ownProps.approveDetailUrlPrefix);
       } else {
         return Promise.resolve();
       }
     },
     onApproveRequest: () => {
-      handleApproveRequest(dispatch, ownProps.type, detail.head);
+      // handleApproveRequest(dispatch, ownProps.type, detail.head);
     },
     onNewRecord: () => {
-      handleNewRecord(dispatch, ownProps.type, detail.head);
+      // handleNewRecord(dispatch, ownProps.type, detail.head);
     },
     onAmendRequest: () => {
-      handleAmendRequest(dispatch, ownProps.type, detail.head);
+      // handleAmendRequest(dispatch, ownProps.type, detail.head);
     },
     onApprove: () => {
-      handleApprove(dispatch, ownProps.type, detail.head);
+      // handleApprove(dispatch, ownProps.type, detail.head);
     },
     onInvalidate: () => {
-      handleInvalidate(dispatch, ownProps.type, detail.head);
+      // handleInvalidate(dispatch, ownProps.type, detail.head);
     }
   };
 };

@@ -95,7 +95,7 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
         rows.push(<DetailItem key={index} item={sameItems[0]} globalEntity={globalEntity}/>);
       }
 
-      result.push(<Col key={index} span={width <= 0 ? 24 : width * 2}>
+      result.push(<Col key={index}>{/* span={width <= 0 ? 24 : width * 2} */}
         {rows}
       </Col>);
     }
@@ -122,9 +122,7 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
 
   return <div className="detail-part">
     <Row
-
-      align="middle"
-      className={classNameHeader}
+      className={classNameHeader + " align-items-center"}
     >
       <Col className="detail-part-label" onClick={() => setCollapsed(!collapsed)}
            title={collapsed ? "Zobrazit podrobnosti" : "Skrýt podrobnosti"}>
@@ -132,7 +130,7 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
         {preferred && <span className="detail-part-label-alt"> (preferované)</span>}
       </Col>
       {editMode && <Col style={{flex: 1}} className="ml-2">
-        <Row type={"flex"} gutter={8}>
+        <Row>{/* gutter=8 */}
           {showPreferredSwitch && !preferred && <Col>
             <Icon
               glyph={'fa-star'}

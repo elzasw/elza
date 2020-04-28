@@ -46,19 +46,18 @@ const DetailHistory: React.FC<AllProps> = props => {
 
   const renderList = () => {
     const itemCount = isListFetched ? historyList.count : props.commentCount;
-    return <div
-      header={<Row className="p-2">
-        <Col className="pr-2">
-          <Icon glyph="fa-coments" size={'2x'}/>
-        </Col>
-        <Col>
-          <h3>Historie stavů ({itemCount})</h3>
-        </Col>
-      </Row>}
-      dataSource={historyList.rows}
-      renderItem={item => (<DetailHistoryItem historyItem={item as AeStateHistoryVO}/>)}
-      loading={!isListFetched}
-    />;
+    return <div>
+        <Row className="p-2">
+            <Col className="pr-2">
+                <Icon glyph="fa-coments" size={'2x'}/>
+            </Col>
+            <Col>
+                <h3>Historie stavů ({itemCount})</h3>
+            </Col>
+        </Row>
+        {isListFetched && historyList.rows.map(item => (<DetailHistoryItem historyItem={item as AeStateHistoryVO}/>))}
+        {!isListFetched && <Loading />}
+    </div>
   };
 
   const renderExtendedContent = () => {
@@ -90,12 +89,12 @@ const DetailHistory: React.FC<AllProps> = props => {
 
   return (
     <div
-      collapsible
-      collapsed={collapsed}
-      onCollapse={() => setCollapsed(!collapsed)}
-      width="300"
-      reverseArrow={true}
-      trigger={renderTrigger()}
+      // collapsible
+      // collapsed={collapsed}
+      // onCollapse={() => setCollapsed(!collapsed)}
+      // width="300"
+      // reverseArrow={true}
+      // trigger={renderTrigger()}
       className="brl-1 history-sider"
     >
       <div className="layout-scroll">
