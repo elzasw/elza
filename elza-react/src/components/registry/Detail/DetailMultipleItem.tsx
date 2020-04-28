@@ -1,6 +1,6 @@
 import React, {FC} from 'react';
-import {AeItemVO} from '../../api/generated/model';
-import {CodelistState} from '../../shared/reducers/codelist/CodelistReducer';
+import {AeItemVO} from '../../../api/generated/model';
+// import {CodelistState} from '../../shared/reducers/codelist/CodelistReducer';
 import {connect} from 'react-redux';
 import DetailItemContent from "./DetailItemContent";
 import "./DetailItem.scss";
@@ -32,7 +32,7 @@ const DetailMultipleItem: FC<Props> = ({items,globalEntity, codelist}) => {
   );
 };
 
-const mapStateToProps = (state: { codelist: CodelistState }) => ({
+const mapStateToProps = (state: { codelist: any }) => ({
     codelist: MOCK_CODE_DATA
 });
 

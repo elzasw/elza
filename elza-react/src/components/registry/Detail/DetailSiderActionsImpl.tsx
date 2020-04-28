@@ -1,6 +1,7 @@
-import * as ModalActions from "../../shared/reducers/modal/ModalActions";
-import ConfirmModal from "../modal/ConfirmModal";
-import {AeDetailHeadGlobalVO, AeDetailHeadLocalVO, AeDetailHeadVO, AeDetailVO, Area} from "../../../api/generated/model";
+const BLANK = "";
+// import * as ModalActions from "../../shared/reducers/modal/ModalActions";
+// import ConfirmModal from "../modal/ConfirmModal";
+/*import {AeDetailHeadGlobalVO, AeDetailHeadLocalVO, AeDetailHeadVO, AeDetailVO, Area} from "../../../api/generated/model";
 import * as Constants from "../../constants";
 import {DetailActionsEnum} from "./DetailSiderActions";
 import {ThunkDispatch} from "redux-thunk";
@@ -291,3 +292,4 @@ export const handleApprove = (dispatch: ThunkDispatch<{}, {}, Action<string>>, t
       title: 'Schválit archivní entitu',
     }));
 };
+*/

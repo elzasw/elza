@@ -11,7 +11,7 @@ type Props = {
 const DetailHistoryItem: React.FC<Props> = props => (
   <div className="p-2 history-item">
     <h4>{getLabel(props.historyItem.state)}</h4>
-    <Row justify="space-between">
+    <Row className="justify-space-between">
       <Col>{props.historyItem.user.displayName}</Col>
       <Col>TODO FORMAT {props.historyItem.change}</Col>
     </Row>

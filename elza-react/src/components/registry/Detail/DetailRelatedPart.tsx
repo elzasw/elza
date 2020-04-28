@@ -24,7 +24,7 @@ interface Props {
   onDelete?: (part: AePartVO) => void;
   onEdit?: (part: AePartVO) => void;
   editMode?: boolean;
-  codelist: CodelistData;
+  codelist: any;
   globalEntity: boolean;
   validationResult?: AeValidationErrorsVO;
 }
@@ -85,7 +85,7 @@ const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDel
         rows.push(<DetailItem key={index} item={sameItems[0]} globalEntity={globalEntity}/>);
       }
 
-      result.push(<Col key={index} span={width <= 0 ? 24 : width * 2}>
+      result.push(<Col key={index}>{/* span={width <= 0 ? 24 : width * 2} */}
         {rows}
       </Col>);
     }
@@ -110,11 +110,7 @@ const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDel
   };
 
   return <div className="detail-related-part">
-    <Row
-
-      align="middle"
-      className={classNameHeader}
-    >
+    <Row className={classNameHeader + " align-items-center"}>
       <Col>
         <Icon glyph='fa-arrow-right' fixedWidth className="detail-related-part-icon"/>
       </Col>
@@ -123,7 +119,7 @@ const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDel
         {label || <i>Popis záznamu entity</i>}
       </Col>
       {editMode && <Col style={{flex: 1}} className="ml-2">
-          <Row type={"flex"} gutter={8}>
+          <Row>{/* gutter={8} */}
               <Col>
                   <Icon
                     glyph={'fa-pencil'}
