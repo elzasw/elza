@@ -103,8 +103,19 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         assertNotNull(linkVo);
         assertNotNull(linkVo.getId());
 
+        // ověření napojeni - neexistence volnych dao
+        List<ArrDaoVO> daosConnected = findDaos(fundVersion.getId());
+        assertTrue(daosConnected.size() == 0);
+
         // disconnect
         deleteDaoLink(fundVersion.getId(), linkVo.getId());
+
+        // ověření vztahu
+        List<ArrDaoVO> daosConnected2 = findDaos(fundVersion.getId());
+        assertTrue(daosConnected2.size() == 1);
+        ArrDaoVO daoConnected2 = daosConnected2.get(0);
+        ArrDaoLinkVO daoLinkVo2 = daoConnected2.getDaoLink();
+        assertTrue(daoLinkVo2 == null);
     }
 
     private DaoPackage createDaoPackage(String fundCode, String digitRepoCode, String packageId, DaoType daoType,

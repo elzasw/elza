@@ -536,8 +536,20 @@ public class ArrangementController {
 
         final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         final ArrDaoLink daoLink = daoLinkRepository.getOneCheckExist(daoLinkId);
+        final ArrDao dao = daoLink.getDao();
 
-        final ArrDaoLink deleteDaoLink = daoService.deleteDaoLink(fundVersion, daoLink);
+        switch (dao.getDaoType()) {
+        case LEVEL:
+            // odstraneni urovne
+            ArrNode deleteNode = daoLink.getNode();
+            fundLevelService.deleteLevel(fundVersion, deleteNode, null);
+            break;
+        case ATTACHMENT:
+            daoService.deleteDaoLink(fundVersion, daoLink);
+            break;
+        default:
+            throw new SystemException("Unrecognized dao type");
+        }
     }
 
     /**
