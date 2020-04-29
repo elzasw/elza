@@ -682,18 +682,38 @@ public class StructObjService {
 
     /**
      * Vrátí strukt. data podle identifikátorů včetně načtených návazných entit.
+     * 
+     * Funkce zachovává pořadí vracených objektů.
      *
-     * @param structureDataIds identifikátory hodnoty strukt. datového typu
-     * @return entity
+     * @param structureDataIds
+     *            identifikátory hodnoty strukt. datového typu
+     * @return entity strukturované typy ve stejném pořadí jako byl požadavek
      */
     public List<ArrStructuredObject> getStructObjByIds(final List<Integer> structureDataIds) {
         List<List<Integer>> idsParts = Lists.partition(structureDataIds, HibernateConfiguration.MAX_IN_SIZE);
-        List<ArrStructuredObject> structureDataList = new ArrayList<>();
+
+        final Map<Integer, ArrStructuredObject> soMap = new HashMap<>();
         for (List<Integer> idsPart : idsParts) {
-            structureDataList.addAll(structObjRepository.findByIdsFetch(idsPart));
+            List<ArrStructuredObject> objs = structObjRepository.findByIdsFetch(idsPart);
+            objs.forEach(so -> soMap.put(so.getStructuredObjectId(), so));
         }
-        if (structureDataList.size() != structureDataIds.size()) {
-            throw new ObjectNotFoundException("Nenalezeny všechny rozšíření", BaseCode.ID_NOT_EXIST).setId(structureDataIds);
+        // final sort
+        List<ArrStructuredObject> structureDataList = new ArrayList<>();
+        List<Integer> notFoundItems = null;
+        for (Integer srcId : structureDataIds) {
+            ArrStructuredObject so = soMap.get(srcId);
+            if (so == null) {
+                if (notFoundItems == null) {
+                    notFoundItems = new ArrayList<>();
+                }
+                notFoundItems.add(srcId);
+            } else {
+                structureDataList.add(so);
+            }
+        }
+        if (notFoundItems != null) {
+            throw new ObjectNotFoundException("Nenalezeny všechny strukturované typye", BaseCode.ID_NOT_EXIST)
+                    .setId(notFoundItems);
         }
         return structureDataList;
     }
