@@ -1742,7 +1742,18 @@ no-loop
 when $activeLevel: ActiveLevel( $items: descItems )
     DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_MTR") ) from $items
     $itemType: RulItemTypeExt( code in (
-        "ZP2015_RECORD_TYPE", "ZP2015_GEO_REF", "ZP2015_DATE_OTHER"
+         "ZP2015_UNIT_DATE"
+       ) )    
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
+rule "Možné prvky pro Matriky - opakovatelné"
+no-loop
+when $activeLevel: ActiveLevel( $items: descItems )
+    DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_MTR") ) from $items
+    $itemType: RulItemTypeExt( code in (
+        "ZP2015_RECORD_TYPE", "ZP2015_GEO_REF", "ZP2015_OTHER_ID"
        ) )    
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
@@ -1763,6 +1774,20 @@ when $activeLevel: ActiveLevel( $items: descItems )
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
+
+rule "Doporučená signatura původce pro Matriky"
+no-loop
+when $activeLevel: ActiveLevel( $items: descItems )
+    $descItem : DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_MTR") ) from $items
+    $itemType: RulItemTypeExt( code in (
+        "ZP2015_OTHER_ID"
+       ) )    
+    $itemSpec: RulItemSpecExt( code in ("ZP2015_OTHERID_SIG_ORIG")
+     	) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
+end
+
 
 //----------------------------------------------
 // Rukopisy
