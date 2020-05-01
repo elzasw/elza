@@ -152,12 +152,14 @@ public class ApFactory {
      */
     public ApAccessPointVO createVO(ApState apState) {
         ApAccessPoint ap = apState.getAccessPoint();
-        ApDescription desc = descRepository.findByAccessPoint(ap);
-        // prepare names
-        List<ApName> names = nameRepository.findByAccessPoint(ap);
+        // prepare parts
+        List<ApPart> parts = partRepository.findValidPartByAccessPoint(ap);
+        // prepare items
+        Map<Integer, List<ApItem>> items = itemRepository.findValidItemsByAccessPoint(ap).stream()
+                .collect(Collectors.groupingBy(i -> i.getPartId()));
         // prepare external ids
         List<ApExternalId> eids = eidRepository.findByAccessPoint(ap);
-        return createVO(apState, desc, names, eids);
+        return createVO(apState, parts, items, eids);
     }
 
     public List<ApStateHistoryVO> createStateHistoriesVO(final Collection<ApState> states) {
@@ -193,15 +195,13 @@ public class ApFactory {
     }
 
     public ApAccessPointVO createVO(final ApState apState,
-                                    final ApDescription desc,
-                                    final List<ApName> names,
+                                    final List<ApPart> parts,
+                                    final Map<Integer, List<ApItem>> items,
                                     final List<ApExternalId> eids) {
-        StaticDataProvider staticData = staticDataService.getData();
         ApAccessPoint ap = apState.getAccessPoint();
-//        ApName prefName = names.get(0);
         ApRuleSystem ruleSystem = ap.getRuleSystem();
-//        Validate.isTrue(prefName.isPreferredName());
-//        List<ApAccessPointNameVO> namesVO = FactoryUtils.transformList(names, n -> ApAccessPointNameVO.newInstance(n, staticData));
+        ApPart preferredPart = ap.getPreferredPart();
+        String desc = getDescription(parts, items);
         // prepare external ids
         List<ApExternalIdVO> eidsVO = FactoryUtils.transformList(eids, ApExternalIdVO::newInstance);
 
@@ -215,19 +215,64 @@ public class ApFactory {
         vo.setStateApproval(apState.getStateApproval());
         vo.setUuid(ap.getUuid());
         vo.setExternalIds(eidsVO);
-//        vo.setNames(namesVO);
         vo.setErrorDescription(ap.getErrorDescription());
         vo.setRuleSystemId(ruleSystem == null ? null : ruleSystem.getRuleSystemId());
         vo.setState(ap.getState() == null ? null : ApStateVO.valueOf(ap.getState().name()));
-        // vo.setPartyId(partyId);
-//        vo.setRecord(prefName.getFullName());
+        vo.setRecord(preferredPart != null ? preferredPart.getValue() : null);
         if (desc != null) {
-            vo.setCharacteristics(desc.getDescription());
+            vo.setCharacteristics(desc);
         }
-        vo.setPreferredPart(ap.getPreferredPart() != null ? ap.getPreferredPart().getPartId() : null);
+        vo.setParts(createVO(parts, items));
+        vo.setPreferredPart(preferredPart != null ? preferredPart.getPartId() : null);
         return vo;
     }
 
+    private String getDescription(List<ApPart> parts, Map<Integer, List<ApItem>> items) {
+        ApPart body = null;
+        String briefDesc = null;
+
+        for (ApPart part : parts) {
+            if (part.getPartType().getCode().equals("PT_BODY")) {
+                body = part;
+                break;
+            }
+        }
+
+        if (body != null) {
+            List<ApItem> bodyItems = items.get(body.getPartId());
+            for (ApItem item : bodyItems) {
+                if (item.getItemType().getCode().equals("BRIEF_DESC")) {
+                    briefDesc = item.getData().getFulltextValue();
+                    break;
+                }
+            }
+        }
+        return briefDesc;
+    }
+
+    public List<ApPartVO> createVO(final List<ApPart> parts,
+                                   final Map<Integer, List<ApItem>> items) {
+        List<ApPartVO> partVOList = new ArrayList<>();
+        for (ApPart part : parts) {
+            partVOList.add(createVO(part, items.get(part.getPartId())));
+        }
+        return partVOList;
+    }
+
+    public ApPartVO createVO(final ApPart part,
+                             final List<ApItem> apItems) {
+        ApPartVO apPartVO = new ApPartVO();
+
+        apPartVO.setId(part.getPartId());
+        apPartVO.setTypeId(part.getPartType().getPartTypeId());
+        apPartVO.setState(part.getState() == null ? null : ApStateVO.valueOf(part.getState().name()));
+        apPartVO.setErrorDescription(part.getErrorDescription());
+        apPartVO.setValue(part.getValue());
+        apPartVO.setPartParentId(part.getParentPart() != null ? part.getParentPart().getPartId() : null);
+        apPartVO.setItems(createItemsVO(apItems));
+
+        return apPartVO;
+    }
     /**
      * Create collection of VO from APs
      *
@@ -245,20 +290,23 @@ public class ApFactory {
 
         Map<Integer, ApState> apStateMap = stateRepository.findLastByAccessPoints(accessPoints).stream()
                 .collect(Collectors.toMap(o -> o.getAccessPointId(), Function.identity()));
+        Map<Integer, List<ApPart>> apPartsMap = partRepository.findValidPartByAccessPoints(accessPoints).stream()
+                .collect(Collectors.groupingBy(o -> o.getAccessPointId()));
         Map<Integer, List<ApExternalId>> apEidsMap = eidRepository.findByAccessPoints(accessPoints).stream()
                 .collect(Collectors.groupingBy(o -> o.getAccessPointId()));
-        Map<Integer, ApDescription> apDescriptionMap = descRepository.findByAccessPoints(accessPoints).stream()
-                .collect(Collectors.toMap(o -> o.getAccessPointId(), Function.identity()));
-        Map<Integer, List<ApName>> apNamesMap = nameRepository.findByAccessPoints(accessPoints).stream()
-                .collect(Collectors.groupingBy(o -> o.getAccessPointId()));
+        Map<Integer, Map<Integer, List<ApItem>>> apItemsMap = new HashMap<>();
+        List<ApItem> items = itemRepository.findValidItemsByAccessPoints(accessPoints);
+        for (ApItem item : items) {
+            apItemsMap.computeIfAbsent(item.getPart().getAccessPointId(), k -> new HashMap<>()).computeIfAbsent(item.getPartId(), l -> new ArrayList<>()).add(item);
+        }
 
         for (ApAccessPoint accessPoint : accessPoints) {
             Integer accessPointId = accessPoint.getAccessPointId();
             ApState apState = apStateMap.get(accessPointId);
+            List<ApPart> parts = apPartsMap.getOrDefault(accessPointId, Collections.emptyList());
+            Map<Integer, List<ApItem>> itemMap = apItemsMap.getOrDefault(accessPointId, Collections.emptyMap());
             List<ApExternalId> apExternalIds = apEidsMap.getOrDefault(accessPointId, Collections.emptyList());
-            ApDescription apDescription = apDescriptionMap.get(accessPointId);
-            List<ApName> apNames = apNamesMap.getOrDefault(accessPointId, Collections.emptyList());
-            result.add(createVO(apState, apDescription, apNames, apExternalIds));
+            result.add(createVO(apState, parts, itemMap, apExternalIds));
         }
 
         return result;
@@ -323,8 +371,8 @@ public class ApFactory {
 
     public List<ApItemVO> createItemsVO(final List<ApItem> apItems) {
         List<ApItemVO> items = new ArrayList<>(apItems.size());
-        for (ApItem fragmentItem : apItems) {
-            items.add(createItem(fragmentItem));
+        for (ApItem item : apItems) {
+            items.add(createItem(item));
         }
         fillRefEntities(items);
         return items;

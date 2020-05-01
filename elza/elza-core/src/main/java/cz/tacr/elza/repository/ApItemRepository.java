@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.RulItemType;
 
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -23,4 +24,7 @@ public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
 
     @Query("SELECT i FROM ApItem i LEFT JOIN FETCH i.data d  JOIN FETCH i.part p WHERE i.deleteChange IS NULL AND p.accessPoint = :accessPoint")
     List<ApItem> findValidItemsByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);
+
+    @Query("SELECT i FROM ApItem i LEFT JOIN FETCH i.data d  JOIN FETCH i.part p WHERE i.deleteChange IS NULL AND p.accessPoint IN :accessPoints")
+    List<ApItem> findValidItemsByAccessPoints(@Param("accessPoints") Collection<ApAccessPoint> accessPoints);
 }
