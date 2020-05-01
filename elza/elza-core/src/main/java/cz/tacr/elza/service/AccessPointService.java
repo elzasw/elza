@@ -230,7 +230,7 @@ public class AccessPointService {
     private ScopeRelationRepository scopeRelationRepository;
 
     @Autowired
-    private FragmentService fragmentService;
+    private PartService partService;
 
     @Autowired
     private StructObjService structObjService;
@@ -835,18 +835,50 @@ public class AccessPointService {
                                      final ApPartFormVO apPartFormVO) {
         Assert.notNull(scope, "Třída musí být vyplněna");
         Assert.notNull(type, "Typ musí být vyplněn");
+        if (CollectionUtils.isEmpty(apPartFormVO.getItems())) {
+            throw new IllegalArgumentException("Část musí mít alespoň jeden prvek popisu.");
+        }
+        if (apPartFormVO.getParentPartId() != null) {
+            throw new IllegalArgumentException("Část nesmí být podřízená.");
+        }
+        RulPartType partType = structObjService.getPartTypeByCode(apPartFormVO.getPartTypeCode());
+        if (!partType.getCode().equals("PT_NAME")) {
+            throw new IllegalArgumentException("Část musí být typu PT_NAME");
+        }
 
         ApChange apChange = apDataService.createChange(ApChange.Type.AP_CREATE);
         ApState apState = createAccessPoint(scope, type, apChange);
         ApAccessPoint accessPoint = apState.getAccessPoint();
-        RulPartType partType = structObjService.getPartTypeByCode(apPartFormVO.getPartTypeCode());
 
-        ApPart apPart = fragmentService.createPart(partType, accessPoint, apChange, null);
+        ApPart apPart = partService.createPart(partType, accessPoint, apChange, null);
         accessPoint.setPreferredPart(apPart);
+
+        partService.createPartItems(apChange, apPart, apPartFormVO);
 
         publishAccessPointCreateEvent(accessPoint);
 
         return apState;
+    }
+
+    public void updatePart(final ApAccessPoint apAccessPoint,
+                           final ApPart apPart,
+                           final ApPartFormVO apPartFormVO) {
+//        if (areItemsChanged(apPart, apPartFormVO)) {
+            ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
+
+            apItemService.deletePartItems(apPart, change);
+            partService.deletePart(apPart, change);
+
+            ApPart newPart = partService.createPart(apPart, change);
+            partService.createPartItems(change, newPart, apPartFormVO);
+
+            partService.changeParentPart(apPart, newPart);
+
+            if (apAccessPoint.getPreferredPart().getPartId().equals(apPart.getPartId())) {
+                apAccessPoint.setPreferredPart(newPart);
+                apAccessPointRepository.save(apAccessPoint);
+            }
+//        }
     }
 
     /**
@@ -2296,6 +2328,25 @@ public class AccessPointService {
 
             return false;
         }
+    }
+
+    /**
+     * Nastaví část přístupového bodu na preferovanou
+     *
+     * @param accessPoint přístupový bod
+     * @param apPart část
+     */
+    public void setPreferName(final ApAccessPoint accessPoint, final ApPart apPart) {
+        if (!apPart.getPartType().getCode().equals("PT_NAME")) {
+            throw new IllegalArgumentException("Preferované jméno musí být typu PT_NAME");
+        }
+
+        if (apPart.getParentPart() != null) {
+            throw new IllegalArgumentException("Návazný part nelze změnit na preferovaný.");
+        }
+
+        accessPoint.setPreferredPart(apPart);
+        apAccessPointRepository.save(accessPoint);
     }
 
     /**

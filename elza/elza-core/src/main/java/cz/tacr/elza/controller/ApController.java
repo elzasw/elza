@@ -8,6 +8,7 @@ import cz.tacr.elza.controller.vo.ApAccessPointEditVO;
 import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApAttributesInfoVO;
+import cz.tacr.elza.controller.vo.ApCreateTypeVO;
 import cz.tacr.elza.controller.vo.ApEidTypeVO;
 import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
@@ -20,6 +21,7 @@ import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.LanguageVO;
+import cz.tacr.elza.controller.vo.RequiredType;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
@@ -64,7 +66,7 @@ import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.AccessPointMigrationService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;
-import cz.tacr.elza.service.FragmentService;
+import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.UserService;
@@ -152,7 +154,7 @@ public class ApController {
     private StaticDataService staticDataService;
 
     @Autowired
-    private FragmentService fragmentService;
+    private PartService partService;
 
     @Autowired
     private StructObjService structObjService;
@@ -523,7 +525,7 @@ public class ApController {
         Validate.notNull(fragmentTypeCode, "Kód typu fragmentu musí být vyplněn");
 
         RulPartType partType = structObjService.getPartTypeByCode(fragmentTypeCode);
-        ApPart part = fragmentService.createPart(partType);
+        ApPart part = partService.createPart(partType);
         return apFactory.createVO(part, true);
     }
 
@@ -540,8 +542,8 @@ public class ApController {
                                             @RequestBody final List<ApUpdateItemVO> items) {
         Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
 
-        ApPart fragment = fragmentService.getFragment(fragmentId);
-        fragmentService.changeFragmentItems(fragment, items);
+        ApPart fragment = partService.getPart(fragmentId);
+        partService.changeFragmentItems(fragment, items);
         return apFactory.createVO(fragment, true);
     }
 
@@ -558,10 +560,10 @@ public class ApController {
         Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
         Validate.notNull(itemTypeId, "Identifikátor typu musí být vyplněn");
 
-        ApPart fragment = fragmentService.getFragment(fragmentId);
+        ApPart fragment = partService.getPart(fragmentId);
         StaticDataProvider data = staticDataService.getData();
         ItemType type = data.getItemTypeById(itemTypeId);
-        fragmentService.deleteFragmentItemsByType(fragment, type.getEntity());
+        partService.deleteFragmentItemsByType(fragment, type.getEntity());
         return apFactory.createVO(fragment, true);
     }
 
@@ -574,8 +576,8 @@ public class ApController {
     @RequestMapping(value = "/fragment/{fragmentId}/confirm", method = RequestMethod.POST)
     public void confirmFragment(@PathVariable final Integer fragmentId) {
         Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
-        ApPart fragment = fragmentService.getFragment(fragmentId);
-        fragmentService.confirmFragment(fragment);
+        ApPart fragment = partService.getPart(fragmentId);
+        partService.confirmFragment(fragment);
     }
 
     /**
@@ -587,7 +589,7 @@ public class ApController {
     @RequestMapping(value = "/fragment/{fragmentId}", method = RequestMethod.GET)
     public ApFragmentVO getFragment(@PathVariable final Integer fragmentId) {
         Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
-        ApPart fragment = fragmentService.getFragment(fragmentId);
+        ApPart fragment = partService.getPart(fragmentId);
         return apFactory.createVO(fragment, true);
     }
 
@@ -600,8 +602,8 @@ public class ApController {
     @RequestMapping(value = "/fragment/{fragmentId}", method = RequestMethod.DELETE)
     public void deleteFragment(@PathVariable final Integer fragmentId) {
         Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
-        ApPart fragment = fragmentService.getFragment(fragmentId);
-        fragmentService.deleteFragment(fragment);
+        ApPart fragment = partService.getPart(fragmentId);
+        partService.deleteFragment(fragment);
     }
 
     /**
@@ -1133,7 +1135,8 @@ public class ApController {
     @RequestMapping(value = "{accessPointId}/part", method = RequestMethod.POST)
     public void createPart(@PathVariable final Integer accessPointId,
                            @RequestBody final ApPartFormVO apPartFormVO) {
-
+        ApAccessPoint apAccessPoint = accessPointRepository.findOne(accessPointId);
+        partService.createPart(apAccessPoint, apPartFormVO);
     }
 
     /**
@@ -1148,7 +1151,9 @@ public class ApController {
     public void updatePart(@PathVariable final Integer accessPointId,
                            @PathVariable final Integer partId,
                            @RequestBody final ApPartFormVO apPartFormVO) {
-
+        ApAccessPoint apAccessPoint = accessPointRepository.findOne(accessPointId);
+        ApPart apPart = partService.getPart(partId);
+        accessPointService.updatePart(apAccessPoint, apPart, apPartFormVO);
     }
 
 
@@ -1162,7 +1167,8 @@ public class ApController {
     @RequestMapping(value = "{accessPointId}/part/{partId}", method = RequestMethod.DELETE)
     public void deletePart(@PathVariable final Integer accessPointId,
                            @PathVariable final Integer partId) {
-
+        ApAccessPoint apAccessPoint = accessPointRepository.findOne(accessPointId);
+        partService.deletePart(apAccessPoint, partId);
     }
 
     /**
@@ -1176,7 +1182,9 @@ public class ApController {
     @RequestMapping(value = "{accessPointId}/part/{partId}/prefer-name", method = RequestMethod.PUT)
     public void setPreferName(@PathVariable final Integer accessPointId,
                               @PathVariable final Integer partId) {
-
+        ApAccessPoint apAccessPoint = accessPointRepository.findOne(accessPointId);
+        ApPart apPart = partService.getPart(partId);
+        accessPointService.setPreferName(apAccessPoint, apPart);
     }
 
     /**
@@ -1200,6 +1208,31 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/available/items", method = RequestMethod.POST)
     public ApAttributesInfoVO getAvailableItems(@RequestBody final ApAccessPointCreateVO apAccessPointCreateVO) {
-        return new ApAttributesInfoVO();
+        boolean hasHlavniCast = false;
+        for (ApItemVO item : apAccessPointCreateVO.getPartForm().getItems()) {
+            if (item.getTypeId() == 11) {
+                hasHlavniCast = true;
+                break;
+            }
+        }
+
+        final boolean hasHlavniCast2 = hasHlavniCast;
+        List<ApCreateTypeVO> list = staticDataService.getData().getItemTypes().stream()
+                .map(x -> {
+                    ApCreateTypeVO vo = new ApCreateTypeVO();
+                    vo.setItemTypeId(x.getItemTypeId());
+                    vo.setRequiredType(RequiredType.POSSIBLE);
+                    vo.setRepeatable(false);
+
+                    if (hasHlavniCast2 && x.getItemTypeId() < 10) {
+                        vo.setRequiredType(RequiredType.REQUIRED);
+                    }
+                    return vo;
+                })
+                .collect(Collectors.toList());
+        ApAttributesInfoVO aeAttributesInfoVO = new ApAttributesInfoVO();
+        aeAttributesInfoVO.setAttributes(list);
+        aeAttributesInfoVO.setErrors(Collections.emptyList());
+        return aeAttributesInfoVO;
     }
 }

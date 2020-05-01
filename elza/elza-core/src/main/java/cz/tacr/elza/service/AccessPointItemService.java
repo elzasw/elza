@@ -167,6 +167,20 @@ public class AccessPointItemService {
         itemRepository.save(items);
     }
 
+    /**
+     * Odstraní všechny atributy části.
+     *
+     * @param part část
+     * @param change změna
+     */
+    public void deletePartItems(ApPart part, ApChange change) {
+        List<ApItem> items = itemRepository.findValidItemsByPart(part);
+        for (ApItem item : items) {
+            item.setDeleteChange(change);
+        }
+        itemRepository.save(items);
+    }
+
     private void updateItems(final List<ApItemVO> updateItems,
                              final Map<Integer, List<ApItem>> typeIdItemsMap,
                              final List<ApItem> itemsDb,
@@ -252,7 +266,7 @@ public class AccessPointItemService {
         return sequenceService.getNext(OBJECT_ID_SEQUENCE_NAME);
     }
 
-    private List<ApItem> createItems(final List<ApItemVO> createItems, final Map<Integer, List<ApItem>> typeIdItemsMap, final List<ApItem> itemsDb, final ApChange change, final CreateFunction create) {
+    public List<ApItem> createItems(final List<ApItemVO> createItems, final Map<Integer, List<ApItem>> typeIdItemsMap, final List<ApItem> itemsDb, final ApChange change, final CreateFunction create) {
         StaticDataProvider sdp = staticDataService.getData();
         List<ArrData> dataToSave = new ArrayList<>(createItems.size());
         List<ApItem> itemsCreated = new ArrayList<>();

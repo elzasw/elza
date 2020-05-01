@@ -62,8 +62,11 @@ public class ApItem {
     protected Integer dataId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApPart.class)
-    @JoinColumn(name = "part_id", nullable = false)
+    @JoinColumn(name = "partId", nullable = false)
     protected ApPart part;
+
+    @Column(nullable = false, updatable = false, insertable = false)
+    private Integer partId;
 
     public ApItem() {
 
@@ -168,5 +171,10 @@ public class ApItem {
 
     public void setPart(ApPart part) {
         this.part = part;
+        this.partId = part != null ? part.getPartId() : null;
+    }
+
+    public Integer getPartId() {
+        return partId;
     }
 }
