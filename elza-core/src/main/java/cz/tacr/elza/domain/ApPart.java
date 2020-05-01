@@ -53,8 +53,11 @@ public class ApPart {
     private ApChange deleteChange;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
-    @JoinColumn(name = "access_point_id", nullable = false)
+    @JoinColumn(name = "accessPointId", nullable = false)
     private ApAccessPoint accessPoint;
+
+    @Column(nullable = false, updatable = false, insertable = false)
+    private Integer accessPointId;
 
     public Integer getPartId() {
         return partId;
@@ -126,5 +129,10 @@ public class ApPart {
 
     public void setAccessPoint(ApAccessPoint accessPoint) {
         this.accessPoint = accessPoint;
+        this.accessPointId = accessPoint != null ? accessPoint.getAccessPointId() : null;
+    }
+
+    public Integer getAccessPointId() {
+        return accessPointId;
     }
 }

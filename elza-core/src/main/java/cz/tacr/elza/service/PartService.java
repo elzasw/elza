@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.BusinessException;
@@ -8,6 +9,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,7 @@ public class PartService {
     private final AccessPointGeneratorService apGeneratorService;
     private final AccessPointItemService apItemService;
     private final AccessPointDataService apDataService;
+    private final StructObjService structObjService;
 
     @Autowired
     public PartService(final ApPartRepository partRepository,
@@ -34,13 +37,15 @@ public class PartService {
                        final ApChangeRepository changeRepository,
                        final AccessPointGeneratorService apGeneratorService,
                        final AccessPointItemService apItemService,
-                       final AccessPointDataService apDataService) {
+                       final AccessPointDataService apDataService,
+                       final StructObjService structObjService) {
         this.partRepository = partRepository;
         this.itemRepository = itemRepository;
         this.changeRepository = changeRepository;
         this.apGeneratorService = apGeneratorService;
         this.apItemService = apItemService;
         this.apDataService = apDataService;
+        this.structObjService = structObjService;
     }
 
     public ApPart createPart(final RulPartType partType) {
@@ -69,14 +74,60 @@ public class PartService {
         return partRepository.save(part);
     }
 
-    public ApPart getFragment(final Integer fragmentId) {
-        Validate.notNull(fragmentId);
-        ApPart fragment = partRepository.findOne(fragmentId);
-        if (fragment == null) {
-            throw new ObjectNotFoundException("Fragment nenalezen", BaseCode.ID_NOT_EXIST)
-                    .setId(fragmentId);
+    public ApPart createPart(final ApPart oldPart,
+                             final ApChange createChange) {
+        ApPart part = new ApPart();
+        part.setPartType(oldPart.getPartType());
+        part.setState(oldPart.getState());
+        part.setAccessPoint(oldPart.getAccessPoint());
+        part.setCreateChange(createChange);
+        part.setParentPart(oldPart.getParentPart());
+
+        return partRepository.save(part);
+    }
+
+    public void changeParentPart(final ApPart oldPart,
+                                 final ApPart newPart) {
+        List<ApPart> partList = partRepository.findPartsByParentPartAndDeleteChangeIsNull(oldPart);
+        for (ApPart part : partList) {
+            part.setParentPart(newPart);
         }
-        return fragment;
+        partRepository.save(partList);
+    }
+
+    /**
+     * Provede založení části.
+     *
+     * @param accessPoint přístupový bod
+     * @param apPartFormVO data k založení
+     */
+    public void createPart(final ApAccessPoint accessPoint,
+                           final ApPartFormVO apPartFormVO) {
+        ApPart parentPart = apPartFormVO.getParentPartId() == null ? null : getPart(apPartFormVO.getParentPartId());
+
+        if (parentPart != null && parentPart.getParentPart() != null) {
+            throw new IllegalArgumentException("Nadřazená část nesmí zároveň být podřazená část");
+        }
+
+        if (CollectionUtils.isEmpty(apPartFormVO.getItems())) {
+            throw new IllegalArgumentException("Část musí mít alespoň jeden prvek popisu");
+        }
+
+        RulPartType partType = structObjService.getPartTypeByCode(apPartFormVO.getPartTypeCode());
+        ApChange apChange = apDataService.createChange(ApChange.Type.AP_CREATE);
+
+        ApPart newPart = createPart(partType, accessPoint, apChange, parentPart);
+        createPartItems(apChange, newPart, apPartFormVO);
+    }
+
+    public ApPart getPart(final Integer partId) {
+        Validate.notNull(partId);
+        ApPart part = partRepository.findOne(partId);
+        if (part == null) {
+            throw new ObjectNotFoundException("Part nenalezen", BaseCode.ID_NOT_EXIST)
+                    .setId(partId);
+        }
+        return part;
     }
 
     public void changeFragmentItems(final ApPart part, final List<ApUpdateItemVO> items) {
@@ -108,6 +159,22 @@ public class PartService {
         apGeneratorService.generateAndSetResult(fragment);
     }
 
+    /**
+     * Založí atributy části.
+     *
+     * @param apChange změna
+     * @param apPart část
+     * @param apPartFormVO data k založení
+     * @return
+     */
+    public List<ApItem> createPartItems(final ApChange apChange,
+                                        final ApPart apPart,
+                                        final ApPartFormVO apPartFormVO) {
+        List<ApItem> items = apItemService.createItems(apPartFormVO.getItems(), null, null, apChange, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
+                -> createPartItem(apPart, it, is, c, objectId, position));
+        return itemRepository.save(items);
+    }
+
     private ApItem createPartItem(final ApPart part, final RulItemType it, final RulItemSpec is, final ApChange c, final int objectId, final int position) {
         ApItem item = new ApItem();
         item.setPart(part);
@@ -117,6 +184,39 @@ public class PartService {
         item.setObjectId(objectId);
         item.setPosition(position);
         return item;
+    }
+
+    /**
+     * Odstraní část
+     *
+     * @param apPart část
+     * @param apChange změna
+     */
+    public void deletePart(ApPart apPart, ApChange apChange) {
+        apPart.setDeleteChange(apChange);
+        partRepository.save(apPart);
+    }
+
+    /**
+     * Odstraní část
+     *
+     * @param accessPoint přístupový bod
+     * @param partId identifikátor části
+     */
+    public void deletePart(final ApAccessPoint accessPoint, final Integer partId) {
+        if (accessPoint.getPreferredPart().getPartId().equals(partId)) {
+            throw new IllegalArgumentException("Preferované jméno nemůže být odstraněno");
+        }
+        ApPart apPart = getPart(partId);
+
+        if (partRepository.countApPartsByParentPartAndDeleteChangeIsNull(apPart) > 0) {
+            throw new IllegalArgumentException("Nelze smazat part, který má aktivní návazné party");
+        }
+
+        ApChange apChange = apDataService.createChange(ApChange.Type.AP_DELETE);
+        apItemService.deletePartItems(apPart, apChange);
+        apPart.setDeleteChange(apChange);
+        partRepository.save(apPart);
     }
 
     public void deleteFragment(final ApPart part) {
