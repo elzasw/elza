@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-public class FragmentService {
+public class PartService {
 
     private final ApPartRepository partRepository;
     private final ApItemRepository itemRepository;
@@ -29,12 +29,12 @@ public class FragmentService {
     private final AccessPointDataService apDataService;
 
     @Autowired
-    public FragmentService(final ApPartRepository partRepository,
-                           final ApItemRepository itemRepository,
-                           final ApChangeRepository changeRepository,
-                           final AccessPointGeneratorService apGeneratorService,
-                           final AccessPointItemService apItemService,
-                           final AccessPointDataService apDataService) {
+    public PartService(final ApPartRepository partRepository,
+                       final ApItemRepository itemRepository,
+                       final ApChangeRepository changeRepository,
+                       final AccessPointGeneratorService apGeneratorService,
+                       final AccessPointItemService apItemService,
+                       final AccessPointDataService apDataService) {
         this.partRepository = partRepository;
         this.itemRepository = itemRepository;
         this.changeRepository = changeRepository;
