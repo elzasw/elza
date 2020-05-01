@@ -230,7 +230,7 @@ public class AccessPointService {
     private ScopeRelationRepository scopeRelationRepository;
 
     @Autowired
-    private FragmentService fragmentService;
+    private PartService partService;
 
     @Autowired
     private StructObjService structObjService;
@@ -841,7 +841,7 @@ public class AccessPointService {
         ApAccessPoint accessPoint = apState.getAccessPoint();
         RulPartType partType = structObjService.getPartTypeByCode(apPartFormVO.getPartTypeCode());
 
-        ApPart apPart = fragmentService.createPart(partType, accessPoint, apChange, null);
+        ApPart apPart = partService.createPart(partType, accessPoint, apChange, null);
         accessPoint.setPreferredPart(apPart);
 
         publishAccessPointCreateEvent(accessPoint);
