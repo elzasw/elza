@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {connect} from 'react-redux';
 import {AbstractReactComponent, FileListBox, FormInput, i18n, Icon, StoreHorizontalLoader} from 'components/shared';
 import AddFileForm from './AddFileForm';
@@ -46,6 +45,8 @@ class FundFiles extends AbstractReactComponent {
     state = {
         selectedId: 0,
     };
+
+    uploadInput = null;
 
     componentDidMount() {
         this.fetchIfNeeded();
@@ -138,7 +139,7 @@ class FundFiles extends AbstractReactComponent {
     };
 
     handleReplace = id => {
-        ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).click();
+        this.uploadInput.click();
         _ReplaceId = id;
     };
 
@@ -210,7 +211,12 @@ class FundFiles extends AbstractReactComponent {
                         </div>
                     </div>
                 )}
-                <FormInput className="hidden" type="file" ref="uploadInput" onChange={this.handleReplaceSubmit} />
+                <FormInput
+                    className="d-none"
+                    type="file"
+                    ref={ref => (this.uploadInput = ref)}
+                    onChange={this.handleReplaceSubmit}
+                />
 
                 {fundFiles.fetched && (
                     <FileListBox
