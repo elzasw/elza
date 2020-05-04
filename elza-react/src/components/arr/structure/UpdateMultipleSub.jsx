@@ -202,9 +202,8 @@ class UpdateMultipleSub extends AbstractReactComponent {
                             autoincrementItemTypeIds.onChange([...autoincrementItemTypeIds.value, infoType.id]);
                         }
                     }}
-                >
-                    {i18n('arr.structure.modal.increment')}
-                </FormCheck>,
+                    label={i18n('arr.structure.modal.increment')}
+                />,
             );
         }
 

@@ -80,9 +80,7 @@ class VisiblePolicyForm extends AbstractReactComponent {
                     <Modal.Body>
                         {records.map((val, index) => (
                             <div key={index}>
-                                <FormCheck {...val.checked} value={true}>
-                                    {visiblePolicyTypeItems[val.id.initialValue].name}
-                                </FormCheck>
+                                <FormCheck {...val.checked} value={true} label={visiblePolicyTypeItems[val.id.initialValue].name} />
                             </div>
                         ))}
                     </Modal.Body>

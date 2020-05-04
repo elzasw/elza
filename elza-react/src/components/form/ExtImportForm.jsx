@@ -479,9 +479,7 @@ class ExtImportForm extends AbstractReactComponent {
                                             </div>
                                             {isParty && (
                                                 <div>
-                                                    <FormCheck {...originator}>
-                                                        {i18n('extImport.originator')}
-                                                    </FormCheck>
+                                                    <FormCheck {...originator} label={i18n('extImport.originator')} />
                                                 </div>
                                             )}
                                         </div>
