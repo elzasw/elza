@@ -50,7 +50,7 @@ class AddGroupForm extends AbstractReactComponent {
                     />
                     <Field
                         name="description"
-                        type="textarea"
+                        as="textarea"
                         component={FormInputField}
                         label={i18n('admin.group.title.description')}
                         disabled={!create}

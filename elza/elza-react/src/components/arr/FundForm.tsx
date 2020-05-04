@@ -151,7 +151,7 @@ const FundForm: React.FC<IFundForm & InjectedFormProps<{}, IFundForm>> = memo((p
                 {approve && (
                     <Field
                         name="dateRange"
-                        type="textarea"
+                        as="textarea"
                         component={FormInputField}
                         label={i18n('arr.fund.dateRange')}
                     />
