@@ -2,11 +2,12 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {FieldArray, reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, Icon} from 'components/shared';
-import {Form, FormGroup, FormLabel, Modal} from 'react-bootstrap';
-import {Button} from '../../ui';
+import {Form, FormGroup, FormLabel, Modal, Button} from 'react-bootstrap';
+//import {Button} from '../../ui';
 import {submitForm} from 'components/form/FormUtils.jsx';
 import './AddDescItemTypeForm.scss';
 import {ItemTypeField} from 'components/arr/nodeForm/ItemTypeField';
+import FF from '../../shared/form/FF';
 
 /**
  * Formulář přidání nové desc item type.
@@ -67,9 +68,12 @@ class AddDescItemTypeForm extends AbstractReactComponent {
             this.submitOptions,
         );
 
+    selectDescItem = (item) => {
+        this.submitReduxForm({descItemTypeId: item}, this.props.dispatch);
+    }
+
     render() {
         const {
-            fields: {descItemTypeId},
             handleSubmit,
             onClose,
             descItemTypes,
@@ -84,34 +88,24 @@ class AddDescItemTypeForm extends AbstractReactComponent {
                         {possibleItemTypes.map((node, index) => {
                             return (
                                 <FormGroup key={index}>
-                                    <FormLabel>{node.name}</FormLabel>
-                                    <div>
-                                        {node.children.map(item => {
-                                            return (
-                                                <button
-                                                    className="add-link btn btn-link"
-                                                    key={item.id}
-                                                    onClick={() => {
-                                                        this.submitReduxForm(
-                                                            {descItemTypeId: item},
-                                                            this.props.dispatch,
-                                                        );
-                                                    }}
-                                                >
-                                                    <Icon glyph="fa-plus" />
-                                                    {item.name}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
+                                    <FormLabel className={"d-block"}>{node.name}</FormLabel>
+                                        {node.children.map(item => <Button
+                                                variant={"link"}
+                                                className="add-link"
+                                                key={item.id}
+                                                onClick={this.selectDescItem.bind(this, item)}
+                                            >
+                                            <Icon glyph="fa-plus" />
+                                            {item.name}
+                                        </Button>)}
                                 </FormGroup>
                             );
                         })}
                     </div>
                     <div className="autocomplete-desc-item-type">
-                        <FieldArray
+                        <FF
                             name="descItemTypeId"
-                            component={ItemTypeField}
+                            field={ItemTypeField}
                             label={i18n('arr.fund.dateRange')}
                             descItemTypes={descItemTypes}
                         />
