@@ -45,14 +45,14 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     private String comment;
 
     /**
-     * Rejstříkové heslo.
+     * Jméno přistupového bodu.
      */
-    private String record;
+    private String name;
 
     /**
-     * Podrobná charakteristika rejstříkového hesla.
+     * Podrobný popis přístupového bodu.
      */
-    private String characteristics;
+    private String description;
 
     private boolean invalid;
 
@@ -107,6 +107,21 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
      */
     private List<ApPartVO> parts = new ArrayList<>();
 
+    /**
+     * Poslední změna přístupového bodu
+     */
+    private ApChangeVO lastChange;
+
+    /**
+     * Vlastník přístupového bodu
+     */
+    private UserVO ownerUser;
+
+    /**
+     * Počet komentářů
+     */
+    private Integer comments;
+
     public Integer getId() {
         return id;
     }
@@ -155,20 +170,20 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
         this.scopeId = scopeId;
     }
 
-    public String getRecord() {
-        return record;
+    public String getName() {
+        return name;
     }
 
-    public void setRecord(String record) {
-        this.record = record;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getCharacteristics() {
-        return characteristics;
+    public String getDescription() {
+        return description;
     }
 
-    public void setCharacteristics(String characteristics) {
-        this.characteristics = characteristics;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public boolean isInvalid() {
@@ -255,5 +270,29 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 
     public void setParts(List<ApPartVO> parts) {
         this.parts = parts;
+    }
+
+    public ApChangeVO getLastChange() {
+        return lastChange;
+    }
+
+    public void setLastChange(ApChangeVO lastChange) {
+        this.lastChange = lastChange;
+    }
+
+    public UserVO getOwnerUser() {
+        return ownerUser;
+    }
+
+    public void setOwnerUser(UserVO ownerUser) {
+        this.ownerUser = ownerUser;
+    }
+
+    public Integer getComments() {
+        return comments;
+    }
+
+    public void setComments(Integer comments) {
+        this.comments = comments;
     }
 }
