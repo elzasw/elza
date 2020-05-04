@@ -2,7 +2,7 @@ import { refInstitutionsFetchIfNeeded } from 'actions/refTables/institutions.jsx
 import { refRuleSetFetchIfNeeded } from 'actions/refTables/ruleSet.jsx';
 import { WebApi } from 'actions/WebApi';
 import { ScopesField } from 'components/admin/ScopesField';
-import { FundScope, IFundFormData } from 'components/arr/FundForm.d';
+import { FundScope, IFundFormData } from '../../types';
 import React, { memo, useEffect } from 'react';
 import { Form, Modal } from 'react-bootstrap';
 import { connect, ConnectedProps, useDispatch } from 'react-redux';
@@ -90,7 +90,7 @@ const FundForm: React.FC<IFundForm & InjectedFormProps<{}, IFundForm>> = memo((p
             );
         } else {
             approveButton = (
-                <Button type="submit" disabled={submitting}>
+                <Button type="submit" variant="outline-secondary" disabled={submitting}>
                     {i18n('arr.fund.approveVersion.approve')}
                 </Button>
             );
@@ -151,7 +151,7 @@ const FundForm: React.FC<IFundForm & InjectedFormProps<{}, IFundForm>> = memo((p
                 {approve && (
                     <Field
                         name="dateRange"
-                        type="textarea"
+                        as="textarea"
                         component={FormInputField}
                         label={i18n('arr.fund.dateRange')}
                     />

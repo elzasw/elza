@@ -59,9 +59,8 @@ class AddStructureDataForm extends AbstractReactComponent {
                             incrementedTypeIds.onChange([...incrementedTypeIds.value, infoType.id]);
                         }
                     }}
-                >
-                    {i18n("arr.structure.modal.increment")}
-                </FormCheck>
+                    label={i18n("arr.structure.modal.increment")}
+                />
             );
         }
         return null;
@@ -105,7 +104,7 @@ class AddStructureDataForm extends AbstractReactComponent {
                     )}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" disabled={submitting}>
+                    <Button type="submit" variant="outline-secondary" disabled={submitting}>
                         {i18n("global.action.add")}
                     </Button>
                     <Button variant="link" disabled={submitting} onClick={onClose}>

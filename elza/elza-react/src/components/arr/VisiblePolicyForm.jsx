@@ -80,14 +80,12 @@ class VisiblePolicyForm extends AbstractReactComponent {
                     <Modal.Body>
                         {records.map((val, index) => (
                             <div key={index}>
-                                <FormCheck {...val.checked} value={true}>
-                                    {visiblePolicyTypeItems[val.id.initialValue].name}
-                                </FormCheck>
+                                <FormCheck {...val.checked} value={true} label={visiblePolicyTypeItems[val.id.initialValue].name} />
                             </div>
                         ))}
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type="submit">{i18n('visiblePolicy.action.save')}</Button>
+                        <Button type="submit" variant="outline-secondary">{i18n('visiblePolicy.action.save')}</Button>
                         <Button onClick={this.handleResetVisiblePolicy}>{i18n('visiblePolicy.action.reset')}</Button>
                         <Button variant="link" onClick={onClose}>
                             {i18n('global.action.cancel')}

@@ -1,10 +1,12 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import {AbstractReactComponent, i18n} from 'components/shared';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
+import {submitForm} from 'components/form/FormUtils.jsx';
+import FileInput from '../shared/form/FileInput';
+import FF from '../shared/form/FF';
 
 /**
  * Formulář přidání souboru.
@@ -33,18 +35,12 @@ class AddFileForm extends AbstractReactComponent {
 
     state = {};
 
-    UNSAFE_componentWillReceiveProps(nextProps) {}
-
-    componentDidMount() {
-        this.props.load(this.props.initData);
-    }
 
     submitReduxForm = (values, dispatch) =>
         submitForm(AddFileForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
         const {
-            fields: {name, file},
             handleSubmit,
             onClose,
         } = this.props;
@@ -53,11 +49,11 @@ class AddFileForm extends AbstractReactComponent {
             <div className="add-file-form-container">
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
-                        <FormInput type="text" label={i18n('dms.file.name')} {...name} {...decorateFormField(name)} />
-                        <FormInput type="file" {...file} {...decorateFormField(file)} value={null} />
+                        <FF label={i18n('dms.file.name')} name={"name"} />
+                        <FF field={FileInput} name={"file"} />
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type="submit">{i18n('global.action.add')}</Button>
+                        <Button variant="outline-secondary" type="submit">{i18n('global.action.add')}</Button>
                         <Button variant="link" onClick={onClose}>
                             {i18n('global.action.cancel')}
                         </Button>
@@ -68,10 +64,6 @@ class AddFileForm extends AbstractReactComponent {
     }
 }
 
-AddFileForm.defaultProps = {
-    initData: {},
-};
-
-export default reduxForm({form: 'addFileForm', fields: ['name', 'file']}, null, {
-    load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addFileForm', data}),
+export default reduxForm({
+    form: 'addFileForm'
 })(AddFileForm);

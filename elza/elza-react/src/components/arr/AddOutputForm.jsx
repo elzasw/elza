@@ -121,7 +121,7 @@ class AddOutputForm extends AbstractReactComponent {
                         </FormInput>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type="submit">
+                        <Button type="submit" variant="outline-secondary">
                             {create ? i18n('global.action.create') : i18n('global.action.update')}
                         </Button>
                         <Button variant="link" onClick={onClose}>

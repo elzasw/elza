@@ -322,12 +322,12 @@ class AddRegistryForm extends AbstractReactComponent {
                             </Button>
                         )}
                         {(!structured.value || this.state.step === 2) && (
-                            <Button type="submit" onClick={handleSubmit(okSubmitForm)} disabled={submitting}>
+                            <Button type="submit" variant="outline-secondary" onClick={handleSubmit(okSubmitForm)} disabled={submitting}>
                                 {i18n('global.action.store')}
                             </Button>
                         )}
                         {structured.value && this.state.step === 1 && (
-                            <Button type="button" onClick={this.nextStep} disabled={this.state.working}>
+                            <Button type="button" variant="outline-secondary" onClick={this.nextStep} disabled={this.state.working}>
                                 {i18n('global.action.next')}
                             </Button>
                         )}

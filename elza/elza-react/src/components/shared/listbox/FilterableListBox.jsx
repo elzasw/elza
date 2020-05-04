@@ -183,8 +183,7 @@ class FilterableListBox extends AbstractReactComponent {
 
         return (
             <div className="checkbox-item">
-                <FormCheck tabIndex={-1} checked={checked} onMouseDown={onCheckItem}></FormCheck>
-                {item.name}
+                <FormCheck tabIndex={-1} checked={checked} onMouseDown={onCheckItem} label={item.name} />
             </div>
         );
     }

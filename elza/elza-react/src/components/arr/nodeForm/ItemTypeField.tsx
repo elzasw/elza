@@ -1,4 +1,4 @@
-import { FundScope } from 'components/arr/FundForm.d';
+import { FundScope } from '../../../types';
 import { Autocomplete, i18n, Icon } from 'components/shared';
 import { Button } from 'components/ui';
 import React, { memo } from 'react';
@@ -19,6 +19,7 @@ export const ItemTypeField: React.FC<IScopesFieldProps> = memo(({fields, ...prop
             getItemRenderClass={item => (item.groupItem ? null : ' type-' + item.type.toLowerCase())}
             allowSelectItem={item => !item.groupItem}
             onBlurValidation={false}
+            {...props}
         />
     </>
 ));
