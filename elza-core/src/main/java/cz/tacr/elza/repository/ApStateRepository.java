@@ -100,4 +100,13 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer> {
             " WHERE s.accessPoint = :accessPoint" +
             " ORDER BY s.createChange DESC")
     List<ApState> findByAccessPointFetch(@Param("accessPoint") ApAccessPoint accessPoint);
+
+    @Query("SELECT COUNT (s) FROM ap_state s WHERE s.accessPoint = :accessPoint AND s.comment IS NOT NULL")
+    Integer countCommentsByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);
+
+    @Query("SELECT s1" +
+            " FROM ap_state s1" +
+            " WHERE s1.accessPoint = :accessPoint" +
+            " AND s1.createChangeId = (SELECT min(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s1.accessPoint)")
+    ApState findFirstByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);
 }
