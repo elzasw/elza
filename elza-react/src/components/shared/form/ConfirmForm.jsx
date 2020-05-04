@@ -37,7 +37,7 @@ class ConfirmForm extends AbstractReactComponent {
                 <div className="confirm-form-container">
                     {content}
                     <Modal.Footer>
-                        <Button disabled={submitting} type="submit">
+                        <Button disabled={submitting} variant="outline-secondary" type="submit">
                             {submitTitle ? submitTitle : i18n('global.action.store')}
                         </Button>
                         <Button variant="link" onClick={onClose}>

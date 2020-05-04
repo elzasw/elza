@@ -191,7 +191,7 @@ class ExtImportSearch extends AbstractReactComponent {
                     </div>
                 )}
                 <div className="text-right">
-                    <Button variant="default" type="submit" disabled={submitting}>
+                    <Button variant="outline-secondary" type="submit" disabled={submitting}>
                         {i18n('extImport.search')}
                     </Button>
                 </div>
@@ -479,9 +479,7 @@ class ExtImportForm extends AbstractReactComponent {
                                             </div>
                                             {isParty && (
                                                 <div>
-                                                    <FormCheck {...originator}>
-                                                        {i18n('extImport.originator')}
-                                                    </FormCheck>
+                                                    <FormCheck {...originator} label={i18n('extImport.originator')} />
                                                 </div>
                                             )}
                                         </div>
@@ -493,7 +491,7 @@ class ExtImportForm extends AbstractReactComponent {
                             <Modal.Footer>
                                 {showDetail ? (
                                     <span>
-                                        <Button type="submit" disabled={disabledSubmit}>
+                                        <Button type="submit" variant="outline-secondary" disabled={disabledSubmit}>
                                             {i18n('extImport.update')}
                                         </Button>
                                         <Button
@@ -506,7 +504,7 @@ class ExtImportForm extends AbstractReactComponent {
                                     </span>
                                 ) : (
                                     <span>
-                                        <Button type="submit" disabled={disabledSubmit}>
+                                        <Button type="submit" variant="outline-secondary" disabled={disabledSubmit}>
                                             {i18n('global.action.import')}
                                         </Button>
                                     </span>

@@ -3,15 +3,15 @@
  * <ImportForm fund onSubmit={this.handleCallImportRegistry} />
  */
 import React from 'react';
-import {reduxForm} from 'redux-form';
+import {Field, reduxForm} from 'redux-form';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
+import {submitForm} from 'components/form/FormUtils.jsx';
 import {WebApi} from 'actions/index.jsx';
 import AbstractReactComponent from '../AbstractReactComponent';
 import HorizontalLoader from '../shared/loading/HorizontalLoader';
-import FormInput from 'components/shared/form/FormInput';
 import i18n from '../i18n';
+import FormInputField from '../shared/form/FormInputField';
 
 class ExportForm extends AbstractReactComponent {
     static propTypes = {};
@@ -44,7 +44,6 @@ class ExportForm extends AbstractReactComponent {
 
     render() {
         const {
-            fields: {transformationName},
             onClose,
             handleSubmit,
         } = this.props;
@@ -56,11 +55,11 @@ class ExportForm extends AbstractReactComponent {
                     {isFetching ? (
                         <HorizontalLoader />
                     ) : (
-                        <FormInput
+                        <Field
+                            name="code"
+                            component={FormInputField}
                             as="select"
                             label={i18n('export.transformationName')}
-                            {...transformationName}
-                            {...decorateFormField(transformationName)}
                         >
                             <option key="blankName" />
                             {this.state.transformationNames.map((i, index) => {
@@ -70,11 +69,11 @@ class ExportForm extends AbstractReactComponent {
                                     </option>
                                 );
                             })}
-                        </FormInput>
+                        </Field>
                     )}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit">{i18n('global.action.export')}</Button>
+                    <Button type="submit" variant="outline-secondary">{i18n('global.action.export')}</Button>
                     <Button variant="link" onClick={onClose}>
                         {i18n('global.action.cancel')}
                     </Button>
@@ -86,5 +85,4 @@ class ExportForm extends AbstractReactComponent {
 
 export default reduxForm({
     form: 'exportForm',
-    fields: ['transformationName'],
 })(ExportForm);

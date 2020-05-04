@@ -26,9 +26,7 @@ class StructureExtensionsForm extends AbstractReactComponent {
                                       const {checked, name, onFocus, onChange, onBlur} = val.active;
                                       const wantedProps = {checked, name, onFocus, onChange, onBlur};
                                       return (
-                                          <FormCheck {...wantedProps} key={index} value={true}>
-                                              {val.name.initialValue}
-                                          </FormCheck>
+                                          <FormCheck {...wantedProps} key={index} value={true} label={val.name.initialValue} />
                                       );
                                   })
                                 : i18n('arr.structure.modal.settings.noResults')}
@@ -36,7 +34,7 @@ class StructureExtensionsForm extends AbstractReactComponent {
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" disabled={submitting}>
+                    <Button type="submit" variant="outline-secondary" disabled={submitting}>
                         {i18n('global.action.update')}
                     </Button>
                     <Button variant="link" disabled={submitting} onClick={onClose}>

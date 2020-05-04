@@ -24,7 +24,7 @@ class DataGridExportDialog extends AbstractReactComponent {
                     <DataGridExportForm versionId={versionId} fundDataGrid={fundDataGrid} ref="form" />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" onClick={this.handleSubmit}>
+                    <Button type="submit" variant="outline-secondary" onClick={this.handleSubmit}>
                         {i18n('global.action.export')}
                     </Button>
                     <Button variant="link" onClick={onClose}>

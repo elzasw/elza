@@ -248,10 +248,10 @@ const ArrRequestForm = class extends AbstractReactComponent {
             <Form onSubmit={handleSubmit(onSubmitForm)}>
                 <Modal.Body>{form}</Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" onClick={handleSubmit(onSubmitForm.bind(this, false))}>
+                    <Button type="submit" variant="outline-secondary" onClick={handleSubmit(onSubmitForm.bind(this, false))}>
                         {i18n('global.action.store')}
                     </Button>
-                    <Button type="submit" onClick={handleSubmit(onSubmitForm.bind(this, true))}>
+                    <Button type="submit" variant="outline-secondary" onClick={handleSubmit(onSubmitForm.bind(this, true))}>
                         {i18n('arr.request.action.storeAndSend')}
                     </Button>
                     <Button variant="link" onClick={onClose}>
