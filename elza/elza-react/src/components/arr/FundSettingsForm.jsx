@@ -67,7 +67,7 @@ class FundSettingsForm extends AbstractReactComponent {
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit">{i18n('visiblePolicy.action.save')}</Button>
+                    <Button type="submit" variant="outline-secondary">{i18n('visiblePolicy.action.save')}</Button>
                     <Button variant="link" onClick={onClose}>
                         {i18n('global.action.cancel')}
                     </Button>

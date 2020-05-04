@@ -474,7 +474,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                     {operationInputs}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit">{i18n(submitButtonTitle)}</Button>
+                    <Button type="submit" variant="outline-secondary">{i18n(submitButtonTitle)}</Button>
                     <Button variant="link" onClick={onClose}>
                         {i18n('global.action.close')}
                     </Button>

@@ -33,7 +33,7 @@ class ApNameForm extends AbstractReactComponent {
                     />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" disabled={submitting}>
+                    <Button type="submit" variant="outline-secondary" disabled={submitting}>
                         {i18n('global.action.store')}
                     </Button>
                     <Button variant="link" onClick={onClose} disabled={submitting}>

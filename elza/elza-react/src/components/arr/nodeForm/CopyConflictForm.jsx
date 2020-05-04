@@ -110,7 +110,12 @@ class CopyConflictForm extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     {!scopeError && (
-                        <Button disabled={submitting} type="submit" onClick={this.handleFormSubmit}>
+                        <Button
+                            disabled={submitting}
+                            variant="outline-secondary"
+                            type="submit"
+                            onClick={this.handleFormSubmit}
+                        >
                             {i18n('global.action.store')}
                         </Button>
                     )}

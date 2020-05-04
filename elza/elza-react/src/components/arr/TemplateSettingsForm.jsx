@@ -63,7 +63,12 @@ class TemplateSettingsForm extends React.Component {
                         label={i18n('arr.output.template.evenPageOffsetY')}
                     />
                     {!readMode && (
-                        <Button className="output-settings-submit" disabled={submitting} type="submit">
+                        <Button
+                            className="output-settings-submit"
+                            disabled={submitting}
+                            type="submit"
+                            variant="outline-secondary"
+                        >
                             {i18n('arr.output.template.set')}
                         </Button>
                     )}

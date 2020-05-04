@@ -90,7 +90,7 @@ const FundForm: React.FC<IFundForm & InjectedFormProps<{}, IFundForm>> = memo((p
             );
         } else {
             approveButton = (
-                <Button type="submit" disabled={submitting}>
+                <Button type="submit" variant="outline-secondary" disabled={submitting}>
                     {i18n('arr.fund.approveVersion.approve')}
                 </Button>
             );
