@@ -293,6 +293,10 @@ public class ApFactory {
     }
 
     public UserVO createVO(final UsrUser user) {
+        if (user == null) {
+            return null;
+        }
+
         UserVO userVO = new UserVO();
         userVO.setId(user.getUserId());
         userVO.setDisplayName(user.getUsername());
