@@ -295,7 +295,7 @@ public class ApControllerTest extends AbstractControllerTest {
         items.add(buildApItem(UpdateOp.CREATE, vztahEntitaType.getCode(), null, accessPoint, null, null));
 
         fragment = changeFragmentItems(fragment.getId(), items);
-        Assert.assertEquals(vztahTypSpec.getName() + ": " + accessPoint.getRecord(), fragment.getValue());
+        Assert.assertEquals(vztahTypSpec.getName() + ": " + accessPoint.getName(), fragment.getValue());
 
         confirmFragment(fragment.getId());
 

@@ -202,6 +202,8 @@ public class ApFactory {
         ApRuleSystem ruleSystem = ap.getRuleSystem();
         ApPart preferredPart = ap.getPreferredPart();
         String desc = getDescription(parts, items);
+        Integer comments = stateRepository.countCommentsByAccessPoint(ap);
+        UserVO ownerUser = getOwnerUser(ap);
         // prepare external ids
         List<ApExternalIdVO> eidsVO = FactoryUtils.transformList(eids, ApExternalIdVO::newInstance);
 
@@ -218,12 +220,15 @@ public class ApFactory {
         vo.setErrorDescription(ap.getErrorDescription());
         vo.setRuleSystemId(ruleSystem == null ? null : ruleSystem.getRuleSystemId());
         vo.setState(ap.getState() == null ? null : ApStateVO.valueOf(ap.getState().name()));
-        vo.setRecord(preferredPart != null ? preferredPart.getValue() : null);
+        vo.setName(preferredPart != null ? preferredPart.getValue() : null);
         if (desc != null) {
-            vo.setCharacteristics(desc);
+            vo.setDescription(desc);
         }
         vo.setParts(createVO(parts, items));
         vo.setPreferredPart(preferredPart != null ? preferredPart.getPartId() : null);
+        vo.setLastChange(createVO(apState.getCreateChange()));
+        vo.setComments(comments);
+        vo.setOwnerUser(ownerUser);
         return vo;
     }
 
@@ -250,6 +255,11 @@ public class ApFactory {
         return briefDesc;
     }
 
+    private UserVO getOwnerUser(final ApAccessPoint accessPoint) {
+        ApState first = stateRepository.findFirstByAccessPoint(accessPoint);
+        return createVO(first.getCreateChange().getUser());
+    }
+
     public List<ApPartVO> createVO(final List<ApPart> parts,
                                    final Map<Integer, List<ApItem>> items) {
         List<ApPartVO> partVOList = new ArrayList<>();
@@ -273,6 +283,26 @@ public class ApFactory {
 
         return apPartVO;
     }
+
+    public ApChangeVO createVO(final ApChange change) {
+        ApChangeVO apChangeVO = new ApChangeVO();
+        apChangeVO.setId(change.getChangeId());
+        apChangeVO.setChange(change.getChangeDate().toLocalDateTime());
+        apChangeVO.setUser(createVO(change.getUser()));
+        return apChangeVO;
+    }
+
+    public UserVO createVO(final UsrUser user) {
+        if (user == null) {
+            return null;
+        }
+
+        UserVO userVO = new UserVO();
+        userVO.setId(user.getUserId());
+        userVO.setDisplayName(user.getUsername());
+        return userVO;
+    }
+
     /**
      * Create collection of VO from APs
      *
