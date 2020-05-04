@@ -162,10 +162,16 @@ scheduleStoreSave();
 
 // Aplikace
 
-const render = Component => {
+const render = () => {
     const MOUNT_POINT = document.getElementById('content');
 
-    ReactDOM.render(<Component store={store} />, MOUNT_POINT);
+    ReactDOM.render(<Root store={store} />, MOUNT_POINT);
 };
 
-render(Root);
+render();
+
+if (module.hot) {
+    module.hot.accept('./router', () => {
+        render();
+    });
+}
