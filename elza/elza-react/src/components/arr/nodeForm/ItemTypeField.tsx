@@ -19,6 +19,7 @@ export const ItemTypeField: React.FC<IScopesFieldProps> = memo(({fields, ...prop
             getItemRenderClass={item => (item.groupItem ? null : ' type-' + item.type.toLowerCase())}
             allowSelectItem={item => !item.groupItem}
             onBlurValidation={false}
+            {...props}
         />
     </>
 ));
