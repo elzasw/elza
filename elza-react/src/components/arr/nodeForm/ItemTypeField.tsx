@@ -1,4 +1,4 @@
-import { FundScope } from 'components/arr/FundForm.d';
+import { FundScope } from '../../../types';
 import { Autocomplete, i18n, Icon } from 'components/shared';
 import { Button } from 'components/ui';
 import React, { memo } from 'react';

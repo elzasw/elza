@@ -2,7 +2,7 @@ import { refInstitutionsFetchIfNeeded } from 'actions/refTables/institutions.jsx
 import { refRuleSetFetchIfNeeded } from 'actions/refTables/ruleSet.jsx';
 import { WebApi } from 'actions/WebApi';
 import { ScopesField } from 'components/admin/ScopesField';
-import { FundScope, IFundFormData } from 'components/arr/FundForm.d';
+import { FundScope, IFundFormData } from '../../types';
 import React, { memo, useEffect } from 'react';
 import { Form, Modal } from 'react-bootstrap';
 import { connect, ConnectedProps, useDispatch } from 'react-redux';

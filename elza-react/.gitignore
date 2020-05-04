@@ -5,3 +5,4 @@ react-app-env.d.ts
 .env.local
 .env.*.local
 .vscode/
+src/*.d.ts
