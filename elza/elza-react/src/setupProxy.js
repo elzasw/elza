@@ -1,31 +1,54 @@
-const proxy = require('http-proxy-middleware');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const HOST = process.env.ENDPOINT || 'http://localhost:8080';
+const inArray = function(arr, key) {
+    for (let word of arr) {
+        if (key.indexOf(word) === 0) {
+            return true;
+        }
+    }
+    return false
+}
+
+const filterApiUrl = (pathname, req) => {
+    const forbidden = ['/api', '/login', '/res', '/static'];
+
+    if (inArray(forbidden, pathname)) {
+        return false
+    }
+
+    const paths = [
+        '/fund',
+        '/node',
+        '/entity',
+        '/arr',
+        '/registry',
+        '/admin',
+    ]
+    if (req.method === 'GET' && (inArray(paths, pathname) || pathname === "/" ||  pathname === "")) {
+        return false;
+    }
+    return true;
+}
+
 
 module.exports = function(app) {
     app.use(
-        '/api',
-        proxy({
+        ['/api', '/login'],
+        createProxyMiddleware({
             target: HOST,
-            ws: true,
             changeOrigin: true,
         }),
     );
     app.use(
-        '/login',
-        proxy({
+        '/',
+        createProxyMiddleware(
+            filterApiUrl,
+        {
             target: HOST,
             ws: true,
             changeOrigin: true,
-        }),
-    );
-    app.use(
-        '^/stomp',
-        proxy({
-            target: HOST,
-            ws: true,
-            changeOrigin: true,
-            proxy: true,
+            logLevel: 'debug',
         }),
     );
 };
