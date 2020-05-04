@@ -104,7 +104,7 @@ class AddStructureDataForm extends AbstractReactComponent {
                     )}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" disabled={submitting}>
+                    <Button type="submit" variant="outline-secondary" disabled={submitting}>
                         {i18n("global.action.add")}
                     </Button>
                     <Button variant="link" disabled={submitting} onClick={onClose}>

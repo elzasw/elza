@@ -402,6 +402,7 @@ class ArrHistoryForm extends AbstractReactComponent {
                         <Button
                             disabled={selectedItem === null || (showHistoryForNode && !node)}
                             type="submit"
+                            variant="outline-secondary"
                             onClick={this.handleDeleteChanges}
                         >
                             {i18n('arr.history.action.deleteChanges')}

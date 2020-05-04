@@ -76,7 +76,7 @@ const RunActionForm = class RunActionForm extends AbstractReactComponent {
                         </FormInput>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type="submit" disabled={submitting}>
+                        <Button type="submit" variant="outline-secondary" disabled={submitting}>
                             {i18n('global.action.run')}
                         </Button>
                         <Button variant="link" onClick={onClose}>

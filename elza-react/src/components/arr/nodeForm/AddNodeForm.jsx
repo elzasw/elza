@@ -504,7 +504,7 @@ class AddNodeForm extends AbstractReactComponent {
                             )}
                         </Col>
                         <Col xs={4} xsOffset={4}>
-                            <Button disabled={submitting || !valid} type="submit" onClick={this.handleFormSubmit}>
+                            <Button variant="outline-secondary" disabled={submitting || !valid} type="submit" onClick={this.handleFormSubmit}>
                                 {i18n('global.action.store')}
                             </Button>
                             <Button disabled={submitting} variant="link" onClick={onClose}>

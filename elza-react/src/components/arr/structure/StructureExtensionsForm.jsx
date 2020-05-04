@@ -34,7 +34,7 @@ class StructureExtensionsForm extends AbstractReactComponent {
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" disabled={submitting}>
+                    <Button type="submit" variant="outline-secondary" disabled={submitting}>
                         {i18n('global.action.update')}
                     </Button>
                     <Button variant="link" disabled={submitting} onClick={onClose}>

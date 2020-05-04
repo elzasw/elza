@@ -112,7 +112,7 @@ class TemplateForm extends AbstractReactComponent {
                         <FormCheck disabled={submitting} {...withValues} inline label={i18n('arr.fund.addTemplate.withValues')} />
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type="submit">{i18n('global.action.add')}</Button>
+                        <Button type="submit" variant="outline-secondary">{i18n('global.action.add')}</Button>
                         <Button variant="link" onClick={onClose}>
                             {i18n('global.action.cancel')}
                         </Button>

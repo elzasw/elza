@@ -73,7 +73,7 @@ class ExportForm extends AbstractReactComponent {
                     )}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit">{i18n('global.action.export')}</Button>
+                    <Button type="submit" variant="outline-secondary">{i18n('global.action.export')}</Button>
                     <Button variant="link" onClick={onClose}>
                         {i18n('global.action.cancel')}
                     </Button>

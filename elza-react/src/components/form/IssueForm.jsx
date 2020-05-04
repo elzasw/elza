@@ -48,7 +48,7 @@ class IssueForm extends AbstractReactComponent {
                     <FormInput as="textarea" label={i18n('issue.text')} {...description} />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit">{i18n(update ? 'global.action.update' : 'global.action.add')}</Button>
+                    <Button type="submit" variant="outline-secondary">{i18n(update ? 'global.action.update' : 'global.action.add')}</Button>
                     <Button variant="link" onClick={onClose}>
                         {i18n('global.action.cancel')}
                     </Button>

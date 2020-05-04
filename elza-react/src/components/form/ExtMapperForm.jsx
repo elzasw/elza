@@ -207,7 +207,7 @@ class ExtMapperForm extends AbstractReactComponent {
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" disabled={submitting}>
+                    <Button type="submit" variant="outline-secondary" disabled={submitting}>
                         {isUpdate ? i18n('extMapperForm.update') : i18n('extMapperForm.import')}
                     </Button>
                     <Button variant="link" type="button" onClick={onClose} disabled={submitting}>

@@ -89,7 +89,7 @@ class EditableFileForm extends AbstractReactComponent {
                         />
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type="submit">{i18n(create ? 'global.action.add' : 'global.action.update')}</Button>
+                        <Button type="submit" variant="outline-secondary">{i18n(create ? 'global.action.add' : 'global.action.update')}</Button>
                         <Button variant="link" onClick={onClose}>
                             {i18n('global.action.cancel')}
                         </Button>

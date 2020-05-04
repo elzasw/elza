@@ -53,7 +53,7 @@ class AddFileForm extends AbstractReactComponent {
                         <FF field={FileInput} name={"file"} />
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="secondary" type="submit">{i18n('global.action.add')}</Button>
+                        <Button variant="outline-secondary" type="submit">{i18n('global.action.add')}</Button>
                         <Button variant="link" onClick={onClose}>
                             {i18n('global.action.cancel')}
                         </Button>
