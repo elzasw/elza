@@ -116,9 +116,7 @@ class PersistentSortForm extends AbstractReactComponent {
                     inline
                 />
 
-                <FormCheck type="checkbox" name="sortChildren" {...sortChildren} value={sortChildren.checked}>
-                    {i18n('arr.functions.persistentSort.sortChildren')}
-                </FormCheck>
+                <FormCheck type="checkbox" name="sortChildren" {...sortChildren} value={sortChildren.checked} label={i18n('arr.functions.persistentSort.sortChildren')} />
             </Form>
         );
     }

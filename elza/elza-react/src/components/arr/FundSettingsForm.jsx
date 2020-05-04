@@ -42,9 +42,8 @@ class FundSettingsForm extends AbstractReactComponent {
                             <h4>{i18n('arr.fund.settings.panel.center.title')}</h4>
                             {panels.map((val, index) => (
                                 <div key={index}>
-                                    <FormCheck {...val.checked} value={true}>
-                                        {val.name.initialValue}
-                                    </FormCheck>
+                                    <FormCheck {...val.checked} value={true} label={val.name.initialValue} />
+
                                 </div>
                             ))}
                         </div>
@@ -52,9 +51,7 @@ class FundSettingsForm extends AbstractReactComponent {
                             <h4>{i18n('arr.fund.settings.panel.right.title')}</h4>
                             {tabs.map((val, index) => (
                                 <div key={index}>
-                                    <FormCheck {...val.checked} value={true}>
-                                        {val.name.initialValue}
-                                    </FormCheck>
+                                    <FormCheck {...val.checked} value={true} label={val.name.initialValue}/>
                                 </div>
                             ))}
                         </div>

@@ -26,9 +26,7 @@ class StructureExtensionsForm extends AbstractReactComponent {
                                       const {checked, name, onFocus, onChange, onBlur} = val.active;
                                       const wantedProps = {checked, name, onFocus, onChange, onBlur};
                                       return (
-                                          <FormCheck {...wantedProps} key={index} value={true}>
-                                              {val.name.initialValue}
-                                          </FormCheck>
+                                          <FormCheck {...wantedProps} key={index} value={true} label={val.name.initialValue} />
                                       );
                                   })
                                 : i18n('arr.structure.modal.settings.noResults')}

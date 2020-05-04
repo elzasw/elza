@@ -499,9 +499,8 @@ class AddNodeForm extends AbstractReactComponent {
                                             };
                                         });
                                     }}
-                                >
-                                    {i18n('arr.fund.addNode.ignoreRootNodes')}
-                                </FormCheck>
+                                    label={i18n('arr.fund.addNode.ignoreRootNodes')}
+                                />
                             )}
                         </Col>
                         <Col xs={4} xsOffset={4}>
@@ -540,7 +539,7 @@ class AddNodeForm extends AbstractReactComponent {
                             value={scenarios[i].name}
                             checked={selectedScenario === scenarios[i].name}
                             label={scenarios[i].name}
-                        ></FormCheck>,
+                        />,
                     );
                 }
             }

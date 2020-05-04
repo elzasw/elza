@@ -62,9 +62,7 @@ class TemplateUseForm extends AbstractReactComponent {
                                 </option>
                             ))}
                         </FormInput>
-                        <FormCheck disabled={submitting} {...replaceValues} inline>
-                            {i18n('arr.fund.useTemplate.replaceValues')}
-                        </FormCheck>
+                        <FormCheck disabled={submitting} {...replaceValues} inline label={i18n('arr.fund.useTemplate.replaceValues')} />
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit">{i18n('global.action.use')}</Button>

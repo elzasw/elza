@@ -59,9 +59,8 @@ class AddStructureDataForm extends AbstractReactComponent {
                             incrementedTypeIds.onChange([...incrementedTypeIds.value, infoType.id]);
                         }
                     }}
-                >
-                    {i18n("arr.structure.modal.increment")}
-                </FormCheck>
+                    label={i18n("arr.structure.modal.increment")}
+                />
             );
         }
         return null;
