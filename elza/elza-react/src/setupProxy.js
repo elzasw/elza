@@ -11,7 +11,7 @@ const inArray = function(arr, key) {
 }
 
 const filterApiUrl = (pathname, req) => {
-    const forbidden = ['/api', '/login', '/res', '/static'];
+    const forbidden = ['/api', '/login', '/res', '/static', '/sockjs-node'];
 
     if (inArray(forbidden, pathname)) {
         return false
@@ -25,7 +25,12 @@ const filterApiUrl = (pathname, req) => {
         '/registry',
         '/admin',
     ]
-    if (req.method === 'GET' && (inArray(paths, pathname) || pathname === "/" ||  pathname === "")) {
+    if (req.method === 'GET' && (
+        inArray(paths, pathname) ||
+        pathname === "/" ||
+        pathname === "" ||
+        pathname.indexOf("hot-update") !== -1
+    )) {
         return false;
     }
     return true;
