@@ -185,6 +185,7 @@ class LecturingTop extends React.Component {
                             disabled={!canWrite}
                             variant="default"
                             id="dropdown-add-comment"
+                            className="d-inline"
                             title={((<Icon glyph="fa-plus-circle" />) as any) as string}
                         >
                             <Dropdown.Item eventKey="1" onClick={this.newArr}>
@@ -199,7 +200,7 @@ class LecturingTop extends React.Component {
                             </Dropdown.Item>
                         </DropdownButton>
                         {hasAdmin && (
-                            <Button className="pull-right" onClick={this.settings}>
+                            <Button variant={'action' as any} className="pull-right" onClick={this.settings}>
                                 <Icon glyph="fa-cogs" />
                             </Button>
                         )}
