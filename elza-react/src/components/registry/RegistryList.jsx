@@ -177,6 +177,7 @@ class RegistryList extends AbstractReactComponent {
     renderListItem = props => {
         const {item} = props;
         const {eidTypes, apTypeIdMap} = this.props;
+        console.log('item', item);
         return (
             <RegistryListItem
                 {...item}

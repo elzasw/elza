@@ -11,10 +11,10 @@ import './RegistryListItem.scss';
 class RegistryListItem extends AbstractReactComponent {
     static propTypes = {
         onClick: PropTypes.func,
-        partyType: PropTypes.object.isRequired,
+        //partyType: PropTypes.object.isRequired,
         relationTypesForClass: PropTypes.object,
         eidTypes: PropTypes.object.isRequired,
-        record: PropTypes.object.isRequired,
+        record: PropTypes.string.isRequired,
         relations: PropTypes.array,
         invalid: PropTypes.bool,
     };

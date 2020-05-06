@@ -2,6 +2,11 @@
 import AjaxUtils from '../components/AjaxUtils';
 import {DEFAULT_LIST_SIZE} from '../constants';
 import {CommentVO, IssueListVO, IssueStateVO, IssueVO} from '../types';
+import {ApPartFormVO} from "../api/generated/model";
+import {ApAttributesInfoVO} from "../api/generated/model";
+import {ApAccessPointCreateVO} from "../api/ApAccessPointCreateVO";
+import {ApAccessPointVO} from "../api/ApAccessPointVO";
+import {ApValidationErrorsVO} from "../api/ApValidationErrorsVO";
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
 
@@ -779,7 +784,7 @@ export class WebApiCls {
         });
     }
 
-    getAccessPoint(accessPointId) {
+    getAccessPoint(accessPointId): Promise<ApAccessPointVO> {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId);
     }
 
@@ -906,6 +911,70 @@ export class WebApiCls {
     getRecordTypes() {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/recordTypes');
     }
+
+    /**
+     * Založení nové části přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param apPartFormVO data pro vytvoření části
+     */
+    createPart(accessPointId: number, apPartFormVO: ApPartFormVO): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/part', null, apPartFormVO);
+    }
+
+    /**
+     * Úprava části přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param partId identifikátor upravované části
+     * @param apPartFormVO data pro úpravu části
+     */
+    updatePart(accessPointId: number, partId: number, apPartFormVO: ApPartFormVO): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/part/' + partId, null, apPartFormVO);
+    }
+
+    /**
+     * Smazání části přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param partId identifikátor mazané části
+     */
+    deletePart(accessPointId: number, partId: number): Promise<void> {
+        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + accessPointId + '/part/' + partId, null, null);
+    }
+
+    /**
+     * Nastavení preferovaného jména přístupového bodu.
+     * Možné pouze pro části typu Označení.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param partId identifikátor části, kterou nastavujeme jako preferovanou
+     * @see ApController.setPreferName
+     */
+    setPreferPartName(accessPointId: number, partId: number): Promise<void> {
+        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + accessPointId + '/part/' + partId + '/prefer-name', null, null);
+    }
+
+    /**
+     * Validace přístupového bodu
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @return validační chyby přístupového bodu
+     */
+    validateAccessPoint(accessPointId: number): Promise<ApValidationErrorsVO> {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/validate');
+    }
+
+    /**
+     * Zjištění povinných a možných atributů pro zakládání nového přístupového bodu nebo nové části
+     *
+     * @param apAccessPointCreateVO průběžná data pro založení
+     * @return vyhodnocené typy a specifikace atributů, které jsou třeba pro založení přístupového bodu nebo části
+     */
+    getAvailableItems(apAccessPointCreateVO: ApAccessPointCreateVO): Promise<ApAttributesInfoVO> {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/available/items', null, apAccessPointCreateVO);
+    }
+
     // End registry
 
     getFundNodeForm(versionId, nodeId) {

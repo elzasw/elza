@@ -1,6 +1,5 @@
 import React, {FC, useEffect, useState} from 'react';
 import {Col, Row} from 'react-bootstrap';
-import {AeItemVO, AePartVO, AeValidationErrorsVO} from '../../../api/generated/model';
 import DetailItem from './DetailItem';
 //import EditModal from '../EditModal';
 import classNames from "classnames";
@@ -9,24 +8,27 @@ import "./DetailRelatedPart.scss";
 //import DetailActionButton from "../DetailActionButton";
 //import {CodelistData} from "../../shared/reducers/codelist/CodelistTypes";
 import {connect} from "react-redux";
-import * as PartTypeInfo from "../../../api/PartTypeInfo";
+import * as PartTypeInfo from "../../../api/old/PartTypeInfo";
 import DetailMultipleItem from "./DetailMultipleItem";
 import Icon from '../../shared/icon/Icon';
 import {MOCK_CODE_DATA} from './mock';
+import {ApPartVO} from "../../../api/ApPartVO";
+import {ApValidationErrorsVO} from "../../../api/ApValidationErrorsVO";
+import {ApItemVO} from "../../../api/ApItemVO";
 //import {sortItems} from "../../itemutils";
 //import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 //import ValidationResultIcon from "../ValidationResultIcon";
 
 interface Props {
   label: string;
-  part: AePartVO;
+  part: ApPartVO;
   globalCollapsed: boolean;
-  onDelete?: (part: AePartVO) => void;
-  onEdit?: (part: AePartVO) => void;
+  onDelete?: (part: ApPartVO) => void;
+  onEdit?: (part: ApPartVO) => void;
   editMode?: boolean;
   codelist: any;
   globalEntity: boolean;
-  validationResult?: AeValidationErrorsVO;
+  validationResult?: ApValidationErrorsVO;
 }
 
 const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDelete, onEdit, globalCollapsed, codelist, validationResult}) => {
@@ -55,7 +57,7 @@ const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDel
     }
   );
 
-  const renderItems = (items: Array<AeItemVO>) => {
+  const renderItems = (items: Array<ApItemVO>) => {
     if (items.length === 0) {
       return <Col className={"mt-1"}><i>Nejsou definovány žádné hodnoty atributů</i></Col>;
     }
@@ -65,13 +67,13 @@ const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDel
     let index=0;
     while (index < items.length) {
       let index2 = index + 1;
-      while (index2 < items.length && items[index].itemTypeId === items[index2].itemTypeId) {
+      while (index2 < items.length && items[index].typeId === items[index2].typeId) {
         index2++;
       }
 
       let itemInfo;
       if (codelist.partItemTypeInfoMap[partType]) {
-        itemInfo = codelist.partItemTypeInfoMap[partType][items[index].itemTypeId];
+        itemInfo = codelist.partItemTypeInfoMap[partType][items[index].typeId];
       }
       let width = itemInfo ? itemInfo.width : 2;
 

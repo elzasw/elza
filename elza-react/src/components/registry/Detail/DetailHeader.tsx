@@ -1,7 +1,7 @@
 import React, {FC} from 'react';
 import RecordDetailState from './DetailState';
 import {Button, Col, Row} from 'react-bootstrap';
-import {AeDetailHeadVO, AeValidationErrorsVO} from '../../../api/generated/model';
+import {AeDetailHeadVO} from '../../../api/generated/model';
 import DetailDescriptions from "./DetailDescriptions";
 import DetailDescriptionsItem from "./DetailDescriptionsItem";
 //import {CodelistData} from "../../shared/reducers/codelist/CodelistTypes";
@@ -14,6 +14,7 @@ import Icon from '../../shared/icon/Icon';
 //import ValidationResultIcon from "../ValidationResultIcon";
 import ArchiveEntityName from "./ArchiveEntityName";
 import {MOCK_CODE_DATA} from './mock';
+import {ApValidationErrorsVO} from "../../../api/ApValidationErrorsVO";
 
 interface Props {
   head: AeDetailHeadVO;
@@ -21,7 +22,7 @@ interface Props {
   onToggleCollapsed?: () => void;
   collapsed: boolean;
   id?: number;
-  validationResult?: AeValidationErrorsVO;
+  validationResult?: ApValidationErrorsVO;
 }
 const formatDate = (a: any, ...other) => a;
 const formatDateTime = (a: any, ...other) => a;

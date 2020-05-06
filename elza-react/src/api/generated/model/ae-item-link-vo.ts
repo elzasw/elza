@@ -13,14 +13,14 @@
 
 
 import { AeItemLinkVOAllOf } from './ae-item-link-voall-of';
-import { AeItemVO } from './ae-item-vo';
+import {ApItemVO} from "../../ApItemVO";
 
 /**
  * Hodnota atributu - odkaz
  * @export
  * @interface AeItemLinkVO
  */
-export interface AeItemLinkVO extends AeItemVO {
+export interface AeItemLinkVO extends ApItemVO {
     /**
      * odkaz
      * @type {string}

@@ -1,24 +1,22 @@
 import React from 'react';
 import {Col, Row} from 'react-bootstrap';
-import {AeState} from "../../../api/generated/model";
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import * as AeStateEnumInfo from "./../../api/AeStateEnumInfo";
+import {ApState} from "../../../api/generated/model";
+import * as AeStateEnumInfo from "../../../api/old/ApStateEnumInfo";
 import "./DetailState.scss";
+import {Icon} from "../../index";
 
 interface Props {
-  state: AeState;
+  state: ApState;
 }
 
 /**
  * Zobrazí stav AE včetně ikony.
  */
 const RecordDetailState: React.FC<Props> = ({state}) => (
-  <Row  justify="space-between" align="middle" className="detail-state">
+  <Row className="detail-state justify-content-between align-middle">
     <Col className="detail-state-icon" style={{backgroundColor: AeStateEnumInfo.getColor(state)}}>
-      <FontAwesomeIcon
-        className="icon"
-        fixedWidth
-        icon={AeStateEnumInfo.getIcon(state)}
+      <Icon
+        glyph={AeStateEnumInfo.getIcon(state)}
       />
     </Col>
     <Col style={{marginLeft: '2px'}}>

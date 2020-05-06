@@ -12,15 +12,14 @@
  */
 
 
-import { AeItemRecordRefVOAllOf } from './ae-item-record-ref-voall-of';
-import { AeItemVO } from './ae-item-vo';
+import {ApItemVO} from "../../ApItemVO";
 
 /**
  * Hodnota atributu - odkaz na archivní entitu
  * @export
  * @interface AeItemRecordRefVO
  */
-export interface AeItemRecordRefVO extends AeItemVO {
+export interface AeItemRecordRefVO extends ApItemVO {
     /**
      * kód archivní entity
      * @type {number}

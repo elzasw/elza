@@ -43,6 +43,9 @@ export default function sturctures(state = initialState, action: StructureNodeFo
                         [action.id]: structureNodeForm(structureNodeForm(), action)
                     }
                 };
+            } else {
+                console.warn("missing actionId or store in structures");
+                return state;
             }
         case types.STRUCTURE_NODE_FORM_SET_DATA:
         case types.STRUCTURE_NODE_FORM_REQUEST:

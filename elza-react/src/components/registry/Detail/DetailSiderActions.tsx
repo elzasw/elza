@@ -1,5 +1,5 @@
 import React, {FC} from 'react';
-import {AeDetailHeadGlobalVO, AeDetailHeadLocalVO, AeDetailVO, AeState, AuthRole} from '../../../api/generated/model';
+import {AeDetailHeadGlobalVO, AeDetailHeadLocalVO, ApState, AuthRole} from '../../../api/generated/model';
 import {connect} from 'react-redux';
 /*
 import {
@@ -38,6 +38,7 @@ import {NavLink} from 'react-router-dom';
 // import AuthWrapper from '../../shared/rights/AuthWrapper';
 import {Button} from 'react-bootstrap';
 import Icon from "../../shared/icon/Icon";
+import {ApAccessPointVO} from "../../../api/ApAccessPointVO";
 
 export enum DetailActionsEnum {
   GLOBAL = 'global',
@@ -47,7 +48,7 @@ export enum DetailActionsEnum {
 
 type OwnProps = {
   isValid: boolean
-  detail: AeDetailVO;
+  detail: ApAccessPointVO;
   type: DetailActionsEnum;
   globalDetailUrlPrefix?: string;
   editDetailUrlPrefix?: string;
@@ -77,14 +78,14 @@ const DetailSiderActions: FC<ComponentProps> = (
 
   const approveDisabled = () => {
     if(type === DetailActionsEnum.APPROVE){
-      return detail.head.aeState !== AeState.RLCSTOAPPROVE;
+      return detail.head.aeState !== ApState.RLCSTOAPPROVE;
     }
     return false;
   };
 
   const amendRequestDisabled = () => {
     if(type === DetailActionsEnum.APPROVE){
-      return detail.head.aeState !== AeState.RLCSTOAPPROVE;
+      return detail.head.aeState !== ApState.RLCSTOAPPROVE;
     }
     return true;
   };
@@ -111,7 +112,7 @@ const DetailSiderActions: FC<ComponentProps> = (
   const canShowNewRecord = (): boolean => {
     if (detail && detail.head) {
       const sourceState = (detail.head as AeDetailHeadLocalVO).sourceState;
-      return sourceState === null || sourceState === AeState.APSNEW;
+      return sourceState === null || sourceState === ApState.APSNEW;
     }
     return false;
   };
@@ -166,9 +167,9 @@ const DetailSiderActions: FC<ComponentProps> = (
     return authInfo && authInfo.id === user.id;
   };
 
-  const isInvalid = detail.head.aeState === AeState.RLCSINVALID;
-  const isSavedInGlobal = detail.head.aeState === AeState.RLCSSAVED;
-  const isToApprove = detail.head.aeState === AeState.RLCSTOAPPROVE;
+  const isInvalid = detail.head.aeState === ApState.RLCSINVALID;
+  const isSavedInGlobal = detail.head.aeState === ApState.RLCSSAVED;
+  const isToApprove = detail.head.aeState === ApState.RLCSTOAPPROVE;
   return <div></div>;
 /*
   return <>

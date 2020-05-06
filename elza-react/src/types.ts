@@ -1,3 +1,6 @@
+import {DataTypeVO, ItemSpecVO, ItemTypeInfoVO, ItemTypeVO, PartType} from "./api/generated/model";
+import {ApTypeVO} from "./api/ApTypeVO";
+
 export interface IssueListVO {
     id: number;
     fundId: number;
@@ -46,6 +49,25 @@ export interface UsrUserVO {
     party: Object;
     permissions: Object[];
     groups: Object[];
+}
+
+export interface CodelistData {
+    aeTypes: ApTypeVO[];
+    aeTypesMap: Record<number, ApTypeVO>;
+    aeTypesTree: Array<ApTypeTreeVO>;
+    dataTypes: DataTypeVO[];
+    dataTypesMap: Record<number, DataTypeVO>;
+    itemSpecs: ItemSpecVO[];
+    itemSpecsMap: Record<number, ItemSpecVO>;
+    itemTypes: ItemTypeVO[];
+    itemTypesMap: Record<number, ItemTypeVO>;
+    partItemTypeInfoMap: Record<string, Record<number, ItemTypeInfoVO>>;
+    partTypes: Array<PartType>;
+}
+
+export interface ApTypeTreeVO extends ApTypeVO {
+    children: Array<ApTypeTreeVO>;
+    parent?: ApTypeTreeVO;
 }
 
 export type FundScope = {id: number, code: string, name: string, language: null | string};

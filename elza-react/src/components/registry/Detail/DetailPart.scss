@@ -1,6 +1,7 @@
 .detail-part {
   .detail-part-header {
     font-size: 14px;
+    font-weight: bold;
 
     .detail-part-actions {
     }
@@ -11,10 +12,6 @@
       &:hover {
         color: #317E9F;
       }
-    }
-
-    &.detail-part-expanded {
-      font-weight: bold;
     }
 
     &.detail-part-preferred {

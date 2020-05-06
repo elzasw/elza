@@ -1,6 +1,5 @@
 import React from 'react';
 import {Button} from 'react-bootstrap';
-import {AeItemCoordinatesVO} from "../../../../api/generated/model";
 //import {faFileExport} from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames";
 //import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -10,9 +9,10 @@ import {Action, Dispatch} from "redux";
 //import CoordinateModal from "./CoordinateModal";
 //import ExportCoordinateModal from "./ExportCoordinateModal";
 import Icon from '../../../shared/icon/Icon';
+import {ApItemCoordinatesVO} from "../../../../api/ApItemCoordinatesVO";
 
 interface Props extends ReturnType<typeof mapDispatchToProps> {
-  item: AeItemCoordinatesVO;
+  item: ApItemCoordinatesVO;
   globalEntity: boolean;
 }
 
@@ -22,7 +22,7 @@ const DetailCoordinateItem: React.FC<Props> = props => {
   };
 
   return <>
-    <Button variant="link" onClick={() => props.showCoordinateDetail(props.item)}>{getLabel(props.item.textValue)}</Button>
+    <Button variant="link" onClick={() => props.showCoordinateDetail(props.item)}>{getLabel(props.item.value)}</Button>
     <Button className={classNames("side-container-button", "mb-1")} title={"Exportovat"} size="sm"
             onClick={() => props.showExportDialog(props.item, props.globalEntity)}>
       <Icon fixedWidth className="icon"/>
@@ -31,7 +31,7 @@ const DetailCoordinateItem: React.FC<Props> = props => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch<Action>) => ({
-  showCoordinateDetail: (item: AeItemCoordinatesVO) => null
+  showCoordinateDetail: (item: ApItemCoordinatesVO) => null
     /*dispatch(
       ModalActions.showForm(CoordinateModal, {
           onCancel: () => dispatch(ModalActions.hide()),
@@ -41,7 +41,7 @@ const mapDispatchToProps = (dispatch: Dispatch<Action>) => ({
           title: 'Detail souřadnice',
         })
     )*/,
-  showExportDialog: (item: AeItemCoordinatesVO, globalEntity: boolean) => null
+  showExportDialog: (item: ApItemCoordinatesVO, globalEntity: boolean) => null
     /*dispatch(
       ModalActions.showForm(ExportCoordinateModal, {
           onCancel: () => dispatch(ModalActions.hide()),

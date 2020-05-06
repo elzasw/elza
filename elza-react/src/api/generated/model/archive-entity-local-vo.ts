@@ -12,7 +12,7 @@
  */
 
 
-import { AeState } from './ae-state';
+import { ApState } from './ap-state';
 import { ArchiveEntityLocalVOAllOf } from './archive-entity-local-voall-of';
 import { ArchiveEntityVO } from './archive-entity-vo';
 import { ResultLookupVO } from './result-lookup-vo';
@@ -38,10 +38,10 @@ export interface ArchiveEntityLocalVO extends ArchiveEntityVO {
     globalId?: number;
     /**
      *
-     * @type {AeState}
+     * @type {ApState}
      * @memberof ArchiveEntityLocalVO
      */
-    aeState: AeState;
+    aeState: ApState;
     /**
      *
      * @type {UserVO}

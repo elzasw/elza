@@ -15,7 +15,7 @@
 import { AeChangeVO } from './ae-change-vo';
 import { AeDetailHeadLocalVOAllOf } from './ae-detail-head-local-voall-of';
 import { AeDetailHeadVO } from './ae-detail-head-vo';
-import { AeState } from './ae-state';
+import { ApState } from './ap-state';
 import { UserVO } from './user-vo';
 
 /**
@@ -50,10 +50,10 @@ export interface AeDetailHeadLocalVO extends AeDetailHeadVO {
     ownerUser: UserVO;
     /**
      *
-     * @type {AeState}
+     * @type {ApState}
      * @memberof AeDetailHeadLocalVO
      */
-    sourceState?: AeState;
+    sourceState?: ApState;
 }
 
 

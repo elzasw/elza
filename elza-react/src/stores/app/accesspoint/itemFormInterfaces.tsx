@@ -1,4 +1,7 @@
-import {ApFormVO, ApItemExt} from './itemForm';
+import {ApItemExt} from './itemForm';
+import {ApFormVO} from "../../../api/ApFormVO";
+import {ApStateVO} from "../../../api/ApStateVO";
+import {ApFragmentVO} from "../../../api/ApFragmentVO";
 
 export enum DataTypeCode {
     FILE_REF = 'FILE_REF',
@@ -17,24 +20,7 @@ export enum DataTypeCode {
     DECIMAL = 'DECIMAL',
     DATE = 'DATE',
     APFRAG_REF = 'APFRAG_REF',
-		URI_REF = "URI_REF"
-}
-
-enum ApStateVO {
-    OK = 'OK',
-    ERROR = 'ERROR',
-    TEMP = 'TEMP',
-    INIT = 'INIT',
-}
-
-export interface ApFragmentVO {
-    id: number;
-    value: string;
-    state: ApStateVO;
-    typeId: number;
-    errorDescription?: string;
-
-    form?: ApFormVO;
+    URI_REF = "URI_REF",
 }
 
 export interface ItemFragmentRefVO extends ApItemExt<number> {

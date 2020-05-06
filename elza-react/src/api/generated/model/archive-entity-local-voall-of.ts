@@ -12,7 +12,7 @@
  */
 
 
-import { AeState } from './ae-state';
+import { ApState } from './ap-state';
 import { UserVO } from './user-vo';
 
 /**
@@ -35,10 +35,10 @@ export interface ArchiveEntityLocalVOAllOf {
     globalId?: number;
     /**
      *
-     * @type {AeState}
+     * @type {ApState}
      * @memberof ArchiveEntityLocalVOAllOf
      */
-    aeState?: AeState;
+    aeState?: ApState;
     /**
      *
      * @type {UserVO}
