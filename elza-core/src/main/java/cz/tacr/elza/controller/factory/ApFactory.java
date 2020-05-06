@@ -185,15 +185,6 @@ public class ApFactory {
         return results;
     }
 
-    public ApAccessPointVO createVO(ApState apState, boolean fillForm) {
-        ApAccessPointVO apVO = createVO(apState);
-        ApType apType = apState.getApType();
-        if (fillForm && apType.getRuleSystem() != null) {
-            apVO.setForm(createFormVO(apState.getAccessPoint(), apType));
-        }
-        return apVO;
-    }
-
     public ApAccessPointVO createVO(final ApState apState,
                                     final List<ApPart> parts,
                                     final Map<Integer, List<ApItem>> items,
