@@ -33,7 +33,7 @@ Podrobnosti o nastavení viz sekce 'Databázové připojení'.
 * Přeložení projektu (root celého projektu) (pokud již nebylo přeloženo kvůli dokumentaci - sekce 'Sestavení vč dokumentace')
 mvn install -Pskiptest
 
-* Aktualizace NPM balíčků (v adresáři elza-web)
+* Aktualizace NPM balíčků (v adresáři elza-react)
 ```
 mvn exec:exec -Pnpm-install
 ```
@@ -43,7 +43,7 @@ mvn exec:exec -Pnpm-install
 mvn spring-boot:run
 ```
 
-* Spuštění serveru pro frontend (v adresáři elza-web)
+* Spuštění serveru pro frontend (v adresáři elza-react)
 ```
 mvn exec:exec -Pfrontend-dev
 ```
@@ -52,34 +52,12 @@ Po sestavení dojde ke spuštění embedded aplikačního serveru Tomcat.
 Uživatelské rozhraní najdete na adrese http://localhost:8080 - není možné přistupovat z jiného počítače (sestavte a zprovozněte war v Tomcat).
 
 #### Nastavení dev serveru klienta
-V projektu elza-web v adresáři `src/main/resources/frontend` pokud vytvoříme soubor `.dev` máme možnost v něm konfigurovat dev server klienta.
+V projektu elza-react pokud vytvoříme soubor `.env.development.local` máme možnost v něm konfigurovat dev server klienta.
 Výchozí konfig
 ```
-{
-  "hot": false,
-  "circularDependencyCheck": true,
-  "sourceMap": "eval-source-map",
-  "happyPack": false,
-  "devTools": false,
-  "port": 8090
-}
+ENDPOINT=http://localhost:8080
 ``` 
-`hot` - react-hot-loader.
-
-`circularDependencyCheck` - kontrola cyklických závislostí v klientském kódu
-
-`sourceMap` - nastavení druhu použité source-map
-
-`happyPack` - povolení babel-loaderu ve více vláknech
-
-`port` - změna portu
-
-`devTools`- Debug nástroje devtools viz. `Debug nástroje - redux-tools` 
-
-##### Debug nástroje - redux-tools
-V případě nastavení v souboru `.dev` a spustíme server frontendu, tak po stisku ctrl+h se zobrazí logovací nástroje redux storu.
-Pomocí stisku ctrl+q se mění umístění panelu nástrojů.
-
+`ENDPOINT` - kam bude komunikovat proxy pro vývoj klienta
 
 ### Release sestavení a spuštění war v Tomcat
 V projektu elza-web je nutné v adresáři config založit soubor elza.yaml s připojením k databázi.
@@ -96,11 +74,11 @@ Proveďte standardním způsobem deploy na aplikační server Tomcat verze 8.0.
 Importujte projekt maven.
 Pro spuštění jádra aplikace obsahující rest služby spusťte `cz.tacr.elza.ElzaCore`.
 Pro spuštění uživatelského rozhranní spusťte `cz.tacr.elza.ElzaWebApp`.
-Pro spuštění serveru pro frontend spusťte příkaz (v modulu elza-web):
+Pro spuštění serveru pro frontend spusťte příkaz (v modulu elza-react):
 ```
 mvn exec:exec -Pfrontend-dev
 ```
-Uživatelské rozhranní najdete na adrese http://localhost:8080.
+Uživatelské rozhranní najdete na adrese http://localhost:3000.
 
 Nastavení spuštění serveru pro IntelliJ Idea (označené hodnoty nutno explicitně nastavit):
 ![IntelliJ Idea](idea.png)
