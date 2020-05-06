@@ -734,6 +734,15 @@ public class StructObjService {
     }
 
     /**
+     * Vyhledání všech typů částí.
+     *
+     * @return nalezené entity
+     */
+    public List<RulPartType> findPartTypes() {
+        return partTypeRepository.findAll();
+    }
+
+    /**
      * Vyhledání hodnot struktovaného datového typu.
      *
      * @param structureType strukturovaný typ
