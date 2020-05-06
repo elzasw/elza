@@ -12,7 +12,7 @@
  */
 
 
-import { AeState } from './ae-state';
+import { ApState } from './ap-state';
 import { UserVO } from './user-vo';
 
 /**
@@ -23,10 +23,10 @@ import { UserVO } from './user-vo';
 export interface AeStateHistoryVO {
     /**
      *
-     * @type {AeState}
+     * @type {ApState}
      * @memberof AeStateHistoryVO
      */
-    state: AeState;
+    state: ApState;
     /**
      * Časová značka změny
      * @type {Date}

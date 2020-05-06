@@ -13,7 +13,7 @@
 
 
 import { AeChangeVO } from './ae-change-vo';
-import { AeState } from './ae-state';
+import { ApState } from './ap-state';
 
 /**
  * Hlavička detailu entity
@@ -41,10 +41,10 @@ export interface AeDetailHeadVO {
     aeTypeId: number;
     /**
      *
-     * @type {AeState}
+     * @type {ApState}
      * @memberof AeDetailHeadVO
      */
-    aeState: AeState;
+    aeState: ApState;
     /**
      *
      * @type {AeChangeVO}

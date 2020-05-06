@@ -12,15 +12,15 @@
  */
 
 
-import { AeItemVO } from './ae-item-vo';
-import { AePartVO } from './ae-part-vo';
+
+import {ApPartVO} from "../../ApPartVO";
 
 /**
  * Identifikátor
  * @export
  * @interface AePartIdentifierVO
  */
-export interface AePartIdentifierVO extends AePartVO {
+export interface AePartIdentifierVO extends ApPartVO {
 }
 
 

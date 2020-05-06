@@ -1,7 +1,6 @@
 import React, {FC, useContext, useState} from 'react';
 import DetailPart from './DetailPart';
-import {AePartNameVO, AePartVO, AeValidationErrorsVO} from '../../../api/generated/model';
-import {AePartNameClass} from "../../../api/AePartInfo";
+import {AePartNameClass} from "../../../api/old/ApPartInfo";
 //import DetailActionButton from "../DetailActionButton";
 //import {faPlus, faTrash} from "@fortawesome/free-solid-svg-icons";
 import {connect} from "react-redux";
@@ -10,24 +9,27 @@ import {compareParts} from "./partutils";
 import DetailRelatedPart from "./DetailRelatedPart";
 import Icon from '../../shared/icon/Icon';
 import {MOCK_CODE_DATA} from './mock';
+import {ApPartVO} from "../../../api/ApPartVO";
+import {ApPartNameVO} from "../../../api/generated/model";
+import {ApValidationErrorsVO} from "../../../api/ApValidationErrorsVO";
 
 interface Props {
   label: string;
-  parts: AePartVO[];
-  relatedParts?: AePartVO[];
+  parts: ApPartVO[];
+  relatedParts?: ApPartVO[];
   globalCollapsed: boolean;
-  onSetPreferred?: (part: AePartNameVO) => void;
-  onDelete?: (part: AePartVO) => void;
-  onEdit?: (part: AePartVO) => void;
+  onSetPreferred?: (part: ApPartNameVO) => void;
+  onDelete?: (part: ApPartVO) => void;
+  onEdit?: (part: ApPartVO) => void;
   onAdd?: () => void;
-  onAddRelated?: (part: AePartVO) => void;
-  onDeleteParts?: (parts: Array<AePartVO>) => void;
+  onAddRelated?: (part: ApPartVO) => void;
+  onDeleteParts?: (parts: Array<ApPartVO>) => void;
   editMode?: boolean;
   codelist: any;
   globalEntity: boolean;
   deletableWholePart?: boolean;
   singlePart?: boolean;
-  validationResult?: AeValidationErrorsVO;
+  validationResult?: ApValidationErrorsVO;
 }
 const DetailMultiSection: FC<Props> = ({
                                          singlePart,
@@ -50,21 +52,21 @@ const DetailMultiSection: FC<Props> = ({
     return null;
   }
 
-  let relatedPartsMap: Record<number, AePartVO[]> = {};
+  let relatedPartsMap: Record<number, ApPartVO[]> = {};
   if (relatedParts && relatedParts.length > 0) {
     relatedParts.forEach(rp => {
-      if (rp.parentPartId) {
-        if (!relatedPartsMap[rp.parentPartId]) {
-          relatedPartsMap[rp.parentPartId] = [];
+      if (rp.partParentId) {
+        if (!relatedPartsMap[rp.partParentId]) {
+          relatedPartsMap[rp.partParentId] = [];
         }
-        relatedPartsMap[rp.parentPartId].push(rp);
+        relatedPartsMap[rp.partParentId].push(rp);
       }
     })
   }
 
   return (
-    <div className="ml-3 mt-3 mr-3 pb-2 brb-1">
-      <h3 className="mb-2">
+    <div className="ml-3 mt-3 mr-3 border-bottom detail-multi-selection">
+      <h3 className="mb-3">
         <span className="mr-1">{label}</span>
         {editMode && (!singlePart || (singlePart && parts.length === 0)) && <Icon
           className="ml-1"
@@ -81,14 +83,14 @@ const DetailMultiSection: FC<Props> = ({
       {[...parts].sort(compareParts).map((part, index) => {
         let preferred = false;
         if (part["@class"] === AePartNameClass) {
-          preferred = (part as AePartNameVO).preferred;
+          preferred = (part as ApPartNameVO).preferred;
         }
 
         return <div>
           <DetailPart
             key={index}
             part={part}
-            label={part.textValue}
+            label={part.value}
             singlePart={parts.length === 1}
             editMode={editMode}
             preferred={preferred}
@@ -106,7 +108,7 @@ const DetailMultiSection: FC<Props> = ({
             return <DetailRelatedPart
               key={index}
               part={part}
-              label={part.textValue}
+              label={part.value}
               editMode={editMode}
               globalCollapsed={globalCollapsed}
               onDelete={onDelete}
@@ -117,6 +119,7 @@ const DetailMultiSection: FC<Props> = ({
           })}
         </div>
       })}
+        {parts.length > 0 && <div className={'pb-2'}/>}
     </div>
   );
 };

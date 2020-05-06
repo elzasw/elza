@@ -12,15 +12,15 @@
  */
 
 
-import { AeItemVO } from './ae-item-vo';
-import { AePartVO } from './ae-part-vo';
+
+import {ApPartVO} from "../../ApPartVO";
 
 /**
  * Vztah
  * @export
  * @interface AePartRelationVO
  */
-export interface AePartRelationVO extends AePartVO {
+export interface AePartRelationVO extends ApPartVO {
 }
 
 

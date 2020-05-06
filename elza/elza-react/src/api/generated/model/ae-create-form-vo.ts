@@ -12,7 +12,7 @@
  */
 
 
-import { AePartFormVO } from './ae-part-form-vo';
+import { ApPartFormVO } from './ap-part-form-v-o';
 
 /**
  * Data pro založení nové archivní entity
@@ -28,10 +28,10 @@ export interface AeCreateFormVO {
     aeTypeId: number;
     /**
      *
-     * @type {AePartFormVO}
+     * @type {ApPartFormVO}
      * @memberof AeCreateFormVO
      */
-    partForm: AePartFormVO;
+    partForm: ApPartFormVO;
     /**
      * Identifikátor lokální entity
      * @type {number}

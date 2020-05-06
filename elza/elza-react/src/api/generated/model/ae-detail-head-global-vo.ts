@@ -14,7 +14,7 @@
 
 import { AeChangeVO } from './ae-change-vo';
 import { AeDetailHeadVO } from './ae-detail-head-vo';
-import { AeState } from './ae-state';
+import { ApState } from './ap-state';
 import { ArchiveEntityGlobalVOAllOf } from './archive-entity-global-voall-of';
 
 /**

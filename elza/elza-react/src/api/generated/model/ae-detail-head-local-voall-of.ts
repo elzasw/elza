@@ -12,7 +12,7 @@
  */
 
 
-import { AeState } from './ae-state';
+import { ApState } from './ap-state';
 import { UserVO } from './user-vo';
 
 /**
@@ -47,10 +47,10 @@ export interface AeDetailHeadLocalVOAllOf {
     ownerUser?: UserVO;
     /**
      *
-     * @type {AeState}
+     * @type {ApState}
      * @memberof AeDetailHeadLocalVOAllOf
      */
-    sourceState?: AeState;
+    sourceState?: ApState;
 }
 
 

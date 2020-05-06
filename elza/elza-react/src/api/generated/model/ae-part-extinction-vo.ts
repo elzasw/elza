@@ -12,15 +12,15 @@
  */
 
 
-import { AeItemVO } from './ae-item-vo';
-import { AePartVO } from './ae-part-vo';
+
+import {ApPartVO} from "../../ApPartVO";
 
 /**
  * Zánik
  * @export
  * @interface AePartExtinctionVO
  */
-export interface AePartExtinctionVO extends AePartVO {
+export interface AePartExtinctionVO extends ApPartVO {
 }
 
 

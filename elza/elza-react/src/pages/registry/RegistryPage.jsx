@@ -31,7 +31,7 @@ import ApStateHistoryForm from '../../components/registry/ApStateHistoryForm';
 import ApStateChangeForm from '../../components/registry/ApStateChangeForm';
 import {registryDetailInvalidate} from '../../actions/registry/registry';
 import {WebApi} from '../../actions';
-import AeDetailPageWrapper from '../../components/registry/AeDetailPageWrapper';
+import ApDetailPageWrapper from '../../components/registry/ApDetailPageWrapper';
 
 /**
  * Stránka rejstříků.
@@ -404,7 +404,7 @@ class RegistryPage extends AbstractReactComponent {
 
         const centerPanel = (
             <div className="registry-page">
-                <AeDetailPageWrapper />
+                <ApDetailPageWrapper />
 
             </div>
         );

@@ -1,8 +1,8 @@
 import React from 'react';
 import {Row, Col} from 'react-bootstrap';
-import {AeState, AeStateHistoryVO} from "../../../api/generated/model";
+import {ApState, AeStateHistoryVO} from "../../../api/generated/model";
 //import {formatDateTime} from "../../dateutils";
-import {getLabel} from "../../../api/AeStateEnumInfo";
+import {getLabel} from "../../../api/old/ApStateEnumInfo";
 
 type Props = {
   historyItem: AeStateHistoryVO

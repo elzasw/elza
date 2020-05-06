@@ -12,7 +12,7 @@
  */
 
 
-import { AeState } from './ae-state';
+import { ApState } from './ap-state';
 import { Area } from './area';
 import { ExtensionFilterVO } from './extension-filter-vo';
 import { RelationFilterVO } from './relation-filter-vo';
@@ -50,10 +50,10 @@ export interface SearchFilterVO {
     aeTypeIds?: Array<number>;
     /**
      * Stavy achrivních entit
-     * @type {Array<AeState>}
+     * @type {Array<ApState>}
      * @memberof SearchFilterVO
      */
-    aeStates?: Array<AeState>;
+    aeStates?: Array<ApState>;
     /**
      * Identifikátor konkrétní archivní entity
      * @type {string}
