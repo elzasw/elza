@@ -57,21 +57,9 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     private boolean invalid;
 
     /**
-     * Id osoby.
-     */
-    // TODO: client should read if it's party AP by cached AP types and find party by AP if needed
-    @Deprecated
-    private Integer partyId;
-
-    /**
      * Externí identifikátory rejstříkového hesla.
      */
     private Collection<ApExternalIdVO> externalIds;
-
-    /**
-     * Seznam jmen přístupového bodu.
-     */
-    private Collection<ApAccessPointNameVO> names;
 
     /**
      * Kód pravidla pro AP.
@@ -90,12 +78,6 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
      */
     @Nullable
     private String errorDescription;
-
-    /**
-     * Strukturované data formuláře pro AP. Vyplněné pouze v případě, že se jedná o strukturovaný typ.
-     */
-    @Nullable
-    private ApFormVO form;
 
     /**
      * Identifikátor preferované části
@@ -194,30 +176,12 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
         this.invalid = invalid;
     }
 
-    @Deprecated
-    public Integer getPartyId() {
-        return partyId;
-    }
-
-    @Deprecated
-    public void setPartyId(Integer partyId) {
-        this.partyId = partyId;
-    }
-
     public Collection<ApExternalIdVO> getExternalIds() {
         return externalIds;
     }
 
     public void setExternalIds(Collection<ApExternalIdVO> externalIds) {
         this.externalIds = externalIds;
-    }
-
-    public Collection<ApAccessPointNameVO> getNames() {
-        return names;
-    }
-
-    public void setNames(Collection<ApAccessPointNameVO> names) {
-        this.names = names;
     }
 
     @Nullable
@@ -236,15 +200,6 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 
     public void setErrorDescription(@Nullable final String errorDescription) {
         this.errorDescription = errorDescription;
-    }
-
-    @Nullable
-    public ApFormVO getForm() {
-        return form;
-    }
-
-    public void setForm(@Nullable final ApFormVO form) {
-        this.form = form;
     }
 
     @Nullable

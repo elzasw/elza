@@ -66,6 +66,7 @@ import cz.tacr.elza.controller.vo.RulArrangementExtensionVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
+import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
@@ -731,6 +732,11 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(RulStructuredType.class, RulStructureTypeVO.class)
                 .byDefault()
                 .field("structuredTypeId", "id")
+                .register();
+
+        mapperFactory.classMap(RulPartType.class, RulPartTypeVO.class)
+                .byDefault()
+                .field("partTypeId", "id")
                 .register();
 
         mapperFactory.classMap(ArrDataCoordinates.class, ArrItemCoordinatesVO.class)
