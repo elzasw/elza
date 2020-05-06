@@ -118,7 +118,7 @@ public class ApControllerTest extends AbstractControllerTest {
     @Ignore
     public void testStructureAccessPoint() throws InterruptedException {
         //TODO fantis upravit test
-        ApTypeVO type = getApType(STRUCT_AP_TYPE);
+        /*ApTypeVO type = getApType(STRUCT_AP_TYPE);
         assertNotNull(type);
 
         Map<String, LanguageVO> languages = getAllLanguages();
@@ -221,7 +221,7 @@ public class ApControllerTest extends AbstractControllerTest {
         LanguageVO langCze = languages.get(LANG_CZE);
         secondName.setLanguageCode(langCze.getCode());
         secondName = updateAccessPointStructuredName(accessPoint.getId(), secondName);
-        assertEquals(langCze.getCode(), secondName.getLanguageCode());
+        assertEquals(langCze.getCode(), secondName.getLanguageCode());*/
     }
 
     private void addApItems(final ApAccessPointVO accessPoint) {

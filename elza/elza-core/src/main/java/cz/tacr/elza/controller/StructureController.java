@@ -21,6 +21,7 @@ import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
@@ -29,6 +30,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.exception.SystemException;
@@ -341,6 +343,13 @@ public class StructureController {
             structureTypes = structureService.findStructureTypes(fundVersion);
         }
         return factoryVO.createSimpleEntity(structureTypes, RulStructureTypeVO.class);
+    }
+
+    @Transactional
+    @RequestMapping(value = "/part-type", method = RequestMethod.GET)
+    public List<RulPartTypeVO> findPartTypes() {
+        List<RulPartType> partTypes = structureService.findPartTypes();
+        return factoryVO.createSimpleEntity(partTypes, RulPartTypeVO.class);
     }
 
     /**

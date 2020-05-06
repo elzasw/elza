@@ -241,13 +241,7 @@ public class ApController {
 
         final List<ApState> foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIdTree, from, count, fund, scopeId, states);
 
-        Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(foundRecords.stream().map(apState -> apState.getAccessPoint()).collect(Collectors.toList()));
-
-        return new FilteredResultVO<>(foundRecords, apState -> {
-            ApAccessPointVO vo = apFactory.createVO(apState);
-            vo.setPartyId(recordIdPartyIdMap.get(vo.getId()));
-            return vo;
-        }, foundRecordsCount);
+        return new FilteredResultVO<>(foundRecords, apState -> apFactory.createVO(apState), foundRecordsCount);
     }
 
 
@@ -344,7 +338,7 @@ public class ApController {
         SysLanguage language = StringUtils.isEmpty(accessPoint.getLanguageCode()) ? null : accessPointService.getLanguage(accessPoint.getLanguageCode());
 
         ApState apState = accessPointService.createStructuredAccessPoint(scope, type, language);
-        return apFactory.createVO(apState, true);
+        return apFactory.createVO(apState);
     }
 
     /**
@@ -635,16 +629,7 @@ public class ApController {
                 .or(UsrPermission.Permission.AP_SCOPE_RD, apState.getScopeId());
         userService.authorizeRequest(authRequest);
 
-        ApAccessPointVO vo = getAccessPoint(apState);
-        return vo;
-    }
-
-    private ApAccessPointVO getAccessPoint(ApState apState) {
-        ApAccessPointVO vo = apFactory.createVO(apState, true);
-        ParParty party = partyService.findParPartyByAccessPoint(apState.getAccessPoint());
-        if (party != null) {
-            vo.setPartyId(party.getPartyId());
-        }
+        ApAccessPointVO vo = apFactory.createVO(apState);
         return vo;
     }
 
@@ -665,7 +650,7 @@ public class ApController {
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
         ApState oldState = accessPointService.getState(accessPoint);
         ApState newState = accessPointService.changeApType(accessPointId, editVo.getTypeId());
-        return getAccessPoint(newState);
+        return apFactory.createVO(newState);
     }
 
     /**
