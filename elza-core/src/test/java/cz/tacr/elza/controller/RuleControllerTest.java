@@ -61,7 +61,6 @@ public class RuleControllerTest extends AbstractControllerTest {
         getRuleSets();
     }
 
-    @Ignore //TODO: smazat po změně importu institucí
     @Test
     public void visiblePolicy() {
         ArrFundVO test = createFund("Test", null);

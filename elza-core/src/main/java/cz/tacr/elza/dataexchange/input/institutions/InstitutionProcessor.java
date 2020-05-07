@@ -19,9 +19,13 @@ public class InstitutionProcessor implements ItemProcessor {
 
     private final InstitutionsContext context;
 
+    private final AccessPointsContext apContext;
+
     public InstitutionProcessor(ImportContext context) {
         this.partsContext = context.getParts();
+        this.apContext = context.getAccessPoints();
         this.context = context.getInstitutions();
+
     }
 
     @Override
@@ -31,8 +35,10 @@ public class InstitutionProcessor implements ItemProcessor {
     }
 
     private void processInstitution(Institution item) {
-        PartInfo partInfo = partsContext.getPartInfo(item.getPaid());
-        AccessPointInfo apInfo = partInfo.getApInfo();
+       /* PartInfo partInfo = partsContext.getPartInfo(item.getPaid());
+        AccessPointInfo apInfo = partInfo.getApInfo();*/
+
+        AccessPointInfo apInfo = apContext.getApInfo(item.getPaid());
 
         ParInstitutionType instType = context.getInstitutionTypeByCode(item.getT());
         if (instType == null) {

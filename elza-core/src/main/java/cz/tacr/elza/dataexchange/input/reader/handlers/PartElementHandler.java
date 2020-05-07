@@ -33,13 +33,14 @@ public class PartElementHandler extends JaxbElementHandler<PartyGroup> {
     }
 
     private void handlePartApEntry(Party party) {
+
         AccessPointEntry entry = party.getApe();
         if (entry == null) {
             throw new DEImportException("Party AccessPointEntry is not set, partyId:" + party.getId());
         }
         try {
             ItemProcessor processor = new AccessPointEntryProcessor(context, true);
-            processor.process(entry);
+            processor.process(party);
         } catch (DEImportException e) {
             throw new DEImportException("Party AccessPointEntry cannot be processed, partyId:" + party.getId(), e);
         }

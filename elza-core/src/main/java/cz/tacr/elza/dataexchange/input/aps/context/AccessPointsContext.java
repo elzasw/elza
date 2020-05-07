@@ -6,6 +6,7 @@ import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.ObjectIdHolder;
 import cz.tacr.elza.dataexchange.input.context.*;
 import cz.tacr.elza.dataexchange.input.parts.context.ParentPartWrapper;
+import cz.tacr.elza.dataexchange.input.parts.context.PartInfo;
 import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
 import cz.tacr.elza.dataexchange.input.parts.context.PrefferedPartWrapper;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
@@ -21,6 +22,8 @@ import java.util.*;
 public class AccessPointsContext {
 
     private final Map<String, AccessPointInfo> entryIdApInfoMap = new HashMap<>();
+
+    private final Map<String, AccessPointInfo> pgIdApInfoMap = new HashMap<>();
 
     private final StorageManager storageManager;
 
@@ -79,6 +82,15 @@ public class AccessPointsContext {
     public AccessPointInfo getApInfo(String entryId) {
         return entryIdApInfoMap.get(entryId);
     }
+
+    public AccessPointInfo getPgIdApInfo(String importId) {
+        return pgIdApInfoMap.get(importId);
+    }
+
+    public void addToPgIdApInfoMap(String importId, AccessPointInfo apInfo) {
+        pgIdApInfoMap.putIfAbsent(importId, apInfo);
+    }
+
 
     public Collection<AccessPointInfo> getAllAccessPointInfo() {
         return Collections.unmodifiableCollection(entryIdApInfoMap.values());

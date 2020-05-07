@@ -57,7 +57,7 @@ public class PartProcessor<P extends Party, E extends ApPart> implements ItemPro
     }
 
     private void processParts(PartyGroup pg) {
-        AccessPointInfo apInfo = apContext.getApInfo(pg.getApe().getId());
+        AccessPointInfo apInfo = apContext.getApInfo(pg.getId());
         processNames(pg.getNms(), apInfo);
         processPartyGroupPart("PT_BODY", "BRIEF_DESC", pg.getChr(), apInfo);
         processPartyGroupPart("PT_BODY", "SOURCE_INFO", pg.getSrc(), apInfo);
