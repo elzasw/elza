@@ -2766,6 +2766,7 @@ public class PackageService {
         structureExtensionRepository.deleteByRulPackage(rulPackage);
         structureDefinitionRepository.deleteByRulPackage(rulPackage);
         structureTypeRepository.deleteByRulPackage(rulPackage);
+        partTypeRepository.deleteByRulPackage(rulPackage);
         packageActionsRepository.deleteByRulPackage(rulPackage);
         arrangementRuleRepository.deleteByRulPackage(rulPackage);
         policyTypeRepository.deleteByRulPackage(rulPackage);
