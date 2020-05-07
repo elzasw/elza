@@ -206,7 +206,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         entity.setPart(partEntity);
         entity.setItemType(itemType.getEntity());
         entity.setCreateChange(context.getCreateChange());
-        entity.setObjectId(context.nextNameObjectId());
+        entity.setObjectId(context.nextItemObjectId());
         entity.setPosition(1);
         entity.setData(createItemData(itemType, value));
         ItemWrapper itemWrapper = partsContext.addItem(entity, partsContext.getPartInfo(entryId));
@@ -276,7 +276,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         apItem.setData(data);
         apItem.setItemType(itemType.getEntity());
         apItem.setCreateChange(context.getCreateChange());
-        apItem.setObjectId(context.nextNameObjectId());
+        apItem.setObjectId(context.nextItemObjectId());
         apItem.setPosition(nextPosition(itemList));
         return apItem;
     }

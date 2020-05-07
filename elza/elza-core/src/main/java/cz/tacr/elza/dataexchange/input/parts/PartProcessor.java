@@ -186,7 +186,7 @@ public class PartProcessor<P extends Party, E extends ApPart> implements ItemPro
         apItem.setData(data);
         apItem.setItemType(itemType.getEntity());
         apItem.setCreateChange(apContext.getCreateChange());
-        apItem.setObjectId(partsContext.getObjectIdHolder().getObjectId());
+        apItem.setObjectId(apContext.nextItemObjectId());
         apItem.setPosition(nextPosition(itemList));
         return apItem;
     }

@@ -170,7 +170,6 @@ public class ApFactory {
                                     final Map<Integer, List<ApItem>> items,
                                     final List<ApExternalId> eids) {
         ApAccessPoint ap = apState.getAccessPoint();
-        ApRuleSystem ruleSystem = ap.getRuleSystem();
         ApPart preferredPart = ap.getPreferredPart();
         String desc = getDescription(parts, items);
         Integer comments = stateRepository.countCommentsByAccessPoint(ap);

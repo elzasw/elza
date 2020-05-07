@@ -11,8 +11,10 @@ import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
 import cz.tacr.elza.dataexchange.input.parts.context.PrefferedPartWrapper;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.service.AccessPointItemService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.ItemService;
 
 import java.util.*;
 
@@ -41,6 +43,8 @@ public class AccessPointsContext {
 
     private final AccessPointService accessPointService;
 
+    private final AccessPointItemService accessPointItemService;
+
     private final List<AccessPointWrapper> apQueue = new ArrayList<>();
 
     private final List<ApExternalIdWrapper> eidQueue = new ArrayList<>();
@@ -64,6 +68,7 @@ public class AccessPointsContext {
         this.staticData = staticData;
         this.arrangementService = initHelper.getArrangementService();
         this.accessPointService = initHelper.getAccessPointService();
+        this.accessPointItemService = initHelper.getAccessPointItemService();
         this.objectIdHolder = objectIdHolder;
     }
 
@@ -257,8 +262,12 @@ public class AccessPointsContext {
         prefferedPartQueue.clear();
     }
 
-    public int nextNameObjectId() {
+    /*public int nextNameObjectId() {
         return accessPointService.nextNameObjectId();
+    }*/
+
+    public int nextItemObjectId() {
+        return accessPointItemService.nextItemObjectId();
     }
 
     /**

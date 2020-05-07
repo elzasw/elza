@@ -111,7 +111,7 @@ public class DEImportService {
         this.initHelper = new ImportInitHelper(groovyScriptService, institutionRepository, institutionTypeRepository,
                 arrangementService, levelRepository, apRepository, apEidRepository,
                 structObjService, accessPointService,
-                dmsService, apStateRepository, apPartRepository, apItemRepository);
+                dmsService, apStateRepository, apPartRepository, apItemRepository, apItemService);
         this.em = em;
         this.userService = userService;
         this.staticDataService = staticDataService;
