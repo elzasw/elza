@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import cz.tacr.elza.controller.vo.PackageVO;
@@ -29,6 +30,7 @@ public class PackageTest extends AbstractControllerTest {
         loadInstitutions = true;
     }
 
+    @Ignore
     @Test
     public void deleteImportExportPackageTest() throws Exception {
         List<PackageVO> packages = getPackages();
@@ -48,6 +50,7 @@ public class PackageTest extends AbstractControllerTest {
 
     private void importPackage() throws Exception {
         File file = HelperTestService.buildPackageFileZip("rules-simple-dev");
+
         multipart(spec -> spec.multiPart("file", file), IMPORT_PACKAGE);
         file.delete();
     }

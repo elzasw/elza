@@ -57,7 +57,7 @@ public class IssueControllerTest extends AbstractControllerTest {
      * Pozitivni test na operace s protokoly, pripominkami a komentari - formou scenare.
      * Test zohlednuje i opravneni uzivatelu.
      */
-    @Ignore //TODO: smazat po změně importu institucí
+    @Ignore
     @Test
     public void issueTest1() throws Exception {
 

@@ -56,7 +56,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
     @Autowired
     private StaticDataService staticDataService;
 
-    @Ignore //TODO: smazat po změně importu institucí
+    //@Ignore //TODO: smazat po změně importu institucí
     @Test
     public void importExportTest() throws IOException {
 

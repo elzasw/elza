@@ -1,24 +1,17 @@
 package cz.tacr.elza.controller;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.BulkActionRunVO;
-import cz.tacr.elza.controller.vo.BulkActionVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.domain.ArrBulkActionRun.State;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -61,7 +54,6 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         }
     }
 
-    @Ignore //TODO: smazat po změně importu institucí
     @Test
     public void getBulkActionsTest() {
         int fundVersionId = importAndGetVersionId();
@@ -109,7 +101,6 @@ public class BulkActionControllerTest extends AbstractControllerTest {
     /**
      * Spustí a čeká na dokončení hromadné akce.
      */
-    @Ignore //TODO: smazat po změně importu institucí
     @Test
     public void runBulkActionByNode() throws InterruptedException {
 		int fundVersionId = importAndGetVersionId();
@@ -144,7 +135,6 @@ public class BulkActionControllerTest extends AbstractControllerTest {
     /**
      * Bulk Actions test
      */
-    @Ignore //TODO: smazat po změně importu institucí
     @Test
     public void bulkActionsTest() throws InterruptedException {
         int fundVersionId = importAndGetVersionId();
@@ -204,7 +194,6 @@ public class BulkActionControllerTest extends AbstractControllerTest {
     /**
      * Spustí homadnou akci a poté se ji pokusí přerušit
      */
-    @Ignore //TODO: smazat po změně importu institucí
     @Test
     public void interruptBulkAction() throws InterruptedException {
         helperTestService.waitForWorkers();

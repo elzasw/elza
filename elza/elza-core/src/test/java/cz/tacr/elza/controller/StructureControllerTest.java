@@ -51,7 +51,6 @@ public class StructureControllerTest extends AbstractControllerTest {
     @Autowired
     protected SobjVrequestRepository sobjVrequestRepository;
 
-    @Ignore //TODO: smazat po změně importu institucí
     @Test
     public void structureTest() {
         ArrFundVO fund = createFund(NAME_AS, CODE_AS);
@@ -70,7 +69,6 @@ public class StructureControllerTest extends AbstractControllerTest {
         }
     }
 
-    @Ignore //TODO: smazat po změně importu institucí
     @Test
     public void structureBatchTest() {
         ArrFundVO fund = createFund(NAME_AS, CODE_AS);

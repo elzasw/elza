@@ -23,7 +23,6 @@ public class ClientEventTest extends AbstractControllerTest {
     @Autowired
     private ClientEventDispatcher clientEventDispatcher;
 
-    @Ignore //TODO: smazat po změně importu institucí
     @Test
     public void testEventPublish() {
         SimpleClientEventDispatcher testDispatcher = (SimpleClientEventDispatcher) clientEventDispatcher;

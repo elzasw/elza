@@ -36,7 +36,7 @@ public class UserControllerTest extends AbstractControllerTest {
 		assertTrue(userDetail.getUserPermissions().size() > 0);
     }
 
-    @Ignore //TODO: smazat po změně importu institucí
+    @Ignore //TODO : upravit zakládání uživatele, bez Party
     @Test
     public void usersTest() {
 

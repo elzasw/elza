@@ -71,7 +71,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
 
     @Override
     public void process(Object item) {
-        processEntry((AccessPointEntry) item);
+        processEntry((Party) item);
     }
 
     protected void proccessAp(AccessPoint ap) {
@@ -90,12 +90,14 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         }
     }
 
-    protected void processEntry(AccessPointEntry entry) {
+    protected void processEntry(Party party) {
+        AccessPointEntry entry = party.getApe();
         entryId = entry.getId();
         // create AP and prepare AP info
         ApEntity entity = createEntity(entry);
         List<ApExternalId> eids = createExternalIds(entry.getEid());
-        apInfo = context.addAccessPoint(entity.accessPoint, entry.getId(), entity.state, eids);
+        apInfo = context.addAccessPoint(entity.accessPoint, party.getId(), entity.state, eids);
+
     }
 
     private List<ApExternalId> createExternalIds(Collection<ExternalId> eids) {
