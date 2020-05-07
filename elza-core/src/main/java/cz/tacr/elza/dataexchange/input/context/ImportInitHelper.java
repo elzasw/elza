@@ -1,11 +1,7 @@
 package cz.tacr.elza.dataexchange.input.context;
 
 import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.AccessPointService;
-import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.DmsService;
-import cz.tacr.elza.service.GroovyScriptService;
-import cz.tacr.elza.service.StructObjValueService;
+import cz.tacr.elza.service.*;
 
 public class ImportInitHelper {
 
@@ -31,6 +27,8 @@ public class ImportInitHelper {
 
     private final AccessPointService accessPointService;
 
+    private final AccessPointItemService accessPointItemService;
+
     private final DmsService dmsService;
 
     private final ApStateRepository apStateRepository;
@@ -47,7 +45,8 @@ public class ImportInitHelper {
                             final DmsService dmsService,
                             final ApStateRepository apStateRepository,
                             final ApPartRepository apPartRepository,
-                            final ApItemRepository apItemRepository) {
+                            final ApItemRepository apItemRepository,
+                            final AccessPointItemService accessPointItemService) {
         this.groovyScriptService = groovyScriptService;
         this.institutionRepository = institutionRepository;
         this.institutionTypeRepository = institutionTypeRepository;
@@ -61,6 +60,7 @@ public class ImportInitHelper {
         this.apStateRepository = apStateRepository;
         this.apPartRepository = apPartRepository;
         this.apItemRepository = apItemRepository;
+        this.accessPointItemService = accessPointItemService;
     }
 
     public DmsService getDmsService() {
@@ -111,5 +111,9 @@ public class ImportInitHelper {
 
     public ApItemRepository getApItemRepository() {
         return apItemRepository;
+    }
+
+    public AccessPointItemService getAccessPointItemService() {
+        return accessPointItemService;
     }
 }
