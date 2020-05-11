@@ -589,7 +589,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 Integer partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_NAME.code), null);
 
                 //kontrola a zapsání preferovaného jména do přístupového bodu
-                if (partyNameId == preferredNameId) {
+                if (partyNameId.intValue() == preferredNameId.intValue()) {
                     updateAccessPoint(accessPointId, ApAccessPoint.COL_PREFERRED_PART_ID, partId);
                 }
 
