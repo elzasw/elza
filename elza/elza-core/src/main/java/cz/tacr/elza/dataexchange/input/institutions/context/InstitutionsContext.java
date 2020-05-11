@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
+import cz.tacr.elza.dataexchange.input.parts.context.PartInfo;
 import org.apache.commons.lang.Validate;
 
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
@@ -12,7 +14,6 @@ import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 import cz.tacr.elza.dataexchange.input.context.ImportPhase;
 import cz.tacr.elza.dataexchange.input.context.ImportPhaseChangeListener;
 import cz.tacr.elza.dataexchange.input.context.ObservableImport;
-import cz.tacr.elza.dataexchange.input.parties.context.PartyInfo;
 import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
 import cz.tacr.elza.domain.ParInstitution;
@@ -47,10 +48,8 @@ public class InstitutionsContext {
         return instTypeCodeMap.get(code);
     }
 
-    public void addInstitution(ParInstitution entity, PartyInfo partyInfo) {
-        Validate.isTrue(partyInfo.getSaveMethod() != SaveMethod.IGNORE);
-
-        InstitutionWrapper wrapper = wrapperBuilder.build(entity, partyInfo);
+    public void addInstitution(ParInstitution entity, AccessPointInfo apInfo) {
+        InstitutionWrapper wrapper = wrapperBuilder.build(entity, apInfo);
         instQueue.add(wrapper);
         if (instQueue.size() >= batchSize) {
             store();

@@ -34,34 +34,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.eventbus.Subscribe;
-
 import cz.tacr.elza.common.TaskExecutor;
 import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApChange;
-import cz.tacr.elza.domain.ApPart;
-import cz.tacr.elza.domain.ApItem;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ApNameItem;
-import cz.tacr.elza.domain.ApRule;
-import cz.tacr.elza.domain.ApRuleSystem;
-import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ApStateEnum;
-import cz.tacr.elza.domain.RulComponent;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.drools.service.ModelFactory;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApChangeRepository;
-import cz.tacr.elza.repository.ApItemRepository;
-import cz.tacr.elza.repository.ApPartRepository;
-import cz.tacr.elza.repository.ApNameItemRepository;
-import cz.tacr.elza.repository.ApNameRepository;
-import cz.tacr.elza.repository.ApRuleRepository;
-import cz.tacr.elza.repository.StructureDefinitionRepository;
-import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -82,8 +61,6 @@ public class AccessPointGeneratorService {
     private final ApRuleRepository ruleRepository;
     private final ResourcePathResolver resourcePathResolver;
     private final ApItemRepository itemRepository;
-    private final ApNameItemRepository nameItemRepository;
-    private final ApNameRepository apNameRepository;
     private final RuleService ruleService;
     private final ApPartRepository partRepository;
     private final AccessPointDataService apDataService;
@@ -106,8 +83,6 @@ public class AccessPointGeneratorService {
     public AccessPointGeneratorService(final ApRuleRepository ruleRepository,
                                        final ResourcePathResolver resourcePathResolver,
                                        final ApItemRepository itemRepository,
-                                       final ApNameItemRepository nameItemRepository,
-                                       final ApNameRepository apNameRepository,
                                        final RuleService ruleService,
                                        final ApPartRepository partRepository,
                                        final AccessPointDataService apDataService,
@@ -123,8 +98,6 @@ public class AccessPointGeneratorService {
         this.ruleRepository = ruleRepository;
         this.resourcePathResolver = resourcePathResolver;
         this.itemRepository = itemRepository;
-        this.nameItemRepository = nameItemRepository;
-        this.apNameRepository = apNameRepository;
         this.ruleService = ruleService;
         this.apDataService = apDataService;
         this.partRepository = partRepository;
@@ -277,42 +250,23 @@ public class AccessPointGeneratorService {
 
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
-        if (accessPoint.getRuleSystem() == null) {
+        logger.warn("Přístupový bod {} nemá vazbu na pravidla a nebude se provádět script", accessPoint.getAccessPointId());
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.ACCESS_POINT_UPDATE, accessPoint.getAccessPointId()));
+
+
+        /*if (accessPoint.getRuleSystem() == null) {
             logger.warn("Přístupový bod {} nemá vazbu na pravidla a nebude se provádět script", accessPoint.getAccessPointId());
             eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.ACCESS_POINT_UPDATE, accessPoint.getAccessPointId()));
             return;
         }
 
         List<ApItem> apItems = new ArrayList<>(itemRepository.findValidItemsByAccessPoint(accessPoint));
-        List<ApName> apNames = apNameRepository.findByAccessPoint(accessPoint);
-
-        Map<Integer, ApName> apNameMap = apNames.isEmpty()
-                ? Collections.emptyMap()
-                : apNames.stream().collect(Collectors.toMap(ApName::getNameId, Function.identity()));
-
-        List<ApNameItem> nameItems = apNames.isEmpty()
-                ? Collections.emptyList()
-                : nameItemRepository.findValidItemsByNames(apNames);
-
-        Map<Integer, List<ApItem>> nameItemsMap = createNameItemsMap(nameItems);
 
         ApErrorDescription apErrorDescription = new ApErrorDescription();
         ApStateEnum apStateEnumOld = accessPoint.getState();
         ApStateEnum apStateEnum = ApStateEnum.OK;
 
         validateApItems(apErrorDescription, apState, apItems);
-
-        try {
-            AccessPoint result = generateValue(accessPoint, apItems, apNames, nameItemsMap);
-            boolean hasError = processResult(apState, apChange, apNameMap, nameItemsMap, result);
-            if (hasError) {
-                apStateEnum = ApStateEnum.ERROR;
-            }
-        } catch (Exception e) {
-            logger.error("Selhání groovy scriptu (accessPointId: {})", accessPoint.getAccessPointId(), e);
-            apErrorDescription.setScriptFail(true);
-            apStateEnum = ApStateEnum.ERROR;
-        }
 
         if (CollectionUtils.isNotEmpty(apErrorDescription.getImpossibleItemTypeIds())
                 || CollectionUtils.isNotEmpty(apErrorDescription.getRequiredItemTypeIds())) {
@@ -325,98 +279,7 @@ public class AccessPointGeneratorService {
 
         eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.ACCESS_POINT_UPDATE, accessPoint.getAccessPointId()));
 
-        accessPointService.reindexDescItem(accessPoint);
-    }
-
-    private boolean processResult(final ApState apState, final ApChange apChange, final Map<Integer, ApName> apNameMap, final Map<Integer, List<ApItem>> nameItemsMap, final AccessPoint result) {
-
-        // zpracování změny charakteristiky
-        apDataService.changeDescription(apState, result.getDescription(), apChange);
-
-        // zpracování jednotlivých jmen přístupového bodu
-        List<NameContext> nameContexts = createNameContextsFromResult(apState, apChange, apNameMap, nameItemsMap, result);
-        return processNameContexts(apState, nameContexts);
-    }
-
-    private boolean processNameContexts(final ApState apState, final List<NameContext> nameContexts) {
-        boolean error = false;
-        for (NameContext nameContext : nameContexts) {
-            ApName name = nameContext.getName();
-            NameErrorDescription errorDescription = nameContext.getErrorDescription();
-
-            if (StringUtils.isEmpty(name.getFullName())) {
-                errorDescription.setEmptyValue(true);
-                nameContext.setState(ApStateEnum.ERROR);
-            } else {
-                boolean isUnique = apDataService.isNameUnique(apState.getScope(), name.getFullName());
-                if (!isUnique) {
-                    errorDescription.setDuplicateValue(true);
-                    nameContext.setState(ApStateEnum.ERROR);
-                }
-            }
-
-            name.setErrorDescription(errorDescription.asJsonString());
-            name.setState(nameContext.getStateOld() == ApStateEnum.TEMP ? ApStateEnum.TEMP : nameContext.getState());
-            if (name.getState() == ApStateEnum.ERROR) {
-                error = true;
-            }
-            apNameRepository.save(name);
-        }
-        return error;
-    }
-
-    private List<NameContext> createNameContextsFromResult(final ApState apState, final ApChange apChange, final Map<Integer, ApName> apNameMap, final Map<Integer, List<ApItem>> nameItemsMap, final AccessPoint result) {
-        List<NameContext> nameContexts = new ArrayList<>();
-        for (Name name : result.getNames()) {
-            ApName apName = apNameMap.get(name.getId());
-            List<ApItem> items = nameItemsMap.getOrDefault(apName.getNameId(), Collections.emptyList());
-
-            if (!apDataService.equalsNames(apName, name.getName(), name.getComplement(), name.getFullName(), apName.getLanguageId())) {
-                ApName apNameNew = apDataService.updateAccessPointName(apState, apName, name.getName(), name.getComplement(), name.getFullName(), apName.getLanguage(), apChange, false);
-                if (apName != apNameNew) {
-                    items = apItemService.copyItems(apName, apNameNew, apChange);
-                    apName = apNameNew;
-                }
-            }
-
-            NameErrorDescription nameErrorDescription = new NameErrorDescription();
-            NameContext nameContext = new NameContext(apName, apName.getState(), ApStateEnum.OK, nameErrorDescription);
-            validateNameItems(nameErrorDescription, apState, items);
-
-            if (CollectionUtils.isNotEmpty(nameErrorDescription.getImpossibleItemTypeIds())
-                    || CollectionUtils.isNotEmpty(nameErrorDescription.getRequiredItemTypeIds())) {
-                nameContext.setState(ApStateEnum.ERROR);
-            }
-
-            nameContexts.add(nameContext);
-        }
-        return nameContexts;
-    }
-
-    private Map<Integer, List<ApItem>> createNameItemsMap(final List<ApNameItem> nameItems) {
-        Map<Integer, List<ApItem>> nameItemsMap = new HashMap<>();
-        for (ApNameItem nameItem : nameItems) {
-            Integer nameId = nameItem.getNameId();
-            List<ApItem> items = nameItemsMap.computeIfAbsent(nameId, k -> new ArrayList<>());
-            items.add(nameItem);
-        }
-        return nameItemsMap;
-    }
-
-    private AccessPoint generateValue(final ApAccessPoint accessPoint, final List<ApItem> apItems, final List<ApName> names, final Map<Integer, List<ApItem>> nameItems) {
-
-        File groovyFile = findGroovyFile(accessPoint);
-
-        GroovyScriptService.GroovyScriptFile groovyScriptFile = groovyScriptMap.get(groovyFile);
-        if (groovyScriptFile == null) {
-            groovyScriptFile = new GroovyScriptService.GroovyScriptFile(groovyFile);
-            groovyScriptMap.put(groovyFile, groovyScriptFile);
-        }
-
-        Map<String, Object> input = new HashMap<>();
-        input.put(AP, ModelFactory.createAp(accessPoint, apItems, names, nameItems));
-
-        return (AccessPoint) groovyScriptFile.evaluate(input);
+        accessPointService.reindexDescItem(accessPoint);*/
     }
 
     private File findGroovyFile(final ApPart fragment) {
@@ -449,7 +312,7 @@ public class AccessPointGeneratorService {
     }
 
     private File findGroovyFile(final ApAccessPoint accessPoint) {
-        ApRuleSystem ruleSystem = accessPoint.getRuleSystem();
+       /* ApRuleSystem ruleSystem = accessPoint.getRuleSystem();
         ApRule rule = ruleRepository.findByRuleSystemAndRuleType(ruleSystem, ApRule.RuleType.TEXT_GENERATOR);
         if (rule == null) {
             throw new SystemException("Nebyly nalezeny pravidla generování pro přítupový bod", BaseCode.SYSTEM_ERROR);
@@ -457,7 +320,8 @@ public class AccessPointGeneratorService {
         RulComponent component = rule.getComponent();
         return resourcePathResolver.getGroovyDir(ruleSystem.getRulPackage())
                 .resolve(component.getFilename())
-                .toFile();
+                .toFile();*/
+       return null;
     }
 
     //TODO fantis: smazat nebo prepsat na novou strukturu
@@ -629,47 +493,6 @@ public class AccessPointGeneratorService {
             } catch (IOException e) {
                 throw new SystemException("Failed to deserialize value").set("json", json);
             }
-        }
-    }
-
-    /**
-     * Pomocná třída při zpracování jména.
-     */
-    private static class NameContext {
-
-        private ApName name;
-
-        private ApStateEnum stateOld;
-
-        private ApStateEnum state;
-
-        private NameErrorDescription errorDescription;
-
-        public NameContext(final ApName name, final ApStateEnum stateOld, final ApStateEnum state, final NameErrorDescription errorDescription) {
-            this.name = name;
-            this.stateOld = stateOld;
-            this.state = state;
-            this.errorDescription = errorDescription;
-        }
-
-        public void setState(final ApStateEnum state) {
-            this.state = state;
-        }
-
-        public ApName getName() {
-            return name;
-        }
-
-        public ApStateEnum getStateOld() {
-            return stateOld;
-        }
-
-        public ApStateEnum getState() {
-            return state;
-        }
-
-        public NameErrorDescription getErrorDescription() {
-            return errorDescription;
         }
     }
 

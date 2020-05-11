@@ -1,89 +1,5 @@
 package cz.tacr.elza.other;
 
-import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.packageimport.PackageService;
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApChangeRepository;
-import cz.tacr.elza.repository.ApDescriptionRepository;
-import cz.tacr.elza.repository.ApExternalIdRepository;
-import cz.tacr.elza.repository.ApItemRepository;
-import cz.tacr.elza.repository.ApNameRepository;
-import cz.tacr.elza.repository.ApPartRepository;
-import cz.tacr.elza.repository.ApStateRepository;
-import cz.tacr.elza.repository.ApTypeRepository;
-import cz.tacr.elza.repository.ArrAsyncRequestRepository;
-import cz.tacr.elza.repository.AuthenticationRepository;
-import cz.tacr.elza.repository.BulkActionNodeRepository;
-import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.CachedNodeRepository;
-import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.ComplementTypeRepository;
-import cz.tacr.elza.repository.DaoBatchInfoRepository;
-import cz.tacr.elza.repository.DaoDigitizationRequestNodeRepository;
-import cz.tacr.elza.repository.DaoFileGroupRepository;
-import cz.tacr.elza.repository.DaoFileRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
-import cz.tacr.elza.repository.DaoLinkRequestRepository;
-import cz.tacr.elza.repository.DaoPackageRepository;
-import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DaoRequestDaoRepository;
-import cz.tacr.elza.repository.DaoRequestRepository;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DataTypeRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.DigitizationRequestRepository;
-import cz.tacr.elza.repository.ExternalSystemRepository;
-import cz.tacr.elza.repository.FundRegisterScopeRepository;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.FundStructureExtensionRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.GroupRepository;
-import cz.tacr.elza.repository.GroupUserRepository;
-import cz.tacr.elza.repository.InstitutionRepository;
-import cz.tacr.elza.repository.InstitutionTypeRepository;
-import cz.tacr.elza.repository.ItemAptypeRepository;
-import cz.tacr.elza.repository.ItemRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
-import cz.tacr.elza.repository.NodeExtensionRepository;
-import cz.tacr.elza.repository.NodeOutputRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputRepository;
-import cz.tacr.elza.repository.PartyCreatorRepository;
-import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
-import cz.tacr.elza.repository.PartyNameComplementRepository;
-import cz.tacr.elza.repository.PartyNameFormTypeRepository;
-import cz.tacr.elza.repository.PartyNameRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
-import cz.tacr.elza.repository.PartyTypeRelationRepository;
-import cz.tacr.elza.repository.PermissionRepository;
-import cz.tacr.elza.repository.RelationEntityRepository;
-import cz.tacr.elza.repository.RelationRepository;
-import cz.tacr.elza.repository.RelationRoleTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
-import cz.tacr.elza.repository.StructuredObjectRepository;
-import cz.tacr.elza.repository.UserRepository;
-import cz.tacr.elza.repository.WfCommentRepository;
-import cz.tacr.elza.repository.WfIssueListRepository;
-import cz.tacr.elza.repository.WfIssueRepository;
-import cz.tacr.elza.service.AsyncRequestService;
-import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -94,6 +10,23 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+
+import cz.tacr.elza.repository.*;
+import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cz.tacr.elza.service.AsyncRequestService;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.packageimport.PackageService;
+
 
 /**
  * Helper test service
@@ -101,7 +34,7 @@ import java.util.zip.ZipOutputStream;
 @Service
 public class HelperTestService {
 
-	private static final Logger logger = LoggerFactory.getLogger(HelperTestService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HelperTestService.class);
 
     @Autowired
     protected BulkActionNodeRepository bulkActionNodeRepository;
@@ -142,43 +75,13 @@ public class HelperTestService {
     @Autowired
     private OutputRepository outputRepository;
     @Autowired
-    private ApNameRepository apNameRepository;
-    @Autowired
-    private PartyNameComplementRepository partyNameComplementRepository;
-    @Autowired
     protected ApTypeRepository apTypeRepository;
-    @Autowired
-    protected PartyRepository partyRepository;
-    @Autowired
-    protected PartyTypeRelationRepository partyTypeRelationRepository;
-    @Autowired
-    protected PartyCreatorRepository partyCreatorRepository;
-    @Autowired
-    protected PartyGroupIdentifierRepository partyGroupIdentifierRepository;
     @Autowired
     protected InstitutionRepository institutionRepository;
     @Autowired
     protected InstitutionTypeRepository institutionTypeRepository;
     @Autowired
-    protected RelationRepository relationRepository;
-    @Autowired
-    protected RelationEntityRepository relationEntityRepository;
-    @Autowired
-    protected RelationTypeRepository relationTypeRepository;
-    @Autowired
-    protected RelationRoleTypeRepository relationRoleTypeRepository;
-    @Autowired
-    protected RelationTypeRoleTypeRepository relationTypeRoleTypeRepository;
-    @Autowired
-    protected PartyTypeComplementTypeRepository partyTypeComplementTypeRepository;
-    @Autowired
-    protected ComplementTypeRepository complementTypeRepository;
-    @Autowired
-    protected PartyNameFormTypeRepository partyNameFormTypeRepository;
-    @Autowired
     protected ApAccessPointRepository apRepository;
-    @Autowired
-    protected PartyNameRepository partyNameRepository;
     @Autowired
     private BulkActionRunRepository faBulkActionRepository;
     @Autowired
@@ -199,8 +102,6 @@ public class HelperTestService {
     private StructuredObjectRepository structureDataRepository;
     @Autowired
     private FundStructureExtensionRepository fundStructureExtensionRepository;
-    @Autowired
-    private ApDescriptionRepository apDescRepository;
     @Autowired
     private ApExternalIdRepository apEidRepository;
     @Autowired
@@ -267,15 +168,15 @@ public class HelperTestService {
     }
 
     @Transactional
-	public RulPackage getPackage(String packageCode) {
-    	List<RulPackage> packages = packageService.getPackages();
-    	for(RulPackage p: packages) {
-    		if(packageCode.equals(p.getCode())) {
-    			return p;
-    		}
-    	}
-		return null;
-	}
+    public RulPackage getPackage(String packageCode) {
+        List<RulPackage> packages = packageService.getPackages();
+        for (RulPackage p : packages) {
+            if (packageCode.equals(p.getCode())) {
+                return p;
+            }
+        }
+        return null;
+    }
 
     @Transactional
     public void deleteTables() {
@@ -315,16 +216,8 @@ public class HelperTestService {
         fundStructureExtensionRepository.deleteAll();
         bulkActionNodeRepository.deleteAll();
         faBulkActionRepository.deleteAll();
-        partyNameComplementRepository.deleteAll();
-        partyRepository.unsetAllPreferredName();
-        relationEntityRepository.deleteAll();
-        relationRepository.deleteAll();
-        partyGroupIdentifierRepository.deleteAll();
-        partyCreatorRepository.deleteAll();
-        partyNameRepository.deleteAll();
         apItemRepository.deleteAll();
         partRepository.deleteAll();
-        apNameRepository.deleteAll();
         fundVersionRepository.deleteAll();
         fundRegisterScopeRepository.deleteAll();
         levelRepository.deleteAll();
@@ -336,8 +229,6 @@ public class HelperTestService {
         nodeRepository.deleteAll();
         fundRepository.deleteAll();
         institutionRepository.deleteAll();
-        partyRepository.deleteAll();
-        apDescRepository.deleteAll();
         apEidRepository.deleteAll();
         apStateRepository.deleteAll();
         apRepository.deleteAll();
@@ -352,9 +243,9 @@ public class HelperTestService {
         packageService.startAsyncTasks();
     }
 
-	public FundRepository getFundRepository() {
-		return fundRepository;
-	}
+    public FundRepository getFundRepository() {
+        return fundRepository;
+    }
 
     public OutputRepository getOutputRepository() {
         return outputRepository;
@@ -363,22 +254,21 @@ public class HelperTestService {
     // Each package have to be loaded in separate transaction
     // this allows to commit package and reload static data
     @Transactional(value = TxType.REQUIRES_NEW)
-	public void loadPackage(String packageCode, String packageDir) {
-    	RulPackage rulPackage = getPackage(packageCode);
-        if (rulPackage == null || rulPackage.getVersion()<=0 ) {
-            logger.info("Loading package '"+packageCode+"' for tests...");
+    public void loadPackage(String packageCode, String packageDir) {
+        RulPackage rulPackage = getPackage(packageCode);
+        if (rulPackage == null || rulPackage.getVersion() <= 0) {
+            logger.info("Loading package '" + packageCode + "' for tests...");
             File file = null;
             try {
                 file = buildPackageFileZip(packageDir);
                 Assert.assertNotNull(file);
-            	importPackage(file);
-            } catch(Exception e) {
-            	logger.info("Exception while importing package: " + e.getMessage());
-            	e.printStackTrace();
-            	throw new RuntimeException(e);
-            }
-            finally {
-            	if(file!=null) {
+                importPackage(file);
+            } catch (Exception e) {
+                logger.info("Exception while importing package: " + e.getMessage());
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            } finally {
+                if (file != null) {
                     file.delete();
                 }
             }
@@ -388,7 +278,7 @@ public class HelperTestService {
             logger.info("Package loaded.");
         }
 
-	}
+    }
 
     /**
      * Vytvoří balíček pro import pravidel a hromadných akcí.
@@ -412,17 +302,15 @@ public class HelperTestService {
      * Rekurzivní přidávání souborů do ZIPu.
      *
      * @param buffer buffer pro kopírování
-     * @param zout  výstupní zip stream
-     * @param dir   adresář k prohledání
-     * @param path  relativní cesta v zip
+     * @param zout   výstupní zip stream
+     * @param dir    adresář k prohledání
+     * @param path   relativní cesta v zip
      */
     static private void recurseAdd(final byte[] buffer, final ZipOutputStream zout, final File dir, final String path) throws IOException {
         File[] files = dir.listFiles();
         logger.info("recurseAdd: path: " + path + ", dir: " + dir + ", files: " + files);
-        for(int i=0; i < files.length ; i++)
-        {
-            if(files[i].isDirectory())
-            {
+        for (int i = 0; i < files.length; i++) {
+            if (files[i].isDirectory()) {
                 recurseAdd(buffer, zout, files[i], path + files[i].getName() + "/");
                 continue;
             }
@@ -431,8 +319,7 @@ public class HelperTestService {
             zout.putNextEntry(new ZipEntry(path + files[i].getName()));
 
             int length;
-            while((length = fin.read(buffer)) > 0)
-            {
+            while ((length = fin.read(buffer)) > 0) {
                 zout.write(buffer, 0, length);
             }
             zout.closeEntry();

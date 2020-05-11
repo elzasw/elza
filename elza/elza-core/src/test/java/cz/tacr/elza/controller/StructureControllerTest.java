@@ -12,16 +12,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.*;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrStructureDataVO;
-import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.RulStructureTypeVO;
-import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
@@ -264,7 +260,7 @@ public class StructureControllerTest extends AbstractControllerTest {
         ArrStructureDataVO structureDataConfirmed = confirmStructureData(fundVersion.getId(), structureData.getId());
         // check id of returned type
         assertTrue(Objects.equals(structureDataConfirmed.getId(), structureDataConfirmed.getId()));
-        
+
         // wait to process whole queue
         while (sobjVrequestRepository.count() > 0) {
             try {
@@ -276,7 +272,7 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertSame(structureDataGet.getState(), ArrStructuredObject.State.OK);
         assertTrue(StringUtils.isNotEmpty(structureDataGet.getValue()));
         assertTrue(StringUtils.isEmpty(structureDataConfirmed.getErrorDescription()));
-        
+
         FilteredResultVO<ArrStructureDataVO> structureDataResult1 = findStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId(), null, null, null, null);
         assertEquals(1, structureDataResult1.getCount());
         assertEquals(1, structureDataResult1.getRows().size());

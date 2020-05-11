@@ -1,16 +1,9 @@
 package cz.tacr.elza.service;
 
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-
-import cz.tacr.elza.domain.*;
-import org.apache.commons.lang.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.CoordinatesTitleValue;
 import cz.tacr.elza.domain.vo.JsonTableTitleValue;
@@ -18,8 +11,13 @@ import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.UnitdateTitleValue;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import org.apache.commons.lang.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * Internal service for description items.
@@ -33,15 +31,11 @@ public class DescriptionItemServiceInternal {
 
     private final StaticDataService staticDataService;
 
-    private final ApNameRepository apNameRepository;
-
     @Autowired
     public DescriptionItemServiceInternal(DescItemRepository descItemRepository,
-                                          StaticDataService staticDataService,
-                                          ApNameRepository apNameRepository) {
+                                          StaticDataService staticDataService) {
         this.descItemRepository = descItemRepository;
         this.staticDataService = staticDataService;
-        this.apNameRepository = apNameRepository;
     }
 
     /**
@@ -95,21 +89,12 @@ public class DescriptionItemServiceInternal {
         switch (dataType) {
         case ENUM:
             return new TitleValue(itemSpec.getName());
-        case PARTY_REF: {
-            ArrDataPartyRef partyData = (ArrDataPartyRef) data;
-            ApName partyName = apNameRepository.findPreferredNameByAccessPoint(partyData.getParty().getAccessPoint());
-            TitleValue value = new TitleValue(partyName.getFullName());
-            if (dataExport) {
-                value.setEntityId(partyData.getPartyId());
-            }
-            return value;
-        }
         case RECORD_REF: {
             ArrDataRecordRef apData = (ArrDataRecordRef) data;
-            ApName apName = apNameRepository.findPreferredNameByAccessPoint(apData.getRecord());
-            TitleValue value = new TitleValue(apName.getFullName());
+            //TODO: smazáno - metoda pro získání jména
+            TitleValue value = new TitleValue("tempValue");
             if (dataExport) {
-                value.setEntityId(apName.getAccessPointId());
+                value.setEntityId(apData.getRecord().getAccessPointId());
             }
             return value;
         }

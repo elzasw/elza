@@ -40,6 +40,8 @@ public class StructObjProcessor implements ItemProcessor {
     public void process(Object item) {
         StructuredObject object = (StructuredObject) item;
         StructObjContext objectCtx = processObject(object);
+        //TODO: gotzy bylo processItems(object.getDdOrDoOrDn(), objectCtx);
+       // processItems(object.getDdOrDoOrDt(), objectCtx);
         processItems(object.getDdOrDoOrDp(), objectCtx);
     }
 

@@ -15,6 +15,10 @@ import javax.persistence.*;
 @Table(name = "ap_item")
 public class ApItem {
 
+    public static final String PART_ID = "partId";
+    public static final String DELETE_CHANGE_ID = "deleteChangeId";
+    public static final String FIELD_DATA = "data";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)
@@ -163,6 +167,10 @@ public class ApItem {
 
     public void setData(final ArrData data) {
         this.data = data;
+    }
+
+    public Integer getDeleteChangeId() {
+        return deleteChangeId;
     }
 
     public ApPart getPart() {

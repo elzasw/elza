@@ -16,6 +16,7 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import cz.tacr.elza.domain.ApItem;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
@@ -47,10 +48,38 @@ public abstract class AbstractEntityLoader<RES, ENT> extends AbstractBatchLoader
     }
 
     @Override
+    protected void processItemBatch(ArrayList<BatchEntry> entries) {
+        Map<Object, List<BatchEntry>> entityIdLookup = getEntityIdLookup(entries);
+        CriteriaQuery<Tuple> cq = createCriteriaItemQuery(entityIdLookup.keySet());
+
+        Query<Tuple> q = createHibernateQuery(cq);
+
+        try (ScrollableResults results = q.scroll(ScrollMode.FORWARD_ONLY)) {
+            while (results.next()) {
+                Tuple tuple = (Tuple) results.get(0);
+                Object entityId = tuple.get(0);
+                Object entity = tuple.get(1);
+
+                // TODO: replace detach for stateless session
+                em.detach(entity);
+                // can be initialized (detached) proxy
+                entity = HibernateUtils.unproxy(entity);
+
+                for (BatchEntry entry : entityIdLookup.get(entityId)) {
+                    RES result = createResult(entity);
+                    entry.setResult(result);
+                }
+            }
+        }
+
+    }
+
+    @Override
     protected final void processBatch(ArrayList<BatchEntry> entries) {
         Map<Object, List<BatchEntry>> entityIdLookup = getEntityIdLookup(entries);
 
         CriteriaQuery<Tuple> cq = createCriteriaQuery(entityIdLookup.keySet());
+
         Query<Tuple> q = createHibernateQuery(cq);
 
         try (ScrollableResults results = q.scroll(ScrollMode.FORWARD_ONLY)) {
@@ -74,9 +103,9 @@ public abstract class AbstractEntityLoader<RES, ENT> extends AbstractBatchLoader
 
     /**
      * Use entity as a result
-     * 
+     *
      * Override this method if result is same as entity
-     * 
+     *
      * @param entity
      * @return
      */
@@ -130,6 +159,33 @@ public abstract class AbstractEntityLoader<RES, ENT> extends AbstractBatchLoader
 
         Root<? extends ENT> root = cq.from(entityClass);
         buildExtendedQuery(root, cb);
+
+        // prepare where
+        Path<?> jpaPath = getJpaPath(root, entityIdPath);
+        Predicate cond = createQueryCondition(root, cb);
+        if (cond != null) {
+            cond = cb.and(jpaPath.in(entityIds), cond);
+        } else {
+            cond = jpaPath.in(entityIds);
+        }
+        cq.where(cond);
+        List<Order> order = createQueryOrderBy(root, cb);
+        if (order != null) {
+            cq.orderBy(order);
+        }
+
+        cq.multiselect(jpaPath, root);
+
+        return cq;
+    }
+
+    private CriteriaQuery<Tuple> createCriteriaItemQuery(Set<Object> entityIds) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Tuple> cq = cb.createTupleQuery();
+
+        Root<? extends ENT> root = cq.from(entityClass);
+
+        root.fetch(ApItem.FIELD_DATA);
 
         // prepare where
         Path<?> jpaPath = getJpaPath(root, entityIdPath);

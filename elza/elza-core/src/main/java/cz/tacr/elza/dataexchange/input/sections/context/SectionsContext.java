@@ -93,7 +93,7 @@ public class SectionsContext {
         }
 
         // create current section
-        SectionContext section = new SectionContext(storageManager, batchSize, createChange, 
+        SectionContext section = new SectionContext(storageManager, batchSize, createChange,
                                                     ruleSet, staticData, initHelper);
 
         // set subsection root adapter when position present
@@ -153,13 +153,13 @@ public class SectionsContext {
         if (institution == null) {
             throw new DEImportException("Institution not found, internal code:" + fundInfo.getIc());
         }
-        ArrFund fund = arrService.createFund(fundInfo.getN(), fundInfo.getC(), institution);
+        ArrFund fund = arrService.createFund(fundInfo.getN(), fundInfo.getC(), institution, null, null);
         arrService.addScopeToFund(fund, importScope);
 
-        FundRootAdapter adapter = new FundRootAdapter(fund, 
-                                   sectionCtx.getRuleSet(), 
-                                   sectionCtx.getCreateChange(), 
-                                   fundInfo.getTr(), 
+        FundRootAdapter adapter = new FundRootAdapter(fund,
+                                   sectionCtx.getRuleSet(),
+                                   sectionCtx.getCreateChange(),
+                                   fundInfo.getTr(),
                                    arrService);
         currentSection.setRootAdapter(adapter);
     }

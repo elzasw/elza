@@ -1,25 +1,12 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrGroupUser;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.*;
 import javax.persistence.criteria.CriteriaBuilder.In;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.persistence.criteria.Subquery;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,17 +27,13 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 	        final Root<UsrUser> user,
 	        final Integer excludedGroupId,
 	        final CriteriaQuery<T> query) {
-		Join<UsrUser, ParParty> partyJoin = user.join(UsrUser.FIELD_PARTY, JoinType.INNER);
-		Join<ParParty, ApAccessPoint> apJoin = partyJoin.join(ParParty.FIELD_RECORD, JoinType.INNER);
-		Join<ApAccessPoint, ApName> nameJoin = ApAccessPointRepositoryImpl.preparePrefNameJoin(apJoin, builder);
-		
+
 		List<Predicate> conditions = new ArrayList<>();
 
 		// Search
 		if (StringUtils.isNotBlank(search)) {
 			final String searchValue = "%" + search.toLowerCase() + "%";
 			conditions.add(builder.or(
-			        builder.like(builder.lower(nameJoin.get(ApName.FIELD_NAME)), searchValue),
 			        builder.like(builder.lower(user.get(UsrUser.FIELD_USERNAME)), searchValue),
 			        builder.like(builder.lower(user.get(UsrUser.FIELD_DESCRIPTION)), searchValue)));
 		}
@@ -141,17 +124,13 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             final CriteriaQuery<T> query,
 	        final int userId,
 	        final boolean includeUser) {
-        Join<UsrUser, ParParty> partyJoin = user.join(UsrUser.FIELD_PARTY, JoinType.INNER);
-        Join<ParParty, ApAccessPoint> apJoin = partyJoin.join(ParParty.FIELD_RECORD, JoinType.INNER);
-        Join<ApAccessPoint, ApName> recordName = ApAccessPointRepositoryImpl.preparePrefNameJoin(apJoin, builder);
-        
+
         List<Predicate> conditions = new ArrayList<>();
 
         // Search
         if (StringUtils.isNotBlank(search)) {
             final String searchValue = "%" + search.toLowerCase() + "%";
             conditions.add(builder.or(
-                    builder.like(builder.lower(recordName.get(ApName.FIELD_NAME)), searchValue),
                     builder.like(builder.lower(user.get(UsrUser.FIELD_USERNAME)), searchValue),
                     builder.like(builder.lower(user.get(UsrUser.FIELD_DESCRIPTION)), searchValue)
             ));
@@ -246,7 +225,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
 		if (condition != null) {
 			prepareUserView(user, builder, query);
-			
+
 			query.where(condition);
 			queryCount.where(conditionCount);
 		}
@@ -292,7 +271,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
         if (condition != null) {
             prepareUserView(user, builder, query);
-            
+
             query.where(condition);
             queryCount.where(conditionCount);
         }
@@ -309,15 +288,12 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
         return new FilteredResult<>(firstResult, maxResults, count, list);
     }
-    
+
     private static void prepareUserView(Root<UsrUser> user, CriteriaBuilder cb, CriteriaQuery<?> query) {
-        Join<UsrUser, ParParty> partyJoin = user.join(UsrUser.FIELD_PARTY, JoinType.INNER);
-        Join<ParParty, ApAccessPoint> apJoin = partyJoin.join(ParParty.FIELD_RECORD, JoinType.INNER);
         // join current preferred AP names
-        Join<ApAccessPoint, ApName> nameJoin = ApAccessPointRepositoryImpl.preparePrefNameJoin(apJoin, cb);
+
         // define order
-        Order order1 = cb.asc(nameJoin.get(ApName.FIELD_NAME));
         Order order2 = cb.asc(user.get(UsrUser.FIELD_USERNAME));
-        query.orderBy(order1, order2);
+        query.orderBy(order2);
     }
 }

@@ -10,6 +10,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import org.apache.commons.lang3.Validate;
 
 import com.ctc.wstx.api.WstxInputProperties;
@@ -18,7 +19,6 @@ import com.sun.xml.txw2.output.IndentingXMLStreamWriter;
 import cz.tacr.elza.dataexchange.output.sections.SectionContext;
 import cz.tacr.elza.dataexchange.output.writer.ApOutputStream;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
-import cz.tacr.elza.dataexchange.output.writer.PartiesOutputStream;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.InternalNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode;
@@ -45,13 +45,8 @@ public class XmlExportBuilder implements ExportBuilder {
     }
 
     @Override
-    public ApOutputStream openAccessPointsOutputStream() {
-        return new XmlApOutputStream(rootNode, tempDirectory);
-    }
-
-    @Override
-    public PartiesOutputStream openPartiesOutputStream() {
-        return new XmlPartiesOutputStream(rootNode, tempDirectory);
+    public ApOutputStream openAccessPointsOutputStream(ExportContext context) {
+        return new XmlApOutputStream(rootNode, tempDirectory, context);
     }
 
     @Override

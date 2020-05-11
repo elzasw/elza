@@ -16,6 +16,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import cz.tacr.elza.schema.v2.*;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang.Validate;
 
@@ -24,7 +25,6 @@ import cz.tacr.elza.dataexchange.output.items.APRefConvertor;
 import cz.tacr.elza.dataexchange.output.items.FileRefConvertor;
 import cz.tacr.elza.dataexchange.output.items.ItemConvertor;
 import cz.tacr.elza.dataexchange.output.items.ItemDataConvertorFactory;
-import cz.tacr.elza.dataexchange.output.items.PartyRefConvertor;
 import cz.tacr.elza.dataexchange.output.items.StructObjRefConvertor;
 import cz.tacr.elza.dataexchange.output.sections.SectionContext;
 import cz.tacr.elza.dataexchange.output.writer.FileInfo;
@@ -36,23 +36,12 @@ import cz.tacr.elza.dataexchange.output.writer.xml.nodes.InternalNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.JaxbNode;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataFileRef;
-import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.schema.v2.AccessPointRefs;
-import cz.tacr.elza.schema.v2.DescriptionItem;
-import cz.tacr.elza.schema.v2.DescriptionItemAPRef;
-import cz.tacr.elza.schema.v2.DescriptionItemFileRef;
-import cz.tacr.elza.schema.v2.DescriptionItemPartyRef;
-import cz.tacr.elza.schema.v2.DescriptionItemStructObjectRef;
-import cz.tacr.elza.schema.v2.FundInfo;
-import cz.tacr.elza.schema.v2.Level;
-import cz.tacr.elza.schema.v2.ObjectFactory;
-import cz.tacr.elza.schema.v2.StructuredObject;
 
 /**
  * XML output stream for section export.
@@ -166,6 +155,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
         structObj.setId(Integer.toString(structObjInfo.getId()));
 
         // convert description items references
+        //TODO: gotzy convertItems(structObjInfo.getItems(), structObj.getDdOrDoOrDn());
         convertItems(structObjInfo.getItems(), structObj.getDdOrDoOrDp());
 
         try {
@@ -301,7 +291,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
 
     /**
      * Rozsireni standardnich convertoru o kontext exportu
-     * 
+     *
      * Umoznuje prevadet slozitejsi typy
      */
     private class ContextAwareItemDataConvertorFactory extends ItemDataConvertorFactory {
@@ -315,21 +305,6 @@ class XmlSectionOutputStream implements SectionOutputStream {
                     if (item != null) {
                         ArrDataRecordRef apRef = (ArrDataRecordRef) data;
                         sectionContext.getContext().addApId(apRef.getRecordId());
-                    }
-                    return item;
-                }
-            };
-        }
-
-        @Override
-        public PartyRefConvertor createPartyRefConvertor() {
-            return new PartyRefConvertor() {
-                @Override
-                public DescriptionItemPartyRef convert(ArrData data, ObjectFactory objectFactory) {
-                    DescriptionItemPartyRef item = super.convert(data, objectFactory);
-                    if (item != null) {
-                        ArrDataPartyRef partyRef = (ArrDataPartyRef) data;
-                        sectionContext.getContext().addPartyId(partyRef.getPartyId());
                     }
                     return item;
                 }

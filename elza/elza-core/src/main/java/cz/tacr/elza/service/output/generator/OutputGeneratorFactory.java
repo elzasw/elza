@@ -1,23 +1,20 @@
 package cz.tacr.elza.service.output.generator;
 
-import javax.persistence.EntityManager;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Service;
-
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.dataexchange.output.DEExportService;
 import cz.tacr.elza.domain.RulTemplate.Engine;
-import cz.tacr.elza.repository.ApDescriptionRepository;
 import cz.tacr.elza.repository.ApExternalIdRepository;
-import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.cache.NodeCacheService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Service;
+
+import javax.persistence.EntityManager;
 
 @Service
 public class OutputGeneratorFactory {
@@ -38,10 +35,6 @@ public class OutputGeneratorFactory {
 
     private final ApStateRepository apStateRepository;
 
-    private final ApDescriptionRepository apDescRepository;
-
-    private final ApNameRepository apNameRepository;
-
     private final ApExternalIdRepository apEidRepository;
 
     private final ApplicationContext applicationContext;
@@ -56,8 +49,6 @@ public class OutputGeneratorFactory {
             NodeCacheService nodeCacheService,
             InstitutionRepository institutionRepository,
             ApStateRepository apStateRepository,
-            ApDescriptionRepository apDescRepository,
-            ApNameRepository apNameRepository,
             ApExternalIdRepository apEidRepository,
             EntityManager em,
             DmsService dmsService,
@@ -69,8 +60,6 @@ public class OutputGeneratorFactory {
         this.nodeCacheService = nodeCacheService;
         this.institutionRepository = institutionRepository;
         this.apStateRepository = apStateRepository;
-        this.apDescRepository = apDescRepository;
-        this.apNameRepository = apNameRepository;
         this.apEidRepository = apEidRepository;
         this.em = em;
         this.dmsService = dmsService;
@@ -93,14 +82,14 @@ public class OutputGeneratorFactory {
     public FreemarkerOutputGenerator createFreemarkerOutputGenerator() {
         return new FreemarkerOutputGenerator(applicationContext, staticDataService, elzaLocale, fundTreeProvider,
                 nodeCacheService,
-                institutionRepository, apStateRepository, apDescRepository, apNameRepository, apEidRepository, em, dmsService);
+                institutionRepository, apStateRepository, apEidRepository, em, dmsService);
     }
 
     public JasperOutputGenerator createJasperOutputGenerator() {
         return new JasperOutputGenerator(applicationContext, staticDataService, elzaLocale,
                 fundTreeProvider, nodeCacheService,
                 institutionRepository, apStateRepository,
-                apDescRepository, apNameRepository, apEidRepository, em, dmsService);
+                apEidRepository, em, dmsService);
     }
 
     public DEXmlOutputGenerator createDEXmlOutputGenerator() {

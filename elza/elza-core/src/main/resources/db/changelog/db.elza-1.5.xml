@@ -177,7 +177,7 @@
         </addColumn>
     </changeSet>
 
-    <changeSet id="20200420204000" author="fantis">
+   <changeSet id="20200420204000" author="fantis">
         <addColumn tableName="ap_item">
             <column name="part_id" type="int">
                 <constraints nullable="true"
@@ -210,10 +210,11 @@
                 <sqlCheck expectedResult="0">SELECT COUNT(access_point_id) FROM ap_access_point</sqlCheck>
             </not>
             <not>
-                <sqlCheck expectedResult="0">SELECT COUNT(rule_set_id) FROM rul_rule_set WHERE code = 'ZP2015'</sqlCheck>
+                <sqlCheck expectedResult="0">SELECT COUNT(rule_set_id) FROM rul_rule_set WHERE code = 'ZP2015'
+                </sqlCheck>
             </not>
         </preConditions>
-        <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20200331164200" />
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20200331164200"/>
     </changeSet>
 
     <changeSet id="20200421140500" author="fantis">
@@ -223,6 +224,123 @@
 
     <changeSet id="20200511102100" author="fantis">
         <addNotNullConstraint tableName="ap_item" columnName="part_id" columnDataType="int"/>
+    </changeSet>
+
+
+    <changeSet id="20200408201500" author="gotzy">
+        <sql>INSERT INTO arr_data_record_ref(data_id, record_id) (SELECT data_id, access_point_id FROM
+            arr_data_party_ref CROSS JOIN par_party WHERE
+            par_party.party_id = arr_data_party_ref.party_id)
+        </sql>
+        <sql>UPDATE arr_data
+            SET data_type_id= (SELECT data_type_id FROM rul_data_type WHERE code = 'RECORD_REF')
+            WHERE data_type_id= (SELECT data_type_id FROM rul_data_type WHERE code = 'PARTY_REF')
+        </sql>
+        <addColumn tableName="par_institution">
+            <column name="access_point_id" type="integer"/>
+        </addColumn>
+        <sql>UPDATE public.par_institution SET access_point_id = (SELECT par_party.access_point_id FROM public.par_party
+            WHERE par_party.party_id = par_institution.party_id)
+        </sql>
+        <addForeignKeyConstraint baseColumnNames="access_point_id" baseTableName="par_institution"
+                                 constraintName="FK_par_institution_access_point_id" deferrable="false"
+                                 initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="access_point_id" referencedTableName="ap_access_point"/>
+        <dropColumn tableName="par_institution" columnName="party_id"/>
+    </changeSet>
+
+    <changeSet id="20200410233000" author="gotzy">
+        <dropTable tableName="arr_data_party_ref"/>
+    </changeSet>
+
+    <changeSet id="20200414091500" author="gotzy">
+        <addColumn tableName="usr_user">
+            <column name="access_point_id" type="integer"/>
+        </addColumn>
+        <sql>UPDATE public.usr_user SET access_point_id = (SELECT par_party.access_point_id FROM public.par_party WHERE
+            par_party.party_id = usr_user.party_id)
+        </sql>
+        <addForeignKeyConstraint baseColumnNames="access_point_id" baseTableName="usr_user"
+                                 constraintName="FK_usr_user_access_point_id" deferrable="false"
+                                 initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="access_point_id" referencedTableName="ap_access_point"/>
+        <dropColumn tableName="usr_user" columnName="party_id"/>
+    </changeSet>
+
+    <changeSet id="20200414101900" author="gotzy">
+        <dropTable tableName="ap_name_item"/>
+    </changeSet>
+
+    <changeSet id="20200414103400" author="gotzy">
+        <dropTable tableName="ap_name"/>
+    </changeSet>
+
+    <changeSet id="20200414103500" author="gotzy">
+        <dropTable tableName="ap_description"/>
+    </changeSet>
+
+    <changeSet id="20200414103600" author="gotzy">
+        <dropColumn tableName="ap_type" columnName="party_type_id"/>
+    </changeSet>
+
+    <changeSet id="20200414103800" author="gotzy">
+        <dropTable tableName="par_creator"/>
+        <dropTable tableName="par_dynasty"/>
+        <dropTable tableName="par_event"/>
+        <dropTable tableName="par_person"/>
+        <dropTable tableName="par_party_name_complement"/>
+        <dropTable tableName="par_party_type_complement_type"/>
+        <dropTable tableName="par_party_group_identifier"/>
+        <dropTable tableName="par_party_group"/>
+        <dropTable tableName="par_party_type_relation"/>
+        <dropTable tableName="par_relation_entity"/>
+        <dropTable tableName="par_relation"/>
+        <dropTable tableName="par_relation_type_role_type"/>
+        <dropTable tableName="par_registry_role"/>
+        <dropTable tableName="par_relation_role_type"/>
+        <dropTable tableName="par_complement_type"/>
+        <dropTable tableName="ui_party_group"/>
+        <dropTable tableName="par_relation_type"/>
+        <dropTable tableName="par_relation_class_type"/>
+        <dropTable cascadeConstraints="true" tableName="par_party"/>
+        <dropTable tableName="par_party_type"/>
+        <dropTable tableName="par_party_name"/>
+        <dropTable tableName="par_party_name_form_type"/>
+        <dropTable tableName="par_unitdate"/>
+    </changeSet>
+
+    <changeSet id="20200416084900" author="gotzy">
+        <dropColumn tableName="ap_access_point" columnName="rule_system_id"/>
+    </changeSet>
+
+    <changeSet id="20200428152200" author="gotzy">
+        <sql>UPDATE rul_item_type SET data_type_id = (SELECT data_type_id FROM rul_data_type WHERE code = 'RECORD_REF')
+        WHERE data_type_id = (SELECT data_type_id FROM rul_data_type WHERE code = 'PARTY_REF')
+        </sql>
+    </changeSet>
+
+    <changeSet id="20200428152400" author="gotzy">
+        <delete tableName="rul_data_type">
+            <where>code='PARTY_REF'</where>
+        </delete>
+    </changeSet>
+
+    <changeSet id="20200430093200" author="gotzy">
+        <validCheckSum>ANY</validCheckSum>
+        <delete tableName="arr_cached_node"/>
+    </changeSet>
+
+    <changeSet id="20200505083000" author="gotzy">
+        <addColumn tableName="arr_fund">
+            <column name="fund_number" type="int">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="arr_fund">
+            <column name="unitdate" type="char(50)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
     </changeSet>
 
 </databaseChangeLog>

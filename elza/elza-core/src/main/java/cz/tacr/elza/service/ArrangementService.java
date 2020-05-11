@@ -7,12 +7,10 @@ import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
-import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.AuthParam.Type;
@@ -46,6 +44,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -60,6 +59,7 @@ import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -73,6 +73,8 @@ import java.util.stream.Collectors;
 public class ArrangementService {
 
     private static final AtomicInteger LAST_DESC_ITEM_OBJECT_ID = new AtomicInteger(-1);
+
+    private static final Pattern UUID_PATTERN = Pattern.compile("[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}");
 
     @Autowired
     private FundRegisterScopeRepository faRegisterRepository;
@@ -89,6 +91,8 @@ public class ArrangementService {
     private RuleService ruleService;
     @Autowired
     private ItemRepository itemRepository;
+    @Autowired
+    private InstitutionRepository institutionRepository;
     @Autowired
     private EventNotificationService eventNotificationService;
     @Autowired
@@ -207,8 +211,10 @@ public class ArrangementService {
                               final String uuid,
                               final String internalCode,
                               final ParInstitution institution,
-                              final String dateRange) {
-        ArrFund fund = createFund(name, internalCode, institution);
+                              final String dateRange,
+                              final Integer fundNumber,
+                              final String unitdate) {
+        ArrFund fund = createFund(name, internalCode, institution,fundNumber, unitdate);
 
         eventNotificationService
                 .publishEvent(EventFactory.createIdEvent(EventType.FUND_CREATE, fund.getFundId()));
@@ -311,10 +317,17 @@ public class ArrangementService {
                                           final RulRuleSet ruleSet,
                                           final String internalCode,
                                           final ParInstitution institution,
-                                          final String dateRange) {
+                                          final String dateRange,
+                                          final Integer fundNumber,
+                                          final String unitdate,
+                                          String Uuid) {
         ArrChange change = createChange(ArrChange.Type.CREATE_AS);
 
-        ArrFund fund = createFund(name, ruleSet, change, generateUuid(), internalCode, institution, dateRange);
+        if(Uuid == null || Uuid.isEmpty()) {
+            Uuid = generateUuid();
+        }
+
+        ArrFund fund = createFund(name, ruleSet, change, Uuid, internalCode, institution, dateRange,fundNumber,unitdate);
 
         List<ApScope> defaultScopes = accessPointService.findDefaultScopes();
         if (!defaultScopes.isEmpty()) {
@@ -351,12 +364,16 @@ public class ArrangementService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE})
     public ArrFund createFund(final String name,
                               final String internalCode,
-                              final ParInstitution institution) {
+                              final ParInstitution institution,
+                              final Integer fundNumber,
+                              final String unitdate) {
         ArrFund fund = new ArrFund();
         fund.setCreateDate(LocalDateTime.now());
         fund.setName(name);
         fund.setInternalCode(internalCode);
         fund.setInstitution(institution);
+        fund.setFundNumber(fundNumber);
+        fund.setUnitDate(unitdate);
         return fundRepository.save(fund);
     }
 
@@ -1465,6 +1482,32 @@ public class ArrangementService {
         }
     }
 
+    public ParInstitution getInstitution(String identifier) {
+        ParInstitution institution;
+        if(checkInstitutionUUID(identifier)) {
+            institution = institutionRepository.findByAccessPointUUID(identifier);
+        } else {
+            institution = institutionRepository.findByInternalCode(identifier);
+        }
+        return institution;
+    }
+
+    private boolean checkInstitutionUUID(String institutionIdentifier) {
+        return UUID_PATTERN.matcher(institutionIdentifier).matches();
+
+    }
+
+    public ApScope getApScope(String s) {
+        ApScope entity = scopeRepository.findByCode(s);
+        if(entity == null) {
+            entity = new ApScope();
+            entity.setCode(s);
+            entity.setName(s);
+        }
+        return entity;
+    }
+
+
     /**
      * @return vrací session uživatele
      */
@@ -1476,6 +1519,29 @@ public class ArrangementService {
 
     public ArrNode findNodeByUuid(final String nodeUuid) {
         return nodeRepository.findOneByUuid(nodeUuid);
+    }
+
+    public FindFundsResult findFundsByFullTextInsIdentifier(List<ArrFund> fundList, String fulltext, String institutionIdentifier, Integer max, Integer from) {
+        FindFundsResult fundsResult = new FindFundsResult();
+        List<ArrFundToNodeList> fundToNodeList = nodeRepository.findFundIdsByFulltext(fulltext, fundList, max, from);
+        fundFulltextSession().set(fundToNodeList);
+
+        if (!fundToNodeList.isEmpty()) {
+            List<Integer> fundIds = fundList.stream().map(ArrFund::getFundId).collect(Collectors.toList());
+            Map<Integer, ArrFundVersion> fundIdVersionsMap = getOpenVersionsByFundIds(fundIds).stream()
+                    .collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
+            Map<Integer, ArrFund> fundMap = fundList.stream().collect(Collectors.toMap(ArrFund::getFundId, Function.identity()));
+
+            for (ArrFundToNodeList fundCount : fundToNodeList) {
+                Fund result = new Fund();
+                ArrFund fund = fundMap.get(fundCount.getFundId());
+                result.setName(fund.getName());
+                result.setId(fundCount.getFundId());
+                fundsResult.addFundsItem(result);
+            }
+            fundsResult.setTotalCount(fundToNodeList.size());
+        }
+        return fundsResult;
     }
 
     public static class Holder<T> {

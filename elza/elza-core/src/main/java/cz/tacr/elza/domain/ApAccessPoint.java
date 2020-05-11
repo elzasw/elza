@@ -35,6 +35,7 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
     public static final String FIELD_DESCRIPTIONS = "descriptions";
     public static final String STATE = "state";
     public static final String RULE_SYSTEM_ID = "ruleSystemId";
+    public static final String FIELD_PREFFERED_PART = "preferredPart";
 
     @Id
     @GeneratedValue
@@ -44,10 +45,6 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
     @Column(length = StringLength.LENGTH_36, nullable = false, unique = true)
     private String uuid;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApRuleSystem.class)
-    @JoinColumn(name = RULE_SYSTEM_ID)
-    private ApRuleSystem ruleSystem;
-
     @Enumerated(EnumType.STRING)
     @Column(length = StringLength.LENGTH_ENUM)
     private ApStateEnum state;
@@ -56,14 +53,6 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
     @Lob
     @Type(type = "org.hibernate.type.TextType")
     private String errorDescription;
-
-    // without getter/setter only for JPA query
-    @OneToMany(mappedBy = "accessPoint")
-    private List<ApName> names;
-
-    // without getter/setter only for JPA query
-    @OneToMany(mappedBy = "accessPoint")
-    private List<ApDescription> descriptions;
 
     @Column
     private LocalDateTime lastUpdate;
@@ -107,14 +96,6 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
      */
     public void setUuid(final String uuid) {
         this.uuid = uuid;
-    }
-
-    public ApRuleSystem getRuleSystem() {
-        return ruleSystem;
-    }
-
-    public void setRuleSystem(final ApRuleSystem ruleSystem) {
-        this.ruleSystem = ruleSystem;
     }
 
     public ApStateEnum getState() {

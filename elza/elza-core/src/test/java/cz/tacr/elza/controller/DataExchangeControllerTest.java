@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -55,6 +56,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
     @Autowired
     private StaticDataService staticDataService;
 
+    //@Ignore //TODO: smazat po změně importu institucí
     @Test
     public void importExportTest() throws IOException {
 
@@ -113,7 +115,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
         // get last fund version and rule system
         ArrFundVO fund = funds.iterator().next();
         ArrFundVersionVO fVersion = getOpenVersion(fund);
-        
+
         // check node count
         FaTreeParam treeParam = new FaTreeParam();
         treeParam.setVersionId(fVersion.getId());

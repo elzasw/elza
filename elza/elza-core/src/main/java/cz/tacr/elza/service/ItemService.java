@@ -37,7 +37,6 @@ import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ItemRepository;
-import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 
 /**
@@ -51,9 +50,6 @@ public class ItemService {
 
     @Autowired
     private DataRepository dataRepository;
-
-    @Autowired
-    private PartyRepository partyRepository;
 
     @Autowired
     private StructuredObjectRepository structureDataRepository;
@@ -249,7 +245,6 @@ public class ItemService {
     public void refItemsLoader(final Collection<ArrItem> dataItems) {
 
         // mapy pro naplnění ID entit
-        Map<Integer, ArrDataPartyRef> partyMap = new HashMap<>();
         Map<Integer, ArrDataStructureRef> structureMap = new HashMap<>();
         Map<Integer, ArrDataFileRef> fileMap = new HashMap<>();
         Map<Integer, ArrDataRecordRef> recordMap = new HashMap<>();
@@ -258,10 +253,7 @@ public class ItemService {
         for (ArrItem dataItem : dataItems) {
             ArrData data = dataItem.getData();
             if (data != null) {
-                if (data instanceof ArrDataPartyRef) {
-                    ParParty party = ((ArrDataPartyRef) data).getParty();
-                    partyMap.put(party.getPartyId(), (ArrDataPartyRef) data);
-                } else if (data instanceof ArrDataStructureRef) {
+                if (data instanceof ArrDataStructureRef) {
                     ArrStructuredObject structureData = ((ArrDataStructureRef) data).getStructuredObject();
                     structureMap.put(structureData.getStructuredObjectId(), (ArrDataStructureRef) data);
                 } else if (data instanceof ArrDataFileRef) {
@@ -280,13 +272,7 @@ public class ItemService {
             structureMap.get(structureDataEntity.getStructuredObjectId()).setStructuredObject(structureDataEntity);
         }
 
-        Set<Integer> partyIds = partyMap.keySet();
-        List<ParParty> partyEntities = partyRepository.findAll(partyIds);
-        for (ParParty partyEntity : partyEntities) {
-            partyMap.get(partyEntity.getPartyId()).setParty(partyEntity);
-        }
-
-        Set<Integer> fileIds = partyMap.keySet();
+        Set<Integer> fileIds = fileMap.keySet();
         List<ArrFile> fileEntities = fundFileRepository.findAll(fileIds);
         for (ArrFile fileEntity : fileEntities) {
             ArrDataFileRef ref = fileMap.get(fileEntity.getFileId());

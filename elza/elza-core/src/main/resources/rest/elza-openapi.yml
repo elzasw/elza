@@ -1,0 +1,305 @@
+openapi: 3.0.2
+info:
+  title: ELZA API
+  version: "1.0"
+tags:
+  - name: funds
+    description: Archivní soubory
+servers:
+  - url: http://localhost
+    description: Výchozí server
+  - url: http://localhost:8080
+    description: Devel server
+paths:
+  /fund:
+    post:
+      summary: Založené nového archivního souboru
+      operationId: createFund
+      tags:
+        - funds
+      requestBody:
+        description: Data pro založení
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/CreateFund'
+      responses:
+        200:
+          description: Úspěšné založení archivního souboru
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/Fund'
+        400:
+          description: Neplatné údaje pro založení AS
+    get:
+      summary: Vyhledání archivních souborů
+      operationId: findFunds
+      tags:
+        - funds
+      parameters:
+        - name: fulltext
+          description: Vyhledávaný výraz
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: institutionIdentifier
+          description: Identifikátor instituce (podpora pro kód instituce i UUID přístupového bodu)
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: max
+          description: Maximální počet výsledků na stránku
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 200
+        - name: from
+          description: Od kolikátého záznamu se mají výsledky vracet (0 = žádné se nepřeskočí)
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+      responses:
+        200:
+          description: Výsledek hledání AS
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/FindFundsResult'
+  /fund/{id}:
+    get:
+      summary: Získání detailu AS
+      operationId: getFund
+      tags:
+        - funds
+      parameters:
+        - name: id
+          description: Identifikátor AS
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Detail AS
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/FundDetail'
+        404:
+          description: AS neexistuje
+    put:
+      summary: Změna AS
+      operationId: updateFund
+      tags:
+        - funds
+      parameters:
+        - name: id
+          description: Identifikátor AS
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Data pro založení
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/UpdateFund'
+      responses:
+        200:
+          description: Detail AS
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/FundDetail'
+        400:
+          description: Neplatné údaje pro úpravu AS
+        404:
+          description: AS neexistuje
+components:
+  schemas:
+    CreateFund:
+      required:
+        - name
+        - ruleSetCode
+        - institutionIdentifier
+        - scopes
+      type: object
+      description: Zakládaný archivní souboru
+      properties:
+        name:
+          description: Název
+          type: string
+        ruleSetCode:
+          description: Kód pravidel
+          type: string
+        institutionIdentifier:
+          description: Identifikátor instituce (podpora pro kód instituce i UUID přístupového bodu)
+          type: string
+        internalCode:
+          description: Interní kód
+          type: string
+        dateRange:
+          description: Vysčítaná informace o časovém rozsahu fondu - sdruženo po typech kalendářů
+          type: string
+        uuid:
+          description: UUID - identifikátor AS (pokud není vyplněno, bude vygenerováno)
+          type: string
+        fundNumber:
+          description: Číslo archivního souboru
+          type: integer
+          format: int32
+        unitdate:
+          description: Datace
+          type: string
+        adminUsers:
+          description: Seznam uživatelů, kteří mají administrátorská oprávnění pro zakládaný AS
+          type: array
+          items:
+            type: integer
+            format: int32
+        adminGroups:
+          description: Seznam skupin, kteří mají administrátorská oprávnění pro zakládaný AS
+          type: array
+          items:
+            type: integer
+            format: int32
+        scopes:
+          description: Seznam oblastí entit
+          type: array
+          items:
+            type: string
+          minItems: 1
+    UpdateFund:
+      type: object
+      description: Změny archivního souboru
+      properties:
+        name:
+          description: Název
+          type: string
+        ruleSetCode:
+          description: Kód pravidel
+          type: string
+        institutionIdentifier:
+          description: Identifikátor instituce (podpora pro kód instituce i UUID přístupového bodu)
+          type: string
+        internalCode:
+          description: Interní kód
+          type: string
+        dateRange:
+          description: Vysčítaná informace o časovém rozsahu fondu - sdruženo po typech kalendářů
+          type: string
+        fundNumber:
+          description: Číslo archivního souboru
+          type: integer
+          format: int32
+        unitdate:
+          description: Datace
+          type: string
+        scopes:
+          description: Seznam oblastí entit
+          type: array
+          items:
+            type: string
+    Fund:
+      required:
+        - id
+        - uuid
+        - name
+        - institutionIdentifier
+      type: object
+      description: Archivní soubor
+      properties:
+        id:
+          description: Identifikátor
+          type: integer
+          format: int32
+        uuid:
+          description: UUID
+          type: string
+        name:
+          description: Název
+          type: string
+        institutionIdentifier:
+          description: Identifikátor instituce (vždy kód instituce)
+          type: string
+        internalCode:
+          description: Interní kód
+          type: string
+        createDate:
+          description: Datum založení
+          type: string
+          format: date-time
+        fundNumber:
+          description: Číslo archivního souboru
+          type: integer
+          format: int32
+        unitdate:
+          description: Datace
+          type: string
+    FundDetail:
+      required:
+        - id
+        - uuid
+        - name
+        - institutionIdentifier
+        - scopes
+      type: object
+      description: Zakládaný archivní souboru
+      properties:
+        id:
+          description: Identifikátor
+          type: integer
+          format: int32
+        uuid:
+          description: UUID
+          type: string
+        name:
+          description: Název
+          type: string
+        institutionIdentifier:
+          description: Identifikátor instituce (vždy kód instituce)
+          type: string
+        internalCode:
+          description: Interní kód
+          type: string
+        createDate:
+          description: Datum založení
+          type: string
+          format: date-time
+        fundNumber:
+          description: Číslo archivního souboru
+          type: integer
+          format: int32
+        unitdate:
+          description: Datace
+          type: string
+        scopes:
+          description: Seznam oblastí entit
+          type: array
+          items:
+            type: string
+    FindFundsResult:
+      required:
+        - funds
+        - totalCount
+      type: object
+      description: Zakládaný archivní souboru
+      properties:
+        funds:
+          description: Seznam oblastí entit
+          type: array
+          items:
+            $ref: '#/components/schemas/Fund'
+        totalCount:
+          description: Celkový počet dohledaných AS
+          type: integer
+          format: int32

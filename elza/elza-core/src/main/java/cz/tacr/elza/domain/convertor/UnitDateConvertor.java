@@ -13,7 +13,6 @@ import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 
 import cz.tacr.elza.api.IUnitdate;
-import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
@@ -171,26 +170,6 @@ public class UnitDateConvertor {
     }
 
     /**
-     * Převede {@link ParUnitdate} na string.
-     *
-     * @param unitdate datum
-     * @return string
-     */
-    public static String convertParUnitDateToString(final ParUnitdate unitdate) {
-        String textDate;
-        if (StringUtils.isEmpty(unitdate.getTextDate())) {
-            try {
-                textDate = UnitDateConvertor.convertToString(unitdate);
-            } catch (Exception e) {
-                textDate = unitdate.getTextDate();
-            }
-        } else {
-            textDate = unitdate.getTextDate();
-        }
-        return textDate;
-    }
-
-    /**
      * Provede konverzi formátu do textové podoby.
      */
     public static String convertToString(final IUnitdate unitdate) {
@@ -209,7 +188,7 @@ public class UnitDateConvertor {
 
 	/**
 	 * Begin of interval to string
-	 * 
+	 *
 	 * @param unitdate
 	 * @return
 	 */
@@ -225,7 +204,7 @@ public class UnitDateConvertor {
 
 	/**
 	 * End of interval to string
-	 * 
+	 *
 	 * @param unitdate
 	 * @return
 	 */

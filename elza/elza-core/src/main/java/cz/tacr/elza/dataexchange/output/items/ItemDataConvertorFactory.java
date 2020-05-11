@@ -1,9 +1,9 @@
 package cz.tacr.elza.dataexchange.output.items;
 
+import cz.tacr.elza.core.data.DataType;
+
 import java.util.EnumMap;
 import java.util.Map;
-
-import cz.tacr.elza.core.data.DataType;
 
 public class ItemDataConvertorFactory {
 
@@ -35,10 +35,6 @@ public class ItemDataConvertorFactory {
         return new APRefConvertor();
     }
 
-    public PartyRefConvertor createPartyRefConvertor() {
-        return new PartyRefConvertor();
-    }
-
     public GeoLocationConvertor createGeLocationConvertor() {
         return new GeoLocationConvertor();
     }
@@ -59,9 +55,13 @@ public class ItemDataConvertorFactory {
         return new FileRefConvertor();
     }
 
-    public UriRefConvertor createUriRefConvertor() { return new UriRefConvertor(); }
+    public UriRefConvertor createUriRefConvertor() {
+        return new UriRefConvertor();
+    }
 
-    private ItemDataConvertor createBitConvertor() { return new BitValueConvertor(); }
+    private ItemDataConvertor createBitConvertor() {
+        return new BitValueConvertor();
+    }
 
     public final Map<DataType, ItemDataConvertor> createAll() {
         Map<DataType, ItemDataConvertor> map = new EnumMap<>(DataType.class);
@@ -75,7 +75,6 @@ public class ItemDataConvertorFactory {
         map.put(DataType.ENUM, createEnumValueConvertor());
         map.put(DataType.UNITDATE, createUnitDateValueConvertor());
         map.put(DataType.RECORD_REF, createAPRefConvertor());
-        map.put(DataType.PARTY_REF, createPartyRefConvertor());
         map.put(DataType.STRUCTURED, createStructObjectRefConvertor());
         map.put(DataType.JSON_TABLE, createJsonTableConvertor());
         map.put(DataType.FILE_REF, createFileRefConvertor());

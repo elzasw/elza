@@ -1,20 +1,20 @@
 package cz.tacr.elza.dataexchange.input.context;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.dataexchange.input.ObjectIdHolder;
+import cz.tacr.elza.dataexchange.input.aps.context.AccessPointsContext;
+import cz.tacr.elza.dataexchange.input.institutions.context.InstitutionsContext;
+import cz.tacr.elza.dataexchange.input.parts.context.PartsContext;
+import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext;
+import cz.tacr.elza.dataexchange.input.storage.StorageManager;
 import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.dataexchange.input.aps.context.AccessPointsContext;
-import cz.tacr.elza.dataexchange.input.institutions.context.InstitutionsContext;
-import cz.tacr.elza.dataexchange.input.parties.context.PartiesContext;
-import cz.tacr.elza.dataexchange.input.sections.context.SectionsContext;
-import cz.tacr.elza.dataexchange.input.storage.StorageManager;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Context for single import execution.
@@ -29,31 +29,33 @@ public class ImportContext implements ObservableImport {
 
     private final AccessPointsContext accessPoints;
 
-    private final PartiesContext parties;
-
     private final InstitutionsContext institutions;
+
+    private final PartsContext parts;
 
     private final SectionsContext sections;
 
     private final StaticDataProvider staticData;
 
     private final StorageManager storageManager;
-    
+
     private ImportPhase currentPhase = ImportPhase.INIT;
+
+
 
     public ImportContext(Session session,
             StaticDataProvider staticData,
             AccessPointsContext accessPoints,
-            PartiesContext parties,
             InstitutionsContext institutions,
-            SectionsContext sections, 
+            SectionsContext sections,
+            PartsContext parts,
             StorageManager storageManager) {
         this.session = session;
         this.staticData = staticData;
         this.accessPoints = accessPoints;
-        this.parties = parties;
         this.institutions = institutions;
         this.sections = sections;
+        this.parts = parts;
         this.storageManager = storageManager;
     }
 
@@ -69,10 +71,6 @@ public class ImportContext implements ObservableImport {
         return accessPoints;
     }
 
-    public PartiesContext getParties() {
-        return parties;
-    }
-
     public InstitutionsContext getInstitutions() {
         return institutions;
     }
@@ -80,6 +78,8 @@ public class ImportContext implements ObservableImport {
     public SectionsContext getSections() {
         return sections;
     }
+
+    public PartsContext getParts() { return parts; }
 
     public void setCurrentPhase(ImportPhase phase) {
         if (currentPhase == phase) {
@@ -106,10 +106,10 @@ public class ImportContext implements ObservableImport {
 
     public void init(Collection<ImportPhaseChangeListener> listeners) {
         accessPoints.init(this);
-        parties.init(this);
         institutions.init(this);
         sections.init(this);
-        
+        parts.init(this);
+
         if (listeners != null) {
         	listeners.forEach(phaseChangeListeners::add);
         }

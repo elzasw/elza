@@ -3,6 +3,8 @@ package cz.tacr.elza.repository;
 import java.util.List;
 
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.vo.ArrFundOpenVersion;
 
 
@@ -50,7 +52,11 @@ public interface FundRepositoryCustom {
      */
     List<ArrFund> findFundByFulltext(String fulltext, Integer userId);
 
+    List<ArrFund> findFundByInstitution(Integer userId, ParInstitution institution);
+
 	FilteredResult<ArrFund> findFunds(String search, int firstResult, int maxResults);
+
+	FilteredResult<ArrFund> findFunds(String search, Integer institutionId, int firstResult, int maxResults);
 
 	/**
 	 * Vyhledá AS na které jsou vázaná nějaká oprávnění.
@@ -67,4 +73,22 @@ public interface FundRepositoryCustom {
 	 */
 	FilteredResult<ArrFund> findFundsWithPermissions(String search, int firstResult, int maxResults,
 	        final int userId);
+
+    /**
+     * Vyhledá AS na které jsou vázaná nějaká oprávnění.
+     *
+     * @param search
+     *            hledané řetězec
+     * @param firstResult
+     *            od jakého záznamu
+     * @param maxResults
+     *            maximální počet vrácených záznamů
+     * @param userId
+     *            identifikátor uživatele, podle kterého filtrujeme
+     * @return výsledek
+     */
+    FilteredResult<ArrFund> findFundsWithPermissions(String search, Integer institutionId, int firstResult, int maxResults,
+                                                     final int userId);
+
+	List<ArrFund> findFundsByInstitutionId(Integer institutionId);
 }

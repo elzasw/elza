@@ -16,6 +16,9 @@ import javax.persistence.*;
 public class ApPart {
 
     public static final String PART_ID = "partId";
+    public static final String ACCESS_POINT_ID = "accessPointId";
+    public static final String DELETE_CHANGE_ID = "deleteChangeId";
+    public static final String PARENT_PART = "parentPart";
 
     @Id
     @GeneratedValue
@@ -40,6 +43,9 @@ public class ApPart {
     @JoinColumn(name = "part_type_id", nullable = false)
     private RulPartType partType;
 
+    @Column(name = "part_type_id", updatable = false, insertable = false)
+    private Integer partTypeId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApPart.class)
     @JoinColumn(name = "parent_part_id")
     private ApPart parentPart;
@@ -51,6 +57,9 @@ public class ApPart {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
     @JoinColumn(name = "delete_change_id")
     private ApChange deleteChange;
+
+    @Column(name = "delete_change_id", updatable = false, insertable = false)
+    private Integer deleteChangeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
     @JoinColumn(name = "accessPointId", nullable = false)
@@ -97,6 +106,7 @@ public class ApPart {
 
     public void setPartType(final RulPartType partType) {
         this.partType = partType;
+        this.partTypeId = partType != null ? partType.getPartTypeId() : null;
     }
 
     public ApPart getParentPart() {
@@ -121,6 +131,11 @@ public class ApPart {
 
     public void setDeleteChange(ApChange deleteChange) {
         this.deleteChange = deleteChange;
+        this.deleteChangeId = deleteChange != null ? deleteChange.getChangeId() : null;
+    }
+
+    public Integer getDeleteChangeId() {
+        return deleteChangeId;
     }
 
     public ApAccessPoint getAccessPoint() {
@@ -134,5 +149,9 @@ public class ApPart {
 
     public Integer getAccessPointId() {
         return accessPointId;
+    }
+
+    public Integer getPartTypeId() {
+        return partTypeId;
     }
 }

@@ -49,7 +49,6 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrGroupUser;
@@ -66,7 +65,6 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.exception.codes.UserCode;
-import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.AuthenticationRepository;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
@@ -103,7 +101,7 @@ public class UserService {
     private PermissionRepository permissionRepository;
 
     @Autowired
-    private PartyService partyService;
+    private AccessPointService accessPointService;
 
     @Autowired
     private IEventNotificationService eventNotificationService;
@@ -116,9 +114,6 @@ public class UserService {
 
     @Autowired
     private ScopeRepository scopeRepository;
-
-    @Autowired
-    private ApNameRepository apNameRepository;
 
     @Autowired
     private WfIssueListRepository issueListRepository;
@@ -191,10 +186,10 @@ public class UserService {
 
 		if (userDetail.hasPermission(UsrPermission.Permission.USR_PERM)) {
 			// nefiltruje se dle přiřazených oprávnění, vrací všechny AS
-			return fundRepository.findFunds(search, firstResult, maxResults);
+			return fundRepository.findFunds(search, null, firstResult, maxResults);
 		} else {
 			// filtruje se dle přiřazeníé oprávnění na AS pro daného uživatele
-			return fundRepository.findFundsWithPermissions(search, firstResult, maxResults, userDetail.getId());
+			return fundRepository.findFundsWithPermissions(search, null, firstResult, maxResults, userDetail.getId());
 		}
     }
 
@@ -918,17 +913,18 @@ public class UserService {
      *
      * @param username uživatelské jméno
      * @param valuesMap mapa typů autentizace + hodnota
-     * @param partyId  identifikátor osoby
+     * @param accessPointId  identifikátor osoby
      * @return vytvořený uživatel
      */
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public UsrUser createUser(@NotEmpty final String username,
                               @NotNull final Map<UsrAuthentication.AuthType, String> valuesMap,
-                              @NotNull final Integer partyId) {
+                              @NotNull final Integer accessPointId) {
 
-        ParParty party = partyService.getParty(partyId);
-        if (party == null) {
-            throw new BusinessException("Osoba neexistuje", RegistryCode.PARTY_NOT_EXIST);
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+
+        if (accessPoint == null) {
+            throw new BusinessException("Přístupový bod neexistuje", RegistryCode.PARTY_NOT_EXIST);
         }
 
         UsrUser user = findByUsername(username);
@@ -938,7 +934,7 @@ public class UserService {
 
         user = new UsrUser();
         user.setActive(true);
-        user.setParty(party);
+        user.setAccessPoint(accessPoint);
         user.setUsername(username);
 
         user = userRepository.save(user);
@@ -1390,11 +1386,11 @@ public class UserService {
     /**
      * Vyhledá list uživatelů podle osoby.
      *
-     * @param party osoba
+     * @param accessPoint osoba
      * @return list uživatelů
      */
-    public List<UsrUser> findUsersByParty(final ParParty party) {
-        return userRepository.findByParty(party);
+    public List<UsrUser> findUsersByAccessPoint(final ApAccessPoint accessPoint) {
+        return userRepository.findByAccessPoint(accessPoint);
     }
 
     /**
@@ -1651,8 +1647,8 @@ public class UserService {
 			UsrUser user = userRepository.findOneWithDetail(userId);
 			Validate.notNull(user, "Failed to get user: {}", userId);
 
-			ApAccessPoint record = user.getParty().getAccessPoint();
-			preferredName = apNameRepository.findPreferredNameByAccessPoint(record).getName();
+			ApAccessPoint record = user.getAccessPoint();
+			//TODO : smazáno - přiřazení preferovaného jména
 		}
 
 		return UserInfoVO.newInstance(userDetail, preferredName);
@@ -1789,7 +1785,7 @@ public class UserService {
 
     /**
      * Create user detail for security context
-     * 
+     *
      * @param user
      * @return
      */

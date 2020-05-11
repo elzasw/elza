@@ -150,13 +150,12 @@ public class ApTypeVO
         //vo.setParents(parents);
         //vo.addParent(parentName);
         //vo.addParents(nextParents);
-        vo.setPartyTypeId(src.getPartyTypeId());
         vo.setRuleSystemId(ruleSystem == null ? null : ruleSystem.getRuleSystemId());
         // set roles
-        ApTypeRoles roles = staticData.getApTypeRolesById(src.getApTypeId());
+       /* ApTypeRoles roles = staticData.getApTypeRolesById(src.getApTypeId());
         if (roles != null) {
             vo.setRelationRoleTypIds(roles.getRoleIds());
-        }
+        }*/
         return vo;
     }
 }

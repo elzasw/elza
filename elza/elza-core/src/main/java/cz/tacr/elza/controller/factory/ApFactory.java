@@ -33,17 +33,11 @@ public class ApFactory {
 
     private final ApStateRepository stateRepository;
 
-    private final ApNameRepository nameRepository;
-
-    private final ApDescriptionRepository descRepository;
-
     private final ApExternalIdRepository eidRepository;
 
     private final ScopeRepository scopeRepository;
 
     private final StaticDataService staticDataService;
-
-    private final ApNameItemRepository nameItemRepository;
 
     private final ApPartRepository partRepository;
 
@@ -53,38 +47,28 @@ public class ApFactory {
 
     private final RuleFactory ruleFactory;
 
-    private final PartyRepository partyRepository;
-
     private final ClientFactoryVO factoryVO;
 
     @Autowired
     public ApFactory(final ApAccessPointRepository apRepository,
                      final ApStateRepository stateRepository,
-                     final ApNameRepository nameRepository,
-                     final ApDescriptionRepository descRepository,
                      final ApExternalIdRepository eidRepository,
                      final ScopeRepository scopeRepository,
                      final StaticDataService staticDataService,
-                     final ApNameItemRepository nameItemRepository,
                      final ApPartRepository partRepository,
                      final ApItemRepository itemRepository,
                      final RuleService ruleService,
                      final RuleFactory ruleFactory,
-                     final PartyRepository partyRepository,
                      final ClientFactoryVO factoryVO) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
-        this.nameRepository = nameRepository;
-        this.descRepository = descRepository;
         this.eidRepository = eidRepository;
         this.scopeRepository = scopeRepository;
         this.staticDataService = staticDataService;
-        this.nameItemRepository = nameItemRepository;
         this.partRepository = partRepository;
         this.itemRepository = itemRepository;
         this.ruleService = ruleService;
         this.ruleFactory = ruleFactory;
-        this.partyRepository = partyRepository;
         this.factoryVO = factoryVO;
     }
 
@@ -93,17 +77,13 @@ public class ApFactory {
      */
     public ApRecordSimple createVOSimple(ApState apState) {
         ApAccessPoint ap = apState.getAccessPoint();
-        ApName prefName = nameRepository.findPreferredNameByAccessPoint(ap);
-        ApDescription desc = descRepository.findByAccessPoint(ap);
         // create VO
         ApRecordSimple vo = new ApRecordSimple();
         vo.setTypeId(apState.getApTypeId());
         vo.setId(ap.getAccessPointId());
-        vo.setRecord(prefName.getFullName());
+        //TODO : chybí metoda pro získání preferovaného jména
+        vo.setRecord(null);
         vo.setScopeName(apState.getScope().getName());
-        if (desc != null) {
-            vo.setCharacteristics(desc.getDescription());
-        }
         return vo;
     }
 
@@ -190,7 +170,6 @@ public class ApFactory {
                                     final Map<Integer, List<ApItem>> items,
                                     final List<ApExternalId> eids) {
         ApAccessPoint ap = apState.getAccessPoint();
-        ApRuleSystem ruleSystem = ap.getRuleSystem();
         ApPart preferredPart = ap.getPreferredPart();
         String desc = getDescription(parts, items);
         Integer comments = stateRepository.countCommentsByAccessPoint(ap);
@@ -209,9 +188,10 @@ public class ApFactory {
         vo.setUuid(ap.getUuid());
         vo.setExternalIds(eidsVO);
         vo.setErrorDescription(ap.getErrorDescription());
-        vo.setRuleSystemId(ruleSystem == null ? null : ruleSystem.getRuleSystemId());
+
         vo.setState(ap.getState() == null ? null : ApStateVO.valueOf(ap.getState().name()));
-        vo.setName(preferredPart != null ? preferredPart.getValue() : null);
+        //TODO fantis groovy
+//        vo.setName(preferredPart != null ? preferredPart.getValue() : null);
         if (desc != null) {
             vo.setDescription(desc);
         }
@@ -220,7 +200,23 @@ public class ApFactory {
         vo.setLastChange(createVO(apState.getCreateChange()));
         vo.setComments(comments);
         vo.setOwnerUser(ownerUser);
+        vo.setName(getName(vo));
         return vo;
+    }
+
+    private String getName(ApAccessPointVO apAccessPointVO) {
+        StaticDataProvider sdp = staticDataService.getData();
+        for (ApPartVO apPartVO : apAccessPointVO.getParts()) {
+            if (apPartVO.getId().equals(apAccessPointVO.getPreferredPart())) {
+                for (ApItemVO apItemVO : apPartVO.getItems()) {
+                    RulItemType rulItemType = sdp.getItemTypeById(apItemVO.getTypeId()).getEntity();
+                    if (rulItemType.getCode().equals("NM_MAIN")) {
+                        return ((ApItemStringVO) apItemVO).getValue();
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private String getDescription(List<ApPart> parts, Map<Integer, List<ApItem>> items) {
@@ -333,11 +329,6 @@ public class ApFactory {
         return result;
     }
 
-    public ApAccessPointNameVO createVO(ApName name) {
-        StaticDataProvider staticData = staticDataService.getData();
-        return ApAccessPointNameVO.newInstance(name, staticData);
-    }
-
     public ApFragmentVO createVO(final ApPart fragment, final boolean fillForm) {
         ApFragmentVO fragmentVO = createVO(fragment);
         if (fillForm) {
@@ -345,14 +336,6 @@ public class ApFactory {
 //            fragmentVO.setForm(createFormVO(fragment));
         }
         return fragmentVO;
-    }
-
-    public ApAccessPointNameVO createVO(final ApName name, final ApType type, boolean fillForm) {
-        ApAccessPointNameVO nameVO = createVO(name);
-        if (fillForm) {
-            nameVO.setForm(createFormVO(name, type));
-        }
-        return nameVO;
     }
 
     public ApFragmentVO createVO(final ApPart fragment) {
@@ -380,13 +363,8 @@ public class ApFactory {
         return form;
     }
 
-    private ApFormVO createFormVO(ApName name, ApType type) {
-        List<ApItem> nameItems = new ArrayList<>(nameItemRepository.findValidItemsByName(name));
-        List<RulItemTypeExt> rulItemTypes = ruleService.getApItemTypesInternal(type, nameItems, ApRule.RuleType.NAME_ITEMS);
-
+    private ApFormVO createFormVO(ApType type) {
         ApFormVO form = new ApFormVO();
-        form.setItemTypes(createItemTypesVO(rulItemTypes));
-        form.setItems(createItemsVO(nameItems));
         return form;
     }
 
@@ -411,7 +389,7 @@ public class ApFactory {
 
     private void fillRefEntities(final List<ApItemVO> items) {
         Map<Integer, List<ApItemAccessPointRefVO>> accessPointsMap = new HashMap<>();
-        Map<Integer, List<ApItemPartyRefVO>> partyMap = new HashMap<>();
+        Map<Integer, List<ApItemAPFragmentRefVO>> fragmentMap = new HashMap<>();
 
         for (ApItemVO item : items) {
             if (item instanceof ApItemAccessPointRefVO) {
@@ -420,11 +398,11 @@ public class ApFactory {
                     List<ApItemAccessPointRefVO> list = accessPointsMap.computeIfAbsent(accessPointId, k -> new ArrayList<>());
                     list.add((ApItemAccessPointRefVO) item);
                 }
-            } else if (item instanceof ApItemPartyRefVO) {
-                Integer partyId = ((ApItemPartyRefVO) item).getValue();
-                if (partyId != null) {
-                    List<ApItemPartyRefVO> list = partyMap.computeIfAbsent(partyId, k -> new ArrayList<>());
-                    list.add((ApItemPartyRefVO) item);
+            } else if (item instanceof ApItemAPFragmentRefVO) {
+                Integer fragmentId = ((ApItemAPFragmentRefVO) item).getValue();
+                if (fragmentId != null) {
+                    List<ApItemAPFragmentRefVO> list = fragmentMap.computeIfAbsent(fragmentId, k -> new ArrayList<>());
+                    list.add((ApItemAPFragmentRefVO) item);
                 }
             }
         }
@@ -441,14 +419,14 @@ public class ApFactory {
             }
         }
 
-        Set<Integer> partyIds = partyMap.keySet();
-        if (!partyIds.isEmpty()) {
-            List<ParParty> parties = partyRepository.findAll(partyIds);
-            List<ParPartyVO> partyVOList = factoryVO.createPartyList(parties);
-            for (ParPartyVO partyVO : partyVOList) {
-                List<ApItemPartyRefVO> partyRefVOS = partyMap.get(partyVO.getId());
-                for (ApItemPartyRefVO partyRefVO : partyRefVOS) {
-                    partyRefVO.setParty(partyVO);
+        Set<Integer> fragmentIds = fragmentMap.keySet();
+        if (!fragmentIds.isEmpty()) {
+            List<ApPart> fragments = partRepository.findAll(fragmentIds);
+            List<ApFragmentVO> fragmentVOList = FactoryUtils.transformList(fragments, this::createVO);
+            for (ApFragmentVO fragmentVO : fragmentVOList) {
+                List<ApItemAPFragmentRefVO> fragmentRefVOS = fragmentMap.get(fragmentVO.getId());
+                for (ApItemAPFragmentRefVO fragmentRefVO : fragmentRefVOS) {
+                    fragmentRefVO.setFragment(fragmentVO);
                 }
             }
         }
@@ -481,9 +459,6 @@ public class ApFactory {
                 break;
             case COORDINATES:
                 item = new ApItemCoordinatesVO(apItem);
-                break;
-            case PARTY_REF:
-                item = new ApItemPartyRefVO(apItem);
                 break;
             case RECORD_REF:
                 item = new ApItemAccessPointRefVO(apItem);

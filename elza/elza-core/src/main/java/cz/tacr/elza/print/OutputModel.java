@@ -1,41 +1,14 @@
 package cz.tacr.elza.print;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-
-import cz.tacr.elza.domain.*;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.ElzaLocale;
-import cz.tacr.elza.core.data.PartyType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.core.fund.FundTree;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.core.fund.TreeNode;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.item.Item;
@@ -44,29 +17,25 @@ import cz.tacr.elza.print.item.ItemType;
 import cz.tacr.elza.print.item.convertors.ItemConvertor;
 import cz.tacr.elza.print.item.convertors.ItemConvertorContext;
 import cz.tacr.elza.print.item.convertors.OutputItemConvertor;
-import cz.tacr.elza.print.party.Dynasty;
-import cz.tacr.elza.print.party.Event;
 import cz.tacr.elza.print.party.Institution;
-import cz.tacr.elza.print.party.Party;
-import cz.tacr.elza.print.party.PartyGroup;
-import cz.tacr.elza.print.party.PartyInitHelper;
-import cz.tacr.elza.print.party.PartyName;
-import cz.tacr.elza.print.party.Person;
-import cz.tacr.elza.print.party.Relation;
-import cz.tacr.elza.print.party.RelationTo;
-import cz.tacr.elza.print.party.RelationToType;
-import cz.tacr.elza.print.party.RelationType;
-import cz.tacr.elza.repository.ApDescriptionRepository;
-import cz.tacr.elza.repository.ApExternalIdRepository;
-import cz.tacr.elza.repository.ApNameRepository;
-import cz.tacr.elza.repository.ApStateRepository;
-import cz.tacr.elza.repository.InstitutionRepository;
-import cz.tacr.elza.repository.StructuredItemRepository;
-import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.output.OutputParams;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
@@ -102,13 +71,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final Map<Integer, RecordType> apTypeIdMap = new HashMap<>();
 
-    private final Map<Integer, Party> partyIdMap = new HashMap<>();
-
     private final Map<Integer, Node> nodeIdMap = new HashMap<>();
-
-    private final Map<Integer, RelationType> relationTypeIdMap = new HashMap<>();
-
-    private final Map<Integer, RelationToType> relationRoleTypeIdMap = new HashMap<>();
 
     private final Map<Integer, Structured> structObjIdMap = new HashMap<>();
 
@@ -131,10 +94,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     private final InstitutionRepository institutionRepository;
 
     private final ApStateRepository apStateRepository;
-
-    private final ApDescriptionRepository apDescRepository;
-
-    private final ApNameRepository apNameRepository;
 
     private final ApExternalIdRepository apEidRepository;
 
@@ -162,8 +121,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final NodeCacheService nodeCacheService,
                        final InstitutionRepository institutionRepository,
                        final ApStateRepository apStateRepository,
-                       final ApDescriptionRepository apDescRepository,
-                       final ApNameRepository apNameRepository,
                        final ApExternalIdRepository apEidRepository,
                        final AttPageProvider attPageProvider,
                        final StructuredObjectRepository structObjRepos,
@@ -174,8 +131,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.nodeCacheService = nodeCacheService;
         this.institutionRepository = institutionRepository;
         this.apStateRepository = apStateRepository;
-        this.apDescRepository = apDescRepository;
-        this.apNameRepository = apNameRepository;
         this.apEidRepository = apEidRepository;
         this.attPageProvider = attPageProvider;
         this.structObjRepos = structObjRepos;
@@ -242,27 +197,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     @Override
-    public List<Party> getParties(Collection<String> typeCodes) {
-        Validate.notNull(typeCodes);
-
-        Set<Integer> distinctPartyIds = new HashSet<>();
-        List<Party> parties = new ArrayList<>();
-
-        for (Item item : outputItems) {
-            String tc = item.getType().getCode();
-            if (!typeCodes.contains(tc)) {
-                continue;
-            }
-            Party party = item.getValue(Party.class);
-            if (distinctPartyIds.add(party.getPartyId())) {
-                parties.add(party);
-            }
-        }
-
-        return parties;
-    }
-
-    @Override
     public Item getSingleItem(String typeCode) {
         Validate.notEmpty(typeCode);
 
@@ -317,7 +251,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         }
 
         // sort collection
-        filteredAPs.nodesAdded();
+
 
         return filteredAPs;
     }
@@ -428,11 +362,13 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     private Institution createInstitution(ArrFund arrFund) {
-        ParInstitution parInst = institutionRepository.findByFundFetchTypeAndParty(arrFund);
-        PartyGroup pg = (PartyGroup) getParty(parInst.getParty());
 
+        ParInstitution parInst = institutionRepository.findByFundFetchTypeAndAccessPoint(arrFund);
         Institution inst = new Institution(parInst.getInternalCode(), parInst.getInstitutionType());
-        inst.setPartyGroup(pg);
+
+        //TODO : gotzy - co s party group
+        /* PartyGroup pg = (PartyGroup) getParty(parInst.getParty());
+        inst.setPartyGroup(pg);*/
 
         return inst;
     }
@@ -525,7 +461,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         ApState apState = apStateRepository.findLastByAccessPoint(ap);
 
         RecordType type = getAPType(apState.getApTypeId());
-        record = new Record(ap, type, staticData, apStateRepository, apDescRepository, apNameRepository, apEidRepository);
+        record = new Record(ap, type, staticData, apStateRepository, apEidRepository);
 
         // add to lookup
         apIdMap.put(ap.getAccessPointId(), record);
@@ -567,144 +503,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         apTypeIdMap.put(apTypeId, type);
 
         return type;
-    }
-
-    // TODO: party names and relations should be fetched
-    @Override
-    public Party getParty(ParParty parParty) {
-        // id without fetch -> access type property
-        Party party = partyIdMap.get(parParty.getPartyId());
-        if (party != null) {
-            return party;
-        }
-
-        Record partyAP = getRecord(parParty.getAccessPoint());
-        PartyInitHelper initHelper = new PartyInitHelper(partyAP);
-
-        // init all party names
-        for (ParPartyName parName : parParty.getPartyNames()) {
-            // TODO: valid dates should be fetched
-            PartyName name = PartyName.newInstance(parName, staticData);
-            if (parName.getPartyNameId().equals(parParty.getPreferredNameId())) {
-                initHelper.setPreferredName(name);
-            } else {
-                initHelper.addName(name);
-            }
-        }
-
-        // init all relations
-        parParty.getRelations().forEach(r -> preparePartyRelation(r, initHelper));
-
-        // create party
-        party = convertParty(parParty, initHelper);
-
-        // add to lookup
-        partyIdMap.put(parParty.getPartyId(), party);
-
-        return party;
-    }
-
-    /**
-     * Prepares output name for party init helper.
-     */
-
-    /**
-     * Prepares output relation for party init helper.
-     */
-    // TODO: valid dates, entities and related records should be fetched
-    private void preparePartyRelation(ParRelation parRelation, PartyInitHelper initHelper) {
-        cz.tacr.elza.core.data.RelationType staticRelationType = staticData.getRelationTypeById(parRelation.getRelationTypeId());
-
-        // prepare list of relationTo
-        List<ParRelationEntity> entities = parRelation.getRelationEntities();
-        List<RelationTo> relationsTo = new ArrayList<>(entities.size());
-        for (ParRelationEntity entity : entities) {
-            // create relation to
-            RelationToType roleType = getRelationRoleType(entity.getRoleTypeId(), staticRelationType);
-            Record entityAP = getRecord(entity.getAccessPoint());
-            RelationTo relationTo = new RelationTo(entity, roleType, entityAP);
-            relationsTo.add(relationTo);
-        }
-
-        // create relation
-        RelationType type = getRelationType(staticRelationType);
-        Relation relation = Relation.newInstance(parRelation, type, relationsTo);
-
-        // resolve relation type
-        ParRelationClassType parClassType = staticRelationType.getEntity().getRelationClassType();
-        switch (parClassType.getCode()) {
-            case ParRelationClassType.CREATION_CODE:
-                initHelper.setCreation(relation);
-                break;
-            case ParRelationClassType.DESTRUCTION_CODE:
-                initHelper.setDestruction(relation);
-                break;
-            default:
-                initHelper.addRelation(relation);
-        }
-    }
-
-    /**
-     * Convert party to output specific object
-     *
-     * @param party
-     *            have to be non null
-     * @param initHelper
-     * @return
-     */
-    private static Party convertParty(ParParty party, PartyInitHelper initHelper) {
-        // input data have to be initialized
-        party = HibernateUtils.unproxyInitialized(party);
-
-        PartyType partyType = PartyType.fromId(party.getPartyTypeId());
-        switch (partyType) {
-            case DYNASTY:
-                ParDynasty parDynasty = (ParDynasty) party;
-                return new Dynasty(parDynasty, initHelper);
-            case EVENT:
-                ParEvent parEvent = (ParEvent) party;
-                return new Event(parEvent, initHelper);
-            case GROUP_PARTY:
-                ParPartyGroup parPartyGroup = (ParPartyGroup) party;
-                return new PartyGroup(parPartyGroup, initHelper);
-            case PERSON:
-                ParPerson parPerson = (ParPerson) party;
-                return new Person(parPerson, initHelper);
-            default:
-                throw new IllegalStateException("Uknown party type: " + partyType);
-        }
-    }
-
-    private RelationType getRelationType(cz.tacr.elza.core.data.RelationType staticRelationType) {
-        RelationType realtionType = relationTypeIdMap.get(staticRelationType.getId());
-        if (realtionType != null) {
-            return realtionType;
-        }
-
-        ParRelationType parRelationType = staticRelationType.getEntity();
-        realtionType = new RelationType(parRelationType);
-
-        // add to lookup
-        relationTypeIdMap.put(staticRelationType.getId(), realtionType);
-
-        return realtionType;
-    }
-
-    private RelationToType getRelationRoleType(Integer relationRoleTypeId, cz.tacr.elza.core.data.RelationType staticRelationType) {
-        Validate.notNull(relationRoleTypeId);
-
-        RelationToType roleType = relationRoleTypeIdMap.get(relationRoleTypeId);
-        if (roleType != null) {
-            return roleType;
-        }
-
-        ParRelationRoleType parRoleType = staticRelationType.getRoleTypeById(relationRoleTypeId);
-        roleType = new RelationToType(parRoleType);
-
-        // add to lookup
-        relationRoleTypeIdMap.put(relationRoleTypeId, roleType);
-
-        return roleType;
     }
 
     @Override

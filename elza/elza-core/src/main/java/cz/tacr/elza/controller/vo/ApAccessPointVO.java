@@ -62,12 +62,6 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     private Collection<ApExternalIdVO> externalIds;
 
     /**
-     * Kód pravidla pro AP.
-     */
-    @Nullable
-    private Integer ruleSystemId;
-
-    /**
      * Stav přístupového bodu.
      */
     @Nullable
@@ -200,15 +194,6 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 
     public void setErrorDescription(@Nullable final String errorDescription) {
         this.errorDescription = errorDescription;
-    }
-
-    @Nullable
-    public Integer getRuleSystemId() {
-        return ruleSystemId;
-    }
-
-    public void setRuleSystemId(@Nullable final Integer ruleSystemId) {
-        this.ruleSystemId = ruleSystemId;
     }
 
     public Integer getPreferredPart() {

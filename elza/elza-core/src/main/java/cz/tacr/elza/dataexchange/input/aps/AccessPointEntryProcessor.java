@@ -4,6 +4,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.dataexchange.common.items.ImportableItemData;
+import cz.tacr.elza.dataexchange.input.parts.context.ItemWrapper;
+import cz.tacr.elza.dataexchange.input.parts.context.PartInfo;
+import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
+import cz.tacr.elza.dataexchange.input.parts.context.PartsContext;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.schema.v2.*;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -12,19 +24,11 @@ import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointsContext;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApExternalId;
-import cz.tacr.elza.domain.ApExternalIdType;
-import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ApStateEnum;
-import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.schema.v2.AccessPointEntry;
-import cz.tacr.elza.schema.v2.ExternalId;
 
 /**
  * Processing access point entries for access points or parties. Implementation
  * is not thread-safe.
- *
+ * <p>
  * When AP storage updates persist type: <br>
  * 1) CREATE -> all sub entities (also party) will be created <br>
  * 2) UPDATE -> <br>
@@ -45,31 +49,55 @@ public class AccessPointEntryProcessor implements ItemProcessor {
 
     protected final AccessPointsContext context;
 
+    protected final PartsContext partsContext;
+
+    protected final ImportContext importContext;
+
     protected final StaticDataProvider staticData;
 
     protected final boolean partyRelated;
 
     protected String entryId;
 
-    protected AccessPointInfo info;
+    protected AccessPointInfo apInfo;
 
     public AccessPointEntryProcessor(ImportContext context, boolean partyRelated) {
         this.context = context.getAccessPoints();
         this.staticData = context.getStaticData();
         this.partyRelated = partyRelated;
+        this.importContext = context;
+        this.partsContext = context.getParts();
     }
 
     @Override
     public void process(Object item) {
-        processEntry((AccessPointEntry) item);
+        processEntry((Party) item);
     }
 
-    protected void processEntry(AccessPointEntry entry) {
+    protected void proccessAp(AccessPoint ap) {
+        AccessPointEntry entry = ap.getApe();
+        entryId = entry.getId();
+        ApEntity entity = createEntity(entry);
+        List<ApExternalId> eids = createExternalIds(entry.getEid());
+        if (ap.getFrgs() != null) {
+            List<PartWrapper> parts = createParts(ap.getFrgs());
+            apInfo = context.addAccessPoint(entity.accessPoint, entry.getId(), entity.state, eids, parts);
+        } else {
+            List<PartWrapper> parts = new ArrayList<>();
+            parts.addAll(processDesc(ap.getChr()));
+            parts.addAll(processNames(ap.getNms(), entity.accessPoint));
+            apInfo = context.addAccessPoint(entity.accessPoint, entry.getId(), entity.state, eids, parts);
+        }
+    }
+
+    protected void processEntry(Party party) {
+        AccessPointEntry entry = party.getApe();
         entryId = entry.getId();
         // create AP and prepare AP info
         ApEntity entity = createEntity(entry);
         List<ApExternalId> eids = createExternalIds(entry.getEid());
-        info = context.addAccessPoint(entity.accessPoint, entry.getId(), entity.state, eids);
+        apInfo = context.addAccessPoint(entity.accessPoint, party.getId(), entity.state, eids);
+
     }
 
     private List<ApExternalId> createExternalIds(Collection<ExternalId> eids) {
@@ -98,6 +126,200 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         return entities;
     }
 
+    private List<PartWrapper> createParts(Fragments fragments) {
+        if (fragments.getFrg().isEmpty()) {
+            return null;
+        }
+
+        List<PartWrapper> wrapperParts = new ArrayList<>(fragments.getFrg().size());
+        for (Fragment fragment : fragments.getFrg()) {
+            if (StringUtils.isEmpty(fragment.getT())) {
+                throw new DEImportException("Fragment id type is not set, fragmentId=" + fragment.getFid());
+            }
+            RulPartType partType = context.getRulPartType(fragment.getT());
+            if (partType == null) {
+                throw new DEImportException("Part type not found, fragmentId=" + fragment.getFid() + ", " + fragment.getT());
+            }
+            //create Ap Part
+            ApPart partEntity = createPart(partType, apInfo);
+            List<ItemWrapper> itemWrapperList = processItems(partEntity, fragment.getDdOrDoOrDp(), fragment.getFid());
+            PartInfo partInfo = new PartInfo(fragment.getFid(), apInfo, partType, partsContext);
+            PartWrapper partWrapper = new PartWrapper(partEntity, partInfo, itemWrapperList);
+
+            //parent part
+            if(fragment.getPid() != null) {
+                context.addToParentPartIdMap(partWrapper, fragment.getPid());
+            }
+
+            wrapperParts.add(partWrapper);
+
+        }
+        return wrapperParts;
+    }
+
+    private List<ItemWrapper> processItems(ApPart partEntity, List<DescriptionItem> itemList, String fragmentId) {
+        List<ItemWrapper> itemWrapperList = new ArrayList<>();
+        for (DescriptionItem di : itemList) {
+            ItemType itemType = staticData.getItemTypeByCode(di.getT());
+            if (itemType == null) {
+                throw new DEImportException("Description item type not found, code:" + di.getT());
+            }
+            DataType dataType = itemType.getDataType();
+
+            if (itemType.getDataType() == DataType.STRING && itemType.getEntity().getStringLengthLimit() != null) {
+                if (((DescriptionItemString) di).getV().length() > itemType.getEntity().getStringLengthLimit()) {
+                    throw new BusinessException("Délka řetězce : " + ((DescriptionItemString) di).getV()
+                            + " je delší než maximální povolená : " + itemType.getEntity().getStringLengthLimit(), BaseCode.INVALID_LENGTH);
+                }
+            }
+
+            ImportableItemData itemData = di.createData(importContext, dataType);
+            ArrData data = itemData.getData();
+            ApItem apItem = createApItem(partEntity, data, itemType, itemWrapperList);
+
+            if (di.getS() != null && !di.getS().isEmpty()) {
+                apItem.setItemSpec(resolveItemSpec(itemType, di.getS()));
+            }
+
+            ItemWrapper itemWrapper = partsContext.addItem(apItem, partsContext.getPartInfo(fragmentId));
+            itemWrapperList.add(itemWrapper);
+        }
+
+        return itemWrapperList;
+    }
+
+    private List<PartWrapper> processDesc(String value) {
+        List<PartWrapper> wrapperParts = new ArrayList<>();
+        if (StringUtils.isEmpty(value)) {
+            return wrapperParts;
+        }
+
+        RulPartType partType = staticData.getPartTypeByCode("PT_BODY");
+        AccessPointInfo apInfo = context.getApInfo(entryId);
+        ApPart partEntity = createPart(partType, apInfo);
+
+        ItemType itemType = staticData.getItemTypeByCode("BRIEF_DESC");
+
+        List<ItemWrapper> itemWrapperList = new ArrayList<>();
+
+        ApItem entity = new ApItem();
+        entity.setPart(partEntity);
+        entity.setItemType(itemType.getEntity());
+        entity.setCreateChange(context.getCreateChange());
+        entity.setObjectId(context.nextItemObjectId());
+        entity.setPosition(1);
+        entity.setData(createItemData(itemType, value));
+        ItemWrapper itemWrapper = partsContext.addItem(entity, partsContext.getPartInfo(entryId));
+        itemWrapperList.add(itemWrapper);
+
+        PartInfo partInfo = new PartInfo(entryId, apInfo, partType, partsContext);
+        PartWrapper partWrapper = new PartWrapper(partEntity, partInfo, itemWrapperList);
+
+        wrapperParts.add(partWrapper);
+
+       /* PartInfo info = new PartInfo(entryId, apInfo,partType, partsContext);
+        context.addPart(new PartWrapper(partEntity, info, itemWrapperList), apInfo);
+        partsContext.addPart(partEntity, entryId, apInfo, partType, itemWrapperList);*/
+        return wrapperParts;
+    }
+
+    private List<PartWrapper> processNames(AccessPointNames names, ApAccessPoint accessPoint ) {
+        List<PartWrapper> wrapperParts = new ArrayList<>();
+        for(int i = 0; i < names.getNm().size(); i++) {
+            AccessPointName name = names.getNm().get(i);
+            RulPartType partType = context.getRulPartType("PT_NAME");
+            ApPart partEntity = createPart(partType, apInfo);
+            List<ItemWrapper> itemWrapperList = new ArrayList<>();
+
+            if(name.getN() != null && !name.getN().isEmpty()) {
+                ItemType itemType = staticData.getItemTypeByCode("NM_MAIN");
+                ApItem entity = createApItem(partEntity, createItemData(itemType, name.getN()), itemType, itemWrapperList);
+                ItemWrapper itemWrapper = partsContext.addItem(entity, partsContext.getPartInfo(entryId));
+                itemWrapperList.add(itemWrapper);
+            }
+
+            if(name.getCpl() != null && !name.getCpl().isEmpty()) {
+                ItemType itemType = staticData.getItemTypeByCode("NM_SUP_GEN");
+                ApItem entity = createApItem(partEntity, createItemData(itemType, name.getCpl()), itemType, itemWrapperList);
+                ItemWrapper itemWrapper = partsContext.addItem(entity, partsContext.getPartInfo(entryId));
+                itemWrapperList.add(itemWrapper);
+
+            }
+            PartInfo partInfo = new PartInfo(entryId, apInfo, partType, partsContext);
+            PartWrapper partWrapper = new PartWrapper(partEntity, partInfo, itemWrapperList);
+            wrapperParts.add(partWrapper);
+
+            if(i == 0) {
+
+            }
+        }
+        return wrapperParts;
+    }
+
+    protected ApPart createPart(RulPartType type, AccessPointInfo apInfo) {
+        ApPart entity;
+        try {
+            entity = new ApPart();
+        } catch (Exception e) {
+            throw new SystemException("Failed to intialized no arg constructor, entity: " + ApPart.class, e);
+        }
+        entity.setPartType(type);
+        entity.setCreateChange(context.getCreateChange());
+        entity.setState(ApStateEnum.OK);
+        return entity;
+    }
+
+    private ApItem createApItem(ApPart partEntity, ArrData data, ItemType itemType, List<ItemWrapper> itemList) {
+        ApItem apItem = new ApItem();
+        apItem.setPart(partEntity);
+        apItem.setData(data);
+        apItem.setItemType(itemType.getEntity());
+        apItem.setCreateChange(context.getCreateChange());
+        apItem.setObjectId(context.nextItemObjectId());
+        apItem.setPosition(nextPosition(itemList));
+        return apItem;
+    }
+
+    private int nextPosition(List<ItemWrapper> itemWrapperList) {
+        if (itemWrapperList.size() == 0) {
+            return 1;
+        }
+        int position = 2;
+        for (ItemWrapper existsItem : itemWrapperList) {
+            ApItem apItem = (ApItem) existsItem.getEntity();
+            if (apItem.getDeleteChange() == null) {
+                if (apItem.getPosition() >= position) {
+                    position = apItem.getPosition() + 1;
+                }
+            }
+        }
+        return position;
+    }
+
+    public static RulItemSpec resolveItemSpec(ItemType rsit, String specCode) {
+        boolean specCodeExists = StringUtils.isNotEmpty(specCode);
+        String typeCode = rsit.getCode();
+
+        if (rsit.hasSpecifications()) {
+            if (specCodeExists) {
+                RulItemSpec itemSpec = rsit.getItemSpecByCode(specCode);
+                if (itemSpec == null) {
+                    throw new DEImportException(
+                            "Description item specification not found, typeCode:" + typeCode + ", specCode:"
+                                    + specCode);
+                }
+                return itemSpec;
+            } else {
+                throw new DEImportException(
+                        "Description item specification missing, typeCode:" + typeCode + ", specCode:" + specCode);
+            }
+        } else if (specCodeExists) {
+            throw new DEImportException(
+                    "Specification for description item not expected, typeCode:" + typeCode + ", specCode:" + specCode);
+        }
+        return null;
+    }
+
     private class ApEntity {
 
         ApAccessPoint accessPoint;
@@ -124,11 +346,6 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         if (apType.isReadOnly()) {
             throw new DEImportException("AP type is read only, apeId:" + entry.getId());
         }
-        if (partyRelated ? apType.getPartyType() == null : apType.getPartyType() != null) {
-            throw new DEImportException("AP type with defined party type "
-                            + (partyRelated ? "must be used" : "can be used only")
-                            + " for party related AP entry, apeId:" + entry.getId());
-        }
 
         // create AP
         ApAccessPoint accessPoint = new ApAccessPoint();
@@ -144,4 +361,73 @@ public class AccessPointEntryProcessor implements ItemProcessor {
 
         return new ApEntity(accessPoint, apState);
     }
+
+    protected ArrData createItemData(ItemType itemType, String value) {
+        ArrData data = null;
+        switch (itemType.getDataType().getCode()) {
+            case "FORMATTED_TEXT":
+            case "TEXT":
+                ArrDataText dataText = new ArrDataText();
+                dataText.setValue(value);
+                data = dataText;
+                break;
+            case "STRING":
+                ArrDataString itemString = new ArrDataString();
+                itemString.setValue(value);
+                data = itemString;
+                break;
+            case "INT":
+                ArrDataInteger itemInteger = new ArrDataInteger();
+                itemInteger.setValue(Integer.valueOf(value));
+                data = itemInteger;
+                break;
+            case "DATE":
+                ArrDataDate itemDate = new ArrDataDate();
+                //TODO: gotzy doresit
+                //itemDate.setValue();
+                break;
+            case "UNITID":
+                ArrDataUnitid itemUnitid = new ArrDataUnitid();
+                itemUnitid.setUnitId(value);
+                data = itemUnitid;
+                break;
+            case "UNITDATE":
+                // TODO : gotzy doresit
+                /*ArrDataUnitdate itemUnitdate = createArrDataUnitdate(text);
+                data = itemUnitdate;*/
+                break;
+            case "COORDINATES":
+                break;
+            case "RECORD_REF":
+                // TODO : gotzy doresit
+                /*ArrDataRecordRef itemRecordRef = new ArrDataRecordRef();
+                ApAccessPoint record = apAccessPointRepository.getOneCheckExist(Integer.valueOf(text));
+                itemRecordRef.setRecord(record);
+                data = itemRecordRef;*/
+                break;
+            case "BIT":
+                ArrDataBit itemBit = new ArrDataBit();
+                itemBit.setValue(Boolean.valueOf(value));
+                data = itemBit;
+                break;
+            case "URI-REF":
+                ArrDataUriRef itemUriRef = new ArrDataUriRef();
+                itemUriRef.setValue(value);
+                data = itemUriRef;
+                break;
+            case "DECIMAL":
+                break;
+            case "STRUCTURED":
+                break;
+            case "ENUM":
+                ArrDataNull itemNull = new ArrDataNull();
+                data = itemNull;
+                break;
+            default:
+                throw new SystemException("Neplatný typ atributu " + itemType.getDataType().getCode(), BaseCode.INVALID_STATE);
+        }
+        data.setDataType(itemType.getDataType().getEntity());
+        return data;
+    }
+
 }

@@ -18,7 +18,6 @@ public enum DataType {
     UNITID(ArrDataUnitid.class, 250),
     FORMATTED_TEXT(ArrDataText.class, Integer.MAX_VALUE),
     COORDINATES(ArrDataCoordinates.class),
-    PARTY_REF(ArrDataPartyRef.class),
     RECORD_REF(ArrDataRecordRef.class),
     DECIMAL(ArrDataDecimal.class, 38),
     STRUCTURED(ArrDataStructureRef.class),

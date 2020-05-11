@@ -1,9 +1,10 @@
 package cz.tacr.elza.dataexchange.input.institutions.context;
 
+import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
+import cz.tacr.elza.dataexchange.input.parts.context.PartInfo;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
-import cz.tacr.elza.dataexchange.input.parties.context.PartyInfo;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
 import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ParInstitution;
@@ -12,13 +13,13 @@ public class InstitutionWrapper implements EntityWrapper {
 
     private final ParInstitution entity;
 
-    private final PartyInfo partyInfo;
+    private final AccessPointInfo apInfo;
 
     private SaveMethod saveMethod = SaveMethod.CREATE;
 
-    public InstitutionWrapper(ParInstitution entity, PartyInfo partyInfo) {
+    public InstitutionWrapper(ParInstitution entity, AccessPointInfo apInfo) {
         this.entity = Validate.notNull(entity);
-        this.partyInfo = Validate.notNull(partyInfo);
+        this.apInfo = Validate.notNull(apInfo);
     }
 
     @Override
@@ -35,11 +36,13 @@ public class InstitutionWrapper implements EntityWrapper {
         this.saveMethod = saveMethod;
     }
 
+    /**     *
+     * @param session
+     */
     @Override
     public void beforeEntitySave(Session session) {
-        // prepare party reference
-        Validate.isTrue(entity.getParty() == null);
-        entity.setParty(partyInfo.getEntityRef(session));
+        Validate.isTrue(entity.getAccessPointId() == null);
+        entity.setAccessPoint(apInfo.getEntityRef(session));
     }
 
     @Override

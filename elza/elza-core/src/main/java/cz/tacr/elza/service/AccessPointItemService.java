@@ -9,7 +9,6 @@ import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApItemRepository;
-import cz.tacr.elza.repository.ApNameItemRepository;
 import cz.tacr.elza.repository.DataRepository;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
@@ -29,20 +28,17 @@ public class AccessPointItemService {
     private final StaticDataService staticDataService;
     private final ApItemRepository itemRepository;
     private final DataRepository dataRepository;
-    private final ApNameItemRepository nameItemRepository;
     private final SequenceService sequenceService;
 
     public AccessPointItemService(final EntityManager em,
                                   final StaticDataService staticDataService,
                                   final ApItemRepository itemRepository,
                                   final DataRepository dataRepository,
-                                  final ApNameItemRepository nameItemRepository,
                                   final SequenceService sequenceService) {
         this.em = em;
         this.staticDataService = staticDataService;
         this.itemRepository = itemRepository;
         this.dataRepository = dataRepository;
-        this.nameItemRepository = nameItemRepository;
         this.sequenceService = sequenceService;
     }
 
@@ -50,7 +46,7 @@ public class AccessPointItemService {
      * Odstranění prvků popisů u dočasných jmen a AP.
      */
     public void removeTempItems() {
-        nameItemRepository.removeTempItems();
+
         //TODO fantis
 //        itemRepository.removeTempItems();
     }
@@ -59,7 +55,7 @@ public class AccessPointItemService {
      * Odstranění prvůk popisů u dočasných jmen a AP.
      */
     public void removeTempItems(final ApAccessPoint ap) {
-        nameItemRepository.removeTempItems(ap);
+
         //TODO fantis
 //        itemRepository.removeTempItems(ap);
     }
@@ -67,43 +63,6 @@ public class AccessPointItemService {
     @FunctionalInterface
     public interface CreateFunction {
         ApItem apply(final RulItemType itemType, final RulItemSpec itemSpec, final ApChange change, final int objectId, final int position);
-    }
-
-    /**
-     * Zkopírování itemů mezi jmény AP.
-     *
-     * @param nameSource zdrojové jméno
-     * @param nameTarget cílové jméno
-     * @param change     změna pod kterou se provede kopírování
-     * @return nové itemy
-     */
-    public List<ApItem> copyItems(final ApName nameSource, final ApName nameTarget, final ApChange change) {
-        Validate.notNull(nameSource, "Zdrojové jméno musí být vyplněno");
-        Validate.notNull(nameTarget, "Cílové jméno musí být vyplněno");
-        Validate.notNull(change, "Změna musí být vyplněna");
-
-        List<ApNameItem> items = nameItemRepository.findValidItemsByName(nameSource);
-
-        List<ApNameItem> newItems = new ArrayList<>(items.size());
-        for (ApNameItem item : items) {
-            ApNameItem newItem;
-            if (item.getCreateChange().getChangeId().equals(change.getChangeId())) {
-                // optimalizace: není třeba odverzovat item, který v této změně již byl odverzován,
-                //               pouze změníme odkazující name
-                newItem = item;
-                newItem.setName(nameTarget);
-            } else {
-                newItem = new ApNameItem(item);
-                newItem.setCreateChange(change);
-                newItem.setName(nameTarget);
-                item.setDeleteChange(change);
-            }
-            newItems.add(newItem);
-        }
-
-        items.addAll(newItems);
-        nameItemRepository.save(items);
-        return new ArrayList<>(newItems);
     }
 
     /**
@@ -262,7 +221,7 @@ public class AccessPointItemService {
     /**
      * @return identifikátor pro nový item AP
      */
-    private int nextItemObjectId() {
+    public int nextItemObjectId() {
         return sequenceService.getNext(OBJECT_ID_SEQUENCE_NAME);
     }
 
