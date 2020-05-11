@@ -1020,7 +1020,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                   final ArrFundVersionVO fundVersion,
                                                                   final ArrNodeVO node,
                                                                   final RulDescItemTypeVO descItemType) {
-        try{
+        try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -1633,7 +1633,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return Objekt s listem (prvních 20) chyb
      */
     public List<ArrangementController.VersionValidationItem> validateVersion(final Integer versionId) {
-       return Arrays.asList(get(spec -> spec
+        return Arrays.asList(get(spec -> spec
                         .pathParameter("versionId", versionId)
                         .pathParameter("showAll", true),
                 VALIDATE_VERSION).getBody().as(ArrangementController.VersionValidationItem[].class));
@@ -2672,16 +2672,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vytvoření propojení na DAO
      *
-     * @param fundVersionId
-     *            identfikátor verze AS
-     * @param daoId
-     *            identfikátor dao
-     * @param nodeId
-     *            uzel k nemuz je DAO pripojeno
+     * @param fundVersionId identfikátor verze AS
+     * @param daoId         identfikátor dao
+     * @param nodeId        uzel k nemuz je DAO pripojeno
      */
     protected ArrDaoLinkVO createDaoLink(final Integer fundVersionId,
-                                 final Integer daoId,
-                                 final Integer nodeId) {
+                                         final Integer daoId,
+                                         final Integer nodeId) {
         Response resp = put(spec -> spec
                 .pathParam("fundVersionId", fundVersionId)
                 .pathParam("daoId", daoId)
@@ -2692,10 +2689,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vymazani propojení na DAO
      *
-     * @param fundVersionId
-     *            identfikátor verze AS
-     * @param daoLinkId
-     *            identfikátor propojeni Dao
+     * @param fundVersionId identfikátor verze AS
+     * @param daoLinkId     identfikátor propojeni Dao
      */
     protected void deleteDaoLink(final Integer fundVersionId,
                                  final Integer daoLinkId) {
@@ -2709,7 +2704,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected List<ArrDaoVO> findDaos(final Integer fundVersionId) {
         Response resp = get(spec -> spec.pathParameter("fundVersionId", fundVersionId),
-                            FIND_DAOS);
+                FIND_DAOS);
         return Arrays.asList(resp.as(ArrDaoVO[].class));
     }
 

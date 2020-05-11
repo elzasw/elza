@@ -32,7 +32,8 @@ public interface InstitutionRepository extends JpaRepository<ParInstitution, Int
     List<ParInstitutionInfo> findInfoByAccessPointIdIn(Collection<Integer> accessPointIds);
 
     @Query("SELECT i FROM par_institution i " +
-            "JOIN FETCH i.accessPoint ap")
+            "JOIN FETCH i.accessPoint ap " +
+            "LEFT JOIN FETCH ap.preferredPart prefPart ")
     List<ParInstitution> findAllWithFetch();
 
     @Modifying
@@ -40,4 +41,9 @@ public interface InstitutionRepository extends JpaRepository<ParInstitution, Int
 
     @Query("SELECT i FROM arr_fund f JOIN f.institution i JOIN FETCH i.institutionType t JOIN FETCH i.accessPoint ap WHERE f=?1")
     ParInstitution findByFundFetchTypeAndAccessPoint(ArrFund arrFund);
+
+    @Query("SELECT i FROM par_institution i JOIN FETCH i.accessPoint ap WHERE ap.uuid=?1")
+    ParInstitution findByAccessPointUUID(String uuid);
+
+
 }

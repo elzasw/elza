@@ -140,7 +140,7 @@ public abstract class AbstractServiceTest extends AbstractTest {
         ArrFund fund = arrangementService.createFundWithScenario(fundName, fi.getFirstRuleset(),
                                                                  fundCode,
                                                                  firstInstitution,
-                                                                 "date-range");
+                                                                 "date-range", null, null, null);
         Validate.notNull(fund);
         fi.setFund(fund);
 

@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
@@ -187,6 +188,9 @@ public class ArrangementController {
 
     @Autowired
     private FundLevelService fundLevelService;
+
+    @Autowired
+    private FundController fundController;
 
     /**
      *  Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
@@ -1076,10 +1080,10 @@ public class ArrangementController {
 
 		if (userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL)) {
 			// read all funds
-			funds = fundRepository.findFunds(fulltext, from, max);
+			funds = fundRepository.findFunds(fulltext, null, from, max);
 		} else {
 			Integer userId = userDetail.getId();
-			funds = fundRepository.findFundsWithPermissions(fulltext, from, max, userId);
+			funds = fundRepository.findFundsWithPermissions(fulltext, null, from, max, userId);
 		}
 
 		/*
@@ -1333,7 +1337,7 @@ public class ArrangementController {
         return factoryVo.createCalendarTypes(calendarTypes);
     }
 
-
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/funds", method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_VALUE)
@@ -1344,6 +1348,8 @@ public class ArrangementController {
         Assert.notNull(createFund.getInstitutionId(), "Identifikátor instituce musí být vyplněn");
         Assert.notNull(createFund.getRuleSetId(), "Identifikátor pravidel musí být vyplněn");
 
+
+
         RulRuleSet ruleSet = ruleSetRepository.findOne(createFund.getRuleSetId());
         Assert.notNull(ruleSet, "Nebyla nalezena pravidla tvorby s id " + createFund.getRuleSetId());
 
@@ -1351,7 +1357,7 @@ public class ArrangementController {
         Assert.notNull(institution, "Nebyla nalezena instituce s id " + createFund.getInstitutionId());
 
         ArrFund newFund = arrangementService
-                .createFundWithScenario(createFund.getName(), ruleSet, createFund.getInternalCode(), institution, createFund.getDateRange());
+                .createFundWithScenario(createFund.getName(), ruleSet, createFund.getInternalCode(), institution, createFund.getDateRange(), null, null, null);
 
         // Kontrola na vyplněnost uživatele nebo skupiny jako správce, pokud není admin
         UserDetail userDetail = userService.getLoggedUserDetail();
@@ -1408,6 +1414,7 @@ public class ArrangementController {
      * @param arrFundVO Archivní pomůcka k úpravě
      * @return
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/updateFund", method = RequestMethod.POST)
     public ArrFundVO updateFund(@RequestParam("ruleSetId") final Integer ruleSetId,

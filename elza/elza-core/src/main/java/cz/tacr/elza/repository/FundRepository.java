@@ -4,6 +4,8 @@ import cz.tacr.elza.domain.ArrFund;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * Respozitory pro Archivní pomůcku.
  * @author by Ondřej Buriánek, burianek@marbes.cz.
@@ -17,6 +19,9 @@ public interface FundRepository extends ElzaJpaRepository<ArrFund, Integer> , Fu
 
     @Query("SELECT fa FROM arr_fund fa JOIN fa.outputs o WHERE o.outputId=?1")
     ArrFund findByOutputId(Integer outputId);
+
+    @Query("SELECT fa FROM arr_fund fa JOIN fa.institution inst WHERE inst.institutionId = ?1")
+    List<ArrFund> findByInstitutionId(Integer institutionId);
 
     ArrFund findByInternalCode(String fundIdentifier);
 }

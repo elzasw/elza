@@ -211,7 +211,6 @@ public class StaticDataProvider {
         initApTypes(service.apTypeRepository);
         initApEidTypes(service.apEidTypeRepository);
         initSysLanguages(service.sysLanguageRepository);
-        initApTypeRoles(service.registryRoleRepository);
         initPartTypes(service.partTypeRepository);
     }
 
