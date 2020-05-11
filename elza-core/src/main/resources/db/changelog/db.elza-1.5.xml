@@ -180,7 +180,7 @@
     <changeSet id="20200420204000" author="fantis">
         <addColumn tableName="ap_item">
             <column name="part_id" type="int">
-                <constraints nullable="false"
+                <constraints nullable="true"
                              foreignKeyName="fk_ap_item_part"
                              referencedTableName="ap_part"
                              referencedColumnNames="part_id"/>
@@ -204,11 +204,6 @@
         <dropColumn tableName="rul_item_type" columnName="fragment_type_id"/>
     </changeSet>
 
-    <changeSet id="20200421140500" author="fantis">
-        <dropTable tableName="ap_fragment_item"/>
-        <dropTable tableName="ap_access_point_item"/>
-    </changeSet>
-
     <changeSet id="20200421155900" author="gotzy">
         <preConditions onFail="MARK_RAN">
             <not>
@@ -219,6 +214,15 @@
             </not>
         </preConditions>
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20200331164200" />
+    </changeSet>
+
+    <changeSet id="20200421140500" author="fantis">
+        <dropTable tableName="ap_fragment_item"/>
+        <dropTable tableName="ap_access_point_item"/>
+    </changeSet>
+
+    <changeSet id="20200511102100" author="fantis">
+        <addNotNullConstraint tableName="ap_item" columnName="part_id" columnDataType="int"/>
     </changeSet>
 
 </databaseChangeLog>
