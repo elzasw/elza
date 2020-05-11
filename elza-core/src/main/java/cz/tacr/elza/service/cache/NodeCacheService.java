@@ -82,9 +82,6 @@ public class NodeCacheService {
     @Autowired
     private StructuredObjectRepository structureDataRepository;
 
-    @Autowired
-    private PartyRepository partyRepository;
-
     /*
     @Autowired
     private PartyNameComplementRepository partyNameComplementRepository;
@@ -466,8 +463,6 @@ public class NodeCacheService {
 
 		StaticDataProvider sdp = staticDataService.getData();
         RestoreAction ra = new RestoreAction(sdp, entityManager, structureDataRepository,
-                partyRepository, /*partyNameComplementRepository,
-                                 partyNameRepository,*/
                 accessPointRepository,
                 fundFileRepository,
                 daoRepository,

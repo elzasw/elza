@@ -117,6 +117,12 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     }
     */
 
+    public List<ArrFundToNodeList> findFundIdsByFulltext(final String text, final Collection<ArrFund> fundList, Integer max, Integer from) {
+        if(from == null) from = 0;
+        if(max == null) max = Integer.MAX_VALUE;
+        return findFundIdsByFulltext(text, fundList).subList(from, Math.min(from + max, fundList.size()));
+    }
+
     /**
      * Vrátí id nodů, přes všechny AS.
      *

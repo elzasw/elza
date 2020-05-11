@@ -16,9 +16,9 @@ public class ExportContext {
 
     private final Set<Integer> apIds = new HashSet<>();
 
-    private final Set<Integer> partyAPIds = new HashSet<>();
+    private final Set<Integer> partAPIds = new HashSet<>();
 
-    private final Set<Integer> partyIds = new HashSet<>();
+    private final Set<Integer> partIds = new HashSet<>();
 
     private Collection<FundSections> fundsSections = new ArrayList<>();
 
@@ -56,21 +56,21 @@ public class ExportContext {
     }
 
     public Set<Integer> getPartyApIds() {
-        return Collections.unmodifiableSet(partyAPIds);
+        return Collections.unmodifiableSet(partAPIds);
     }
 
     public void addPartyApId(Integer partyApId) {
         Validate.notNull(partyApId);
-        partyAPIds.add(partyApId);
+        partAPIds.add(partyApId);
     }
 
     public Set<Integer> getPartyIds() {
-        return Collections.unmodifiableSet(partyIds);
+        return Collections.unmodifiableSet(partIds);
     }
 
     public void addPartyId(Integer partyId) {
         Validate.notNull(partyId);
-        partyIds.add(partyId);
+        partIds.add(partyId);
     }
 
     public Collection<FundSections> getFundsSections() {

@@ -12,7 +12,7 @@ public class ParInstitutionVO {
 
     private ParInstitutionTypeVO institutionType;
 
-    private Integer partyId;
+    private Integer accessPointId;
 
     private String name;
 
@@ -34,14 +34,6 @@ public class ParInstitutionVO {
         this.institutionType = institutionType;
     }
 
-    public Integer getPartyId() {
-        return partyId;
-    }
-
-    public void setPartyId(final Integer partyId) {
-        this.partyId = partyId;
-    }
-
     public String getName() {
         return name;
     }
@@ -56,5 +48,13 @@ public class ParInstitutionVO {
 
     public void setCode(final String code) {
         this.code = code;
+    }
+
+    public Integer getAccessPointId() {
+        return accessPointId;
+    }
+
+    public void setAccessPointId(Integer accessPointId) {
+        this.accessPointId = accessPointId;
     }
 }

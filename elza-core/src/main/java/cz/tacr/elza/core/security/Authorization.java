@@ -28,7 +28,6 @@ import cz.tacr.elza.core.security.Authorization.MethodParamBasedAccess.Permissio
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
@@ -40,7 +39,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.security.UserDetail;
@@ -125,9 +123,6 @@ public class Authorization {
 
     @Autowired
 	private ApStateRepository stateRepository;
-
-    @Autowired
-    private PartyRepository partyRepository;
 
     @Autowired
     private WfIssueListRepository issueListRepository;
@@ -260,7 +255,6 @@ public class Authorization {
 	/**
 	 * Check if logged user can manage entity in parameter
 	 *
-	 * @param permission
 	 * @param methodInfo
 	 * @param userDetail
 	 * @return
@@ -367,12 +361,6 @@ public class Authorization {
 		case SCOPE:
 			if (value instanceof Integer) {
 				return (Integer) value;
-			}
-			break;
-		case PARTY:
-			if (value instanceof Integer) {
-				ParParty party = partyRepository.getOneCheckExist((Integer) value);
-				return getScopeIdAccessPointId(party.getAccessPointId());
 			}
 			break;
 		case AP:

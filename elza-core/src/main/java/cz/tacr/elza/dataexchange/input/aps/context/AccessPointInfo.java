@@ -58,10 +58,14 @@ public class AccessPointInfo implements EntityIdHolder<ApAccessPoint> {
     }
 
     public SaveMethod getSaveMethod() {
-        return saveMethod;
+        if(entityId == null) {
+            return SaveMethod.CREATE;
+        } else {
+            return saveMethod;
+        }
     }
 
-    void setSaveMethod(SaveMethod saveMethod) {
+    public void setSaveMethod(SaveMethod saveMethod) {
         this.saveMethod = saveMethod;
     }
 

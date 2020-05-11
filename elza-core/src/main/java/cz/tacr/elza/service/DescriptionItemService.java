@@ -586,7 +586,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param change
      *            změna operace
      * @param changeContext
-     *
      * @return vytvořená hodnota atributu
      */
     private ArrDescItem createDescriptionItemWithData(final ArrDescItem descItem,
@@ -1355,8 +1354,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 return ArrDataUnitid.class;
             case "COORDINATES":
                 return ArrDataCoordinates.class;
-            case "PARTY_REF":
-                return ArrDataPartyRef.class;
             case "RECORD_REF":
                 return ArrDataRecordRef.class;
             case "DECIMAL":

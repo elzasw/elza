@@ -1,27 +1,20 @@
 package cz.tacr.elza.dataexchange.output.parties;
 
-import java.util.Collection;
-
 import cz.tacr.elza.dataexchange.output.writer.BaseApInfo;
 import cz.tacr.elza.dataexchange.output.writer.ExternalIdApInfo;
 import cz.tacr.elza.domain.ApExternalId;
 import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ParParty;
+
+import java.util.Collection;
 
 public class PartyInfo implements BaseApInfo, ExternalIdApInfo {
 
     // --- fields ---
 
-    private final ParParty party;
-
     private ApState apState;
     private Collection<ApExternalId> externalIds;
 
     // --- getters/setters ---
-
-    public ParParty getParty() {
-        return party;
-    }
 
     @Override
     public ApState getApState() {
@@ -43,8 +36,4 @@ public class PartyInfo implements BaseApInfo, ExternalIdApInfo {
     }
 
     // --- constructor ---
-
-    public PartyInfo(ParParty party) {
-        this.party = party;
-    }
 }

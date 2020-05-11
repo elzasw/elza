@@ -7,6 +7,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
+import cz.tacr.elza.domain.ParInstitution;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,50 +19,55 @@ import cz.tacr.elza.domain.vo.ArrFundOpenVersion;
 
 /**
  * Rozšiřující rozhraní pro archivní fondy.
- *
  */
 @Component
 public class FundRepositoryImpl implements FundRepositoryCustom {
 
-    @Autowired
-    private EntityManager entityManager;
+	@Autowired
+	private EntityManager entityManager;
 
-    @Autowired
-    private FundRepository fundRepository;
+	@Autowired
+	private FundRepository fundRepository;
 
-    @Override
-    public List<ArrFundOpenVersion> findByFulltext(final String fulltext, final int max, final Integer userId) {
+	@Override
+	public List<ArrFundOpenVersion> findByFulltext(final String fulltext, final int max, final Integer userId) {
 
-        String hql = "SELECT f.fundId, max(v) FROM arr_fund f JOIN f.versions v "
-                + createFulltextWhereClause(fulltext, userId)
-                + " GROUP BY f.fundId, f.name ORDER BY f.name";
+		String hql = "SELECT f.fundId, max(v) FROM arr_fund f JOIN f.versions v "
+				+ createFulltextWhereClause(fulltext, userId)
+				+ " GROUP BY f.fundId, f.name ORDER BY f.name";
 
-        Query query = createFulltextQuery(hql, fulltext, userId);
+		Query query = createFulltextQuery(hql, fulltext, userId);
 
-        query.setMaxResults(max);
-        List<Object[]> arrayList = query.getResultList();
-        List<ArrFundOpenVersion> result = new ArrayList<>(arrayList.size());
-        for (Object[] array : arrayList) {
-            final int fundId = (int) array[0];
-            final ArrFund fund = fundRepository.getOneCheckExist(fundId);
-            result.add(new ArrFundOpenVersion(fund, (ArrFundVersion) array[1]));
-        }
-        return result;
-    }
+		query.setMaxResults(max);
+		List<Object[]> arrayList = query.getResultList();
+		List<ArrFundOpenVersion> result = new ArrayList<>(arrayList.size());
+		for (Object[] array : arrayList) {
+			final int fundId = (int) array[0];
+			final ArrFund fund = fundRepository.getOneCheckExist(fundId);
+			result.add(new ArrFundOpenVersion(fund, (ArrFundVersion) array[1]));
+		}
+		return result;
+	}
 
-    @Override
-    public Integer findCountByFulltext(final String fulltext, final Integer userId) {
-        String hql = "SELECT count(f) FROM arr_fund f " + createFulltextWhereClause(fulltext, userId);
-        Query query = createFulltextQuery(hql, fulltext, userId);
-        return Math.toIntExact((long) query.getSingleResult());
-    }
+	@Override
+	public Integer findCountByFulltext(final String fulltext, final Integer userId) {
+		String hql = "SELECT count(f) FROM arr_fund f " + createFulltextWhereClause(fulltext, userId);
+		Query query = createFulltextQuery(hql, fulltext, userId);
+		return Math.toIntExact((long) query.getSingleResult());
+	}
 
-    @Override
-    public List<ArrFund> findFundByFulltext(final String fulltext, final Integer userId) {
-        String hql = "SELECT f FROM arr_fund f " + createFulltextWhereClause(fulltext, userId);
-        Query query = createFulltextQuery(hql, fulltext, userId);
-        return query.getResultList();
-    }
+	@Override
+	public List<ArrFund> findFundByFulltext(final String fulltext, final Integer userId) {
+		String hql = "SELECT f FROM arr_fund f " + createFulltextWhereClause(fulltext, userId);
+		Query query = createFulltextQuery(hql, fulltext, userId);
+		return query.getResultList();
+	}
+
+	public List<ArrFund> findFundByInstitution(Integer userId, ParInstitution institution) {
+		String hql = "SELECT f FROM arr_fund f WHERE institution_id = " + institution.getInstitutionId();
+		Query query = createFulltextQuery(hql, null, userId);
+		return query.getResultList();
+	}
 
 	/**
 	 * Vytvoří WHERE podmínky pro dotazy vyhledávání podle fulltextu.
@@ -118,28 +124,64 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
 		return new FilteredResult<>(firstResult, maxResults, totalCount, results);
 	}
 
-    @Override
+	@Override
+	public FilteredResult<ArrFund> findFunds(String search, Integer institutionId, int firstResult, int maxResults) {
+		TypedQuery<ArrFund> data = buildFundFindQuery(true, search, institutionId, firstResult, maxResults, ArrFund.class);
+		List<ArrFund> results = data.getResultList();
+		int totalCount = results.size();
+
+		// get total number of records if needed
+		if (totalCount >= maxResults || firstResult > 0) {
+			TypedQuery<Number> count = buildFundFindQuery(false, search, firstResult, maxResults, Number.class);
+			totalCount = count.getSingleResult().intValue();
+		}
+		return new FilteredResult<>(firstResult, maxResults, totalCount, results);
+	}
+
+	@Override
 	public FilteredResult<ArrFund> findFundsWithPermissions(final String search, final int firstResult,
-	        final int maxResults, final int userId) {
+															final int maxResults, final int userId) {
 		TypedQuery<ArrFund> data = buildFundFindWithPermQuery(true, search, firstResult, maxResults, userId,
-		        ArrFund.class);
+				ArrFund.class);
 		List<ArrFund> results = data.getResultList();
 		int totalCount = results.size();
 
 		// get total number of records if needed
 		if (totalCount >= maxResults || firstResult > 0) {
 			TypedQuery<Number> count = buildFundFindWithPermQuery(false, search, firstResult, maxResults, userId,
-			        Number.class);
+					Number.class);
 			totalCount = count.getSingleResult().intValue();
 		}
 		return new FilteredResult<>(firstResult, maxResults, totalCount, results);
-    }
+	}
+
+	@Override
+	public FilteredResult<ArrFund> findFundsWithPermissions(final String search, final Integer institutionId, final int firstResult,
+															final int maxResults, final int userId) {
+		TypedQuery<ArrFund> data = buildFundFindWithPermQuery(true, search, institutionId, firstResult, maxResults, userId,
+				ArrFund.class);
+		List<ArrFund> results = data.getResultList();
+		int totalCount = results.size();
+
+		// get total number of records if needed
+		if (totalCount >= maxResults || firstResult > 0) {
+			TypedQuery<Number> count = buildFundFindWithPermQuery(false, search, institutionId, firstResult, maxResults, userId,
+					Number.class);
+			totalCount = count.getSingleResult().intValue();
+		}
+		return new FilteredResult<>(firstResult, maxResults, totalCount, results);
+	}
+
+	@Override
+	public List<ArrFund> findFundsByInstitutionId(Integer institutionId) {
+		return fundRepository.findByInstitutionId(institutionId);
+	}
 
 	private <T> TypedQuery<T> buildFundFindQuery(final boolean dataQuery,
-	        final String search,
-	        final int firstResult,
-	        final int maxResults,
-	        Class<T> clazz) {
+												 final String search,
+												 final int firstResult,
+												 final int maxResults,
+												 Class<T> clazz) {
 
 		StringBuilder query = new StringBuilder();
 		StringBuilder whereConds = new StringBuilder();
@@ -177,17 +219,70 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
 		return q;
 	}
 
+	private <T> TypedQuery<T> buildFundFindQuery(final boolean dataQuery,
+												 final String search,
+												 final Integer institutionId,
+												 final int firstResult,
+												 final int maxResults,
+												 Class<T> clazz) {
+
+		StringBuilder query = new StringBuilder();
+		StringBuilder whereConds = new StringBuilder();
+		StringBuilder orderBy = new StringBuilder();
+		if (dataQuery) {
+			query.append("select distinct f ");
+			orderBy.append("f.name");
+		} else {
+			query.append("select count(distinct f) ");
+		}
+
+		query.append("FROM arr_fund f ");
+
+		// text condition
+		if (!StringUtils.isEmpty(search)) {
+			query.append("where (LOWER(f.name) LIKE :search OR LOWER(f.internalCode) LIKE :search) ");
+			if (institutionId != null) {
+				query.append("AND f.institution.institutionId = :institutionId ");
+			}
+		} else {
+			if (institutionId != null) {
+				query.append("where f.institution.institutionId = :institutionId ");
+			}
+		}
+		if (orderBy.length() > 0) {
+			query.append(" order by ").append(orderBy);
+		}
+
+		TypedQuery<T> q = entityManager.createQuery(query.toString(), clazz);
+
+		// set parameters
+		if (!StringUtils.isEmpty(search)) {
+			q.setParameter("search", "%" + search.toLowerCase() + "%");
+		}
+		if (institutionId != null) {
+			q.setParameter("institutionId", institutionId);
+		}
+
+		if (dataQuery) {
+			q.setFirstResult(firstResult);
+			if (maxResults >= 0) {
+				q.setMaxResults(maxResults);
+			}
+		}
+		return q;
+	}
+
 	/* Dotaz detailne
-	
+
 	-- zajimaji nas fondy, na nez jsou nastavena nejaka explicitni prava
 	-- pro uzivatele, tj. muze je predavat dale, opravneni jsou
 	-- nastavena bud primo nebo pres skupinu
-	
+
 	select distinct f.* from arr_fund f
 	join usr_permission fu on f.fund_id = fu.fund_id
 	where
 	fu.user_id = 23
-	OR 
+	OR
 	fu.group_id IN (
 	-- vyber skupin jejichz je clenem
 	SELECT gu.group_Id FROM usr_group_user gu WHERE gu.user_Id = 23
@@ -197,13 +292,13 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
 	 */
 
 	private <T> TypedQuery<T> buildFundFindWithPermQuery(final boolean dataQuery,
-                                                 final String search,
-	        final int firstResult,
-	        final int maxResults,
-	        final int userId,
-	        Class<T> clazz) {
+														 final String search,
+														 final int firstResult,
+														 final int maxResults,
+														 final int userId,
+														 Class<T> clazz) {
 
-        StringBuilder query = new StringBuilder();
+		StringBuilder query = new StringBuilder();
 		StringBuilder orderBy = new StringBuilder();
 		if (dataQuery) {
 			query.append("select distinct f ");
@@ -213,25 +308,25 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
 		}
 
 		query.append(
-		        "FROM arr_fund f " +
-		                "JOIN usr_permission fu on fu.fund = f " +
-		                "where " +
-		                "(fu.userId = :userId OR " +
-		                "       fu.groupId IN " +
-		                "         ( SELECT gu.groupId FROM usr_group_user gu WHERE gu.userId = :userId ) " +
-		                ")"
-			);
+				"FROM arr_fund f " +
+						"JOIN usr_permission fu on fu.fund = f " +
+						"where " +
+						"(fu.userId = :userId OR " +
+						"       fu.groupId IN " +
+						"         ( SELECT gu.groupId FROM usr_group_user gu WHERE gu.userId = :userId ) " +
+						")"
+		);
 
 		// text condition
-        if (!StringUtils.isEmpty(search)) {
+		if (!StringUtils.isEmpty(search)) {
 			query.append(" AND ")
-			        .append("(LOWER(f.name) LIKE :search OR LOWER(f.internalCode) LIKE :search)");
-        }
+					.append("(LOWER(f.name) LIKE :search OR LOWER(f.internalCode) LIKE :search)");
+		}
 
-        // Připojení podmínek ke query
+		// Připojení podmínek ke query
 		if (orderBy.length() > 0) {
 			query.append(" order by ")
-			        .append(orderBy);
+					.append(orderBy);
 		}
 
 		TypedQuery<T> q = entityManager.createQuery(query.toString(), clazz);
@@ -242,12 +337,93 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
 			q.setParameter("search", "%" + search.toLowerCase() + "%");
 		}
 
-        if (dataQuery) {
-            q.setFirstResult(firstResult);
-            if (maxResults >= 0) {
-                q.setMaxResults(maxResults);
-            }
-        }
-        return q;
-    }
+		if (dataQuery) {
+			q.setFirstResult(firstResult);
+			if (maxResults >= 0) {
+				q.setMaxResults(maxResults);
+			}
+		}
+		return q;
+	}
+
+    /* Dotaz detailne
+
+	-- zajimaji nas fondy, na nez jsou nastavena nejaka explicitni prava
+	-- pro uzivatele, tj. muze je predavat dale, opravneni jsou
+	-- nastavena bud primo nebo pres skupinu
+
+	select distinct f.* from arr_fund f
+	join usr_permission fu on f.fund_id = fu.fund_id
+	where
+	fu.user_id = 23
+	OR
+	fu.group_id IN (
+	-- vyber skupin jejichz je clenem
+	SELECT gu.group_Id FROM usr_group_user gu WHERE gu.user_Id = 23
+	)
+	-- AND LOWER(f.name) like '%t%' OR LOWER(f.internalCode)  like '%t%'
+	ORDER BY f.name
+	 */
+
+	private <T> TypedQuery<T> buildFundFindWithPermQuery(final boolean dataQuery,
+														 final String search,
+														 final Integer institutionId,
+														 final int firstResult,
+														 final int maxResults,
+														 final int userId,
+														 Class<T> clazz) {
+
+		StringBuilder query = new StringBuilder();
+		StringBuilder orderBy = new StringBuilder();
+		if (dataQuery) {
+			query.append("select distinct f ");
+			orderBy.append("f.name");
+		} else {
+			query.append("select count(distinct f) ");
+		}
+
+		query.append(
+				"FROM arr_fund f " +
+						"JOIN usr_permission fu on fu.fund = f " +
+						"where " +
+						"(fu.userId = :userId OR " +
+						"       fu.groupId IN " +
+						"         ( SELECT gu.groupId FROM usr_group_user gu WHERE gu.userId = :userId ) " +
+						")"
+		);
+
+		// text condition
+		if (!StringUtils.isEmpty(search)) {
+			query.append(" AND ")
+					.append("(LOWER(f.name) LIKE :search OR LOWER(f.internalCode) LIKE :search) ");
+		}
+		if (institutionId != null) {
+			query.append(" AND ").append("f.institution.institutionId = :institutionId ");
+		}
+
+		// Připojení podmínek ke query
+		if (orderBy.length() > 0) {
+			query.append(" order by ")
+					.append(orderBy);
+		}
+
+		TypedQuery<T> q = entityManager.createQuery(query.toString(), clazz);
+
+		// set parameters
+		q.setParameter("userId", userId);
+		if (!StringUtils.isEmpty(search)) {
+			q.setParameter("search", "%" + search.toLowerCase() + "%");
+		}
+		if (institutionId != null) {
+			q.setParameter("institutionId", institutionId);
+		}
+
+		if (dataQuery) {
+			q.setFirstResult(firstResult);
+			if (maxResults >= 0) {
+				q.setMaxResults(maxResults);
+			}
+		}
+		return q;
+	}
 }

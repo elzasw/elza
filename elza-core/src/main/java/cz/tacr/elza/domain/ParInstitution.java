@@ -34,12 +34,12 @@ public class ParInstitution {
     @JoinColumn(name = "institutionTypeId", nullable = false)
     private ParInstitutionType institutionType;
 
-    @OneToOne(fetch = FetchType.LAZY, targetEntity = ParParty.class)
-    @JoinColumn(name = "partyId", nullable = false)
-    private ParParty party;
+    @OneToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
+    @JoinColumn(name = "accessPointId", nullable = false)
+    private ApAccessPoint accessPoint;
 
     @Column(updatable = false, insertable = false, nullable = false)
-    private Integer partyId;
+    private Integer accessPointId;
 
     /**
      * @return identifikátor
@@ -84,21 +84,22 @@ public class ParInstitution {
     }
 
     /**
-     * @return osoba
+     * @return přístupový bod
      */
-    public ParParty getParty() {
-        return party;
+    public ApAccessPoint getAccessPoint() {
+        return accessPoint;
     }
 
-    /**
-     * @param party osoba
-     */
-    public void setParty(final ParParty party) {
-        this.party = party;
-        this.partyId = party == null ? null : party.getPartyId();
+    public void setAccessPoint(ApAccessPoint accessPoint) {
+        this.accessPoint = accessPoint;
+        this.accessPointId = accessPoint == null ? null : accessPoint.getAccessPointId();
     }
 
-    public Integer getPartyId() {
-        return partyId;
+    public Integer getAccessPointId() {
+        return accessPointId;
+    }
+
+    public void setAccessPointId(Integer accessPointId) {
+        this.accessPointId = accessPointId;
     }
 }

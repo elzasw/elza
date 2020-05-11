@@ -1,12 +1,11 @@
 package cz.tacr.elza.print;
 
+import cz.tacr.elza.print.item.Item;
+import net.bytebuddy.implementation.bytecode.Throw;
+
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
-
-import cz.tacr.elza.print.item.Item;
-import cz.tacr.elza.print.party.Party;
-import net.bytebuddy.implementation.bytecode.Throw;
 
 /**
  * Output interface to access all output related data
@@ -26,7 +25,7 @@ public interface Output {
 
     /**
      * Return date/time of the corresponding change
-     * 
+     *
      * @return datetime
      */
     OffsetDateTime getChangeDateTime();
@@ -56,15 +55,6 @@ public interface Output {
      */
     List<Item> getItemsWithout(final Collection<String> codes);
 
-	/**
-	 * Return list of parties from the given description items.
-	 *
-	 * Description items have to be party references.
-	 * @param codes List of description items referencing parties
-	 * @return List of referenced parties
-	 */
-	List<Party> getParties(final Collection<String> codes);
-
     /**
      * Return single item
      * @param itemTypeCode Code of item
@@ -88,7 +78,7 @@ public interface Output {
 
     /**
      * Create iterator for structured object
-     * 
+     *
      * @param structTypeCode
      *            Code of structured type
      * @return List of structured objects

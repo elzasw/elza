@@ -4,5 +4,5 @@ public interface ParInstitutionInfo {
 
     Integer getInstitutionId();
 
-    Integer getPartyId();
+    Integer getAccessPointId();
 }

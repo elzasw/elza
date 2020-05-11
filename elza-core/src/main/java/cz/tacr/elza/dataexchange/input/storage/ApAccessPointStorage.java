@@ -25,10 +25,6 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
 
     private final ApAccessPointRepository apRepository;
 
-    private final ApNameRepository apNameRepository;
-
-    private final ApDescriptionRepository apDescRepository;
-
     private final ApExternalIdRepository apEidRepository;
 
     private final ApChangeHolder changeHolder;
@@ -40,8 +36,6 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
             ImportInitHelper initHelper) {
         super(session, persistEntityListener);
         this.apRepository = initHelper.getApRepository();
-        this.apNameRepository = initHelper.getApNameRepository();
-        this.apDescRepository = initHelper.getApDescRepository();
         this.apEidRepository = initHelper.getApEidRepository();
         this.apStateRepository = initHelper.getApStateRepository();
         this.changeHolder = changeHolder;
@@ -75,8 +69,6 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
         }
         ApChange change = changeHolder.getChange();
         if (apIds.size() > 0) {
-            apNameRepository.invalidateByAccessPointIdIn(apIds, change);
-            apDescRepository.invalidateByAccessPointIdIn(apIds, change);
             apEidRepository.invalidateByAccessPointIdIn(apIds, change);
         }
     }

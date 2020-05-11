@@ -1,32 +1,22 @@
 package cz.tacr.elza.dataexchange.input.aps.context;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.input.ApChangeHolder;
 import cz.tacr.elza.dataexchange.input.DEImportException;
-import cz.tacr.elza.dataexchange.input.context.ImportContext;
-import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
-import cz.tacr.elza.dataexchange.input.context.ImportPhase;
-import cz.tacr.elza.dataexchange.input.context.ImportPhaseChangeListener;
-import cz.tacr.elza.dataexchange.input.context.ObservableImport;
+import cz.tacr.elza.dataexchange.input.ObjectIdHolder;
+import cz.tacr.elza.dataexchange.input.context.*;
+import cz.tacr.elza.dataexchange.input.parts.context.ParentPartWrapper;
+import cz.tacr.elza.dataexchange.input.parts.context.PartInfo;
+import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
+import cz.tacr.elza.dataexchange.input.parts.context.PrefferedPartWrapper;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApChange;
-import cz.tacr.elza.domain.ApDescription;
-import cz.tacr.elza.domain.ApExternalId;
-import cz.tacr.elza.domain.ApExternalIdType;
-import cz.tacr.elza.domain.ApFulltextProviderImpl;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.SysLanguage;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.service.AccessPointItemService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.ItemService;
+
+import java.util.*;
 
 /**
  * Context for data exchange access points.
@@ -34,6 +24,8 @@ import cz.tacr.elza.service.ArrangementService;
 public class AccessPointsContext {
 
     private final Map<String, AccessPointInfo> entryIdApInfoMap = new HashMap<>();
+
+    private final Map<String, AccessPointInfo> pgIdApInfoMap = new HashMap<>();
 
     private final StorageManager storageManager;
 
@@ -43,22 +35,32 @@ public class AccessPointsContext {
 
     private final ApChangeHolder changeHolder;
 
+    private final ObjectIdHolder objectIdHolder;
+
     private final StaticDataProvider staticData;
 
     private final ArrangementService arrangementService;
 
     private final AccessPointService accessPointService;
 
+    private final AccessPointItemService accessPointItemService;
+
     private final List<AccessPointWrapper> apQueue = new ArrayList<>();
 
     private final List<ApExternalIdWrapper> eidQueue = new ArrayList<>();
 
-    private final List<ApDescriptionWrapper> descQueue = new ArrayList<>();
+    private final List<PartWrapper> partQueue = new ArrayList<>();
 
-    private final List<ApNameWrapper> nameQueue = new ArrayList<>();
+    private final List<ParentPartWrapper> parentPartQueue = new ArrayList<>();
+
+    private Map<PartWrapper, String> parentPartIdMap = new HashMap<>();
+
+    private final List<PrefferedPartWrapper> prefferedPartQueue = new ArrayList<>();
+
+    private Set<AccessPointInfo> prefferedPartApInfos = new HashSet<>();
 
     public AccessPointsContext(StorageManager storageManager, int batchSize, ApScope scope, ApChangeHolder changeHolder,
-                               StaticDataProvider staticData, ImportInitHelper initHelper) {
+                               StaticDataProvider staticData, ImportInitHelper initHelper, ObjectIdHolder objectIdHolder) {
         this.storageManager = storageManager;
         this.batchSize = batchSize;
         this.scope = scope;
@@ -66,6 +68,8 @@ public class AccessPointsContext {
         this.staticData = staticData;
         this.arrangementService = initHelper.getArrangementService();
         this.accessPointService = initHelper.getAccessPointService();
+        this.accessPointItemService = initHelper.getAccessPointItemService();
+        this.objectIdHolder = objectIdHolder;
     }
 
     public void init(ObservableImport observableImport) {
@@ -84,25 +88,69 @@ public class AccessPointsContext {
         return entryIdApInfoMap.get(entryId);
     }
 
+    public AccessPointInfo getPgIdApInfo(String importId) {
+        return pgIdApInfoMap.get(importId);
+    }
+
+    public void addToPgIdApInfoMap(String importId, AccessPointInfo apInfo) {
+        pgIdApInfoMap.putIfAbsent(importId, apInfo);
+    }
+
+
+    public Collection<AccessPointInfo> getAllAccessPointInfo() {
+        return Collections.unmodifiableCollection(entryIdApInfoMap.values());
+    }
+
     public ApExternalIdType getEidType(String code) {
         return staticData.getApEidTypeByCode(code);
+    }
+
+    public RulPartType getRulPartType(String code) {
+        return staticData.getPartTypeByCode(code);
     }
 
     public SysLanguage getSysLanguageByCode(String code) {
         return staticData.getSysLanguageByCode(code);
     }
 
+    public void addToParentPartIdMap(PartWrapper partWrapper, String parentFragmentId) {
+        parentPartIdMap.putIfAbsent(partWrapper, parentFragmentId);
+    }
+
     /**
      * Add access point for storage
      *
-     * @param entity
-     *            access point to be saved
-     * @param entryId
-     *            import id of the access point
-     * @param eids
-     *            AP external ids, can be null
+     * @param entity  access point to be saved
+     * @param entryId import id of the access point
+     * @param eids    AP external ids, can be null
      * @return Return access point import info
      */
+    public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId, ApState apState, Collection<ApExternalId> eids, Collection<PartWrapper> partWrappers) {
+        AccessPointInfo info = new AccessPointInfo(apState);
+        if (entryIdApInfoMap.putIfAbsent(entryId, info) != null) {
+            throw new DEImportException("Access point has duplicate id, apeId:" + entryId);
+        }
+        // add to queue
+        AccessPointWrapper apWrapper = new AccessPointWrapper(entity, info, eids, arrangementService);
+        apQueue.add(apWrapper);
+        info.onEntityQueued();
+        if (apQueue.size() >= batchSize) {
+            storeAccessPoints();
+        }
+        // add all external ids to queue
+        if (eids != null) {
+            eids.forEach(eid -> addExternalId(eid, info));
+        }
+
+        if (partWrappers != null) {
+            partWrappers.forEach(partWrapper -> addPart(partWrapper, apWrapper));
+        }
+
+
+
+        return info;
+    }
+
     public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId, ApState apState, Collection<ApExternalId> eids) {
         AccessPointInfo info = new AccessPointInfo(apState);
         if (entryIdApInfoMap.putIfAbsent(entryId, info) != null) {
@@ -129,24 +177,37 @@ public class AccessPointsContext {
         }
     }
 
-    public void addDescription(ApDescription entity, AccessPointInfo apInfo) {
-        descQueue.add(new ApDescriptionWrapper(entity, apInfo));
-        apInfo.onEntityQueued();
-        if (descQueue.size() > batchSize) {
-            storeDescriptions(true);
-        }
-    }
+    private void addPart(PartWrapper partWrapper, AccessPointWrapper apWrapper) {
+        AccessPointInfo apInfo = apWrapper.getApInfo();
+        partWrapper.getPartInfo().setApInfo(apInfo);
 
-    public void addName(ApName entity, AccessPointInfo apInfo) {
-        if (entity.isPreferredName()) {
-            String fulltext = ApFulltextProviderImpl.createFulltext(entity);
-            apInfo.setFulltext(fulltext);
-        }
-        nameQueue.add(new ApNameWrapper(entity, apInfo));
+        partQueue.add(partWrapper);
         apInfo.onEntityQueued();
-        if (nameQueue.size() >= batchSize) {
-            storeNames(true);
+        if (partQueue.size() >= batchSize) {
+            storeParts(true);
         }
+
+        if(!prefferedPartApInfos.contains(apInfo) && partWrapper.getPartInfo().getRulPartType().getCode().equals("PT_NAME")) {
+            PrefferedPartWrapper prefferedPartWrapper = new PrefferedPartWrapper(apInfo, partWrapper.getPartInfo());
+            prefferedPartQueue.add(prefferedPartWrapper);
+            prefferedPartApInfos.add(apInfo);
+            apInfo.onEntityQueued();
+        }
+
+        if (parentPartIdMap.containsValue(partWrapper.getPartInfo().getImportId())) {
+            for (Map.Entry<PartWrapper, String> entry : parentPartIdMap.entrySet()) {
+                if (partWrapper.getPartInfo().getImportId().equals(entry.getValue())) {
+                    ParentPartWrapper parentPartWrapper = new ParentPartWrapper(entry.getKey().getPartInfo(), partWrapper.getPartInfo());
+                    parentPartQueue.add(parentPartWrapper);
+                    entry.getKey().getPartInfo().onEntityQueued();
+                    if (parentPartQueue.size() > batchSize) {
+                        storeParentParts(true);
+                    }
+                }
+            }
+        }
+
+
     }
 
     /**
@@ -155,8 +216,9 @@ public class AccessPointsContext {
     public void storeAll() {
         storeAccessPoints();
         storeExternalIds(false);
-        storeDescriptions(false);
-        storeNames(false);
+        storeParts(false);
+        storeParentParts(false);
+        storePrefferedParts(false);
     }
 
     public void storeAccessPoints() {
@@ -172,24 +234,40 @@ public class AccessPointsContext {
         eidQueue.clear();
     }
 
-    private void storeDescriptions(boolean storeReferenced) {
+    private void storeParts(boolean storeReferenced) {
         if (storeReferenced) {
             storeAccessPoints();
         }
-        storageManager.storeGeneric(descQueue);
-        descQueue.clear();
-    }
-
-    private void storeNames(boolean storeReferenced) {
-        if (storeReferenced) {
-            storeAccessPoints();
+        //storageManager.storeGeneric(partQueue);
+        storageManager.storeParts(partQueue);
+        for (PartWrapper wrapper : partQueue) {
+            wrapper.getPartInfo().setEntityId(wrapper.getEntity().getPartId());
         }
-        storageManager.storeGeneric(nameQueue);
-        nameQueue.clear();
+        partQueue.clear();
     }
 
-    public int nextNameObjectId() {
+    private void storeParentParts(boolean storeReferenced) {
+        if (storeReferenced) {
+            storeParts(true);
+        }
+        storageManager.storeRefUpdates(parentPartQueue);
+        parentPartQueue.clear();
+    }
+
+    private void storePrefferedParts(boolean storeReferenced) {
+        if (storeReferenced) {
+            storeParts(true);
+        }
+        storageManager.storeRefUpdates(prefferedPartQueue);
+        prefferedPartQueue.clear();
+    }
+
+    /*public int nextNameObjectId() {
         return accessPointService.nextNameObjectId();
+    }*/
+
+    public int nextItemObjectId() {
+        return accessPointItemService.nextItemObjectId();
     }
 
     /**

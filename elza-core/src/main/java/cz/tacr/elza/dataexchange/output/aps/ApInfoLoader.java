@@ -9,6 +9,7 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import cz.tacr.elza.domain.ApPart;
 import org.apache.commons.lang.Validate;
 
 import cz.tacr.elza.common.db.HibernateUtils;
@@ -17,7 +18,6 @@ import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.service.UserService;
 
@@ -25,11 +25,11 @@ public class ApInfoLoader extends AbstractEntityLoader<ApInfo, ApState> {
 
     private final Set<Integer> checkedScopeIds = new HashSet<>();
 
-    private final NameLoader nameLoader;
-
-    private final DescriptionLoader descriptionLoader;
-
     private final ExternalIdLoader externalIdLoader;
+
+    private final PartLoader partLoader;
+
+    private final ItemLoader itemLoader;
 
     private final ExportContext context;
 
@@ -39,9 +39,9 @@ public class ApInfoLoader extends AbstractEntityLoader<ApInfo, ApState> {
 
     public ApInfoLoader(ExportContext context, EntityManager em, UserService userService) {
         super(ApState.class, ApState.FIELD_ACCESS_POINT_ID, em, context.getBatchSize());
-        this.nameLoader = new NameLoader(em, batchSize);
-        this.descriptionLoader = new DescriptionLoader(em, batchSize);
         this.externalIdLoader = new ExternalIdLoader(em, batchSize);
+        this.partLoader = new PartLoader(context,em,batchSize);
+        this.itemLoader = new ItemLoader(context,em,batchSize);
         this.context = context;
         this.userService = userService;
         this.globalScopePermission = userService.hasPermission(Permission.AP_SCOPE_RD_ALL);
@@ -50,9 +50,9 @@ public class ApInfoLoader extends AbstractEntityLoader<ApInfo, ApState> {
     @Override
     public void flush() {
         super.flush();
-        nameLoader.flush();
-        descriptionLoader.flush();
         externalIdLoader.flush();
+        partLoader.flush();
+        itemLoader.flush();
     }
 
     @Override
@@ -85,21 +85,13 @@ public class ApInfoLoader extends AbstractEntityLoader<ApInfo, ApState> {
             }
         }
 
-        // we must ignore party AP (AP type initialized by dispatcher)
-        ParPartyType partyType = apState.getApType().getPartyType();
-        if (partyType != null) {
-            context.addPartyApId(accessPointId);
-            result.setPartyAp(true);
-            return;
-        }
-
-        NameDispatcher nd = new NameDispatcher(result, dispatcher, context.getStaticData());
-        nameLoader.addRequest(accessPointId, nd);
-
-        DescriptionDispatcher dd = new DescriptionDispatcher(result, dispatcher);
-        descriptionLoader.addRequest(accessPointId, dd);
-
         ExternalIdDispatcher eidd = new ExternalIdDispatcher(result, dispatcher, context.getStaticData());
         externalIdLoader.addRequest(accessPointId, eidd);
+
+        PartDispatcher pd = new PartDispatcher(result, dispatcher, context.getStaticData());
+        partLoader.addRequest(accessPointId, pd);
+
+
+
     }
 }

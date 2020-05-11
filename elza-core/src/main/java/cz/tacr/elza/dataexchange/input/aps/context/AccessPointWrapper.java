@@ -53,6 +53,10 @@ public class AccessPointWrapper implements EntityWrapper {
         return apInfo.getApState();
     }
 
+    public AccessPointInfo getApInfo() {
+        return apInfo;
+    }
+
     public Collection<ApExternalId> getExternalIds() {
         return externalIds;
     }

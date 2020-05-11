@@ -329,6 +329,14 @@
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-local</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>jackson-databind-nullable</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -383,8 +391,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>8</source>
+                    <target>8</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -480,6 +488,39 @@
                         <version>2.3.2</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>4.2.3</version>
+                <executions>
+                    <execution>
+                        <id>openapi-eskartace-spring</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <generatorName>spring</generatorName>
+                            <inputSpec>${project.basedir}/src/main/resources/rest/elza-openapi.yml</inputSpec>
+                            <output>${project.build.directory}/generated-sources/api/rest</output>
+                            <generateSupportingFiles>false</generateSupportingFiles>
+                            <apiPackage>cz.tacr.elza.controller</apiPackage>
+                            <modelPackage>cz.tacr.elza.controller.vo</modelPackage>
+                            <configOptions>
+                                <sourceFolder>/</sourceFolder>
+                                <interfaceOnly>true</interfaceOnly>
+                                <dateLibrary>java8-localdatetime</dateLibrary>
+                                <!--
+                                 use java8-localdatetime instead of java8 when java8 is false
+                                -->
+                                <java8>false</java8>
+                                <!--  disables default interface methods for testing  -->
+                                <useTags>true</useTags>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

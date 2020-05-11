@@ -18,7 +18,6 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApRuleSystem;
 import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -32,7 +31,6 @@ import cz.tacr.elza.packageimport.xml.common.OtherCodes;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
-import cz.tacr.elza.repository.RegistryRoleRepository;
 
 /**
  * Update AP types
@@ -47,8 +45,6 @@ public class APTypeUpdater {
 
     final private ApTypeRepository apTypeRepository;
 
-    final private RegistryRoleRepository registryRoleRepository;
-
     private APTypes apXmlTypes = null;
 
     /**
@@ -58,24 +54,18 @@ public class APTypeUpdater {
 
     private Map<String, ApType> apTypesMap = new HashMap<>();
 
-    private final List<ParPartyType> parPartyTypes;
-
     private List<ApRuleSystem> apRuleSystems;
 
     private StaticDataProvider staticDataProvider;
 
     public APTypeUpdater(final ApStateRepository apStateRepository,
                          final ApTypeRepository apTypeRepository,
-                         final RegistryRoleRepository registryRoleRepository,
                          final ApAccessPointRepository accessPointRepository,
-                         final List<ParPartyType> parPartyTypes,
                          final List<ApRuleSystem> apRuleSystems,
                          final StaticDataProvider staticDataProvider) {
         this.apStateRepository = apStateRepository;
         this.apTypeRepository = apTypeRepository;
-        this.registryRoleRepository = registryRoleRepository;
         this.accessPointRepository = accessPointRepository;
-        this.parPartyTypes = parPartyTypes;
         this.apRuleSystems = apRuleSystems;
         this.staticDataProvider = staticDataProvider;
     }
@@ -153,14 +143,14 @@ public class APTypeUpdater {
         // set party type
         if (apTypeXml.getPartyType() != null) {
             // check party type - if exists
-            ParPartyType parPartyType = PackageService.findEntity(parPartyTypes, apTypeXml.getPartyType(),
+           /* ParPartyType parPartyType = PackageService.findEntity(parPartyTypes, apTypeXml.getPartyType(),
                     ParPartyType::getCode);
             if (parPartyType == null) {
                 throw new BusinessException("ParPartyType s code=" + apTypeXml.getPartyType() + " nenalezen",
                         PackageCode.CODE_NOT_FOUND).set("code", apTypeXml.getPartyType()).set("file",
                         AP_TYPE_XML);
             }
-            apType.setPartyType(parPartyType);
+            apType.setPartyType(parPartyType);*/
         }
     }
 
@@ -168,11 +158,9 @@ public class APTypeUpdater {
      * Zpracování vztahy typu třídy.
      *
      * @param rulPackage    balíček
-     * @param parPartyTypes seznam typů osob
      */
     private void processApTypes(
-            @NotNull final RulPackage rulPackage,
-            @NotNull final List<ParPartyType> parPartyTypes) {
+            @NotNull final RulPackage rulPackage) {
         // TODO: nacitani AP type musi byt serazeno podle urovni (recursive query) aby mohl byt zbytek
         // (nezaktualizovane typy) odstranen hierarchicky (linked hash map uchova poradi)
         Map<String, ApType> oldTypeCodeMap = apTypeRepository.findByRulPackage(rulPackage)
@@ -223,7 +211,7 @@ public class APTypeUpdater {
 
         // drop old types
         Collection<ApType> oldTypes = oldTypeCodeMap.values();
-        oldTypes.forEach(registryRoleRepository::deleteByApType);
+       // TODO: smazáno - odstranění starých typů - oldTypes.forEach(registryRoleRepository::deleteByApType);
 
         apTypeRepository.delete(oldTypes);
     }
@@ -232,7 +220,7 @@ public class APTypeUpdater {
         this.apXmlTypes = pkgCtx.convertXmlStreamToObject(APTypes.class,
                 AP_TYPE_XML);
 
-        processApTypes(pkgCtx.getPackage(), parPartyTypes);
+        processApTypes(pkgCtx.getPackage());
 
     }
 

@@ -1,15 +1,18 @@
 package cz.tacr.elza.dataexchange.output.aps;
 
-import java.util.Collection;
-
 import cz.tacr.elza.dataexchange.output.writer.BaseApInfo;
 import cz.tacr.elza.dataexchange.output.writer.ExternalIdApInfo;
-import cz.tacr.elza.domain.ApDescription;
+import cz.tacr.elza.dataexchange.output.writer.ItemApInfo;
+import cz.tacr.elza.dataexchange.output.writer.PartApInfo;
 import cz.tacr.elza.domain.ApExternalId;
-import cz.tacr.elza.domain.ApName;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 
-public class ApInfo implements BaseApInfo, ExternalIdApInfo {
+import java.util.Collection;
+import java.util.Map;
+
+public class ApInfo implements BaseApInfo, ExternalIdApInfo, PartApInfo, ItemApInfo {
 
     // --- fields ---
 
@@ -17,9 +20,9 @@ public class ApInfo implements BaseApInfo, ExternalIdApInfo {
 
     private Collection<ApExternalId> externalIds;
 
-    private Collection<ApName> names;
+    private Collection<ApPart> parts;
 
-    private ApDescription desc;
+    private Map<Integer, Collection<ApItem>> partItemsMap; // partId, items
 
     private boolean partyAp;
 
@@ -40,22 +43,6 @@ public class ApInfo implements BaseApInfo, ExternalIdApInfo {
         this.externalIds = externalIds;
     }
 
-    public Collection<ApName> getNames() {
-        return names;
-    }
-
-    public void setNames(Collection<ApName> names) {
-        this.names = names;
-    }
-
-    public ApDescription getDesc() {
-        return desc;
-    }
-
-    public void setDesc(ApDescription desc) {
-        this.desc = desc;
-    }
-
     public boolean isPartyAp() {
         return partyAp;
     }
@@ -68,5 +55,30 @@ public class ApInfo implements BaseApInfo, ExternalIdApInfo {
 
     public ApInfo(ApState apState) {
         this.apState = apState;
+    }
+
+    @Override
+    public Collection<ApPart> getParts() {
+        return parts;
+    }
+
+    @Override
+    public void setParts(Collection<ApPart> parts) {
+        this.parts = parts;
+    }
+
+
+    @Override
+    public Map<Integer, Collection<ApItem>> getItems() {
+        return partItemsMap;
+    }
+
+    @Override
+    public void setItems(Map<Integer, Collection<ApItem>> items) {
+        partItemsMap = items;
+    }
+
+    public void addItemsMap(Integer partId, Collection<ApItem> items) {
+
     }
 }

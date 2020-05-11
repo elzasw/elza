@@ -1,26 +1,19 @@
 package cz.tacr.elza.repository;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.*;
-
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApStateEnum;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ApStateEnum;
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.*;
+import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * Implementace respozitory pro aprecord.
@@ -129,21 +122,7 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         conjunctions.add(cb.or(accessPoint.get(ApAccessPoint.STATE).isNull(), cb.notEqual(accessPoint.get(ApAccessPoint.STATE), ApStateEnum.TEMP)));
 
         // add name join
-        Join<ApAccessPoint, ApName> nameJoin = accessPoint.join(ApAccessPoint.FIELD_NAMES, JoinType.LEFT);
-        Predicate nameFkCond = cb.equal(accessPoint.get(ApAccessPoint.FIELD_ACCESS_POINT_ID),
-                nameJoin.get(ApName.FIELD_ACCESS_POINT_ID));
-        Predicate activeNameCond = nameJoin.get(ApName.FIELD_DELETE_CHANGE_ID).isNull();
-        nameJoin.on(cb.and(nameFkCond, activeNameCond));
 
-        Path<String> accessPointName = nameJoin.get(ApName.FIELD_NAME);
-
-        if (accessPointNameCallback != null) {
-            accessPointNameCallback.accept(cb.asc(accessPointName));
-        }
-
-        if (onlyPrefferedName) {
-            conjunctions.add(cb.isTrue(nameJoin.get(ApName.FIELD_PREFERRED_NAME)));
-        }
 
         // add text search
         String searchExp = StringUtils.trimToNull(searchValue);
@@ -157,8 +136,8 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
             // descJoin.on(cb.and(descFkCond, activeDescCond));
 
             // add like condition to where
-            Predicate nameLikeCond = cb.like(cb.lower(accessPointName), searchExp);
-            conjunctions.add(nameLikeCond);
+            /*Predicate nameLikeCond = cb.like(cb.lower(accessPointName), searchExp);
+            conjunctions.add(nameLikeCond);*/
         }
 
         // add scope id condition
@@ -175,21 +154,5 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         }
 
         return cb.and(conjunctions.toArray(new Predicate[0]));
-    }
-
-    /**
-     * Prepares inner join for preferred AP name (preferred name is always expected).
-     *
-     * @param fromAp query root or entity join of AP
-     * @param cb JPA criteria builder
-     * @return Created preferred AP name join.
-     */
-    public static Join<ApAccessPoint, ApName> preparePrefNameJoin(From<?, ApAccessPoint> fromAp, CriteriaBuilder cb) {
-        Join<ApAccessPoint, ApName> join = fromAp.join(ApAccessPoint.FIELD_NAMES, JoinType.INNER);
-        Predicate fkCond = cb.equal(fromAp.get(ApAccessPoint.FIELD_ACCESS_POINT_ID), join.get(ApName.FIELD_ACCESS_POINT_ID));
-        Predicate activeCond = join.get(ApName.FIELD_DELETE_CHANGE_ID).isNull();
-        Predicate prefCond = cb.isTrue(join.get(ApName.FIELD_PREFERRED_NAME));
-        join.on(cb.and(fkCond, activeCond, prefCond));
-        return join;
     }
 }

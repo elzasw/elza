@@ -4,13 +4,14 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import cz.tacr.elza.dataexchange.input.parts.context.ItemWrapper;
+import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
 import cz.tacr.elza.dataexchange.input.ApChangeHolder;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointWrapper;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
-import cz.tacr.elza.dataexchange.input.parties.context.PartyWrapper;
 
 /**
  * Storage manager for all imported items. Must be initialized with active
@@ -97,12 +98,21 @@ public class StorageManager implements StoredEntityCallback {
         storage.store(apws);
     }
 
-    public void storeParties(Collection<PartyWrapper> pws) {
-        if (pws.isEmpty()) {
+    public void storeParts(Collection<PartWrapper> pws) {
+        if(pws.isEmpty()) {
             return;
         }
-        ParPartyStorage storage = new ParPartyStorage(session, this, initHelper);
+        ApPartStorage storage = new ApPartStorage(session, this, initHelper);
         storage.store(pws);
+
+    }
+
+    public void storeItems(Collection<ItemWrapper> iws) {
+        if(iws.isEmpty()) {
+            return;
+        }
+        ApItemStorage storage = new ApItemStorage(session, this, initHelper);
+        storage.store(iws);
     }
 
 	public void clear() {

@@ -370,6 +370,16 @@
                 <artifactId>cxf-rt-transports-local</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.openapitools</groupId>
+                <artifactId>jackson-databind-nullable</artifactId>
+                <version>0.2.0</version>
+            </dependency>
+            <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-annotations</artifactId>
+                <version>1.5.21</version>
+            </dependency>
             <!-- END - CXF -->
         </dependencies>
     </dependencyManagement>
@@ -392,12 +402,12 @@
                 <plugin>
                 	<groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.1.2</version>                
+                    <version>3.1.2</version>
                 </plugin>
                 <plugin>
                 	<groupId>org.apache.maven.shared</groupId>
                 	<artifactId>maven-filtering</artifactId>
-                	<version>3.1.1</version>                
+                	<version>3.1.1</version>
                 </plugin>
                 <plugin>
 					<artifactId>maven-resources-plugin</artifactId>
@@ -407,7 +417,7 @@
 					<artifactId>maven-antrun-plugin</artifactId>
 					<groupId>org.apache.maven.plugins</groupId>
 					<version>1.8</version>
-				</plugin>                
+				</plugin>
             </plugins>
         </pluginManagement>
     </build>

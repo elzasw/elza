@@ -17,7 +17,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
-import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApEidTypeVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
@@ -231,7 +230,7 @@ public class ApControllerTest extends AbstractControllerTest {
         changeAccessPointItems(accessPoint.getId(), items);
     }
 
-    private ApAccessPointNameVO createName(final ApAccessPointVO accessPoint) {
+    /*private ApAccessPointNameVO createName(final ApAccessPointVO accessPoint) {
         ApAccessPointNameVO accessPointName = createAccessPointStructuredName(accessPoint.getId());
         List<ApUpdateItemVO> items = new ArrayList<>();
         RulDescItemTypeExtVO apNameType = findDescItemTypeByCode("AP_NAME");
@@ -241,7 +240,7 @@ public class ApControllerTest extends AbstractControllerTest {
         items.add(buildApItem(UpdateOp.CREATE, apComplementType.getCode(), null, "IV", null, null));
         changeNameItems(accessPoint.getId(), accessPointName.getObjectId(), items);
         return accessPointName;
-    }
+    }*/
 
     private ApTypeVO getApType(final String structApType) {
         List<ApTypeVO> recordTypes = getRecordTypes();
@@ -418,7 +417,6 @@ public class ApControllerTest extends AbstractControllerTest {
         //TODO fantis
         // Vytvoření fund
         ArrFundVO fund = createFund("RegisterLinks Test AP", "IC3");
-
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();

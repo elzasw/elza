@@ -52,7 +52,6 @@ import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.controller.ArrangementController.FaFilteredFulltextParam;
 import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
-import cz.tacr.elza.controller.vo.ApAccessPointNameVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApEidTypeVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
@@ -81,10 +80,6 @@ import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.controller.vo.PackageVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
 import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
@@ -1025,7 +1020,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                   final ArrFundVersionVO fundVersion,
                                                                   final ArrNodeVO node,
                                                                   final RulDescItemTypeVO descItemType) {
-        try{
+        try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -1281,12 +1276,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 break;
             }
 
-            case "PARTY_REF": {
-                descItem = new ArrItemPartyRefVO();
-                ((ArrItemPartyRefVO) descItem).setValue(((ParPartyVO) value).getId());
-                break;
-            }
-
             case "RECORD_REF": {
                 descItem = new ArrItemRecordRefVO();
                 ((ArrItemRecordRefVO) descItem).setValue(((ApAccessPointVO) value).getId());
@@ -1442,12 +1431,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
             case COORDINATES: {
                 item = new ApItemCoordinatesVO();
                 ((ApItemCoordinatesVO) item).setValue((String) value);
-                break;
-            }
-
-            case PARTY_REF: {
-                item = new ApItemPartyRefVO();
-                ((ApItemPartyRefVO) item).setValue(((ParPartyVO) value).getId());
                 break;
             }
 
@@ -1650,7 +1633,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return Objekt s listem (prvních 20) chyb
      */
     public List<ArrangementController.VersionValidationItem> validateVersion(final Integer versionId) {
-       return Arrays.asList(get(spec -> spec
+        return Arrays.asList(get(spec -> spec
                         .pathParameter("versionId", versionId)
                         .pathParameter("showAll", true),
                 VALIDATE_VERSION).getBody().as(ArrangementController.VersionValidationItem[].class));
@@ -2031,27 +2014,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return get(spec -> spec.queryParameters(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
     }
 
-
-    /**
-     * Vytvoření variantního hesla
-     *
-     * @param recordVO VO objektu k vytvoření
-     * @return VO
-     */
-    protected ApAccessPointNameVO createVariantRecord(final ApAccessPointNameVO recordVO) {
-        return post(spec -> spec.body(recordVO), CREATE_VARIANT_RECORD).getBody().as(ApAccessPointNameVO.class);
-    }
-
-    /**
-     * Úprava variantního hesla
-     *
-     * @param recordVO VO objektu k vytvoření
-     * @return VO
-     */
-    protected ApAccessPointNameVO updateVariantRecord(final ApAccessPointNameVO recordVO) {
-        return put(spec -> spec.pathParam("variantRecordId", recordVO.getId()).body(recordVO), UPDATE_VARIANT_RECORD).getBody().as(ApAccessPointNameVO.class);
-    }
-
     /**
      * Smazání variantního hesla
      *
@@ -2063,193 +2025,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
-     * Vytvoření party
-     *
-     * @param partyVO Party VO
-     * @return VO vytvořené party
-     */
-    protected ParPartyVO createParty(final ParPartyVO partyVO) {
-        return post(spec -> spec.body(partyVO), INSERT_PARTY).getBody().as(ParPartyVO.class);
-    }
-
-    protected ParPartyVO updateParty(final ParPartyVO partyVO) {
-        return put(spec -> spec.body(partyVO).pathParam("partyId", partyVO.getId()), UPDATE_PARTY).getBody().as(ParPartyVO.class);
-    }
-
-    /**
-     * Získání osoby
-     *
-     * @param partyId id osoby
-     * @return získaná osoba
-     */
-    protected ParPartyVO getParty(final int partyId) {
-        return get(spec -> spec.pathParam("partyId", partyId), GET_PARTY).getBody().as(ParPartyVO.class);
-    }
-
-    /**
-     * Odstranení osoby
-     *
-     * @param partyId id osoby
-     * @return response
-     */
-    protected Response deleteParty(final int partyId) {
-        return delete(spec -> spec.pathParam("partyId", partyId), DELETE_PARTY);
-    }
-
-    /**
-     * Použití osoby
-     *
-     * @param partyId id osoby
-     * @return response
-     */
-    protected RecordUsageVO usageParty(final int partyId) {
-        return get(spec -> spec.pathParam("partyId", partyId), USAGE_PARTY).getBody().as(RecordUsageVO.class);
-    }
-
-    /**
-     * Nahrazení osoby
-     *
-     * @param partyId id osoby
-     * @return response
-     */
-    protected Response replaceParty(final int partyId, final int replacementId) {
-        return post(spec -> spec.pathParam("partyId", partyId).body(replacementId), REPLACE_PARTY);
-    }
-
-    /**
-     * Typy osob
-     *
-     * @return Typy osob
-     */
-    protected List<ParPartyTypeVO> getPartyTypes() {
-        return Arrays.asList(get(GET_PARTY_TYPES).getBody().as(ParPartyTypeVO[].class));
-    }
-
-    /**
-     * Typy názvů osob
-     *
-     * @return Typy názvů osob
-     */
-    protected List<ParPartyNameFormTypeVO> getPartyNameFormTypes() {
-        return Arrays.asList(get(GET_PARTY_NAME_FORM_TYPES).getBody().as(ParPartyNameFormTypeVO[].class));
-    }
-
-    /**
-     * Typy rejstříků pro daný typ osob
-     *
-     * @param partyTypeId
-     * @return typy rejstříků
-     */
-    protected List<ApTypeVO> recordTypesForPartyType(final int partyTypeId) {
-        return Arrays
-                .asList(get(spec -> spec.queryParam("partyTypeId", partyTypeId), RECORD_TYPES_FOR_PARTY_TYPE).getBody()
-                        .as(ApTypeVO[].class));
-    }
-
-    /**
      * Scopy
      *
      * @return list scope
      */
     protected List<ApScopeVO> faScopes() {
         return Arrays.asList(get(FA_SCOPES).getBody().as(ApScopeVO[].class));
-    }
-
-
-    /**
-     * Vyhledávání v Party
-     *
-     * @param search
-     * @param from
-     * @param count
-     * @param partyTypeId
-     * @param versionId
-     * @return List nalezených záznamů
-     */
-    protected List<ParPartyVO> findParty(final String search,
-                                         final Integer from, final Integer count,
-                                         final Integer partyTypeId,
-                                         final Integer versionId) {
-        HashMap<String, Object> params = new HashMap<>();
-
-        if (search != null) {
-            params.put("search", search);
-        }
-        if (versionId != null) {
-            params.put("versionId", versionId);
-        }
-        if (partyTypeId != null) {
-            params.put("partyTypeId", partyTypeId);
-        }
-        params.put("from", from != null ? from : 0);
-        params.put("count", count != null ? count : 20);
-        params.put("excludeInvalid", true);
-
-        return get(spec -> spec.queryParameters(params), FIND_PARTY).getBody().as(FilteredResultVO.class).getRows();
-    }
-
-    /**
-     * Vytvoření relace
-     *
-     * @param relationVO relace k vytvoření
-     * @return vytvořená relace
-     */
-    protected ParRelationVO insertRelation(final ParRelationVO relationVO) {
-        return post(spec -> spec.body(relationVO), CREATE_RELATIONS).getBody().as(ParRelationVO.class);
-    }
-
-    /**
-     * Upravení relace
-     *
-     * @param relationVO relace k vytvoření
-     * @return vytvořená relace
-     */
-    protected ParRelationVO updateRelation(final ParRelationVO relationVO) {
-        return put(spec -> spec.body(relationVO).pathParam("relationId", relationVO.getId()), UPDATE_RELATIONS).getBody().as(ParRelationVO.class);
-    }
-
-    /**
-     * Smazání relace
-     *
-     * @param relationId id relace ke smazání
-     * @return response
-     */
-    protected Response deleteRelation(final int relationId) {
-        return delete(spec -> spec.pathParam("relationId", relationId), DELETE_RELATIONS);
-    }
-
-    /**
-     * Vyhledání osob podle osoby
-     *
-     * @param partyId     id osoby
-     * @param search      název / jméno osoby
-     * @param from        od
-     * @param count       počet
-     * @param partyTypeId typ osoby
-     * @param versionId   verze
-     * @return List osob
-     */
-    protected List<ParPartyVO> findPartyForParty(final Integer partyId,
-                                                 final String search,
-                                                 final Integer from, final Integer count,
-                                                 final Integer partyTypeId,
-                                                 final Integer versionId) {
-        HashMap<String, Object> params = new HashMap<>();
-
-        if (search != null) {
-            params.put("search", search);
-        }
-        if (versionId != null) {
-            params.put("versionId", versionId);
-        }
-        if (partyTypeId != null) {
-            params.put("partyTypeId", partyTypeId);
-        }
-        params.put("partyId", partyId);
-        params.put("from", from != null ? from : 0);
-        params.put("count", count != null ? count : 20);
-
-        return get(spec -> spec.queryParameters(params), FIND_PARTY_FOR_PARTY).getBody().as(FilteredResultVO.class).getRows();
     }
 
     /**
@@ -2518,12 +2299,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return vytvořený uživatel
      */
     protected UsrUserVO createUser(final String username,
-                                   final Map<UsrAuthentication.AuthType, String> valueMap,
-                                   final Integer partyId) {
+                                   final Map<UsrAuthentication.AuthType, String> valueMap) {
         CreateUserVO params = new CreateUserVO();
         params.setUsername(username);
         params.setValuesMap(valueMap);
-        params.setPartyId(partyId);
+        //TODO : smazáno, přidat vazbu na AccessPoint : params.setPartyId(partyId);
         return createUser(params);
     }
 
@@ -2892,16 +2672,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vytvoření propojení na DAO
      *
-     * @param fundVersionId
-     *            identfikátor verze AS
-     * @param daoId
-     *            identfikátor dao
-     * @param nodeId
-     *            uzel k nemuz je DAO pripojeno
+     * @param fundVersionId identfikátor verze AS
+     * @param daoId         identfikátor dao
+     * @param nodeId        uzel k nemuz je DAO pripojeno
      */
     protected ArrDaoLinkVO createDaoLink(final Integer fundVersionId,
-                                 final Integer daoId,
-                                 final Integer nodeId) {
+                                         final Integer daoId,
+                                         final Integer nodeId) {
         Response resp = put(spec -> spec
                 .pathParam("fundVersionId", fundVersionId)
                 .pathParam("daoId", daoId)
@@ -2912,10 +2689,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vymazani propojení na DAO
      *
-     * @param fundVersionId
-     *            identfikátor verze AS
-     * @param daoLinkId
-     *            identfikátor propojeni Dao
+     * @param fundVersionId identfikátor verze AS
+     * @param daoLinkId     identfikátor propojeni Dao
      */
     protected void deleteDaoLink(final Integer fundVersionId,
                                  final Integer daoLinkId) {
@@ -2929,7 +2704,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected List<ArrDaoVO> findDaos(final Integer fundVersionId) {
         Response resp = get(spec -> spec.pathParameter("fundVersionId", fundVersionId),
-                            FIND_DAOS);
+                FIND_DAOS);
         return Arrays.asList(resp.as(ArrDaoVO[].class));
     }
 
@@ -3512,10 +3287,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
         post(spec -> spec.pathParameter("accessPointId", accessPointId), CONFIRM_ACCESS_POINT);
     }
 
-    protected ApAccessPointNameVO createAccessPointStructuredName(final Integer accessPointId) {
+    /*protected ApAccessPointNameVO createAccessPointStructuredName(final Integer accessPointId) {
         return post(spec -> spec.pathParameter("accessPointId", accessPointId),
                 CREATE_STRUCTURED_NAME_ACCESS_POINT).as(ApAccessPointNameVO.class);
-    }
+    }*/
 
     protected void confirmAccessPointStructuredName(final Integer accessPointId,
                                                     final Integer objectId) {
@@ -3551,18 +3326,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .body(items), CHANGE_NAME_ITEMS);
     }
 
-    /**
-     * Získání jména přístupového bodu.
-     *
-     * @param accessPointId identifikátor přístupového bodu
-     * @param objectId      identifikátor objektu jména
-     * @return jméno
-     */
-    protected ApAccessPointNameVO getAccessPointName(final Integer accessPointId,
-                                                     final Integer objectId) {
-        return get(spec -> spec.pathParameter("accessPointId", accessPointId)
-                .pathParameter("objectId", objectId), GET_NAME).as(ApAccessPointNameVO.class);
-    }
 
     /**
      * Upravení jazyk strukturovaného jména přístupového bodu.
@@ -3571,11 +3334,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param accessPointName data jména
      * @return upravené jméno
      */
-    public ApAccessPointNameVO updateAccessPointStructuredName(final Integer accessPointId,
+   /* public ApAccessPointNameVO updateAccessPointStructuredName(final Integer accessPointId,
                                                                final ApAccessPointNameVO accessPointName) {
         return put(spec -> spec.pathParameter("accessPointId", accessPointId)
                 .body(accessPointName), UPDATE_STRUCTURED_NAME_ACCESS_POINT).as(ApAccessPointNameVO.class);
-    }
+    }*/
 
     /**
      * Vrací všechny jazyky.

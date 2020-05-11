@@ -1,28 +1,20 @@
 package cz.tacr.elza.service;
 
-import static cz.tacr.elza.utils.CsvUtils.CSV_EXCEL_CHARSET;
-import static cz.tacr.elza.utils.CsvUtils.CSV_EXCEL_FORMAT;
-import static cz.tacr.elza.utils.CsvUtils.CVS_DATE_TIME_FORMATTER;
-import static org.apache.commons.io.IOUtils.LINE_SEPARATOR_WINDOWS;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-
+import cz.tacr.elza.controller.vo.IssueNodeItem;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.TreeNode;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.*;
+import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.lang3.StringUtils;
@@ -31,34 +23,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import cz.tacr.elza.controller.vo.IssueNodeItem;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.core.security.AuthMethod;
-import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.ApName;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.UsrPermission.Permission;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.WfComment;
-import cz.tacr.elza.domain.WfIssue;
-import cz.tacr.elza.domain.WfIssueList;
-import cz.tacr.elza.domain.WfIssueState;
-import cz.tacr.elza.domain.WfIssueType;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.WfCommentRepository;
-import cz.tacr.elza.repository.WfIssueListRepository;
-import cz.tacr.elza.repository.WfIssueRepository;
-import cz.tacr.elza.repository.WfIssueStateRepository;
-import cz.tacr.elza.repository.WfIssueTypeRepository;
-import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.events.EventType;
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static cz.tacr.elza.utils.CsvUtils.*;
+import static org.apache.commons.io.IOUtils.LINE_SEPARATOR_WINDOWS;
 
 @Service
 @Transactional(readOnly = true)
@@ -473,8 +449,6 @@ public class IssueService {
 
         Map<Integer, List<WfComment>> issueToCommentMap = issueDataService.groupCommentByIssueId(issues.stream().map(issue -> issue.getIssueId()).collect(Collectors.toList()));
 
-        Map<Integer, ApName> userToAccessPointNameMap = findUserAccessPointNames(issues, issueToCommentMap);
-
         DateTimeFormatter commentDateFormatter = DateTimeFormatter.ofPattern("d.M.u");
 
         String[] headers = new String[]{
@@ -499,7 +473,6 @@ public class IssueService {
             printer.print(issue.getIssueType().getName());
             printer.print(issue.getIssueState().getName());
 
-            printer.print(formatUserName(userToAccessPointNameMap, issue.getUserCreate()));
             printer.print(CVS_DATE_TIME_FORMATTER.format(issue.getTimeCreated()));
             printer.print(issue.getDescription());
 
@@ -514,9 +487,8 @@ public class IssueService {
                         text.append(LINE_SEPARATOR_WINDOWS);
                     }
 
-                    text.append(String.format("%s (%s): %s",
+                    text.append(String.format("%s : %s",
                             commentDateFormatter.format(comment.getTimeCreated()),
-                            formatUserName(userToAccessPointNameMap, comment.getUser()),
                             comment.getComment()));
 
                     if (comment.getPrevState() != comment.getNextState()) {
@@ -563,35 +535,6 @@ public class IssueService {
         }
         Validate.isTrue(fundIds.size() == 1, "Připomínky jsou z různých archivních souborů");
         return levelTreeCacheService.findNodeReferenceMark(fundIds.iterator().next(), nodeIds);
-    }
-
-    protected Map<Integer, ApName> findUserAccessPointNames(List<WfIssue> issues, Map<Integer, List<WfComment>> issueCommentMap) {
-
-        Map<Integer, UsrUser> userMap = new HashMap<>();
-        for (WfIssue issue : issues) {
-            UsrUser user = issue.getUserCreate();
-            userMap.put(user.getUserId(), user);
-        }
-        for (List<WfComment> comments : issueCommentMap.values()) {
-            for (WfComment comment : comments) {
-                UsrUser user = comment.getUser();
-                userMap.put(user.getUserId(), user);
-            }
-        }
-
-        Set<Integer> accessPointIds = userMap.values().stream()
-                .map(user -> user.getParty().getAccessPoint().getAccessPointId())
-                .collect(Collectors.toSet());
-
-        Map<Integer, ApName> accessPointToNameMap = accessPointService.findPreferredNamesByAccessPointIds(accessPointIds).stream()
-                .collect(Collectors.toMap(apName -> apName.getAccessPoint().getAccessPointId(), apName -> apName));
-
-        return userMap.values().stream()
-                .collect(Collectors.toMap(user -> user.getUserId(), user -> accessPointToNameMap.get(user.getParty().getAccessPoint().getAccessPointId())));
-    }
-
-    protected String formatUserName(Map<Integer, ApName> userAccessPointNameMap, UsrUser user) {
-        return userAccessPointNameMap.get(user.getUserId()).getName();
     }
 
     protected void publishEvent(Integer id, final EventType type) {

@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.descitems.*;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.*;
@@ -26,56 +27,6 @@ import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
 import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.factory.RuleFactory;
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrChangeVO;
-import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
-import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
-import cz.tacr.elza.controller.vo.ArrFundBaseVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.BulkActionRunVO;
-import cz.tacr.elza.controller.vo.BulkActionVO;
-import cz.tacr.elza.controller.vo.NodeConformityErrorVO;
-import cz.tacr.elza.controller.vo.NodeConformityMissingVO;
-import cz.tacr.elza.controller.vo.NodeConformityVO;
-import cz.tacr.elza.controller.vo.ParComplementTypeVO;
-import cz.tacr.elza.controller.vo.ParDynastyVO;
-import cz.tacr.elza.controller.vo.ParEventVO;
-import cz.tacr.elza.controller.vo.ParInstitutionTypeVO;
-import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
-import cz.tacr.elza.controller.vo.ParPartyGroupVO;
-import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVO;
-import cz.tacr.elza.controller.vo.ParPartyTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParPersonVO;
-import cz.tacr.elza.controller.vo.ParRelationClassTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationEntityVO;
-import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.ParUnitdateVO;
-import cz.tacr.elza.controller.vo.PersistentSortConfigVO;
-import cz.tacr.elza.controller.vo.RulArrangementExtensionVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPartTypeVO;
-import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.RulStructureTypeVO;
-import cz.tacr.elza.controller.vo.RulTemplateVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.UIPartyGroupVO;
-import cz.tacr.elza.controller.vo.UISettingsVO;
-import cz.tacr.elza.controller.vo.UsrGroupVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
@@ -115,8 +66,6 @@ public class ConfigMapperConfiguration {
     private StructuredObjectRepository structureDataRepository;
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
-    @Autowired
-    private PartyRepository partyRepository;
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
     @Autowired
@@ -202,34 +151,34 @@ public class ConfigMapperConfiguration {
 
 
         mapperFactory.classMap(ArrItemCoordinates.class, ArrItemCoordinatesVO.class)
-               .customize(new CustomMapper<ArrItemCoordinates, ArrItemCoordinatesVO>() {
-            @Override
-            public void mapAtoB(final ArrItemCoordinates coordinates,
-                                final ArrItemCoordinatesVO coordinatesVO,
-                                final MappingContext context) {
-                Geometry geo = coordinates.getValue();
-                String value = GeometryConvertor.convert(geo);
-                coordinatesVO.setValue(value);
+                .customize(new CustomMapper<ArrItemCoordinates, ArrItemCoordinatesVO>() {
+                    @Override
+                    public void mapAtoB(final ArrItemCoordinates coordinates,
+                                        final ArrItemCoordinatesVO coordinatesVO,
+                                        final MappingContext context) {
+                        Geometry geo = coordinates.getValue();
+                        String value = GeometryConvertor.convert(geo);
+                        coordinatesVO.setValue(value);
                     }
 
-            @Override
-            public void mapBtoA(final ArrItemCoordinatesVO coordinatesVO,
-                                final ArrItemCoordinates coordinates,
-                                final MappingContext context) {
-                String str = coordinatesVO.getValue();
-                Geometry value = GeometryConvertor.convert(str);
-                coordinates.setValue(value);
-                }
-         }).exclude("value").byDefault().register();
-         mapperFactory.classMap(ArrItemEnum.class, ArrItemEnumVO.class).byDefault().register();
-         mapperFactory.classMap(ArrItemFormattedText.class, ArrItemFormattedTextVO.class).byDefault().register();
-         mapperFactory.classMap(ArrItemInt.class, ArrItemIntVO.class).byDefault().register();
-         mapperFactory.classMap(ArrItemJsonTable.class, ArrItemJsonTableVO.class).byDefault().register();
-         mapperFactory.classMap(ArrItemText.class, ArrItemTextVO.class).byDefault().register();
-         mapperFactory.classMap(ArrItemDate.class, ArrItemDateVO.class).byDefault().register();
-         mapperFactory.classMap(ArrItemDecimal.class, ArrItemDecimalVO.class).byDefault().register();
-         mapperFactory.classMap(ArrItemUnitid.class, ArrItemUnitidVO.class).byDefault().register();
-         mapperFactory.classMap(ArrItemUnitdate.class, ArrItemUnitdateVO.class).customize(
+                    @Override
+                    public void mapBtoA(final ArrItemCoordinatesVO coordinatesVO,
+                                        final ArrItemCoordinates coordinates,
+                                        final MappingContext context) {
+                        String str = coordinatesVO.getValue();
+                        Geometry value = GeometryConvertor.convert(str);
+                        coordinates.setValue(value);
+                    }
+                }).exclude("value").byDefault().register();
+        mapperFactory.classMap(ArrItemEnum.class, ArrItemEnumVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemFormattedText.class, ArrItemFormattedTextVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemInt.class, ArrItemIntVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemJsonTable.class, ArrItemJsonTableVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemText.class, ArrItemTextVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemDate.class, ArrItemDateVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemDecimal.class, ArrItemDecimalVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemUnitid.class, ArrItemUnitidVO.class).byDefault().register();
+        mapperFactory.classMap(ArrItemUnitdate.class, ArrItemUnitdateVO.class).customize(
                 new CustomMapper<ArrItemUnitdate, ArrItemUnitdateVO>() {
                     @Override
                     public void mapAtoB(final ArrItemUnitdate unitdate,
@@ -291,24 +240,6 @@ public class ConfigMapperConfiguration {
                         arrItemFileRef.setFile(fundFileRepository.findOne(arrItemFileRefVO.getValue()));
                     }
                 }).byDefault().register();
-        mapperFactory.classMap(ArrItemPartyRef.class, ArrItemPartyRefVO.class).customize(
-                new CustomMapper<ArrItemPartyRef, ArrItemPartyRefVO>() {
-                    @Override
-                    public void mapAtoB(final ArrItemPartyRef partyRef,
-                                        final ArrItemPartyRefVO patryRefVO,
-                                        final MappingContext context) {
-                        super.mapAtoB(partyRef, patryRefVO, context);
-                        patryRefVO.setValue(partyRef.getParty() == null ? null : partyRef.getParty().getPartyId());
-                    }
-
-                    @Override
-                    public void mapBtoA(final ArrItemPartyRefVO partyRefVO,
-                                        final ArrItemPartyRef partyRef,
-                                        final MappingContext context) {
-                        super.mapBtoA(partyRefVO, partyRef, context);
-                        partyRef.setParty(partyRefVO.getValue() == null ? null : partyRepository.findOne(partyRefVO.getValue()));
-                    }
-                }).byDefault().register();
         mapperFactory.classMap(ArrItemRecordRef.class, ArrItemRecordRefVO.class).customize(
                 new CustomMapper<ArrItemRecordRef, ArrItemRecordRefVO>() {
                     @Override
@@ -357,211 +288,17 @@ public class ConfigMapperConfiguration {
                     public void mapAtoB(final BulkActionConfig bulkActionConfig,
                                         final BulkActionVO bulkActionVO,
                                         final MappingContext context) {
-				        bulkActionVO.setName(bulkActionConfig.getName());
-				        bulkActionVO.setDescription(bulkActionConfig.getDescription());
+                        bulkActionVO.setName(bulkActionConfig.getName());
+                        bulkActionVO.setDescription(bulkActionConfig.getDescription());
                         bulkActionVO.setFastAction(bulkActionConfig.isFastAction());
                     }
                 }
         ).byDefault().register();
         mapperFactory.classMap(ArrBulkActionRun.class, BulkActionRunVO.class).field("bulkActionRunId", "id").field("bulkActionCode", "code").byDefault().register();
-        mapperFactory.classMap(ParComplementType.class, ParComplementTypeVO.class).byDefault().register();
-        mapperFactory.classMap(ParDynasty.class, ParDynastyVO.class).byDefault().register();
-        mapperFactory.classMap(ParParty.class, ParPartyVO.class)
-                .field("partyId", "id")
-                .exclude("preferredName")
-                .exclude("partyNames")
-                .exclude("partyCreators")
-                .exclude("relations")
-                .exclude(ParParty.FIELD_RECORD)
-                .customize(new CustomMapper<ParParty, ParPartyVO>() {
-                    @Override
-                    public void mapAtoB(ParParty a, ParPartyVO b, MappingContext context) {
-                        ApAccessPointVO apVO = apFactory.createVO(a.getAccessPoint());
-                        b.setAccessPoint(apVO);
-                    }
-                    @Override
-                    public void mapBtoA(final ParPartyVO parPartyVO,
-                                        final ParParty party,
-                                        final MappingContext context) {
-
-                        if (parPartyVO.getAccessPoint() != null && parPartyVO.getAccessPoint().getId() != null) {
-                            party.setAccessPoint(apAccessPointRepository.getOneCheckExist(parPartyVO.getAccessPoint().getId()));
-                        }
-
-                        if (CollectionUtils.isNotEmpty(parPartyVO.getCreators())) {
-                            List<ParCreator> creators = new ArrayList<>(parPartyVO.getCreators().size());
-                            for (ParPartyVO creator : parPartyVO.getCreators()) {
-                                ParCreator parCreator = new ParCreator();
-                                ParParty creatorParty = new ParParty();
-                                creatorParty.setPartyId(creator.getId());
-                                parCreator.setCreatorParty(creatorParty);
-                                creators.add(parCreator);
-                            }
-                            party.setPartyCreators(creators);
-                        }
-                    }
-                })
-                .byDefault().register();
-
-
-        mapperFactory.classMap(ParEvent.class, ParEventVO.class).byDefault().register();
         mapperFactory.classMap(ParInstitution.class, ParInstitutionVO.class).byDefault()
                 .field("institutionId", "id").register();
         mapperFactory.classMap(ParInstitutionType.class, ParInstitutionTypeVO.class).byDefault()
                 .field("institutionTypeId", "id").register();
-
-        mapperFactory.classMap(ParPartyGroup.class, ParPartyGroupVO.class).byDefault().register();
-        mapperFactory.classMap(ParPartyGroupIdentifier.class, ParPartyGroupIdentifierVO.class)
-                .field("partyGroupIdentifierId", "id")
-                .customize(
-                new CustomMapper<ParPartyGroupIdentifier, ParPartyGroupIdentifierVO>() {
-                    @Override
-                    public void mapAtoB(final ParPartyGroupIdentifier parPartyGroupIdentifier,
-                                        final ParPartyGroupIdentifierVO parPartyGroupIdentifierVO,
-                                        final MappingContext context) {
-                        ParPartyGroup parPartyGroup = parPartyGroupIdentifier.getPartyGroup();
-                        parPartyGroupIdentifierVO.setPartyId(parPartyGroup.getPartyId());
-                    }
-                }).byDefault().register();
-
-        mapperFactory.classMap(ParPartyName.class, ParPartyNameVO.class)
-                .field("partyNameId", "id")
-                .customize(
-                new CustomMapper<ParPartyName, ParPartyNameVO>() {
-                    @Override
-                    public void mapAtoB(final ParPartyName parPartyName,
-                                        final ParPartyNameVO parPartyNameVO,
-                                        final MappingContext context) {
-                        ParParty party = parPartyName.getParty();
-                        if (party != null) {
-                            parPartyNameVO.setPartyId(party.getPartyId());
-                        }
-
-                        String displayName = StringUtils
-                                .join(Arrays.asList(parPartyName.getMainPart(), parPartyName.getOtherPart(),
-                                        parPartyName.getDegreeBefore(), parPartyName.getDegreeAfter()), " ");
-                        displayName = displayName.replaceAll("\\s+", " ");
-                        parPartyNameVO.setDisplayName(displayName.trim());
-                    }
-                }).byDefault().register();
-
-        mapperFactory.classMap(ParPartyNameComplement.class, ParPartyNameComplementVO.class)
-                .field("partyNameComplementId", "id")
-                .exclude("partyName").customize(new CustomMapper<ParPartyNameComplement, ParPartyNameComplementVO>() {
-            @Override
-            public void mapAtoB(final ParPartyNameComplement complement,
-                                final ParPartyNameComplementVO complementVO,
-                                final MappingContext context) {
-                complementVO.setComplementTypeId(complement.getComplementType() == null
-                                                 ? null : complement.getComplementType().getComplementTypeId());
-            }
-
-            @Override
-            public void mapBtoA(final ParPartyNameComplementVO complementVO,
-                                final ParPartyNameComplement complement,
-                                final MappingContext context) {
-                if (complementVO.getComplementTypeId() != null) {
-                    ParComplementType complementType = new ParComplementType();
-                    complementType.setComplementTypeId(complementVO.getComplementTypeId());
-                    complement.setComplementType(complementType);
-                }
-            }
-        }).byDefault().register();
-
-        mapperFactory.classMap(ParPartyNameFormType.class, ParPartyNameFormTypeVO.class).field("nameFormTypeId", "id").byDefault().register();
-
-        mapperFactory.classMap(ParPartyType.class, ParPartyTypeVO.class).field("partyTypeId", "id").byDefault().register();
-
-
-        mapperFactory.classMap(ParPerson.class, ParPersonVO.class).byDefault().register();
-
-        mapperFactory.classMap(ParRelation.class, ParRelationVO.class).field("relationId", "id").exclude("relationEntities").customize(
-                new CustomMapper<ParRelation, ParRelationVO>() {
-                    @Override
-                    public void mapAtoB(final ParRelation parRelation,
-                                        final ParRelationVO parRelationVO,
-                                        final MappingContext context) {
-                        ParParty party = parRelation.getParty();
-                        parRelationVO.setPartyId(party.getPartyId());
-                        parRelationVO.setDisplayName(parRelation.getNote());
-                        parRelationVO.setRelationTypeId(parRelation.getRelationType().getRelationTypeId());
-                    }
-
-                    @Override
-                    public void mapBtoA(final ParRelationVO relationVO,
-                                        final ParRelation parRelation,
-                                        final MappingContext context) {
-                        if (relationVO.getPartyId() != null) {
-                            ParParty party = new ParParty();
-                            party.setPartyId(relationVO.getPartyId());
-                            parRelation.setParty(party);
-                        }
-                        ParRelationType parRelationType = new ParRelationType();
-                        parRelationType.setRelationTypeId(relationVO.getRelationTypeId());
-                        parRelation.setRelationType(parRelationType);
-                    }
-                }).byDefault().register();
-
-        mapperFactory.classMap(ParRelationEntity.class, ParRelationEntityVO.class).field("relationEntityId", "id").customize(
-                new CustomMapper<ParRelationEntity, ParRelationEntityVO>() {
-                    @Override
-                    public void mapAtoB(final ParRelationEntity parRelationEntity,
-                                        final ParRelationEntityVO parRelationEntityVO,
-                                        final MappingContext context) {
-                        ParRelation relation = parRelationEntity.getRelation();
-                        parRelationEntityVO.setRelationId(relation.getRelationId());
-                        ApAccessPointVO apVO = apFactory.createVO(parRelationEntity.getAccessPoint());
-                        parRelationEntityVO.setRecord(apVO);
-                    }
-
-                    @Override
-                    public void mapBtoA(final ParRelationEntityVO relationEntityVO,
-                                        final ParRelationEntity parRelationEntity,
-                                        final MappingContext context) {
-
-                        if (relationEntityVO.getRoleType() != null) {
-                            ParRelationRoleType roleType = new ParRelationRoleType();
-                            roleType.setRoleTypeId(relationEntityVO.getRoleType().getId());
-                            parRelationEntity.setRoleType(roleType);
-                        }
-
-                        if (relationEntityVO.getRecord() != null) {
-                            ApAccessPoint record = new ApAccessPoint();
-                            record.setAccessPointId(relationEntityVO.getRecord().getId());
-                            parRelationEntity.setAccessPoint(record);
-                        }
-                    }
-                }).byDefault().register();
-
-
-        mapperFactory.classMap(ParRelationRoleType.class, ParRelationRoleTypeVO.class).field("roleTypeId", "id").byDefault().register();
-        mapperFactory.classMap(ParRelationType.class, ParRelationTypeVO.class).field("relationTypeId", "id").byDefault().register();
-        mapperFactory.classMap(ParUnitdate.class, ParUnitdateVO.class).field("unitdateId", "id").customize(
-            new CustomMapper<ParUnitdate, ParUnitdateVO>() {
-                @Override
-                public void mapAtoB(final ParUnitdate parUnitdate,
-                                    final ParUnitdateVO unitdateVO,
-                                    final MappingContext context) {
-                    if (parUnitdate.getCalendarType() != null) {
-                        unitdateVO.setCalendarTypeId(parUnitdate.getCalendarType().getCalendarTypeId());
-                    }
-                    if (parUnitdate.getFormat() != null) {
-                        unitdateVO.setValue(UnitDateConvertor.convertToString(parUnitdate));
-                    }
-                }
-
-                @Override
-                public void mapBtoA(final ParUnitdateVO unitdateVO,
-                                    final ParUnitdate parUnitdate,
-                                    final MappingContext context) {
-                    if (unitdateVO.getValue() != null) {
-                        UnitDateConvertor.convertToUnitDate(unitdateVO.getValue(), parUnitdate);
-                    }
-                    Integer calendarTypeId = unitdateVO.getCalendarTypeId();
-                    parUnitdate.setCalendarType(calendarTypeId != null ? calendarTypeRepository.getOneCheckExist(calendarTypeId) : null);
-                }
-            }).byDefault().register();
-
         mapperFactory.classMap(ArrDigitizationFrontdesk.class, ArrDigitizationFrontdeskVO.class).field("externalSystemId", "id").byDefault().register();
         mapperFactory.classMap(ArrDigitalRepository.class, ArrDigitalRepositoryVO.class).field("externalSystemId", "id").byDefault().register();
 
@@ -653,6 +390,8 @@ public class ConfigMapperConfiguration {
 
         mapperFactory.classMap(ArrFund.class, ArrFundVO.class).byDefault().field("fundId", "id").register();
         mapperFactory.classMap(ArrFund.class, ArrFundBaseVO.class).byDefault().field("fundId", "id").register();
+        mapperFactory.classMap(ArrFund.class, Fund.class).byDefault().field("fundId", "id").register();
+        mapperFactory.classMap(ArrFund.class, FundDetail.class).byDefault().field("fundId", "id").register();
 
         mapperFactory.classMap(ArrFundVersion.class, ArrFundVersionVO.class).byDefault().field(
                 "fundVersionId", "id").exclude("arrangementType")
@@ -719,16 +458,6 @@ public class ConfigMapperConfiguration {
                 .field("settingsId", "id")
                 .register();
 
-        mapperFactory.classMap(ParRelationClassType.class, ParRelationClassTypeVO.class)
-                .byDefault()
-                .field("relationClassTypeId", "id")
-                .register();
-
-        mapperFactory.classMap(UIPartyGroup.class, UIPartyGroupVO.class)
-                .byDefault()
-                .field("partyGroupId", "id")
-                .register();
-
         mapperFactory.classMap(RulStructuredType.class, RulStructureTypeVO.class)
                 .byDefault()
                 .field("structuredTypeId", "id")
@@ -748,7 +477,7 @@ public class ConfigMapperConfiguration {
                         Geometry geo = coordinates.getValue();
                         String value = GeometryConvertor.convert(geo);
                         coordinatesVO.setValue(value);
-                            }
+                    }
 
                     @Override
                     public void mapBtoA(final ArrItemCoordinatesVO coordinatesVO,
@@ -757,7 +486,7 @@ public class ConfigMapperConfiguration {
                         String str = coordinatesVO.getValue();
                         Geometry value = GeometryConvertor.convert(str);
                         coordinates.setValue(value);
-                        }
+                    }
                 }).exclude("value").byDefault().register();
         mapperFactory.classMap(ArrDataNull.class, ArrItemEnumVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataInteger.class, ArrItemIntVO.class).byDefault().register();
@@ -766,24 +495,24 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrDataDecimal.class, ArrItemDecimalVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataBit.class, ArrItemBitVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataUnitid.class, ArrItemUnitidVO.class).customize(
-                                                                                     new CustomMapper<ArrDataUnitid, ArrItemUnitidVO>() {
-                                                                                         @Override
-                                                                                         public void mapAtoB(final ArrDataUnitid unitId,
-                                                                                                             final ArrItemUnitidVO unitIdVo,
-                                                                                                             final MappingContext context) {
-                                                                                             unitIdVo.setValue(unitId
-                                                                                                     .getUnitId());
-                                                                                         }
+                new CustomMapper<ArrDataUnitid, ArrItemUnitidVO>() {
+                    @Override
+                    public void mapAtoB(final ArrDataUnitid unitId,
+                                        final ArrItemUnitidVO unitIdVo,
+                                        final MappingContext context) {
+                        unitIdVo.setValue(unitId
+                                .getUnitId());
+                    }
 
-                                                                                         @Override
-                                                                                         public void mapBtoA(final ArrItemUnitidVO unitIdVo,
-                                                                                                             final ArrDataUnitid unitId,
-                                                                                                             final MappingContext context) {
-                                                                                             unitId.setUnitId(unitIdVo
-                                                                                                     .getValue());
-                                                                                         }
+                    @Override
+                    public void mapBtoA(final ArrItemUnitidVO unitIdVo,
+                                        final ArrDataUnitid unitId,
+                                        final MappingContext context) {
+                        unitId.setUnitId(unitIdVo
+                                .getValue());
+                    }
 
-                                                                                     })
+                })
                 .byDefault().register();
         mapperFactory.classMap(ArrDataUnitdate.class, ArrItemUnitdateVO.class).customize(
                 new CustomMapper<ArrDataUnitdate, ArrItemUnitdateVO>() {
@@ -873,24 +602,6 @@ public class ConfigMapperConfiguration {
                                         final MappingContext context) {
                         super.mapBtoA(arrItemFileRefVO, arrItemFileRef, context);
                         arrItemFileRef.setFile(fundFileRepository.findOne(arrItemFileRefVO.getValue()));
-                    }
-                }).byDefault().register();
-        mapperFactory.classMap(ArrDataPartyRef.class, ArrItemPartyRefVO.class).customize(
-                new CustomMapper<ArrDataPartyRef, ArrItemPartyRefVO>() {
-                    @Override
-                    public void mapAtoB(final ArrDataPartyRef partyRef,
-                                        final ArrItemPartyRefVO patryRefVO,
-                                        final MappingContext context) {
-                        super.mapAtoB(partyRef, patryRefVO, context);
-                        patryRefVO.setValue(partyRef.getParty() == null ? null : partyRef.getParty().getPartyId());
-                    }
-
-                    @Override
-                    public void mapBtoA(final ArrItemPartyRefVO partyRefVO,
-                                        final ArrDataPartyRef partyRef,
-                                        final MappingContext context) {
-                        super.mapBtoA(partyRefVO, partyRef, context);
-                        partyRef.setParty(partyRefVO.getValue() == null ? null : partyRepository.findOne(partyRefVO.getValue()));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrDataRecordRef.class, ArrItemRecordRefVO.class).customize(
@@ -1049,7 +760,7 @@ public class ConfigMapperConfiguration {
 
         @Override
         public Integer convertTo(final RulItemSpec.Type type,
-                                                 final Type<Integer> type2) {
+                                 final Type<Integer> type2) {
             return RuleFactory.convertType(type);
         }
 

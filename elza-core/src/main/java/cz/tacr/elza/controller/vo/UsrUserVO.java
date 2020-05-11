@@ -18,8 +18,8 @@ public class UsrUserVO {
     private boolean active;
     /** Popis. */
     private String description;
-    /** Osoba. */
-    private ParPartyVO party;
+    /** Přístupový bod. */
+    private ApAccessPointVO accessPoint;
 	/**
 	 * Oprávnění.
 	 */
@@ -38,17 +38,17 @@ public class UsrUserVO {
 
 	}
 
-	protected UsrUserVO(UsrUser user, ParPartyVO party) {
+	protected UsrUserVO(UsrUser user, ApAccessPointVO accessPoint) {
 		this.username = user.getUsername();
 		this.id = user.getUserId();
 		this.active = user.getActive();
 		this.description = user.getDescription();
-		this.party = party;
+		this.accessPoint = accessPoint;
 	}
 
 	/**
 	 * Prepare simplified user info
-	 * 
+	 *
 	 * @param userDetail
 	 */
 	public UsrUserVO(UserDetail userDetail) {
@@ -90,14 +90,6 @@ public class UsrUserVO {
         this.description = description;
     }
 
-    public ParPartyVO getParty() {
-        return party;
-    }
-
-    public void setParty(final ParPartyVO party) {
-        this.party = party;
-    }
-
     public List<UsrPermissionVO> getPermissions() {
         return permissions;
     }
@@ -120,6 +112,14 @@ public class UsrUserVO {
 
     public void setGroups(final List<UsrGroupVO> groups) {
         this.groups = groups;
+    }
+
+    public ApAccessPointVO getAccessPoint() {
+        return accessPoint;
+    }
+
+    public void setAccessPoint(ApAccessPointVO accessPoint) {
+        this.accessPoint = accessPoint;
     }
 
     public UsrUser createEntity() {

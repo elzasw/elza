@@ -1,15 +1,10 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
-import cz.tacr.elza.service.party.ApConvResult;
 import cz.tacr.elza.ws.types.v1.Did;
 import groovy.lang.*;
 import org.apache.commons.io.FileUtils;
@@ -60,27 +55,6 @@ public class GroovyScriptService {
         } catch (Throwable t) {
             throw new SystemException("Failed to initialize groovy scripts", t);
         }
-    }
-
-    /**
-     * Zavolá script pro vytvoření rejstříkového hesla z osoby.
-     *
-     * @param party osoba
-     * @param complementTypes available complement types for party type
-     * @return vytvořené rejstříkové heslo s nastavenými variantními hesly
-     */
-    public ApConvResult convertPartyToAp(final ParParty party,
-                                         final ApState apState,
-                                         final Collection<ParComplementType> complementTypes) {
-        Map<Integer, ParComplementType> complementTypeMap = ElzaTools.createEntityMap(complementTypes,
-                ParComplementType::getComplementTypeId);
-
-        Map<String, Object> input = new HashMap<>();
-        input.put("PARTY", party);
-        input.put("AP_STATE", apState);
-        input.put("COMPLEMENT_TYPE_MAP", complementTypeMap);
-
-        return (ApConvResult) createRecordScriptFile.evaluate(input);
     }
 
     /**
