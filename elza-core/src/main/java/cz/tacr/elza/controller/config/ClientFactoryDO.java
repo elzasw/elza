@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.controller.vo.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
@@ -29,10 +30,6 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.FilterTools;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.PersistentSortConfigVO;
-import cz.tacr.elza.controller.vo.UISettingsVO;
-import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.filter.Condition;
 import cz.tacr.elza.controller.vo.filter.Filter;
 import cz.tacr.elza.controller.vo.filter.Filters;
@@ -280,6 +277,19 @@ public class ClientFactoryDO {
         ParInstitution institution = institutionRepository.findOne(fundVO.getInstitutionId());
         fund.setInstitution(institution);
         return fund;
+    }
+
+    public ArrFund createFund(final UpdateFund fund, ParInstitution institution, String id) {
+        Assert.notNull(fund, "AS musí být vyplněno");
+        //TODO : mozna pouzit MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrFund arrFund = new ArrFund();
+        arrFund.setFundId(Integer.valueOf(id));
+        arrFund.setUnitDate(fund.getUnitdate());
+        arrFund.setName(fund.getName());
+        arrFund.setFundNumber(fund.getFundNumber());
+        arrFund.setInternalCode(fund.getInternalCode());
+        arrFund.setInstitution(institution);
+        return arrFund;
     }
 
     public List<DescItemTypeFilter> createFilters(final Filters filters) {

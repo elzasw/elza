@@ -194,6 +194,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         ArrFundVO fund = createFund("Test fulltext " + i, "TST" + 1);
 
+
         RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_TITLE");
 
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
@@ -1187,6 +1188,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     }
 
+    @Ignore
     @Test
     public void copyLevelsTest() throws InterruptedException {
         ArrFundVO fundSource = createdFund();

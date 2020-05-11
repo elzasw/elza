@@ -61,8 +61,6 @@ public class AccessPointGeneratorService {
     private final ApRuleRepository ruleRepository;
     private final ResourcePathResolver resourcePathResolver;
     private final ApItemRepository itemRepository;
-    private final ApNameItemRepository nameItemRepository;
-    private final ApAccessPointItemRepository accessPointItemRepository;
     private final RuleService ruleService;
     private final ApPartRepository partRepository;
     private final AccessPointDataService apDataService;

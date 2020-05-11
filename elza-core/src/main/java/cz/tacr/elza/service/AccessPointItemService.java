@@ -28,7 +28,6 @@ public class AccessPointItemService {
     private final StaticDataService staticDataService;
     private final ApItemRepository itemRepository;
     private final DataRepository dataRepository;
-    private final ApAccessPointItemRepository accessPointItemRepository;
     private final SequenceService sequenceService;
 
     public AccessPointItemService(final EntityManager em,

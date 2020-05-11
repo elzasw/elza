@@ -186,10 +186,10 @@ public class UserService {
 
 		if (userDetail.hasPermission(UsrPermission.Permission.USR_PERM)) {
 			// nefiltruje se dle přiřazených oprávnění, vrací všechny AS
-			return fundRepository.findFunds(search, firstResult, maxResults);
+			return fundRepository.findFunds(search, null, firstResult, maxResults);
 		} else {
 			// filtruje se dle přiřazeníé oprávnění na AS pro daného uživatele
-			return fundRepository.findFundsWithPermissions(search, firstResult, maxResults, userDetail.getId());
+			return fundRepository.findFundsWithPermissions(search, null, firstResult, maxResults, userDetail.getId());
 		}
     }
 

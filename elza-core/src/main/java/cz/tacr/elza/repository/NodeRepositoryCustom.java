@@ -45,6 +45,14 @@ public interface NodeRepositoryCustom {
     /**
      * Najde uzly s danou hodnotou.
      *
+     * @param fundId id fondů, do kterých uzly patří
+     * @param text hledaná hodnota
+     * @return množina id uzlů odopovídající hledané hodnotě
+     */
+    List<ArrFundToNodeList> findFundIdsByFulltext(String text, Collection<ArrFund> fundList, Integer max, Integer from);
+    /**
+     * Najde uzly s danou hodnotou.
+     *
      * @param text hledaná hodnota
      * @param fundId id fondu do kterého uzly patří
      * @param lockChangeId id verze ve které se má hledat, může být null

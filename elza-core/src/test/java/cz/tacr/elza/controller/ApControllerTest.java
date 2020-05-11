@@ -417,7 +417,6 @@ public class ApControllerTest extends AbstractControllerTest {
         //TODO fantis
         // Vytvoření fund
         ArrFundVO fund = createFund("RegisterLinks Test AP", "IC3");
-
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();

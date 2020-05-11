@@ -228,7 +228,6 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         for(int i = 0; i < names.getNm().size(); i++) {
             AccessPointName name = names.getNm().get(i);
             RulPartType partType = context.getRulPartType("PT_NAME");
-            //TODO : vyřešit preferované jméno
             ApPart partEntity = createPart(partType, apInfo);
             List<ItemWrapper> itemWrapperList = new ArrayList<>();
 

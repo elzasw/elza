@@ -14,6 +14,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -25,7 +26,7 @@ import cz.tacr.elza.domain.interfaces.Versionable;
 /**
  * Archivní pomůcka. Archivní pomůcka je lineárně verzována pomocí
  * {@link ArrFundVersion}.
- * 
+ *
  * @since 22.7.15
  */
 @Entity(name = "arr_fund")
@@ -46,6 +47,13 @@ public class ArrFund extends AbstractVersionableEntity implements Versionable, I
 
 	@Column(length = 250)
 	private String internalCode;
+
+	@Column
+    private Integer fundNumber;
+
+    @Column(length = StringLength.LENGTH_50)
+    private String unitdate;
+
 
 	@OneToOne(fetch = FetchType.LAZY, targetEntity = ParInstitution.class)
 	@JoinColumn(name = "institutionId", nullable = false)
@@ -89,7 +97,23 @@ public class ArrFund extends AbstractVersionableEntity implements Versionable, I
 		this.internalCode = internalCode;
 	}
 
-	public ParInstitution getInstitution() {
+    public Integer getFundNumber() {
+        return fundNumber;
+    }
+
+    public void setFundNumber(Integer fundNumber) {
+        this.fundNumber = fundNumber;
+    }
+
+    public String getUnitDate() {
+        return unitdate;
+    }
+
+    public void setUnitDate(String unitdate) {
+        this.unitdate = unitdate;
+    }
+
+    public ParInstitution getInstitution() {
 		return institution;
 	}
 

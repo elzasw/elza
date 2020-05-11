@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.config;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.descitems.*;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.*;
@@ -44,6 +46,11 @@ import cz.tacr.elza.controller.factory.WfFactory;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.*;
 import cz.tacr.elza.controller.vo.nodes.descitems.*;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
+import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -317,6 +324,37 @@ public class ClientFactoryVO {
         }
 
         return fundVO;
+    }
+
+    /**
+     * Vytvoření ArrFund a načtení verzí.
+     *
+     * @param arrFund archivní soubor     *
+     * @param user přihlášený uživatel
+     * @return VO
+     */
+    public Fund createFund(final ArrFund arrFund, UserDetail user) {
+        Assert.notNull(arrFund, "AS musí být vyplněn");
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        Fund fund = mapper.map(arrFund, Fund.class);
+        fund.setInstitutionIdentifier(arrFund.getInstitution().getInternalCode()); //TODO : gotzy - nebo accesspoint uuid ?
+        fund.setFundNumber(arrFund.getFundNumber());
+        fund.setName(arrFund.getName());
+        fund.setInternalCode(arrFund.getInternalCode());
+        fund.setUnitdate(arrFund.getUnitDate());
+        return fund;
+    }
+
+    public FundDetail createFundDetail(final ArrFund arrFund, UserDetail user) {
+        Assert.notNull(arrFund, "AS musí být vyplněn");
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        FundDetail fundDetail = mapper.map(arrFund, FundDetail.class);
+        fundDetail.setInstitutionIdentifier(arrFund.getInstitution().getInternalCode());//TODO : gotzy - nebo accesspoint uuid ?
+        fundDetail.setFundNumber(arrFund.getFundNumber());
+        fundDetail.setName(arrFund.getName());
+        fundDetail.setInternalCode(arrFund.getInternalCode());
+        fundDetail.setUnitdate(arrFund.getUnitDate());
+        return fundDetail;
     }
 
     /**
@@ -1020,9 +1058,11 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ParInstitutionVO institutionVO = mapper.map(institution, ParInstitutionVO.class);
         institutionVO.setAccessPointId(institution.getAccessPointId());
+        institutionVO.setName(institution.getAccessPoint().getPreferredPart().getValue());
         //TODO : gotzy dořešit generování preferovaného jména
         //ApName prefName = apNameRepository.findPreferredNameByPartyId(institution.getAccessPointId());
-        institutionVO.setName("Preferované jméno");
+
+
         return institutionVO;
     }
 

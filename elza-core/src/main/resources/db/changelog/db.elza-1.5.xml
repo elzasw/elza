@@ -177,7 +177,7 @@
         </addColumn>
     </changeSet>
 
-    <changeSet id="20200420204000" author="fantis">
+   <changeSet id="20200420204000" author="fantis">
         <addColumn tableName="ap_item">
             <column name="part_id" type="int">
                 <constraints nullable="true"
@@ -252,24 +252,6 @@
     <changeSet id="20200410233000" author="gotzy">
         <dropTable tableName="arr_data_party_ref"/>
     </changeSet>
-
-    <!--<changeSet id="20200413232320" author="gotzy">
-        <delete tableName="rul_item_type_action">
-            <where>item_type_id IN (SELECT item_type_id FROM rul_item_type CROSS JOIN rul_data_type WHERE rul_item_type.data_type_id = rul_data_type.data_type_id AND rul_data_type.code ='PARTY_REF')</where>
-        </delete>
-    </changeSet>
-
-    <changeSet id="20200413232330" author="gotzy">
-        <delete tableName="rul_item_type">
-            <where>data_type_id = (SELECT data_type_id FROM rul_data_type WHERE code ='PARTY_REF')</where>
-        </delete>
-    </changeSet>
-
-    <changeSet id="20200413232400" author="gotzy">
-        <delete tableName="rul_data_type">
-            <where>code='PARTY_REF'</where>
-        </delete>
-    </changeSet>-->
 
     <changeSet id="20200414091500" author="gotzy">
         <addColumn tableName="usr_user">
@@ -346,6 +328,19 @@
     <changeSet id="20200430093200" author="gotzy">
         <validCheckSum>ANY</validCheckSum>
         <delete tableName="arr_cached_node"/>
+    </changeSet>
+
+    <changeSet id="20200505083000" author="gotzy">
+        <addColumn tableName="arr_fund">
+            <column name="fund_number" type="int">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="arr_fund">
+            <column name="unitdate" type="char(50)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
     </changeSet>
 
 </databaseChangeLog>
