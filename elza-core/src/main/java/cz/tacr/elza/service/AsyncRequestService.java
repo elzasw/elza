@@ -2,7 +2,6 @@ package cz.tacr.elza.service;
 
 import cz.tacr.elza.asynchactions.*;
 import cz.tacr.elza.bulkaction.AsyncBulkActionWorker;
-import cz.tacr.elza.bulkaction.BulkActionHelperService;
 import cz.tacr.elza.controller.vo.ArrAsyncRequestVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.FundStatisticsVO;
@@ -10,6 +9,8 @@ import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.ArrAsyncRequestRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.AsyncOutputGeneratorWorker;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
@@ -85,7 +86,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     private BulkActionRunRepository bulkActionRepository;
 
     @Autowired
-    private BulkActionHelperService bulkActionHelperService;
+    private IEventNotificationService eventNotificationService;
 
     @Autowired
     @Qualifier(value = "threadPoolTaskExecutorAR")
@@ -172,7 +173,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         if (validationPriority == null) {
             validationPriority = 1;
         }
-        bulkActionHelperService.eventPublishBulkAction(bulkActionRun);
+        eventPublishBulkAction(bulkActionRun);
         ArrAsyncRequest request = new ArrAsyncRequest(type, validationPriority, fundVersion);
         request.setBulkAction(bulkActionRun);
         asyncRequestRepository.save(request);
@@ -821,7 +822,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         if (needSave) {
             bulkActionRun.setState(ArrBulkActionRun.State.INTERRUPTED);
             bulkActionRepository.save(bulkActionRun);
-            bulkActionHelperService.eventPublishBulkAction(bulkActionRun);
+            eventPublishBulkAction(bulkActionRun);
             removeFromArrAsyncRequest(AsyncTypeEnum.BULK, bulkActionRun.getBulkActionRunId());
             bulkActionRepository.flush();
         }
@@ -1110,5 +1111,23 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                 throw new IllegalArgumentException();
             }
         } while (i > 0);
+    }
+
+    /**
+     * Event publish bulk action.
+     *
+     * @param bulkActionRun the bulk action run
+     */
+    @Transactional(Transactional.TxType.MANDATORY)
+    public void eventPublishBulkAction(final ArrBulkActionRun bulkActionRun) {
+        eventNotificationService.publishEvent(
+                EventFactory.createIdInVersionEvent(
+                        EventType.BULK_ACTION_STATE_CHANGE,
+                        bulkActionRun.getFundVersion(),
+                        bulkActionRun.getBulkActionRunId(),
+                        bulkActionRun.getBulkActionCode(),
+                        bulkActionRun.getState()
+                )
+        );
     }
 }
