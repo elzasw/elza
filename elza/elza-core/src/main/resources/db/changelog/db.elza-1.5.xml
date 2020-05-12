@@ -343,4 +343,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20200512223400" author="gotzy">
+        <addColumn tableName="arr_fund">
+            <column name="mark" type="char(50)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

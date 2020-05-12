@@ -36,6 +36,7 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
     public static final String STATE = "state";
     public static final String RULE_SYSTEM_ID = "ruleSystemId";
     public static final String FIELD_PREFFERED_PART = "preferredPart";
+    public static final String FIELD_USER_LIST = "userList";
 
     @Id
     @GeneratedValue
@@ -61,6 +62,9 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
     @JoinColumn(name = "preferred_part_id")
     private ApPart preferredPart;
 
+    @OneToMany(fetch = FetchType.LAZY, targetEntity = UsrUser.class)
+    @JoinColumn(name= "accessPointId")
+    private List<UsrUser> userList;
     /**
      * ID hesla.
      *
@@ -128,6 +132,14 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
 
     public void setPreferredPart(ApPart preferredPart) {
         this.preferredPart = preferredPart;
+    }
+
+    public List<UsrUser> getUserList() {
+        return userList;
+    }
+
+    public void setUserList(List<UsrUser> userList) {
+        this.userList = userList;
     }
 
     @Override

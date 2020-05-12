@@ -153,7 +153,7 @@ public class SectionsContext {
         if (institution == null) {
             throw new DEImportException("Institution not found, internal code:" + fundInfo.getIc());
         }
-        ArrFund fund = arrService.createFund(fundInfo.getN(), fundInfo.getC(), institution, null, null);
+        ArrFund fund = arrService.createFund(fundInfo.getN(), fundInfo.getC(), institution, null, null, null);
         arrService.addScopeToFund(fund, importScope);
 
         FundRootAdapter adapter = new FundRootAdapter(fund,

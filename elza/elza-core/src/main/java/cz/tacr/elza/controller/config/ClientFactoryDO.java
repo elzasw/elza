@@ -284,10 +284,11 @@ public class ClientFactoryDO {
         //TODO : mozna pouzit MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrFund arrFund = new ArrFund();
         arrFund.setFundId(Integer.valueOf(id));
-        arrFund.setUnitDate(fund.getUnitdate());
+        arrFund.setUnitdate(fund.getUnitdate());
         arrFund.setName(fund.getName());
         arrFund.setFundNumber(fund.getFundNumber());
         arrFund.setInternalCode(fund.getInternalCode());
+        arrFund.setMark(fund.getMark());
         arrFund.setInstitution(institution);
         return arrFund;
     }

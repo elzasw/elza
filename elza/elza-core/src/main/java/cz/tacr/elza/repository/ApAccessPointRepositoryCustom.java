@@ -7,6 +7,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApState;
 
@@ -34,7 +35,8 @@ public interface ApAccessPointRepositoryCustom {
             Integer firstResult,
             Integer maxResults,
             @Nullable Set<Integer> scopeIds,
-            @Nullable Collection<ApState.StateApproval> approvalStates);
+            @Nullable Collection<ApState.StateApproval> approvalStates,
+            @Nullable SearchType searchType);
 
 
     /**
@@ -50,5 +52,6 @@ public interface ApAccessPointRepositoryCustom {
             @Nullable String searchRecord,
             @Nullable Collection<Integer> apTypeIds,
             @Nullable Set<Integer> scopeIds,
-            @Nullable Collection<ApState.StateApproval> approvalStates);
+            @Nullable Collection<ApState.StateApproval> approvalStates,
+            @Nullable SearchType searchType);
 }
