@@ -25,6 +25,7 @@ import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
 import cz.tacr.elza.controller.vo.ApPartFormVO;
+import cz.tacr.elza.core.data.SearchType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -199,11 +200,12 @@ public class AccessPointService {
                                                         final Integer maxResults,
                                                         @Nullable final ArrFund fund,
                                                         @Nullable final Integer scopeId,
-                                                        @Nullable final Collection<StateApproval> approvalStates) {
+                                                        @Nullable final Collection<StateApproval> approvalStates,
+                                                        @Nullable final SearchType searchType) {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
-        return apAccessPointRepository.findApAccessPointByTextAndType(searchRecord, apTypeIds, firstResult, maxResults, scopeIdsForSearch, approvalStates);
+        return apAccessPointRepository.findApAccessPointByTextAndType(searchRecord, apTypeIds, firstResult, maxResults, scopeIdsForSearch, approvalStates, searchType);
     }
 
 
@@ -220,11 +222,12 @@ public class AccessPointService {
                                                     @Nullable final Collection<Integer> apTypeIds,
                                                     @Nullable final ArrFund fund,
                                                     @Nullable final Integer scopeId,
-                                                    @Nullable final Collection<StateApproval> approvalStates) {
+                                                    @Nullable final Collection<StateApproval> approvalStates,
+                                                    @Nullable final SearchType searchType) {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
-        return apAccessPointRepository.findApAccessPointByTextAndTypeCount(searchRecord, apTypeIds, scopeIdsForSearch, approvalStates);
+        return apAccessPointRepository.findApAccessPointByTextAndTypeCount(searchRecord, apTypeIds, scopeIdsForSearch, approvalStates, searchType);
     }
 
     /**
