@@ -24,6 +24,8 @@ import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.packageimport.xml.SettingFundIssues;
 import cz.tacr.elza.packageimport.xml.SettingFundViews;
 import cz.tacr.elza.packageimport.xml.SettingGridView;
+import cz.tacr.elza.packageimport.xml.SettingItemTypes;
+import cz.tacr.elza.packageimport.xml.SettingPartsOrder;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
 import cz.tacr.elza.packageimport.xml.SettingStructTypeSettings;
 import cz.tacr.elza.packageimport.xml.SettingStructureTypes;
@@ -168,7 +170,13 @@ public class SettingsService {
         settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.FAVORITE_ITEM_SPECS, 
                 c -> SettingFavoriteItemSpecs.newInstance(c, staticDataService),
                 SettingFavoriteItemSpecs.class ));
-        settingsConvertors.add(new StructTypeSettingsConvertor()); 
+        settingsConvertors.add(new StructTypeSettingsConvertor());
+        settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.PARTS_ORDER,
+                SettingPartsOrder::newInstance,
+                SettingPartsOrder.class ));
+        settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.ITEM_TYPES,
+                SettingItemTypes::newInstance,
+                SettingItemTypes.class ));
 		
 		// default convertor
 		// settingsConvertors.add(uiSettings -> SettingBase.newInstance(uiSettings));
