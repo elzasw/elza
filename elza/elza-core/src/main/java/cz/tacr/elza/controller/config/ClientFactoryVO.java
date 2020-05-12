@@ -173,7 +173,6 @@ public class ClientFactoryVO {
     private AuthenticationRepository authenticationRepository;
 
 
-
     /**
      * Vytvoření nastavení.
      *
@@ -187,7 +186,8 @@ public class ClientFactoryVO {
 
     /**
      * Vytvoří seznam VO.
-     * @param users vstupní seznam uživatelů
+     *
+     * @param users           vstupní seznam uživatelů
      * @param initPermissions mají se plnit oprávnění?
      * @return seznam VO
      */
@@ -203,10 +203,11 @@ public class ClientFactoryVO {
 
     /**
      * Vytvoření kolekce VO z kolekce DO.
+     *
      * @param templates vstup
      * @return seznam VO
      */
-    public List<RulTemplateVO> createTemplates(final Collection<RulTemplate> templates){
+    public List<RulTemplateVO> createTemplates(final Collection<RulTemplate> templates) {
         Assert.notNull(templates, "Šablony musí být vyplněny");
 
         List<RulTemplateVO> result = new ArrayList<>();
@@ -218,10 +219,11 @@ public class ClientFactoryVO {
 
     /**
      * Vytvoření VO z DO.
+     *
      * @param template DO
      * @return VO
      */
-    public RulTemplateVO createTemplate(final RulTemplate template){
+    public RulTemplateVO createTemplate(final RulTemplate template) {
         Assert.notNull(template, "Šablona musí být vyplněna");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(template, RulTemplateVO.class);
@@ -277,9 +279,9 @@ public class ClientFactoryVO {
      * @return nalezený nebo vytvořený VO
      */
     public <VO> VO getOrCreateVo(final Integer id,
-                                                       final Object source,
-                                                       final Map<Integer, VO> processedItemsMap,
-                                                       final Class<VO> classType) {
+                                 final Object source,
+                                 final Map<Integer, VO> processedItemsMap,
+                                 final Class<VO> classType) {
         VO item = processedItemsMap.get(id);
 
 
@@ -293,9 +295,9 @@ public class ClientFactoryVO {
     /**
      * Vytvoření ArrFund a načtení verzí.
      *
-     * @param fund archivní soubor
+     * @param fund            archivní soubor
      * @param includeVersions true - budou do objektu donačteny všechny jeho verze, false- verze nebudou donačteny
-     * @param user přihlášený uživatel
+     * @param user            přihlášený uživatel
      * @return VO
      */
     public ArrFundVO createFundVO(final ArrFund fund, final boolean includeVersions, UserDetail user) {
@@ -330,7 +332,7 @@ public class ClientFactoryVO {
      * Vytvoření ArrFund a načtení verzí.
      *
      * @param arrFund archivní soubor     *
-     * @param user přihlášený uživatel
+     * @param user    přihlášený uživatel
      * @return VO
      */
     public Fund createFund(final ArrFund arrFund, UserDetail user) {
@@ -341,7 +343,8 @@ public class ClientFactoryVO {
         fund.setFundNumber(arrFund.getFundNumber());
         fund.setName(arrFund.getName());
         fund.setInternalCode(arrFund.getInternalCode());
-        fund.setUnitdate(arrFund.getUnitDate());
+        fund.setUnitdate(arrFund.getUnitdate());
+        fund.setMark(arrFund.getMark());
         return fund;
     }
 
@@ -353,7 +356,8 @@ public class ClientFactoryVO {
         fundDetail.setFundNumber(arrFund.getFundNumber());
         fundDetail.setName(arrFund.getName());
         fundDetail.setInternalCode(arrFund.getInternalCode());
-        fundDetail.setUnitdate(arrFund.getUnitDate());
+        fundDetail.setUnitdate(arrFund.getUnitdate());
+        fundDetail.setMark(arrFund.getMark());
         return fundDetail;
     }
 
@@ -373,7 +377,7 @@ public class ClientFactoryVO {
                 fundVersion.getCreateChange().getChangeDate().toInstant());
         fundVersionVO.setCreateDate(createDate);
         ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSetId(),
-                                                                    fundVersion.getFundId());
+                fundVersion.getFundId());
         fundVersionVO.setStrictMode(viewTitles.getStrictMode());
 
         ArrChange lockChange = fundVersion.getLockChange();
@@ -461,7 +465,7 @@ public class ClientFactoryVO {
 
     /**
      * Vytvoření hodnoty atributu.
-     *
+     * <p>
      * TODO: přepsat metodu bez mapperu na klasické metody/factory
      *
      * @param item hodnota atributu
@@ -498,35 +502,35 @@ public class ClientFactoryVO {
         }
         if (itemVO == null) {
             switch (dataType) {
-            case UNITDATE:
-                itemVO = new ArrItemUnitdateVO();
-                break;
-            case UNITID:
-                itemVO = new ArrItemUnitidVO();
-                break;
-            case COORDINATES:
-                itemVO = new ArrItemCoordinatesVO();
-                break;
-            case DECIMAL:
-                itemVO = new ArrItemDecimalVO();
-                break;
-            case STRUCTURED:
-                itemVO = new ArrItemStructureVO();
-                break;
-            case JSON_TABLE:
-                itemVO = new ArrItemJsonTableVO();
-                break;
-            case URI_REF:
-                itemVO = new ArrItemUriRefVO();
-                break;
-            case DATE:
-                itemVO = new ArrItemDateVO();
-                break;
-            case BIT:
-                itemVO = new ArrItemBitVO();
-                break;
-            default:
-                throw new NotImplementedException(item.getItemType().getDataTypeId().toString());
+                case UNITDATE:
+                    itemVO = new ArrItemUnitdateVO();
+                    break;
+                case UNITID:
+                    itemVO = new ArrItemUnitidVO();
+                    break;
+                case COORDINATES:
+                    itemVO = new ArrItemCoordinatesVO();
+                    break;
+                case DECIMAL:
+                    itemVO = new ArrItemDecimalVO();
+                    break;
+                case STRUCTURED:
+                    itemVO = new ArrItemStructureVO();
+                    break;
+                case JSON_TABLE:
+                    itemVO = new ArrItemJsonTableVO();
+                    break;
+                case URI_REF:
+                    itemVO = new ArrItemUriRefVO();
+                    break;
+                case DATE:
+                    itemVO = new ArrItemDateVO();
+                    break;
+                case BIT:
+                    itemVO = new ArrItemBitVO();
+                    break;
+                default:
+                    throw new NotImplementedException(item.getItemType().getDataTypeId().toString());
             }
             itemVO.setUndefined(true);
         }
@@ -585,12 +589,12 @@ public class ClientFactoryVO {
      */
     public <T extends ArrItem> List<ItemGroupVO> createItemGroupsNew(final String ruleCode, final Integer fundId, final List<T> items) {
         Map<RulItemType, List<ArrItemVO>> itemByType = new HashMap<>();
-		if (items != null) {
-        // vytvoření VO hodnot atributů
-			for (T item : items) {
+        if (items != null) {
+            // vytvoření VO hodnot atributů
+            for (T item : items) {
                 List<ArrItemVO> itemList = itemByType.computeIfAbsent(item.getItemType(), k -> new ArrayList<>());
                 itemList.add(createItem(item));
-			}
+            }
         }
 
         List<ItemTypeDescItemsLiteVO> itemTypeVOList = new ArrayList<>();
@@ -606,18 +610,16 @@ public class ClientFactoryVO {
         itemByType.keySet().forEach(type -> codeToId.put(type.getItemTypeId(), type.getCode()));
 
         ViewConfiguration viewConfig = elzaRules.getViewConfiguration(ruleCode, fundId);
-    	List<ItemGroupVO> allItemGroups = new ArrayList<>();
+        List<ItemGroupVO> allItemGroups = new ArrayList<>();
         Map<GroupConfiguration, ItemGroupVO> itemGroupVOMap = new HashMap<>();
         // prepare empty groups
-        if(viewConfig!=null)
-        {
-        	for(GroupConfiguration groupConfig: viewConfig.getGroups())
-        	{
-        		ItemGroupVO groupVo = new ItemGroupVO(groupConfig.getCode());
-        		groupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO
-        		allItemGroups.add(groupVo);
-        		itemGroupVOMap.put(groupConfig, groupVo);
-        	}
+        if (viewConfig != null) {
+            for (GroupConfiguration groupConfig : viewConfig.getGroups()) {
+                ItemGroupVO groupVo = new ItemGroupVO(groupConfig.getCode());
+                groupVo.setTypes(new ArrayList<>()); // should be removed after moving logic into ItemTypeGroupVO
+                allItemGroups.add(groupVo);
+                itemGroupVOMap.put(groupConfig, groupVo);
+            }
         }
         // prepare default group for all other items
         ItemGroupVO defaultGroupVo = new ItemGroupVO(elzaRules.getDefaultGroupConfigurationCode());
@@ -628,10 +630,10 @@ public class ClientFactoryVO {
         for (ItemTypeDescItemsLiteVO descItemTypeVO : itemTypeVOList) {
             GroupConfiguration groupConfig = viewConfig.getGroupForType(codeToId.get(descItemTypeVO.getId()));
             ItemGroupVO itemGroupVO;
-            if(groupConfig!=null) {
-            	itemGroupVO = itemGroupVOMap.get(groupConfig);
+            if (groupConfig != null) {
+                itemGroupVO = itemGroupVOMap.get(groupConfig);
             } else {
-            	itemGroupVO = defaultGroupVo;
+                itemGroupVO = defaultGroupVo;
             }
 
             List<ItemTypeDescItemsLiteVO> itemTypeList = itemGroupVO.getTypes();
@@ -639,22 +641,22 @@ public class ClientFactoryVO {
         }
 
         // Filter empty groups
-        List<ItemGroupVO> itemGroupVOList = allItemGroups.stream().filter(g -> g.getTypes().size()>0).collect(Collectors.toList());
+        List<ItemGroupVO> itemGroupVOList = allItemGroups.stream().filter(g -> g.getTypes().size() > 0).collect(Collectors.toList());
 
         // seřazení položek ve skupinách
         for (ItemGroupVO itemGroupVO : itemGroupVOList) {
-        	boolean ordered = false;
+            boolean ordered = false;
 
-            if(viewConfig!=null) {
-            	GroupConfiguration groupConfig = viewConfig.getGroup(itemGroupVO.getCode());
-            	if(groupConfig!=null) {
-            		List<String> typeInfos = groupConfig.getTypeCodes();
+            if (viewConfig != null) {
+                GroupConfiguration groupConfig = viewConfig.getGroup(itemGroupVO.getCode());
+                if (groupConfig != null) {
+                    List<String> typeInfos = groupConfig.getTypeCodes();
                     // seřazení typů atributů podle konfigurace
                     Collections.sort(itemGroupVO.getTypes(), (left, right) -> Integer
                             .compare(typeInfos.indexOf(codeToId.get(left.getId())), typeInfos.indexOf(codeToId.get(
                                     right.getId()))));
                     ordered = true;
-            	}
+                }
             }
 
             if (!ordered) {
@@ -721,10 +723,10 @@ public class ClientFactoryVO {
         for (UISettings favoritesItemType : favoritesItemTypes) {
             SettingFavoriteItemSpecs setting = SettingFavoriteItemSpecs.newInstance(favoritesItemType, staticDataService);
             if (CollectionUtils.isNotEmpty(setting.getFavoriteItems())) {
-            	StaticDataProvider sdp = staticDataService.getData();
-            	List<Integer> itemSpecsIds = setting.getFavoriteItems().stream()
-            		.map(fi -> sdp.getItemSpecByCode(fi.getValue()).getItemSpecId() )
-                    .collect(Collectors.toList());
+                StaticDataProvider sdp = staticDataService.getData();
+                List<Integer> itemSpecsIds = setting.getFavoriteItems().stream()
+                        .map(fi -> sdp.getItemSpecByCode(fi.getValue()).getItemSpecId())
+                        .collect(Collectors.toList());
                 typeSpecsMap.put(favoritesItemType.getEntityId(), itemSpecsIds);
             }
         }
@@ -769,8 +771,8 @@ public class ClientFactoryVO {
 
             // set width from type info
             Integer width = 1;
-            if(typeInfo != null && typeInfo.getWidth() != null) {
-            	width = typeInfo.getWidth();
+            if (typeInfo != null && typeInfo.getWidth() != null) {
+                width = typeInfo.getWidth();
             }
 
             itemTypeVO.setWidth(width);
@@ -945,8 +947,9 @@ public class ClientFactoryVO {
 
     /**
      * Vytvoření informace o validace stavu JP.
-     * @param nodeConformity    stav validace
-     * @return  VO stavu validace
+     *
+     * @param nodeConformity stav validace
+     * @return VO stavu validace
      */
     public NodeConformityVO createNodeConformity(final ArrNodeConformityExt nodeConformity) {
         Assert.notNull(nodeConformity, "Musí být vyplněno");
@@ -1069,7 +1072,7 @@ public class ClientFactoryVO {
     /**
      * Vytvoří VO pro seznam typů oprávnění.
      *
-     * @param policyTypes   seznam DO
+     * @param policyTypes seznam DO
      * @return seznam VO
      */
     public List<RulPolicyTypeVO> createPolicyTypes(final List<RulPolicyType> policyTypes) {
@@ -1079,7 +1082,7 @@ public class ClientFactoryVO {
     /**
      * Vytvoří VO pro typ oprávnění.
      *
-     * @param policyType   DO typu oprávnění
+     * @param policyType DO typu oprávnění
      * @return seznam VO typu oprávnění
      */
     public RulPolicyTypeVO createPolicyType(final RulPolicyType policyType) {
@@ -1093,7 +1096,7 @@ public class ClientFactoryVO {
     /**
      * Vytvoří VO pro seznam typů outputů.
      *
-     * @param outputTypes   seznam DO
+     * @param outputTypes seznam DO
      * @return seznam VO
      */
     public List<RulOutputTypeVO> createOutputTypes(final List<RulOutputType> outputTypes) {
@@ -1103,7 +1106,7 @@ public class ClientFactoryVO {
     /**
      * Vytvoří VO pro typ outputů.
      *
-     * @param outputType   DO typu outputu
+     * @param outputType DO typu outputu
      * @return seznam VO typu outputu
      */
     public RulOutputTypeVO createOutputType(final RulOutputType outputType) {
@@ -1119,7 +1122,7 @@ public class ClientFactoryVO {
     /**
      * Vytvoření VO rozšířeného výstupu.
      *
-     * @param outputs seznam DO výstupů
+     * @param outputs     seznam DO výstupů
      * @param fundVersion
      * @return seznam VO výstupů
      */
@@ -1135,7 +1138,7 @@ public class ClientFactoryVO {
     /**
      * Vytvoření VO rozšířeného výstupu.
      *
-     * @param output DO výstup
+     * @param output      DO výstup
      * @param fundVersion
      * @return VO výstup
      */
@@ -1149,9 +1152,10 @@ public class ClientFactoryVO {
 
     /**
      * Vytvoří seznam VO.
-     * @param groups vstupní seznam skupin
+     *
+     * @param groups          vstupní seznam skupin
      * @param initPermissions mají se plnit oprávnění
-     * @param initUsers mají se plnit uživatelé?
+     * @param initUsers       mají se plnit uživatelé?
      * @return seznam VO
      */
     public List<UsrGroupVO> createGroupList(final List<UsrGroup> groups, final boolean initPermissions, final boolean initUsers) {
@@ -1164,9 +1168,10 @@ public class ClientFactoryVO {
 
     /**
      * Vytvoří VO uživatele s návaznými daty.
-     * @param user uživatel
+     *
+     * @param user            uživatel
      * @param initPermissions mají se plnit oprávnění?
-     * @param initGroups mají se plnit skuipny?
+     * @param initGroups      mají se plnit skuipny?
      * @return VO
      */
     public UsrUserVO createUser(final UsrUser user, final boolean initPermissions, final boolean initGroups) {
@@ -1181,10 +1186,10 @@ public class ClientFactoryVO {
 
             StaticDataProvider staticData = staticDataService.getData();
             List<UsrPermissionVO> permissionsVOs = permissions.stream().map(
-                                                                            // if has groupId -> it is inheritted
-                                                                            p -> UsrPermissionVO.newInstance(p,
-                                                                                                             p.getGroupId() != null,
-                                                                                                             staticData))
+                    // if has groupId -> it is inheritted
+                    p -> UsrPermissionVO.newInstance(p,
+                            p.getGroupId() != null,
+                            staticData))
                     .collect(Collectors.toList());
 
             result.setPermissions(permissionsVOs);
@@ -1201,9 +1206,10 @@ public class ClientFactoryVO {
 
     /**
      * Vytvoří VO skupiny s návaznými daty.
-     * @param group skupina
+     *
+     * @param group           skupina
      * @param initPermissions mají se plnit oprávnění
-     * @param initUsers mají se plnit uživatelé?
+     * @param initUsers       mají se plnit uživatelé?
      * @return VO
      */
     public UsrGroupVO createGroup(final UsrGroup group, final boolean initPermissions, final boolean initUsers) {
@@ -1217,8 +1223,8 @@ public class ClientFactoryVO {
 
             StaticDataProvider staticData = staticDataService.getData();
             List<UsrPermissionVO> permissionsVOs = permissions.stream().map(
-                                                                            p -> UsrPermissionVO.newInstance(p, false,
-                                                                                                             staticData))
+                    p -> UsrPermissionVO.newInstance(p, false,
+                            staticData))
                     .collect(Collectors.toList());
 
             result.setPermissions(permissionsVOs);
@@ -1477,22 +1483,22 @@ public class ClientFactoryVO {
         switch (request.getDiscriminator()) {
             case DIGITIZATION: {
                 requestVO = new ArrDigitizationRequestVO();
-            convertDigitizationRequest((ArrDigitizationRequest) req, (ArrDigitizationRequestVO) requestVO,
-                                       countNodesRequestMap.get(request), nodesRequestMap.get(request));
+                convertDigitizationRequest((ArrDigitizationRequest) req, (ArrDigitizationRequestVO) requestVO,
+                        countNodesRequestMap.get(request), nodesRequestMap.get(request));
                 break;
             }
 
             case DAO: {
                 requestVO = new ArrDaoRequestVO();
-            convertDaoRequest((ArrDaoRequest) req, (ArrDaoRequestVO) requestVO, countDaosRequestMap.get(request),
-                              daosRequestMap.get(request), detail, fundVersion);
+                convertDaoRequest((ArrDaoRequest) req, (ArrDaoRequestVO) requestVO, countDaosRequestMap.get(request),
+                        daosRequestMap.get(request), detail, fundVersion);
                 break;
             }
 
             case DAO_LINK: {
                 requestVO = new ArrDaoLinkRequestVO();
-            convertDaoLinkRequest((ArrDaoLinkRequest) req, (ArrDaoLinkRequestVO) requestVO, false, fundVersion,
-                                  codeTreeNodeClientMap);
+                convertDaoLinkRequest((ArrDaoLinkRequest) req, (ArrDaoLinkRequestVO) requestVO, false, fundVersion,
+                        codeTreeNodeClientMap);
                 break;
             }
 
@@ -1508,17 +1514,17 @@ public class ClientFactoryVO {
         ArrRequest req = HibernateUtils.unproxy(request);
         switch (request.getDiscriminator()) {
             case DIGITIZATION: {
-            requestForNodes.add((ArrDigitizationRequest) req);
+                requestForNodes.add((ArrDigitizationRequest) req);
                 break;
             }
 
             case DAO: {
-            requestForDaos.add((ArrDaoRequest) req);
+                requestForDaos.add((ArrDaoRequest) req);
                 break;
             }
 
             case DAO_LINK: {
-            requestForDaoLinks.add((ArrDaoLinkRequest) req);
+                requestForDaoLinks.add((ArrDaoLinkRequest) req);
                 break;
             }
 
@@ -1648,7 +1654,7 @@ public class ClientFactoryVO {
      * Vytvoření VO
      *
      * @param arrDaoList DO ke konverzi
-     * @param detail příznak, zda se mají naplnit seznamy na VO, pokud ne, jsou naplněny pouze počty podřízených záznamů v DB
+     * @param detail     příznak, zda se mají naplnit seznamy na VO, pokud ne, jsou naplněny pouze počty podřízených záznamů v DB
      * @param version
      * @return list VO
      */
@@ -1662,6 +1668,7 @@ public class ClientFactoryVO {
 
     /**
      * Vytvoření VO z DO.
+     *
      * @param daoFile do
      * @return VO
      */
@@ -1678,8 +1685,8 @@ public class ClientFactoryVO {
     /**
      * Vytvoření vo z DO
      *
-     * @param arrDao DO
-     * @param detail příznak, zda se mají naplnit seznamy na VO, pokud ne, jsou naplněny pouze počty podřízených záznamů v DB
+     * @param arrDao  DO
+     * @param detail  příznak, zda se mají naplnit seznamy na VO, pokud ne, jsou naplněny pouze počty podřízených záznamů v DB
      * @param version
      * @return vo
      */

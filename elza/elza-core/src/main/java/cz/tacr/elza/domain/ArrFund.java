@@ -54,6 +54,8 @@ public class ArrFund extends AbstractVersionableEntity implements Versionable, I
     @Column(length = StringLength.LENGTH_50)
     private String unitdate;
 
+    @Column(length = StringLength.LENGTH_50)
+	private String mark;
 
 	@OneToOne(fetch = FetchType.LAZY, targetEntity = ParInstitution.class)
 	@JoinColumn(name = "institutionId", nullable = false)
@@ -105,15 +107,23 @@ public class ArrFund extends AbstractVersionableEntity implements Versionable, I
         this.fundNumber = fundNumber;
     }
 
-    public String getUnitDate() {
-        return unitdate;
-    }
+	public String getUnitdate() {
+		return unitdate;
+	}
 
-    public void setUnitDate(String unitdate) {
-        this.unitdate = unitdate;
-    }
+	public void setUnitdate(String unitdate) {
+		this.unitdate = unitdate;
+	}
 
-    public ParInstitution getInstitution() {
+	public String getMark() {
+		return mark;
+	}
+
+	public void setMark(String mark) {
+		this.mark = mark;
+	}
+
+	public ParInstitution getInstitution() {
 		return institution;
 	}
 

@@ -160,6 +160,9 @@ components:
         unitdate:
           description: Datace
           type: string
+        mark:
+          description: Značka archivního souboru
+          type: string
         adminUsers:
           description: Seznam uživatelů, kteří mají administrátorská oprávnění pro zakládaný AS
           type: array
@@ -204,6 +207,9 @@ components:
         unitdate:
           description: Datace
           type: string
+        mark:
+          description: Značka archivního souboru
+          type: string
         scopes:
           description: Seznam oblastí entit
           type: array
@@ -245,6 +251,9 @@ components:
         unitdate:
           description: Datace
           type: string
+        mark:
+          description: Značka archivního souboru
+          type: string
     FundDetail:
       required:
         - id
@@ -281,6 +290,9 @@ components:
           format: int32
         unitdate:
           description: Datace
+          type: string
+        mark:
+          description: Značka archivního souboru
           type: string
         scopes:
           description: Seznam oblastí entit

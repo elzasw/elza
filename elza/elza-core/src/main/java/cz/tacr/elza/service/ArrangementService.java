@@ -213,8 +213,9 @@ public class ArrangementService {
                               final ParInstitution institution,
                               final String dateRange,
                               final Integer fundNumber,
-                              final String unitdate) {
-        ArrFund fund = createFund(name, internalCode, institution,fundNumber, unitdate);
+                              final String unitdate,
+                              final String mark) {
+        ArrFund fund = createFund(name, internalCode, institution,fundNumber, unitdate, mark);
 
         eventNotificationService
                 .publishEvent(EventFactory.createIdEvent(EventType.FUND_CREATE, fund.getFundId()));
@@ -320,6 +321,7 @@ public class ArrangementService {
                                           final String dateRange,
                                           final Integer fundNumber,
                                           final String unitdate,
+                                          final String mark,
                                           String Uuid) {
         ArrChange change = createChange(ArrChange.Type.CREATE_AS);
 
@@ -327,7 +329,7 @@ public class ArrangementService {
             Uuid = generateUuid();
         }
 
-        ArrFund fund = createFund(name, ruleSet, change, Uuid, internalCode, institution, dateRange,fundNumber,unitdate);
+        ArrFund fund = createFund(name, ruleSet, change, Uuid, internalCode, institution, dateRange,fundNumber,unitdate, mark);
 
         List<ApScope> defaultScopes = accessPointService.findDefaultScopes();
         if (!defaultScopes.isEmpty()) {
@@ -366,14 +368,16 @@ public class ArrangementService {
                               final String internalCode,
                               final ParInstitution institution,
                               final Integer fundNumber,
-                              final String unitdate) {
+                              final String unitdate,
+                              final String mark) {
         ArrFund fund = new ArrFund();
         fund.setCreateDate(LocalDateTime.now());
         fund.setName(name);
         fund.setInternalCode(internalCode);
         fund.setInstitution(institution);
         fund.setFundNumber(fundNumber);
-        fund.setUnitDate(unitdate);
+        fund.setUnitdate(unitdate);
+        fund.setMark(mark);
         return fundRepository.save(fund);
     }
 
@@ -791,7 +795,7 @@ public class ArrangementService {
     /**
      * Vyhledání id nodů podle hodnoty atributu.
      *
-     * @param fundIds id fondů, do kterých uzly patří
+     * @param fundList id fondů, do kterých uzly patří
      * @return seznam id uzlů které vyhovují parametrům
      */
     public List<ArrFundFulltextResult> findFundsByFulltext(final String searchValue, final Collection<ArrFund> fundList) {
