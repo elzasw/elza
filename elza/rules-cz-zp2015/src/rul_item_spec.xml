@@ -294,8 +294,8 @@
         <shortcut>hdb</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_SUBTYPE_STV" item-type="ZP2015_UNIT_SUBTYPE">
-        <name>Státní vyznamenání</name>
-        <description>Státní vyznamenání</description>
+        <name>Státní vyznamenání / cena</name>
+        <description>Státní vyznamenání nebo cena</description>
         <shortcut>stv</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_SUBTYPE_PA" item-type="ZP2015_UNIT_SUBTYPE">
@@ -304,8 +304,8 @@
         <shortcut>pa</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_SUBTYPE_STVR" item-type="ZP2015_UNIT_SUBTYPE">
-        <name>Rozhodnutí o udělení / propůjčení státního vyznamenání / ceny</name>
-        <description>Rozhodnutí o udělení / propůjčení státního vyznamenání / ceny</description>
+        <name>Udělení / propůjčení státního vyznamenání / ceny</name>
+        <description>Udělení / propůjčení státního vyznamenání / ceny</description>
         <shortcut>stvr</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_SUBTYPE_JMF" item-type="ZP2015_UNIT_SUBTYPE">
@@ -2613,82 +2613,82 @@
     </item-spec>
     <!-- jiné typy datace -->
     <item-spec code="ZP2015_DATE_OF_CONTENT" item-type="ZP2015_DATE_OTHER">
-        <name>Datace obsahu</name>
+        <name>obsahu</name>
         <description>Datace obsahu jednotky popisu</description>
         <shortcut>obsah</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_DECLARED" item-type="ZP2015_DATE_OTHER">
-        <name>Datace deklarovaná</name>
+        <name>deklarovaná</name>
         <description>Datace, k níž se jednotka popisu hlásí</description>
         <shortcut>deklarovaná</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_ORIG" item-type="ZP2015_DATE_OTHER">
-        <name>Datace vzniku předlohy</name>
+        <name>vzniku předlohy</name>
         <description>Datace vzniku předlohy, pokud je popisována kopie, která nenahrazuje předlohu</description>
         <shortcut>vznik předlohy</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_OF_COPY" item-type="ZP2015_DATE_OTHER">
-        <name>Datace vzniku kopie</name>
+        <name>vzniku kopie</name>
         <description>Datace vzniku kopie, která nahrazuje zničenou archiválii</description>
         <shortcut>vznik kopie</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_SEALING" item-type="ZP2015_DATE_OTHER">
-        <name>Datace zpečetění</name>
+        <name>zpečetění</name>
         <description>Datace zpečetění jednotky popisu</description>
         <shortcut>zpečetění</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_ACT_PUBLISHING" item-type="ZP2015_DATE_OTHER">
-        <name>Datace vydání listiny</name>
+        <name>vydání listiny</name>
         <description>Datace vydání listiny</description>
         <shortcut>vydání listiny</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_INSERT" item-type="ZP2015_DATE_OTHER">
-        <name>Datace insertu/transeptu</name>
+        <name>insertu/transeptu</name>
         <description>Datace insertu/transeptu</description>
         <shortcut>insert/transept</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_MOLD_CREATION" item-type="ZP2015_DATE_OTHER">
-        <name>Datace vzniku matrice</name>
+        <name>vzniku matrice</name>
         <description>Datace vzniku matrice, z níž byla jednotka popisu zhotovena</description>
         <shortcut>vznik matrice</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_USAGE" item-type="ZP2015_DATE_OTHER">
-        <name>Datace užívání typáře</name>
+        <name>užívání typáře</name>
         <description>Doba užívání typáře</description>
         <shortcut>užívání typáře</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_PUBLISHING" item-type="ZP2015_DATE_OTHER">
-        <name>Datace vydání dokumentu</name>
+        <name>vydání dokumentu</name>
         <description>Datace vydání dokumentu, k němuž byl popisovaný otisk připojen</description>
         <shortcut>vydání dokumentu</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_MAP_UPDATE" item-type="ZP2015_DATE_OTHER">
-        <name>Datace reambulace mapy</name>
+        <name>reambulace mapy</name>
         <description>Datace reambulace (aktualizace) mapy</description>
         <shortcut>reambulace mapy</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_CAPTURING" item-type="ZP2015_DATE_OTHER">
-        <name>Datace pořízení obrazového záznamu</name>
+        <name>pořízení obrazového záznamu</name>
         <description>Datace pořízení obrazového záznamu</description>
         <shortcut>pořízení obrazového záznamu</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_RECORDING" item-type="ZP2015_DATE_OTHER">
-        <name>Datace pořízení filmového / zvukového záznamu</name>
+        <name>pořízení filmového / zvukového záznamu</name>
         <description>Datace pořízení filmového / zvukového záznamu</description>
         <shortcut>pořízení filmového / zvukového záznamu</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_AWARDING" item-type="ZP2015_DATE_OTHER">
-        <name>Datace udělení / propůjčení faleristického předmětu</name>
+        <name>udělení / propůjčení faleristického předmětu</name>
         <description>Datace udělení / propůjčení faleristického předmětu</description>
         <shortcut>udělení / propůjčení faleristického předmětu</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_AWARD_CER" item-type="ZP2015_DATE_OTHER">
-        <name>Datace předání faleristického předmětu</name>
+        <name>předání faleristického předmětu</name>
         <description>Datace předání faleristického předmětu</description>
         <shortcut>předání faleristického předmětu</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_WITHDRAWAL" item-type="ZP2015_DATE_OTHER">
-        <name>Datace odnětí / vrácení faleristického předmětu</name>
+        <name>odnětí / vrácení faleristického předmětu</name>
         <description>Datace odnětí / vrácení faleristického předmětu</description>
         <shortcut>odnětí / vrácení faleristického předmětu</shortcut>
     </item-spec>
