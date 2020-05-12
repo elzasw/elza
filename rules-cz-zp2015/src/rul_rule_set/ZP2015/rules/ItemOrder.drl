@@ -14,12 +14,13 @@ import cz.tacr.elza.drools.model.StructObjItem;
 // Pořadí uložení
 //----------------------------------------------
 
-rule "Pořadí uložení - doporučené pro kar, fas, aka, kdi, vka"
+rule "Pořadí uložení - doporučené pro kar, fas, aka, kdi, vka, ddi"
 no-loop
 when $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_STORAGE_ID" && structured!=null && !inherited ) from $activeLevel.descItems
     StructObjItem(type=="ZP2015_PACKET_TYPE" && specCode in ("ZP2015_PACKET_TYPE_KAR", "ZP2015_PACKET_TYPE_FAS",
-    	"ZP2015_PACKET_TYPE_AKA", "ZP2015_PACKET_TYPE_KDI", "ZP2015_PACKET_TYPE_VKA")) from $descItem.structured.items
+    	"ZP2015_PACKET_TYPE_AKA", "ZP2015_PACKET_TYPE_KDI", "ZP2015_PACKET_TYPE_VKA",
+    	"ZP2015_PACKET_TYPE_DDI")) from $descItem.structured.items
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $activeLevel.descItems
     $itemType: RulItemTypeExt( code in ("ZP2015_ITEM_ORDER") )
 then
