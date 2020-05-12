@@ -96,6 +96,7 @@
                 <!-- 5.2.2 Název autorského díla -->
                 <type code="ZP2015_ITEM_TITLE" width="0"/>
                 <type code="ZP2015_ITEM_TITLE_REF" width="0"/>
+                <type code="ZP2015_LEGALACT_REF" width="0"/>
             </group>
             <group code="06_ZP2015_CH4">
                 <name>Společné prvky popisu</name>
@@ -169,7 +170,6 @@
                 <!-- Matrika -->
                 <type code="ZP2015_RECORD_TYPE" width="1"/>
                 <type code="ZP2015_GEO_REF" width="0"/>
-                <type code="ZP2015_LEGALACT_REF" width="0"/>
             </group>
             <!-- Other items -->
             <group code="08_OTHERS">
