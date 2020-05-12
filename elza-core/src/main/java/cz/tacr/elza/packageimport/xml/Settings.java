@@ -30,6 +30,8 @@ public class Settings {
             @XmlElement(name = "grid-view", type = SettingGridView.class),
             @XmlElement(name = "fund-issues", type = SettingFundIssues.class),
             @XmlElement(name = "structure-type-settings", type = SettingStructTypeSettings.class),
+            @XmlElement(name = "parts-order", type = SettingPartsOrder.class),
+            @XmlElement(name = "item-types", type = SettingItemTypes.class),
     })
     private List<Setting> settings;
 

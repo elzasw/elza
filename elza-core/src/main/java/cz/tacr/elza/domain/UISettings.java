@@ -236,7 +236,17 @@ public class UISettings {
         /**
          * Nastavení barev a ikon připomínek.
          */
-        FUND_ISSUES(true, EntityType.RULE);
+        FUND_ISSUES(true, EntityType.RULE),
+
+        /**
+         * Nastavení pořadí částí v detailu přístupového bodu.
+         */
+        PARTS_ORDER(true, EntityType.RULE),
+
+        /**
+         * Nastavení atributů dle části v detailu přístupového bodu.
+         */
+        ITEM_TYPES(true, EntityType.RULE);
 
         /**
          * If settings can be global or has to be defined on some entity.
