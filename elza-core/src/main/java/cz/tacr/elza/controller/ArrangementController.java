@@ -1349,15 +1349,15 @@ public class ArrangementController {
         Assert.notNull(createFund.getRuleSetId(), "Identifikátor pravidel musí být vyplněn");
 
 
-
         RulRuleSet ruleSet = ruleSetRepository.findOne(createFund.getRuleSetId());
         Assert.notNull(ruleSet, "Nebyla nalezena pravidla tvorby s id " + createFund.getRuleSetId());
 
         ParInstitution institution = institutionRepository.findOne(createFund.getInstitutionId());
         Assert.notNull(institution, "Nebyla nalezena instituce s id " + createFund.getInstitutionId());
 
+
         ArrFund newFund = arrangementService
-                .createFundWithScenario(createFund.getName(), ruleSet, createFund.getInternalCode(), institution, createFund.getDateRange(), null, null, null);
+                .createFundWithScenario(createFund.getName(), ruleSet, createFund.getInternalCode(), institution, createFund.getDateRange(), null, null, null, null);
 
         // Kontrola na vyplněnost uživatele nebo skupiny jako správce, pokud není admin
         UserDetail userDetail = userService.getLoggedUserDetail();

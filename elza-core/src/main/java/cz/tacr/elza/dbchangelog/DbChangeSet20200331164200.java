@@ -1955,13 +1955,6 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
 
     private enum ItemTypeCode {
         BRIEF_DESC("BRIEF_DESC"),
-        /* PT_BODY("PT_BODY"),
-         PT_NAME("PT_NAME"),
-         PT_IDENT("PT_IDENT"),
-         PT_REL("PT_REL"),
-         PT_CRE("PT_CRE"),
-         PT_EVENT("PT_EVENT"),
-         PT_EXT("PT_EXT"),*/
         NM_MAIN("NM_MAIN"),
         NM_MINOR("NM_MINOR"),
         NM_DEGREE_PRE("NM_DEGREE_PRE"),

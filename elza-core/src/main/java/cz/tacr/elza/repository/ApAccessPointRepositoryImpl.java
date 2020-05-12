@@ -1,16 +1,17 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ApStateEnum;
+import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.domain.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.util.*;
 import java.util.function.Consumer;
@@ -33,7 +34,8 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
             Integer firstResult,
             Integer maxResults,
             @Nullable Set<Integer> scopeIds,
-            @Nullable Collection<ApState.StateApproval> approvalStates) {
+            @Nullable Collection<ApState.StateApproval> approvalStates,
+            @Nullable SearchType searchType) {
 
         if (CollectionUtils.isEmpty(scopeIds)) {
             return Collections.emptyList();
@@ -49,8 +51,8 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         Root<ApAccessPoint> accessPointSubquery = subquery.from(ApAccessPoint.class);
         Root<ApState> apStateSubquery = subquery.from(ApState.class);
 
-        Predicate condition = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIds, approvalStates, accessPointRoot, apStateRoot, builder, query::orderBy, true);
-        Predicate conditionSubquery = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIds, approvalStates, accessPointSubquery, apStateSubquery, builder, null, false);
+        Predicate condition = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIds, approvalStates, accessPointRoot, apStateRoot, builder, query::orderBy, true, searchType);
+        Predicate conditionSubquery = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIds, approvalStates, accessPointSubquery, apStateSubquery, builder, null, false, searchType);
 
         subquery.select(accessPointSubquery.get(ApAccessPoint.FIELD_ACCESS_POINT_ID));
         subquery.where(conditionSubquery);
@@ -59,7 +61,6 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         if (condition != null) {
             query.where(condition, builder.in(accessPointRoot.get(ApAccessPoint.FIELD_ACCESS_POINT_ID)).value(subquery));
         }
-
         return entityManager.createQuery(query)
                 .setFirstResult(firstResult)
                 .setMaxResults(maxResults)
@@ -71,7 +72,8 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
             @Nullable String searchRecord,
             @Nullable Collection<Integer> apTypeIds,
             @Nullable Set<Integer> scopeIds,
-            @Nullable Collection<ApState.StateApproval> approvalStates) {
+            @Nullable Collection<ApState.StateApproval> approvalStates,
+            @Nullable SearchType searchType) {
 
         if (CollectionUtils.isEmpty(scopeIds)) {
             return 0L;
@@ -83,7 +85,7 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         Root<ApAccessPoint> accessPoint = query.from(ApAccessPoint.class);
         Root<ApState> apState = query.from(ApState.class);
 
-        Predicate condition = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIds, approvalStates, accessPoint, apState, builder, null, false);
+        Predicate condition = prepareApSearchPredicate(searchRecord, apTypeIds, scopeIds, approvalStates, accessPoint, apState, builder, null, false,searchType);
 
         query.select(builder.countDistinct(accessPoint));
         if (condition != null) {
@@ -97,10 +99,10 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
      * Prepares predicate for AP search. Only necessary entities will be joined.
      *
      * @param searchValue if present APs with partial match in name or description are returned
-     * @param apTypeIds if not empty APs with same type are returned
-     * @param scopeIds APs with same scope are returned, cannot be empty
+     * @param apTypeIds   if not empty APs with same type are returned
+     * @param scopeIds    APs with same scope are returned, cannot be empty
      * @param accessPoint query root or entity join of AP
-     * @param cb JPA query builder
+     * @param cb          JPA query builder
      * @return AP predicate which can be used as where condition.
      */
     public static Predicate prepareApSearchPredicate(@Nullable final String searchValue,
@@ -111,7 +113,10 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
                                                      final From<?, ApState> apState,
                                                      final CriteriaBuilder cb,
                                                      final Consumer<Order> accessPointNameCallback,
-                                                     final boolean onlyPrefferedName) {
+                                                     final boolean onlyPrefferedName,
+                                                     @Nullable SearchType searchType) {
+        if(searchType == null) searchType = SearchType.FULLTEXT;
+
         // prepare conjunction list
         List<Predicate> conjunctions = new ArrayList<>();
 
@@ -122,12 +127,55 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         conjunctions.add(cb.or(accessPoint.get(ApAccessPoint.STATE).isNull(), cb.notEqual(accessPoint.get(ApAccessPoint.STATE), ApStateEnum.TEMP)));
 
         // add name join
+        Path<String> accessPointName = null;
+        if(searchType == SearchType.USERNAME) {
 
+            Join<ApAccessPoint, UsrUser> userJoin = accessPoint.join(ApAccessPoint.FIELD_USER_LIST, JoinType.LEFT);
+            Predicate userFkCond = cb.equal(accessPoint.get(ApAccessPoint.FIELD_ACCESS_POINT_ID),
+                    userJoin.get(UsrUser.FIELD_ACCESS_POINT));
+            Predicate activeUserCond = cb.equal(userJoin.get(UsrUser.FIELD_ACTIVE), true);
+            userJoin.on(cb.and(userFkCond, activeUserCond));
+            accessPointName = userJoin.get(UsrUser.FIELD_USERNAME);
+
+            if (accessPointNameCallback != null) {
+                accessPointNameCallback.accept(cb.asc(accessPointName));
+            }
+        } else {
+            Join<ApAccessPoint, ApPart> nameJoin = accessPoint.join(ApAccessPoint.FIELD_PREFFERED_PART, JoinType.LEFT);
+            Predicate nameFkCond = cb.equal(accessPoint.get(ApAccessPoint.FIELD_PREFFERED_PART),
+                    nameJoin.get(ApPart.PART_ID));
+            Predicate activeNameCond = nameJoin.get(ApPart.DELETE_CHANGE_ID).isNull();
+            nameJoin.on(cb.and(nameFkCond, activeNameCond));
+            accessPointName = nameJoin.get(ApPart.VALUE);
+
+            if (accessPointNameCallback != null) {
+                accessPointNameCallback.accept(cb.asc(accessPointName));
+            }
+        }
+
+
+
+        /*if (onlyPrefferedName) {
+            conjunctions.add(cb.isTrue(nameJoin.get(ApPart.VALUE)));
+        }*/
 
         // add text search
         String searchExp = StringUtils.trimToNull(searchValue);
         if (searchExp != null && !onlyPrefferedName) {
-            searchExp = '%' + searchExp.toLowerCase() + '%';
+            switch(searchType) {
+                case FULLTEXT:
+                    searchExp = '%' + searchExp.toLowerCase() + '%';
+                    break;
+                case RIGHTSIDELIKE:
+                    searchExp = searchExp.toLowerCase() + '%';
+                    break;
+                case USERNAME:
+                    searchExp = searchExp.toLowerCase();
+                    break;
+                default:
+                    break;
+            }
+
 
             // add description join
             // Join<ApAccessPoint, ApDescription> descJoin = apJoin.join(ApAccessPoint.DESCRIPTIONS, JoinType.LEFT);
@@ -136,8 +184,8 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
             // descJoin.on(cb.and(descFkCond, activeDescCond));
 
             // add like condition to where
-            /*Predicate nameLikeCond = cb.like(cb.lower(accessPointName), searchExp);
-            conjunctions.add(nameLikeCond);*/
+            Predicate nameLikeCond = cb.like(cb.lower(accessPointName), searchExp);
+            conjunctions.add(nameLikeCond);
         }
 
         // add scope id condition
