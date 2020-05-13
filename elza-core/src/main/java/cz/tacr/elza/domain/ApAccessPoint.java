@@ -134,14 +134,6 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
         this.preferredPart = preferredPart;
     }
 
-    public List<UsrUser> getUserList() {
-        return userList;
-    }
-
-    public void setUserList(List<UsrUser> userList) {
-        this.userList = userList;
-    }
-
     @Override
     public String toString() {
         return "ApAccessPoint pk=" + accessPointId;
