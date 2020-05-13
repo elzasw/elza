@@ -25,6 +25,7 @@ import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.ap.item.*;
 import cz.tacr.elza.controller.vo.nodes.*;
 import cz.tacr.elza.controller.vo.nodes.descitems.*;
+import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.domain.UsrAuthentication;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -2006,6 +2007,47 @@ public abstract class AbstractControllerTest extends AbstractTest {
         }
         if (apTypeId != null) {
             params.put("apTypeId", apTypeId);
+        }
+        params.put("from", from != null ? from : 0);
+        params.put("count", count != null ? count : 20);
+        params.put("excludeInvalid", true);
+
+        return get(spec -> spec.queryParameters(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
+    }
+
+    /**
+     * Vyhledávání v ApRecord
+     *
+     * @param search
+     * @param from
+     * @param count
+     * @param apTypeId
+     * @param parentRecordId
+     * @param versionId
+     * @return List nalezených záznamů
+     */
+    protected List<ApAccessPointVO> findRecord(final String search,
+                                               final Integer from, final Integer count,
+                                               final Integer apTypeId,
+                                               final Integer parentRecordId,
+                                               final Integer versionId,
+                                               final SearchType searchType) {
+        HashMap<String, Object> params = new HashMap<>();
+
+        if (search != null) {
+            params.put("search", search);
+        }
+        if (versionId != null) {
+            params.put("versionId", versionId);
+        }
+        if (parentRecordId != null) {
+            params.put("parentRecordId", parentRecordId);
+        }
+        if (apTypeId != null) {
+            params.put("apTypeId", apTypeId);
+        }
+        if (searchType != null) {
+            params.put("searchType", searchType);
         }
         params.put("from", from != null ? from : 0);
         params.put("count", count != null ? count : 20);
