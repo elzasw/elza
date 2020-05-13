@@ -11,6 +11,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.core.data.SearchType;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -73,6 +74,12 @@ public class ApControllerTest extends AbstractControllerTest {
     public void getScopeIdsByVersionTest(final Integer versionId) {
         getScopeIdsByVersion(null);
         getScopeIdsByVersion(versionId);
+    }
+
+    @Test
+    public void findAccessPoint() {
+        List<ApAccessPointVO> records = findRecord(null, 0, 10, null, null, null, SearchType.FULLTEXT);
+        assertNotNull(records);
     }
 
 

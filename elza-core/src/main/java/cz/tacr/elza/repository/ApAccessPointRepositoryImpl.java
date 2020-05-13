@@ -166,7 +166,7 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
                 case FULLTEXT:
                     searchExp = '%' + searchExp.toLowerCase() + '%';
                     break;
-                case RIGHTSIDELIKE:
+                case RIGHT_SIDE_LIKE:
                     searchExp = searchExp.toLowerCase() + '%';
                     break;
                 case USERNAME:

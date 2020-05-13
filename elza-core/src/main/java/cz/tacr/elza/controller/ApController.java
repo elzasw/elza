@@ -125,14 +125,10 @@ public class ApController {
                                                              @RequestParam(required = false) @Nullable final ApState.StateApproval state,
                                                              @RequestParam(required = false) @Nullable final Integer scopeId,
                                                              @RequestParam(required = false) @Nullable final Integer lastRecordNr,
-                                                             @RequestParam(required = false) @Nullable SearchType searchType) {
+                                                             @RequestParam(required = false) @Nullable final SearchType searchType) {
 
         if (apTypeId != null && (itemSpecId != null || itemTypeId != null)) {
             throw new SystemException("Nelze použít více kritérií zároveň (specifikace/typ a typ rejstříku).", BaseCode.SYSTEM_ERROR);
-        }
-
-        if(searchType == null) {
-            searchType = SearchType.FULLTEXT;
         }
 
         StaticDataProvider sdp = staticDataService.getData();
@@ -179,9 +175,11 @@ public class ApController {
 
         Set<ApState.StateApproval> states = state != null ? EnumSet.of(state) : null;
 
-        final long foundRecordsCount = accessPointService.findApAccessPointByTextAndTypeCount(search, apTypeIdTree, fund, scopeId, states, searchType);
+        SearchType searchTypeFinal = searchType != null ? searchType : SearchType.FULLTEXT;
 
-        final List<ApState> foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIdTree, from, count, fund, scopeId, states, searchType);
+        final long foundRecordsCount = accessPointService.findApAccessPointByTextAndTypeCount(search, apTypeIdTree, fund, scopeId, states, searchTypeFinal);
+
+        final List<ApState> foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIdTree, from, count, fund, scopeId, states, searchTypeFinal);
 
         return new FilteredResultVO<>(foundRecords, apState -> apFactory.createVO(apState), foundRecordsCount);
     }
