@@ -206,12 +206,16 @@ public class ApFactory {
 
     private String getName(ApAccessPointVO apAccessPointVO) {
         StaticDataProvider sdp = staticDataService.getData();
-        for (ApPartVO apPartVO : apAccessPointVO.getParts()) {
-            if (apPartVO.getId().equals(apAccessPointVO.getPreferredPart())) {
-                for (ApItemVO apItemVO : apPartVO.getItems()) {
-                    RulItemType rulItemType = sdp.getItemTypeById(apItemVO.getTypeId()).getEntity();
-                    if (rulItemType.getCode().equals("NM_MAIN")) {
-                        return ((ApItemStringVO) apItemVO).getValue();
+        if (CollectionUtils.isNotEmpty(apAccessPointVO.getParts())) {
+            for (ApPartVO apPartVO : apAccessPointVO.getParts()) {
+                if (apPartVO.getId().equals(apAccessPointVO.getPreferredPart())) {
+                    if (CollectionUtils.isNotEmpty(apPartVO.getItems())) {
+                        for (ApItemVO apItemVO : apPartVO.getItems()) {
+                            RulItemType rulItemType = sdp.getItemTypeById(apItemVO.getTypeId()).getEntity();
+                            if (rulItemType.getCode().equals("NM_MAIN")) {
+                                return ((ApItemStringVO) apItemVO).getValue();
+                            }
+                        }
                     }
                 }
             }
@@ -223,19 +227,23 @@ public class ApFactory {
         ApPart body = null;
         String briefDesc = null;
 
-        for (ApPart part : parts) {
-            if (part.getPartType().getCode().equals("PT_BODY")) {
-                body = part;
-                break;
+        if (CollectionUtils.isNotEmpty(parts)) {
+            for (ApPart part : parts) {
+                if (part.getPartType().getCode().equals("PT_BODY")) {
+                    body = part;
+                    break;
+                }
             }
         }
 
-        if (body != null) {
+        if (body != null && items != null) {
             List<ApItem> bodyItems = items.get(body.getPartId());
-            for (ApItem item : bodyItems) {
-                if (item.getItemType().getCode().equals("BRIEF_DESC")) {
-                    briefDesc = item.getData().getFulltextValue();
-                    break;
+            if (CollectionUtils.isNotEmpty(bodyItems)) {
+                for (ApItem item : bodyItems) {
+                    if (item.getItemType().getCode().equals("BRIEF_DESC")) {
+                        briefDesc = item.getData().getFulltextValue();
+                        break;
+                    }
                 }
             }
         }
@@ -266,7 +274,7 @@ public class ApFactory {
         apPartVO.setErrorDescription(part.getErrorDescription());
         apPartVO.setValue(part.getValue());
         apPartVO.setPartParentId(part.getParentPart() != null ? part.getParentPart().getPartId() : null);
-        apPartVO.setItems(createItemsVO(apItems));
+        apPartVO.setItems(CollectionUtils.isNotEmpty(apItems) ? createItemsVO(apItems) : null);
 
         return apPartVO;
     }
