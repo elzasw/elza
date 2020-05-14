@@ -36,7 +36,8 @@ public interface ApAccessPointRepositoryCustom {
             Integer maxResults,
             @Nullable Set<Integer> scopeIds,
             @Nullable Collection<ApState.StateApproval> approvalStates,
-            @Nullable SearchType searchType);
+            @Nullable SearchType searchTypeName,
+            @Nullable SearchType searchTypeUsername);
 
 
     /**
@@ -53,5 +54,6 @@ public interface ApAccessPointRepositoryCustom {
             @Nullable Collection<Integer> apTypeIds,
             @Nullable Set<Integer> scopeIds,
             @Nullable Collection<ApState.StateApproval> approvalStates,
-            @Nullable SearchType searchType);
+            @Nullable SearchType searchTypeName,
+            @Nullable SearchType searchTypeUsername);
 }

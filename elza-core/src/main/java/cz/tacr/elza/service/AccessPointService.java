@@ -201,11 +201,12 @@ public class AccessPointService {
                                                         @Nullable final ArrFund fund,
                                                         @Nullable final Integer scopeId,
                                                         @Nullable final Collection<StateApproval> approvalStates,
-                                                        @Nullable final SearchType searchType) {
+                                                        @Nullable SearchType searchTypeName,
+                                                        @Nullable SearchType searchTypeUsername) {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
-        return apAccessPointRepository.findApAccessPointByTextAndType(searchRecord, apTypeIds, firstResult, maxResults, scopeIdsForSearch, approvalStates, searchType);
+        return apAccessPointRepository.findApAccessPointByTextAndType(searchRecord, apTypeIds, firstResult, maxResults, scopeIdsForSearch, approvalStates, searchTypeName, searchTypeUsername);
     }
 
 
@@ -223,11 +224,12 @@ public class AccessPointService {
                                                     @Nullable final ArrFund fund,
                                                     @Nullable final Integer scopeId,
                                                     @Nullable final Collection<StateApproval> approvalStates,
-                                                    @Nullable final SearchType searchType) {
+                                                    @Nullable SearchType searchTypeName,
+                                                    @Nullable SearchType searchTypeUsername) {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
-        return apAccessPointRepository.findApAccessPointByTextAndTypeCount(searchRecord, apTypeIds, scopeIdsForSearch, approvalStates, searchType);
+        return apAccessPointRepository.findApAccessPointByTextAndTypeCount(searchRecord, apTypeIds, scopeIdsForSearch, approvalStates, searchTypeName, searchTypeUsername);
     }
 
     /**
