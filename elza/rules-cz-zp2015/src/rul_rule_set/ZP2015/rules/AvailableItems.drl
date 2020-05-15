@@ -1779,12 +1779,26 @@ no-loop
 when $activeLevel: ActiveLevel( $items: descItems )
     DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_MTR") ) from $items
     $itemType: RulItemTypeExt( code in (
-        "ZP2015_RECORD_TYPE", "ZP2015_GEO_REF", "ZP2015_OTHER_ID"
+        "ZP2015_RECORD_TYPE", "ZP2015_ENTITY_ROLE", "ZP2015_OTHER_ID"
        ) )    
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
     $itemType.setRepeatable(true);
 end
+
+rule "Doporučené specifikace pro Matriky"
+no-loop
+when $activeLevel: ActiveLevel( $items: descItems )
+    DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_MTR") ) from $items
+    $itemType: RulItemTypeExt( code in (
+        "ZP2015_ENTITY_ROLE"
+       ) )    
+    $itemSpec: RulItemSpecExt( code in ("ZP2015_ENTITY_ROLE_71")
+     	) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
+end
+
 
 rule "Možné specifikace pro Matriky"
 no-loop
