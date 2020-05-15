@@ -836,6 +836,7 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
+    <!-- Přepracováno na role entit, nebude dále využito -->
     <item-type code="ZP2015_GEO_REF" data-type="RECORD_REF">
         <name>Lokalita</name>
         <shortcut>Lokalita</shortcut>
