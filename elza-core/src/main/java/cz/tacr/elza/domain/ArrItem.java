@@ -34,7 +34,7 @@ import cz.tacr.elza.service.cache.NodeCacheSerializable;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-public abstract class ArrItem implements NodeCacheSerializable {
+public abstract class ArrItem implements NodeCacheSerializable, IntItem {
 
     public static final String TABLE_NAME = "arr_item";
 
@@ -163,7 +163,7 @@ public abstract class ArrItem implements NodeCacheSerializable {
 
     /**
      * Setter which will not touch ID in createChange
-     * 
+     *
      * @param createChange
      * @param createChangeId
      */

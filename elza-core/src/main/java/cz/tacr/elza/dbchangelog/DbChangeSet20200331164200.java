@@ -1224,7 +1224,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         convertItemSpecMap.put("LEGAL", "NT_NATIV");
         convertItemSpecMap.put("SINGULAR", "NT_SINGULAR");
         convertItemSpecMap.put("USED", "NT_ACTUAL");
-        convertItemSpecMap.put("LEGAL", "NT_SECULAR");
+        convertItemSpecMap.put("LEGAL", "NT_OFFICIAL");
         convertItemSpecMap.put("ARTIFICIAL", "NT_ARTIFICIAL");
         convertItemSpecMap.put("LEGAL2", "NT_OFFICIAL");
         convertItemSpecMap.put("NARROW", "NT_NARROWER");

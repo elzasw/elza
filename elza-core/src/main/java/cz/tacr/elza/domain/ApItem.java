@@ -13,7 +13,7 @@ import javax.persistence.*;
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "ap_item")
-public class ApItem {
+public class ApItem implements IntItem{
 
     public static final String PART_ID = "partId";
     public static final String DELETE_CHANGE_ID = "deleteChangeId";
@@ -184,5 +184,9 @@ public class ApItem {
 
     public Integer getPartId() {
         return partId;
+    }
+
+    public boolean isUndefined() {
+        return data == null;
     }
 }

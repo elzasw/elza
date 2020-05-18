@@ -2,7 +2,7 @@ package cz.tacr.elza.print.item.convertors;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.IntItem;
 import cz.tacr.elza.print.item.AbstractItem;
 import cz.tacr.elza.print.item.ItemDecimal;
 import cz.tacr.elza.print.item.ItemType;
@@ -10,7 +10,7 @@ import cz.tacr.elza.print.item.ItemType;
 public class DecimalItemConvertor extends AbstractItemConvertor {
 
     @Override
-    protected AbstractItem convert(ArrItem item, ItemType itemType) {
+    protected AbstractItem convert(IntItem item, ItemType itemType) {
         if (itemType.getDataType() != DataType.DECIMAL) {
             return null;
         }

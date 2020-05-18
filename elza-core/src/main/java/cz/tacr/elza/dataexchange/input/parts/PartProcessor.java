@@ -13,6 +13,7 @@ import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.print.item.ItemSpec;
 import cz.tacr.elza.schema.v2.*;
 import cz.tacr.elza.service.AccessPointDataService;
 import org.apache.commons.lang3.NotImplementedException;
@@ -84,40 +85,40 @@ public class PartProcessor<P extends Party, E extends ApPart> implements ItemPro
         List<ItemWrapper> returnList = new ArrayList<>();
 
         ItemType itemType = staticData.getItemTypeByCode("NM_MAIN");
-        ApItem mainEntity = createApItem(partEntity, createItemData(itemType, name.getMain()), itemType, returnList);
+        ApItem mainEntity = createApItem(partEntity, createItemData(itemType, name.getMain()), itemType, null,returnList);
         ItemWrapper itemWrapper = partsContext.addItem(mainEntity, info);
         returnList.add(itemWrapper);
 
         itemType = staticData.getItemTypeByCode("NM_TYPE");
-        ApItem entity = createApItem(partEntity, createItemData(itemType, null), itemType, returnList);
+        ApItem entity = createApItem(partEntity, createItemData(itemType, null), itemType, name.getFt(), returnList);
         itemWrapper = partsContext.addItem(entity, info);
         returnList.add(itemWrapper);
 
 
         if (name.getOth() != null && !name.getOth().isEmpty()) {
             itemType = staticData.getItemTypeByCode("NM_MINOR");
-            entity = createApItem(partEntity, createItemData(itemType, name.getOth()), itemType, returnList);
+            entity = createApItem(partEntity, createItemData(itemType, name.getOth()), itemType,null, returnList);
             itemWrapper = partsContext.addItem(entity, info);
             returnList.add(itemWrapper);
         }
 
         if (name.getNote() != null && !name.getNote().isEmpty()) {
             itemType = staticData.getItemTypeByCode("NOTE");
-            entity = createApItem(partEntity, createItemData(itemType, name.getNote()), itemType, returnList);
+            entity = createApItem(partEntity, createItemData(itemType, name.getNote()), itemType, null,returnList);
             itemWrapper = partsContext.addItem(entity, info);
             returnList.add(itemWrapper);
         }
 
         if (name.getDgb() != null && !name.getDgb().isEmpty()) {
             itemType = staticData.getItemTypeByCode("NM_DEGREE_PRE");
-            entity = createApItem(partEntity, createItemData(itemType, name.getDgb()), itemType, returnList);
+            entity = createApItem(partEntity, createItemData(itemType, name.getDgb()), itemType,null, returnList);
             itemWrapper = partsContext.addItem(entity, info);
             returnList.add(itemWrapper);
         }
 
         if (name.getDga() != null && !name.getDga().isEmpty()) {
             itemType = staticData.getItemTypeByCode("NM_DEGREE_POST");
-            entity = createApItem(partEntity, createItemData(itemType, name.getDga()), itemType, returnList);
+            entity = createApItem(partEntity, createItemData(itemType, name.getDga()), itemType, null, returnList);
             itemWrapper = partsContext.addItem(entity, info);
             returnList.add(itemWrapper);
         }
@@ -135,25 +136,25 @@ public class PartProcessor<P extends Party, E extends ApPart> implements ItemPro
                         break;
                     case "GENERAL":
                         itemType = staticData.getItemTypeByCode("NM_SUP_GEN");
-                        entity = createApItem(partEntity, createItemData(itemType, nc.getV()), itemType, returnList);
+                        entity = createApItem(partEntity, createItemData(itemType, nc.getV()), itemType, null,returnList);
                         itemWrapper = partsContext.addItem(entity, info);
                         returnList.add(itemWrapper);
                         break;
                     case "GEO":
                         itemType = staticData.getItemTypeByCode("NM_SUP_GEO");
-                        entity = createApItem(partEntity, createItemData(itemType, nc.getV()), itemType, returnList);
+                        entity = createApItem(partEntity, createItemData(itemType, nc.getV()), itemType, null, returnList);
                         itemWrapper = partsContext.addItem(entity, info);
                         returnList.add(itemWrapper);
                         break;
                     case "TIME":
                         itemType = staticData.getItemTypeByCode("NM_SUP_CHRO");
-                        entity = createApItem(partEntity, createItemData(itemType, nc.getV()), itemType, returnList);
+                        entity = createApItem(partEntity, createItemData(itemType, nc.getV()), itemType, null, returnList);
                         itemWrapper = partsContext.addItem(entity, info);
                         returnList.add(itemWrapper);
                         break;
                     case "ORDER":
                         itemType = staticData.getItemTypeByCode("NM_ORDER");
-                        entity = createApItem(partEntity, createItemData(itemType, nc.getV()), itemType, returnList);
+                        entity = createApItem(partEntity, createItemData(itemType, nc.getV()), itemType, null, returnList);
                         itemWrapper = partsContext.addItem(entity, info);
                         returnList.add(itemWrapper);
                         break;
@@ -173,18 +174,19 @@ public class PartProcessor<P extends Party, E extends ApPart> implements ItemPro
             List<ItemWrapper> itemWrapperList = new ArrayList<>();
 
             ItemType itemType = staticData.getItemTypeByCode(itemTypeCode);
-            ApItem entity = createApItem(partEntity, createItemData(itemType, value), itemType, itemWrapperList);
+            ApItem entity = createApItem(partEntity, createItemData(itemType, value), itemType, null, itemWrapperList);
             ItemWrapper itemWrapper = partsContext.addItem(entity, info);
             itemWrapperList.add(itemWrapper);
             info = partsContext.addPart(partEntity, String.valueOf(partsContext.getCurrentImportId()), apInfo, type, itemWrapperList);
         }
     }
 
-    private ApItem createApItem(ApPart partEntity, ArrData data, ItemType itemType, List<ItemWrapper> itemList) {
+    private ApItem createApItem(ApPart partEntity, ArrData data, ItemType itemType, String itemSpecCode, List<ItemWrapper> itemList) {
         ApItem apItem = new ApItem();
         apItem.setPart(partEntity);
         apItem.setData(data);
         apItem.setItemType(itemType.getEntity());
+        if(itemSpecCode != null) apItem.setItemSpec(itemType.getItemSpecByCode(itemSpecCode));
         apItem.setCreateChange(apContext.getCreateChange());
         apItem.setObjectId(apContext.nextItemObjectId());
         apItem.setPosition(nextPosition(itemList));

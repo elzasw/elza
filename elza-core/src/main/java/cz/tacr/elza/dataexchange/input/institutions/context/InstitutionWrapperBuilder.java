@@ -71,8 +71,7 @@ class InstitutionWrapperBuilder implements ImportPhaseChangeListener {
         }
         if (previousPhase == ImportPhase.INSTITUTIONS) {
             // end -> delete not paired institutions and clean up resources
-            //TODO : gotzy - zjistit co s tim
-          /*  deleteNotPairedInstitutions(apIdInstInfoMap.values());
+           /* deleteNotPairedInstitutions(apIdInstInfoMap.values());
             apIdInstInfoMap = null;
             referencedApIds.clear();
             return false;*/

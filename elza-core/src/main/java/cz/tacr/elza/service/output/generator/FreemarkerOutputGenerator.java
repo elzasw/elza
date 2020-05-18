@@ -38,6 +38,8 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
                               InstitutionRepository institutionRepository,
                               ApStateRepository apStateRepository,
                               ApExternalIdRepository apEidRepository,
+                              ApPartRepository partRepository,
+                              ApItemRepository itemRepository,
                               EntityManager em,
                               DmsService dmsService) {
         super(em, dmsService);
@@ -47,7 +49,7 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
 
         outputModel = new OutputModel(staticDataService, elzaLocale,
                 fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
-                apEidRepository, null, structObjRepos, structItemRepos);
+                apEidRepository, null, structObjRepos, structItemRepos, partRepository, itemRepository);
     }
 
     @Override

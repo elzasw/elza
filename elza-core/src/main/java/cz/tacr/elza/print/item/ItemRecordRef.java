@@ -16,7 +16,7 @@ public class ItemRecordRef extends AbstractItem {
 
     @Override
     public String getSerializedValue() {
-        return String.valueOf(record.getId()); //TODO: bylo preferované jméno
+        return String.valueOf(record.getPreferredPart().getValue());
     }
 
     @Override

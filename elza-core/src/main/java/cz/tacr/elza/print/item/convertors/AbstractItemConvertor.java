@@ -1,7 +1,7 @@
 package cz.tacr.elza.print.item.convertors;
 
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.IntItem;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.item.AbstractItem;
@@ -14,18 +14,18 @@ public abstract class AbstractItemConvertor implements ItemConvertor {
     protected ItemConvertorContext context;
 
     @Override
-    public final Item convert(ArrItem arrItem, ItemConvertorContext context) {
+    public final Item convert(IntItem iItem, ItemConvertorContext context) {
         this.context = context; // prepare context for implementation
 
-        ItemType itemType = context.getItemTypeById(arrItem.getItemTypeId());
+        ItemType itemType = context.getItemTypeById(iItem.getItemTypeId());
 
         AbstractItem item;
         try {
-            item = convert(arrItem, itemType);
+            item = convert(iItem, itemType);
         } catch (Exception e) {
-            ArrData data = arrItem.getData();
+            ArrData data = iItem.getData();
             throw new BusinessException(
-                    "Failed to convert item, itemId = " + arrItem.getItemId() + ", targetItemType=" + itemType.getCode()
+                    "Failed to convert item, itemId = " + iItem.getItemId() + ", targetItemType=" + itemType.getCode()
                             + ", dataType=" + ((data == null) ? "null" : data.getClass().getCanonicalName()),
                     e, BaseCode.DB_INTEGRITY_PROBLEM);
         }
@@ -34,15 +34,15 @@ public abstract class AbstractItemConvertor implements ItemConvertor {
             return null;
         }
         // update common properties
-        item.setPosition(arrItem.getPosition());
+        item.setPosition(iItem.getPosition());
         item.setType(itemType);
-        if (arrItem.getItemSpecId() != null) {
-            ItemSpec itemSpec = context.getItemSpecById(arrItem.getItemSpecId());
+        if (iItem.getItemSpecId() != null) {
+            ItemSpec itemSpec = context.getItemSpecById(iItem.getItemSpecId());
             item.setSpecification(itemSpec);
         }
         return item;
     }
 
-    protected abstract AbstractItem convert(ArrItem item, ItemType itemType);
+    protected abstract AbstractItem convert(IntItem item, ItemType itemType);
 
 }

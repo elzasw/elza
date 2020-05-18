@@ -3,10 +3,10 @@
     <pars>
         <pg id="p000000010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archivní správa Ministerstva vnitra České republiky</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>AS MV ČR</main>
                 </nm>
             </nms>
@@ -14,10 +14,10 @@
         </pg>
         <pg id="p100000010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Národní archiv</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Národní archiv</main>
                 </nm>
             </nms>
@@ -25,10 +25,10 @@
         </pg>
         <pg id="p211000010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní oblastní archiv v Praze</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOA v Praze</main>
                 </nm>
             </nms>
@@ -36,10 +36,10 @@
         </pg>
         <pg id="p212000010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní oblastní archiv v Třeboni</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOA v Třeboni</main>
                 </nm>
             </nms>
@@ -47,10 +47,10 @@
         </pg>
         <pg id="p213000010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní oblastní archiv v Plzni</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOA v Plzni</main>
                 </nm>
             </nms>
@@ -58,10 +58,10 @@
         </pg>
         <pg id="p214000010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní oblastní archiv v Litoměřicích</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOA v Litoměřicích</main>
                 </nm>
             </nms>
@@ -69,10 +69,10 @@
         </pg>
         <pg id="p215000010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní oblastní archiv v Zámrsku</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOA v Zámrsku</main>
                 </nm>
             </nms>
@@ -80,10 +80,10 @@
         </pg>
         <pg id="p216000010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Moravský zemský archiv v Brně</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>MZA v Brně</main>
                 </nm>
             </nms>
@@ -91,10 +91,10 @@
         </pg>
         <pg id="p217000010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Zemský archiv v Opavě</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>ZA v Opavě</main>
                 </nm>
             </nms>
@@ -102,10 +102,10 @@
         </pg>
         <pg id="p321100010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv hlavního města Prahy</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>AHMP</main>
                 </nm>
             </nms>
@@ -113,10 +113,10 @@
         </pg>
         <pg id="p323103010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv města Plzně</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>AM Plzně</main>
                 </nm>
             </nms>
@@ -124,10 +124,10 @@
         </pg>
         <pg id="p324107010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv města Ústí nad Labem</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>AM Ústí nad Labem</main>
                 </nm>
             </nms>
@@ -135,10 +135,10 @@
         </pg>
         <pg id="p326202010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv města Brna</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>AM Brna</main>
                 </nm>
             </nms>
@@ -146,10 +146,10 @@
         </pg>
         <pg id="p327206010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv města Ostravy</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>AM Ostravy</main>
                 </nm>
             </nms>
@@ -157,10 +157,10 @@
         </pg>
         <pg id="p221201010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Benešov</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Benešov</main>
                 </nm>
             </nms>
@@ -168,10 +168,10 @@
         </pg>
         <pg id="p221202010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Beroun</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Beroun</main>
                 </nm>
             </nms>
@@ -179,10 +179,10 @@
         </pg>
         <pg id="p221203010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Kladno</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Kladno</main>
                 </nm>
             </nms>
@@ -190,10 +190,10 @@
         </pg>
         <pg id="p221204010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Kolín</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Kolín</main>
                 </nm>
             </nms>
@@ -201,10 +201,10 @@
         </pg>
         <pg id="p221205010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Kutná Hora</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Kutná Hora</main>
                 </nm>
             </nms>
@@ -212,10 +212,10 @@
         </pg>
         <pg id="p221206010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Mělník</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Mělník</main>
                 </nm>
             </nms>
@@ -223,10 +223,10 @@
         </pg>
         <pg id="p221207010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Mladá Boleslav</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Mladá Boleslav</main>
                 </nm>
             </nms>
@@ -234,10 +234,10 @@
         </pg>
         <pg id="p221208010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Nymburk se sídlem v Lysé nad Labem</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Nymburk</main>
                 </nm>
             </nms>
@@ -245,10 +245,10 @@
         </pg>
         <pg id="p221209010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Praha-východ se sídlem v Přemyšlení</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Praha-východ</main>
                 </nm>
             </nms>
@@ -256,10 +256,10 @@
         </pg>
         <pg id="p221210010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Praha-západ se sídlem v Dobřichovicích</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Praha-západ</main>
                 </nm>
             </nms>
@@ -267,10 +267,10 @@
         </pg>
         <pg id="p221211010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Příbram</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Příbram</main>
                 </nm>
             </nms>
@@ -278,10 +278,10 @@
         </pg>
         <pg id="p221212010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Rakovník</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Rakovník</main>
                 </nm>
             </nms>
@@ -289,10 +289,10 @@
         </pg>
         <pg id="p222101010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv České Budějovice</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Čes. Budějovice</main>
                 </nm>
             </nms>
@@ -300,10 +300,10 @@
         </pg>
         <pg id="p222102010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Český Krumlov</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Český Krumlov</main>
                 </nm>
             </nms>
@@ -311,10 +311,10 @@
         </pg>
         <pg id="p222103010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Jindřichův Hradec</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Jindřichův Hradec</main>
                 </nm>
             </nms>
@@ -322,10 +322,10 @@
         </pg>
         <pg id="p222104010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Písek</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Písek</main>
                 </nm>
             </nms>
@@ -333,10 +333,10 @@
         </pg>
         <pg id="p222105010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Prachatice</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Prachatice</main>
                 </nm>
             </nms>
@@ -344,10 +344,10 @@
         </pg>
         <pg id="p222106010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Strakonice</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Strakonice</main>
                 </nm>
             </nms>
@@ -355,10 +355,10 @@
         </pg>
         <pg id="p222107010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Tábor</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Tábor</main>
                 </nm>
             </nms>
@@ -366,10 +366,10 @@
         </pg>
         <pg id="p223101010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Domažlice se sídlem v Horšovském Týně</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Domažlice</main>
                 </nm>
             </nms>
@@ -377,10 +377,10 @@
         </pg>
         <pg id="p223201010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Cheb</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Cheb</main>
                 </nm>
             </nms>
@@ -388,10 +388,10 @@
         </pg>
         <pg id="p223202010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Karlovy Vary</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Karlovy Vary</main>
                 </nm>
             </nms>
@@ -399,10 +399,10 @@
         </pg>
         <pg id="p223102010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Klatovy</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Klatovy</main>
                 </nm>
             </nms>
@@ -410,10 +410,10 @@
         </pg>
         <pg id="p223104010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Plzeň-jih se sídlem v Blovicích</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Plzeň-jih</main>
                 </nm>
             </nms>
@@ -421,10 +421,10 @@
         </pg>
         <pg id="p223105010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Plzeň-sever se sídlem v Plasích</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Plzeň-sever</main>
                 </nm>
             </nms>
@@ -432,10 +432,10 @@
         </pg>
         <pg id="p223106010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Rokycany</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Rokycany</main>
                 </nm>
             </nms>
@@ -443,10 +443,10 @@
         </pg>
         <pg id="p223203010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Sokolov se sídlem v Jindřichovicích</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Sokolov</main>
                 </nm>
             </nms>
@@ -454,10 +454,10 @@
         </pg>
         <pg id="p223107010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Tachov</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Tachov</main>
                 </nm>
             </nms>
@@ -465,10 +465,10 @@
         </pg>
         <pg id="p224201010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Česká Lípa</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Česká Lípa</main>
                 </nm>
             </nms>
@@ -476,10 +476,10 @@
         </pg>
         <pg id="p224101010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Děčín</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Děčín</main>
                 </nm>
             </nms>
@@ -487,10 +487,10 @@
         </pg>
         <pg id="p224102010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Chomutov se sídlem v Kadani</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Chomutov</main>
                 </nm>
             </nms>
@@ -498,10 +498,10 @@
         </pg>
         <pg id="p224202010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Jablonec nad Nisou</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Jablonec nad N.</main>
                 </nm>
             </nms>
@@ -509,10 +509,10 @@
         </pg>
         <pg id="p224203010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Liberec</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Liberec</main>
                 </nm>
             </nms>
@@ -520,10 +520,10 @@
         </pg>
         <pg id="p224103010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Litoměřice se sídlem v Lovosicích</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Litoměřice</main>
                 </nm>
             </nms>
@@ -531,10 +531,10 @@
         </pg>
         <pg id="p224104010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Louny</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Louny</main>
                 </nm>
             </nms>
@@ -542,10 +542,10 @@
         </pg>
         <pg id="p224105010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Most</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Most</main>
                 </nm>
             </nms>
@@ -553,10 +553,10 @@
         </pg>
         <pg id="p224106010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Teplice</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Teplice</main>
                 </nm>
             </nms>
@@ -564,10 +564,10 @@
         </pg>
         <pg id="p225101010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Hradec Králové</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Hradec Králové</main>
                 </nm>
             </nms>
@@ -575,10 +575,10 @@
         </pg>
         <pg id="p225201010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Chrudim</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Chrudim</main>
                 </nm>
             </nms>
@@ -586,10 +586,10 @@
         </pg>
         <pg id="p225102010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Jičín</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Jičín</main>
                 </nm>
             </nms>
@@ -597,10 +597,10 @@
         </pg>
         <pg id="p225103010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Náchod</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Náchod</main>
                 </nm>
             </nms>
@@ -608,10 +608,10 @@
         </pg>
         <pg id="p225202010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Pardubice</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Pardubice</main>
                 </nm>
             </nms>
@@ -619,10 +619,10 @@
         </pg>
         <pg id="p225104010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Rychnov nad Kněžnou</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Rychnov nad Kn.</main>
                 </nm>
             </nms>
@@ -630,10 +630,10 @@
         </pg>
         <pg id="p225203010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Svitavy se sídlem v Litomyšli</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Svitavy</main>
                 </nm>
             </nms>
@@ -641,10 +641,10 @@
         </pg>
         <pg id="p225105010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Trutnov</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Trutnov</main>
                 </nm>
             </nms>
@@ -652,10 +652,10 @@
         </pg>
         <pg id="p225204010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Ústí nad Orlicí</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Ústí nad Orlicí</main>
                 </nm>
             </nms>
@@ -663,10 +663,10 @@
         </pg>
         <pg id="p226201010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Blansko</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Blansko</main>
                 </nm>
             </nms>
@@ -674,10 +674,10 @@
         </pg>
         <pg id="p226203010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Brno-venkov se sídlem v Rajhradě</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Brno-venkov</main>
                 </nm>
             </nms>
@@ -685,10 +685,10 @@
         </pg>
         <pg id="p226204010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Břeclav se sídlem v Mikulově</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Břeclav</main>
                 </nm>
             </nms>
@@ -696,10 +696,10 @@
         </pg>
         <pg id="p226304010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Zlín</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Zlín</main>
                 </nm>
             </nms>
@@ -707,10 +707,10 @@
         </pg>
         <pg id="p226205010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Hodonín</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Hodonín</main>
                 </nm>
             </nms>
@@ -718,10 +718,10 @@
         </pg>
         <pg id="p226102010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Jihlava</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Jihlava</main>
                 </nm>
             </nms>
@@ -729,10 +729,10 @@
         </pg>
         <pg id="p226301010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Kroměříž</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Kroměříž</main>
                 </nm>
             </nms>
@@ -740,10 +740,10 @@
         </pg>
         <pg id="p226104010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Třebíč</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Třebíč</main>
                 </nm>
             </nms>
@@ -751,10 +751,10 @@
         </pg>
         <pg id="p226302010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Uherské Hradiště</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Uherské Hradiště</main>
                 </nm>
             </nms>
@@ -762,10 +762,10 @@
         </pg>
         <pg id="p226206010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Vyškov se sídlem ve Slavkově u Brna</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Vyškov</main>
                 </nm>
             </nms>
@@ -773,10 +773,10 @@
         </pg>
         <pg id="p226207010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Znojmo</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Znojmo</main>
                 </nm>
             </nms>
@@ -784,10 +784,10 @@
         </pg>
         <pg id="p226105010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Žďár nad Sázavou</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Žďár nad Sázavou</main>
                 </nm>
             </nms>
@@ -795,10 +795,10 @@
         </pg>
         <pg id="p227201010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Bruntál se sídlem v Krnově</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Bruntál</main>
                 </nm>
             </nms>
@@ -806,10 +806,10 @@
         </pg>
         <pg id="p227202010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Frýdek-Místek</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Frýdek-Místek</main>
                 </nm>
             </nms>
@@ -817,10 +817,10 @@
         </pg>
         <pg id="p227203010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Karviná</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Karviná</main>
                 </nm>
             </nms>
@@ -828,10 +828,10 @@
         </pg>
         <pg id="p227204010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Nový Jičín</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Nový Jičín</main>
                 </nm>
             </nms>
@@ -839,10 +839,10 @@
         </pg>
         <pg id="p227102010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Olomouc</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Olomouc</main>
                 </nm>
             </nms>
@@ -850,10 +850,10 @@
         </pg>
         <pg id="p227205010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Opava</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Opava</main>
                 </nm>
             </nms>
@@ -861,10 +861,10 @@
         </pg>
         <pg id="p227104010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Přerov</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Přerov</main>
                 </nm>
             </nms>
@@ -872,10 +872,10 @@
         </pg>
         <pg id="p227105010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Šumperk</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Šumperk</main>
                 </nm>
             </nms>
@@ -883,10 +883,10 @@
         </pg>
         <pg id="p227101010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Jeseník</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Jeseník</main>
                 </nm>
             </nms>
@@ -894,10 +894,10 @@
         </pg>
         <pg id="p610000010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Kanceláře prezidenta republiky</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv KPR</main>
                 </nm>
             </nms>
@@ -905,10 +905,10 @@
         </pg>
         <pg id="p610000020">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Pražského hradu</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv Pražského hradu</main>
                 </nm>
             </nms>
@@ -916,10 +916,10 @@
         </pg>
         <pg id="p610000030">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Odbor administrativy a zpracování informací MZV - Archiv MZV</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv MZV Praha</main>
                 </nm>
             </nms>
@@ -927,10 +927,10 @@
         </pg>
         <pg id="p610000040">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Vojenský historický archiv</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>VHA Praha</main>
                 </nm>
             </nms>
@@ -938,10 +938,10 @@
         </pg>
         <pg id="p610000050">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Českého rozhlasu</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv ČRO</main>
                 </nm>
             </nms>
@@ -949,10 +949,10 @@
         </pg>
         <pg id="p610000060">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv České televize</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv České televize</main>
                 </nm>
             </nms>
@@ -960,10 +960,10 @@
         </pg>
         <pg id="p610000070">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Akademie věd České republiky</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv AV ČR</main>
                 </nm>
             </nms>
@@ -971,10 +971,10 @@
         </pg>
         <pg id="p610000080">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Poslanecké sněmovny</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv PS</main>
                 </nm>
             </nms>
@@ -982,10 +982,10 @@
         </pg>
         <pg id="p620000010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Ústav dějin Univerzity Karlovy – Archiv Univerzity Karlovy</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv UK Praha</main>
                 </nm>
             </nms>
@@ -993,10 +993,10 @@
         </pg>
         <pg id="p620000020">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Českého vysokého učení technického v Praze</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv ČVUT Praha</main>
                 </nm>
             </nms>
@@ -1004,10 +1004,10 @@
         </pg>
         <pg id="p630000010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Národního muzea</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>ANM</main>
                 </nm>
             </nms>
@@ -1015,10 +1015,10 @@
         </pg>
         <pg id="p630000020">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Literární archiv Památníku národního písemnictví</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>LA PNP Praha</main>
                 </nm>
             </nms>
@@ -1026,10 +1026,10 @@
         </pg>
         <pg id="p610000110">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Ústřední archiv zeměměřictví a katastru</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>ÚA ZAK Praha</main>
                 </nm>
             </nms>
@@ -1037,10 +1037,10 @@
         </pg>
         <pg id="p610000130">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Národní filmový archiv</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>NFA Praha</main>
                 </nm>
             </nms>
@@ -1048,10 +1048,10 @@
         </pg>
         <pg id="p620000030">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Masarykovy univerzity v Brně</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv AMU Brno</main>
                 </nm>
             </nms>
@@ -1059,10 +1059,10 @@
         </pg>
         <pg id="p620000040">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Vysokého učení technického v Brně</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv VUT Brno</main>
                 </nm>
             </nms>
@@ -1070,10 +1070,10 @@
         </pg>
         <pg id="p630000040">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Národní galerie</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv NG Praha</main>
                 </nm>
             </nms>
@@ -1081,10 +1081,10 @@
         </pg>
         <pg id="p630000050">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Národní knihovny</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv NK Praha</main>
                 </nm>
             </nms>
@@ -1092,10 +1092,10 @@
         </pg>
         <pg id="p640000010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv DIAMO</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv DIAMO</main>
                 </nm>
             </nms>
@@ -1103,10 +1103,10 @@
         </pg>
         <pg id="p700000020">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Bezpečnostní informační služby</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv BIS</main>
                 </nm>
             </nms>
@@ -1114,10 +1114,10 @@
         </pg>
         <pg id="p521100010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Všeodborový archiv Českomoravské konfederace odborových svazů</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Všeodborový archiv</main>
                 </nm>
             </nms>
@@ -1125,10 +1125,10 @@
         </pg>
         <pg id="p630000060">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Národního technického muzea</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv NTM v Praze</main>
                 </nm>
             </nms>
@@ -1136,10 +1136,10 @@
         </pg>
         <pg id="p521100030">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Židovského muzea v Praze</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv ŽM v Praze</main>
                 </nm>
             </nms>
@@ -1147,10 +1147,10 @@
         </pg>
         <pg id="p610000100">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv České národní banky</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv ČNB</main>
                 </nm>
             </nms>
@@ -1158,10 +1158,10 @@
         </pg>
         <pg id="p226103010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Pelhřimov</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Pelhřimov</main>
                 </nm>
             </nms>
@@ -1169,10 +1169,10 @@
         </pg>
         <pg id="p226101010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Havlíčkův Brod</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Havlíčkův Brod</main>
                 </nm>
             </nms>
@@ -1180,10 +1180,10 @@
         </pg>
         <pg id="p226303010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Vsetín</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Vsetín</main>
                 </nm>
             </nms>
@@ -1191,10 +1191,10 @@
         </pg>
         <pg id="p224204010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Semily</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Semily</main>
                 </nm>
             </nms>
@@ -1202,10 +1202,10 @@
         </pg>
         <pg id="p227103010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Státní okresní archiv Prostějov</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>SOkA Prostějov</main>
                 </nm>
             </nms>
@@ -1213,10 +1213,10 @@
         </pg>
         <pg id="p610000090">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Senátu</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv Senátu</main>
                 </nm>
             </nms>
@@ -1224,10 +1224,10 @@
         </pg>
         <pg id="p700000030">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Úřadu pro zahraniční styky a informace</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv ÚZI</main>
                 </nm>
             </nms>
@@ -1235,10 +1235,10 @@
         </pg>
         <pg id="p521100020">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv České strany sociálně demokratické</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv ČSSD</main>
                 </nm>
             </nms>
@@ -1246,10 +1246,10 @@
         </pg>
         <pg id="p700000040">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Národního bezpečnostního úřadu</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv NBÚ</main>
                 </nm>
             </nms>
@@ -1257,10 +1257,10 @@
         </pg>
         <pg id="p620000050">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Univerzity Hradec Králové</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv UHK</main>
                 </nm>
             </nms>
@@ -1268,10 +1268,10 @@
         </pg>
         <pg id="p513103010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv společnosti Plzeňský Prazdroj, a.s.</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Plzeňský Prazdroj</main>
                 </nm>
             </nms>
@@ -1279,10 +1279,10 @@
         </pg>
         <pg id="p620000060">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Univerzity Palackého v Olomouci</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv UP Olomouc</main>
                 </nm>
             </nms>
@@ -1290,10 +1290,10 @@
         </pg>
         <pg id="p517206010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv OKD a. s. , Ostrava</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv OKD</main>
                 </nm>
             </nms>
@@ -1301,10 +1301,10 @@
         </pg>
         <pg id="p517206020">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Vítkovice, a.s.</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv Vítkovice</main>
                 </nm>
             </nms>
@@ -1312,10 +1312,10 @@
         </pg>
         <pg id="p517206040">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv ArcelorMittal Ostrava a. s.</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv ArcelorMittal</main>
                 </nm>
             </nms>
@@ -1323,10 +1323,10 @@
         </pg>
         <pg id="p620000070">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Akademie výtvarných umění v Praze</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv AVU Praha</main>
                 </nm>
             </nms>
@@ -1334,10 +1334,10 @@
         </pg>
         <pg id="p630000070">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Moravské galerie v Brně</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv MG v Brně</main>
                 </nm>
             </nms>
@@ -1345,10 +1345,10 @@
         </pg>
         <pg id="p511207010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv společnosti Škoda Auto</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv Škoda Auto</main>
                 </nm>
             </nms>
@@ -1356,10 +1356,10 @@
         </pg>
         <pg id="p526101010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Centra hasičského hnutí Přibyslav</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv CHH Přibyslav</main>
                 </nm>
             </nms>
@@ -1367,10 +1367,10 @@
         </pg>
         <pg id="p513203010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv společnosti Sokolovská uhelná a. s.</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Arch. Sokolovská uhel.</main>
                 </nm>
             </nms>
@@ -1378,10 +1378,10 @@
         </pg>
         <pg id="p620000080">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Vysoké školy báňské - Technické univerzity Ostrava</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv VŠB Ostrava</main>
                 </nm>
             </nms>
@@ -1389,10 +1389,10 @@
         </pg>
         <pg id="p620000090">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Slezské univerzity v Opavě</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv SU v Opavě</main>
                 </nm>
             </nms>
@@ -1400,10 +1400,10 @@
         </pg>
         <pg id="p100000020">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv bezpečnostních složek</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>ABS</main>
                 </nm>
             </nms>
@@ -1411,10 +1411,10 @@
         </pg>
         <pg id="p620000100">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Mendelovy univerzity v Brně</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv MENDELU</main>
                 </nm>
             </nms>
@@ -1422,10 +1422,10 @@
         </pg>
         <pg id="p700000050">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Bezpečnostní archiv Vojenského zpravodajství</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>BA Vojen.zpravodajství</main>
                 </nm>
             </nms>
@@ -1433,10 +1433,10 @@
         </pg>
         <pg id="p700000060">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Policie České republiky</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>BAP ČR</main>
                 </nm>
             </nms>
@@ -1444,10 +1444,10 @@
         </pg>
         <pg id="p536000010">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Biskupství brněnského</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>ABB</main>
                 </nm>
             </nms>
@@ -1455,10 +1455,10 @@
         </pg>
         <pg id="p700000070">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Ministerstva vnitra ČR</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>Archiv MV</main>
                 </nm>
             </nms>
@@ -1466,10 +1466,10 @@
         </pg>
         <pg id="p610000140">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Národního bezpečnostního úřadu - specializovaný</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>ANBU-S</main>
                 </nm>
             </nms>
@@ -1477,10 +1477,10 @@
         </pg>
         <pg id="p620000110">
             <nms>
-            <nm ft="LEGAL">
+            <nm ft="NT_OFFICIAL">
                 <main>Archiv Veterinární a farmaceutické univerzity Brno</main>
             </nm>
-                <nm ft="ABBRV">
+                <nm ft="NT_ACRONYM">
                     <main>AVFU Brno</main>
                 </nm>
             </nms>

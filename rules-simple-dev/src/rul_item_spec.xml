@@ -2437,4 +2437,10 @@
         <view-order>2</view-order>
         <item-type-assign code="VZTAH_TYP"/>
     </item-spec>
+    <item-spec code="NT_OFFICIAL">
+        <name>úřední</name>
+        <description>úřední</description>
+        <shortcut>úřední</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
 </item-specs>
