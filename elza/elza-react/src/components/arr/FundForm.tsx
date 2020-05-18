@@ -44,11 +44,17 @@ const FundForm: React.FC<IFundForm & InjectedFormProps<{}, IFundForm>> = memo((p
         if ((props.create || props.update) && !values.name) {
             errors.name = i18n('global.validation.required');
         }
-        if ((props.create || props.ruleSet) && !values.ruleSetId) {
+        if ((props.ruleSet) && !values.ruleSetId) {
             errors.ruleSetId = i18n('global.validation.required');
         }
-        if ((props.create || props.update) && !values.institutionId) {
-            errors.institutionId = i18n('global.validation.required');
+        if ((props.create || props.ruleSet) && !values.ruleSetCode) {
+            errors.ruleSetCode = i18n('global.validation.required');
+        }
+        if ((props.create || props.update) && !values.institutionIdentifier) {
+            errors.institutionIdentifier = i18n('global.validation.required');
+        }
+        if (props.create && (!values.scopes || values.scopes.length === 0)) {
+            errors.scopes = i18n('global.validation.required');
         }
 
         if (props.create && !admin && (!values.fundAdmins || values.fundAdmins.length === 0)) {
@@ -122,28 +128,28 @@ const FundForm: React.FC<IFundForm & InjectedFormProps<{}, IFundForm>> = memo((p
 
                 {(create || update) && (
                     <Field
-                        name="institutionId"
+                        name="institutionIdentifier"
                         type="select"
                         component={FormInputField}
                         label={i18n('arr.fund.institution')}
                     >
                         <option key="-institutionId"/>
                         {institutions.map(i => {
-                            return <option value={i.id}>{i.name}</option>;
+                            return <option value={i.code}>{i.name}</option>;
                         })}
                     </Field>
                 )}
 
                 {(create || ruleSet) && (
                     <Field
-                        name="ruleSetId"
+                        name="ruleSetCode"
                         type="select"
                         component={FormInputField}
                         label={i18n('arr.fund.ruleSet')}
                     >
-                        <option key="-ruleSetId"/>
+                        <option key="-ruleSetCode"/>
                         {ruleSets.map(i => {
-                            return <option value={i.id}>{i.name}</option>;
+                            return <option value={i.code}>{i.name}</option>;
                         })}
                     </Field>
                 )}
@@ -157,9 +163,9 @@ const FundForm: React.FC<IFundForm & InjectedFormProps<{}, IFundForm>> = memo((p
                     />
                 )}
 
-                {update && (
+                {(create || update) && (
                     <FieldArray
-                        name="apScopes"
+                        name="scopes"
                         component={ScopesField}
                         label={i18n('arr.fund.regScope')}
                         scopeList={props.scopeList}
@@ -180,6 +186,9 @@ const FundForm: React.FC<IFundForm & InjectedFormProps<{}, IFundForm>> = memo((p
                         }}
                     />
                 )}
+                {(create || update) && <Field name={"fundNumber"} component={FormInputField} label={i18n('arr.fund.number')} type={"number"} />}
+                {(create || update) && <Field name={"unitdate"} component={FormInputField} label={i18n('arr.fund.unitdate')} />}
+                {(create || update) && <Field name={"mark"} component={FormInputField} label={i18n('arr.fund.mark')} />}
             </Modal.Body>
             <Modal.Footer>
                 {create && (

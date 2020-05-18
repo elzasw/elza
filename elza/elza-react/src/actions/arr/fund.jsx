@@ -18,10 +18,10 @@ import {downloadAjaxFile} from '../global/download';
  */
 export function fundsFetchIfNeeded() {
     return (dispatch, getState) => {
-        var state = getState();
-        var funds = state.arrRegion.funds;
+        const state = getState();
+        const funds = state.arrRegion.funds;
 
-        var versionIds = [];
+        const versionIds = [];
         funds.forEach(fund => {
             if (fund.dirty && !fund.isFetching) {
                 versionIds.push(fund.versionId);
@@ -31,12 +31,12 @@ export function fundsFetchIfNeeded() {
         if (versionIds.length > 0) {
             dispatch(fundsRequest(versionIds));
             WebApi.getFundsByVersionIds(versionIds).then(json => {
-                var funds = json.map(x => getFundFromFundAndVersion(x, x.versions[0]));
+                const funds = json.map(x => getFundFromFundAndVersion(x, x.versions[0]));
                 dispatch(fundsReceive(funds));
 
                 // Ještě musíme provést aktualizaci node, pokud je otevřený v záložce takový, který reprezentuje AS - virtuální kořenový NODE
                 funds.forEach(fund => {
-                    var node = createFundRoot(fund);
+                    const node = createFundRoot(fund);
                     dispatch(nodesRequest(fund.versionId, [node.id]));
                     dispatch(nodesReceive(fund.versionId, [node]));
                 });
@@ -80,12 +80,15 @@ export function fundsReceive(funds) {
 export function createFund(data) {
     const formData = {
         name: data.name,
-        ruleSetId: data.ruleSetId,
+        ruleSetCode: data.ruleSetCode,
         internalCode: data.internalCode,
-        institutionId: data.institutionId,
+        institutionIdentifier: data.institutionIdentifier,
         dateRange: data.dateRange,
         adminUsers: [],
         adminGroups: [],
+        fundNumber: data.fundNumber,
+        unitdate:data.unitdate,
+        mark: data.mark,
     };
 
     data.fundAdmins &&
@@ -98,16 +101,16 @@ export function createFund(data) {
         });
 
     return dispatch => {
-        return savingApiWrapper(dispatch, WebApi.createFund(formData)).then(fund => {
+        return savingApiWrapper(dispatch, WebApi.createFund2(formData)).then(fund => {
             dispatch(addToastrSuccess(i18n('arr.fund.title.added')));
             dispatch(fundsSelectFund(fund.id));
         });
     };
 }
 
-export function updateFund(data) {
+export function updateFund(id, data) {
     return dispatch => {
-        return savingApiWrapper(dispatch, WebApi.updateFund(data));
+        return savingApiWrapper(dispatch, WebApi.updateFund2(id, data));
     };
 }
 

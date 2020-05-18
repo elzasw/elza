@@ -43,14 +43,14 @@ export function fundsSearch(filterText) {
  */
 export function fundsFundDetailFetchIfNeeded() {
     return (dispatch, getState) => {
-        var state = getState();
+        const state = getState();
         const fundDetail = state.fundRegion.fundDetail;
         const dataKey = _fundDetailDataKey(fundDetail);
 
         if (fundDetail.currentDataKey !== dataKey) {
             dispatch(fundsFundDetailRequest(dataKey));
             WebApi.getFundDetail(fundDetail.id).then(json => {
-                var newState = getState();
+                const newState = getState();
                 const newFundDetail = newState.fundRegion.fundDetail;
                 const newDataKey = _fundDetailDataKey(newFundDetail);
                 if (newDataKey === dataKey) {
@@ -64,17 +64,17 @@ export function fundsFundDetailFetchIfNeeded() {
 /**
  * Fetch dat pro seznam archivních souborů.
  */
-export function fundsFetchIfNeeded(from = 0, size = DEFAULT_FUND_LIST_MAX_SIZE) {
+export function fundsFetchIfNeeded(size = DEFAULT_FUND_LIST_MAX_SIZE) {
     return (dispatch, getState) => {
-        var state = getState();
+        const state = getState();
         const {fundRegion} = state;
         const {filter} = fundRegion;
         const dataKey = _fundRegionDataKey(fundRegion);
 
         if (fundRegion.currentDataKey !== dataKey) {
             dispatch(fundsRequest(dataKey));
-            WebApi.findFunds(fundRegion.filterText, size, filter.from).then(json => {
-                var newState = getState();
+            WebApi.findFunds2(fundRegion.filterText, filter.institutionIdentifier, size, filter.from).then(json => {
+                const newState = getState();
                 const newFundRegion = newState.fundRegion;
                 const newDataKey = _fundRegionDataKey(newFundRegion);
                 if (newDataKey === dataKey) {

@@ -1,7 +1,16 @@
 // @ts-ignore
 import AjaxUtils from '../components/AjaxUtils';
 import {DEFAULT_LIST_SIZE} from '../constants';
-import {CommentVO, IssueListVO, IssueStateVO, IssueVO} from '../types';
+import {
+    CommentVO,
+    CreateFund,
+    CreateFundVO,
+    FindFundsResult,
+    IssueListVO,
+    IssueStateVO,
+    IssueVO,
+    UpdateFund
+} from '../types';
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
 
@@ -48,6 +57,8 @@ function callWS(url, data, needResponse = true) {
  */
 export class WebApiCls {
     static baseUrl = '/api';
+    static v1 = WebApiCls.baseUrl + '/v1';
+    static fundV1 = WebApiCls.v1 + '/fund';
     static authUrl = WebApiCls.baseUrl + '/auth';
     static arrangementUrl = WebApiCls.baseUrl + '/arrangement';
     static issueUrl = WebApiCls.baseUrl + '/issue';
@@ -737,7 +748,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + objectId);
     }
 
-    findRegistry(
+    findAccessPoint(
         search = null,
         registryParent = null,
         apTypeId = null,
@@ -1125,12 +1136,28 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/getRuleSets');
     }
 
-    createFund(createFund) {
+    /**
+     * @deprecated use {WebApiCls.createFund2}
+     * @param createFund
+     */
+    createFund(createFund: CreateFundVO) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/funds', null, createFund);
     }
 
+    createFund2(createFund: CreateFund) {
+        return AjaxUtils.ajaxPost(WebApiCls.fundV1, null, createFund);
+    }
+
+    /**
+     * @deprecated use {WebApiCls.updateFund2}
+     * @param updateFund
+     */
     updateFund(data) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/updateFund', {ruleSetId: data.ruleSetId}, data);
+    }
+
+    updateFund2(id, data: UpdateFund) {
+        return AjaxUtils.ajaxPut(WebApiCls.fundV1 + "/" + id, null, data);
     }
 
     approveVersion(versionId, dateRange) {
@@ -1289,8 +1316,8 @@ export class WebApiCls {
         );
     }
 
-    getInstitutions() {
-        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/institutions');
+    getInstitutions(hasFund = null) {
+        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/institutions', {hasFund});
     }
 
     /**
@@ -1350,6 +1377,12 @@ export class WebApiCls {
         return AjaxUtils.ajaxCallRaw('/logout', {}, 'POST', '', 'application/x-www-form-urlencoded', true);
     }
 
+    /**
+     * @deprecated use #{WebApiCls.findFunds2}
+     * @param fulltext
+     * @param max
+     * @param from
+     */
     findFunds(fulltext, max = DEFAULT_LIST_SIZE, from = 0) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/getFunds', {fulltext, max, from}).then(json => ({
             funds: json.list,
@@ -1357,6 +1390,10 @@ export class WebApiCls {
             max,
             from,
         }));
+    }
+
+    findFunds2(fulltext = null, institutionIdentifier = null, max = 200, from = 0): Promise<FindFundsResult> {
+        return AjaxUtils.ajaxGet(WebApiCls.fundV1, {fulltext, institutionIdentifier, max, from});
     }
 
     findUser(fulltext, active, disabled, max = DEFAULT_LIST_SIZE, groupId = null) {

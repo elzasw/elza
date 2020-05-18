@@ -72,7 +72,7 @@ class RegistryField extends AbstractReactComponent {
         if (roleTypeId || partyId) {
             promise = WebApi.findRecordForRelation(text, roleTypeId, partyId, 0, AUTOCOMPLETE_REGISTRY_LIST_SIZE);
         } else {
-            promise = WebApi.findRegistry(
+            promise = WebApi.findAccessPoint(
                 text,
                 registryParent,
                 apTypeId,
