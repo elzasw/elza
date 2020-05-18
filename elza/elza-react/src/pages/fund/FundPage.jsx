@@ -476,7 +476,7 @@ class FundPage extends AbstractReactComponent {
                     items={[{code: null, name: i18n('global.all')}, ...this.state.institutions]}
                     getItemId={item => item ? item.code : null}
                     getItemName={item => item ? item.name? item.name : i18n('arr.fund.filterSettings.value.empty') + " id:" + item.id : null}
-                    inputProps={{placeholder: i18n('search.input.institutions')}}
+                    inputProps={{placeholder: i18n('arr.fund.institution')}}
                     value={fundRegion.filter.institutionIdentifier}
                     onChange={this.handleFilterInstitution}
                 />
