@@ -45,5 +45,8 @@ public interface InstitutionRepository extends JpaRepository<ParInstitution, Int
     @Query("SELECT i FROM par_institution i JOIN FETCH i.accessPoint ap WHERE ap.uuid=?1")
     ParInstitution findByAccessPointUUID(String uuid);
 
+    @Query("SELECT distinct i FROM arr_fund f JOIN f.institution i JOIN FETCH i.accessPoint ap JOIN FETCH ap.preferredPart pref")
+    List<ParInstitution> findListByFundFetchAccessPointFetchPreferredPart();
+
 
 }

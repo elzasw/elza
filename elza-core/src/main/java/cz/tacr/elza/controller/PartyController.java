@@ -46,9 +46,6 @@ public class PartyController {
     @Autowired
     private InstitutionRepository institutionRepository;
 
-    @Autowired
-    private ApController apController;
-
     /**
      * Načte seznam institucí
      * @return seznam institucí
@@ -58,6 +55,18 @@ public class PartyController {
     public List<ParInstitutionVO> getInstitutions() {
         //findAll()
         List<ParInstitution> instsFromDB = institutionRepository.findAllWithFetch();
+        return factoryVo.createInstitutionList(instsFromDB);
+    }
+
+    /**
+     * Načte seznam institucí s vazbou na accesspoint
+     * @return seznam institucí
+     */
+    @RequestMapping(value = "/withFundInstitutions", method = RequestMethod.GET)
+    @Transactional
+    public List<ParInstitutionVO> getInstitutionsWithFund() {
+        //findAll()
+        List<ParInstitution> instsFromDB = institutionRepository.findListByFundFetchAccessPointFetchPreferredPart();
         return factoryVo.createInstitutionList(instsFromDB);
     }
 

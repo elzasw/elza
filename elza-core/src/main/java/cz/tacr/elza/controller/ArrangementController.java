@@ -189,9 +189,6 @@ public class ArrangementController {
     @Autowired
     private FundLevelService fundLevelService;
 
-    @Autowired
-    private FundController fundController;
-
     /**
      *  Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
      *
@@ -1094,7 +1091,7 @@ public class ArrangementController {
 			fundsCount = fundRepository.findCountByFulltext(fulltext, userId);
 		}*/
 
-		List<ArrFund> fundList = funds.getList();
+        List<ArrFund> fundList = funds.getList();
 
 		List<ArrFundVO> fundVOList = new ArrayList<>(fundList.size());
 		fundList.forEach(f -> {
@@ -1347,7 +1344,6 @@ public class ArrangementController {
         Assert.hasText(createFund.getName(), "Musí být vyplněn název");
         Assert.notNull(createFund.getInstitutionId(), "Identifikátor instituce musí být vyplněn");
         Assert.notNull(createFund.getRuleSetId(), "Identifikátor pravidel musí být vyplněn");
-
 
         RulRuleSet ruleSet = ruleSetRepository.findOne(createFund.getRuleSetId());
         Assert.notNull(ruleSet, "Nebyla nalezena pravidla tvorby s id " + createFund.getRuleSetId());
