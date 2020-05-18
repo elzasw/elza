@@ -135,7 +135,12 @@ public class FundController implements FundsApi {
             if (institution != null) {
                 institutionId = institution.getInstitutionId();
             }
+            else {
+                FindFundsResult fundsResult = new FindFundsResult();
+                return ResponseEntity.ok(fundsResult);
+            }
         }
+
         if (userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL)) {
             // read all funds
             funds = fundRepository.findFunds(fulltext, institutionId, from, max);
