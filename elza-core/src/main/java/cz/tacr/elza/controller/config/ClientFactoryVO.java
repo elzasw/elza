@@ -1062,9 +1062,7 @@ public class ClientFactoryVO {
         ParInstitutionVO institutionVO = mapper.map(institution, ParInstitutionVO.class);
         institutionVO.setAccessPointId(institution.getAccessPointId());
         institutionVO.setName(institution.getAccessPoint().getPreferredPart().getValue());
-
-        //ApName prefName = apNameRepository.findPreferredNameByPartyId(institution.getAccessPointId());
-
+        institutionVO.setCode(institution.getInternalCode());
 
         return institutionVO;
     }
