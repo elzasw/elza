@@ -53,7 +53,7 @@ public class PartyController {
      */
     @RequestMapping(value = "/institutions", method = RequestMethod.GET)
     @Transactional
-    public List<ParInstitutionVO> getInstitutions(@RequestParam(value = "has-fund", required = false) Boolean hasFund) {
+    public List<ParInstitutionVO> getInstitutions(@RequestParam(value = "hasFund", required = false) Boolean hasFund) {
         List<ParInstitution> instsFromDB;
         if (hasFund == null) {
             //findAll()
