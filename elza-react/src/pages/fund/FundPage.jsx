@@ -36,6 +36,10 @@ import {globalFundTreeInvalidate} from '../../actions/arr/globalFundTree';
 import SearchFundsForm from '../../components/arr/SearchFundsForm';
 import IssueLists from '../../components/arr/IssueLists';
 import ListPager from '../../components/shared/listPager/ListPager';
+import {Autocomplete} from "../../components/shared";
+import {refInstitutionsFetchIfNeeded} from "../../actions/refTables/institutions";
+import {objectById} from "../../shared/utils";
+import institutions from "../../stores/app/refTables/institutions";
 
 /**
  * Stránka archivní soubory.
@@ -49,6 +53,8 @@ class FundPage extends AbstractReactComponent {
     static defaultProps = {
         maxSize: DEFAULT_FUND_LIST_MAX_SIZE,
     };
+
+    state = {institutions: []}
 
     constructor(props) {
         super(props);
@@ -70,15 +76,18 @@ class FundPage extends AbstractReactComponent {
         );
 
         this.buildRibbon = this.buildRibbon.bind(this);
+        WebApi.getInstitutions(true).then(institutions => this.setState({institutions}));
     }
 
     UNSAFE_componentWillReceiveProps() {
         this.props.dispatch(fundsFetchIfNeeded());
         this.props.dispatch(fundsFundDetailFetchIfNeeded());
+        this.props.dispatch(refInstitutionsFetchIfNeeded());
     }
 
     componentDidMount() {
         this.props.dispatch(fundsFetchIfNeeded());
+        this.props.dispatch(refInstitutionsFetchIfNeeded());
     }
 
     handleAddFund() {
@@ -87,19 +96,22 @@ class FundPage extends AbstractReactComponent {
         if (!userDetail.hasOne(perms.ADMIN, perms.FUND_ADMIN)) {
             initData.fundAdmins = [{id: 'default', user: userDetail}];
         }
-        this.props.dispatch(
-            modalDialogShow(
-                this,
-                i18n('arr.fund.title.add'),
-                <FundForm
-                    create
-                    initialValues={initData}
-                    onSubmitForm={data => {
-                        return this.props.dispatch(createFund(data));
-                    }}
-                />,
-            ),
-        );
+        WebApi.getAllScopes().then(scopes => {
+            this.props.dispatch(
+                modalDialogShow(
+                    this,
+                    i18n('arr.fund.title.add'),
+                    <FundForm
+                        create
+                        initialValues={initData}
+                        scopeList={scopes}
+                        onSubmitForm={data => {
+                            return this.props.dispatch(createFund(data));
+                        }}
+                    />,
+                ),
+            );
+        });
     }
 
     handleImport() {
@@ -171,7 +183,7 @@ class FundPage extends AbstractReactComponent {
                         this.handleCallEditFundVersion({
                             ...data,
                             name: fundDetail.name,
-                            institutionId: fundDetail.institutionId,
+                            institutionIdentifier: fundDetail.institutionIdentifier,
                             internalCode: fundDetail.internalCode,
                         })
                     }
@@ -181,8 +193,10 @@ class FundPage extends AbstractReactComponent {
     }
 
     handleEditFundVersion() {
-        const {fundRegion} = this.props;
+        const {fundRegion, ruleSet, institutionsAll} = this.props;
         const fundDetail = fundRegion.fundDetail;
+        const rules = objectById(ruleSet.items, fundDetail.activeVersion.ruleSetId);
+        const institution = objectById(institutionsAll.items, fundDetail.institutionId);
 
         Utils.barrier(WebApi.getScopes(fundDetail.versionId), WebApi.getAllScopes())
             .then(data => {
@@ -194,9 +208,9 @@ class FundPage extends AbstractReactComponent {
             .then(json => {
                 const data = {
                     name: fundDetail.name,
-                    institutionId: fundDetail.institutionId,
+                    institutionIdentifier: institution.code,
                     internalCode: fundDetail.internalCode,
-                    ruleSetId: fundDetail.activeVersion.ruleSetId,
+                    ruleSetCode: rules.code,
                     apScopes: json.scopes,
                 };
                 this.props.dispatch(
@@ -218,9 +232,13 @@ class FundPage extends AbstractReactComponent {
         const {fundRegion} = this.props;
         const fundDetail = fundRegion.fundDetail;
 
-        data.id = fundDetail.id;
         this.props.dispatch(scopesDirty(fundDetail.versionId));
-        return this.props.dispatch(updateFund(data));
+        return this.props.dispatch(updateFund(fundDetail.id, {
+            institutionIdentifier: data.institutionIdentifier,
+            internalCode: data.internalCode,
+            name: data.name,
+            ruleSetCode: data.ruleSetCode,
+        }));
     }
 
     /**
@@ -390,13 +408,13 @@ class FundPage extends AbstractReactComponent {
     renderListItem(props) {
         const {item} = props;
         return [
-            <div className="item-row">
+            <div className="item-row" key={item.id}>
                 <div className="name">{item.name}</div>
                 <div className="btn btn-action" onClick={this.handleShowInArr.bind(this, item)} variant="link">
                     <Icon glyph="fa-folder-open" />
                 </div>
             </div>,
-            <div className="item-row desc">
+            <div className="item-row desc"  key={item.id + "-x"}>
                 <div>{item.internalCode}</div>
                 <div>{item.id}</div>
             </div>,
@@ -435,6 +453,14 @@ class FundPage extends AbstractReactComponent {
         }
     };
 
+    handleFilterInstitution = (institutionIdentifier) => {
+        const {filter} = this.props.fundRegion;
+
+        if (institutionIdentifier !== filter.institutionIdentifier) {
+            this.props.dispatch(fundsFilter({...filter, institutionIdentifier}));
+        }
+    };
+
     render() {
         const {splitter, focus, fundRegion, maxSize} = this.props;
 
@@ -445,6 +471,15 @@ class FundPage extends AbstractReactComponent {
 
         const leftPanel = (
             <div className="fund-list-container">
+                <Autocomplete
+                    useIdAsValue={true}
+                    items={[{code: null, name: i18n('global.all')}, ...this.state.institutions]}
+                    getItemId={item => item ? item.code : null}
+                    getItemName={item => item ? item.name? item.name : i18n('arr.fund.filterSettings.value.empty') + " id:" + item.id : null}
+                    inputProps={{placeholder: i18n('search.input.institutions')}}
+                    value={fundRegion.filter.institutionIdentifier}
+                    onChange={this.handleFilterInstitution}
+                />
                 <SearchWithGoto
                     onFulltextSearch={this.handleSearch}
                     onClear={this.handleSearchClear}
@@ -499,13 +534,15 @@ class FundPage extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {focus, splitter, fundRegion, userDetail} = state;
+    const {focus, splitter, fundRegion, userDetail, refTables} = state;
 
     return {
         focus,
         splitter,
         fundRegion,
         userDetail,
+        ruleSet: refTables.ruleSet,
+        institutionsAll: refTables.institutions
     };
 }
 

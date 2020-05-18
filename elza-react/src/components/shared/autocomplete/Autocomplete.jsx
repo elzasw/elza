@@ -81,7 +81,7 @@ export default class Autocomplete extends AbstractReactComponent {
     static childContextTypes = {shortcuts: PropTypes.object.isRequired};
 
     static propTypes = {
-        value: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
+        value: PropTypes.oneOfType([PropTypes.object, PropTypes.string, PropTypes.number]),
         onFocus: PropTypes.func,
         onBlur: PropTypes.func,
         onSearchChange: PropTypes.func,

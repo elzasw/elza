@@ -92,6 +92,7 @@ export default function fundRegion(state = initialState, action = {}) {
                 ...state,
                 filter: {
                     from: typeof action.filter.from !== 'undefined' ? action.filter.from : '',
+                    institutionIdentifier: typeof action.filter.institutionIdentifier !== 'undefined' ? action.filter.institutionIdentifier : null,
                 },
                 currentDataKey: '',
             };

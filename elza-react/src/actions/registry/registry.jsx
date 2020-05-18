@@ -28,7 +28,7 @@ import('../../components/registry/AddRegistryForm').then(a => {
  */
 export function registryListFetchIfNeeded(from = 0, size = DEFAULT_REGISTRY_LIST_MAX_SIZE) {
     return SimpleListActions.fetchIfNeeded(AREA_REGISTRY_LIST, true, (parent, filter) =>
-        WebApi.findRegistry(
+        WebApi.findAccessPoint(
             filter.text,
             filter.registryParentId,
             filter.registryTypeId,
