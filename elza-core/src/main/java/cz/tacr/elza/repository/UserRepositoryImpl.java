@@ -1,8 +1,10 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.domain.*;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.*;
@@ -26,17 +28,79 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 	        final CriteriaBuilder builder,
 	        final Root<UsrUser> user,
 	        final Integer excludedGroupId,
-	        final CriteriaQuery<T> query) {
+	        final CriteriaQuery<T> query,
+            final SearchType searchTypeName,
+            final SearchType searchTypeUsername) {
 
 		List<Predicate> conditions = new ArrayList<>();
 
+        Path<String> accessPointName = null;
+        Path<String> userName = null;
+
+        if (searchTypeName == SearchType.FULLTEXT || searchTypeName == SearchType.RIGHT_SIDE_LIKE) {
+            Join<UsrUser, ApAccessPoint> apJoin = user.join(UsrUser.FIELD_ACCESS_POINT, JoinType.INNER);
+            Predicate apFkCond = builder.equal(user.get(UsrUser.FIELD_ACCESS_POINT), apJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID));
+            Join<ApAccessPoint, ApPart> nameJoin = apJoin.join(ApAccessPoint.FIELD_PREFFERED_PART, JoinType.INNER);
+            Predicate nameFkCond = builder.equal(apJoin.get(ApAccessPoint.FIELD_PREFFERED_PART),
+                    nameJoin.get(ApPart.PART_ID));
+            Predicate activeNameCond = nameJoin.get(ApPart.DELETE_CHANGE_ID).isNull();
+            nameJoin.on(builder.and(nameFkCond, activeNameCond));
+            accessPointName = nameJoin.get(ApPart.VALUE);
+        }
+
+        Predicate nameLikeCond = null;
+        Predicate usernameLikeCond = null;
+
+        if (searchTypeName == SearchType.FULLTEXT || searchTypeName == SearchType.RIGHT_SIDE_LIKE) {
+            String searchNameExp = org.apache.commons.lang.StringUtils.trimToNull(search);
+            if (searchNameExp != null) {
+                switch (searchTypeName) {
+                    case FULLTEXT:
+                        searchNameExp = '%' + searchNameExp.toLowerCase() + '%';
+                        break;
+                    case RIGHT_SIDE_LIKE:
+                        searchNameExp = searchNameExp.toLowerCase() + '%';
+                        break;
+                    default:
+                        break;
+                }
+                // add description join
+                // Join<ApAccessPoint, ApDescription> descJoin = apJoin.join(ApAccessPoint.DESCRIPTIONS, JoinType.LEFT);
+                // Predicate descFkCond = cb.equal(apJoin.get(ApAccessPoint.ACCESS_POINT_ID), descJoin.get(ApDescription.ACCESS_POINT_ID));
+                // Predicate activeDescCond = descJoin.get(ApDescription.DELETE_CHANGE_ID).isNull();
+                // descJoin.on(cb.and(descFkCond, activeDescCond));
+
+                // add like condition to where
+                nameLikeCond = builder.like(builder.lower(accessPointName), searchNameExp);
+            }
+        }
+
 		// Search
-		if (StringUtils.isNotBlank(search)) {
-			final String searchValue = "%" + search.toLowerCase() + "%";
-			conditions.add(builder.or(
-			        builder.like(builder.lower(user.get(UsrUser.FIELD_USERNAME)), searchValue),
-			        builder.like(builder.lower(user.get(UsrUser.FIELD_DESCRIPTION)), searchValue)));
-		}
+        if (searchTypeUsername == SearchType.FULLTEXT || searchTypeUsername == SearchType.RIGHT_SIDE_LIKE) {
+            String searchUsernameExp = org.apache.commons.lang.StringUtils.trimToNull(search);
+            if (searchUsernameExp != null) {
+                switch (searchTypeUsername) {
+                    case FULLTEXT:
+                        searchUsernameExp = '%' + searchUsernameExp.toLowerCase() + '%';
+                        break;
+                    case RIGHT_SIDE_LIKE:
+                        searchUsernameExp = searchUsernameExp.toLowerCase() + '%';
+                        break;
+                    default:
+                        break;
+                }
+                usernameLikeCond = builder.or(
+                        builder.like(builder.lower(user.get(UsrUser.FIELD_USERNAME)), searchUsernameExp),
+                        builder.like(builder.lower(user.get(UsrUser.FIELD_DESCRIPTION)), searchUsernameExp));
+            }
+        }
+        if(nameLikeCond != null && usernameLikeCond == null) conditions.add(nameLikeCond);
+        if(nameLikeCond == null && usernameLikeCond != null) conditions.add(usernameLikeCond);
+        if(nameLikeCond != null && usernameLikeCond != null) {
+            conditions.add(builder.or(nameLikeCond, usernameLikeCond));
+        }
+
+
 
 		if (excludedGroupId != null) {
 			final Subquery<UsrUser> subquery = query.subquery(UsrUser.class);
@@ -123,17 +187,79 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             final Integer excludedGroupId,
             final CriteriaQuery<T> query,
 	        final int userId,
-	        final boolean includeUser) {
+	        final boolean includeUser,
+            @Nullable SearchType searchTypeName,
+            @Nullable SearchType searchTypeUsername) {
+
+        searchTypeName = searchTypeName != null ? searchTypeName : SearchType.DISABLED;
+        searchTypeUsername = searchTypeUsername != null ? searchTypeUsername : SearchType.FULLTEXT;
 
         List<Predicate> conditions = new ArrayList<>();
 
+        Path<String> accessPointName = null;
+        Path<String> userName = null;
+
+        if (searchTypeName == SearchType.FULLTEXT || searchTypeName == SearchType.RIGHT_SIDE_LIKE) {
+            Join<UsrUser, ApAccessPoint> apJoin = user.join(UsrUser.FIELD_ACCESS_POINT, JoinType.INNER);
+            Predicate apFkCond = builder.equal(user.get(UsrUser.FIELD_ACCESS_POINT), apJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID));
+            Join<ApAccessPoint, ApPart> nameJoin = apJoin.join(ApAccessPoint.FIELD_PREFFERED_PART, JoinType.INNER);
+            Predicate nameFkCond = builder.equal(apJoin.get(ApAccessPoint.FIELD_PREFFERED_PART),
+                    nameJoin.get(ApPart.PART_ID));
+            Predicate activeNameCond = nameJoin.get(ApPart.DELETE_CHANGE_ID).isNull();
+            nameJoin.on(builder.and(nameFkCond, activeNameCond));
+            accessPointName = nameJoin.get(ApPart.VALUE);
+        }
+
+        Predicate nameLikeCond = null;
+        Predicate usernameLikeCond = null;
+
+        if (searchTypeName == SearchType.FULLTEXT || searchTypeName == SearchType.RIGHT_SIDE_LIKE) {
+            String searchNameExp = org.apache.commons.lang.StringUtils.trimToNull(search);
+            if (searchNameExp != null) {
+                switch (searchTypeName) {
+                    case FULLTEXT:
+                        searchNameExp = '%' + searchNameExp.toLowerCase() + '%';
+                        break;
+                    case RIGHT_SIDE_LIKE:
+                        searchNameExp = searchNameExp.toLowerCase() + '%';
+                        break;
+                    default:
+                        break;
+                }
+                // add description join
+                // Join<ApAccessPoint, ApDescription> descJoin = apJoin.join(ApAccessPoint.DESCRIPTIONS, JoinType.LEFT);
+                // Predicate descFkCond = cb.equal(apJoin.get(ApAccessPoint.ACCESS_POINT_ID), descJoin.get(ApDescription.ACCESS_POINT_ID));
+                // Predicate activeDescCond = descJoin.get(ApDescription.DELETE_CHANGE_ID).isNull();
+                // descJoin.on(cb.and(descFkCond, activeDescCond));
+
+                // add like condition to where
+                nameLikeCond = builder.like(builder.lower(accessPointName), searchNameExp);
+            }
+        }
+
         // Search
-        if (StringUtils.isNotBlank(search)) {
-            final String searchValue = "%" + search.toLowerCase() + "%";
-            conditions.add(builder.or(
-                    builder.like(builder.lower(user.get(UsrUser.FIELD_USERNAME)), searchValue),
-                    builder.like(builder.lower(user.get(UsrUser.FIELD_DESCRIPTION)), searchValue)
-            ));
+        if (searchTypeUsername == SearchType.FULLTEXT || searchTypeUsername == SearchType.RIGHT_SIDE_LIKE) {
+            String searchUsernameExp = org.apache.commons.lang.StringUtils.trimToNull(search);
+            if (searchUsernameExp != null) {
+                switch (searchTypeUsername) {
+                    case FULLTEXT:
+                        searchUsernameExp = '%' + searchUsernameExp.toLowerCase() + '%';
+                        break;
+                    case RIGHT_SIDE_LIKE:
+                        searchUsernameExp = searchUsernameExp.toLowerCase() + '%';
+                        break;
+                    default:
+                        break;
+                }
+                usernameLikeCond = builder.or(
+                        builder.like(builder.lower(user.get(UsrUser.FIELD_USERNAME)), searchUsernameExp),
+                        builder.like(builder.lower(user.get(UsrUser.FIELD_DESCRIPTION)), searchUsernameExp));
+            }
+        }
+        if(nameLikeCond != null && usernameLikeCond == null) conditions.add(nameLikeCond);
+        if(nameLikeCond == null && usernameLikeCond != null) conditions.add(usernameLikeCond);
+        if(nameLikeCond != null && usernameLikeCond != null) {
+            conditions.add(builder.or(nameLikeCond, usernameLikeCond));
         }
 
         if (excludedGroupId != null) {
@@ -207,7 +333,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
 	@Override
 	public FilteredResult<UsrUser> findUserByText(String search, boolean active, boolean disabled,
-	        int firstResult, int maxResults, Integer excludedGroupId) {
+                                                  int firstResult, int maxResults, Integer excludedGroupId, SearchType searchTypeName, SearchType searchTypeUsername ) {
 		CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<UsrUser> query = builder.createQuery(UsrUser.class);
@@ -216,9 +342,9 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 		Root<UsrUser> user = query.from(UsrUser.class);
 		Root<UsrUser> userCount = queryCount.from(UsrUser.class);
 
-		Predicate condition = prepareFindUserByText(search, active, disabled, builder, user, excludedGroupId, query);
+		Predicate condition = prepareFindUserByText(search, active, disabled, builder, user, excludedGroupId, query, searchTypeName, searchTypeUsername);
 		Predicate conditionCount = prepareFindUserByText(search, active, disabled, builder, userCount, excludedGroupId,
-		        queryCount);
+		        queryCount, searchTypeName, searchTypeUsername);
 
 		query.select(user);
 		queryCount.select(builder.countDistinct(userCount));
@@ -251,7 +377,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                                                                final int maxResults,
                                                                final Integer excludedGroupId,
                                                                final int userId,
-                                                               final boolean includeUser
+                                                               final boolean includeUser, SearchType searchTypeName, SearchType searchTypeUsername
                                                                ) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
@@ -262,9 +388,9 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         Root<UsrUser> userCount = queryCount.from(UsrUser.class);
 
         Predicate condition = prepareFindUserByTextAndStateCount(search, active, disabled, builder, user,
-                excludedGroupId, query, userId, includeUser);
+                excludedGroupId, query, userId, includeUser, searchTypeName, searchTypeUsername);
         Predicate conditionCount = prepareFindUserByTextAndStateCount(search, active, disabled, builder, userCount,
-                excludedGroupId, queryCount, userId, includeUser);
+                excludedGroupId, queryCount, userId, includeUser, searchTypeName, searchTypeUsername);
 
         query.select(user);
         queryCount.select(builder.countDistinct(userCount));

@@ -1,4 +1,4 @@
-${output.fund.institution.partyGroup.preferredName.formatWithAllDetails()}
+${output.fund.institution.record.preferredPart.value}
 ${output.fund.name}
 ${output.fund.internalCode}
 
@@ -8,22 +8,28 @@ ${output.fund.internalCode}
 1. Dějiny původce archivního souboru
 ************************************
 <#list node.getItems(["ZP2015_ORIGINATOR"]) as originatorObj>
-<#assign originator = originatorObj.party>
-<#if originator.preferredName.formatWithAllDetails()??>
-<#assign prefName = originator.preferredName >
+<#assign originator = originatorObj.record>
+<#if originator.preferredPart.value??>
+<#assign prefName = originator.preferredPart >
 
-Preferovaná forma jména: ${prefName.formatWithAllDetails()}
+Preferovaná forma jména: ${prefName.value}
 
-Datace použití jména od-do: <#if prefName.validFrom.valueText??>${prefName.validFrom.valueText}<#else>Neuvedeno</#if> - <#if (prefName.validTo.valueText)??>${prefName.validTo.valueText}<#else>Neuvedeno</#if>
+Datace použití jména od-do: <#if (prefName.getSingleItemValue("NM_USED_FROM"))??>${prefName.getSingleItemValue("NM_USED_FROM")}<#else>Neuvedeno</#if> - <#if (prefName.getSingleItemValue("NM_USED_TO"))??>${prefName.getSingleItemValue("NM_USED_TO")}<#else>Neuvedeno</#if>
 </#if>
 
-Variantní/Paralelní formy jména a jejich typy: <#list originator.names as name>${name.formatWithAllDetails()}<#sep>, </#list>
+Variantní/Paralelní formy jména a jejich typy: <#list originator.getParts(['PT_NAME']) as name>
+    ${name.getSingleItemValue('NM_MAIN')}
+    <#sep>,
+</#list>
 
 Dějiny původce:
-    <#if (originator.history)??>${originator.history}</#if>
+    <#list originator.getItems(["BIOGRAPHY"]) as originatorBio>
+        ${originatorBio.serializedValue}
+    </#list>
+    <#--<#if (originator.history)??>${originator.history}</#if>-->
 
-Zdroje informací:
-    <#if (originator.sourceInformation)??>${originator.sourceInformation}</#if>
+<#--Zdroje informací:
+    <#if (originator.sourceInformation)??>${originator.sourceInformation}</#if>-->
 
 </#list>
 

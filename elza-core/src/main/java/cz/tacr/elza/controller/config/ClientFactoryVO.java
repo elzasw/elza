@@ -1177,7 +1177,15 @@ public class ClientFactoryVO {
     public UsrUserVO createUser(final UsrUser user, final boolean initPermissions, final boolean initGroups) {
         // Hlavní objekt
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        UsrUserVO result = mapper.map(user, UsrUserVO.class);
+        // UsrUserVO result = mapper.map(user, UsrUserVO.class);
+
+        ApAccessPointVO accessPointVO = new ApAccessPointVO();
+        if (user.getAccessPoint() != null) {
+            accessPointVO.setId(user.getAccessPoint().getAccessPointId());
+            accessPointVO.setUuid(user.getAccessPoint().getUuid());
+            accessPointVO.setName(user.getAccessPoint().getPreferredPart().getValue());
+        }
+        UsrUserVO result = new UsrUserVO(user, accessPointVO);
         result.setAuthTypes(authenticationRepository.findByUser(user).stream().map(UsrAuthentication::getAuthType).collect(Collectors.toList()));
         // Načtení oprávnění
         if (initPermissions) {

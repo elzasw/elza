@@ -38,7 +38,7 @@ public class UsrUserVO {
 
 	}
 
-	protected UsrUserVO(UsrUser user, ApAccessPointVO accessPoint) {
+	public UsrUserVO(UsrUser user, ApAccessPointVO accessPoint) {
 		this.username = user.getUsername();
 		this.id = user.getUserId();
 		this.active = user.getActive();

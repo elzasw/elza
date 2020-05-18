@@ -4,6 +4,7 @@ import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.*;
@@ -87,7 +88,7 @@ public class FundController implements FundsApi {
             // pokud není admin, musí zadat je uživatele, kteří mají oprávnění (i zděděné) na zakládání nových AS
             if (createFund.getAdminUsers() != null && !createFund.getAdminUsers().isEmpty()) {
                 // TODO: Remove stream and user more direct query
-                final Set<Integer> userIds = userService.findUserWithFundCreate(null, 0, -1).getList().stream()
+                final Set<Integer> userIds = userService.findUserWithFundCreate(null, 0, -1, SearchType.DISABLED, SearchType.FULLTEXT).getList().stream()
                         .map(x -> x.getUserId())
                         .collect(toSet());
                 createFund.getAdminUsers()
