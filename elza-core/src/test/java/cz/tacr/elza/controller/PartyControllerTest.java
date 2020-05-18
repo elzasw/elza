@@ -17,7 +17,7 @@ public class PartyControllerTest extends AbstractControllerTest {
     public void getInstitutionsTest() {
         Response response = get(INSTITUTIONS);
         List<ParInstitutionVO> parInstitutionVOS = Arrays.asList(response.getBody().as(ParInstitutionVO[].class));
-        response = get(spec -> spec.param("has-fund", true), INSTITUTIONS);
+        response = get(spec -> spec.param("hasFund", true), INSTITUTIONS);
         parInstitutionVOS = Arrays.asList(response.getBody().as(ParInstitutionVO[].class));
     }
 }
