@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.core.data.SearchType;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
@@ -41,7 +42,6 @@ import cz.tacr.elza.service.UserService;
 
 /**
  * Kontroler pro uživatele.
- *
  */
 @RestController
 @RequestMapping("/api/user")
@@ -66,10 +66,10 @@ public class UserController {
     private StaticDataService staticDataService;
 
     /**
-	 * Return detail user info
-	 *
-	 * @return výčet oprávnění uživatele.
-	 */
+     * Return detail user info
+     *
+     * @return výčet oprávnění uživatele.
+     */
     @RequestMapping(value = "/detail", method = RequestMethod.GET)
     public UserInfoVO getUserDetail() {
         UserInfoVO userInfo = userService.getLoggeUserInfo();
@@ -88,7 +88,7 @@ public class UserController {
      * @param settings Seznam nastavení uživatele.
      */
     @RequestMapping(value = "/detail/settings", method = RequestMethod.PUT)
-	@Transactional
+    @Transactional
     public List<UISettingsVO> setUserSettings(@RequestBody final List<UISettingsVO> settings) {
         List<UISettings> settingsList = factoryDO.createSettingsList(settings);
 
@@ -126,7 +126,7 @@ public class UserController {
      * @param params parametry pro úpravu uživatele
      * @return upravený uživatel
      */
-    @RequestMapping(value = "/{userId}",method = RequestMethod.PUT)
+    @RequestMapping(value = "/{userId}", method = RequestMethod.PUT)
     @Transactional
     public UsrUserVO changeUser(@PathVariable("userId") final Integer userId,
                                 @RequestBody final CreateUserVO params) {
@@ -223,9 +223,9 @@ public class UserController {
      * @return VO
      */
     @RequestMapping(value = "/{userId}", method = RequestMethod.GET)
-	@Transactional
+    @Transactional
     public UsrUserVO getUser(@PathVariable(value = "userId") final Integer userId) {
-		Validate.notNull(userId);
+        Validate.notNull(userId);
 
         UsrUser user = userService.getUser(userId);
         return factoryVO.createUser(user, true, true);
@@ -242,22 +242,26 @@ public class UserController {
      * @return seznam s celkovým počtem
      */
     @RequestMapping(method = RequestMethod.GET)
-	@Transactional
+    @Transactional
     public FilteredResultVO<UsrUserVO> findUser(@Nullable @RequestParam(value = "search", required = false) final String search,
                                                 @RequestParam("active") final Boolean active,
                                                 @RequestParam("disabled") final Boolean disabled,
                                                 @RequestParam("from") final Integer from,
                                                 @RequestParam("count") final Integer count,
-                                                @RequestParam(value = "excludedGroupId", required = false) final Integer excludedGroupId
+                                                @RequestParam(value = "excludedGroupId", required = false) final Integer excludedGroupId,
+                                                @RequestParam(required = false) @Nullable final SearchType searchTypeName,
+                                                @RequestParam(required = false) @Nullable final SearchType searchTypeUsername
     ) {
-		Validate.notNull(active);
-		Validate.notNull(disabled);
+        Validate.notNull(active);
+        Validate.notNull(disabled);
+        SearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : SearchType.DISABLED;
+        SearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : SearchType.FULLTEXT;
 
         if (!active && !disabled) {
             throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
         }
 
-        FilteredResult<UsrUser> users = userService.findUser(search, active, disabled, from, count, excludedGroupId);
+        FilteredResult<UsrUser> users = userService.findUser(search, active, disabled, from, count, excludedGroupId, searchTypeNameFinal, searchTypeUsernameFinal);
         return new FilteredResultVO<>(users.getList(),
                 (entity) -> factoryVO.createUser(entity, false, false),
                 users.getTotalCount());
@@ -274,12 +278,16 @@ public class UserController {
      * @return seznam s celkovým počtem
      */
     @RequestMapping(value = "/withFundCreate", method = RequestMethod.GET)
-	@Transactional
+    @Transactional
     public FilteredResultVO<UsrUserVO> findUserWithFundCreate(@Nullable @RequestParam(value = "search", required = false) final String search,
-                                                @RequestParam("from") final Integer from,
-                                                @RequestParam("count") final Integer count
+                                                              @RequestParam("from") final Integer from,
+                                                              @RequestParam("count") final Integer count,
+                                                              @RequestParam(required = false) @Nullable final SearchType searchTypeName,
+                                                              @RequestParam(required = false) @Nullable final SearchType searchTypeUsername
     ) {
-        FilteredResult<UsrUser> users = userService.findUserWithFundCreate(search, from, count);
+        SearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : SearchType.DISABLED;
+        SearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : SearchType.FULLTEXT;
+        FilteredResult<UsrUser> users = userService.findUserWithFundCreate(search, from, count, searchTypeNameFinal, searchTypeUsernameFinal);
         return new FilteredResultVO<>(users.getList(),
                 (entity) -> factoryVO.createUser(entity, false, false),
                 users.getTotalCount());
@@ -289,12 +297,12 @@ public class UserController {
      * Načtení seznamu archivních souborů, pro které může aktuální uživatel nastavovat oprávnění.
      *
      * @param search hledací výraz
-     * @param from počáteční záznam
-     * @param count počet vrácených záznamů
+     * @param from   počáteční záznam
+     * @param count  počet vrácených záznamů
      * @return seznam s celkovým počtem
      */
     @RequestMapping(value = "/controlFunds", method = RequestMethod.GET)
-	@Transactional
+    @Transactional
     public FilteredResultVO<ArrFundBaseVO> findControlFunds(@Nullable @RequestParam(value = "search", required = false) final String search,
                                                             @RequestParam("from") final Integer from,
                                                             @RequestParam("count") final Integer count
@@ -306,17 +314,16 @@ public class UserController {
     }
 
     /**
-	 * Načte seznam uživatelů, kteří mají explicitně (přímo na nich) nastavené
-	 * nějaké oprávnění pro daný AS.
-	 *
-	 * Method will return only users which might be administered by logged user.
-	 *
-	 * @param fundId
-	 *            id of fund
-	 * @return seznam
-	 */
+     * Načte seznam uživatelů, kteří mají explicitně (přímo na nich) nastavené
+     * nějaké oprávnění pro daný AS.
+     * <p>
+     * Method will return only users which might be administered by logged user.
+     *
+     * @param fundId id of fund
+     * @return seznam
+     */
     @RequestMapping(value = "/fund/{fundId}/users", method = RequestMethod.GET)
-	@Transactional
+    @Transactional
     public List<UsrUserVO> findUsersPermissionsByFund(@PathVariable(value = "fundId") final Integer fundId) {
         ArrFund fund = fundRepository.getOneCheckExist(fundId);
         List<UsrUser> users = userService.findUsersByFund(fund);
@@ -325,10 +332,11 @@ public class UserController {
 
     /**
      * Načte seznam uživatelů, kteří mají explicitně (přímo na nich) nastavené nějaké oprávnění typu všechny AS.
+     *
      * @return seznam
      */
     @RequestMapping(value = "/fund/all/users", method = RequestMethod.GET)
-	@Transactional
+    @Transactional
     public List<UsrUserVO> findUsersPermissionsByFundAll() {
         List<UsrUser> users = userService.findUsersByFundAll();
         return factoryVO.createUserList(users, true);
@@ -372,14 +380,14 @@ public class UserController {
     @Transactional
     @RequestMapping(value = "/{userId}/permission/add", method = RequestMethod.POST)
     public List<UsrPermissionVO> addUserPermission(@PathVariable(value = "userId") final Integer userId,
-                                     @RequestBody final List<UsrPermissionVO> permissions) {
+                                                   @RequestBody final List<UsrPermissionVO> permissions) {
         UsrUser user = userService.getUser(userId);
         List<UsrPermission> usrPermissions = factoryDO.createPermissionList(permissions);
         List<UsrPermission> result = userService.addUserPermission(user, usrPermissions, true);
 
         StaticDataProvider staticData = staticDataService.getData();
         List<UsrPermissionVO> resultVOs = result.stream().map(
-                                                              p -> UsrPermissionVO.newInstance(p, false, staticData))
+                p -> UsrPermissionVO.newInstance(p, false, staticData))
                 .collect(Collectors.toList());
         return resultVOs;
     }
@@ -387,7 +395,7 @@ public class UserController {
     /**
      * Odebrání oprávnění uživatele.
      *
-     * @param userId      identifikátor uživatele
+     * @param userId     identifikátor uživatele
      * @param permission seznam oprávnění pro odebr8n9
      */
     @Transactional
@@ -402,8 +410,8 @@ public class UserController {
     /**
      * Odebrání oprávnění uživatele na AS.
      *
-     * @param userId      identifikátor uživatele
-     * @param fundId      id AS
+     * @param userId identifikátor uživatele
+     * @param fundId id AS
      */
     @Transactional
     @RequestMapping(value = "/{userId}/permission/delete/fund/{fundId}", method = RequestMethod.POST)
@@ -415,7 +423,7 @@ public class UserController {
     /**
      * Odebrání oprávnění uživatele typu AS all.
      *
-     * @param userId      identifikátor uživatele
+     * @param userId identifikátor uživatele
      */
     @Transactional
     @RequestMapping(value = "/{userId}/permission/delete/fund/all", method = RequestMethod.POST)
@@ -427,8 +435,8 @@ public class UserController {
     /**
      * Odebrání oprávnění uživatele na typ rejstříku.
      *
-     * @param userId      identifikátor uživatele
-     * @param scopeId     id typu rejstříku
+     * @param userId  identifikátor uživatele
+     * @param scopeId id typu rejstříku
      */
     @Transactional
     @RequestMapping(value = "/{userId}/permission/delete/scope/{scopeId}", method = RequestMethod.POST)

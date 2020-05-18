@@ -20,6 +20,7 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.core.data.SearchType;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -1227,7 +1228,7 @@ public class UserService {
      * @return výsledky hledání
      */
 	public FilteredResult<UsrUser> findUser(final String search, final boolean active, final boolean disabled,
-	        final int firstResult, final int maxResults, final Integer excludedGroupId) {
+	        final int firstResult, final int maxResults, final Integer excludedGroupId, final SearchType searchTypeName, final SearchType searchTypeUsername ) {
         if (!active && !disabled) {
             throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
         }
@@ -1235,11 +1236,11 @@ public class UserService {
 		UserDetail userDetail = getLoggedUserDetail();
 		if (userDetail.hasPermission(UsrPermission.Permission.USR_PERM)) {
 			// return all users
-			return userRepository.findUserByText(search, active, disabled, firstResult, maxResults, excludedGroupId);
+			return userRepository.findUserByText(search, active, disabled, firstResult, maxResults, excludedGroupId, searchTypeName, searchTypeUsername);
 		} else {
 			return userRepository.findUserByTextAndStateCount(search, active, disabled, firstResult, maxResults,
 			        excludedGroupId,
-			        userDetail.getId(), false);
+			        userDetail.getId(), false, searchTypeName, searchTypeUsername);
 		}
     }
 
@@ -1254,7 +1255,8 @@ public class UserService {
 	@Transactional
 	@AuthMethod(permission={UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE,
 			UsrPermission.Permission.USR_PERM})
-	public FilteredResult<UsrUser> findUserWithFundCreate(final String search, final Integer firstResult, final Integer maxResults) {
+	public FilteredResult<UsrUser> findUserWithFundCreate(final String search, final Integer firstResult,
+                                                          final Integer maxResults, final SearchType searchTypeName, final SearchType searchTypeUsername) {
 		// get current user
 		UserDetail userDetail = getLoggedUserDetail();
     	// if has admin rights -> we can find any user
@@ -1262,12 +1264,12 @@ public class UserService {
 				.or(UsrPermission.Permission.USR_PERM);
 		if (authRequest.matches(userDetail)) {
 			// find in all users
-			return this.findUser(search, true, false, firstResult, maxResults, null);
+			return this.findUser(search, true, false, firstResult, maxResults, null, searchTypeName, searchTypeUsername);
 		}
 
 		// only create permission -> have to return himself + or any controlled user
         return userRepository.findUserByTextAndStateCount(search, true, false, firstResult, maxResults, null,
-                userDetail.getId(), true);
+                userDetail.getId(), true, searchTypeName, searchTypeUsername);
     }
 
     /**

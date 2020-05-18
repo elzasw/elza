@@ -171,9 +171,6 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         Predicate usernameLikeCond = null;
         if (searchTypeName == SearchType.FULLTEXT || searchTypeName == SearchType.RIGHT_SIDE_LIKE) {
             String searchNameExp = StringUtils.trimToNull(searchValue);
-            if (searchTypeName == SearchType.DISABLED || searchTypeName == SearchType.JOIN) {
-                searchNameExp = "";
-            }
             if (searchNameExp != null && !onlyPrefferedName) {
                 switch (searchTypeName) {
                     case FULLTEXT:

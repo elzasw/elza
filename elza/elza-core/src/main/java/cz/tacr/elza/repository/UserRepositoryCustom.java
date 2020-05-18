@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.domain.UsrUser;
 
 /**
@@ -9,7 +10,7 @@ import cz.tacr.elza.domain.UsrUser;
 public interface UserRepositoryCustom {
 
 	FilteredResult<UsrUser> findUserByText(String search, boolean active, boolean disabled, int firstResult,
-	        int maxResults, Integer excludedGroupId);
+                                           int maxResults, Integer excludedGroupId, SearchType searchTypeName, SearchType searchTypeUsername);
 
 	/**
 	 * Hledání uživatelů na základě podmínek.
@@ -33,5 +34,6 @@ public interface UserRepositoryCustom {
 	 * @return výsledky hledání
 	 */
 	FilteredResult<UsrUser> findUserByTextAndStateCount(String search, boolean active, boolean disabled,
-	        int firstResult, int maxResults, Integer excludedGroupId, int userId, boolean includeUser);
+	        int firstResult, int maxResults, Integer excludedGroupId, int userId, boolean includeUser,
+                                                       SearchType searchTypeName, SearchType searchTypeUsername);
 }
