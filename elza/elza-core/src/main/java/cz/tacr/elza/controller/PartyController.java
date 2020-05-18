@@ -18,6 +18,7 @@ import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.UserService;
+import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,23 +52,17 @@ public class PartyController {
      * @return seznam institucí
      */
     @RequestMapping(value = "/institutions", method = RequestMethod.GET)
-	@Transactional
-    public List<ParInstitutionVO> getInstitutions() {
-        //findAll()
-        List<ParInstitution> instsFromDB = institutionRepository.findAllWithFetch();
-        return factoryVo.createInstitutionList(instsFromDB);
-    }
-
-    /**
-     * Načte seznam institucí s vazbou na accesspoint
-     * @return seznam institucí
-     */
-    @RequestMapping(value = "/institutions/with-funds", method = RequestMethod.GET)
     @Transactional
-    public List<ParInstitutionVO> getInstitutionsWithFund() {
-        //findAll()
-        List<ParInstitution> instsFromDB = institutionRepository.findListByFundFetchAccessPointFetchPreferredPart();
+    public List<ParInstitutionVO> getInstitutions(@RequestParam(value = "has-fund", required = false) Boolean hasFund) {
+        List<ParInstitution> instsFromDB;
+        if (hasFund == null) {
+            //findAll()
+            instsFromDB = institutionRepository.findAllWithFetch();
+        } else if (hasFund) {
+            instsFromDB = institutionRepository.findListByFundFetchAccessPointFetchPreferredPart();
+        } else {
+            throw new NotImplementedException("Search for institutions without Funds is not implemented.");
+        }
         return factoryVo.createInstitutionList(instsFromDB);
     }
-
 }
