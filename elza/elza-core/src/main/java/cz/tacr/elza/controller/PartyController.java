@@ -62,7 +62,7 @@ public class PartyController {
      * Načte seznam institucí s vazbou na accesspoint
      * @return seznam institucí
      */
-    @RequestMapping(value = "/withFundInstitutions", method = RequestMethod.GET)
+    @RequestMapping(value = "/institutions/with-funds", method = RequestMethod.GET)
     @Transactional
     public List<ParInstitutionVO> getInstitutionsWithFund() {
         //findAll()
