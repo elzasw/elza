@@ -5,9 +5,7 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.dataexchange.output.DEExportService;
 import cz.tacr.elza.domain.RulTemplate.Engine;
-import cz.tacr.elza.repository.ApExternalIdRepository;
-import cz.tacr.elza.repository.ApStateRepository;
-import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +35,10 @@ public class OutputGeneratorFactory {
 
     private final ApExternalIdRepository apEidRepository;
 
+    private final ApPartRepository partRepository;
+
+    private final ApItemRepository itemRepository;
+
     private final ApplicationContext applicationContext;
 
     private ElzaLocale elzaLocale;
@@ -50,6 +52,8 @@ public class OutputGeneratorFactory {
             InstitutionRepository institutionRepository,
             ApStateRepository apStateRepository,
             ApExternalIdRepository apEidRepository,
+            ApPartRepository partRepository,
+            ApItemRepository itemRepository,
             EntityManager em,
             DmsService dmsService,
             DEExportService exportService) {
@@ -61,6 +65,8 @@ public class OutputGeneratorFactory {
         this.institutionRepository = institutionRepository;
         this.apStateRepository = apStateRepository;
         this.apEidRepository = apEidRepository;
+        this.partRepository = partRepository;
+        this.itemRepository = itemRepository;
         this.em = em;
         this.dmsService = dmsService;
         this.exportService = exportService;
@@ -82,14 +88,14 @@ public class OutputGeneratorFactory {
     public FreemarkerOutputGenerator createFreemarkerOutputGenerator() {
         return new FreemarkerOutputGenerator(applicationContext, staticDataService, elzaLocale, fundTreeProvider,
                 nodeCacheService,
-                institutionRepository, apStateRepository, apEidRepository, em, dmsService);
+                institutionRepository, apStateRepository, apEidRepository, partRepository, itemRepository, em, dmsService);
     }
 
     public JasperOutputGenerator createJasperOutputGenerator() {
         return new JasperOutputGenerator(applicationContext, staticDataService, elzaLocale,
                 fundTreeProvider, nodeCacheService,
                 institutionRepository, apStateRepository,
-                apEidRepository, em, dmsService);
+                apEidRepository, partRepository, itemRepository, em, dmsService);
     }
 
     public DEXmlOutputGenerator createDEXmlOutputGenerator() {

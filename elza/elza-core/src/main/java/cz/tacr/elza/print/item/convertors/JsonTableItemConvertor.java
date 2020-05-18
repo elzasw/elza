@@ -2,7 +2,7 @@ package cz.tacr.elza.print.item.convertors;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.IntItem;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.print.item.AbstractItem;
 import cz.tacr.elza.print.item.ItemJsonTable;
@@ -13,7 +13,7 @@ import java.util.List;
 public class JsonTableItemConvertor extends AbstractItemConvertor {
 
     @Override
-    protected AbstractItem convert(ArrItem item, ItemType itemType) {
+    protected AbstractItem convert(IntItem item, ItemType itemType) {
         if (itemType.getDataType() != DataType.JSON_TABLE) {
             return null;
         }

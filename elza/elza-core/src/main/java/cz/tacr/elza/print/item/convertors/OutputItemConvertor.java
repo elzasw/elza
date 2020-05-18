@@ -1,29 +1,29 @@
 package cz.tacr.elza.print.item.convertors;
 
-import java.util.Arrays;
-import java.util.List;
-
-import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.IntItem;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.item.Item;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class OutputItemConvertor implements ItemConvertor {
 
-    @Override
-    public Item convert(ArrItem arrItem, ItemConvertorContext context) {
-        if (arrItem.isUndefined()) {
+    public Item convert(IntItem iItem, ItemConvertorContext context) {
+        if (iItem.isUndefined()) {
             return null;
         }
         for (ItemConvertor conv : getConvertors()) {
-            Item item = conv.convert(arrItem, context);
+            Item item = conv.convert(iItem, context);
             if (item != null) {
                 return item;
             }
         }
         throw new SystemException("Failed to convert output item", BaseCode.SYSTEM_ERROR)
-                .set("arrItemId", arrItem.getItemId())
-                .set("itemTypeId", arrItem.getItemTypeId());
+                .set("itemClass", iItem.getClass())
+                .set("itemId", iItem.getItemId())
+                .set("itemTypeId", iItem.getItemTypeId());
     }
 
     private List<ItemConvertor> getConvertors() {

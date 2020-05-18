@@ -10,6 +10,7 @@ import java.util.List;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.repository.*;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,11 +32,6 @@ import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ArrStructuredObject.State;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.repository.ApExternalIdRepository;
-import cz.tacr.elza.repository.ApStateRepository;
-import cz.tacr.elza.repository.OutputTypeRepository;
-import cz.tacr.elza.repository.StructuredItemRepository;
-import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -63,6 +59,12 @@ public class OutputModelTest extends AbstractServiceTest {
     ApExternalIdRepository apEidRepository;
 
     @Autowired
+    ApPartRepository partRepository;
+
+    @Autowired
+    ApItemRepository itemRepository;
+
+    @Autowired
     StructuredObjectRepository structObjRepos;
 
     @Autowired
@@ -72,7 +74,6 @@ public class OutputModelTest extends AbstractServiceTest {
     StructuredItemRepository structItemRepos;
 
     // test output with structObjs
-    @Ignore //TODO: smazat po změně importu institucí
     @Test
     @Transactional(TxType.REQUIRES_NEW)
     public void outputStructObjs() {
@@ -140,7 +141,7 @@ public class OutputModelTest extends AbstractServiceTest {
         helperTestService.waitForWorkers();
         OutputModel outputModel = new OutputModel(staticDataService, elzaLocale,
                 fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
-                apEidRepository,null, structObjRepos, structItemRepos);
+                apEidRepository,null, structObjRepos, structItemRepos, partRepository, itemRepository);
 
         ArrOutput output = new ArrOutput();
         output.setFund(fi.getFund());

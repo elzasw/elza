@@ -17,6 +17,7 @@ import cz.tacr.elza.print.item.ItemType;
 import cz.tacr.elza.print.item.convertors.ItemConvertor;
 import cz.tacr.elza.print.item.convertors.ItemConvertorContext;
 import cz.tacr.elza.print.item.convertors.OutputItemConvertor;
+import cz.tacr.elza.print.part.Part;
 import cz.tacr.elza.print.party.Institution;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.cache.CachedNode;
@@ -97,6 +98,10 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final ApExternalIdRepository apEidRepository;
 
+    private final ApPartRepository partRepository;
+
+    private final ApItemRepository itemRepository;
+
     private final StructuredObjectRepository structObjRepos;
 
     /**
@@ -124,7 +129,9 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final ApExternalIdRepository apEidRepository,
                        final AttPageProvider attPageProvider,
                        final StructuredObjectRepository structObjRepos,
-                       final StructuredItemRepository structItemRepos) {
+                       final StructuredItemRepository structItemRepos,
+                       final ApPartRepository partRepository,
+                       final ApItemRepository itemRepository) {
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
         this.fundTreeProvider = fundTreeProvider;
@@ -135,6 +142,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.attPageProvider = attPageProvider;
         this.structObjRepos = structObjRepos;
         this.structItemRepos = structItemRepos;
+        this.partRepository = partRepository;
+        this.itemRepository = itemRepository;
     }
 
     public boolean isInitialized() {
@@ -285,7 +294,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         return nodes;
     }
 
-    private List<Item> convert(List<? extends ArrItem> srcItems) {
+    private List<Item> convertItems(List<? extends IntItem> srcItems) {
         ItemConvertor conv = new OutputItemConvertor();
         List<Item> result = srcItems.stream()
                 .map(i -> conv.convert(i, this))
@@ -307,7 +316,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         // set node items
         List<ArrDescItem> descItems = cachedNode.getDescItems();
         if (descItems != null) {
-            List<Item> items = convert(descItems);
+            List<Item> items = convertItems(descItems);
             node.setItems(items);
         }
     }
@@ -366,9 +375,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         ParInstitution parInst = institutionRepository.findByFundFetchTypeAndAccessPoint(arrFund);
         Institution inst = new Institution(parInst.getInternalCode(), parInst.getInstitutionType());
 
-        //TODO : gotzy - co s party group
-        /* PartyGroup pg = (PartyGroup) getParty(parInst.getParty());
-        inst.setPartyGroup(pg);*/
+        inst.setRecord(getRecord(parInst.getAccessPoint()));
 
         return inst;
     }
@@ -461,10 +468,32 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         ApState apState = apStateRepository.findLastByAccessPoint(ap);
 
         RecordType type = getAPType(apState.getApTypeId());
-        record = new Record(ap, type, staticData, apStateRepository, apEidRepository);
+        record = new Record(ap, type, staticData, apStateRepository, apEidRepository, partRepository);
+        List<ApPart> apParts = partRepository.findValidPartByAccessPoint(ap);
+        List<ApItem> apItems = itemRepository.findValidItemsByAccessPoint(ap);
+        List<Part> parts = new ArrayList<>(apParts.size());
+        for (ApPart apPart : apParts) {
+            Part part = new Part(apPart, staticData);
+            List<ApItem> partItems = new ArrayList<>();
+            for(ApItem apItem : apItems) {
+                if(apItem.getPart().getPartId().intValue() == part.getPartId()) {
+                    partItems.add(apItem);
+                }
+            }
+           // List<ApItem> apItems = itemRepository.findValidItemsByPartId(part.getPartId());
+
+            part.setItems(convertItems(partItems));
+            if(part.getPartId() == ap.getPreferredPart().getPartId()) {
+                record.setPreferredPart(part);
+            }
+            parts.add(part);
+        }
+        parts = Collections.unmodifiableList(parts);
+        record.setParts(parts);
 
         // add to lookup
         apIdMap.put(ap.getAccessPointId(), record);
+
 
         return record;
     }
@@ -605,7 +634,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     public List<Item> loadStructItems(Integer structObjId) {
         List<ArrStructuredItem> items = structItemRepos.findByStructuredObjectAndDeleteChangeIsNullFetchData(
                 structObjId);
-        List<Item> result = convert(items);
+        List<Item> result = convertItems(items);
         return result;
     }
 }

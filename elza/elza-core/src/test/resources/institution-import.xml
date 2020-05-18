@@ -7,7 +7,7 @@
 			<src>sourceInformations 0</src>
 
 			<nms>
-				<nm ft="LEGAL">
+				<nm ft="NT_OFFICIAL">
 					<dga>degreeAfter 0</dga>
 					<dgb>degreeBefore 0</dgb>
 					<main>mainPart 0</main>
@@ -36,7 +36,7 @@
 			<src>sourceInformations 1</src>
 
 			<nms>
-				<nm ft="LEGAL">
+				<nm ft="NT_OFFICIAL">
 					<dga>degreeAfter 1</dga>
 					<dgb>degreeBefore 1</dgb>
 					<main>mainPart 1</main>
@@ -67,7 +67,7 @@
 			<src>sourceInformations 2</src>
 
 			<nms>
-				<nm ft="LEGAL">
+				<nm ft="NT_OFFICIAL">
 					<dga>degreeAfter 2</dga>
 					<dgb>degreeBefore 2</dgb>
 					<main>mainPart 2</main>
@@ -148,7 +148,7 @@
 			<src>sourceInformations 3</src>
 
 			<nms>
-				<nm ft="LEGAL">
+				<nm ft="NT_OFFICIAL">
 					<dga>degreeAfter 3</dga>
 					<dgb>degreeBefore 3</dgb>
 					<main>mainPart 3</main>

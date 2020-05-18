@@ -10,7 +10,7 @@ import java.util.Locale;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataDate;
-import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.IntItem;
 import cz.tacr.elza.print.item.AbstractItem;
 import cz.tacr.elza.print.item.ItemString;
 import cz.tacr.elza.print.item.ItemType;
@@ -18,12 +18,12 @@ import cz.tacr.elza.print.item.ItemType;
 public class DateItemConvertor extends AbstractItemConvertor {
 
     @Override
-    protected AbstractItem convert(ArrItem item, ItemType itemType) {
+    protected AbstractItem convert(IntItem item, ItemType itemType) {
         if (itemType.getDataType() != DataType.DATE) {
             return null;
         }
 
-        // 
+        //
         ArrData data = item.getData();
         if (data == null) {
             return null;
@@ -32,7 +32,7 @@ public class DateItemConvertor extends AbstractItemConvertor {
 
         // get locale
         Locale locale = this.context.getLocale();
-        
+
         Date date = dataDate.getDate();
 
         DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).withLocale(locale);
