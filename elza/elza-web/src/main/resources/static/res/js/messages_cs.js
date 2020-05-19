@@ -655,6 +655,9 @@ var messages = {
     "arr.fund.internalCode": "Interní kod",
     "arr.fund.dateRange": "Časový rozsah",
     "arr.fund.fundAdmins": "Správci",
+    "arr.fund.number": "Číslo archivního souboru",
+    "arr.fund.unitdate": "Datace",
+    "arr.fund.mark": "Značka archivního souboru",
 
     "arr.fund.addNode": "Přidat jednotku popisu",
     "arr.fund.addNode.type.new": "Nová",
