@@ -4,6 +4,7 @@ import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -195,6 +196,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
      * Spustí homadnou akci a poté se ji pokusí přerušit
      */
     @Test
+    @Ignore //TODO: gotzy doresit
     public void interruptBulkAction() throws InterruptedException {
         helperTestService.waitForWorkers();
         int fundVersionId = importAndGetVersionId();

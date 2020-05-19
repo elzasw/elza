@@ -23,10 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -60,6 +59,7 @@ public class FundController implements FundsApi {
     private ClientFactoryDO factoryDO;
 
     @Override
+    @Transactional
     public ResponseEntity<Fund> createFund(@RequestBody CreateFund createFund) {
         // Kontrola a vytvoření AS
         Assert.hasText(createFund.getName(), "Musí být vyplněn název");
@@ -128,7 +128,10 @@ public class FundController implements FundsApi {
     }
 
     @Override
-    public ResponseEntity<FindFundsResult> findFunds(String fulltext, String institutionIdentifier, Integer max, Integer from) {
+    public ResponseEntity<FindFundsResult> findFunds(@RequestParam(value = "fulltext", required = false) String fulltext,
+                                                     @RequestParam(value = "institutionIdentifier", required = false) String institutionIdentifier,
+                                                     @RequestParam(value = "max", required = false, defaultValue="200") Integer max,
+                                                     @RequestParam(value = "from", required = false, defaultValue="0") Integer from) {
         UserDetail userDetail = userService.getLoggedUserDetail();
         FilteredResult<ArrFund> funds;
         Integer institutionId = null;
@@ -165,14 +168,15 @@ public class FundController implements FundsApi {
     }
 
     @Override
-    public ResponseEntity<FundDetail> getFund(String id) {
+    public ResponseEntity<FundDetail> getFund(@PathVariable("id") String id) {
         Assert.notNull(id, "Musí být zadáno id AS");
         UserDetail userDetail = userService.getLoggedUserDetail();
         return ResponseEntity.ok(factoryVo.createFundDetail(arrangementService.getFund(Integer.valueOf(id)), userDetail));
     }
 
     @Override
-    public ResponseEntity<FundDetail> updateFund(String id, @RequestBody UpdateFund updateFund) {
+    @Transactional
+    public ResponseEntity<FundDetail> updateFund(@PathVariable("id") String id, @RequestBody UpdateFund updateFund) {
         Assert.notNull(updateFund, "AS musí být vyplněn");
         Assert.notNull(updateFund.getRuleSetCode(), "AS musí mít přiřazená pravidla");
 
