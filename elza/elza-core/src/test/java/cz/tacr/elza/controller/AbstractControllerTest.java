@@ -143,6 +143,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String USER_CONTROLLER_URL = "/api/user";
     protected static final String GROUP_CONTROLLER_URL = "/api/group";
     protected static final String ISSUE_CONTROLLER_URL = "/api/issue";
+    protected static final String FUND_CONTROLLER_URL = "/api/v1";
 
     // ADMIN
     protected static final String REINDEX = ADMIN_CONTROLLER_URL + "/reindex";
@@ -386,6 +387,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String SET_ISSUE_TYPE = ISSUE_CONTROLLER_URL + "/issues/{issueId}/type";
     protected static final String UPDATE_COMMENT = ISSUE_CONTROLLER_URL + "/comments/{commentId}";
     protected static final String EXPORT_ISSUE_LIST = ISSUE_CONTROLLER_URL + "/issue_lists/{issueListId}/export";
+
+    //FUND
+    protected static final String CREATE_FUND_V1 = FUND_CONTROLLER_URL + "/fund";
+    protected static final String UPDATE_FUND_V1 = FUND_CONTROLLER_URL + "/fund/{id}";
+    protected static final String FUND_V1 = FUND_CONTROLLER_URL + "/fund/{id}";
+    protected static final String FUNDS_V1 = FUND_CONTROLLER_URL + "/fund";
 
     protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.000ZZZZZ");
 
@@ -665,6 +672,42 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
         return createFund(createFund);
     }
+
+    /**
+     * Vytvoření archivní pomůcky.
+     *
+     * @param createFund parametry pro založení
+     * @return ap
+     */
+    protected Fund createFundV1(final CreateFund fund) {
+        Response response = post(spec -> spec
+                .body(fund), CREATE_FUND_V1);
+        return response.getBody().as(Fund.class);
+    }
+
+    protected FundDetail updateFundV1(final Integer id, final UpdateFund fund) {
+        Response response = put(spec ->
+                spec.pathParameter("id", id)
+                        .body(fund), UPDATE_FUND_V1);
+        return response.getBody().as(FundDetail.class);
+    }
+
+    protected FundDetail getFundV1(final Integer id) {
+        Response response = get(spec ->
+                spec.pathParameter("id", id), FUND_V1);
+        return response.getBody().as(FundDetail.class);
+    }
+
+    protected FindFundsResult findFunds(final String fulltext, final String institutionIdentifier, final Integer max, final Integer from) {
+        Response response = get(spec ->
+                spec.queryParameter("fulltext", fulltext)
+                        .queryParameter("institutionIdentifier", institutionIdentifier)
+                        .queryParameter("max", max)
+                        .queryParameter("from", from), FUNDS_V1);
+        return response.getBody().as(FindFundsResult.class);
+    }
+
+
 
     /**
      * Úprava archivní pomůcky.

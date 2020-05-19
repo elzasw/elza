@@ -249,8 +249,8 @@ public class UserController {
                                                 @RequestParam("from") final Integer from,
                                                 @RequestParam("count") final Integer count,
                                                 @RequestParam(value = "excludedGroupId", required = false) final Integer excludedGroupId,
-                                                @RequestParam(required = false) @Nullable final SearchType searchTypeName,
-                                                @RequestParam(required = false) @Nullable final SearchType searchTypeUsername
+                                                @RequestParam(value = "searchTypeName", required = false) @Nullable final SearchType searchTypeName,
+                                                @RequestParam(value = "searchTypeUsername",required = false) @Nullable final SearchType searchTypeUsername
     ) {
         Validate.notNull(active);
         Validate.notNull(disabled);
@@ -282,8 +282,8 @@ public class UserController {
     public FilteredResultVO<UsrUserVO> findUserWithFundCreate(@Nullable @RequestParam(value = "search", required = false) final String search,
                                                               @RequestParam("from") final Integer from,
                                                               @RequestParam("count") final Integer count,
-                                                              @RequestParam(required = false) @Nullable final SearchType searchTypeName,
-                                                              @RequestParam(required = false) @Nullable final SearchType searchTypeUsername
+                                                              @RequestParam(value = "searchTypeName", required = false) @Nullable final SearchType searchTypeName,
+                                                              @RequestParam(value = "searchTypeUsername", required = false) @Nullable final SearchType searchTypeUsername
     ) {
         SearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : SearchType.DISABLED;
         SearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : SearchType.FULLTEXT;
