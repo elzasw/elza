@@ -34,19 +34,16 @@
         <meta name="format-detection" content="telephone=no"/>
         <meta name="theme-color" content="#ffffff"/>
 
-        <script>
-        </script>
-        <script th:if="${isDefaultUserEnabled}">
-            var defaultUserEnabled = true;
+        <script th:if="${isDefaultUserEnabled}">            
         </script>
 
         <script th:inline="javascript">
-            /*<![CDATA[*/
+        	/*<![CDATA[*/
             var serverContextPath = [[${contextPath}]];
-                    /*]]>*/
-           	/*<![CDATA[*/
             var versionNumber = [[${appVersion}]];
-                    /*]]>*/
+            var displayUserInfo = [[${displayUserInfo}]];
+            var defaultUserEnabled = [[${isDefaultUserEnabled}]];
+            /*]]>*/
         </script>
     </head>
 
