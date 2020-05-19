@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -59,7 +60,7 @@ public class FundController implements FundsApi {
     private ClientFactoryDO factoryDO;
 
     @Override
-    public ResponseEntity<Fund> createFund(CreateFund createFund) {
+    public ResponseEntity<Fund> createFund(@RequestBody CreateFund createFund) {
         // Kontrola a vytvoření AS
         Assert.hasText(createFund.getName(), "Musí být vyplněn název");
         Assert.notNull(createFund.getInstitutionIdentifier(), "Identifikátor instituce musí být vyplněn");
@@ -171,7 +172,7 @@ public class FundController implements FundsApi {
     }
 
     @Override
-    public ResponseEntity<FundDetail> updateFund(String id, UpdateFund updateFund) {
+    public ResponseEntity<FundDetail> updateFund(String id, @RequestBody UpdateFund updateFund) {
         Assert.notNull(updateFund, "AS musí být vyplněn");
         Assert.notNull(updateFund.getRuleSetCode(), "AS musí mít přiřazená pravidla");
 
