@@ -89,6 +89,7 @@ export function createFund(data) {
         fundNumber: data.fundNumber,
         unitdate:data.unitdate,
         mark: data.mark,
+        scopes: data.scopes,
     };
 
     data.fundAdmins &&
