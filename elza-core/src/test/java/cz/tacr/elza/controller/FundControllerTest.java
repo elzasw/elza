@@ -10,7 +10,6 @@ import java.util.List;
 public class FundControllerTest extends AbstractControllerTest {
 
     @Test
-    @Ignore
     public void createFund() {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(0);
@@ -31,7 +30,6 @@ public class FundControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @Ignore
     public void updateFund() {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(0);
@@ -63,7 +61,6 @@ public class FundControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @Ignore
     public void getFund() {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(0);
