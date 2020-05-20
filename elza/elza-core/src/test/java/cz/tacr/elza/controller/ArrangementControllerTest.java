@@ -1066,6 +1066,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         body.setNodes(new HashSet<>(allNodes));
         body.setSelectionType(ArrangementController.SelectionType.NODES);
         Thread.sleep(1000);
+        helperTestService.waitForWorkers();
         replaceDataValues(fundVersion.getId(), typeVo.getId(), "value", "valXYZ", body);
 
 
@@ -1100,6 +1101,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         }
 
         //smazání hodnot atributů
+        helperTestService.waitForWorkers();
         allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAll(nodeIds));
         body.setNodes(new HashSet<>(allNodes));
         body.setSelectionType(ArrangementController.SelectionType.NODES);

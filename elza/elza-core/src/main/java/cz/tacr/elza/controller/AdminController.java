@@ -168,7 +168,6 @@ public class AdminController {
      * @return seznam JP
      */
     @RequestMapping(value = "/{fundId}/nodes/byIds", method = RequestMethod.POST)
-    @Transactional
     public List<TreeNodeVO> findNodeByIds(@PathVariable("fundId") Integer fundId,
                                           @RequestBody List<Integer> nodeIds) {
         ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fundId);
@@ -181,7 +180,8 @@ public class AdminController {
 
     @RequestMapping(value="/asyncRequests", method = RequestMethod.GET)
     public List<ArrAsyncRequestVO> getAsyncRequestInfo() {
-        return asyncRequestService.dispatcherInfo();
+        List<ArrAsyncRequestVO> requestList =  asyncRequestService.dispatcherInfo();
+        return requestList;
     }
 
     @RequestMapping(value= "/asyncRequests/{requestType}", method = RequestMethod.GET)
