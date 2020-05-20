@@ -43,7 +43,22 @@ import org.springframework.util.Assert;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -1215,8 +1230,12 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         String fulltext = StringUtils.isEmpty(param.getSiblingsFilter()) ? null : param.getSiblingsFilter().trim();
         int maxCount = param.getSiblingsMaxCount() == null || param.getSiblingsMaxCount() > 1000 ? 1000 : param.getSiblingsMaxCount();
         if (siblingsFrom != null) {
-            if (siblingsFrom < 0) {
-                throw new IllegalArgumentException("Index pro sourozence nesmí být záporný");
+            // pokud je na vstupu soused nastaven na -1, provede se automatický dopočet indexu na konec
+            if (siblingsFrom.equals(-1)) {
+                // vybrat poslední
+                siblingsFrom = calcLastSiblingsFrom(node, maxCount);
+            } else if (siblingsFrom < 0) {
+                throw new IllegalArgumentException("Index pro sourozence nesmí být záporný: " + siblingsFrom);
             }
             LevelTreeCacheService.Siblings siblings = getNodeSiblings(node, fundVersion, siblingsFrom, maxCount, fulltext, userDetail);
             result.setNodeIndex(siblings.getNodeIndex());
@@ -1229,6 +1248,21 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         }
 
         return result;
+    }
+
+    private Integer calcLastSiblingsFrom(final TreeNode node, final int maxCount) {
+        TreeNode parentNode = node.getParent();
+        List<TreeNode> childs;
+        if (parentNode == null) {
+            childs = Collections.singletonList(node);
+        } else {
+            childs = parentNode.getChilds();
+        }
+        int diff = childs.size() - (childs.size() % maxCount);
+        if (diff == childs.size()) {
+            diff -= maxCount / 2;
+        }
+        return Math.max(diff, 0);
     }
 
     /**
