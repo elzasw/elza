@@ -780,12 +780,14 @@ public class StructObjValueService {
                 so.setState(State.ERROR);
                 structObjRepository.save(so);
             }
-            //structObjRepository.
             logger.info("Inconsistencies in structured objects fixed");
 
             // plan recheck
             this.addToValidate(connTempObjs);
         }
+
+        // Drop any requests for temp objects
+        sobjVrequestRepository.deleteByStructuredObjectStateTemp();
 
         // Delete remaining temp objects
         //List<ArrChange> changes = structObjRepository.findTempChange();

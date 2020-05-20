@@ -49,6 +49,8 @@ public class ArrStructuredObject implements IArrFund, Structured {
 
     public final static String FIELD_VALUE = "value";
 
+    public final static String FIELD_STATE = "state";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
