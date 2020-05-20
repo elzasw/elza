@@ -1024,7 +1024,10 @@ class NodeFormActions extends ItemFormActions {
                     // ##
 
                     // výpočet pozice záznamu
-                    let indexFrom = node.viewStartIndex - node.viewStartIndex % (node.pageSize / 2);
+                    // pokud neznáme node.nodeIndex, nastavíme na -1 (necháme výpočet indexu na serveru)
+                    let indexFrom = node.nodeIndex == null ? -1 : node.nodeIndex - node.nodeIndex % (node.pageSize / 2);
+                    //původní výpočet z viewStartIndex
+                    //let indexFrom = node.viewStartIndex - node.viewStartIndex % (node.pageSize / 2);
 
                     const nodeParam = {nodeId};
                     const resultParam = {
