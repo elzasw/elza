@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.asynchactions.AsyncWorkerVO;
 import cz.tacr.elza.asynchactions.IAsyncWorker;
 import cz.tacr.elza.domain.AsyncTypeEnum;
 
@@ -14,9 +15,9 @@ public class ArrAsyncRequestVO {
     private int waitingRequests;
     private int runningThreadCount;
     private int totalThreadCount;
-    private List<IAsyncWorker> currentThreads;
+    private List<AsyncWorkerVO> currentThreads;
 
-    public ArrAsyncRequestVO(AsyncTypeEnum type, double load, int requestPerHour, int waitingRequests, int runningThreadCount, int totalThreadCount, List<IAsyncWorker> currentThreads) {
+    public ArrAsyncRequestVO(AsyncTypeEnum type, double load, int requestPerHour, int waitingRequests, int runningThreadCount, int totalThreadCount, List<AsyncWorkerVO> currentThreads) {
         this.type = type;
         this.load = load;
         this.requestPerHour = requestPerHour;
@@ -46,7 +47,7 @@ public class ArrAsyncRequestVO {
         return totalThreadCount;
     }
 
-    public List<IAsyncWorker> getCurrentThreads() {
+    public List<AsyncWorkerVO> getCurrentThreads() {
         return currentThreads;
     }
 

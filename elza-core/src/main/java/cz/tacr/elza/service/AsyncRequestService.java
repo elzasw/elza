@@ -705,6 +705,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
      */
     private void runBulkAction(AsyncRequestVO requestVO, Integer fundVersionId) {
         AsyncBulkActionWorker bulkActionWorker = this.appCtx.getBean(AsyncBulkActionWorker.class, fundVersionId, requestVO.getRequestId(), requestVO.getBulkActionId());
+        runningBulkActionWorkers.put(fundVersionId, bulkActionWorker);
         bulkActionTaskExecutor.execute(bulkActionWorker);
     }
 
@@ -997,21 +998,30 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
      * @param type
      * @return
      */
-    private List<IAsyncWorker> getRunningWorkers(AsyncTypeEnum type) {
+    private List<AsyncWorkerVO> getRunningWorkers(AsyncTypeEnum type) {
         switch (type) {
             case NODE:
                 List<IAsyncWorker> runningList = new ArrayList<>();
                 for (Map.Entry<Integer, List<IAsyncWorker>> entry : runningNodeWorkers.entrySet()) {
                     runningList.addAll(entry.getValue());
                 }
-                return runningList;
+                return convertWorkerList(runningList);
             case BULK:
-                return new ArrayList<>(runningBulkActionWorkers.values());
+                return convertWorkerList(runningBulkActionWorkers.values());
             case OUTPUT:
-                return new ArrayList<>(runningOutputGeneratorWorkers);
+                return convertWorkerList(runningOutputGeneratorWorkers);
             default:
                 throw new NotImplementedException("Typ requestu neni implementován: " + type);
         }
+    }
+
+    private List<AsyncWorkerVO> convertWorkerList(Collection<IAsyncWorker> workers) {
+        List<AsyncWorkerVO> runningVOList = new ArrayList<>();
+        for(IAsyncWorker worker : workers) {
+            AsyncWorkerVO workerVO = new AsyncWorkerVO(worker.getFundVersionId(), worker.getRequestId(), worker.getBeginTime(), worker.getRunningTime(), worker.getCurrentId());
+            runningVOList.add(workerVO);
+        }
+        return runningVOList;
     }
 
     /**
