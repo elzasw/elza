@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public class ApCreateTypeVO {
@@ -17,6 +18,7 @@ public class ApCreateTypeVO {
     /**
      * Seznam povolených specifikací typu atributu
      */
+    @Nullable
     private List<Integer> itemSpecIds = null;
 
     /**
