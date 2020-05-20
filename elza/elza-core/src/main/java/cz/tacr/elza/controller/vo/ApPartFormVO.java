@@ -2,6 +2,7 @@ package cz.tacr.elza.controller.vo;
 
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,11 +21,13 @@ public class ApPartFormVO {
     /**
      * Identifikátor nadřízené části
      */
+    @Nullable
     private Integer parentPartId;
 
     /**
      * Identifikátor části
      */
+    @Nullable
     private Integer partId;
 
     public String getPartTypeCode() {
