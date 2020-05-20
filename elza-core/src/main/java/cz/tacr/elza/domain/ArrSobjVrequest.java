@@ -22,16 +22,20 @@ import javax.persistence.Table;
 @Table
 public class ArrSobjVrequest {
 
+    public static final String TABLE_NAME = "arr_sobj_vrequest";
+
+    public static final String FIELD_STRUCTURED_OBJECT_ID = "structuredObjectId";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer sobjVrequestId;
     
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrStructuredObject.class)
-    @JoinColumn(name = "structuredObjectId", nullable = false)
+    @JoinColumn(name = FIELD_STRUCTURED_OBJECT_ID, nullable = false)
     private ArrStructuredObject structuredObject;
 
-    @Column(name = "structuredObjectId", updatable = false, insertable = false)
+    @Column(name = FIELD_STRUCTURED_OBJECT_ID, updatable = false, insertable = false)
     private Integer structuredObjectId;
 
     public Integer getSobjVrequestId() {
