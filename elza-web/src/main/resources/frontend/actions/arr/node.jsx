@@ -10,7 +10,6 @@ import {savingApiWrapper} from 'actions/global/status.jsx';
 import {fundExtendedView} from "./fundExtended";
 import {developerNodeScenariosDirty} from 'actions/global/developer.jsx';
 import {fundNodeInfoReceive} from "./nodeInfo";
-import {getParentNode} from "../../components/arr/ArrUtils";
 
 export function isNodeAction(action) {
     switch (action.type) {
@@ -63,37 +62,51 @@ export function fundSelectSubNode(versionId, subNodeId, subNodeParentNode, openN
     return (dispatch, getState) => {
         dispatch(fundExtendedView(false));
 
-        let state = getState();
+        const state = getState();
 
-        // vyhledání indexu uzlu, nejprve se vyzkouší strom
-        let nodes = state.arrRegion.funds[state.arrRegion.activeIndex].fundTree.nodes;
+        const fund = state.arrRegion.funds[state.arrRegion.activeIndex];
+        const treeNodes = fund.fundTree.nodes;
+
+        let nodeIndex = null;
+        let treeIndex;
+
         if (!subNodeId && subNodeIndex !== null) {
-            const index = indexById(nodes, subNodeParentNode.id) + subNodeIndex + 1;
-            subNodeId = nodes[index].id;
-        }
-        let index = indexById(nodes, subNodeId);
-        // pokud není ve stromu, tak se zkusí i akordeon - při přidání položky
-        // je někdy dříve v akordeonu než-li ve stromu
-        if(index===null) {
-            const fund = state.arrRegion.funds[state.arrRegion.activeIndex];
-            nodes = fund.nodes.nodes[fund.nodes.activeIndex].childNodes;
-            index = indexById(nodes, subNodeId);
-
-            subNodeIndex = index;
+            // vyhledani indexu ve stromu, za pomoci id rodice,
+            // pokud je poskytnut pouze subNodeIndex
+            const parentNodeIndex = indexById(treeNodes, subNodeParentNode.id);
+            treeIndex = parentNodeIndex + subNodeIndex + 1;
+            subNodeId = treeNodes[treeIndex].id;
         } else {
-            // korekce pozice v případě stromu o nadřazené
-            let i = index;
-            const node = nodes[index];
-            for (; i >= 0; i--) {
-                const n = nodes[i];
-                if (n.depth < node.depth) {
+            // vyhledání indexu uzlu ve stromu
+            treeIndex = indexById(treeNodes, subNodeId);
+            //throw new Error();
+        }
+
+        if (treeIndex !== null) {
+            // korekce indexu v zavislosti na stavu rozbaleni stromu
+            const selectedNodeDepth = treeNodes[treeIndex].depth;
+            for (let i = treeIndex; i >= 0; i--) {
+                const n = treeNodes[i];
+                if (n.depth < selectedNodeDepth) {
+                    treeIndex = treeIndex - i - 1
                     break;
+                } else if (n.depth > selectedNodeDepth) {
+                    // snizi index o kazdou polozku s vyssi hloubkou zanoreni
+                    // (ignorovani obsahu rozbalenych sourozencu)
+                    treeIndex--;
                 }
             }
-            subNodeIndex = index - i - 1;
+            nodeIndex = treeIndex;
         }
 
-        dispatch(fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible, subNodeIndex));
+        if (subNodeId >= 0 && nodeIndex === null) {
+            // pokud není ve stromu, tak se zkusí i akordeon - při přidání položky
+            // je někdy dříve v akordeonu než-li ve stromu
+            const childNodes = fund.nodes.nodes[fund.nodes.activeIndex].childNodes;
+            nodeIndex = indexById(childNodes, subNodeId);
+        }
+
+        dispatch(fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible, nodeIndex));
         dispatch(developerNodeScenariosDirty(subNodeId, subNodeParentNode.routingKey, state.arrRegion.funds[state.arrRegion.activeIndex].versionId));
     }
 }
